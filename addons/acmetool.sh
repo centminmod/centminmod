@@ -13,7 +13,7 @@ export SYSTEMD_PAGER=''
 ###############################################################
 # variables
 ###############################################################
-ACMEVER='1.0.88'
+ACMEVER='1.0.89'
 DT=$(date +"%d%m%y-%H%M%S")
 ACMEDEBUG='n'
 ACMEDEBUG_LOG='y'
@@ -2094,8 +2094,8 @@ issue_acme() {
     # staging test ssl certificates
     echo "testcert value = $testcert"
     if [[ "$testcert" = 'live' || "$testcert" = 'lived' || "$testcert" != 'd' ]] && [[ "$testcert" != 'wplive' && "$testcert" != 'wplived' && "$testcert" != 'wptestd' ]] && [[ "$testcert" != 'wptest' ]] && [[ ! -z "$testcert" ]]; then
-     echo ""$ACMEBINARY"${ACME_APIENDPOINT}${ACMEOCSP}${DNSAPI_OPT_GLOBAL} --issue $DOMAINOPT --days $RENEWDAYS -w "$WEBROOTPATH_OPT" -k "$KEYLENGTH" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT${ACME_PREFERRED_CHAIN}"
-      "$ACMEBINARY"${ACME_APIENDPOINT}${ACMEOCSP}${DNSAPI_OPT_GLOBAL} --issue $DOMAINOPT --days $RENEWDAYS -w "$WEBROOTPATH_OPT" -k "$KEYLENGTH" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT${ACME_PREFERRED_CHAIN}
+     echo "${ACMEBINARY}${ACME_APIENDPOINT}${ACMEOCSP}${DNSAPI_OPT_GLOBAL} --issue $DOMAINOPT --days $RENEWDAYS --pre-hook \"/usr/local/src/centminmod/tools/pre-acme-hooks.sh all-check $vhostname\" -w \"$WEBROOTPATH_OPT\" -k \"$KEYLENGTH\" --useragent \"$LE_USERAGENT\" $ACMEDEBUG_OPT${ACME_PREFERRED_CHAIN}"
+      "$ACMEBINARY"${ACME_APIENDPOINT}${ACMEOCSP}${DNSAPI_OPT_GLOBAL} --issue $DOMAINOPT --days $RENEWDAYS --pre-hook "/usr/local/src/centminmod/tools/pre-acme-hooks.sh all-check $vhostname" -w "$WEBROOTPATH_OPT" -k "$KEYLENGTH" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT${ACME_PREFERRED_CHAIN}
       LECHECK=$?
       # only enable resolver and ssl_stapling for live ssl certificate deployments
       if [[ -f "$SSLVHOST_CONFIG" && "$LECHECK" = '0' ]]; then
@@ -2112,8 +2112,8 @@ issue_acme() {
             echo
             echo "get 2nd SSL cert issued for dual ssl cert config"
             echo
-          echo ""$ACMEBINARY"${ACME_APIENDPOINT}${ACMEOCSP}${DNSAPI_OPT_GLOBAL} --issue $DOMAINOPT --days $RENEWDAYS -w "$WEBROOTPATH_OPT" -k "$KEYLENGTH_DUAL" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT${ACME_PREFERRED_CHAIN}"
-          "$ACMEBINARY"${ACME_APIENDPOINT}${ACMEOCSP}${DNSAPI_OPT_GLOBAL} --issue $DOMAINOPT --days $RENEWDAYS -w "$WEBROOTPATH_OPT" -k "$KEYLENGTH_DUAL" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT${ACME_PREFERRED_CHAIN}
+          echo "${ACMEBINARY}${ACME_APIENDPOINT}${ACMEOCSP}${DNSAPI_OPT_GLOBAL} --issue $DOMAINOPT --days $RENEWDAYS --pre-hook \"/usr/local/src/centminmod/tools/pre-acme-hooks.sh all-check $vhostname\" -w \"$WEBROOTPATH_OPT\" -k \"$KEYLENGTH_DUAL\" --useragent \"$LE_USERAGENT\" $ACMEDEBUG_OPT${ACME_PREFERRED_CHAIN}"
+          "$ACMEBINARY"${ACME_APIENDPOINT}${ACMEOCSP}${DNSAPI_OPT_GLOBAL} --issue $DOMAINOPT --days $RENEWDAYS --pre-hook "/usr/local/src/centminmod/tools/pre-acme-hooks.sh all-check $vhostname" -w "$WEBROOTPATH_OPT" -k "$KEYLENGTH_DUAL" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT${ACME_PREFERRED_CHAIN}
           DUAL_LECHECK=$?
           if [[ "$DUAL_LECHECK" = '0' ]]; then
             echo
@@ -2135,8 +2135,8 @@ issue_acme() {
       fi
     elif [[ "$testcert" = 'wplive' || "$testcert" = 'wplived' || "$testcert" != 'wptestd' ]] && [[ "$testcert" != 'wptest' ]] && [[ "$testcert" != 'd' ]] && [[ ! -z "$testcert" ]]; then
       echo "wp routine detected use reissue instead via --force"
-     echo ""$ACMEBINARY"${ACME_APIENDPOINT} --force${ACMEOCSP}${DNSAPI_OPT_GLOBAL} --issue $DOMAINOPT --days $RENEWDAYS -w "$WEBROOTPATH_OPT" -k "$KEYLENGTH" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT${ACME_PREFERRED_CHAIN}"
-      "$ACMEBINARY"${ACME_APIENDPOINT} --force${ACMEOCSP}${DNSAPI_OPT_GLOBAL} --issue $DOMAINOPT --days $RENEWDAYS -w "$WEBROOTPATH_OPT" -k "$KEYLENGTH" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT${ACME_PREFERRED_CHAIN}
+     echo "${ACMEBINARY}${ACME_APIENDPOINT} --force${ACMEOCSP}${DNSAPI_OPT_GLOBAL} --issue $DOMAINOPT --days $RENEWDAYS --pre-hook \"/usr/local/src/centminmod/tools/pre-acme-hooks.sh all-check $vhostname\" -w \"$WEBROOTPATH_OPT\" -k \"$KEYLENGTH\" --useragent \"$LE_USERAGENT\" $ACMEDEBUG_OPT${ACME_PREFERRED_CHAIN}"
+      "$ACMEBINARY"${ACME_APIENDPOINT} --force${ACMEOCSP}${DNSAPI_OPT_GLOBAL} --issue $DOMAINOPT --days $RENEWDAYS --pre-hook "/usr/local/src/centminmod/tools/pre-acme-hooks.sh all-check $vhostname" -w "$WEBROOTPATH_OPT" -k "$KEYLENGTH" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT${ACME_PREFERRED_CHAIN}
       LECHECK=$?
       # only enable resolver and ssl_stapling for live ssl certificate deployments
       if [[ -f "$SSLVHOST_CONFIG" && "$LECHECK" = '0' ]]; then
@@ -2153,8 +2153,8 @@ issue_acme() {
             echo
             echo "get 2nd SSL cert issued for dual ssl cert config"
             echo
-          echo ""$ACMEBINARY"${ACME_APIENDPOINT} --force${ACMEOCSP}${DNSAPI_OPT_GLOBAL} --issue $DOMAINOPT --days $RENEWDAYS -w "$WEBROOTPATH_OPT" -k "$KEYLENGTH_DUAL" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT${ACME_PREFERRED_CHAIN}"
-          "$ACMEBINARY"${ACME_APIENDPOINT} --force${ACMEOCSP}${DNSAPI_OPT_GLOBAL} --issue $DOMAINOPT --days $RENEWDAYS -w "$WEBROOTPATH_OPT" -k "$KEYLENGTH_DUAL" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT${ACME_PREFERRED_CHAIN}
+          echo "${ACMEBINARY}${ACME_APIENDPOINT} --force${ACMEOCSP}${DNSAPI_OPT_GLOBAL} --issue $DOMAINOPT --days $RENEWDAYS --pre-hook \"/usr/local/src/centminmod/tools/pre-acme-hooks.sh all-check $vhostname\" -w \"$WEBROOTPATH_OPT\" -k \"$KEYLENGTH_DUAL\" --useragent \"$LE_USERAGENT\" $ACMEDEBUG_OPT${ACME_PREFERRED_CHAIN}"
+          "$ACMEBINARY"${ACME_APIENDPOINT} --force${ACMEOCSP}${DNSAPI_OPT_GLOBAL} --issue $DOMAINOPT --days $RENEWDAYS --pre-hook "/usr/local/src/centminmod/tools/pre-acme-hooks.sh all-check $vhostname" -w "$WEBROOTPATH_OPT" -k "$KEYLENGTH_DUAL" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT${ACME_PREFERRED_CHAIN}
           DUAL_LECHECK=$?
           if [[ "$DUAL_LECHECK" = '0' ]]; then
             echo
@@ -2176,8 +2176,8 @@ issue_acme() {
       fi
     else
      testcert_dual=y
-     echo ""$ACMEBINARY"${STAGING_OPT}${DNSAPI_OPT_GLOBAL} --issue $DOMAINOPT --days $RENEWDAYS -w "$WEBROOTPATH_OPT" -k "$KEYLENGTH" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT${ACME_PREFERRED_CHAIN}"
-      "$ACMEBINARY"${STAGING_OPT}${DNSAPI_OPT_GLOBAL} --issue $DOMAINOPT --days $RENEWDAYS -w "$WEBROOTPATH_OPT" -k "$KEYLENGTH" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT${ACME_PREFERRED_CHAIN}
+     echo "${ACMEBINARY}${STAGING_OPT}${DNSAPI_OPT_GLOBAL} --issue $DOMAINOPT --days $RENEWDAYS --pre-hook \"/usr/local/src/centminmod/tools/pre-acme-hooks.sh all-check $vhostname\" -w \"$WEBROOTPATH_OPT\" -k \"$KEYLENGTH\" --useragent \"$LE_USERAGENT\" $ACMEDEBUG_OPT${ACME_PREFERRED_CHAIN}"
+      "$ACMEBINARY"${STAGING_OPT}${DNSAPI_OPT_GLOBAL} --issue $DOMAINOPT --days $RENEWDAYS --pre-hook "/usr/local/src/centminmod/tools/pre-acme-hooks.sh all-check $vhostname" -w "$WEBROOTPATH_OPT" -k "$KEYLENGTH" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT${ACME_PREFERRED_CHAIN}
       LECHECK=$?
       if [[ "$LECHECK" = '0' ]]; then
         # dual cert routine start
@@ -2185,8 +2185,8 @@ issue_acme() {
             echo
             echo "get 2nd SSL cert issued for dual ssl cert config"
             echo
-          echo ""$ACMEBINARY"${STAGING_OPT}${DNSAPI_OPT_GLOBAL} --issue $DOMAINOPT --days $RENEWDAYS -w "$WEBROOTPATH_OPT" -k "$KEYLENGTH_DUAL" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT${ACME_PREFERRED_CHAIN}"
-          "$ACMEBINARY"${STAGING_OPT}${DNSAPI_OPT_GLOBAL} --issue $DOMAINOPT --days $RENEWDAYS -w "$WEBROOTPATH_OPT" -k "$KEYLENGTH_DUAL" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT${ACME_PREFERRED_CHAIN}
+          echo "${ACMEBINARY}${STAGING_OPT}${DNSAPI_OPT_GLOBAL} --issue $DOMAINOPT --days $RENEWDAYS --pre-hook "/usr/local/src/centminmod/tools/pre-acme-hooks.sh all-check $vhostname" -w "$WEBROOTPATH_OPT" -k "$KEYLENGTH_DUAL" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT${ACME_PREFERRED_CHAIN}"
+          "$ACMEBINARY"${STAGING_OPT}${DNSAPI_OPT_GLOBAL} --issue $DOMAINOPT --days $RENEWDAYS --pre-hook "/usr/local/src/centminmod/tools/pre-acme-hooks.sh all-check $vhostname" -w "$WEBROOTPATH_OPT" -k "$KEYLENGTH_DUAL" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT${ACME_PREFERRED_CHAIN}
           DUAL_LECHECK=$?
           if [[ "$DUAL_LECHECK" = '0' ]]; then
             echo
@@ -2411,8 +2411,8 @@ reissue_acme() {
     # staging test ssl certificates
     echo "testcert value = $testcert"
     if [[ "$testcert" = 'live' || "$testcert" = 'lived' || "$testcert" != 'd' ]] && [[ "$testcert" != 'wplive' && "$testcert" != 'wplived' && "$testcert" != 'wptestd' ]] && [[ "$testcert" != 'wptest' ]] && [[ ! -z "$testcert" ]]; then
-     echo ""$ACMEBINARY"${ACME_APIENDPOINT} --force${ACMEOCSP}${DNSAPI_OPT_GLOBAL} --issue $DOMAINOPT --days $RENEWDAYS -w "$WEBROOTPATH_OPT" -k "$KEYLENGTH" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT${ACME_PREFERRED_CHAIN}"
-      "$ACMEBINARY"${ACME_APIENDPOINT} --force${ACMEOCSP}${DNSAPI_OPT_GLOBAL} --issue $DOMAINOPT --days $RENEWDAYS -w "$WEBROOTPATH_OPT" -k "$KEYLENGTH" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT${ACME_PREFERRED_CHAIN}
+     echo "${ACMEBINARY}${ACME_APIENDPOINT} --force${ACMEOCSP}${DNSAPI_OPT_GLOBAL} --issue $DOMAINOPT --days $RENEWDAYS --pre-hook \"/usr/local/src/centminmod/tools/pre-acme-hooks.sh all-check $vhostname\" -w \"$WEBROOTPATH_OPT\" -k \"$KEYLENGTH\" --useragent \"$LE_USERAGENT\" $ACMEDEBUG_OPT${ACME_PREFERRED_CHAIN}"
+      "$ACMEBINARY"${ACME_APIENDPOINT} --force${ACMEOCSP}${DNSAPI_OPT_GLOBAL} --issue $DOMAINOPT --days $RENEWDAYS --pre-hook "/usr/local/src/centminmod/tools/pre-acme-hooks.sh all-check $vhostname" -w "$WEBROOTPATH_OPT" -k "$KEYLENGTH" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT${ACME_PREFERRED_CHAIN}
       LECHECK=$?
       # only enable resolver and ssl_stapling for live ssl certificate deployments
       if [[ -f "$SSLVHOST_CONFIG" && "$LECHECK" = '0' ]]; then
@@ -2429,8 +2429,8 @@ reissue_acme() {
             echo
             echo "get 2nd SSL cert issued for dual ssl cert config"
             echo
-          echo ""$ACMEBINARY"${ACME_APIENDPOINT} --force${ACMEOCSP}${DNSAPI_OPT_GLOBAL} --issue $DOMAINOPT --days $RENEWDAYS -w "$WEBROOTPATH_OPT" -k "$KEYLENGTH_DUAL" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT${ACME_PREFERRED_CHAIN}"
-          "$ACMEBINARY"${ACME_APIENDPOINT} --force${ACMEOCSP}${DNSAPI_OPT_GLOBAL} --issue $DOMAINOPT --days $RENEWDAYS -w "$WEBROOTPATH_OPT" -k "$KEYLENGTH_DUAL" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT${ACME_PREFERRED_CHAIN}
+          echo "${ACMEBINARY}${ACME_APIENDPOINT} --force${ACMEOCSP}${DNSAPI_OPT_GLOBAL} --issue $DOMAINOPT --days $RENEWDAYS --pre-hook \"/usr/local/src/centminmod/tools/pre-acme-hooks.sh all-check $vhostname\" -w \"$WEBROOTPATH_OPT\" -k \"$KEYLENGTH_DUAL\" --useragent \"$LE_USERAGENT\" $ACMEDEBUG_OPT${ACME_PREFERRED_CHAIN}"
+          "$ACMEBINARY"${ACME_APIENDPOINT} --force${ACMEOCSP}${DNSAPI_OPT_GLOBAL} --issue $DOMAINOPT --days $RENEWDAYS --pre-hook "/usr/local/src/centminmod/tools/pre-acme-hooks.sh all-check $vhostname" -w "$WEBROOTPATH_OPT" -k "$KEYLENGTH_DUAL" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT${ACME_PREFERRED_CHAIN}
           DUAL_LECHECK=$?
           if [[ "$DUAL_LECHECK" = '0' ]]; then
             echo
@@ -2452,8 +2452,8 @@ reissue_acme() {
       fi
     elif [[ "$testcert" = 'wplive' || "$testcert" = 'wplived' || "$testcert" != 'wptestd' ]] && [[ "$testcert" != 'wptest' ]] && [[ "$testcert" != 'd' ]] && [[ ! -z "$testcert" ]]; then
       echo "wp routine"
-     echo ""$ACMEBINARY"${ACME_APIENDPOINT} --force${ACMEOCSP}${DNSAPI_OPT_GLOBAL} --issue $DOMAINOPT --days $RENEWDAYS -w "$WEBROOTPATH_OPT" -k "$KEYLENGTH" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT${ACME_PREFERRED_CHAIN}"
-      "$ACMEBINARY"${ACME_APIENDPOINT} --force${ACMEOCSP}${DNSAPI_OPT_GLOBAL} --issue $DOMAINOPT --days $RENEWDAYS -w "$WEBROOTPATH_OPT" -k "$KEYLENGTH" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT${ACME_PREFERRED_CHAIN}
+     echo "${ACMEBINARY}${ACME_APIENDPOINT} --force${ACMEOCSP}${DNSAPI_OPT_GLOBAL} --issue $DOMAINOPT --days $RENEWDAYS --pre-hook \"/usr/local/src/centminmod/tools/pre-acme-hooks.sh all-check $vhostname\" -w \"$WEBROOTPATH_OPT\" -k \"$KEYLENGTH\" --useragent \"$LE_USERAGENT\" $ACMEDEBUG_OPT${ACME_PREFERRED_CHAIN}"
+      "$ACMEBINARY"${ACME_APIENDPOINT} --force${ACMEOCSP}${DNSAPI_OPT_GLOBAL} --issue $DOMAINOPT --days $RENEWDAYS --pre-hook "/usr/local/src/centminmod/tools/pre-acme-hooks.sh all-check $vhostname" -w "$WEBROOTPATH_OPT" -k "$KEYLENGTH" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT${ACME_PREFERRED_CHAIN}
       LECHECK=$?
       # only enable resolver and ssl_stapling for live ssl certificate deployments
       if [[ -f "$SSLVHOST_CONFIG" && "$LECHECK" = '0' ]]; then
@@ -2470,8 +2470,8 @@ reissue_acme() {
             echo
             echo "get 2nd SSL cert issued for dual ssl cert config"
             echo
-          echo ""$ACMEBINARY"${ACME_APIENDPOINT} --force${ACMEOCSP}${DNSAPI_OPT_GLOBAL} --issue $DOMAINOPT --days $RENEWDAYS -w "$WEBROOTPATH_OPT" -k "$KEYLENGTH_DUAL" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT${ACME_PREFERRED_CHAIN}"
-          "$ACMEBINARY"${ACME_APIENDPOINT} --force${ACMEOCSP}${DNSAPI_OPT_GLOBAL} --issue $DOMAINOPT --days $RENEWDAYS -w "$WEBROOTPATH_OPT" -k "$KEYLENGTH_DUAL" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT${ACME_PREFERRED_CHAIN}
+          echo "${ACMEBINARY}${ACME_APIENDPOINT} --force${ACMEOCSP}${DNSAPI_OPT_GLOBAL} --issue $DOMAINOPT --days $RENEWDAYS --pre-hook \"/usr/local/src/centminmod/tools/pre-acme-hooks.sh all-check $vhostname\" -w \"$WEBROOTPATH_OPT\" -k \"$KEYLENGTH_DUAL\" --useragent \"$LE_USERAGENT\" $ACMEDEBUG_OPT${ACME_PREFERRED_CHAIN}"
+          "$ACMEBINARY"${ACME_APIENDPOINT} --force${ACMEOCSP}${DNSAPI_OPT_GLOBAL} --issue $DOMAINOPT --days $RENEWDAYS --pre-hook "/usr/local/src/centminmod/tools/pre-acme-hooks.sh all-check $vhostname" -w "$WEBROOTPATH_OPT" -k "$KEYLENGTH_DUAL" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT${ACME_PREFERRED_CHAIN}
           DUAL_LECHECK=$?
           if [[ "$DUAL_LECHECK" = '0' ]]; then
             echo
@@ -2493,8 +2493,8 @@ reissue_acme() {
       fi
     else
      testcert_dual=y
-     echo ""$ACMEBINARY" --force${STAGING_OPT}${DNSAPI_OPT_GLOBAL} --issue $DOMAINOPT --days $RENEWDAYS -w "$WEBROOTPATH_OPT" -k "$KEYLENGTH" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT${ACME_PREFERRED_CHAIN}"
-      "$ACMEBINARY" --force${STAGING_OPT}${DNSAPI_OPT_GLOBAL} --issue $DOMAINOPT --days $RENEWDAYS -w "$WEBROOTPATH_OPT" -k "$KEYLENGTH" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT${ACME_PREFERRED_CHAIN}
+     echo ""$ACMEBINARY" --force${STAGING_OPT}${DNSAPI_OPT_GLOBAL} --issue $DOMAINOPT --days $RENEWDAYS --pre-hook \"/usr/local/src/centminmod/tools/pre-acme-hooks.sh all-check $vhostname\" -w \"$WEBROOTPATH_OPT\" -k \"$KEYLENGTH\" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT${ACME_PREFERRED_CHAIN}"
+      "$ACMEBINARY" --force${STAGING_OPT}${DNSAPI_OPT_GLOBAL} --issue $DOMAINOPT --days $RENEWDAYS --pre-hook "/usr/local/src/centminmod/tools/pre-acme-hooks.sh all-check $vhostname" -w "$WEBROOTPATH_OPT" -k "$KEYLENGTH" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT${ACME_PREFERRED_CHAIN}
       LECHECK=$?
       if [[ "$LECHECK" = '0' ]]; then
         # dual cert routine start
@@ -2502,8 +2502,8 @@ reissue_acme() {
             echo
             echo "get 2nd SSL cert issued for dual ssl cert config"
             echo
-          echo ""$ACMEBINARY" --force${STAGING_OPT}${DNSAPI_OPT_GLOBAL} --issue $DOMAINOPT --days $RENEWDAYS -w "$WEBROOTPATH_OPT" -k "$KEYLENGTH_DUAL" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT${ACME_PREFERRED_CHAIN}"
-          "$ACMEBINARY" --force${STAGING_OPT}${DNSAPI_OPT_GLOBAL} --issue $DOMAINOPT --days $RENEWDAYS -w "$WEBROOTPATH_OPT" -k "$KEYLENGTH_DUAL" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT${ACME_PREFERRED_CHAIN}
+          echo ""$ACMEBINARY" --force${STAGING_OPT}${DNSAPI_OPT_GLOBAL} --issue $DOMAINOPT --days $RENEWDAYS --pre-hook \"/usr/local/src/centminmod/tools/pre-acme-hooks.sh all-check $vhostname\" -w \"$WEBROOTPATH_OPT\" -k \"$KEYLENGTH_DUAL\" --useragent \"$LE_USERAGENT\" $ACMEDEBUG_OPT${ACME_PREFERRED_CHAIN}"
+          "$ACMEBINARY" --force${STAGING_OPT}${DNSAPI_OPT_GLOBAL} --issue $DOMAINOPT --days $RENEWDAYS --pre-hook "/usr/local/src/centminmod/tools/pre-acme-hooks.sh all-check $vhostname" -w "$WEBROOTPATH_OPT" -k "$KEYLENGTH_DUAL" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT${ACME_PREFERRED_CHAIN}
           DUAL_LECHECK=$?
           if [[ "$DUAL_LECHECK" = '0' ]]; then
             echo
@@ -2685,8 +2685,8 @@ reissue_acme_only() {
     # staging test ssl certificates
     echo "testcert value = $testcert"
     if [[ "$testcert" = 'live' ]]; then
-     echo ""$ACMEBINARY"${ACME_APIENDPOINT} --force${ACMEOCSP}${DNSAPI_OPT_GLOBAL} --issue $DOMAINOPT --days $RENEWDAYS -w "$WEBROOTPATH_OPT" -k "$KEYLENGTH" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT${ACME_PREFERRED_CHAIN}"
-      "$ACMEBINARY"${ACME_APIENDPOINT} --force${ACMEOCSP}${DNSAPI_OPT_GLOBAL} --issue $DOMAINOPT --days $RENEWDAYS -w "$WEBROOTPATH_OPT" -k "$KEYLENGTH" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT${ACME_PREFERRED_CHAIN}
+     echo "${ACMEBINARY}${ACME_APIENDPOINT} --force${ACMEOCSP}${DNSAPI_OPT_GLOBAL} --issue $DOMAINOPT --days $RENEWDAYS --pre-hook \"/usr/local/src/centminmod/tools/pre-acme-hooks.sh all-check $vhostname\" -w \"$WEBROOTPATH_OPT\" -k \"$KEYLENGTH\" --useragent \"$LE_USERAGENT\" $ACMEDEBUG_OPT${ACME_PREFERRED_CHAIN}"
+      "$ACMEBINARY"${ACME_APIENDPOINT} --force${ACMEOCSP}${DNSAPI_OPT_GLOBAL} --issue $DOMAINOPT --days $RENEWDAYS --pre-hook "/usr/local/src/centminmod/tools/pre-acme-hooks.sh all-check $vhostname" -w "$WEBROOTPATH_OPT" -k "$KEYLENGTH" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT${ACME_PREFERRED_CHAIN}
       LECHECK=$?
       # only enable resolver and ssl_stapling for live ssl certificate deployments
       if [[ -f "$SSLVHOST_CONFIG" && "$LECHECK" = '0' ]]; then
@@ -2703,8 +2703,8 @@ reissue_acme_only() {
             echo
             echo "get 2nd SSL cert issued for dual ssl cert config"
             echo
-          echo ""$ACMEBINARY"${ACME_APIENDPOINT} --force${ACMEOCSP}${DNSAPI_OPT_GLOBAL} --issue $DOMAINOPT --days $RENEWDAYS -w "$WEBROOTPATH_OPT" -k "$KEYLENGTH_DUAL" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT${ACME_PREFERRED_CHAIN}"
-          "$ACMEBINARY"${ACME_APIENDPOINT} --force${ACMEOCSP}${DNSAPI_OPT_GLOBAL} --issue $DOMAINOPT --days $RENEWDAYS -w "$WEBROOTPATH_OPT" -k "$KEYLENGTH_DUAL" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT${ACME_PREFERRED_CHAIN}
+          echo "${ACMEBINARY}${ACME_APIENDPOINT} --force${ACMEOCSP}${DNSAPI_OPT_GLOBAL} --issue $DOMAINOPT --days $RENEWDAYS --pre-hook \"/usr/local/src/centminmod/tools/pre-acme-hooks.sh all-check $vhostname\" -w \"$WEBROOTPATH_OPT\" -k \"$KEYLENGTH_DUAL\" --useragent \"$LE_USERAGENT\" $ACMEDEBUG_OPT${ACME_PREFERRED_CHAIN}"
+          "$ACMEBINARY"${ACME_APIENDPOINT} --force${ACMEOCSP}${DNSAPI_OPT_GLOBAL} --issue $DOMAINOPT --days $RENEWDAYS --pre-hook "/usr/local/src/centminmod/tools/pre-acme-hooks.sh all-check $vhostname" -w "$WEBROOTPATH_OPT" -k "$KEYLENGTH_DUAL" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT${ACME_PREFERRED_CHAIN}
           DUAL_LECHECK=$?
           if [[ "$DUAL_LECHECK" = '0' ]]; then
             echo
@@ -2720,8 +2720,8 @@ reissue_acme_only() {
       fi
     else
      testcert_dual=y
-     echo ""$ACMEBINARY" --force${STAGING_OPT}${DNSAPI_OPT_GLOBAL} --issue $DOMAINOPT --days $RENEWDAYS -w "$WEBROOTPATH_OPT" -k "$KEYLENGTH" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT${ACME_PREFERRED_CHAIN}"
-      "$ACMEBINARY" --force${STAGING_OPT}${DNSAPI_OPT_GLOBAL} --issue $DOMAINOPT --days $RENEWDAYS -w "$WEBROOTPATH_OPT" -k "$KEYLENGTH" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT${ACME_PREFERRED_CHAIN}
+     echo ""$ACMEBINARY" --force${STAGING_OPT}${DNSAPI_OPT_GLOBAL} --issue $DOMAINOPT --days $RENEWDAYS --pre-hook \"/usr/local/src/centminmod/tools/pre-acme-hooks.sh all-check $vhostname\" -w \"$WEBROOTPATH_OPT\" -k \"$KEYLENGTH\" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT${ACME_PREFERRED_CHAIN}"
+      "$ACMEBINARY" --force${STAGING_OPT}${DNSAPI_OPT_GLOBAL} --issue $DOMAINOPT --days $RENEWDAYS --pre-hook "/usr/local/src/centminmod/tools/pre-acme-hooks.sh all-check $vhostname" -w "$WEBROOTPATH_OPT" -k "$KEYLENGTH" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT${ACME_PREFERRED_CHAIN}
       LECHECK=$?
       if [[ "$LECHECK" = '0' ]]; then
         # dual cert routine start
@@ -2729,8 +2729,8 @@ reissue_acme_only() {
             echo
             echo "get 2nd SSL cert issued for dual ssl cert config"
             echo
-          echo ""$ACMEBINARY" --force${STAGING_OPT}${DNSAPI_OPT_GLOBAL} --issue $DOMAINOPT --days $RENEWDAYS -w "$WEBROOTPATH_OPT" -k "$KEYLENGTH_DUAL" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT${ACME_PREFERRED_CHAIN}"
-          "$ACMEBINARY" --force${STAGING_OPT}${DNSAPI_OPT_GLOBAL} --issue $DOMAINOPT --days $RENEWDAYS -w "$WEBROOTPATH_OPT" -k "$KEYLENGTH_DUAL" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT${ACME_PREFERRED_CHAIN}
+          echo ""$ACMEBINARY" --force${STAGING_OPT}${DNSAPI_OPT_GLOBAL} --issue $DOMAINOPT --days $RENEWDAYS --pre-hook \"/usr/local/src/centminmod/tools/pre-acme-hooks.sh all-check $vhostname\" -w \"$WEBROOTPATH_OPT\" -k \"$KEYLENGTH_DUAL\" --useragent \"$LE_USERAGENT\" $ACMEDEBUG_OPT${ACME_PREFERRED_CHAIN}"
+          "$ACMEBINARY" --force${STAGING_OPT}${DNSAPI_OPT_GLOBAL} --issue $DOMAINOPT --days $RENEWDAYS --pre-hook "/usr/local/src/centminmod/tools/pre-acme-hooks.sh all-check $vhostname" -w "$WEBROOTPATH_OPT" -k "$KEYLENGTH_DUAL" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT${ACME_PREFERRED_CHAIN}
           DUAL_LECHECK=$?
           if [[ "$DUAL_LECHECK" = '0' ]]; then
             echo
@@ -2943,8 +2943,8 @@ renew_acme() {
     # staging test ssl certificates
     echo "testcert value = $testcert"
     if [[ "$testcert" = 'live' || "$testcert" = 'lived' || "$testcert" != 'd' ]] && [[ "$testcert" != 'wplive' && "$testcert" != 'wplived' && "$testcert" != 'wptestd' ]] && [[ "$testcert" != 'wptest' ]] && [[ ! -z "$testcert" ]]; then
-     echo ""$ACMEBINARY"${ACME_APIENDPOINT}${ACMEOCSP}${DNSAPI_OPT_GLOBAL} --issue $DOMAINOPT --days $RENEWDAYS -w "$WEBROOTPATH_OPT" -k "$KEYLENGTH" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT${ACME_PREFERRED_CHAIN}"
-      "$ACMEBINARY"${ACME_APIENDPOINT}${ACMEOCSP}${DNSAPI_OPT_GLOBAL} --issue $DOMAINOPT --days $RENEWDAYS -w "$WEBROOTPATH_OPT" -k "$KEYLENGTH" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT${ACME_PREFERRED_CHAIN}
+     echo "${ACMEBINARY}${ACME_APIENDPOINT}${ACMEOCSP}${DNSAPI_OPT_GLOBAL} --issue $DOMAINOPT --days $RENEWDAYS --pre-hook \"/usr/local/src/centminmod/tools/pre-acme-hooks.sh all-check $vhostname\" -w \"$WEBROOTPATH_OPT\" -k \"$KEYLENGTH\" --useragent \"$LE_USERAGENT\" $ACMEDEBUG_OPT${ACME_PREFERRED_CHAIN}"
+      "$ACMEBINARY"${ACME_APIENDPOINT}${ACMEOCSP}${DNSAPI_OPT_GLOBAL} --issue $DOMAINOPT --days $RENEWDAYS --pre-hook "/usr/local/src/centminmod/tools/pre-acme-hooks.sh all-check $vhostname" -w "$WEBROOTPATH_OPT" -k "$KEYLENGTH" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT${ACME_PREFERRED_CHAIN}
       LECHECK=$?
       # only enable resolver and ssl_stapling for live ssl certificate deployments
       if [[ -f "$SSLVHOST_CONFIG" && "$LECHECK" = '0' ]]; then
@@ -2961,8 +2961,8 @@ renew_acme() {
             echo
             echo "get 2nd SSL cert issued for dual ssl cert config"
             echo
-          echo ""$ACMEBINARY"${ACME_APIENDPOINT}${ACMEOCSP}${DNSAPI_OPT_GLOBAL} --issue $DOMAINOPT --days $RENEWDAYS -w "$WEBROOTPATH_OPT" -k "$KEYLENGTH_DUAL" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT${ACME_PREFERRED_CHAIN}"
-          "$ACMEBINARY"${ACME_APIENDPOINT}${ACMEOCSP}${DNSAPI_OPT_GLOBAL} --issue $DOMAINOPT --days $RENEWDAYS -w "$WEBROOTPATH_OPT" -k "$KEYLENGTH_DUAL" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT${ACME_PREFERRED_CHAIN}
+          echo "${ACMEBINARY}${ACME_APIENDPOINT}${ACMEOCSP}${DNSAPI_OPT_GLOBAL} --issue $DOMAINOPT --days $RENEWDAYS --pre-hook \"/usr/local/src/centminmod/tools/pre-acme-hooks.sh all-check $vhostname\" -w \"$WEBROOTPATH_OPT\" -k \"$KEYLENGTH_DUAL\" --useragent \"$LE_USERAGENT\" $ACMEDEBUG_OPT${ACME_PREFERRED_CHAIN}"
+          "$ACMEBINARY"${ACME_APIENDPOINT}${ACMEOCSP}${DNSAPI_OPT_GLOBAL} --issue $DOMAINOPT --days $RENEWDAYS --pre-hook "/usr/local/src/centminmod/tools/pre-acme-hooks.sh all-check $vhostname" -w "$WEBROOTPATH_OPT" -k "$KEYLENGTH_DUAL" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT${ACME_PREFERRED_CHAIN}
           DUAL_LECHECK=$?
           if [[ "$DUAL_LECHECK" = '0' ]]; then
             echo
@@ -2984,8 +2984,8 @@ renew_acme() {
       fi
     elif [[ "$testcert" = 'wplive' || "$testcert" = 'wplived' || "$testcert" != 'wptestd' ]] && [[ "$testcert" != 'wptest' ]] && [[ "$testcert" != 'd' ]] && [[ ! -z "$testcert" ]]; then
       echo "wp routine detected use reissue instead via --force"
-     echo ""$ACMEBINARY"${ACME_APIENDPOINT} --force${ACMEOCSP}${DNSAPI_OPT_GLOBAL} --issue $DOMAINOPT --days $RENEWDAYS -w "$WEBROOTPATH_OPT" -k "$KEYLENGTH" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT${ACME_PREFERRED_CHAIN}"
-      "$ACMEBINARY"${ACME_APIENDPOINT} --force${ACMEOCSP}${DNSAPI_OPT_GLOBAL} --issue $DOMAINOPT --days $RENEWDAYS -w "$WEBROOTPATH_OPT" -k "$KEYLENGTH" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT${ACME_PREFERRED_CHAIN}
+     echo "${ACMEBINARY}${ACME_APIENDPOINT} --force${ACMEOCSP}${DNSAPI_OPT_GLOBAL} --issue $DOMAINOPT --days $RENEWDAYS --pre-hook \"/usr/local/src/centminmod/tools/pre-acme-hooks.sh all-check $vhostname\" -w \"$WEBROOTPATH_OPT\" -k \"$KEYLENGTH\" --useragent \"$LE_USERAGENT\" $ACMEDEBUG_OPT${ACME_PREFERRED_CHAIN}"
+      "$ACMEBINARY"${ACME_APIENDPOINT} --force${ACMEOCSP}${DNSAPI_OPT_GLOBAL} --issue $DOMAINOPT --days $RENEWDAYS --pre-hook "/usr/local/src/centminmod/tools/pre-acme-hooks.sh all-check $vhostname" -w "$WEBROOTPATH_OPT" -k "$KEYLENGTH" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT${ACME_PREFERRED_CHAIN}
       LECHECK=$?
       # only enable resolver and ssl_stapling for live ssl certificate deployments
       if [[ -f "$SSLVHOST_CONFIG" && "$LECHECK" = '0' ]]; then
@@ -3002,8 +3002,8 @@ renew_acme() {
             echo
             echo "get 2nd SSL cert issued for dual ssl cert config"
             echo
-          echo ""$ACMEBINARY"${ACME_APIENDPOINT} --force${ACMEOCSP}${DNSAPI_OPT_GLOBAL} --issue $DOMAINOPT --days $RENEWDAYS -w "$WEBROOTPATH_OPT" -k "$KEYLENGTH_DUAL" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT${ACME_PREFERRED_CHAIN}"
-          "$ACMEBINARY"${ACME_APIENDPOINT} --force${ACMEOCSP}${DNSAPI_OPT_GLOBAL} --issue $DOMAINOPT --days $RENEWDAYS -w "$WEBROOTPATH_OPT" -k "$KEYLENGTH_DUAL" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT${ACME_PREFERRED_CHAIN}
+          echo "${ACMEBINARY}${ACME_APIENDPOINT} --force${ACMEOCSP}${DNSAPI_OPT_GLOBAL} --issue $DOMAINOPT --days $RENEWDAYS --pre-hook \"/usr/local/src/centminmod/tools/pre-acme-hooks.sh all-check $vhostname\" -w \"$WEBROOTPATH_OPT\" -k \"$KEYLENGTH_DUAL\" --useragent \"$LE_USERAGENT\" $ACMEDEBUG_OPT${ACME_PREFERRED_CHAIN}"
+          "$ACMEBINARY"${ACME_APIENDPOINT} --force${ACMEOCSP}${DNSAPI_OPT_GLOBAL} --issue $DOMAINOPT --days $RENEWDAYS --pre-hook "/usr/local/src/centminmod/tools/pre-acme-hooks.sh all-check $vhostname" -w "$WEBROOTPATH_OPT" -k "$KEYLENGTH_DUAL" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT${ACME_PREFERRED_CHAIN}
           DUAL_LECHECK=$?
           if [[ "$DUAL_LECHECK" = '0' ]]; then
             echo
@@ -3025,8 +3025,8 @@ renew_acme() {
       fi
     else
      testcert_dual=y
-     echo ""$ACMEBINARY"${STAGING_OPT}${DNSAPI_OPT_GLOBAL} --issue $DOMAINOPT --days $RENEWDAYS -w "$WEBROOTPATH_OPT" -k "$KEYLENGTH" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT${ACME_PREFERRED_CHAIN}"
-      "$ACMEBINARY"${STAGING_OPT}${DNSAPI_OPT_GLOBAL} --issue $DOMAINOPT --days $RENEWDAYS -w "$WEBROOTPATH_OPT" -k "$KEYLENGTH" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT${ACME_PREFERRED_CHAIN}
+     echo "${ACMEBINARY}${STAGING_OPT}${DNSAPI_OPT_GLOBAL} --issue $DOMAINOPT --days $RENEWDAYS --pre-hook \"/usr/local/src/centminmod/tools/pre-acme-hooks.sh all-check $vhostname\" -w \"$WEBROOTPATH_OPT\" -k \"$KEYLENGTH\" --useragent \"$LE_USERAGENT\" $ACMEDEBUG_OPT${ACME_PREFERRED_CHAIN}"
+      "$ACMEBINARY"${STAGING_OPT}${DNSAPI_OPT_GLOBAL} --issue $DOMAINOPT --days $RENEWDAYS --pre-hook "/usr/local/src/centminmod/tools/pre-acme-hooks.sh all-check $vhostname" -w "$WEBROOTPATH_OPT" -k "$KEYLENGTH" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT${ACME_PREFERRED_CHAIN}
       LECHECK=$?
       if [[ "$LECHECK" = '0' ]]; then
         # dual cert routine start
@@ -3034,8 +3034,8 @@ renew_acme() {
             echo
             echo "get 2nd SSL cert issued for dual ssl cert config"
             echo
-          echo ""$ACMEBINARY"${STAGING_OPT}${DNSAPI_OPT_GLOBAL} --issue $DOMAINOPT --days $RENEWDAYS -w "$WEBROOTPATH_OPT" -k "$KEYLENGTH_DUAL" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT${ACME_PREFERRED_CHAIN}"
-          "$ACMEBINARY"${STAGING_OPT}${DNSAPI_OPT_GLOBAL} --issue $DOMAINOPT --days $RENEWDAYS -w "$WEBROOTPATH_OPT" -k "$KEYLENGTH_DUAL" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT${ACME_PREFERRED_CHAIN}
+          echo "${ACMEBINARY}${STAGING_OPT}${DNSAPI_OPT_GLOBAL} --issue $DOMAINOPT --days $RENEWDAYS --pre-hook "/usr/local/src/centminmod/tools/pre-acme-hooks.sh all-check $vhostname" -w "$WEBROOTPATH_OPT" -k "$KEYLENGTH_DUAL" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT${ACME_PREFERRED_CHAIN}"
+          "$ACMEBINARY"${STAGING_OPT}${DNSAPI_OPT_GLOBAL} --issue $DOMAINOPT --days $RENEWDAYS --pre-hook "/usr/local/src/centminmod/tools/pre-acme-hooks.sh all-check $vhostname" -w "$WEBROOTPATH_OPT" -k "$KEYLENGTH_DUAL" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT${ACME_PREFERRED_CHAIN}
           DUAL_LECHECK=$?
           if [[ "$DUAL_LECHECK" = '0' ]]; then
             echo
@@ -3306,8 +3306,8 @@ webroot_issueacme() {
     # staging test ssl certificates
     echo "testcert value = $testcert"
     if [[ "$testcert" = 'live' || "$testcert" = 'lived' || "$testcert" != 'd' || "$testcert" != 'wplive' && "$testcert" != 'wplived' && "$testcert" != 'wptestd' ]] && [[ ! -z "$testcert" ]]; then
-      echo ""$ACMEBINARY"${ACME_APIENDPOINT}${ACMEOCSP}${DNSAPI_OPT_GLOBAL} --issue $DOMAINOPT --days $RENEWDAYS -w "$CUSTOM_WEBROOT" -k "$KEYLENGTH" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT${ACME_PREFERRED_CHAIN}"
-      "$ACMEBINARY"${ACME_APIENDPOINT}${ACMEOCSP}${DNSAPI_OPT_GLOBAL} --issue $DOMAINOPT --days $RENEWDAYS -w "$CUSTOM_WEBROOT" -k "$KEYLENGTH" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT${ACME_PREFERRED_CHAIN}
+      echo "${ACMEBINARY}${ACME_APIENDPOINT}${ACMEOCSP}${DNSAPI_OPT_GLOBAL} --issue $DOMAINOPT --days $RENEWDAYS --pre-hook \"/usr/local/src/centminmod/tools/pre-acme-hooks.sh all-check $vhostname\" -w "$CUSTOM_WEBROOT" -k "$KEYLENGTH" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT${ACME_PREFERRED_CHAIN}"
+      "$ACMEBINARY"${ACME_APIENDPOINT}${ACMEOCSP}${DNSAPI_OPT_GLOBAL} --issue $DOMAINOPT --days $RENEWDAYS --pre-hook "/usr/local/src/centminmod/tools/pre-acme-hooks.sh all-check $vhostname" -w "$CUSTOM_WEBROOT" -k "$KEYLENGTH" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT${ACME_PREFERRED_CHAIN}
       LECHECK=$?
       # only enable resolver and ssl_stapling for live ssl certificate deployments
       if [[ -f "$SSLVHOST_CONFIG" && "$LECHECK" = '0' ]]; then
@@ -3324,8 +3324,8 @@ webroot_issueacme() {
             echo
             echo "get 2nd SSL cert issued for dual ssl cert config"
             echo
-          echo ""$ACMEBINARY"${ACME_APIENDPOINT}${ACMEOCSP}${DNSAPI_OPT_GLOBAL} --issue $DOMAINOPT --days $RENEWDAYS -w "$CUSTOM_WEBROOT" -k "$KEYLENGTH_DUAL" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT${ACME_PREFERRED_CHAIN}"
-          "$ACMEBINARY"${ACME_APIENDPOINT}${ACMEOCSP}${DNSAPI_OPT_GLOBAL} --issue $DOMAINOPT --days $RENEWDAYS -w "$CUSTOM_WEBROOT" -k "$KEYLENGTH_DUAL" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT${ACME_PREFERRED_CHAIN}
+          echo "${ACMEBINARY}${ACME_APIENDPOINT}${ACMEOCSP}${DNSAPI_OPT_GLOBAL} --issue $DOMAINOPT --days $RENEWDAYS --pre-hook \"/usr/local/src/centminmod/tools/pre-acme-hooks.sh all-check $vhostname\" -w "$CUSTOM_WEBROOT" -k "$KEYLENGTH_DUAL" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT${ACME_PREFERRED_CHAIN}"
+          "$ACMEBINARY"${ACME_APIENDPOINT}${ACMEOCSP}${DNSAPI_OPT_GLOBAL} --issue $DOMAINOPT --days $RENEWDAYS --pre-hook "/usr/local/src/centminmod/tools/pre-acme-hooks.sh all-check $vhostname" -w "$CUSTOM_WEBROOT" -k "$KEYLENGTH_DUAL" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT${ACME_PREFERRED_CHAIN}
           DUAL_LECHECK=$?
           if [[ "$DUAL_LECHECK" = '0' ]]; then
             echo
@@ -3347,8 +3347,8 @@ webroot_issueacme() {
       fi
     elif [[ "$testcert" = 'wplive' || "$testcert" = 'wplived' || "$testcert" != 'wptestd' ]] && [[ "$testcert" != 'wptest' ]] && [[ "$testcert" != 'd' ]] && [[ ! -z "$testcert" ]]; then
        echo "wp routine detected use reissue instead via --force"
-      echo ""$ACMEBINARY"${ACME_APIENDPOINT} --force${ACMEOCSP}${DNSAPI_OPT_GLOBAL} --issue $DOMAINOPT --days $RENEWDAYS -w "$CUSTOM_WEBROOT" -k "$KEYLENGTH" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT${ACME_PREFERRED_CHAIN}"
-      "$ACMEBINARY"${ACME_APIENDPOINT} --force${ACMEOCSP}${DNSAPI_OPT_GLOBAL} --issue $DOMAINOPT --days $RENEWDAYS -w "$CUSTOM_WEBROOT" -k "$KEYLENGTH" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT${ACME_PREFERRED_CHAIN}
+      echo "${ACMEBINARY}${ACME_APIENDPOINT} --force${ACMEOCSP}${DNSAPI_OPT_GLOBAL} --issue $DOMAINOPT --days $RENEWDAYS --pre-hook "/usr/local/src/centminmod/tools/pre-acme-hooks.sh all-check $vhostname" -w "$CUSTOM_WEBROOT" -k "$KEYLENGTH" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT${ACME_PREFERRED_CHAIN}"
+      "$ACMEBINARY"${ACME_APIENDPOINT} --force${ACMEOCSP}${DNSAPI_OPT_GLOBAL} --issue $DOMAINOPT --days $RENEWDAYS --pre-hook "/usr/local/src/centminmod/tools/pre-acme-hooks.sh all-check $vhostname" -w "$CUSTOM_WEBROOT" -k "$KEYLENGTH" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT${ACME_PREFERRED_CHAIN}
       LECHECK=$?
       # only enable resolver and ssl_stapling for live ssl certificate deployments
       if [[ -f "$SSLVHOST_CONFIG" && "$LECHECK" = '0' ]]; then
@@ -3365,8 +3365,8 @@ webroot_issueacme() {
             echo
             echo "get 2nd SSL cert issued for dual ssl cert config"
             echo
-          echo ""$ACMEBINARY"${ACME_APIENDPOINT} --force${ACMEOCSP}${DNSAPI_OPT_GLOBAL} --issue $DOMAINOPT --days $RENEWDAYS -w "$CUSTOM_WEBROOT" -k "$KEYLENGTH_DUAL" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT${ACME_PREFERRED_CHAIN}"
-          "$ACMEBINARY"${ACME_APIENDPOINT} --force${ACMEOCSP}${DNSAPI_OPT_GLOBAL} --issue $DOMAINOPT --days $RENEWDAYS -w "$CUSTOM_WEBROOT" -k "$KEYLENGTH_DUAL" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT${ACME_PREFERRED_CHAIN}
+          echo "${ACMEBINARY}${ACME_APIENDPOINT} --force${ACMEOCSP}${DNSAPI_OPT_GLOBAL} --issue $DOMAINOPT --days $RENEWDAYS --pre-hook "/usr/local/src/centminmod/tools/pre-acme-hooks.sh all-check $vhostname" -w "$CUSTOM_WEBROOT" -k "$KEYLENGTH_DUAL" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT${ACME_PREFERRED_CHAIN}"
+          "$ACMEBINARY"${ACME_APIENDPOINT} --force${ACMEOCSP}${DNSAPI_OPT_GLOBAL} --issue $DOMAINOPT --days $RENEWDAYS --pre-hook "/usr/local/src/centminmod/tools/pre-acme-hooks.sh all-check $vhostname" -w "$CUSTOM_WEBROOT" -k "$KEYLENGTH_DUAL" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT${ACME_PREFERRED_CHAIN}
           DUAL_LECHECK=$?
           if [[ "$DUAL_LECHECK" = '0' ]]; then
             echo
@@ -3388,8 +3388,8 @@ webroot_issueacme() {
       fi
     else
       testcert_dual=y
-      echo ""$ACMEBINARY"${STAGING_OPT}${DNSAPI_OPT_GLOBAL} --issue $DOMAINOPT --days $RENEWDAYS -w "$CUSTOM_WEBROOT" -k "$KEYLENGTH" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT${ACME_PREFERRED_CHAIN}"
-      "$ACMEBINARY"${STAGING_OPT}${DNSAPI_OPT_GLOBAL} --issue $DOMAINOPT --days $RENEWDAYS -w "$CUSTOM_WEBROOT" -k "$KEYLENGTH" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT${ACME_PREFERRED_CHAIN}
+      echo "${ACMEBINARY}${STAGING_OPT}${DNSAPI_OPT_GLOBAL} --issue $DOMAINOPT --days $RENEWDAYS --pre-hook "/usr/local/src/centminmod/tools/pre-acme-hooks.sh all-check $vhostname" -w "$CUSTOM_WEBROOT" -k "$KEYLENGTH" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT${ACME_PREFERRED_CHAIN}"
+      "$ACMEBINARY"${STAGING_OPT}${DNSAPI_OPT_GLOBAL} --issue $DOMAINOPT --days $RENEWDAYS --pre-hook "/usr/local/src/centminmod/tools/pre-acme-hooks.sh all-check $vhostname" -w "$CUSTOM_WEBROOT" -k "$KEYLENGTH" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT${ACME_PREFERRED_CHAIN}
       LECHECK=$?
       if [[ "$LECHECK" = '0' ]]; then
         # dual cert routine start
@@ -3397,8 +3397,8 @@ webroot_issueacme() {
             echo
             echo "get 2nd SSL cert issued for dual ssl cert config"
             echo
-          echo ""$ACMEBINARY"${STAGING_OPT}${DNSAPI_OPT_GLOBAL} --issue $DOMAINOPT --days $RENEWDAYS -w "$CUSTOM_WEBROOT" -k "$KEYLENGTH_DUAL" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT${ACME_PREFERRED_CHAIN}"
-          "$ACMEBINARY"${STAGING_OPT}${DNSAPI_OPT_GLOBAL} --issue $DOMAINOPT --days $RENEWDAYS -w "$CUSTOM_WEBROOT" -k "$KEYLENGTH_DUAL" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT${ACME_PREFERRED_CHAIN}
+          echo "${ACMEBINARY}${STAGING_OPT}${DNSAPI_OPT_GLOBAL} --issue $DOMAINOPT --days $RENEWDAYS --pre-hook \"/usr/local/src/centminmod/tools/pre-acme-hooks.sh all-check $vhostname\" -w \"$CUSTOM_WEBROOT\" -k \"$KEYLENGTH_DUAL\" --useragent \"$LE_USERAGENT\" $ACMEDEBUG_OPT${ACME_PREFERRED_CHAIN}"
+          "$ACMEBINARY"${STAGING_OPT}${DNSAPI_OPT_GLOBAL} --issue $DOMAINOPT --days $RENEWDAYS --pre-hook "/usr/local/src/centminmod/tools/pre-acme-hooks.sh all-check $vhostname" -w "$CUSTOM_WEBROOT" -k "$KEYLENGTH_DUAL" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT${ACME_PREFERRED_CHAIN}
           DUAL_LECHECK=$?
           if [[ "$DUAL_LECHECK" = '0' ]]; then
             echo
@@ -3671,8 +3671,8 @@ webroot_reissueacme() {
     # staging test ssl certificates
     echo "testcert value = $testcert"
     if [[ "$testcert" = 'live' || "$testcert" = 'lived' || "$testcert" != 'd' || "$testcert" = 'wplive' || "$testcert" = 'wplived' || "$testcert" != 'wptestd' ]] && [[ "$testcert" != 'wptest' ]] && [[ ! -z "$testcert" ]]; then
-      echo ""$ACMEBINARY"${ACME_APIENDPOINT} --force${ACMEOCSP}${DNSAPI_OPT_GLOBAL} --issue $DOMAINOPT --days $RENEWDAYS -w "$CUSTOM_WEBROOT" -k "$KEYLENGTH" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT${ACME_PREFERRED_CHAIN}"
-      "$ACMEBINARY"${ACME_APIENDPOINT} --force${ACMEOCSP}${DNSAPI_OPT_GLOBAL} --issue $DOMAINOPT --days $RENEWDAYS -w "$CUSTOM_WEBROOT" -k "$KEYLENGTH" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT${ACME_PREFERRED_CHAIN}
+      echo "${ACMEBINARY}${ACME_APIENDPOINT} --force${ACMEOCSP}${DNSAPI_OPT_GLOBAL} --issue $DOMAINOPT --days $RENEWDAYS --pre-hook "/usr/local/src/centminmod/tools/pre-acme-hooks.sh all-check $vhostname" -w "$CUSTOM_WEBROOT" -k "$KEYLENGTH" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT${ACME_PREFERRED_CHAIN}"
+      "$ACMEBINARY"${ACME_APIENDPOINT} --force${ACMEOCSP}${DNSAPI_OPT_GLOBAL} --issue $DOMAINOPT --days $RENEWDAYS --pre-hook "/usr/local/src/centminmod/tools/pre-acme-hooks.sh all-check $vhostname" -w "$CUSTOM_WEBROOT" -k "$KEYLENGTH" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT${ACME_PREFERRED_CHAIN}
       LECHECK=$?
       # only enable resolver and ssl_stapling for live ssl certificate deployments
       if [[ -f "$SSLVHOST_CONFIG" && "$LECHECK" = '0' ]]; then
@@ -3689,8 +3689,8 @@ webroot_reissueacme() {
             echo
             echo "get 2nd SSL cert issued for dual ssl cert config"
             echo
-          echo ""$ACMEBINARY"${ACME_APIENDPOINT} --force${ACMEOCSP}${DNSAPI_OPT_GLOBAL} --issue $DOMAINOPT --days $RENEWDAYS -w "$CUSTOM_WEBROOT" -k "$KEYLENGTH_DUAL" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT${ACME_PREFERRED_CHAIN}"
-          "$ACMEBINARY"${ACME_APIENDPOINT} --force${ACMEOCSP}${DNSAPI_OPT_GLOBAL} --issue $DOMAINOPT --days $RENEWDAYS -w "$CUSTOM_WEBROOT" -k "$KEYLENGTH_DUAL" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT${ACME_PREFERRED_CHAIN}
+          echo "${ACMEBINARY}${ACME_APIENDPOINT} --force${ACMEOCSP}${DNSAPI_OPT_GLOBAL} --issue $DOMAINOPT --days $RENEWDAYS --pre-hook "/usr/local/src/centminmod/tools/pre-acme-hooks.sh all-check $vhostname" -w "$CUSTOM_WEBROOT" -k "$KEYLENGTH_DUAL" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT${ACME_PREFERRED_CHAIN}"
+          "$ACMEBINARY"${ACME_APIENDPOINT} --force${ACMEOCSP}${DNSAPI_OPT_GLOBAL} --issue $DOMAINOPT --days $RENEWDAYS --pre-hook "/usr/local/src/centminmod/tools/pre-acme-hooks.sh all-check $vhostname" -w "$CUSTOM_WEBROOT" -k "$KEYLENGTH_DUAL" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT${ACME_PREFERRED_CHAIN}
           DUAL_LECHECK=$?
           if [[ "$DUAL_LECHECK" = '0' ]]; then
             echo
@@ -3712,8 +3712,8 @@ webroot_reissueacme() {
       fi
     else
       testcert_dual=y
-      echo ""$ACMEBINARY" --force${STAGING_OPT}${DNSAPI_OPT_GLOBAL} --issue $DOMAINOPT --days $RENEWDAYS -w "$CUSTOM_WEBROOT" -k "$KEYLENGTH" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT${ACME_PREFERRED_CHAIN}"
-      "$ACMEBINARY" --force${STAGING_OPT}${DNSAPI_OPT_GLOBAL} --issue $DOMAINOPT --days $RENEWDAYS -w "$CUSTOM_WEBROOT" -k "$KEYLENGTH" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT${ACME_PREFERRED_CHAIN}
+      echo ""$ACMEBINARY" --force${STAGING_OPT}${DNSAPI_OPT_GLOBAL} --issue $DOMAINOPT --days $RENEWDAYS --pre-hook "/usr/local/src/centminmod/tools/pre-acme-hooks.sh all-check $vhostname" -w "$CUSTOM_WEBROOT" -k "$KEYLENGTH" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT${ACME_PREFERRED_CHAIN}"
+      "$ACMEBINARY" --force${STAGING_OPT}${DNSAPI_OPT_GLOBAL} --issue $DOMAINOPT --days $RENEWDAYS --pre-hook "/usr/local/src/centminmod/tools/pre-acme-hooks.sh all-check $vhostname" -w "$CUSTOM_WEBROOT" -k "$KEYLENGTH" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT${ACME_PREFERRED_CHAIN}
       LECHECK=$?
       if [[ "$LECHECK" = '0' ]]; then
         # dual cert routine start
@@ -3721,8 +3721,8 @@ webroot_reissueacme() {
             echo
             echo "get 2nd SSL cert issued for dual ssl cert config"
             echo
-          echo ""$ACMEBINARY" --force${STAGING_OPT}${DNSAPI_OPT_GLOBAL} --issue $DOMAINOPT --days $RENEWDAYS -w "$CUSTOM_WEBROOT" -k "$KEYLENGTH_DUAL" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT${ACME_PREFERRED_CHAIN}"
-          "$ACMEBINARY" --force${STAGING_OPT}${DNSAPI_OPT_GLOBAL} --issue $DOMAINOPT --days $RENEWDAYS -w "$CUSTOM_WEBROOT" -k "$KEYLENGTH_DUAL" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT${ACME_PREFERRED_CHAIN}
+          echo ""$ACMEBINARY" --force${STAGING_OPT}${DNSAPI_OPT_GLOBAL} --issue $DOMAINOPT --days $RENEWDAYS --pre-hook "/usr/local/src/centminmod/tools/pre-acme-hooks.sh all-check $vhostname" -w "$CUSTOM_WEBROOT" -k "$KEYLENGTH_DUAL" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT${ACME_PREFERRED_CHAIN}"
+          "$ACMEBINARY" --force${STAGING_OPT}${DNSAPI_OPT_GLOBAL} --issue $DOMAINOPT --days $RENEWDAYS --pre-hook "/usr/local/src/centminmod/tools/pre-acme-hooks.sh all-check $vhostname" -w "$CUSTOM_WEBROOT" -k "$KEYLENGTH_DUAL" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT${ACME_PREFERRED_CHAIN}
           DUAL_LECHECK=$?
           if [[ "$DUAL_LECHECK" = '0' ]]; then
             echo
@@ -3989,8 +3989,8 @@ webroot_renewacme() {
     # staging test ssl certificates
     echo "testcert value = $testcert"
     if [[ "$testcert" = 'live' || "$testcert" = 'lived' || "$testcert" != 'd' || "$testcert" != 'wplive' && "$testcert" != 'wplived' && "$testcert" != 'wptestd' ]] && [[ ! -z "$testcert" ]]; then
-      echo ""$ACMEBINARY"${ACME_APIENDPOINT}${ACMEOCSP}${DNSAPI_OPT_GLOBAL} --issue $DOMAINOPT --days $RENEWDAYS -w "$CUSTOM_WEBROOT" -k "$KEYLENGTH" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT${ACME_PREFERRED_CHAIN}"
-      "$ACMEBINARY"${ACME_APIENDPOINT}${ACMEOCSP}${DNSAPI_OPT_GLOBAL} --issue $DOMAINOPT --days $RENEWDAYS -w "$CUSTOM_WEBROOT" -k "$KEYLENGTH" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT${ACME_PREFERRED_CHAIN}
+      echo "${ACMEBINARY}${ACME_APIENDPOINT}${ACMEOCSP}${DNSAPI_OPT_GLOBAL} --issue $DOMAINOPT --days $RENEWDAYS --pre-hook \"/usr/local/src/centminmod/tools/pre-acme-hooks.sh all-check $vhostname\" -w "$CUSTOM_WEBROOT" -k "$KEYLENGTH" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT${ACME_PREFERRED_CHAIN}"
+      "$ACMEBINARY"${ACME_APIENDPOINT}${ACMEOCSP}${DNSAPI_OPT_GLOBAL} --issue $DOMAINOPT --days $RENEWDAYS --pre-hook "/usr/local/src/centminmod/tools/pre-acme-hooks.sh all-check $vhostname" -w "$CUSTOM_WEBROOT" -k "$KEYLENGTH" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT${ACME_PREFERRED_CHAIN}
       LECHECK=$?
       # only enable resolver and ssl_stapling for live ssl certificate deployments
       if [[ -f "$SSLVHOST_CONFIG" && "$LECHECK" = '0' ]]; then
@@ -4007,8 +4007,8 @@ webroot_renewacme() {
             echo
             echo "get 2nd SSL cert issued for dual ssl cert config"
             echo
-          echo ""$ACMEBINARY"${ACME_APIENDPOINT}${ACMEOCSP}${DNSAPI_OPT_GLOBAL} --issue $DOMAINOPT --days $RENEWDAYS -w "$CUSTOM_WEBROOT" -k "$KEYLENGTH_DUAL" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT${ACME_PREFERRED_CHAIN}"
-          "$ACMEBINARY"${ACME_APIENDPOINT}${ACMEOCSP}${DNSAPI_OPT_GLOBAL} --issue $DOMAINOPT --days $RENEWDAYS -w "$CUSTOM_WEBROOT" -k "$KEYLENGTH_DUAL" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT${ACME_PREFERRED_CHAIN}
+          echo "${ACMEBINARY}${ACME_APIENDPOINT}${ACMEOCSP}${DNSAPI_OPT_GLOBAL} --issue $DOMAINOPT --days $RENEWDAYS --pre-hook \"/usr/local/src/centminmod/tools/pre-acme-hooks.sh all-check $vhostname\" -w "$CUSTOM_WEBROOT" -k "$KEYLENGTH_DUAL" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT${ACME_PREFERRED_CHAIN}"
+          "$ACMEBINARY"${ACME_APIENDPOINT}${ACMEOCSP}${DNSAPI_OPT_GLOBAL} --issue $DOMAINOPT --days $RENEWDAYS --pre-hook "/usr/local/src/centminmod/tools/pre-acme-hooks.sh all-check $vhostname" -w "$CUSTOM_WEBROOT" -k "$KEYLENGTH_DUAL" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT${ACME_PREFERRED_CHAIN}
           DUAL_LECHECK=$?
           if [[ "$DUAL_LECHECK" = '0' ]]; then
             echo
@@ -4030,8 +4030,8 @@ webroot_renewacme() {
       fi
     elif [[ "$testcert" = 'wplive' || "$testcert" = 'wplived' || "$testcert" != 'wptestd' ]] && [[ "$testcert" != 'wptest' ]] && [[ "$testcert" != 'd' ]] && [[ ! -z "$testcert" ]]; then
        echo "wp routine detected use reissue instead via --force"
-      echo ""$ACMEBINARY"${ACME_APIENDPOINT} --force${ACMEOCSP}${DNSAPI_OPT_GLOBAL} --issue $DOMAINOPT --days $RENEWDAYS -w "$CUSTOM_WEBROOT" -k "$KEYLENGTH" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT${ACME_PREFERRED_CHAIN}"
-      "$ACMEBINARY"${ACME_APIENDPOINT} --force${ACMEOCSP}${DNSAPI_OPT_GLOBAL} --issue $DOMAINOPT --days $RENEWDAYS -w "$CUSTOM_WEBROOT" -k "$KEYLENGTH" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT${ACME_PREFERRED_CHAIN}
+      echo "${ACMEBINARY}${ACME_APIENDPOINT} --force${ACMEOCSP}${DNSAPI_OPT_GLOBAL} --issue $DOMAINOPT --days $RENEWDAYS --pre-hook "/usr/local/src/centminmod/tools/pre-acme-hooks.sh all-check $vhostname" -w "$CUSTOM_WEBROOT" -k "$KEYLENGTH" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT${ACME_PREFERRED_CHAIN}"
+      "$ACMEBINARY"${ACME_APIENDPOINT} --force${ACMEOCSP}${DNSAPI_OPT_GLOBAL} --issue $DOMAINOPT --days $RENEWDAYS --pre-hook "/usr/local/src/centminmod/tools/pre-acme-hooks.sh all-check $vhostname" -w "$CUSTOM_WEBROOT" -k "$KEYLENGTH" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT${ACME_PREFERRED_CHAIN}
       LECHECK=$?
       # only enable resolver and ssl_stapling for live ssl certificate deployments
       if [[ -f "$SSLVHOST_CONFIG" && "$LECHECK" = '0' ]]; then
@@ -4048,8 +4048,8 @@ webroot_renewacme() {
             echo
             echo "get 2nd SSL cert issued for dual ssl cert config"
             echo
-          echo ""$ACMEBINARY"${ACME_APIENDPOINT} --force${ACMEOCSP}${DNSAPI_OPT_GLOBAL} --issue $DOMAINOPT --days $RENEWDAYS -w "$CUSTOM_WEBROOT" -k "$KEYLENGTH_DUAL" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT${ACME_PREFERRED_CHAIN}"
-          "$ACMEBINARY"${ACME_APIENDPOINT} --force${ACMEOCSP}${DNSAPI_OPT_GLOBAL} --issue $DOMAINOPT --days $RENEWDAYS -w "$CUSTOM_WEBROOT" -k "$KEYLENGTH_DUAL" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT${ACME_PREFERRED_CHAIN}
+          echo "${ACMEBINARY}${ACME_APIENDPOINT} --force${ACMEOCSP}${DNSAPI_OPT_GLOBAL} --issue $DOMAINOPT --days $RENEWDAYS --pre-hook "/usr/local/src/centminmod/tools/pre-acme-hooks.sh all-check $vhostname" -w "$CUSTOM_WEBROOT" -k "$KEYLENGTH_DUAL" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT${ACME_PREFERRED_CHAIN}"
+          "$ACMEBINARY"${ACME_APIENDPOINT} --force${ACMEOCSP}${DNSAPI_OPT_GLOBAL} --issue $DOMAINOPT --days $RENEWDAYS --pre-hook "/usr/local/src/centminmod/tools/pre-acme-hooks.sh all-check $vhostname" -w "$CUSTOM_WEBROOT" -k "$KEYLENGTH_DUAL" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT${ACME_PREFERRED_CHAIN}
           DUAL_LECHECK=$?
           if [[ "$DUAL_LECHECK" = '0' ]]; then
             echo
@@ -4071,8 +4071,8 @@ webroot_renewacme() {
       fi
     else
       testcert_dual=y
-      echo ""$ACMEBINARY"${STAGING_OPT}${DNSAPI_OPT_GLOBAL} --issue $DOMAINOPT --days $RENEWDAYS -w "$CUSTOM_WEBROOT" -k "$KEYLENGTH" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT${ACME_PREFERRED_CHAIN}"
-      "$ACMEBINARY"${STAGING_OPT}${DNSAPI_OPT_GLOBAL} --issue $DOMAINOPT --days $RENEWDAYS -w "$CUSTOM_WEBROOT" -k "$KEYLENGTH" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT${ACME_PREFERRED_CHAIN}
+      echo "${ACMEBINARY}${STAGING_OPT}${DNSAPI_OPT_GLOBAL} --issue $DOMAINOPT --days $RENEWDAYS --pre-hook "/usr/local/src/centminmod/tools/pre-acme-hooks.sh all-check $vhostname" -w "$CUSTOM_WEBROOT" -k "$KEYLENGTH" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT${ACME_PREFERRED_CHAIN}"
+      "$ACMEBINARY"${STAGING_OPT}${DNSAPI_OPT_GLOBAL} --issue $DOMAINOPT --days $RENEWDAYS --pre-hook "/usr/local/src/centminmod/tools/pre-acme-hooks.sh all-check $vhostname" -w "$CUSTOM_WEBROOT" -k "$KEYLENGTH" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT${ACME_PREFERRED_CHAIN}
       LECHECK=$?
       if [[ "$LECHECK" = '0' ]]; then
         # dual cert routine start
@@ -4080,8 +4080,8 @@ webroot_renewacme() {
             echo
             echo "get 2nd SSL cert issued for dual ssl cert config"
             echo
-          echo ""$ACMEBINARY"${STAGING_OPT}${DNSAPI_OPT_GLOBAL} --issue $DOMAINOPT --days $RENEWDAYS -w "$CUSTOM_WEBROOT" -k "$KEYLENGTH_DUAL" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT${ACME_PREFERRED_CHAIN}"
-          "$ACMEBINARY"${STAGING_OPT}${DNSAPI_OPT_GLOBAL} --issue $DOMAINOPT --days $RENEWDAYS -w "$CUSTOM_WEBROOT" -k "$KEYLENGTH_DUAL" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT${ACME_PREFERRED_CHAIN}
+          echo "${ACMEBINARY}${STAGING_OPT}${DNSAPI_OPT_GLOBAL} --issue $DOMAINOPT --days $RENEWDAYS --pre-hook \"/usr/local/src/centminmod/tools/pre-acme-hooks.sh all-check $vhostname\" -w \"$CUSTOM_WEBROOT\" -k \"$KEYLENGTH_DUAL\" --useragent \"$LE_USERAGENT\" $ACMEDEBUG_OPT${ACME_PREFERRED_CHAIN}"
+          "$ACMEBINARY"${STAGING_OPT}${DNSAPI_OPT_GLOBAL} --issue $DOMAINOPT --days $RENEWDAYS --pre-hook "/usr/local/src/centminmod/tools/pre-acme-hooks.sh all-check $vhostname" -w "$CUSTOM_WEBROOT" -k "$KEYLENGTH_DUAL" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT${ACME_PREFERRED_CHAIN}
           DUAL_LECHECK=$?
           if [[ "$DUAL_LECHECK" = '0' ]]; then
             echo
