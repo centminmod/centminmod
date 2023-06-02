@@ -13,7 +13,7 @@ export SYSTEMD_PAGER=''
 ###############################################################
 # variables
 ###############################################################
-ACMEVER='1.0.89'
+ACMEVER='1.0.90'
 DT=$(date +"%d%m%y-%H%M%S")
 ACMEDEBUG='n'
 ACMEDEBUG_LOG='y'
@@ -652,6 +652,10 @@ getuseragent() {
     LE_OSVER=centos6
   elif [[ "$CENTOS_SEVEN" = '7' ]]; then
     LE_OSVER=centos7
+  elif [[ "$CENTOS_EIGHT" = '8' ]]; then
+    LE_OSVER=centos8
+  elif [[ "$CENTOS_NINE" = '9' ]]; then
+    LE_OSVER=centos9
   fi
   if [[ "$_dnsagent" != 'dns' ]]; then
     LE_USERAGENT="centminmod-$LE_OSVER-acmesh-webroot"
