@@ -1,4 +1,5 @@
 #!/bin/bash
+export PATH="/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin:/root/bin"
 ################################################################
 # 1, for centminmod.com LEMP stacks to be placed in
 # /home/nginx/domains/domain.com/tools/backup-perm.sh

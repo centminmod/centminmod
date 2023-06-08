@@ -1,4 +1,5 @@
 #!/bin/bash
+export PATH="/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin:/root/bin"
 ###################################################
 # tool to update fix DST Root CA X3 expiry by
 # blacklisting expired cert

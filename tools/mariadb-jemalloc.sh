@@ -1,4 +1,5 @@
 #!/bin/bash
+export PATH="/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin:/root/bin"
 ######################################################
 # switch from glibc system memory allocator to
 # jemalloc malloc on CentOS 7 64bit systems only
