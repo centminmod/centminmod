@@ -449,7 +449,7 @@ if [ -f /usr/bin/re2c ]; then
     fi
 fi
 
-php-config --version | cut -d . -f1,2 | egrep -w '7.0|7.1|7.2|7.3|7.4|8.0|8.1|8.2'
+php-config --version | cut -d . -f1,2 | egrep -w '7.0|7.1|7.2|7.3|7.4|8.0|8.1|8.2|8.3'
 PHPSEVEN_CHECKVER=$?
 echo "$PHPSEVEN_CHECKVER"
 

@@ -325,7 +325,7 @@ else
     if [ -f /usr/local/bin/getphpver ]; then
       display_phpver="$(getphpver 73), $(getphpver 74), $(getphpver 80), $(getphpver 81), $(getphpver 82)"
     else
-      display_phpver="7.3.33, 7.4.33, 8.0.26, 8.1.13, 8.2.0"
+      display_phpver="7.3.33, 7.4.33, 8.0.29, 8.1.20, 8.2.7"
     fi
     echo
     echo "----------------------------------------------------------------"
@@ -1344,7 +1344,7 @@ if [[ "$zendopcacheon" = [yY] && "$OLD_OPCACHEPHP" != [yY] ]]; then
 fi
 
 # notes for users if PHP 7.0 detected
-php-config --version | cut -d . -f1,2 | egrep -w '7.0|7.1|7.2|7.3|7.4|8.0|8.1|8.2'
+php-config --version | cut -d . -f1,2 | egrep -w '7.0|7.1|7.2|7.3|7.4|8.0|8.1|8.2|8.3'
 PHPSEVEN_CHECKVER=$?
 echo "$PHPSEVEN_CHECKVER"
 

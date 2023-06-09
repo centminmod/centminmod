@@ -601,7 +601,7 @@ imagickinstall() {
     echo "cd $DIR_TMP"
     cd $DIR_TMP
 
-php-config --version | cut -d . -f1,2 | egrep -w '7.0||7.1|7.2|7.3'
+php-config --version | cut -d . -f1,2 | egrep -w '7.0||7.1|7.2|7.3|7.4'
 PHPSEVEN_CHECKVER=$?
 echo $PHPSEVEN_CHECKVER
 
