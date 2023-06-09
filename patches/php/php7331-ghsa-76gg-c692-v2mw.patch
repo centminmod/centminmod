@@ -1,0 +1,123 @@
+From 0cfca9aa1395271833848daec0bace51d965531d Mon Sep 17 00:00:00 2001
+From: Niels Dossche <7771979+nielsdos@users.noreply.github.com>
+Date: Sun, 16 Apr 2023 15:05:03 +0200
+Subject: [PATCH] Fix missing randomness check and insufficient random bytes
+ for SOAP HTTP Digest
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+If php_random_bytes_throw fails, the nonce will be uninitialized, but
+still sent to the server. The client nonce is intended to protect
+against a malicious server. See section 5.10 and 5.12 of RFC 7616 [1],
+and bullet point 2 below.
+
+Tim pointed out that even though it's the MD5 of the nonce that gets sent,
+enumerating 31 bits is trivial. So we have still a stack information leak
+of 31 bits.
+
+Furthermore, Tim found the following issues:
+* The small size of cnonce might cause the server to erroneously reject
+  a request due to a repeated (cnonce, nc) pair. As per the birthday
+  problem 31 bits of randomness will return a duplication with 50%
+  chance after less than 55000 requests and nc always starts counting at 1.
+* The cnonce is intended to protect the client and password against a
+  malicious server that returns a constant server nonce where the server
+  precomputed a rainbow table between passwords and correct client response.
+  As storage is fairly cheap, a server could precompute the client responses
+  for (a subset of) client nonces and still have a chance of reversing the
+  client response with the same probability as the cnonce duplication.
+
+  Precomputing the rainbow table for all 2^31 cnonces increases the rainbow
+  table size by factor 2 billion, which is infeasible. But precomputing it
+  for 2^14 cnonces only increases the table size by factor 16k and the server
+  would still have a 10% chance of successfully reversing a password with a
+  single client request.
+
+This patch fixes the issues by increasing the nonce size, and checking
+the return value of php_random_bytes_throw(). In the process we also get
+rid of the MD5 hashing of the nonce.
+
+[1] RFC 7616: https://www.rfc-editor.org/rfc/rfc7616
+
+Co-authored-by: Tim Düsterhus <timwolla@php.net>
+(cherry picked from commit 126d517ce240e9f638d9a5eaa509eaca49ef562a)
+---
+ NEWS                |  6 ++++++
+ ext/soap/php_http.c | 21 +++++++++++++--------
+ 2 files changed, 19 insertions(+), 8 deletions(-)
+
+diff --git a/NEWS b/NEWS
+index 3f8739eae7..7c07635cad 100644
+--- a/NEWS
++++ b/NEWS
+@@ -1,6 +1,12 @@
+ PHP                                                                        NEWS
+ |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+ 
++Backported from 8.0.29
++
++- Soap:
++  . Fixed bug GHSA-76gg-c692-v2mw (Missing error check and insufficient random
++    bytes in HTTP Digest authentication for SOAP). (nielsdos, timwolla)
++
+ Backported from 8.0.28
+ 
+ - Core:
+diff --git a/ext/soap/php_http.c b/ext/soap/php_http.c
+index ee3dcbdc9a..e3a9afdbe9 100644
+--- a/ext/soap/php_http.c
++++ b/ext/soap/php_http.c
+@@ -666,18 +666,23 @@ int make_http_soap_request(zval        *this_ptr,
+ 			if ((digest = zend_hash_str_find(Z_OBJPROP_P(this_ptr), "_digest", sizeof("_digest")-1)) != NULL) {
+ 				if (Z_TYPE_P(digest) == IS_ARRAY) {
+ 					char          HA1[33], HA2[33], response[33], cnonce[33], nc[9];
+-					zend_long     nonce;
++					unsigned char nonce[16];
+ 					PHP_MD5_CTX   md5ctx;
+ 					unsigned char hash[16];
+ 
+-					php_random_bytes_throw(&nonce, sizeof(nonce));
+-					nonce &= 0x7fffffff;
++					if (UNEXPECTED(php_random_bytes_throw(&nonce, sizeof(nonce)) != SUCCESS)) {
++						ZEND_ASSERT(EG(exception));
++						php_stream_close(stream);
++						zend_hash_str_del(Z_OBJPROP_P(this_ptr), "httpurl", sizeof("httpurl")-1);
++						zend_hash_str_del(Z_OBJPROP_P(this_ptr), "httpsocket", sizeof("httpsocket")-1);
++						zend_hash_str_del(Z_OBJPROP_P(this_ptr), "_use_proxy", sizeof("_use_proxy")-1);
++						smart_str_free(&soap_headers_z);
++						smart_str_free(&soap_headers);
++						return FALSE;
++					}
+ 
+-					PHP_MD5Init(&md5ctx);
+-					snprintf(cnonce, sizeof(cnonce), ZEND_LONG_FMT, nonce);
+-					PHP_MD5Update(&md5ctx, (unsigned char*)cnonce, strlen(cnonce));
+-					PHP_MD5Final(hash, &md5ctx);
+-					make_digest(cnonce, hash);
++					php_hash_bin2hex(cnonce, nonce, sizeof(nonce));
++					cnonce[32] = 0;
+ 
+ 					if ((tmp = zend_hash_str_find(Z_ARRVAL_P(digest), "nc", sizeof("nc")-1)) != NULL &&
+ 					    Z_TYPE_P(tmp) == IS_LONG) {
+From 40439039c224bb8cdebd1b7b3d03b8cc11e7cce7 Mon Sep 17 00:00:00 2001
+From: Remi Collet <remi@remirepo.net>
+Date: Tue, 6 Jun 2023 18:05:22 +0200
+Subject: [PATCH] Fix GH-11382 add missing hash header for bin2hex
+
+---
+ ext/soap/php_http.c | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/ext/soap/php_http.c b/ext/soap/php_http.c
+index e3a9afdbe9..912b8e341d 100644
+--- a/ext/soap/php_http.c
++++ b/ext/soap/php_http.c
+@@ -22,6 +22,7 @@
+ #include "ext/standard/base64.h"
+ #include "ext/standard/md5.h"
+ #include "ext/standard/php_random.h"
++#include "ext/hash/php_hash.h"
+ 
+ static char *get_http_header_value_nodup(char *headers, char *type, size_t *len);
+ static char *get_http_header_value(char *headers, char *type);
