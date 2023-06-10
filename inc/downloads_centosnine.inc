@@ -5,7 +5,12 @@ if [[ "$REMIREPO_DISABLE" = [nN] ]]; then
   cd $DIR_TMP
   if [ ! "$(yum repolist remi | grep -o remi)" ]; then
     echo "Configuring Remi EL9 repo"
+    rpm --import https://rpms.remirepo.net/RPM-GPG-KEY-remi2018
+    rpm --import https://rpms.remirepo.net/RPM-GPG-KEY-remi2019
+    rpm --import https://rpms.remirepo.net/RPM-GPG-KEY-remi2020
     rpm --import https://rpms.remirepo.net/RPM-GPG-KEY-remi2021
+    rpm --import https://rpms.remirepo.net/RPM-GPG-KEY-remi2022
+    rpm --import https://rpms.remirepo.net/RPM-GPG-KEY-remi2023
     yum -y install https://rpms.remirepo.net/enterprise/remi-release-9.rpm
     ERR=$?
     CCREMICHECK="$ERR"
