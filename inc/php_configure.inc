@@ -138,6 +138,19 @@ oniguruma_check() {
     echo
     yum -y install oniguruma5php oniguruma5php-devel --enablerepo=remi
   fi
+  if [[ "$PHPMVER" = '7.4' || "$PHPMUVER" = '7.4' || "$PHPMVER" = '8.0' || "$PHPMUVER" = '8.0' || "$PHPMVER" = '8.1' || "$PHPMUVER" = '8.1' || "$PHPMVER" = '8.2' || "$PHPMUVER" = '8.2' || "$PHPMVER" = '8.3' || "$PHPMUVER" = '8.3' || "$PHPVER_ID" -ge '80000' ]]; then
+    echo "export ONIG_CFLAGS='-I/usr/include'"
+    export ONIG_CFLAGS="-I/usr/include"
+    echo "export ONIG_LIBS='-L/usr/lib64 -lonig'"
+    export ONIG_LIBS="-L/usr/lib64 -lonig"
+    echo
+    echo "ls -lAh /usr/include | grep onig"
+    ls -lAh /usr/include | grep onig
+    echo
+    echo "ls -lAh /usr/lib64 | grep onig"
+    ls -lAh /usr/lib64 | grep onig
+    echo
+  fi
 }
 
 function funct_phpconfigure {
