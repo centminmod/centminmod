@@ -680,6 +680,15 @@ pzcat_install() {
   fi
 }
 
+csf_udpfix() {
+  # fix CSF bug to properly allow HTTP/3 QUIC UDP port 443 outbound connections
+  if [[ -f /etc/csf/csf.conf && "$(grep ',44320,21,' /etc/csf/csf.conf)" ]]; then
+    csf --profile backup udpout_quic_fix >/dev/null 2>&1
+    sed -i 's|,44320,21,|,443,20,21,|' /etc/csf/csf.conf
+    csf -ra >/dev/null 2>&1
+  fi
+}
+
 csf_portflood() {
   # override default CSF Firewall PORTFLOOD values
   # PORTFLOOD_COUNT=20
@@ -3490,6 +3499,7 @@ setup_pwdh
 cmupdatecheck
 pzcat_install
 csf_portflood
+csf_udpfix
 python_centossix_sclfix
 disable_avahi
 qrencode_setup
