@@ -189,7 +189,7 @@ phpfpm_setup_systemd() {
     echo "if [ ! -d $PHP_PID_PATHDIR ]; then mkdir -p $PHP_PID_PATHDIR; fi" >> /etc/rc.local
   fi
 
-  if [[ -f /proc/user_beancounters || "$(virt-what | grep -o lxc )" = 'lxc' ]]; then
+  if [[ -f /.dockerenv || -f /proc/user_beancounters || "$(virt-what | grep -o lxc )" = 'lxc' ]]; then
 cat > /etc/systemd/system/php-fpm.service.d/limit.conf <<EOF
 [Service]
 LimitNOFILE=262144
