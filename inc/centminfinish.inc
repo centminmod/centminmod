@@ -171,6 +171,13 @@ echo ""
     fi
     echo
     systemctl status nginx
+    final_nginx_status=$?
+    if [ "$final_nginx_status" -ne '0' ]; then
+      echo
+      echo "journalctl -u nginx --no-pager | tail -150"
+      journalctl -u nginx --no-pager | tail -150
+      echo
+    fi
   else
     echo "can not find nginx binary.. install failed"
   fi
@@ -194,6 +201,13 @@ echo ""
   fi
   echo
   systemctl status php-fpm
+  final_phpfpm_status=$?
+  if [ "$final_phpfpm_status" -ne '0' ]; then
+    echo
+    echo "journalctl -u php-fpm --no-pager | tail -150"
+    journalctl -u php-fpm --no-pager | tail -150
+    echo
+  fi
 letswait
   else
 echo ""
@@ -278,6 +292,13 @@ echo ""
   fi
   echo
   systemctl status mariadb
+  final_mariadb_status=$?
+  if [ "$final_mariadb_status" -ne '0' ]; then
+    echo
+    echo "journalctl -u mariadb --no-pager | tail -150"
+    journalctl -u mariadb --no-pager | tail -150
+    echo
+  fi
 letswait
 echo ""
   cecho "--------------------------------------------------------" $boldyellow
@@ -298,6 +319,13 @@ echo ""
   fi
   echo
   systemctl status redis
+  final_redis_status=$?
+  if [ "$final_redis_status" -ne '0' ]; then
+    echo
+    echo "journalctl -u redis --no-pager | tail -150"
+    journalctl -u redis --no-pager | tail -150
+    echo
+  fi
 letswait
 echo ""
   cecho "--------------------------------------------------------" $boldyellow
@@ -312,6 +340,16 @@ echo ""
   fi
   echo
   systemctl status csf lfd
+  final_csf_status=$?
+  if [ "$final_csf_status" -ne '0' ]; then
+    echo
+    echo "journalctl -u csf --no-pager | tail -150"
+    journalctl -u csf --no-pager | tail -150
+    echo
+    echo "journalctl -u lfd --no-pager | tail -150"
+    journalctl -u lfd --no-pager | tail -150
+    echo
+  fi
 letswait
 
 if [[ "$(uname -m)" != 'aarch64' ]]; then
@@ -361,6 +399,14 @@ $(which pure-ftpd) -h | head -n1 | awk '{print $1,$2}'
   if [[ "$(systemctl is-enabled pure-ftpd)" = 'disabled' ]]; then
     systemctl enable pure-ftpd >/dev/null 2>&1
   fi
+  systemctl status pure-ftpd --no-pager
+  final_pure_ftpd_status=$?
+  if [ "$final_pure_ftpd_status" -ne '0' ]; then
+    echo
+    echo "journalctl -u pure-ftpd --no-pager | tail -150"
+    journalctl -u pure-ftpd --no-pager | tail -150
+    echo
+  fi
 letswait
 echo ""
   cecho "--------------------------------------------------------" $boldyellow
@@ -370,6 +416,13 @@ echo ""
     systemctl enable postfix >/dev/null 2>&1
   fi
   systemctl status postfix --no-pager
+  final_postfix_status=$?
+  if [ "$final_postfix_status" -ne '0' ]; then
+    echo
+    echo "journalctl -u postfix --no-pager | tail -150"
+    journalctl -u postfix --no-pager | tail -150
+    echo
+  fi
 letswait
 echo ""
   cecho "--------------------------------------------------------" $boldyellow

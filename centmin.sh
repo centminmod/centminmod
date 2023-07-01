@@ -29,7 +29,7 @@ DT=$(date +"%d%m%y-%H%M%S")
 branchname='130.00beta01'
 SCRIPT_MAJORVER='130'
 SCRIPT_MINORVER='00'
-SCRIPT_INCREMENTVER='355'
+SCRIPT_INCREMENTVER='357'
 SCRIPT_VERSIONSHORT="${branchname}"
 SCRIPT_VERSION="${SCRIPT_VERSIONSHORT}.b${SCRIPT_INCREMENTVER}"
 SCRIPT_DATE='31/01/23'
@@ -904,7 +904,7 @@ NGINX_UPSTREAMCHECK='n'      # nginx upstream check https://github.com/yaoweibin
 NGINX_UPSTREAMCHECKVER='0.3.0'
 NGINX_OPENRESTY='y'          # Agentzh's openresty Nginx modules
 ORESTY_MEMCVER='0.19'        # openresty memc module https://github.com/openresty/memc-nginx-module
-ORESTY_SRCCACHEVER='0.32'    # openresty subrequest cache module https://github.com/openresty/srcache-nginx-module
+ORESTY_SRCCACHEVER='0.33'    # openresty subrequest cache module https://github.com/openresty/srcache-nginx-module
 ORESTY_DEVELKITVER='0.3.0'  # openresty ngx_devel_kit module https://github.com/simpl/ngx_devel_kit
 ORESTY_SETMISCGIT='n'        # use git master instead of version specific
 ORESTY_SETMISC='y'           # openresty set-misc-nginx module https://github.com/openresty/echo-nginx-module
@@ -3158,7 +3158,7 @@ bookmark
 
 sync 
 
-if [[ ! -f /proc/user_beancounters && "$(virt-what | grep -o lxc)" != 'lxc' ]]; then
+if [[ ! -f /.dockerenv && ! -f /proc/user_beancounters && "$(virt-what | grep -o lxc)" != 'lxc' ]]; then
   echo 3 > /proc/sys/vm/drop_caches
 fi
 
