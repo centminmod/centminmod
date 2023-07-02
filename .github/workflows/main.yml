@@ -2,6 +2,7 @@ name: Trigger AlmaLinux 8 Workflow
 
 on:
   workflow_dispatch:
+    branches: [130.00beta01]
   push:
     branches:
       - 130.00beta01
