@@ -420,15 +420,37 @@ mytop_setup() {
 
 pureftpd_symlink_fix() {
   # workaround for too many levels of symbolic links
-  # messages on openvz vpses
-  if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]] && [[ -f /proc/user_beancounters && ! -f /etc/systemd/system/pure-ftpd.service.d/pidfile.conf ]]; then
+  # messages on openvz vpses & for docker el8/el9 environements
+  if [[ "$CENTOS_SEVEN" = '7' ]] && [[ -f /proc/user_beancounters && ! -f /etc/systemd/system/pure-ftpd.service.d/pidfile.conf ]]; then
     echo
-    # echo "create /etc/systemd/system/pure-ftpd.service.d/pidfile.conf"
     mkdir -p /etc/systemd/system/pure-ftpd.service.d
     echo '[Service]' > /etc/systemd/system/pure-ftpd.service.d/pidfile.conf
     echo 'PIDFile=/run/pure-ftpd.pid' >> /etc/systemd/system/pure-ftpd.service.d/pidfile.conf
     systemctl daemon-reload >/dev/null 2>&1
-    #cat /etc/systemd/system/pure-ftpd.service.d/pidfile.conf
+  elif [[ "$CENTOS_EIGHT" -eq '8' ]] && [[ -f /proc/user_beancounters && ! -f /etc/systemd/system/pure-ftpd.service.d/pidfile.conf ]]; then
+    echo
+    mkdir -p /etc/systemd/system/pure-ftpd.service.d
+    echo '[Service]' > /etc/systemd/system/pure-ftpd.service.d/pidfile.conf
+    echo 'PIDFile=/run/pure-ftpd.pid' >> /etc/systemd/system/pure-ftpd.service.d/pidfile.conf
+    systemctl daemon-reload >/dev/null 2>&1
+  elif [[ "$CENTOS_EIGHT" -eq '8' ]] && [[ -f /.dockerenv && ! -f /etc/systemd/system/pure-ftpd.service.d/pidfile.conf ]]; then
+    echo
+    mkdir -p /etc/systemd/system/pure-ftpd.service.d
+    echo '[Service]' > /etc/systemd/system/pure-ftpd.service.d/pidfile.conf
+    echo 'PIDFile=/run/pure-ftpd.pid' >> /etc/systemd/system/pure-ftpd.service.d/pidfile.conf
+    systemctl daemon-reload >/dev/null 2>&1
+  elif [[ "$CENTOS_NINE" -eq '9' ]] && [[ -f /proc/user_beancounters && ! -f /etc/systemd/system/pure-ftpd.service.d/pidfile.conf ]]; then
+    echo
+    mkdir -p /etc/systemd/system/pure-ftpd.service.d
+    echo '[Service]' > /etc/systemd/system/pure-ftpd.service.d/pidfile.conf
+    echo 'PIDFile=/run/pure-ftpd.pid' >> /etc/systemd/system/pure-ftpd.service.d/pidfile.conf
+    systemctl daemon-reload >/dev/null 2>&1
+  elif [[ "$CENTOS_NINE" -eq '9' ]] && [[ -f /.dockerenv && ! -f /etc/systemd/system/pure-ftpd.service.d/pidfile.conf ]]; then
+    echo
+    mkdir -p /etc/systemd/system/pure-ftpd.service.d
+    echo '[Service]' > /etc/systemd/system/pure-ftpd.service.d/pidfile.conf
+    echo 'PIDFile=/run/pure-ftpd.pid' >> /etc/systemd/system/pure-ftpd.service.d/pidfile.conf
+    systemctl daemon-reload >/dev/null 2>&1
   fi
 }
 
