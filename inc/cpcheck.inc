@@ -421,7 +421,7 @@ mytop_setup() {
 pureftpd_symlink_fix() {
   # workaround for too many levels of symbolic links
   # messages on openvz vpses & for docker el8/el9 environements
-  if [[ "$CENTOS_SEVEN" = '7' ]] && [[ -f /proc/user_beancounters && ! -f /etc/systemd/system/pure-ftpd.service.d/pidfile.conf ]]; then
+  if [[ "$CENTOS_SEVEN" -eq '7' ]] && [[ -f /proc/user_beancounters && ! -f /etc/systemd/system/pure-ftpd.service.d/pidfile.conf ]]; then
     echo
     mkdir -p /etc/systemd/system/pure-ftpd.service.d
     echo '[Service]' > /etc/systemd/system/pure-ftpd.service.d/pidfile.conf

@@ -114,9 +114,17 @@ fi
     echo "self-signed ssl cert generated"
 
     pureftpd_symlink_fix
-      
+    # checks
+    echo
+    echo "ls -lAh /etc/systemd/system/pure-ftpd.service.d"
+    ls -lAh /etc/systemd/system/pure-ftpd.service.d
+    echo
+    echo "cat /etc/systemd/system/pure-ftpd.service.d/pidfile.conf"
+    cat /etc/systemd/system/pure-ftpd.service.d/pidfile.conf
+    echo
     echo "pure-ftpd installed"
     cmservice pure-ftpd restart
+    echo
     csf -r
 
     echo
