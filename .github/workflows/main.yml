@@ -4,6 +4,12 @@ on:
   push:
     branches:
       - 130.00beta01
+    paths-ignore:
+      - '.gitignore'
+      - 'readme.txt'
+      - 'README.md'
+      - 'CONTRIBUTING.md'
+      - '.github/workflows/main.yml'
 
 jobs:
   dispatch:
