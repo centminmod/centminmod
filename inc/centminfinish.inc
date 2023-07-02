@@ -149,6 +149,8 @@ echo ""
       systemctl enable php-fpm.service
       systemctl restart redis.service
       systemctl enable redis.service
+      systemctl restart pure-ftpd.service
+      systemctl enable pure-ftpd.service
     fi
   fi
 
