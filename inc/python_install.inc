@@ -20,20 +20,22 @@ python_alternatives_setup() {
             echo
         fi
     elif [[ "$PYTHON_INSTALL_ALTERNATIVES" = [yY] && "$CENTOS_NINE" -eq '9' ]]; then
-        if [ ! -f "/usr/bin/python${ALT_PYTHON_VER_LABEL}" ]; then
-            yum -y install python${ALT_PYTHON_VER}
+        # ALT_PYTHON_VER_LABEL='3.11'
+        ALT_PYTHON_VER_EL9='3.11'
+        if [ ! -f "/usr/bin/python${ALT_PYTHON_VER_EL9}" ]; then
+            yum -y install python${ALT_PYTHON_VER_EL9}
         fi
-        if [ ! -f "/usr/bin/pip${ALT_PYTHON_VER_LABEL}" ]; then
-            yum -y install python3-pip
+        if [ ! -f "/usr/bin/pip${ALT_PYTHON_VER_EL9}" ]; then
+            yum -y install python${ALT_PYTHON_VER_EL9}-pip
         fi
-        if [[ ! "$(alternatives --list | grep -E 'manual.*\/usr\/bin\/python3')" && ! "$(alternatives --list | egrep -i 'pip|python' | grep -E 'manual.*\/usr\/bin\/pip3')" ]]; then
+        if [[ ! "$(alternatives --list | grep -E 'manual.*\/usr\/bin\/python')" && ! "$(alternatives --list | egrep -i 'pip|python' | grep -E 'manual.*\/usr\/bin\/pip')" ]]; then
             echo
-            echo "Setup python3 and pip3 alternatives mapping"
-            echo "you can reference pip for pip3"
-            echo "you can reference python for python3"
-            alternatives --set python /usr/bin/python3
-            alternatives --install /usr/bin/pip pip /usr/bin/pip3 1
-            alternatives --set pip /usr/bin/pip3
+            echo "Setup python${ALT_PYTHON_VER_EL9} and pip${ALT_PYTHON_VER_EL9} alternatives mapping"
+            echo "you can reference pip for pip${ALT_PYTHON_VER_EL9}"
+            echo "you can reference python for python${ALT_PYTHON_VER_EL9}"
+            alternatives --set python /usr/bin/python${ALT_PYTHON_VER_EL9}
+            alternatives --install /usr/bin/pip pip /usr/bin/pip${ALT_PYTHON_VER_EL9} 1
+            alternatives --set pip /usr/bin/pip${ALT_PYTHON_VER_EL9}
             alternatives --list | egrep -i 'pip|python'
             echo
         fi
