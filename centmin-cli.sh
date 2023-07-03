@@ -29,7 +29,7 @@ DT=$(date +"%d%m%y-%H%M%S")
 branchname='130.00beta01'
 SCRIPT_MAJORVER='130'
 SCRIPT_MINORVER='00'
-SCRIPT_INCREMENTVER='363'
+SCRIPT_INCREMENTVER='364'
 SCRIPT_VERSIONSHORT="${branchname}"
 SCRIPT_VERSION="${SCRIPT_VERSIONSHORT}.b${SCRIPT_INCREMENTVER}"
 SCRIPT_DATE='31/01/23'
@@ -3009,6 +3009,13 @@ shortcutsinstall
 
 echo
 python_alternatives_setup
+if [[ -f /usr/bin/python3 && -f /usr/bin/pip ]]; then
+  echo
+  echo "python3 --version"
+  python3 --version
+  echo "pip --version"
+  pip --version
+fi
 
 if [[ "$CENTOS_SEVEN" -eq '7' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]] && [[ -f "$CUR_DIR/tools/journald-set.sh config" ]]; then
   echo

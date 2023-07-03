@@ -19,7 +19,7 @@ python_alternatives_setup() {
             alternatives --list | egrep -i 'pip|python'
             echo
         fi
-    elif [[ "$PYTHON_INSTALL_ALTERNATIVES" = [yY] && "$CENTOS_NINE" -eq '9' ]]; then
+    elif [[ "$PYTHON_INSTALL_ALTERNATIVES" = [yY] && "$CENTOS_NINE" -eq '9' ]] && [[ ! -f /usr/bin/python3 && ! -f /usr/bin/pip ]]; then
         # ALT_PYTHON_VER_LABEL='3.11'
         ALT_PYTHON_VER_EL9='3.11'
         if [ ! -f "/usr/bin/python${ALT_PYTHON_VER_EL9}" ]; then
