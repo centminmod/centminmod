@@ -17,6 +17,8 @@ on:
       - '.github/workflows/cmm-rockylinux8.yml'
       - '.github/workflows/cmm-almalinux9-mariadb10.6.yml'
       - '.github/workflows/cmm-almalinux8-mariadb10.6.yml'
+      - '.github/workflows/cmm-almalinux8-mariadb10.4.yml'
+      - '.github/workflows/cmm-rockylinux8-mariadb10.4.yml'
 
 jobs:
   dispatch:

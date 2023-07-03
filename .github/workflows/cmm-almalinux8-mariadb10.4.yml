@@ -1,4 +1,4 @@
-name: Trigger AlmaLinux 8 MariaDB 10.6 Workflow
+name: Trigger AlmaLinux 8 MariaDB 10.4 Workflow
 
 on:
   workflow_dispatch:
@@ -18,7 +18,6 @@ on:
       - '.github/workflows/cmm-almalinux9-mariadb10.6.yml'
       - '.github/workflows/cmm-almalinux8-mariadb10.6.yml'
       - '.github/workflows/cmm-almalinux8-mariadb10.4.yml'
-      - '.github/workflows/cmm-rockylinux8-mariadb10.4.yml'
 
 jobs:
   dispatch:
@@ -32,4 +31,4 @@ jobs:
         with:
           token: ${{ secrets.REPO_ACCESS_TOKEN }}
           repository: centminmod/centminmod-workflows
-          event-type: run-almalinux-8-mariadb-10.6-workflow
+          event-type: run-almalinux-8-mariadb-10.4-workflow
