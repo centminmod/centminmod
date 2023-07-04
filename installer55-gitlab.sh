@@ -358,8 +358,13 @@ if [[ "$CENTOS_NINE" -eq '9' ]]; then
   WGET_FILENAME="wget-${WGET_VERSION}.tar.gz"
   WGET_LINK="https://centminmod.com/centminmodparts/wget/${WGET_FILENAME}"
 
-  # enable CentOS 9 crb repo for -devel packages
-  reponame_powertools=crb
+  if [ "$(yum repolist all | grep -ow 'ol9_codeready_builder')" ]; then
+    # oracle linux 9
+    reponame_powertools=ol9_codeready_builder
+  else
+    # enable CentOS 9 crb repo for -devel packages
+    reponame_powertools=crb
+  fi
 
   if [ ! -f /usr/bin/yum-config-manager ]; then
     yum -q -y install yum-utils tar
