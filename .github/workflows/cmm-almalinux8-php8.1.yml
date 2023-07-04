@@ -1,4 +1,4 @@
-name: Trigger Rocky Linux 8 MariaDB 10.6 Workflow
+name: Trigger AlmaLinux 8 With PHP 8.1 Workflow
 
 on:
   workflow_dispatch:
@@ -36,4 +36,4 @@ jobs:
         with:
           token: ${{ secrets.REPO_ACCESS_TOKEN }}
           repository: centminmod/centminmod-workflows
-          event-type: run-rockylinux-8-mariadb-10.6-workflow
+          event-type: run-almalinux-8-workflow-php81
