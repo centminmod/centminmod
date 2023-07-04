@@ -29,7 +29,7 @@ DT=$(date +"%d%m%y-%H%M%S")
 branchname='130.00beta01'
 SCRIPT_MAJORVER='130'
 SCRIPT_MINORVER='00'
-SCRIPT_INCREMENTVER='366'
+SCRIPT_INCREMENTVER='367'
 SCRIPT_VERSIONSHORT="${branchname}"
 SCRIPT_VERSION="${SCRIPT_VERSIONSHORT}.b${SCRIPT_INCREMENTVER}"
 SCRIPT_DATE='31/01/23'
@@ -1642,9 +1642,9 @@ if [[ "$CENTOS_EIGHT" -eq '8' ]]; then
   # enable CentOS 8 PowerTools repo for -devel packages
   if [ "$(yum repolist powertools | grep -ow 'powertools')" ]; then
     reponame_powertools=powertools
-  elif [ "$(yum repolist | grep -ow 'ol8_codeready_builder')" ]; then
+  elif [ "$(yum repolist all | grep -ow 'ol8_codeready_builder')" ]; then
     reponame_powertools=ol8_codeready_builder
-  elif [ "$(yum repolist | grep -ow 'ol9_codeready_builder')" ]; then
+  elif [ "$(yum repolist all | grep -ow 'ol9_codeready_builder')" ]; then
     reponame_powertools=ol9_codeready_builder
   else
     reponame_powertools=PowerTools

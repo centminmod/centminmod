@@ -329,9 +329,9 @@ if [[ "$CENTOS_EIGHT" -eq '8' ]]; then
   # enable CentOS 8 PowerTools repo for -devel packages
   if [ "$(yum repolist powertools | grep -ow 'powertools')" ]; then
     reponame_powertools=powertools
-  elif [ "$(yum repolist | grep -ow 'ol8_codeready_builder')" ]; then
+  elif [ "$(yum repolist all | grep -ow 'ol8_codeready_builder')" ]; then
     reponame_powertools=ol8_codeready_builder
-  elif [ "$(yum repolist | grep -ow 'ol9_codeready_builder')" ]; then
+  elif [ "$(yum repolist all | grep -ow 'ol9_codeready_builder')" ]; then
     reponame_powertools=ol9_codeready_builder
   else
     reponame_powertools=PowerTools
