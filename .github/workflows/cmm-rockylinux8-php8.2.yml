@@ -12,6 +12,7 @@ on:
       - 'README.md'
       - 'CONTRIBUTING.md'
       - '.github/workflows/main.yml'
+      - '.github/workflows/cmm-centos7.yml'
       - '.github/workflows/cmm-almalinux9.yml'
       - '.github/workflows/cmm-rockylinux9.yml'
       - '.github/workflows/cmm-rockylinux8.yml'
