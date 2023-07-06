@@ -13,7 +13,7 @@ export SYSTEMD_PAGER=''
 ###############################################################
 # variables
 ###############################################################
-ACMEVER='1.0.90'
+ACMEVER='1.0.91'
 DT=$(date +"%d%m%y-%H%M%S")
 ACMEDEBUG='n'
 ACMEDEBUG_LOG='y'
@@ -576,6 +576,9 @@ checkdate() {
 #####################
 check_dns() {
   vhostname_dns="$1"
+  if [ ! -f /usr/bin/idn ]; then
+    yum -q -y install libidn
+  fi
     # if CHECKIDN = 0 then internationalized domain name which not supported by letsencrypt
     CHECKIDN=$(echo $vhostname_dns | idn | grep '^xn--' >/dev/null 2>&1; echo $?)
     if [[ "$CHECKIDN" = '0' ]]; then
