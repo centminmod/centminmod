@@ -29,6 +29,8 @@ on:
       - '.github/workflows/cmm-almalinux8-php8.1.yml'
       - '.github/workflows/cmm-rockylinux8-php8.2.yml'
       - '.github/workflows/cmm-almalinux8-php8.2.yml'
+      - '.github/workflows/cmm-rockylinux9-php8.2.yml'
+      - '.github/workflows/cmm-almalinux9-php8.2.yml'
       - '.github/workflows/cmm-almalinux9-mariadb10.6.yml'
       - '.github/workflows/cmm-rockylinux9-mariadb10.6.yml'
       - '.github/workflows/cmm-almalinux8-mariadb10.6.yml'
