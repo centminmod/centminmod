@@ -133,6 +133,10 @@ if [ -f "${CUR_DIR}/inc/z_custom.inc" ]; then
     source "${CUR_DIR}/inc/z_custom.inc"
 fi
 
+if [ ! -f /usr/bin/idn ]; then
+  yum -q -y install libidn
+fi
+
   # extended custom nginx log format = main_ext for nginx amplify metric support
   # https://github.com/nginxinc/nginx-amplify-doc/blob/master/amplify-guide.md#additional-nginx-metrics
   if [ -f /usr/local/nginx/conf/nginx.conf ]; then

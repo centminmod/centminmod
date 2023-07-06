@@ -562,6 +562,10 @@ yumpriorpercona_eight() {
     echo "Percona Yum Priorities Placeholder"
 }
 
+yumpriorpercona_nine() {
+    echo "Percona Yum Priorities Placeholder"
+}
+
 yumpriorpercona() {
 if [ -f /etc/yum.repos.d/percona-release.repo ]; then
 cp -p /etc/yum.repos.d/percona-release.repo /etc/yum.repos.d/percona-release.OLD

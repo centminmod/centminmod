@@ -107,6 +107,10 @@ if [ ! -d /root/tools ]; then
   mkdir -p /root/tools
 fi
 
+if [ ! -f /usr/bin/idn ]; then
+  yum -q -y install libidn
+fi
+
   # extended custom nginx log format = main_ext for nginx amplify metric support
   # https://github.com/nginxinc/nginx-amplify-doc/blob/master/amplify-guide.md#additional-nginx-metrics
   if [ -f /usr/local/nginx/conf/nginx.conf ]; then
