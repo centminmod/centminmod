@@ -29,7 +29,7 @@ DT=$(date +"%d%m%y-%H%M%S")
 branchname='130.00beta01'
 SCRIPT_MAJORVER='130'
 SCRIPT_MINORVER='00'
-SCRIPT_INCREMENTVER='370'
+SCRIPT_INCREMENTVER='371'
 SCRIPT_VERSIONSHORT="${branchname}"
 SCRIPT_VERSION="${SCRIPT_VERSIONSHORT}.b${SCRIPT_INCREMENTVER}"
 SCRIPT_DATE='31/01/23'
@@ -1629,7 +1629,7 @@ fi
 if [[ "$CENTOS_SEVEN" -eq '7' ]]; then
   WGET_VERSION=$WGET_VERSION_SEVEN
   WGET_FILENAME="wget-${WGET_VERSION}.tar.gz"
-  WGET_LINK="https://centminmod.com/centminmodparts/wget/${WGET_FILENAME}"
+  WGET_LINK="${LOCALCENTMINMOD_MIRROR}/centminmodparts/wget/${WGET_FILENAME}"
 fi
 if [[ "$CENTOS_EIGHT" -eq '8' ]]; then
   if [[ "$INITIALINSTALL" = [yY] ]]; then
@@ -1637,7 +1637,7 @@ if [[ "$CENTOS_EIGHT" -eq '8' ]]; then
   fi
   WGET_VERSION=$WGET_VERSION_EIGHT
   WGET_FILENAME="wget-${WGET_VERSION}.tar.gz"
-  WGET_LINK="https://centminmod.com/centminmodparts/wget/${WGET_FILENAME}"
+  WGET_LINK="${LOCALCENTMINMOD_MIRROR}/centminmodparts/wget/${WGET_FILENAME}"
 
   # enable CentOS 8 PowerTools repo for -devel packages
   if [ "$(yum repolist powertools | grep -ow 'powertools')" ]; then

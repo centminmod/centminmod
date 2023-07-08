@@ -14,10 +14,10 @@ check_pythonthree_six() {
   #     # workaround for premature EPEL python36 package retirement before CentOS 7.7 is ready
   #     # https://community.centminmod.com/threads/18142/
   #     if [ ! -f "${DIR_TMP}/python36-libs-3.6.8-1.el7.x86_64.rpm" ]; then
-  #       wget -4 -q -O "${DIR_TMP}/python36-libs-3.6.8-1.el7.x86_64.rpm" https://centminmod.com/centminmodparts/epel/el7/x86_64/python36-libs-3.6.8-1.el7.x86_64.rpm
+  #       wget -4 -q -O "${DIR_TMP}/python36-libs-3.6.8-1.el7.x86_64.rpm" ${LOCALCENTMINMOD_MIRROR}/centminmodparts/epel/el7/x86_64/python36-libs-3.6.8-1.el7.x86_64.rpm
   #     fi
   #     if [ ! -f "${DIR_TMP}/python36-3.6.8-1.el7.x86_64.rpm" ]; then
-  #       wget -4 -q -O "${DIR_TMP}/python36-3.6.8-1.el7.x86_64.rpm" https://centminmod.com/centminmodparts/epel/el7/x86_64/python36-3.6.8-1.el7.x86_64.rpm
+  #       wget -4 -q -O "${DIR_TMP}/python36-3.6.8-1.el7.x86_64.rpm" ${LOCALCENTMINMOD_MIRROR}/centminmodparts/epel/el7/x86_64/python36-3.6.8-1.el7.x86_64.rpm
   #     fi
   #     yum -y localinstall "${DIR_TMP}/python36-3.6.8-1.el7.x86_64.rpm" "${DIR_TMP}/python36-libs-3.6.8-1.el7.x86_64.rpm"
   #   fi
@@ -25,7 +25,7 @@ check_pythonthree_six() {
   #     # workaround for premature EPEL python36 package retirement before CentOS 7.7 is ready
   #     # https://community.centminmod.com/threads/18142/
   #     if [ ! -f "${DIR_TMP}/python36-libs-3.6.8-1.el7.x86_64.rpm" ]; then
-  #       wget -4 -q -O "${DIR_TMP}/python36-libs-3.6.8-1.el7.x86_64.rpm" https://centminmod.com/centminmodparts/epel/el7/x86_64/python36-libs-3.6.8-1.el7.x86_64.rpm
+  #       wget -4 -q -O "${DIR_TMP}/python36-libs-3.6.8-1.el7.x86_64.rpm" ${LOCALCENTMINMOD_MIRROR}/centminmodparts/epel/el7/x86_64/python36-libs-3.6.8-1.el7.x86_64.rpm
   #     fi
   #     yum -y localinstall "${DIR_TMP}/python36-libs-3.6.8-1.el7.x86_64.rpm"
   #   fi

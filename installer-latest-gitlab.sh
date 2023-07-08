@@ -52,7 +52,7 @@ WGET_VERSION_SEVEN='1.20.3'
 WGET_VERSION_EIGHT='1.21.3'
 WGET_VERSION_NINE='1.21.3'
 WGET_FILENAME="wget-${WGET_VERSION}.tar.gz"
-WGET_LINK="https://centminmod.com/centminmodparts/wget/${WGET_FILENAME}"
+WGET_LINK="${LOCALCENTMINMOD_MIRROR}/centminmodparts/wget/${WGET_FILENAME}"
 
 CPUSPEED=$(awk -F: '/cpu MHz/{print $2}' /proc/cpuinfo | sort | uniq -c | sed -e s'|      ||g' | xargs); 
 CPUMODEL=$(awk -F: '/model name/{print $2}' /proc/cpuinfo | sort | uniq -c | xargs);
@@ -318,13 +318,13 @@ fi
 if [[ "$CENTOS_SEVEN" -eq '7' ]]; then
   WGET_VERSION=$WGET_VERSION_SEVEN
   WGET_FILENAME="wget-${WGET_VERSION}.tar.gz"
-  WGET_LINK="https://centminmod.com/centminmodparts/wget/${WGET_FILENAME}"
+  WGET_LINK="${LOCALCENTMINMOD_MIRROR}/centminmodparts/wget/${WGET_FILENAME}"
 fi
 if [[ "$CENTOS_EIGHT" -eq '8' ]]; then
   echo "EL${label_os_ver} Install Dependencies Start..."
   WGET_VERSION=$WGET_VERSION_EIGHT
   WGET_FILENAME="wget-${WGET_VERSION}.tar.gz"
-  WGET_LINK="https://centminmod.com/centminmodparts/wget/${WGET_FILENAME}"
+  WGET_LINK="${LOCALCENTMINMOD_MIRROR}/centminmodparts/wget/${WGET_FILENAME}"
 
   # enable CentOS 8 PowerTools repo for -devel packages
   if [ "$(yum repolist powertools | grep -ow 'powertools')" ]; then
@@ -356,7 +356,7 @@ if [[ "$CENTOS_NINE" -eq '9' ]]; then
   echo "EL${label_os_ver} Install Dependencies Start..."
   WGET_VERSION=$WGET_VERSION_NINE
   WGET_FILENAME="wget-${WGET_VERSION}.tar.gz"
-  WGET_LINK="https://centminmod.com/centminmodparts/wget/${WGET_FILENAME}"
+  WGET_LINK="${LOCALCENTMINMOD_MIRROR}/centminmodparts/wget/${WGET_FILENAME}"
 
   if [ "$(yum repolist all | grep -ow 'ol9_codeready_builder')" ]; then
     # oracle linux 9
@@ -1295,8 +1295,8 @@ libc_fix() {
   elif [[ "$CENTOS_SEVEN" -eq '7' && ! -f /etc/yum/pluginconf.d/versionlock.conf && "$(rpm -qa libc-client)" != 'libc-client-2007f-16.el7.x86_64' ]]; then
     INIT_DIR=$(echo $PWD)
     cd /svr-setup
-    wget https://centminmod.com/centminmodparts/uw-imap/libc-client-2007f-16.el7.x86_64.rpm
-    wget https://centminmod.com/centminmodparts/uw-imap/uw-imap-devel-2007f-16.el7.x86_64.rpm
+    wget ${LOCALCENTMINMOD_MIRROR}/centminmodparts/uw-imap/libc-client-2007f-16.el7.x86_64.rpm
+    wget ${LOCALCENTMINMOD_MIRROR}/centminmodparts/uw-imap/uw-imap-devel-2007f-16.el7.x86_64.rpm
     yum -y remove libc-client
     yum -y localinstall libc-client-2007f-16.el7.x86_64.rpm uw-imap-devel-2007f-16.el7.x86_64.rpm
     yum -y install yum-plugin-versionlock
@@ -1305,8 +1305,8 @@ libc_fix() {
    elif [[ "$CENTOS_SEVEN" -eq '7' && -f /etc/yum/pluginconf.d/versionlock.conf && "$(rpm -qa libc-client)" != 'libc-client-2007f-16.el7.x86_64' ]]; then
     INIT_DIR=$(echo $PWD)
     cd /svr-setup
-    wget https://centminmod.com/centminmodparts/uw-imap/libc-client-2007f-16.el7.x86_64.rpm
-    wget https://centminmod.com/centminmodparts/uw-imap/uw-imap-devel-2007f-16.el7.x86_64.rpm
+    wget ${LOCALCENTMINMOD_MIRROR}/centminmodparts/uw-imap/libc-client-2007f-16.el7.x86_64.rpm
+    wget ${LOCALCENTMINMOD_MIRROR}/centminmodparts/uw-imap/uw-imap-devel-2007f-16.el7.x86_64.rpm
     yum versionlock delete libc-client uw-imap-devel
     yum -y remove libc-client
     yum -y localinstall libc-client-2007f-16.el7.x86_64.rpm uw-imap-devel-2007f-16.el7.x86_64.rpm

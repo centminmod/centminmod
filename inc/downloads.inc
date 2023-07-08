@@ -3530,7 +3530,7 @@ echo ""
     if [[ -s "${SPROXY_LINKFILE}" && "$(tar -tzf ${SPROXY_LINKFILE} >/dev/null 2>&1; echo $?)" -eq '0' ]]; then
         cecho "sproxy-latest found, skipping download..." $boldgreen
     else
-        download_cmd "https://centminmod.com/centminmodparts/siege/${SPROXY_LINKFILE}" $WGETRETRY
+        download_cmd "${LOCALCENTMINMOD_MIRROR}/centminmodparts/siege/${SPROXY_LINKFILE}" $WGETRETRY
 ERROR=$?
   if [[ "$ERROR" != '0' ]]; then
   cecho "Error: ${SPROXY_LINKFILE} download failed." $boldgreen

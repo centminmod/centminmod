@@ -32,7 +32,7 @@ WGET_VERSION_SEVEN='1.20.3'
 WGET_VERSION_EIGHT='1.21.3'
 WGET_VERSION_NINE='1.21.3'
 WGET_FILENAME="wget-${WGET_VERSION}.tar.gz"
-WGET_LINK="https://centminmod.com/centminmodparts/wget/${WGET_FILENAME}"
+WGET_LINK="${LOCALCENTMINMOD_MIRROR}/centminmodparts/wget/${WGET_FILENAME}"
 WGET_LINKLOCAL="${LOCALCENTMINMOD_MIRROR}/centminmodparts/wget/${WGET_FILENAME}"
 WGET_OPENSSL='n'
 WGET_STRACE='n'
@@ -201,19 +201,19 @@ fi
 if [[ "$CENTOS_SEVEN" -eq '7' ]]; then
   WGET_VERSION=$WGET_VERSION_SEVEN
   WGET_FILENAME="wget-${WGET_VERSION}.tar.gz"
-  WGET_LINK="https://centminmod.com/centminmodparts/wget/${WGET_FILENAME}"
+  WGET_LINK="${LOCALCENTMINMOD_MIRROR}/centminmodparts/wget/${WGET_FILENAME}"
 fi
 if [[ "$CENTOS_EIGHT" -eq '8' ]]; then
   echo "EL${label_os_ver} Install Dependencies Start..."
   WGET_VERSION=$WGET_VERSION_EIGHT
   WGET_FILENAME="wget-${WGET_VERSION}.tar.gz"
-  WGET_LINK="https://centminmod.com/centminmodparts/wget/${WGET_FILENAME}"
+  WGET_LINK="${LOCALCENTMINMOD_MIRROR}/centminmodparts/wget/${WGET_FILENAME}"
 fi
 if [[ "$CENTOS_NINE" -eq '9' ]]; then
   echo "EL${label_os_ver} Install Dependencies Start..."
   WGET_VERSION=$WGET_VERSION_NINE
   WGET_FILENAME="wget-${WGET_VERSION}.tar.gz"
-  WGET_LINK="https://centminmod.com/centminmodparts/wget/${WGET_FILENAME}"
+  WGET_LINK="${LOCALCENTMINMOD_MIRROR}/centminmodparts/wget/${WGET_FILENAME}"
 fi
 
 if [ -f /usr/local/lib/libssl.a ]; then
@@ -859,7 +859,7 @@ source_pcreinstall() {
 source_wgetinstall() {
   if [[ "$WGET_REBUILD_ALWAYS" = [yY] || "$(/usr/local/bin/wget -V | head -n1 | awk '{print $3}' | grep -q ${WGET_VERSION} >/dev/null 2>&1; echo $?)" != '0' ]]; then
   WGET_FILENAME="wget-${WGET_VERSION}.tar.gz"
-  WGET_LINK="https://centminmod.com/centminmodparts/wget/${WGET_FILENAME}"
+  WGET_LINK="${LOCALCENTMINMOD_MIRROR}/centminmodparts/wget/${WGET_FILENAME}"
   if [[ "$CENTOS_EIGHT" = '8' ]]; then
     libmetalink_install
     export METALINK_CFLAGS='-I/usr/local/include'

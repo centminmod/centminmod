@@ -10,6 +10,7 @@ export PATH="/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin:/root/
 # account API key by setting MM_LICENSE_KEY variable 
 # in persistent config file /etc/centminmod/custom_config.inc
 MM_LICENSE_KEY='k0sP8JPgZm6i0sOF'
+LOCALCENTMINMOD_MIRROR='https://centminmod.com'
 ############################################################
 if [ -f /etc/centminmod/custom_config.inc ]; then
   . /etc/centminmod/custom_config.inc
@@ -27,9 +28,9 @@ if [[ "$MM_LICENSE_KEY" ]]; then
   maxmind_asn_url="https://download.maxmind.com/app/geoip_download?edition_id=GeoLite2-ASN&license_key=$MM_LICENSE_KEY&suffix=tar.gz"
 else
   echo
-  maxmind_city_url='https://centminmod.com/centminmodparts/geoip2-lite/GeoLite2-City.tar.gz'
-  maxmind_country_url='https://centminmod.com/centminmodparts/geoip2-lite/GeoLite2-Country.tar.gz'
-  maxmind_asn_url='https://centminmod.com/centminmodparts/geoip2-lite/GeoLite2-ASN.tar.gz'
+  maxmind_city_url='${LOCALCENTMINMOD_MIRROR}/centminmodparts/geoip2-lite/GeoLite2-City.tar.gz'
+  maxmind_country_url='${LOCALCENTMINMOD_MIRROR}/centminmodparts/geoip2-lite/GeoLite2-Country.tar.gz'
+  maxmind_asn_url='${LOCALCENTMINMOD_MIRROR}/centminmodparts/geoip2-lite/GeoLite2-ASN.tar.gz'
 fi
 
 geoiptwo_updater() {

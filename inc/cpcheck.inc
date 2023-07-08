@@ -1213,8 +1213,8 @@ libc_fix() {
   elif [[ "$CENTOS_SEVEN" -eq '7' && ! -f /etc/yum/pluginconf.d/versionlock.conf && "$(rpm -qa libc-client)" != 'libc-client-2007f-16.el7.x86_64' ]]; then
     INIT_DIR=$(echo $PWD)
     cd /svr-setup
-    wget -q https://centminmod.com/centminmodparts/uw-imap/libc-client-2007f-16.el7.x86_64.rpm
-    wget -q https://centminmod.com/centminmodparts/uw-imap/uw-imap-devel-2007f-16.el7.x86_64.rpm
+    wget -q ${LOCALCENTMINMOD_MIRROR}/centminmodparts/uw-imap/libc-client-2007f-16.el7.x86_64.rpm
+    wget -q ${LOCALCENTMINMOD_MIRROR}/centminmodparts/uw-imap/uw-imap-devel-2007f-16.el7.x86_64.rpm
     yum -y -q remove libc-client
     yum -y -q localinstall libc-client-2007f-16.el7.x86_64.rpm uw-imap-devel-2007f-16.el7.x86_64.rpm
     yum -y -q install yum-plugin-versionlock
@@ -1223,8 +1223,8 @@ libc_fix() {
   elif [[ "$CENTOS_SEVEN" -eq '7' && -f /etc/yum/pluginconf.d/versionlock.conf && "$(rpm -qa libc-client)" != 'libc-client-2007f-16.el7.x86_64' ]]; then
     INIT_DIR=$(echo $PWD)
     cd /svr-setup
-    wget -q https://centminmod.com/centminmodparts/uw-imap/libc-client-2007f-16.el7.x86_64.rpm
-    wget -q https://centminmod.com/centminmodparts/uw-imap/uw-imap-devel-2007f-16.el7.x86_64.rpm
+    wget -q ${LOCALCENTMINMOD_MIRROR}/centminmodparts/uw-imap/libc-client-2007f-16.el7.x86_64.rpm
+    wget -q ${LOCALCENTMINMOD_MIRROR}/centminmodparts/uw-imap/uw-imap-devel-2007f-16.el7.x86_64.rpm
     yum versionlock delete libc-client uw-imap-devel -q >/dev/null 2>&1
     yum -y -q remove libc-client
     yum -y -q localinstall libc-client-2007f-16.el7.x86_64.rpm uw-imap-devel-2007f-16.el7.x86_64.rpm
@@ -1841,17 +1841,17 @@ wgetver_check() {
   if [[ "$CENTOS_SEVEN" -eq '7' ]]; then
     WGET_VERSION=$WGET_VERSION_SEVEN
     WGET_FILENAME="wget-${WGET_VERSION}.tar.gz"
-    WGET_LINK="https://centminmod.com/centminmodparts/wget/${WGET_FILENAME}"
+    WGET_LINK="${LOCALCENTMINMOD_MIRROR}/centminmodparts/wget/${WGET_FILENAME}"
   fi
   if [[ "$CENTOS_EIGHT" -eq '8' ]]; then
     WGET_VERSION=$WGET_VERSION_EIGHT
     WGET_FILENAME="wget-${WGET_VERSION}.tar.gz"
-    WGET_LINK="https://centminmod.com/centminmodparts/wget/${WGET_FILENAME}"
+    WGET_LINK="${LOCALCENTMINMOD_MIRROR}/centminmodparts/wget/${WGET_FILENAME}"
   fi
   if [[ "$CENTOS_NINE" -eq '9' ]]; then
     WGET_VERSION=$WGET_VERSION_NINE
     WGET_FILENAME="wget-${WGET_VERSION}.tar.gz"
-    WGET_LINK="https://centminmod.com/centminmodparts/wget/${WGET_FILENAME}"
+    WGET_LINK="${LOCALCENTMINMOD_MIRROR}/centminmodparts/wget/${WGET_FILENAME}"
   fi
   # only check if on 64bit OS
   if [[ "$(uname -m)" = 'x86_64' ]]; then

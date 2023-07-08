@@ -22,6 +22,7 @@ CENTMINLOGDIR='/root/centminlogs'
 WPCLIDIR='/root/wpcli'
 WPCLILINK='https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar'
 FORCE_IPVFOUR='y' # curl/wget commands through script force IPv4
+LOCALCENTMINMOD_MIRROR='https://centminmod.com'
 
 # set locale temporarily to english
 # due to some non-english locale issues
@@ -52,7 +53,7 @@ fi
 curl -${ipv_forceopt}Is --connect-timeout 30 --max-time 30 $WPCLILINK | grep 'HTTP\/' | grep '200' >/dev/null 2>&1
 WPCLI_CURLCHECK=$?
 if [[ "$WPCLI_CURLCHECK" != '0' ]]; then
-	WPCLILINK='https://centminmod.com/centminmodparts/wp-cli/wp-cli.phar'
+	WPCLILINK='${LOCALCENTMINMOD_MIRROR}/centminmodparts/wp-cli/wp-cli.phar'
 fi
 
 # functions

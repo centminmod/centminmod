@@ -36,7 +36,7 @@
 VARNISH_REPOFILE='/etc/yum.repos.d/varnishcache_varnish41.repo'
 
 CURL_CACERTURL='https://curl.se/ca/cacert.pem'
-# CURL_CACERTURL='https://centminmod.com/centminmodparts/curl/cacert.pem'
+# CURL_CACERTURL='${LOCALCENTMINMOD_MIRROR}/centminmodparts/curl/cacert.pem'
 
 CCACHEFILE="ccache-${CCACHE_VER}.tar.gz"
 #CCCACHELINK="https://www.samba.org/ftp/ccache/${CCACHEFILE}"
@@ -76,7 +76,7 @@ CENTOSSIXPERCONALRELEASE="https://repo.percona.com/yum/${CENTOSSIXPERCONALRELEAS
 
 CENTOSSIXVARNISHFILE="varnish-4.1.el6.rpm"
 CENTOSSIXVARNISH="https://repo.varnish-cache.org/redhat/${CENTOSSIXVARNISHFILE}"
-CENTOSSIXVARNISHLOCAL='https://centminmod.com/centminmodparts/repos/${CENTOSSIXVARNISHFILE}'
+CENTOSSIXVARNISHLOCAL='${LOCALCENTMINMOD_MIRROR}/centminmodparts/repos/${CENTOSSIXVARNISHFILE}'
 
 CENTOSSIXAXIVOFILE="axivo-release-6-1.noarch.rpm"
 CENTOSSIXAXIVO="http://rpm.axivo.com/${CENTOSSIXAXIVOFILE}"
@@ -162,7 +162,7 @@ CENTOSSEVENPERCONALRELEASE="https://repo.percona.com/yum/${CENTOSSEVENPERCONALRE
 
 CENTOSSEVENVARNISHFILE="varnish-4.1.el7.rpm"
 CENTOSSEVENVARNISH="https://repo.varnish-cache.org/redhat/${CENTOSSEVENVARNISHFILE}"
-CENTOSSEVENVARNISHLOCAL='https://centminmod.com/centminmodparts/repos/${CENTOSSEVENVARNISHFILE}'
+CENTOSSEVENVARNISHLOCAL='${LOCALCENTMINMOD_MIRROR}/centminmodparts/repos/${CENTOSSEVENVARNISHFILE}'
 
 CENTOSSEVENAXIVOFILE="axivo-release-7-1.noarch.rpm"
 CENTOSSEVENAXIVO="http://rpm.axivo.com/${CENTOSSEVENAXIVOFILE}"
@@ -499,7 +499,7 @@ AXEL_LINKGITLAB="https://gitlab.com/centminmod-github-mirror/axel/repository/arc
 AXEL_LINKLOCAL="https://github.com/axel-download-accelerator/axel/archive/v${AXEL_VER}.tar.gz"
 
 WGET_FILENAME="wget-${WGET_VERSION}.tar.gz"
-WGET_LINK="https://centminmod.com/centminmodparts/wget/${WGET_FILENAME}"
+WGET_LINK="${LOCALCENTMINMOD_MIRROR}/centminmodparts/wget/${WGET_FILENAME}"
 
 LIBUNWIND_LINKFILE="libunwind-${LIBUNWIND_VERSION}.tar.gz"
 LIBUNWIND_LINKDIR="libunwind-${LIBUNWIND_VERSION}"

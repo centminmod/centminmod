@@ -126,7 +126,7 @@ if [ "$CCACHEINSTALL" == 'y' ]; then
       #   yum -y install asciidoctor
       # fi
       if [[ ! -s /usr/local/lib/libhiredis.so ]]; then
-        yum -y localinstall https://centminmod.com/centminmodparts/hiredis/centmin-hiredis-0.14.1-1.el7.x86_64.rpm
+        yum -y localinstall ${LOCALCENTMINMOD_MIRROR}/centminmodparts/hiredis/centmin-hiredis-0.14.1-1.el7.x86_64.rpm
         ldconfig
       fi
       cd ${DIR_TMP}/ccache-${CCACHE_VER}/

@@ -442,7 +442,7 @@ if [[ "${OPENSSL_VERSION}" = '1.0.1g' ]]; then
     echo  "######################################################################"
     pushd ssl
     rm -rf releasebuffer.patch
-    wget -${ipv_forceopt}cnv https://centminmod.com/centminmodparts/openssl/patches/releasebuffer.patch
+    wget -${ipv_forceopt}cnv ${LOCALCENTMINMOD_MIRROR}/centminmodparts/openssl/patches/releasebuffer.patch
     patch < releasebuffer.patch
     popd
     echo  "######################################################################"

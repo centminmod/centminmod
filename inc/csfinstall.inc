@@ -14,13 +14,13 @@ csf_maxmind_geolite_two_download() {
     csf_maxmind_silent=$1
     if [[ -f /etc/csf/csf.conf && -d /var/lib/csf/ ]] && [[ ! -f /var/lib/csf/Geo/GeoLite2-Country-Blocks-IPv4.csv || ! -f /var/lib/csf/Geo/GeoLite2-Country-Blocks-IPv6.csv || ! -f GeoLite2-Country-Locations-en.csv ]]; then
         if [[ "$csf_maxmind_silent" = 'silent' ]]; then
-            wget${ipv_forceopt_wget} https://centminmod.com/centminmodparts/geoip2-lite/csf-geolite2.tar.gz -O /svr-setup/csf-geolite2.tar.gz
+            wget${ipv_forceopt_wget} ${LOCALCENTMINMOD_MIRROR}/centminmodparts/geoip2-lite/csf-geolite2.tar.gz -O /svr-setup/csf-geolite2.tar.gz
             tar xf /svr-setup/csf-geolite2.tar.gz -C /var/lib/csf/
             csf --profile backup cmm-before-maxmind-csf-database-download >/dev/null 2>&1
             sed -i 's|CC_INTERVAL = .*|CC_INTERVAL = "14"|' /etc/csf/csf.conf
             csf --profile backup cmm-after-maxmind-csf-database-download >/dev/null 2>&1
         else
-            wget${ipv_forceopt_wget} https://centminmod.com/centminmodparts/geoip2-lite/csf-geolite2.tar.gz -O /svr-setup/csf-geolite2.tar.gz
+            wget${ipv_forceopt_wget} ${LOCALCENTMINMOD_MIRROR}/centminmodparts/geoip2-lite/csf-geolite2.tar.gz -O /svr-setup/csf-geolite2.tar.gz
             tar xvf /svr-setup/csf-geolite2.tar.gz -C /var/lib/csf/
             csf --profile backup cmm-before-maxmind-csf-database-download >/dev/null 2>&1
             sed -i 's|CC_INTERVAL = .*|CC_INTERVAL = "14"|' /etc/csf/csf.conf

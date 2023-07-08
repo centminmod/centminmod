@@ -25,11 +25,11 @@ nginx_deprecate_httptwo_param() {
 mercurial_check() {
   if [[ -f /usr/bin/hg && "$(hg version | head -n1 | grep -o '2.6')" = '2.6' ]]; then
     if [[ "$CENTOS_SEVEN" -eq '7' ]]; then
-      yum -y localinstall https://centminmod.com/centminmodparts/mercurial/centos7/mercurial-4.9-1.x86_64.rpm
+      yum -y localinstall ${LOCALCENTMINMOD_MIRROR}/centminmodparts/mercurial/centos7/mercurial-4.9-1.x86_64.rpm
     fi
   elif [[ ! -f /usr/bin/hg ]]; then
     if [[ "$CENTOS_SEVEN" -eq '7' ]]; then
-      yum -y localinstall https://centminmod.com/centminmodparts/mercurial/centos7/mercurial-4.9-1.x86_64.rpm
+      yum -y localinstall ${LOCALCENTMINMOD_MIRROR}/centminmodparts/mercurial/centos7/mercurial-4.9-1.x86_64.rpm
     elif [[ "$CENTOS_EIGHT" -eq '8' ]]; then
       yum -y install mercurial
     elif [[ "$CENTOS_NINE" -eq '9' ]]; then
@@ -59,12 +59,12 @@ run_after_nginx_install() {
 mold_check() {
     if [[ "$CENTOS_SEVEN" = '7' && "$(uname -m)" = 'x86_64' ]] && [[ "$(rpm -qa centmin-mold | grep -o "centmin-mold-${MOLD_VERSION}")" != "centmin-mold-${MOLD_VERSION}" || ! -s /usr/local/libexec/mold ]]; then
       echo "installing newer mold ${MOLD_VERSION}"
-      wget${ipv_forceopt_wget} -q "https://centminmod.com/centminmodparts/mold/centmin-mold-${MOLD_VERSION}-1.el7.x86_64.rpm" -O "${DIR_TMP}/centmin-mold-${MOLD_VERSION}-1.el7.x86_64.rpm"
+      wget${ipv_forceopt_wget} -q "${LOCALCENTMINMOD_MIRROR}/centminmodparts/mold/centmin-mold-${MOLD_VERSION}-1.el7.x86_64.rpm" -O "${DIR_TMP}/centmin-mold-${MOLD_VERSION}-1.el7.x86_64.rpm"
       echo "yum -y localinstall ${DIR_TMP}/centmin-mold-${MOLD_VERSION}-1.el7.x86_64.rpm"
       yum -y localinstall "${DIR_TMP}/centmin-mold-${MOLD_VERSION}-1.el7.x86_64.rpm"
     elif [[ "$CENTOS_EIGHT" = '8' && "$(uname -m)" = 'x86_64' ]] && [[ "$(rpm -qa centmin-mold | grep -o "centmin-mold-${MOLD_VERSION_EL8}")" != "centmin-mold-${MOLD_VERSION_EL8}" || ! -s /usr/local/libexec/mold ]]; then
       echo "installing newer mold ${MOLD_VERSION_EL8}"
-      wget${ipv_forceopt_wget} -q "https://centminmod.com/centminmodparts/mold/centmin-mold-${MOLD_VERSION_EL8}-1.el8.x86_64.rpm" -O "${DIR_TMP}/centmin-mold-${MOLD_VERSION_EL8}-1.el8.x86_64.rpm"
+      wget${ipv_forceopt_wget} -q "${LOCALCENTMINMOD_MIRROR}/centminmodparts/mold/centmin-mold-${MOLD_VERSION_EL8}-1.el8.x86_64.rpm" -O "${DIR_TMP}/centmin-mold-${MOLD_VERSION_EL8}-1.el8.x86_64.rpm"
       echo "yum -y localinstall ${DIR_TMP}/centmin-mold-${MOLD_VERSION_EL8}-1.el8.x86_64.rpm"
       yum -y localinstall "${DIR_TMP}/centmin-mold-${MOLD_VERSION_EL8}-1.el8.x86_64.rpm"
     fi
@@ -1855,9 +1855,9 @@ if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9'
     if [[ "$CENTOS_SEVEN" = '7' && "$(uname -m)" = 'x86_64' && "$(rpm -qa centmin-libatomic_ops | grep -o "centmin-libatomic_ops-${NGINX_LIBATOMIC_VERSION}")" != "centmin-libatomic_ops-${NGINX_LIBATOMIC_VERSION}" ]]; then
       echo "installing newer libatomic_ops library ${NGINX_LIBATOMIC_VERSION}"
       # PREFIX=/usr/local version
-      # wget${ipv_forceopt_wget} -q "https://centminmod.com/centminmodparts/libatomic_ops/centmin-libatomic_ops-${NGINX_LIBATOMIC_VERSION}-1.el7.x86_64.rpm" -O "${DIR_TMP}/centmin-libatomic_ops-${NGINX_LIBATOMIC_VERSION}-1.el7.x86_64.rpm"
+      # wget${ipv_forceopt_wget} -q "${LOCALCENTMINMOD_MIRROR}/centminmodparts/libatomic_ops/centmin-libatomic_ops-${NGINX_LIBATOMIC_VERSION}-1.el7.x86_64.rpm" -O "${DIR_TMP}/centmin-libatomic_ops-${NGINX_LIBATOMIC_VERSION}-1.el7.x86_64.rpm"
       # PREFIX=/usr/local/nginx-dep version
-      wget${ipv_forceopt_wget} -q "https://centminmod.com/centminmodparts/libatomic_ops/nginx-dep/centmin-libatomic_ops-${NGINX_LIBATOMIC_VERSION}-1.el7.x86_64.rpm" -O "${DIR_TMP}/centmin-libatomic_ops-${NGINX_LIBATOMIC_VERSION}-1.el7.x86_64.rpm"
+      wget${ipv_forceopt_wget} -q "${LOCALCENTMINMOD_MIRROR}/centminmodparts/libatomic_ops/nginx-dep/centmin-libatomic_ops-${NGINX_LIBATOMIC_VERSION}-1.el7.x86_64.rpm" -O "${DIR_TMP}/centmin-libatomic_ops-${NGINX_LIBATOMIC_VERSION}-1.el7.x86_64.rpm"
       echo "yum -y localinstall ${DIR_TMP}/centmin-libatomic_ops-${NGINX_LIBATOMIC_VERSION}-1.el7.x86_64.rpm"
       yum -y localinstall "${DIR_TMP}/centmin-libatomic_ops-${NGINX_LIBATOMIC_VERSION}-1.el7.x86_64.rpm"
       ldconfig
