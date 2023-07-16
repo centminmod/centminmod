@@ -13,6 +13,8 @@ on:
       - 'CONTRIBUTING.md'
       - '.github/workflows/main.yml'
       - '.github/workflows/cmm-centos7.yml'
+      - '.github/workflows/cmm-almalinux8-vs-rockylinux8-vs-oraclelinux8.yml'
+      - '.github/workflows/cmm-almalinux9-vs-rockylinux9-vs-oraclelinux9.yml'
       - '.github/workflows/cmm-oraclelinux9.yml'
       - '.github/workflows/cmm-oraclelinux8-edge.yml'
       - '.github/workflows/cmm-almalinux9.yml'
