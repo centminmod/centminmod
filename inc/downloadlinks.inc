@@ -269,7 +269,7 @@ NGX_SRCACHELINKGITLAB="https://gitlab.com/centminmod-github-mirror/srcache-nginx
 # wget renamed
 NGX_DEVELKITLINKFILE="nginx-develkit_v${ORESTY_DEVELKITVER}.tar.gz"
 MASTER_NGX_DEVELKITLINKFILE="master-nginx-develkit_v${ORESTY_DEVELKITVER}.tar.gz"
-NGX_DEVELKITLINK="https://github.com/simpl/ngx_devel_kit/archive/v${ORESTY_DEVELKITVER}.tar.gz"
+NGX_DEVELKITLINK="https://github.com/vision5/ngx_devel_kit/archive/v${ORESTY_DEVELKITVER}.tar.gz"
 NGX_DEVELKITLINKGITLAB="https://gitlab.com/centminmod-github-mirror/ngx_devel_kit/repository/archive.tar.gz?ref=v${ORESTY_DEVELKITVER}"
 
 # wget renamed

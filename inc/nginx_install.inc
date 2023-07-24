@@ -466,6 +466,16 @@ geoipphp
         cp -af "$DIR_TMP/njs/build/njs" /usr/local/bin/njs
     fi
 
+    if [[ "$ORESTY_LUANGINX" = [yY] && "$INITIALINSTALL" = [yY] ]]; then
+        echo
+        echo "setup initial install lua_package_path include file"
+        echo "lua_package_path '/usr/local/nginx-dep/lib/lua/?.lua;/usr/local/nginx-dep/lib/lua/5.1/?.lua;/usr/local/nginx-dep/lib/lua/ngx/?.lua;/usr/local/nginx-dep/lib/lua/resty/?.lua;;';" > /usr/local/nginx/conf/lua-package-path-include.conf
+        LUAPACKAGEPATH_INCLUDECHECK=$(grep '\/usr\/local\/nginx\/conf\/lua-package-path-include.conf' /usr/local/nginx/conf/nginx.conf)
+        if [[ -z "$LUAPACKAGEPATH_INCLUDECHECK" ]]; then
+            sed -i 's|\/usr\/local\/nginx\/conf\/fastcgi_param_https_map.conf;|\/usr\/local\/nginx\/conf\/fastcgi_param_https_map.conf;\ninclude \/usr\/local\/nginx\/conf\/lua-package-path-include.conf;|g' /usr/local/nginx/conf/nginx.conf
+        fi
+    fi
+
     echo "*************************************************"
     cecho "* nginx installed, Apache disabled" $boldgreen
     echo "*************************************************"

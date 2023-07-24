@@ -1241,7 +1241,7 @@ if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9'
     ngxopenresty_patch
 
     # nginx 1.9.11+ dynamic module support 
-    # https://github.com/simpl/ngx_devel_kit#building-as-a-dynamic-module
+    # https://github.com/vision5/ngx_devel_kit#building-as-a-dynamic-module
     if [[ "$DYNAMIC_SUPPORT" = [yY] && "$NGXDYNAMIC_DEVELKIT" = [yY] ]]; then
         # certain oprenresty modules need to be compiled as dynamic modules if ngx_devel_kit
         # module is compiled as a dynamic module
