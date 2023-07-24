@@ -1,4 +1,4 @@
-name: Trigger Rocky Linux 8 MariaDB 10.4 Workflow
+name: Trigger AlmaLinux 9 Workflow + Nginx Modsecurity Enabled
 
 on:
   workflow_dispatch:
@@ -68,4 +68,4 @@ jobs:
         with:
           token: ${{ secrets.REPO_ACCESS_TOKEN }}
           repository: centminmod/centminmod-workflows
-          event-type: run-rockylinux-8-mariadb-10.4-workflow
+          event-type: run-almalinux-9-workflow-modsecurity
