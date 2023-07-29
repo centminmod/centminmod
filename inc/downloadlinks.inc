@@ -495,4 +495,4 @@ GPERFTOOL_LINK="https://github.com/gperftools/gperftools/releases/download/gperf
 GPERFTOOL_LINKLOCAL="${LOCALCENTMINMOD_MIRROR}/centminmodparts/gperf/${GPERFTOOL_LINKFILE}"
 
 LIBZIP_LINKFILE="libzip-${LIBZIP_VER}.tar.gz"
-LIBZIP_LINK="https://libzip.org/download/${LIBZIP_LINKFILE}"
+LIBZIP_LINK="https://github.com/nih-at/libzip/releases/download/v${LIBZIP_VER}/${LIBZIP_LINKFILE}"
