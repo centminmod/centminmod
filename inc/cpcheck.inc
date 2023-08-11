@@ -1,3 +1,34 @@
+check_and_fix_cache_keys() {
+    # fix to ensure $http_accept_encoding is included in cache keys
+    TARGET_DIR1="/usr/local/nginx/conf/wpincludes"
+    TARGET_DIR2="/usr/local/nginx/conf"
+    SEARCH_FILE1="php-fastcgicache.conf"
+    SEARCH_FILE2="php-rediscache.conf"
+    # Paths to the configuration files
+    CONF_PATH1="${TARGET_DIR1}/*/${SEARCH_FILE1}"
+    CONF_PATH2="${TARGET_DIR2}/${SEARCH_FILE2}"
+
+    # Check the content of each file to see if it contains the expected value
+    if ! grep -q "\$http_accept_encoding" $CONF_PATH1; then
+        # echo "${SEARCH_FILE1} requires updates..."
+        NEED_UPDATE=1
+    fi
+    
+    if ! grep -q "\$http_accept_encoding" $CONF_PATH2; then
+        # echo "${SEARCH_FILE2} requires updates..."
+        NEED_UPDATE=1
+    fi
+
+    # If any of the files need to be updated, run the script
+    if [ "$NEED_UPDATE" -eq 1 ]; then
+        # echo "Running fix script..."
+        "${SCRIPT_DIR}/tools/fix-cache-keys.sh" silent
+    else
+        # echo "Cache keys are already updated."
+        echo
+    fi
+}
+
 fix_pure_ftpd_el8() {
   if [[ -f /etc/pure-ftpd/pure-ftpd.conf && "$(grep '@sysconfigdir\@\/pureftpd.pdb' /etc/pure-ftpd/pure-ftpd.conf)" ]] && [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]]; then
     sed -i 's/# PureDB                       \@sysconfigdir\@\/pureftpd.pdb/PureDB                        \/etc\/pure-ftpd\/pureftpd.pdb/' /etc/pure-ftpd/pure-ftpd.conf
@@ -3667,6 +3698,7 @@ if [[ "$INITIALINSTALL" != [yY] ]]; then
   start_limit_burst_adjust
   fix_pure_ftpd_el8
   python_alternatives_setup
+  check_and_fix_cache_keys
 fi
 
 }
