@@ -9,12 +9,14 @@ check_and_fix_cache_keys() {
     CONF_PATH2="${TARGET_DIR2}/${SEARCH_FILE2}"
 
     # Check the content of each file to see if it contains the expected value
-    if ! grep -q "\$http_accept_encoding" $CONF_PATH1; then
-        # echo "${SEARCH_FILE1} requires updates..."
-        NEED_UPDATE=1
+    if [ -d /usr/local/nginx/conf/wpincludes ]; then
+      if ! grep -q "\$http_accept_encoding" $CONF_PATH1 2>/dev/null; then
+          # echo "${SEARCH_FILE1} requires updates..."
+          NEED_UPDATE=1
+      fi
     fi
     
-    if ! grep -q "\$http_accept_encoding" $CONF_PATH2; then
+    if ! grep -q "\$http_accept_encoding" $CONF_PATH2 2>/dev/null; then
         # echo "${SEARCH_FILE2} requires updates..."
         NEED_UPDATE=1
     fi
@@ -22,6 +24,7 @@ check_and_fix_cache_keys() {
     # If any of the files need to be updated, run the script
     if [ "$NEED_UPDATE" -eq 1 ]; then
         # echo "Running fix script..."
+        chmod +x "${SCRIPT_DIR}/tools/fix-cache-keys.sh"
         "${SCRIPT_DIR}/tools/fix-cache-keys.sh" silent
     else
         # echo "Cache keys are already updated."
