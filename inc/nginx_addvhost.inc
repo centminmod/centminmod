@@ -1542,6 +1542,10 @@ if [[ "$LETSENCRYPT_DETECT" = [yY] ]]; then
   fi
 fi
 
+# nginx 1.25.1+ vhost corrections
+# DETECT_NGXVER_INITIAL_INSTALL=$(echo "$(nginx -v 2>&1 | awk -F "/" '{print $2}' | head -n1 | awk '{print $1}')" | awk -F'.' '{printf "%s%03d%03d\n", $1, $2, $3}')
+# nginx_deprecate_httptwo_param_fix
+
 echo 
 if [[ "$PUREFTPD_DISABLED" = [nN] ]]; then
 cecho "-------------------------------------------------------------" $boldyellow

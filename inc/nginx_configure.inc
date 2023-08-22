@@ -22,6 +22,30 @@ nginx_deprecate_httptwo_param() {
   fi
 }
 
+nginx_deprecate_httptwo_param_fix() {
+  if [[ "$DETECT_NGXVER_INITIAL_INSTALL" -ge '1025001' ]]; then
+      echo "Update deprecated listen directive's http2 option in Nginx 1.25.1+"
+      for v in "$(ls /usr/local/nginx/conf/conf.d/*.conf)"; do
+          echo "$v";
+          egrep -n 'listen .*http2' $v;
+          echo "---";
+          sed -i 's|listen 443 ssl http2;|listen 443 ssl;\n  http2 on;|g' $v;
+          egrep -n 'listen 443 ssl|http2 on' $v;
+      done
+      echo
+  elif [[ "$DETECT_NGXVER_INITIAL_INSTALL" -le '1025000' ]]; then
+      echo "Revert listen directive's http2 option for Nginx 1.25.0 and below"
+      for v in "$(ls /usr/local/nginx/conf/conf.d/*.conf)"; do
+          echo "$v";
+          egrep -n 'listen 443 ssl|http2 on' $v;
+          echo "---";
+          sed -i '/listen 443 ssl;/N; s|listen 443 ssl;\n  http2 on;|listen 443 ssl http2;|' $v;
+          egrep -n 'listen .*http2' $v;
+      done
+      echo
+  fi
+}
+
 mercurial_check() {
   if [[ -f /usr/bin/hg && "$(hg version | head -n1 | grep -o '2.6')" = '2.6' ]]; then
     if [[ "$CENTOS_SEVEN" -eq '7' ]]; then
