@@ -177,7 +177,13 @@ if [[ "$CSFINSTALLOK" = [yY] ]]; then
     csf --profile list
 
     echo "CSF adding memcached, varnish ports to csf.allow list..."
-    sed -i 's/20,21,22,25,53,80,110,143,443,465,587,993,995/20,21,22,25,53,80,110,111,143,161,443,465,587,993,995,1110,1186,1194,2049,81,9418,30001:50011/g' /etc/csf/csf.conf
+    # sed -i 's/20,21,22,25,53,853,80,110,143,443,465,587,993,995/20,21,22,25,53,853,80,110,111,143,161,443,465,587,993,995,1110,1186,1194,2049,81,9418,30001:50011/g' /etc/csf/csf.conf
+    # modify /etc/csf/csf.conf and save modifications /etc/csf/csf.conf.tmp
+    awk -v additional="1110,1186,1194,2049,81,9418,30001:50011" '/^TCP_IN =/ {gsub("\"$", "," additional "\""); print; next} /^TCP6_IN =/ {gsub("\"$", "," additional "\""); print; next} {print}' /etc/csf/csf.conf > /etc/csf/csf.conf.tmp
+    # compare /etc/csf/csf.conf vs /etc/csf/csf.conf.tmp via diff
+    diff -u /etc/csf/csf.conf /etc/csf/csf.conf.tmp
+    # overwrite existing csf.conf with modified
+    mv /etc/csf/csf.conf.tmp /etc/csf/csf.conf
 
 sed -i "s/TCP_OUT = \"/TCP_OUT = \"8080,2525,465,111,2049,1110,1194,9418,3306,/g" /etc/csf/csf.conf
 sed -i "s/TCP6_OUT = \"/TCP6_OUT = \"8080,2525,465,3306,/g" /etc/csf/csf.conf

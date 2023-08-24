@@ -1,3 +1,18 @@
+fix_ftp_csf_ports() {
+  # fix csf v14.18 adding DoT DNS over TLS port 853 which broke
+  # Centmin Mod initial install CSF port list configuration
+  # and didn't add pure-ftpd passive port range to whitelist
+  # this function runs on centmin.sh menu runs to check if
+  # pure-ftpd passive port range is missing and auto re-add it
+  # if script runs, there will be a backup of prior CSF Firewall
+  # profile config at /var/lib/csf/backup/ named fix-ftp from
+  # csf --profile backup fix-ftp
+  if [ -f /usr/local/src/centminmod/tools/fix-csf-ftp-ports.sh ]; then
+    chmod +x /usr/local/src/centminmod/tools/fix-csf-ftp-ports.sh
+    /usr/local/src/centminmod/tools/fix-csf-ftp-ports.sh >/dev/null 2>&1
+  fi
+}
+
 nginx_systemd_switch() {
 if [[ "$CENTOS_NINE" = '9' || "$CENTOS_EIGHT" = '8' || "$CENTOS_SEVEN" = '7' ]] && [[ -f /etc/init.d/nginx && "$SWITCH_NGINX_SYSTEMD" = [yY] ]]; then
     rm -f /etc/init.d/nginx
@@ -3324,6 +3339,7 @@ if [[ "$INITIALINSTALL" != [yY] ]]; then
   jetpack_ip_whitelist_cronsetup
   lets_dst_root_ca_fix
   check_php_cainfo_file
+  fix_ftp_csf_ports
 fi
 
 }
