@@ -777,6 +777,10 @@ ngxbrotli_download() {
     if [ ! -d ngx_brotli ]; then
       time git clone --recursive "$NGXBROTLILINK"
       cd ngx_brotli
+      # workaround for ngx_brotli upstream brotli dependency removing
+      # configure-cmake method of building brotli
+      # https://github.com/google/ngx_brotli/issues/148#issuecomment-1703859910
+      git checkout 6e975bcb015f62e1f303054897783355e2a877dc
       git submodule update --init
       cd deps/brotli
       brdep_update
