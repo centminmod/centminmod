@@ -1,5 +1,5 @@
 #!/bin/bash
-VER='0.3'
+VER='0.4'
 ######################################################
 # set locale temporarily to english
 # due to some non-english locale issues
@@ -15,8 +15,12 @@ export SYSTEMD_PAGER=''
 # written by George Liu (eva2000) centminmod.com
 ######################################################
 # switch to nodesource yum repo instead of source compile
-# specify version branch so set NODEJSVER to 4, 5, 6, 7 or 8
+# specify version branch so set NODEJSVER to 16 max for EL7
+# 20 for EL8 and EL9
 NODEJSVER='16'
+NODEJSVER_EL8='20'
+NODEJSVER_EL9='20'
+# for EL6 only
 NODEJS_SOURCEINSTALL='y'
 NODEJS_REINSTALL='y'
 
@@ -471,13 +475,50 @@ scl_install() {
 	fi # centos 6 only needed
 }
 
+remove_old_repo() {
+    if [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]] && [[ "$(dnf config-manager --dump nodesource-nodejs 2>/dev/null | grep -q '^enabled')" ]]; then
+        echo n
+    elif [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]] && [[ "$(dnf config-manager --dump nodesource 2>/dev/null | grep -q '^enabled')" ]]; then
+        echo y
+        rm -f /etc/yum.repos.d/nodesource*.repo
+        rm -rf /usr/lib/node_modules/npm/
+    elif [[ "$CENTOS_SEVEN" -eq '7' ]] && [[ "$(yum-config-manager nodesource 2>/dev/null | grep -q 'enabled =')" ]]; then
+        echo y
+        rm -f /etc/yum.repos.d/nodesource*.repo
+        rm -rf /usr/lib/node_modules/npm/
+    else
+        echo n
+    fi
+}
+
 installnodejs_new() {
   if [[ "$(which node >/dev/null 2>&1; echo $?)" != '0' ]]; then
       cd $DIR_TMP
-      curl --silent -4 --location https://rpm.nodesource.com/setup_${NODEJSVER}.x | bash -
+      if [[ "$CENTOS_SEVEN" -eq '7' ]]; then
+        remove_old_repo
+        echo "yum install https://rpm.nodesource.com/pub_${NODEJSVER}.x/nodistro/repo/nodesource-release-nodistro-1.noarch.rpm -y"
+        yum install "https://rpm.nodesource.com/pub_${NODEJSVER}.x/nodistro/repo/nodesource-release-nodistro-1.noarch.rpm" -y
+        echo "yum install nodejs -y --setopt=nodesource-nodejs.module_hotfixes=1 --disablerepo=epel"
+        yum install nodejs -y --setopt=nodesource-nodejs.module_hotfixes=1 --disablerepo=epel
+      elif [[ "$CENTOS_EIGHT" -eq '8' ]]; then
+        remove_old_repo
+        echo "yum install https://rpm.nodesource.com/pub_${NODEJSVER_EL8}.x/nodistro/repo/nodesource-release-nodistro-1.noarch.rpm -y"
+        yum install "https://rpm.nodesource.com/pub_${NODEJSVER_EL8}.x/nodistro/repo/nodesource-release-nodistro-1.noarch.rpm" -y
+        echo "yum install nodejs -y --setopt=nodesource-nodejs.module_hotfixes=1 --disablerepo=epel"
+        yum install nodejs -y --setopt=nodesource-nodejs.module_hotfixes=1 --disablerepo=epel
+      elif [[ "$CENTOS_NINE" -eq '9' ]]; then
+        remove_old_repo
+        echo "yum install https://rpm.nodesource.com/pub_${NODEJSVER_EL9}.x/nodistro/repo/nodesource-release-nodistro-1.noarch.rpm -y"
+        yum install "https://rpm.nodesource.com/pub_${NODEJSVER_EL9}.x/nodistro/repo/nodesource-release-nodistro-1.noarch.rpm" -y
+        echo "yum install nodejs -y --setopt=nodesource-nodejs.module_hotfixes=1 --disablerepo=epel"
+        yum install nodejs -y --setopt=nodesource-nodejs.module_hotfixes=1 --disablerepo=epel
+      fi
       yum clean all
-      yum -y install nodejs --disableplugin=priorities --disablerepo=epel
-      time npm install npm@latest -g
+      # time npm install npm@latest -g
+      if [ -f /etc/yum.repos.d/nodesource-nodistro.repo ]; then
+        echo
+        cat /etc/yum.repos.d/nodesource-nodistro.repo
+      fi
   
     echo
     cecho "---------------------------" $boldyellow
