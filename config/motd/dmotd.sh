@@ -355,6 +355,43 @@ gitenv_askupdate() {
     fi
 }
 
+needrestart_check() {
+  if [[ "$NEEDRESTART_CHECK" = [yY] && -f /usr/bin/needs-restarting ]]; then
+    # Get the current day of the week (0 for Sunday, 1 for Monday, etc.)
+    DAY_OF_WEEK=$(date +%u)
+    
+    # Check if today is Friday (5), Saturday (6), or Sunday (0)
+    if [ "$DAY_OF_WEEK" -eq "5" ] || [ "$DAY_OF_WEEK" -eq "6" ] || [ "$DAY_OF_WEEK" -eq "0" ]; then
+        # Run the command and capture its output
+        output=$(needs-restarting -r)
+        # Modify the output based on the version-specific message
+        if echo "$output" | grep -q "Reboot is required to ensure that your system benefits from these updates."; then
+            # For EL7
+            modified_output=$(echo "$output" | sed 's/Reboot/Server Reboot/')
+            # Display the modified output and the additional message
+            echo
+            cecho "===============================================================================" $boldgreen
+            echo "$modified_output"
+            echo -e "\nRather than reboot server for each YUM update, you can schedule a specific time\n  i.e. on weekends"
+            echo -e "\nTo ensure all MySQL data in memory buffers is written to disk before reboot"
+            echo -e "Run this command & wait 180 seconds before rebooting server:\n  mysqladmin flush-tables && sleep 180"
+            cecho "===============================================================================" $boldgreen
+        elif echo "$output" | grep -q "Reboot is required to fully utilize these updates."; then
+            # For EL8 & EL9
+            modified_output=$(echo "$output" | sed 's/Reboot/Server Reboot/')
+            # Display the modified output and the additional message
+            echo
+            cecho "===============================================================================" $boldgreen
+            echo "$modified_output"
+            echo -e "\nRather than reboot server for each YUM update, you can schedule a specific time\n  i.e. on weekends"
+            echo -e "\nTo ensure all MySQL data in memory buffers is written to disk before reboot"
+            echo -e "Run this command & wait 180 seconds before rebooting server:\n  mysqladmin flush-tables && sleep 180"
+            cecho "===============================================================================" $boldgreen
+        fi
+    fi
+  fi
+}
+
 kernel_checks() {
   if [[ "$SSHLOGIN_KERNELCHECK" = [yY] && -f "$CMSCRIPT_GITDIR/tools/kernelcheck.sh" ]]; then
     "$CMSCRIPT_GITDIR/tools/kernelcheck.sh"
@@ -375,6 +412,7 @@ else
   ngxver_checker
 fi
 gitenv_askupdate
+needrestart_check
 } 2>&1 | tee "${CENTMINLOGDIR}/cmm-login-git-checks_${DT}.log"
 
 endtime=$(TZ=UTC date +%s.%N)

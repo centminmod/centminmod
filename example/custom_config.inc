@@ -30,6 +30,11 @@ VPS_GEOIPCHECK_V3='n'
 VPS_GEOIPCHECK_V4='y'
 
 #####################################################
+# MOTD prompt alert user if server reboot is required
+# after YUM package updates, alerts Fri-Sun only
+NEEDRESTART_CHECK='n'
+
+#####################################################
 TIME_NGINX='n'
 TIME_PHPCONFIGURE='n'
 TIME_MEMCACHED='n'

@@ -29,7 +29,7 @@ DT=$(date +"%d%m%y-%H%M%S")
 branchname='130.00beta01'
 SCRIPT_MAJORVER='130'
 SCRIPT_MINORVER='00'
-SCRIPT_INCREMENTVER='386'
+SCRIPT_INCREMENTVER='387'
 SCRIPT_VERSIONSHORT="${branchname}"
 SCRIPT_VERSION="${SCRIPT_VERSIONSHORT}.b${SCRIPT_INCREMENTVER}"
 SCRIPT_DATE='31/01/23'
@@ -700,6 +700,11 @@ VPS_GEOIPCHECK_V4='y'
 # in persistent config file /etc/centminmod/custom_config.inc
 MM_LICENSE_KEY='k0sP8JPgZm6i0sOF'
 MM_CSF_SRC='n'
+
+#####################################################
+# MOTD prompt alert user if server reboot is required
+# after YUM package updates, alerts Fri-Sun only
+NEEDRESTART_CHECK='n'
 
 #####################################################
 # Networking
