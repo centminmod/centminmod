@@ -1,5 +1,5 @@
 #!/bin/bash
-VER='0.4'
+VER='0.5'
 ######################################################
 # set locale temporarily to english
 # due to some non-english locale issues
@@ -494,6 +494,9 @@ remove_old_repo() {
 installnodejs_new() {
   if [[ "$(which node >/dev/null 2>&1; echo $?)" != '0' ]]; then
       cd $DIR_TMP
+      if [[ ! "$(rpm -q gpg-pubkey --qf '%{NAME}-%{VERSION}-%{RELEASE} %{SUMMARY}\n' | grep 'nsolid')" ]]; then
+        rpm --import https://rpm.nodesource.com/gpgkey/nodesource.gpg.key
+      fi
       if [[ "$CENTOS_SEVEN" -eq '7' ]]; then
         remove_old_repo
         echo "yum install https://rpm.nodesource.com/pub_${NODEJSVER}.x/nodistro/repo/nodesource-release-nodistro-1.noarch.rpm -y"
