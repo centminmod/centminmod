@@ -2,10 +2,10 @@ phpimap_install() {
   if [[ "$CENTOS_NINE" = '9' && "$PHPIMAP" = [yY] ]]; then
     if [[ $(rpm -q uw-imap-devel >/dev/null 2>&1; echo $?) != '0' ]]; then 
       if [ -f /etc/yum.repos.d/rpmforge.repo ]; then
-        time yum${CACHESKIP} -y install uw-imap-devel --disablerepo=rpmforge
+        time yum${CACHESKIP} -y install libc-client uw-imap-devel --disablerepo=rpmforge
         sar_call
       else
-        time yum${CACHESKIP} -y install uw-imap-devel
+        time yum${CACHESKIP} -y install libc-client uw-imap-devel --enablerepo=remi
         sar_call
       fi
     fi
