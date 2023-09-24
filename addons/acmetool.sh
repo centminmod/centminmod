@@ -13,7 +13,7 @@ export SYSTEMD_PAGER=''
 ###############################################################
 # variables
 ###############################################################
-ACMEVER='1.0.91'
+ACMEVER='1.0.92'
 DT=$(date +"%d%m%y-%H%M%S")
 ACMEDEBUG='n'
 ACMEDEBUG_LOG='y'
@@ -2702,9 +2702,17 @@ reissue_acme_only() {
         sed -i "s|#ssl_stapling on|ssl_stapling on|" "$SSLVHOST_CONFIG"
         sed -i "s|#ssl_stapling_verify|ssl_stapling_verify|" "$SSLVHOST_CONFIG"
         sed -i "s|#ssl_trusted_certificate|ssl_trusted_certificate|" "$SSLVHOST_CONFIG"
-        if [ -f "/usr/local/nginx/conf/ssl/${vhostname}/${vhostname}.crt.key.conf" ]; then
+        if [[ "$DUALCERTS" != [yY] && -f "/usr/local/nginx/conf/ssl/${vhostname}/${vhostname}.crt.key.conf" ]]; then
           sed -i "s|#ssl_trusted_certificate|ssl_trusted_certificate|" "/usr/local/nginx/conf/ssl/${vhostname}/${vhostname}.crt.key.conf"
         fi
+        # if [[ "$DUALCERTS" != [yY] && -f "/usr/local/nginx/conf/ssl/${vhostname}/${vhostname}.crt.key.conf" ]]; then
+        #     if [[ "$KEYLENGTH" = '2048' ]]; then
+        #       sed -i "s|#ssl_trusted_certificate /usr/local/nginx/conf/ssl/${vhostname}/${vhostname}-acme.cer|ssl_trusted_certificate /usr/local/nginx/conf/ssl/${vhostname}/${vhostname}-acme.cer|" "/usr/local/nginx/conf/ssl/${vhostname}/${vhostname}.crt.key.conf"
+        #     fi
+        #     if [[ "$KEYLENGTH" = 'ec-384' ]]; then
+        #       sed -i "s|#ssl_trusted_certificate /usr/local/nginx/conf/ssl/${vhostname}/${vhostname}-acme-ecc.cer|ssl_trusted_certificate /usr/local/nginx/conf/ssl/${vhostname}/${vhostname}-acme-ecc.cer|" "/usr/local/nginx/conf/ssl/${vhostname}/${vhostname}.crt.key.conf"
+        #     fi
+        # fi
         # dual cert routine start
         if [[ "$DUALCERTS" = [yY] && "$KEYLENGTH" = '2048' ]]; then
             echo
