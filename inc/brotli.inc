@@ -777,18 +777,44 @@ ngxbrotli_download() {
     if [ ! -d ngx_brotli ]; then
       time git clone --recursive "$NGXBROTLILINK"
       cd ngx_brotli
-      # workaround for ngx_brotli upstream brotli dependency removing
-      # configure-cmake method of building brotli
-      # https://github.com/google/ngx_brotli/issues/148#issuecomment-1703859910
-      git checkout 6e975bcb015f62e1f303054897783355e2a877dc
-      git submodule update --init
-      cd deps/brotli
-      brdep_update
-      ./configure-cmake --prefix=/usr/local/nginx-dep
-      make${MAKETHREADS}
-      make install
-      cd ../../
-      cd ../
+      if [[ "$NGINX_BROTLI_NEW_METHOD" = [yY] ]]; then
+        git submodule update --init
+        cd deps/brotli
+        brdep_update
+        mkdir out && cd out
+        cmake -DCMAKE_BUILD_TYPE=Release \
+        -DBUILD_SHARED_LIBS=ON \
+        -DCMAKE_C_FLAGS="-Ofast -m64 -flto -funroll-loops -ffunction-sections -fdata-sections -Wl,--gc-sections" \
+        -DCMAKE_CXX_FLAGS="-Ofast -m64 -flto -funroll-loops -ffunction-sections -fdata-sections -Wl,--gc-sections" \
+        -DCMAKE_INSTALL_PREFIX=/usr/local/nginx-dep \
+        -DCMAKE_PREFIX_PATH=/usr/local/nginx-dep \
+        -DCMAKE_INSTALL_LIBDIR=lib \
+        -DCMAKE_INSTALL_RPATH=/usr/local/nginx-dep/lib \
+        ..
+        cmake --build . --config Release --target brotlienc install
+        cd ../../../..
+      else
+        # workaround for ngx_brotli upstream brotli dependency removing
+        # configure-cmake method of building brotli
+        # https://github.com/google/ngx_brotli/issues/148#issuecomment-1703859910
+        # git checkout 6e975bcb015f62e1f303054897783355e2a877dc
+        git checkout 6e975bcb015f62e1f303054897783355e2a877dc
+        git submodule update --init
+        cd deps/brotli
+        brdep_update
+        ./configure-cmake --prefix=/usr/local/nginx-dep
+        make${MAKETHREADS}
+        make install
+        cd ../../
+        cd ../
+      fi
+      echo
+      echo "ngx_brotli brotli check"
+      echo
+      /usr/local/nginx-dep/bin/brotli -V
+      echo
+      ldd /usr/local/nginx-dep/bin/brotli
+      echo
     fi
 
     if [[ "$DEVTOOLSETSEVEN" = [yY] && -f /opt/rh/devtoolset-7/root/usr/bin/gcc && -f /opt/rh/devtoolset-7/root/usr/bin/g++ ]] && [[ "$(gcc --version | head -n1 | awk '{print $3}' | cut -d . -f1,2 | sed "s|\.|0|")" -gt '407' ]]; then

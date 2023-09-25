@@ -2519,7 +2519,9 @@ fi
 
 if [[ "$NGINX_LIBBROTLI" = [yY] && "$(uname -m)" = 'x86_64' ]]; then
   #libbroti_install
+  { 
   ngxbrotli_download
+  } 2>&1 | tee "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_nginx_brotli.log"
   # initial installs don't have nginx directories setup from inc/brotli.inc routines yet
   # so need to do it at the stage of initial first time nginx installs
   if [[ "$INITIALINSTALL" = [yY] && ! -f /usr/local/nginx/conf/brotli_inc.conf ]]; then
