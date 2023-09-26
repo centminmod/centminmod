@@ -556,7 +556,7 @@ libbroti_install() {
 }
 
 brdep_update() {
-  if [[ "$NGINX_BROTLIDEP_UPDATE" = [yY] ]]; then
+  if [[ "$NGINX_BROTLI_NEW_METHOD" = [yY] && "$NGINX_BROTLIDEP_UPDATE" = [yY] ]]; then
     grep 'BROTLI_VERSION' c/common/version.h
     brotlilatest_tag=$(git tag | tail -1)
     brotlibranch=$(echo $brotlilatest_tag | sed -e 's|v|local-|')
@@ -801,7 +801,6 @@ ngxbrotli_download() {
         git checkout 6e975bcb015f62e1f303054897783355e2a877dc
         git submodule update --init
         cd deps/brotli
-        brdep_update
         ./configure-cmake --prefix=/usr/local/nginx-dep
         make${MAKETHREADS}
         make install
