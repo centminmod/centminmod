@@ -1625,7 +1625,7 @@ fi
         # re-enable TLS 1.3 draft 23 /28 support
         # sed -i 's|tls13_rfc = 0|tls13_all = 0|' ${BORINGSSL_DIR}/boringssl/include/openssl/ssl.h
         # sed -i 's|  tls13_all,|  tls13_rfc,|' ${BORINGSSL_DIR}/boringssl/include/openssl/ssl.h
-        sed -i 's|tls13_variant_t tls13_variant = tls13_rfc;|tls13_variant_t tls13_variant = tls13_all;|g' ${BORINGSSL_DIR}/boringssl/ssl/internal.h
+        # sed -i 's|tls13_variant_t tls13_variant = tls13_rfc;|tls13_variant_t tls13_variant = tls13_all;|g' ${BORINGSSL_DIR}/boringssl/ssl/internal.h
         make${MAKETHREADS}
         mkdir -p ${BORINGSSL_DIR}/boringssl/.openssl/lib
         cd ${BORINGSSL_DIR}/boringssl/.openssl
