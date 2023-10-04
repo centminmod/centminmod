@@ -224,7 +224,7 @@ NGINX_PCREVER='8.45'         # Version of PCRE used for pcre-jit support in Ngin
 NGINX_PCRE_TWO='n'           # optional PCRE2 for Nginx 1.21.5+
 NGINX_PCRETWOVER='10.39'     # Version of PCRE2 used for pcre-jit support in Nginx
 NGINX_ZLIBCUSTOM='y'         # Use custom zlib instead of system version
-NGINX_ZLIBVER='1.2.11'       # http://www.zlib.net/
+NGINX_ZLIBVER='1.3'       # http://www.zlib.net/
 NGINX_VIDEO='n'              # control variable when 'y' set for NGINX_SLICE='y', NGINX_RTMP='y', NGINX_FLV='y', NGINX_MP4='y'
 ORESTY_HEADERSMORE='y'       # openresty headers more https://github.com/openresty/headers-more-nginx-module
 ORESTY_HEADERSMOREGIT='n'    # use git master instead of version specific
@@ -352,7 +352,7 @@ CLOUDFLARE_ZLIBRESET='y'   # if CLOUDFLARE_ZLIB='n' set, then revert gzip compre
 CLOUDFLARE_ZLIBRAUTOMAX='n' # don't auto raise nginx gzip compression level to 9 if using Cloudflare zlib
 CLOUDFLARE_ZLIBPHP='n'     # use Cloudflare optimised zlib fork for PHP-FPM zlib instead of system zlib
 CLOUDFLARE_ZLIBDEBUG='n'   # make install debug verbose mode
-CLOUDFLARE_ZLIBVER='1.3.0'
+CLOUDFLARE_ZLIBVER='1.3.1'
 NGINX_DYNAMICTLS='n'          # set 'y' and recompile nginx https://blog.cloudflare.com/optimizing-tls-over-tcp-to-reduce-latency/
 OPENSSLECDSA_PATCH='n'        # https://community.centminmod.com/posts/57725/
 OPENSSLECDHX_PATCH='n'        # https://community.centminmod.com/posts/57726/
