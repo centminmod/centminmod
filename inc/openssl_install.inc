@@ -1274,6 +1274,9 @@ fi
         if [ -f "$(which figlet)" ]; then
             figlet -ckf standard "Compiling OpenSSL quictls fork"
         fi
+        DETECTOPENSSL_ONEONE=$(echo $OPENSSL_QUIC_VERSION  | cut -d . -f1-3 | grep -o 1.1.1)
+        DETECTOPENSSL_THREEZERO=$(echo $OPENSSL_QUIC_VERSION  | cut -d . -f1-2 | grep -o 3.0)
+        DETECTOPENSSL_THREEONE=$(echo $OPENSSL_QUIC_VERSION  | cut -d . -f1-2 | grep -o 3.1)
 
         # Install OpenSSL
         cd $DIR_TMP
@@ -1325,7 +1328,7 @@ fi
             else
                 ECNISTP_OPT=""
             fi
-            if [[ "$DETECTOPENSSL_ONEZERO" = '1.1' ]] || [[ "$DETECTOPENSSL_ONEONE" = '1.1.1' ]]; then
+            if [[ "$c" = '1.1' ]] || [[ "$DETECTOPENSSL_ONEONE" = '1.1.1' || "$DETECTOPENSSL_ONEONE" = '1_1_1' ]]; then
                 # openssl 1.1.0 unsupported flag enable-tlsext
                 if [[ "$OPENSSL_TLSONETHREE" = [yY] && "$(grep -w 'tls1_3' Configure)" ]]; then
                     TLSONETHREEOPT=' enable-tls1_3'
