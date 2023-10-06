@@ -37,7 +37,7 @@ check_and_fix_cache_keys() {
     fi
 
     # If any of the files need to be updated, run the script
-    if [ "$NEED_UPDATE" -eq 1 ]; then
+    if [[ "$NEED_UPDATE" -eq 1 ]]; then
         # echo "Running fix script..."
         chmod +x "${SCRIPT_DIR}/tools/fix-cache-keys.sh"
         "${SCRIPT_DIR}/tools/fix-cache-keys.sh" silent
