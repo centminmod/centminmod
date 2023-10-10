@@ -657,7 +657,7 @@ fi
         echo "CXXFLAGS=$CXXFLAGS"
         echo "GCC_NONNATIVEFLAGS=$GCC_NONNATIVEFLAGS"
         echo
-        free -m
+        free -mlt
         echo
         df -hT
         echo
@@ -846,7 +846,7 @@ fi
         echo "report errors on the forums at community.centminmod.com/forums/8/"
         echo "with info asked at community.centminmod.com/threads/17857/"
         echo
-        free -m
+        free -mlt
         echo
         df -hT
         echo
@@ -953,7 +953,7 @@ fi
         echo "CXXFLAGS=$CXXFLAGS"
         echo "GCC_NONNATIVEFLAGS=$GCC_NONNATIVEFLAGS"
         echo
-        free -m
+        free -mlt
         echo
         df -hT
         echo

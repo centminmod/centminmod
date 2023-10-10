@@ -249,12 +249,12 @@ postgresqlinstall() {
         # cd $DIR_TMP
         if [[ "$CENTOS_NINE" = '9' ]]; then
             # install postgresql 16 instead of default el9 module postgresql 13
-            dnf -qy module disable postgresql
+            time dnf -y module disable postgresql
             wget${ipv_forceopt_pgsl} https://download.postgresql.org/pub/repos/yum/reporpms/EL-9-x86_64/pgdg-redhat-repo-latest.noarch.rpm -O ${DIR_TMP}/pgdg-redhat-repo-latest.noarch.rpm
             rpm -Uvh ${DIR_TMP}/pgdg-redhat-repo-latest.noarch.rpm
         elif [[ "$CENTOS_EIGHT" = '8' ]]; then
             # install postgresql 16 instead of default el9 module postgresql 13, 12, 10 and 9.6
-            dnf -qy module disable postgresql
+            time dnf -y module disable postgresql
             wget${ipv_forceopt_pgsl} https://download.postgresql.org/pub/repos/yum/reporpms/EL-8-x86_64/pgdg-redhat-repo-latest.noarch.rpm -O ${DIR_TMP}/pgdg-redhat-repo-latest.noarch.rpm
             rpm -Uvh ${DIR_TMP}/pgdg-redhat-repo-latest.noarch.rpm
         elif [[ "$CENTOS_SEVEN" = '7' ]]; then
@@ -268,14 +268,26 @@ postgresqlinstall() {
             rpm -Uvh ${DIR_TMP}/pgdg-redhat-repo-latest.noarch.rpm
         fi
     
-        ls -lah /etc/yum.repos.d/pgdg-16-redhat.repo
-        cat /etc/yum.repos.d/pgdg-16-redhat.repo
+        echo
+        ls -lAhrt /etc/yum.repos.d/
+        echo
+        echo "cat /etc/yum.repos.d/pgdg-redhat-all.repo"
+        cat /etc/yum.repos.d/pgdg-redhat-all.repo
     
         echo
-        time $YUMDNFBIN list postgresql16 postgresql16-devel postgresql16-contrib postgresql16-libs postgresql16-server --disableplugin=priorities${DISABLEREPO_DNF}
-    
-        echo
-        time $YUMDNFBIN -y install postgresql16 postgresql16-devel postgresql16-contrib postgresql16-libs postgresql16-server --disableplugin=priorities${DISABLEREPO_DNF}
+        if [[ "$CENTOS_EIGHT" = '8' || "$CENTOS_NINE" = '9' ]]; then
+          # rpm --import https://download.postgresql.org/pub/repos/yum/RPM-GPG-KEY-PGDG-16
+          # rpm --import https://download.postgresql.org/pub/repos/yum/RPM-GPG-KEY-PGDG
+          time $YUMDNFBIN -y list postgresql16 postgresql16-devel libpq5-devel postgresql16-contrib postgresql16-libs postgresql16-server --disableplugin=priorities${DISABLEREPO_DNF}
+          echo
+          time $YUMDNFBIN -y install postgresql16 postgresql16-devel libpq5-devel postgresql16-contrib postgresql16-libs postgresql16-server --disableplugin=priorities${DISABLEREPO_DNF} --skip-broken
+        elif [[ "$CENTOS_SEVEN" = '7' ]]; then
+          # rpm --import https://download.postgresql.org/pub/repos/yum/RPM-GPG-KEY-PGDG-16
+          # rpm --import https://download.postgresql.org/pub/repos/yum/RPM-GPG-KEY-PGDG
+          time $YUMDNFBIN -y list postgresql16 postgresql16-devel libpq5-devel postgresql16-contrib postgresql16-libs postgresql16-server --disableplugin=priorities${DISABLEREPO_DNF}
+          echo
+          time $YUMDNFBIN -y install postgresql16 postgresql16-devel libpq5-devel postgresql16-contrib postgresql16-libs postgresql16-server --disableplugin=priorities${DISABLEREPO_DNF}
+        fi
 
         if [[ "$CENTOS_NINE" = '9' ]]; then
           echo

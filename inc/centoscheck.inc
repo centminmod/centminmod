@@ -110,9 +110,9 @@ sshdtweaks
     echo
     echo "create 1GB swap file"; 
     if [[ "$(df -hT | grep -w xfs)" || "$(virt-what | grep -o lxc)" = 'lxc' ]]; then
-        dd if=/dev/zero of=/swapfile bs=1024 count=1024k;
+        dd if=/dev/zero of=/swapfile bs=4096 count=1024k;
     else
-        fallocate -l 1G /swapfile
+        fallocate -l 4G /swapfile
     fi
     ls -lah /swapfile;
     mkswap /swapfile;
@@ -133,9 +133,9 @@ sshdtweaks
     echo "re-create 1GB swap file";
     swapoff -a
     if [[ "$(df -hT | grep -w xfs)" || "$(virt-what | grep -o lxc)" = 'lxc' ]]; then
-        dd if=/dev/zero of=/swapfile bs=1024 count=1024k;
+        dd if=/dev/zero of=/swapfile bs=4096 count=1024k;
     else
-        fallocate -l 1G /swapfile
+        fallocate -l 4G /swapfile
     fi
     ls -lah /swapfile;
     mkswap /swapfile;
