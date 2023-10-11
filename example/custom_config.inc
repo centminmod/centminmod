@@ -309,7 +309,7 @@ PHPMSSQL_ALWAYS='n'          # mssql php extension always install on php recompi
 PHPEMBED='y'                 # built php with php embed SAPI library support --enable-embed=shared
 SHORTCUTS='y'                # shortcuts
 PHPSWOOLE='n'                # https://pecl.php.net/package/swoole
-PHPSWOOLE_VER='5.0.0'
+PHPSWOOLE_VER='5.1.0'
 PHPSWOOLE_FIVE_VER='2.0.5' # max PHP 5.0 supported version
 PHPSWOOLE_SEVEN_ZERO_VER='4.3.5' # max PHP 7.0 supported version
 PHPSWOOLE_SEVEN_ONE_VER='4.5.11' # max PHP 7.1 supported version
@@ -384,7 +384,8 @@ PCRE_VERSION='8.45'          # PCRE version
 IMAGICKPHP_VER='3.4.4'         # PHP extension for imagick
 IMAGICKPHP_SEVEN_VER='3.7.0'   # PHP extension for imagick
 MAILPARSEPHP_VER='2.1.6'      # https://pecl.php.net/package/mailparse
-MAILPARSEPHP_COMPATVER='3.1.2' # For PHP 7
+MAILPARSEPHP_COMPATVER='3.1.3' # For PHP 7.0-7.3
+MAILPARSEPHPSEVENFOUR_COMPATVER='3.1.6' # For PHP 7.4+
 MEMCACHED_INSTALL='y'         # Install Memcached
 LIBEVENT_VERSION='2.1.12'      # Use this version of Libevent
 MEMCACHED_VERSION='1.6.17'    # Use this version of Memcached server
@@ -399,14 +400,15 @@ TWEMPERF_VER='0.1.1'
 
 PHPREDIS='y'                # redis PHP extension install
 REDISPHP_VER='4.3.0'        # redis PHP version for PHP <7.x
-REDISPHPSEVEN_VER='5.3.7'   # redis PHP version for PHP =>7.x
+REDISPHPSEVEN_VER='5.3.7'   # redis PHP version for PHP 7.0.x to 7.1.x
+REDISPHPSEVENTWO_VER='6.0.1'   # redis PHP version for PHP =>7.2.x
 REDISPHP_GIT='n'            # pull php 7 redis extension from git or pecl downloads
 PHPMONGODB='n'              # MongoDB PHP extension install
 MONGODBPHP_VER='1.7.5'      # MongoDB PHP version
 MONGODBPHP_SEVEN_ZERO_VER='1.9.2' # MongoDB max PHP =<7.0 version
 MONGODBPHP_SEVEN_VER='1.11.1'     # MongoDB max PHP 7.1+ version
 MONGODBPHP_EIGHT_VER='1.13.0'
-MONGODBPHP_EIGHTTWO_VER='1.14.0beta1'     # MongoDB PHP version
+MONGODBPHP_EIGHTTWO_VER='1.16.2'     # MongoDB PHP version
 MONGODB_SASL='n'            # SASL not working yet leave = n
 PDOPGSQL_PHPVER='11'       # pdo-pgsql PHP extension version for postgresql
 PHP_LIBZIP='n'              # use newer libzip instead of PHP embedded zip
