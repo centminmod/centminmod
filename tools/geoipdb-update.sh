@@ -117,9 +117,9 @@ if [[ -f /usr/share/GeoIP/GeoLite2-City.mmdb || -f /usr/share/GeoIP/GeoLite2-Cou
     maxmind_asn_url="https://download.maxmind.com/app/geoip_download?edition_id=GeoLite2-ASN&license_key=$MM_LICENSE_KEY&suffix=tar.gz"
   else
     echo
-    maxmind_city_url='${LOCALCENTMINMOD_MIRROR}/centminmodparts/geoip2-lite/GeoLite2-City.tar.gz'
-    maxmind_country_url='${LOCALCENTMINMOD_MIRROR}/centminmodparts/geoip2-lite/GeoLite2-Country.tar.gz'
-    maxmind_asn_url='${LOCALCENTMINMOD_MIRROR}/centminmodparts/geoip2-lite/GeoLite2-ASN.tar.gz'
+    maxmind_city_url="${LOCALCENTMINMOD_MIRROR}/centminmodparts/geoip2-lite/GeoLite2-City.tar.gz"
+    maxmind_country_url="${LOCALCENTMINMOD_MIRROR}/centminmodparts/geoip2-lite/GeoLite2-Country.tar.gz"
+    maxmind_asn_url="${LOCALCENTMINMOD_MIRROR}/centminmodparts/geoip2-lite/GeoLite2-ASN.tar.gz"
   fi
 
   mkdir -p /usr/share/GeoIP
