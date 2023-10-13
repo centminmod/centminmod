@@ -46,6 +46,8 @@ checkredistar() {
     if [[ "$REDISPHP_GIT" != [yY] ]]; then
       if [[ "$REDIS_PHPCURRENTVER" = '8.3' || "$PHPMUVER" = '8.3' || "$REDIS_PHPCURRENTVER" = '8.2' || "$PHPMUVER" = '8.2' || "$REDIS_PHPCURRENTVER" = '8.1' || "$PHPMUVER" = '8.1' || "$REDIS_PHPCURRENTVER" = '8.0' || "$PHPMUVER" = '8.0' ]] || [[ "$REDIS_PHPCURRENTVER" = '7.4' || "$PHPMUVER" = '7.4' ]] || [[ "$REDIS_PHPCURRENTVER" = '7.3' || "$PHPMUVER" = '7.3' ]] || [[ "$REDIS_PHPCURRENTVER" = '7.2' || "$PHPMUVER" = '7.2' ]]; then
         REDISPHP_VER="$REDISPHPSEVENTWO_VER"
+      elif [[ "$INITIALINSTALL" = [yY] ]] && [[ "$PHPMVER" = '8.3' || "$PHPMVER" = '8.2' || "$PHPMVER" = '8.1' || "$PHPMVER" = '8.0' || "$PHPMVER" = '7.4' || "$PHPMVER" = '7.3' || "$PHPMVER" = '7.2' ]]; then
+        REDISPHP_VER="$REDISPHPSEVENTWO_VER"
       else
         REDISPHP_VER="$REDISPHPSEVEN_VER"
       fi
@@ -198,6 +200,8 @@ if [[ "$REDIS_PHPCURRENTVER" = '8.3' || "$PHPMUVER" = '8.3' || "$REDIS_PHPCURREN
         make install
     else
         if [[ "$REDIS_PHPCURRENTVER" = '8.3' || "$PHPMUVER" = '8.3' || "$REDIS_PHPCURRENTVER" = '8.2' || "$PHPMUVER" = '8.2' || "$REDIS_PHPCURRENTVER" = '8.1' || "$PHPMUVER" = '8.1' || "$REDIS_PHPCURRENTVER" = '8.0' || "$PHPMUVER" = '8.0' ]] || [[ "$REDIS_PHPCURRENTVER" = '7.4' || "$PHPMUVER" = '7.4' ]] || [[ "$REDIS_PHPCURRENTVER" = '7.3' || "$PHPMUVER" = '7.3' ]] || [[ "$REDIS_PHPCURRENTVER" = '7.2' || "$PHPMUVER" = '7.2' ]]; then
+            REDISPHP_VER="$REDISPHPSEVENTWO_VER"
+        elif [[ "$INITIALINSTALL" = [yY] ]] && [[ "$PHPMVER" = '8.3' || "$PHPMVER" = '8.2' || "$PHPMVER" = '8.1' || "$PHPMVER" = '8.0' || "$PHPMVER" = '7.4' || "$PHPMVER" = '7.3' || "$PHPMVER" = '7.2' ]]; then
             REDISPHP_VER="$REDISPHPSEVENTWO_VER"
         else
             REDISPHP_VER="$REDISPHPSEVEN_VER"
