@@ -387,14 +387,9 @@ install_cfzlib() {
         echo "pwd"
         pwd
         pushd "$DIR_TMP"
+        rm -rf "zlib-cloudflare-${CLOUDFLARE_ZLIBVER}"
         if [ ! -d "zlib-cloudflare-${CLOUDFLARE_ZLIBVER}" ]; then
             git clone https://github.com/cloudflare/zlib "zlib-cloudflare-${CLOUDFLARE_ZLIBVER}"
-        elif [ -d "zlib-cloudflare-${CLOUDFLARE_ZLIBVER}/.git" ]; then
-            ZLIB_STASHED='y'
-            pushd "zlib-cloudflare-${CLOUDFLARE_ZLIBVER}"
-            git stash
-            git pull
-            popd
         fi
         pushd "zlib-cloudflare-${CLOUDFLARE_ZLIBVER}"
         # CVE-2022-37434 patch
@@ -408,8 +403,13 @@ install_cfzlib() {
                 patch -p1 < "$CUR_DIR/patches/cloudflare/cloudflare-zlib-CVE-2022-37434.patch"
             fi
         fi
-        # CVE-2018-25032 patch
         LAST_CFZLIB_COMMIT=$(git rev-parse --short HEAD)
+        # if [[ "$LAST_CFZLIB_COMMIT" = '47f1285' ]]; then
+            # Workaround Oct 13, 2023 commited rebase changes
+            # https://github.com/cloudflare/zlib/pull/46
+            git checkout d213e64378ec4c289429145ac0e5ee35d1214cd4
+        # fi
+        # CVE-2018-25032 patch
         # ls -lah CVE-2018-25032.patch
         # if [[ ! -f CVE-2018-25032.patch && "$LAST_CFZLIB_COMMIT" = '959b4ea' ]] || [[ "$ZLIB_STASHED" = [yY] ]]; then
         #     echo
