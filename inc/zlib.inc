@@ -171,6 +171,59 @@ install_cfzlib() {
             CLANG='n'
             DEVTOOLSETSEVEN='n'
             DEVTOOLSETEIGHT='y'
+        elif [[ "$DEVTOOLSETELEVEN" = [yY] && "$CLANG" = [nN] && "$CENTOS_NINE" -eq '9' ]]; then
+            CLANG='n'
+            # DEVTOOLSETELEVEN='y'
+            # DEVTOOLSETTEN='n'
+            # DEVTOOLSETNINE='n'
+            # DEVTOOLSETEIGHT='n'
+            # DEVTOOLSETSEVEN='n'
+            unset CC
+            unset CXX
+            if [[ "$INITIALINSTALL" != [yY] ]]; then
+                export CC="ccache gcc"
+                export CXX="ccache g++"
+            else
+                export CC="gcc"
+                export CXX="g++"
+            fi
+            gcc --version
+            g++ --version
+        elif [[ "$DEVTOOLSETELEVEN" = [yY] && "$CLANG" = [nN] && "$CENTOS_EIGHT" -eq '8' ]]; then
+            CLANG='n'
+            DEVTOOLSETELEVEN='y'
+            DEVTOOLSETTEN='n'
+            DEVTOOLSETNINE='n'
+            DEVTOOLSETEIGHT='n'
+            DEVTOOLSETSEVEN='n'
+        elif [[ "$DEVTOOLSETELEVEN" = [yY] && "$CLANG" = [nN] && "$CENTOS_SEVEN" -eq '7' ]]; then
+            CLANG='n'
+            DEVTOOLSETELEVEN='y'
+            DEVTOOLSETTEN='n'
+            DEVTOOLSETNINE='n'
+            DEVTOOLSETEIGHT='n'
+            DEVTOOLSETSEVEN='n'
+        elif [[ "$DEVTOOLSETTEN" = [yY] && "$CLANG" = [nN] && "$CENTOS_NINE" -eq '9' ]]; then
+            CLANG='n'
+            DEVTOOLSETELEVEN='n'
+            DEVTOOLSETTEN='y'
+            DEVTOOLSETNINE='n'
+            DEVTOOLSETEIGHT='n'
+            DEVTOOLSETSEVEN='n'
+        elif [[ "$DEVTOOLSETTEN" = [yY] && "$CLANG" = [nN] && "$CENTOS_EIGHT" -eq '8' ]]; then
+            CLANG='n'
+            DEVTOOLSETELEVEN='n'
+            DEVTOOLSETTEN='y'
+            DEVTOOLSETNINE='n'
+            DEVTOOLSETEIGHT='n'
+            DEVTOOLSETSEVEN='n'
+        elif [[ "$DEVTOOLSETTEN" = [yY] && "$CLANG" = [nN] && "$CENTOS_SEVEN" -eq '7' ]]; then
+            CLANG='n'
+            DEVTOOLSETELEVEN='n'
+            DEVTOOLSETTEN='y'
+            DEVTOOLSETNINE='n'
+            DEVTOOLSETEIGHT='n'
+            DEVTOOLSETSEVEN='n'
         else
             CLANG='n'
             DEVTOOLSETSEVEN='n'
@@ -282,6 +335,51 @@ install_cfzlib() {
         g++ --version
     fi
 
+    if [[ "$DEVTOOLSETNINE" = [yY] && -f /opt/rh/gcc-toolset-9/root/usr/bin/gcc && -f /opt/rh/gcc-toolset-9/root/usr/bin/g++ ]] && [[ "$(gcc --version | head -n1 | awk '{print $3}' | cut -d . -f1,2 | sed "s|\.|0|")" -gt '407' ]]; then
+        source /opt/rh/gcc-toolset-9/enable
+        unset CC
+        unset CXX
+        if [[ "$INITIALINSTALL" != [yY] ]]; then
+            export CC="ccache gcc"
+            export CXX="ccache g++"
+        else
+            export CC="gcc"
+            export CXX="g++"
+        fi
+        gcc --version
+        g++ --version
+    fi
+
+    if [[ "$DEVTOOLSETTEN" = [yY] && -f /opt/rh/gcc-toolset-10/root/usr/bin/gcc && -f /opt/rh/gcc-toolset-10/root/usr/bin/g++ ]] && [[ "$(gcc --version | head -n1 | awk '{print $3}' | cut -d . -f1,2 | sed "s|\.|0|")" -gt '407' ]]; then
+        source /opt/rh/gcc-toolset-10/enable
+        unset CC
+        unset CXX
+        if [[ "$INITIALINSTALL" != [yY] ]]; then
+            export CC="ccache gcc"
+            export CXX="ccache g++"
+        else
+            export CC="gcc"
+            export CXX="g++"
+        fi
+        gcc --version
+        g++ --version
+    fi
+
+    if [[ "$DEVTOOLSETELEVEN" = [yY] && -f /opt/rh/gcc-toolset-11/root/usr/bin/gcc && -f /opt/rh/gcc-toolset-11/root/usr/bin/g++ ]] && [[ "$(gcc --version | head -n1 | awk '{print $3}' | cut -d . -f1,2 | sed "s|\.|0|")" -gt '407' ]]; then
+        source /opt/rh/gcc-toolset-11/enable
+        unset CC
+        unset CXX
+        if [[ "$INITIALINSTALL" != [yY] ]]; then
+            export CC="ccache gcc"
+            export CXX="ccache g++"
+        else
+            export CC="gcc"
+            export CXX="g++"
+        fi
+        gcc --version
+        g++ --version
+    fi
+
         install_cfzlibstartdir=$(pwd)
         echo
         echo "install zlib cloudflare..."
@@ -289,13 +387,9 @@ install_cfzlib() {
         echo "pwd"
         pwd
         pushd "$DIR_TMP"
+        rm -rf "zlib-cloudflare-${CLOUDFLARE_ZLIBVER}"
         if [ ! -d "zlib-cloudflare-${CLOUDFLARE_ZLIBVER}" ]; then
             git clone https://github.com/cloudflare/zlib "zlib-cloudflare-${CLOUDFLARE_ZLIBVER}"
-        elif [ -d "zlib-cloudflare-${CLOUDFLARE_ZLIBVER}/.git" ]; then
-            pushd "zlib-cloudflare-${CLOUDFLARE_ZLIBVER}"
-            git stash
-            git pull
-            popd
         fi
         pushd "zlib-cloudflare-${CLOUDFLARE_ZLIBVER}"
         # CVE-2022-37434 patch
@@ -309,6 +403,22 @@ install_cfzlib() {
                 patch -p1 < "$CUR_DIR/patches/cloudflare/cloudflare-zlib-CVE-2022-37434.patch"
             fi
         fi
+        LAST_CFZLIB_COMMIT=$(git rev-parse --short HEAD)
+        # if [[ "$LAST_CFZLIB_COMMIT" = '47f1285' ]]; then
+            # Workaround Oct 13, 2023 commited rebase changes
+            # https://github.com/cloudflare/zlib/pull/46
+            git checkout d213e64378ec4c289429145ac0e5ee35d1214cd4
+        # fi
+        # CVE-2018-25032 patch
+        # ls -lah CVE-2018-25032.patch
+        # if [[ ! -f CVE-2018-25032.patch && "$LAST_CFZLIB_COMMIT" = '959b4ea' ]] || [[ "$ZLIB_STASHED" = [yY] ]]; then
+        #     echo
+        #     echo "Patch Cloudflare zlib CVE-2018-25032"
+        #     echo
+        #     wget -O CVE-2018-25032.patch https://patch-diff.githubusercontent.com/raw/cloudflare/zlib/pull/29.patch
+        #     patch -p1 < CVE-2018-25032.patch
+        #     echo
+        # fi
         # sed -i "s|\#define ZLIB_VERSION .*|\#define ZLIB_VERSION \"${CLOUDFLARE_ZLIBVER}\"|" zlib.h
         # ldconfig
         make -f Makefile.in distclean
