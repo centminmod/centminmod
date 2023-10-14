@@ -404,11 +404,21 @@ install_cfzlib() {
             fi
         fi
         LAST_CFZLIB_COMMIT=$(git rev-parse --short HEAD)
-        # if [[ "$LAST_CFZLIB_COMMIT" = '47f1285' ]]; then
+        TARGET_CFZLIB_COMMIT='47f1285'
+        COMMON_ANCESTOR=$(git rev-parse --short $(git merge-base HEAD ${TARGET_CFZLIB_COMMIT}))
+        
+        if [[ "${COMMON_ANCESTOR}" = "${TARGET_CFZLIB_COMMIT}" ]]; then
             # Workaround Oct 13, 2023 commited rebase changes
             # https://github.com/cloudflare/zlib/pull/46
+            # If TARGET_CFZLIB_COMMIT is the current commit or an ancestor of the current commit
+            sed -i.bak 's/clean: minizip-clean/clean: #minizip-clean/' Makefile.in
+        else
+            # Workaround Oct 13, 2023 commited rebase changes
+            # https://github.com/cloudflare/zlib/pull/46
+            # git checkout d213e64378ec4c289429145ac0e5ee35d1214cd4
             git checkout d213e64378ec4c289429145ac0e5ee35d1214cd4
-        # fi
+        fi
+
         # CVE-2018-25032 patch
         # ls -lah CVE-2018-25032.patch
         # if [[ ! -f CVE-2018-25032.patch && "$LAST_CFZLIB_COMMIT" = '959b4ea' ]] || [[ "$ZLIB_STASHED" = [yY] ]]; then

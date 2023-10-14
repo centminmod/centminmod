@@ -170,7 +170,9 @@ installopenssl
     fi
 
 luajitinstall
+{
 nginxzlib_install
+} 2>&1 | tee "${CENTMINLOGDIR}/nginx-install-zlib_${DT}.log"
 nginx_libuuid
 
     # Install nginx
