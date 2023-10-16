@@ -407,7 +407,7 @@ install_cfzlib() {
         # if [[ "$LAST_CFZLIB_COMMIT" = '47f1285' ]]; then
             # Workaround Oct 13, 2023 commited rebase changes
             # https://github.com/cloudflare/zlib/pull/46
-            git checkout d213e64378ec4c289429145ac0e5ee35d1214cd4
+            # git checkout d213e64378ec4c289429145ac0e5ee35d1214cd4
         # fi
         # CVE-2018-25032 patch
         # ls -lah CVE-2018-25032.patch
