@@ -177,7 +177,7 @@ echo "service nginx reload;service php-fpm reload" >/usr/bin/npreload ; chmod 70
 
 systemctl start nginx >/dev/null 2>&1
 systemctl enable nginx >/dev/null 2>&1
-systemctl status nginx >/dev/null 2>&1
+systemctl status nginx --no-pager >/dev/null 2>&1
 
 fi # CENTOS_EIGHT = 8 nginx systemd service file
 if [[ "$CENTOS_SEVEN" = '7' && -f /etc/systemd/system/nginx.service.d/failure-restart.conf && "$(grep -o Unit /etc/systemd/system/nginx.service.d/failure-restart.conf)" = 'Unit' ]]; then
@@ -204,7 +204,7 @@ if [[ "$CENTOS_NINE" = '9' || "$CENTOS_EIGHT" = '8' || "$CENTOS_SEVEN" = '7' ]] 
   
   systemctl start nginx >/dev/null 2>&1
   systemctl enable nginx >/dev/null 2>&1
-  systemctl status nginx >/dev/null 2>&1
+  systemctl status nginx --no-pager >/dev/null 2>&1
 elif [[ "$CENTOS_NINE" = '9' || "$CENTOS_EIGHT" = '8' || "$CENTOS_SEVEN" = '7' ]] && [[ ! -f /etc/init.d/nginx && "$SWITCH_NGINX_SYSTEMD" = [yY] && "$(systemctl is-enabled nginx)" = 'disabled' ]]; then
   systemctl enable nginx >/dev/null 2>&1
 fi

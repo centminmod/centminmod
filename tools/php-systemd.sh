@@ -296,7 +296,7 @@ fi
   echo "systemctl daemon-reload; systemctl restart php-fpm; echo \"Restarting php-fpm (via systemctl) [  OK  ]\"" >/usr/bin/fpmrestart ; chmod 700 /usr/bin/fpmrestart
   echo "systemctl daemon-reload; systemctl reload php-fpm; echo \"Reloading php-fpm (via systemctl) [  OK  ]\"" >/usr/bin/fpmreload ; chmod 700 /usr/bin/fpmreload
   rm -rf /usr/bin/fpmconfigtest
-  echo "systemctl daemon-reload; systemctl status php-fpm" >/usr/bin/fpmstatus ; chmod 700 /usr/bin/fpmstatus
+  echo "systemctl daemon-reload; systemctl status php-fpm --no-pager" >/usr/bin/fpmstatus ; chmod 700 /usr/bin/fpmstatus
   if [[ "$fpm_systemd" = 'yes' && "$CHECK_FPMSYSTEMD" = 'with-fpm-systemd' ]]; then
 cat > /usr/bin/fpmstats <<EOF
 systemctl daemon-reload;
@@ -338,8 +338,8 @@ EOF
   echo "systemctl enable php-fpm"
   systemctl enable php-fpm
   echo
-  echo "systemctl status php-fpm"
-  systemctl status php-fpm
+  echo "systemctl status php-fpm --no-pager"
+  systemctl status php-fpm --no-pager
   echo
   if [[ "$fpm_systemd" = 'yes' && "$CHECK_FPMSYSTEMD" = 'with-fpm-systemd' ]]; then
     echo "php-fpm systemd service setup"

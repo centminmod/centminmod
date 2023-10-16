@@ -91,7 +91,7 @@ postgresqlinstall() {
           /usr/pgsql-10/bin/postgresql-10-setup initdb
           systemctl enable postgresql-10
           systemctl start postgresql-10
-          systemctl status postgresql-10
+          systemctl status postgresql-10 --no-pager
         elif [[ "$CENTOS_SIX" = '6' ]]; then
           echo
           service postgresql-10 initdb
@@ -136,7 +136,7 @@ postgresqlinstall() {
           /usr/pgsql-11/bin/postgresql-11-setup initdb
           systemctl enable postgresql-11
           systemctl start postgresql-11
-          systemctl status postgresql-11
+          systemctl status postgresql-11 --no-pager
         elif [[ "$CENTOS_SIX" = '6' ]]; then
           echo
           service postgresql-11 initdb
@@ -181,7 +181,7 @@ postgresqlinstall() {
           /usr/pgsql-12/bin/postgresql-12-setup initdb
           systemctl enable postgresql-12
           systemctl start postgresql-12
-          systemctl status postgresql-12
+          systemctl status postgresql-12 --no-pager
         elif [[ "$CENTOS_SIX" = '6' ]]; then
           echo
           service postgresql-12 initdb
@@ -226,7 +226,7 @@ postgresqlinstall() {
           /usr/pgsql-13/bin/postgresql-13-setup initdb
           systemctl enable postgresql-13
           systemctl start postgresql-13
-          systemctl status postgresql-13
+          systemctl status postgresql-13 --no-pager
         elif [[ "$CENTOS_SIX" = '6' ]]; then
           echo
           service postgresql-13 initdb
@@ -294,19 +294,19 @@ postgresqlinstall() {
           /usr/pgsql-16/bin/postgresql-16-setup initdb
           systemctl enable postgresql-16
           systemctl start postgresql-16
-          systemctl status postgresql-16
+          systemctl status postgresql-16 --no-pager
         elif [[ "$CENTOS_EIGHT" = '8' ]]; then
           echo
           /usr/pgsql-16/bin/postgresql-16-setup initdb
           systemctl enable postgresql-16
           systemctl start postgresql-16
-          systemctl status postgresql-16
+          systemctl status postgresql-16 --no-pager
         elif [[ "$CENTOS_SEVEN" = '7' ]]; then
           echo
           /usr/pgsql-16/bin/postgresql-16-setup initdb
           systemctl enable postgresql-16
           systemctl start postgresql-16
-          systemctl status postgresql-16
+          systemctl status postgresql-16 --no-pager
         elif [[ "$CENTOS_SIX" = '6' ]]; then
           echo
           service postgresql-16 initdb

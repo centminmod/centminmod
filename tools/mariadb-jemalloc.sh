@@ -133,7 +133,7 @@ switch_malloc() {
   
         echo
         cecho "restarting MariaDB MySQL server for changes" $boldyellow
-        systemctl daemon-reload; systemctl restart mariadb; systemctl status mariadb
+        systemctl daemon-reload; systemctl restart mariadb; systemctl status mariadb --no-pager
   
         echo
         cecho "inspect MariaDB MySQL server version_malloc_library value after switch" $boldyellow
@@ -154,7 +154,7 @@ switch_malloc() {
       rm -f /etc/systemd/system/mariadb.service.d/jemalloc.conf
       echo
       cecho "restarting MariaDB MySQL server for changes" $boldyellow
-      systemctl daemon-reload; systemctl restart mariadb; systemctl status mariadb
+      systemctl daemon-reload; systemctl restart mariadb; systemctl status mariadb --no-pager
       echo
       cecho "inspect MariaDB MySQL server version_malloc_library value after switch" $boldyellow
       mysqladmin var | grep 'version_malloc_library' | tr -s ' '
@@ -196,7 +196,7 @@ numa_opt() {
 
       echo
       cecho "restarting MariaDB MySQL server for changes" $boldyellow
-      systemctl daemon-reload; systemctl restart mariadb; systemctl status mariadb
+      systemctl daemon-reload; systemctl restart mariadb; systemctl status mariadb --no-pager
     fi
   else
     echo

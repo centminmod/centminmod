@@ -100,7 +100,7 @@ journald_diskusage() {
 
 journald_status() {
   if [ -f /usr/lib/systemd/system/systemd-journald.service ]; then
-    systemctl status systemd-journald | sed -e "s|$(hostname)|hostname|g"
+    systemctl status systemd-journald --no-pager | sed -e "s|$(hostname)|hostname|g"
     journald_diskusage
   fi
 }

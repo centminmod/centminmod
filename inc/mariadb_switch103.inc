@@ -540,7 +540,7 @@ funct_logmysqlrotate
     systemctl restart mariadb
   fi
   systemctl enable mariadb
-  systemctl status mariadb
+  systemctl status mariadb --no-pager
 }
 
 mariabackup_backup() {
@@ -598,7 +598,7 @@ mariabackup_restore() {
     time mariabackup --copy-back --target-dir="${mariabackup_destination_dir}"
     chown -R mysql:mysql "$MARIABACKUP_DATADIR"
     systemctl start mariadb
-    systemctl status mariadb
+    systemctl status mariadb --no-pager
     systemctl enable mariadb
     mysql_upgrade
     echo
@@ -634,7 +634,7 @@ mariabackup_restore_native() {
     time mariabackup --copy-back --target-dir="${mariabackup_destination_dir}"
     chown -R mysql:mysql "$MARIABACKUP_DATADIR"
     systemctl start mariadb
-    systemctl status mariadb
+    systemctl status mariadb --no-pager
     systemctl enable mariadb
     mysql_upgrade
     echo

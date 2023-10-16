@@ -357,7 +357,7 @@ systemctl daemon-reload
 systemctl start docker
 systemctl enable docker
 echo
-systemctl status docker
+systemctl status docker --no-pager
 echo
 journalctl -u docker --no-pager
 echo
