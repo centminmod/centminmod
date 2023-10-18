@@ -1423,9 +1423,22 @@ TDG
   systemctl daemon-reload
 fi
 
+if [[ "$CENTOS_NINE" = '9' || "$CENTOS_EIGHT" = '8' || "$CENTOS_SEVEN" = '7' ]] && [[ ! -f /etc/systemd/system/mariadb.service.d/oomscoreadjust.conf && -d /etc/systemd/system/mariadb.service.d/ ]]; then
+    echo "Initial Install: Update MariaDB 10 setting for OOMScoreAdjust=-1000"
+cat > "/etc/systemd/system/mariadb.service.d/oomscoreadjust.conf" <<TDG
+[Service]
+OOMScoreAdjust=-1000
+TDG
+  systemctl daemon-reload
+fi
+
 mysqltmpdir
 
 cmservice mysql restart
+
+echo
+systemctl show mariadb --no-pager | egrep 'LimitNOFILE|NotifyAccess|OOM'
+echo
 if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_EIGHT" = '8' || "$CENTOS_NINE" = '9' ]] ; then
     cmchkconfig mariadb on
 else

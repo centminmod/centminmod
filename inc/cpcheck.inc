@@ -1724,6 +1724,18 @@ TDG
   fi
 }
 
+mariadb_oomfix() {
+  if [[ "$CENTOS_SEVEN" -eq '7' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]] && [[ ! -f /etc/systemd/system/mariadb.service.d/oomscoreadjust.conf && -d /etc/systemd/system/mariadb.service.d/ ]]; then
+    echo "Update MariaDB 10 setting for OOMScoreAdjust=-1000"
+cat > "/etc/systemd/system/mariadb.service.d/oomscoreadjust.conf" <<TDG
+[Service]
+OOMScoreAdjust=-1000
+TDG
+  systemctl daemon-reload
+  systemctl restart mysql
+  fi
+}
+
 fixlibmysqlclient_symlink() {
   if [ "$(uname -m)" == 'x86_64' ]; then
     FIXMDB_LIBDIR='lib64'
@@ -3584,6 +3596,7 @@ if [[ "$INITIALINSTALL" != [yY] ]]; then
   setup_pwdh
   c7mariadb_tmpdir
   mariadb_openfilesfix
+  mariadb_oomfix
   mariadb_errorlogfix
   yumfastmirror_check
   axelcheck
