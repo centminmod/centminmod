@@ -2667,6 +2667,31 @@ elif [[ "$INITIALINSTALL" != [yY] ]]; then
   PHPXPMOPT="--with-xpm-dir=${PLIBDIR}"
 fi
 
+if [[ "$PHPMVER" = '7.4' || "$PHPMUVER" = '7.4' || "$PHPMVER" = '8.0' || "$PHPMUVER" = '8.0' || "$PHPMVER" = '8.1' || "$PHPMUVER" = '8.1' || "$PHPMVER" = '8.2' || "$PHPMUVER" = '8.2' || "$PHPMVER" = '8.3' || "$PHPMUVER" = '8.3' || "$PHPVER_ID" -ge '80000' ]]; then
+  # ensure libpng-devel paths are found by PHP 7.4+
+  if [ -f /usr/bin/libpng-config ]; then
+    PHP_PNG_SUFFIX=$(/usr/bin/libpng-config --libs)
+    echo
+    echo "set PNG_CFLAGS and PNG_LIBS"
+    echo "export PNG_CFLAGS='-I/usr/include'"
+    export PNG_CFLAGS='-I/usr/include'
+    echo "export PNG_LIBS='-L/usr/lib64 ${PHP_PNG_SUFFIX}'"
+    export PNG_LIBS="-L/usr/lib64 ${PHP_PNG_SUFFIX}"
+    echo
+    ls -lAhrt /usr/include | grep -i png
+    echo
+    ls -lAhrt /usr/lib64 | grep -i png
+    echo
+  else
+    echo
+    echo "error: /usr/bin/libpng-config not found"
+    echo "libpng-devel not installed"
+    echo
+    yum -y install libpng libpng-devel
+    echo
+  fi
+fi
+
 php_pcrejit_stacksize
 pgo_version_edit
 echo
