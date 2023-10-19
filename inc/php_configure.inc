@@ -2963,6 +2963,9 @@ sar_call
         echo
     fi
   fi
+  if [ -f config.log ]; then
+    gzip -c config.log > "${CENTMINLOGDIR}/php-compile-config-${DT}.log.gz"
+  fi
 
 if [[ "$CLANG_PHP" = [yY] ]]; then
     unset CC
