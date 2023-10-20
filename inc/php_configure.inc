@@ -2728,6 +2728,15 @@ else
   PHPCONFIGURE_ERR=$?
 fi
 sar_call
+
+if [[ "$PHP_PGO" = [yY] ]]; then
+  if [ -d /opt/php-pgo-data ]; then
+    # clear old PGO profiling data first
+    rm -rf /opt/php-pgo-data
+  fi
+  sed -i 's|PROF_FLAGS=-fprofile-generate|PROF_FLAGS="-fprofile-generate=/opt/php-pgo-data -fprofile-dir=/opt/php-pgo-data"|' Makefile
+  sed -i 's|PROF_FLAGS=-fprofile-use|PROF_FLAGS="-fprofile-use=/opt/php-pgo-data -fprofile-dir=/opt/php-pgo-data -fprofile-correction"|' Makefile
+fi
   # only initial install needs to run make, make install
   # via funct_phpconfigure function otherwise upgrade php
   # routines do make, make install via inc/php_upgrade.inc
