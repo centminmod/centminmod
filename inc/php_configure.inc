@@ -107,6 +107,7 @@ php_pcrejit_stacksize() {
 }
 
 pgophpbench() {
+  # https://openbenchmarking.org/test/pts/phpbench-1.1.1
   echo
   echo "PGO phpbench setup start"
   rm -rf "${DIR_TMP}/phpbench"
@@ -115,7 +116,7 @@ pgophpbench() {
   wget${ipv_forceopt_wget} -O /opt/phpbench/detailed_benchmark.php https://github.com/centminmod/centminmod-php71/raw/master/scripts/detailed_benchmark.php
   pushd "${DIR_TMP}/phpbench"
   unzip phpbench-0.8.1.zip
-  \cp -af tests /opt/phpbench/tests
+  # \cp -af tests /opt/phpbench/tests
   popd
   echo "PGO phpbench setup end"
   echo
@@ -658,6 +659,12 @@ if [[ ! -f /usr/include/readline/readline.h || ! -f /usr/include/editline/readli
     time yum${CACHESKIP} -q -y install readline-devel libedit-devel --disablerepo=epel
     sar_call
   fi
+fi
+
+# xxhash-devel
+if [ ! -f /usr/include/xxhash.h ]; then
+  time yum${CACHESKIP} -y install xxhash xxhash-devel
+  sar_call
 fi
 
 # Microsoft SQL Server PHP driver support
