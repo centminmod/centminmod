@@ -4459,8 +4459,8 @@ echo
 echo "gcc -c -Q -march=native${NGXEXTRA_CCOPT} --help=target | egrep '\-mtune|\-mprefer-vector-width|\-march|\-msse|\-msse2|\-msse2avx|\-msse3|\-mavx|\-msse4|\-mssse3|\-mpclmul' | tee ${CENTMINLOGDIR}/gcc_native.log"
 gcc -c -Q -march=native${NGXEXTRA_CCOPT} --help=target | egrep '\-mtune|\-mprefer-vector-width|\-march|\-msse|\-msse2|\-msse2avx|\-msse3|\-mavx|\-msse4|\-mssse3|\-mpclmul' | tee ${CENTMINLOGDIR}/gcc_native.log
 echo
-echo "gcc -c -Q -march=x86-64${NGXEXTRA_CCOPT} --help=target | egrep '\-mtune|\-mprefer-vector-width|\-march|\-msse|\-msse2|\-msse2avx|\-msse3|\-mavx|\-msse4|\-mssse3|\-mpclmul' | tee ${CENTMINLOGDIR}/gcc_x86-64.log"
-gcc -c -Q -march=x86-64${NGXEXTRA_CCOPT} --help=target | egrep '\-mtune|\-mprefer-vector-width|\-march|\-msse|\-msse2|\-msse2avx|\-msse3|\-mavx|\-msse4|\-mssse3|\-mpclmul' | tee ${CENTMINLOGDIR}/gcc_x86-64.log
+echo "gcc -c -Q -march=${march_flag}${NGXEXTRA_CCOPT} --help=target | egrep '\-mtune|\-mprefer-vector-width|\-march|\-msse|\-msse2|\-msse2avx|\-msse3|\-mavx|\-msse4|\-mssse3|\-mpclmul' | tee ${CENTMINLOGDIR}/gcc_x86-64.log"
+gcc -c -Q -march=${march_flag}${NGXEXTRA_CCOPT} --help=target | egrep '\-mtune|\-mprefer-vector-width|\-march|\-msse|\-msse2|\-msse2avx|\-msse3|\-mavx|\-msse4|\-mssse3|\-mpclmul' | tee ${CENTMINLOGDIR}/gcc_x86-64.log
 echo
 diff -y --suppress-common-lines ${CENTMINLOGDIR}/gcc_native.log ${CENTMINLOGDIR}/gcc_x86-64.log | tee ${CENTMINLOGDIR}/gcc_diff_native-vs-x86-64.log
 echo
@@ -4473,8 +4473,8 @@ egrep '\-march=|\-mtune|\-mavx|\-msse4|\-mpclmul' ${CENTMINLOGDIR}/gcc_diff_nati
   else
     GCC_NONNATIVEFLAGS=" $(egrep '\-march=|\-mtune|\-mavx|\-msse4|\-mpclmul' ${CENTMINLOGDIR}/gcc_native.log | egrep -v 'march|mtune|avx512' | grep enabled | sed -e 's|\[||g' -e 's|\]||g' -e 's|enabled||g'| xargs)"
     echo
-    echo "gcc -c -Q -march=x86-64${GCC_NONNATIVEFLAGS}${NGXEXTRA_CCOPT} --help=target | egrep '\-mtune|\-mprefer-vector-width|\-march|\-msse|\-msse2|\-msse2avx|\-msse3|\-mavx|\-msse4|\-mssse3|\-mpclmul' | tee ${CENTMINLOGDIR}/gcc_x86-64-non-native.log"
-    gcc -c -Q -march=x86-64${GCC_NONNATIVEFLAGS}${NGXEXTRA_CCOPT} --help=target | egrep '\-mtune|\-mprefer-vector-width|\-march|\-msse|\-msse2|\-msse2avx|\-msse3|\-mavx|\-msse4|\-mssse3|\-mpclmul' | tee ${CENTMINLOGDIR}/gcc_x86-64-non-native.log
+    echo "gcc -c -Q -march=${march_flag}${GCC_NONNATIVEFLAGS}${NGXEXTRA_CCOPT} --help=target | egrep '\-mtune|\-mprefer-vector-width|\-march|\-msse|\-msse2|\-msse2avx|\-msse3|\-mavx|\-msse4|\-mssse3|\-mpclmul' | tee ${CENTMINLOGDIR}/gcc_x86-64-non-native.log"
+    gcc -c -Q -march=${march_flag}${GCC_NONNATIVEFLAGS}${NGXEXTRA_CCOPT} --help=target | egrep '\-mtune|\-mprefer-vector-width|\-march|\-msse|\-msse2|\-msse2avx|\-msse3|\-mavx|\-msse4|\-mssse3|\-mpclmul' | tee ${CENTMINLOGDIR}/gcc_x86-64-non-native.log
   fi
   echo
   echo "GCC_NONNATIVEFLAGS=$GCC_NONNATIVEFLAGS"

@@ -29,7 +29,7 @@ DT=$(date +"%d%m%y-%H%M%S")
 branchname='130.00beta01'
 SCRIPT_MAJORVER='130'
 SCRIPT_MINORVER='00'
-SCRIPT_INCREMENTVER='417'
+SCRIPT_INCREMENTVER='418'
 SCRIPT_VERSIONSHORT="${branchname}"
 SCRIPT_VERSION="${SCRIPT_VERSIONSHORT}.b${SCRIPT_INCREMENTVER}"
 SCRIPT_DATE='31/01/23'
@@ -1613,6 +1613,27 @@ if [ -f "${CONFIGSCANBASE}/custom_config.inc" ]; then
     OPENSSL_LINK="https://www.openssl.org/source/${OPENSSL_LINKFILE}"
   fi
 fi
+
+# Determine the -march flag based on the CPU flags
+cpu_flags=$(grep -m1 -o -e 'avx512f' -e 'avx2' -e 'avx' /proc/cpuinfo | tr '\n' ' ')
+
+# Determine the -march flag based on the CPU flags
+if [[ "$DEVTOOLSETELEVEN" = [yY] || "$DEVTOOLSETTWELVE" = [yY] ]]; then
+  if [[ $cpu_flags == *'avx512f'* ]]; then
+    march_flag='x86-64-v4'
+  elif [[ $cpu_flags == *'avx2'* ]]; then
+    march_flag='x86-64-v3'
+  elif [[ $cpu_flags == *'sse4.1'* ]] || [[ $cpu_flags == *'sse4.2'* ]] || [[ $cpu_flags == *'ssse3'* ]]; then
+    march_flag='x86-64-v2'
+  else
+    march_flag='x86-64'
+  fi
+else
+  march_flag='x86-64'
+fi
+#echo
+#echo "march_flag=$march_flag"
+#echo
 
 if [[ "$CENTOS_NINE" -eq '9' ]]; then
   # el9 OSes will default to MariaDB 10.6 LTS releases
