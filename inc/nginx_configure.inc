@@ -1123,10 +1123,36 @@ if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9'
           OPENSSLOPT=" --with-openssl=../$OPENSSLDIR"
           OPENSSLOPT_B=" --with-openssl-opt=enable-tls1_3"
         fi
+      elif [[ "$DETECTOPENSSL_THREEZERO" = '3.0' && "$ORESTY_LUANGINX" != [yY] ]] || [[ "$DETECTOPENSSL_THREEZERO" = '3.0' && "$ORESTY_LUANGINX" = [yY] ]]; then
+        echo 2c
+        if [[ "$(uname -m)" = 'x86_64' ]]; then
+          if [[ "$ECNISTP_CHECK" && ! -d "${DIR_TMP}/${OPENSSL_QUIC_DIR}" ]]; then
+            OPENSSLOPT=" --with-openssl=../$OPENSSLDIR --with-openssl-opt='enable-ec_nistp_64_gcc_128'"
+          else
+            OPENSSLOPT=" --with-openssl=../$OPENSSLDIR"
+          fi
+          TLSTHREEOPT='y'
+        else
+          OPENSSLOPT=" --with-openssl=../$OPENSSLDIR"
+          OPENSSLOPT_B=" --with-openssl-opt=enable-tls1_3"
+        fi
+      elif [[ "$DETECTOPENSSL_THREEONE" = '3.1' && "$ORESTY_LUANGINX" != [yY] ]] || [[ "$DETECTOPENSSL_THREEONE" = '3.1' && "$ORESTY_LUANGINX" = [yY] ]]; then
+        echo 2d
+        if [[ "$(uname -m)" = 'x86_64' ]]; then
+          if [[ "$ECNISTP_CHECK" && ! -d "${DIR_TMP}/${OPENSSL_QUIC_DIR}" ]]; then
+            OPENSSLOPT=" --with-openssl=../$OPENSSLDIR --with-openssl-opt='enable-ec_nistp_64_gcc_128'"
+          else
+            OPENSSLOPT=" --with-openssl=../$OPENSSLDIR"
+          fi
+          TLSTHREEOPT='y'
+        else
+          OPENSSLOPT=" --with-openssl=../$OPENSSLDIR"
+          OPENSSLOPT_B=" --with-openssl-opt=enable-tls1_3"
+        fi
       elif [[ "$NGINX_KTLS" = [yY] && "$KERNEL_NUMERICVER" -ge '5002000000' && "$DETECTOPENSSL_THREEZERO" = '3.0' ]]; then
         OPENSSLOPT=" --with-openssl=../$OPENSSLDIR --with-openssl-opt='${NGINX_KTLS_OPT_ALT}'"
       else
-        echo 2c
+        echo 2e
         export STATICLIBSSL="${OPENSSL_CUSTOMPATH}"
         if [[ "$(uname -m)" = 'x86_64' ]]; then
           if [[ "$ECNISTP_CHECK" && ! -d "${DIR_TMP}/${OPENSSL_QUIC_DIR}" ]]; then
@@ -4684,6 +4710,24 @@ if [[ "$(gcc --version | head -n1 | awk '{print $3}' | cut -d . -f1-3 | sed "s|\
         echo "NGINXOPENSSL_NOFATLTO_OBJECTS=$NGINXOPENSSL_NOFATLTO_OBJECTS"
         echo "OPENSSL_VERION=$OPENSSL_VERSION"
       elif [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]] && [[ "$NGINXOPENSSL_FATLTO_OBJECTS" != [yY] && "$NGX_LDGOLD" = [yY] && "$DETECT_NGXVER" -ge '1015005' && "$(echo $OPENSSL_VERSION | grep -o '1.1.1')" = '1.1.1' ]]; then
+        NGINX_OPENSSLOPT_EXTRAS=" -fuse-ld=gold"
+        echo "NGINX_OPENSSLOPT_EXTRAS=$NGINX_OPENSSLOPT_EXTRAS"
+        echo "NGINXOPENSSL_FATLTO_OBJECTS=$NGINXOPENSSL_FATLTO_OBJECTS"
+        echo "NGINXOPENSSL_NOFATLTO_OBJECTS=$NGINXOPENSSL_NOFATLTO_OBJECTS"
+        echo "OPENSSL_VERION=$OPENSSL_VERSION"
+      elif [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]] && [[ "$NGINXOPENSSL_FATLTO_OBJECTS" != [yY] && "$NGX_LDGOLD" = [yY] && "$DETECT_NGXVER" -ge '1015005' && "$(echo $OPENSSL_VERSION | grep -o '3.0')" = '3.0' ]]; then
+        NGINX_OPENSSLOPT_EXTRAS=" -fuse-ld=gold"
+        echo "NGINX_OPENSSLOPT_EXTRAS=$NGINX_OPENSSLOPT_EXTRAS"
+        echo "NGINXOPENSSL_FATLTO_OBJECTS=$NGINXOPENSSL_FATLTO_OBJECTS"
+        echo "NGINXOPENSSL_NOFATLTO_OBJECTS=$NGINXOPENSSL_NOFATLTO_OBJECTS"
+        echo "OPENSSL_VERION=$OPENSSL_VERSION"
+      elif [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]] && [[ "$NGINXOPENSSL_FATLTO_OBJECTS" != [yY] && "$NGX_LDGOLD" = [yY] && "$DETECT_NGXVER" -ge '1015005' && "$(echo $OPENSSL_VERSION | grep -o '3.1')" = '3.1' ]]; then
+        NGINX_OPENSSLOPT_EXTRAS=" -fuse-ld=gold"
+        echo "NGINX_OPENSSLOPT_EXTRAS=$NGINX_OPENSSLOPT_EXTRAS"
+        echo "NGINXOPENSSL_FATLTO_OBJECTS=$NGINXOPENSSL_FATLTO_OBJECTS"
+        echo "NGINXOPENSSL_NOFATLTO_OBJECTS=$NGINXOPENSSL_NOFATLTO_OBJECTS"
+        echo "OPENSSL_VERION=$OPENSSL_VERSION"
+      elif [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]] && [[ "$NGINXOPENSSL_FATLTO_OBJECTS" != [yY] && "$NGX_LDGOLD" = [yY] && "$DETECT_NGXVER" -ge '1015005' && "$(echo $OPENSSL_VERSION | grep -o '3.2')" = '3.2' ]]; then
         NGINX_OPENSSLOPT_EXTRAS=" -fuse-ld=gold"
         echo "NGINX_OPENSSLOPT_EXTRAS=$NGINX_OPENSSLOPT_EXTRAS"
         echo "NGINXOPENSSL_FATLTO_OBJECTS=$NGINXOPENSSL_FATLTO_OBJECTS"
