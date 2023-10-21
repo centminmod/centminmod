@@ -81,14 +81,21 @@ case "$mmoption" in
 
 centminlog
 {
-STOPMYSQL='n'
+STOPMYSQL='y'
+CHECK_FOR_MARIADB_TENFOUR_ABOVE=$(rpm -qa | grep -i -E '^MariaDB-server-|^mariadb-server-' | grep -v 'server-utils' | head -n1 | awk -F- '{print $3}' | cut -d . -f1,2)
 echo
 if [[ "$STOPMYSQL" = [yY] ]]; then
-  cecho "This routine will regenerate a new MySQL root user password &" $boldyellow
+  cecho "You may want to schedule the password reset at a off peak site time" $boldyellow
+  echo
+  cecho "When you answer no to - Do you know the existing MySQL root password question," $boldyellow
+  cecho "this routine will regenerate a new MySQL root user password &" $boldyellow
   cecho "properly update the /root/.my.cnf file as well. To do this MySQL" $boldyellow
   cecho "server needs to be temporarily shutdown and restarted. To prevent" $boldyellow
   cecho "visitor shown errors, this routine will also temp shutdown Nginx." $boldyellow
   cecho "So you will want to do this at a off peak site/server time ideally." $boldyellow
+  echo
+  cecho "When you answer yes to - Do you know the existing MySQL root password question," $boldyellow
+  cecho "this routine will not need to shutdown MariaDB MySQL & Nginx server" $boldyellow
 else
   cecho "This routine will reset the MySQL root user password" $boldyellow
   cecho "and properly update the /root/.my.cnf file as well." $boldyellow
@@ -97,71 +104,158 @@ echo
 cecho "This routine is only for local MariaDB MySQL servers not remote ones" $boldyellow
 echo
 read -ep "Do you want to continue? [y/n]: " mysqlroot_reset
+read -ep "Do you know the existing MySQL root password set in /root/.my.cnf? [y/n]: " mysqlroot_known
 echo
 if [[ "$mysqlroot_reset" = [yY] ]]; then
   echo "Process begins in 10 seconds..."
   echo
-  if [ -f /root/.my.cnf ]; then
+  if [[ "$mysqlroot_known" = [yY] && -f /root/.my.cnf ]]; then
+    STOPMYSQL=n
     echo "Previous MySQL root password:"
     echo
     cat /root/.my.cnf
     echo
     OLDMYSQLROOTPASS=$(awk -F '=' '/password/ {print $2}' /root/.my.cnf)
   else
-    echo "/root/.my.cnf does not exist"
-    echo "can not continue as this routine uses /root/.my.cnf"
-    echo
-    exit
+    # echo "/root/.my.cnf does not exist"
+    # echo "can not continue as this routine uses /root/.my.cnf"
+    # echo
+    # exit
+    echo "Proceeding with root password reset without known password"
   fi
-  if [[ "$STOPMYSQL" = [yY] && "$CENTOS_SEVEN" = '7' ]]; then
-    mysqladmin flush-tables >/dev/null 2>&1
-    sleep 10
+  if [[ "$STOPMYSQL" = [yY] ]] && [[ "$CENTOS_NINE" = '9' ]]; then
+    # mysqladmin flush-tables >/dev/null 2>&1
+    # sleep 10
     service nginx stop
-    service mariadb stop
-    mysqld --skip-grant-tables --skip-networking --user=mysql &
-    mysql -e "FLUSH PRIVILEGES;"
-  elif [[ "$STOPMYSQL" = [yY] && "$CENTOS_SIX" = '6' ]]; then
-    mysqladmin flush-tables >/dev/null 2>&1
+    systemctl stop mariadb
+    mysqld_safe --skip-grant-tables > /dev/null 2>&1 &
     sleep 10
+    # mysql -e "FLUSH PRIVILEGES;"
+  elif [[ "$STOPMYSQL" = [yY] ]] && [[ "$CENTOS_EIGHT" = '8' ]]; then
+    # mysqladmin flush-tables >/dev/null 2>&1
+    # sleep 10
+    service nginx stop
+    systemctl stop mariadb
+    mysqld_safe --skip-grant-tables > /dev/null 2>&1 &
+    sleep 10
+    # mysql -e "FLUSH PRIVILEGES;"
+  elif [[ "$STOPMYSQL" = [yY] && "$CENTOS_SEVEN" = '7' ]]; then
+    # mysqladmin flush-tables >/dev/null 2>&1
+    # sleep 10
+    service nginx stop
+    systemctl stop mariadb
+    mysqld_safe --skip-grant-tables > /dev/null 2>&1 &
+    sleep 10
+    # mysql -e "FLUSH PRIVILEGES;"
+  elif [[ "$STOPMYSQL" = [yY] && "$CENTOS_SIX" = '6' ]]; then
+    # mysqladmin flush-tables >/dev/null 2>&1
+    # sleep 10
     service nginx stop
     service mysql stop
-    mysqld --skip-grant-tables --skip-networking --user=mysql &
-    mysql -e "FLUSH PRIVILEGES;"
+    mysqld --skip-grant-tables --skip-networking --user=mysql > /dev/null 2>&1 &
+    sleep 10
+    # mysql -e "FLUSH PRIVILEGES;"
   fi
-  NEWMYSQLROOTPASS=$(/usr/bin/openssl rand -base64 24 | tr -dc 'a-zA-Z0-9')
-  echo "mysqladmin -u root -p${OLDMYSQLROOTPASS} password $NEWMYSQLROOTPASS"
-  mysqladmin -u root -p${OLDMYSQLROOTPASS} password $NEWMYSQLROOTPASS
+  NEWMYSQLROOTPASS=$(/usr/bin/openssl rand -base64 27 | tr -dc 'a-zA-Z0-9')
+  if [[ "$mysqlroot_known" = [yY] && -f /root/.my.cnf ]]; then
+    echo "mysqladmin -u root -p${OLDMYSQLROOTPASS} password $NEWMYSQLROOTPASS"
+    mysqladmin -u root -p${OLDMYSQLROOTPASS} password $NEWMYSQLROOTPASS
+  else
+    rm -rf /root/.my.cnf
+    if [[ "$CHECK_FOR_MARIADB_TENFOUR_ABOVE" = '10.2' || "$CHECK_FOR_MARIADB_TENFOUR_ABOVE" = '10.3' || "$CHECK_FOR_MARIADB_TENFOUR_ABOVE" = '10.4' || "$CHECK_FOR_MARIADB_TENFOUR_ABOVE" = '10.5' || "$CHECK_FOR_MARIADB_TENFOUR_ABOVE" = '10.6' ]]; then
+      # echo "mysql -u root -e \"FLUSH PRIVILEGES; ALTER USER root@localhost IDENTIFIED BY mysql_native_password USING PASSWORD('$NEWMYSQLROOTPASS');FLUSH PRIVILEGES;\""
+      # mysql -u root -e "FLUSH PRIVILEGES; ALTER USER root@localhost IDENTIFIED BY mysql_native_password USING PASSWORD('$NEWMYSQLROOTPASS');FLUSH PRIVILEGES;"
+      echo "mysql -u root -B -N -e \"FLUSH PRIVILEGES; ALTER USER 'root'@'localhost' IDENTIFIED BY '${NEWMYSQLROOTPASS}'; FLUSH PRIVILEGES;\""
+      mysql -u root -B -N -e "FLUSH PRIVILEGES; ALTER USER 'root'@'localhost' IDENTIFIED BY '${NEWMYSQLROOTPASS}'; FLUSH PRIVILEGES;"
+    else
+      sleep 5
+      # echo "mysql -e \"select user, host, password, plugin, authentication_string from mysql.user where user='root';\""
+      # mysql -e "select user, host, password, plugin, authentication_string from mysql.user where user='root';"
+
+      # echo "mysql -u root -B -N -e \"FLUSH PRIVILEGES; ALTER USER 'root'@'localhost' IDENTIFIED BY '${NEWMYSQLROOTPASS}'; FLUSH PRIVILEGES;\""
+      # mysql -u root -B -N -e "FLUSH PRIVILEGES; ALTER USER 'root'@'localhost' IDENTIFIED BY '${NEWMYSQLROOTPASS}'; FLUSH PRIVILEGES;"
+
+      echo "mysql -u root -e \"UPDATE mysql.user SET Password = PASSWORD('$NEWMYSQLROOTPASS') WHERE User = 'root'; FLUSH PRIVILEGES;\""
+      mysql -u root -e "UPDATE mysql.user SET Password = PASSWORD('$NEWMYSQLROOTPASS') WHERE User = 'root'; FLUSH PRIVILEGES;"
+    fi
+  fi
+  if [[ $? -ne 0 ]]; then
+    echo "Error: Failed to reset MySQL root password."
+    # exit 1
+  fi
   echo
   echo "New MySQL root user password: $NEWMYSQLROOTPASS"
   echo
-  if [[ "$STOPMYSQL" = [yY] && "$CENTOS_SEVEN" = '7' ]]; then
-    mysqladmin -u root -p${NEWMYSQLROOTPASS} flush-tables >/dev/null 2>&1
+  if [[ "$STOPMYSQL" = [yY] ]] && [[ "$CENTOS_NINE" = '9' ]]; then
+    # mysqladmin -u root -p${NEWMYSQLROOTPASS} flush-tables >/dev/null 2>&1
     sleep 3
-    MYSQL_PID=$(pidof mysqld)
-    kill -9 $MYSQL_PID >/dev/null 2>&1
+    # MYSQL_PID=$(pidof mysqld)
+    # kill -9 $MYSQL_PID >/dev/null 2>&1
+    killall -9 mysqld_safe >/dev/null 2>&1
+    killall -9 mysqld >/dev/null 2>&1
+    sleep 10
+  elif [[ "$STOPMYSQL" = [yY] ]] && [[ "$CENTOS_EIGHT" = '8' ]]; then
+    # mysqladmin -u root -p${NEWMYSQLROOTPASS} flush-tables >/dev/null 2>&1
+    sleep 3
+    # MYSQL_PID=$(pidof mysqld)
+    # kill -9 $MYSQL_PID >/dev/null 2>&1
+    killall -9 mysqld_safe >/dev/null 2>&1
+    killall -9 mysqld >/dev/null 2>&1
+    sleep 10
+  elif [[ "$STOPMYSQL" = [yY] && "$CENTOS_SEVEN" = '7' ]]; then
+    # mysqladmin -u root -p${NEWMYSQLROOTPASS} flush-tables >/dev/null 2>&1
+    sleep 3
+    # MYSQL_PID=$(pidof mysqld)
+    # kill -9 $MYSQL_PID >/dev/null 2>&1
+    killall -9 mysqld_safe >/dev/null 2>&1
+    killall -9 mysqld >/dev/null 2>&1
+    sleep 10
   elif [[ "$STOPMYSQL" = [yY] && "$CENTOS_SIX" = '6' ]]; then
-    mysqladmin -u root -p${NEWMYSQLROOTPASS} flush-tables >/dev/null 2>&1
+    # mysqladmin -u root -p${NEWMYSQLROOTPASS} flush-tables >/dev/null 2>&1
     sleep 3
-    MYSQL_PID=$(pidof mysqld)
-    kill -9 $MYSQL_PID >/dev/null 2>&1
+    # MYSQL_PID=$(pidof mysqld)
+    # kill -9 $MYSQL_PID >/dev/null 2>&1
+    killall -9 mysqld_safe >/dev/null 2>&1
+    killall -9 mysqld >/dev/null 2>&1
+    sleep 10
   fi
-  if [[ "$STOPMYSQL" = [yY] && "$CENTOS_SEVEN" = '7' ]]; then
-    service mariadb start
+  if [[ "$STOPMYSQL" = [yY] ]] && [[ "$CENTOS_EIGHT" = '8' || "$CENTOS_NINE" = '9' ]]; then
+    echo "systemctl start mariadb"
+    systemctl start mariadb
+    echo "service nginx start"
+    service nginx start
+  elif [[ "$STOPMYSQL" = [yY] && "$CENTOS_SEVEN" = '7' ]]; then
+    echo "systemctl start mariadb"
+    systemctl start mariadb
+    echo "service nginx start"
     service nginx start
   elif [[ "$STOPMYSQL" = [yY] && "$CENTOS_SIX" = '6' ]]; then
+    echo "service mysql start"
     service mysql start
+    echo "service nginx start"
     service nginx start
   fi
+  # if [[ "$CHECK_FOR_MARIADB_TENFOUR_ABOVE" = '10.3' || "$CHECK_FOR_MARIADB_TENFOUR_ABOVE" = '10.2' || "$CHECK_FOR_MARIADB_TENFOUR_ABOVE" = '10.1' || "$CHECK_FOR_MARIADB_TENFOUR_ABOVE" = '10.0' ]]; then
+  #     sleep 5
+  #     echo "mysql -u root -p${NEWMYSQLROOTPASS} -e \"SET PASSWORD FOR 'root'@'localhost' = PASSWORD('$NEWMYSQLROOTPASS'); FLUSH PRIVILEGES;\""
+  #     mysql -u root -p${NEWMYSQLROOTPASS} -e "SET PASSWORD FOR 'root'@'localhost' = PASSWORD('$NEWMYSQLROOTPASS'); FLUSH PRIVILEGES;"
+  # fi
   if [[ "$STOPMYSQL" = [yY] && "$?" = '0' ]]; then
     echo "MySQL root user password updated: $NEWMYSQLROOTPASS"
     echo
   fi
-  if [ -f /root/.my.cnf ]; then
+  if [[ "$mysqlroot_known" = [yY] && -f /root/.my.cnf ]]; then
     sed -i "s|password=.*|password=$NEWMYSQLROOTPASS|" /root/.my.cnf
     echo "/root/.my.cnf updated"
     echo
     cat /root/.my.cnf
     echo
+  else
+cat > /root/.my.cnf <<EOF
+[client]
+user=root
+password=${NEWMYSQLROOTPASS}
+EOF
   fi
 else
   echo "aborting routine..."
