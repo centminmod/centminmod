@@ -561,6 +561,7 @@ mkdir "$DIR_TMP"
 fi
 
 funct_mktempfile
+perl_ipc_cmd_install
 
 # only run for CentOS 6.x
 if [[ "$CENTOS_SIX" = '6' ]]; then

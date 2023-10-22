@@ -162,7 +162,7 @@ fi
 install_gperftools
 
 pcredir_check
-
+perl_ipc_cmd_install
 installopenssl
 
     if [ -f "$(which figlet)" ]; then
