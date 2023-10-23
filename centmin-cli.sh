@@ -29,7 +29,7 @@ DT=$(date +"%d%m%y-%H%M%S")
 branchname='130.00beta01'
 SCRIPT_MAJORVER='130'
 SCRIPT_MINORVER='00'
-SCRIPT_INCREMENTVER='424'
+SCRIPT_INCREMENTVER='425'
 SCRIPT_VERSIONSHORT="${branchname}"
 SCRIPT_VERSION="${SCRIPT_VERSIONSHORT}.b${SCRIPT_INCREMENTVER}"
 SCRIPT_DATE='31/01/23'
@@ -1616,10 +1616,17 @@ fi
 
 # Determine the -march flag based on the CPU flags
 cpu_flags=$(grep -m1 -o -e 'avx512f' -e 'avx2' -e 'avx' /proc/cpuinfo | tr '\n' ' ')
+if [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]]; then
+  check_cflags=$(/lib64/ld-linux-x86-64.so.2 --help | grep supported | awk '/x86-64/ {print $1}' | head -n1 | egrep 'x86-64')
+else
+  check_cflags=''
+fi
 
 # Determine the -march flag based on the CPU flags
 if [[ "$DEVTOOLSETELEVEN" = [yY] || "$DEVTOOLSETTWELVE" = [yY] ]]; then
-  if [[ $cpu_flags == *'avx512f'* ]]; then
+  if [[ $check_cflags == *'x86-64'* ]]; then
+    march_flag="$check_cflags"
+  elif [[ $cpu_flags == *'avx512f'* ]]; then
     march_flag='x86-64-v4'
   elif [[ $cpu_flags == *'avx2'* ]]; then
     march_flag='x86-64-v3'
