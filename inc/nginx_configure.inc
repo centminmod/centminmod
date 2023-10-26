@@ -6,6 +6,10 @@ nginx_deprecate_httptwo_param() {
           egrep -n 'listen .*http2' $v;
           echo "---";
           sed -i 's|listen 443 ssl http2;|listen 443 ssl;\n  http2 on;|g' $v;
+          # for ipv6
+          sed -i 's|listen\s*\[::\]:443\s*ssl\s*http2;|listen [::]:443 ssl;|g' $v;
+          # for reuseport listener
+          sed -i 's|listen 443 ssl http2 reuseport;|listen 443 ssl reuseport;\n  http2 on;|g' $v;
           egrep -n 'listen 443 ssl|http2 on' $v;
       done
       echo
@@ -16,6 +20,10 @@ nginx_deprecate_httptwo_param() {
           egrep -n 'listen 443 ssl|http2 on' $v;
           echo "---";
           sed -i '/listen 443 ssl;/N; s|listen 443 ssl;\n  http2 on;|listen 443 ssl http2;|' $v;
+          # for reuseport listener
+          sed -i '/listen 443 ssl reuseport;/N; s|listen 443 ssl reuseport;\n  http2 on;|listen 443 ssl http2 reuseport;|' $v;
+          # for ipv6
+          sed -i 's|listen\s*\[::\]:443\s*ssl;|listen [::]:443 ssl http2;|g' $v;
           egrep -n 'listen .*http2' $v;
       done
       echo
@@ -30,6 +38,10 @@ nginx_deprecate_httptwo_param_fix() {
           egrep -n 'listen .*http2' $v;
           echo "---";
           sed -i 's|listen 443 ssl http2;|listen 443 ssl;\n  http2 on;|g' $v;
+          # for ipv6
+          sed -i 's|listen\s*\[::\]:443\s*ssl\s*http2;|listen [::]:443 ssl;|g' $v;
+          # for reuseport listener
+          sed -i 's|listen 443 ssl http2 reuseport;|listen 443 ssl reuseport;\n  http2 on;|g' $v;
           egrep -n 'listen 443 ssl|http2 on' $v;
       done
       echo
@@ -40,6 +52,10 @@ nginx_deprecate_httptwo_param_fix() {
           egrep -n 'listen 443 ssl|http2 on' $v;
           echo "---";
           sed -i '/listen 443 ssl;/N; s|listen 443 ssl;\n  http2 on;|listen 443 ssl http2;|' $v;
+          # for reuseport listener
+          sed -i '/listen 443 ssl reuseport;/N; s|listen 443 ssl reuseport;\n  http2 on;|listen 443 ssl http2 reuseport;|' $v;
+          # for ipv6
+          sed -i 's|listen\s*\[::\]:443\s*ssl;|listen [::]:443 ssl http2;|g' $v;
           egrep -n 'listen .*http2' $v;
       done
       echo
