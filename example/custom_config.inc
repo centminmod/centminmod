@@ -64,6 +64,7 @@ CLANG_APC='n'                 # APC Cache
 CLANG_MEMCACHED='n'           # Memcached menu option 10 routine
 GCCINTEL_PHP='y'              # enable PHP-FPM GCC compiler with Intel cpu optimizations
 PHP_PGO='n'                   # Profile Guided Optimization https://software.intel.com/en-us/blogs/2015/10/09/pgo-let-it-go-php
+PHP_PATCH_OPENSSL_THREE='y'   # workaround compatibility patches for PHP 7.4 & 8.0 for EL9 system's OpenSSL 3.0 system library
 PHP_PGO_ALWAYS='n'            # override for PHP_PGO enable for 1 cpu thread servers too
 PHP_PGO_TRAINRUNS='10'        # number of runs done during PGO PHP 7 training runs
 PHP_PGO_APPEND_LABEL='y'          # appen PGO label to PHP binaries built with Profile Guided Optimizations

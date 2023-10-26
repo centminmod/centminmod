@@ -325,7 +325,7 @@ else
     if [ -f /usr/local/bin/getphpver ]; then
       display_phpver="$(getphpver 73), $(getphpver 74), $(getphpver 80), $(getphpver 81), $(getphpver 82)"
     else
-      display_phpver="7.3.33, 7.4.33, 8.0.29, 8.1.20, 8.2.7"
+      display_phpver="7.3.33, 7.4.33, 8.0.30, 8.1.25, 8.2.11"
     fi
     echo
     echo "----------------------------------------------------------------"
@@ -396,6 +396,7 @@ else
     fi
     echo
     read -ep "Enter PHP Version number you want to upgrade/downgrade to: " phpver
+    PHPMUVER=$(echo "$phpver" | cut -d . -f1,2)
     echo
     # validate php version format is 7.3.x and not 7.3
     phpver_formatcheck="$(echo "$phpver" | grep '[0-9].[0-9].[0-9]')"
@@ -407,6 +408,23 @@ else
         echo "latest php versions are listed at https://php.net/"
         echo
         read -ep "Enter PHP Version number you want to upgrade/downgrade to: " phpver
+        echo
+    fi
+    if [[ "$CENTOS_NINE" -eq '9' && "$PHP_PATCH_OPENSSL_THREE" = [yY] ]] && [[ "$PHPMUVER" = '7.4' || "$PHPMUVER" = '8.0' ]]; then
+        # note for EL9 PHP 7.4/8.0 for OpenSSL 3.0 system compatibility
+        echo
+        echo "#####################################################################"
+        echo "         EL9 OpenSSL 3.0 Compatibility Note"
+        echo "#####################################################################"
+        echo "Detected EL9 system running OpenSSL 3.0 system library ..."
+        echo "PHP 7.4 and PHP 8.0 officially do not support OpenSSL 3.0"
+        echo "For EL9 systems using OpenSSL 3.0, minimum PHP 8.1 version"
+        echo "is required. However, Centmin Mod has patched PHP 7.4.33 and"
+        echo "PHP 8.0 workarounds to be able to compile on EL9 OpenSSL 3.0."
+        echo "This may not be 100% and is provided as is."
+        echo
+        echo "If you need PHP <=8.0, you should use EL8 systems with OpenSSL 1.1.1"
+        echo "#####################################################################"
         echo
     fi
     read -ep "Do you still want to continue? [y/n] " phpfpm_stillcont
@@ -449,7 +467,6 @@ fi # UALL
 gethtpasswdsh
 
 PHPCURRENTVER=$(php-config --version | cut -d . -f1,2)
-PHPMUVER=$(echo "$phpver" | cut -d . -f1,2)
 PHPMU_ALPHAVER=$(echo "$phpver")
 
     phpng_download

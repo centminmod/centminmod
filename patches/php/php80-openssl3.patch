@@ -1,4 +1,4 @@
-From 3d13d14f318267b27f99025b37a2061c835e0727 Mon Sep 17 00:00:00 2001
+From 016e857bed6cbd4a96f520d05499b7e30bbf877c Mon Sep 17 00:00:00 2001
 From: Remi Collet <remi@php.net>
 Date: Sun, 8 Aug 2021 17:38:30 +0200
 Subject: [PATCH 01/39] minimal fix for openssl 3.0 (#7002)
@@ -9,10 +9,10 @@ Subject: [PATCH 01/39] minimal fix for openssl 3.0 (#7002)
  1 file changed, 2 insertions(+)
 
 diff --git a/ext/openssl/openssl.c b/ext/openssl/openssl.c
-index 19e7a0d79e..015cd89aa6 100644
+index f791cfa856..b327b121d8 100644
 --- a/ext/openssl/openssl.c
 +++ b/ext/openssl/openssl.c
-@@ -1221,7 +1221,9 @@ PHP_MINIT_FUNCTION(openssl)
+@@ -1313,7 +1313,9 @@ PHP_MINIT_FUNCTION(openssl)
  	REGISTER_LONG_CONSTANT("OPENSSL_CMS_NOSIGS", CMS_NOSIGS, CONST_CS|CONST_PERSISTENT);
  
  	REGISTER_LONG_CONSTANT("OPENSSL_PKCS1_PADDING", RSA_PKCS1_PADDING, CONST_CS|CONST_PERSISTENT);
@@ -23,9 +23,9 @@ index 19e7a0d79e..015cd89aa6 100644
  	REGISTER_LONG_CONSTANT("OPENSSL_PKCS1_OAEP_PADDING", RSA_PKCS1_OAEP_PADDING, CONST_CS|CONST_PERSISTENT);
  
 -- 
-2.31.1
+2.35.3
 
-From fc0dbc36e4563a5146aa5345e8520f6601ec7030 Mon Sep 17 00:00:00 2001
+From 4f53ad619bb69c26e0ad0e59caf98642d8a6f038 Mon Sep 17 00:00:00 2001
 From: Nikita Popov <nikita.ppv@gmail.com>
 Date: Wed, 4 Aug 2021 09:41:39 +0200
 Subject: [PATCH 02/39] Optimize openssl memory leak test
@@ -71,9 +71,9 @@ index 4f3dc9e766..c9c7df2953 100644
  --EXPECT--
  bool(true)
 -- 
-2.31.1
+2.35.3
 
-From da4fbfb99a6dfc9dbaaa04a4bc8068a7e9bfa46c Mon Sep 17 00:00:00 2001
+From 8ae6f0974ea3f3c39e24b2e1825ba419f5b2ee94 Mon Sep 17 00:00:00 2001
 From: Nikita Popov <nikita.ppv@gmail.com>
 Date: Wed, 4 Aug 2021 09:46:07 +0200
 Subject: [PATCH 03/39] Reduce security level in some OpenSSL tests
@@ -341,9 +341,9 @@ index c1aaa04919..84a137b5f4 100644
  
      phpt_wait();
 -- 
-2.31.1
+2.35.3
 
-From fe770720985c5f31a79528528be0aa8e0e56a389 Mon Sep 17 00:00:00 2001
+From e11ba509a72315046a015e8e106b4c1a0fdf4be9 Mon Sep 17 00:00:00 2001
 From: Nikita Popov <nikita.ppv@gmail.com>
 Date: Wed, 4 Aug 2021 09:57:40 +0200
 Subject: [PATCH 04/39] Adjust some tests for whitespace differences in OpenSSL
@@ -449,9 +449,9 @@ index b80c1f71f1..38915157f3 100644
      string(7) "CA:TRUE"
    }
 -- 
-2.31.1
+2.35.3
 
-From 676a47080bed2730b892e4ea43b93deb4acea335 Mon Sep 17 00:00:00 2001
+From 6d8810376b61aa4d37fbe773caa036ae7fec01a4 Mon Sep 17 00:00:00 2001
 From: Nikita Popov <nikita.ppv@gmail.com>
 Date: Wed, 4 Aug 2021 11:55:47 +0200
 Subject: [PATCH 05/39] Use different cipher in openssl_seal() test
@@ -488,9 +488,9 @@ index 16efb05a66..e23045c992 100644
  Warning: openssl_seal(): Not a public key (2th member of pubkeys) in %s on line %d
  bool(false)
 -- 
-2.31.1
+2.35.3
 
-From 389b4605281975d4ecac92cb3751d18d2e3fd60a Mon Sep 17 00:00:00 2001
+From 0d452b65cc8adf1867a26a470295a03324ea150b Mon Sep 17 00:00:00 2001
 From: Nikita Popov <nikita.ppv@gmail.com>
 Date: Wed, 4 Aug 2021 11:58:46 +0200
 Subject: [PATCH 06/39] Don't test legacy algorithms in SPKI tests
@@ -629,9 +629,9 @@ index c760d0cb83..35badcda37 100644
 -bool(true)
 -bool(false)
 -- 
-2.31.1
+2.35.3
 
-From 054aeebb623e6d4a055a4bab60a864f8c7f65675 Mon Sep 17 00:00:00 2001
+From 6489539ac9867eb365cd90bbb4ffc755f35bd9c3 Mon Sep 17 00:00:00 2001
 From: Nikita Popov <nikita.ppv@gmail.com>
 Date: Wed, 4 Aug 2021 12:48:02 +0200
 Subject: [PATCH 07/39] Only report provided ciphers in
@@ -649,10 +649,10 @@ checks continue working as expected.
  2 files changed, 36 insertions(+), 2 deletions(-)
 
 diff --git a/ext/openssl/openssl.c b/ext/openssl/openssl.c
-index 015cd89aa6..4ffa2185fb 100644
+index b327b121d8..f99961c589 100644
 --- a/ext/openssl/openssl.c
 +++ b/ext/openssl/openssl.c
-@@ -6798,6 +6798,31 @@ PHP_FUNCTION(openssl_get_md_methods)
+@@ -6863,6 +6863,31 @@ PHP_FUNCTION(openssl_get_md_methods)
  }
  /* }}} */
  
@@ -684,7 +684,7 @@ index 015cd89aa6..4ffa2185fb 100644
  /* {{{ Return array of available cipher algorithms */
  PHP_FUNCTION(openssl_get_cipher_methods)
  {
-@@ -6807,9 +6832,16 @@ PHP_FUNCTION(openssl_get_cipher_methods)
+@@ -6872,9 +6897,16 @@ PHP_FUNCTION(openssl_get_cipher_methods)
  		RETURN_THROWS();
  	}
  	array_init(return_value);
@@ -719,9 +719,9 @@ index c674ead34b..16bad9e6b0 100644
  #endif
  
 -- 
-2.31.1
+2.35.3
 
-From 62fbe1839d980583156b0d22c49753c4666e73e8 Mon Sep 17 00:00:00 2001
+From 407368e3fad0e4a46152bdf0061f590387365409 Mon Sep 17 00:00:00 2001
 From: Nikita Popov <nikita.ppv@gmail.com>
 Date: Wed, 4 Aug 2021 12:05:02 +0200
 Subject: [PATCH 08/39] Avoid RC4 use in another test
@@ -745,9 +745,9 @@ index 5e551c507f..271a878cdf 100644
  openssl_seal($data, $sealed, $ekeys, array($pub_key, $pub_key, $pub_key), $method);
  openssl_open($sealed, $output, $ekeys[0], $priv_key, $method);
 -- 
-2.31.1
+2.35.3
 
-From 95e6b2c67de6a63d059b678d14f291487f563163 Mon Sep 17 00:00:00 2001
+From 33f11d251877bd3fa4a533eec1a9d1df4a2ab13b Mon Sep 17 00:00:00 2001
 From: Nikita Popov <nikita.ppv@gmail.com>
 Date: Wed, 4 Aug 2021 15:47:14 +0200
 Subject: [PATCH 09/39] Use EVP_PKEY API for
@@ -762,10 +762,10 @@ Use the high level API instead of the deprecated low level API.
  2 files changed, 45 insertions(+), 74 deletions(-)
 
 diff --git a/ext/openssl/openssl.c b/ext/openssl/openssl.c
-index 4ffa2185fb..64840da451 100644
+index f99961c589..d5ccfb09cb 100644
 --- a/ext/openssl/openssl.c
 +++ b/ext/openssl/openssl.c
-@@ -6230,11 +6230,6 @@ PHP_FUNCTION(openssl_private_encrypt)
+@@ -6295,11 +6295,6 @@ PHP_FUNCTION(openssl_private_encrypt)
  PHP_FUNCTION(openssl_private_decrypt)
  {
  	zval *key, *crypted;
@@ -777,7 +777,7 @@ index 4ffa2185fb..64840da451 100644
  	zend_long padding = RSA_PKCS1_PADDING;
  	char * data;
  	size_t data_len;
-@@ -6243,11 +6238,7 @@ PHP_FUNCTION(openssl_private_decrypt)
+@@ -6308,11 +6303,7 @@ PHP_FUNCTION(openssl_private_decrypt)
  		RETURN_THROWS();
  	}
  
@@ -785,12 +785,12 @@ index 4ffa2185fb..64840da451 100644
 -
 -	RETVAL_FALSE;
 -
--	pkey = php_openssl_pkey_from_zval(key, 0, "", 0);
-+	EVP_PKEY *pkey = php_openssl_pkey_from_zval(key, 0, "", 0);
+-	pkey = php_openssl_pkey_from_zval(key, 0, "", 0, 3);
++	EVP_PKEY *pkey = php_openssl_pkey_from_zval(key, 0, "", 0, 3);
  	if (pkey == NULL) {
  		if (!EG(exception)) {
  			php_error_docref(NULL, E_WARNING, "key parameter is not a valid private key");
-@@ -6255,42 +6246,33 @@ PHP_FUNCTION(openssl_private_decrypt)
+@@ -6320,42 +6311,33 @@ PHP_FUNCTION(openssl_private_decrypt)
  		RETURN_FALSE;
  	}
  
@@ -854,7 +854,7 @@ index 4ffa2185fb..64840da451 100644
  }
  /* }}} */
  
-@@ -6298,10 +6280,6 @@ PHP_FUNCTION(openssl_private_decrypt)
+@@ -6363,10 +6345,6 @@ PHP_FUNCTION(openssl_private_decrypt)
  PHP_FUNCTION(openssl_public_encrypt)
  {
  	zval *key, *crypted;
@@ -865,7 +865,7 @@ index 4ffa2185fb..64840da451 100644
  	zend_long padding = RSA_PKCS1_PADDING;
  	char * data;
  	size_t data_len;
-@@ -6310,11 +6288,7 @@ PHP_FUNCTION(openssl_public_encrypt)
+@@ -6375,11 +6353,7 @@ PHP_FUNCTION(openssl_public_encrypt)
  		RETURN_THROWS();
  	}
  
@@ -873,12 +873,12 @@ index 4ffa2185fb..64840da451 100644
 -
 -	RETVAL_FALSE;
 -
--	pkey = php_openssl_pkey_from_zval(key, 1, NULL, 0);
-+	EVP_PKEY *pkey = php_openssl_pkey_from_zval(key, 1, NULL, 0);
+-	pkey = php_openssl_pkey_from_zval(key, 1, NULL, 0, 3);
++	EVP_PKEY *pkey = php_openssl_pkey_from_zval(key, 1, NULL, 0, 3);
  	if (pkey == NULL) {
  		if (!EG(exception)) {
  			php_error_docref(NULL, E_WARNING, "key parameter is not a valid public key");
-@@ -6322,35 +6296,32 @@ PHP_FUNCTION(openssl_public_encrypt)
+@@ -6387,35 +6361,32 @@ PHP_FUNCTION(openssl_public_encrypt)
  		RETURN_FALSE;
  	}
  
@@ -949,9 +949,9 @@ index b55b7ced44..eb76dfbf77 100644
  // X509
  echo "X509 errors\n";
 -- 
-2.31.1
+2.35.3
 
-From b29b719e4741cde6d1e441e0340f038976cb461b Mon Sep 17 00:00:00 2001
+From 08fc5c58b197732e8e4bdc8cf2d9fd9eecec3fb9 Mon Sep 17 00:00:00 2001
 From: Nikita Popov <nikita.ppv@gmail.com>
 Date: Wed, 4 Aug 2021 16:56:32 +0200
 Subject: [PATCH 10/39] Use EVP_PKEY APIs for
@@ -966,10 +966,10 @@ Use high level APIs instead of deprecated low level APIs.
  2 files changed, 45 insertions(+), 76 deletions(-)
 
 diff --git a/ext/openssl/openssl.c b/ext/openssl/openssl.c
-index 64840da451..4e9b949b5f 100644
+index d5ccfb09cb..77b24b7a1b 100644
 --- a/ext/openssl/openssl.c
 +++ b/ext/openssl/openssl.c
-@@ -6170,10 +6170,6 @@ clean_exit:
+@@ -6235,10 +6235,6 @@ clean_exit:
  PHP_FUNCTION(openssl_private_encrypt)
  {
  	zval *key, *crypted;
@@ -980,7 +980,7 @@ index 64840da451..4e9b949b5f 100644
  	char * data;
  	size_t data_len;
  	zend_long padding = RSA_PKCS1_PADDING;
-@@ -6182,12 +6178,7 @@ PHP_FUNCTION(openssl_private_encrypt)
+@@ -6247,12 +6243,7 @@ PHP_FUNCTION(openssl_private_encrypt)
  		RETURN_THROWS();
  	}
  
@@ -988,13 +988,13 @@ index 64840da451..4e9b949b5f 100644
 -
 -	RETVAL_FALSE;
 -
--	pkey = php_openssl_pkey_from_zval(key, 0, "", 0);
+-	pkey = php_openssl_pkey_from_zval(key, 0, "", 0, 3);
 -
-+	EVP_PKEY *pkey = php_openssl_pkey_from_zval(key, 0, "", 0);
++	EVP_PKEY *pkey = php_openssl_pkey_from_zval(key, 0, "", 0, 3);
  	if (pkey == NULL) {
  		if (!EG(exception)) {
  			php_error_docref(NULL, E_WARNING, "key param is not a valid private key");
-@@ -6195,33 +6186,31 @@ PHP_FUNCTION(openssl_private_encrypt)
+@@ -6260,33 +6251,31 @@ PHP_FUNCTION(openssl_private_encrypt)
  		RETURN_FALSE;
  	}
  
@@ -1049,7 +1049,7 @@ index 64840da451..4e9b949b5f 100644
  	EVP_PKEY_free(pkey);
  }
  /* }}} */
-@@ -6329,11 +6318,6 @@ cleanup:
+@@ -6394,11 +6383,6 @@ cleanup:
  PHP_FUNCTION(openssl_public_decrypt)
  {
  	zval *key, *crypted;
@@ -1061,7 +1061,7 @@ index 64840da451..4e9b949b5f 100644
  	zend_long padding = RSA_PKCS1_PADDING;
  	char * data;
  	size_t data_len;
-@@ -6342,11 +6326,7 @@ PHP_FUNCTION(openssl_public_decrypt)
+@@ -6407,11 +6391,7 @@ PHP_FUNCTION(openssl_public_decrypt)
  		RETURN_THROWS();
  	}
  
@@ -1069,12 +1069,12 @@ index 64840da451..4e9b949b5f 100644
 -
 -	RETVAL_FALSE;
 -
--	pkey = php_openssl_pkey_from_zval(key, 1, NULL, 0);
-+	EVP_PKEY *pkey = php_openssl_pkey_from_zval(key, 1, NULL, 0);
+-	pkey = php_openssl_pkey_from_zval(key, 1, NULL, 0, 3);
++	EVP_PKEY *pkey = php_openssl_pkey_from_zval(key, 1, NULL, 0, 3);
  	if (pkey == NULL) {
  		if (!EG(exception)) {
  			php_error_docref(NULL, E_WARNING, "key parameter is not a valid public key");
-@@ -6354,43 +6334,32 @@ PHP_FUNCTION(openssl_public_decrypt)
+@@ -6419,43 +6399,32 @@ PHP_FUNCTION(openssl_public_decrypt)
  		RETURN_FALSE;
  	}
  
@@ -1153,9 +1153,9 @@ index eb76dfbf77..f3eb82067b 100644
  @openssl_private_decrypt("data", $crypted, $private_key_file);
  expect_openssl_errors('openssl_private_decrypt', ['04065072']);
 -- 
-2.31.1
+2.35.3
 
-From bfdbdfb6bf128c157adfba402b89b0f82be993ab Mon Sep 17 00:00:00 2001
+From 162e1ff4452f6c48c9efd51393c06d24ae02f1d2 Mon Sep 17 00:00:00 2001
 From: Nikita Popov <nikita.ppv@gmail.com>
 Date: Thu, 5 Aug 2021 10:29:50 +0200
 Subject: [PATCH 11/39] Use EVP_PKEY APIs for key generation
@@ -1169,10 +1169,10 @@ Use high level API instead of deprecated low level API.
  2 files changed, 101 insertions(+), 113 deletions(-)
 
 diff --git a/ext/openssl/openssl.c b/ext/openssl/openssl.c
-index 4e9b949b5f..d260670ff9 100644
+index 77b24b7a1b..f158815c6b 100644
 --- a/ext/openssl/openssl.c
 +++ b/ext/openssl/openssl.c
-@@ -3656,140 +3656,130 @@ static EVP_PKEY *php_openssl_pkey_from_zval(zval *val, int public_key, char *pas
+@@ -3758,140 +3758,130 @@ static EVP_PKEY *php_openssl_pkey_from_zval(
  	return key;
  }
  
@@ -1429,9 +1429,9 @@ index 327c916688..12ae0ff0e1 100644
  ?>
  --EXPECTF--
 -- 
-2.31.1
+2.35.3
 
-From 8dfe551ef85a874df63d0bb50b2d065c3370fd7e Mon Sep 17 00:00:00 2001
+From f3ac6b3dff7a9062186e595deebe268174d5abb8 Mon Sep 17 00:00:00 2001
 From: Nikita Popov <nikita.ppv@gmail.com>
 Date: Thu, 5 Aug 2021 11:50:11 +0200
 Subject: [PATCH 12/39] Relax error check
@@ -1462,9 +1462,9 @@ index 12ae0ff0e1..3f319b4b24 100644
 -error:%s:key size too small
 +bool(true)
 -- 
-2.31.1
+2.35.3
 
-From 44859f59f3ff3d7cf24ae146e9b0da348e6befcd Mon Sep 17 00:00:00 2001
+From de7bd3a3d035d0b018058ee623412d08c5e50b6e Mon Sep 17 00:00:00 2001
 From: Nikita Popov <nikita.ppv@gmail.com>
 Date: Thu, 5 Aug 2021 12:59:13 +0200
 Subject: [PATCH 13/39] Store whether pkey object contains private key
@@ -1487,7 +1487,7 @@ of construction.
  1 file changed, 31 insertions(+), 124 deletions(-)
 
 diff --git a/ext/openssl/openssl.c b/ext/openssl/openssl.c
-index d260670ff9..1fca64df15 100644
+index f158815c6b..afd6072d12 100644
 --- a/ext/openssl/openssl.c
 +++ b/ext/openssl/openssl.c
 @@ -201,6 +201,7 @@ static void php_openssl_request_free_obj(zend_object *object)
@@ -1512,15 +1512,15 @@ index d260670ff9..1fca64df15 100644
  static zend_function *php_openssl_pkey_get_constructor(zend_object *object) {
  	zend_throw_error(NULL, "Cannot directly construct OpenSSLAsymmetricKey, use openssl_pkey_new() instead");
  	return NULL;
-@@ -517,7 +525,6 @@ static X509 *php_openssl_x509_from_zval(zval *val, bool *free_cert);
- static X509_REQ *php_openssl_csr_from_param(zend_object *csr_obj, zend_string *csr_str);
- static EVP_PKEY *php_openssl_pkey_from_zval(zval *val, int public_key, char *passphrase, size_t passphrase_len);
+@@ -608,7 +616,6 @@ static X509_REQ *php_openssl_csr_from_param(
+ static EVP_PKEY *php_openssl_pkey_from_zval(
+ 		zval *val, int public_key, char *passphrase, size_t passphrase_len, uint32_t arg_num);
  
 -static int php_openssl_is_private_key(EVP_PKEY* pkey);
- static X509_STORE * php_openssl_setup_verify(zval * calist);
- static STACK_OF(X509) * php_openssl_load_all_certs_from_file(char *certfile);
- static EVP_PKEY * php_openssl_generate_private_key(struct php_x509_request * req);
-@@ -3362,11 +3369,8 @@ PHP_FUNCTION(openssl_csr_new)
+ static X509_STORE * php_openssl_setup_verify(zval * calist, uint32_t arg_num);
+ static STACK_OF(X509) * php_openssl_load_all_certs_from_file(
+ 		char *cert_file, size_t cert_file_len, uint32_t arg_num);
+@@ -3463,11 +3470,8 @@ PHP_FUNCTION(openssl_csr_new)
  						if (we_made_the_key) {
  							/* and an object for the private key */
  							zval zkey_object;
@@ -1534,7 +1534,7 @@ index d260670ff9..1fca64df15 100644
  							ZEND_TRY_ASSIGN_REF_TMP(out_pkey, &zkey_object);
  							req.priv_key = NULL; /* make sure the cleanup code doesn't zap it! */
  						}
-@@ -3424,7 +3428,6 @@ PHP_FUNCTION(openssl_csr_get_public_key)
+@@ -3525,7 +3529,6 @@ PHP_FUNCTION(openssl_csr_get_public_key)
  	zend_string *csr_str;
  	zend_bool use_shortnames = 1;
  
@@ -1542,7 +1542,7 @@ index d260670ff9..1fca64df15 100644
  	EVP_PKEY *tpubkey;
  
  	ZEND_PARSE_PARAMETERS_START(1, 2)
-@@ -3467,9 +3470,7 @@ PHP_FUNCTION(openssl_csr_get_public_key)
+@@ -3568,9 +3571,7 @@ PHP_FUNCTION(openssl_csr_get_public_key)
  		RETURN_FALSE;
  	}
  
@@ -1553,7 +1553,7 @@ index d260670ff9..1fca64df15 100644
  }
  /* }}} */
  
-@@ -3545,10 +3546,9 @@ static EVP_PKEY *php_openssl_pkey_from_zval(zval *val, int public_key, char *pas
+@@ -3647,10 +3648,9 @@ static EVP_PKEY *php_openssl_pkey_from_zval(
  	}
  
  	if (Z_TYPE_P(val) == IS_OBJECT && Z_OBJCE_P(val) == php_openssl_pkey_ce) {
@@ -1567,7 +1567,7 @@ index d260670ff9..1fca64df15 100644
  
  		/* check whether it is actually a private key if requested */
  		if (!public_key && !is_priv) {
-@@ -3783,85 +3783,6 @@ cleanup:
+@@ -3885,85 +3885,6 @@ cleanup:
  }
  /* }}} */
  
@@ -1653,7 +1653,7 @@ index d260670ff9..1fca64df15 100644
  #define OPENSSL_GET_BN(_array, _bn, _name) do { \
  		if (_bn != NULL) { \
  			int len = BN_num_bytes(_bn); \
-@@ -3920,7 +3841,7 @@ static zend_bool php_openssl_pkey_init_and_assign_rsa(EVP_PKEY *pkey, RSA *rsa,
+@@ -4022,7 +3943,7 @@ static zend_bool php_openssl_pkey_init_and_assign_rsa(EVP_PKEY *pkey, RSA *rsa,
  }
  
  /* {{{ php_openssl_pkey_init_dsa */
@@ -1662,7 +1662,7 @@ index d260670ff9..1fca64df15 100644
  {
  	BIGNUM *p, *q, *g, *priv_key, *pub_key;
  	const BIGNUM *priv_key_const, *pub_key_const;
-@@ -3934,6 +3855,7 @@ static zend_bool php_openssl_pkey_init_dsa(DSA *dsa, zval *data)
+@@ -4036,6 +3957,7 @@ static zend_bool php_openssl_pkey_init_dsa(DSA *dsa, zval *data)
  
  	OPENSSL_PKEY_SET_BN(data, pub_key);
  	OPENSSL_PKEY_SET_BN(data, priv_key);
@@ -1670,7 +1670,7 @@ index d260670ff9..1fca64df15 100644
  	if (pub_key) {
  		return DSA_set0_key(dsa, pub_key, priv_key);
  	}
-@@ -3998,7 +3920,7 @@ static BIGNUM *php_openssl_dh_pub_from_priv(BIGNUM *priv_key, BIGNUM *g, BIGNUM
+@@ -4100,7 +4022,7 @@ static BIGNUM *php_openssl_dh_pub_from_priv(BIGNUM *priv_key, BIGNUM *g, BIGNUM
  /* }}} */
  
  /* {{{ php_openssl_pkey_init_dh */
@@ -1679,7 +1679,7 @@ index d260670ff9..1fca64df15 100644
  {
  	BIGNUM *p, *q, *g, *priv_key, *pub_key;
  
-@@ -4011,6 +3933,7 @@ static zend_bool php_openssl_pkey_init_dh(DH *dh, zval *data)
+@@ -4113,6 +4035,7 @@ static zend_bool php_openssl_pkey_init_dh(DH *dh, zval *data)
  
  	OPENSSL_PKEY_SET_BN(data, priv_key);
  	OPENSSL_PKEY_SET_BN(data, pub_key);
@@ -1687,7 +1687,7 @@ index d260670ff9..1fca64df15 100644
  	if (pub_key) {
  		return DH_set0_key(dh, pub_key, priv_key);
  	}
-@@ -4039,7 +3962,6 @@ PHP_FUNCTION(openssl_pkey_new)
+@@ -4141,7 +4064,6 @@ PHP_FUNCTION(openssl_pkey_new)
  	struct php_x509_request req;
  	zval * args = NULL;
  	zval *data;
@@ -1695,7 +1695,7 @@ index d260670ff9..1fca64df15 100644
  
  	if (zend_parse_parameters(ZEND_NUM_ARGS(), "|a!", &args) == FAILURE) {
  		RETURN_THROWS();
-@@ -4056,9 +3978,7 @@ PHP_FUNCTION(openssl_pkey_new)
+@@ -4158,9 +4080,7 @@ PHP_FUNCTION(openssl_pkey_new)
  				RSA *rsa = RSA_new();
  				if (rsa) {
  					if (php_openssl_pkey_init_and_assign_rsa(pkey, rsa, data)) {
@@ -1706,7 +1706,7 @@ index d260670ff9..1fca64df15 100644
  						return;
  					}
  					RSA_free(rsa);
-@@ -4076,11 +3996,10 @@ PHP_FUNCTION(openssl_pkey_new)
+@@ -4178,11 +4098,10 @@ PHP_FUNCTION(openssl_pkey_new)
  			if (pkey) {
  				DSA *dsa = DSA_new();
  				if (dsa) {
@@ -1721,7 +1721,7 @@ index d260670ff9..1fca64df15 100644
  							return;
  						} else {
  							php_openssl_store_errors();
-@@ -4101,13 +4020,10 @@ PHP_FUNCTION(openssl_pkey_new)
+@@ -4203,13 +4122,10 @@ PHP_FUNCTION(openssl_pkey_new)
  			if (pkey) {
  				DH *dh = DH_new();
  				if (dh) {
@@ -1738,7 +1738,7 @@ index d260670ff9..1fca64df15 100644
  							return;
  						} else {
  							php_openssl_store_errors();
-@@ -4133,6 +4049,7 @@ PHP_FUNCTION(openssl_pkey_new)
+@@ -4235,6 +4151,7 @@ PHP_FUNCTION(openssl_pkey_new)
  			if (pkey) {
  				eckey = EC_KEY_new();
  				if (eckey) {
@@ -1746,7 +1746,7 @@ index d260670ff9..1fca64df15 100644
  					EC_GROUP *group = NULL;
  					zval *bn;
  					zval *x;
-@@ -4164,6 +4081,7 @@ PHP_FUNCTION(openssl_pkey_new)
+@@ -4266,6 +4183,7 @@ PHP_FUNCTION(openssl_pkey_new)
  					// The public key 'pnt' can be calculated from 'd' or is defined by 'x' and 'y'
  					if ((bn = zend_hash_str_find(Z_ARRVAL_P(data), "d", sizeof("d") - 1)) != NULL &&
  							Z_TYPE_P(bn) == IS_STRING) {
@@ -1754,7 +1754,7 @@ index d260670ff9..1fca64df15 100644
  						d = BN_bin2bn((unsigned char*) Z_STRVAL_P(bn), Z_STRLEN_P(bn), NULL);
  						if (!EC_KEY_set_private_key(eckey, d)) {
  							php_openssl_store_errors();
-@@ -4211,10 +4129,7 @@ PHP_FUNCTION(openssl_pkey_new)
+@@ -4313,10 +4231,7 @@ PHP_FUNCTION(openssl_pkey_new)
  					}
  					if (EC_KEY_check_key(eckey) && EVP_PKEY_assign_EC_KEY(pkey, eckey)) {
  						EC_GROUP_free(group);
@@ -1766,7 +1766,7 @@ index d260670ff9..1fca64df15 100644
  						return;
  					} else {
  						php_openssl_store_errors();
-@@ -4249,9 +4164,7 @@ clean_exit:
+@@ -4351,9 +4266,7 @@ clean_exit:
  	if (PHP_SSL_REQ_PARSE(&req, args) == SUCCESS) {
  		if (php_openssl_generate_private_key(&req)) {
  			/* pass back a key resource */
@@ -1777,7 +1777,7 @@ index d260670ff9..1fca64df15 100644
  			/* make sure the cleanup code doesn't zap it! */
  			req.priv_key = NULL;
  		}
-@@ -4424,7 +4337,6 @@ PHP_FUNCTION(openssl_pkey_get_public)
+@@ -4526,7 +4439,6 @@ PHP_FUNCTION(openssl_pkey_get_public)
  {
  	zval *cert;
  	EVP_PKEY *pkey;
@@ -1785,7 +1785,7 @@ index d260670ff9..1fca64df15 100644
  
  	if (zend_parse_parameters(ZEND_NUM_ARGS(), "z", &cert) == FAILURE) {
  		RETURN_THROWS();
-@@ -4434,9 +4346,7 @@ PHP_FUNCTION(openssl_pkey_get_public)
+@@ -4536,9 +4448,7 @@ PHP_FUNCTION(openssl_pkey_get_public)
  		RETURN_FALSE;
  	}
  
@@ -1796,7 +1796,7 @@ index d260670ff9..1fca64df15 100644
  }
  /* }}} */
  
-@@ -4458,7 +4368,6 @@ PHP_FUNCTION(openssl_pkey_get_private)
+@@ -4560,7 +4470,6 @@ PHP_FUNCTION(openssl_pkey_get_private)
  	EVP_PKEY *pkey;
  	char * passphrase = "";
  	size_t passphrase_len = sizeof("")-1;
@@ -1804,7 +1804,7 @@ index d260670ff9..1fca64df15 100644
  
  	if (zend_parse_parameters(ZEND_NUM_ARGS(), "z|s!", &cert, &passphrase, &passphrase_len) == FAILURE) {
  		RETURN_THROWS();
-@@ -4473,9 +4382,7 @@ PHP_FUNCTION(openssl_pkey_get_private)
+@@ -4575,9 +4484,7 @@ PHP_FUNCTION(openssl_pkey_get_private)
  		RETURN_FALSE;
  	}
  
@@ -1816,9 +1816,9 @@ index d260670ff9..1fca64df15 100644
  
  /* }}} */
 -- 
-2.31.1
+2.35.3
 
-From c58ef46342a52c8b81ee6f727257a2b471b6d9c3 Mon Sep 17 00:00:00 2001
+From 10413110152d816c16aee3ef854cce4784966239 Mon Sep 17 00:00:00 2001
 From: Nikita Popov <nikita.ppv@gmail.com>
 Date: Thu, 5 Aug 2021 14:59:16 +0200
 Subject: [PATCH 14/39] Add test for openssl_dh_compute_key()
@@ -1867,9 +1867,9 @@ index 0000000000..8730f4b57d
 +--EXPECT--
 +b0049944fa5d36f364dd02e675dde50f8c2d67481c5cf0fe2f248d383eec1d38c23d5ed2644fbef2676bcd6ce148361ca82619c8f93e10506cb89d0a1bdaa0f0bc6f68cef0f7cb6d97d43e8dda3c7a5c5a98ebd2342a605ce530fd46a0602d28d4afc48e92088d0bc42194ca8682a85317f812d81b86cd284eed405df2f76aae84ccd560856e8a3d0ce4f591394bca02eb8a1984ebb41bb19714fb8b579bcafd36a9051d51d075f66229893289d8a0c918bfd222f17803cc532d2cf93bb2a567953323ca409beb3237faae9c6fdfc671594324953badd07dd4770ee09fd19f90045654c5709e92aa614b83594c2f62a8bc3c7e786e54bc1259a0a737c70dd4cc
 -- 
-2.31.1
+2.35.3
 
-From fbb478f86081d4d879d1ed644c37842e0d9b1192 Mon Sep 17 00:00:00 2001
+From 81985366729b7e81d924007cae618f1f75f9a7e1 Mon Sep 17 00:00:00 2001
 From: Nikita Popov <nikita.ppv@gmail.com>
 Date: Thu, 5 Aug 2021 14:52:56 +0200
 Subject: [PATCH 15/39] Extract php_openssl_pkey_derive() function
@@ -1882,10 +1882,10 @@ To allow sharing it with the openssl_dh_compute_key() implementation.
  1 file changed, 41 insertions(+), 36 deletions(-)
 
 diff --git a/ext/openssl/openssl.c b/ext/openssl/openssl.c
-index 1fca64df15..bf3f70d355 100644
+index afd6072d12..ceece680b8 100644
 --- a/ext/openssl/openssl.c
 +++ b/ext/openssl/openssl.c
-@@ -4560,6 +4560,34 @@ PHP_FUNCTION(openssl_pkey_get_details)
+@@ -4662,6 +4662,34 @@ PHP_FUNCTION(openssl_pkey_get_details)
  }
  /* }}} */
  
@@ -1920,7 +1920,7 @@ index 1fca64df15..bf3f70d355 100644
  /* {{{ Computes shared secret for public value of remote DH key and local DH key */
  PHP_FUNCTION(openssl_dh_compute_key)
  {
-@@ -4567,7 +4595,6 @@ PHP_FUNCTION(openssl_dh_compute_key)
+@@ -4669,7 +4697,6 @@ PHP_FUNCTION(openssl_dh_compute_key)
  	char *pub_str;
  	size_t pub_len;
  	DH *dh;
@@ -1928,7 +1928,7 @@ index 1fca64df15..bf3f70d355 100644
  	BIGNUM *pub;
  	zend_string *data;
  	int len;
-@@ -4578,11 +4605,12 @@ PHP_FUNCTION(openssl_dh_compute_key)
+@@ -4680,11 +4707,12 @@ PHP_FUNCTION(openssl_dh_compute_key)
  
  	PHP_OPENSSL_CHECK_SIZE_T_TO_INT(pub_len, pub_key, 1);
  
@@ -1942,7 +1942,7 @@ index 1fca64df15..bf3f70d355 100644
  	dh = EVP_PKEY_get0_DH(pkey);
  	if (dh == NULL) {
  		RETURN_FALSE;
-@@ -4612,59 +4640,36 @@ PHP_FUNCTION(openssl_pkey_derive)
+@@ -4714,59 +4742,36 @@ PHP_FUNCTION(openssl_pkey_derive)
  {
  	zval *priv_key;
  	zval *peer_pub_key;
@@ -1964,15 +1964,15 @@ index 1fca64df15..bf3f70d355 100644
  	}
  
 -	key_size = key_len;
--	pkey = php_openssl_pkey_from_zval(priv_key, 0, "", 0);
-+	EVP_PKEY *pkey = php_openssl_pkey_from_zval(priv_key, 0, "", 0);
+-	pkey = php_openssl_pkey_from_zval(priv_key, 0, "", 0, 2);
++	EVP_PKEY *pkey = php_openssl_pkey_from_zval(priv_key, 0, "", 0, 2);
  	if (!pkey) {
 -		goto cleanup;
 +		RETURN_FALSE;
  	}
  
--	peer_key = php_openssl_pkey_from_zval(peer_pub_key, 1, NULL, 0);
-+	EVP_PKEY *peer_key = php_openssl_pkey_from_zval(peer_pub_key, 1, NULL, 0);
+-	peer_key = php_openssl_pkey_from_zval(peer_pub_key, 1, NULL, 0, 1);
++	EVP_PKEY *peer_key = php_openssl_pkey_from_zval(peer_pub_key, 1, NULL, 0, 1);
  	if (!peer_key) {
 -		goto cleanup;
 -	}
@@ -2014,9 +2014,9 @@ index 1fca64df15..bf3f70d355 100644
  }
  /* }}} */
 -- 
-2.31.1
+2.35.3
 
-From f8f202ae92bf2c92cec4ad8d6bf2f57236ccd976 Mon Sep 17 00:00:00 2001
+From dda6e3b15760809b86a5ddf45cc19cc606b408f2 Mon Sep 17 00:00:00 2001
 From: Nikita Popov <nikita.ppv@gmail.com>
 Date: Thu, 5 Aug 2021 15:58:20 +0200
 Subject: [PATCH 16/39] Avoid DH_compute_key() with OpenSSL 3
@@ -2035,10 +2035,10 @@ DH keys prior to OpenSSL 3.
  1 file changed, 40 insertions(+), 24 deletions(-)
 
 diff --git a/ext/openssl/openssl.c b/ext/openssl/openssl.c
-index bf3f70d355..91d2589aad 100644
+index ceece680b8..1b27f609fe 100644
 --- a/ext/openssl/openssl.c
 +++ b/ext/openssl/openssl.c
-@@ -4588,16 +4588,48 @@ static zend_string *php_openssl_pkey_derive(EVP_PKEY *key, EVP_PKEY *peer_key, s
+@@ -4690,16 +4690,48 @@ static zend_string *php_openssl_pkey_derive(EVP_PKEY *key, EVP_PKEY *peer_key, s
  	return result;
  }
  
@@ -2091,7 +2091,7 @@ index bf3f70d355..91d2589aad 100644
  
  	if (zend_parse_parameters(ZEND_NUM_ARGS(), "sO", &pub_str, &pub_len, &key, php_openssl_pkey_ce) == FAILURE) {
  		RETURN_THROWS();
-@@ -4606,32 +4638,16 @@ PHP_FUNCTION(openssl_dh_compute_key)
+@@ -4708,32 +4740,16 @@ PHP_FUNCTION(openssl_dh_compute_key)
  	PHP_OPENSSL_CHECK_SIZE_T_TO_INT(pub_len, pub_key, 1);
  
  	EVP_PKEY *pkey = Z_OPENSSL_PKEY_P(key)->pkey;
@@ -2129,9 +2129,9 @@ index bf3f70d355..91d2589aad 100644
  /* }}} */
  
 -- 
-2.31.1
+2.35.3
 
-From fbb13f6bf183f1d2d95fe2aa48edce300aad5fd7 Mon Sep 17 00:00:00 2001
+From 6da4cc5e00da17af52467285a1101c39e95d0b66 Mon Sep 17 00:00:00 2001
 From: Nikita Popov <nikita.ppv@gmail.com>
 Date: Wed, 4 Aug 2021 14:54:59 +0200
 Subject: [PATCH 17/39] Use different algorithm in pkcs7 tests
@@ -2200,9 +2200,9 @@ index ef9b25e70b..7a600bc292 100644
  if (file_exists($outfile)) {
      echo "true\n";
 -- 
-2.31.1
+2.35.3
 
-From e6d9c6b6cfcc255124bb42b409c29db854ff828d Mon Sep 17 00:00:00 2001
+From e4ab465140753e247a0cd9d9047364e582e59cbe Mon Sep 17 00:00:00 2001
 From: Nikita Popov <nikita.ppv@gmail.com>
 Date: Thu, 5 Aug 2021 16:30:55 +0200
 Subject: [PATCH 18/39] Use different algorithm in cms tests
@@ -2266,9 +2266,9 @@ index 929f3f2e02..4030862391 100644
      print "PEM decrypt error\n";
      print "recipient:\n";
 -- 
-2.31.1
+2.35.3
 
-From 31e60d155d01253ab42f490fecd0f2a5e537bc47 Mon Sep 17 00:00:00 2001
+From 3721dfdca9e62d5ecfba130c66b1e910bd2d1689 Mon Sep 17 00:00:00 2001
 From: Nikita Popov <nikita.ppv@gmail.com>
 Date: Thu, 5 Aug 2021 17:07:44 +0200
 Subject: [PATCH 19/39] Use larger key size for DSA/DH tests
@@ -2315,9 +2315,9 @@ index 0b3f91b8fe..4e4bba8aa8 100644
  ?>
  --EXPECTF--
 -- 
-2.31.1
+2.35.3
 
-From b93f08093684d24a80857fec7ede1c41f440cff5 Mon Sep 17 00:00:00 2001
+From c1b1cba2c21378bc51881c4f5d335405a7384b56 Mon Sep 17 00:00:00 2001
 From: Nikita Popov <nikita.ppv@gmail.com>
 Date: Wed, 4 Aug 2021 13:54:26 +0200
 Subject: [PATCH 20/39] Skip some tests if cipher not available
@@ -2385,9 +2385,9 @@ index 4175e703d2..e846b42e78 100644
 +bool(true)
  NULL
 -- 
-2.31.1
+2.35.3
 
-From bc8281431c8ce82c232fee5674b945af95bbd860 Mon Sep 17 00:00:00 2001
+From d52d5912d444437f5e021ea7a2fa287fd9276b40 Mon Sep 17 00:00:00 2001
 From: Nikita Popov <nikita.ppv@gmail.com>
 Date: Thu, 5 Aug 2021 16:29:43 +0200
 Subject: [PATCH 21/39] Use different cipher in one more CMS test
@@ -2438,9 +2438,9 @@ index f1a0c6af8b..ee706ebfba 100644
  if (file_exists($outfile)) {
      echo "true\n";
 -- 
-2.31.1
+2.35.3
 
-From c42a69def274fb77cbcb3db4189841e3f582803a Mon Sep 17 00:00:00 2001
+From a78ef37e631f2b6e7804a557d016737010fb15db Mon Sep 17 00:00:00 2001
 From: Nikita Popov <nikita.ppv@gmail.com>
 Date: Fri, 6 Aug 2021 10:35:49 +0200
 Subject: [PATCH 22/39] Generate pkcs12_read test inputs on the fly
@@ -2544,9 +2544,9 @@ index b81b4d9dac..8cb2b41fd7 100644
    }
 
 -- 
-2.31.1
+2.35.3
 
-From 8e99695bb1f630edee4ddb44ae78e99190b5efb3 Mon Sep 17 00:00:00 2001
+From b9b0a9a1a42cbbea0d2fab27360fc5c62c98a6e4 Mon Sep 17 00:00:00 2001
 From: Nikita Popov <nikita.ppv@gmail.com>
 Date: Fri, 6 Aug 2021 11:15:18 +0200
 Subject: [PATCH 23/39] Do not special case export of EC keys
@@ -2568,10 +2568,10 @@ As the OpenSSL docs say:
  2 files changed, 11 insertions(+), 31 deletions(-)
 
 diff --git a/ext/openssl/openssl.c b/ext/openssl/openssl.c
-index 91d2589aad..b360b0506e 100644
+index 1b27f609fe..4a151cf2d7 100644
 --- a/ext/openssl/openssl.c
 +++ b/ext/openssl/openssl.c
-@@ -4225,21 +4225,9 @@ PHP_FUNCTION(openssl_pkey_export_to_file)
+@@ -4327,21 +4327,9 @@ PHP_FUNCTION(openssl_pkey_export_to_file)
  			cipher = NULL;
  		}
  
@@ -2596,7 +2596,7 @@ index 91d2589aad..b360b0506e 100644
  		if (pem_write) {
  			/* Success!
  			 * If returning the output as a string, do so now */
-@@ -4297,21 +4285,9 @@ PHP_FUNCTION(openssl_pkey_export)
+@@ -4399,21 +4387,9 @@ PHP_FUNCTION(openssl_pkey_export)
  			cipher = NULL;
  		}
  
@@ -2639,9 +2639,9 @@ index 678b7e7299..5cd68d18b8 100644
  bool(true)
  object(OpenSSLAsymmetricKey)#%d (0) {
 -- 
-2.31.1
+2.35.3
 
-From 87bec9d2942be4a87cccb0d28cb3e134d692c312 Mon Sep 17 00:00:00 2001
+From af97ffecf1c98606c65cabe5b150b5447a0d2c53 Mon Sep 17 00:00:00 2001
 From: Nikita Popov <nikita.ppv@gmail.com>
 Date: Fri, 6 Aug 2021 16:51:05 +0200
 Subject: [PATCH 24/39] Switch manual DH key generation to param API
@@ -2657,7 +2657,7 @@ legacy keys, cf. https://github.com/openssl/openssl/issues/16247.
  1 file changed, 112 insertions(+), 24 deletions(-)
 
 diff --git a/ext/openssl/openssl.c b/ext/openssl/openssl.c
-index b360b0506e..06e5adecda 100644
+index 4a151cf2d7..2493fd777c 100644
 --- a/ext/openssl/openssl.c
 +++ b/ext/openssl/openssl.c
 @@ -56,6 +56,10 @@
@@ -2671,7 +2671,7 @@ index b360b0506e..06e5adecda 100644
  
  /* Common */
  #include <time.h>
-@@ -3919,8 +3923,8 @@ static BIGNUM *php_openssl_dh_pub_from_priv(BIGNUM *priv_key, BIGNUM *g, BIGNUM
+@@ -4021,8 +4025,8 @@ static BIGNUM *php_openssl_dh_pub_from_priv(BIGNUM *priv_key, BIGNUM *g, BIGNUM
  }
  /* }}} */
  
@@ -2682,7 +2682,7 @@ index b360b0506e..06e5adecda 100644
  {
  	BIGNUM *p, *q, *g, *priv_key, *pub_key;
  
-@@ -3952,9 +3956,108 @@ static zend_bool php_openssl_pkey_init_dh(DH *dh, zval *data, bool *is_private)
+@@ -4054,9 +4058,108 @@ static zend_bool php_openssl_pkey_init_dh(DH *dh, zval *data, bool *is_private)
  		return 0;
  	}
  	/* all good */
@@ -2792,7 +2792,7 @@ index b360b0506e..06e5adecda 100644
  
  /* {{{ Generates a new private key */
  PHP_FUNCTION(openssl_pkey_new)
-@@ -4016,28 +4119,13 @@ PHP_FUNCTION(openssl_pkey_new)
+@@ -4118,28 +4221,13 @@ PHP_FUNCTION(openssl_pkey_new)
  			RETURN_FALSE;
  		} else if ((data = zend_hash_str_find(Z_ARRVAL_P(args), "dh", sizeof("dh") - 1)) != NULL &&
  			Z_TYPE_P(data) == IS_ARRAY) {
@@ -2828,9 +2828,9 @@ index b360b0506e..06e5adecda 100644
  		} else if ((data = zend_hash_str_find(Z_ARRVAL_P(args), "ec", sizeof("ec") - 1)) != NULL &&
  			Z_TYPE_P(data) == IS_ARRAY) {
 -- 
-2.31.1
+2.35.3
 
-From 0b1f12e24360dad5c6feba319af7e12e2cf72fc1 Mon Sep 17 00:00:00 2001
+From 3a377b2e852b5164439d2e376ff5e9012a5dd27b Mon Sep 17 00:00:00 2001
 From: Nikita Popov <nikita.ppv@gmail.com>
 Date: Fri, 6 Aug 2021 17:14:58 +0200
 Subject: [PATCH 25/39] Switch manual DSA key generation to param API
@@ -2847,10 +2847,10 @@ for FFC algorithms, as it's very similar).
  1 file changed, 102 insertions(+), 24 deletions(-)
 
 diff --git a/ext/openssl/openssl.c b/ext/openssl/openssl.c
-index 06e5adecda..84a4083807 100644
+index 2493fd777c..732007be73 100644
 --- a/ext/openssl/openssl.c
 +++ b/ext/openssl/openssl.c
-@@ -3844,8 +3844,8 @@ static zend_bool php_openssl_pkey_init_and_assign_rsa(EVP_PKEY *pkey, RSA *rsa,
+@@ -3946,8 +3946,8 @@ static zend_bool php_openssl_pkey_init_and_assign_rsa(EVP_PKEY *pkey, RSA *rsa,
  	return 1;
  }
  
@@ -2861,7 +2861,7 @@ index 06e5adecda..84a4083807 100644
  {
  	BIGNUM *p, *q, *g, *priv_key, *pub_key;
  	const BIGNUM *priv_key_const, *pub_key_const;
-@@ -3878,9 +3878,102 @@ static zend_bool php_openssl_pkey_init_dsa(DSA *dsa, zval *data, bool *is_privat
+@@ -3980,9 +3980,102 @@ static zend_bool php_openssl_pkey_init_dsa(DSA *dsa, zval *data, bool *is_privat
  		return 0;
  	}
  	/* all good */
@@ -2965,7 +2965,7 @@ index 06e5adecda..84a4083807 100644
  
  /* {{{ php_openssl_dh_pub_from_priv */
  static BIGNUM *php_openssl_dh_pub_from_priv(BIGNUM *priv_key, BIGNUM *g, BIGNUM *p)
-@@ -4095,28 +4188,13 @@ PHP_FUNCTION(openssl_pkey_new)
+@@ -4197,28 +4290,13 @@ PHP_FUNCTION(openssl_pkey_new)
  			RETURN_FALSE;
  		} else if ((data = zend_hash_str_find(Z_ARRVAL_P(args), "dsa", sizeof("dsa") - 1)) != NULL &&
  			Z_TYPE_P(data) == IS_ARRAY) {
@@ -3001,9 +3001,9 @@ index 06e5adecda..84a4083807 100644
  			Z_TYPE_P(data) == IS_ARRAY) {
  			bool is_private;
 -- 
-2.31.1
+2.35.3
 
-From d20cf6a278be5561debcd5ce0cc34a6046eac669 Mon Sep 17 00:00:00 2001
+From 3018e5994bf3c2fb2bfab8c21bd5052b3a0064d9 Mon Sep 17 00:00:00 2001
 From: Nikita Popov <nikita.ppv@gmail.com>
 Date: Sun, 8 Aug 2021 17:39:06 +0200
 Subject: [PATCH 26/39] Use OpenSSL NCONF APIs (#7337)
@@ -3014,10 +3014,10 @@ Subject: [PATCH 26/39] Use OpenSSL NCONF APIs (#7337)
  1 file changed, 36 insertions(+), 30 deletions(-)
 
 diff --git a/ext/openssl/openssl.c b/ext/openssl/openssl.c
-index 84a4083807..1dda83f71e 100644
+index 732007be73..098b1163c6 100644
 --- a/ext/openssl/openssl.c
 +++ b/ext/openssl/openssl.c
-@@ -500,8 +500,8 @@ int php_openssl_get_ssl_stream_data_index()
+@@ -587,8 +587,8 @@ int php_openssl_get_ssl_stream_data_index()
  static char default_ssl_conf_filename[MAXPATHLEN];
  
  struct php_x509_request { /* {{{ */
@@ -3028,7 +3028,7 @@ index 84a4083807..1dda83f71e 100644
  	const EVP_MD * md_alg;
  	const EVP_MD * digest;
  	char	* section_name,
-@@ -712,13 +712,13 @@ static time_t php_openssl_asn1_time_to_time_t(ASN1_UTCTIME * timestr) /* {{{ */
+@@ -804,13 +804,13 @@ static time_t php_openssl_asn1_time_to_time_t(ASN1_UTCTIME * timestr) /* {{{ */
  }
  /* }}} */
  
@@ -3045,7 +3045,7 @@ index 84a4083807..1dda83f71e 100644
  		php_openssl_store_errors();
  		php_error_docref(NULL, E_WARNING, "Error loading %s section %s of %s",
  				section_label,
-@@ -730,17 +730,24 @@ static inline int php_openssl_config_check_syntax(const char * section_label, co
+@@ -822,17 +822,24 @@ static inline int php_openssl_config_check_syntax(const char * section_label, co
  }
  /* }}} */
  
@@ -3078,7 +3078,7 @@ index 84a4083807..1dda83f71e 100644
  static int php_openssl_add_oid_section(struct php_x509_request * req) /* {{{ */
  {
  	char * str;
-@@ -752,7 +759,7 @@ static int php_openssl_add_oid_section(struct php_x509_request * req) /* {{{ */
+@@ -844,7 +851,7 @@ static int php_openssl_add_oid_section(struct php_x509_request * req) /* {{{ */
  	if (str == NULL) {
  		return SUCCESS;
  	}
@@ -3087,7 +3087,7 @@ index 84a4083807..1dda83f71e 100644
  	if (sktmp == NULL) {
  		php_openssl_store_errors();
  		php_error_docref(NULL, E_WARNING, "Problem loading oid section %s", str);
-@@ -823,13 +830,13 @@ static int php_openssl_parse_config(struct php_x509_request * req, zval * option
+@@ -915,13 +922,13 @@ static int php_openssl_parse_config(struct php_x509_request * req, zval * option
  
  	SET_OPTIONAL_STRING_ARG("config", req->config_filename, default_ssl_conf_filename);
  	SET_OPTIONAL_STRING_ARG("config_section_name", req->section_name, "req");
@@ -3106,7 +3106,7 @@ index 84a4083807..1dda83f71e 100644
  		return FAILURE;
  	}
  
-@@ -853,8 +860,7 @@ static int php_openssl_parse_config(struct php_x509_request * req, zval * option
+@@ -945,8 +952,7 @@ static int php_openssl_parse_config(struct php_x509_request * req, zval * option
  	SET_OPTIONAL_STRING_ARG("req_extensions", req->request_extensions_section,
  		php_openssl_conf_get_string(req->req_config, req->section_name, "req_extensions"));
  	SET_OPTIONAL_LONG_ARG("private_key_bits", req->priv_key_bits,
@@ -3116,7 +3116,7 @@ index 84a4083807..1dda83f71e 100644
  	SET_OPTIONAL_LONG_ARG("private_key_type", req->priv_key_type, OPENSSL_KEYTYPE_DEFAULT);
  
  	if (optional_args && (item = zend_hash_str_find(Z_ARRVAL_P(optional_args), "encrypt_key", sizeof("encrypt_key")-1)) != NULL) {
-@@ -934,11 +940,11 @@ static void php_openssl_dispose_config(struct php_x509_request * req) /* {{{ */
+@@ -1026,11 +1032,11 @@ static void php_openssl_dispose_config(struct php_x509_request * req) /* {{{ */
  		req->priv_key = NULL;
  	}
  	if (req->global_config) {
@@ -3130,7 +3130,7 @@ index 84a4083807..1dda83f71e 100644
  		req->req_config = NULL;
  	}
  }
-@@ -2844,12 +2850,12 @@ static int php_openssl_make_REQ(struct php_x509_request * req, X509_REQ * csr, z
+@@ -2947,12 +2953,12 @@ static int php_openssl_make_REQ(struct php_x509_request * req, X509_REQ * csr, z
  	STACK_OF(CONF_VALUE) * dn_sk, *attr_sk = NULL;
  	char * str, *dn_sect, *attr_sect;
  
@@ -3145,7 +3145,7 @@ index 84a4083807..1dda83f71e 100644
  	if (dn_sk == NULL) {
  		php_openssl_store_errors();
  		return FAILURE;
-@@ -2858,7 +2864,7 @@ static int php_openssl_make_REQ(struct php_x509_request * req, X509_REQ * csr, z
+@@ -2961,7 +2967,7 @@ static int php_openssl_make_REQ(struct php_x509_request * req, X509_REQ * csr, z
  	if (attr_sect == NULL) {
  		attr_sk = NULL;
  	} else {
@@ -3154,7 +3154,7 @@ index 84a4083807..1dda83f71e 100644
  		if (attr_sk == NULL) {
  			php_openssl_store_errors();
  			return FAILURE;
-@@ -3275,8 +3281,8 @@ PHP_FUNCTION(openssl_csr_sign)
+@@ -3376,8 +3382,8 @@ PHP_FUNCTION(openssl_csr_sign)
  		X509V3_CTX ctx;
  
  		X509V3_set_ctx(&ctx, cert, new_cert, csr, NULL, 0);
@@ -3165,7 +3165,7 @@ index 84a4083807..1dda83f71e 100644
  			php_openssl_store_errors();
  			goto cleanup;
  		}
-@@ -3349,10 +3355,10 @@ PHP_FUNCTION(openssl_csr_new)
+@@ -3450,10 +3456,10 @@ PHP_FUNCTION(openssl_csr_new)
  					X509V3_CTX ext_ctx;
  
  					X509V3_set_ctx(&ext_ctx, NULL, NULL, csr, NULL, 0);
@@ -3179,9 +3179,9 @@ index 84a4083807..1dda83f71e 100644
  					{
  						php_openssl_store_errors();
 -- 
-2.31.1
+2.35.3
 
-From 575c8ddf73c4a343139be225596c5101497e3186 Mon Sep 17 00:00:00 2001
+From d6b6224ea0fcfd7ae358afa3a768878fb8fb9ccd Mon Sep 17 00:00:00 2001
 From: Jakub Zelenka <bukka@php.net>
 Date: Sun, 8 Aug 2021 20:54:46 +0100
 Subject: [PATCH 27/39] Make CertificateGenerator not dependent on external
@@ -3237,9 +3237,9 @@ index 1dc378e706..4783353a47 100644
              file_put_contents($file, $certText . PHP_EOL . $keyText);
          } finally {
 -- 
-2.31.1
+2.35.3
 
-From 4da1bade85b14bd1f0aa9cf9f463931de54de2ef Mon Sep 17 00:00:00 2001
+From dd5c2fac14bd179d3014fdf21accd7b81a67024b Mon Sep 17 00:00:00 2001
 From: Nikita Popov <nikita.ppv@gmail.com>
 Date: Mon, 9 Aug 2021 10:26:12 +0200
 Subject: [PATCH 28/39] Extract EC key initialization
@@ -3250,10 +3250,10 @@ Subject: [PATCH 28/39] Extract EC key initialization
  1 file changed, 126 insertions(+), 113 deletions(-)
 
 diff --git a/ext/openssl/openssl.c b/ext/openssl/openssl.c
-index 1dda83f71e..a595101cf6 100644
+index 098b1163c6..bfa3191410 100644
 --- a/ext/openssl/openssl.c
 +++ b/ext/openssl/openssl.c
-@@ -4158,6 +4158,126 @@ cleanup:
+@@ -4260,6 +4260,126 @@ cleanup:
  #endif
  }
  
@@ -3380,7 +3380,7 @@ index 1dda83f71e..a595101cf6 100644
  /* {{{ Generates a new private key */
  PHP_FUNCTION(openssl_pkey_new)
  {
-@@ -4213,120 +4333,13 @@ PHP_FUNCTION(openssl_pkey_new)
+@@ -4315,120 +4435,13 @@ PHP_FUNCTION(openssl_pkey_new)
  #ifdef HAVE_EVP_PKEY_EC
  		} else if ((data = zend_hash_str_find(Z_ARRVAL_P(args), "ec", sizeof("ec") - 1)) != NULL &&
  			Z_TYPE_P(data) == IS_ARRAY) {
@@ -3508,9 +3508,9 @@ index 1dda83f71e..a595101cf6 100644
  		}
  	}
 -- 
-2.31.1
+2.35.3
 
-From 0b12c49898ef390ce53e33490a842fd384de6902 Mon Sep 17 00:00:00 2001
+From 14ec063fb3aefafe98cd0853b07a5ccf8d247fc7 Mon Sep 17 00:00:00 2001
 From: Nikita Popov <nikita.ppv@gmail.com>
 Date: Mon, 9 Aug 2021 12:01:35 +0200
 Subject: [PATCH 29/39] Test calculation of EC public key from private key
@@ -3552,9 +3552,9 @@ index 0a71393ae3..0b05410c2c 100644
  NULL
  object(OpenSSLAsymmetricKey)#%d (0) {
 -- 
-2.31.1
+2.35.3
 
-From 6b6b7c28dc81e106f6a1ef96d1f4bc43901764cf Mon Sep 17 00:00:00 2001
+From ffe0c9df1f478d34ec98e5bb02c2b0efb2443edb Mon Sep 17 00:00:00 2001
 From: Nikita Popov <nikita.ppv@gmail.com>
 Date: Mon, 9 Aug 2021 11:12:20 +0200
 Subject: [PATCH 30/39] Use param API for creating EC keys
@@ -3567,10 +3567,10 @@ Rather than the deprecated low level APIs.
  1 file changed, 96 insertions(+)
 
 diff --git a/ext/openssl/openssl.c b/ext/openssl/openssl.c
-index a595101cf6..df057caa8b 100644
+index bfa3191410..45f2a30392 100644
 --- a/ext/openssl/openssl.c
 +++ b/ext/openssl/openssl.c
-@@ -4159,6 +4159,7 @@ cleanup:
+@@ -4261,6 +4261,7 @@ cleanup:
  }
  
  #ifdef HAVE_EVP_PKEY_EC
@@ -3578,7 +3578,7 @@ index a595101cf6..df057caa8b 100644
  static bool php_openssl_pkey_init_legacy_ec(EC_KEY *eckey, zval *data, bool *is_private) {
  	EC_GROUP *group = NULL;
  	EC_POINT *pnt = NULL;
-@@ -4236,6 +4237,7 @@ static bool php_openssl_pkey_init_legacy_ec(EC_KEY *eckey, zval *data, bool *is_
+@@ -4338,6 +4339,7 @@ static bool php_openssl_pkey_init_legacy_ec(EC_KEY *eckey, zval *data, bool *is_
  	}
  
  	if (!EC_KEY_check_key(eckey)) {
@@ -3586,7 +3586,7 @@ index a595101cf6..df057caa8b 100644
  		PHP_OPENSSL_RAND_ADD_TIME();
  		EC_KEY_generate_key(eckey);
  		php_openssl_store_errors();
-@@ -4252,8 +4254,101 @@ clean_exit:
+@@ -4354,8 +4356,101 @@ clean_exit:
  	EC_GROUP_free(group);
  	return false;
  }
@@ -3688,7 +3688,7 @@ index a595101cf6..df057caa8b 100644
  	EVP_PKEY *pkey = EVP_PKEY_new();
  	if (!pkey) {
  		php_openssl_store_errors();
-@@ -4275,6 +4370,7 @@ static EVP_PKEY *php_openssl_pkey_init_ec(zval *data, bool *is_private) {
+@@ -4377,6 +4472,7 @@ static EVP_PKEY *php_openssl_pkey_init_ec(zval *data, bool *is_private) {
  	}
  
  	return pkey;
@@ -3697,9 +3697,9 @@ index a595101cf6..df057caa8b 100644
  #endif
  
 -- 
-2.31.1
+2.35.3
 
-From ab4d43be04953eb75b37d532ac5fe42f0464f1be Mon Sep 17 00:00:00 2001
+From 862016897008903be67970101a25c244bc9b3b2f Mon Sep 17 00:00:00 2001
 From: Nikita Popov <nikita.ppv@gmail.com>
 Date: Mon, 9 Aug 2021 14:19:33 +0200
 Subject: [PATCH 31/39] Extract public key portion via PEM roundtrip
@@ -3714,10 +3714,10 @@ tripping through PEM.
  1 file changed, 19 insertions(+), 24 deletions(-)
 
 diff --git a/ext/openssl/openssl.c b/ext/openssl/openssl.c
-index df057caa8b..e86e99c73f 100644
+index 45f2a30392..ebc862eda2 100644
 --- a/ext/openssl/openssl.c
 +++ b/ext/openssl/openssl.c
-@@ -3430,49 +3430,44 @@ PHP_FUNCTION(openssl_csr_get_subject)
+@@ -3531,49 +3531,44 @@ PHP_FUNCTION(openssl_csr_get_subject)
  }
  /* }}} */
  
@@ -3751,9 +3751,9 @@ index df057caa8b..e86e99c73f 100644
  		Z_PARAM_BOOL(use_shortnames)
  	ZEND_PARSE_PARAMETERS_END();
  
--	orig_csr = php_openssl_csr_from_param(csr_obj, csr_str);
+-	orig_csr = php_openssl_csr_from_param(csr_obj, csr_str, 1);
 -	if (orig_csr == NULL) {
-+	X509_REQ *csr = php_openssl_csr_from_param(csr_obj, csr_str);
++	X509_REQ *csr = php_openssl_csr_from_param(csr_obj, csr_str, 1);
 +	if (csr == NULL) {
  		RETURN_FALSE;
  	}
@@ -3787,9 +3787,9 @@ index df057caa8b..e86e99c73f 100644
  
  	if (tpubkey == NULL) {
 -- 
-2.31.1
+2.35.3
 
-From 7939ffbdcc8d3358306653d7343f2b70204824f9 Mon Sep 17 00:00:00 2001
+From f80074791359e1f6d06803ae7abf0bfaba2208af Mon Sep 17 00:00:00 2001
 From: Nikita Popov <nikita.ppv@gmail.com>
 Date: Fri, 6 Aug 2021 12:08:07 +0200
 Subject: [PATCH 32/39] Use param API for openssl_pkey_get_details()
@@ -3804,10 +3804,10 @@ run into buggy priv_key handling.
  1 file changed, 106 insertions(+), 17 deletions(-)
 
 diff --git a/ext/openssl/openssl.c b/ext/openssl/openssl.c
-index e86e99c73f..40f05da9f2 100644
+index ebc862eda2..c92524b08e 100644
 --- a/ext/openssl/openssl.c
 +++ b/ext/openssl/openssl.c
-@@ -3788,17 +3788,17 @@ cleanup:
+@@ -3890,17 +3890,17 @@ cleanup:
  }
  /* }}} */
  
@@ -3835,7 +3835,7 @@ index e86e99c73f..40f05da9f2 100644
  
  #define OPENSSL_PKEY_SET_BN(_data, _name) do { \
  		zval *bn; \
-@@ -4639,12 +4639,34 @@ PHP_FUNCTION(openssl_pkey_get_private)
+@@ -4741,12 +4741,34 @@ PHP_FUNCTION(openssl_pkey_get_private)
  
  /* }}} */
  
@@ -3872,7 +3872,7 @@ index e86e99c73f..40f05da9f2 100644
  	unsigned int pbio_len;
  	char *pbio;
  	zend_long ktype;
-@@ -4653,9 +4675,9 @@ PHP_FUNCTION(openssl_pkey_get_details)
+@@ -4755,9 +4777,9 @@ PHP_FUNCTION(openssl_pkey_get_details)
  		RETURN_THROWS();
  	}
  
@@ -3884,7 +3884,7 @@ index e86e99c73f..40f05da9f2 100644
  	if (!PEM_write_bio_PUBKEY(out, pkey)) {
  		BIO_free(out);
  		php_openssl_store_errors();
-@@ -4669,6 +4691,72 @@ PHP_FUNCTION(openssl_pkey_get_details)
+@@ -4771,6 +4793,72 @@ PHP_FUNCTION(openssl_pkey_get_details)
  	/*TODO: Use the real values once the openssl constants are used
  	 * See the enum at the top of this file
  	 */
@@ -3957,7 +3957,7 @@ index e86e99c73f..40f05da9f2 100644
  	switch (EVP_PKEY_base_id(pkey)) {
  		case EVP_PKEY_RSA:
  		case EVP_PKEY_RSA2:
-@@ -4785,14 +4873,14 @@ PHP_FUNCTION(openssl_pkey_get_details)
+@@ -4887,14 +4975,14 @@ PHP_FUNCTION(openssl_pkey_get_details)
  				pub = EC_KEY_get0_public_key(ec_key);
  
  				if (EC_POINT_get_affine_coordinates_GFp(ec_group, pub, x, y, NULL)) {
@@ -3975,7 +3975,7 @@ index e86e99c73f..40f05da9f2 100644
  				}
  
  				add_assoc_zval(return_value, "ec", &ec);
-@@ -4806,6 +4894,7 @@ PHP_FUNCTION(openssl_pkey_get_details)
+@@ -4908,6 +4996,7 @@ PHP_FUNCTION(openssl_pkey_get_details)
  			ktype = -1;
  			break;
  	}
@@ -3984,9 +3984,9 @@ index e86e99c73f..40f05da9f2 100644
  
  	BIO_free(out);
 -- 
-2.31.1
+2.35.3
 
-From 35012d2b29254b806e5f376817d22f6c3bab136d Mon Sep 17 00:00:00 2001
+From 657a28022fbcd7c22137f00c3688b4e5a19a1457 Mon Sep 17 00:00:00 2001
 From: Nikita Popov <nikita.ppv@gmail.com>
 Date: Mon, 9 Aug 2021 14:34:12 +0200
 Subject: [PATCH 33/39] Add missing unsigned qualifier
@@ -3999,10 +3999,10 @@ This previously got lost in the deprecation warning noise.
  1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/ext/openssl/openssl.c b/ext/openssl/openssl.c
-index 40f05da9f2..856d7fc4af 100644
+index c92524b08e..36f69bf248 100644
 --- a/ext/openssl/openssl.c
 +++ b/ext/openssl/openssl.c
-@@ -4256,7 +4256,7 @@ static EVP_PKEY *php_openssl_pkey_init_ec(zval *data, bool *is_private) {
+@@ -4358,7 +4358,7 @@ static EVP_PKEY *php_openssl_pkey_init_ec(zval *data, bool *is_private) {
  	BIGNUM *d = NULL, *x = NULL, *y = NULL;
  	EC_GROUP *group = NULL;
  	EC_POINT *pnt = NULL;
@@ -4012,9 +4012,9 @@ index 40f05da9f2..856d7fc4af 100644
  	EVP_PKEY_CTX *ctx = EVP_PKEY_CTX_new_id(EVP_PKEY_EC, NULL);
  	OSSL_PARAM *params = NULL;
 -- 
-2.31.1
+2.35.3
 
-From c34296faadc0a9e15e4ca960d573cdf3aabd8742 Mon Sep 17 00:00:00 2001
+From b4573ad1283bb4405b4826d248d272eaca2d9ee8 Mon Sep 17 00:00:00 2001
 From: Nikita Popov <nikita.ppv@gmail.com>
 Date: Mon, 9 Aug 2021 14:47:43 +0200
 Subject: [PATCH 34/39] Use param API to create RSA key
@@ -4037,10 +4037,10 @@ are more elsewhere.
  2 files changed, 116 insertions(+), 21 deletions(-)
 
 diff --git a/ext/openssl/openssl.c b/ext/openssl/openssl.c
-index 856d7fc4af..9e31f76998 100644
+index 36f69bf248..e545c00731 100644
 --- a/ext/openssl/openssl.c
 +++ b/ext/openssl/openssl.c
-@@ -3812,8 +3812,8 @@ static void php_openssl_add_bn_to_array(zval *ary, const BIGNUM *bn, const char
+@@ -3914,8 +3914,8 @@ static void php_openssl_add_bn_to_array(zval *ary, const BIGNUM *bn, const char
  		} \
  	} while (0);
  
@@ -4051,7 +4051,7 @@ index 856d7fc4af..9e31f76998 100644
  {
  	BIGNUM *n, *e, *d, *p, *q, *dmp1, *dmq1, *iqmp;
  
-@@ -3837,12 +3837,102 @@ static zend_bool php_openssl_pkey_init_and_assign_rsa(EVP_PKEY *pkey, RSA *rsa,
+@@ -3939,12 +3939,102 @@ static zend_bool php_openssl_pkey_init_and_assign_rsa(EVP_PKEY *pkey, RSA *rsa,
  		return 0;
  	}
  
@@ -4157,7 +4157,7 @@ index 856d7fc4af..9e31f76998 100644
  }
  
  #if PHP_OPENSSL_API_VERSION < 0x30000
-@@ -4386,23 +4476,12 @@ PHP_FUNCTION(openssl_pkey_new)
+@@ -4488,23 +4578,12 @@ PHP_FUNCTION(openssl_pkey_new)
  
  		if ((data = zend_hash_str_find(Z_ARRVAL_P(args), "rsa", sizeof("rsa")-1)) != NULL &&
  			Z_TYPE_P(data) == IS_ARRAY) {
@@ -4235,9 +4235,9 @@ index b2c37f6a87..08c9660f22 100644
  int(0)
  int(0)
 -- 
-2.31.1
+2.35.3
 
-From b32adee0fe39c9d0fb981fc7cfe1892c225ba1c3 Mon Sep 17 00:00:00 2001
+From df158325e29bda202b654d1257a8f86782d7a2d2 Mon Sep 17 00:00:00 2001
 From: Nikita Popov <nikita.ppv@gmail.com>
 Date: Tue, 10 Aug 2021 11:50:18 +0200
 Subject: [PATCH 35/39] Fork openssl_error_string() test for OpenSSL
@@ -4462,9 +4462,9 @@ index 0000000000..b119346fe1
 +openssl_csr_get_subject open: ok
 +openssl_csr_get_subjec pem: ok
 -- 
-2.31.1
+2.35.3
 
-From f99d70f7d8d660c2ded4f8f1700771c227987021 Mon Sep 17 00:00:00 2001
+From 48fb287c50a87929a30da3e751e4c0f7a3f2d86f Mon Sep 17 00:00:00 2001
 From: Nikita Popov <nikita.ppv@gmail.com>
 Date: Tue, 10 Aug 2021 12:17:17 +0200
 Subject: [PATCH 36/39] Switch dh_param handling to EVP_PKEY API
@@ -4532,9 +4532,9 @@ index 206543ca82..b61234943e 100644
  	return SUCCESS;
  }
 -- 
-2.31.1
+2.35.3
 
-From b3deb9b38d4a52b4582f40d4d32240353db26653 Mon Sep 17 00:00:00 2001
+From 516b75ea853a88a8d690628e5283f551bce6664e Mon Sep 17 00:00:00 2001
 From: Nikita Popov <nikita.ppv@gmail.com>
 Date: Wed, 11 Aug 2021 10:11:12 +0200
 Subject: [PATCH 37/39] Fix openssl memory leaks
@@ -4547,10 +4547,10 @@ Some leaks that snuck in during refactorings.
  1 file changed, 4 insertions(+), 1 deletion(-)
 
 diff --git a/ext/openssl/openssl.c b/ext/openssl/openssl.c
-index 9e31f76998..d8102bd4bc 100644
+index e545c00731..c6445a1993 100644
 --- a/ext/openssl/openssl.c
 +++ b/ext/openssl/openssl.c
-@@ -3463,7 +3463,9 @@ PHP_FUNCTION(openssl_csr_get_public_key)
+@@ -3564,7 +3564,9 @@ PHP_FUNCTION(openssl_csr_get_public_key)
  	}
  
  	/* Retrieve the public key from the CSR */
@@ -4561,7 +4561,7 @@ index 9e31f76998..d8102bd4bc 100644
  
  	if (csr_str) {
  		/* We need to free the original CSR if it was freshly created */
-@@ -4328,6 +4330,7 @@ static bool php_openssl_pkey_init_legacy_ec(EC_KEY *eckey, zval *data, bool *is_
+@@ -4430,6 +4432,7 @@ static bool php_openssl_pkey_init_legacy_ec(EC_KEY *eckey, zval *data, bool *is_
  		php_openssl_store_errors();
  	}
  	if (EC_KEY_check_key(eckey)) {
@@ -4570,9 +4570,9 @@ index 9e31f76998..d8102bd4bc 100644
  	} else {
  		php_openssl_store_errors();
 -- 
-2.31.1
+2.35.3
 
-From 02f08ac888b0c5f43468eaf76b59b29a7c2d7c74 Mon Sep 17 00:00:00 2001
+From 63cd9d7c16f7b7fa847c2e5239285a7d07edd237 Mon Sep 17 00:00:00 2001
 From: Remi Collet <remi@remirepo.net>
 Date: Fri, 10 Sep 2021 11:28:20 +0200
 Subject: [PATCH 38/39] fix [-Wmaybe-uninitialized] build warnings
@@ -4583,10 +4583,10 @@ Subject: [PATCH 38/39] fix [-Wmaybe-uninitialized] build warnings
  1 file changed, 8 insertions(+), 1 deletion(-)
 
 diff --git a/ext/openssl/openssl.c b/ext/openssl/openssl.c
-index d8102bd4bc..40e6e7ba97 100644
+index c6445a1993..8e28575659 100644
 --- a/ext/openssl/openssl.c
 +++ b/ext/openssl/openssl.c
-@@ -3991,6 +3991,8 @@ static EVP_PKEY *php_openssl_pkey_init_dsa(zval *data, bool *is_private)
+@@ -4093,6 +4093,8 @@ static EVP_PKEY *php_openssl_pkey_init_dsa(zval *data, bool *is_private)
  	OPENSSL_PKEY_SET_BN(data, priv_key);
  	OPENSSL_PKEY_SET_BN(data, pub_key);
  
@@ -4595,7 +4595,7 @@ index d8102bd4bc..40e6e7ba97 100644
  	if (!ctx || !bld || !p || !q || !g) {
  		goto cleanup;
  	}
-@@ -4162,6 +4164,8 @@ static EVP_PKEY *php_openssl_pkey_init_dh(zval *data, bool *is_private)
+@@ -4264,6 +4266,8 @@ static EVP_PKEY *php_openssl_pkey_init_dh(zval *data, bool *is_private)
  	OPENSSL_PKEY_SET_BN(data, priv_key);
  	OPENSSL_PKEY_SET_BN(data, pub_key);
  
@@ -4604,7 +4604,7 @@ index d8102bd4bc..40e6e7ba97 100644
  	if (!ctx || !bld || !p || !g) {
  		goto cleanup;
  	}
-@@ -4255,6 +4259,8 @@ static bool php_openssl_pkey_init_legacy_ec(EC_KEY *eckey, zval *data, bool *is_
+@@ -4357,6 +4361,8 @@ static bool php_openssl_pkey_init_legacy_ec(EC_KEY *eckey, zval *data, bool *is_
  	zval *x;
  	zval *y;
  
@@ -4613,7 +4613,7 @@ index d8102bd4bc..40e6e7ba97 100644
  	if ((bn = zend_hash_str_find(Z_ARRVAL_P(data), "curve_name", sizeof("curve_name") - 1)) != NULL &&
  			Z_TYPE_P(bn) == IS_STRING) {
  		int nid = OBJ_sn2nid(Z_STRVAL_P(bn));
-@@ -4279,7 +4285,6 @@ static bool php_openssl_pkey_init_legacy_ec(EC_KEY *eckey, zval *data, bool *is_
+@@ -4381,7 +4387,6 @@ static bool php_openssl_pkey_init_legacy_ec(EC_KEY *eckey, zval *data, bool *is_
  	}
  
  	// The public key 'pnt' can be calculated from 'd' or is defined by 'x' and 'y'
@@ -4621,7 +4621,7 @@ index d8102bd4bc..40e6e7ba97 100644
  	if ((bn = zend_hash_str_find(Z_ARRVAL_P(data), "d", sizeof("d") - 1)) != NULL &&
  			Z_TYPE_P(bn) == IS_STRING) {
  		*is_private = true;
-@@ -4360,6 +4365,8 @@ static EVP_PKEY *php_openssl_pkey_init_ec(zval *data, bool *is_private) {
+@@ -4462,6 +4467,8 @@ static EVP_PKEY *php_openssl_pkey_init_ec(zval *data, bool *is_private) {
  	OPENSSL_PKEY_SET_BN(data, x);
  	OPENSSL_PKEY_SET_BN(data, y);
  
@@ -4631,9 +4631,9 @@ index d8102bd4bc..40e6e7ba97 100644
  		goto cleanup;
  	}
 -- 
-2.31.1
+2.35.3
 
-From b881c41d32928781cb48013692da04fc84ca9107 Mon Sep 17 00:00:00 2001
+From ae633599a3a1475e6b3508cd538c3d283fc2cabc Mon Sep 17 00:00:00 2001
 From: Jakub Zelenka <bukka@php.net>
 Date: Sun, 12 Sep 2021 20:30:02 +0100
 Subject: [PATCH 39/39] Make OpenSSL tests less dependent on system config
@@ -4757,5 +4757,5 @@ index b119346fe1..d435a53e30 100644
  // invalid x509 for getting public key
  @openssl_pkey_get_public($private_key_file);
 -- 
-2.31.1
+2.35.3
 
