@@ -71,7 +71,7 @@ csf_maxmind_rego() {
             # variable check and not set in CSF config file
             # at /etc/csf/csf.conf, then ensure CSF Firewall's MM_LICENSE_KEY
             # variable is populated as well using CHECK_CMM_MM_LICENSE_KEY
-            echo a1
+            # echo a1
             csf --profile backup cmm-before-maxmind-rego >/dev/null 2>&1
             sed -i "s|MM_LICENSE_KEY = .*|MM_LICENSE_KEY = \"${MM_LICENSE_KEY}\"|" /etc/csf/csf.conf
             csf --profile backup cmm-after-maxmind-rego >/dev/null 2>&1
@@ -84,7 +84,7 @@ csf_maxmind_rego() {
                 csf -ra >/dev/null 2>&1
             fi
         elif [[ "$MM_LICENSE_KEY" && "$CHECK_CMM_MM_LICENSE_KEY" ]] && [[ "$CHECK_CSF_MM_LICENSE_KEY" = "$GET_CMM_MM_LICENSE_KEY" ]]; then
-            echo a2
+            # echo a2
             # if MM_LICENSE_KEY variable is set in Centmin Mod's persistent config file
             # at /etc/centminmod/custom_config.inc via CHECK_CMM_MM_LICENSE_KEY
             # variable check and shared Maxmind API key is already set in CSF config file
@@ -106,7 +106,7 @@ csf_maxmind_rego() {
                 fi
             fi
         elif [[ "$MM_LICENSE_KEY" && "$CHECK_CMM_MM_LICENSE_KEY" ]] && [[ "$CHECK_CSF_MM_LICENSE_KEY" != "$GET_CMM_MM_LICENSE_KEY" ]]; then
-            echo a3
+            # echo a3
             # if MM_LICENSE_KEY variable is set in Centmin Mod's persistent config file
             # at /etc/centminmod/custom_config.inc via CHECK_CMM_MM_LICENSE_KEY
             # variable check and shared Maxmind API key is already set in CSF config file
@@ -128,7 +128,7 @@ csf_maxmind_rego() {
                 fi
             fi
         elif [[ "$MM_LICENSE_KEY" && ! "$CHECK_CMM_MM_LICENSE_KEY" ]] && [ ! "$CHECK_CSF_MM_LICENSE_KEY" ]; then
-            echo a4
+            # echo a4
             # if MM_LICENSE_KEY variable is set in centmin.sh for shared Maxmind API key
             csf --profile backup cmm-before-maxmind-rego-sharedkey >/dev/null 2>&1
             sed -i "s|MM_LICENSE_KEY = .*|MM_LICENSE_KEY = \"${MM_LICENSE_KEY}\"|" /etc/csf/csf.conf
@@ -148,7 +148,7 @@ csf_maxmind_rego() {
             # download last publicly available geolite2 databases for CSF Firewall
             # as at Dec 23, 2019 & extend CC_INTERVAL to 365 days before next geolite2 database update to give
             # time to develop alternative arrangements
-            echo a5
+            # echo a5
             csf_maxmind_geolite_two_download silent
         fi
     fi
