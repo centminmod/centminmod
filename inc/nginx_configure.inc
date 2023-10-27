@@ -405,7 +405,7 @@ if [[ "$ORESTY_LUANGINX" = [yY] ]]; then
   # https://github.com/openresty/lua-nginx-module/issues/1984
   NGINX_PCRE_TWO='n'
 fi
-if [[ "$NGINX_KTLS" = [yY] && "$KERNEL_NUMERICVER" -ge '5002000000' && "$DETECTOPENSSL_THREEZERO" = '3.0' ]]; then
+if [[ "$NGINX_KTLS" = [yY] && "$KERNEL_NUMERICVER" -ge '5002000000' ]] && [[ "$DETECTOPENSSL_THREEZERO" = '3.0' || "$DETECTOPENSSL_THREEONE" = '3.1' || "$DETECTOPENSSL_THREETWO" = '3.2' ]]; then
   KTLS_BUILD_TAG='-ktls'
   NGINX_KTLS_OPT=' enable-ktls'
   NGINX_KTLS_OPT_ALT='enable-ktls'
@@ -1095,7 +1095,7 @@ if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9'
           OPENSSLOPT=" --with-openssl=../$OPENSSLDIR"
           OPENSSLOPT_B=" --with-openssl-opt=enable-tls1_3"
         fi
-      elif [[ "$NGINX_KTLS" = [yY] && "$KERNEL_NUMERICVER" -ge '5002000000' && "$DETECTOPENSSL_THREEZERO" = '3.0' ]]; then
+      elif [[ "$NGINX_KTLS" = [yY] && "$KERNEL_NUMERICVER" -ge '5002000000' ]] && [[ "$DETECTOPENSSL_THREEZERO" = '3.0' || "$DETECTOPENSSL_THREEONE" = '3.1' || "$DETECTOPENSSL_THREETWO" = '3.2' ]]; then
         OPENSSLOPT=" --with-openssl=../$OPENSSLDIR --with-openssl-opt='${NGINX_KTLS_OPT_ALT}'"
       else
         echo 1c
@@ -1165,10 +1165,24 @@ if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9'
           OPENSSLOPT=" --with-openssl=../$OPENSSLDIR"
           OPENSSLOPT_B=" --with-openssl-opt=enable-tls1_3"
         fi
-      elif [[ "$NGINX_KTLS" = [yY] && "$KERNEL_NUMERICVER" -ge '5002000000' && "$DETECTOPENSSL_THREEZERO" = '3.0' ]]; then
+      elif [[ "$DETECTOPENSSL_THREETWO" = '3.2' && "$ORESTY_LUANGINX" != [yY] ]] || [[ "$DETECTOPENSSL_THREETWO" = '3.2' && "$ORESTY_LUANGINX" = [yY] ]]; then
+        echo 2e
+        if [[ "$(uname -m)" = 'x86_64' ]]; then
+          if [[ "$ECNISTP_CHECK" && ! -d "${DIR_TMP}/${OPENSSL_QUIC_DIR}" ]]; then
+            OPENSSLOPT=" --with-openssl=../$OPENSSLDIR --with-openssl-opt='enable-ec_nistp_64_gcc_128'"
+          else
+            OPENSSLOPT=" --with-openssl=../$OPENSSLDIR"
+          fi
+          TLSTHREEOPT='y'
+        else
+          OPENSSLOPT=" --with-openssl=../$OPENSSLDIR"
+          OPENSSLOPT_B=" --with-openssl-opt=enable-tls1_3"
+        fi
+      elif [[ "$NGINX_KTLS" = [yY] && "$KERNEL_NUMERICVER" -ge '5002000000' ]] && [[ "$DETECTOPENSSL_THREEZERO" = '3.0' || "$DETECTOPENSSL_THREEONE" = '3.1' || "$DETECTOPENSSL_THREETWO" = '3.2' ]]; then
+        echo 2f
         OPENSSLOPT=" --with-openssl=../$OPENSSLDIR --with-openssl-opt='${NGINX_KTLS_OPT_ALT}'"
       else
-        echo 2e
+        echo 2g
         export STATICLIBSSL="${OPENSSL_CUSTOMPATH}"
         if [[ "$(uname -m)" = 'x86_64' ]]; then
           if [[ "$ECNISTP_CHECK" && ! -d "${DIR_TMP}/${OPENSSL_QUIC_DIR}" ]]; then
