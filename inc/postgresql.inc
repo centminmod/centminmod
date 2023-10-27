@@ -286,6 +286,7 @@ postgresqlinstall() {
           # rpm --import https://download.postgresql.org/pub/repos/yum/RPM-GPG-KEY-PGDG
           time $YUMDNFBIN -y list postgresql15 postgresql15-devel libpq5-devel postgresql15-contrib postgresql15-libs postgresql15-server --disableplugin=priorities${DISABLEREPO_DNF}
           echo
+          time $YUMDNFBIN -y swap -- remove postgresql-libs -- install libpq5
           time $YUMDNFBIN -y install postgresql15 postgresql15-devel libpq5-devel postgresql15-contrib postgresql15-libs postgresql15-server --disableplugin=priorities${DISABLEREPO_DNF}
         fi
 
@@ -366,6 +367,7 @@ postgresqlinstall() {
           # rpm --import https://download.postgresql.org/pub/repos/yum/RPM-GPG-KEY-PGDG
           time $YUMDNFBIN -y list postgresql15 postgresql15-devel libpq5-devel postgresql15-contrib postgresql15-libs postgresql15-server --disableplugin=priorities${DISABLEREPO_DNF}
           echo
+          time $YUMDNFBIN -y swap -- remove postgresql-libs -- install libpq5
           time $YUMDNFBIN -y install postgresql15 postgresql15-devel libpq5-devel postgresql15-contrib postgresql15-libs postgresql15-server --disableplugin=priorities${DISABLEREPO_DNF}
         fi
 
