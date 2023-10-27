@@ -82,13 +82,13 @@ csf_maxmind_rego() {
             if [[ "$(csf -l >/dev/null 2>&1; echo $?)" -eq '0' ]]; then
                 csf -ra >/dev/null 2>&1
             fi
-        elif [[ "$MM_LICENSE_KEY" && "$CHECK_CMM_MM_LICENSE_KEY" ]] && [[ "$CHECK_CSF_MM_LICENSE_KEY" = 'k0sP8JPgZm6i0sOF' ]]; then
+        elif [[ "$MM_LICENSE_KEY" && "$CHECK_CMM_MM_LICENSE_KEY" ]] && [[ "$CHECK_CSF_MM_LICENSE_KEY" = "$GET_CMM_MM_LICENSE_KEY" ]]; then
             # if MM_LICENSE_KEY variable is set in Centmin Mod's persistent config file
             # at /etc/centminmod/custom_config.inc via CHECK_CMM_MM_LICENSE_KEY
             # variable check and shared Maxmind API key is already set in CSF config file
             # at /etc/csf/csf.conf, then ensure CSF Firewall's MM_LICENSE_KEY
             # variable is populated with /etc/centminmod/custom_config.inc version
-            if [[ "$(grep "MM_LICENSE_KEY = \"${MM_LICENSE_KEY}\"" /etc/csf/csf.conf)" != 'MM_LICENSE_KEY = "k0sP8JPgZm6i0sOF"' ]]; then
+            if [[ "$(grep "MM_LICENSE_KEY = \"${MM_LICENSE_KEY}\"" /etc/csf/csf.conf)" != "MM_LICENSE_KEY = \"${GET_CMM_MM_LICENSE_KEY}\"" ]]; then
                 csf --profile backup cmm-before-maxmind-rego-override >/dev/null 2>&1
                 sed -i "s|MM_LICENSE_KEY = .*|MM_LICENSE_KEY = \"${MM_LICENSE_KEY}\"|" /etc/csf/csf.conf
                 csf --profile backup cmm-after-maxmind-rego-override >/dev/null 2>&1
