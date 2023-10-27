@@ -238,7 +238,7 @@ postgresqlinstall() {
   fi
   if [[ "$CENTOS_SEVEN" = '7' && "$POSTGRESQL_BRANCHVER" = '16' ]]; then
     # https://www.postgresql.org/download/linux/redhat/
-    if [[ ! -f /usr/pgsql-15/bin/pg_config || ! -f /usr/pgsql-15/lib/libpq.a || ! -f /etc/yum.repos.d/pgdg-15-redhat.repo ]] || ; then
+    if [[ ! -f /usr/pgsql-15/bin/pg_config || ! -f /usr/pgsql-15/lib/libpq.a || ! -f /etc/yum.repos.d/pgdg-15-redhat.repo ]]; then
         echo
         echo "install and setup PostgreSQL server and devel packages"
         if [[ "$FORCE_IPVFOUR" != [yY] ]]; then
@@ -319,7 +319,7 @@ postgresqlinstall() {
   fi
   if [[ "$CENTOS_EIGHT" = '8' || "$CENTOS_NINE" = '9' ]] && [[ "$POSTGRESQL_BRANCHVER" = '16' ]]; then
     # https://www.postgresql.org/download/linux/redhat/
-    if [[ ! -f /usr/pgsql-16/bin/pg_config || ! -f /usr/pgsql-16/lib/libpq.a || ! -f /etc/yum.repos.d/pgdg-16-redhat.repo ]] || ; then
+    if [[ ! -f /usr/pgsql-16/bin/pg_config || ! -f /usr/pgsql-16/lib/libpq.a || ! -f /etc/yum.repos.d/pgdg-16-redhat.repo ]]; then
         echo
         echo "install and setup PostgreSQL server and devel packages"
         if [[ "$FORCE_IPVFOUR" != [yY] ]]; then
