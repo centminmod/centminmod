@@ -83,7 +83,7 @@ csf_maxmind_rego() {
             if [[ "$(csf -l >/dev/null 2>&1; echo $?)" -eq '0' ]]; then
                 csf -ra >/dev/null 2>&1
             fi
-        elif [[ "$MM_LICENSE_KEY" && "$CHECK_CMM_MM_LICENSE_KEY" ]] && [[ "$CHECK_CSF_MM_LICENSE_KEY" = 'k0sP8JPgZm6i0sOF' ]]; then
+        elif [[ "$MM_LICENSE_KEY" && "$CHECK_CMM_MM_LICENSE_KEY" ]] && [[ "$CHECK_CSF_MM_LICENSE_KEY" = "${GET_CMM_MM_LICENSE_KEY}" ]]; then
             # if MM_LICENSE_KEY variable is set in Centmin Mod's persistent config file
             # at /etc/centminmod/custom_config.inc via CHECK_CMM_MM_LICENSE_KEY
             # variable check and shared Maxmind API key is already set in CSF config file

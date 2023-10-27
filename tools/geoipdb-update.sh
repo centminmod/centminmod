@@ -11,7 +11,8 @@ FORCE_IPVFOUR='y' # curl/wget commands through script force IPv4
 # You can override this API key with your own Maxmind
 # account API key by setting MM_LICENSE_KEY variable 
 # in persistent config file /etc/centminmod/custom_config.inc
-MM_LICENSE_KEY='k0sP8JPgZm6i0sOF'
+GET_CMM_MM_LICENSE_KEY=$(curl -s https://mmkey.centminmod.com/)
+MM_LICENSE_KEY="$GET_CMM_MM_LICENSE_KEY"
 ######################################################
 # Setup Colours
 black='\E[30;40m'
