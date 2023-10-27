@@ -386,7 +386,7 @@ else
     else
         php_customssl_run_nginx_notify='y'
     fi
-    if [[ "$php_customssl_run_nginx_notify" = [yY] && "$PHP_CUSTOMSSL" = [yY] ]]; then
+    if [[ "$php_customssl_run_nginx_notify" = [yY] && "$PHP_CUSTOMSSL" = [yY] && "$LIBRESSL_SWITCH" = [nN] && "$BORINGSSL_SWITCH" = [nN] ]]; then
         echo
         echo "You are using PHP_CUSTOMSSL='y'. Detected new/different OpenSSL version"
         echo "is available. Please run centmin.sh menu option 4 to update Nginx's"
