@@ -549,18 +549,16 @@ MEMCACHESOCHECKB=$(grep 'memcache.so' "${CONFIGSCANDIR}/memcache.ini")
 PHPEXTDIR=$(cat /usr/local/bin/php-config | awk '/^extension_dir/ {extdir=$1} END {gsub(/\047|extension_dir|=|)/,"",extdir); print extdir}')
 
 if [[ -z "$MEMCACHESOCHECK" || -z "$MEMCACHESOCHECKB" ]]; then
-
-#echo "" >> /usr/local/lib/php.ini
-#echo "extension=${PHPEXTDIR}/memcache.so" >> /usr/local/lib/php.ini
-echo "extension=${PHPEXTDIR}/memcache.so" > "${CONFIGSCANDIR}/memcache.ini"
-
+    echo ""
+    if [ "$PHP_MEMCACHE" == 'y' ]; then
+        echo ""
+        echo "extension=${PHPEXTDIR}/memcache.so" > "${CONFIGSCANDIR}/memcache.ini"
+    fi
 else
-
-echo ""
-echo "memcache.so already loaded in ${CONFIGSCANDIR}/memcache.ini"
-echo "$MEMCACHESOCHECK"
-echo ""
-
+    echo ""
+    echo "memcache.so already loaded in ${CONFIGSCANDIR}/memcache.ini"
+    echo "$MEMCACHESOCHECK"
+    echo ""
 fi # memcache.so check
 
 #######################################################
@@ -572,24 +570,23 @@ MEMCACHEDSOCHECKB=$(grep 'memcached.so' "${CONFIGSCANDIR}/memcached.ini")
 PHPEXTDIRD=$(cat /usr/local/bin/php-config | awk '/^extension_dir/ {extdir=$1} END {gsub(/\047|extension_dir|=|)/,"",extdir); print extdir}')
 
 if [[ -z "$MEMCACHEDSOCHECK" || -z "$MEMCACHEDSOCHECKB" ]]; then
-
-#echo "" >> /usr/local/lib/php.ini
-echo "extension=${PHPEXTDIRD}/memcached.so" > "${CONFIGSCANDIR}/memcached.ini"
-echo "memcached.sess_connect_timeout=3000" >> "${CONFIGSCANDIR}/memcached.ini"
-echo "; http://php.net/manual/en/memcached.configuration.php" >> "${CONFIGSCANDIR}/memcached.ini"
-echo "memcached.sess_consistent_hash=0" >> "${CONFIGSCANDIR}/memcached.ini"
-echo "memcached.sess_number_of_replicas=0" >> "${CONFIGSCANDIR}/memcached.ini"
-echo "memcached.sess_randomize_replica_read=0" >> "${CONFIGSCANDIR}/memcached.ini"
-echo "memcached.sess_remove_failed=0" >> "${CONFIGSCANDIR}/memcached.ini"
-echo "memcached.sess_binary=0" >> "${CONFIGSCANDIR}/memcached.ini"
-
+    echo ""
+    if [ "$PHP_MEMCACHED" == 'y' ]; then
+        echo ""
+        echo "extension=${PHPEXTDIRD}/memcached.so" > "${CONFIGSCANDIR}/memcached.ini"
+        echo "memcached.sess_connect_timeout=3000" >> "${CONFIGSCANDIR}/memcached.ini"
+        echo "; http://php.net/manual/en/memcached.configuration.php" >> "${CONFIGSCANDIR}/memcached.ini"
+        echo "memcached.sess_consistent_hash=0" >> "${CONFIGSCANDIR}/memcached.ini"
+        echo "memcached.sess_number_of_replicas=0" >> "${CONFIGSCANDIR}/memcached.ini"
+        echo "memcached.sess_randomize_replica_read=0" >> "${CONFIGSCANDIR}/memcached.ini"
+        echo "memcached.sess_remove_failed=0" >> "${CONFIGSCANDIR}/memcached.ini"
+        echo "memcached.sess_binary=0" >> "${CONFIGSCANDIR}/memcached.ini"
+    fi
 else
-
-echo ""
-echo "memcached.so already loaded in ${CONFIGSCANDIR}/memcached.ini"
-echo "$MEMCACHEDSOCHECK"
-echo ""
-
+    echo ""
+    echo "memcached.so already loaded in ${CONFIGSCANDIR}/memcached.ini"
+    echo "$MEMCACHEDSOCHECK"
+    echo ""
 fi # memcached.so check
 
         if [[ "$CLANG_MEMCACHED" = [yY] ]]; then
