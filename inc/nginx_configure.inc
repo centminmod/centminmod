@@ -4899,6 +4899,7 @@ else
       NGX_BROTLI_TAG=''
     fi
     SETBUILD_VALUE="${SETBUILD_DATE}-${SETBUILD_OS}${SETBUILD_ENV}${CM_COMMIT_LAST}${NGX_BROTLI_TAG}${KTLS_BUILD_TAG}"
+    SETBUILD_VALUE=$(echo "$SETBUILD_VALUE" | sed -e 's|\-redhat||g')
     if [[ "$NGXMODULE_ALTORDER" = [yY] ]]; then
       if [[ "$asknginxipv" = [yY] || "$NGINX_IPV" = [yY] ]]; then
           pwd

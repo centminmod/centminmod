@@ -449,6 +449,9 @@ top_info() {
     CCACHE_INFOVER=$(ccache -V | head -n1)
     NGINX_INFOVER=$(nginx -v 2>&1 | awk -F "/" '{print $2}' | head -n1)
     PHP_INFOVER=$(php-config --version)
+    PHPOPENSSL_INFOVER=$(php --ri openssl | awk '/Library Version/ {print $6}')
+    PHPCURL_INFOVER=$(php --ri curl | awk '/cURL Information/ {print $4}')
+    PHPCURLSSL_INFOVER=$(php --ri curl | awk '/SSL Version/ {print $4}')
     MARIADB_INFOVER=$(rpm -qa | grep -i MariaDB-server | head -n1 | cut -d '-' -f3)
     MEMCACHEDSERVER_INFOVER=$(/usr/local/bin/memcached -h | head -n1 | awk '{print $2}')
     CSF_INFOVER=$(csf -v | head -n1 | awk '{print $2}')
@@ -546,6 +549,9 @@ top_info() {
     echo -e " Nginx PageSpeed: \t$PS"
     echo -e " Nginx Version: \t$NGINX_INFOVER"
     echo -e " PHP-FPM Version: \t$PHP_INFOVER"
+    echo -e " PHP-FPM OpenSSL: \t$PHPOPENSSL_INFOVER"
+    echo -e " PHP-FPM CURL Version: \t$PHPCURL_INFOVER"
+    echo -e " PHP-FPM CURL SSL: \t$PHPCURLSSL_INFOVER"
     echo -e " MariaDB Version: \t$MARIADB_INFOVER"
     echo -e " CSF Firewall: \t\t$CSF_INFOVER"
     echo -e " Memcached Server: \t$MEMCACHEDSERVER_INFOVER"
@@ -919,6 +925,9 @@ CENTMINMOD_INFOVER=$(head -n1 /etc/centminmod-release)
 CCACHE_INFOVER=$(ccache -V | head -n1)
 NGINX_INFOVER=$(nginx -v 2>&1 | awk -F "/" '{print $2}' | head -n1)
 PHP_INFOVER=$(php-config --version)
+PHPOPENSSL_INFOVER=$(php --ri openssl | awk '/Library Version/ {print $6}')
+PHPCURL_INFOVER=$(php --ri curl | awk '/cURL Information/ {print $4}')
+PHPCURLSSL_INFOVER=$(php --ri curl | awk '/SSL Version/ {print $4}')
 MARIADB_INFOVER=$(rpm -qa | grep -i MariaDB-server | head -n1 | cut -d '-' -f3)
 MEMCACHEDSERVER_INFOVER=$(/usr/local/bin/memcached -h | head -n1 | awk '{print $2}')
 CSF_INFOVER=$(csf -v | head -n1 | awk '{print $2}')
@@ -1007,6 +1016,9 @@ echo -e " Centmin Mod: \t\t$CENTMINMOD_INFOVER"
 echo -e " Nginx PageSpeed: \t$PS"
 echo -e " Nginx Version: \t$NGINX_INFOVER"
 echo -e " PHP-FPM Version: \t$PHP_INFOVER"
+echo -e " PHP-FPM OpenSSL: \t$PHPOPENSSL_INFOVER"
+echo -e " PHP-FPM CURL Version: \t$PHPCURL_INFOVER"
+echo -e " PHP-FPM CURL SSL: \t$PHPCURLSSL_INFOVER"
 echo -e " MariaDB Version: \t$MARIADB_INFOVER"
 echo -e " CSF Firewall: \t\t$CSF_INFOVER"
 echo -e " Memcached Server: \t$MEMCACHEDSERVER_INFOVER"
