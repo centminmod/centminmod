@@ -925,6 +925,21 @@ php_patches() {
   # only compilation fixes but not 100% working as extensive changes
   # needed for 7.4 & 8.0 for compatibility
   # "$PHP_PATCH_OPENSSL_THREE" = [yY]
+  if [[ "$CENTOS_EIGHT" -eq '8' && "$PHP_PATCH_OPENSSL_THREE" = [yY] ]] && [[ "$PHPVER_ID" -ge '70400' && "$PHPVER_ID" -lt '80000' ]]; then
+    phpsevenfour_opensslthree_bugids='php74-snmp-openssl3 php74-openssl3'
+    for bugid in $phpsevenfour_opensslthree_bugids; do
+      if [[ ! -f "${bugid}.patch" && -f "$CUR_DIR/patches/php/${bugid}.patch" ]]; then
+        echo
+        if [[ "$bugid" != 'php-openssl-cert' ]]; then
+          echo "patching PHP 7.4 for ${bugid}"
+        fi
+        echo
+        cp -a $CUR_DIR/patches/php/${bugid}.patch ${bugid}.patch
+        dos2unix ${bugid}.patch
+        patch -p1 < ${bugid}.patch
+      fi
+    done
+  fi
   if [[ "$CENTOS_NINE" -eq '9' && "$PHP_PATCH_OPENSSL_THREE" = [yY] ]] && [[ "$PHPVER_ID" -ge '70400' && "$PHPVER_ID" -lt '80000' ]]; then
     phpsevenfour_opensslthree_bugids='php74-snmp-openssl3 php74-openssl3'
     for bugid in $phpsevenfour_opensslthree_bugids; do
@@ -977,6 +992,21 @@ php_patches() {
   # only compilation fixes but not 100% working as extensive changes
   # needed for 7.4 & 8.0 for compatibility
   # "$PHP_PATCH_OPENSSL_THREE" = [yY]
+  if [[ "$CENTOS_EIGHT" -eq '8' && "$PHP_PATCH_OPENSSL_THREE" = [yY] ]] && [[ "$PHPVER_ID" -ge '80000' && "$PHPVER_ID" -lt '80100' ]]; then
+    phpeightzero_opensslthree_bugids='php80-snmp-openssl3 php80-openssl3-phar-sha php80-openssl3'
+    for bugid in $phpeightzero_opensslthree_bugids; do
+      if [[ ! -f "${bugid}.patch" && -f "$CUR_DIR/patches/php/${bugid}.patch" ]]; then
+        echo
+        if [[ "$bugid" != 'php-openssl-cert' ]]; then
+          echo "patching PHP 8.0 for ${bugid}"
+        fi
+        echo
+        cp -a $CUR_DIR/patches/php/${bugid}.patch ${bugid}.patch
+        dos2unix ${bugid}.patch
+        patch -p1 < ${bugid}.patch
+      fi
+    done
+  fi
   if [[ "$CENTOS_NINE" -eq '9' && "$PHP_PATCH_OPENSSL_THREE" = [yY] ]] && [[ "$PHPVER_ID" -ge '80000' && "$PHPVER_ID" -lt '80100' ]]; then
     phpeightzero_opensslthree_bugids='php80-snmp-openssl3 php80-openssl3-phar-sha php80-openssl3'
     for bugid in $phpeightzero_opensslthree_bugids; do
