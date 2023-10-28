@@ -694,7 +694,7 @@ install_gperftools
 # read -ep "Do you want to recompile OpenSSL ? Only needed if you updated OpenSSL version in centmin.sh [y/n]: " recompileopenssl 
 # echo ""
 
-if [[ "$recompileopenssl" = [yY] || "$LIBRESSL_SWITCH" = [yY] ]]; then
+if [[ "$recompileopenssl" = [yY] || "$LIBRESSL_SWITCH" = [yY] ]] && [[ "$OPENSSL_SYSTEM_USE" != [yY] ]]; then
     installopenssl
 fi # recompileopenssl
 

@@ -1082,6 +1082,9 @@ if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9'
           OPENSSLOPT=" --with-openssl=../openssl-tls1.3"
           OPENSSLOPT_B=" --with-openssl-opt=enable-tls1_3"
         fi
+      elif [[ "$OPENSSL_SYSTEM_USE" = [yY] ]]; then
+        echo 1a2
+        OPENSSLOPT=""
       elif [[ "$DETECTOPENSSL_ONEONE" = '1.1.1' && "$ORESTY_LUANGINX" != [yY] ]] || [[ "$DETECTOPENSSL_ONEONE" = '1.1.1' && "$ORESTY_LUANGINX" = [yY] ]]; then
         echo 1b
         if [[ "$(uname -m)" = 'x86_64' ]]; then
@@ -1111,6 +1114,7 @@ if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9'
       fi
       LRT=""
     else
+      # NOSOURCEOPENSSL=y
       OPENSSLDIR=$(tar -tzf "$DIR_TMP/${OPENSSL_LINKFILE}" | head -1 | cut -f1 -d"/")
       # export OPENSSL_BPATH=$DIR_TMP
       LIBRESSLOPT=""
@@ -1126,6 +1130,9 @@ if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9'
           OPENSSLOPT=" --with-openssl=../openssl-tls1.3"
           OPENSSLOPT_B=" --with-openssl-opt=enable-tls1_3"
         fi
+      elif [[ "$OPENSSL_SYSTEM_USE" = [yY] ]]; then
+        echo 2a2
+        OPENSSLOPT=""
       elif [[ "$DETECTOPENSSL_ONEONE" = '1.1.1' && "$ORESTY_LUANGINX" != [yY] ]] || [[ "$DETECTOPENSSL_ONEONE" = '1.1.1' && "$ORESTY_LUANGINX" = [yY] ]]; then
         echo 2b
         if [[ "$(uname -m)" = 'x86_64' ]]; then

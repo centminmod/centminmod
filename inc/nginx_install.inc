@@ -163,7 +163,9 @@ install_gperftools
 
 pcredir_check
 perl_ipc_cmd_install
-installopenssl
+if [[ "$OPENSSL_SYSTEM_USE" != [yY] ]]; then
+    installopenssl
+fi
 
     if [ -f "$(which figlet)" ]; then
         figlet -ckf standard "luajit install"
