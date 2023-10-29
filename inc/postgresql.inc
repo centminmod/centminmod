@@ -304,7 +304,7 @@ postgresqlinstall() {
           systemctl status postgresql-16 --no-pager
         elif [[ "$CENTOS_SEVEN" = '7' ]]; then
           echo
-          /usr/pgsql-16/bin/postgresql-15-setup initdb
+          /usr/pgsql-15/bin/postgresql-15-setup initdb
           systemctl enable postgresql-15
           systemctl start postgresql-15
           systemctl status postgresql-15 --no-pager
@@ -385,7 +385,7 @@ postgresqlinstall() {
           systemctl status postgresql-16 --no-pager
         elif [[ "$CENTOS_SEVEN" = '7' ]]; then
           echo
-          /usr/pgsql-16/bin/postgresql-15-setup initdb
+          /usr/pgsql-15/bin/postgresql-15-setup initdb
           systemctl enable postgresql-15
           systemctl start postgresql-15
           systemctl status postgresql-15 --no-pager
