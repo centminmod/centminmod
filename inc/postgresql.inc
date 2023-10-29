@@ -236,7 +236,7 @@ postgresqlinstall() {
         fi
     fi
   fi
-  if [[ "$CENTOS_SEVEN" = '7' && "$POSTGRESQL_BRANCHVER" = '16' ]]; then
+  if [[ "$CENTOS_SEVEN" = '7' && "$POSTGRESQL_BRANCHVER" = '16' && ! -d /var/lib/psql/15/data ]]; then
     # https://www.postgresql.org/download/linux/redhat/
     if [[ ! -f /usr/pgsql-15/bin/pg_config || ! -f /usr/pgsql-15/lib/libpq.a || ! -f /etc/yum.repos.d/pgdg-15-redhat.repo ]]; then
         echo
@@ -317,7 +317,7 @@ postgresqlinstall() {
         fi
     fi
   fi
-  if [[ "$CENTOS_EIGHT" = '8' || "$CENTOS_NINE" = '9' ]] && [[ "$POSTGRESQL_BRANCHVER" = '16' ]]; then
+  if [[ "$CENTOS_EIGHT" = '8' || "$CENTOS_NINE" = '9' ]] && [[ "$POSTGRESQL_BRANCHVER" = '16' && ! -d /var/lib/psql/16/data ]]; then
     # https://www.postgresql.org/download/linux/redhat/
     if [[ ! -f /usr/pgsql-16/bin/pg_config || ! -f /usr/pgsql-16/lib/libpq.a || ! -f /etc/yum.repos.d/pgdg-16-redhat.repo ]]; then
         echo
