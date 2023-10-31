@@ -19,10 +19,19 @@ export SYSTEMD_PAGER=''
 DT=$(date +"%d%m%y-%H%M%S")
 DIR_TMP=/svr-setup
 CENTMINLOGDIR='/root/centminlogs'
+CSF_PERMABAN_LISTDIR='/etc/centminmod/csf'
 GET_DENY_IP_LIMIT=$(egrep '^DENY_IP_LIMIT' /etc/csf/csf.conf | awk -F' = ' '{print $2}' | tr -d '"')
 THRESHOLD_DENY_IP_LIMIT=$(echo "$GET_DENY_IP_LIMIT - 100" | bc)
 GET_DENY_TEMP_IP_LIMIT=$(egrep '^DENY_TEMP_IP_LIMIT' /etc/csf/csf.conf | awk -F' = ' '{print $2}' | tr -d '"')
 THRESHOLD_DENY_TEMP_IP_LIMIT=$(echo "$GET_DENY_TEMP_IP_LIMIT - 100" | bc)
+
+if [ ! -d "$CSF_PERMABAN_LISTDIR" ]; then
+  mkdir -p "$CSF_PERMABAN_LISTDIR"
+fi
+
+if [ -f "${CSF_PERMABAN_LISTDIR}/csf-permaban.conf" ]; then
+  CSF_PERMABAN_LIST=$(cat "${CSF_PERMABAN_LISTDIR}/csf-permaban.conf")
+fi
 
 echo
 echo "Check /etc/csf/csf.conf"
@@ -36,11 +45,35 @@ fi
 echo "Number of CSF Firewall Blocked IPs: $CSF_COUNT_IPS"
 
 initial_csf_blocks() {
-  if [[ "$CSF_COUNT_IPS" -ge "$GET_DENY_IP_LIMIT" ]] && [[ "$(systemctl is-enabled csf)" = 'enabled' && -f /etc/csf/csf.deny ]]; then
+  if [[ ! "$(grep 'perma' /etc/csf/csf.deny)" && "$(wc -l < ${CSF_PERMABAN_LISTDIR}/csf-permaban.conf)" -gt '1' ]] || [[ ! "$(grep 'shodan' /etc/csf/csf.deny)" ]] || [[ ! "$(grep 'censys' /etc/csf/csf.deny)" ]] || [[ "$CSF_COUNT_IPS" -ge "$GET_DENY_IP_LIMIT" && "$(systemctl is-enabled csf)" = 'enabled' && -f /etc/csf/csf.deny ]]; then
         echo
         echo "Re-apply initial CSF Firewall set of IP blocks once CSF Firewall"
         echo "DENY_IP_LIMIT & DENY_TEMP_IP_LIMIT IP limits are reached"
-        echo
+        if [ -f "${CSF_PERMABAN_LISTDIR}/csf-permaban.conf" ]; then
+          echo
+          # Get the epoch time for 24 hours ago
+          TIME_24_HOURS_AGO=$(($(date +%s) - 86400))
+          # Get the epoch time of the last modification of the last backup file
+          LAST_BACKUP_FILE=$(ls -1t /var/lib/csf/backup/*_cmm_b4_permaban_block_tool | head -n 1)
+          LAST_BACKUP_TIME=$(stat -c %Y "$LAST_BACKUP_FILE")
+      
+          # Check if the last backup time is less than the epoch time for 24 hours ago
+          if (( LAST_BACKUP_TIME <= TIME_24_HOURS_AGO )); then
+            echo
+            if [ "$(wc -l < ${CSF_PERMABAN_LISTDIR}/csf-permaban.conf)" -gt '1' ]; then
+              csf --profile backup cmm-b4-permaban-block-tool
+            fi
+          else
+            echo "Backup file is not older than 24 hours, skipping csf --profile backup cmm-b4-permaban-block-tool command."
+          fi
+          for ip in $CSF_PERMABAN_LIST; 
+          do
+            if [[ "$(ipcalc -c "$ip" >/dev/null 2>&1; echo $?)" -eq '0' ]] && [[ ! "$(grep "$ip" /etc/csf/csf.deny)" ]]; then
+              csf -d $ip permaban
+            fi
+          done
+        fi
+    if [[ ! "$(grep 'shodan' /etc/csf/csf.deny)" ]] || [[ ! "$(grep 'censys' /etc/csf/csf.deny)" ]] || [[ "$CSF_COUNT_IPS" -ge "$GET_DENY_IP_LIMIT" && "$(systemctl is-enabled csf)" = 'enabled' && -f /etc/csf/csf.deny ]]; then
         csf --profile backup cmm-b4-censys-block-tool
         # block censys.io scans
         # https://support.censys.io/getting-started/frequently-asked-questions-faq
@@ -142,6 +175,7 @@ initial_csf_blocks() {
         csf -d 80.82.77.139 dojo.census.shodan.io
         csf -d 66.240.205.34 malware-hunter.census.shodan.io
         csf -d 188.138.9.50 atlantic481.serverprofi24.com
+    fi
   else
     echo
     echo "DENY_IP_LIMIT & DENY_TEMP_IP_LIMIT IP limits not reached"
