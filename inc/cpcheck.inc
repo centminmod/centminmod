@@ -1,3 +1,13 @@
+setup_initial_csf_block_cronjob() {
+  if [[ -f /usr/local/src/centminmod/tools/initial-csf-blocks.sh && ! "$(crontab -l | grep -F '33 */2 * * * /usr/local/src/centminmod/tools/initial-csf-blocks.sh >/dev/null 2>&1')" ]]; then
+    mkdir -p /etc/centminmod/cronjobs/
+    crontab -l > /etc/centminmod/cronjobs/before_initial_csf_blocklist_cronjoblist
+    sed -i '/initial-csf-blocks.sh/d' /etc/centminmod/cronjobs/before_initial_csf_blocklist_cronjoblist
+    echo "33 */2 * * * /usr/local/src/centminmod/tools/initial-csf-blocks.sh >/dev/null 2>&1" >> /etc/centminmod/cronjobs/before_initial_csf_blocklist_cronjoblist
+    crontab /etc/centminmod/cronjobs/before_initial_csf_blocklist_cronjoblist
+  fi
+}
+
 fix_ftp_csf_ports() {
   # fix csf v14.18 adding DoT DNS over TLS port 853 which broke
   # Centmin Mod initial install CSF port list configuration
@@ -3731,6 +3741,7 @@ if [[ "$INITIALINSTALL" != [yY] ]]; then
   python_alternatives_setup
   check_and_fix_cache_keys
   fix_ftp_csf_ports
+  setup_initial_csf_block_cronjob
 fi
 
 }
