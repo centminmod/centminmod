@@ -21,7 +21,7 @@ if [[ -d /root/centminlogs/ ]]; then
   FIRSTYUM_FILE=$(find /root/centminlogs/ -maxdepth 1 -type f -name "firstyum_installtime_*.log" | head -n 1)
 fi
 
-if [[ -d /root/centminlogs ]] || [[ -f "$FIRSTYUM_FILE" ]] || [[ -f /usr/local/src/centminmod/centmin.sh && -f /usr/local/bin/php && -f /usr/local/sbin/nginx ]]; then
+if [[ -f "$FIRSTYUM_FILE" ]] || [[ -f /usr/local/src/centminmod/centmin.sh && -f /usr/local/bin/php && -f /usr/local/sbin/nginx ]]; then
   echo
   echo "error: Detected that Centmin Mod has already been installed on this system"
   echo "       You are only meant to run initial installer once"
