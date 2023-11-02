@@ -21,6 +21,7 @@ if [[ "$REMIREPO_DISABLE" = [nN] ]]; then
     if [ "$CCREMICHECK" == '0' ]; then
       # yumpriorremi_eight
       echo
+      yum clean all
       # set remi redis 6.2 default
       yum -y module disable composer
       yum -y module enable redis:remi-6.2

@@ -22,6 +22,7 @@ if [[ "$REMIREPO_DISABLE" = [nN] ]]; then
       # yumpriorremi_nine
       echo
       # set remi redis 6.2 default
+      yum clean all
       yum -y module disable composer
       yum -y module enable redis:remi-6.2
       # el9 missing libc-client& uw-imap-develthat remi-safe/remi repo have
