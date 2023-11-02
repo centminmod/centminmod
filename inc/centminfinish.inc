@@ -401,6 +401,7 @@ $(which pure-ftpd) -h | head -n1 | awk '{print $1,$2}'
   if [[ "$(systemctl is-enabled pure-ftpd)" = 'disabled' ]]; then
     systemctl enable pure-ftpd >/dev/null 2>&1
   fi
+  systemctl restart pure-ftpd
   systemctl status pure-ftpd --no-pager
   final_pure_ftpd_status=$?
   if [ "$final_pure_ftpd_status" -ne '0' ]; then
