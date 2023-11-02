@@ -193,6 +193,7 @@ if [[ "$mysqlroot_reset" = [yY] ]]; then
     # kill -9 $MYSQL_PID >/dev/null 2>&1
     killall -9 mysqld_safe >/dev/null 2>&1
     killall -9 mysqld >/dev/null 2>&1
+    killall -9 mariadbd >/dev/null 2>&1
     sleep 10
   elif [[ "$STOPMYSQL" = [yY] ]] && [[ "$CENTOS_EIGHT" = '8' ]]; then
     # mysqladmin -u root -p${NEWMYSQLROOTPASS} flush-tables >/dev/null 2>&1
@@ -201,6 +202,7 @@ if [[ "$mysqlroot_reset" = [yY] ]]; then
     # kill -9 $MYSQL_PID >/dev/null 2>&1
     killall -9 mysqld_safe >/dev/null 2>&1
     killall -9 mysqld >/dev/null 2>&1
+    killall -9 mariadbd >/dev/null 2>&1
     sleep 10
   elif [[ "$STOPMYSQL" = [yY] && "$CENTOS_SEVEN" = '7' ]]; then
     # mysqladmin -u root -p${NEWMYSQLROOTPASS} flush-tables >/dev/null 2>&1
