@@ -116,7 +116,10 @@ if [[ "$REMIREPO_DISABLE" = [nN] ]]; then
     rpm --import https://rpms.remirepo.net/RPM-GPG-KEY-remi2021
     rpm --import https://rpms.remirepo.net/RPM-GPG-KEY-remi2022
     rpm --import https://rpms.remirepo.net/RPM-GPG-KEY-remi2023
+    echo
+    echo "rpm -q gpg-pubkey --qf \"%{summary} ->%{version}-%{release}\n\""
     rpm -q gpg-pubkey --qf "%{summary} ->%{version}-%{release}\n"
+    echo
     rpm -Uvh --nosignature ${CENTOSSEVENREMIFILE}
     ERR=$?
     CCREMICHECK="$ERR"
@@ -147,7 +150,10 @@ if [[ "$REMIREPO_DISABLE" = [nN] ]]; then
     rpm --import https://rpms.remirepo.net/RPM-GPG-KEY-remi2021
     rpm --import https://rpms.remirepo.net/RPM-GPG-KEY-remi2022
     rpm --import https://rpms.remirepo.net/RPM-GPG-KEY-remi2023
+    echo
+    echo "rpm -q gpg-pubkey --qf \"%{summary} ->%{version}-%{release}\n\""
     rpm -q gpg-pubkey --qf "%{summary} ->%{version}-%{release}\n"
+    echo
     rpm -Uvh --nosignature ${CENTOSSEVENREMIFILE}
     ERR=$?
     CCREMICHECK="$ERR"

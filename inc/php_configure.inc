@@ -138,6 +138,14 @@ oniguruma_check() {
     echo "install oniguruma5php oniguruma5php-devel"
     echo
     yum -y install oniguruma5php oniguruma5php-devel --enablerepo=remi
+    oni_err=$?
+    echo "oni_err=$oni_err"
+    if [ ! -f /usr/include/oniggnu.h ]; then
+      yum clean all
+      yum -y install oniguruma5php oniguruma5php-devel --enablerepo=remi
+      oni_err=$?
+      echo "oni_err=$oni_err"
+    fi
   fi
   if [[ "$PHPMVER" = '7.4' || "$PHPMUVER" = '7.4' || "$PHPMVER" = '8.0' || "$PHPMUVER" = '8.0' || "$PHPMVER" = '8.1' || "$PHPMUVER" = '8.1' || "$PHPMVER" = '8.2' || "$PHPMUVER" = '8.2' || "$PHPMVER" = '8.3' || "$PHPMUVER" = '8.3' || "$PHPVER_ID" -ge '80000' ]]; then
     echo "export ONIG_CFLAGS='-I/usr/include'"
@@ -1398,8 +1406,13 @@ if [[ "$GCCINTEL_PHP" = [yY] ]]; then
         which g++
         unset CC
         unset CXX
-        export CC="ccache /opt/rh/gcc-toolset-12/root/usr/bin/gcc"
-        export CXX="ccache /opt/rh/gcc-toolset-12/root/usr/bin/g++"
+        if [[ "$INITIALINSTALL" != [yY] ]]; then
+          export CC="ccache /opt/rh/gcc-toolset-12/root/usr/bin/gcc"
+          export CXX="ccache /opt/rh/gcc-toolset-12/root/usr/bin/g++"
+        else
+          export CC="/opt/rh/gcc-toolset-12/root/usr/bin/gcc"
+          export CXX="/opt/rh/gcc-toolset-12/root/usr/bin/g++"
+        fi
         echo "EL 8.7 set gcc-toolset-12"
         echo $CC
         echo $CXX
@@ -1412,8 +1425,13 @@ if [[ "$GCCINTEL_PHP" = [yY] ]]; then
         which g++
         unset CC
         unset CXX
-        export CC="ccache /opt/rh/gcc-toolset-11/root/usr/bin/gcc"
-        export CXX="ccache /opt/rh/gcc-toolset-11/root/usr/bin/g++"
+        if [[ "$INITIALINSTALL" != [yY] ]]; then
+          export CC="ccache /opt/rh/gcc-toolset-11/root/usr/bin/gcc"
+          export CXX="ccache /opt/rh/gcc-toolset-11/root/usr/bin/g++"
+        else
+          export CC="/opt/rh/gcc-toolset-11/root/usr/bin/gcc"
+          export CXX="/opt/rh/gcc-toolset-11/root/usr/bin/g++"
+        fi
         echo "centos 8 set gcc-toolset-11"
         echo $CC
         echo $CXX
@@ -1426,8 +1444,13 @@ if [[ "$GCCINTEL_PHP" = [yY] ]]; then
         which g++
         unset CC
         unset CXX
-        export CC="ccache /opt/rh/gcc-toolset-10/root/usr/bin/gcc"
-        export CXX="ccache /opt/rh/gcc-toolset-10/root/usr/bin/g++"
+        if [[ "$INITIALINSTALL" != [yY] ]]; then
+          export CC="ccache /opt/rh/gcc-toolset-10/root/usr/bin/gcc"
+          export CXX="ccache /opt/rh/gcc-toolset-10/root/usr/bin/g++"
+        else
+          export CC="/opt/rh/gcc-toolset-10/root/usr/bin/gcc"
+          export CXX="/opt/rh/gcc-toolset-10/root/usr/bin/g++"
+        fi
         echo "centos 8 set gcc-toolset-10"
         echo $CC
         echo $CXX
@@ -1440,8 +1463,13 @@ if [[ "$GCCINTEL_PHP" = [yY] ]]; then
         which g++
         unset CC
         unset CXX
-        export CC="ccache /opt/rh/gcc-toolset-9/root/usr/bin/gcc"
-        export CXX="ccache /opt/rh/gcc-toolset-9/root/usr/bin/g++"
+        if [[ "$INITIALINSTALL" != [yY] ]]; then
+          export CC="ccache /opt/rh/gcc-toolset-9/root/usr/bin/gcc"
+          export CXX="ccache /opt/rh/gcc-toolset-9/root/usr/bin/g++"
+        else
+          export CC="/opt/rh/gcc-toolset-9/root/usr/bin/gcc"
+          export CXX="/opt/rh/gcc-toolset-9/root/usr/bin/g++"
+        fi
         echo "centos 8 set gcc-toolset-9"
         echo $CC
         echo $CXX
@@ -1637,8 +1665,13 @@ if [[ "$GCCINTEL_PHP" = [yY] ]]; then
         which g++
         unset CC
         unset CXX
-        export CC="ccache /opt/rh/gcc-toolset-12/root/usr/bin/gcc"
-        export CXX="ccache /opt/rh/gcc-toolset-12/root/usr/bin/g++"
+        if [[ "$INITIALINSTALL" != [yY] ]]; then
+          export CC="ccache /opt/rh/gcc-toolset-12/root/usr/bin/gcc"
+          export CXX="ccache /opt/rh/gcc-toolset-12/root/usr/bin/g++"
+        else
+          export CC="/opt/rh/gcc-toolset-12/root/usr/bin/gcc"
+          export CXX="/opt/rh/gcc-toolset-12/root/usr/bin/g++"
+        fi
         echo "EL 8.7 set gcc-toolset-12"
         echo $CC
         echo $CXX
@@ -1651,8 +1684,13 @@ if [[ "$GCCINTEL_PHP" = [yY] ]]; then
         which g++
         unset CC
         unset CXX
-        export CC="ccache /opt/rh/gcc-toolset-11/root/usr/bin/gcc"
-        export CXX="ccache /opt/rh/gcc-toolset-11/root/usr/bin/g++"
+        if [[ "$INITIALINSTALL" != [yY] ]]; then
+          export CC="ccache /opt/rh/gcc-toolset-11/root/usr/bin/gcc"
+          export CXX="ccache /opt/rh/gcc-toolset-11/root/usr/bin/g++"
+        else
+          export CC="/opt/rh/gcc-toolset-11/root/usr/bin/gcc"
+          export CXX="/opt/rh/gcc-toolset-11/root/usr/bin/g++"
+        fi
         echo "centos 8 set gcc-toolset-11"
         echo $CC
         echo $CXX
@@ -1665,8 +1703,13 @@ if [[ "$GCCINTEL_PHP" = [yY] ]]; then
         which g++
         unset CC
         unset CXX
-        export CC="ccache /opt/rh/gcc-toolset-10/root/usr/bin/gcc"
-        export CXX="ccache /opt/rh/gcc-toolset-10/root/usr/bin/g++"
+        if [[ "$INITIALINSTALL" != [yY] ]]; then
+          export CC="ccache /opt/rh/gcc-toolset-10/root/usr/bin/gcc"
+          export CXX="ccache /opt/rh/gcc-toolset-10/root/usr/bin/g++"
+        else
+          export CC="/opt/rh/gcc-toolset-10/root/usr/bin/gcc"
+          export CXX="/opt/rh/gcc-toolset-10/root/usr/bin/g++"
+        fi
         echo "centos 8 set gcc-toolset-10"
         echo $CC
         echo $CXX
@@ -1679,8 +1722,13 @@ if [[ "$GCCINTEL_PHP" = [yY] ]]; then
         which g++
         unset CC
         unset CXX
-        export CC="ccache /opt/rh/gcc-toolset-9/root/usr/bin/gcc"
-        export CXX="ccache /opt/rh/gcc-toolset-9/root/usr/bin/g++"
+        if [[ "$INITIALINSTALL" != [yY] ]]; then
+          export CC="ccache /opt/rh/gcc-toolset-9/root/usr/bin/gcc"
+          export CXX="ccache /opt/rh/gcc-toolset-9/root/usr/bin/g++"
+        else
+          export CC="/opt/rh/gcc-toolset-9/root/usr/bin/gcc"
+          export CXX="/opt/rh/gcc-toolset-9/root/usr/bin/g++"
+        fi
         echo "centos 8 set gcc-toolset-9"
         echo $CC
         echo $CXX
@@ -1709,8 +1757,13 @@ if [[ "$GCCINTEL_PHP" = [yY] ]]; then
         which g++
         unset CC
         unset CXX
-        export CC="ccache /opt/rh/gcc-toolset-13/root/usr/bin/gcc"
-        export CXX="ccache /opt/rh/gcc-toolset-13/root/usr/bin/g++"
+        if [[ "$INITIALINSTALL" != [yY] ]]; then
+          export CC="ccache /opt/rh/gcc-toolset-13/root/usr/bin/gcc"
+          export CXX="ccache /opt/rh/gcc-toolset-13/root/usr/bin/g++"
+        else
+          export CC="/opt/rh/gcc-toolset-13/root/usr/bin/gcc"
+          export CXX="/opt/rh/gcc-toolset-13/root/usr/bin/g++"
+        fi
         echo "EL 9.2 set gcc-toolset-13"
         echo $CC
         echo $CXX
@@ -1723,8 +1776,13 @@ if [[ "$GCCINTEL_PHP" = [yY] ]]; then
         which g++
         unset CC
         unset CXX
-        export CC="ccache /opt/rh/gcc-toolset-12/root/usr/bin/gcc"
-        export CXX="ccache /opt/rh/gcc-toolset-12/root/usr/bin/g++"
+        if [[ "$INITIALINSTALL" != [yY] ]]; then
+          export CC="ccache /opt/rh/gcc-toolset-12/root/usr/bin/gcc"
+          export CXX="ccache /opt/rh/gcc-toolset-12/root/usr/bin/g++"
+        else
+          export CC="/opt/rh/gcc-toolset-12/root/usr/bin/gcc"
+          export CXX="/opt/rh/gcc-toolset-12/root/usr/bin/g++"
+        fi
         echo "EL 9.1 set gcc-toolset-12"
         echo $CC
         echo $CXX

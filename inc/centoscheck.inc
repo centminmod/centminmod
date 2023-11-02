@@ -108,7 +108,7 @@ sshdtweaks
     echo
     free -m
     echo
-    echo "create 1GB swap file"; 
+    echo "create 4GB swap file"; 
     if [[ "$(df -hT | grep -w xfs)" || "$(virt-what | grep -o lxc)" = 'lxc' ]]; then
         dd if=/dev/zero of=/swapfile bs=4096 count=1024k;
     else
