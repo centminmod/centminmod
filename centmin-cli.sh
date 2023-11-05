@@ -29,7 +29,7 @@ DT=$(date +"%d%m%y-%H%M%S")
 branchname='130.00beta01'
 SCRIPT_MAJORVER='130'
 SCRIPT_MINORVER='00'
-SCRIPT_INCREMENTVER='458'
+SCRIPT_INCREMENTVER='459'
 SCRIPT_VERSIONSHORT="${branchname}"
 SCRIPT_VERSION="${SCRIPT_VERSIONSHORT}.b${SCRIPT_INCREMENTVER}"
 SCRIPT_DATE='31/01/23'
@@ -263,10 +263,43 @@ elif [ -f /etc/el-release ] && [[ "$EL_VERID" -eq 8 || "$EL_VERID" -eq 9 ]]; the
   fi
 fi
 
+CENTOSVER_NUMERIC=$(echo $CENTOSVER | sed -e 's|\.||g')
+
 # switch el8 OSes to GCC 11 for compile routines
-if [[ "$CENTOS_EIGHT" -eq '8' ]]; then
+if [[ "$CENTOS_EIGHT" -eq '8' && "$DEVTOOLSETTHIRTEEN" = [yY] && "$CENTOSVER_NUMERIC" -ge '89' ]]; then
+  DEVTOOLSETTEN='n'
+  DEVTOOLSETELEVEN='n'
+  DEVTOOLSETTWELVE='n'
+  DEVTOOLSETTHIRTEEN='y'
+elif [[ "$CENTOS_EIGHT" -eq '8' && "$DEVTOOLSETTWELVE" = [yY] && "$CENTOSVER_NUMERIC" -ge '87' ]]; then
+  DEVTOOLSETTEN='n'
+  DEVTOOLSETELEVEN='n'
+  DEVTOOLSETTWELVE='y'
+  DEVTOOLSETTHIRTEEN='n'
+elif [[ "$CENTOS_EIGHT" -eq '8' ]]; then
   DEVTOOLSETTEN='n'
   DEVTOOLSETELEVEN='y'
+  DEVTOOLSETTWELVE='n'
+  DEVTOOLSETTHIRTEEN='n'
+fi
+
+# el9 GCC
+if [[ "$CENTOS_NINE" -eq '9' && "$DEVTOOLSETTHIRTEEN" = [yY] && "$CENTOSVER_NUMERIC" -ge '93' ]]; then
+  DEVTOOLSETTEN='n'
+  DEVTOOLSETELEVEN='n'
+  DEVTOOLSETTWELVE='n'
+  DEVTOOLSETTHIRTEEN='y'
+elif [[ "$CENTOS_NINE" -eq '9' && "$DEVTOOLSETTWELVE" = [yY] && "$CENTOSVER_NUMERIC" -ge '91' ]]; then
+  DEVTOOLSETTEN='n'
+  DEVTOOLSETELEVEN='n'
+  DEVTOOLSETTWELVE='y'
+  DEVTOOLSETTHIRTEEN='n'
+elif [[ "$CENTOS_NINE" -eq '9' ]]; then
+  # el9 already defaults to GCC 11
+  DEVTOOLSETTEN='n'
+  DEVTOOLSETELEVEN='n'
+  DEVTOOLSETTWELVE='n'
+  DEVTOOLSETTHIRTEEN='n'
 fi
 
 if [[ "$FORCE_IPVFOUR" != [yY] ]]; then

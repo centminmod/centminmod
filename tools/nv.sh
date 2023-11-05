@@ -407,6 +407,8 @@ elif [ -f /etc/el-release ] && [[ "$EL_VERID" -eq 8 || "$EL_VERID" -eq 9 ]]; the
   fi
 fi
 
+CENTOSVER_NUMERIC=$(echo $CENTOSVER | sed -e 's|\.||g')
+
 cmservice() {
   servicename=$1
   action=$2
