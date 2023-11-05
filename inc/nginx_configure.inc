@@ -3572,6 +3572,9 @@ fi
 if [[ "$CENTOS_EIGHT" = '8' && "$CLANG" = [nN] && "$NGINX_DEVTOOLSETGCC" = [yY] ]]; then
   CENTOSVER_NUMERIC=$(echo $CENTOSVER | sed -e 's|\.||g')
   if [[ ! -f /opt/rh/gcc-toolset-9/root/usr/bin/gcc || ! -f /opt/rh/gcc-toolset-9/root/usr/bin/g++ ]] || [[ ! -f /opt/rh/gcc-toolset-10/root/usr/bin/gcc || ! -f /opt/rh/gcc-toolset-10/root/usr/bin/g++ ]] || [[ ! -f /opt/rh/gcc-toolset-11/root/usr/bin/gcc || ! -f /opt/rh/gcc-toolset-11/root/usr/bin/g++ ]] || [[ ! -f /opt/rh/gcc-toolset-12/root/usr/bin/gcc || ! -f /opt/rh/gcc-toolset-12/root/usr/bin/g++ ]]; then
+    if [[ "$CENTOSVER_NUMERIC" -ge '89' && "$DEVTOOLSETTHIRTEEN" = [yY] && ! -f /opt/rh/gcc-toolset-13/root/usr/bin/gcc || ! -f /opt/rh/gcc-toolset-13/root/usr/bin/g++ ]]; then
+        yum -y install gcc-toolset-13-annobin-annocheck gcc-toolset-13-annobin-docs.noarch gcc-toolset-13-annobin-plugin-gcc gcc-toolset-13-binutils gcc-toolset-13-binutils-devel gcc-toolset-13-dwz gcc-toolset-13-gcc gcc-toolset-13-gcc-c++ gcc-toolset-13-gcc-gfortran gcc-toolset-13-gdb gcc-toolset-13-libasan-devel gcc-toolset-13-libatomic-devel gcc-toolset-13-libgccjit gcc-toolset-13-libgccjit-devel gcc-toolset-13-libgccjit-docs gcc-toolset-13-libitm-devel gcc-toolset-13-liblsan-devel gcc-toolset-13-libquadmath-devel gcc-toolset-13-libstdc++-devel gcc-toolset-13-libtsan-devel gcc-toolset-13-libubsan-devel gcc-toolset-13-runtime
+    fi
     if [[ "$CENTOSVER_NUMERIC" -ge '87' && "$DEVTOOLSETTWELVE" = [yY] && ! -f /opt/rh/gcc-toolset-12/root/usr/bin/gcc || ! -f /opt/rh/gcc-toolset-12/root/usr/bin/g++ ]]; then
         yum -y install gcc-toolset-12-annobin-annocheck gcc-toolset-12-annobin-docs.noarch gcc-toolset-12-annobin-plugin-gcc gcc-toolset-12-binutils gcc-toolset-12-binutils-devel gcc-toolset-12-dwz gcc-toolset-12-gcc gcc-toolset-12-gcc-c++ gcc-toolset-12-gcc-gfortran gcc-toolset-12-gdb gcc-toolset-12-libasan-devel gcc-toolset-12-libatomic-devel gcc-toolset-12-libgccjit gcc-toolset-12-libgccjit-devel gcc-toolset-12-libgccjit-docs gcc-toolset-12-libitm-devel gcc-toolset-12-liblsan-devel gcc-toolset-12-libquadmath-devel gcc-toolset-12-libstdc++-devel gcc-toolset-12-libtsan-devel gcc-toolset-12-libubsan-devel gcc-toolset-12-runtime
     fi
@@ -3584,7 +3587,43 @@ if [[ "$CENTOS_EIGHT" = '8' && "$CLANG" = [nN] && "$NGINX_DEVTOOLSETGCC" = [yY] 
     if [[ "$DEVTOOLSETNINE" = [yY] && ! -f /opt/rh/gcc-toolset-9/root/usr/bin/gcc || ! -f /opt/rh/gcc-toolset-9/root/usr/bin/g++ ]]; then
         yum -y install gcc-toolset-9-binutils gcc-toolset-9-gcc gcc-toolset-9-gcc-c++
     fi
-    if [[ "$CENTOSVER_NUMERIC" -ge '87' && "$DEVTOOLSETTWELVE" = [yY] && -f /opt/rh/gcc-toolset-12/root/usr/bin/gcc ]]; then
+    if [[ "$CENTOSVER_NUMERIC" -ge '89' && "$DEVTOOLSETTHIRTEEN" = [yY] && -f /opt/rh/gcc-toolset-13/root/usr/bin/gcc ]]; then
+      DEVTOOLSETTHIRTEEN_FALLTHROUGH=' -Wimplicit-fallthrough=0 -Wno-implicit-function-declaration -Wno-int-conversion -Wno-error=unused-result -Wno-unused-result -Wno-error=vla-parameter'
+      DEVTOOLSETTHIRTEEN_EXTRAFLAGS=' -fcode-hoisting -Wno-cast-function-type -Wno-format-extra-args'
+      DEVTOOLSETTWELVE_FALLTHROUGH=""
+      DEVTOOLSETTWELVE_EXTRAFLAGS=""
+      DEVTOOLSETELEVEN_FALLTHROUGH=""
+      DEVTOOLSETELEVEN_EXTRAFLAGS=""
+      DEVTOOLSETTEN_FALLTHROUGH=""
+      DEVTOOLSETTEN_EXTRAFLAGS=""
+      DEVTOOLSETNINE_FALLTHROUGH=""
+      DEVTOOLSETNINE_EXTRAFLAGS=""
+      DEVTOOLSETEIGHT_FALLTHROUGH=""
+      DEVTOOLSETEIGHT_EXTRAFLAGS=""
+      DEVTOOLSETSEVEN_FALLTHROUGH=""
+      DEVTOOLSETSEVEN_EXTRAFLAGS=""
+      if [[ "$INITIALINSTALL" != [yY] ]]; then
+        source /opt/rh/gcc-toolset-13/enable
+        which gcc
+        which g++
+        unset CC
+        unset CXX
+        export CC="ccache gcc"
+        export CXX="ccache g++"
+        NGX_GSPLITDWARF='n'
+      else
+        source /opt/rh/gcc-toolset-13/enable
+        which gcc
+        which g++
+        unset CC
+        unset CXX
+        export CC="gcc"
+        export CXX="g++"
+        NGX_GSPLITDWARF='n'
+      fi
+    elif [[ "$CENTOSVER_NUMERIC" -ge '87' && "$DEVTOOLSETTWELVE" = [yY] && -f /opt/rh/gcc-toolset-12/root/usr/bin/gcc ]]; then
+      DEVTOOLSETTHIRTEEN_FALLTHROUGH=""
+      DEVTOOLSETTHIRTEEN_EXTRAFLAGS=""
       DEVTOOLSETTWELVE_FALLTHROUGH=' -Wimplicit-fallthrough=0 -Wno-implicit-function-declaration -Wno-int-conversion -Wno-error=unused-result -Wno-unused-result -Wno-error=vla-parameter'
       DEVTOOLSETTWELVE_EXTRAFLAGS=' -fcode-hoisting -Wno-cast-function-type -Wno-format-extra-args'
       DEVTOOLSETELEVEN_FALLTHROUGH=""
@@ -4410,14 +4449,14 @@ fi
 # el9 default GCC 11, 12, 13 settings
 if [[ "$CENTOS_NINE" -eq '9' && "$CLANG" = [nN] && "$NGINX_DEVTOOLSETGCC" = [yY] ]]; then
   CENTOSVER_NUMERIC=$(echo $CENTOSVER | sed -e 's|\.||g')
-  if [[ "$DEVTOOLSETTHIRTEEN" = [yY] && ! -f /opt/rh/gcc-toolset-13/root/usr/bin/gcc ]]; then
+  if [[ "$CENTOSVER_NUMERIC" -ge '93' && "$DEVTOOLSETTHIRTEEN" = [yY] && ! -f /opt/rh/gcc-toolset-13/root/usr/bin/gcc ]]; then
     if [[ "$(rpm -ql gcc-toolset-13-gcc >/dev/null 2>&1; echo $?)" -ne '0' ]] || [[ "$(rpm -ql gcc-toolset-13-gcc-c++ >/dev/null 2>&1; echo $?)" -ne '0' ]] || [[ "$(rpm -ql gcc-toolset-13-binutils >/dev/null 2>&1; echo $?)" -ne '0' ]]; then
       time yum -y install gcc-toolset-13-annobin-annocheck gcc-toolset-13-annobin-docs.noarch gcc-toolset-13-annobin-plugin-gcc gcc-toolset-13-binutils gcc-toolset-13-binutils-devel gcc-toolset-13-dwz gcc-toolset-13-gcc gcc-toolset-13-gcc-c++ gcc-toolset-13-gcc-gfortran gcc-toolset-13-gdb gcc-toolset-13-libasan-devel gcc-toolset-13-libatomic-devel gcc-toolset-13-libgccjit gcc-toolset-13-libgccjit-devel gcc-toolset-13-libgccjit-docs gcc-toolset-13-libitm-devel gcc-toolset-13-liblsan-devel gcc-toolset-13-libquadmath-devel gcc-toolset-13-libstdc++-devel gcc-toolset-13-libtsan-devel gcc-toolset-13-libubsan-devel gcc-toolset-13-runtime
     fi
     sar_call
     /opt/rh/gcc-toolset-13/root/usr/bin/gcc --version
     /opt/rh/gcc-toolset-13/root/usr/bin/g++ --version
-  elif [[ "$DEVTOOLSETTWELVE" = [yY] && ! -f /opt/rh/gcc-toolset-12/root/usr/bin/gcc ]]; then
+  elif [[ "$CENTOSVER_NUMERIC" -ge '91' && "$DEVTOOLSETTWELVE" = [yY] && ! -f /opt/rh/gcc-toolset-12/root/usr/bin/gcc ]]; then
     if [[ "$(rpm -ql gcc-toolset-12-gcc >/dev/null 2>&1; echo $?)" -ne '0' ]] || [[ "$(rpm -ql gcc-toolset-12-gcc-c++ >/dev/null 2>&1; echo $?)" -ne '0' ]] || [[ "$(rpm -ql gcc-toolset-12-binutils >/dev/null 2>&1; echo $?)" -ne '0' ]]; then
       time yum -y install gcc-toolset-12-annobin-annocheck gcc-toolset-12-annobin-docs.noarch gcc-toolset-12-annobin-plugin-gcc gcc-toolset-12-binutils gcc-toolset-12-binutils-devel gcc-toolset-12-dwz gcc-toolset-12-gcc gcc-toolset-12-gcc-c++ gcc-toolset-12-gcc-gfortran gcc-toolset-12-gdb gcc-toolset-12-libasan-devel gcc-toolset-12-libatomic-devel gcc-toolset-12-libgccjit gcc-toolset-12-libgccjit-devel gcc-toolset-12-libgccjit-docs gcc-toolset-12-libitm-devel gcc-toolset-12-liblsan-devel gcc-toolset-12-libquadmath-devel gcc-toolset-12-libstdc++-devel gcc-toolset-12-libtsan-devel gcc-toolset-12-libubsan-devel gcc-toolset-12-runtime
     fi
@@ -4425,7 +4464,7 @@ if [[ "$CENTOS_NINE" -eq '9' && "$CLANG" = [nN] && "$NGINX_DEVTOOLSETGCC" = [yY]
     /opt/rh/gcc-toolset-12/root/usr/bin/gcc --version
     /opt/rh/gcc-toolset-12/root/usr/bin/g++ --version
   fi
-  if [[ "$DEVTOOLSETTHIRTEEN" = [yY] && -f /opt/rh/gcc-toolset-13/root/usr/bin/gcc ]]; then
+  if [[ "$CENTOSVER_NUMERIC" -ge '93' && "$DEVTOOLSETTHIRTEEN" = [yY] && -f /opt/rh/gcc-toolset-13/root/usr/bin/gcc ]]; then
     DEVTOOLSETTHIRTEEN_FALLTHROUGH=' -Wimplicit-fallthrough=0 -Wno-implicit-function-declaration -Wno-int-conversion -Wno-error=unused-result -Wno-unused-result'
     DEVTOOLSETTHIRTEEN_EXTRAFLAGS=' -fcode-hoisting -Wno-cast-function-type -Wno-format-extra-args'
     DEVTOOLSETTWELVE_FALLTHROUGH=""
@@ -4459,7 +4498,7 @@ if [[ "$CENTOS_NINE" -eq '9' && "$CLANG" = [nN] && "$NGINX_DEVTOOLSETGCC" = [yY]
       export CXX="g++"
       NGX_GSPLITDWARF='n'
     fi
-  elif [[ "$DEVTOOLSETTWELVE" = [yY] && -f /opt/rh/gcc-toolset-12/root/usr/bin/gcc ]]; then
+  elif [[ "$CENTOSVER_NUMERIC" -ge '91' && "$DEVTOOLSETTWELVE" = [yY] && -f /opt/rh/gcc-toolset-12/root/usr/bin/gcc ]]; then
     DEVTOOLSETTWELVE_FALLTHROUGH=' -Wimplicit-fallthrough=0 -Wno-implicit-function-declaration -Wno-int-conversion -Wno-error=unused-result -Wno-unused-result'
     DEVTOOLSETTWELVE_EXTRAFLAGS=' -fcode-hoisting -Wno-cast-function-type -Wno-format-extra-args'
     DEVTOOLSETELEVEN_FALLTHROUGH=""
