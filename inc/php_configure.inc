@@ -2223,6 +2223,48 @@ if [[ "$GCCINTEL_PHP" = [yY] ]]; then
       echo "gcc -c -Q -march=bonnell${PHPEXTRA_CFLAGS} --help=target"
       gcc -c -Q -march=bonnell${PHPEXTRA_CFLAGS} --help=target
       echo
+    elif [[ "$CPU_MARCH" = 'graniterapids-d' ]]; then
+      PHP_MTUNEOPT="-m${CCM} -march=graniterapids-d${FALIGN_FUNCTION_OPT}"
+      echo
+      echo "gcc -c -Q -march=graniterapids-d${PHPEXTRA_CFLAGS} --help=target"
+      gcc -c -Q -march=graniterapids-d${PHPEXTRA_CFLAGS} --help=target
+      echo
+    elif [[ "$CPU_MARCH" = 'graniterapids' ]]; then
+      PHP_MTUNEOPT="-m${CCM} -march=graniterapids${FALIGN_FUNCTION_OPT}"
+      echo
+      echo "gcc -c -Q -march=graniterapids${PHPEXTRA_CFLAGS} --help=target"
+      gcc -c -Q -march=graniterapids${PHPEXTRA_CFLAGS} --help=target
+      echo
+    elif [[ "$CPU_MARCH" = 'emeraldrapids' ]]; then
+      PHP_MTUNEOPT="-m${CCM} -march=emeraldrapids${FALIGN_FUNCTION_OPT}"
+      echo
+      echo "gcc -c -Q -march=emeraldrapids${PHPEXTRA_CFLAGS} --help=target"
+      gcc -c -Q -march=emeraldrapids${PHPEXTRA_CFLAGS} --help=target
+      echo
+    elif [[ "$CPU_MARCH" = 'grandridge' ]]; then
+      PHP_MTUNEOPT="-m${CCM} -march=grandridge${FALIGN_FUNCTION_OPT}"
+      echo
+      echo "gcc -c -Q -march=grandridge${PHPEXTRA_CFLAGS} --help=target"
+      gcc -c -Q -march=grandridge${PHPEXTRA_CFLAGS} --help=target
+      echo
+    elif [[ "$CPU_MARCH" = 'sierraforest' ]]; then
+      PHP_MTUNEOPT="-m${CCM} -march=sierraforest${FALIGN_FUNCTION_OPT}"
+      echo
+      echo "gcc -c -Q -march=sierraforest${PHPEXTRA_CFLAGS} --help=target"
+      gcc -c -Q -march=sierraforest${PHPEXTRA_CFLAGS} --help=target
+      echo
+    elif [[ "$CPU_MARCH" = 'meteorlake' ]]; then
+      PHP_MTUNEOPT="-m${CCM} -march=meteorlake${FALIGN_FUNCTION_OPT}"
+      echo
+      echo "gcc -c -Q -march=meteorlake${PHPEXTRA_CFLAGS} --help=target"
+      gcc -c -Q -march=meteorlake${PHPEXTRA_CFLAGS} --help=target
+      echo
+    elif [[ "$CPU_MARCH" = 'raptorlake' ]]; then
+      PHP_MTUNEOPT="-m${CCM} -march=raptorlake${FALIGN_FUNCTION_OPT}"
+      echo
+      echo "gcc -c -Q -march=raptorlake${PHPEXTRA_CFLAGS} --help=target"
+      gcc -c -Q -march=raptorlake${PHPEXTRA_CFLAGS} --help=target
+      echo
     elif [[ "$CPU_MARCH" = 'sapphirerapids' ]]; then
       PHP_MTUNEOPT="-m${CCM} -march=sapphirerapids${FALIGN_FUNCTION_OPT}"
       echo
@@ -2374,6 +2416,18 @@ if [[ "$GCCINTEL_PHP" = [yY] ]]; then
     fi
     export CXXFLAGS="$CFLAGS"
   elif [[ "$(uname -m)" = 'x86_64' && "$CPUVENDOR" = 'AuthenticAMD' && "$CPU_MARCH" = 'znver3' ]] && [[ "$CLANG_PHP" = [nN] ]]; then
+    CCM=64
+    PHP_MTUNEOPT="-m${CCM} -march=${MARCH_TARGET}"
+    # if only 1 cpu thread use -O2 to keep compile times sane
+    if [[ "$(grep -c "processor" /proc/cpuinfo)" -eq '1' ]]; then
+      export CFLAGS="-O2 $PHP_MTUNEOPT -pipe${SET_PHPEXTRA_CFLAGS}"
+    elif [[ "$(grep -c "processor" /proc/cpuinfo)" -eq '2' ]]; then
+      export CFLAGS="-O2 $PHP_MTUNEOPT -pipe${SET_PHPEXTRA_CFLAGS}"
+    else
+      export CFLAGS="-O3 $PHP_MTUNEOPT -pipe${SET_PHPEXTRA_CFLAGS}"
+    fi
+    export CXXFLAGS="$CFLAGS"
+  elif [[ "$(uname -m)" = 'x86_64' && "$CPUVENDOR" = 'AuthenticAMD' && "$CPU_MARCH" = 'znver4' ]] && [[ "$CLANG_PHP" = [nN] ]]; then
     CCM=64
     PHP_MTUNEOPT="-m${CCM} -march=${MARCH_TARGET}"
     # if only 1 cpu thread use -O2 to keep compile times sane
