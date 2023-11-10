@@ -153,6 +153,8 @@ elif [ -f /etc/el-release ] && [[ "$EL_VERID" -eq 8 || "$EL_VERID" -eq 9 ]]; the
   fi
 fi
 
+CENTOSVER_NUMERIC=$(echo $CENTOSVER | sed -e 's|\.||g')
+
 if [[ "$CENTOS_SEVEN" = '7' ]]; then
     echo
     echo "detected CentOS 7.x OS, python 2.7 is already"

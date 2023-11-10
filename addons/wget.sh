@@ -154,6 +154,8 @@ elif [ -f /etc/el-release ] && [[ "$EL_VERID" -eq 8 || "$EL_VERID" -eq 9 ]]; the
   fi
 fi
 
+CENTOSVER_NUMERIC=$(echo $CENTOSVER | sed -e 's|\.||g')
+
 if [[ "$CENTOS_ALPHATEST" != [yY] && "$CENTOS_EIGHT" -eq '8' ]] || [[ "$CENTOS_ALPHATEST" != [yY] && "$CENTOS_NINE" -eq '9' ]]; then
   if [[ "$ORACLELINUX_NINE" -eq '9' ]]; then
     label_os=OracleLinux
