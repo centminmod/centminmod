@@ -1446,7 +1446,7 @@ if [ -f /etc/my.cnf ]; then
     rm -rf /etc/my.cnf
 fi
 
-mariadb107_yuminstall
+mariadb1010_yuminstall
 
     if [ -f "$(which figlet)" ]; then
         figlet -ckf standard "New Initial /etc/my.cnf"
