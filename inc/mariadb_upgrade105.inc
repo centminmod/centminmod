@@ -243,8 +243,18 @@ elif [[ "$MARIADB_INSTALLTENFIVE" = [yY] ]]; then
     MDB_REPO_VER=10.5
 elif [[ "$MARIADB_INSTALLTENSIX" = [yY] ]]; then
     MDB_REPO_VER=10.6
+elif [[ "$MARIADB_INSTALLTENSEVEN" = [yY] ]]; then
+    MDB_REPO_VER=10.7
+elif [[ "$MARIADB_INSTALLTENEIGHT" = [yY] ]]; then
+    MDB_REPO_VER=10.8
+elif [[ "$MARIADB_INSTALLTENNINE" = [yY] ]]; then
+    MDB_REPO_VER=10.9
+elif [[ "$MARIADB_INSTALLTENTEN" = [yY] ]]; then
+    MDB_REPO_VER=10.10
+elif [[ "$MARIADB_INSTALLTENELEVEN" = [yY] ]]; then
+    MDB_REPO_VER=10.11
 else
-    MDB_REPO_VER=10.1
+    MDB_REPO_VER=10.4
 fi
 if [[ "$CENTOS_NINE" = '9' && "$(uname -m)" == 'aarch64' ]]; then
     MDB_REPO_DIR="${MDB_REPO_VER}/centos9-aarch64"
