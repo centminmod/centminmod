@@ -1193,6 +1193,7 @@ fi
 sed -i '/^slow_query_log/d' /etc/my.cnf
 sed -i '/^slow_query_log_file/d' /etc/my.cnf
 sed -i '/^long_query_time/d' /etc/my.cnf
+sed -i '/^innodb_buffer_pool_instances/d' /etc/my.cnf
 
 cat >>/etc/my.cnf<<FFF
 

@@ -1082,6 +1082,7 @@ echo ""
 sed -i '/^slow_query_log/d' /etc/my.cnf
 sed -i '/^slow_query_log_file/d' /etc/my.cnf
 sed -i '/^long_query_time/d' /etc/my.cnf
+sed -i '/^innodb_buffer_pool_instances/d' /etc/my.cnf
 
 cat >>/etc/my.cnf<<FFF
 
@@ -1512,8 +1513,8 @@ elif [[ "$CENTOS_SEVEN" -eq '7' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq
     # ensure MariaDB starts up initially
     systemctl stop mariadb
     sleep 2
-    rm -f /var/lib/mysql/ib_logfile*
-    rm -f /var/lib/mysql/aria_log*
+    # rm -f /var/lib/mysql/ib_logfile*
+    # rm -f /var/lib/mysql/aria_log*
     systemctl start mariadb
 fi
 

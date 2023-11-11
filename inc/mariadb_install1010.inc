@@ -1497,8 +1497,8 @@ elif [[ "$CENTOS_SEVEN" -eq '7' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq
     # ensure MariaDB starts up initially
     systemctl stop mariadb
     sleep 2
-    rm -f /var/lib/mysql/ib_logfile*
-    rm -f /var/lib/mysql/aria_log*
+    # rm -f /var/lib/mysql/ib_logfile*
+    # rm -f /var/lib/mysql/aria_log*
     systemctl start mariadb
 fi
 
