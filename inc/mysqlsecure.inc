@@ -21,7 +21,7 @@ THEMYSQLPASS=$(/usr/bin/openssl rand -base64 26 | tr -dc 'a-zA-Z0-9')
 
 CHECK_FOR_MARIADB_TENFOUR_ABOVE=$(rpm -qa | grep -i MariaDB-server | head -n1 | cut -d '-' -f3 | cut -d . -f1,2)
 
-if [[ "$CHECK_FOR_MARIADB_TENFOUR_ABOVE" = '10.4' || "$CHECK_FOR_MARIADB_TENFOUR_ABOVE" = '10.5' || "$CHECK_FOR_MARIADB_TENFOUR_ABOVE" = '10.6' ]]; then
+if [[ "$CHECK_FOR_MARIADB_TENFOUR_ABOVE" = '10.4' || "$CHECK_FOR_MARIADB_TENFOUR_ABOVE" = '10.5' || "$CHECK_FOR_MARIADB_TENFOUR_ABOVE" = '10.6' || "$CHECK_FOR_MARIADB_TENFOUR_ABOVE" = '10.7' || "$CHECK_FOR_MARIADB_TENFOUR_ABOVE" = '10.8' || "$CHECK_FOR_MARIADB_TENFOUR_ABOVE" = '10.9' || "$CHECK_FOR_MARIADB_TENFOUR_ABOVE" = '10.10' || "$CHECK_FOR_MARIADB_TENFOUR_ABOVE" = '10.11' ]]; then
   echo
   mysql -e "select concat(user, '@', host, ' => ', json_detailed(priv)) from mysql.global_priv;" > "${CENTMINLOGDIR}/mariadb10.4-or-above-check-users-before.log"
   echo
