@@ -1188,6 +1188,12 @@ fi
         figlet -ckf standard "MariaDB ${MDB_UPGRADED_VER_ELEVEN}.x /etc/my.cnf Adjustments"
     fi
 
+# 10.11 renamed variables
+# https://mariadb.com/kb/en/changes-improvements-in-mariadb-1011/#variables
+sed -i '/^slow_query_log/d' /etc/my.cnf
+sed -i '/^slow_query_log_file/d' /etc/my.cnf
+sed -i '/^long_query_time/d' /etc/my.cnf
+
 cat >>/etc/my.cnf<<FFF
 
 
@@ -1195,6 +1201,12 @@ cat >>/etc/my.cnf<<FFF
 #innodb_file_format = Barracuda
 innodb_default_row_format = dynamic
 innodb_file_per_table = 1
+
+log_warnings=1
+log_slow_query=0
+log_slow_query_time=1
+log_slow_query_file=/var/lib/mysql/slowq.log
+log-error=/var/log/mysqld.log
 
 # performance regressions
 # https://jira.mariadb.org/browse/MDEV-16337
@@ -1270,7 +1282,10 @@ sed -i '/^innodb_large_prefix/d' /etc/my.cnf
 # https://jira.mariadb.org/browse/MDEV-8334
 # sed -i '/^character-set-server/d' /etc/my.cnf
 
-echo ""
+echo
+echo "cat /etc/my.cnf"
+cat /etc/my.cnf
+echo
 
 cmservice mysql start
 sleep 15
