@@ -1,11 +1,11 @@
-name: Trigger AlmaLinux 9 Workflow
+name: Trigger AlmaLinux 8 MariaDB 10.11 Workflow
 
 on:
   workflow_dispatch:
-    branches: [130.00beta01]
+    branches: [130.00beta01-mariadb10.11]
   push:
     branches:
-      - 130.00beta01
+      - 130.00beta01-mariadb10.11
     paths-ignore:
       - '.gitignore'
       - 'readme.txt'
@@ -72,4 +72,4 @@ jobs:
         with:
           token: ${{ secrets.REPO_ACCESS_TOKEN }}
           repository: centminmod/centminmod-workflows
-          event-type: run-almalinux-9-workflow
+          event-type: run-almalinux-8-mariadb-10.11-workflow
