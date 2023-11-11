@@ -1300,7 +1300,7 @@ funct_logmysqlrotate
 
 }
 
-mariadbtensix_installfunct() {
+mariadbtenseven_installfunct() {
 
 MDB_DEBUG='n'
 

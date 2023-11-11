@@ -2725,7 +2725,17 @@ echo "" >> "${CENTMINLOGDIR}/centminmod_ngxinstalltime_${DT}.log"
 echo "Total Nginx First Time Install Time: $NGXINSTALLTIME seconds" >> "${CENTMINLOGDIR}/centminmod_ngxinstalltime_${DT}.log"
 ls -lah "${CENTMINLOGDIR}/centminmod_ngxinstalltime_${DT}.log"
 
-if [[ "$MARIADB_INSTALLTENSIX" = [yY] && "$MARIADB_INSTALLTENTWO" = [nN] ]]; then
+if [[ "$MARIADB_INSTALLTENELEVEN" = [yY] && "$MARIADB_INSTALLTENTWO" = [nN] ]]; then
+  mariadbteneleven_installfunct
+elif [[ "$MARIADB_INSTALLTENTEN" = [yY] && "$MARIADB_INSTALLTENTWO" = [nN] ]]; then
+  mariadbtenten_installfunct
+elif [[ "$MARIADB_INSTALLTENNINE" = [yY] && "$MARIADB_INSTALLTENTWO" = [nN] ]]; then
+  mariadbtennine_installfunct
+elif [[ "$MARIADB_INSTALLTENEIGHT" = [yY] && "$MARIADB_INSTALLTENTWO" = [nN] ]]; then
+  mariadbteneight_installfunct
+elif [[ "$MARIADB_INSTALLTENSEVEN" = [yY] && "$MARIADB_INSTALLTENTWO" = [nN] ]]; then
+  mariadbtenseven_installfunct
+elif [[ "$MARIADB_INSTALLTENSIX" = [yY] && "$MARIADB_INSTALLTENTWO" = [nN] ]]; then
   mariadbtensix_installfunct
 elif [[ "$MARIADB_INSTALLTENFIVE" = [yY] && "$MARIADB_INSTALLTENTWO" = [nN] ]]; then
   mariadbtenfive_installfunct
