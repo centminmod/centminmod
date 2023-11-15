@@ -4914,7 +4914,11 @@ else
     # force NGXMODULE_ALTORDER='y'
     NGXMODULE_ALTORDER='y'
     SETBUILD_DATE=$(date +"%d%m%y-%H%M%S")
-    if [[ "$ALMALINUX_NINE" -eq '9' ]]; then
+    if [[ "$ORACLELINUX_NINE" -eq '9' ]]; then
+      SETBUILD_OS='oraclelinux9'
+    elif [[ "$ORACLELINUX_EIGHT" -eq '8' ]]; then
+      SETBUILD_OS='oraclelinux8'
+    elif [[ "$ALMALINUX_NINE" -eq '9' ]]; then
       SETBUILD_OS='almalinux9'
     elif [[ "$ROCKYLINUX_NINE" -eq '9' ]]; then
       SETBUILD_OS='rockylinux9'
