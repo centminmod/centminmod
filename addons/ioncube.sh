@@ -31,7 +31,7 @@ fi
 
 echo
 echo "ioncube loader installation started"
-echo "ioncube loader only supports PHP 5.3, 5.4, 5.5, 5.6, 7.x, 8.1"
+echo "ioncube loader only supports PHP 5.3, 5.4, 5.5, 5.6, 7.x, 8.1, 8.2"
 echo "ioncube loader has skipped PHP 8.0 support"
 echo "https://blog.ioncube.com/2022/08/05/ioncube-php-8-1-support-faq-were-almost-ready/"
 # echo "ioncube loader PHP 7 currently beta supported"
@@ -76,9 +76,10 @@ if [[ "$(uname -m)" = 'x86_64' ]]; then
     echo "only PHP 8.1 is supported"
     exit
   elif [[ "$(php-config --version | cut -d . -f1-2)" = '8.2' ]]; then
-    echo "ioncube loader does not currently have PHP 8.2 support"
-    echo "only PHP 8.1 is supported"
-    exit
+    rm -rf ioncube_loaders_lin_x86-64.tar.gz
+    rm -rf ioncube
+    wget -${ipv_forceopt}cnv https://downloads.ioncube.com/loader_downloads/ioncube_loaders_lin_x86-64.tar.gz
+    tar xvzf ioncube_loaders_lin_x86-64.tar.gz
   elif [[ "$(php-config --version | cut -d . -f1-2)" = '8.1' ]]; then
     rm -rf ioncube_loaders_lin_x86-64.tar.gz
     rm -rf ioncube
@@ -116,13 +117,21 @@ fi
 
 # check current PHP version
 ICPHPVER=$(php-config --version | cut -d . -f1,2)
-PHPEXTDIRD=`cat /usr/local/bin/php-config | awk '/^extension_dir/ {extdir=$1} END {gsub(/\047|extension_dir|=|)/,"",extdir); print extdir}'`
+PHPEXTDIRD=$(php-config --extension-dir)
 
 # move current ioncube version to existing PHP extension directory
 if [[ "$(php-config --version | cut -d . -f1)" = '5' ]]; then
   \cp -fa ioncube/ioncube_loader_lin_${ICPHPVER}.so "${PHPEXTDIRD}/ioncube.so"
   chown root:root "${PHPEXTDIRD}/ioncube.so"
   chmod 755 "${PHPEXTDIRD}/ioncube.so"
+elif [[ "$(php-config --version | cut -d . -f1-2)" = '8.2' ]]; then
+  # for php 8 ioncube
+  ICPHPVER="$(php-config --version | cut -d . -f1,2)"
+  if [[ "$(uname -m)" = 'x86_64' ]]; then
+    \cp -fa ioncube/ioncube_loader_lin_${ICPHPVER}.so "${PHPEXTDIRD}/ioncube.so"
+    chown root:root "${PHPEXTDIRD}/ioncube.so"
+    chmod 755 "${PHPEXTDIRD}/ioncube.so"
+  fi
 elif [[ "$(php-config --version | cut -d . -f1-2)" = '8.1' ]]; then
   # for php 8 ioncube
   ICPHPVER="$(php-config --version | cut -d . -f1,2)"
