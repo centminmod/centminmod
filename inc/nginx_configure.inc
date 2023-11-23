@@ -3782,7 +3782,7 @@ if [[ "$CENTOS_EIGHT" = '8' && "$CLANG" = [nN] && "$NGINX_DEVTOOLSETGCC" = [yY] 
         NGX_GSPLITDWARF='n'
       fi
     fi
-  elif [[ -f /opt/rh/gcc-toolset-9/root/usr/bin/gcc || -f /opt/rh/gcc-toolset-9/root/usr/bin/g++ ]] || [[ -f /opt/rh/gcc-toolset-10/root/usr/bin/gcc || -f /opt/rh/gcc-toolset-10/root/usr/bin/g++ ]] || [[ -f /opt/rh/gcc-toolset-11/root/usr/bin/gcc || -f /opt/rh/gcc-toolset-11/root/usr/bin/g++ ]] || [[ -f /opt/rh/gcc-toolset-12/root/usr/bin/gcc || -f /opt/rh/gcc-toolset-12/root/usr/bin/g++ ]]; then
+  elif [[ -f /opt/rh/gcc-toolset-9/root/usr/bin/gcc || -f /opt/rh/gcc-toolset-9/root/usr/bin/g++ ]] || [[ -f /opt/rh/gcc-toolset-10/root/usr/bin/gcc || -f /opt/rh/gcc-toolset-10/root/usr/bin/g++ ]] || [[ -f /opt/rh/gcc-toolset-11/root/usr/bin/gcc || -f /opt/rh/gcc-toolset-11/root/usr/bin/g++ ]] || [[ -f /opt/rh/gcc-toolset-12/root/usr/bin/gcc || -f /opt/rh/gcc-toolset-12/root/usr/bin/g++ ]] || [[ -f /opt/rh/gcc-toolset-13/root/usr/bin/gcc || -f /opt/rh/gcc-toolset-13/root/usr/bin/g++ ]]; then
     if [[ "$DEVTOOLSETELEVEN" = [yY] && ! -f /opt/rh/gcc-toolset-11/root/usr/bin/gcc || ! -f /opt/rh/gcc-toolset-11/root/usr/bin/g++ ]]; then
         yum -y install gcc-toolset-11-runtime gcc-toolset-11-toolchain gcc-toolset-11-binutils gcc-toolset-11-binutils-devel gcc-toolset-11-gcc gcc-toolset-11-gcc-c++ gcc-toolset-11-libatomic-devel gcc-toolset-11-libstdc++-devel gcc-toolset-11-ltrace gcc-toolset-11-make gcc-toolset-11-make-devel gcc-toolset-11-annobin-plugin-gcc gcc-toolset-11-annobin-annocheck gcc-toolset-11-gdb gcc-toolset-11-dwz gcc-toolset-11-elfutils gcc-toolset-11-elfutils-devel gcc-toolset-11-elfutils-libs gcc-toolset-11-strace gcc-toolset-11-gcc-gfortran gcc-toolset-11-elfutils-libelf gcc-toolset-11-elfutils-libelf-devel gcc-toolset-11-libasan-devel gcc-toolset-11-libgccjit-devel gcc-toolset-11-libitm-devel gcc-toolset-11-liblsan-devel gcc-toolset-11-libquadmath-devel gcc-toolset-11-libtsan-devel gcc-toolset-11-libubsan-devel gcc-toolset-11-elfutils-debuginfod-client gcc-toolset-11-elfutils-debuginfod-client-devel gcc-toolset-11-elfutils-libs gcc-toolset-11-annobin-docs gcc-toolset-11-libgccjit gcc-toolset-11-libgccjit-devel gcc-toolset-11-libgccjit-docs
     fi
@@ -3792,7 +3792,39 @@ if [[ "$CENTOS_EIGHT" = '8' && "$CLANG" = [nN] && "$NGINX_DEVTOOLSETGCC" = [yY] 
     if [[ "$DEVTOOLSETNINE" = [yY] && ! -f /opt/rh/gcc-toolset-9/root/usr/bin/gcc || ! -f /opt/rh/gcc-toolset-9/root/usr/bin/g++ ]]; then
         yum -y install gcc-toolset-9-binutils gcc-toolset-9-gcc gcc-toolset-9-gcc-c++
     fi
-    if [[ "$DEVTOOLSETTWELVE" = [yY] && -f /opt/rh/gcc-toolset-12/root/usr/bin/gcc ]]; then
+    if [[ "$DEVTOOLSETTHIRTEEN" = [yY] && -f /opt/rh/gcc-toolset-13/root/usr/bin/gcc ]]; then
+      DEVTOOLSETTWELVE_FALLTHROUGH=' -Wimplicit-fallthrough=0 -Wno-implicit-function-declaration -Wno-int-conversion -Wno-error=unused-result -Wno-unused-result -Wno-error=vla-parameter'
+      DEVTOOLSETTWELVE_EXTRAFLAGS=""
+      DEVTOOLSETELEVEN_FALLTHROUGH=""
+      DEVTOOLSETELEVEN_EXTRAFLAGS=""
+      DEVTOOLSETTEN_FALLTHROUGH=""
+      DEVTOOLSETTEN_EXTRAFLAGS=' -fcode-hoisting -Wno-cast-function-type -Wno-format-extra-args'
+      DEVTOOLSETNINE_FALLTHROUGH=""
+      DEVTOOLSETNINE_EXTRAFLAGS=""
+      DEVTOOLSETEIGHT_FALLTHROUGH=""
+      DEVTOOLSETEIGHT_EXTRAFLAGS=""
+      DEVTOOLSETSEVEN_FALLTHROUGH=""
+      DEVTOOLSETSEVEN_EXTRAFLAGS=""
+      if [[ "$INITIALINSTALL" != [yY] ]]; then
+        source /opt/rh/gcc-toolset-13/enable
+        which gcc
+        which g++
+        unset CC
+        unset CXX
+        export CC="ccache gcc"
+        export CXX="ccache g++"
+        NGX_GSPLITDWARF='n'
+      else
+        source /opt/rh/gcc-toolset-13/enable
+        which gcc
+        which g++
+        unset CC
+        unset CXX
+        export CC="gcc"
+        export CXX="g++"
+        NGX_GSPLITDWARF='n'
+      fi
+    elif [[ "$DEVTOOLSETTWELVE" = [yY] && -f /opt/rh/gcc-toolset-12/root/usr/bin/gcc ]]; then
       DEVTOOLSETTWELVE_FALLTHROUGH=' -Wimplicit-fallthrough=0 -Wno-implicit-function-declaration -Wno-int-conversion -Wno-error=unused-result -Wno-unused-result -Wno-error=vla-parameter'
       DEVTOOLSETTWELVE_EXTRAFLAGS=""
       DEVTOOLSETELEVEN_FALLTHROUGH=""

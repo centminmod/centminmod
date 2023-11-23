@@ -1400,7 +1400,26 @@ if [[ "$GCCINTEL_PHP" = [yY] ]]; then
   if [[ "$CENTOS_EIGHT" = '8' && "$PHP_PGO" = [yY] && "$PHPMVER" > 7 ]] || [[ "$CENTOS_EIGHT" = '8' && "$PHPMVER" = '8.3' ]] || [[ "$CENTOS_EIGHT" = '8' && "$PHPMVER" = '8.2' ]] || [[ "$CENTOS_EIGHT" = '8' && "$PHPMVER" = '8.1' ]] || [[ "$CENTOS_EIGHT" = '8' && "$PHPMVER" = '8.0' ]] || [[ "$CENTOS_EIGHT" = '8' && "$PHPVER_ID" -ge '80000' ]] || [[ "$CENTOS_EIGHT" = '8' && "$PHPMVER" = '7.4' ]] || [[ "$CENTOS_EIGHT" = '8' && "$PHPMVER" = '7.3' ]] || [[ "$CENTOS_EIGHT" = '8' && "$DEVTOOLSET_PHP" = [yY] ]]; then
     CENTOSVER_NUMERIC=$(echo $CENTOSVER | sed -e 's|\.||g')
     # if devtoolset-4 gcc and g++ exist use then instead of system versions regardless of CentOS version
-    if [[ "$CENTOSVER_NUMERIC" -ge '87' && "$DEVTOOLSETTWELVE" = [yY] && -f /opt/rh/gcc-toolset-12/root/usr/bin/gcc && -f /opt/rh/gcc-toolset-12/root/usr/bin/g++ ]]; then
+    if [[ "$CENTOSVER_NUMERIC" -ge '89' && "$DEVTOOLSETTHIRTEEN" = [yY] && -f /opt/rh/gcc-toolset-13/root/usr/bin/gcc && -f /opt/rh/gcc-toolset-13/root/usr/bin/g++ ]]; then
+        GENERAL_DEVTOOLSETGCC='y'
+        DEVTOOLSETPHP_FALLTHROUGH=' -Wimplicit-fallthrough=0 -Wno-implicit-function-declaration -Wno-int-conversion -Wno-error=unused-result -Wno-unused-result -Wno-return-local-addr -Wno-maybe-uninitialized -Wno-array-parameter -Wno-alloc-size-larger-than -Wno-address -Wno-array-bounds -Wno-deprecated-declarations -Wno-discarded-qualifiers -Wno-stringop-overread -Wno-stringop-truncation -Wno-missing-profile'
+        DEVTOOLSETPHP_EXTRAFLAGS=' -fcode-hoisting -Wno-cast-function-type -Wno-error=cast-align -Wno-implicit-function-declaration -Wno-builtin-declaration-mismatch -Wno-return-local-addr -Wno-maybe-uninitialized -Wno-array-parameter -Wno-alloc-size-larger-than -Wno-address -Wno-array-bounds -Wno-deprecated-declarations -Wno-discarded-qualifiers -Wno-stringop-overread -Wno-stringop-truncation'
+        source /opt/rh/gcc-toolset-13/enable
+        which gcc
+        which g++
+        unset CC
+        unset CXX
+        if [[ "$INITIALINSTALL" != [yY] ]]; then
+          export CC="ccache /opt/rh/gcc-toolset-13/root/usr/bin/gcc"
+          export CXX="ccache /opt/rh/gcc-toolset-13/root/usr/bin/g++"
+        else
+          export CC="/opt/rh/gcc-toolset-13/root/usr/bin/gcc"
+          export CXX="/opt/rh/gcc-toolset-13/root/usr/bin/g++"
+        fi
+        echo "EL 8.9 set gcc-toolset-13"
+        echo $CC
+        echo $CXX
+    elif [[ "$CENTOSVER_NUMERIC" -ge '87' && "$DEVTOOLSETTWELVE" = [yY] && -f /opt/rh/gcc-toolset-12/root/usr/bin/gcc && -f /opt/rh/gcc-toolset-12/root/usr/bin/g++ ]]; then
         GENERAL_DEVTOOLSETGCC='y'
         DEVTOOLSETPHP_FALLTHROUGH=' -Wimplicit-fallthrough=0 -Wno-implicit-function-declaration -Wno-int-conversion -Wno-error=unused-result -Wno-unused-result -Wno-return-local-addr -Wno-maybe-uninitialized -Wno-array-parameter -Wno-alloc-size-larger-than -Wno-address -Wno-array-bounds -Wno-deprecated-declarations -Wno-discarded-qualifiers -Wno-stringop-overread -Wno-stringop-truncation -Wno-missing-profile'
         DEVTOOLSETPHP_EXTRAFLAGS=' -fcode-hoisting -Wno-cast-function-type -Wno-error=cast-align -Wno-implicit-function-declaration -Wno-builtin-declaration-mismatch -Wno-return-local-addr -Wno-maybe-uninitialized -Wno-array-parameter -Wno-alloc-size-larger-than -Wno-address -Wno-array-bounds -Wno-deprecated-declarations -Wno-discarded-qualifiers -Wno-stringop-overread -Wno-stringop-truncation'
@@ -1659,7 +1678,26 @@ if [[ "$GCCINTEL_PHP" = [yY] ]]; then
   if [[ "$CENTOS_EIGHT" = '8' && "$PHP_PGO" = [yY] && "$PHPMUVER" > 7 ]] || [[ "$CENTOS_EIGHT" = '8' && "$PHPMUVER" = '8.3' ]] || [[ "$CENTOS_EIGHT" = '8' && "$PHPMUVER" = '8.2' ]] || [[ "$CENTOS_EIGHT" = '8' && "$PHPMUVER" = '8.1' ]] || [[ "$CENTOS_EIGHT" = '8' && "$PHPMUVER" = '8.0' ]] || [[ "$CENTOS_EIGHT" = '8' && "$PHPVER_ID" -ge '80000' ]] || [[ "$CENTOS_EIGHT" = '8' && "$PHPMUVER" = '7.4' ]] || [[ "$CENTOS_EIGHT" = '8' && "$PHPMUVER" = '7.3' ]] || [[ "$CENTOS_EIGHT" = '8' && "$DEVTOOLSET_PHP" = [yY] ]]; then
     CENTOSVER_NUMERIC=$(echo $CENTOSVER | sed -e 's|\.||g')
     # if devtoolset-4 gcc and g++ exist use then instead of system versions regardless of CentOS version
-    if [[ "$CENTOSVER_NUMERIC" -ge '87' && "$DEVTOOLSETTWELVE" = [yY] && -f /opt/rh/gcc-toolset-12/root/usr/bin/gcc && -f /opt/rh/gcc-toolset-12/root/usr/bin/g++ ]]; then
+    if [[ "$CENTOSVER_NUMERIC" -ge '89' && "$DEVTOOLSETTHIRTEEN" = [yY] && -f /opt/rh/gcc-toolset-13/root/usr/bin/gcc && -f /opt/rh/gcc-toolset-13/root/usr/bin/g++ ]]; then
+        GENERAL_DEVTOOLSETGCC='y'
+        DEVTOOLSETPHP_FALLTHROUGH=' -Wimplicit-fallthrough=0 -Wno-implicit-function-declaration -Wno-int-conversion -Wno-error=unused-result -Wno-unused-result -Wno-return-local-addr -Wno-maybe-uninitialized -Wno-array-parameter -Wno-alloc-size-larger-than -Wno-address -Wno-array-bounds -Wno-deprecated-declarations -Wno-discarded-qualifiers -Wno-stringop-overread -Wno-stringop-truncation -Wno-missing-profile'
+        DEVTOOLSETPHP_EXTRAFLAGS=' -fcode-hoisting -Wno-cast-function-type -Wno-error=cast-align -Wno-implicit-function-declaration -Wno-builtin-declaration-mismatch -Wno-return-local-addr -Wno-maybe-uninitialized -Wno-array-parameter -Wno-alloc-size-larger-than -Wno-address -Wno-array-bounds -Wno-deprecated-declarations -Wno-discarded-qualifiers -Wno-stringop-overread -Wno-stringop-truncation'
+        source /opt/rh/gcc-toolset-13/enable
+        which gcc
+        which g++
+        unset CC
+        unset CXX
+        if [[ "$INITIALINSTALL" != [yY] ]]; then
+          export CC="ccache /opt/rh/gcc-toolset-13/root/usr/bin/gcc"
+          export CXX="ccache /opt/rh/gcc-toolset-13/root/usr/bin/g++"
+        else
+          export CC="/opt/rh/gcc-toolset-13/root/usr/bin/gcc"
+          export CXX="/opt/rh/gcc-toolset-13/root/usr/bin/g++"
+        fi
+        echo "EL 8.9 set gcc-toolset-13"
+        echo $CC
+        echo $CXX
+    elif [[ "$CENTOSVER_NUMERIC" -ge '87' && "$DEVTOOLSETTWELVE" = [yY] && -f /opt/rh/gcc-toolset-12/root/usr/bin/gcc && -f /opt/rh/gcc-toolset-12/root/usr/bin/g++ ]]; then
         GENERAL_DEVTOOLSETGCC='y'
         DEVTOOLSETPHP_FALLTHROUGH=' -Wimplicit-fallthrough=0 -Wno-implicit-function-declaration -Wno-int-conversion -Wno-error=unused-result -Wno-unused-result -Wno-return-local-addr -Wno-maybe-uninitialized -Wno-array-parameter -Wno-alloc-size-larger-than -Wno-address -Wno-array-bounds -Wno-deprecated-declarations -Wno-discarded-qualifiers -Wno-stringop-overread -Wno-stringop-truncation -Wno-missing-profile'
         DEVTOOLSETPHP_EXTRAFLAGS=' -fcode-hoisting -Wno-cast-function-type -Wno-error=cast-align -Wno-implicit-function-declaration -Wno-builtin-declaration-mismatch -Wno-return-local-addr -Wno-maybe-uninitialized -Wno-array-parameter -Wno-alloc-size-larger-than -Wno-address -Wno-array-bounds -Wno-deprecated-declarations -Wno-discarded-qualifiers -Wno-stringop-overread -Wno-stringop-truncation'
