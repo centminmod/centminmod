@@ -1,3 +1,17 @@
+switch_mariadbtenthree_archives() {
+  if grep -q "http://yum.mariadb.org/10.3/centos7-amd64" /etc/yum.repos.d/mariadb.repo; then
+      sed -i 's|http://yum.mariadb.org/10.3/centos7-amd64|https://archive.mariadb.org/mariadb-10.3/yum/centos7-amd64|' /etc/yum.repos.d/mariadb.repo
+      sed -i 's|https://yum.mariadb.org/RPM-GPG-KEY-MariaDB|https://archive.mariadb.org/PublicKey|' /etc/yum.repos.d/mariadb.repo
+      yum -q clean all
+  fi
+  
+  if grep -q "http://yum.mariadb.org/10.3/centos8-amd64" /etc/yum.repos.d/mariadb.repo; then
+      sed -i 's|http://yum.mariadb.org/10.3/centos8-amd64|https://archive.mariadb.org/mariadb-10.3/yum/centos8-amd64|' /etc/yum.repos.d/mariadb.repo
+      sed -i 's|https://yum.mariadb.org/RPM-GPG-KEY-MariaDB|https://archive.mariadb.org/PublicKey|' /etc/yum.repos.d/mariadb.repo
+      yum -q clean all
+  fi
+}
+
 setup_initial_csf_block_cronjob() {
   if [[ -f /usr/local/src/centminmod/tools/initial-csf-blocks.sh && ! "$(crontab -l | grep -F '33 */2 * * * /usr/local/src/centminmod/tools/initial-csf-blocks.sh >/dev/null 2>&1')" ]]; then
     mkdir -p /etc/centminmod/cronjobs/
@@ -3742,6 +3756,7 @@ if [[ "$INITIALINSTALL" != [yY] ]]; then
   check_and_fix_cache_keys
   fix_ftp_csf_ports
   setup_initial_csf_block_cronjob
+  switch_mariadbtenthree_archives
 fi
 
 }
