@@ -1,3 +1,17 @@
+switch_mariadbtenthree_archives() {
+  if grep -q "http://yum.mariadb.org/10.3/centos7-amd64" /etc/yum.repos.d/mariadb.repo; then
+      sed -i 's|http://yum.mariadb.org/10.3/centos7-amd64|https://archive.mariadb.org/mariadb-10.3/yum/centos7-amd64|' /etc/yum.repos.d/mariadb.repo
+      sed -i 's|https://yum.mariadb.org/RPM-GPG-KEY-MariaDB|https://archive.mariadb.org/PublicKey|' /etc/yum.repos.d/mariadb.repo
+      yum -q clean all
+  fi
+  
+  if grep -q "http://yum.mariadb.org/10.3/centos8-amd64" /etc/yum.repos.d/mariadb.repo; then
+      sed -i 's|http://yum.mariadb.org/10.3/centos8-amd64|https://archive.mariadb.org/mariadb-10.3/yum/centos8-amd64|' /etc/yum.repos.d/mariadb.repo
+      sed -i 's|https://yum.mariadb.org/RPM-GPG-KEY-MariaDB|https://archive.mariadb.org/PublicKey|' /etc/yum.repos.d/mariadb.repo
+      yum -q clean all
+  fi
+}
+
 fix_ftp_csf_ports() {
   # fix csf v14.18 adding DoT DNS over TLS port 853 which broke
   # Centmin Mod initial install CSF port list configuration
@@ -3340,6 +3354,7 @@ if [[ "$INITIALINSTALL" != [yY] ]]; then
   lets_dst_root_ca_fix
   check_php_cainfo_file
   fix_ftp_csf_ports
+  switch_mariadbtenthree_archives
 fi
 
 }
