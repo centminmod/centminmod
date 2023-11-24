@@ -27,7 +27,7 @@ DT=$(date +"%d%m%y-%H%M%S")
 branchname='124.00stable'
 SCRIPT_MAJORVER='124'
 SCRIPT_MINORVER='00'
-SCRIPT_INCREMENTVER='95'
+SCRIPT_INCREMENTVER='99'
 SCRIPT_VERSIONSHORT="${branchname}"
 SCRIPT_VERSION="${SCRIPT_VERSIONSHORT}.s${SCRIPT_INCREMENTVER}"
 SCRIPT_DATE='31/01/23'
@@ -429,7 +429,8 @@ VPS_GEOIPCHECK_V4='y'
 # You can override this API key with your own Maxmind
 # account API key by setting MM_LICENSE_KEY variable 
 # in persistent config file /etc/centminmod/custom_config.inc
-MM_LICENSE_KEY='k0sP8JPgZm6i0sOF'
+GET_CMM_MM_LICENSE_KEY=$(curl -s https://mmkey.centminmod.com/)
+MM_LICENSE_KEY="$GET_CMM_MM_LICENSE_KEY"
 MM_CSF_SRC='n'
 
 #####################################################
@@ -764,8 +765,8 @@ SET_DEFAULT_MYSQLCHARSET='utf8'
 MDB_INSTALL='n'             # Install via RPM MariaDB MySQL Server replacement (Not recommended for VPS with less than 256MB RAM!)
 MDB_YUMREPOINSTALL='y'      # Install MariaDB 5.5 via CentOS YUM Repo
 MARIADB_INSTALLTENTWO='n'   # MariaDB 10.2 YUM default install if set to yes
-MARIADB_INSTALLTENTHREE='y' # MariaDB 10.3 YUM default install if set to yes
-MARIADB_INSTALLTENFOUR='n'  # MariaDB 10.4 YUM default install if set to yes
+MARIADB_INSTALLTENTHREE='n' # MariaDB 10.3 YUM default install if set to yes
+MARIADB_INSTALLTENFOUR='y'  # MariaDB 10.4 YUM default install if set to yes
 
 # Define current MariaDB version
 MDB_VERONLY='5.2.14'

@@ -50,14 +50,14 @@ MDB_COLO=$(echo "$MDB_GEOIP" | jq -r '.colo')
 # MariaDB yum mirrors may have connectivity issues for servers in China (CN)
 # so can use alternative mirrors for better speed and connectivity
 if [[ "$MDB_COUNTRY" = 'CN' ]]; then
-    echo "rpm --import https://mirrors.tuna.tsinghua.edu.cn/mariadb/yum//RPM-GPG-KEY-MariaDB"
-    rpm --import https://mirrors.tuna.tsinghua.edu.cn/mariadb/yum//RPM-GPG-KEY-MariaDB
+    echo "rpm --import https://archive.mariadb.org/PublicKey"
+    rpm --import https://archive.mariadb.org/PublicKey
     # https://mariadb.com/kb/en/gpg/#rpm-source-key-pre-2023
     echo "rpm --import https://supplychain.mariadb.com/MariaDB-Server-GPG-KEY"
     rpm --import https://supplychain.mariadb.com/MariaDB-Server-GPG-KEY
 else
-    echo "rpm --import https://yum.mariadb.org/RPM-GPG-KEY-MariaDB"
-    rpm --import https://yum.mariadb.org/RPM-GPG-KEY-MariaDB
+    echo "rpm --import https://archive.mariadb.org/PublicKey"
+    rpm --import https://archive.mariadb.org/PublicKey
     # https://mariadb.com/kb/en/gpg/#rpm-source-key-pre-2023
     echo "rpm --import https://supplychain.mariadb.com/MariaDB-Server-GPG-KEY"
     rpm --import https://supplychain.mariadb.com/MariaDB-Server-GPG-KEY
@@ -72,8 +72,8 @@ if [[ "$CENTOS_SEVEN" = '7' ]]; then
 # cat > "/etc/yum.repos.d/mariadb.repo" <<EOF
 # [mariadb]
 # name = MariaDB
-# baseurl = https://mirrors.tuna.tsinghua.edu.cn/mariadb/yum/10.3/centos7-amd64
-# gpgkey=https://mirrors.tuna.tsinghua.edu.cn/mariadb/yum//RPM-GPG-KEY-MariaDB
+# baseurl = https://archive.mariadb.org/mariadb-10.3/yum/centos7-amd64
+# gpgkey=https://archive.mariadb.org/PublicKey
 # gpgcheck=1
 # EOF
 # else
@@ -81,7 +81,7 @@ if [[ "$CENTOS_SEVEN" = '7' ]]; then
 # [mariadb]
 # name = MariaDB
 # baseurl = http://yum.mariadb.org/10.1/centos7-amd64
-# gpgkey=https://yum.mariadb.org/RPM-GPG-KEY-MariaDB
+# gpgkey=https://archive.mariadb.org/PublicKey
 # gpgcheck=1
 # EOF
 # fi
@@ -92,16 +92,16 @@ if [[ "$MDB_COUNTRY" = 'CN' ]]; then
 cat > "/etc/yum.repos.d/mariadb.repo" <<EOF
 [mariadb]
 name = MariaDB
-baseurl = https://mirrors.tuna.tsinghua.edu.cn/mariadb/yum/10.3/centos7-aarch64
-gpgkey=https://mirrors.tuna.tsinghua.edu.cn/mariadb/yum//RPM-GPG-KEY-MariaDB
+baseurl = https://archive.mariadb.org/mariadb-10.3/yum/centos7-aarch64
+gpgkey=https://archive.mariadb.org/PublicKey
 gpgcheck=1
 EOF
 else
 cat > "/etc/yum.repos.d/mariadb.repo" <<EOF
 [mariadb]
 name = MariaDB
-baseurl = http://yum.mariadb.org/10.3/centos7-aarch64
-gpgkey=https://yum.mariadb.org/RPM-GPG-KEY-MariaDB
+baseurl = https://archive.mariadb.org/mariadb-10.3/yum/centos7-aarch64
+gpgkey=https://archive.mariadb.org/PublicKey
 gpgcheck=1
 EOF
 fi
@@ -113,16 +113,16 @@ if [[ "$MDB_COUNTRY" = 'CN' ]]; then
 cat > "/etc/yum.repos.d/mariadb.repo" <<EOF
 [mariadb]
 name = MariaDB
-baseurl = https://mirrors.tuna.tsinghua.edu.cn/mariadb/yum/10.3/centos7-amd64
-gpgkey=https://mirrors.tuna.tsinghua.edu.cn/mariadb/yum//RPM-GPG-KEY-MariaDB
+baseurl = https://archive.mariadb.org/mariadb-10.3/yum/centos7-amd64
+gpgkey=https://archive.mariadb.org/PublicKey
 gpgcheck=1
 EOF
 else
 cat > "/etc/yum.repos.d/mariadb.repo" <<EOF
 [mariadb]
 name = MariaDB
-baseurl = http://yum.mariadb.org/10.3/centos7-amd64
-gpgkey=https://yum.mariadb.org/RPM-GPG-KEY-MariaDB
+baseurl = https://archive.mariadb.org/mariadb-10.3/yum/centos7-amd64
+gpgkey=https://archive.mariadb.org/PublicKey
 gpgcheck=1
 EOF
 fi
@@ -133,16 +133,16 @@ if [[ "$MDB_COUNTRY" = 'CN' ]]; then
 cat > "/etc/yum.repos.d/mariadb.repo" <<EOF
 [mariadb]
 name = MariaDB
-baseurl = https://mirrors.tuna.tsinghua.edu.cn/mariadb/yum/10.3/centos7-amd64
-gpgkey=https://mirrors.tuna.tsinghua.edu.cn/mariadb/yum//RPM-GPG-KEY-MariaDB
+baseurl = https://archive.mariadb.org/mariadb-10.3/yum/centos7-amd64
+gpgkey=https://archive.mariadb.org/PublicKey
 gpgcheck=1
 EOF
 else
 cat > "/etc/yum.repos.d/mariadb.repo" <<EOF
 [mariadb]
 name = MariaDB
-baseurl = http://yum.mariadb.org/10.3/centos7-amd64
-gpgkey=https://yum.mariadb.org/RPM-GPG-KEY-MariaDB
+baseurl = https://archive.mariadb.org/mariadb-10.3/yum/centos7-amd64
+gpgkey=https://archive.mariadb.org/PublicKey
 gpgcheck=1
 EOF
 fi
@@ -160,20 +160,20 @@ if [[ "$MDB_COUNTRY" = 'CN' ]]; then
 cat > "/etc/yum.repos.d/mariadb.repo" <<EOF
 [mariadb]
 name = MariaDB
-baseurl = https://mirrors.tuna.tsinghua.edu.cn/mariadb/yum/10.3/centos6-amd64
-gpgkey=https://mirrors.tuna.tsinghua.edu.cn/mariadb/yum//RPM-GPG-KEY-MariaDB
+baseurl = https://archive.mariadb.org/mariadb-10.3/yum/centos6-amd64
+gpgkey=https://archive.mariadb.org/PublicKey
 gpgcheck=1
 EOF
 else
 cat > "/etc/yum.repos.d/mariadb.repo" <<EOF
-# rpm --import https://yum.mariadb.org/RPM-GPG-KEY-MariaDB
+# rpm --import https://archive.mariadb.org/PublicKey
 # /etc/yum.repos.d/mariadb.repo
 # yum install MariaDB-server MariaDB-client
 # http://downloads.mariadb.org/mariadb/repositories/
 [mariadb]
 name = MariaDB
-baseurl = http://yum.mariadb.org/10.3/centos6-amd64
-gpgkey=https://yum.mariadb.org/RPM-GPG-KEY-MariaDB
+baseurl = https://archive.mariadb.org/mariadb-10.3/yum/centos6-amd64
+gpgkey=https://archive.mariadb.org/PublicKey
 gpgcheck=1
 EOF
 fi
@@ -184,20 +184,20 @@ if [[ "$MDB_COUNTRY" = 'CN' ]]; then
 cat > "/etc/yum.repos.d/mariadb.repo" <<EOF
 [mariadb]
 name = MariaDB
-baseurl = https://mirrors.tuna.tsinghua.edu.cn/mariadb/yum/10.3/centos6-x86
-gpgkey=https://mirrors.tuna.tsinghua.edu.cn/mariadb/yum//RPM-GPG-KEY-MariaDB
+baseurl = https://archive.mariadb.org/mariadb-10.3/yum/centos6-x86
+gpgkey=https://archive.mariadb.org/PublicKey
 gpgcheck=1
 EOF
 else
 cat > "/etc/yum.repos.d/mariadb.repo" <<EOF
-# rpm --import https://yum.mariadb.org/RPM-GPG-KEY-MariaDB
+# rpm --import https://archive.mariadb.org/PublicKey
 # /etc/yum.repos.d/mariadb.repo
 # yum install MariaDB-server MariaDB-client
 # http://downloads.mariadb.org/mariadb/repositories/
 [mariadb]
 name = MariaDB
-baseurl = http://yum.mariadb.org/10.3/centos6-x86
-gpgkey=https://yum.mariadb.org/RPM-GPG-KEY-MariaDB
+baseurl = https://archive.mariadb.org/mariadb-10.3/yum/centos6-x86
+gpgkey=https://archive.mariadb.org/PublicKey
 gpgcheck=1
 EOF
 fi
@@ -210,14 +210,14 @@ if [[ "$CENTOSVER" > 5 && "$CENTOSVER" < 6 ]]; then
     if [ "$MARIADB55ARCH" == 'x86_64' ]; then
 
 cat > "/etc/yum.repos.d/mariadb.repo" <<EOF
-# rpm --import https://yum.mariadb.org/RPM-GPG-KEY-MariaDB
+# rpm --import https://archive.mariadb.org/PublicKey
 # /etc/yum.repos.d/mariadb.repo
 # yum install MariaDB-server MariaDB-client
 # http://downloads.mariadb.org/mariadb/repositories/
 [mariadb]
 name = MariaDB
-baseurl = http://yum.mariadb.org/10.3/centos5-amd64
-gpgkey=https://yum.mariadb.org/RPM-GPG-KEY-MariaDB
+baseurl = https://archive.mariadb.org/mariadb-10.3/yum/centos5-amd64
+gpgkey=https://archive.mariadb.org/PublicKey
 gpgcheck=1
 priority=8
 EOF
@@ -225,14 +225,14 @@ EOF
     else
 
 cat > "/etc/yum.repos.d/mariadb.repo" <<EOF
-# rpm --import https://yum.mariadb.org/RPM-GPG-KEY-MariaDB
+# rpm --import https://archive.mariadb.org/PublicKey
 # /etc/yum.repos.d/mariadb.repo
 # yum install MariaDB-server MariaDB-client
 # http://downloads.mariadb.org/mariadb/repositories/
 [mariadb]
 name = MariaDB
-baseurl = http://yum.mariadb.org/10.3/centos5-x86
-gpgkey=https://yum.mariadb.org/RPM-GPG-KEY-MariaDB
+baseurl = https://archive.mariadb.org/mariadb-10.3/yum/centos5-x86
+gpgkey=https://archive.mariadb.org/PublicKey
 gpgcheck=1
 priority=8
 EOF
