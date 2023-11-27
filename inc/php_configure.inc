@@ -758,35 +758,80 @@ if [[ "$PHPMUVER" = '7.4' ]]; then
   NEWLIBICU='y'
   echo "NEWLIBICU=$NEWLIBICU"
 fi
-if [[ "$PHPMUVER" = '8.0' || "$PHPMUVER" = '8.1' || "$PHPMUVER" = '8.2' || "$PHPMUVER" = '8.3' || "$PHPVER_ID" -ge '80000' ]]; then
+if [[ "$PHPMUVER" = '7.4' || "$PHPMUVER" = '8.0' || "$PHPMUVER" = '8.1' || "$PHPMUVER" = '8.2' || "$PHPMUVER" = '8.3' || "$PHPVER_ID" -ge '80000' ]]; then
   NEWLIBICU='y'
   echo "NEWLIBICU=$NEWLIBICU"
+  if [[ "$NEWLIBICU" = [yY] && ! "$(ls /usr/lib64/icu/73* 1> /dev/null 2>&1)" && "$CENTOS_NINE" = '9' && -f /etc/yum.repos.d/remi.repo && -f /etc/yum.repos.d/rpmforge.repo ]]; then
+    echo "yum -y install libicu73 libicu73-devel --allowerasing --enablerepo=remi --disablerepo=rpmforge,epel"
+    yum -y install libicu73 libicu73-devel --allowerasing --enablerepo=remi --disablerepo=rpmforge,epel
+    # if [ "$(rpm -qa libicu)" ]; then
+    #   yum -y remove libicu
+    # fi
+    sar_call
+  elif [[ "$NEWLIBICU" = [yY] && ! "$(ls /usr/lib64/icu/73* 1> /dev/null 2>&1)" && "$CENTOS_NINE" = '9' && -f /etc/yum.repos.d/remi.repo && ! -f /etc/yum.repos.d/rpmforge.repo ]]; then
+    echo "yum -y install libicu73 libicu73-devel --allowerasing --enablerepo=remi --disablerepo=epel"
+    yum -y install libicu73 libicu73-devel --allowerasing --enablerepo=remi --disablerepo=epel
+    # if [ "$(rpm -qa libicu)" ]; then
+    #   yum -y remove libicu
+    # fi
+    sar_call
+  elif [[ "$NEWLIBICU" = [yY] && ! "$(ls /usr/lib64/icu/73* 1> /dev/null 2>&1)" && "$CENTOS_EIGHT" = '8' && -f /etc/yum.repos.d/remi.repo && -f /etc/yum.repos.d/rpmforge.repo ]]; then
+    echo "yum -y install libicu73 libicu73-devel --allowerasing --enablerepo=remi --disablerepo=rpmforge,epel"
+    yum -y install libicu73 libicu73-devel --allowerasing --enablerepo=remi --disablerepo=rpmforge,epel
+    # if [ "$(rpm -qa libicu)" ]; then
+    #   yum -y remove libicu
+    # fi
+    sar_call
+  elif [[ "$NEWLIBICU" = [yY] && ! "$(ls /usr/lib64/icu/73* 1> /dev/null 2>&1)" && "$CENTOS_EIGHT" = '8' && -f /etc/yum.repos.d/remi.repo && ! -f /etc/yum.repos.d/rpmforge.repo ]]; then
+    echo "yum -y install libicu73 libicu73-devel --allowerasing --enablerepo=remi --disablerepo=epel"
+    yum -y install libicu73 libicu73-devel --allowerasing --enablerepo=remi --disablerepo=epel
+    # if [ "$(rpm -qa libicu)" ]; then
+    #   yum -y remove libicu
+    # fi
+    sar_call
+  fi
 fi
 
 if [[ ! -f /usr/bin/icu-config ]]; then
-  if [[ "$NEWLIBICU" = [yY] && "$CENTOS_SEVEN" = '7' && -f /etc/yum.repos.d/remi.repo && -f /etc/yum.repos.d/rpmforge.repo ]]; then
-    echo "yum -q -y install libicu62 libicu62-devel --enablerepo=remi --disablerepo=rpmforge,epel"
-    yum -q -y install libicu62 libicu62-devel --enablerepo=remi --disablerepo=rpmforge,epel
+  if [[ "$NEWLIBICU" = [yY] && "$CENTOS_NINE" = '9' && -f /etc/yum.repos.d/remi.repo && -f /etc/yum.repos.d/rpmforge.repo ]]; then
+    echo "yum -y install libicu73 libicu73-devel --allowerasing --enablerepo=remi --disablerepo=rpmforge,epel"
+    yum -y install libicu73 libicu73-devel --allowerasing --enablerepo=remi --disablerepo=rpmforge,epel
+    sar_call
+  elif [[ "$NEWLIBICU" = [yY] && "$CENTOS_NINE" = '9' && -f /etc/yum.repos.d/remi.repo && ! -f /etc/yum.repos.d/rpmforge.repo ]]; then
+    echo "yum -y install libicu73 libicu73-devel --allowerasing --enablerepo=remi --disablerepo=epel"
+    yum -y install libicu73 libicu73-devel --allowerasing --enablerepo=remi --disablerepo=epel
+    sar_call
+  elif [[ "$NEWLIBICU" = [yY] && "$CENTOS_EIGHT" = '8' && -f /etc/yum.repos.d/remi.repo && -f /etc/yum.repos.d/rpmforge.repo ]]; then
+    echo "yum -y install libicu73 libicu73-devel --allowerasing --enablerepo=remi --disablerepo=rpmforge,epel"
+    yum -y install libicu73 libicu73-devel --allowerasing --enablerepo=remi --disablerepo=rpmforge,epel
+    sar_call
+  elif [[ "$NEWLIBICU" = [yY] && "$CENTOS_EIGHT" = '8' && -f /etc/yum.repos.d/remi.repo && ! -f /etc/yum.repos.d/rpmforge.repo ]]; then
+    echo "yum -y install libicu73 libicu73-devel --allowerasing --enablerepo=remi --disablerepo=epel"
+    yum -y install libicu73 libicu73-devel --allowerasing --enablerepo=remi --disablerepo=epel
+    sar_call
+  elif [[ "$NEWLIBICU" = [yY] && "$CENTOS_SEVEN" = '7' && -f /etc/yum.repos.d/remi.repo && -f /etc/yum.repos.d/rpmforge.repo ]]; then
+    echo "yum -y install libicu62 libicu62-devel --enablerepo=remi --disablerepo=rpmforge,epel"
+    yum -y install libicu62 libicu62-devel --enablerepo=remi --disablerepo=rpmforge,epel
     sar_call
   elif [[ "$NEWLIBICU" = [yY] && "$CENTOS_SEVEN" = '7' && -f /etc/yum.repos.d/remi.repo && ! -f /etc/yum.repos.d/rpmforge.repo ]]; then
-    echo "yum -q -y install libicu62 libicu62-devel --enablerepo=remi --disablerepo=epel"
-    yum -q -y install libicu62 libicu62-devel --enablerepo=remi --disablerepo=epel
+    echo "yum -y install libicu62 libicu62-devel --enablerepo=remi --disablerepo=epel"
+    yum -y install libicu62 libicu62-devel --enablerepo=remi --disablerepo=epel
     sar_call
   elif [[ "$CENTOS_SIX" = '6' && -f /etc/yum.repos.d/remi.repo && -f /etc/yum.repos.d/rpmforge.repo ]]; then
-    echo "yum -q -y install libicu-last libicu-last-devel --enablerepo=remi --disablerepo=rpmforge,epel"
-    yum -q -y install libicu-last libicu-last-devel --enablerepo=remi --disablerepo=rpmforge,epel
+    echo "yum -y install libicu-last libicu-last-devel --enablerepo=remi --disablerepo=rpmforge,epel"
+    yum -y install libicu-last libicu-last-devel --enablerepo=remi --disablerepo=rpmforge,epel
     sar_call
   elif [[ "$CENTOS_SIX" = '6' && -f /etc/yum.repos.d/remi.repo && ! -f /etc/yum.repos.d/rpmforge.repo ]]; then
-    echo "yum -q -y install libicu-last libicu-last-devel --enablerepo=remi --disablerepo=epel"
-    yum -q -y install libicu-last libicu-last-devel --enablerepo=remi --disablerepo=epel
+    echo "yum -y install libicu-last libicu-last-devel --enablerepo=remi --disablerepo=epel"
+    yum -y install libicu-last libicu-last-devel --enablerepo=remi --disablerepo=epel
     sar_call
   elif [ -f /etc/yum.repos.d/rpmforge.repo ]; then
-    echo "yum -q -y install libicu libicu-devel --disablerepo=rpmforge,epel"
-    yum -q -y install libicu libicu-devel --disablerepo=rpmforge,epel
+    echo "yum -y install libicu libicu-devel --disablerepo=rpmforge,epel"
+    yum -y install libicu libicu-devel --disablerepo=rpmforge,epel
     sar_call
   else
-    echo "yum -q -y install libicu libicu-devel --disablerepo=epel"
-    yum -q -y install libicu libicu-devel --disablerepo=epel
+    echo "yum -y install libicu libicu-devel --disablerepo=epel"
+    yum -y install libicu libicu-devel --disablerepo=epel
     sar_call
   fi
 fi
@@ -808,22 +853,22 @@ if [[ "$NEWLIBICU" = [nN] && "$CENTOS_SEVEN" = '7' && -f /etc/yum.repos.d/remi.r
     yum -y remove libicu62 --enablerepo=remi
     if [ -f /etc/yum.repos.d/rpmforge.repo ]; then
       echo "yum -q -y install libicu-devel --disablerepo=rpmforge,epel"
-      yum -q -y install libicu-devel --disablerepo=rpmforge,epel
+      yum -y install libicu-devel --disablerepo=rpmforge,epel
     else
-      echo "yum -q -y install libicu-devel --disablerepo=epel"
-      yum -q -y install libicu-devel --disablerepo=epel
+      echo "yum -y install libicu-devel --disablerepo=epel"
+      yum -y install libicu-devel --disablerepo=epel
     fi
   fi
-  if [ "$(rpm -ql libicu62-devel)" ]; then
+  if [ "$(rpml libicu62-devel)" ]; then
     echo "yum -y swap libicu62-devel libicu-devel --enablerepo=remi"
     yum -y swap libicu62-devel libicu-devel --enablerepo=remi
   else
     if [ -f /etc/yum.repos.d/rpmforge.repo ]; then
-      echo "yum -q -y install libicu-devel --disablerepo=rpmforge,epel"
-      yum -q -y install libicu-devel --disablerepo=rpmforge,epel
+      echo "yum -y install libicu-devel --disablerepo=rpmforge,epel"
+      yum -y install libicu-devel --disablerepo=rpmforge,epel
     else
-      echo "yum -q -y install libicu-devel --disablerepo=epel"
-      yum -q -y install libicu-devel --disablerepo=epel
+      echo "yum -y install libicu-devel --disablerepo=epel"
+      yum -y install libicu-devel --disablerepo=epel
     fi
   fi
 fi
@@ -837,11 +882,36 @@ if [[ "$CENTOS_SIX" = '6' && -f /etc/yum.repos.d/remi.repo && -f /usr/bin/icu-co
   yum -y install libicu-last-devel --enablerepo=remi
 fi
 
-if [[ "$PHPMVER" = '7.4' || "$PHPMUVER" = '7.4' || "$PHPMVER" = '8.0' || "$PHPMUVER" = '8.0' || "$PHPMVER" = '8.1' || "$PHPMUVER" = '8.1' || "$PHPMVER" = '8.2' || "$PHPMUVER" = '8.2' || "$PHPMVER" = '8.3' || "$PHPMUVER" = '8.3' || "$PHPVER_ID" -ge '80000' ]]; then
+if [[ "$PHPMVER" = '7.3' || "$PHPMUVER" = '7.3' || "$PHPMVER" = '7.4' || "$PHPMUVER" = '7.4' || "$PHPMVER" = '8.0' || "$PHPMUVER" = '8.0' || "$PHPMVER" = '8.1' || "$PHPMUVER" = '8.1' || "$PHPMVER" = '8.2' || "$PHPMUVER" = '8.2' || "$PHPMVER" = '8.3' || "$PHPMUVER" = '8.3' || "$PHPVER_ID" -ge '80000' ]]; then
   if [[ "$(uname -m)" = 'x86_64' ]]; then
     LIBDIR_LIBICU='lib64'
   else
     LIBDIR_LIBICU='lib'
+  fi
+  export ICU_CFLAGS='-I/usr/include'
+  export ICU_LIBS="-L/usr/${LIBDIR_LIBICU} -licuio -licui18n -licuuc -licudata"
+fi
+
+if [[ "$PHPMVER" = '7.0' || "$PHPMUVER" = '7.0' || "$PHPMVER" = '7.1' || "$PHPMUVER" = '7.1' || "$PHPMVER" = '7.2' || "$PHPMUVER" = '7.2' || "$PHPMVER" = '7.3' || "$PHPMUVER" = '7.3' ]]; then
+  if [[ "$(uname -m)" = 'x86_64' ]]; then
+    LIBDIR_LIBICU='lib64'
+  else
+    LIBDIR_LIBICU='lib'
+  fi
+  if [[ "$CENTOS_NINE" = '9' && -f /etc/yum.repos.d/remi.repo && ! -f /etc/yum.repos.d/rpmforge.repo ]]; then
+      echo "yum -q -y install libicu libicu-devel --allowerasing --enablerepo=remi --disablerepo=epel"
+      yum -y install libicu libicu-devel --allowerasing --enablerepo=remi --disablerepo=epel
+      if [[ ! -f /usr/bin/icu-config ]]; then
+        yum -y install libicu-devel --enablerepo=remi --disablerepo=epel
+      fi
+      sar_call
+  elif [[ "$CENTOS_EIGHT" = '8' && -f /etc/yum.repos.d/remi.repo && ! -f /etc/yum.repos.d/rpmforge.repo ]]; then
+      echo "yum -y install libicu libicu-devel --allowerasing --enablerepo=remi --disablerepo=epel"
+      yum -y install libicu libicu-devel --allowerasing --enablerepo=remi --disablerepo=epel
+      if [[ ! -f /usr/bin/icu-config ]]; then
+        yum -y install libicu-devel --enablerepo=remi --disablerepo=epel
+      fi
+      sar_call
   fi
   export ICU_CFLAGS='-I/usr/include'
   export ICU_LIBS="-L/usr/${LIBDIR_LIBICU} -licuio -licui18n -licuuc -licudata"
