@@ -192,12 +192,12 @@ fi
 # fi
 # mariadb 10.3 deprecated to override old mirror baseurls with archives version
 MDB_MIRROR_BASEURL='https://archive.mariadb.org/mariadb-10.3'
-MDB_ARCHIVES_PUBKEY='https://archive.mariadb.org/PublicKey'
+MDB_ARCHIVES_PUBKEY='https://supplychain.mariadb.com/MariaDB-Server-GPG-KEY'
 echo "rpm --import ${MDB_ARCHIVES_PUBKEY}"
 rpm --import "${MDB_ARCHIVES_PUBKEY}"
 # https://mariadb.com/kb/en/gpg/#rpm-source-key-pre-2023
-echo "rpm --import https://supplychain.mariadb.com/MariaDB-Server-GPG-KEY"
-rpm --import https://supplychain.mariadb.com/MariaDB-Server-GPG-KEY
+# echo "rpm --import https://supplychain.mariadb.com/MariaDB-Server-GPG-KEY"
+# rpm --import https://supplychain.mariadb.com/MariaDB-Server-GPG-KEY
 
 ###############################################################################
 if [[ "$CENTOS_NINE" = '9' ]]; then
