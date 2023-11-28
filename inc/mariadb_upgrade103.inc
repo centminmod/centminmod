@@ -253,7 +253,7 @@ cat > "/etc/yum.repos.d/mariadb.repo" <<EOF
 [mariadb]
 name = MariaDB
 baseurl = https://archive.mariadb.org/mariadb-10.3/yum/centos7-aarch64
-gpgkey=https://archive.mariadb.org/PublicKey
+gpgkey=https://supplychain.mariadb.com/MariaDB-Server-GPG-KEY
 gpgcheck=1
 EOF
 else
@@ -261,7 +261,7 @@ cat > "/etc/yum.repos.d/mariadb.repo" <<EOF
 [mariadb]
 name = MariaDB
 baseurl = https://archive.mariadb.org/mariadb-10.3/yum/centos7-aarch64
-gpgkey=https://archive.mariadb.org/PublicKey
+gpgkey=https://supplychain.mariadb.com/MariaDB-Server-GPG-KEY
 gpgcheck=1
 EOF
 fi
@@ -274,7 +274,7 @@ cat > "/etc/yum.repos.d/mariadb.repo" <<EOF
 [mariadb]
 name = MariaDB
 baseurl = https://archive.mariadb.org/mariadb-10.3/yum/centos7-amd64
-gpgkey=https://archive.mariadb.org/PublicKey
+gpgkey=https://supplychain.mariadb.com/MariaDB-Server-GPG-KEY
 gpgcheck=1
 EOF
 else
@@ -282,7 +282,7 @@ cat > "/etc/yum.repos.d/mariadb.repo" <<EOF
 [mariadb]
 name = MariaDB
 baseurl = https://archive.mariadb.org/mariadb-10.3/yum/centos7-amd64
-gpgkey=https://archive.mariadb.org/PublicKey
+gpgkey=https://supplychain.mariadb.com/MariaDB-Server-GPG-KEY
 gpgcheck=1
 EOF
 fi
@@ -294,7 +294,7 @@ cat > "/etc/yum.repos.d/mariadb.repo" <<EOF
 [mariadb]
 name = MariaDB
 baseurl = https://archive.mariadb.org/mariadb-10.3/yum/centos7-amd64
-gpgkey=https://archive.mariadb.org/PublicKey
+gpgkey=https://supplychain.mariadb.com/MariaDB-Server-GPG-KEY
 gpgcheck=1
 EOF
 else
@@ -302,7 +302,7 @@ cat > "/etc/yum.repos.d/mariadb.repo" <<EOF
 [mariadb]
 name = MariaDB
 baseurl = https://archive.mariadb.org/mariadb-10.3/yum/centos7-amd64
-gpgkey=https://archive.mariadb.org/PublicKey
+gpgkey=https://supplychain.mariadb.com/MariaDB-Server-GPG-KEY
 gpgcheck=1
 EOF
 fi
@@ -321,7 +321,7 @@ cat > "/etc/yum.repos.d/mariadb.repo" <<EOF
 [mariadb]
 name = MariaDB
 baseurl = https://archive.mariadb.org/mariadb-10.3/yum/centos6-amd64
-gpgkey=https://archive.mariadb.org/PublicKey
+gpgkey=https://supplychain.mariadb.com/MariaDB-Server-GPG-KEY
 gpgcheck=1
 EOF
 else
@@ -333,7 +333,7 @@ cat > "/etc/yum.repos.d/mariadb.repo" <<EOF
 [mariadb]
 name = MariaDB
 baseurl = https://archive.mariadb.org/mariadb-10.3/yum/centos6-amd64
-gpgkey=https://archive.mariadb.org/PublicKey
+gpgkey=https://supplychain.mariadb.com/MariaDB-Server-GPG-KEY
 gpgcheck=1
 EOF
 fi
@@ -345,7 +345,7 @@ cat > "/etc/yum.repos.d/mariadb.repo" <<EOF
 [mariadb]
 name = MariaDB
 baseurl = https://archive.mariadb.org/mariadb-10.3/yum/centos6-x86
-gpgkey=https://archive.mariadb.org/PublicKey
+gpgkey=https://supplychain.mariadb.com/MariaDB-Server-GPG-KEY
 gpgcheck=1
 EOF
 else
@@ -357,7 +357,7 @@ cat > "/etc/yum.repos.d/mariadb.repo" <<EOF
 [mariadb]
 name = MariaDB
 baseurl = https://archive.mariadb.org/mariadb-10.3/yum/centos6-x86
-gpgkey=https://archive.mariadb.org/PublicKey
+gpgkey=https://supplychain.mariadb.com/MariaDB-Server-GPG-KEY
 gpgcheck=1
 EOF
 fi
@@ -377,7 +377,7 @@ cat > "/etc/yum.repos.d/mariadb.repo" <<EOF
 [mariadb]
 name = MariaDB
 baseurl = https://archive.mariadb.org/mariadb-10.3/yum/centos5-amd64
-gpgkey=https://archive.mariadb.org/PublicKey
+gpgkey=https://supplychain.mariadb.com/MariaDB-Server-GPG-KEY
 gpgcheck=1
 priority=8
 EOF
@@ -392,7 +392,7 @@ cat > "/etc/yum.repos.d/mariadb.repo" <<EOF
 [mariadb]
 name = MariaDB
 baseurl = https://archive.mariadb.org/mariadb-10.3/yum/centos5-x86
-gpgkey=https://archive.mariadb.org/PublicKey
+gpgkey=https://supplychain.mariadb.com/MariaDB-Server-GPG-KEY
 gpgcheck=1
 priority=8
 EOF
