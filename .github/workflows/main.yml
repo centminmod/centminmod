@@ -12,6 +12,7 @@ on:
       - 'README.md'
       - 'CONTRIBUTING.md'
       - '.github/workflows/main.yml'
+      - 'datamanagement/centmin.sh-menu-21.readme.md'
       - '.github/workflows/cmm-centos7.yml'
       - '.github/workflows/cmm-almalinux8-vs-rockylinux8-vs-oraclelinux8.yml'
       - '.github/workflows/cmm-almalinux9-vs-rockylinux9-vs-oraclelinux9.yml'

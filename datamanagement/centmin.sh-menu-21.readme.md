@@ -1,6 +1,6 @@
 # Centmin Mod User Guide: centmin.sh Menu Option 21
 
-This guide provides an overview of centmin.sh menu option 21 in Centmin Mod, which focuses on data management tasks. You'll learn about the available menu and submenu options, as well as their functionalities.
+This guide provides an overview of centmin.sh menu option 21 in Centmin Mod, which focuses on data management tasks. You'll learn about the available menu and submenu options, as well as their functionalities. If you appreciate the work and effort, please consider [supporting Centmin Mod](https://community.centminmod.com/threads/ways-to-support-centmin-mod.11435/). Shorten url to [PayPal donation link](https://centminmod.com/donate/).
 
 ## Table of Contents
 
@@ -225,8 +225,8 @@ When using the "Migrate Centmin Mod Data To New Centmin Mod Server" option, you'
 
 1. Confirmation to continue with the migration process.
 2. Backup method choice: 
-   - Backup Nginx Vhosts Data + MariaBackup MySQL Backups (option 1)
-   - Backup Nginx Vhosts Data + Backup MariaDB MySQL With mysqldump (option 2)
+   - Backup Nginx Vhosts Data + MariaBackup MySQL Backups (option 1) - only choose this method if both old and new servers run the same MariaDB MySQL server major version i.e. 10.3 or 10.4 or 10.6 on both servers. If one server is on an older version, I'd upgrade that major version to match the newer major version.
+   - Backup Nginx Vhosts Data + Backup MariaDB MySQL With mysqldump (option 2) - this method more suited if you MariaDB MySQL server major versions differ where new server has a newer major version i.e. old server uses MariaDB 10.3 and new server uses MariaDB 10.4 or 10.6.
 3. If you chose option 1:
    - Confirmation to continue with the chosen backup method.
    - Option to use tar + zstd compression for the backup.
@@ -586,7 +586,7 @@ You can also use equivalent SSH command line below based on above input prompt v
 
 This option allows you to transfer directory data from your current server to S3 compatible storage. The following information will be required:
 
-1. AWS CLI profile name: Enter the AWS CLI profile name that you have configured with the necessary access keys and secret keys.
+1. AWS CLI profile name: Enter the AWS CLI profile name that you have configured with the necessary access keys and secret keys. You may have already created a AWS CLI tool profile name manually via `aws` cli client or via `centmin.sh` menu `option 21` submenu `option 2` options.
 2. S3 bucket name: Enter the name of the S3 bucket to which you want to transfer the data.
 3. S3 endpoint URL: Provide the endpoint URL of the S3 compatible storage provider (e.g., Amazon S3, Cloudflare R2, Backblaze, DigitalOcean, Vultr, Linode).
 4. Source directory path: Enter the full path to the source directory you want to transfer from your current server.
@@ -872,3 +872,5 @@ This option returns you to the main Centmin Mod menu.
 ## Conclusion
 
 Centmin Mod's centmin.sh menu option 21 provides various data management functionalities, such as SSH key management, AWS CLI S3 profile credential management, data migration, backup, and transfer. This guide has detailed each submenu option to help you understand and utilize these features effectively.
+
+If you appreciate the work and effort, please consider [supporting Centmin Mod](https://community.centminmod.com/threads/ways-to-support-centmin-mod.11435/). Shorten url to [PayPal donation link](https://centminmod.com/donate/).
