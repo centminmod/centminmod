@@ -3015,8 +3015,13 @@ else
     export CFLAGS="$CFLAGS -fstack-protector-strong -fPIC"
     echo "export CPPFLAGS=\"$CPPFLAGS -D_FORTIFY_SOURCE=2\""
     export CPPFLAGS="$CPPFLAGS -D_FORTIFY_SOURCE=2"
-    echo "export LDFLAGS=\"$LDFLAGS -Wl,-z,relro,-z,now -pie\""
-    export LDFLAGS="$LDFLAGS -Wl,-z,relro,-z,now -pie"
+    if [[ "$PHP_SECURED_PIE" = [yY] ]]; then
+      echo "export LDFLAGS=\"$LDFLAGS -Wl,-z,relro,-z,now -pie\""
+      export LDFLAGS="$LDFLAGS -Wl,-z,relro,-z,now -pie"
+    else
+      echo "export LDFLAGS=\"$LDFLAGS -Wl,-z,relro,-z,now\""
+      export LDFLAGS="$LDFLAGS -Wl,-z,relro,-z,now"
+    fi
     if [ ! -f /usr/bin/checksec ]; then
       echo
       yum -y install checksec
