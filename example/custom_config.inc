@@ -89,6 +89,8 @@ NGINXCOMPILE_FORMATSEC='y'    # whether or not nginx is compiled with -Wformat -
 NGX_LDMOLD='n'                # optional mold linker https://github.com/rui314/mold
 MOLD_VERSION='1.3.0'          # mold linker rpm version
 MOLD_VERSION_EL8='1.11.0'     # mold linker rpm version
+NGINX_SECURED='y'             # apply more secure compilation options for Nginx
+PHP_SECURED='y'               # apply more secure compilation options for PHP-FPM
 
 # Nginx Dynamic Module Switches
 NGXDYNAMIC_MANUALOVERRIDE='n' # set to 'y' if you want to manually drop in nginx dynamic modules into /usr/local/nginx/modules

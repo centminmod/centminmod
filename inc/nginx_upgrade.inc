@@ -1381,6 +1381,12 @@ fi
             echo "dropbox_generate $DT"
             dropbox_generate "$DT"
         fi
+        if [[ "$NGINX_SECURED" = [yY] ]]; then
+            echo
+            echo "checksec --format=json --file=/usr/local/sbin/nginx | jq -r"
+            checksec --format=json --file=/usr/local/sbin/nginx | jq -r
+            echo
+        fi
         echo
 
         echo "*************************************************"

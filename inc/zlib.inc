@@ -432,9 +432,23 @@ install_cfzlib() {
         # sed -i "s|\#define ZLIB_VERSION .*|\#define ZLIB_VERSION \"${CLOUDFLARE_ZLIBVER}\"|" zlib.h
         # ldconfig
         make -f Makefile.in distclean
-        ./configure --prefix=/usr/local/zlib-cf
+        if [[ "$NGINXCOMPILE_PIE" = [yY] ]]; then
+            CFLAGS="-fPIC" ./configure --prefix=/usr/local/zlib-cf
+            if [ ! "$(grep '^CFLAGS=' Makefile | grep -w 'fPIC')" ]; then
+                sed -i '/^CFLAGS=/ s|$| -fPIC|' Makefile
+            fi
+        else
+            ./configure --prefix=/usr/local/zlib-cf
+            if [ "$(grep '^CFLAGS=' Makefile | grep -w 'fPIC')" ]; then
+                sed -i '/^CFLAGS=/ s/ -fPIC$//' Makefile
+            fi
+        fi
         # ./configure --prefix=/usr/local/zlib-cf --static
-        make${MAKETHREADS}
+        if [[ "$NGINXCOMPILE_PIE" = [yY] ]]; then
+            CFLAGS="-fPIC" make${MAKETHREADS}
+        else
+            make${MAKETHREADS}
+        fi
         # ps aufxwww > zlib-process.log
         if [[ "$CLOUDFLARE_ZLIBDEBUG" = [Yy] ]]; then
             make -d install

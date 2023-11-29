@@ -3010,6 +3010,20 @@ if [[ "$FPM_PHPFPM_RPM" = [yY] && "$INITIALINSTALL" = [yY] && "$CENTOS_SEVEN" -e
   echo "FPM_PHPFPM_RPM=$FPM_PHPFPM_RPM"
   PHPCONFIGURE_ERR=0
 else
+  if [[ "$PHP_SECURED" = [yY] ]]; then
+    echo "export CFLAGS=\"$CFLAGS -fstack-protector-strong -fPIC\""
+    export CFLAGS="$CFLAGS -fstack-protector-strong -fPIC"
+    echo "export CPPFLAGS=\"$CPPFLAGS -D_FORTIFY_SOURCE=2\""
+    export CPPFLAGS="$CPPFLAGS -D_FORTIFY_SOURCE=2"
+    echo "export LDFLAGS=\"$LDFLAGS -Wl,-z,relro,-z,now -pie\""
+    export LDFLAGS="$LDFLAGS -Wl,-z,relro,-z,now -pie"
+    if [ ! -f /usr/bin/checksec ]; then
+      echo
+      yum -y install checksec
+      echo
+    fi
+  fi
+
   if [[ "$PHP_CUSTOMSSL" = [yY] ]] && [[ "$PHPMVER" = '7.4' || "$PHPMVER" = '8.0' || "$PHPMVER" = '8.1' || "$PHPMVER" = '8.2' || "$PHPMVER" = '8.3' ]]; then
     PHP_CUSTOMSSL_PKG_CONFIG_PATH="${OPENSSL_CUSTOMPATH}/lib/pkgconfig"
     PHP_CUSTOMSSL_LD_LIBRARY_PATH="${OPENSSL_CUSTOMPATH}/lib:"
@@ -3283,6 +3297,12 @@ fi
         ls -lah /usr/local/sbin/php-fpm
         echo
     fi
+  fi
+  if [[ "$PHP_SECURED" = [yY] ]]; then
+    echo
+    echo "checksec --format=json --file=/usr/local/sbin/php-fpm | jq -r"
+    checksec --format=json --file=/usr/local/sbin/php-fpm | jq -r
+    echo
   fi
   if [ -f config.log ]; then
     gzip -c config.log > "${CENTMINLOGDIR}/php-compile-config-${DT}.log.gz"

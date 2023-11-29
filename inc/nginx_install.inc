@@ -469,7 +469,12 @@ geoipphp
     if [[ "$NGINX_NJS" = [yY] && -f "$DIR_TMP/njs/build/njs" ]]; then
         cp -af "$DIR_TMP/njs/build/njs" /usr/local/bin/njs
     fi
-
+    if [[ "$NGINX_SECURED" = [yY] ]]; then
+        echo
+        echo "checksec --format=json --file=/usr/local/sbin/nginx | jq -r"
+        checksec --format=json --file=/usr/local/sbin/nginx | jq -r
+        echo
+    fi
     if [[ "$ORESTY_LUANGINX" = [yY] && "$INITIALINSTALL" = [yY] ]]; then
         echo
         echo "setup initial install lua_package_path include file"
