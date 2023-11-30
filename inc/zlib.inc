@@ -433,11 +433,15 @@ install_cfzlib() {
         # ldconfig
         make -f Makefile.in distclean
         if [[ "$NGINXCOMPILE_PIE" = [yY] ]]; then
+            echo
+            echo "CFLAGS=$CFLAGS"
             CFLAGS="-fPIC" ./configure --prefix=/usr/local/zlib-cf
             if [ ! "$(grep '^CFLAGS=' Makefile | grep -w 'fPIC')" ]; then
                 sed -i '/^CFLAGS=/ s|$| -fPIC|' Makefile
             fi
         else
+            echo
+            echo "CFLAGS=$CFLAGS"
             ./configure --prefix=/usr/local/zlib-cf
             if [ "$(grep '^CFLAGS=' Makefile | grep -w 'fPIC')" ]; then
                 sed -i '/^CFLAGS=/ s/ -fPIC$//' Makefile
@@ -445,6 +449,8 @@ install_cfzlib() {
         fi
         # ./configure --prefix=/usr/local/zlib-cf --static
         if [[ "$NGINXCOMPILE_PIE" = [yY] ]]; then
+            echo
+            echo "CFLAGS=$CFLAGS"
             CFLAGS="-fPIC" make${MAKETHREADS}
         else
             make${MAKETHREADS}

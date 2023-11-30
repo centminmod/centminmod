@@ -4903,6 +4903,7 @@ fi
 if [[ "$NGINXCOMPILE_PIE" = [yY] ]]; then
   PIE_LDOPT=' -pie '
   PIE_CCOPT=' -fPIC '
+  ZLIBCUSTOM_OPT=""
 else
   PIE_LDOPT=""
   PIE_CCOPT=""
