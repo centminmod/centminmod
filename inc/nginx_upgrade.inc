@@ -1383,8 +1383,8 @@ fi
         fi
         if [[ "$NGINX_SECURED" = [yY] ]]; then
             echo
-            echo "checksec --format=json --file=/usr/local/sbin/nginx | jq -r"
-            checksec --format=json --file=/usr/local/sbin/nginx | jq -r
+            echo "checksec --format=json --file=/usr/local/sbin/nginx --extended | jq -r"
+            checksec --format=json --file=/usr/local/sbin/nginx --extended | jq -r
             echo
         fi
         echo
