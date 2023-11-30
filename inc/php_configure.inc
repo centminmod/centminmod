@@ -3342,6 +3342,8 @@ if [[ "$PHP_SECURED" = [yY] && "$PHP_SECURED_PIE" = [yY] ]]; then
     if [[ "$PHP_SECURED_PIE" = [yY] ]]; then
       unset LDFLAGS
     fi
+elif [[ "$PHP_SECURED" = [yY] && "$PHP_SECURED_PIE" != [yY] ]]; then
+    unset CPPFLAGS
 fi
 
 # unset_intelflags
