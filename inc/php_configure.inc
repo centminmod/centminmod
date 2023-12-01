@@ -1,3 +1,20 @@
+checksec_phpext() {
+  if [ ! -f /usr/bin/checksec ]; then
+    echo
+    yum -y install checksec
+    echo
+  fi
+  checksec_phpext_dir=$(php-config --extension-dir)
+  find $checksec_phpext_dir -name "*.so" | while read slib; do
+    if [ -f "${slib}" ]; then
+      checksec --file="${slib}" --format=json --extended | jq -r
+    fi
+  done
+  if [ -f /usr/local/lib/libpcre.so ]; then
+    checksec --file=/usr/local/lib/libpcre.so --format=json --extended | jq -r
+  fi
+}
+
 max_spawn_rate_check() {
   if [[ "$CENTOS_SEVEN" -eq '7' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]] && [[ ! "$(grep 'pm.max_spawn_rate' /usr/local/etc/php-fpm.conf)" ]] && [[ "$PHPMVER" = '8.1' && "$INITIALINSTALL" = [yY] ]]; then  
     if [[ "$FPM_MAX_SPAWN_RATE" -ge '32' && -f /usr/local/etc/php-fpm.conf ]]; then

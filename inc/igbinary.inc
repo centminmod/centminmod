@@ -59,7 +59,7 @@ if [ "$IGBINARYGIT" == 'y' ]; then
         /usr/local/bin/phpize -clean
         /usr/local/bin/phpize
         pwd
-        ./configure CFLAGS="-O2 -g" --enable-igbinary --with-php-config=/usr/local/bin/php-config
+        CFLAGS="-fPIC -O2 -fstack-protector-strong -D_FORTIFY_SOURCE=2" CPPFLAGS="-D_FORTIFY_SOURCE=2" CXXFLAGS="-fPIC -O2" LDFLAGS="-Wl,-z,relro,-z,now -pie" ./configure --enable-igbinary --with-php-config=/usr/local/bin/php-config
         make${MAKETHREADS}
         #make test
         make install    
@@ -84,7 +84,7 @@ if [ "$IGBINARYGIT" == 'y' ]; then
         /usr/local/bin/phpize -clean
         /usr/local/bin/phpize
         pwd
-        ./configure CFLAGS="-O2 -g" --enable-igbinary --with-php-config=/usr/local/bin/php-config
+        CFLAGS="-fPIC -O2 -fstack-protector-strong -D_FORTIFY_SOURCE=2" CPPFLAGS="-D_FORTIFY_SOURCE=2" CXXFLAGS="-fPIC -O2" LDFLAGS="-Wl,-z,relro,-z,now -pie" ./configure --enable-igbinary --with-php-config=/usr/local/bin/php-config
         make${MAKETHREADS}
         #make test
         make install

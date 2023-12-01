@@ -6,7 +6,7 @@ fileinfo_standalone() {
     cd "${DIR_TMP}/php-${FILEINFO_PHP_VERSION}/ext/fileinfo"
     make clean
     phpize
-    ./configure --with-php-config=/usr/local/bin/php-config
+    CFLAGS="-fPIC -O2 -fstack-protector-strong -D_FORTIFY_SOURCE=2" CPPFLAGS="-D_FORTIFY_SOURCE=2" CXXFLAGS="-fPIC -O2" LDFLAGS="-Wl,-z,relro,-z,now -pie" ./configure --with-php-config=/usr/local/bin/php-config
     make -j$(nproc)
     make install
     if [ -f "$(php-config --extension-dir)/fileinfo.so" ]; then

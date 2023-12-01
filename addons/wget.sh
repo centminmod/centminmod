@@ -840,7 +840,7 @@ source_pcreinstall() {
   fi
   cd "pcre-${ALTPCRE_VERSION}"
   make clean >/dev/null 2>&1
-  ./configure --enable-utf8 --enable-unicode-properties --enable-pcre16 --enable-pcre32 --enable-pcregrep-libz --enable-pcregrep-libbz2 --enable-pcretest-libreadline --enable-jit
+  CFLAGS="-fPIC -O2 -fstack-protector-strong -D_FORTIFY_SOURCE=2" CPPFLAGS="-D_FORTIFY_SOURCE=2" CXXFLAGS="-fPIC -O2" LDFLAGS="-Wl,-z,relro,-z,now -pie" ./configure --enable-utf8 --enable-unicode-properties --enable-pcre16 --enable-pcre32 --enable-pcregrep-libz --enable-pcregrep-libbz2 --enable-pcretest-libreadline --enable-jit
   sar_call
   if [[ "$WGET_STRACE" = [yY] ]]; then
     strace -o "${CENTMINLOGDIR}/strace_pcre_make_$DT.log" -f -s256 -tt -T -q make${MAKETHREADS}

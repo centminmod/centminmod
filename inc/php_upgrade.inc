@@ -1464,6 +1464,8 @@ fi
     php-config
     if [[ "$PHP_SECURED" = [yY] ]]; then
         echo "***************************************************"
+        checksec_phpext
+        echo "***************************************************"
         echo "checksec --format=json --file=/usr/local/sbin/php-fpm --extended | jq -r"
         checksec --format=json --file=/usr/local/sbin/php-fpm --extended | jq -r
     fi

@@ -81,7 +81,7 @@ if [[ "$PHPSWOOLE" = [yY] ]]; then
         /usr/local/bin/phpize clean
     fi
     /usr/local/bin/phpize
-    ./configure --with-php-config=/usr/local/bin/php-config --enable-mysqlnd --enable-swoole-json --enable-swoole-curl --enable-sockets --enable-openssl
+    CFLAGS="-fPIC -O2 -fstack-protector-strong -D_FORTIFY_SOURCE=2" CPPFLAGS="-D_FORTIFY_SOURCE=2" CXXFLAGS="-fPIC -O2" LDFLAGS="-Wl,-z,relro,-z,now -pie" ./configure --with-php-config=/usr/local/bin/php-config --enable-mysqlnd --enable-swoole-json --enable-swoole-curl --enable-sockets --enable-openssl
 
     make${MAKETHREADS}
     make install
@@ -112,7 +112,7 @@ if [[ "$PHPSWOOLE" = [yY] ]]; then
         make clean
     fi
     /usr/local/bin/phpize
-    ./configure
+    CFLAGS="-fPIC -O2 -fstack-protector-strong -D_FORTIFY_SOURCE=2" CPPFLAGS="-D_FORTIFY_SOURCE=2" CXXFLAGS="-fPIC -O2" LDFLAGS="-Wl,-z,relro,-z,now -pie" ./configure
     make${MAKETHREADS}
     make install
     ASYNC_SWOOLE_ERR=$?

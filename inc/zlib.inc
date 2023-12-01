@@ -146,7 +146,7 @@ zlibng_install() {
     fi
     time git clone https://github.com/zlib-ng/zlib-ng
     cd zlib-ng
-    ./configure --zlib-compat --prefix=/usr/local/zlib-ng
+    CFLAGS="-fPIC -O2 -fstack-protector-strong -D_FORTIFY_SOURCE=2" CPPFLAGS="-D_FORTIFY_SOURCE=2" CXXFLAGS="-fPIC -O2" LDFLAGS="-Wl,-z,relro,-z,now -pie" ./configure --zlib-compat --prefix=/usr/local/zlib-ng
     make${MAKETHREADS}
     make -d install
     zlibng_check=$?
@@ -435,7 +435,7 @@ install_cfzlib() {
         if [[ "$NGINXCOMPILE_PIE" = [yY] ]]; then
             echo
             echo "CFLAGS=$CFLAGS"
-            CFLAGS="-fPIC" ./configure --prefix=/usr/local/zlib-cf
+            CFLAGS="-fPIC -O2 -fstack-protector-strong -D_FORTIFY_SOURCE=2" CPPFLAGS="-D_FORTIFY_SOURCE=2" CXXFLAGS="-fPIC -O2" LDFLAGS="-Wl,-z,relro,-z,now -pie" ./configure --prefix=/usr/local/zlib-cf
             if [ ! "$(grep '^CFLAGS=' Makefile | grep -w 'fPIC')" ]; then
                 sed -i '/^CFLAGS=/ s|$| -fPIC|' Makefile
             fi
@@ -451,7 +451,7 @@ install_cfzlib() {
         if [[ "$NGINXCOMPILE_PIE" = [yY] ]]; then
             echo
             echo "CFLAGS=$CFLAGS"
-            CFLAGS="-fPIC" make${MAKETHREADS}
+            CFLAGS="-fPIC -O2 -fstack-protector-strong -D_FORTIFY_SOURCE=2" CPPFLAGS="-D_FORTIFY_SOURCE=2" CXXFLAGS="-fPIC -O2" LDFLAGS="-Wl,-z,relro,-z,now -pie" make${MAKETHREADS}
         else
             make${MAKETHREADS}
         fi

@@ -522,7 +522,7 @@ libbroti_install() {
   #       git pull
     # fi
     ./autogen.sh
-    ./configure --prefix=/usr/local/nginx-dep
+    CFLAGS="-fPIC -O2 -fstack-protector-strong -D_FORTIFY_SOURCE=2" CPPFLAGS="-D_FORTIFY_SOURCE=2" CXXFLAGS="-fPIC -O2" LDFLAGS="-Wl,-z,relro,-z,now -pie" ./configure --prefix=/usr/local/nginx-dep
     make${MAKETHREADS}
     make install
     echo
@@ -792,8 +792,8 @@ ngxbrotli_download() {
         mkdir out && cd out
         cmake -DCMAKE_BUILD_TYPE=Release \
         -DBUILD_SHARED_LIBS=ON \
-        -DCMAKE_C_FLAGS="-Ofast -m64 -flto -funroll-loops -ffunction-sections -fdata-sections -Wl,--gc-sections" \
-        -DCMAKE_CXX_FLAGS="-Ofast -m64 -flto -funroll-loops -ffunction-sections -fdata-sections -Wl,--gc-sections" \
+        -DCMAKE_C_FLAGS="-Ofast -fPIC -fstack-protector-strong -D_FORTIFY_SOURCE=2 -m64 -flto -funroll-loops -ffunction-sections -fdata-sections -Wl,--gc-sections" \
+        -DCMAKE_CXX_FLAGS="-Ofast -fPIC -m64 -flto -funroll-loops -ffunction-sections -fdata-sections -Wl,--gc-sections" \
         -DCMAKE_INSTALL_PREFIX=/usr/local/nginx-dep \
         -DCMAKE_PREFIX_PATH=/usr/local/nginx-dep \
         -DCMAKE_INSTALL_LIBDIR=lib \
@@ -809,7 +809,7 @@ ngxbrotli_download() {
         git checkout 6e975bcb015f62e1f303054897783355e2a877dc
         git submodule update --init
         cd deps/brotli
-        ./configure-cmake --prefix=/usr/local/nginx-dep
+        CFLAGS="-fPIC -O2 -fstack-protector-strong -D_FORTIFY_SOURCE=2" CPPFLAGS="-D_FORTIFY_SOURCE=2" CXXFLAGS="-fPIC -O2" LDFLAGS="-Wl,-z,relro,-z,now -pie" ./configure-cmake --prefix=/usr/local/nginx-dep
         make${MAKETHREADS}
         make install
         cd ../../

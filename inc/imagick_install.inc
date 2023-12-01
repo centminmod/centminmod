@@ -455,9 +455,9 @@ if [[ "$PHPMUVER" = '8.0' || "$PHPVER_ID" -ge '80000' || "$PHPMUVER" = 'NGDEBUG'
     export PHP_AUTOHEADER=/usr/bin/autoheader
     /usr/local/bin/phpize
     if [[ "$IMAGEMAGICK_SOURCE_INSTALL" = [yY] ]]; then
-        ./configure --with-php-config=/usr/local/bin/php-config --with-imagick=/usr/local
+        CFLAGS="-fPIC -O2 -fstack-protector-strong -Wno-deprecated-declarations -D_FORTIFY_SOURCE=2" CPPFLAGS="-D_FORTIFY_SOURCE=2" CXXFLAGS="-fPIC -O2" LDFLAGS="-Wl,-z,relro,-z,now -pie" ./configure --with-php-config=/usr/local/bin/php-config --with-imagick=/usr/local
     else
-        ./configure --with-php-config=/usr/local/bin/php-config --with-imagick=/usr
+        CFLAGS="-fPIC -O2 -fstack-protector-strong -Wno-deprecated-declarations -D_FORTIFY_SOURCE=2" CPPFLAGS="-D_FORTIFY_SOURCE=2" CXXFLAGS="-fPIC -O2" LDFLAGS="-Wl,-z,relro,-z,now -pie" ./configure --with-php-config=/usr/local/bin/php-config --with-imagick=/usr
     fi
     sar_call
     make${MAKETHREADS}
@@ -496,9 +496,9 @@ elif [[ "$PHPMUVER" = '7.0' || "$PHPMUVER" = '7.1' || "$PHPMUVER" = '7.2' || "$P
     export PHP_AUTOHEADER=/usr/bin/autoheader
     /usr/local/bin/phpize
     if [[ "$IMAGEMAGICK_SOURCE_INSTALL" = [yY] ]]; then
-        ./configure --with-php-config=/usr/local/bin/php-config --with-imagick=/usr/local
+        CFLAGS="-fPIC -O2 -fstack-protector-strong -Wno-deprecated-declarations -D_FORTIFY_SOURCE=2" CPPFLAGS="-D_FORTIFY_SOURCE=2" CXXFLAGS="-fPIC -O2" LDFLAGS="-Wl,-z,relro,-z,now -pie" ./configure --with-php-config=/usr/local/bin/php-config --with-imagick=/usr/local
     else
-        ./configure --with-php-config=/usr/local/bin/php-config --with-imagick=/usr
+        CFLAGS="-fPIC -O2 -fstack-protector-strong -Wno-deprecated-declarations -D_FORTIFY_SOURCE=2" CPPFLAGS="-D_FORTIFY_SOURCE=2" CXXFLAGS="-fPIC -O2" LDFLAGS="-Wl,-z,relro,-z,now -pie" ./configure --with-php-config=/usr/local/bin/php-config --with-imagick=/usr
     fi
     sar_call
     make${MAKETHREADS}
@@ -514,9 +514,9 @@ else
     export PHP_AUTOHEADER=/usr/bin/autoheader
     /usr/local/bin/phpize
     if [[ "$IMAGEMAGICK_SOURCE_INSTALL" = [yY] ]]; then
-        ./configure --with-php-config=/usr/local/bin/php-config --with-imagick=/usr/local
+        CFLAGS="-fPIC -O2 -fstack-protector-strong -Wno-deprecated-declarations -D_FORTIFY_SOURCE=2" CPPFLAGS="-D_FORTIFY_SOURCE=2" CXXFLAGS="-fPIC -O2" LDFLAGS="-Wl,-z,relro,-z,now -pie" ./configure --with-php-config=/usr/local/bin/php-config --with-imagick=/usr/local
     else
-        ./configure --with-php-config=/usr/local/bin/php-config --with-imagick=/usr
+        CFLAGS="-fPIC -O2 -fstack-protector-strong -Wno-deprecated-declarations -D_FORTIFY_SOURCE=2" CPPFLAGS="-D_FORTIFY_SOURCE=2" CXXFLAGS="-fPIC -O2" LDFLAGS="-Wl,-z,relro,-z,now -pie" ./configure --with-php-config=/usr/local/bin/php-config --with-imagick=/usr
     fi
     sar_call
     make${MAKETHREADS}

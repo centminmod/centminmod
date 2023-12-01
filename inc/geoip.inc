@@ -14,7 +14,7 @@ install_libmaxmindb() {
     make$MAKETHREADS
     make install
     popd
-    ./configure --prefix=/usr/local/nginx-dep
+    CFLAGS="-fPIC -O2 -fstack-protector-strong -D_FORTIFY_SOURCE=2" CPPFLAGS="-D_FORTIFY_SOURCE=2" CXXFLAGS="-fPIC -O2" LDFLAGS="-Wl,-z,relro,-z,now -pie" ./configure --prefix=/usr/local/nginx-dep
     make$MAKETHREADS
     make install
     ldconfig
@@ -50,7 +50,7 @@ geoiptwolite_phpext_install() {
     cd MaxMind-DB-Reader-php
     cd ext
     /usr/local/bin/phpize
-    PKG_CONFIG_PATH=/usr/lib64/pkgconfig:/usr/share/pkgconfig:/usr/local/nginx-dep/lib/pkgconfig ./configure --prefix=/usr/local/nginx-dep --with-php-config=/usr/local/bin/php-config
+    PKG_CONFIG_PATH=/usr/lib64/pkgconfig:/usr/share/pkgconfig:/usr/local/nginx-dep/lib/pkgconfig CFLAGS="-fPIC -O2 -fstack-protector-strong -D_FORTIFY_SOURCE=2" CPPFLAGS="-D_FORTIFY_SOURCE=2" CXXFLAGS="-fPIC -O2" LDFLAGS="-Wl,-z,relro,-z,now -pie" ./configure --prefix=/usr/local/nginx-dep --with-php-config=/usr/local/bin/php-config
     make$MAKETHREADS
     # make test
     make install
@@ -112,7 +112,7 @@ if [[ -d /usr/share/GeoIP ]]; then
         fi
     fi
     /usr/local/bin/phpize
-    ./configure --with-php-config=/usr/local/bin/php-config
+    CFLAGS="-fPIC -O2 -fstack-protector-strong -D_FORTIFY_SOURCE=2" CPPFLAGS="-D_FORTIFY_SOURCE=2" CXXFLAGS="-fPIC -O2" LDFLAGS="-Wl,-z,relro,-z,now -pie" ./configure --with-php-config=/usr/local/bin/php-config
     sar_call
     make$MAKETHREADS
     sar_call

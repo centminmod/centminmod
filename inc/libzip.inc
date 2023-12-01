@@ -62,7 +62,10 @@ libzip_install() {
   rm -rf build
   mkdir -p build
   cd build/
-  cmake3 ..
+  cmake3 .. \
+  -DCMAKE_C_FLAGS="-fPIC -O2 -fstack-protector-strong -D_FORTIFY_SOURCE=2" \
+  -DCMAKE_CXX_FLAGS="-fPIC -O2" \
+  -DCMAKE_SHARED_LINKER_FLAGS="-Wl,-z,relro,-z,now -pie"
   make${MAKETHREADS}
   make install
     if [[ "$PHPMVER" = '7.4' || "$PHPMUVER" = '7.4' || "$PHPMVER" = '8.0' || "$PHPMUVER" = '8.0' || "$PHPMVER" = '8.1' || "$PHPMUVER" = '8.1' || "$PHPMVER" = '8.2' || "$PHPMUVER" = '8.2' || "$PHPMVER" = '8.3' || "$PHPMUVER" = '8.3' || "$PHPVER_ID" -ge '80000' ]]; then

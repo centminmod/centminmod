@@ -20,4 +20,11 @@ run_after_php_install() {
     bash /etc/centminmod/run-after-php-install.sh
     echo
   fi
+  if [[ "$PHP_SECURED" = [yY] ]]; then
+      echo "***************************************************"
+      checksec_phpext
+      echo "***************************************************"
+      echo "checksec --format=json --file=/usr/local/sbin/php-fpm --extended | jq -r"
+      checksec --format=json --file=/usr/local/sbin/php-fpm --extended | jq -r
+  fi
 }

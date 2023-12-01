@@ -11,7 +11,7 @@ phptimezonedb_install() {
     cd "timezonedb-${PHPTIMEZONEDB_VER}"
     make clean
     /usr/local/bin/phpize
-    ./configure --with-php-config=/usr/local/bin/php-config
+    CFLAGS="-fPIC -O2 -fstack-protector-strong -D_FORTIFY_SOURCE=2" CPPFLAGS="-D_FORTIFY_SOURCE=2" CXXFLAGS="-fPIC -O2" LDFLAGS="-Wl,-z,relro,-z,now -pie" ./configure --with-php-config=/usr/local/bin/php-config
     make$MAKETHREADS
     # make test
     make install

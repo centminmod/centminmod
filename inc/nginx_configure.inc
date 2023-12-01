@@ -1,3 +1,35 @@
+checksec_nginx() {
+  if [ ! -f /usr/bin/checksec ]; then
+    echo
+    yum -y install checksec
+    echo
+  fi
+  checksec_ngxlibs_dir=/usr/local/nginx-dep/lib
+  find $checksec_ngxlibs_dir -name "*.so" | while read ngxlib; do
+    if [ -f "${ngxlib}" ]; then
+      checksec --file="${ngxlib}" --format=json --extended | jq -r
+    fi
+  done
+  checksec_openssllibs_dir=/opt/openssl/lib
+  find $checksec_openssllibs_dir -name "*.so" | while read openssllib; do
+    if [ -f "${openssllib}" ]; then
+      checksec --file="${openssllib}" --format=json --extended | jq -r
+    fi
+  done
+  checksec_opensslquiclibs_dir=/opt/openssl-quic/lib
+  find $checksec_opensslquiclibs_dir -name "*.so" | while read opensslquiclib; do
+    if [ -f "${opensslquiclib}" ]; then
+      checksec --file="${opensslquiclib}" --format=json --extended | jq -r
+    fi
+  done
+  checksec_ngxmodules_dir=/usr/local/nginx/modules
+  find $checksec_ngxmodules_dir -name "*.so" | while read ngxmodules; do
+    if [ -f "${ngxmodules}" ]; then
+      checksec --file="${ngxmodules}" --format=json --extended | jq -r
+    fi
+  done  
+}
+
 nginx_deprecate_httptwo_param() {
   if [[ "$DETECT_NGXVER" -ge '1025001' ]]; then
       echo "Update deprecated listen directive's http2 option in Nginx 1.25.1+"
