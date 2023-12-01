@@ -1453,6 +1453,13 @@ if [[ "$PHPMUVER" = '5.6' && -f "${CONFIGSCANDIR}/timezonedb.ini" ]]; then
     fi
 fi
 
+    if [[ "$PHP_SECURED" = [yY] ]]; then
+        echo "***************************************************"
+        checksec_phpext
+        echo "***************************************************"
+        echo "checksec --format=json --file=/usr/local/sbin/php-fpm --extended | jq -r"
+        checksec --format=json --file=/usr/local/sbin/php-fpm --extended | jq -r
+    fi
     if [[ "$PHP_LDMOLD" = [yY] ]]; then
         echo
         echo "***************************************************"
@@ -1462,13 +1469,6 @@ fi
     fi
     echo "***************************************************"
     php-config
-    if [[ "$PHP_SECURED" = [yY] ]]; then
-        echo "***************************************************"
-        checksec_phpext
-        echo "***************************************************"
-        echo "checksec --format=json --file=/usr/local/sbin/php-fpm --extended | jq -r"
-        checksec --format=json --file=/usr/local/sbin/php-fpm --extended | jq -r
-    fi
     echo "***************************************************"
     php -v
     echo "***************************************************"

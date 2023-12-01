@@ -1357,7 +1357,14 @@ fi
             # echo
             # nginx -t
         fi
-
+        if [[ "$NGINX_SECURED" = [yY] ]]; then
+            echo
+            checksec_nginx
+            echo
+            echo "checksec --format=json --file=/usr/local/sbin/nginx --extended | jq -r"
+            checksec --format=json --file=/usr/local/sbin/nginx --extended | jq -r
+            echo
+        fi
         if [[ "$DYNAMIC_SUPPORT" = [yY] ]]; then
             echo
             echo "dynamic modules include file /usr/local/nginx/conf/dynamic-modules.conf"
@@ -1380,14 +1387,6 @@ fi
             echo
             echo "dropbox_generate $DT"
             dropbox_generate "$DT"
-        fi
-        if [[ "$NGINX_SECURED" = [yY] ]]; then
-            echo
-            checksec_nginx
-            echo
-            echo "checksec --format=json --file=/usr/local/sbin/nginx --extended | jq -r"
-            checksec --format=json --file=/usr/local/sbin/nginx --extended | jq -r
-            echo
         fi
         echo
 
