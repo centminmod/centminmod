@@ -127,6 +127,7 @@ MARIADB_UPDATEMAINTENANCE='n'
 
 # Nginx
 NGINXCOMPILE_PIE='y'         # build nginx with Position-independent code (PIC) / Position-indendendent executables (PIEs)
+PHP_SECURED_PIE='y'          # build php-fpm with Position-independent code (PIC) / Position-indendendent executables (PIEs)
 NGINX_VERSION='1.21.4'      # Use this version of Nginx
 NGINX_VHOSTSSL='y'           # enable centmin.sh menu 2 prompt to create self signed SSL vhost 2nd vhost conf
 NGINXBACKUP='y'
