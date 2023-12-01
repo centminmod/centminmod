@@ -3047,11 +3047,7 @@ else
       echo "export LDFLAGS=\"$LDFLAGS -Wl,-z,relro,-z,now\""
       export LDFLAGS="$LDFLAGS -Wl,-z,relro,-z,now"
     fi
-    if [ ! -f /usr/bin/checksec ]; then
-      echo
-      yum -y install checksec
-      echo
-    fi
+    checksec_check
   fi
 
   if [[ "$PHP_CUSTOMSSL" = [yY] ]] && [[ "$PHPMVER" = '7.4' || "$PHPMVER" = '8.0' || "$PHPMVER" = '8.1' || "$PHPMVER" = '8.2' || "$PHPMVER" = '8.3' ]]; then

@@ -29,7 +29,7 @@ DT=$(date +"%d%m%y-%H%M%S")
 branchname='130.00beta01'
 SCRIPT_MAJORVER='130'
 SCRIPT_MINORVER='00'
-SCRIPT_INCREMENTVER='478'
+SCRIPT_INCREMENTVER='479'
 SCRIPT_VERSIONSHORT="${branchname}"
 SCRIPT_VERSION="${SCRIPT_VERSIONSHORT}.b${SCRIPT_INCREMENTVER}"
 SCRIPT_DATE='31/01/23'
@@ -734,6 +734,9 @@ VPS_GEOIPCHECK_V4='y'
 GET_CMM_MM_LICENSE_KEY=$(curl -s https://mmkey.centminmod.com/)
 MM_LICENSE_KEY="$GET_CMM_MM_LICENSE_KEY"
 MM_CSF_SRC='n'
+
+#####################################################
+CHECKSEC_VERSION='2.6.0'
 
 #####################################################
 # MOTD prompt alert user if server reboot is required

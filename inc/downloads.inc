@@ -1,3 +1,20 @@
+checksec_check(){
+  if [ ! -f /usr/bin/checksec ]; then
+    echo
+    yum -y install checksec
+    echo
+  fi
+  if [[ ! -f /usr/local/bin/checksec || ! -f "${DIR_TMP}/checksec-${CHECKSEC_VERSION}.tar.gz" ]]; then
+    echo
+    pushd "$DIR_TMP"
+    wget -q "https://github.com/slimm609/checksec.sh/archive/refs/tags/${CHECKSEC_VERSION}.tar.gz" -O "checksec-${CHECKSEC_VERSION}.tar.gz"
+    tar xzf "checksec-${CHECKSEC_VERSION}.tar.gz"
+    \cp -af "${DIR_TMP}/checksec.sh-${CHECKSEC_VERSION}/checksec" /usr/local/bin/checksec
+    echo
+    popd
+  fi
+}
+
 validcheck_downloads() {
   {
   echo

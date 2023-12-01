@@ -1,33 +1,37 @@
 checksec_nginx() {
-  if [ ! -f /usr/bin/checksec ]; then
-    echo
-    yum -y install checksec
-    echo
-  fi
+  checksec_check
   checksec_ngxlibs_dir=/usr/local/nginx-dep/lib
-  find $checksec_ngxlibs_dir -name "*.so" | while read ngxlib; do
-    if [ -f "${ngxlib}" ]; then
-      checksec --file="${ngxlib}" --format=json --extended | jq -r
-    fi
-  done
+  if [ -d "${checksec_ngxlibs_dir}" ]; then
+    find $checksec_ngxlibs_dir -name "*.so" | while read ngxlib; do
+      if [ -f "${ngxlib}" ]; then
+        checksec --file="${ngxlib}" --format=json --extended | jq -r
+      fi
+    done
+  fi
   checksec_openssllibs_dir=/opt/openssl/lib
-  find $checksec_openssllibs_dir -name "*.so" | while read openssllib; do
-    if [ -f "${openssllib}" ]; then
-      checksec --file="${openssllib}" --format=json --extended | jq -r
-    fi
-  done
+  if [ -d "${checksec_openssllibs_dir}" ]; then
+    find $checksec_openssllibs_dir -name "*.so" | while read openssllib; do
+      if [ -f "${openssllib}" ]; then
+        checksec --file="${openssllib}" --format=json --extended | jq -r
+      fi
+    done
+  fi
   checksec_opensslquiclibs_dir=/opt/openssl-quic/lib
-  find $checksec_opensslquiclibs_dir -name "*.so" | while read opensslquiclib; do
-    if [ -f "${opensslquiclib}" ]; then
-      checksec --file="${opensslquiclib}" --format=json --extended | jq -r
-    fi
-  done
+  if [ -d "${checksec_opensslquiclibs_dir}" ]; then
+    find $checksec_opensslquiclibs_dir -name "*.so" | while read opensslquiclib; do
+      if [ -f "${opensslquiclib}" ]; then
+        checksec --file="${opensslquiclib}" --format=json --extended | jq -r
+      fi
+    done
+  fi
   checksec_ngxmodules_dir=/usr/local/nginx/modules
-  find $checksec_ngxmodules_dir -name "*.so" | while read ngxmodules; do
-    if [ -f "${ngxmodules}" ]; then
-      checksec --file="${ngxmodules}" --format=json --extended | jq -r
-    fi
-  done  
+  if [ -d "${checksec_ngxmodules_dir}" ]; then
+    find $checksec_ngxmodules_dir -name "*.so" | while read ngxmodules; do
+      if [ -f "${ngxmodules}" ]; then
+        checksec --file="${ngxmodules}" --format=json --extended | jq -r
+      fi
+    done  
+  fi
 }
 
 nginx_deprecate_httptwo_param() {
@@ -5024,11 +5028,7 @@ else
     SETBUILD_VALUE="${SETBUILD_DATE}-${SETBUILD_OS}${SETBUILD_ENV}${CM_COMMIT_LAST}${NGX_BROTLI_TAG}${KTLS_BUILD_TAG}"
     SETBUILD_VALUE=$(echo "$SETBUILD_VALUE" | sed -e 's|\-redhat||g')
     if [[ "$NGINX_SECURED" = [yY] ]]; then
-      if [ ! -f /usr/bin/checksec ]; then
-        echo
-        yum -y install checksec
-        echo
-      fi
+      checksec_check
     fi
     if [[ "$NGXMODULE_ALTORDER" = [yY] ]]; then
       if [[ "$asknginxipv" = [yY] || "$NGINX_IPV" = [yY] ]]; then
