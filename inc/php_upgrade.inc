@@ -323,9 +323,9 @@ elif [[ "$CLI_PHP_VER" ]]; then
     # lessphpmem='y'
 else
     if [ -f /usr/local/bin/getphpver ]; then
-      display_phpver="$(getphpver 73), $(getphpver 74), $(getphpver 80), $(getphpver 81), $(getphpver 82)"
+      display_phpver="$(getphpver 73), $(getphpver 74), $(getphpver 80), $(getphpver 81), $(getphpver 82), $(getphpver 83)"
     else
-      display_phpver="7.3.33, 7.4.33, 8.0.30, 8.1.25, 8.2.11"
+      display_phpver="7.3.33, 7.4.33, 8.0.30, 8.1.26, 8.2.13 8.3.0"
     fi
     echo
     echo "----------------------------------------------------------------"
@@ -346,29 +346,32 @@ else
     fi
     if [ -f /usr/local/bin/getphpver ]; then
         getlatest_phpbranch=$(php-config --version | awk  -F '.' '{print $1$2}')
-        if [[ "$getlatest_phpbranch" = '82' ]]; then
-            getlatest_phpbranchver=$(getphpver 82)
+        if [[ "$getlatest_phpbranch" = '83' ]]; then
+            getlatest_phpbranchver=$(getphpver 8 | xargs | sed -e 's| |, |g')
+            echo "Latest PHP Version Installable: $getlatest_phpbranchver"
+        elif [[ "$getlatest_phpbranch" = '82' ]]; then
+            getlatest_phpbranchver=$(getphpver 8 | xargs | sed -e 's| |, |g')
             echo "Latest PHP Version Installable: $getlatest_phpbranchver"
         elif [[ "$getlatest_phpbranch" = '81' ]]; then
-            getlatest_phpbranchver=$(getphpver 81)
+            getlatest_phpbranchver=$(getphpver 8 | xargs | sed -e 's| |, |g')
             echo "Latest PHP Version Installable: $getlatest_phpbranchver"
         elif [[ "$getlatest_phpbranch" = '80' ]]; then
-            getlatest_phpbranchver=$(getphpver 80)
+            getlatest_phpbranchver=$(getphpver 8 | xargs | sed -e 's| |, |g')
             echo "Latest PHP Version Installable: $getlatest_phpbranchver"
         elif [[ "$getlatest_phpbranch" = '74' ]]; then
-            getlatest_phpbranchver=$(getphpver 74)
+            getlatest_phpbranchver=$(getphpver 7 | xargs | sed -e 's| |, |g')
             echo "Latest PHP Version Installable: $getlatest_phpbranchver"
         elif [[ "$getlatest_phpbranch" = '73' ]]; then
-            getlatest_phpbranchver=$(getphpver 73)
+            getlatest_phpbranchver=$(getphpver 7 | xargs | sed -e 's| |, |g')
             echo "Latest PHP Version Installable: $getlatest_phpbranchver"
         elif [[ "$getlatest_phpbranch" = '72' ]]; then
-            getlatest_phpbranchver=$(getphpver 72)
+            getlatest_phpbranchver=$(getphpver 7 | xargs | sed -e 's| |, |g')
             echo "Latest PHP Version Installable: $getlatest_phpbranchver"
         elif [[ "$getlatest_phpbranch" = '71' ]]; then
-            getlatest_phpbranchver=$(getphpver 71)
+            getlatest_phpbranchver=$(getphpver 7 | xargs | sed -e 's| |, |g')
             echo "Latest PHP Version Installable: $getlatest_phpbranchver"
         elif [[ "$getlatest_phpbranch" = '70' ]]; then
-            getlatest_phpbranchver=$(getphpver 70)
+            getlatest_phpbranchver=$(getphpver 7 | xargs | sed -e 's| |, |g')
             echo "Latest PHP Version Installable: $getlatest_phpbranchver"
         elif [[ "$getlatest_phpbranch" = '56' ]]; then
             getlatest_phpbranchver=$(getphpver 56)
@@ -377,7 +380,8 @@ else
             getlatest_phpbranchver=$(getphpver 55)
             echo "Latest PHP Version Installable: $getlatest_phpbranchver"
         else
-            echo "Can Not Determine Latest PHP Version Installable: $getlatest_phpbranchver"
+            echo "Can Not Determine Latest PHP Version Installable:"
+            getphpver
         fi
     fi
     PHP_AUTOOPENSSLCHECK=$(nginx -V 2>&1 | grep -Eo "$OPENSSL_VERSION")
