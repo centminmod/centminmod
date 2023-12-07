@@ -1456,7 +1456,7 @@ if [[ "$PHPMUVER" = '5.6' && -f "${CONFIGSCANDIR}/timezonedb.ini" ]]; then
         cmservice php-fpm restart >/dev/null 2>&1
     fi
 fi
-
+    strip_php_extensions
     if [[ "$PHP_SECURED" = [yY] ]]; then
         echo "***************************************************"
         checksec_phpext

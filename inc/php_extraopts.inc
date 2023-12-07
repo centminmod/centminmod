@@ -14,6 +14,7 @@ run_after_php_upgrade() {
 }
 
 run_after_php_install() {
+  strip_php_extensions
   if [[ -d /etc/centminmod && -f /etc/centminmod/run-after-php-install.sh ]]; then
     echo
     echo "running /etc/centminmod/run-after-php-install.sh"

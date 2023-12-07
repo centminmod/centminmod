@@ -1,3 +1,15 @@
+strip_php_extensions() {
+    strip_php_ext_dir=$(php-config --extension-dir)
+    echo "Stripping PHP Extensions in $strip_php_ext_dir"
+    echo "before stripping"
+    ls -lAhrt $strip_php_ext_dir
+    echo
+    find $strip_php_ext_dir -type f -name "*.so" -exec strip -s {} +
+    echo "after stripping"
+    ls -lAhrt $strip_php_ext_dir
+    echo
+}
+
 checksec_phpext() {
   if [ ! -f /usr/bin/checksec ]; then
     echo
