@@ -44,7 +44,7 @@ max_spawn_rate_check() {
       grep 'pm.max_spawn_rate' /usr/local/etc/php-fpm.conf
       echo
     fi
-  elif [[ "$CENTOS_SEVEN" -eq '7' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]] && [[ "$(grep 'pm.max_spawn_rate' /usr/local/etc/php-fpm.conf)" ]] && [[ "$PHPMUVER" != '8.1' && "$INITIALINSTALL" != [yY] ]]; then 
+  elif [[ "$CENTOS_SEVEN" -eq '7' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' && "$INITIALINSTALL" != [yY] ]] && [[ "$(grep 'pm.max_spawn_rate' /usr/local/etc/php-fpm.conf)" ]] && [[ "$PHPMUVER" = '5.6' || "$PHPMUVER" = '7.0' || "$PHPMUVER" = '7.1' || "$PHPMUVER" = '7.2' || "$PHPMUVER" = '7.3' || "$PHPMUVER" = '7.4' || "$PHPMUVER" = '8.0' ]]; then 
     echo
     echo "remove unsupported pm.max_spawn_rate from /usr/local/etc/php-fpm.conf"
     sed -i "/pm.max_spawn_rate/d" /usr/local/etc/php-fpm.conf
