@@ -331,7 +331,7 @@ else
     echo "----------------------------------------------------------------"
     echo "Install which version of PHP? (i.e. $display_phpver, NGDEBUG)"
     echo "PHP 7.x/7.1.x/7.2.x/7.3.x is GA Stable but still may have broken PHP extensions."
-    echo "NGDEBUG is PHP 8.3 dev builds minus incompatible PHP extensions"
+    echo "NGDEBUG is PHP 8.4 dev builds minus incompatible PHP extensions"
     echo "----------------------------------------------------------------"
     echo
     echo "Current PHP Version: $(php-config --version)"
@@ -400,6 +400,30 @@ else
     fi
     echo
     read -ep "Enter PHP Version number you want to upgrade/downgrade to: " phpver
+    # if user incorrectly enters PHP version without minor version i.e. 8.0 instead
+    # of 8.0.30 try to use getphpver to get the latest PHP version within that branch
+    declare -A php_versions
+    php_versions=(
+        ['8.3']='83'
+        ['8.2']='82'
+        ['8.1']='81'
+        ['8.0']='80'
+        ['7.4']='74'
+        ['7.3']='73'
+        ['7.2']='72'
+        ['7.1']='71'
+        ['7.0']='70'
+        ['5.6']='56'
+    )
+    
+    # Check if the entered version is in the array
+    if [[ -n ${php_versions[$phpver]} ]]; then
+        # Get full PHP version
+        phpver=$(getphpver ${php_versions[$phpver]})
+        echo
+        echo "Enter full PHP version next time i.e. $phpver"
+        echo "Setting upgrade PHP version as $phpver"
+    fi
     PHPMUVER=$(echo "$phpver" | cut -d . -f1,2)
     echo
     # validate php version format is 7.3.x and not 7.3
