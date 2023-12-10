@@ -46,7 +46,7 @@ fi
 echo "Number of CSF Firewall Blocked IPs: $CSF_COUNT_IPS"
 
 initial_csf_blocks() {
-  if [[ ! "$(grep 'perma' /etc/csf/csf.deny)" && "$(wc -l < ${CSF_PERMABAN_LISTDIR}/csf-permaban.conf)" -gt '1' ]] || [[ ! "$(grep 'shodan' /etc/csf/csf.deny)" ]] || [[ ! "$(grep 'censys' /etc/csf/csf.deny)" ]] || [[ "$CSF_COUNT_IPS" -ge "$GET_DENY_IP_LIMIT" && "$(systemctl is-enabled csf)" = 'enabled' && -f /etc/csf/csf.deny ]]; then
+  if [[ "$(egrep 'censys|shodan' -c /etc/csf/csf.deny)" -ne '85' ]] || [[ ! "$(grep 'perma' /etc/csf/csf.deny)" && "$(wc -l < ${CSF_PERMABAN_LISTDIR}/csf-permaban.conf)" -gt '1' ]] || [[ ! "$(grep 'shodan' /etc/csf/csf.deny)" ]] || [[ ! "$(grep 'censys' /etc/csf/csf.deny)" ]] || [[ "$CSF_COUNT_IPS" -ge "$GET_DENY_IP_LIMIT" && "$(systemctl is-enabled csf)" = 'enabled' && -f /etc/csf/csf.deny ]]; then
         echo
         echo "Re-apply initial CSF Firewall set of IP blocks once CSF Firewall"
         echo "DENY_IP_LIMIT & DENY_TEMP_IP_LIMIT IP limits are reached"
@@ -74,7 +74,7 @@ initial_csf_blocks() {
             fi
           done
         fi
-    if [[ ! "$(grep 'shodan' /etc/csf/csf.deny)" ]] || [[ ! "$(grep 'censys' /etc/csf/csf.deny)" ]] || [[ "$CSF_COUNT_IPS" -ge "$GET_DENY_IP_LIMIT" && "$(systemctl is-enabled csf)" = 'enabled' && -f /etc/csf/csf.deny ]]; then
+    if [[ "$(egrep 'censys|shodan' -c /etc/csf/csf.deny)" -ne '85' ]] || [[ ! "$(grep 'shodan' /etc/csf/csf.deny)" ]] || [[ ! "$(grep 'censys' /etc/csf/csf.deny)" ]] || [[ "$CSF_COUNT_IPS" -ge "$GET_DENY_IP_LIMIT" && "$(systemctl is-enabled csf)" = 'enabled' && -f /etc/csf/csf.deny ]]; then
         csf --profile backup cmm-b4-censys-block-tool
         # block censys.io scans
         # https://support.censys.io/getting-started/frequently-asked-questions-faq
