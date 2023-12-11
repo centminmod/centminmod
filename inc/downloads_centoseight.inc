@@ -24,7 +24,7 @@ if [[ "$REMIREPO_DISABLE" = [nN] ]]; then
       yum clean all
       # set remi redis 6.2 default
       yum -y module disable composer
-      yum -y module enable redis:remi-6.2
+      yum -y module enable redis:remi-7.2
     else
       cecho "Error: problem with Remi repo install." $boldgreen
     fi

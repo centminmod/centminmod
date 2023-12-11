@@ -181,12 +181,66 @@ fi
 
 CENTOSVER_NUMERIC=$(echo $CENTOSVER | sed -e 's|\.||g')
 
+redisupgrade_el() {
+  if [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]]; then
+    # Check the current version of Redis
+    current_version=$(dnf module list redis --enabled | grep remi-6.2 | awk '{print $2}')
+
+    # Check if the current version is 6.2
+    if [[ "$current_version" == "remi-6.2" ]]; then
+      echo "Detected Redis REMI 6.2 Enabled Module"
+      echo "Switching to Redis REMI 7.2 Enabled Module version..."
+      echo
+      echo "dnf module list redis"
+      dnf module list redis
+      echo
+      echo "dnf -y module reset redis:remi-6.2"
+      dnf -y module reset redis:remi-6.2
+      echo
+      echo "dnf -y module enable -y redis:remi-7.2"
+      dnf -y module enable -y redis:remi-7.2
+      echo
+      echo "dnf module list redis"
+      dnf module list redis
+      echo
+      echo "yum -y install redis --enablerepo=remi"
+      yum -y install redis --enablerepo=remi
+      echo
+      echo "Redis REMI MODULE Switched to 7.2 version"
+    else
+      echo "Current Redis version is not 6.2. No upgrade needed."
+    fi
+  fi
+}
+
 redisinstall() {
   echo "install redis server..."
   if [[ -f /etc/yum/pluginconf.d/priorities.conf && "$(grep 'enabled = 1' /etc/yum/pluginconf.d/priorities.conf)" ]]; then
     yum -y install redis --enablerepo=remi --disableplugin=priorities
   else
-    yum -y install redis --enablerepo=remi
+    if [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]]; then
+      # Check the current version of Redis
+      current_version=$(dnf module list redis --enabled | grep remi-6.2 | awk '{print $2}')
+      if [[ "$current_version" == "remi-6.2" ]]; then
+        echo
+        echo "dnf module list redis"
+        dnf module list redis
+        echo
+        echo "dnf -y module reset redis:remi-6.2"
+        dnf -y module reset redis:remi-6.2
+        echo
+        echo "dnf -y module enable -y redis:remi-7.2"
+        dnf -y module enable -y redis:remi-7.2
+        echo
+        echo "dnf module list redis"
+        dnf module list redis
+      fi
+      echo
+      echo "yum -y install redis --enablerepo=remi"
+      yum -y install redis --enablerepo=remi
+    else
+      yum -y install redis --enablerepo=remi
+    fi
   fi
   sed -i 's|LimitNOFILE=.*|LimitNOFILE=524288|' /etc/systemd/system/redis.service.d/limit.conf
   # echo -e "[Service]\nExecStartPre=/usr/sbin/sysctl vm.overcommit_memory=1" > /etc/systemd/system/redis.service.d/vm.conf
@@ -368,6 +422,9 @@ case "$1" in
   install )
     redisinstall
     ;;
+  upgrade )
+    redisupgrade_el
+    ;;
   install-source )
     redisinstall_source
     ;;
@@ -375,7 +432,7 @@ case "$1" in
     echo
     echo "Usage:"
     echo
-    echo "$0 {install|install-source}"
+    echo "$0 {install|upgrade|install-source}"
     echo
     ;;
 esac
