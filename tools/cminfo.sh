@@ -1,5 +1,6 @@
 #!/bin/bash
 #####################################################
+export PATH="/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin:/root/bin"
 # set locale temporarily to english
 # due to some non-english locale issues
 export LC_ALL=en_US.UTF-8
@@ -1137,7 +1138,7 @@ echo "------------------------------------------------------------------"
 echo " PHP-FPM Configuration:"
 echo "------------------------------------------------------------------"
 echo
-php -i | grep configure
+php-config
 
 echo
 echo "------------------------------------------------------------------"
