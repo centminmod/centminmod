@@ -456,6 +456,7 @@ top_info() {
     PHPCURLSSL_INFOVER=$(php --ri curl | awk '/SSL Version/ {print $4}')
     MARIADB_INFOVER=$(rpm -qa | grep -i MariaDB-server | head -n1 | cut -d '-' -f3)
     MEMCACHEDSERVER_INFOVER=$(/usr/local/bin/memcached -h | head -n1 | awk '{print $2}')
+    REDIS_INFOVER=$(/usr/bin/redis-cli --version | head -n1 | awk '{print $2}')
     CSF_INFOVER=$(csf -v | head -n1 | awk '{print $2}')
     SIEGE_INFOVER=$(siege -V 2>&1 | head -n1 | awk '{print $2}')
     APC_INFOVER=$(php --ri apc | awk '/Version/ {print $3}' | head -n1)
@@ -557,6 +558,7 @@ top_info() {
     echo -e " MariaDB Version: \t$MARIADB_INFOVER"
     echo -e " CSF Firewall: \t\t$CSF_INFOVER"
     echo -e " Memcached Server: \t$MEMCACHEDSERVER_INFOVER"
+    echo -e " Redis Server: \t$REDIS_INFOVER"
     echo -e " NSD Version: \t\t$NSD_INFOVER"
     echo -e " Siege Version: \t$SIEGE_INFOVER"
     if [ -f /usr/local/sbin/maldet ]; then
@@ -1024,6 +1026,7 @@ echo -e " PHP-FPM CURL SSL: \t$PHPCURLSSL_INFOVER"
 echo -e " MariaDB Version: \t$MARIADB_INFOVER"
 echo -e " CSF Firewall: \t\t$CSF_INFOVER"
 echo -e " Memcached Server: \t$MEMCACHEDSERVER_INFOVER"
+echo -e " Redis Server: \t$REDIS_INFOVER"
 echo -e " NSD Version: \t\t$NSD_INFOVER"
 echo -e " Siege Version: \t$SIEGE_INFOVER"
 if [ -f /usr/local/sbin/maldet ]; then
