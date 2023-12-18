@@ -61,7 +61,9 @@ if [ ! -f /etc/yum.repos.d/epel.repo ]; then
 fi
 
 if [ -f /proc/user_beancounters ]; then
-    CPUS=$(grep -c "processor" /proc/cpuinfo)
+    CPUS=$(nproc)
+    CPUS=${CPUS:-1}
+    REDIS_IOTHREAD_CPUS=${CPUS:-1}
     if [[ "$CPUS" -gt '8' ]]; then
         CPUS=$(echo $(($CPUS+2)))
     else
@@ -69,7 +71,9 @@ if [ -f /proc/user_beancounters ]; then
     fi
     MAKETHREADS=" -j$CPUS"
 else
-    CPUS=$(grep -c "processor" /proc/cpuinfo)
+    CPUS=$(nproc)
+    CPUS=${CPUS:-1}
+    REDIS_IOTHREAD_CPUS=${CPUS:-1}
     if [[ "$CPUS" -gt '8' ]]; then
         CPUS=$(echo $(($CPUS+4)))
     elif [[ "$CPUS" -eq '8' ]]; then
@@ -289,6 +293,20 @@ StartLimitBurst=5
 Restart=on-failure
 RestartSec=5s
 TDG
+fi
+
+if [ -f /etc/redis/redis.conf ]; then
+  \cp -af /etc/redis/redis.conf "/etc/redis/redis.conf-backup-${DT}"
+  if [[ "$REDIS_IOTHREAD_CPUS" -ge '16' ]]; then
+    sed -i "s|^# io-threads 2|io-threads 8|" /etc/redis/redis.conf
+  elif [[ "$REDIS_IOTHREAD_CPUS" -ge '12' && "$REDIS_IOTHREAD_CPUS" -le '15' ]]; then
+    sed -i "s|^# io-threads 2|io-threads 6|" /etc/redis/redis.conf
+  elif [[ "$REDIS_IOTHREAD_CPUS" -ge '7' && "$REDIS_IOTHREAD_CPUS" -le '11' ]]; then
+    sed -i "s|^# io-threads 2|io-threads 4|" /etc/redis/redis.conf
+  elif [[ "$REDIS_IOTHREAD_CPUS" -ge '4' && "$REDIS_IOTHREAD_CPUS" -le '6' ]]; then
+    sed -i "s|^# io-threads 2|io-threads 2|" /etc/redis/redis.conf
+  fi
+  sed -i 's|^# io-threads-do-reads yes|io-threads-do-reads yes|' /etc/redis/redis.conf 
 fi
 
 if [ -f /etc/systemd/system/disable-thp.service ]; then
