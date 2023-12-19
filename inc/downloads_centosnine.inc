@@ -21,8 +21,15 @@ if [[ "$REMIREPO_DISABLE" = [nN] ]]; then
     if [ "$CCREMICHECK" == '0' ]; then
       # yumpriorremi_nine
       echo
-      # set remi redis 6.2 default
+      grep repo_gpgcheck /etc/yum.repos.d/remi*.repo
+      echo
+      echo "disable repo_gpgcheck for REMI"
+      sed -i 's|repo_gpgcheck=1|repo_gpgcheck=0|g' /etc/yum.repos.d/remi*.repo
       yum clean all
+      yum makecache
+      echo
+      grep repo_gpgcheck /etc/yum.repos.d/remi*.repo
+      echo
       yum -y module disable composer
       yum -y module enable redis:remi-7.2
       # el9 missing libc-client& uw-imap-develthat remi-safe/remi repo have
