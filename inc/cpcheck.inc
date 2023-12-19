@@ -1,3 +1,15 @@
+fix_remi_repo_gpgcheck() {
+  if [[ "$CENTOS_NINE" = '9' || "$CENTOS_EIGHT" = '8' ]] && [[ "$(grep repo_gpgcheck=1 /etc/yum.repos.d/remi.repo)" ]]; then
+    echo
+    echo "disabling repo_gpgcheck for REMI... please wait"
+    sed -i 's|repo_gpgcheck=1|repo_gpgcheck=0|g' /etc/yum.repos.d/remi*.repo
+    yum -q clean all
+    yum -q makecache
+    grep repo_gpgcheck /etc/yum.repos.d/remi*.repo
+    echo "disabled repo_gpgcheck for REMI..."
+  fi
+}
+
 switch_mariadbtenthree_archives() {
   if [ -f /etc/yum.repos.d/mariadb.repo ]; then
     if grep -q "http://yum.mariadb.org/10.3/centos7-amd64" /etc/yum.repos.d/mariadb.repo; then
@@ -3767,6 +3779,9 @@ if [[ "$INITIALINSTALL" != [yY] ]]; then
   fix_ftp_csf_ports
   setup_initial_csf_block_cronjob
   switch_mariadbtenthree_archives
+  if [ -f /etc/yum.repos.d/remi.repo ]; then
+    fix_remi_repo_gpgcheck
+  fi
 fi
 
 }
