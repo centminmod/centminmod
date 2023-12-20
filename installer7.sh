@@ -2075,7 +2075,7 @@ echo "1" > /etc/centminmod/email-primary.ini
 echo "2" > /etc/centminmod/email-secondary.ini
 echo "${INSTALLDIR}/centminmod"
 cd "${INSTALLDIR}/centminmod"
-sed -i 's|TESTEDCENTOSVER='7.9'|TESTEDCENTOSVER='9.3'|' centmin.sh
+sed -i 's|TESTEDCENTOSVER='9.3'|TESTEDCENTOSVER='9.3'|' centmin.sh
 ./centmin.sh install
 sar_call
 echo "./centmin.sh install completion"

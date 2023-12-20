@@ -29,7 +29,7 @@ DT=$(date +"%d%m%y-%H%M%S")
 branchname='130.00beta01'
 SCRIPT_MAJORVER='130'
 SCRIPT_MINORVER='00'
-SCRIPT_INCREMENTVER='499'
+SCRIPT_INCREMENTVER='500'
 SCRIPT_VERSIONSHORT="${branchname}"
 SCRIPT_VERSION="${SCRIPT_VERSIONSHORT}.b${SCRIPT_INCREMENTVER}"
 SCRIPT_DATE='31/01/23'
@@ -163,7 +163,7 @@ if [ ! -d /var/run/php-fpm/ ]; then
     mkdir -p /var/run/php-fpm/
 fi
 
-TESTEDCENTOSVER='7.9'
+TESTEDCENTOSVER='9.3'
 CENTOSVER=$(awk '{ print $3 }' /etc/redhat-release)
 KERNEL_NUMERICVER=$(uname -r | awk -F. '{ printf("%d%03d%03d%03d\n", $1,$2,$3,$4); }')
 
