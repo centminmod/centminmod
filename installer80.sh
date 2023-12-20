@@ -3,6 +3,22 @@
 # centminmod.com cli installer
 #
 #######################################################
+# some OS image templates are missing some locales that need to be installed
+check_install_locale() {
+  if [[ ! "$(locale -a | grep -qi "en_US.UTF8")" ]]; then
+    local os_version=$(rpm -qa yum | grep -o 'el[0-9]*')
+    case "$os_version" in
+      el7)
+          yum install -y glibc-common
+          ;;
+      el8|el9)
+          yum install -y glibc-langpack-en
+          ;;
+    esac
+  fi
+}
+
+check_install_locale
 export PATH="/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin:/root/bin"
 # set locale temporarily to english
 # due to some non-english locale issues
@@ -12,6 +28,8 @@ export LANGUAGE=en_US.UTF-8
 export LC_CTYPE=en_US.UTF-8
 # disable systemd pager so it doesn't pipe systemctl output to less
 export SYSTEMD_PAGER=''
+DT=$(date +"%d%m%y-%H%M%S")
+exec > >(tee -a installer_${DT}.log) 2>&1
 #######################################################
 # check if Centmin Mod already installed
 FIRSTYUM_FILE=""
@@ -30,12 +48,19 @@ if [[ -f "$FIRSTYUM_FILE" ]] || [[ -f /usr/local/src/centminmod/centmin.sh && -f
   echo
   exit
 fi
-DT=$(date +"%d%m%y-%H%M%S")
+mkdir -p /etc/centminmod
+touch /etc/centminmod/custom_config.inc
+#if [ ! "$(grep 'CENTOS_ALPHATEST' /etc/centminmod/custom_config.inc)" ]; then
+#  echo "CENTOS_ALPHATEST='y'" >> /etc/centminmod/custom_config.inc
+#fi
+CENTOS_ALPHATEST='y'
+#######################################################
 DNF_ENABLE='n'
 DNF_COPR='y'
 branchname='130.00beta01'
 DOWNLOAD="${branchname}.zip"
 LOCALCENTMINMOD_MIRROR='https://centminmod.com'
+CPUS=$(nproc)
 
 FORCE_IPVFOUR='y' # curl/wget commands through script force IPv4
 INSTALLDIR='/usr/local/src'
@@ -71,6 +96,7 @@ WGET_VERSION_NINE='1.21.4'
 WGET_FILENAME="wget-${WGET_VERSION}.tar.gz"
 WGET_LINK="${LOCALCENTMINMOD_MIRROR}/centminmodparts/wget/${WGET_FILENAME}"
 
+OS_PRETTY_NAME=$(cat /etc/os-release | awk -F '=' '/PRETTY_NAME/ {print $2}' | sed -e 's| (| |g' -e 's|)| |g' -e 's| Core ||g' -e 's|"||g')
 CPUSPEED=$(awk -F: '/cpu MHz/{print $2}' /proc/cpuinfo | sort | uniq -c | sed -e s'|      ||g' | xargs); 
 CPUMODEL=$(awk -F: '/model name/{print $2}' /proc/cpuinfo | sort | uniq -c | xargs);
 ###########################################################
@@ -116,16 +142,6 @@ if [ "$(id -u)" != 0 ]; then
     echo "sudo -i" >&2
   fi
   exit 1
-fi
-
-if [[ "$(id -u)" = 0 ]]; then
-  # account for if centmin mod installation is being
-  # run within a cloud-init user data scripted session
-  mkdir -p /root
-  export HOME=/root
-  touch $HOME/.rnd
-  export RANDFILE=$HOME/.rnd
-  chmod 600 $HOME/.rnd
 fi
 
 shopt -s expand_aliases
@@ -288,9 +304,172 @@ elif [ -f /etc/el-release ] && [[ "$EL_VERID" -eq 8 || "$EL_VERID" -eq 9 ]]; the
   fi
 fi
 
-CENTOSVER_NUMERIC=$(echo $CENTOSVER | sed -e 's|\.||g')
+# check for Docker environment to skip grub routines
+if [ ! -f /.dockerenv ]; then
+  # earlier selinux check for el9 systems
+  SELINUX_STATUS=$(getenforce)
+  if [ -f /etc/default/grub ]; then
+    SELINUX_STATUS_GRUB=$(grep 'selinux=0' /etc/default/grub)
+  else
+    SELINUX_STATUS_GRUB=""
+  fi
+  if [[ "$CENTOS_NINE" -eq '9' ]] && [[ -z "$SELINUX_STATUS_GRUB" ]]; then
+    echo "Detected SELinux NOT disabled for EL9"
+    echo "Adding selinux=0 to Kernel GRUB_CMDLINE_LINUX line in /etc/default/grub"
+    echo
+    # https://access.redhat.com/documentation/en-us/red_hat_enterprise_linux/9/html/using_selinux/changing-selinux-states-and-modes_using-selinux#Enabling_and_Disabling_SELinux-Disabling_SELinux_changing-selinux-states-and-modes
+    if [ ! "$(rpm -qa grubby | grep grubby)" ]; then
+      yum -y install grubby
+    fi
+    echo "grubby --update-kernel ALL --args selinux=0"
+    grubby --update-kernel ALL --args selinux=0
+    echo
+    grep '^GRUB_CMDLINE_LINUX=' /etc/default/grub
+    echo
+    echo "Added selinux=0 to Kernel GRUB_CMDLINE_LINUX line in /etc/default/grub to disable SELinux"
+    echo "This is the right way to disable SELinux in future as other run-time methods deprecated"
+    echo "If you intend to use own custom Linux Kernels i.e. ELRepo, ensure you have selinux=0 set"
+    echo "Please reboot system to disable SELinux then install Centmin Mod"
+    exit
+  fi
+  if [[ "$CENTOS_EIGHT" -eq '8' ]] && [[ -z "$SELINUX_STATUS_GRUB" ]]; then
+    echo "Detected SELinux NOT disabled for EL8"
+    echo "Adding selinux=0 to Kernel GRUB_CMDLINE_LINUX line in /etc/default/grub"
+    if [ -f /etc/default/grub ]; then
+      sed -i '/^GRUB_CMDLINE_LINUX=/ s/"$/ selinux=0"/' /etc/default/grub
+      grep '^GRUB_CMDLINE_LINUX=' /etc/default/grub
+    fi
+    echo "Regenerating GRUB2 configuration"
+    if [ ! -f /usr/sbin/grub2-mkconfig ]; then
+      echo "/usr/sbin/grub2-mkconfig not found"
+      echo "installing grub2-tools"
+      yum -y install grub2-tools
+    fi
+    if [ -d /sys/firmware/efi ]; then
+      # UEFI-based systems
+      if [ -f /etc/almalinux-release ] && [ -f /boot/efi/EFI/almalinux/grub.cfg ]; then
+        # AlmaLinux OS
+        echo "grub2-mkconfig -o /boot/efi/EFI/almalinux/grub.cfg"
+        grub2-mkconfig -o /boot/efi/EFI/almalinux/grub.cfg
+      elif [ -f /etc/rocky-release ] && [ -f /boot/efi/EFI/rocky/grub.cfg ]; then
+        # Rocky Linux
+        echo "grub2-mkconfig -o /boot/efi/EFI/rocky/grub.cfg"
+        grub2-mkconfig -o /boot/efi/EFI/rocky/grub.cfg
+      elif [ -f /etc/oracle-release ] && [ -f /boot/efi/EFI/oracle/grub.cfg ]; then
+        # Oracle Linux
+        echo "grub2-mkconfig -o /boot/efi/EFI/oracle/grub.cfg"
+        grub2-mkconfig -o /boot/efi/EFI/oracle/grub.cfg
+      elif [ -f /etc/vzlinux-release ] && [ -f /boot/efi/EFI/vzlinux/grub.cfg ]; then
+        # VzLinux
+        echo "grub2-mkconfig -o /boot/efi/EFI/vzlinux/grub.cfg"
+        grub2-mkconfig -o /boot/efi/EFI/vzlinux/grub.cfg
+      elif [ -f /etc/circle-release ] && [ -f /boot/efi/EFI/circle/grub.cfg ]; then
+        # Circle Linux
+        echo "grub2-mkconfig -o /boot/efi/EFI/circle/grub.cfg"
+        grub2-mkconfig -o /boot/efi/EFI/circle/grub.cfg
+      elif [ -f /etc/navylinux-release ] && [ -f /boot/efi/EFI/navylinux/grub.cfg ]; then
+        # Navy Linux
+        echo "grub2-mkconfig -o /boot/efi/EFI/navylinux/grub.cfg"
+        grub2-mkconfig -o /boot/efi/EFI/navylinux/grub.cfg
+      elif [ -f /boot/efi/EFI/centos/grub.cfg ]; then
+        # CentOS Stream
+        echo "grub2-mkconfig -o /boot/efi/EFI/centos/grub.cfg"
+        grub2-mkconfig -o /boot/efi/EFI/centos/grub.cfg
+      else
+      echo "GRUB2 configuration file not found for your distribution. Please check the file paths and update the  script accordingly."
+        exit 1
+      fi
+    else
+      # BIOS-based systems
+      if [ -f /boot/grub2/grub.cfg ]; then
+        echo "grub2-mkconfig -o /boot/grub2/grub.cfg"
+        grub2-mkconfig -o /boot/grub2/grub.cfg
+      else
+      echo "GRUB2 configuration file not found for your distribution. Please check the file paths and update the  script accordingly."
+        exit 1
+      fi
+    fi
+    echo "Added selinux=0 to Kernel GRUB_CMDLINE_LINUX line in /etc/default/grub to disable SELinux"
+    echo "This is the right way to disable SELinux in future as other run-time methods deprecated"
+    echo "If you intend to use own custom Linux Kernels i.e. ELRepo, ensure you have selinux=0 set"
+    echo "Please reboot system to disable SELinux then install Centmin Mod"
+    exit
+  fi
+fi
 
-if [[ "$CENTOS_ALPHATEST" != [yY] && "$CENTOS_EIGHT" -eq '8' ]] || [[ "$CENTOS_ALPHATEST" != [yY] && "$CENTOS_NINE" -eq '9' ]]; then
+# set el9 to utf8mb4 charset for MariaDB 10.6
+if [[ "$CENTOS_NINE" -eq '9' ]]; then
+  echo "DEVTOOLSETTEN='n'" >> /etc/centminmod/custom_config.inc
+  echo "DEVTOOLSETELEVEN='n'" >> /etc/centminmod/custom_config.inc
+  echo "DEVTOOLSETTWELVE='y'" >> /etc/centminmod/custom_config.inc
+  echo "SET_DEFAULT_MYSQLCHARSET='utf8mb4'" >> /etc/centminmod/custom_config.inc
+  echo "SELFSIGNEDSSL_ECDSA='y'" >> /etc/centminmod/custom_config.inc
+  echo "PHPFINFO='y'" >> /etc/centminmod/custom_config.inc
+  echo "PHP_OVERWRITECONF='n'" >> /etc/centminmod/custom_config.inc
+  echo "PYTHON_INSTALL_ALTERNATIVES='y'" >> /etc/centminmod/custom_config.inc
+fi
+# set el8 defaults
+if [[ "$CENTOS_EIGHT" -eq '8' ]]; then
+  echo "DEVTOOLSETTEN='n'" >> /etc/centminmod/custom_config.inc
+  echo "DEVTOOLSETELEVEN='n'" >> /etc/centminmod/custom_config.inc
+  echo "DEVTOOLSETTWELVE='y'" >> /etc/centminmod/custom_config.inc
+  echo "SELFSIGNEDSSL_ECDSA='y'" >> /etc/centminmod/custom_config.inc
+  echo "PHPFINFO='y'" >> /etc/centminmod/custom_config.inc
+  echo "PHP_OVERWRITECONF='n'" >> /etc/centminmod/custom_config.inc
+  echo "PYTHON_INSTALL_ALTERNATIVES='y'" >> /etc/centminmod/custom_config.inc
+fi
+# set el7 defaults
+if [[ "$CENTOS_SEVEN" -eq '7' ]]; then
+  echo "DEVTOOLSETTEN='n'" >> /etc/centminmod/custom_config.inc
+  echo "DEVTOOLSETELEVEN='y'" >> /etc/centminmod/custom_config.inc
+  echo "SELFSIGNEDSSL_ECDSA='y'" >> /etc/centminmod/custom_config.inc
+  echo "PHP_OVERWRITECONF='n'" >> /etc/centminmod/custom_config.inc
+fi
+
+# el8+ dnf/yum speed tweaks
+if [[ -f /etc/dnf/dnf.conf && "$CPUS" -ge '2' ]]; then
+  echo "Optimizing /etc/dnf/dnf.conf settings"
+  if [[ "$CPUS" -eq '2' ]]; then
+    max_dnf_downloads=4
+  elif [[ "$CPUS" -eq '3' ]]; then
+    max_dnf_downloads=4
+  elif [[ "$CPUS" -eq '4' ]]; then
+    max_dnf_downloads=6
+  elif [[ "$CPUS" -eq '5' ]]; then
+    max_dnf_downloads=6
+  elif [[ "$CPUS" -eq '6' ]]; then
+    max_dnf_downloads=6
+  elif [[ "$CPUS" -eq '7' ]]; then
+    max_dnf_downloads=7
+  elif [[ "$CPUS" -eq '8' ]]; then
+    max_dnf_downloads=8
+  elif [[ "$CPUS" -eq '9' ]]; then
+    max_dnf_downloads=9
+  elif [[ "$CPUS" -ge '10' ]]; then
+    max_dnf_downloads=10
+  fi
+  if [[ ! "$(grep 'max_parallel_downloads' /etc/dnf/dnf.conf)" ]]; then
+    echo "max_parallel_downloads=$max_dnf_downloads" >> /etc/dnf/dnf.conf
+  elif [[ "$(grep 'max_parallel_downloads' /etc/dnf/dnf.conf)" ]]; then
+    sed -i "s|max_parallel_downloads=.*|max_parallel_downloads=$max_dnf_downloads|" /etc/dnf/dnf.conf
+  fi
+  if [[ ! "$(grep 'fastestmirror=' /etc/dnf/dnf.conf)" ]]; then
+    echo "fastestmirror=True" >> /etc/dnf/dnf.conf
+  elif [[ "$(grep 'fastestmirror=' /etc/dnf/dnf.conf)" ]]; then
+    sed -i "s|fastestmirror=.*|fastestmirror=True|" /etc/dnf/dnf.conf
+  fi
+  dnf -y update --refresh
+elif [[ -f /etc/dnf/dnf.conf && "$CPUS" -eq '1' ]]; then
+  echo "Optimizing /etc/dnf/dnf.conf settings"
+  if [[ ! "$(grep 'fastestmirror=' /etc/dnf/dnf.conf)" ]]; then
+    echo "fastestmirror=True" >> /etc/dnf/dnf.conf
+  elif [[ "$(grep 'fastestmirror=' /etc/dnf/dnf.conf)" ]]; then
+    sed -i "s|fastestmirror=.*|fastestmirror=True|" /etc/dnf/dnf.conf
+  fi
+  dnf -y update --refresh
+fi
+
+if [[ "$CENTOS_ALPHATEST" != [yY] && "$CENTOS_NINE" -eq '9' ]] || [[ "$CENTOS_ALPHATEST" != [yY] && "$CENTOS_EIGHT" -eq '8' ]] || [[ "$CENTOS_ALPHATEST" != [yY] && "$CENTOS_NINE" -eq '9' ]]; then
   if [[ "$ORACLELINUX_NINE" -eq '9' ]]; then
     label_os=OracleLinux
     label_os_ver=9
@@ -367,9 +546,10 @@ if [[ "$CENTOS_EIGHT" -eq '8' ]]; then
 
   # install missing dependencies specific to CentOS 8
   # for csf firewall installs
-  if [ ! -f /usr/share/perl5/vendor_perl/Math/BigInt.pm ]; then
-    yum -q -y install perl-Math-BigInt
-  fi
+  # if [ ! -f /usr/share/perl5/vendor_perl/Math/BigInt.pm ]; then
+  #   echo "EL8 CSF Firewall dependency"
+  #   yum -q -y install perl-Math-BigInt
+  # fi
 fi
 if [[ "$CENTOS_NINE" -eq '9' ]]; then
   echo "EL${label_os_ver} Install Dependencies Start..."
@@ -393,13 +573,14 @@ if [[ "$CENTOS_NINE" -eq '9' ]]; then
   fi
 
   # disable native CentOS 9 AppStream repo based nginx, php & oracle mysql packages
-  yum -q -y module disable nginx mariadb mysql php redis:6
+  # yum -q -y module disable nginx mariadb mysql php redis:6
 
   # install missing dependencies specific to CentOS 9
   # for csf firewall installs
-  if [ ! -f /usr/share/perl5/vendor_perl/Math/BigInt.pm ]; then
-    yum -q -y install perl-Math-BigInt
-  fi
+  # if [ ! -f /usr/share/perl5/vendor_perl/Math/BigInt.pm ]; then
+  #   echo "EL9 CSF Firewall dependency"
+  #   yum -q -y install perl-Math-BigInt
+  # fi
 fi
 
 if [ -f /proc/user_beancounters ]; then
@@ -673,7 +854,11 @@ else
   WGETOPT="-cnv --no-dns-cache${ipv_forceopt_wget}"
 fi
 
-if [[ ! -f /proc/user_beancounters && -f /usr/bin/systemd-detect-virt && "$(/usr/bin/systemd-detect-virt)" = 'lxc' ]] || [[ ! -f /proc/user_beancounters && -f $(which virt-what) && $(virt-what | xargs | grep -o lxc) = 'lxc' ]]; then
+if [ ! -f /usr/sbin/virt-what ]; then
+  yum -q -y install virt-what
+fi
+
+if [[ ! -f /proc/user_beancounters && -f /usr/bin/systemd-detect-virt && "$(/usr/bin/systemd-detect-virt)" = 'lxc' ]] || [[ ! -f /proc/user_beancounters && -f /usr/sbin/virt-what && $(virt-what | xargs | grep -o lxc) = 'lxc' ]]; then
   CHECK_LXD='y'
 fi
 
@@ -849,7 +1034,7 @@ else
   if [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]]; then
       echo
       echo "*************************************************"
-      echo "* Installing chronyd (and syncing time)"
+      echo "* Installing chronyd and syncing time"
       echo "*************************************************"
       time $YUMDNFBIN -y install chrony
       systemctl start chronyd
@@ -860,7 +1045,7 @@ else
   else
     if [ ! -f /usr/sbin/ntpd ]; then
       echo "*************************************************"
-      echo "* Installing NTP (and syncing time)"
+      echo "* Installing NTP and syncing time"
       echo "*************************************************"
       echo "The date/time before was:"
       date
@@ -1296,7 +1481,15 @@ fileperm_fixes() {
 
 libc_fix() {
   # https://community.centminmod.com/posts/52555/
-  if [[ "$CENTOS_NINE" -eq '9' && ! -f /etc/yum/pluginconf.d/versionlock.conf && "$(rpm -qa libc-client)" = 'libc-client-2007f-30.el9.remi.x86_64' ]]; then
+  if [[ "$CENTOS_NINE" -eq '9' ]]; then
+    # yum -y -q install python3-dnf-plugin-versionlock
+    yum -y install libc-client uw-imap-devel
+    yum versionlock libc-client uw-imap-devel -q >/dev/null 2>&1
+  elif [[ "$CENTOS_EIGHT" -eq '8' ]]; then
+    # yum -y -q install python3-dnf-plugin-versionlock
+    yum -y install libc-client uw-imap-devel
+    yum versionlock libc-client uw-imap-devel -q >/dev/null 2>&1
+  elif [[ "$CENTOS_NINE" -eq '9' && ! -f /etc/yum/pluginconf.d/versionlock.conf && "$(rpm -qa libc-client)" = 'libc-client-2007f-30.el9.remi.x86_64' ]]; then
     yum -y -q install python3-dnf-plugin-versionlock
     yum versionlock libc-client uw-imap-devel -q >/dev/null 2>&1
   elif [[ "$CENTOS_EIGHT" -eq '8' && ! -f /etc/yum/pluginconf.d/versionlock.conf && "$(rpm -qa libc-client)" = 'libc-client-2007f-24.el8.x86_64' ]]; then
@@ -1452,8 +1645,10 @@ if [[ ! -f /proc/user_beancounters ]]; then
         fi
         if [[ "$CENTOS_EIGHT" = '8' || "$CENTOS_NINE" = '9' ]]; then
           TCP_PID_MAX='4194300'
+          TCP_BACKLOG='524280'
         elif [[ "$CENTOS_SEVEN" = '7' ]]; then
           TCP_PID_MAX='65535'
+          TCP_BACKLOG='65535'
         fi
         if [ -d /etc/sysctl.d ]; then
             # centos 7
@@ -1475,13 +1670,13 @@ net.core.rmem_max=16777216
 net.ipv4.tcp_rmem=8192 87380 16777216                                          
 net.ipv4.tcp_wmem=8192 65536 16777216
 net.core.netdev_max_backlog=65536
-net.core.somaxconn=65535
+net.core.somaxconn=$TCP_BACKLOG
 net.core.optmem_max=$TCP_OPTMEM_MAX
 net.ipv4.tcp_fin_timeout=30
 net.ipv4.tcp_keepalive_intvl=30
 net.ipv4.tcp_keepalive_probes=3
 net.ipv4.tcp_keepalive_time=240
-net.ipv4.tcp_max_syn_backlog=65536
+net.ipv4.tcp_max_syn_backlog=$TCP_BACKLOG
 net.ipv4.tcp_sack=1
 net.ipv4.tcp_syn_retries=3
 net.ipv4.tcp_synack_retries = 2
@@ -1665,8 +1860,10 @@ if [[ ! -f /usr/bin/git || ! -f /usr/bin/bc || ! -f /usr/bin/wget || ! -f /bin/n
     USER_PKGS=" ipset ipset-devel"
   fi
 
-if [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]]; then
-  time $YUMDNFBIN -y install systemd-libs open-sans-fonts libidn2-devel libpsl-devel gpgme-devel gnutls-devel virt-what acl libacl-devel attr libattr-devel lz4-devel gawk unzip libuuid-devel sqlite-devel bc wget lynx screen ca-certificates yum-utils bash mlocate subversion rsyslog dos2unix boost-program-options net-tools imake bind-utils libatomic_ops-devel time coreutils autoconf cronie crontabs cronie-anacron gcc gcc-c++ automake libtool make libXext-devel unzip patch sysstat openssh flex bison file libtool-ltdl-devel  krb5-devel libXpm-devel nano gmp-devel aspell-devel numactl lsof pkgconfig gdbm-devel tk-devel bluez-libs-devel iptables* rrdtool diffutils which perl-Test-Simple perl-ExtUtils-Embed perl-ExtUtils-MakeMaker perl-Time-HiRes perl-libwww-perl perl-Net-SSLeay cyrus-imapd cyrus-sasl-md5 cyrus-sasl-plain strace cmake git net-snmp-libs net-snmp-utils iotop libvpx libvpx-devel t1lib t1lib-devel expect readline readline-devel libedit libedit-devel libxslt libxslt-devel openssl openssl-devel curl curl-devel openldap openldap-devel zlib zlib-devel gd gd-devel pcre pcre-devel gettext gettext-devel libidn libidn-devel libjpeg libjpeg-devel libpng libpng-devel freetype freetype-devel libxml2 libxml2-devel glib2 glib2-devel bzip2 bzip2-devel ncurses ncurses-devel e2fsprogs e2fsprogs-devel libc-client libc-client-devel cyrus-sasl cyrus-sasl-devel pam pam-devel libaio libaio-devel libevent libevent-devel recode recode-devel libtidy libtidy-devel net-snmp net-snmp-devel enchant enchant-devel lua lua-devel mailx perl-LWP-Protocol-https OpenEXR-devel OpenEXR-libs atk cups-libs fftw-libs-double fribidi gdk-pixbuf2 ghostscript-devel gl-manpages graphviz gtk2 hicolor-icon-theme ilmbase ilmbase-devel jasper-devel jasper-libs jbigkit-devel jbigkit-libs lcms2 lcms2-devel libICE-devel libSM-devel libXaw libXcomposite libXcursor libXdamage-devel libXfixes-devel libXi libXinerama libXmu libXrandr libXt-devel libXxf86vm-devel libdrm-devel libfontenc librsvg2 libtiff libtiff-devel libwebp libwebp-devel libwmf-lite mesa-libGL-devel mesa-libGLU mesa-libGLU-devel poppler-data urw-fonts xorg-x11-font-utils${USER_PKGS}${DISABLEREPO_DNF} --skip-broken
+if [[ "$CENTOS_NINE" -eq '9' ]]; then
+  time $YUMDNFBIN -y install perl-FindBin libc-client libc-client-devel systemd-libs open-sans-fonts libidn2-devel libpsl-devel gpgme-devel gnutls-devel virt-what acl libacl-devel attr libattr-devel lz4-devel gawk unzip libuuid-devel sqlite-devel bc wget lynx screen ca-certificates yum-utils bash mlocate subversion rsyslog dos2unix boost-program-options net-tools imake bind-utils libatomic_ops-devel time coreutils autoconf cronie crontabs cronie-anacron gcc gcc-c++ automake libtool make libXext-devel unzip patch sysstat openssh flex bison file libtool-ltdl-devel  krb5-devel libXpm-devel nano gmp-devel aspell-devel numactl lsof pkgconfig gdbm-devel tk-devel bluez-libs-devel iptables* rrdtool diffutils which perl-Math-BigInt perl-Test-Simple perl-ExtUtils-Embed perl-ExtUtils-MakeMaker perl-Time-HiRes perl-libwww-perl perl-Net-SSLeay cyrus-imapd cyrus-sasl-md5 cyrus-sasl-plain strace cmake git net-snmp-libs net-snmp-utils iotop libvpx libvpx-devel t1lib t1lib-devel expect readline readline-devel libedit libedit-devel libxslt libxslt-devel openssl openssl-devel curl curl-devel openldap openldap-devel zlib zlib-devel gd gd-devel pcre pcre-devel gettext gettext-devel libidn libidn-devel libjpeg libjpeg-devel libpng libpng-devel freetype freetype-devel libxml2 libxml2-devel glib2 glib2-devel bzip2 bzip2-devel ncurses ncurses-devel e2fsprogs e2fsprogs-devel libc-client libc-client-devel cyrus-sasl cyrus-sasl-devel pam pam-devel libaio libaio-devel libevent libevent-devel recode recode-devel libtidy libtidy-devel net-snmp net-snmp-devel enchant enchant-devel lua lua-devel s-nail perl-LWP-Protocol-https OpenEXR-devel OpenEXR-libs atk cups-libs fftw-libs-double fribidi gdk-pixbuf2 ghostscript-devel gl-manpages graphviz gtk2 hicolor-icon-theme ilmbase ilmbase-devel jasper-devel jasper-libs jbigkit-devel jbigkit-libs lcms2 lcms2-devel libICE-devel libSM-devel libXaw libXcomposite libXcursor libXdamage-devel libXfixes-devel libXi libXinerama libXmu libXrandr libXt-devel libXxf86vm-devel libdrm-devel libfontenc librsvg2 libtiff libtiff-devel libwebp libwebp-devel libwmf-lite mesa-libGL-devel mesa-libGLU mesa-libGLU-devel poppler-data urw-fonts xorg-x11-font-utils${USER_PKGS}${DISABLEREPO_DNF} --skip-broken
+elif [[ "$CENTOS_EIGHT" -eq '8' ]]; then
+  time $YUMDNFBIN -y install perl-FindBin libc-client libc-client-devel systemd-libs open-sans-fonts libidn2-devel libpsl-devel gpgme-devel gnutls-devel virt-what acl libacl-devel attr libattr-devel lz4-devel gawk unzip libuuid-devel sqlite-devel bc wget lynx screen ca-certificates yum-utils bash mlocate subversion rsyslog dos2unix boost-program-options net-tools imake bind-utils libatomic_ops-devel time coreutils autoconf cronie crontabs cronie-anacron gcc gcc-c++ automake libtool make libXext-devel unzip patch sysstat openssh flex bison file libtool-ltdl-devel  krb5-devel libXpm-devel nano gmp-devel aspell-devel numactl lsof pkgconfig gdbm-devel tk-devel bluez-libs-devel iptables* rrdtool diffutils which perl-Math-BigInt perl-Test-Simple perl-ExtUtils-Embed perl-ExtUtils-MakeMaker perl-Time-HiRes perl-libwww-perl perl-Net-SSLeay cyrus-imapd cyrus-sasl-md5 cyrus-sasl-plain strace cmake git net-snmp-libs net-snmp-utils iotop libvpx libvpx-devel t1lib t1lib-devel expect readline readline-devel libedit libedit-devel libxslt libxslt-devel openssl openssl-devel curl curl-devel openldap openldap-devel zlib zlib-devel gd gd-devel pcre pcre-devel gettext gettext-devel libidn libidn-devel libjpeg libjpeg-devel libpng libpng-devel freetype freetype-devel libxml2 libxml2-devel glib2 glib2-devel bzip2 bzip2-devel ncurses ncurses-devel e2fsprogs e2fsprogs-devel libc-client libc-client-devel cyrus-sasl cyrus-sasl-devel pam pam-devel libaio libaio-devel libevent libevent-devel recode recode-devel libtidy libtidy-devel net-snmp net-snmp-devel enchant enchant-devel lua lua-devel mailx perl-LWP-Protocol-https OpenEXR-devel OpenEXR-libs atk cups-libs fftw-libs-double fribidi gdk-pixbuf2 ghostscript-devel gl-manpages graphviz gtk2 hicolor-icon-theme ilmbase ilmbase-devel jasper-devel jasper-libs jbigkit-devel jbigkit-libs lcms2 lcms2-devel libICE-devel libSM-devel libXaw libXcomposite libXcursor libXdamage-devel libXfixes-devel libXi libXinerama libXmu libXrandr libXt-devel libXxf86vm-devel libdrm-devel libfontenc librsvg2 libtiff libtiff-devel libwebp libwebp-devel libwmf-lite mesa-libGL-devel mesa-libGLU mesa-libGLU-devel poppler-data urw-fonts xorg-x11-font-utils${USER_PKGS}${DISABLEREPO_DNF} --skip-broken
 else
   time $YUMDNFBIN -y install systemd-libs open-sans-fonts virt-what acl libacl-devel attr libattr-devel lz4-devel python-devel gawk unzip pyOpenSSL python-dateutil libuuid-devel sqlite-devel bc wget lynx screen deltarpm ca-certificates yum-utils bash mlocate subversion rsyslog dos2unix boost-program-options net-tools imake bind-utils libatomic_ops-devel time coreutils autoconf cronie crontabs cronie-anacron gcc gcc-c++ automake libtool make libXext-devel unzip patch sysstat openssh flex bison file libtool-ltdl-devel  krb5-devel libXpm-devel nano gmp-devel aspell-devel numactl lsof pkgconfig gdbm-devel tk-devel bluez-libs-devel iptables* rrdtool diffutils which perl-Test-Simple perl-ExtUtils-Embed perl-ExtUtils-MakeMaker perl-Time-HiRes perl-libwww-perl perl-Crypt-SSLeay perl-Net-SSLeay cyrus-imapd cyrus-sasl-md5 cyrus-sasl-plain strace cmake git net-snmp-libs net-snmp-utils iotop libvpx libvpx-devel t1lib t1lib-devel expect expect-devel readline readline-devel libedit libedit-devel libxslt libxslt-devel openssl openssl-devel curl curl-devel openldap openldap-devel zlib zlib-devel gd gd-devel pcre pcre-devel gettext gettext-devel libidn libidn-devel libjpeg libjpeg-devel libpng libpng-devel freetype freetype-devel libxml2 libxml2-devel glib2 glib2-devel bzip2 bzip2-devel ncurses ncurses-devel e2fsprogs e2fsprogs-devel libc-client libc-client-devel cyrus-sasl cyrus-sasl-devel pam pam-devel libaio libaio-devel libevent libevent-devel recode recode-devel libtidy libtidy-devel net-snmp net-snmp-devel enchant enchant-devel lua lua-devel mailx perl-LWP-Protocol-https OpenEXR-devel OpenEXR-libs atk cups-libs fftw-libs-double fribidi gdk-pixbuf2 ghostscript-devel ghostscript-fonts gl-manpages graphviz gtk2 hicolor-icon-theme ilmbase ilmbase-devel jasper-devel jasper-libs jbigkit-devel jbigkit-libs lcms2 lcms2-devel libICE-devel libSM-devel libXaw libXcomposite libXcursor libXdamage-devel libXfixes-devel libXfont libXi libXinerama libXmu libXrandr libXt-devel libXxf86vm-devel libdrm-devel libfontenc librsvg2 libtiff libtiff-devel libwebp libwebp-devel libwmf-lite mesa-libGL-devel mesa-libGLU mesa-libGLU-devel poppler-data urw-fonts xorg-x11-font-utils${USER_PKGS}${DISABLEREPO_DNF}
 fi
@@ -1849,8 +2046,20 @@ cd $INSTALLDIR
 #sed -i "s|PHPREDIS='y'|PHPREDIS='n'|" centmin.sh
 
 # switch from PHP 5.4.41 to 5.6.9 default with Zend Opcache
-PHPVERLATEST=$(curl -${ipv_forceopt}sL https://www.php.net/downloads.php| egrep -o "php\-[0-9.]+\.tar[.a-z]*" | grep -v '.asc' | awk -F "php-" '/.tar.gz$/ {print $2}' | sed -e 's|.tar.gz||g' | uniq | grep '8.0' | head -n1)
-PHPVERLATEST=${PHPVERLATEST:-"8.0.30"}
+if [[ "$CENTOS_NINE" -eq '9' ]]; then
+  PHPVERLATEST=$(curl -${ipv_forceopt}sL https://www.php.net/downloads.php| egrep -o "php\-[0-9.]+\.tar[.a-z]*" | grep -v '.asc' | awk -F "php-" '/.tar.gz$/ {print $2}' | sed -e 's|.tar.gz||g' | uniq | grep '8.0' | head -n1)
+elif [[ "$CENTOS_EIGHT" -eq '8' ]]; then
+  PHPVERLATEST=$(curl -${ipv_forceopt}sL https://www.php.net/downloads.php| egrep -o "php\-[0-9.]+\.tar[.a-z]*" | grep -v '.asc' | awk -F "php-" '/.tar.gz$/ {print $2}' | sed -e 's|.tar.gz||g' | uniq | grep '8.0' | head -n1)
+else
+  PHPVERLATEST=$(curl -${ipv_forceopt}sL https://www.php.net/downloads.php| egrep -o "php\-[0-9.]+\.tar[.a-z]*" | grep -v '.asc' | awk -F "php-" '/.tar.gz$/ {print $2}' | sed -e 's|.tar.gz||g' | uniq | grep '8.0' | head -n1)
+fi
+if [[ "$CENTOS_NINE" -eq '9' ]]; then
+  PHPVERLATEST=${PHPVERLATEST:-"8.0.30"}
+elif [[ "$CENTOS_EIGHT" -eq '8' ]]; then
+  PHPVERLATEST=${PHPVERLATEST:-"8.0.30"}
+else
+  PHPVERLATEST=${PHPVERLATEST:-"8.0.30"}
+fi
 sed -i "s|^PHP_VERSION='.*'|PHP_VERSION='$PHPVERLATEST'|" centmin.sh
 sed -i "s|ZOPCACHEDFT='n'|ZOPCACHEDFT='y'|" centmin.sh
 
@@ -1864,25 +2073,35 @@ if [[ "$LOWMEM_INSTALL" = [yY] ]]; then
 fi
 echo "1" > /etc/centminmod/email-primary.ini
 echo "2" > /etc/centminmod/email-secondary.ini
+echo "${INSTALLDIR}/centminmod"
 cd "${INSTALLDIR}/centminmod"
+sed -i 's|TESTEDCENTOSVER='7.9'|TESTEDCENTOSVER='9.3'|' centmin.sh
 ./centmin.sh install
 sar_call
+echo "./centmin.sh install completion"
 rm -rf /etc/centminmod/email-primary.ini
 rm -rf /etc/centminmod/email-secondary.ini
 
     # setup command shortcut aliases 
     # given the known download location
     # updated method for cmdir and centmin shorcuts
+    echo
+    echo "/root/.bashrc modifications"
     sed -i '/cmdir=/d' /root/.bashrc
     sed -i '/centmin=/d' /root/.bashrc
-    rm -rf /usr/bin/cmdir
+    if [ -f /usr/bin/cmdir ]; then
+      rm -rf /usr/bin/cmdir
+    fi
+    echo "alias command setup"
     alias cmdir="pushd /usr/local/src/centminmod"
     echo "alias cmdir='pushd /usr/local/src/centminmod'" >> /root/.bashrc
     echo -e "pushd /usr/local/src/centminmod; bash centmin.sh" > /usr/bin/centmin
     if [[ "$(id -u)" -ne '0' ]]; then
       sed -i '/cmdir=/d' $HOME/.bashrc
       sed -i '/centmin=/d' $HOME/.bashrc
-      rm -rf /usr/bin/cmdir
+      if [ -f /usr/bin/cmdir ]; then
+        rm -rf /usr/bin/cmdir
+      fi
       alias cmdir="pushd /usr/local/src/centminmod"
       echo "alias cmdir='pushd /usr/local/src/centminmod'" >> $HOME/.bashrc
       echo -e "pushd /usr/local/src/centminmod; bash centmin.sh" > /usr/bin/centmin
@@ -1917,7 +2136,7 @@ if [[ "$DEF" = 'novalue' ]]; then
   install_axel
   fileperm_fixes
   cminstall
-} 2>&1 | tee "/root/centminlogs/installer_${DT}.log"
+} 2>&1 | tee "/root/centminlogs/installer_cmm_${DT}.log"
   echo
   FIRSTYUMINSTALLTIME=$(echo "$firstyuminstallendtime - $firstyuminstallstarttime" | bc)
   FIRSTYUMINSTALLTIME=$(printf "%0.4f\n" $FIRSTYUMINSTALLTIME)
@@ -1948,6 +2167,12 @@ if [[ "$DNF_ENABLE" = [yY] ]]; then
 else
   CURLT=$(awk '{print $8}' /root/centminlogs/firstyum_installtime_*.log | tail -1)
 fi
+  FPM_CHECK_PGO=$(/usr/local/bin/php -v | grep -o PGO | head -n1)
+  if [[ "$FPM_CHECK_PGO" = 'PGO' ]]; then
+    DESC_PGO='PGO'
+  else
+    DESC_PGO=''
+  fi
   CT=$(awk '{print $6}' ${CM_INSTALL_TIME_LOG} | tail -1)
   GETCMTIME=$(tail -1 /root/centminlogs/getcmtime_installtime_${DT}.log)
   TT=$(echo "$CURLT + $CT + $GETCMTIME" | bc)
@@ -1961,16 +2186,19 @@ fi
   echo "Total Time Other eg. source compiles: $ST"
   echo "Total Centmin Mod Install Time: $CMTIME_SEC"
 echo "---------------------------------------------------------------------------"
-  echo "Total Install Time (curl yum + cm install + zip download): $TT seconds"    
+  echo "Total Install Time for curl yum + cm install + zip download: ${TT} seconds"    
 echo "---------------------------------------------------------------------------"
+  echo "$OS_PRETTY_NAME $(uname -r)"
   echo "$CPUMODEL"; echo "$CPUSPEED"
+  echo "PHP VERSION: $(php-config --version) $DESC_PGO"
 echo "---------------------------------------------------------------------------"
   echo "Centmin Mod Version: $(cat /etc/centminmod-release)"
   echo "Install Summary Logs: /root/centminlogs/installer_summary_links.log"
 echo "---------------------------------------------------------------------------"
 } 2>&1 | tee "/root/centminlogs/install_time_stats_${DT}.log"
-  cat "/root/centminlogs/install_time_stats_${DT}.log" >> "/root/centminlogs/installer_${DT}.log"
-  cat "/root/centminlogs/installer_${DT}.log" | egrep -v '\*\*\*\*\*\*|shell-init:|csf: |Flushing chain  CC |and iptables DROP|The set with the given name does not exist|csf: IPSET adding|\.\.\.\.\.\.\.\.\.\.|DOPENSSL_PIC|\/opt\/openssl\/share\/|fpm-build\/libtool|checking for |checking whether |make -f |make\[1\]|make\[2\]|make\[3\]|make\[4\]|make\[5\]|--noexecstack -O3 -m64 -march=native -Wimplicit-fallthrough=0 |install .\/include\/openssl' > "/root/centminlogs/installer_${DT}_minimal.log"
+  cat "/root/centminlogs/install_time_stats_${DT}.log" >> "installer_${DT}.log"
+  cat "installer_${DT}.log" | egrep -v '\*\*\*\*\*\*|shell-init:|csf: |Flushing chain  CC |and iptables DROP|The set with the given name does not exist|csf: IPSET adding|\.\.\.\.\.\.\.\.\.\.|DOPENSSL_PIC|\/opt\/openssl\/share\/|fpm-build\/libtool|checking for |checking whether |make -f |make\[1\]|make\[2\]|make\[3\]|make\[4\]|make\[5\]|--noexecstack -O3 -m64 -march=native -Wimplicit-fallthrough=0 |install .\/include\/openssl' > "/root/centminlogs/installer_${DT}_minimal.log"
+  cp -a "installer_${DT}.log" "/root/centminlogs/installer_${DT}.log"
   echo "Full initial install log: /root/centminlogs/installer_${DT}.log" > /root/centminlogs/installer_summary_links.log
   echo "Minimal initial install log: /root/centminlogs/installer_${DT}_minimal.log" >> /root/centminlogs/installer_summary_links.log
   echo "Initial install time stats: /root/centminlogs/install_time_stats_${DT}.log" >> /root/centminlogs/installer_summary_links.log
