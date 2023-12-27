@@ -432,7 +432,7 @@ install_cfzlib() {
         # sed -i "s|\#define ZLIB_VERSION .*|\#define ZLIB_VERSION \"${CLOUDFLARE_ZLIBVER}\"|" zlib.h
         # ldconfig
         make -f Makefile.in distclean
-        if [[ "$NGINXCOMPILE_PIE" = [yY] ]]; then
+        if [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_EIGHT" -eq '9' ]] && [[ "$NGINXCOMPILE_PIE" = [yY] ]]; then
             echo
             echo "CFLAGS=$CFLAGS"
             CFLAGS="-fPIC -O2 -fstack-protector-strong -D_FORTIFY_SOURCE=2" CPPFLAGS="-D_FORTIFY_SOURCE=2" CXXFLAGS="-fPIC -O2" LDFLAGS="-Wl,-z,relro,-z,now -pie" ./configure --prefix=/usr/local/zlib-cf

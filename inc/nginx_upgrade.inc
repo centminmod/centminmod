@@ -1029,6 +1029,7 @@ fi
         echo "NGXEXTRA_LDGOLDCCOPT=$NGXEXTRA_LDGOLDCCOPT"
         echo "NGINX_KTLS=$NGINX_KTLS"
         echo "OPENSSL_VERSION=$OPENSSL_VERSION"
+        echo "HTTPTWOOPT=$HTTPTWOOPT"
         echo
         echo "ls -lAhrt /usr/local/lib | egrep 'libpcre.so|libpcre2-8.so'"
         ls -lAhrt /usr/local/lib | egrep 'libpcre.so|libpcre2-8.so'

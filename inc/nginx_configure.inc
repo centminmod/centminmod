@@ -5046,6 +5046,7 @@ else
           echo "NGINXOPENSSL_FATLTO_OBJECTS=$NGINXOPENSSL_FATLTO_OBJECTS"
           echo "NGINXOPENSSL_NOFATLTO_OBJECTS=$NGINXOPENSSL_NOFATLTO_OBJECTS"
           echo "OPENSSL_VERION=$OPENSSL_VERSION"
+          echo "HTTPTWOOPT=$HTTPTWOOPT"
           echo
           echo "nginx configure options (alternate ordering):"
         if [[ "$TLSTHREEOPT" = [yY] && "$OPENSSL_TLSONETHREE" = [yY] ]]; then
