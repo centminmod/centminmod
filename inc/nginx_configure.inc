@@ -275,6 +275,15 @@ dynamicmodule_file() {
 }
 
 ngx_dynamicfunction() {
+  # inc/nginx_install.inc referenced ngx_dynamicfunction function
+  if [ "$1" ]; then
+    NGINX_VERSION=$NGINX_VERSION
+    echo "ngx_dynamicfunction NGINX_VERSION=$NGINX_VERSION"
+  fi
+  if [[ "$2" = 'y' ]]; then
+    NGINX_HTTP2=$NGINX_HTTP2
+    echo "ngx_dynamicfunction NGINX_HTTP2=$NGINX_HTTP2"
+  fi
   if [ ! -d /usr/local/nginx/conf ]; then
     mkdir -p /usr/local/nginx/conf
   fi
@@ -558,7 +567,13 @@ if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9'
     NGX_HPACK_OPT=""
     NGINX_HPACK='n'
   elif [[ "$ngver" && "$ngver" = 'quic' || "$NGINX_QUIC_SUPPORT" = [yY] ]]; then
-    DETECT_NGXVER=$(awk '/define nginx_version  / {print $3}' "/svr-setup/nginx-$ngver/src/core/nginx.h")
+    if [ "$ngver" ]; then
+      DETECT_NGXVER=$(awk '/define nginx_version  / {print $3}' "/svr-setup/nginx-$ngver/src/core/nginx.h")
+      echo "NGINX_QUIC_SUPPORT=y DETECT_NGXVER=$DETECT_NGXVER"
+    else
+      DETECT_NGXVER=$(awk '/define nginx_version  / {print $3}' "/svr-setup/nginx-${NGINX_VERSION}/src/core/nginx.h")
+      echo "NGINX_QUIC_SUPPORT=y DETECT_NGXVER=$DETECT_NGXVER"
+    fi
     if [[ "$NGINX_QUIC_HPACK_SUPPORT" != [yY] ]]; then
       NGX_HPACK_OPT=""
       NGINX_HPACK='n'
