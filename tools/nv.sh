@@ -1146,6 +1146,7 @@ cat > "/usr/local/nginx/conf/conf.d/$vhostname.conf"<<ENSS
 
 server {
   $DEDI_LISTEN
+  $DEDI_LISTEN_V6
   server_name $vhostname www.$vhostname;
 
 # ngx_pagespeed & ngx_pagespeed handler
@@ -1226,6 +1227,7 @@ cat > "/usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf"<<ESX
 #x# HTTPS-DEFAULT
 server {
   $DEDI_LISTEN
+  $DEDI_LISTEN_V6
   server_name ${vhostname} www.${vhostname};
   return 302 https://\$server_name\$request_uri;
 }
@@ -1325,6 +1327,7 @@ cat > "/usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf"<<ESS
 # if unsure use return 302 before using return 301
 server {
   $DEDI_LISTEN
+  $DEDI_LISTEN_V6
   server_name ${vhostname} www.${vhostname};
   return 302 https://\$server_name\$request_uri;
 }
@@ -1539,6 +1542,7 @@ cat > "/usr/local/nginx/conf/conf.d/$vhostname.conf"<<END
 
 server {
   $DEDI_LISTEN
+  $DEDI_LISTEN_V6
   server_name $vhostname www.$vhostname;
 
 # ngx_pagespeed & ngx_pagespeed handler
