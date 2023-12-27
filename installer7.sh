@@ -304,8 +304,16 @@ elif [ -f /etc/el-release ] && [[ "$EL_VERID" -eq 8 || "$EL_VERID" -eq 9 ]]; the
   fi
 fi
 
+if [ ! -f /usr/sbin/virt-what ]; then
+  yum -q -y install virt-what
+fi
+
+if [[ ! -f /proc/user_beancounters && -f /usr/bin/systemd-detect-virt && "$(/usr/bin/systemd-detect-virt)" = 'lxc' ]] || [[ ! -f /proc/user_beancounters && -f /usr/sbin/virt-what && $(virt-what | xargs | grep -o lxc) = 'lxc' ]]; then
+  CHECK_LXD='y'
+fi
+
 # check for Docker environment to skip grub routines
-if [ ! -f /.dockerenv ]; then
+if [[ ! -f /.dockerenv && "$CHECK_LXD" != 'y' ]]; then
   # earlier selinux check for el9 systems
   SELINUX_STATUS=$(getenforce)
   if [ -f /etc/default/grub ]; then
@@ -852,14 +860,6 @@ else
   ipv_forceopt='4'
   ipv_forceopt_wget=' -4'
   WGETOPT="-cnv --no-dns-cache${ipv_forceopt_wget}"
-fi
-
-if [ ! -f /usr/sbin/virt-what ]; then
-  yum -q -y install virt-what
-fi
-
-if [[ ! -f /proc/user_beancounters && -f /usr/bin/systemd-detect-virt && "$(/usr/bin/systemd-detect-virt)" = 'lxc' ]] || [[ ! -f /proc/user_beancounters && -f /usr/sbin/virt-what && $(virt-what | xargs | grep -o lxc) = 'lxc' ]]; then
-  CHECK_LXD='y'
 fi
 
 if [[ "$(uname -m)" = 'x86_64' ]]; then
