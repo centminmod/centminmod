@@ -43,11 +43,18 @@ geoiptwolite_phpext_install() {
       GENERAL_DEVTOOLSETGCC='y'
       enable_devtoolset
     fi
+    GEOIPTWOLITE_PHP_VER_NUM=$(/usr/local/bin/php-config --vernum)
+
     cecho "compiling MaxMind DB Reader PHP API extension..." $boldyellow
     pushd $DIR_TMP
     rm -rf MaxMind-DB-Reader-php
-    git clone --depth=1 https://github.com/maxmind/MaxMind-DB-Reader-php
+    git clone https://github.com/maxmind/MaxMind-DB-Reader-php
     cd MaxMind-DB-Reader-php
+    # Fetch and checkout specific tag for PHP version <= 7.1
+    if [[ "$GEOIPTWOLITE_PHP_VER_NUM" -le 70199 ]]; then
+      git fetch --depth=1 origin tag v1.6.0
+      git checkout v1.6.0
+    fi
     cd ext
     /usr/local/bin/phpize
     PKG_CONFIG_PATH=/usr/lib64/pkgconfig:/usr/share/pkgconfig:/usr/local/nginx-dep/lib/pkgconfig CFLAGS="-fPIC -O2 -fstack-protector-strong -D_FORTIFY_SOURCE=2" CPPFLAGS="-D_FORTIFY_SOURCE=2" CXXFLAGS="-fPIC -O2" LDFLAGS="-Wl,-z,relro,-z,now -pie" ./configure --prefix=/usr/local/nginx-dep --with-php-config=/usr/local/bin/php-config
