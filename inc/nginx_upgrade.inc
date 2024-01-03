@@ -773,6 +773,14 @@ fi
     fi
 
     echo "Compiling nginx..."
+    if [[ "$ngver" = 'angie' ]]; then
+        rm -rf nginx-angie*
+        git clone https://github.com/webserver-llc/angie nginx-angie
+        pushd nginx-angie
+        git checkout Angie-1.4.0
+        popd
+        # mv nginx-angie/auto/configure nginx-master/configure
+    fi
     if [[ "$ngver" = 'master' ]]; then
         rm -rf nginx-${ngver}*
         git clone --depth=1 https://github.com/nginx/nginx nginx-master
@@ -789,7 +797,7 @@ fi
         git clone --depth=1 https://nginx.googlesource.com/nginx nginx-master-google
         mv nginx-master-google/auto/configure nginx-master-google/configure
     fi
-    if [[ -s "nginx-${ngver}.tar.gz" || "$ngver" = 'master' || "$ngver" = 'master-google' || "$ngver" = 'quic' ]]; then
+    if [[ -s "nginx-${ngver}.tar.gz" || "$ngver" = 'angie' || "$ngver" = 'master' || "$ngver" = 'master-google' || "$ngver" = 'quic' ]]; then
         cecho "nginx ${ngver} download found, skipping download..." $boldgreen
     else
         download_cmd "https://nginx.org/download/nginx-${ngver}.tar.gz" $WGETRETRY
@@ -830,7 +838,7 @@ fi
         fi
     fi
 
-    if [[ ! "$(echo $ngver | egrep 'master|quic')" ]]; then
+    if [[ ! "$(echo $ngver | egrep 'master|angie|quic')" ]]; then
         tar xvfz "nginx-${ngver}.tar.gz"
         NGINXTAREXTRACT_CHECK=$?
         if [[ "$NGINXTAREXTRACT_CHECK" != '0' ]]; then
@@ -1405,6 +1413,9 @@ fi
             cecho "* NGINX_STAPLE_CACHE_OVERRIDE='y' detected NGINX_STAPLE_CACHE_TTL='${NGINX_STAPLE_CACHE_TTL}' set" $boldgreen
         fi
         cecho "* nginx updated" $boldgreen
+        if [[ "$ngver" = 'angie' ]]; then
+            cecho "* angie nginx fork build https://github.com/webserver-llc/angie" $boldgreen
+        fi
         if [[ "$ngver" = 'master' ]]; then
             cecho "* nginx github master build" $boldgreen
         fi

@@ -435,7 +435,7 @@ install_cfzlib() {
         if [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_EIGHT" -eq '9' ]] && [[ "$NGINXCOMPILE_PIE" = [yY] ]]; then
             echo
             echo "CFLAGS=$CFLAGS"
-            CFLAGS="-fPIC -O2 -fstack-protector-strong -D_FORTIFY_SOURCE=2" CPPFLAGS="-D_FORTIFY_SOURCE=2" CXXFLAGS="-fPIC -O2" LDFLAGS="-Wl,-z,relro,-z,now -pie" ./configure --prefix=/usr/local/zlib-cf
+            ./configure --prefix=/usr/local/zlib-cf
             if [ ! "$(grep '^CFLAGS=' Makefile | grep -w 'fPIC')" ]; then
                 sed -i '/^CFLAGS=/ s|$| -fPIC|' Makefile
             fi
