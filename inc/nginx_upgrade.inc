@@ -779,6 +779,7 @@ fi
         pushd nginx-angie
         git checkout Angie-1.4.0
         popd
+        angie_console_setup
         # mv nginx-angie/auto/configure nginx-master/configure
     fi
     if [[ "$ngver" = 'master' ]]; then

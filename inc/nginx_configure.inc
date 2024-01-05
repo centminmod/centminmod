@@ -1,3 +1,39 @@
+angie_console_setup() {
+  if [[ ! -d /usr/share/angie-console-light/html ]]; then
+    echo
+    echo "Setup angie console"
+    pushd "$DIR_TMP"
+    wget https://download.angie.software/files/angie-console-light/angie-console-light-1.2.1.tar.gz
+    tar xzf angie-console-light-1.2.1.tar.gz
+    cd angie-console-light-1.2.1
+    mkdir -p /usr/share/angie-console-light
+    \cp -af html /usr/share/angie-console-light
+    popd
+    echo "Setup angie console completed"
+  else
+    echo "$DIR_TMP/angie-console-light-1.2.1.tar.gz found"
+  fi
+  if [ ! -f /usr/local/nginx/conf/angie-console-light.conf ]; then
+cat > /usr/local/nginx/conf/angie-console-light.conf <<EOF
+location /console/ {
+    allow 127.0.0.1;
+    #allow your_isp_ip_address;
+    deny all;
+
+    alias /usr/share/angie-console-light/html/;
+    index index.html;
+
+    location /console/api/ {
+        api /status/;
+    }
+}
+EOF
+    echo "Created /usr/local/nginx/conf/angie-console-light.conf include file"
+    echo "include /usr/local/nginx/conf/angie-console-light.conf;"
+    echo
+  fi
+}
+
 checksec_nginx() {
   checksec_check
   checksec_ngxlibs_dir=/usr/local/nginx-dep/lib
