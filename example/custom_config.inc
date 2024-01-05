@@ -142,6 +142,7 @@ AUTOHARDTUNE_NGINXBACKLOG='y' # on non-openvz systems, if enabled will override 
 USE_NGINXMAINEXTLOGFORMAT='n' # use default combined nginx log format instead of main_ext custom format for nginx amplify
 NGINX_ALLOWOVERRIDE='y'      # allow centmin mod to update nginx.conf setting defaults when the defaults are revised
 NGINX_SSLCACHE_ALLOWOVERRIDE='n' # dynamically tune nginx ssl_session_cache in /usr/local/nginx/conf/ssl_include.conf based on system detected memory
+NGINX_GZIP_MULTI_STATUS='n'  # enable HTTP Multi Status 207 gzip compression patch for Nextcloud etc https://trac.nginx.org/nginx/ticket/394
 NGINXUPGRADESLEEP='3'
 NGINX_MAINHOSTNAME_BLANK_INDEX='n'  # if enabled main hostname public web root /usr/local/nginx/html/index.html will be blank
 SWITCH_NGINX_SYSTEMD='y'     # Switch to centos 7 systemd nginx service file

@@ -1,3 +1,31 @@
+ngx_gzip_multi_status_patch() {
+  if [[ "$NGINX_GZIP_MULTI_STATUS" = [yY] && "$DETECT_NGXVER" -ge '1025003' ]]; then
+    cecho "nginx-gzip-207-status.patch" $boldyellow
+    cecho "patch -p1 < $CUR_DIR/patches/nginx/nginx-gzip-207-status.patch" $boldyellow
+    patch -p1 < $CUR_DIR/patches/nginx/nginx-gzip-207-status.patch
+    echo 
+    echo "patching nginx to allow gzip to compress HTTP Multi-Status 207 for nginx 1.25.0+"
+    echo "https://trac.nginx.org/nginx/ticket/394"
+  fi
+}
+
+nginx_quic_patches() {
+  if [[ "$ngver" = 'quic' ]]; then
+    {
+    echo "patching nginx-quic"
+    if [ "$ngver" ]; then
+      pushd "$DIR_TMP/nginx-${ngver}"
+    else
+      pushd "$DIR_TMP/nginx-${NGINX_VERSION}"
+    fi
+    if [[ -f "$CUR_DIR/patches/nginx/nginx-quic-patch1.patch" && "$(grep -c 'lsopt.type = SOCK_STREAM;' src/http/ngx_http_core_module.c)" -lt '2' ]]; then
+      patch -p1 < "$CUR_DIR/patches/nginx/nginx-quic-patch1.patch"
+    fi
+    popd
+    } 2>&1 | tee -a "${CENTMINLOGDIR}/patch_patchnginx_${DT}.log"
+  fi
+}
+
 ocsp_ttl_override() {
   if [[ "$NGINX_STAPLE_CACHE_OVERRIDE" = [yY] ]]; then
     if [ "$ngver" ]; then
@@ -660,23 +688,7 @@ patchnginx() {
       fi
     fi
   fi
-
-nginx_quic_patches() {
-  if [[ "$ngver" = 'quic' ]]; then
-    {
-    echo "patching nginx-quic"
-    if [ "$ngver" ]; then
-      pushd "$DIR_TMP/nginx-${ngver}"
-    else
-      pushd "$DIR_TMP/nginx-${NGINX_VERSION}"
-    fi
-    if [[ -f "$CUR_DIR/patches/nginx/nginx-quic-patch1.patch" && "$(grep -c 'lsopt.type = SOCK_STREAM;' src/http/ngx_http_core_module.c)" -lt '2' ]]; then
-      patch -p1 < "$CUR_DIR/patches/nginx/nginx-quic-patch1.patch"
-    fi
-    popd
-    } 2>&1 | tee -a "${CENTMINLOGDIR}/patch_patchnginx_${DT}.log"
-  fi
-}
+  ngx_gzip_multi_status_patch
 
   if [[ "$NGINX_HTTP2" = [yY] ]]; then
     # assign NGX_VEREVAL nginx version based on if it's an initial

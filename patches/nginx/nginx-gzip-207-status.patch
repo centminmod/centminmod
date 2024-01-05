@@ -1,0 +1,37 @@
+From 50894d89d0e1fbbd1878030f47842e79568c73a1 Mon Sep 17 00:00:00 2001
+From: DBotThePony <dbotthepony@yandex.ru>
+Date: Wed, 15 Mar 2023 13:27:08 +0700
+Subject: [PATCH] Allow gzip module to compress HTTP 207 Multi-Status responses
+ Added NGX_HTTP_MULTI_STATUS constant, reflecting HTTP status code 207
+
+---
+ src/http/modules/ngx_http_gzip_filter_module.c | 3 ++-
+ src/http/ngx_http_request.h                    | 1 +
+ 2 files changed, 3 insertions(+), 1 deletion(-)
+
+diff --git a/src/http/modules/ngx_http_gzip_filter_module.c b/src/http/modules/ngx_http_gzip_filter_module.c
+index b7758690f..cfe97e510 100644
+--- a/src/http/modules/ngx_http_gzip_filter_module.c
++++ b/src/http/modules/ngx_http_gzip_filter_module.c
+@@ -228,7 +228,8 @@ ngx_http_gzip_header_filter(ngx_http_request_t *r)
+     if (!conf->enable
+         || (r->headers_out.status != NGX_HTTP_OK
+             && r->headers_out.status != NGX_HTTP_FORBIDDEN
+-            && r->headers_out.status != NGX_HTTP_NOT_FOUND)
++            && r->headers_out.status != NGX_HTTP_NOT_FOUND
++            && r->headers_out.status != NGX_HTTP_MULTI_STATUS)
+         || (r->headers_out.content_encoding
+             && r->headers_out.content_encoding->value.len)
+         || (r->headers_out.content_length_n != -1
+diff --git a/src/http/ngx_http_request.h b/src/http/ngx_http_request.h
+index 8c9eed249..ce22e1a5f 100644
+--- a/src/http/ngx_http_request.h
++++ b/src/http/ngx_http_request.h
+@@ -79,6 +79,7 @@
+ #define NGX_HTTP_ACCEPTED                  202
+ #define NGX_HTTP_NO_CONTENT                204
+ #define NGX_HTTP_PARTIAL_CONTENT           206
++#define NGX_HTTP_MULTI_STATUS              207
+ 
+ #define NGX_HTTP_SPECIAL_RESPONSE          300
+ #define NGX_HTTP_MOVED_PERMANENTLY         301
