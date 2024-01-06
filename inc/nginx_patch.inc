@@ -1,11 +1,16 @@
 ngx_gzip_multi_status_patch() {
   if [[ "$NGINX_GZIP_MULTI_STATUS" = [yY] && "$DETECT_NGXVER" -ge '1025003' ]]; then
     cecho "nginx-gzip-207-status.patch" $boldyellow
-    cecho "patch -p1 < $CUR_DIR/patches/nginx/nginx-gzip-207-status.patch" $boldyellow
-    patch -p1 < $CUR_DIR/patches/nginx/nginx-gzip-207-status.patch
-    echo 
-    echo "patching nginx to allow gzip to compress HTTP Multi-Status 207 for nginx 1.25.0+"
-    echo "https://trac.nginx.org/nginx/ticket/394"
+    if [ ! "$(grep 'NGX_HTTP_MULTI_STATUS' src/http/ngx_http_request.h)" ]; then
+      cecho "patch -p1 < $CUR_DIR/patches/nginx/nginx-gzip-207-status.patch" $boldyellow
+      patch -p1 < $CUR_DIR/patches/nginx/nginx-gzip-207-status.patch
+      echo 
+      echo "patching nginx to allow gzip to compress HTTP Multi-Status 207 for nginx 1.25.0+"
+      echo "https://trac.nginx.org/nginx/ticket/394"
+    else
+      cecho "skip gzip HTTP Multi-Status 207 patch" $boldyellow
+      echo "already detected as patched"
+    fi
   fi
 }
 
