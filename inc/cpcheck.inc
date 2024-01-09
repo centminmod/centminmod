@@ -2457,18 +2457,36 @@ axivo_remove() {
 }
 
 csfipsetcheck() {
-  if [[ ! -f /proc/user_beancounters && "$(lsmod | grep ip_set)" ]]; then
-    if [[ ! -f /usr/sbin/ipset || ! -f /usr/include/libipset/data.h ]]; then
-      time $YUMDNFBIN -y -q install ipset ipset-devel${DISABLEREPO_DNF}
-      if [ -f /etc/csf/csf.conf ]; then
-      sed -i 's/LF_IPSET = "0"/LF_IPSET = "1"/g' /etc/csf/csf.conf
-      fi
+    if [[ ! -f /proc/user_beancounters ]] && [[ "$(uname -r | grep linode)" || "$(find /lib/modules/`uname -r` -name 'ipset' >/dev/null 2>&1; echo $?)" -eq '0' ]] && [[ "$(virt-what | grep -o lxc)" != 'lxc' ]]; then
+        if [[ ! -f /usr/sbin/ipset ]]; then
+            # CSF now has ipset support to offload large IP address numbers 
+            # from iptables so uses less server resources to handle many IPs
+            # does not work with OpenVZ VPS so only implement for non-OpenVZ
+            yum -q -y install ipset ipset-devel
+            sed -i 's/LF_IPSET = \"0\"/LF_IPSET = \"1\"/' /etc/csf/csf.conf
+            setiplimits
+        elif [[ -f /usr/sbin/ipset ]]; then
+            sed -i 's/LF_IPSET = \"0\"/LF_IPSET = \"1\"/' /etc/csf/csf.conf
+            setiplimits
+        fi
+    elif [[ -f /proc/user_beancounters && "$KERNEL_NUMERICVER" -ge '3000000000' ]] && [[ "$(virt-what | grep -o lxc)" != 'lxc' ]]; then
+        # openvz7's 3.10 linux kernels support IPSET
+        if [[ ! -f /usr/sbin/ipset ]]; then
+            # CSF now has ipset support to offload large IP address numbers 
+            # from iptables so uses less server resources to handle many IPs
+            # does not work with OpenVZ VPS so only implement for non-OpenVZ
+            yum -q -y install ipset ipset-devel
+            sed -i 's/LF_IPSET = \"0\"/LF_IPSET = \"1\"/' /etc/csf/csf.conf
+            setiplimits
+        elif [[ -f /usr/sbin/ipset ]]; then
+            sed -i 's/LF_IPSET = \"0\"/LF_IPSET = \"1\"/' /etc/csf/csf.conf
+            setiplimits
+        fi
+    else
+        sed -i 's/LF_IPSET = \"1\"/LF_IPSET = \"0\"/' /etc/csf/csf.conf
+        sed -i 's/^DENY_IP_LIMIT = .*/DENY_IP_LIMIT = \"500\"/' /etc/csf/csf.conf
+        sed -i 's/^DENY_TEMP_IP_LIMIT = .*/DENY_TEMP_IP_LIMIT = \"500\"/' /etc/csf/csf.conf
     fi
-  else
-    if [ -f /etc/csf/csf.conf ]; then
-    sed -i 's/LF_IPSET = \"1\"/LF_IPSET = \"0\"/' /etc/csf/csf.conf
-    fi
-  fi
 }
 
 checkovzkernels() {
