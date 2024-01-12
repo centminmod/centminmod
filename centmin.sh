@@ -29,7 +29,7 @@ DT=$(date +"%d%m%y-%H%M%S")
 branchname='130.00beta01'
 SCRIPT_MAJORVER='130'
 SCRIPT_MINORVER='00'
-SCRIPT_INCREMENTVER='514'
+SCRIPT_INCREMENTVER='515'
 SCRIPT_VERSIONSHORT="${branchname}"
 SCRIPT_VERSION="${SCRIPT_VERSIONSHORT}.b${SCRIPT_INCREMENTVER}"
 SCRIPT_DATE='31/01/23'
@@ -1566,13 +1566,27 @@ else
     TCMALLOC_PAGESIZE='8'
 fi
 
-if [[ "$INITIALINSTALL" = [yY] && -f /usr/bin/systemd-detect-virt && "$(/usr/bin/systemd-detect-virt)" = 'lxc' ]] || [[ "$INITIALINSTALL" = [yY] && -f "$(which virt-what)" && "$(virt-what | xargs | grep -o lxc)" = 'lxc' ]]; then
-  CHECK_LXD='y'
-  if [ -d /etc/profile.d ]; then
-    echo "export LANG=en_US.UTF-8" >> /etc/profile.d/locale.sh
-    echo "export LANGUAGE=en_US.UTF-8" >> /etc/profile.d/locale.sh
-    source /etc/profile.d/locale.sh
-  fi
+if [[ ! -f /proc/user_beancounters ]]; then
+    if [[ -f /usr/bin/systemd-detect-virt && "$(/usr/bin/systemd-detect-virt)" = 'lxc' ]]; then
+        CHECK_LXD='y'
+        if [ -d /etc/profile.d ]; then
+            echo "export LANG=en_US.UTF-8" >> /etc/profile.d/locale.sh
+            echo "export LANGUAGE=en_US.UTF-8" >> /etc/profile.d/locale.sh
+            source /etc/profile.d/locale.sh
+        fi
+    elif [[ -f $(which virt-what) ]]; then
+        VIRT_WHAT_OUTPUT=$(virt-what | xargs)
+        if [[ $VIRT_WHAT_OUTPUT == *'openvz'* ]]; then
+            CHECK_LXD='n'
+        elif [[ $VIRT_WHAT_OUTPUT == *'lxc'* ]]; then
+            CHECK_LXD='y'
+            if [ -d /etc/profile.d ]; then
+                echo "export LANG=en_US.UTF-8" >> /etc/profile.d/locale.sh
+                echo "export LANGUAGE=en_US.UTF-8" >> /etc/profile.d/locale.sh
+                source /etc/profile.d/locale.sh
+            fi
+        fi
+    fi
 fi
 
 # auto enable nginx brotli module if Intel Skylake or newer cpus exist
