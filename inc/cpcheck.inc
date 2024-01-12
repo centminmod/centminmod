@@ -2067,7 +2067,7 @@ csfipsetcheck() {
             sed -i 's/LF_IPSET = \"0\"/LF_IPSET = \"1\"/' /etc/csf/csf.conf
             setiplimits
         fi
-    elif [[ -f /proc/user_beancounters && "$KERNEL_NUMERICVER" -ge '3000000000' ]] && [[ "$(virt-what | grep -o lxc)" != 'lxc' ]]; then
+    elif [[ -f /proc/user_beancounters && "$KERNEL_NUMERICVER" -ge '3000000000' ]] && [[ "$(virt-what | grep -o openvz)" = 'openvz' ]]; then
         # openvz7's 3.10 linux kernels support IPSET
         if [[ ! -f /usr/sbin/ipset ]]; then
             # CSF now has ipset support to offload large IP address numbers 
