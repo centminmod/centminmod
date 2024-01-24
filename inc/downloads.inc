@@ -197,7 +197,7 @@ libresslgeolocation() {
     fi
   elif [[ "$SERVER_COUNTRY" = 'AT' ]]; then
     echo "AT server detected"
-    LIBRESSL_MIRRORURL="https://fastly.cdn.openbsd.org/pub/OpenBSD/LibreSSL"
+    LIBRESSL_MIRRORURL="https://cdn.openbsd.org/pub/OpenBSD/LibreSSL"
     LIBRESSL_LINK="${LIBRESSL_MIRRORURL}/libressl-${LIBRESSL_VERSION}.tar.gz"
     curl -${ipv_forceopt}Is --connect-timeout 30 --max-time 30 "$LIBRESSL_LINK" | grep 'HTTP\/' | grep '200'
     LIBRESSL_CURLCHECK=$?
@@ -229,7 +229,7 @@ libresslgeolocation() {
     fi
   elif [[ "$SERVER_COUNTRY" = 'BG' ]]; then
     echo "BG server detected"
-    LIBRESSL_MIRRORURL="https://fastly.cdn.openbsd.org/pub/OpenBSD/LibreSSL"
+    LIBRESSL_MIRRORURL="https://cdn.openbsd.org/pub/OpenBSD/LibreSSL"
     LIBRESSL_LINK="${LIBRESSL_MIRRORURL}/libressl-${LIBRESSL_VERSION}.tar.gz"
     curl -${ipv_forceopt}Is --connect-timeout 30 --max-time 30 "$LIBRESSL_LINK" | grep 'HTTP\/' | grep '200'
     LIBRESSL_CURLCHECK=$?
@@ -245,7 +245,7 @@ libresslgeolocation() {
     fi
   elif [[ "$SERVER_COUNTRY" = 'BR' ]]; then
     echo "BR server detected"
-    LIBRESSL_MIRRORURL="https://fastly.cdn.openbsd.org/pub/OpenBSD/LibreSSL"
+    LIBRESSL_MIRRORURL="https://cdn.openbsd.org/pub/OpenBSD/LibreSSL"
     LIBRESSL_LINK="${LIBRESSL_MIRRORURL}/libressl-${LIBRESSL_VERSION}.tar.gz"
     curl -${ipv_forceopt}Is --connect-timeout 30 --max-time 30 "$LIBRESSL_LINK" | grep 'HTTP\/' | grep '200'
     LIBRESSL_CURLCHECK=$?
@@ -261,7 +261,7 @@ libresslgeolocation() {
     fi
   elif [[ "$SERVER_COUNTRY" = 'CA' ]]; then
     echo "CA server detected"
-    LIBRESSL_MIRRORURL="https://fastly.cdn.openbsd.org/pub/OpenBSD/LibreSSL"
+    LIBRESSL_MIRRORURL="https://cdn.openbsd.org/pub/OpenBSD/LibreSSL"
     LIBRESSL_LINK="${LIBRESSL_MIRRORURL}/libressl-${LIBRESSL_VERSION}.tar.gz"
     curl -${ipv_forceopt}Is --connect-timeout 30 --max-time 30 "$LIBRESSL_LINK" | grep 'HTTP\/' | grep '200'
     LIBRESSL_CURLCHECK=$?
@@ -282,7 +282,7 @@ libresslgeolocation() {
     curl -${ipv_forceopt}Is --connect-timeout 30 --max-time 30 "$LIBRESSL_LINK" | grep 'HTTP\/' | grep '200'
     LIBRESSL_CURLCHECK=$?
     if [[ "$LIBRESSL_CURLCHECK" != '0' ]]; then
-      LIBRESSL_MIRRORURL="https://fastly.cdn.openbsd.org/pub/OpenBSD/LibreSSL"
+      LIBRESSL_MIRRORURL="https://cdn.openbsd.org/pub/OpenBSD/LibreSSL"
       LIBRESSL_LINK="${LIBRESSL_MIRRORURL}/libressl-${LIBRESSL_VERSION}.tar.gz"
       curl -${ipv_forceopt}Is --connect-timeout 30 --max-time 30 "$LIBRESSL_LINK" | grep 'HTTP\/' | grep '200'
       LIBRESSL_CURLCHECK=$?
@@ -293,7 +293,7 @@ libresslgeolocation() {
     fi
   elif [[ "$SERVER_COUNTRY" = 'CR' ]]; then
     echo "CR server detected"
-    LIBRESSL_MIRRORURL="https://fastly.cdn.openbsd.org/pub/OpenBSD/LibreSSL"
+    LIBRESSL_MIRRORURL="https://cdn.openbsd.org/pub/OpenBSD/LibreSSL"
     LIBRESSL_LINK="${LIBRESSL_MIRRORURL}/libressl-${LIBRESSL_VERSION}.tar.gz"
     curl -${ipv_forceopt}Is --connect-timeout 30 --max-time 30 "$LIBRESSL_LINK" | grep 'HTTP\/' | grep '200'
     LIBRESSL_CURLCHECK=$?
@@ -309,7 +309,7 @@ libresslgeolocation() {
     fi
   elif [[ "$SERVER_COUNTRY" = 'DE' ]]; then
     echo "DE server detected"
-    LIBRESSL_MIRRORURL="https://fastly.cdn.openbsd.org/pub/OpenBSD/LibreSSL"
+    LIBRESSL_MIRRORURL="https://cdn.openbsd.org/pub/OpenBSD/LibreSSL"
     LIBRESSL_LINK="${LIBRESSL_MIRRORURL}/libressl-${LIBRESSL_VERSION}.tar.gz"
     curl -${ipv_forceopt}Is --connect-timeout 30 --max-time 30 "$LIBRESSL_LINK" | grep 'HTTP\/' | grep '200'
     LIBRESSL_CURLCHECK=$?
@@ -325,7 +325,7 @@ libresslgeolocation() {
     fi
   elif [[ "$SERVER_COUNTRY" = 'DK' ]]; then
     echo "DK server detected"
-    LIBRESSL_MIRRORURL="https://fastly.cdn.openbsd.org/pub/OpenBSD/LibreSSL"
+    LIBRESSL_MIRRORURL="https://cdn.openbsd.org/pub/OpenBSD/LibreSSL"
     LIBRESSL_LINK="${LIBRESSL_MIRRORURL}/libressl-${LIBRESSL_VERSION}.tar.gz"
     curl -${ipv_forceopt}Is --connect-timeout 30 --max-time 30 "$LIBRESSL_LINK" | grep 'HTTP\/' | grep '200'
     LIBRESSL_CURLCHECK=$?
@@ -341,7 +341,7 @@ libresslgeolocation() {
     fi
   elif [[ "$SERVER_COUNTRY" = 'FR' ]]; then
     echo "FR server detected"
-    LIBRESSL_MIRRORURL="https://fastly.cdn.openbsd.org/pub/OpenBSD/LibreSSL"
+    LIBRESSL_MIRRORURL="https://cdn.openbsd.org/pub/OpenBSD/LibreSSL"
     LIBRESSL_LINK="${LIBRESSL_MIRRORURL}/libressl-${LIBRESSL_VERSION}.tar.gz"
     curl -${ipv_forceopt}Is --connect-timeout 30 --max-time 30 "$LIBRESSL_LINK" | grep 'HTTP\/' | grep '200'
     LIBRESSL_CURLCHECK=$?
@@ -357,7 +357,7 @@ libresslgeolocation() {
     fi
   elif [[ "$SERVER_COUNTRY" = 'GB' ]]; then
     echo "GB server detected"
-    LIBRESSL_MIRRORURL="https://fastly.cdn.openbsd.org/pub/OpenBSD/LibreSSL"
+    LIBRESSL_MIRRORURL="https://cdn.openbsd.org/pub/OpenBSD/LibreSSL"
     LIBRESSL_LINK="${LIBRESSL_MIRRORURL}/libressl-${LIBRESSL_VERSION}.tar.gz"
     curl -${ipv_forceopt}Is --connect-timeout 30 --max-time 30 "$LIBRESSL_LINK" | grep 'HTTP\/' | grep '200'
     LIBRESSL_CURLCHECK=$?
@@ -373,7 +373,7 @@ libresslgeolocation() {
     fi
   elif [[ "$SERVER_COUNTRY" = 'HK' ]]; then
     echo "HK server detected"
-    LIBRESSL_MIRRORURL="https://fastly.cdn.openbsd.org/pub/OpenBSD/LibreSSL"
+    LIBRESSL_MIRRORURL="https://cdn.openbsd.org/pub/OpenBSD/LibreSSL"
     LIBRESSL_LINK="${LIBRESSL_MIRRORURL}/libressl-${LIBRESSL_VERSION}.tar.gz"
     curl -${ipv_forceopt}Is --connect-timeout 30 --max-time 30 "$LIBRESSL_LINK" | grep 'HTTP\/' | grep '200'
     LIBRESSL_CURLCHECK=$?
@@ -389,7 +389,7 @@ libresslgeolocation() {
     fi
   elif [[ "$SERVER_COUNTRY" = 'ID' ]]; then
     echo "ID server detected"
-    LIBRESSL_MIRRORURL="https://fastly.cdn.openbsd.org/pub/OpenBSD/LibreSSL"
+    LIBRESSL_MIRRORURL="https://cdn.openbsd.org/pub/OpenBSD/LibreSSL"
     LIBRESSL_LINK="${LIBRESSL_MIRRORURL}/libressl-${LIBRESSL_VERSION}.tar.gz"
     curl -${ipv_forceopt}Is --connect-timeout 30 --max-time 30 "$LIBRESSL_LINK" | grep 'HTTP\/' | grep '200'
     LIBRESSL_CURLCHECK=$?
@@ -405,7 +405,7 @@ libresslgeolocation() {
     fi
   elif [[ "$SERVER_COUNTRY" = 'IE' ]]; then
     echo "IE server detected"
-    LIBRESSL_MIRRORURL="https://fastly.cdn.openbsd.org/pub/OpenBSD/LibreSSL"
+    LIBRESSL_MIRRORURL="https://cdn.openbsd.org/pub/OpenBSD/LibreSSL"
     LIBRESSL_LINK="${LIBRESSL_MIRRORURL}/libressl-${LIBRESSL_VERSION}.tar.gz"
     curl -${ipv_forceopt}Is --connect-timeout 30 --max-time 30 "$LIBRESSL_LINK" | grep 'HTTP\/' | grep '200'
     LIBRESSL_CURLCHECK=$?
@@ -421,7 +421,7 @@ libresslgeolocation() {
     fi
   elif [[ "$SERVER_COUNTRY" = 'IN' ]]; then
     echo "IN server detected"
-    LIBRESSL_MIRRORURL="https://fastly.cdn.openbsd.org/pub/OpenBSD/LibreSSL"
+    LIBRESSL_MIRRORURL="https://cdn.openbsd.org/pub/OpenBSD/LibreSSL"
     LIBRESSL_LINK="${LIBRESSL_MIRRORURL}/libressl-${LIBRESSL_VERSION}.tar.gz"
     curl -${ipv_forceopt}Is --connect-timeout 30 --max-time 30 "$LIBRESSL_LINK" | grep 'HTTP\/' | grep '200'
     LIBRESSL_CURLCHECK=$?
@@ -437,7 +437,7 @@ libresslgeolocation() {
     fi
   elif [[ "$SERVER_COUNTRY" = 'IT' ]]; then
     echo "IT server detected"
-    LIBRESSL_MIRRORURL="https://fastly.cdn.openbsd.org/pub/OpenBSD/LibreSSL"
+    LIBRESSL_MIRRORURL="https://cdn.openbsd.org/pub/OpenBSD/LibreSSL"
     LIBRESSL_LINK="${LIBRESSL_MIRRORURL}/libressl-${LIBRESSL_VERSION}.tar.gz"
     curl -${ipv_forceopt}Is --connect-timeout 30 --max-time 30 "$LIBRESSL_LINK" | grep 'HTTP\/' | grep '200'
     LIBRESSL_CURLCHECK=$?
@@ -453,7 +453,7 @@ libresslgeolocation() {
     fi
   elif [[ "$SERVER_COUNTRY" = 'NL' ]]; then
     echo "NL server detected"
-    LIBRESSL_MIRRORURL="https://fastly.cdn.openbsd.org/pub/OpenBSD/LibreSSL"
+    LIBRESSL_MIRRORURL="https://cdn.openbsd.org/pub/OpenBSD/LibreSSL"
     LIBRESSL_LINK="${LIBRESSL_MIRRORURL}/libressl-${LIBRESSL_VERSION}.tar.gz"
     curl -${ipv_forceopt}Is --connect-timeout 30 --max-time 30 "$LIBRESSL_LINK" | grep 'HTTP\/' | grep '200'
     LIBRESSL_CURLCHECK=$?
@@ -469,7 +469,7 @@ libresslgeolocation() {
     fi
   elif [[ "$SERVER_COUNTRY" = 'JP' ]]; then
     echo "JP server detected"
-    LIBRESSL_MIRRORURL="https://fastly.cdn.openbsd.org/pub/OpenBSD/LibreSSL"
+    LIBRESSL_MIRRORURL="https://cdn.openbsd.org/pub/OpenBSD/LibreSSL"
     LIBRESSL_LINK="${LIBRESSL_MIRRORURL}/libressl-${LIBRESSL_VERSION}.tar.gz"
     curl -${ipv_forceopt}Is --connect-timeout 30 --max-time 30 "$LIBRESSL_LINK" | grep 'HTTP\/' | grep '200'
     LIBRESSL_CURLCHECK=$?
@@ -485,7 +485,7 @@ libresslgeolocation() {
     fi
   elif [[ "$SERVER_COUNTRY" = 'PH' ]]; then
     echo "PH server detected"
-    LIBRESSL_MIRRORURL="https://fastly.cdn.openbsd.org/pub/OpenBSD/LibreSSL"
+    LIBRESSL_MIRRORURL="https://cdn.openbsd.org/pub/OpenBSD/LibreSSL"
     LIBRESSL_LINK="${LIBRESSL_MIRRORURL}/libressl-${LIBRESSL_VERSION}.tar.gz"
     curl -${ipv_forceopt}Is --connect-timeout 30 --max-time 30 "$LIBRESSL_LINK" | grep 'HTTP\/' | grep '200'
     LIBRESSL_CURLCHECK=$?
@@ -501,7 +501,7 @@ libresslgeolocation() {
     fi
   elif [[ "$SERVER_COUNTRY" = 'PL' ]]; then
     echo "PL server detected"
-    LIBRESSL_MIRRORURL="https://fastly.cdn.openbsd.org/pub/OpenBSD/LibreSSL"
+    LIBRESSL_MIRRORURL="https://cdn.openbsd.org/pub/OpenBSD/LibreSSL"
     LIBRESSL_LINK="${LIBRESSL_MIRRORURL}/libressl-${LIBRESSL_VERSION}.tar.gz"
     curl -${ipv_forceopt}Is --connect-timeout 30 --max-time 30 "$LIBRESSL_LINK" | grep 'HTTP\/' | grep '200'
     LIBRESSL_CURLCHECK=$?
@@ -533,7 +533,7 @@ libresslgeolocation() {
     fi
   elif [[ "$SERVER_COUNTRY" = 'SE' ]]; then
     echo "SE server detected"
-    LIBRESSL_MIRRORURL="https://fastly.cdn.openbsd.org/pub/OpenBSD/LibreSSL"
+    LIBRESSL_MIRRORURL="https://cdn.openbsd.org/pub/OpenBSD/LibreSSL"
     LIBRESSL_LINK="${LIBRESSL_MIRRORURL}/libressl-${LIBRESSL_VERSION}.tar.gz"
     curl -${ipv_forceopt}Is --connect-timeout 30 --max-time 30 "$LIBRESSL_LINK" | grep 'HTTP\/' | grep '200'
     LIBRESSL_CURLCHECK=$?
@@ -549,7 +549,7 @@ libresslgeolocation() {
     fi
   elif [[ "$SERVER_COUNTRY" = 'SG' ]]; then
     echo "SG server detected"
-    LIBRESSL_MIRRORURL="https://fastly.cdn.openbsd.org/pub/OpenBSD/LibreSSL"
+    LIBRESSL_MIRRORURL="https://cdn.openbsd.org/pub/OpenBSD/LibreSSL"
     LIBRESSL_LINK="${LIBRESSL_MIRRORURL}/libressl-${LIBRESSL_VERSION}.tar.gz"
     curl -${ipv_forceopt}Is --connect-timeout 30 --max-time 30 "$LIBRESSL_LINK" | grep 'HTTP\/' | grep '200'
     LIBRESSL_CURLCHECK=$?
@@ -565,7 +565,7 @@ libresslgeolocation() {
     fi
   elif [[ "$SERVER_COUNTRY" = 'TH' ]]; then
     echo "TH server detected"
-    LIBRESSL_MIRRORURL="https://fastly.cdn.openbsd.org/pub/OpenBSD/LibreSSL"
+    LIBRESSL_MIRRORURL="https://cdn.openbsd.org/pub/OpenBSD/LibreSSL"
     LIBRESSL_LINK="${LIBRESSL_MIRRORURL}/libressl-${LIBRESSL_VERSION}.tar.gz"
     curl -${ipv_forceopt}Is --connect-timeout 30 --max-time 30 "$LIBRESSL_LINK" | grep 'HTTP\/' | grep '200'
     LIBRESSL_CURLCHECK=$?
@@ -581,7 +581,7 @@ libresslgeolocation() {
     fi
   elif [[ "$SERVER_COUNTRY" = 'US' ]]; then
     echo "US server detected"
-    LIBRESSL_MIRRORURL="https://fastly.cdn.openbsd.org/pub/OpenBSD/LibreSSL"
+    LIBRESSL_MIRRORURL="https://cdn.openbsd.org/pub/OpenBSD/LibreSSL"
     LIBRESSL_LINK="${LIBRESSL_MIRRORURL}/libressl-${LIBRESSL_VERSION}.tar.gz"
     curl -${ipv_forceopt}Is --connect-timeout 30 --max-time 30 "$LIBRESSL_LINK" | grep 'HTTP\/' | grep '200'
     LIBRESSL_CURLCHECK=$?
@@ -615,7 +615,7 @@ libresslgeolocation() {
     fi
   elif [[ "$SERVER_COUNTRY" = 'VN' ]]; then
     echo "VN server detected"
-    LIBRESSL_MIRRORURL="https://fastly.cdn.openbsd.org/pub/OpenBSD/LibreSSL"
+    LIBRESSL_MIRRORURL="https://cdn.openbsd.org/pub/OpenBSD/LibreSSL"
     LIBRESSL_LINK="${LIBRESSL_MIRRORURL}/libressl-${LIBRESSL_VERSION}.tar.gz"
     curl -${ipv_forceopt}Is --connect-timeout 30 --max-time 30 "$LIBRESSL_LINK" | grep 'HTTP\/' | grep '200'
     LIBRESSL_CURLCHECK=$?
@@ -630,7 +630,7 @@ libresslgeolocation() {
       fi
     fi
   else
-    LIBRESSL_MIRRORURL="https://fastly.cdn.openbsd.org/pub/OpenBSD/LibreSSL"
+    LIBRESSL_MIRRORURL="https://cdn.openbsd.org/pub/OpenBSD/LibreSSL"
     LIBRESSL_LINK="${LIBRESSL_MIRRORURL}/libressl-${LIBRESSL_VERSION}.tar.gz"
     curl -${ipv_forceopt}Is --connect-timeout 30 --max-time 30 "$LIBRESSL_LINK" | grep 'HTTP\/' | grep '200'
     LIBRESSL_CURLCHECK=$?

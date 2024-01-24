@@ -29,7 +29,7 @@ DT=$(date +"%d%m%y-%H%M%S")
 branchname='130.00beta01'
 SCRIPT_MAJORVER='130'
 SCRIPT_MINORVER='00'
-SCRIPT_INCREMENTVER='515'
+SCRIPT_INCREMENTVER='516'
 SCRIPT_VERSIONSHORT="${branchname}"
 SCRIPT_VERSION="${SCRIPT_VERSIONSHORT}.b${SCRIPT_INCREMENTVER}"
 SCRIPT_DATE='31/01/23'
@@ -1164,7 +1164,7 @@ PRIORITIZE_CHACHA_OPENSSL='n' # https://community.centminmod.com/threads/15708/
 
 # LibreSSL
 LIBRESSL_SWITCH='n'        # if set to 'y' it overrides OpenSSL as the default static compiled option for Nginx server
-LIBRESSL_VERSION='3.5.3'   # Use this version of LibreSSL http://www.libressl.org/
+LIBRESSL_VERSION='3.8.2'   # Use this version of LibreSSL http://www.libressl.org/
 
 # BoringSSL
 # not working yet just prep work
@@ -1223,7 +1223,7 @@ SIEGE_VERSION='4.1.5'
 
 CURL_TIMEOUTS=' --max-time 5 --connect-timeout 5'
 AXEL_VER='2.6'               # Axel source compile version https://github.com/axel-download-accelerator/axel/releases
-USEAXEL='y'                  # whether to use axel download accelerator or wget
+USEAXEL='n'                  # whether to use axel download accelerator or wget
 ###############################################################
 # experimental Intel compiled optimisations 
 # when auto detect Intel based processors
