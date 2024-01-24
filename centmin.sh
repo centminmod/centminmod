@@ -27,7 +27,7 @@ DT=$(date +"%d%m%y-%H%M%S")
 branchname='124.00stable'
 SCRIPT_MAJORVER='124'
 SCRIPT_MINORVER='00'
-SCRIPT_INCREMENTVER='100'
+SCRIPT_INCREMENTVER='105'
 SCRIPT_VERSIONSHORT="${branchname}"
 SCRIPT_VERSION="${SCRIPT_VERSIONSHORT}.s${SCRIPT_INCREMENTVER}"
 SCRIPT_DATE='31/01/23'
@@ -833,7 +833,7 @@ PRIORITIZE_CHACHA_OPENSSL='n' # https://community.centminmod.com/threads/15708/
 
 # LibreSSL
 LIBRESSL_SWITCH='n'        # if set to 'y' it overrides OpenSSL as the default static compiled option for Nginx server
-LIBRESSL_VERSION='3.5.3'   # Use this version of LibreSSL http://www.libressl.org/
+LIBRESSL_VERSION='3.8.2'   # Use this version of LibreSSL http://www.libressl.org/
 
 # BoringSSL
 # not working yet just prep work
@@ -889,7 +889,7 @@ SIEGE_VERSION='4.0.4'
 CURL_TIMEOUTS=' --max-time 5 --connect-timeout 5'
 
 AXEL_VER='2.6'               # Axel source compile version https://github.com/axel-download-accelerator/axel/releases
-USEAXEL='y'                  # whether to use axel download accelerator or wget
+USEAXEL='n'                  # whether to use axel download accelerator or wget
 ###############################################################
 # experimental Intel compiled optimisations 
 # when auto detect Intel based processors
@@ -1200,13 +1200,27 @@ else
     TCMALLOC_PAGESIZE='8'
 fi
 
-if [[ "$INITIALINSTALL" = [yY] && -f /usr/bin/systemd-detect-virt && "$(/usr/bin/systemd-detect-virt)" = 'lxc' ]] || [[ "$INITIALINSTALL" = [yY] && -f "$(which virt-what)" && "$(virt-what | xargs | grep -o lxc)" = 'lxc' ]]; then
-  CHECK_LXD='y'
-  if [ -d /etc/profile.d ]; then
-    echo "export LANG=en_US.UTF-8" >> /etc/profile.d/locale.sh
-    echo "export LANGUAGE=en_US.UTF-8" >> /etc/profile.d/locale.sh
-    source /etc/profile.d/locale.sh
-  fi
+if [[ ! -f /proc/user_beancounters ]]; then
+    if [[ -f /usr/bin/systemd-detect-virt && "$(/usr/bin/systemd-detect-virt)" = 'lxc' ]]; then
+        CHECK_LXD='y'
+        if [ -d /etc/profile.d ]; then
+            echo "export LANG=en_US.UTF-8" >> /etc/profile.d/locale.sh
+            echo "export LANGUAGE=en_US.UTF-8" >> /etc/profile.d/locale.sh
+            source /etc/profile.d/locale.sh
+        fi
+    elif [[ -f $(which virt-what) ]]; then
+        VIRT_WHAT_OUTPUT=$(virt-what | xargs)
+        if [[ $VIRT_WHAT_OUTPUT == *'openvz'* ]]; then
+            CHECK_LXD='n'
+        elif [[ $VIRT_WHAT_OUTPUT == *'lxc'* ]]; then
+            CHECK_LXD='y'
+            if [ -d /etc/profile.d ]; then
+                echo "export LANG=en_US.UTF-8" >> /etc/profile.d/locale.sh
+                echo "export LANGUAGE=en_US.UTF-8" >> /etc/profile.d/locale.sh
+                source /etc/profile.d/locale.sh
+            fi
+        fi
+    fi
 fi
 
 # auto enable nginx brotli module if Intel Skylake or newer cpus exist
