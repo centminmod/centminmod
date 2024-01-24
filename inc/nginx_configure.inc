@@ -827,7 +827,7 @@ if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_SIX" = '6' ]]; then
     # LRT=""
     LRT='-lrt '
     # BORINGSSLOPT=" --with-openssl=${BORINGSSL_DIR}/boringssl"
-    BORINGSSL_RPATH=${LIBRESSL_RPATH}"${BORINGSSL_DIR}/boringssl/.openssl/lib:"
+    BORINGSSL_RPATH="${BORINGSSL_DIR}/boringssl/.openssl/lib:"
     BORINGSSL_LIBOPT="-L${BORINGSSL_DIR}/boringssl/.openssl/lib -lcrypto -lssl "
     BORINGSSLINC_OPT="-I${BORINGSSL_DIR}/boringssl/.openssl/include "
     # openresty set-misc nginx module not compatible with boringssl
