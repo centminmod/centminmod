@@ -1,6 +1,6 @@
 #!/bin/bash
 export PATH="/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin:/root/bin"
-VER='0.0.7'
+VER='0.0.8'
 #####################################################
 # set locale temporarily to english
 # due to some non-english locale issues
@@ -17,7 +17,7 @@ export SYSTEMD_PAGER=''
 # https://rvm.io/
 ######################################################
 # https://rvm_io.global.ssl.fastly.net/binaries/centos/7/x86_64/
-RUBYVER='2.6.6'
+RUBYVER='2.6.10'
 RUBYBUILD=''
 
 DT=$(date +"%d%m%y-%H%M%S")

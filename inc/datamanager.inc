@@ -415,10 +415,24 @@ case "$sshkeys_menu_opt" in
 1)
   {
     check_for_keygen
+    files=$(find /root/.ssh/ -type f -name "my*.key")
+    
+    if [ -n "$files" ]; then
+        echo "Found matching keygen.sh generated SSH private key files."
+        echo
+        for file in $files; do
+            # ls -lAh $file
+            echo -n "${file}.pub: "
+            ssh-keygen -lf ${file}.pub
+        done
+    else
+        echo "No matching keygen.sh generated SSH private key files found."
+    fi
     echo
     echo "List Registered SSH Keys"
     echo
-    ssh_keys_info=$(ssh-add -l)
+    # eval $(ssh-agent -s)
+    ssh_keys_info=$(ssh-add -l 2>&1 | grep -v error)
 
     if [[ -z "$ssh_keys_info" ]]; then
       echo "No SSH keys registered with the system's ssh-agent."
@@ -515,7 +529,7 @@ case "$sshkeys_menu_opt" in
     echo
 
     # List Registered SSH Keys
-    ssh_keys_info=$(ssh-add -l)
+    ssh_keys_info=$(ssh-add -l 2>&1 | grep -v error)
 
     if [[ -z "$ssh_keys_info" ]]; then
       echo "No SSH keys registered with the system's ssh-agent."
@@ -699,7 +713,7 @@ case "$sshkeys_menu_opt" in
 
     while true; do
       # List Registered SSH Keys
-      ssh_keys_info=$(ssh-add -l)
+      ssh_keys_info=$(ssh-add -l 2>&1 | grep -v error)
 
       if [[ -z "$ssh_keys_info" ]]; then
         echo "No SSH keys registered with the system's ssh-agent."

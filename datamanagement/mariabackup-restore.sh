@@ -7,6 +7,19 @@ MYSQLBACKUP_CMD_PREFIX="mariabackup --defaults-extra-file=$MY_CNF -h $DBHOST"
 MYSQLADMIN_CMD_PREFIX="mysqladmin --defaults-extra-file=$MY_CNF -h $DBHOST"
 DATADIR=$($MYSQLADMIN_CMD_PREFIX var | grep datadir | awk '{ print $4}')
 
+check_command_exists() {
+  command -v "$1" >/dev/null 2>&1 || {
+    local package_name="$2"
+    if [ "$1" = "mariabackup" ]; then
+      grep -q "AlmaLinux" /etc/os-release && package_name="mariadb-backup"
+      grep -q "CentOS Linux 7" /etc/os-release && package_name="MariaDB-backup"
+    fi
+    echo "[$(date)] Command '$1' not found. Installing package '$package_name'..."
+    yum install -y "$package_name"
+  }
+}
+check_command_exists mariabackup mariadb-backup
+
 check_backup_info() {
   TARGET_DIR=$1
   XTRABACKUP_INFO="${TARGET_DIR}/xtrabackup_info"
@@ -61,6 +74,7 @@ move_back() {
 
 # Check if the script is run with the correct number of arguments
 if [ "$#" -ne 2 ]; then
+  echo
   echo "Usage: $0 [copy-back|move-back] /path/to/backup/dir"
   exit 1
 fi
