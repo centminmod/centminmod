@@ -288,7 +288,7 @@ For example, the resulting `/home/databackup/070523-072252/centminmod_backup.tar
 To restore the data from the backup, follow these steps:
 
 1. Transfer the backup file to the server where you want to restore the data.
-2. Extract the contents of the backup file using the command: 
+2. Extract the contents of the backup file using these 2 commands: 
    ```
    mkdir -p /home/restoredata
    tar -I zstd -xvf /home/databackup/070523-072252/centminmod_backup.tar.zst -C /home/restoredata
@@ -398,6 +398,37 @@ tree -d -L 6 /home/restoredata/
             └── html
 
 78 directories
+```
+
+Then proceed to move the restored files to the correct locations. You can first use `diff` command to check backup versus destination directory files
+
+```
+diff -ur /home/restoredata/etc/centminmod/ /etc/centminmod
+diff -ur /home/restoredata/root/tools/ /root/tools
+diff -ur /home/restoredata/usr/local/nginx/ /usr/local/nginx
+```
+
+Example where `/etc/centminmod/diff.txt` file exists only on destination side
+
+```
+diff -ur /home/restoredata/etc/centminmod/ /etc/centminmod
+Only in /etc/centminmod: diff.txt
+```
+
+Then copy command will force override any existing files on destination directory side
+
+```
+\cp -af /home/restoredata/etc/centminmod/* /etc/centminmod
+\cp -af /home/restoredata/root/tools/* /root/tools
+\cp -af /home/restoredata/usr/local/nginx/* /usr/local/nginx
+```
+
+Or if disk space is a concern, instead of copy command use move commands
+
+```
+mv -f /home/restoredata/etc/centminmod/* /etc/centminmod
+mv -f /home/restoredata/root/tools/* /root/tools
+mv -f /home/restoredata/usr/local/nginx/* /usr/local/nginx
 ```
 
 The `/home/restoredata/home/databackup/070523-072252/mariadb_tmp/mariabackup-restore.sh` script has 2 options to restore MariaDB MySQL data either via `copy-back` or `move-back`. 

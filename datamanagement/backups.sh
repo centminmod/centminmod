@@ -485,6 +485,10 @@ files_backup() {
       rsync -av --delete /etc/cron.d/ "${CRON_BACKUP_DIR}/system_cronjobs/" >> "$RSYNC_LOG" 2>&1
     fi
     DIRECTORIES_TO_BACKUP+=("$CRON_BACKUP_DIR")
+    if [ -d /root/.acme.sh ]; then
+      DIRECTORIES_TO_BACKUP+=("/root/.acme.sh")
+      DIRECTORIES_TO_BACKUP_NOCOMPRESS+=("/root/.acme.sh")
+    fi
   fi
   
   if [[ "$files_mode" = 'all' || "$files_mode" = 'mariabackup' ]]; then
@@ -517,6 +521,58 @@ files_backup() {
     echo "[$(date)] $MARIADB_TMP_DIR/mariabackup-restore.sh saved"
     echo "[$(date)] MariaBackup log saved at $MARIABACKUP_LOG"
   fi
+
+    # instructions for backup restoration
+cat > "$BASE_DIR/restore-instructions.txt" <<EOF
+# https://github.com/centminmod/centminmod/blob/130.00beta01/datamanagement/centmin.sh-menu-21.readme.md
+
+To restore the data from the backup, follow these steps:
+
+1. Transfer the backup file to the server where you want to restore the data.
+2. Extract the contents of the backup file using these 2 commands if you chose to tar zstd compress backups. Otherise the uncompressed contents should already be shown:
+
+mkdir -p /home/restoredata
+tar -I zstd -xvf ${BASE_DIR}/centminmod_backup.tar.zst -C /home/restoredata
+
+3. Follow the instructions in the mariabackup-restore.sh script located in the extracted backup directory (e.g., ${BASE_DIR}/mariadb_tmp/mariabackup-restore.sh) to restore the MariaDB MySQL databases.
+
+When you extract the backup centminmod_backup.tar.zst file to /home/restoredata, you'll find backup directories and files which correspond with the relative directory paths to root / for /etc, /home, /root and /usr respectively.
+
+Where:
+
+* /home/restoredata/etc/centminmod is the backup data for /etc/centminmod
+
+* /home/restoredata${BASE_DIR}/domains_tmp is the backup data for /home/nginx/domains for Nginx vhost directories
+
+* /home/restoredata${BASE_DIR}/mariadb_tmp is the backup data for /var/lib/mysql MySQL data directory which also contains the MariaBackup MySQL data restore script at /home/restoredata${BASE_DIR}/mariadb_tmp/mariabackup-restore.sh. Provided you chose to backup MariaDB MySQL data.
+
+* /home/restoredata/root/tools is the backup data for /root/tools
+
+* /home/restoredata/usr/local/nginx/ is the backup data for /usr/local/nginx
+
+Then proceed to move the restored files to the correct locations. You can first use diff command to check backup versus destination directory files
+
+diff -ur /home/restoredata/etc/centminmod/ /etc/centminmod
+diff -ur /home/restoredata/root/tools/ /root/tools
+diff -ur /home/restoredata/usr/local/nginx/ /usr/local/nginx
+
+Example where /etc/centminmod/diff.txt file exists only on destination side
+
+diff -ur /home/restoredata/etc/centminmod/ /etc/centminmod
+Only in /etc/centminmod: diff.txt
+
+Then copy command will force override any existing files on destination directory side
+
+\cp -af /home/restoredata/etc/centminmod/* /etc/centminmod
+\cp -af /home/restoredata/root/tools/* /root/tools
+\cp -af /home/restoredata/usr/local/nginx/* /usr/local/nginx
+
+Or if disk space is a concern, instead of copy command use move commands
+
+mv -f /home/restoredata/etc/centminmod/* /etc/centminmod
+mv -f /home/restoredata/root/tools/* /root/tools
+mv -f /home/restoredata/usr/local/nginx/* /usr/local/nginx
+EOF
   
   if [[ "$FILES_TARBALL_CREATION" = [yY] ]]; then
     # echo "[$(date)] Total uncompressed size of all directories to be backed up: $hr_total_size"

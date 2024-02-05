@@ -2,6 +2,7 @@
 # Data Management Routines
 #######################################################################################
 AWSCLI_BIN='/usr/local/bin/aws'
+DATAM_SOURCE_IP=$(curl -4s https://geoip.centminmod.com/v4 | jq -r '.ip')
 #######################################################################################
 check_for_awscli_get() {
   if [[ -d "$SCRIPT_DIR/datamanagement" && ! -f "$SCRIPT_DIR/datamanagement/awscli-get.sh" ]]; then
@@ -987,8 +988,8 @@ case "$datamenu_opt" in
                     read -ep "Listen port for nc or socat (default: 12345): " listen_port
                     listen_port=${listen_port:-12345}
                     read -e -i "$transfer_backup_dir" -p "Source backup directory: " source_directory
-                    read -ep "Remote (destination) backup directory: " remote_directory
-                    read -ep "Path to the SSH private key: " private_key
+                    read -ep "Remote (destination) backup directory i.e. /home/remotebackup : " remote_directory
+                    read -ep "Path to the SSH private key i.e. /root/.ssh/my1.key : " private_key
                 
                     echo
                     echo "Please confirm the entered information:"
@@ -1013,6 +1014,17 @@ case "$datamenu_opt" in
                       echo
                     fi
                   done
+
+                  # allow remote IP in source CSF Firewall
+                  echo
+                  echo "csf -a $remote_server remotebackup"
+                  csf -a $remote_server remotebackup
+                  echo
+
+                  # connect to remote destination to run CSF Firewall allow
+                  echo "ssh -i $private_key -p $remote_port $remote_user@$remote_server \"csf -a $DATAM_SOURCE_IP cmmbackupip\""
+                  ssh -i $private_key -p $remote_port $remote_user@$remote_server "csf -a $DATAM_SOURCE_IP cmmbackupip"
+                  echo
                 
                   echo "$SCRIPT_DIR/datamanagement/tunnel-transfers.sh -p $remote_port -u $remote_user -h $remote_server -m $tunnel_method -b $buffer_size -l $listen_port -s $source_directory -r $remote_directory -k $private_key"
                   "$SCRIPT_DIR/datamanagement/tunnel-transfers.sh" -p "$remote_port" -u "$remote_user" -h "$remote_server" -m "$tunnel_method" -b "$buffer_size" -l "$listen_port" -s "$source_directory" -r "$remote_directory" -k "$private_key"
@@ -1108,8 +1120,8 @@ case "$datamenu_opt" in
                 read -ep "Listen port for nc or socat (default: 12345): " listen_port
                 listen_port=${listen_port:-12345}
                 # read -e -i "$transfer_backup_dir" -p "Source backup directory: " source_directory
-                read -ep "Remote (destination) backup directory: " remote_directory
-                read -ep "Path to the SSH private key: " private_key
+                read -ep "Remote (destination) backup directory i.e. /home/remotebackup : " remote_directory
+                read -ep "Path to the SSH private key i.e. /root/.ssh/my1.key : " private_key
 
                 # An associative array containing the directories to transfer and their corresponding subdirectories
                 declare -A directories_to_transfer=(
@@ -1126,7 +1138,18 @@ case "$datamenu_opt" in
                   echo "Transfer $transfer_backup_dir Directory Data To Remote Server Via SSH"
                   echo
                   read -ep "Do you want to continue [y/n]: " datamanager_cont
-                  if [[ "$datamanager_cont" = [yY] ]]; then                 
+                  if [[ "$datamanager_cont" = [yY] ]]; then
+                    # allow remote IP in source CSF Firewall
+                    echo
+                    echo "csf -a $remote_server remotebackup"
+                    csf -a $remote_server remotebackup
+                    echo
+  
+                    # connect to remote destination to run CSF Firewall allow
+                    echo "ssh -i $private_key -p $remote_port $remote_user@$remote_server \"csf -a $DATAM_SOURCE_IP cmmbackupip\""
+                    ssh -i $private_key -p $remote_port $remote_user@$remote_server "csf -a $DATAM_SOURCE_IP cmmbackupip"
+                    echo
+
                     echo "$SCRIPT_DIR/datamanagement/tunnel-transfers.sh -p $remote_port -u $remote_user -h $remote_server -m $tunnel_method -b $buffer_size -l $listen_port -s $transfer_backup_dir -r $remote_subdir -k $private_key"
                     "$SCRIPT_DIR/datamanagement/tunnel-transfers.sh" -p "$remote_port" -u "$remote_user" -h "$remote_server" -m "$tunnel_method" -b "$buffer_size" -l "$listen_port" -s "$transfer_backup_dir" -r "$remote_subdir" -k "$private_key"
                   else
@@ -1298,8 +1321,8 @@ case "$datamenu_opt" in
         read -ep "Listen port for nc or socat (default: 12345): " listen_port
         listen_port=${listen_port:-12345}
         read -ep "Source backup directory: " source_directory
-        read -ep "Remote (destination) backup directory: " remote_directory
-        read -ep "Path to the SSH private key: " private_key
+        read -ep "Remote (destination) backup directory i.e. /home/remotebackup : " remote_directory
+        read -ep "Path to the SSH private key i.e. /root/.ssh/my1.key : " private_key
     
         echo
         echo "Please confirm the entered information:"
@@ -1324,6 +1347,17 @@ case "$datamenu_opt" in
           echo
         fi
       done
+
+      # allow remote IP in source CSF Firewall
+      echo
+      echo "csf -a $remote_server remotebackup"
+      csf -a $remote_server remotebackup
+      echo
+
+      # connect to remote destination to run CSF Firewall allow
+      echo "ssh -i $private_key -p $remote_port $remote_user@$remote_server \"csf -a $DATAM_SOURCE_IP cmmbackupip\""
+      ssh -i $private_key -p $remote_port $remote_user@$remote_server "csf -a $DATAM_SOURCE_IP cmmbackupip"
+      echo
     
       echo "$SCRIPT_DIR/datamanagement/tunnel-transfers.sh -p $remote_port -u $remote_user -h $remote_server -m $tunnel_method -b $buffer_size -l $listen_port -s $source_directory -r $remote_directory -k $private_key"
       "$SCRIPT_DIR/datamanagement/tunnel-transfers.sh" -p "$remote_port" -u "$remote_user" -h "$remote_server" -m "$tunnel_method" -b "$buffer_size" -l "$listen_port" -s "$source_directory" -r "$remote_directory" -k "$private_key"
