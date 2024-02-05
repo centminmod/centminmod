@@ -934,6 +934,10 @@ case "$datamenu_opt" in
         
             read -ep "Do you want to continue [y/n]: " datamanager_cont
             if [[ "$datamanager_cont" = [yY] ]]; then
+              # echo
+              # echo "Compressed has full backup - vhost files + MySQL backup including non-vhost files"
+              # echo "Non-compressed has vhost files + MySQL backup only."
+              # echo
               read -ep "Do you want tar + zstd compress backup [y/n]: " comp_backup_opt
               if [[ "$comp_backup_opt" = [yY] ]]; then
                 "$SCRIPT_DIR/datamanagement/backups.sh" backup-all-mariabackup comp
@@ -1051,8 +1055,11 @@ case "$datamenu_opt" in
             echo "server. If the database name already exists on the server, it will restore to"
             echo "a new database name with suffix added _restorecopy_datetimestamp to prevent"
             echo "overwriting the existing database name."
+            # echo
+            # echo "Compressed has full backup - vhost files + MySQL backup including non-vhost files"
+            # echo "Non-compressed has vhost files + MySQL backup only."
             echo
-            read -ep "Do you want tar + zstd compress backup [y/n]: " comp_backup_opt
+            read -ep "Do you want tar + zstd compress backup [y/n] " comp_backup_opt
             if [[ "$comp_backup_opt" = [yY] ]]; then
               "$SCRIPT_DIR/datamanagement/backups.sh" backup-files comp
               "$SCRIPT_DIR/datamanagement/backups.sh" backup-all
@@ -1160,6 +1167,10 @@ case "$datamenu_opt" in
     echo
     read -ep "Do you want to continue [y/n]: " datamanager_cont
     if [[ "$datamanager_cont" = [yY] ]]; then
+      # echo
+      # echo "Compressed has full backup - vhost files + MySQL backup including non-vhost files"
+      # echo "Non-compressed has vhost files + MySQL backup only."
+      # echo
       read -ep "Do you want tar + zstd compress backup [y/n]: " comp_backup_opt
       if [[ "$comp_backup_opt" = [yY] ]]; then
         "$SCRIPT_DIR/datamanagement/backups.sh" backup-all-mariabackup comp
@@ -1186,6 +1197,10 @@ case "$datamenu_opt" in
     echo
     read -ep "Do you want to continue [y/n]: " datamanager_cont
     if [[ "$datamanager_cont" = [yY] ]]; then
+      # echo
+      # echo "Compressed has full backup - vhost files including non-vhost files"
+      # echo "Non-compressed has vhost files only."
+      # echo
       read -ep "Do you want tar + zstd compress backup [y/n]: " comp_backup_opt
       if [[ "$comp_backup_opt" = [yY] ]]; then
         "$SCRIPT_DIR/datamanagement/backups.sh" backup-files comp

@@ -55,6 +55,7 @@ BACKUP_NAME="$BASE_DIR/centminmod_backup.tar.zst"
 DOMAINS_TMP_DIR="$BASE_DIR/domains_tmp"
 RSYNC_LOG="$BASE_DIR/domains_tmp/rsync_${DT}.log"
 DIRECTORIES_TO_BACKUP=( "/etc/centminmod" "/usr/local/nginx/conf" "/root/tools" "/usr/local/nginx/html" )
+DIRECTORIES_TO_BACKUP_NOCOMPRESS=( "/etc/centminmod" "/usr/local/nginx/conf" "/root/tools" "/usr/local/nginx/html" )
 MARIADB_TMP_DIR="$BASE_DIR/mariadb_tmp"
 MARIABACKUP_LOG="$MARIADB_TMP_DIR/mariabackup_${DT}.log"
 BACKUP_LOG_FILENAME="files-backup_${DT}.log"
@@ -546,6 +547,18 @@ files_backup() {
     fi
   else
     if [[ "$files_mode" = 'all' ]]; then
+      # non-vhost files backup that non-tar compressed miss
+      for dir in "${DIRECTORIES_TO_BACKUP_NOCOMPRESS[@]}"; do
+        echo "[$(date)] rsync non-vhost files in $dir to backup location $BASE_DIR"
+        if [[ "$DEBUG_DISPLAY" = [yY] ]]; then
+          mkdir -p "${BASE_DIR}${dir}"
+          rsync -av --delete $dir/ "${BASE_DIR}${dir}/" | tee -a "$RSYNC_LOG"
+        else
+          mkdir -p "${BASE_DIR}${dir}"
+          rsync -av --delete $dir/ "${BASE_DIR}${dir}/" >> "$RSYNC_LOG" 2>&1
+        fi
+      done
+      echo
       echo "[$(date)] Backup completed at $BASE_DIR"
       if [ -f "$BACKUP_LOG_TMP" ]; then
         mv -f "$BACKUP_LOG_TMP" "$BACKUP_LOG"
@@ -553,6 +566,18 @@ files_backup() {
         BACKUP_DIR_FINAL=$BASE_DIR
       fi
     elif [[ "$files_mode" = 'filesbackup' ]]; then
+      # non-vhost files backup that non-tar compressed miss
+      for dir in "${DIRECTORIES_TO_BACKUP_NOCOMPRESS[@]}"; do
+        echo "[$(date)] rsync non-vhost files in $dir to backup location $BASE_DIR"
+        if [[ "$DEBUG_DISPLAY" = [yY] ]]; then
+          mkdir -p "${BASE_DIR}${dir}"
+          rsync -av --delete $dir/ "${BASE_DIR}${dir}/" | tee -a "$RSYNC_LOG"
+        else
+          mkdir -p "${BASE_DIR}${dir}"
+          rsync -av --delete $dir/ "${BASE_DIR}${dir}/" >> "$RSYNC_LOG" 2>&1
+        fi
+      done
+      echo
       echo "[$(date)] Backup completed at $DOMAINS_TMP_DIR"
       if [ -f "$BACKUP_LOG_TMP" ]; then
         mv -f "$BACKUP_LOG_TMP" "$DOMAINS_TMP_DIR"

@@ -290,6 +290,7 @@ To restore the data from the backup, follow these steps:
 1. Transfer the backup file to the server where you want to restore the data.
 2. Extract the contents of the backup file using the command: 
    ```
+   mkdir -p /home/restoredata
    tar -I zstd -xvf /home/databackup/070523-072252/centminmod_backup.tar.zst -C /home/restoredata
    ```
 3. Follow the instructions in the `mariabackup-restore.sh` script located in the extracted backup directory (e.g., `/home/databackup/070523-072252/mariadb_tmp/mariabackup-restore.sh`) to restore the MariaDB MySQL databases.
