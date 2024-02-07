@@ -529,10 +529,29 @@ cat > "$BASE_DIR/restore-instructions.txt" <<EOF
 To restore the data from the backup, follow these steps:
 
 1. Transfer the backup file to the server where you want to restore the data.
-2. Extract the contents of the backup file using these 2 commands if you chose to tar zstd compress backups. Otherise the uncompressed contents should already be shown:
+2. Extract the contents of the backup file
 
-mkdir -p /home/restoredata
-tar -I zstd -xvf ${BASE_DIR}/centminmod_backup.tar.zst -C /home/restoredata
+If you have tar version 1.31 or higher, it has native zstd compression support, and extract the backup using these 2 commands. Centmin Mod 130.00beta01's centmin.sh menu option 21, will automatically install a custom built tar 1.35 version YUM RPM binary at /usr/local/bin/tar to not conflict with system installed /usr/bin/tar and the custom tar 1.35 binary will take priority over system tar if called just as tar.
+
+   mkdir -p /home/restoredata
+   tar -I zstd -xf /home/databackup/070523-072252/centminmod_backup.tar.zst -C /home/restoredata
+
+If you have tar version lower than 1.31, you will have to extract the tar zstd compressed backup first.
+
+   mkdir -p /home/restoredata
+   zstd -d /home/databackup/070523-072252/centminmod_backup.tar.zst
+   tar -xf /home/databackup/070523-072252/centminmod_backup.tar -C /home/restoredata
+
+Custom tar 1.35
+
+tar --version
+tar (GNU tar) 1.35
+Copyright (C) 2023 Free Software Foundation, Inc.
+License GPLv3+: GNU GPL version 3 or later <https://gnu.org/licenses/gpl.html>.
+This is free software: you are free to change and redistribute it.
+There is NO WARRANTY, to the extent permitted by law.
+
+Written by John Gilmore and Jay Fenlason.
 
 3. Follow the instructions in the mariabackup-restore.sh script located in the extracted backup directory (e.g., ${BASE_DIR}/mariadb_tmp/mariabackup-restore.sh) to restore the MariaDB MySQL databases.
 

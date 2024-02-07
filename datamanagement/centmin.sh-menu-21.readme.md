@@ -250,7 +250,7 @@ After entering the required information, you'll be asked to confirm the details 
 
 #### Submenu Option 3 Command Line:
 
-You can also initiate the option at SSH command line which would consist of multiple commands:
+You can also initiate the option at SSH command line which would consist of multiple commands where `/root/.ssh/my1.key` is your SSH private key setup to connect to your remote server:
 
 With tar + zstd compression:
 
@@ -288,11 +288,37 @@ For example, the resulting `/home/databackup/070523-072252/centminmod_backup.tar
 To restore the data from the backup, follow these steps:
 
 1. Transfer the backup file to the server where you want to restore the data.
-2. Extract the contents of the backup file using these 2 commands: 
+2. Extract the contents of the backup file
+
+
+If you have tar version 1.31 or higher, it has native zstd compression support, and extract the backup using these 2 commands. Centmin Mod 130.00beta01's centmin.sh menu option 21, will automatically install a custom built tar 1.35 version YUM RPM binary at `/usr/local/bin/tar` to not conflict with system installed `/usr/bin/tar` and the custom tar 1.35 binary will take priority over system tar if called just as `tar`.
+
    ```
    mkdir -p /home/restoredata
    tar -I zstd -xvf /home/databackup/070523-072252/centminmod_backup.tar.zst -C /home/restoredata
    ```
+
+If you have tar version lower than 1.31, you will have to extract the tar zstd compressed backup first.
+
+   ```
+   mkdir -p /home/restoredata
+   zstd -d /home/databackup/070523-072252/centminmod_backup.tar.zst
+   tar -xf /home/databackup/070523-072252/centminmod_backup.tar -C /home/restoredata
+   ```
+
+Custom tar 1.35
+
+```
+tar --version
+tar (GNU tar) 1.35
+Copyright (C) 2023 Free Software Foundation, Inc.
+License GPLv3+: GNU GPL version 3 or later <https://gnu.org/licenses/gpl.html>.
+This is free software: you are free to change and redistribute it.
+There is NO WARRANTY, to the extent permitted by law.
+
+Written by John Gilmore and Jay Fenlason.
+```
+
 3. Follow the instructions in the `mariabackup-restore.sh` script located in the extracted backup directory (e.g., `/home/databackup/070523-072252/mariadb_tmp/mariabackup-restore.sh`) to restore the MariaDB MySQL databases.
 
 When you extract the backup `centminmod_backup.tar.zst` file to `/home/restoredata`, you'll find backup directories and files which correspond with the relative directory paths to root `/` for `/etc`, `/home`, `/root` and `/usr` respectively.
@@ -606,9 +632,175 @@ ls -lAh /home/remotebackup/
 -rw-r--r-- 1 root root 1.6M May  7 07:23 /home/remotebackup/files-backup_070523-072252.log
 ```
 
+To extract the contents of the backup file:
+
+If you have tar version 1.31 or higher, it has native zstd compression support, and extract the backup using these 2 commands. Centmin Mod 130.00beta01's centmin.sh menu option 21, will automatically install a custom built tar 1.35 version YUM RPM binary at `/usr/local/bin/tar` to not conflict with system installed `/usr/bin/tar` and the custom tar 1.35 binary will take priority over system tar if called just as `tar`.
+
+   ```
+   mkdir -p /home/restoredata
+   tar -I zstd -xvf /home/databackup/070523-072252/centminmod_backup.tar.zst -C /home/restoredata
+   ```
+
+If you have tar version lower than 1.31, you will have to extract the tar zstd compressed backup first.
+
+   ```
+   mkdir -p /home/restoredata
+   zstd -d /home/databackup/070523-072252/centminmod_backup.tar.zst
+   tar -xf /home/databackup/070523-072252/centminmod_backup.tar -C /home/restoredata
+   ```
+
+Custom tar 1.35
+
+```
+tar --version
+tar (GNU tar) 1.35
+Copyright (C) 2023 Free Software Foundation, Inc.
+License GPLv3+: GNU GPL version 3 or later <https://gnu.org/licenses/gpl.html>.
+This is free software: you are free to change and redistribute it.
+There is NO WARRANTY, to the extent permitted by law.
+
+Written by John Gilmore and Jay Fenlason.
+```
+
+When you extract the backup `centminmod_backup.tar.zst` file to `/home/restoredata`, you'll find backup directories and files which correspond with the relative directory paths to root `/` for `/etc`, `/home`, `/root` and `/usr` respectively.
+
+```
+ls -lAh /home/restoredata/
+total 16K
+drwxr-xr-x 3 root root 4.0K May  7 07:33 etc
+drwxr-xr-x 3 root root 4.0K May  7 07:33 home
+drwxr-xr-x 3 root root 4.0K May  7 07:33 root
+drwxr-xr-x 3 root root 4.0K May  7 07:33 usr
+```
+
+An breakdown of backup directory structure 6 directory levels max deep with the files hidden for easier visual view. Where:
+
+1. `/home/restoredata/etc/centminmod` is the backup data for `/etc/centminmod`
+2. `/home/restoredata/home/databackup/070523-072252/domains_tmp` is the backup data for `/home/nginx/domains` for Nginx vhost directories
+3. `/home/restoredata/home/databackup/070523-072252/mariadb_tmp` is the backup data for `/var/lib/mysql` MySQL data directory which also contains the MariaBackup MySQL data restore script at `/home/restoredata/home/databackup/070523-072252/mariadb_tmp/mariabackup-restore.sh`
+4. `/home/restoredata/root/tools` is the backup data for `/root/tools`
+5. `/home/restoredata/usr/local/nginx/` is the backup data for `/usr/local/nginx`
+
+```
+tree -d -L 6 /home/restoredata/
+
+/home/restoredata/
+├── etc
+│   └── centminmod
+│       ├── awscli
+│       │   ├── backup-profiles
+│       │   └── export-profiles
+│       ├── cronjobs
+│       └── php.d
+├── home
+│   └── databackup
+│       └── 070523-072252
+│           ├── domains_tmp
+│           │   ├── demodomain.com
+│           │   │   ├── backup
+│           │   │   ├── log
+│           │   │   ├── private
+│           │   │   └── public
+│           │   ├── domain.com
+│           │   │   ├── backup
+│           │   │   ├── log
+│           │   │   ├── private
+│           │   │   └── public
+│           │   ├── log4j.domain.com
+│           │   │   ├── backup
+│           │   │   ├── log
+│           │   │   ├── private
+│           │   │   └── public
+│           │   ├── domain2.com
+│           │   │   ├── backup
+│           │   │   ├── cronjobs
+│           │   │   ├── log
+│           │   │   ├── private
+│           │   │   ├── public
+│           │   │   └── sucuri_data_storage
+│           │   └── domain3.com
+│           │       ├── backup
+│           │       ├── log
+│           │       ├── private
+│           │       └── public
+│           └── mariadb_tmp
+│               ├── mysql
+│               ├── performance_schema
+│               ├── sakila
+│               └── wp3233312196db_24171
+├── root
+│   └── tools
+│       ├── acme.sh
+│       │   ├── deploy
+│       │   ├── dnsapi
+│       │   └── notify
+│       ├── awscli
+│       │   └── aws
+│       │       └── dist
+│       │           ├── awscli
+│       │           ├── cryptography
+│       │           ├── docutils
+│       │           └── lib-dynload
+│       └── keygen
+└── usr
+    └── local
+        └── nginx
+            ├── conf
+            │   ├── acmevhostbackup
+            │   ├── autoprotect
+            │   │   ├── demodomain.com
+            │   │   ├── domain.com
+            │   │   ├── log4j.domain.com
+            │   │   ├── domain2.com
+            │   │   └── domain3.com
+            │   ├── conf.d
+            │   ├── phpfpmd
+            │   ├── ssl
+            │   │   ├── cloudflare
+            │   │   ├── log4j.domain.com
+            │   │   ├── domain2.com
+            │   │   └── domain3.com
+            │   └── wpincludes
+            │       └── domain2.com
+            └── html
+
+78 directories
+```
+
+Then proceed to move the restored files to the correct locations. You can first use `diff` command to check backup versus destination directory files
+
+```
+diff -ur /home/restoredata/etc/centminmod/ /etc/centminmod
+diff -ur /home/restoredata/root/tools/ /root/tools
+diff -ur /home/restoredata/usr/local/nginx/ /usr/local/nginx
+```
+
+Example where `/etc/centminmod/diff.txt` file exists only on destination side
+
+```
+diff -ur /home/restoredata/etc/centminmod/ /etc/centminmod
+Only in /etc/centminmod: diff.txt
+```
+
+Then copy command will force override any existing files on destination directory side
+
+```
+\cp -af /home/restoredata/etc/centminmod/* /etc/centminmod
+\cp -af /home/restoredata/root/tools/* /root/tools
+\cp -af /home/restoredata/usr/local/nginx/* /usr/local/nginx
+```
+
+Or if disk space is a concern, instead of copy command use move commands
+
+```
+mv -f /home/restoredata/etc/centminmod/* /etc/centminmod
+mv -f /home/restoredata/root/tools/* /root/tools
+mv -f /home/restoredata/usr/local/nginx/* /usr/local/nginx
+```
+
 #### Submenu Option 8 Command Line:
 
-You can also use equivalent SSH command line below based on above input prompt values:
+You can also use equivalent SSH command line below based on above input prompt values where `/root/.ssh/my1.key` is your SSH private key setup to connect to your remote server:
 
 ```
 /usr/local/src/centminmod/datamanagement/tunnel-transfers.sh -p 22 -u root -h 123.123.123.123 -m nc -b 262144 -l 12345 -s /home/databackup/070523-072252 -r /home/remotebackup -k /root/.ssh/my1.key

@@ -432,8 +432,10 @@ case "$sshkeys_menu_opt" in
     echo
     echo "List Registered SSH Keys"
     echo
-    # eval $(ssh-agent -s)
-    ssh_keys_info=$(ssh-add -l 2>&1 | grep -v error)
+    if [ ! -n "$SSH_AGENT_PID" ]; then
+      eval $(ssh-agent -s)
+    fi
+    ssh_keys_info=$(ssh-add -l 2>&1 | egrep -iv 'error|Not found')
 
     if [[ -z "$ssh_keys_info" ]]; then
       echo "No SSH keys registered with the system's ssh-agent."
@@ -460,11 +462,23 @@ case "$sshkeys_menu_opt" in
     echo
 
     read -ep "Enter the path to the existing SSH private key file: " private_key_path
-
+    
     if [[ -f "$private_key_path" ]]; then
-      eval "$(ssh-agent -s)"
-      ssh-add "$private_key_path"
-      echo "SSH private key registered with the system's ssh-agent."
+      # Check if ssh-agent is already running
+      if [ -n "$SSH_AGENT_PID" ]; then
+        echo "An ssh-agent session is already running with PID: $SSH_AGENT_PID"
+      else
+        # Start a new ssh-agent session if not already running
+        eval "$(ssh-agent -s)"
+      fi
+      
+      # Check if the key is already added
+      if ssh-add -L | grep -q "$private_key_path"; then
+        echo "The specified SSH private key is already added."
+      else
+        ssh-add "$private_key_path"
+        echo "SSH private key registered with the system's ssh-agent."
+      fi
     else
       echo "Error: The specified private key file does not exist."
     fi
@@ -985,10 +999,12 @@ case "$datamenu_opt" in
                     read -ep "Tunnel method (nc or socat, default: nc): " tunnel_method
                     tunnel_method=${tunnel_method:-nc}
                     read -ep "Buffer size for socat (in bytes, e.g., 131072 for 128 KB): " buffer_size
+                    buffer_size=${buffer_size:-131072}
                     read -ep "Listen port for nc or socat (default: 12345): " listen_port
                     listen_port=${listen_port:-12345}
                     read -e -i "$transfer_backup_dir" -p "Source backup directory: " source_directory
                     read -ep "Remote (destination) backup directory i.e. /home/remotebackup : " remote_directory
+                    remote_directory=${remote_directory:-/home/remotebackup}
                     read -ep "Path to the SSH private key i.e. /root/.ssh/my1.key : " private_key
                 
                     echo
@@ -1117,10 +1133,12 @@ case "$datamenu_opt" in
                 read -ep "Tunnel method (nc or socat, default: nc): " tunnel_method
                 tunnel_method=${tunnel_method:-nc}
                 read -ep "Buffer size for socat (in bytes, e.g., 131072 for 128 KB): " buffer_size
+                buffer_size=${buffer_size:-131072}
                 read -ep "Listen port for nc or socat (default: 12345): " listen_port
                 listen_port=${listen_port:-12345}
                 # read -e -i "$transfer_backup_dir" -p "Source backup directory: " source_directory
                 read -ep "Remote (destination) backup directory i.e. /home/remotebackup : " remote_directory
+                remote_directory=${remote_directory:-/home/remotebackup}
                 read -ep "Path to the SSH private key i.e. /root/.ssh/my1.key : " private_key
 
                 # An associative array containing the directories to transfer and their corresponding subdirectories
@@ -1318,10 +1336,12 @@ case "$datamenu_opt" in
         read -ep "Tunnel method (nc or socat, default: nc): " tunnel_method
         tunnel_method=${tunnel_method:-nc}
         read -ep "Buffer size for socat (in bytes, e.g., 131072 for 128 KB): " buffer_size
+        buffer_size=${buffer_size:-131072}
         read -ep "Listen port for nc or socat (default: 12345): " listen_port
         listen_port=${listen_port:-12345}
         read -ep "Source backup directory: " source_directory
         read -ep "Remote (destination) backup directory i.e. /home/remotebackup : " remote_directory
+        remote_directory=${remote_directory:-/home/remotebackup}
         read -ep "Path to the SSH private key i.e. /root/.ssh/my1.key : " private_key
     
         echo
