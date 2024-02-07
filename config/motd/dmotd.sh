@@ -35,6 +35,13 @@ CACHE_TIMEOUT=60
 # Set cache file path
 CACHE_FILE="/tmp/nginx_version_cache"
 CACHE_PHP_FILE="/tmp/php_version_cache"
+
+# pushover.net settings
+PUSH_VERBOSE='1'
+PUSH_LOG_FILE="/var/log/push_dmotd_notify.log"
+PUSH_LOGIN_USER="$(whoami)"
+PUSH_HOSTNAME="$(hostname)"
+PUSH_DATE_TIME="$(date '+%d-%m-%Y %H:%M:%S')"
 ###########################################################
 # Setup Colours
 black='\E[30;40m'
@@ -73,6 +80,12 @@ if [ -f "${CONFIGSCANBASE}/custom_config.inc" ]; then
     # default is at /etc/centminmod/custom_config.inc
     dos2unix -q "${CONFIGSCANBASE}/custom_config.inc"
     source "${CONFIGSCANBASE}/custom_config.inc"
+fi
+if [ -f "/etc/centminmod/pushover.ini" ]; then
+  if [ -f /usr/bin/dos2unix ]; then
+    dos2unix -q "/etc/centminmod/pushover.ini"
+  fi
+  source "/etc/centminmod/pushover.ini"
 fi
 if [[ "$(id -u)" -eq '0' && ! -d "$CENTMINLOGDIR" ]]; then
   mkdir -p $CENTMINLOGDIR
@@ -119,6 +132,41 @@ else
   ipv_forceopt_wget=' -4'
   WGETOPT="-cnv --no-dns-cache${ipv_forceopt_wget}"
 fi
+
+log_message() {
+    if [[ "${PUSH_VERBOSE}" -eq 1 ]]; then
+        echo "$(date '+%Y-%m-%d %H:%M:%S') - $1" >> "${PUSH_LOG_FILE}"
+    fi
+}
+
+push_dmotd_alerts() {
+  pushapp=$1
+  pushapp_ver=$2
+  if [[ "$pushapp" = 'nginx' ]]; then
+    PUSH_MESSAGE="nginx ${pushapp_ver} update available, run centmin.sh menu option 4"
+    PUSH_TITLE="nginx ${pushapp_ver} update available ${PUSH_HOSTNAME} ${PUSH_DATE_TIME}"
+  elif [[ "$pushapp" = 'php' ]]; then
+    PUSH_MESSAGE="php-fpm ${pushapp_ver} update available, run centmin.sh menu option 5"
+    PUSH_TITLE="php-fpm ${pushapp_ver} update available ${PUSH_HOSTNAME} ${PUSH_DATE_TIME}"
+  elif [[ "$pushapp" = 'cmm' ]]; then
+    PUSH_MESSAGE="centminmod ${pushapp_ver} update available, run cmupdate to update"
+    PUSH_TITLE="centminmod ${pushapp_ver} update available ${PUSH_HOSTNAME} ${PUSH_DATE_TIME}"
+  fi
+  if [[ "$PUSH_API_TOKEN" && "$PUSH_USER_KEY" ]]; then
+    log_message "$PUSH_MESSAGE"
+    
+    # Send Notification
+    RESPONSE=$(curl -s \
+      --form-string "token=${PUSH_API_TOKEN}" \
+      --form-string "user=${PUSH_USER_KEY}" \
+      --form-string "message=${PUSH_MESSAGE}" \
+      --form-string "title=${PUSH_TITLE}" \
+      https://api.pushover.net/1/messages.json)
+    
+    # Log the response from Pushover
+    log_message "Notification sent. Response: ${RESPONSE}"
+  fi
+}
 
 motd_output() {
 echo "
@@ -216,6 +264,7 @@ ngxver_checker() {
       # cecho "* Latest Nginx Stable Available:   $LATEST_NGINXSTABLEVER" $boldyellow
       cecho "===============================================================================" $boldgreen
       echo
+      push_dmotd_alerts nginx "$LATEST_NGINXVERS"
     fi
   fi
 }
@@ -280,6 +329,7 @@ phpver_checker() {
       cecho "* Latest PHP Branch Version:  $LATEST_PHPVERS (github.com/php/php-src/tags)" $boldyellow
       cecho "===============================================================================" $boldgreen
       echo
+      push_dmotd_alerts php "$LATEST_PHPVERS"
     fi
   fi
 }
@@ -332,6 +382,7 @@ gitenv_askupdate() {
           # pulling
           cecho "===============================================================================" $boldgreen
           cecho " Centmin Mod code updates available for ${CMSCRIPT_GITDIR}" $boldyellow
+          push_dmotd_alerts cmm "$branchname"
           if [[ "$GET_GITREMOTEURL" != "$CURL_GITURL" ]]; then
             cecho " to update re-run centmin.sh menu option 23 submenu option 1" $boldyellow
           else
