@@ -1,3 +1,13 @@
+push_check_updates_cronsetup() {
+  if [[ -z "$(crontab -l 2>&1 | grep '\/usr\/local\/src\/centminmod\/tools\/check-for-updates.sh')" && -f "/usr/local/src/centminmod/tools/check-for-updates.sh" ]]; then
+    mkdir -p /etc/centminmod/cronjobs/
+    crontab -l > /etc/centminmod/cronjobs/cronjoblist-before-check-forum-updates.txt
+    sed -i '/check-for-updates.sh/d' /etc/centminmod/cronjobs/cronjoblist-before-check-forum-updates.txt
+    echo "20 2,14 * * * /usr/local/src/centminmod/tools/check-for-updates.sh all >/dev/null 2>&1" >> /etc/centminmod/cronjobs/cronjoblist-before-check-forum-updates.txt
+    crontab /etc/centminmod/cronjobs/cronjoblist-before-check-forum-updates.txt
+  fi
+}
+
 fix_remi_repo_gpgcheck() {
   if [[ "$CENTOS_NINE" = '9' || "$CENTOS_EIGHT" = '8' ]] && [[ "$(grep repo_gpgcheck=1 /etc/yum.repos.d/remi.repo)" ]]; then
     echo
@@ -3652,6 +3662,7 @@ disable_avahi
 qrencode_setup
 initial_pip_updates initial
 jetpack_ip_whitelist_cronsetup
+push_check_updates_cronsetup
 tcp_bbr_setup
 
 if [[ "$INITIALINSTALL" != [yY] ]]; then
@@ -3797,6 +3808,7 @@ if [[ "$INITIALINSTALL" != [yY] ]]; then
   fix_ftp_csf_ports
   setup_initial_csf_block_cronjob
   switch_mariadbtenthree_archives
+  push_check_updates_cronsetup
   if [ -f /etc/yum.repos.d/remi.repo ]; then
     fix_remi_repo_gpgcheck
   fi
