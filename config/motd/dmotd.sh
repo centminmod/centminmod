@@ -152,7 +152,7 @@ push_dmotd_alerts() {
     PUSH_MESSAGE="centminmod ${pushapp_ver} update available, run cmupdate to update"
     PUSH_TITLE="centminmod ${pushapp_ver} update available ${PUSH_HOSTNAME} ${PUSH_DATE_TIME}"
   fi
-  if [[ "$PUSH_API_TOKEN" && "$PUSH_USER_KEY" ]]; then
+  if [[ "$PUSH_MOTD_ALERTS" = [yY] && "$PUSH_API_TOKEN" && "$PUSH_USER_KEY" ]]; then
     log_message "$PUSH_MESSAGE"
     
     # Send Notification
