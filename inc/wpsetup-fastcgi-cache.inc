@@ -1343,8 +1343,8 @@ location ~ [^/]\.php(/|\$) {
     #}
 
 fastcgi_cache_methods GET;
-fastcgi_cache_key       "\$scheme\$request_method\$host\$request_uri\$http_accept_encoding";
-#fastcgi_cache_key       "\$scheme\$request_method\$host\$request_uri\$http_accept_encoding\$wpfcgi_wosession";
+fastcgi_cache_key       "\$scheme\$request_method\$host\$request_uri\$normalized_encoding";
+#fastcgi_cache_key       "\$scheme\$request_method\$host\$request_uri\$normalized_encoding\$wpfcgi_wosession";
 fastcgi_cache_lock         on;
 fastcgi_keep_conn          on;
 fastcgi_cache_lock_age     5s;
@@ -1461,7 +1461,7 @@ location ~ [^/]\.php(/|\$) {
         return 404;
     }
 
-    set \$key "nginx-cache:\$scheme\$request_method\$host\$request_uri\$http_accept_encoding";
+    set \$key "nginx-cache:\$scheme\$request_method\$host\$request_uri\$normalized_encoding";
     srcache_fetch_skip \$skip_cache;
     srcache_store_skip \$skip_cache;
     srcache_response_cache_control off;
@@ -1564,7 +1564,7 @@ location ~ [^/]\.php(/|\$) {
         return 404;
     }
 
-    set \$key "nginx-cache:\$scheme\$request_method\$host\$request_uri\$http_accept_encoding";
+    set \$key "nginx-cache:\$scheme\$request_method\$host\$request_uri\$normalized_encoding";
     srcache_fetch_skip \$skip_cache;
     srcache_store_skip \$skip_cache;
     srcache_response_cache_control off;

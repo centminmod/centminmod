@@ -1,3 +1,58 @@
+fix_wordpress_accept_encoding() {
+  #/usr/local/nginx/conf/wpincludes/${vhostname}/php-fastcgicache.conf
+  #/usr/local/nginx/conf/php-rediscache.conf
+  #/usr/local/nginx/conf/php-rediscache-shortttl.conf
+  files=(
+    "/usr/local/nginx/conf/php-rediscache.conf"
+    "/usr/local/nginx/conf/php-rediscache-shortttl.conf"
+  )
+  
+  # Process wildcard pattern separately
+  wildcard_pattern="/usr/local/nginx/conf/wpincludes/*/php-fastcgicache.conf"
+  
+  # Check and modify specified files
+  for file in "${files[@]}"; do
+    if [ -f "$file" ]; then
+      if grep -q "\$request_uri\$http_accept_encoding" "$file" 2>/dev/null; then
+        sed -i 's/\$request_uri\$http_accept_encoding/\$request_uri\$normalized_encoding/g' "$file"
+        # echo "Modified: $file"
+      fi
+    fi
+  done
+  
+  # Check and modify files matching the wildcard pattern
+  find /usr/local/nginx/conf/wpincludes -type f -name "php-fastcgicache.conf" | while read file; do
+    if [ -f "$file" ]; then
+      if grep -q "\$request_uri\$http_accept_encoding" "$file"; then
+        sed -i 's/\$request_uri\$http_accept_encoding/\$request_uri\$normalized_encoding/g' "$file"
+        # echo "Modified: $file"
+      fi
+    fi
+  done
+}
+
+normalize_accept_encoding() {
+  # https://community.centminmod.com/posts/98553/
+  if [ ! -f /usr/local/nginx/conf/normalize_encoding.conf ]; then
+cat > /usr/local/nginx/conf/normalize_encoding.conf <<EOF
+map \$http_accept_encoding \$normalized_encoding {
+    ~*br     br;
+    ~*gzip   gzip;
+    default  "";
+}
+EOF
+  fi
+
+  NORMALIZE_ACCEPT_ENCODING_INCLUDECHECK=$(grep '\/usr\/local\/nginx\/conf\/normalize_encoding.conf' /usr/local/nginx/conf/nginx.conf)
+  if [[ -z "$NORMALIZE_ACCEPT_ENCODING_INCLUDECHECK" ]]; then
+    # echo
+    # echo "include file /usr/local/nginx/conf/normalize_encoding.conf add to nginx.conf"
+    sed -i 's|\/usr\/local\/nginx\/conf\/fastcgi_param_https_map.conf;|\/usr\/local\/nginx\/conf\/fastcgi_param_https_map.conf;\ninclude \/usr\/local\/nginx\/conf\/normalize_encoding.conf;|g' /usr/local/nginx/conf/nginx.conf
+    service nginx restart >/dev/null 2>&1
+    service nginx php-fpm >/dev/null 2>&1
+  fi
+}
+
 push_check_updates_cronsetup() {
   if [[ -z "$(crontab -l 2>&1 | grep '\/usr\/local\/src\/centminmod\/tools\/check-for-updates.sh')" && -f "/usr/local/src/centminmod/tools/check-for-updates.sh" ]]; then
     mkdir -p /etc/centminmod/cronjobs/
@@ -3664,6 +3719,7 @@ initial_pip_updates initial
 jetpack_ip_whitelist_cronsetup
 push_check_updates_cronsetup
 tcp_bbr_setup
+normalize_accept_encoding
 
 if [[ "$INITIALINSTALL" != [yY] ]]; then
   march_hostcheck
@@ -3809,6 +3865,8 @@ if [[ "$INITIALINSTALL" != [yY] ]]; then
   setup_initial_csf_block_cronjob
   switch_mariadbtenthree_archives
   push_check_updates_cronsetup
+  fix_wordpress_accept_encoding
+  normalize_accept_encoding
   if [ -f /etc/yum.repos.d/remi.repo ]; then
     fix_remi_repo_gpgcheck
   fi
