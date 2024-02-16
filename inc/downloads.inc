@@ -2196,6 +2196,62 @@ fi # NGINX INSTALL
 }
 
 ###############################################
+freenginxtarball() {
+
+if [[ "$NGINX_INSTALL" = [yY] && "$FREENGINX_INSTALL" = [yY] ]]; 
+then
+
+echo ""
+  if [ "$UNATTENDED" == 'n' ]; then
+    read -ep "Would you like to compile nginx with IPv6 support? [y/n] " asknginxipv
+  else
+  asknginxipv="$NGINX_IPV"
+  fi #unattended
+
+    cd "$DIR_TMP"
+
+        cecho "Download ${FREENGX_LINKFILE} ..." $boldyellow
+    if [[ -s "${FREENGX_LINKFILE}" && "$(tar -tzf ${FREENGX_LINKFILE} >/dev/null 2>&1; echo $?)" -eq '0' ]]; then
+        cecho "${FREENGX_LINKFILE} found, skipping download..." $boldgreen
+    else
+        rm -rf "${FREENGX_LINKFILE}"
+        download_cmd "${FREENGX_LINK}" "$WGETRETRY" 
+ERROR=$?
+  if [[ "$ERROR" != '0' ]]; then
+  cecho "Error: ${FREENGX_LINKFILE} download failed." $boldgreen
+checklogdetails
+  exit #$ERROR
+else 
+         cecho "Download done." $boldyellow
+#echo ""
+  fi
+    fi
+
+tar xzf "${FREENGX_LINKFILE}"
+ERROR=$?
+  if [[ "$ERROR" != '0' ]]; then
+  cecho "Error: ${FREENGX_LINKFILE} extraction failed." $boldgreen
+checklogdetails
+  exit #$ERROR
+else 
+         cecho "${FREENGX_LINKFILE} valid file." $boldyellow
+echo ""
+  fi
+
+if [[ "$PARALLEL_MODE" = [yY] ]] && [[ "$(grep -c "processor" /proc/cpuinfo)" -gt '1' ]]; then
+  ngxmoduletarball &
+  openrestytarball &
+  wait
+else
+  ngxmoduletarball
+  openrestytarball
+fi
+
+fi # FREENGINX INSTALL
+
+}
+
+###############################################
 libeventtarball() {
 
     cd "$DIR_TMP"
@@ -4095,6 +4151,7 @@ ccacheinstall
 
 axelsetup
 nginxtarball
+freenginxtarball
 
 if [[ "$PARALLEL_MODE" = [yY] ]] && [[ "$(grep -c "processor" /proc/cpuinfo)" -gt '1' ]]; then
   csftarball &

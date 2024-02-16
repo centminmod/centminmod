@@ -785,6 +785,8 @@ if [ -f /etc/csf/csf.conf ]; then
         dig +short A centminmod.com | while read i; do csf -a $i centminmod.com; done
         # whitelist nginx.org download IPs
         dig +short A nginx.org | while read i; do csf -a $i nginx.org; done
+        # whitelist freenginx.org download IPs
+        dig +short A freenginx.org | while read i; do csf -a $i freenginx.org; done
         # whitelist raw.githubusercontent.com download IPs
         dig +short A raw.githubusercontent.com | while read i; do csf -a $i raw.githubusercontent.com; done
         csf --profile backup cmm-after-whitelist

@@ -178,7 +178,11 @@ push_update_alerts() {
 
 # Function to retrieve the latest NGINX version
 get_latest_nginx_version() {
-  curl -${ipv_forceopt}sL --connect-timeout 10 https://nginx.org/en/download.html 2>&1 | egrep -o "nginx\-[0-9.]+\.tar[.a-z]*" | grep -v '.asc' | awk -F "nginx-" '/.tar.gz$/ {print $2}' | sed -e 's|.tar.gz||g' | head -n1 2>&1 | tee "${CENTMINLOGDIR}/cmm-check-for-updates-nginxver-check-debug_${DT}.log"
+  if [[ "$FREENGINX_INSTALL" = [yY] ]]; then
+    curl -${ipv_forceopt}sL --connect-timeout 10 https://freenginx.org/en/download.html 2>&1 | egrep -o "nginx\-[0-9.]+\.tar[.a-z]*" | grep -v '.asc' | awk -F "nginx-" '/.tar.gz$/ {print $2}' | sed -e 's|.tar.gz||g' | head -n1 2>&1 | tee "${CENTMINLOGDIR}/cmm-login-nginxver-check-debug_${DT}.log"
+  else
+    curl -${ipv_forceopt}sL --connect-timeout 10 https://nginx.org/en/download.html 2>&1 | egrep -o "nginx\-[0-9.]+\.tar[.a-z]*" | grep -v '.asc' | awk -F "nginx-" '/.tar.gz$/ {print $2}' | sed -e 's|.tar.gz||g' | head -n1 2>&1 | tee "${CENTMINLOGDIR}/cmm-login-nginxver-check-debug_${DT}.log"
+  fi
 }
 
 ngxver_checker() {
@@ -229,7 +233,11 @@ ngxver_checker() {
     if [[ "$CURRENT_NGINXVERS" != "$LATEST_NGINXVERS" ]]; then
       echo
       # cecho "===============================================================================" $boldgreen
-      cecho "* Nginx Update May Be Available via centmin.sh menu option 4" $boldyellow
+      if [[ "$FREENGINX_INSTALL" = [yY] ]]; then
+        cecho "* FreeNginx Fork Update May Be Available via centmin.sh menu option 4" $boldyellow
+      else
+        cecho "* Nginx Update May Be Available via centmin.sh menu option 4" $boldyellow
+      fi
       cecho "* see https://centminmod.com/nginx.html#nginxupgrade" $boldyellow
       # cecho "===============================================================================" $boldgreen
       cecho "* Current Nginx Version:           $CURRENT_NGINXVERS" $boldyellow

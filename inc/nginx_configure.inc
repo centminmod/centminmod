@@ -5110,7 +5110,10 @@ else
     else
       NGX_BROTLI_TAG=''
     fi
-    SETBUILD_VALUE="${SETBUILD_DATE}-${SETBUILD_OS}${SETBUILD_ENV}${CM_COMMIT_LAST}${NGX_BROTLI_TAG}${KTLS_BUILD_TAG}"
+    if [[ "$FREENGINX_INSTALL" = [yY] ]]; then
+      NGX_FREENGINX_TAG='-freengx'
+    fi
+    SETBUILD_VALUE="${SETBUILD_DATE}-${SETBUILD_OS}${SETBUILD_ENV}${CM_COMMIT_LAST}${NGX_BROTLI_TAG}${KTLS_BUILD_TAG}${NGX_FREENGINX_TAG}"
     SETBUILD_VALUE=$(echo "$SETBUILD_VALUE" | sed -e 's|\-redhat||g')
     if [[ "$NGINX_SECURED" = [yY] ]]; then
       checksec_check

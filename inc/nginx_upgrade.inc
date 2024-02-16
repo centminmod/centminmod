@@ -801,7 +801,14 @@ fi
     if [[ -s "nginx-${ngver}.tar.gz" || "$ngver" = 'angie' || "$ngver" = 'master' || "$ngver" = 'master-google' || "$ngver" = 'quic' ]]; then
         cecho "nginx ${ngver} download found, skipping download..." $boldgreen
     else
-        download_cmd "https://nginx.org/download/nginx-${ngver}.tar.gz" $WGETRETRY
+        if [[ "$FREENGINX_INSTALL" = [yY] ]]; then
+            echo
+            echo "Downloading Freenginx forked version"
+            echo
+            download_cmd "https://freenginx.org/download/nginx-${ngver}.tar.gz" $WGETRETRY
+        else
+            download_cmd "https://nginx.org/download/nginx-${ngver}.tar.gz" $WGETRETRY
+        fi
         NGINXDOWNLOAD_CHECK=$?
         if [[ "$NGINXDOWNLOAD_CHECK" != '0' ]]; then
             wget -c${ipv_forceopt} "https://nginx.org/download/nginx-${ngver}.tar.gz" --tries=3
