@@ -6,10 +6,7 @@ fix_wordpress_accept_encoding() {
     "/usr/local/nginx/conf/php-rediscache.conf"
     "/usr/local/nginx/conf/php-rediscache-shortttl.conf"
   )
-  
-  # Process wildcard pattern separately
-  wildcard_pattern="/usr/local/nginx/conf/wpincludes/*/php-fastcgicache.conf"
-  
+   
   # Check and modify specified files
   for file in "${files[@]}"; do
     if [ -f "$file" ]; then
@@ -21,14 +18,16 @@ fix_wordpress_accept_encoding() {
   done
   
   # Check and modify files matching the wildcard pattern
-  find /usr/local/nginx/conf/wpincludes -type f -name "php-fastcgicache.conf" | while read file; do
-    if [ -f "$file" ]; then
-      if grep -q "\$request_uri\$http_accept_encoding" "$file"; then
-        sed -i 's/\$request_uri\$http_accept_encoding/\$request_uri\$normalized_encoding/g' "$file"
-        # echo "Modified: $file"
+  if [ -d /usr/local/nginx/conf/wpincludes ]; then
+    find /usr/local/nginx/conf/wpincludes -type f -name "php-fastcgicache.conf" | while read file; do
+      if [ -f "$file" ]; then
+        if grep -q "\$request_uri\$http_accept_encoding" "$file"; then
+          sed -i 's/\$request_uri\$http_accept_encoding/\$request_uri\$normalized_encoding/g' "$file"
+          # echo "Modified: $file"
+        fi
       fi
-    fi
-  done
+    done
+  fi
 }
 
 normalize_accept_encoding() {
