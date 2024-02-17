@@ -66,7 +66,7 @@ else
 cat > "/etc/yum.repos.d/mariadb.repo" <<EOF
 [mariadb]
 name = MariaDB
-baseurl = http://yum.mariadb.org/10.1/centos8-aarch64
+baseurl = https://archive.mariadb.org/mariadb-10.1/yum/centos8-aarch64
 module_hotfixes=1
 gpgkey=https://yum.mariadb.org/RPM-GPG-KEY-MariaDB
 gpgcheck=1
@@ -89,7 +89,7 @@ else
 cat > "/etc/yum.repos.d/mariadb.repo" <<EOF
 [mariadb]
 name = MariaDB
-baseurl = http://yum.mariadb.org/10.1/centos8-amd64
+baseurl = https://archive.mariadb.org/mariadb-10.1/yum/centos8-amd64
 module_hotfixes=1
 gpgkey=https://yum.mariadb.org/RPM-GPG-KEY-MariaDB
 gpgcheck=1
@@ -111,7 +111,7 @@ else
 cat > "/etc/yum.repos.d/mariadb.repo" <<EOF
 [mariadb]
 name = MariaDB
-baseurl = http://yum.mariadb.org/10.1/centos8-amd64
+baseurl = https://archive.mariadb.org/mariadb-10.1/yum/centos8-amd64
 module_hotfixes=1
 gpgkey=https://yum.mariadb.org/RPM-GPG-KEY-MariaDB
 gpgcheck=1
@@ -207,7 +207,7 @@ else
 cat > "/etc/yum.repos.d/mariadb.repo" <<EOF
 [mariadb]
 name = MariaDB
-baseurl = http://yum.mariadb.org/10.1/centos6-amd64
+baseurl = https://archive.mariadb.org/mariadb-10.1/yum/centos6-amd64
 gpgkey=https://yum.mariadb.org/RPM-GPG-KEY-MariaDB
 gpgcheck=1
 EOF
@@ -227,7 +227,7 @@ else
 cat > "/etc/yum.repos.d/mariadb.repo" <<EOF
 [mariadb]
 name = MariaDB
-baseurl = http://yum.mariadb.org/10.1/centos6-x86
+baseurl = https://archive.mariadb.org/mariadb-10.1/yum/centos6-x86
 gpgkey=https://yum.mariadb.org/RPM-GPG-KEY-MariaDB
 gpgcheck=1
 EOF
@@ -243,7 +243,7 @@ if [[ "$CENTOSVER" > 5 && "$CENTOSVER" < 6 ]]; then
 cat > "/etc/yum.repos.d/mariadb.repo" <<EOF
 [mariadb]
 name = MariaDB
-baseurl = http://yum.mariadb.org/10.1/centos5-amd64
+baseurl = https://archive.mariadb.org/mariadb-10.1/yum/centos5-amd64
 gpgkey=https://yum.mariadb.org/RPM-GPG-KEY-MariaDB
 gpgcheck=1
 priority=8
@@ -254,7 +254,7 @@ EOF
 cat > "/etc/yum.repos.d/mariadb.repo" <<EOF
 [mariadb]
 name = MariaDB
-baseurl = http://yum.mariadb.org/10.1/centos5-x86
+baseurl = https://archive.mariadb.org/mariadb-10.1/yum/centos5-x86
 gpgkey=https://yum.mariadb.org/RPM-GPG-KEY-MariaDB
 gpgcheck=1
 priority=8
