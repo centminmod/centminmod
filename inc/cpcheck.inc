@@ -3911,7 +3911,7 @@ if [[ "$INITIALINSTALL" != [yY] ]]; then
   fix_ftp_csf_ports
   setup_initial_csf_block_cronjob
   switch_mariadbtenthree_archives
-  switch_mariadbtenttwo_archives
+  switch_mariadbtentwo_archives
   switch_mariadbtenone_archives
   push_check_updates_cronsetup
   fix_wordpress_accept_encoding
