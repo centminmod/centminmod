@@ -287,15 +287,23 @@ For example, the resulting `/home/databackup/070523-072252/centminmod_backup.tar
 
 To restore the data from the backup, follow these steps:
 
-1. Transfer the backup file to the server where you want to restore the data.
+1. Transfer the backup file to the server where you want to restore the data from. Below instructions restore to staging directory at `/home/restoredata`
 2. Extract the contents of the backup file
 
 
 If you have tar version 1.31 or higher, it has native zstd compression support, and extract the backup using these 2 commands. Centmin Mod 130.00beta01's centmin.sh menu option 21, will automatically install a custom built tar 1.35 version YUM RPM binary at `/usr/local/bin/tar` to not conflict with system installed `/usr/bin/tar` and the custom tar 1.35 binary will take priority over system tar if called just as `tar`.
 
+Change path to `/home/databackup/070523-072252/centminmod_backup.tar.zst` where you saved or transfered the backup to i.e. `/home/remotebackup/centminmod_backup.tar.zst`.
+
    ```
    mkdir -p /home/restoredata
-   tar -I zstd -xvf /home/databackup/070523-072252/centminmod_backup.tar.zst -C /home/restoredata
+   tar -I zstd -xf /home/databackup/070523-072252/centminmod_backup.tar.zst -C /home/restoredata
+   ```
+or
+
+   ```
+   mkdir -p /home/restoredata
+   tar -I zstd -xf /home/remotebackup/centminmod_backup.tar.zst -C /home/restoredata
    ```
 
 If you have tar version lower than 1.31, you will have to extract the tar zstd compressed backup first.
@@ -304,6 +312,14 @@ If you have tar version lower than 1.31, you will have to extract the tar zstd c
    mkdir -p /home/restoredata
    zstd -d /home/databackup/070523-072252/centminmod_backup.tar.zst
    tar -xf /home/databackup/070523-072252/centminmod_backup.tar -C /home/restoredata
+   ```
+
+or
+
+   ```
+   mkdir -p /home/restoredata
+   zstd -d /home/remotebackup/centminmod_backup.tar.zst
+   tar -xf /home/remotebackup/centminmod_backup.tar -C /home/restoredata
    ```
 
 Custom tar 1.35
@@ -430,6 +446,7 @@ Then proceed to move the restored files to the correct locations. You can first 
 
 ```
 diff -ur /home/restoredata/etc/centminmod/ /etc/centminmod
+diff -ur /home/restoredata/root/.acme.sh/ /root/.acme.sh
 diff -ur /home/restoredata/root/tools/ /root/tools
 diff -ur /home/restoredata/usr/local/nginx/ /usr/local/nginx
 ```
@@ -441,20 +458,48 @@ diff -ur /home/restoredata/etc/centminmod/ /etc/centminmod
 Only in /etc/centminmod: diff.txt
 ```
 
-Then copy command will force override any existing files on destination directory side
+Then copy command will force override any existing files on destination directory side and ensure to backup new destination server's files for future reference for `/etc/centminmod/custom_config.inc` and `/etc/centminmod/php.d/a_customphp.ini` and `/etc/my.cnf` and `/etc/centminmod/php.d/zendopcache.ini` and `/usr/local/nginx` and `/usr/local/nginx/conf/staticfiles.conf` files/directory as you may want to use the new server's version of these files or directories for server settings instead of using old server's transferred settings.
 
 ```
-\cp -af /home/restoredata/etc/centminmod/* /etc/centminmod
-\cp -af /home/restoredata/root/tools/* /root/tools
-\cp -af /home/restoredata/usr/local/nginx/* /usr/local/nginx
+\cp -af /usr/local/nginx/conf/staticfiles.conf /usr/local/nginx/conf/staticfiles.conf.original
+\cp -af /usr/local/nginx /usr/local/nginx_original
+\cp -af /etc/my.cnf /etc/my.cnf.original
+\cp -af /etc/centminmod/custom_config.inc /etc/centminmod/custom_config.inc.original
+\cp -af /etc/centminmod/php.d/a_customphp.ini /etc/centminmod/php.d/a_customphp.ini.original
+\cp -af /etc/centminmod/php.d/zendopcache.ini /etc/centminmod/php.d/zendopcache.ini.original
+\cp -af /home/restoredata/etc/centminmod/* /etc/centminmod/
+mkdir -p /root/.acme.sh
+\cp -af /home/restoredata/root/.acme.sh/* /root/.acme.sh/
+\cp -af /home/restoredata/root/tools/* /root/tools/
+\cp -af /home/restoredata/usr/local/nginx/* /usr/local/nginx/
+```
+
+For Nginx vhost data where backup directory timestamp = `070523-072252`
+
+```
+\cp -af /home/restoredata/home/databackup/070523-072252/domains_tmp/* /home/nginx/domains/
 ```
 
 Or if disk space is a concern, instead of copy command use move commands
 
 ```
-mv -f /home/restoredata/etc/centminmod/* /etc/centminmod
-mv -f /home/restoredata/root/tools/* /root/tools
-mv -f /home/restoredata/usr/local/nginx/* /usr/local/nginx
+\cp -af /usr/local/nginx/conf/staticfiles.conf /usr/local/nginx/conf/staticfiles.conf.original
+\cp -af /usr/local/nginx /usr/local/nginx_original
+\cp -af /etc/my.cnf /etc/my.cnf.original
+\cp -af /etc/centminmod/custom_config.inc /etc/centminmod/custom_config.inc.original
+\cp -af /etc/centminmod/php.d/a_customphp.ini /etc/centminmod/php.d/a_customphp.ini.original
+\cp -af /etc/centminmod/php.d/zendopcache.ini /etc/centminmod/php.d/zendopcache.ini.original
+mv -f /home/restoredata/etc/centminmod/* /etc/centminmod/
+mkdir -p /root/.acme.sh
+mv -f /home/restoredata/root/.acme.sh/* /root/.acme.sh/
+mv -f /home/restoredata/root/tools/* /root/tools/
+mv -f /home/restoredata/usr/local/nginx/* /usr/local/nginx/
+```
+
+For Nginx vhost data where backup directory timestamp = `070523-072252`
+
+```
+mv -f /home/restoredata/home/databackup/070523-072252/domains_tmp/* /home/nginx/domains/
 ```
 
 The `/home/restoredata/home/databackup/070523-072252/mariadb_tmp/mariabackup-restore.sh` script has 2 options to restore MariaDB MySQL data either via `copy-back` or `move-back`. 
@@ -475,7 +520,13 @@ Both options involve the following steps:
 
 ```
 ./mariabackup-restore.sh
-Usage: ./mariabackup-restore.sh [copy-back|move-back] /path/to/backup/dir
+Usage: ./mariabackup-restore.sh [copy-back|move-back] /path/to/backup/dir/
+```
+
+Actual command where backup directory timestamp = `070523-072252`
+
+```
+time /home/restoredata/home/databackup/070523-072252/mariadb_tmp/mariabackup-restore.sh copy-back /home/restoredata/home/databackup/070523-072252/mariadb_tmp/
 ```
 
 **Note:** Make sure to adjust the paths in the commands above to match the actual location of your backup files.
@@ -636,9 +687,17 @@ To extract the contents of the backup file:
 
 If you have tar version 1.31 or higher, it has native zstd compression support, and extract the backup using these 2 commands. Centmin Mod 130.00beta01's centmin.sh menu option 21, will automatically install a custom built tar 1.35 version YUM RPM binary at `/usr/local/bin/tar` to not conflict with system installed `/usr/bin/tar` and the custom tar 1.35 binary will take priority over system tar if called just as `tar`.
 
+Change path to `/home/databackup/070523-072252/centminmod_backup.tar.zst` where you saved or transfered the backup to i.e. `/home/remotebackup/centminmod_backup.tar.zst`.
+
    ```
    mkdir -p /home/restoredata
-   tar -I zstd -xvf /home/databackup/070523-072252/centminmod_backup.tar.zst -C /home/restoredata
+   tar -I zstd -xf /home/databackup/070523-072252/centminmod_backup.tar.zst -C /home/restoredata
+   ```
+or
+
+   ```
+   mkdir -p /home/restoredata
+   tar -I zstd -xf /home/remotebackup/centminmod_backup.tar.zst -C /home/restoredata
    ```
 
 If you have tar version lower than 1.31, you will have to extract the tar zstd compressed backup first.
@@ -647,6 +706,14 @@ If you have tar version lower than 1.31, you will have to extract the tar zstd c
    mkdir -p /home/restoredata
    zstd -d /home/databackup/070523-072252/centminmod_backup.tar.zst
    tar -xf /home/databackup/070523-072252/centminmod_backup.tar -C /home/restoredata
+   ```
+
+or
+
+   ```
+   mkdir -p /home/restoredata
+   zstd -d /home/remotebackup/centminmod_backup.tar.zst
+   tar -xf /home/remotebackup/centminmod_backup.tar -C /home/restoredata
    ```
 
 Custom tar 1.35
@@ -772,6 +839,7 @@ Then proceed to move the restored files to the correct locations. You can first 
 ```
 diff -ur /home/restoredata/etc/centminmod/ /etc/centminmod
 diff -ur /home/restoredata/root/tools/ /root/tools
+diff -ur /home/restoredata/root/tools/ /root/tools
 diff -ur /home/restoredata/usr/local/nginx/ /usr/local/nginx
 ```
 
@@ -782,21 +850,76 @@ diff -ur /home/restoredata/etc/centminmod/ /etc/centminmod
 Only in /etc/centminmod: diff.txt
 ```
 
-Then copy command will force override any existing files on destination directory side
+Then copy command will force override any existing files on destination directory side and ensure to backup new destination server's files for future reference for `/etc/centminmod/custom_config.inc` and `/etc/centminmod/php.d/a_customphp.ini` and `/etc/my.cnf` and `/etc/centminmod/php.d/zendopcache.ini` and `/usr/local/nginx` and `/usr/local/nginx/conf/staticfiles.conf` files/directory as you may want to use the new server's version of these files or directories for server settings instead of using old server's transferred settings.
 
 ```
-\cp -af /home/restoredata/etc/centminmod/* /etc/centminmod
-\cp -af /home/restoredata/root/tools/* /root/tools
-\cp -af /home/restoredata/usr/local/nginx/* /usr/local/nginx
+\cp -af /usr/local/nginx/conf/staticfiles.conf /usr/local/nginx/conf/staticfiles.conf.original
+\cp -af /usr/local/nginx /usr/local/nginx_original
+\cp -af /etc/my.cnf /etc/my.cnf.original
+\cp -af /etc/centminmod/custom_config.inc /etc/centminmod/custom_config.inc.original
+\cp -af /etc/centminmod/php.d/a_customphp.ini /etc/centminmod/php.d/a_customphp.ini.original
+\cp -af /etc/centminmod/php.d/zendopcache.ini /etc/centminmod/php.d/zendopcache.ini.original
+\cp -af /home/restoredata/etc/centminmod/* /etc/centminmod/
+\cp -af /home/restoredata/root/.acme.sh/* /root/.acme.sh/
+\cp -af /home/restoredata/root/tools/* /root/tools/
+\cp -af /home/restoredata/usr/local/nginx/* /usr/local/nginx/
+```
+
+For Nginx vhost data where backup directory timestamp = `070523-072252`
+
+```
+\cp -af /home/restoredata/home/databackup/070523-072252/domains_tmp/* /home/nginx/domains/
 ```
 
 Or if disk space is a concern, instead of copy command use move commands
 
 ```
-mv -f /home/restoredata/etc/centminmod/* /etc/centminmod
-mv -f /home/restoredata/root/tools/* /root/tools
-mv -f /home/restoredata/usr/local/nginx/* /usr/local/nginx
+\cp -af /usr/local/nginx/conf/staticfiles.conf /usr/local/nginx/conf/staticfiles.conf.original
+\cp -af /usr/local/nginx /usr/local/nginx_original
+\cp -af /etc/my.cnf /etc/my.cnf.original
+\cp -af /etc/centminmod/custom_config.inc /etc/centminmod/custom_config.inc.original
+\cp -af /etc/centminmod/php.d/a_customphp.ini /etc/centminmod/php.d/a_customphp.ini.original
+\cp -af /etc/centminmod/php.d/zendopcache.ini /etc/centminmod/php.d/zendopcache.ini.original
+mv -f /home/restoredata/etc/centminmod/* /etc/centminmod/
+mv -f /home/restoredata/root/.acme.sh/* /root/.acme.sh/
+mv -f /home/restoredata/root/tools/* /root/tools/
+mv -f /home/restoredata/usr/local/nginx/* /usr/local/nginx/
 ```
+
+For Nginx vhost data where backup directory timestamp = `070523-072252`
+
+```
+mv -f /home/restoredata/home/databackup/070523-072252/domains_tmp/* /home/nginx/domains/
+```
+
+The `/home/restoredata/home/databackup/070523-072252/mariadb_tmp/mariabackup-restore.sh` script has 2 options to restore MariaDB MySQL data either via `copy-back` or `move-back`. 
+
+1. `copy-back`: This option copies the backup files back to the original data directory at `/var/lib/mysql`. The backup files themselves are not altered or removed. The script checks if the provided backup directory is valid and if the backup and current MariaDB versions match. If everything is fine, it proceeds with copying the backup files back to the original data directory at `/var/lib/mysql`.
+2. `move-back`: This option moves the backup files back to the original data directory at `/var/lib/mysql`. Unlike `copy-back`, the backup files are removed from the backup directory. The script checks if the provided backup directory is valid and if the backup and current MariaDB versions match. If everything is fine, it proceeds with moving the backup files back to the original data directory at `/var/lib/mysql`.
+
+Both options involve the following steps:
+
+* The script first checks if the provided directory contains valid MariaBackup data.
+* It then compares the MariaDB version used for the backup with the version running on the current system. The script aborts the restore process if the versions do not match.
+* The MariaDB server is stopped, and the existing data directory is backed up to `/var/lib/mysql-copy-datetimestamp` and then `/var/lib/mysql` data directory is emptied.
+* The ownership of the data directory is changed to `mysql:mysql`.
+* The MariaDB server is started.
+* Depending on the option chosen (`copy-back` or `move-back`), the script copies or moves the backup files back to the original data directory.
+
+`mariabackup-restore.sh` Usage help output:
+
+```
+./mariabackup-restore.sh
+Usage: ./mariabackup-restore.sh [copy-back|move-back] /path/to/backup/dir
+```
+
+Actual command where backup directory timestamp = `070523-072252`
+
+```
+time /home/restoredata/home/databackup/070523-072252/mariadb_tmp/mariabackup-restore.sh copy-back /home/restoredata/home/databackup/070523-072252/mariadb_tmp
+```
+
+**Note:** Make sure to adjust the paths in the commands above to match the actual location of your backup files.
 
 #### Submenu Option 8 Command Line:
 
