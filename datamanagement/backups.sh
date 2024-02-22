@@ -1,6 +1,6 @@
 #!/bin/bash
 ################################################################################
-VER=0.9
+VER=1.0
 DT=$(date +"%d%m%y-%H%M%S")
 DEBUG_DISPLAY='n'
 CHECKSUMS='y'
@@ -489,6 +489,10 @@ files_backup() {
       DIRECTORIES_TO_BACKUP+=("/root/.acme.sh")
       DIRECTORIES_TO_BACKUP_NOCOMPRESS+=("/root/.acme.sh")
     fi
+    if [ -f /root/.my.cnf ]; then
+      DIRECTORIES_TO_BACKUP+=("/root/.my.cnf")
+      DIRECTORIES_TO_BACKUP_NOCOMPRESS+=("/root/.my.cnf")
+    fi
   fi
   
   if [[ "$files_mode" = 'all' || "$files_mode" = 'mariabackup' ]]; then
@@ -599,6 +603,7 @@ Then copy command will force override any existing files on destination director
 \cp -af /usr/local/nginx/conf/staticfiles.conf /usr/local/nginx/conf/staticfiles.conf.original
 \cp -af /usr/local/nginx /usr/local/nginx_original
 \cp -af /etc/my.cnf /etc/my.cnf.original
+\cp -af /root/.my.cnf /root/.my.cnf.original
 \cp -af /etc/centminmod/custom_config.inc /etc/centminmod/custom_config.inc.original
 \cp -af /etc/centminmod/php.d/a_customphp.ini /etc/centminmod/php.d/a_customphp.ini.original
 \cp -af /etc/centminmod/php.d/zendopcache.ini /etc/centminmod/php.d/zendopcache.ini.original
@@ -652,6 +657,10 @@ Usage: ./mariabackup-restore.sh [copy-back|move-back] /path/to/backup/dir/
 Actual command where backup directory timestamp = ${DT}
 
 time /home/restoredata/home/databackup/${DT}/mariadb_tmp/mariabackup-restore.sh copy-back /home/restoredata/home/databackup/${DT}/mariadb_tmp/
+
+Then restore /root/.my.cnf
+
+\cp -af /home/restoredata/root/.my.cnf /root/.my.cnf
 
 **Note:** Make sure to adjust the paths in the commands above to match the actual location of your backup files.
 EOF

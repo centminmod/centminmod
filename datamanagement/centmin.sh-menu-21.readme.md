@@ -464,6 +464,7 @@ Then copy command will force override any existing files on destination director
 \cp -af /usr/local/nginx/conf/staticfiles.conf /usr/local/nginx/conf/staticfiles.conf.original
 \cp -af /usr/local/nginx /usr/local/nginx_original
 \cp -af /etc/my.cnf /etc/my.cnf.original
+\cp -af /root/.my.cnf /root/.my.cnf.original
 \cp -af /etc/centminmod/custom_config.inc /etc/centminmod/custom_config.inc.original
 \cp -af /etc/centminmod/php.d/a_customphp.ini /etc/centminmod/php.d/a_customphp.ini.original
 \cp -af /etc/centminmod/php.d/zendopcache.ini /etc/centminmod/php.d/zendopcache.ini.original
@@ -486,6 +487,7 @@ Or if disk space is a concern, instead of copy command use move commands
 \cp -af /usr/local/nginx/conf/staticfiles.conf /usr/local/nginx/conf/staticfiles.conf.original
 \cp -af /usr/local/nginx /usr/local/nginx_original
 \cp -af /etc/my.cnf /etc/my.cnf.original
+\cp -af /root/.my.cnf /root/.my.cnf.original
 \cp -af /etc/centminmod/custom_config.inc /etc/centminmod/custom_config.inc.original
 \cp -af /etc/centminmod/php.d/a_customphp.ini /etc/centminmod/php.d/a_customphp.ini.original
 \cp -af /etc/centminmod/php.d/zendopcache.ini /etc/centminmod/php.d/zendopcache.ini.original
@@ -527,6 +529,12 @@ Actual command where backup directory timestamp = `070523-072252`
 
 ```
 time /home/restoredata/home/databackup/070523-072252/mariadb_tmp/mariabackup-restore.sh copy-back /home/restoredata/home/databackup/070523-072252/mariadb_tmp/
+```
+
+Then restore `/root/.my.cnf`
+
+```
+\cp -af /home/restoredata/root/.my.cnf /root/.my.cnf
 ```
 
 **Note:** Make sure to adjust the paths in the commands above to match the actual location of your backup files.
@@ -856,6 +864,7 @@ Then copy command will force override any existing files on destination director
 \cp -af /usr/local/nginx/conf/staticfiles.conf /usr/local/nginx/conf/staticfiles.conf.original
 \cp -af /usr/local/nginx /usr/local/nginx_original
 \cp -af /etc/my.cnf /etc/my.cnf.original
+\cp -af /root/.my.cnf /root/.my.cnf.original
 \cp -af /etc/centminmod/custom_config.inc /etc/centminmod/custom_config.inc.original
 \cp -af /etc/centminmod/php.d/a_customphp.ini /etc/centminmod/php.d/a_customphp.ini.original
 \cp -af /etc/centminmod/php.d/zendopcache.ini /etc/centminmod/php.d/zendopcache.ini.original
@@ -877,6 +886,7 @@ Or if disk space is a concern, instead of copy command use move commands
 \cp -af /usr/local/nginx/conf/staticfiles.conf /usr/local/nginx/conf/staticfiles.conf.original
 \cp -af /usr/local/nginx /usr/local/nginx_original
 \cp -af /etc/my.cnf /etc/my.cnf.original
+\cp -af /root/.my.cnf /root/.my.cnf.original
 \cp -af /etc/centminmod/custom_config.inc /etc/centminmod/custom_config.inc.original
 \cp -af /etc/centminmod/php.d/a_customphp.ini /etc/centminmod/php.d/a_customphp.ini.original
 \cp -af /etc/centminmod/php.d/zendopcache.ini /etc/centminmod/php.d/zendopcache.ini.original
@@ -917,6 +927,12 @@ Actual command where backup directory timestamp = `070523-072252`
 
 ```
 time /home/restoredata/home/databackup/070523-072252/mariadb_tmp/mariabackup-restore.sh copy-back /home/restoredata/home/databackup/070523-072252/mariadb_tmp
+```
+
+Then restore `/root/.my.cnf`
+
+```
+\cp -af /home/restoredata/root/.my.cnf /root/.my.cnf
 ```
 
 **Note:** Make sure to adjust the paths in the commands above to match the actual location of your backup files.
