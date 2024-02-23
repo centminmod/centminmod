@@ -510,6 +510,23 @@ For Nginx vhost data where backup directory timestamp = `070523-072252`
 mv -f /home/restoredata/home/databackup/070523-072252/domains_tmp/* /home/nginx/domains/
 ```
 
+Check overwritten files
+
+```
+diff -ur /etc/centminmod/custom_config.inc.original /etc/centminmod/custom_config.inc
+diff -ur /usr/local/nginx_original/conf/conf.d/virtual.conf /usr/local/nginx/conf/conf.d/virtual.conf
+diff -ur /usr/local/nginx_original/conf/nginx.conf /usr/local/nginx/conf/nginx.conf
+```
+
+If no changes to virtual.conf and nginx.conf use new server one
+
+```
+\cp -af /usr/local/nginx_original/conf/nginx.conf /usr/local/nginx/conf/nginx.conf
+\cp -af /usr/local/nginx_original/conf/conf.d/virtual.conf /usr/local/nginx/conf/conf.d/virtual.conf
+diff -ur /usr/local/nginx_original/conf/nginx.conf /usr/local/nginx/conf/nginx.conf
+diff -ur /usr/local/nginx_original/conf/conf.d/virtual.conf /usr/local/nginx/conf/conf.d/virtual.conf
+```
+
 Restore cronjobs
 
 ```
@@ -920,6 +937,23 @@ For Nginx vhost data where backup directory timestamp = `070523-072252`
 
 ```
 mv -f /home/restoredata/home/databackup/070523-072252/domains_tmp/* /home/nginx/domains/
+```
+
+Check overwritten files
+
+```
+diff -ur /etc/centminmod/custom_config.inc.original /etc/centminmod/custom_config.inc
+diff -ur /usr/local/nginx_original/conf/conf.d/virtual.conf /usr/local/nginx/conf/conf.d/virtual.conf
+diff -ur /usr/local/nginx_original/conf/nginx.conf /usr/local/nginx/conf/nginx.conf
+```
+
+If no changes to virtual.conf and nginx.conf use new server one
+
+```
+\cp -af /usr/local/nginx_original/conf/nginx.conf /usr/local/nginx/conf/nginx.conf
+\cp -af /usr/local/nginx_original/conf/conf.d/virtual.conf /usr/local/nginx/conf/conf.d/virtual.conf
+diff -ur /usr/local/nginx_original/conf/nginx.conf /usr/local/nginx/conf/nginx.conf
+diff -ur /usr/local/nginx_original/conf/conf.d/virtual.conf /usr/local/nginx/conf/conf.d/virtual.conf
 ```
 
 Restore cronjobs

@@ -1,6 +1,6 @@
 #!/bin/bash
 ################################################################################
-VER=1.0
+VER=1.1
 DT=$(date +"%d%m%y-%H%M%S")
 DEBUG_DISPLAY='n'
 CHECKSUMS='y'
@@ -434,6 +434,7 @@ files_backup() {
     FILES_TARBALL_CREATION='n'
   fi
   check_command_exists pv pv
+  check_command_exists zstd zstd
   check_command_exists rsync rsync
   check_command_exists mariabackup mariadb-backup
   START_TIME=$(date +%s)
@@ -443,7 +444,7 @@ files_backup() {
     total_uncompressed_size=$((total_uncompressed_size + dir_size))
   done
   hr_total_size=$(human_readable_size "$total_uncompressed_size")
-  echo "[$(date)] Total uncompressed size of all directories to be backed up: $hr_total_size"
+  # echo "[$(date)] Total uncompressed size of all directories to be backed up: $hr_total_size"
   
   MOST_FREE_SPACE_MOUNT_BYTES=$(df --output=avail -B1 "$MOST_FREE_SPACE_MOUNT" | sed '1d')
   hr_most_free_space_mount=$(human_readable_size "$MOST_FREE_SPACE_MOUNT_BYTES")
@@ -459,17 +460,18 @@ files_backup() {
     mkdir -p "$BASE_DIR"
     mkdir -p "$DOMAINS_TMP_DIR"
     echo "[$(date)] Copying domain data (excluding logs) ..."
+    export RSYNC_SKIP_COMPRESS="3g2,3gp,3gpp,3mf,7z,aac,ace,amr,apk,appx,appxbundle,arc,arj,asf,avi,br,bz2,cab,crypt5,crypt7,crypt8,deb,dmg,drc,ear,gz,flac,flv,gpg,h264,h265,heif,iso,jar,jp2,jpg,jpeg,lz,lz4,lzma,lzo,m4a,m4p,m4v,mkv,msi,mov,mp3,mp4,mpeg,mpg,mpv,oga,ogg,ogv,opus,pack,png,qt,rar,rpm,rzip,s7z,sfx,svgz,tbz,tgz,tlz,txz,vob,webm,webp,wim,wma,wmv,xz,z,zip,zst"
     for domain_path in /home/nginx/domains/*/; do
       domain=$(basename "$domain_path")
       destination="$DOMAINS_TMP_DIR/$domain"
       mkdir -p "$destination"
       echo "[$(date)] Backup data to $destination"
       if [[ "$DEBUG_DISPLAY" = [yY] ]]; then
-        echo "rsync -av --exclude='logs' \"$domain_path\" \"$destination\"" | tee -a "$RSYNC_LOG"
-        rsync -av --exclude='logs' "$domain_path" "$destination" | tee -a "$RSYNC_LOG"
+        echo "rsync -av --whole-file --exclude='logs' \"$domain_path\" \"$destination\"" | tee -a "$RSYNC_LOG"
+        rsync -av --whole-file --exclude='logs' "$domain_path" "$destination" | tee -a "$RSYNC_LOG"
       else
-        echo "rsync -av --exclude='logs' \"$domain_path\" \"$destination\"" >> "$RSYNC_LOG"
-        rsync -av --exclude='logs' "$domain_path" "$destination" >> "$RSYNC_LOG" 2>&1
+        echo "rsync -av --whole-file --exclude='logs' \"$domain_path\" \"$destination\"" >> "$RSYNC_LOG"
+        rsync -av --whole-file --exclude='logs' "$domain_path" "$destination" >> "$RSYNC_LOG" 2>&1
       fi
       DIRECTORIES_TO_BACKUP+=("$destination")
     done
@@ -645,6 +647,19 @@ mv -f /home/restoredata/usr/local/nginx/* /usr/local/nginx/
 For Nginx vhost data where backup directory timestamp = ${DT}
 
 mv -f /home/restoredata/home/databackup/${DT}/domains_tmp/* /home/nginx/domains/
+
+Check overwritten files
+
+diff -ur /etc/centminmod/custom_config.inc.original /etc/centminmod/custom_config.inc
+diff -ur /usr/local/nginx_original/conf/conf.d/virtual.conf /usr/local/nginx/conf/conf.d/virtual.conf
+diff -ur /usr/local/nginx_original/conf/nginx.conf /usr/local/nginx/conf/nginx.conf
+
+If no changes to virtual.conf and nginx.conf use new server one
+
+\cp -af /usr/local/nginx_original/conf/nginx.conf /usr/local/nginx/conf/nginx.conf
+\cp -af /usr/local/nginx_original/conf/conf.d/virtual.conf /usr/local/nginx/conf/conf.d/virtual.conf
+diff -ur /usr/local/nginx_original/conf/nginx.conf /usr/local/nginx/conf/nginx.conf
+diff -ur /usr/local/nginx_original/conf/conf.d/virtual.conf /usr/local/nginx/conf/conf.d/virtual.conf
 
 Restore cronjobs
 
