@@ -554,12 +554,17 @@ DETECTOPENSSL_THREETWO=$(echo $OPENSSL_VERSION  | cut -d . -f1-2 | grep -o 3.2)
 # el9 uses OpenSSL 3.0 and is not supported for PHP builds <=8.0
 # for PHP 7.4 to 8.0, use OpenSSL 1.1.1 instead
 # https://bugs.php.net/bug.php?id=81540
+if [[ "$CENTOS_NINE" -eq '9' && "$PHP_PATCH_OPENSSL_THREE" = [yY] ]] && [[ "$PHPMVER" = '8.1' || "$PHPMUVER" = '8.1' || "$PHPMVER" = '8.2' || "$PHPMUVER" = '8.2' || "$PHPMVER" = '8.3' || "$PHPMUVER" = '8.3' || "$PHPMVER" = '8.4' || "$PHPMUVER" = '8.4' ]]; then
+  PHP_CUSTOMSSL='n'
+  PHP_PATCH_OPENSSL_THREE='n'
+fi
 if [[ "$CENTOS_NINE" -eq '9' && "$PHP_PATCH_OPENSSL_THREE" = [yY] ]] && [[ "$PHPVER_ID" -ge '70400' && "$PHPVER_ID" -lt '80100' ]]; then
   PHP_CUSTOMSSL='y'
 fi
 if [[ "$CENTOS_NINE" -eq '9' && "$PHP_PATCH_OPENSSL_THREE" = [yY] ]] && [[ "$PHPMVER" = '7.4' || "$PHPMUVER" = '7.4' || "$PHPMVER" = '8.0' || "$PHPMUVER" = '8.0' ]]; then
   PHP_CUSTOMSSL='y'
 fi
+
 # disable PHP custom openssl for el8 unless force flag enabled
 # EL8 already uses system OpenSSL 1.1.1 which has best performance
 if [[ "$CENTOS_EIGHT" -eq '8' && "$PHP_CUSTOMSSL_FORCE" != [yY] ]]; then
