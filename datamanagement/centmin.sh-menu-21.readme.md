@@ -445,11 +445,17 @@ tree -d -L 6 /home/restoredata/
 Then proceed to move the restored files to the correct locations. You can first use `diff` command to check backup versus destination directory files
 
 ```
-diff -ur /home/restoredata/etc/centminmod/ /etc/centminmod
-diff -ur /home/restoredata/root/.acme.sh/ /root/.acme.sh
-diff -ur /home/restoredata/root/tools/ /root/tools
-diff -ur /home/restoredata/usr/local/nginx/ /usr/local/nginx
+diff -ur /etc/centminmod /home/restoredata/etc/centminmod/
+diff -ur /root/.acme.sh /home/restoredata/root/.acme.sh/
+diff -ur /root/tools /home/restoredata/root/tools/
+diff -ur /usr/local/nginx /home/restoredata/usr/local/nginx/
+diff -ur /root/.my.cnf /home/restoredata/root/.my.cnf
+diff -ur /var/spool/cron/root /home/remotebackup/cronjobs_tmp/root_cronjobs
 ```
+
+If Elasticsearch is installed on both old and new server, centmin.sh menu option 21 backup script will backup /etc/elasticsearch as a copy located at /etc/elasticsearch-source so that restoration doesn't override, new server Elasticsearch instance. But you'd have /home/restoredata/etc/elasticsearch-source to reference old server's Elasticsearch settings.
+
+diff -ur /etc/elasticsearch /home/restoredata/etc/elasticsearch-source
 
 Example where `/etc/centminmod/diff.txt` file exists only on destination side
 
@@ -502,6 +508,14 @@ For Nginx vhost data where backup directory timestamp = `070523-072252`
 
 ```
 mv -f /home/restoredata/home/databackup/070523-072252/domains_tmp/* /home/nginx/domains/
+```
+
+Restore cronjobs
+
+```
+crontab -l > /etc/centminmod/cronjobs/cronjoblist-restore-from-migration.txt
+cat /etc/centminmod/cronjobs/cronjoblist-restore-from-migration.txt
+crontab /home/remotebackup/cronjobs_tmp/root_cronjobs
 ```
 
 The `/home/restoredata/home/databackup/070523-072252/mariadb_tmp/mariabackup-restore.sh` script has 2 options to restore MariaDB MySQL data either via `copy-back` or `move-back`. 
@@ -845,11 +859,17 @@ tree -d -L 6 /home/restoredata/
 Then proceed to move the restored files to the correct locations. You can first use `diff` command to check backup versus destination directory files
 
 ```
-diff -ur /home/restoredata/etc/centminmod/ /etc/centminmod
-diff -ur /home/restoredata/root/tools/ /root/tools
-diff -ur /home/restoredata/root/tools/ /root/tools
-diff -ur /home/restoredata/usr/local/nginx/ /usr/local/nginx
+diff -ur /etc/centminmod /home/restoredata/etc/centminmod/
+diff -ur /root/.acme.sh /home/restoredata/root/.acme.sh/
+diff -ur /root/tools /home/restoredata/root/tools/
+diff -ur /usr/local/nginx /home/restoredata/usr/local/nginx/
+diff -ur /root/.my.cnf /home/restoredata/root/.my.cnf
+diff -ur /var/spool/cron/root /home/remotebackup/cronjobs_tmp/root_cronjobs
 ```
+
+If Elasticsearch is installed on both old and new server, centmin.sh menu option 21 backup script will backup /etc/elasticsearch as a copy located at /etc/elasticsearch-source so that restoration doesn't override, new server Elasticsearch instance. But you'd have /home/restoredata/etc/elasticsearch-source to reference old server's Elasticsearch settings.
+
+diff -ur /etc/elasticsearch /home/restoredata/etc/elasticsearch-source
 
 Example where `/etc/centminmod/diff.txt` file exists only on destination side
 
@@ -900,6 +920,14 @@ For Nginx vhost data where backup directory timestamp = `070523-072252`
 
 ```
 mv -f /home/restoredata/home/databackup/070523-072252/domains_tmp/* /home/nginx/domains/
+```
+
+Restore cronjobs
+
+```
+crontab -l > /etc/centminmod/cronjobs/cronjoblist-restore-from-migration.txt
+cat /etc/centminmod/cronjobs/cronjoblist-restore-from-migration.txt
+crontab /home/remotebackup/cronjobs_tmp/root_cronjobs
 ```
 
 The `/home/restoredata/home/databackup/070523-072252/mariadb_tmp/mariabackup-restore.sh` script has 2 options to restore MariaDB MySQL data either via `copy-back` or `move-back`. 
