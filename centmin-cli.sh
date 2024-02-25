@@ -29,14 +29,14 @@ DT=$(date +"%d%m%y-%H%M%S")
 branchname='130.00beta01'
 SCRIPT_MAJORVER='130'
 SCRIPT_MINORVER='00'
-SCRIPT_INCREMENTVER='540'
+SCRIPT_INCREMENTVER='541'
 SCRIPT_VERSIONSHORT="${branchname}"
 SCRIPT_VERSION="${SCRIPT_VERSIONSHORT}.b${SCRIPT_INCREMENTVER}"
-SCRIPT_DATE='31/01/23'
+SCRIPT_DATE='24/02/24'
 SCRIPT_AUTHOR='eva2000 (centminmod.com)'
 SCRIPT_MODIFICATION_AUTHOR='eva2000 (centminmod.com)'
 SCRIPT_URL='https://centminmod.com'
-COPYRIGHT="Copyright 2011-2023 CentminMod.com"
+COPYRIGHT="Copyright 2011-2024 CentminMod.com"
 DISCLAIMER='This software is provided "as is" in the hope that it will be useful, but WITHOUT ANY WARRANTY, to the extent permitted by law; without even the implied warranty of MERCHANTABILITY OR FITNESS FOR A PARTICULAR PURPOSE. IN NO EVENT SHALL THE AUTHOR OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.'
 
 #####################################################
@@ -45,9 +45,6 @@ DISCLAIMER='This software is provided "as is" in the hope that it will be useful
 # under the terms of the GNU General Public License as published by the Free
 # Software Foundation, either version 3 of the License, or (at your option)
 # any later version. See the included license.txt for futher details.
-#
-# PLEASE MODIFY VALUES BELOW THIS LINE ++++++++++++++++++++++++++++++++++++++
-# Note: Please enter y for yes or n for no.
 #####################################################
 SCRIPT_DIR=$(readlink -f $(dirname ${BASH_SOURCE[0]}))
 

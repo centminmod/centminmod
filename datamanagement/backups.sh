@@ -1,6 +1,6 @@
 #!/bin/bash
 ################################################################################
-VER=1.1
+VER=1.2
 DT=$(date +"%d%m%y-%H%M%S")
 DEBUG_DISPLAY='n'
 CHECKSUMS='y'
@@ -495,6 +495,14 @@ files_backup() {
       DIRECTORIES_TO_BACKUP+=("/root/.my.cnf")
       DIRECTORIES_TO_BACKUP_NOCOMPRESS+=("/root/.my.cnf")
     fi
+    if [ -f /etc/pure-ftpd/pureftpd.passwd ]; then
+      DIRECTORIES_TO_BACKUP+=("/etc/pure-ftpd/pureftpd.passwd")
+      DIRECTORIES_TO_BACKUP_NOCOMPRESS+=("/etc/pure-ftpd/pureftpd.passwd")
+    fi
+    if [ -f /etc/pure-ftpd/pureftpd.pdb ]; then
+      DIRECTORIES_TO_BACKUP+=("/etc/pure-ftpd/pureftpd.pdb")
+      DIRECTORIES_TO_BACKUP_NOCOMPRESS+=("/etc/pure-ftpd/pureftpd.pdb")
+    fi
     if [ -d /etc/elasticsearch ]; then
       \cp -af /etc/elasticsearch /etc/elasticsearch-source
       DIRECTORIES_TO_BACKUP+=("/etc/elasticsearch-source")
@@ -585,6 +593,8 @@ Where:
 
 * /home/restoredata/etc/centminmod is the backup data for /etc/centminmod
 
+* /home/restoredata/etc/pure-ftpd is for /etc/pure-ftpd virtual FTP user database files
+
 * /home/restoredata${BASE_DIR}/domains_tmp is the backup data for /home/nginx/domains for Nginx vhost directories
 
 * /home/restoredata${BASE_DIR}/mariadb_tmp is the backup data for /var/lib/mysql MySQL data directory which also contains the MariaBackup MySQL data restore script at /home/restoredata${BASE_DIR}/mariadb_tmp/mariabackup-restore.sh. Provided you chose to backup MariaDB MySQL data.
@@ -596,6 +606,7 @@ Where:
 Then proceed to move the restored files to the correct locations. You can first use diff command to check backup versus destination directory files
 
 diff -ur /etc/centminmod /home/restoredata/etc/centminmod/
+diff -ur /etc/pure-ftpd /home/restoredata/etc/pure-ftpd
 diff -ur /root/.acme.sh /home/restoredata/root/.acme.sh/
 diff -ur /root/tools /home/restoredata/root/tools/
 diff -ur /usr/local/nginx /home/restoredata/usr/local/nginx/
@@ -621,6 +632,7 @@ Then copy command will force override any existing files on destination director
 \cp -af /etc/centminmod/php.d/a_customphp.ini /etc/centminmod/php.d/a_customphp.ini.original
 \cp -af /etc/centminmod/php.d/zendopcache.ini /etc/centminmod/php.d/zendopcache.ini.original
 \cp -af /home/restoredata/etc/centminmod/* /etc/centminmod/
+\cp -af /home/restoredata/etc/pure-ftpd/* /etc/pure-ftpd/
 mkdir -p /root/.acme.sh
 \cp -af /home/restoredata/root/.acme.sh/* /root/.acme.sh/
 \cp -af /home/restoredata/root/tools/* /root/tools/
@@ -639,6 +651,7 @@ Or if disk space is a concern, instead of copy command use move commands
 \cp -af /etc/centminmod/php.d/a_customphp.ini /etc/centminmod/php.d/a_customphp.ini.original
 \cp -af /etc/centminmod/php.d/zendopcache.ini /etc/centminmod/php.d/zendopcache.ini.original
 mv -f /home/restoredata/etc/centminmod/* /etc/centminmod/
+mv -f /home/restoredata/etc/pure-ftpd/* /etc/pure-ftpd/
 mkdir -p /root/.acme.sh
 mv -f /home/restoredata/root/.acme.sh/* /root/.acme.sh/
 mv -f /home/restoredata/root/tools/* /root/tools/

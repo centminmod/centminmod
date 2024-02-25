@@ -351,22 +351,22 @@ drwxr-xr-x 3 root root 4.0K May  7 07:33 usr
 An breakdown of backup directory structure 6 directory levels max deep with the files hidden for easier visual view. Where:
 
 1. `/home/restoredata/etc/centminmod` is the backup data for `/etc/centminmod`
-2. `/home/restoredata/home/databackup/070523-072252/domains_tmp` is the backup data for `/home/nginx/domains` for Nginx vhost directories
-3. `/home/restoredata/home/databackup/070523-072252/mariadb_tmp` is the backup data for `/var/lib/mysql` MySQL data directory which also contains the MariaBackup MySQL data restore script at `/home/restoredata/home/databackup/070523-072252/mariadb_tmp/mariabackup-restore.sh`
-4. `/home/restoredata/root/tools` is the backup data for `/root/tools`
-5. `/home/restoredata/usr/local/nginx/` is the backup data for `/usr/local/nginx`
+2. `/home/restoredata/etc/pure-ftpd` is for /etc/pure-ftpd virtual FTP user database files
+3. `/home/restoredata/home/databackup/070523-072252/domains_tmp` is the backup data for `/home/nginx/domains` for Nginx vhost directories
+4. `/home/restoredata/home/databackup/070523-072252/mariadb_tmp` is the backup data for `/var/lib/mysql` MySQL data directory which also contains the MariaBackup MySQL data restore script at `/home/restoredata/home/databackup/070523-072252/mariadb_tmp/mariabackup-restore.sh`
+5. `/home/restoredata/root/tools` is the backup data for `/root/tools`
+6. `/home/restoredata/usr/local/nginx/` is the backup data for `/usr/local/nginx`
 
 ```
 tree -d -L 6 /home/restoredata/
 
 /home/restoredata/
 ├── etc
-│   └── centminmod
-│       ├── awscli
-│       │   ├── backup-profiles
-│       │   └── export-profiles
-│       ├── cronjobs
-│       └── php.d
+│   ├── centminmod
+│   │   ├── cronjobs
+│   │   ├── csf
+│   │   └── php.d
+│   └── pure-ftpd
 ├── home
 │   └── databackup
 │       └── 070523-072252
@@ -446,6 +446,7 @@ Then proceed to move the restored files to the correct locations. You can first 
 
 ```
 diff -ur /etc/centminmod /home/restoredata/etc/centminmod/
+diff -ur /etc/pure-ftpd /home/restoredata/etc/pure-ftpd
 diff -ur /root/.acme.sh /home/restoredata/root/.acme.sh/
 diff -ur /root/tools /home/restoredata/root/tools/
 diff -ur /usr/local/nginx /home/restoredata/usr/local/nginx/
@@ -475,6 +476,7 @@ Then copy command will force override any existing files on destination director
 \cp -af /etc/centminmod/php.d/a_customphp.ini /etc/centminmod/php.d/a_customphp.ini.original
 \cp -af /etc/centminmod/php.d/zendopcache.ini /etc/centminmod/php.d/zendopcache.ini.original
 \cp -af /home/restoredata/etc/centminmod/* /etc/centminmod/
+\cp -af /home/restoredata/etc/pure-ftpd/* /etc/pure-ftpd/
 mkdir -p /root/.acme.sh
 \cp -af /home/restoredata/root/.acme.sh/* /root/.acme.sh/
 \cp -af /home/restoredata/root/tools/* /root/tools/
@@ -498,6 +500,7 @@ Or if disk space is a concern, instead of copy command use move commands
 \cp -af /etc/centminmod/php.d/a_customphp.ini /etc/centminmod/php.d/a_customphp.ini.original
 \cp -af /etc/centminmod/php.d/zendopcache.ini /etc/centminmod/php.d/zendopcache.ini.original
 mv -f /home/restoredata/etc/centminmod/* /etc/centminmod/
+mv -f /home/restoredata/etc/pure-ftpd/* /etc/pure-ftpd/
 mkdir -p /root/.acme.sh
 mv -f /home/restoredata/root/.acme.sh/* /root/.acme.sh/
 mv -f /home/restoredata/root/tools/* /root/tools/
@@ -782,22 +785,22 @@ drwxr-xr-x 3 root root 4.0K May  7 07:33 usr
 An breakdown of backup directory structure 6 directory levels max deep with the files hidden for easier visual view. Where:
 
 1. `/home/restoredata/etc/centminmod` is the backup data for `/etc/centminmod`
-2. `/home/restoredata/home/databackup/070523-072252/domains_tmp` is the backup data for `/home/nginx/domains` for Nginx vhost directories
-3. `/home/restoredata/home/databackup/070523-072252/mariadb_tmp` is the backup data for `/var/lib/mysql` MySQL data directory which also contains the MariaBackup MySQL data restore script at `/home/restoredata/home/databackup/070523-072252/mariadb_tmp/mariabackup-restore.sh`
-4. `/home/restoredata/root/tools` is the backup data for `/root/tools`
-5. `/home/restoredata/usr/local/nginx/` is the backup data for `/usr/local/nginx`
+2. `/home/restoredata/etc/pure-ftpd` is for /etc/pure-ftpd virtual FTP user database files
+3. `/home/restoredata/home/databackup/070523-072252/domains_tmp` is the backup data for `/home/nginx/domains` for Nginx vhost directories
+4. `/home/restoredata/home/databackup/070523-072252/mariadb_tmp` is the backup data for `/var/lib/mysql` MySQL data directory which also contains the MariaBackup MySQL data restore script at `/home/restoredata/home/databackup/070523-072252/mariadb_tmp/mariabackup-restore.sh`
+5. `/home/restoredata/root/tools` is the backup data for `/root/tools`
+6. `/home/restoredata/usr/local/nginx/` is the backup data for `/usr/local/nginx`
 
 ```
 tree -d -L 6 /home/restoredata/
 
 /home/restoredata/
 ├── etc
-│   └── centminmod
-│       ├── awscli
-│       │   ├── backup-profiles
-│       │   └── export-profiles
-│       ├── cronjobs
-│       └── php.d
+│   ├── centminmod
+│   │   ├── cronjobs
+│   │   ├── csf
+│   │   └── php.d
+│   └── pure-ftpd
 ├── home
 │   └── databackup
 │       └── 070523-072252
@@ -877,6 +880,7 @@ Then proceed to move the restored files to the correct locations. You can first 
 
 ```
 diff -ur /etc/centminmod /home/restoredata/etc/centminmod/
+diff -ur /etc/pure-ftpd /home/restoredata/etc/pure-ftpd
 diff -ur /root/.acme.sh /home/restoredata/root/.acme.sh/
 diff -ur /root/tools /home/restoredata/root/tools/
 diff -ur /usr/local/nginx /home/restoredata/usr/local/nginx/
@@ -906,6 +910,7 @@ Then copy command will force override any existing files on destination director
 \cp -af /etc/centminmod/php.d/a_customphp.ini /etc/centminmod/php.d/a_customphp.ini.original
 \cp -af /etc/centminmod/php.d/zendopcache.ini /etc/centminmod/php.d/zendopcache.ini.original
 \cp -af /home/restoredata/etc/centminmod/* /etc/centminmod/
+\cp -af /home/restoredata/etc/pure-ftpd/* /etc/pure-ftpd/
 \cp -af /home/restoredata/root/.acme.sh/* /root/.acme.sh/
 \cp -af /home/restoredata/root/tools/* /root/tools/
 \cp -af /home/restoredata/usr/local/nginx/* /usr/local/nginx/
@@ -928,6 +933,7 @@ Or if disk space is a concern, instead of copy command use move commands
 \cp -af /etc/centminmod/php.d/a_customphp.ini /etc/centminmod/php.d/a_customphp.ini.original
 \cp -af /etc/centminmod/php.d/zendopcache.ini /etc/centminmod/php.d/zendopcache.ini.original
 mv -f /home/restoredata/etc/centminmod/* /etc/centminmod/
+mv -f /home/restoredata/etc/pure-ftpd/* /etc/pure-ftpd/
 mv -f /home/restoredata/root/.acme.sh/* /root/.acme.sh/
 mv -f /home/restoredata/root/tools/* /root/tools/
 mv -f /home/restoredata/usr/local/nginx/* /usr/local/nginx/
