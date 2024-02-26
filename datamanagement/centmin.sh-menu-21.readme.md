@@ -442,11 +442,13 @@ tree -d -L 6 /home/restoredata/
 78 directories
 ```
 
-Then proceed to move the restored files to the correct locations. You can first use `diff` command to check backup versus destination directory files
+Then proceed to move the restored files to the correct locations. You can first use `diff` command to check backup versus destination directory files. Not all directories may exist as it's dependent on whether you have installed the software i.e. Redis and KeyDB.
 
 ```
 diff -ur /etc/centminmod /home/restoredata/etc/centminmod/
 diff -ur /etc/pure-ftpd /home/restoredata/etc/pure-ftpd
+diff -ur /etc/redis /home/restoredata/etc/redis
+diff -ur /etc/keydb /home/restoredata/etc/keydb
 diff -ur /root/.acme.sh /home/restoredata/root/.acme.sh/
 diff -ur /root/tools /home/restoredata/root/tools/
 diff -ur /usr/local/nginx /home/restoredata/usr/local/nginx/
@@ -477,6 +479,8 @@ Then copy command will force override any existing files on destination director
 \cp -af /etc/centminmod/php.d/zendopcache.ini /etc/centminmod/php.d/zendopcache.ini.original
 \cp -af /home/restoredata/etc/centminmod/* /etc/centminmod/
 \cp -af /home/restoredata/etc/pure-ftpd/* /etc/pure-ftpd/
+\cp -af /home/restoredata/etc/redis/* /etc/redis/
+\cp -af /home/restoredata/etc/keydb/* /etc/keydb/
 mkdir -p /root/.acme.sh
 \cp -af /home/restoredata/root/.acme.sh/* /root/.acme.sh/
 \cp -af /home/restoredata/root/tools/* /root/tools/
@@ -501,6 +505,8 @@ Or if disk space is a concern, instead of copy command use move commands
 \cp -af /etc/centminmod/php.d/zendopcache.ini /etc/centminmod/php.d/zendopcache.ini.original
 mv -f /home/restoredata/etc/centminmod/* /etc/centminmod/
 mv -f /home/restoredata/etc/pure-ftpd/* /etc/pure-ftpd/
+mv -f /home/restoredata/etc/redis/* /etc/redis/
+mv -f /home/restoredata/etc/keydb/* /etc/keydb/
 mkdir -p /root/.acme.sh
 mv -f /home/restoredata/root/.acme.sh/* /root/.acme.sh/
 mv -f /home/restoredata/root/tools/* /root/tools/
@@ -519,6 +525,8 @@ Check overwritten files
 diff -ur /etc/centminmod/custom_config.inc.original /etc/centminmod/custom_config.inc
 diff -ur /usr/local/nginx_original/conf/conf.d/virtual.conf /usr/local/nginx/conf/conf.d/virtual.conf
 diff -ur /usr/local/nginx_original/conf/nginx.conf /usr/local/nginx/conf/nginx.conf
+diff -ur /etc/redis/redis.conf.original /etc/redis/redis.conf
+diff -ur /etc/keydb/keydb.conf.original /etc/keydb/keydb.conf
 ```
 
 If no changes to virtual.conf and nginx.conf use new server one
@@ -528,6 +536,10 @@ If no changes to virtual.conf and nginx.conf use new server one
 \cp -af /usr/local/nginx_original/conf/conf.d/virtual.conf /usr/local/nginx/conf/conf.d/virtual.conf
 diff -ur /usr/local/nginx_original/conf/nginx.conf /usr/local/nginx/conf/nginx.conf
 diff -ur /usr/local/nginx_original/conf/conf.d/virtual.conf /usr/local/nginx/conf/conf.d/virtual.conf
+\cp -af /etc/redis/redis.conf.original /etc/redis/redis.conf
+\cp -af /etc/keydb/keydb.conf.original /etc/keydb/keydb.conf
+diff -ur /etc/redis/redis.conf.original /etc/redis/redis.conf
+diff -ur /etc/keydb/keydb.conf.original /etc/keydb/keydb.conf
 ```
 
 Restore cronjobs
@@ -876,11 +888,13 @@ tree -d -L 6 /home/restoredata/
 78 directories
 ```
 
-Then proceed to move the restored files to the correct locations. You can first use `diff` command to check backup versus destination directory files
+Then proceed to move the restored files to the correct locations. You can first use `diff` command to check backup versus destination directory files. Not all directories may exist as it's dependent on whether you have installed the software i.e. Redis and KeyDB.
 
 ```
 diff -ur /etc/centminmod /home/restoredata/etc/centminmod/
 diff -ur /etc/pure-ftpd /home/restoredata/etc/pure-ftpd
+diff -ur /etc/redis /home/restoredata/etc/redis
+diff -ur /etc/keydb /home/restoredata/etc/keydb
 diff -ur /root/.acme.sh /home/restoredata/root/.acme.sh/
 diff -ur /root/tools /home/restoredata/root/tools/
 diff -ur /usr/local/nginx /home/restoredata/usr/local/nginx/
@@ -906,11 +920,15 @@ Then copy command will force override any existing files on destination director
 \cp -af /usr/local/nginx /usr/local/nginx_original
 \cp -af /etc/my.cnf /etc/my.cnf.original
 \cp -af /root/.my.cnf /root/.my.cnf.original
+\cp -af /etc/redis/redis.conf /etc/redis/redis.conf.original
+\cp -af /etc/keydb/keydb.conf /etc/keydb/keydb.conf.original
 \cp -af /etc/centminmod/custom_config.inc /etc/centminmod/custom_config.inc.original
 \cp -af /etc/centminmod/php.d/a_customphp.ini /etc/centminmod/php.d/a_customphp.ini.original
 \cp -af /etc/centminmod/php.d/zendopcache.ini /etc/centminmod/php.d/zendopcache.ini.original
 \cp -af /home/restoredata/etc/centminmod/* /etc/centminmod/
 \cp -af /home/restoredata/etc/pure-ftpd/* /etc/pure-ftpd/
+\cp -af /home/restoredata/etc/redis/* /etc/redis/
+\cp -af /home/restoredata/etc/keydb/* /etc/keydb/
 \cp -af /home/restoredata/root/.acme.sh/* /root/.acme.sh/
 \cp -af /home/restoredata/root/tools/* /root/tools/
 \cp -af /home/restoredata/usr/local/nginx/* /usr/local/nginx/
@@ -929,11 +947,15 @@ Or if disk space is a concern, instead of copy command use move commands
 \cp -af /usr/local/nginx /usr/local/nginx_original
 \cp -af /etc/my.cnf /etc/my.cnf.original
 \cp -af /root/.my.cnf /root/.my.cnf.original
+\cp -af /etc/redis/redis.conf /etc/redis/redis.conf.original
+\cp -af /etc/keydb/keydb.conf /etc/keydb/keydb.conf.original
 \cp -af /etc/centminmod/custom_config.inc /etc/centminmod/custom_config.inc.original
 \cp -af /etc/centminmod/php.d/a_customphp.ini /etc/centminmod/php.d/a_customphp.ini.original
 \cp -af /etc/centminmod/php.d/zendopcache.ini /etc/centminmod/php.d/zendopcache.ini.original
 mv -f /home/restoredata/etc/centminmod/* /etc/centminmod/
 mv -f /home/restoredata/etc/pure-ftpd/* /etc/pure-ftpd/
+mv -f /home/restoredata/etc/redis/* /etc/redis/
+mv -f /home/restoredata/etc/keydb/* /etc/keydb/
 mv -f /home/restoredata/root/.acme.sh/* /root/.acme.sh/
 mv -f /home/restoredata/root/tools/* /root/tools/
 mv -f /home/restoredata/usr/local/nginx/* /usr/local/nginx/
@@ -951,6 +973,8 @@ Check overwritten files
 diff -ur /etc/centminmod/custom_config.inc.original /etc/centminmod/custom_config.inc
 diff -ur /usr/local/nginx_original/conf/conf.d/virtual.conf /usr/local/nginx/conf/conf.d/virtual.conf
 diff -ur /usr/local/nginx_original/conf/nginx.conf /usr/local/nginx/conf/nginx.conf
+diff -ur /etc/redis/redis.conf.original /etc/redis/redis.conf
+diff -ur /etc/keydb/keydb.conf.original /etc/keydb/keydb.conf
 ```
 
 If no changes to virtual.conf and nginx.conf use new server one
@@ -960,6 +984,10 @@ If no changes to virtual.conf and nginx.conf use new server one
 \cp -af /usr/local/nginx_original/conf/conf.d/virtual.conf /usr/local/nginx/conf/conf.d/virtual.conf
 diff -ur /usr/local/nginx_original/conf/nginx.conf /usr/local/nginx/conf/nginx.conf
 diff -ur /usr/local/nginx_original/conf/conf.d/virtual.conf /usr/local/nginx/conf/conf.d/virtual.conf
+\cp -af /etc/redis/redis.conf.original /etc/redis/redis.conf
+\cp -af /etc/keydb/keydb.conf.original /etc/keydb/keydb.conf
+diff -ur /etc/redis/redis.conf.original /etc/redis/redis.conf
+diff -ur /etc/keydb/keydb.conf.original /etc/keydb/keydb.conf
 ```
 
 Restore cronjobs

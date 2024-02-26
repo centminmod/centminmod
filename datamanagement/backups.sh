@@ -1,6 +1,6 @@
 #!/bin/bash
 ################################################################################
-VER=1.2
+VER=1.3
 DT=$(date +"%d%m%y-%H%M%S")
 DEBUG_DISPLAY='n'
 CHECKSUMS='y'
@@ -503,6 +503,22 @@ files_backup() {
       DIRECTORIES_TO_BACKUP+=("/etc/pure-ftpd/pureftpd.pdb")
       DIRECTORIES_TO_BACKUP_NOCOMPRESS+=("/etc/pure-ftpd/pureftpd.pdb")
     fi
+    if [ -f /etc/redis/redis.conf ]; then
+      DIRECTORIES_TO_BACKUP+=("/etc/redis/redis.conf")
+      DIRECTORIES_TO_BACKUP_NOCOMPRESS+=("/etc/redis/redis.conf")
+    fi
+    if [ -f /etc/redis/sentinel.conf ]; then
+      DIRECTORIES_TO_BACKUP+=("/etc/redis/sentinel.conf")
+      DIRECTORIES_TO_BACKUP_NOCOMPRESS+=("/etc/redis/sentinel.conf")
+    fi
+    if [ -f /etc/keydb/keydb.conf ]; then
+      DIRECTORIES_TO_BACKUP+=("/etc/keydb/keydb.conf")
+      DIRECTORIES_TO_BACKUP_NOCOMPRESS+=("/etc/keydb/keydb.conf")
+    fi
+    if [ -f /etc/keydb/sentinel.conf ]; then
+      DIRECTORIES_TO_BACKUP+=("/etc/keydb/sentinel.conf")
+      DIRECTORIES_TO_BACKUP_NOCOMPRESS+=("/etc/keydb/sentinel.conf")
+    fi
     if [ -d /etc/elasticsearch ]; then
       \cp -af /etc/elasticsearch /etc/elasticsearch-source
       DIRECTORIES_TO_BACKUP+=("/etc/elasticsearch-source")
@@ -603,10 +619,12 @@ Where:
 
 * /home/restoredata/usr/local/nginx/ is the backup data for /usr/local/nginx
 
-Then proceed to move the restored files to the correct locations. You can first use diff command to check backup versus destination directory files
+Then proceed to move the restored files to the correct locations. You can first use diff command to check backup versus destination directory files. Not all directories may exist as it's dependent on whether you have installed the software i.e. Redis and KeyDB.
 
 diff -ur /etc/centminmod /home/restoredata/etc/centminmod/
 diff -ur /etc/pure-ftpd /home/restoredata/etc/pure-ftpd
+diff -ur /etc/redis /home/restoredata/etc/redis
+diff -ur /etc/keydb /home/restoredata/etc/keydb
 diff -ur /root/.acme.sh /home/restoredata/root/.acme.sh/
 diff -ur /root/tools /home/restoredata/root/tools/
 diff -ur /usr/local/nginx /home/restoredata/usr/local/nginx/
@@ -628,11 +646,15 @@ Then copy command will force override any existing files on destination director
 \cp -af /usr/local/nginx /usr/local/nginx_original
 \cp -af /etc/my.cnf /etc/my.cnf.original
 \cp -af /root/.my.cnf /root/.my.cnf.original
+\cp -af /etc/redis/redis.conf /etc/redis/redis.conf.original
+\cp -af /etc/keydb/keydb.conf /etc/keydb/keydb.conf.original
 \cp -af /etc/centminmod/custom_config.inc /etc/centminmod/custom_config.inc.original
 \cp -af /etc/centminmod/php.d/a_customphp.ini /etc/centminmod/php.d/a_customphp.ini.original
 \cp -af /etc/centminmod/php.d/zendopcache.ini /etc/centminmod/php.d/zendopcache.ini.original
 \cp -af /home/restoredata/etc/centminmod/* /etc/centminmod/
 \cp -af /home/restoredata/etc/pure-ftpd/* /etc/pure-ftpd/
+\cp -af /home/restoredata/etc/redis/* /etc/redis/
+\cp -af /home/restoredata/etc/keydb/* /etc/keydb/
 mkdir -p /root/.acme.sh
 \cp -af /home/restoredata/root/.acme.sh/* /root/.acme.sh/
 \cp -af /home/restoredata/root/tools/* /root/tools/
@@ -652,6 +674,8 @@ Or if disk space is a concern, instead of copy command use move commands
 \cp -af /etc/centminmod/php.d/zendopcache.ini /etc/centminmod/php.d/zendopcache.ini.original
 mv -f /home/restoredata/etc/centminmod/* /etc/centminmod/
 mv -f /home/restoredata/etc/pure-ftpd/* /etc/pure-ftpd/
+mv -f /home/restoredata/etc/redis/* /etc/redis/
+mv -f /home/restoredata/etc/keydb/* /etc/keydb/
 mkdir -p /root/.acme.sh
 mv -f /home/restoredata/root/.acme.sh/* /root/.acme.sh/
 mv -f /home/restoredata/root/tools/* /root/tools/
@@ -666,6 +690,8 @@ Check overwritten files
 diff -ur /etc/centminmod/custom_config.inc.original /etc/centminmod/custom_config.inc
 diff -ur /usr/local/nginx_original/conf/conf.d/virtual.conf /usr/local/nginx/conf/conf.d/virtual.conf
 diff -ur /usr/local/nginx_original/conf/nginx.conf /usr/local/nginx/conf/nginx.conf
+diff -ur /etc/redis/redis.conf.original /etc/redis/redis.conf
+diff -ur /etc/keydb/keydb.conf.original /etc/keydb/keydb.conf
 
 If no changes to virtual.conf and nginx.conf use new server one
 
@@ -673,6 +699,11 @@ If no changes to virtual.conf and nginx.conf use new server one
 \cp -af /usr/local/nginx_original/conf/conf.d/virtual.conf /usr/local/nginx/conf/conf.d/virtual.conf
 diff -ur /usr/local/nginx_original/conf/nginx.conf /usr/local/nginx/conf/nginx.conf
 diff -ur /usr/local/nginx_original/conf/conf.d/virtual.conf /usr/local/nginx/conf/conf.d/virtual.conf
+
+\cp -af /etc/redis/redis.conf.original /etc/redis/redis.conf
+\cp -af /etc/keydb/keydb.conf.original /etc/keydb/keydb.conf
+diff -ur /etc/redis/redis.conf.original /etc/redis/redis.conf
+diff -ur /etc/keydb/keydb.conf.original /etc/keydb/keydb.conf
 
 Restore cronjobs
 
