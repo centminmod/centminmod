@@ -1,3 +1,10 @@
+elnine_perl_check() {
+  if [[ "$CENTOS_NINE" -eq '9' && ! -f /usr/share/perl5/diagnostics.pm ]]; then
+    # required for mysqltuner.pl
+    $YUMDNFBIN -q -y install perl-diagnostics
+  fi
+}
+
 fix_wordpress_accept_encoding() {
   #/usr/local/nginx/conf/wpincludes/${vhostname}/php-fastcgicache.conf
   #/usr/local/nginx/conf/php-rediscache.conf
@@ -3916,6 +3923,7 @@ if [[ "$INITIALINSTALL" != [yY] ]]; then
   push_check_updates_cronsetup
   fix_wordpress_accept_encoding
   normalize_accept_encoding
+  elnine_perl_check
   if [ -f /etc/yum.repos.d/remi.repo ]; then
     fix_remi_repo_gpgcheck
   fi
