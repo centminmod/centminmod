@@ -63,8 +63,14 @@ enable_devtoolset() {
    if [[ "$GENERAL_DEVTOOLSETGCC" = [yY] ]]; then
       if [[ "$NGX_LDMOLD" = [yY] ]]; then
         mold_check
-        MOLD_LINKER_OPT=' -B/usr/local/libexec/mold'
-        # export LD="/usr/local/libexec/mold"
+        if [ -f /usr/bin/mold ]; then
+          MOLD_LINKER_OPT=' -B/usr/bin/mold'
+        elif [ -f /usr/local/libexec/mold ]; then
+          MOLD_LINKER_OPT=' -B/usr/local/libexec/mold'
+        else
+          NGX_LDMOLD='n'
+          MOLD_LINKER_OPT=""
+        fi
       else
         MOLD_LINKER_OPT=""
       fi

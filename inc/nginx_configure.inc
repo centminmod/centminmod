@@ -166,6 +166,10 @@ mold_check() {
       wget${ipv_forceopt_wget} -q "${LOCALCENTMINMOD_MIRROR}/centminmodparts/mold/centmin-mold-${MOLD_VERSION}-1.el7.x86_64.rpm" -O "${DIR_TMP}/centmin-mold-${MOLD_VERSION}-1.el7.x86_64.rpm"
       echo "yum -y localinstall ${DIR_TMP}/centmin-mold-${MOLD_VERSION}-1.el7.x86_64.rpm"
       yum -y localinstall "${DIR_TMP}/centmin-mold-${MOLD_VERSION}-1.el7.x86_64.rpm"
+    elif [[ "$CENTOS_NINE" = '9' && "$(uname -m)" = 'x86_64' ]] && [[ ! -f /usr/bin/mold ]]; then
+      yum -y install mold
+    elif [[ "$CENTOS_EIGHT" = '8' && "$(uname -m)" = 'x86_64' ]] && [[ ! -f /usr/bin/mold ]]; then
+      yum -y install mold
     elif [[ "$CENTOS_EIGHT" = '8' && "$(uname -m)" = 'x86_64' ]] && [[ "$(rpm -qa centmin-mold | grep -o "centmin-mold-${MOLD_VERSION_EL8}")" != "centmin-mold-${MOLD_VERSION_EL8}" || ! -s /usr/local/libexec/mold ]]; then
       echo "installing newer mold ${MOLD_VERSION_EL8}"
       wget${ipv_forceopt_wget} -q "${LOCALCENTMINMOD_MIRROR}/centminmodparts/mold/centmin-mold-${MOLD_VERSION_EL8}-1.el8.x86_64.rpm" -O "${DIR_TMP}/centmin-mold-${MOLD_VERSION_EL8}-1.el8.x86_64.rpm"
@@ -4856,6 +4860,8 @@ if [[ "$(gcc --version | head -n1 | awk '{print $3}' | cut -d . -f1-3 | sed "s|\
           NGXEXTRA_LDGOLDCCOPT="$NGXEXTRA_LDGOLDCCOPT${FLTO_OPT} -fuse-ld=gold -fno-fat-lto-objects -fuse-linker-plugin"
         elif [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]] && [[ "$NGINX_FATLTO_OBJECTS" = [yY] && "$NGX_LDGOLD" = [yY] ]]; then
           NGXEXTRA_LDGOLDCCOPT="$NGXEXTRA_LDGOLDCCOPT${FLTO_OPT} -fuse-ld=gold -ffat-lto-objects"
+        elif [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]] && [[ "$NGINX_FATLTO_OBJECTS" != [yY] && "$NGX_LDMOLD" = [yY] && -s /usr/bin/mold ]]; then
+          NGXEXTRA_LDGOLDCCOPT="$NGXEXTRA_LDGOLDCCOPT${FLTO_OPT} -B/usr/bin/mold"
         elif [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]] && [[ "$NGINX_FATLTO_OBJECTS" != [yY] && "$NGX_LDMOLD" = [yY] && -s /usr/local/libexec/mold ]]; then
           NGXEXTRA_LDGOLDCCOPT="$NGXEXTRA_LDGOLDCCOPT${FLTO_OPT} -B/usr/local/libexec/mold"
         elif [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]] && [[ "$NGINX_FATLTO_OBJECTS" != [yY] && "$NGX_LDGOLD" = [yY] ]]; then
@@ -4889,6 +4895,8 @@ if [[ "$(gcc --version | head -n1 | awk '{print $3}' | cut -d . -f1-3 | sed "s|\
           NGXEXTRA_LDGOLDCCOPT="$NGXEXTRA_LDGOLDCCOPT${FLTO_OPT} -fuse-ld=gold -fno-fat-lto-objects -fuse-linker-plugin"
         elif [[ "$CENTOS_SEVEN" -eq '7' && "$NGINX_FATLTO_OBJECTS" = [yY] && "$NGX_LDGOLD" = [yY] ]]; then
           NGXEXTRA_LDGOLDCCOPT="$NGXEXTRA_LDGOLDCCOPT${FLTO_OPT} -fuse-ld=gold -ffat-lto-objects"
+        elif [[ "$NGX_LDMOLD" = [yY] && -s /usr/bin/mold ]]; then
+          NGXEXTRA_LDGOLDCCOPT="$NGXEXTRA_LDGOLDCCOPT${FLTO_OPT} -B/usr/bin/mold"
         elif [[ "$NGX_LDMOLD" = [yY] && -s /usr/local/libexec/mold ]]; then
           NGXEXTRA_LDGOLDCCOPT="$NGXEXTRA_LDGOLDCCOPT${FLTO_OPT} -B/usr/local/libexec/mold"
         elif [[ "$NGX_LDGOLD" = [yY] ]]; then
@@ -4921,6 +4929,13 @@ if [[ "$(gcc --version | head -n1 | awk '{print $3}' | cut -d . -f1-3 | sed "s|\
         echo "HTTPTWOOPT=$HTTPTWOOPT"
       elif [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]] && [[ "$NGINXOPENSSL_FATLTO_OBJECTS" = [yY] && "$NGX_LDGOLD" = [nN] && "$DETECT_NGXVER" -ge '1015005' && "$(echo $OPENSSL_VERSION | grep -o '1.1.1')" = '1.1.1' ]]; then
         NGINX_OPENSSLOPT_EXTRAS=" ${FLTO_OPT} -ffat-lto-objects"
+        echo "NGINX_OPENSSLOPT_EXTRAS=$NGINX_OPENSSLOPT_EXTRAS"
+        echo "NGINXOPENSSL_FATLTO_OBJECTS=$NGINXOPENSSL_FATLTO_OBJECTS"
+        echo "NGINXOPENSSL_NOFATLTO_OBJECTS=$NGINXOPENSSL_NOFATLTO_OBJECTS"
+        echo "OPENSSL_VERION=$OPENSSL_VERSION"
+        echo "HTTPTWOOPT=$HTTPTWOOPT"
+      elif [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]] && [[ "$NGINXOPENSSL_FATLTO_OBJECTS" != [yY] && "$NGX_LDMOLD" = [yY] && -s /usr/bin/mold && "$DETECT_NGXVER" -ge '1015005' && "$(echo $OPENSSL_VERSION | grep -o '1.1.1')" = '1.1.1' ]]; then
+        NGINX_OPENSSLOPT_EXTRAS=" -B/usr/bin/mold"
         echo "NGINX_OPENSSLOPT_EXTRAS=$NGINX_OPENSSLOPT_EXTRAS"
         echo "NGINXOPENSSL_FATLTO_OBJECTS=$NGINXOPENSSL_FATLTO_OBJECTS"
         echo "NGINXOPENSSL_NOFATLTO_OBJECTS=$NGINXOPENSSL_NOFATLTO_OBJECTS"

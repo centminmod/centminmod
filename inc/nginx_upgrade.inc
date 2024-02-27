@@ -180,6 +180,7 @@ pcre_check_nginx(){
         echo
     fi
     if [[ "$NGX_LDMOLD" = [yY] ]]; then
+        echo 'readelf -p .comment $(which nginx)'
         readelf -p .comment $(which nginx)
     fi
     } 2>&1 | tee "${CENTMINLOGDIR}/nginx_pcre_checks_${DT}.log"
@@ -1014,6 +1015,13 @@ fi
         if [ -f objs/nginx ]; then
             echo
             echo "strip nginx binary..."
+            \cp -af objs/nginx objs/nginx.b4strip
+            if [[ "$NGX_LDMOLD" = [yY] ]]; then
+                echo
+                echo 'readelf -p .comment objs/nginx.b4strip'
+                readelf -p .comment objs/nginx.b4strip
+                echo
+            fi
             ls -lah objs/nginx
             strip -s objs/nginx
             ls -lah objs/nginx
