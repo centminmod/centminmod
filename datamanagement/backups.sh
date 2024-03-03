@@ -1,6 +1,6 @@
 #!/bin/bash
 ################################################################################
-VER=1.3
+VER=1.4
 DT=$(date +"%d%m%y-%H%M%S")
 DEBUG_DISPLAY='n'
 CHECKSUMS='y'
@@ -437,6 +437,13 @@ files_backup() {
   check_command_exists zstd zstd
   check_command_exists rsync rsync
   check_command_exists mariabackup mariadb-backup
+  if [[ "$(rsync --help | grep -o zstd)" = 'zstd' ]]; then
+    # if newer rsync 3.2.3+ detected with zstd support, use more
+    # performant rsync flags for better transfer speeds
+    RSYNC_NEW_FLAGS=' --cc xxhash --zc none'
+  else
+    RSYNC_NEW_FLAGS=""
+  fi
   START_TIME=$(date +%s)
   total_uncompressed_size=0
   for dir in "${DIRECTORIES_TO_BACKUP[@]}"; do
@@ -467,11 +474,11 @@ files_backup() {
       mkdir -p "$destination"
       echo "[$(date)] Backup data to $destination"
       if [[ "$DEBUG_DISPLAY" = [yY] ]]; then
-        echo "rsync -av --whole-file --exclude='logs' \"$domain_path\" \"$destination\"" | tee -a "$RSYNC_LOG"
-        rsync -av --whole-file --exclude='logs' "$domain_path" "$destination" | tee -a "$RSYNC_LOG"
+        echo "rsync -av${RSYNC_NEW_FLAGS} --whole-file --exclude='logs' \"$domain_path\" \"$destination\"" | tee -a "$RSYNC_LOG"
+        rsync -av${RSYNC_NEW_FLAGS} --whole-file --exclude='logs' "$domain_path" "$destination" | tee -a "$RSYNC_LOG"
       else
-        echo "rsync -av --whole-file --exclude='logs' \"$domain_path\" \"$destination\"" >> "$RSYNC_LOG"
-        rsync -av --whole-file --exclude='logs' "$domain_path" "$destination" >> "$RSYNC_LOG" 2>&1
+        echo "rsync -av${RSYNC_NEW_FLAGS} --whole-file --exclude='logs' \"$domain_path\" \"$destination\"" >> "$RSYNC_LOG"
+        rsync -av${RSYNC_NEW_FLAGS} --whole-file --exclude='logs' "$domain_path" "$destination" >> "$RSYNC_LOG" 2>&1
       fi
       DIRECTORIES_TO_BACKUP+=("$destination")
     done
@@ -482,9 +489,9 @@ files_backup() {
     \cp -af /var/spool/cron/root "${CRON_BACKUP_DIR}/root_cronjobs"
     # Backup system-wide cron jobs
     if [[ "$DEBUG_DISPLAY" = [yY] ]]; then
-      rsync -av --delete /etc/cron.d/ "${CRON_BACKUP_DIR}/system_cronjobs/" | tee -a "$RSYNC_LOG"
+      rsync -av${RSYNC_NEW_FLAGS} --delete /etc/cron.d/ "${CRON_BACKUP_DIR}/system_cronjobs/" | tee -a "$RSYNC_LOG"
     else
-      rsync -av --delete /etc/cron.d/ "${CRON_BACKUP_DIR}/system_cronjobs/" >> "$RSYNC_LOG" 2>&1
+      rsync -av${RSYNC_NEW_FLAGS} --delete /etc/cron.d/ "${CRON_BACKUP_DIR}/system_cronjobs/" >> "$RSYNC_LOG" 2>&1
     fi
     DIRECTORIES_TO_BACKUP+=("$CRON_BACKUP_DIR")
     if [ -d /root/.acme.sh ]; then
@@ -775,10 +782,10 @@ EOF
         echo "[$(date)] rsync non-vhost files in $dir to backup location $BASE_DIR"
         if [[ "$DEBUG_DISPLAY" = [yY] ]]; then
           mkdir -p "${BASE_DIR}${dir}"
-          rsync -av --delete $dir/ "${BASE_DIR}${dir}/" | tee -a "$RSYNC_LOG"
+          rsync -av${RSYNC_NEW_FLAGS} --delete $dir/ "${BASE_DIR}${dir}/" | tee -a "$RSYNC_LOG"
         else
           mkdir -p "${BASE_DIR}${dir}"
-          rsync -av --delete $dir/ "${BASE_DIR}${dir}/" >> "$RSYNC_LOG" 2>&1
+          rsync -av${RSYNC_NEW_FLAGS} --delete $dir/ "${BASE_DIR}${dir}/" >> "$RSYNC_LOG" 2>&1
         fi
       done
       echo
@@ -794,10 +801,10 @@ EOF
         echo "[$(date)] rsync non-vhost files in $dir to backup location $BASE_DIR"
         if [[ "$DEBUG_DISPLAY" = [yY] ]]; then
           mkdir -p "${BASE_DIR}${dir}"
-          rsync -av --delete $dir/ "${BASE_DIR}${dir}/" | tee -a "$RSYNC_LOG"
+          rsync -av${RSYNC_NEW_FLAGS} --delete $dir/ "${BASE_DIR}${dir}/" | tee -a "$RSYNC_LOG"
         else
           mkdir -p "${BASE_DIR}${dir}"
-          rsync -av --delete $dir/ "${BASE_DIR}${dir}/" >> "$RSYNC_LOG" 2>&1
+          rsync -av${RSYNC_NEW_FLAGS} --delete $dir/ "${BASE_DIR}${dir}/" >> "$RSYNC_LOG" 2>&1
         fi
       done
       echo
