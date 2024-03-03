@@ -1,3 +1,27 @@
+rsync_backport_install() {
+  # Almalinux provides a Rsync backport YUM repo that supports latest
+  # rsync 3.2.3+ versions which support zstd and xxhash 
+  # like outlined at https://community.centminmod.com/threads/custom-rsync-3-2-3-rpm-builds-with-xxhash-zstd-support-for-centos-7.20768/
+  # el8 native rsync is 3.1.3 and el9 native rsync is 3.2.3
+  # Almalinux backport report has rsync 3.2.7+
+  if [[ "$ALMALINUX_EIGHT" -eq '8' || "$ALMALINUX_NINE" -eq '9' || "$RSYNC_BACKPORT_REPO" = [yY] ]] && [ ! -f /etc/yum.repos.d/almalinux-backports-rsync.repo ]; then
+    curl http://repo.almalinux.org/backports/almalinux-backports-rsync.repo --output /etc/yum.repos.d/almalinux-backports-rsync.repo
+    yum -y update rsync
+    echo
+    echo "Backport Rsync 3.2.7+ YUM Repo Setup Installed"
+    echo
+    echo "EL7 default uses Rsync 3.1.2"
+    echo "EL8 default uses Rsync 3.1.3"
+    echo "EL9 default uses Rsync 3.2.3"
+    echo
+    echo "Rsync 3.2.3 adds zstd & xxhash support"
+    echo "https://community.centminmod.com/threads/custom-rsync-3-2-3-rpm-builds-with-xxhash-zstd-support-for-centos-7.20768/"
+    echo
+    /usr/bin/rsync --version
+    echo
+  fi
+}
+
 elnine_perl_check() {
   if [[ "$CENTOS_NINE" -eq '9' && ! -f /usr/share/perl5/diagnostics.pm ]]; then
     # required for mysqltuner.pl
@@ -3774,6 +3798,7 @@ jetpack_ip_whitelist_cronsetup
 push_check_updates_cronsetup
 tcp_bbr_setup
 normalize_accept_encoding
+rsync_backport_install
 
 if [[ "$INITIALINSTALL" != [yY] ]]; then
   march_hostcheck
@@ -3924,6 +3949,7 @@ if [[ "$INITIALINSTALL" != [yY] ]]; then
   fix_wordpress_accept_encoding
   normalize_accept_encoding
   elnine_perl_check
+  rsync_backport_install
   if [ -f /etc/yum.repos.d/remi.repo ]; then
     fix_remi_repo_gpgcheck
   fi
