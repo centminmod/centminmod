@@ -5126,7 +5126,11 @@ else
       NGX_BROTLI_TAG=''
     fi
     if [[ "$FREENGINX_INSTALL" = [yY] ]]; then
-      NGX_FREENGINX_TAG='-freengx'
+      if [[ "$ngver" = 'angie' ]]; then
+        NGX_FREENGINX_TAG=""
+      else
+        NGX_FREENGINX_TAG='-freengx'
+      fi
     fi
     SETBUILD_VALUE="${SETBUILD_DATE}-${SETBUILD_OS}${SETBUILD_ENV}${CM_COMMIT_LAST}${NGX_BROTLI_TAG}${KTLS_BUILD_TAG}${NGX_FREENGINX_TAG}"
     SETBUILD_VALUE=$(echo "$SETBUILD_VALUE" | sed -e 's|\-redhat||g')
