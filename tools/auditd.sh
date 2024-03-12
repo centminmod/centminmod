@@ -156,23 +156,23 @@ if [[ "$AUDITD_ENABLE" != [yY] ]]; then
 fi
 
 if [[ "$AUDITD_TOTALMEM" -le '499000' ]]; then
-  AUDITD_BUFFERSIZE='2048'
-elif [[ "$AUDITD_TOTALMEM" -ge '499001' && "$AUDITD_TOTALMEM" -le '1030000' ]]; then
   AUDITD_BUFFERSIZE='4096'
-elif [[ "$AUDITD_TOTALMEM" -ge '1030001' && "$AUDITD_TOTALMEM" -le '2040000' ]]; then
+elif [[ "$AUDITD_TOTALMEM" -ge '499001' && "$AUDITD_TOTALMEM" -le '1030000' ]]; then
   AUDITD_BUFFERSIZE='8192'
-elif [[ "$AUDITD_TOTALMEM" -ge '2040001' && "$AUDITD_TOTALMEM" -le '3040000' ]]; then
+elif [[ "$AUDITD_TOTALMEM" -ge '1030001' && "$AUDITD_TOTALMEM" -le '2040000' ]]; then
   AUDITD_BUFFERSIZE='16384'
-elif [[ "$AUDITD_TOTALMEM" -ge '3040001' && "$AUDITD_TOTALMEM" -le '4000000' ]]; then
+elif [[ "$AUDITD_TOTALMEM" -ge '2040001' && "$AUDITD_TOTALMEM" -le '3040000' ]]; then
   AUDITD_BUFFERSIZE='32768'
-elif [[ "$AUDITD_TOTALMEM" -ge '4000001' && "$AUDITD_TOTALMEM" -le '6020000' ]]; then
+elif [[ "$AUDITD_TOTALMEM" -ge '3040001' && "$AUDITD_TOTALMEM" -le '4000000' ]]; then
   AUDITD_BUFFERSIZE='65536'
-elif [[ "$AUDITD_TOTALMEM" -ge '6020001' && "$AUDITD_TOTALMEM" -le '8060000' ]]; then
+elif [[ "$AUDITD_TOTALMEM" -ge '4000001' && "$AUDITD_TOTALMEM" -le '6020000' ]]; then
   AUDITD_BUFFERSIZE='131072'
-elif [[ "$AUDITD_TOTALMEM" -ge '8060001' && "$AUDITD_TOTALMEM" -le '16000000' ]]; then
+elif [[ "$AUDITD_TOTALMEM" -ge '6020001' && "$AUDITD_TOTALMEM" -le '8060000' ]]; then
   AUDITD_BUFFERSIZE='262144'
-elif [[ "$AUDITD_TOTALMEM" -ge '16000001' ]]; then
+elif [[ "$AUDITD_TOTALMEM" -ge '8060001' && "$AUDITD_TOTALMEM" -le '16000000' ]]; then
   AUDITD_BUFFERSIZE='524288'
+elif [[ "$AUDITD_TOTALMEM" -ge '16000001' ]]; then
+  AUDITD_BUFFERSIZE='1048576'
 fi
 
 ######################################################
@@ -182,14 +182,14 @@ auditd_customrules() {
             VHOSTS=$(ls /usr/local/nginx/conf/conf.d | egrep 'ssl.conf|.conf' | egrep -v 'virtual.conf|^ssl.conf|demodomain.com.conf' |  sed -e 's/.ssl.conf//' -e 's/.conf//' | uniq)
         fi
 
-sed -i "s|-b 320|-b $AUDITD_BUFFERSIZE|" "$AUDITRULE_PERMFILE"
+sed -i "s|^-b .*|-b $AUDITD_BUFFERSIZE|" "$AUDITRULE_PERMFILE"
 echo "" >> "$AUDITRULE_PERMFILE"
 echo "# continue loading rules when it runs rule syntax errors" >> "$AUDITRULE_PERMFILE"
 echo "#-c" >> "$AUDITRULE_PERMFILE"
 echo "#-i" >> "$AUDITRULE_PERMFILE"
 echo "" >> "$AUDITRULE_PERMFILE"
-echo "# Generate at most 1000 audit messages per second" >> "$AUDITRULE_PERMFILE"
-echo "-r 1000" >> "$AUDITRULE_PERMFILE"
+echo "# Generate at most 5000 audit messages per second" >> "$AUDITRULE_PERMFILE"
+echo "-r 5000" >> "$AUDITRULE_PERMFILE"
 echo "" >> "$AUDITRULE_PERMFILE"
 echo "# custom auditd rules for centmin mod centos environments - DO NOT DELETE THIS LINE" >> "$AUDITRULE_PERMFILE"
 echo "-w /var/log/wtmp -k sessiontmp" >> "$AUDITRULE_PERMFILE"
@@ -311,14 +311,17 @@ fi
 if [ -f /etc/nsd/nsd.conf ]; then
 echo "-w /etc/nsd/nsd.conf -p wa -k nsdconf_changes" >> "$AUDITRULE_PERMFILE"
 fi
-for vhostname in $VHOSTS; do
-    if [ -d "/home/nginx/domains/${vhostname}/log" ]; then
-        echo "-a exit,always -F arch=b32 -S unlink -S unlinkat -S rmdir -F dir=/home/nginx/domains/${vhostname}/log -F success=0 -k ${vhostname}_logdeletion" >> "$AUDITRULE_PERMFILE"
-        echo "-a exit,always -F arch=b32 -S rename -S renameat -F dir=/home/nginx/domains/${vhostname}/log -F success=0 -k ${vhostname}_logrename" >> "$AUDITRULE_PERMFILE"
-        echo "-a exit,always -F arch=b64 -S unlink -S unlinkat -S rmdir -F dir=/home/nginx/domains/${vhostname}/log -F success=0 -k ${vhostname}_logdeletion" >> "$AUDITRULE_PERMFILE"
-        echo "-a exit,always -F arch=b64 -S rename -S renameat -F dir=/home/nginx/domains/${vhostname}/log -F success=0 -k ${vhostname}_logrename" >> "$AUDITRULE_PERMFILE"
-    fi
-done
+if [ -d /usr/local/nginx/conf/conf.d ]; then
+    VHOSTS=$(ls /usr/local/nginx/conf/conf.d | egrep 'ssl.conf|.conf' | egrep -v 'virtual.conf|^ssl.conf|demodomain.com.conf' |  sed -e 's/.ssl.conf//' -e 's/.conf//' | uniq)
+    for vhostname in $VHOSTS; do
+        if [ -d "/home/nginx/domains/${vhostname}/log" ]; then
+            echo "-a exit,always -F arch=b32 -S unlink -S unlinkat -S rmdir -F dir=/home/nginx/domains/${vhostname}/log -F success=0 -k ${vhostname}_logdeletion" >> "$AUDITRULE_PERMFILE"
+            echo "-a exit,always -F arch=b32 -S rename -S renameat -F dir=/home/nginx/domains/${vhostname}/log -F success=0 -k ${vhostname}_logrename" >> "$AUDITRULE_PERMFILE"
+            echo "-a exit,always -F arch=b64 -S unlink -S unlinkat -S rmdir -F dir=/home/nginx/domains/${vhostname}/log -F success=0 -k ${vhostname}_logdeletion" >> "$AUDITRULE_PERMFILE"
+            echo "-a exit,always -F arch=b64 -S rename -S renameat -F dir=/home/nginx/domains/${vhostname}/log -F success=0 -k ${vhostname}_logrename" >> "$AUDITRULE_PERMFILE"
+        fi
+    done
+fi
 cat "$AUDITRULE_PERMFILE" > "$CENTMINLOGDIR/auditd_rulesd_output_$DT.log"
 service auditd restart >/dev/null 2>&1
 chkconfig auditd on >/dev/null 2>&1    
@@ -507,7 +510,7 @@ audit_setup() {
 
 wipe_config() {
     if [[ -f /sbin/aureport && ! -f /proc/user_beancounters ]]; then
-        if [[ "$CENTOS_SEVEN" = '7' ]]; then
+        if [[ "$CENTOS_SEVEN" -eq '7' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]]; then
             AUDITRULE_FILE='/etc/audit/audit.rules'
             AUDITRULE_PERMFILE='/etc/audit/rules.d/audit.rules'
         elif [[ "$CENTOS_SIX" = '6' ]]; then
@@ -630,18 +633,18 @@ add_rules() {
         fi
         if [ -d /usr/local/nginx/conf/conf.d ]; then
             VHOSTS=$(ls /usr/local/nginx/conf/conf.d | egrep 'ssl.conf|.conf' | egrep -v 'virtual.conf|^ssl.conf|demodomain.com.conf' |  sed -e 's/.ssl.conf//' -e 's/.conf//' | uniq)
+            for vhostname in $VHOSTS; do
+                if [[ -d "/home/nginx/domains/${vhostname}/log" && -z "$(fgrep "/home/nginx/domains/${vhostname}/log" "$AUDITRULE_PERMFILE")" ]]; then
+                    echo "-a exit,always -F arch=b32 -S unlink -S unlinkat -S rmdir -F dir=/home/nginx/domains/${vhostname}/log -F success=0 -k ${vhostname}_logdeletion" >> "$AUDITRULE_PERMFILE"
+                    echo "-a exit,always -F arch=b32 -S rename -S renameat -F dir=/home/nginx/domains/${vhostname}/log -F success=0 -k ${vhostname}_logrename" >> "$AUDITRULE_PERMFILE"
+                    echo "-a exit,always -F arch=b64 -S unlink -S unlinkat -S rmdir -F dir=/home/nginx/domains/${vhostname}/log -F success=0 -k ${vhostname}_logdeletion" >> "$AUDITRULE_PERMFILE"
+                    echo "-a exit,always -F arch=b64 -S rename -S renameat -F dir=/home/nginx/domains/${vhostname}/log -F success=0 -k ${vhostname}_logrename" >> "$AUDITRULE_PERMFILE"
+                fi
+            done
         fi
-        for vhostname in $VHOSTS; do
-            if [[ -d "/home/nginx/domains/${vhostname}/log" && -z "$(fgrep "/home/nginx/domains/${vhostname}/log" "$AUDITRULE_PERMFILE")" ]]; then
-                echo "-a exit,always -F arch=b32 -S unlink -S unlinkat -S rmdir -F dir=/home/nginx/domains/${vhostname}/log -F success=0 -k ${vhostname}_logdeletion" >> "$AUDITRULE_PERMFILE"
-                echo "-a exit,always -F arch=b32 -S rename -S renameat -F dir=/home/nginx/domains/${vhostname}/log -F success=0 -k ${vhostname}_logrename" >> "$AUDITRULE_PERMFILE"
-                echo "-a exit,always -F arch=b64 -S unlink -S unlinkat -S rmdir -F dir=/home/nginx/domains/${vhostname}/log -F success=0 -k ${vhostname}_logdeletion" >> "$AUDITRULE_PERMFILE"
-                echo "-a exit,always -F arch=b64 -S rename -S renameat -F dir=/home/nginx/domains/${vhostname}/log -F success=0 -k ${vhostname}_logrename" >> "$AUDITRULE_PERMFILE"
-            fi
-        done
         # if auditd rules have changed restart auditd service
         if [[ "$(augenrules --check | grep 'No change' >/dev/null 2>&1; echo $?)" != '0' ]]; then
-            if [[ "$CENTOS_SIX" = '6' || "$CENTOS_SEVEN" = '7' ]]; then
+            if [[ "$CENTOS_SIX" -eq '6' || "$CENTOS_SEVEN" -eq '7' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]]; then
                 augenrules --check >/dev/null 2>&1
                 augenrules --load >/dev/null 2>&1
             fi
