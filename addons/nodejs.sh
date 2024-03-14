@@ -1,5 +1,5 @@
 #!/bin/bash
-VER='0.5'
+VER='0.6'
 ######################################################
 # set locale temporarily to english
 # due to some non-english locale issues
@@ -17,7 +17,7 @@ export SYSTEMD_PAGER=''
 # switch to nodesource yum repo instead of source compile
 # specify version branch so set NODEJSVER to 16 max for EL7
 # 20 for EL8 and EL9
-NODEJSVER='16'
+NODEJSVER='18'
 NODEJSVER_EL8='20'
 NODEJSVER_EL9='20'
 # for EL6 only
@@ -71,7 +71,7 @@ done
 CENTOSVER=$(awk '{ print $3 }' /etc/redhat-release)
 
 if [ ! -d "$CENTMINLOGDIR" ]; then
-    mkdir -p "$CENTMINLOGDIR"
+  mkdir -p "$CENTMINLOGDIR"
 fi
 
 if [ "$CENTOSVER" == 'release' ]; then
@@ -169,6 +169,8 @@ elif [ -f /etc/el-release ] && [[ "$EL_VERID" -eq 8 || "$EL_VERID" -eq 9 ]]; the
     EUROLINUX_NINE='9'
   fi
 fi
+
+CENTOSVER_NUMERIC=$(echo $CENTOSVER | sed -e 's|\.||g')
 
 if [ -f /etc/centminmod/custom_config.inc ]; then
   source /etc/centminmod/custom_config.inc
@@ -434,20 +436,20 @@ else
 fi
 
 preyum() {
-    if [[ ! -d /svr-setup ]]; then
-        yum -y install gcc-c++ patch readline readline-devel zlib zlib-devel libyaml-devel libffi-devel make bzip2 autoconf automake libtool bison iconv-devel sqlite-devel openssl-devel
-    elif [[ -z "$(rpm -ql libffi-devel)" || -z "$(rpm -ql libyaml-devel)" || -z "$(rpm -ql sqlite-devel)" ]]; then
-        yum -y install libffi-devel libyaml-devel sqlite-devel
-    fi
+  if [[ ! -d /svr-setup ]]; then
+    yum -y install gcc-c++ patch readline readline-devel zlib zlib-devel libyaml-devel libffi-devel make bzip2 autoconf automake libtool bison iconv-devel sqlite-devel openssl-devel
+  elif [[ -z "$(rpm -ql libffi-devel)" || -z "$(rpm -ql libyaml-devel)" || -z "$(rpm -ql sqlite-devel)" ]]; then
+    yum -y install libffi-devel libyaml-devel sqlite-devel
+  fi
 
-    mkdir -p /home/.ccache/tmp
+  mkdir -p /home/.ccache/tmp
 }
 
 scl_install() {
-    # if gcc version is less than 4.7 (407) install scl collection yum repo
-    if [[ "$CENTOS_SIX" = '6' ]]; then
-        if [[ "$(gcc --version | head -n1 | awk '{print $3}' | cut -d . -f1,2 | sed "s|\.|0|")" -lt '407' ]]; then
-            cecho "install centos-release-scl for newer gcc and g++ versions" $boldgreen
+  # if gcc version is less than 4.7 (407) install scl collection yum repo
+  if [[ "$CENTOS_SIX" = '6' ]]; then
+    if [[ "$(gcc --version | head -n1 | awk '{print $3}' | cut -d . -f1,2 | sed "s|\.|0|")" -lt '407' ]]; then
+      cecho "install centos-release-scl for newer gcc and g++ versions" $boldgreen
       if [[ -z "$(rpm -qa | grep rpmforge)" ]]; then
         yum -y -q install centos-release-scl
       else
@@ -459,20 +461,20 @@ scl_install() {
           yum -y -q install devtoolset-6-gcc devtoolset-6-gcc-c++ devtoolset-6-binutils --disablerepo=rpmforge
         fi
 
-            CCTOOLSET=' --gcc-toolchain=/opt/rh/devtoolset-6/root/usr/'
-            unset CC
-            unset CXX
-            # export CC="/opt/rh/devtoolset-6/root/usr/bin/gcc ${CCTOOLSET}"
-            # export CXX="/opt/rh/devtoolset-6/root/usr/bin/g++"
-            CLANG_CCOPT=""
-            export CC="ccache /usr/bin/clang ${CCTOOLSET}${CLANG_CCOPT}"
-            export CXX="ccache /usr/bin/clang++ ${CCTOOLSET}${CLANG_CCOPT}"
-            export CCACHE_CPP2=yes
-            echo ""
-        else
-            CCTOOLSET=""
-        fi
-    fi # centos 6 only needed
+      CCTOOLSET=' --gcc-toolchain=/opt/rh/devtoolset-6/root/usr/'
+      unset CC
+      unset CXX
+      # export CC="/opt/rh/devtoolset-6/root/usr/bin/gcc ${CCTOOLSET}"
+      # export CXX="/opt/rh/devtoolset-6/root/usr/bin/g++"
+      CLANG_CCOPT=""
+      export CC="ccache /usr/bin/clang ${CCTOOLSET}${CLANG_CCOPT}"
+      export CXX="ccache /usr/bin/clang++ ${CCTOOLSET}${CLANG_CCOPT}"
+      export CCACHE_CPP2=yes
+      echo ""
+    else
+      CCTOOLSET=""
+    fi
+  fi # centos 6 only needed
 }
 
 remove_old_repo() {
@@ -494,27 +496,21 @@ remove_old_repo() {
 installnodejs_new() {
   if [[ "$(which node >/dev/null 2>&1; echo $?)" != '0' ]]; then
       cd $DIR_TMP
-      if [[ ! "$(rpm -q gpg-pubkey --qf '%{NAME}-%{VERSION}-%{RELEASE} %{SUMMARY}\n' | grep 'nsolid')" ]]; then
-        rpm --import https://rpm.nodesource.com/gpgkey/nodesource.gpg.key
-      fi
+      # if [[ ! "$(rpm -q gpg-pubkey --qf '%{NAME}-%{VERSION}-%{RELEASE} %{SUMMARY}\n' | grep 'nsolid')" ]]; then
+      #   rpm --import https://rpm.nodesource.com/gpgkey/nodesource.gpg.key
+      # fi
       if [[ "$CENTOS_SEVEN" -eq '7' ]]; then
         remove_old_repo
-        echo "yum install https://rpm.nodesource.com/pub_${NODEJSVER}.x/nodistro/repo/nodesource-release-nodistro-1.noarch.rpm -y"
-        yum install "https://rpm.nodesource.com/pub_${NODEJSVER}.x/nodistro/repo/nodesource-release-nodistro-1.noarch.rpm" -y
-        echo "yum install nodejs -y --setopt=nodesource-nodejs.module_hotfixes=1 --disablerepo=epel"
-        yum install nodejs -y --setopt=nodesource-nodejs.module_hotfixes=1 --disablerepo=epel
+        curl -fsSL https://rpm.nodesource.com/setup_${NODEJSVER}.x | bash -
+        yum install -y nodejs --disablerepo=epel
       elif [[ "$CENTOS_EIGHT" -eq '8' ]]; then
         remove_old_repo
-        echo "yum install https://rpm.nodesource.com/pub_${NODEJSVER_EL8}.x/nodistro/repo/nodesource-release-nodistro-1.noarch.rpm -y"
-        yum install "https://rpm.nodesource.com/pub_${NODEJSVER_EL8}.x/nodistro/repo/nodesource-release-nodistro-1.noarch.rpm" -y
-        echo "yum install nodejs -y --setopt=nodesource-nodejs.module_hotfixes=1 --disablerepo=epel"
-        yum install nodejs -y --setopt=nodesource-nodejs.module_hotfixes=1 --disablerepo=epel
+        curl -fsSL https://rpm.nodesource.com/setup_${NODEJSVER_EL8}.x | bash -
+        yum install -y nodejs --disablerepo=epel
       elif [[ "$CENTOS_NINE" -eq '9' ]]; then
         remove_old_repo
-        echo "yum install https://rpm.nodesource.com/pub_${NODEJSVER_EL9}.x/nodistro/repo/nodesource-release-nodistro-1.noarch.rpm -y"
-        yum install "https://rpm.nodesource.com/pub_${NODEJSVER_EL9}.x/nodistro/repo/nodesource-release-nodistro-1.noarch.rpm" -y
-        echo "yum install nodejs -y --setopt=nodesource-nodejs.module_hotfixes=1 --disablerepo=epel"
-        yum install nodejs -y --setopt=nodesource-nodejs.module_hotfixes=1 --disablerepo=epel
+        curl -fsSL https://rpm.nodesource.com/setup_${NODEJSVER_EL9}.x | bash -
+        yum install -y nodejs --disablerepo=epel
       fi
       yum clean all
       # time npm install npm@latest -g
@@ -552,52 +548,52 @@ installnodejs() {
 # https://github.com/nodesource/distributions/issues/128
 # https://github.com/nodesource/distributions/blob/master/OLDER_DISTROS.md
 if [[ "$CENTOS_SEVEN" = '7' ]]; then
-    if [[ "$(which node >/dev/null 2>&1; echo $?)" != '0' ]]; then
-        cd $DIR_TMP
-        curl --silent -4 --location https://rpm.nodesource.com/setup_8.x | bash -
-        yum -y install nodejs --disableplugin=priorities --disablerepo=epel
-        npm install npm@latest -g
-    
-        echo
-        cecho "---------------------------" $boldyellow
-        cecho -n "Node.js Version: " $boldgreen
-        node -v
-        cecho "---------------------------" $boldyellow
-        cecho -n "npm Version: " $boldgreen
-        npm --version
-        cecho "---------------------------" $boldyellow
-        echo
-        cecho "node.js source install completed" $boldgreen
-    else
-        echo
-        cecho "node.js install already detected" $boldgreen
-    fi
+  if [[ "$(which node >/dev/null 2>&1; echo $?)" != '0' ]]; then
+      cd $DIR_TMP
+      curl --silent -4 --location https://rpm.nodesource.com/setup_8.x | bash -
+      yum -y install nodejs --disableplugin=priorities --disablerepo=epel
+      npm install npm@latest -g
+  
+    echo
+    cecho "---------------------------" $boldyellow
+    cecho -n "Node.js Version: " $boldgreen
+    node -v
+    cecho "---------------------------" $boldyellow
+    cecho -n "npm Version: " $boldgreen
+    npm --version
+    cecho "---------------------------" $boldyellow
+    echo
+    cecho "node.js source install completed" $boldgreen
+  else
+    echo
+    cecho "node.js install already detected" $boldgreen
+  fi
 elif [[ "$CENTOS_SIX" = '6' ]]; then
-    echo
-    cecho "--------------------------------------------------------------------" $boldyellow
-    cecho "CentOS 6.x detected... " $boldgreen
-    cecho "nodesource YUM install currently only works on CentOS 7.x systems" $boldgreen
-    cecho "alternative is to compile node.js from source instead" $boldgreen
-    cecho "due to devtoolset-6 & source compilation method it may" $boldgreen
-    cecho "take between 10-45 minutes to compile depending on system" $boldgreen
-    cecho "--------------------------------------------------------------------" $boldyellow
-    echo
-    read -ep "Do you want to continue with node.js source install ? [y/n]: " nodecontinue
-    echo
-    if [[ "$nodecontinue" = [yY] && "$NODEJS_SOURCEINSTALL" = [yY] ]]; then
-        if [[ "$(which node >/dev/null 2>&1; echo $?)" != '0' || "$NODEJS_REINSTALL" = [yY] ]]; then
-    
-            if [[ ! -f /opt/rh/devtoolset-4/root/usr/bin/gcc || ! -f /opt/rh/devtoolset-4/root/usr/bin/g++ ]] || [[ ! -f /opt/rh/devtoolset-6/root/usr/bin/gcc || ! -f /opt/rh/devtoolset-6/root/usr/bin/g++ ]]; then
-                scl_install
-            elif [[ "$DEVTOOLSETSIX" = [yY] && -f /opt/rh/devtoolset-6/root/usr/bin/gcc && -f /opt/rh/devtoolset-6/root/usr/bin/g++ ]]; then
-                CCTOOLSET=' --gcc-toolchain=/opt/rh/devtoolset-6/root/usr/'
-                unset CC
-                unset CXX
-                CLANG_CCOPT=""
-                export CC="ccache /usr/bin/clang ${CCTOOLSET}${CLANG_CCOPT}"
-                export CXX="ccache /usr/bin/clang++ ${CCTOOLSET}${CLANG_CCOPT}"
-                export CCACHE_CPP2=yes
-                echo ""
+  echo
+  cecho "--------------------------------------------------------------------" $boldyellow
+  cecho "CentOS 6.x detected... " $boldgreen
+  cecho "nodesource YUM install currently only works on CentOS 7.x systems" $boldgreen
+  cecho "alternative is to compile node.js from source instead" $boldgreen
+  cecho "due to devtoolset-6 & source compilation method it may" $boldgreen
+  cecho "take between 10-45 minutes to compile depending on system" $boldgreen
+  cecho "--------------------------------------------------------------------" $boldyellow
+  echo
+  read -ep "Do you want to continue with node.js source install ? [y/n]: " nodecontinue
+  echo
+  if [[ "$nodecontinue" = [yY] && "$NODEJS_SOURCEINSTALL" = [yY] ]]; then
+    if [[ "$(which node >/dev/null 2>&1; echo $?)" != '0' || "$NODEJS_REINSTALL" = [yY] ]]; then
+  
+      if [[ ! -f /opt/rh/devtoolset-4/root/usr/bin/gcc || ! -f /opt/rh/devtoolset-4/root/usr/bin/g++ ]] || [[ ! -f /opt/rh/devtoolset-6/root/usr/bin/gcc || ! -f /opt/rh/devtoolset-6/root/usr/bin/g++ ]]; then
+        scl_install
+      elif [[ "$DEVTOOLSETSIX" = [yY] && -f /opt/rh/devtoolset-6/root/usr/bin/gcc && -f /opt/rh/devtoolset-6/root/usr/bin/g++ ]]; then
+        CCTOOLSET=' --gcc-toolchain=/opt/rh/devtoolset-6/root/usr/'
+        unset CC
+        unset CXX
+        CLANG_CCOPT=""
+        export CC="ccache /usr/bin/clang ${CCTOOLSET}${CLANG_CCOPT}"
+        export CXX="ccache /usr/bin/clang++ ${CCTOOLSET}${CLANG_CCOPT}"
+        export CCACHE_CPP2=yes
+        echo ""
       elif [[ -f /opt/rh/devtoolset-4/root/usr/bin/gcc && -f /opt/rh/devtoolset-4/root/usr/bin/g++ ]]; then
         CCTOOLSET=' --gcc-toolchain=/opt/rh/devtoolset-4/root/usr/'
         unset CC
@@ -607,82 +603,82 @@ elif [[ "$CENTOS_SIX" = '6' ]]; then
         export CXX="ccache /usr/bin/clang++ ${CCTOOLSET}${CLANG_CCOPT}"
         export CCACHE_CPP2=yes
         echo ""
-            fi
-        
-            cd $DIR_TMP
-        
-                cecho "Download node-v${NODEJSVER}.tar.gz ..." $boldyellow
-            if [ -s node-v${NODEJSVER}.tar.gz ]; then
-                cecho "node-v${NODEJSVER}.tar.gz Archive found, skipping download..." $boldgreen
-            else
-                wget -c${ipv_forceopt} --progress=bar https://nodejs.org/dist/v${NODEJSVER}/node-v${NODEJSVER}.tar.gz --tries=3 
-        ERROR=$?
-            if [[ "$ERROR" != '0' ]]; then
-            cecho "Error: node-v${NODEJSVER}.tar.gz download failed." $boldgreen
-        checklogdetails
-            exit #$ERROR
-        else 
-                cecho "Download done." $boldyellow
-        #echo ""
-            fi
-            fi
-        
-            tar xzf node-v${NODEJSVER}.tar.gz 
-            ERROR=$?
-            if [[ "$ERROR" != '0' ]]; then
-            cecho "Error: node-v${NODEJSVER}.tar.gz extraction failed." $boldgreen
-        checklogdetails
-            exit #$ERROR
-        else 
-                cecho "node-v${NODEJSVER}.tar.gz valid file." $boldyellow
-                echo ""
-            fi
-        
-            cd node-v${NODEJSVER}
-            make clean
-            ./configure
-            make${MAKETHREADS}
-            make install
-            make doc
-            npm install npm@latest -g
-        
-            echo
-            cecho "---------------------------" $boldyellow
-            cecho -n "Node.js Version: " $boldgreen
-            node -v
-            cecho "---------------------------" $boldyellow
-            cecho -n "npm Version: " $boldgreen
-            npm --version
-            cecho "---------------------------" $boldyellow
-            echo
-            cecho "node.js source install completed" $boldgreen
+      fi
+    
+        cd $DIR_TMP
+    
+            cecho "Download node-v${NODEJSVER}.tar.gz ..." $boldyellow
+        if [ -s node-v${NODEJSVER}.tar.gz ]; then
+            cecho "node-v${NODEJSVER}.tar.gz Archive found, skipping download..." $boldgreen
         else
-            echo
-            cecho "node.js install already detected" $boldgreen
+            wget -c${ipv_forceopt} --progress=bar https://nodejs.org/dist/v${NODEJSVER}/node-v${NODEJSVER}.tar.gz --tries=3 
+    ERROR=$?
+      if [[ "$ERROR" != '0' ]]; then
+      cecho "Error: node-v${NODEJSVER}.tar.gz download failed." $boldgreen
+    checklogdetails
+      exit #$ERROR
+    else 
+            cecho "Download done." $boldyellow
+    #echo ""
+      fi
         fi
+    
+      tar xzf node-v${NODEJSVER}.tar.gz 
+      ERROR=$?
+      if [[ "$ERROR" != '0' ]]; then
+      cecho "Error: node-v${NODEJSVER}.tar.gz extraction failed." $boldgreen
+    checklogdetails
+      exit #$ERROR
+    else 
+            cecho "node-v${NODEJSVER}.tar.gz valid file." $boldyellow
+        echo ""
+      fi
+    
+      cd node-v${NODEJSVER}
+      make clean
+      ./configure
+      make${MAKETHREADS}
+      make install
+      make doc
+          npm install npm@latest -g
+    
+      echo
+      cecho "---------------------------" $boldyellow
+      cecho -n "Node.js Version: " $boldgreen
+      node -v
+      cecho "---------------------------" $boldyellow
+      cecho -n "npm Version: " $boldgreen
+      npm --version
+      cecho "---------------------------" $boldyellow
+      echo
+      cecho "node.js source install completed" $boldgreen
     else
-        if [[ "$NODEJS_SOURCEINSTALL" != [yY] ]]; then
-            echo
-            cecho "NODEJS_SOURCEINSTALL=n is set" $boldgreen
-            cecho "exiting..." $boldgreen
-            exit            
-        else    
-            echo
-            cecho "exiting..." $boldgreen
-            exit
-        fi
-    fi # nodecontinue
+      echo
+      cecho "node.js install already detected" $boldgreen
+    fi
+  else
+    if [[ "$NODEJS_SOURCEINSTALL" != [yY] ]]; then
+      echo
+      cecho "NODEJS_SOURCEINSTALL=n is set" $boldgreen
+      cecho "exiting..." $boldgreen
+      exit      
+    else  
+      echo
+      cecho "exiting..." $boldgreen
+      exit
+    fi
+  fi # nodecontinue
 fi
 
 }
 
 ###########################################################################
 case $1 in
-    install)
+  install)
 starttime=$(TZ=UTC date +%s.%N)
 {
-        # preyum
-        installnodejs_new
+    # preyum
+    installnodejs_new
 } 2>&1 | tee ${CENTMINLOGDIR}/centminmod_nodejs_install_${DT}.log
 
 endtime=$(TZ=UTC date +%s.%N)
@@ -690,9 +686,9 @@ endtime=$(TZ=UTC date +%s.%N)
 INSTALLTIME=$(echo "scale=2;$endtime - $starttime"|bc )
 echo "" >> ${CENTMINLOGDIR}/centminmod_nodejs_install_${DT}.log
 echo "Total Node.js Install Time: $INSTALLTIME seconds" >> ${CENTMINLOGDIR}/centminmod_nodejs_install_${DT}.log
-    ;;
-    *)
-        echo "$0 install"
-    ;;
+  ;;
+  *)
+    echo "$0 install"
+  ;;
 esac
 exit
