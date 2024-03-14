@@ -13,7 +13,7 @@ export SYSTEMD_PAGER=''
 ###############################################################
 # variables
 ###############################################################
-ACMEVER='1.0.92'
+ACMEVER='1.0.93'
 DT=$(date +"%d%m%y-%H%M%S")
 ACMEDEBUG='n'
 ACMEDEBUG_LOG='y'
@@ -34,7 +34,7 @@ RENEWDAYS='60'
 # https://community.letsencrypt.org/t/the-acme-sh-will-change-default-ca-to-zerossl-on-august-1st-2021/144052
 # set to default CA letsencrypt always
 ACME_DEFAULT_CA='letsencrypt'
-ACME_PREFERRED_CHAIN=' --preferred-chain  "ISRG"'
+ACME_PREFERRED_CHAIN=' --preferred-chain "ISRG"'
 
 # if set to yes, will issue and setup both RSA 2048bit +
 # ECDSA 256bit SSL certificates as outlined at
@@ -298,6 +298,13 @@ if [[ "$ACME_DEFAULT_CA" = 'buypass' ]]; then
   RENEWDAYS='160'
 elif [[ "$ACME_DEFAULT_CA" != 'letsencrypt' ]]; then
   ACME_PREFERRED_CHAIN=''
+fi
+
+if [[ "$ACME_DEFAULT_CA" = 'letsencrypt' && "$(echo $ACME_PREFERRED_CHAIN | grep -io 'DST Root CA X3')" = 'DST Root CA X3' ]]; then
+  # disable long chain support as letsencrypt no longer issues
+  # long chain supported SSL certificates since Feb 8, 2024
+  # https://blog.centminmod.com/2021/10/02/2425/centmin-mod-managing-letsencrypt-dst-root-ca-x3-certificate-expiration-on-centos-7/#finalexpiry
+  ACME_PREFERRED_CHAIN=' --preferred-chain "ISRG"'
 fi
 
 ###############################################################
