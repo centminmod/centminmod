@@ -236,7 +236,7 @@ geoiptwolite_install() {
   echo "------------------------------------------------------"
   cecho "GeoLite2 City database download ..." $boldyellow
   echo "------------------------------------------------------"
-  curl -${ipv_forceopt}Is --connect-timeout 30 --max-time 30 "$maxmind_city_url" | grep 'HTTP\/' | grep '200'
+  curl -${ipv_forceopt}IsL --connect-timeout 30 --max-time 30 "$maxmind_city_url" | grep 'HTTP\/' | grep '200'
   GEOIPTWOCITYDATA_CURLCHECK=$?
   # only overwrite existing downloaded file if the download url is working
   # if download doesn't work, do not overwrite existing downloaded file
@@ -253,7 +253,7 @@ geoiptwolite_install() {
   echo "------------------------------------------------------"
   cecho "GeoLite2 Country database download ..." $boldyellow
   echo "------------------------------------------------------"
-  curl -${ipv_forceopt}Is --connect-timeout 30 --max-time 30 "$maxmind_country_url" | grep 'HTTP\/' | grep '200'
+  curl -${ipv_forceopt}IsL --connect-timeout 30 --max-time 30 "$maxmind_country_url" | grep 'HTTP\/' | grep '200'
   GEOIPTWOCOUNTRYDATA_CURLCHECK=$?
   # only overwrite existing downloaded file if the download url is working
   # if download doesn't work, do not overwrite existing downloaded file
@@ -270,7 +270,7 @@ geoiptwolite_install() {
   echo "------------------------------------------------------"
   cecho "GeoLite2 ASN database download ..." $boldyellow
   echo "------------------------------------------------------"
-  curl -${ipv_forceopt}Is --connect-timeout 30 --max-time 30 "$maxmind_asn_url" | grep 'HTTP\/' | grep '200'
+  curl -${ipv_forceopt}IsL --connect-timeout 30 --max-time 30 "$maxmind_asn_url" | grep 'HTTP\/' | grep '200'
   GEOIPTWOASNDATA_CURLCHECK=$?
   # only overwrite existing downloaded file if the download url is working
   # if download doesn't work, do not overwrite existing downloaded file
