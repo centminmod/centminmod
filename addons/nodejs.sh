@@ -1,5 +1,5 @@
 #!/bin/bash
-VER='0.5'
+VER='0.6'
 ######################################################
 # set locale temporarily to english
 # due to some non-english locale issues
@@ -17,7 +17,7 @@ export SYSTEMD_PAGER=''
 # switch to nodesource yum repo instead of source compile
 # specify version branch so set NODEJSVER to 16 max for EL7
 # 20 for EL8 and EL9
-NODEJSVER='16'
+NODEJSVER='18'
 NODEJSVER_EL8='20'
 NODEJSVER_EL9='20'
 # for EL6 only
@@ -496,27 +496,21 @@ remove_old_repo() {
 installnodejs_new() {
   if [[ "$(which node >/dev/null 2>&1; echo $?)" != '0' ]]; then
       cd $DIR_TMP
-      if [[ ! "$(rpm -q gpg-pubkey --qf '%{NAME}-%{VERSION}-%{RELEASE} %{SUMMARY}\n' | grep 'nsolid')" ]]; then
-        rpm --import https://rpm.nodesource.com/gpgkey/nodesource.gpg.key
-      fi
+      # if [[ ! "$(rpm -q gpg-pubkey --qf '%{NAME}-%{VERSION}-%{RELEASE} %{SUMMARY}\n' | grep 'nsolid')" ]]; then
+      #   rpm --import https://rpm.nodesource.com/gpgkey/nodesource.gpg.key
+      # fi
       if [[ "$CENTOS_SEVEN" -eq '7' ]]; then
         remove_old_repo
-        echo "yum install https://rpm.nodesource.com/pub_${NODEJSVER}.x/nodistro/repo/nodesource-release-nodistro-1.noarch.rpm -y"
-        yum install "https://rpm.nodesource.com/pub_${NODEJSVER}.x/nodistro/repo/nodesource-release-nodistro-1.noarch.rpm" -y
-        echo "yum install nodejs -y --setopt=nodesource-nodejs.module_hotfixes=1 --disablerepo=epel"
-        yum install nodejs -y --setopt=nodesource-nodejs.module_hotfixes=1 --disablerepo=epel
+        curl -fsSL https://rpm.nodesource.com/setup_${NODEJSVER}.x | bash -
+        yum install -y nodejs --disablerepo=epel
       elif [[ "$CENTOS_EIGHT" -eq '8' ]]; then
         remove_old_repo
-        echo "yum install https://rpm.nodesource.com/pub_${NODEJSVER_EL8}.x/nodistro/repo/nodesource-release-nodistro-1.noarch.rpm -y"
-        yum install "https://rpm.nodesource.com/pub_${NODEJSVER_EL8}.x/nodistro/repo/nodesource-release-nodistro-1.noarch.rpm" -y
-        echo "yum install nodejs -y --setopt=nodesource-nodejs.module_hotfixes=1 --disablerepo=epel"
-        yum install nodejs -y --setopt=nodesource-nodejs.module_hotfixes=1 --disablerepo=epel
+        curl -fsSL https://rpm.nodesource.com/setup_${NODEJSVER_EL8}.x | bash -
+        yum install -y nodejs --disablerepo=epel
       elif [[ "$CENTOS_NINE" -eq '9' ]]; then
         remove_old_repo
-        echo "yum install https://rpm.nodesource.com/pub_${NODEJSVER_EL9}.x/nodistro/repo/nodesource-release-nodistro-1.noarch.rpm -y"
-        yum install "https://rpm.nodesource.com/pub_${NODEJSVER_EL9}.x/nodistro/repo/nodesource-release-nodistro-1.noarch.rpm" -y
-        echo "yum install nodejs -y --setopt=nodesource-nodejs.module_hotfixes=1 --disablerepo=epel"
-        yum install nodejs -y --setopt=nodesource-nodejs.module_hotfixes=1 --disablerepo=epel
+        curl -fsSL https://rpm.nodesource.com/setup_${NODEJSVER_EL9}.x | bash -
+        yum install -y nodejs --disablerepo=epel
       fi
       yum clean all
       # time npm install npm@latest -g
