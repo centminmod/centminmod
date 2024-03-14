@@ -379,6 +379,19 @@ else
     fi
     echo
     read -ep "Enter PHP Version number you want to upgrade/downgrade to: " phpver
+
+    PHP_MAX_VER=$(echo "$phpver" | cut -d . -f1,2)
+    if [[ "$PHP_MAX_VER" = 8.2 || "$PHP_MAX_VER" = 8.3 ]]; then
+        echo
+        echo
+        echo "$branchname Max supported PHP version is 8.1. For PHP 8.2+ support"
+        echo "Upgrade switch to Centmin Mod 130.00beta01 or higher as per:"
+        echo "https://community.centminmod.com/threads/centmin-mod-124-00stable-130-00beta01-releases.22673/"
+        echo
+        echo
+        exit
+    fi
+
     echo
     # validate php version format is 7.3.x and not 7.3
     phpver_formatcheck="$(echo "$phpver" | grep '[0-9].[0-9].[0-9]')"
