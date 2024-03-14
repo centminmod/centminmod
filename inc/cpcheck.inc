@@ -1,3 +1,32 @@
+fix_mount_loop_sh() {
+    # https://community.centminmod.com/threads/mount-loop-service-special-device-tmpfs-does-not-exist.24652/#post-98927
+    FILE="/usr/local/bin/mount-loop.sh"
+    
+    # First pattern
+    INCORRECT_MOUNT1="mount -o rw,noexec,nodev,nosuid tmpfs /tmp"
+    CORRECT_MOUNT1="mount -t tmpfs -o rw,noexec,nodev,nosuid tmpfs /tmp"
+
+    # Second pattern
+    INCORRECT_MOUNT2="mount -o loop,rw,noexec,nosuid /home/usertmp_donotdelete /tmp"
+    CORRECT_MOUNT2="mount -t ext4 -o loop,rw,noexec,nodev,nosuid /home/usertmp_donotdelete /tmp"
+
+    if [ -f "$FILE" ]; then
+        # Check and correct the first pattern
+        if grep -qF -- "$INCORRECT_MOUNT1" "$FILE"; then
+            # echo "Incorrect mount command found (first pattern). Correcting it now..."
+            sed -i "s|${INCORRECT_MOUNT1}|${CORRECT_MOUNT1}|g" "$FILE"
+            # echo "The mount command has been corrected (first pattern)."
+        fi
+        
+        # Check and correct the second pattern
+        if grep -qF -- "$INCORRECT_MOUNT2" "$FILE"; then
+            # echo "Incorrect mount command found (second pattern). Correcting it now..."
+            sed -i "s|${INCORRECT_MOUNT2}|${CORRECT_MOUNT2}|g" "$FILE"
+            # echo "The mount command has been corrected (second pattern)."
+        fi
+    fi
+}
+
 rsync_backport_install() {
   # Almalinux provides a Rsync backport YUM repo that supports latest
   # rsync 3.2.3+ versions which support zstd and xxhash 
@@ -3950,6 +3979,7 @@ if [[ "$INITIALINSTALL" != [yY] ]]; then
   normalize_accept_encoding
   elnine_perl_check
   rsync_backport_install
+  fix_mount_loop_sh
   if [ -f /etc/yum.repos.d/remi.repo ]; then
     fix_remi_repo_gpgcheck
   fi
