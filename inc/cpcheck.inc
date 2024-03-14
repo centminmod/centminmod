@@ -16,6 +16,7 @@ fix_mount_loop_sh() {
             # echo "Incorrect mount command found (first pattern). Correcting it now..."
             sed -i "s|${INCORRECT_MOUNT1}|${CORRECT_MOUNT1}|g" "$FILE"
             # echo "The mount command has been corrected (first pattern)."
+            $FILE
         fi
         
         # Check and correct the second pattern
@@ -23,6 +24,7 @@ fix_mount_loop_sh() {
             # echo "Incorrect mount command found (second pattern). Correcting it now..."
             sed -i "s|${INCORRECT_MOUNT2}|${CORRECT_MOUNT2}|g" "$FILE"
             # echo "The mount command has been corrected (second pattern)."
+            $FILE
         fi
     fi
 }
