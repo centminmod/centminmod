@@ -15,16 +15,26 @@ fix_mount_loop_sh() {
         if grep -qF -- "$INCORRECT_MOUNT1" "$FILE"; then
             # echo "Incorrect mount command found (first pattern). Correcting it now..."
             sed -i "s|${INCORRECT_MOUNT1}|${CORRECT_MOUNT1}|g" "$FILE"
-            # echo "The mount command has been corrected (first pattern)."
-            $FILE
+            # Unmount /tmp if it's currently mounted to avoid the error
+            if [ "$(lsof /tmp | tail -n +2 | egrep -v 'deleted' | wc -l)" -eq 0 ]; then
+                if mountpoint -q /tmp; then
+                  umount -l /tmp
+                  $FILE
+                fi
+            fi
         fi
         
         # Check and correct the second pattern
         if grep -qF -- "$INCORRECT_MOUNT2" "$FILE"; then
             # echo "Incorrect mount command found (second pattern). Correcting it now..."
             sed -i "s|${INCORRECT_MOUNT2}|${CORRECT_MOUNT2}|g" "$FILE"
-            # echo "The mount command has been corrected (second pattern)."
-            $FILE
+            # Unmount /tmp if it's currently mounted to avoid the error
+            if [ "$(lsof /tmp | tail -n +2 | egrep -v 'deleted' | wc -l)" -eq 0 ]; then
+                if mountpoint -q /tmp; then
+                  umount -l /tmp
+                  $FILE
+                fi
+            fi
         fi
     fi
 }
