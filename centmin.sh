@@ -29,7 +29,7 @@ DT=$(date +"%d%m%y-%H%M%S")
 branchname='130.00beta01'
 SCRIPT_MAJORVER='130'
 SCRIPT_MINORVER='00'
-SCRIPT_INCREMENTVER='557'
+SCRIPT_INCREMENTVER='558'
 SCRIPT_VERSIONSHORT="${branchname}"
 SCRIPT_VERSION="${SCRIPT_VERSIONSHORT}.b${SCRIPT_INCREMENTVER}"
 SCRIPT_DATE='24/02/24'
@@ -1927,6 +1927,14 @@ if [[ "$CENTOS_SIX" -eq '6' && "$BORINGSSL_SWITCH" = [yY] ]]; then
   DEVTOOLSETEIGHT='n'
   DEVTOOLSETSEVEN='n'
   CRYPTO_DEVTOOLSETGCC='y'
+fi
+
+if [[ "$LIBRESSL_SWITCH" = [yY] ]]; then
+  # don't use system OpenSSL for Nginx
+  OPENSSL_SYSTEM_USE='n'
+elif [[ "$BORINGSSL_SWITCH" = [yY] ]]; then
+  # don't use system OpenSSL for Nginx
+  OPENSSL_SYSTEM_USE='n'
 fi
 
 # ensure if ORESTY_LUANGINX is enabled, that the other required

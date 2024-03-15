@@ -182,6 +182,7 @@ auditd_customrules() {
             VHOSTS=$(ls /usr/local/nginx/conf/conf.d | egrep 'ssl.conf|.conf' | egrep -v 'virtual.conf|^ssl.conf|demodomain.com.conf' |  sed -e 's/.ssl.conf//' -e 's/.conf//' | uniq)
         fi
 
+echo '-b 320' > "$AUDITRULE_PERMFILE"
 sed -i "s|^-b .*|-b $AUDITD_BUFFERSIZE|" "$AUDITRULE_PERMFILE"
 echo "" >> "$AUDITRULE_PERMFILE"
 echo "# continue loading rules when it runs rule syntax errors" >> "$AUDITRULE_PERMFILE"
