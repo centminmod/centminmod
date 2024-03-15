@@ -1593,6 +1593,7 @@ fi
       fi
     elif [[ "$BORINGSSL_SWITCH" = [yY] ]]; then
         boringsslinstallstarttime=$(TZ=UTC date +%s.%N)
+        OPENSSL_SYSTEM_USE='n'
         crypto_gcc
         if [ -f "$(which figlet)" ]; then
             figlet -ckf standard "Compiling BoringSSL"

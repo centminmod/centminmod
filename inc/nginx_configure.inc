@@ -1133,6 +1133,7 @@ if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9'
   fi
 
   if [[ "$LIBRESSL_SWITCH" = [yY] ]]; then
+    OPENSSL_SYSTEM_USE='n'
     LIBRESSLDIR=$(tar -tzf "$DIR_TMP/${LIBRESSL_LINKFILE}" 2>&1 | head -1 | cut -f1 -d"/" | grep libressl)
     LIBRESSLOPT=" --with-openssl=../$LIBRESSLDIR"
     OPENSSLOPT=""
@@ -1142,6 +1143,7 @@ if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9'
     LIBRESSL_LIBOPT="-L/opt/libressl/lib -lcrypto -lssl "
     LIBRESSLINC_OPT="-I/opt/libressl/include/openssl "
   elif [[ "$BORINGSSL_SWITCH" = [yY] ]]; then
+    OPENSSL_SYSTEM_USE='n'
     LIBRESSLOPT=""
     OPENSSLOPT=""
     # LRT=""
@@ -5154,6 +5156,7 @@ else
           echo "NGINXOPENSSL_FATLTO_OBJECTS=$NGINXOPENSSL_FATLTO_OBJECTS"
           echo "NGINXOPENSSL_NOFATLTO_OBJECTS=$NGINXOPENSSL_NOFATLTO_OBJECTS"
           echo "OPENSSL_VERION=$OPENSSL_VERSION"
+          echo "OPENSSL_SYSTEM_USE=$OPENSSL_SYSTEM_USE"
           echo "HTTPTWOOPT=$HTTPTWOOPT"
           echo
           echo "nginx configure options (alternate ordering):"
@@ -5188,6 +5191,7 @@ else
         echo "NGINXOPENSSL_FATLTO_OBJECTS=$NGINXOPENSSL_FATLTO_OBJECTS"
         echo "NGINXOPENSSL_NOFATLTO_OBJECTS=$NGINXOPENSSL_NOFATLTO_OBJECTS"
         echo "OPENSSL_VERION=$OPENSSL_VERSION"
+        echo "OPENSSL_SYSTEM_USE=$OPENSSL_SYSTEM_USE"
         echo "HTTPTWOOPT=$HTTPTWOOPT"
         echo
         echo "nginx configure options (alternate ordering):"
