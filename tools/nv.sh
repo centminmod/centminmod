@@ -207,6 +207,16 @@ if [ ! -d "$CUR_DIR" ]; then
   exit 1
 fi
 
+nginx_auditd_sync() {
+  # if tools/auditd.sh is setup for auditd services
+  # then ensure everytime a new nginx vhost is added
+  # that auditd rules configuration is updated to
+  # add that new nginx vhost for auditd rule tracking
+  if [[ "$(systemctl is-enabled auditd)" = 'enabled' && -f "${CUR_DIR}/tools/auditd.sh" ]]; then
+    "${CUR_DIR}/tools/auditd.sh" updaterules
+  fi
+}
+
 usage() { 
 # if pure-ftpd service running = 0
 if [[ -f "${CUR_DIR}/addons/acmetool.sh" && "$LETSENCRYPT_DETECT" = [yY] ]]; then
@@ -1691,6 +1701,7 @@ echo "FTP password created for $vhostname : $ftppass"
 fi
 cecho "-------------------------------------------------------------" $boldyellow
 cecho "vhost for $vhostname created successfully" $boldwhite
+nginx_auditd_sync
 echo
 if [[ "$create_mainhostname_ssl" != [yY] ]]; then
   if [[ "$sslconfig" != 'yd' ]] || [[ "$sslconfig" != 'ydle' ]]; then

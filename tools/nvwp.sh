@@ -171,6 +171,16 @@ if [ ! -d "$CUR_DIR" ]; then
   exit 1
 fi
 
+nginx_auditd_sync() {
+  # if tools/auditd.sh is setup for auditd services
+  # then ensure everytime a new nginx vhost is added
+  # that auditd rules configuration is updated to
+  # add that new nginx vhost for auditd rule tracking
+  if [[ "$(systemctl is-enabled auditd)" = 'enabled' && -f "${CUR_DIR}/tools/auditd.sh" ]]; then
+    "${CUR_DIR}/tools/auditd.sh" updaterules
+  fi
+}
+
 usage() { 
 # if pure-ftpd service running = 0
 if [[ "$(ps aufx | grep -v grep | grep 'pure-ftpd' 2>&1>/dev/null; echo $?)" = '0' ]]; then
@@ -1931,6 +1941,7 @@ echo "FTP password created for $vhostname : $ftppass"
 fi
 cecho "-------------------------------------------------------------" $boldyellow
 cecho "vhost for $vhostname created successfully" $boldwhite
+nginx_auditd_sync
 echo
 cecho "domain: http://$vhostname" $boldyellow
 cecho "vhost conf file for $vhostname created: /usr/local/nginx/conf/conf.d/$vhostname.conf" $boldwhite

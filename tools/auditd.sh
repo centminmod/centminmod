@@ -309,6 +309,51 @@ fi
 if [ -f /usr/lib/systemd/system/memcached.service ]; then
 echo "-w /usr/lib/systemd/system/memcached.service -p wa -k memcachedservice_changes" >> "$AUDITRULE_PERMFILE"
 fi
+if [ -f /usr/lib/systemd/system/redis.service ]; then
+echo "-w /usr/lib/systemd/system/redis.service -p wa -k redisservice_changes" >> "$AUDITRULE_PERMFILE"
+fi
+if [ -f /usr/lib/systemd/system/redis6479.service ]; then
+echo "-w /usr/lib/systemd/system/redis6479.service -p wa -k redis6479service_changes" >> "$AUDITRULE_PERMFILE"
+fi
+if [ -f /usr/lib/systemd/system/redis6480.service ]; then
+echo "-w /usr/lib/systemd/system/redis6480.service -p wa -k redis6480service_changes" >> "$AUDITRULE_PERMFILE"
+fi
+if [ -f /usr/lib/systemd/system/keydb.service ]; then
+echo "-w /usr/lib/systemd/system/keydb.service -p wa -k keydbservice_changes" >> "$AUDITRULE_PERMFILE"
+fi
+if [ -f /usr/lib/systemd/system/keydb6479.service ]; then
+echo "-w /usr/lib/systemd/system/keydb6479.service -p wa -k keydb6479service_changes" >> "$AUDITRULE_PERMFILE"
+fi
+if [ -f /usr/lib/systemd/system/keydb6480.service ]; then
+echo "-w /usr/lib/systemd/system/keydb6480.service -p wa -k keydb6480service_changes" >> "$AUDITRULE_PERMFILE"
+fi
+if [ -f /usr/lib/systemd/system/mariadb.service ]; then
+echo "-w /usr/lib/systemd/system/mariadb.service -p wa -k mariadbservice_changes" >> "$AUDITRULE_PERMFILE"
+fi
+if [ -f /usr/lib/systemd/system/elasticsearch.service ]; then
+echo "-w /usr/lib/systemd/system/elasticsearch.service -p wa -k elasticsearchservice_changes" >> "$AUDITRULE_PERMFILE"
+fi
+if [ -f /usr/lib/systemd/system/postfix.service ]; then
+echo "-w /usr/lib/systemd/system/postfix.service -p wa -k postfixservice_changes" >> "$AUDITRULE_PERMFILE"
+fi
+if [ -f /usr/lib/systemd/system/csf.service ]; then
+echo "-w /usr/lib/systemd/system/csf.service -p wa -k csfservice_changes" >> "$AUDITRULE_PERMFILE"
+fi
+if [ -f /usr/lib/systemd/system/lfd.service ]; then
+echo "-w /usr/lib/systemd/system/lfd.service -p wa -k lfdservice_changes" >> "$AUDITRULE_PERMFILE"
+fi
+if [ -f /usr/lib/systemd/system/pure-ftpd.service ]; then
+echo "-w /usr/lib/systemd/system/pure-ftpd.service -p wa -k pureftpdservice_changes" >> "$AUDITRULE_PERMFILE"
+fi
+if [ -f /usr/lib/systemd/system/cockpit.service ]; then
+echo "-w /usr/lib/systemd/system/cockpit.service -p wa -k cockpitservice_changes" >> "$AUDITRULE_PERMFILE"
+fi
+if [ -f /usr/lib/systemd/system/nginx.service ]; then
+echo "-w /usr/lib/systemd/system/nginx.service -p wa -k nginxservice_changes" >> "$AUDITRULE_PERMFILE"
+fi
+if [ -f /usr/lib/systemd/system/php-fpm.service ]; then
+echo "-w /usr/lib/systemd/system/php-fpm.service -p wa -k phpfpmservice_changes" >> "$AUDITRULE_PERMFILE"
+fi
 if [ -f /etc/nsd/nsd.conf ]; then
 echo "-w /etc/nsd/nsd.conf -p wa -k nsdconf_changes" >> "$AUDITRULE_PERMFILE"
 fi
@@ -625,7 +670,13 @@ mariadb_auditon() {
 
 add_rules() {
     if [[ -f /etc/audit/auditd.conf && ! -f /proc/user_beancounters ]]; then
-        if [[ "$CENTOS_SEVEN" = '7' ]]; then
+        if [[ "$CENTOS_NINE" = '9' ]]; then
+            AUDITRULE_FILE='/etc/audit/audit.rules'
+            AUDITRULE_PERMFILE='/etc/audit/rules.d/audit.rules'
+        elif [[ "$CENTOS_EIGHT" = '8' ]]; then
+            AUDITRULE_FILE='/etc/audit/audit.rules'
+            AUDITRULE_PERMFILE='/etc/audit/rules.d/audit.rules'
+        elif [[ "$CENTOS_SEVEN" = '7' ]]; then
             AUDITRULE_FILE='/etc/audit/audit.rules'
             AUDITRULE_PERMFILE='/etc/audit/rules.d/audit.rules'
         elif [[ "$CENTOS_SIX" = '6' ]]; then

@@ -1,3 +1,13 @@
+nginx_auditd_sync() {
+  # if tools/auditd.sh is setup for auditd services
+  # then ensure everytime a new nginx vhost is added
+  # that auditd rules configuration is updated to
+  # add that new nginx vhost for auditd rule tracking
+  if [[ "$(systemctl is-enabled auditd)" = 'enabled' && -f "${SCRIPT_DIR}/tools/auditd.sh" ]]; then
+    "${SCRIPT_DIR}/tools/auditd.sh" updaterules
+  fi
+}
+
 check_dns() {
   vhostname_dns="$1"
     # if CHECKIDN = 0 then internationalized domain name which not supported by letsencrypt
@@ -1558,6 +1568,7 @@ echo "FTP password created for $vhostname : $ftppass"
 fi
 cecho "-------------------------------------------------------------" $boldyellow
 cecho "vhost for $vhostname created successfully" $boldwhite
+nginx_auditd_sync
 echo
 cecho "domain: http://$vhostname" $boldyellow
 cecho "vhost conf file for $vhostname created: /usr/local/nginx/conf/conf.d/$vhostname.conf" $boldwhite
