@@ -3371,6 +3371,7 @@ echo "FTP password created for $vhostname : $ftppass"
 fi
 cecho "-------------------------------------------------------------" $boldyellow
 cecho "vhost for $vhostname created successfully" $boldwhite
+nginx_auditd_sync
 echo
 if [[ "$wpcli_ssldefault" != '1' ]]; then
   cecho "domain: http://$vhostname" $boldyellow

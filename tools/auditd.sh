@@ -607,6 +607,8 @@ EOF
 
 mariadb_audit() {
     if [[ "$AUDIT_MARIADB" = [yY] ]]; then
+        mkdir -p /var/log/mysql
+        chown mysql /var/log/mysql
         echo
         echo "Setup MariaDB Audit Plugin"
         echo
@@ -615,12 +617,24 @@ mariadb_audit() {
         mysql -e "SELECT * FROM INFORMATION_SCHEMA.PLUGINS WHERE PLUGIN_NAME='SERVER_AUDIT'\G"
         mysql -e "SET GLOBAL server_audit_logging=on;"
         mysql -e "SET GLOBAL server_audit_events='connect,query_dml';"
+        mysql -e "SET GLOBAL server_audit_output_type=FILE;"
+        mysql -e "SET GLOBAL server_audit_file_path='/var/log/mysql/audit.log';"
+        mysql -e "SET GLOBAL server_audit_file_rotate_size=1000000;"
+        mysql -e "SET GLOBAL server_audit_file_rotations=5;"
         echo
         echo "Update /etc/my.cnf for server_audit_logging"
         sed -i '/server_audit_logging/d' /etc/my.cnf
         sed -i '/server_audit_events/d' /etc/my.cnf
+        sed -i '/server_audit_output_type/d' /etc/my.cnf
+        sed -i '/server_audit_file_path/d' /etc/my.cnf
+        sed -i '/server_audit_file_rotate_size/d' /etc/my.cnf
+        sed -i '/server_audit_file_rotations/d' /etc/my.cnf
         echo "server_audit_logging=1" >> /etc/my.cnf
         echo "server_audit_events=connect,query_dml" >> /etc/my.cnf
+        echo "server_audit_output_type=FILE" >> /etc/my.cnf
+        echo "server_audit_file_path=/var/log/mysql/audit.log" >> /etc/my.cnf
+        echo "server_audit_file_rotate_size=1000000" >> /etc/my.cnf
+        echo "server_audit_file_rotations=5" >> /etc/my.cnf
         echo
         echo "MariaDB Audit Plugin Installed & Configured"
         echo
@@ -637,8 +651,10 @@ mariadb_auditoff() {
         echo "Update /etc/my.cnf for server_audit_logging off"
         sed -i '/server_audit_logging/d' /etc/my.cnf
         sed -i '/server_audit_events/d' /etc/my.cnf
-        echo "server_audit_logging=0" >> /etc/my.cnf
-        echo "server_audit_events=connect,query_dml" >> /etc/my.cnf
+        sed -i '/server_audit_output_type/d' /etc/my.cnf
+        sed -i '/server_audit_file_path/d' /etc/my.cnf
+        sed -i '/server_audit_file_rotate_size/d' /etc/my.cnf
+        sed -i '/server_audit_file_rotations/d' /etc/my.cnf
         if [ -f /etc/centminmod/custom_config.inc ]; then
             sed -i 's|AUDIT_MARIADB.*|AUDIT_MARIADB='n'|' /etc/centminmod/custom_config.inc
         fi
@@ -647,6 +663,8 @@ mariadb_auditoff() {
 }
 
 mariadb_auditon() {
+        mkdir -p /var/log/mysql
+        chown mysql /var/log/mysql
         echo
         echo "Turn On MariaDB Audit Plugin"
         echo
@@ -655,12 +673,24 @@ mariadb_auditon() {
         mysql -e "SELECT * FROM INFORMATION_SCHEMA.PLUGINS WHERE PLUGIN_NAME='SERVER_AUDIT'\G"
         mysql -e "SET GLOBAL server_audit_logging=on;"
         mysql -e "SET GLOBAL server_audit_events='connect,query_dml';"
+        mysql -e "SET GLOBAL server_audit_output_type=FILE;"
+        mysql -e "SET GLOBAL server_audit_file_path='/var/log/mysql/audit.log';"
+        mysql -e "SET GLOBAL server_audit_file_rotate_size=1000000;"
+        mysql -e "SET GLOBAL server_audit_file_rotations=5;"
         echo
         echo "Update /etc/my.cnf for server_audit_logging on"
         sed -i '/server_audit_logging/d' /etc/my.cnf
         sed -i '/server_audit_events/d' /etc/my.cnf
+        sed -i '/server_audit_output_type/d' /etc/my.cnf
+        sed -i '/server_audit_file_path/d' /etc/my.cnf
+        sed -i '/server_audit_file_rotate_size/d' /etc/my.cnf
+        sed -i '/server_audit_file_rotations/d' /etc/my.cnf
         echo "server_audit_logging=1" >> /etc/my.cnf
         echo "server_audit_events=connect,query_dml" >> /etc/my.cnf
+        echo "server_audit_output_type=FILE" >> /etc/my.cnf
+        echo "server_audit_file_path=/var/log/mysql/audit.log" >> /etc/my.cnf
+        echo "server_audit_file_rotate_size=1000000" >> /etc/my.cnf
+        echo "server_audit_file_rotations=5" >> /etc/my.cnf
         if [ -f /etc/centminmod/custom_config.inc ]; then
             sed -i 's|AUDIT_MARIADB.*|AUDIT_MARIADB='y'|' /etc/centminmod/custom_config.inc
         fi
