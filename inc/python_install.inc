@@ -22,6 +22,9 @@ python_alternatives_setup() {
         if [[ "$(rpm -qa python3-numpy | grep -o 'python3-numpy')" != 'python3-numpy' ]]; then
             yum -y install python3-numpy
         fi
+        if [[ "$(rpm -qa python3-requests | grep -o 'python3-requests')" != 'python3-requests' ]]; then
+            yum -y install python3-requests
+        fi
     elif [[ "$PYTHON_INSTALL_ALTERNATIVES" = [yY] && "$CENTOS_NINE" -eq '9' ]] && [[ ! -f /usr/bin/python3 && ! -f /usr/bin/pip ]]; then
         # ALT_PYTHON_VER_LABEL='3.11'
         ALT_PYTHON_VER_EL9='3.11'
@@ -44,6 +47,9 @@ python_alternatives_setup() {
         fi
         if [[ "$(rpm -qa python3-numpy | grep -o 'python3-numpy')" != 'python3-numpy' ]]; then
             yum -y install python3-numpy
+        fi
+        if [[ "$(rpm -qa python3-requests | grep -o 'python3-requests')" != 'python3-requests' ]]; then
+            yum -y install python3-requests
         fi
     fi
 }
