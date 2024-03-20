@@ -18,6 +18,9 @@ python_alternatives_setup() {
             alternatives --set pip /usr/bin/pip3
             alternatives --list | egrep -i 'pip|python'
             echo
+        else
+            echo
+            echo "Skip python3 and pip3 alternatives mapping"
         fi
         if [[ "$(rpm -qa python3-numpy | grep -o 'python3-numpy')" != 'python3-numpy' ]]; then
             yum -y install python3-numpy
@@ -44,6 +47,9 @@ python_alternatives_setup() {
             alternatives --set pip /usr/bin/pip${ALT_PYTHON_VER_EL9}
             alternatives --list | egrep -i 'pip|python'
             echo
+        else
+            echo
+            echo "Skip python${ALT_PYTHON_VER_EL9} and pip${ALT_PYTHON_VER_EL9} alternatives mapping"
         fi
         if [[ "$(rpm -qa python3-numpy | grep -o 'python3-numpy')" != 'python3-numpy' ]]; then
             yum -y install python3-numpy
