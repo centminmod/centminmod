@@ -1112,6 +1112,10 @@ if [[ "$overwritephpfpmconf" = [yY] ]]; then
         PHP_MAJORUPGRADE='n'
     fi
 
+    if [[ ! -f "${CONFIGSCANDIR}/mssql.ini" || ! -f "${CONFIGSCANDIR}/mongodb.ini" || ! -f "${CONFIGSCANDIR}/swoole.ini" || ! -f "${CONFIGSCANDIR}/zopfli.ini" || ! -f "${CONFIGSCANDIR}/brotli.ini" || ! -f "${CONFIGSCANDIR}/brotli.ini" || ! -f "${CONFIGSCANDIR}/lz4.ini" || ! -f "${CONFIGSCANDIR}/lzf.ini" || ! -f "${CONFIGSCANDIR}/zstd.ini" ]] && [[ "$PHPMSSQL" = [yY] || "$PHPMONGODB" = [yY] || "$PHPSWOOLE" = [yY] || "$PHPZOPFLI" = [yY] || "$PHP_BROTLI" = [yY] || "$PHP_LZFOUR" = [yY] || "$PHP_LZF" = [yY] || "$PHP_ZSTD" = [yY] ]]; then
+        autodetectinstallextensions
+    fi
+
     if [[ "$PHPMUVER" != 'NGDEBUG' ]]; then
         if [[ ! -f "${CONFIGSCANDIR}/redis.ini" && "$PHPREDIS" = [yY] ]]; then
             redisinstall
