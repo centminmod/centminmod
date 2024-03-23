@@ -1,10 +1,10 @@
 #!/bin/bash
-VER=0.4
+VER=0.5
 DT=$(date +"%d%m%y-%H%M%S")
 SSH_LOGGING='n'
 remote_port=22; remote_user="root"; remote_server=""
 netcat="y"; buffer_size=131072; listen_port=12345
-backupdir=""; remote_backupdir=""; private_key=""; comp_level=6
+backupdir=""; remote_backupdir=""; private_key=""; comp_level=8
 
 print_usage() {
   cat <<- EOF
@@ -15,7 +15,7 @@ Options:
   -u   remote_user       Remote server SSH username (default: root)
   -h   remote_server     Remote server SSH hostname/IP address
   -m   tunnel_method     Tunnel method: 'nc' or 'socat' (default: nc)
-  -b   buffer_size       Buffer size for socat (in bytes, e.g., 131072 for 128 KB)
+  -b   buffer_size       Buffer size for socat (in bytes, e.g., 262144 for 256 KB)
   -l  listen_port       nc or socat listen port (default: 12345)
   -s source_directory Source backup directory
   -r remote_directory Remote (destination) backup directory
@@ -115,10 +115,10 @@ if ! [[ "$listen_port" =~ ^[1-9][0-9]*$ ]] || [ "$listen_port" -lt 1 ] || [ "$li
 fi
 
 if [[ "$SSH_LOGGING" = [yY] ]]; then
-  ssh_cmd="ssh -v -p $remote_port"
+  ssh_cmd="ssh -v -o Ciphers=aes128-gcm@openssh.com,aes256-gcm@openssh.com,aes128-ctr,aes192-ctr,aes256-ctr,aes128-cbc,aes192-cbc,aes256-cbc -p $remote_port"
   ssh_debug_log="2>ssh_debug.log"
 else
-  ssh_cmd="ssh -p $remote_port"
+  ssh_cmd="ssh -o Ciphers=aes128-gcm@openssh.com,aes256-gcm@openssh.com,aes128-ctr,aes192-ctr,aes256-ctr,aes128-cbc,aes192-cbc,aes256-cbc -p $remote_port"
   ssh_debug_log=""
 fi
 [ -n "$private_key" ] && ssh_cmd="$ssh_cmd -i $private_key"

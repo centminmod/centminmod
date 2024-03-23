@@ -8,6 +8,7 @@ export LANGUAGE=en_US.UTF-8
 export LC_CTYPE=en_US.UTF-8
 # disable systemd pager so it doesn't pipe systemctl output to less
 export SYSTEMD_PAGER=''
+ARCH_CHECK="$(uname -m)"
 ########################################################################################
 # https://community.centminmod.com/threads/help-test-innodbio-sh-for-mysql-tuning.6012/
 # for centminmod.com /etc/my.cnf

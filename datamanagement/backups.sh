@@ -1,6 +1,6 @@
 #!/bin/bash
 ################################################################################
-VER=1.4
+VER=1.5
 DT=$(date +"%d%m%y-%H%M%S")
 DEBUG_DISPLAY='n'
 CHECKSUMS='y'
@@ -466,19 +466,25 @@ files_backup() {
     echo "[$(date)] Creating temporary domain data directory ..."
     mkdir -p "$BASE_DIR"
     mkdir -p "$DOMAINS_TMP_DIR"
-    echo "[$(date)] Copying domain data (excluding logs) ..."
+    echo "[$(date)] Rsync copying domain data (excluding logs) ..."
     export RSYNC_SKIP_COMPRESS="3g2,3gp,3gpp,3mf,7z,aac,ace,amr,apk,appx,appxbundle,arc,arj,asf,avi,br,bz2,cab,crypt5,crypt7,crypt8,deb,dmg,drc,ear,gz,flac,flv,gpg,h264,h265,heif,iso,jar,jp2,jpg,jpeg,lz,lz4,lzma,lzo,m4a,m4p,m4v,mkv,msi,mov,mp3,mp4,mpeg,mpg,mpv,oga,ogg,ogv,opus,pack,png,qt,rar,rpm,rzip,s7z,sfx,svgz,tbz,tgz,tlz,txz,vob,webm,webp,wim,wma,wmv,xz,z,zip,zst"
     for domain_path in /home/nginx/domains/*/; do
       domain=$(basename "$domain_path")
       destination="$DOMAINS_TMP_DIR/$domain"
       mkdir -p "$destination"
-      echo "[$(date)] Backup data to $destination"
+      echo "[$(date)] Backup $domain data to $destination"
       if [[ "$DEBUG_DISPLAY" = [yY] ]]; then
         echo "rsync -av${RSYNC_NEW_FLAGS} --whole-file --exclude='logs' \"$domain_path\" \"$destination\"" | tee -a "$RSYNC_LOG"
         rsync -av${RSYNC_NEW_FLAGS} --whole-file --exclude='logs' "$domain_path" "$destination" | tee -a "$RSYNC_LOG"
       else
         echo "rsync -av${RSYNC_NEW_FLAGS} --whole-file --exclude='logs' \"$domain_path\" \"$destination\"" >> "$RSYNC_LOG"
         rsync -av${RSYNC_NEW_FLAGS} --whole-file --exclude='logs' "$domain_path" "$destination" >> "$RSYNC_LOG" 2>&1
+      fi
+      ERR_RSYNC=$?
+      if [[ "$ERR_RSYNC" -eq '0' ]]; then
+        echo "[$(date)] Rsync copy $domain completed ok" | tee -a "${destination}/.rsync_backup_${domain}_completed_${DT}.log"
+      else
+        echo "[$(date)] Rsync copy $domain failed to complete" | tee -a "${destination}/.rsync_backup_${domain}_failed_${DT}.log"
       fi
       DIRECTORIES_TO_BACKUP+=("$destination")
     done

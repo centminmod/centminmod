@@ -28,8 +28,10 @@ export LANGUAGE=en_US.UTF-8
 export LC_CTYPE=en_US.UTF-8
 # disable systemd pager so it doesn't pipe systemctl output to less
 export SYSTEMD_PAGER=''
+ARCH_CHECK="$(uname -m)"
 DT=$(date +"%d%m%y-%H%M%S")
 exec > >(tee -a installer_${DT}.log) 2>&1
+if [[ "$ARCH_CHECK" = 'aarch64' ]]; then echo; echo -e "Centmin Mod supports x86_64 CPUs only.\nARM based aarch64 CPUs not supported yet."; echo; exit 1; fi
 #######################################################
 # check if Centmin Mod already installed
 FIRSTYUM_FILE=""

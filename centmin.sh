@@ -7,6 +7,7 @@ export LANGUAGE=en_US.UTF-8
 export LC_CTYPE=en_US.UTF-8
 # disable systemd pager so it doesn't pipe systemctl output to less
 export SYSTEMD_PAGER=''
+ARCH_CHECK="$(uname -m)"
 #####################################################
 EMAIL=''          # Server notification email address enter only 1 address
 PUSHOVER_EMAIL='' # Signup pushover.net push email notifications to mobile & tablets
@@ -1023,7 +1024,7 @@ PHPMSSQL_ALWAYS='n'          # mssql php extension always install on php recompi
 PHPEMBED='y'                 # built php with php embed SAPI library support --enable-embed=shared
 
 PHPSWOOLE='n'                # https://pecl.php.net/package/swoole
-PHPSWOOLE_VER='5.1.0'
+PHPSWOOLE_VER='5.1.1'
 PHPSWOOLE_FIVE_VER='2.0.5' # max PHP 5.0 supported version
 PHPSWOOLE_SEVEN_ZERO_VER='4.3.5' # max PHP 7.0 supported version
 PHPSWOOLE_SEVEN_ONE_VER='4.5.11' # max PHP 7.1 supported version

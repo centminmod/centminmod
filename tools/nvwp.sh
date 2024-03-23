@@ -8,6 +8,7 @@ export LANGUAGE=en_US.UTF-8
 export LC_CTYPE=en_US.UTF-8
 # disable systemd pager so it doesn't pipe systemctl output to less
 export SYSTEMD_PAGER=''
+ARCH_CHECK="$(uname -m)"
 ###############################################################
 # standalone nginx vhost creation script for centminmod.com
 # .09 beta01 and higher written by George Liu

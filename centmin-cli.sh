@@ -7,6 +7,7 @@ export LANGUAGE=en_US.UTF-8
 export LC_CTYPE=en_US.UTF-8
 # disable systemd pager so it doesn't pipe systemctl output to less
 export SYSTEMD_PAGER=''
+ARCH_CHECK="$(uname -m)"
 #####################################################
 EMAIL=''          # Server notification email address enter only 1 address
 PUSHOVER_EMAIL='' # Signup pushover.net push email notifications to mobile & tablets
