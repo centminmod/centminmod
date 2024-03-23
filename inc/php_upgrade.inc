@@ -17,6 +17,8 @@ fi
 
 if [[ -f "${CONFIGSCANDIR}/mssql.ini" && "$PHPMSSQL" = [yY] ]]; then
     DETECTMSSQL=y
+elif [[ ! -f "${CONFIGSCANDIR}/mssql.ini" && "$PHPMSSQL" = [yY] ]]; then
+    DETECTMSSQL=y
 elif [[ "$AUTODETECPHP_OVERRIDE" = [yY] ]]; then
     DETECTMSSQL=y
 fi
@@ -63,11 +65,15 @@ fi
 
 if [[ -f "${CONFIGSCANDIR}/redis.ini" || "$PHPREDIS" = [yY] ]]; then
     DETECTREDIS=y
+elif [[ ! -f "${CONFIGSCANDIR}/redis.ini" && "$PHPREDIS" = [yY] ]]; then
+    DETECTREDIS=y
 elif [[ "$AUTODETECPHP_OVERRIDE" = [yY] ]]; then
     DETECTREDIS=y
 fi
 
 if [[ -f "${CONFIGSCANDIR}/mongodb.ini" || "$PHPMONGODB" = [yY] ]]; then
+    DETECTMONGODB=y
+elif [[ ! -f "${CONFIGSCANDIR}/mongodb.ini" && "$PHPMONGODB" = [yY] ]]; then
     DETECTMONGODB=y
 elif [[ "$AUTODETECPHP_OVERRIDE" = [yY] ]]; then
     DETECTMONGODB=y
@@ -75,11 +81,15 @@ fi
 
 if [[ -f "${CONFIGSCANDIR}/swoole.ini" || "$PHPSWOOLE" = [yY] ]]; then
     DETECTSWOOLE=y
+elif [[ ! -f "${CONFIGSCANDIR}/swoole.ini" && "$PHPSWOOLE" = [yY] ]]; then
+    DETECTSWOOLE=y
 elif [[ "$AUTODETECPHP_OVERRIDE" = [yY] ]]; then
     DETECTSWOOLE=y
 fi
 
 if [[ -f "${CONFIGSCANDIR}/zopfli.ini" || "$PHPZOPFLI" = [yY] ]]; then
+    DETECTZOPFLI=y
+elif [[ ! -f "${CONFIGSCANDIR}/zopfli.ini" && "$PHPZOPFLI" = [yY] ]]; then
     DETECTZOPFLI=y
 elif [[ "$AUTODETECPHP_OVERRIDE" = [yY] ]]; then
     DETECTZOPFLI=y
@@ -87,11 +97,15 @@ fi
 
 if [[ -f "${CONFIGSCANDIR}/brotli.ini" || "$PHP_BROTLI" = [yY] ]]; then
     DETECTBROTLI=y
+elif [[ ! -f "${CONFIGSCANDIR}/brotli.ini" && "$PHP_BROTLI" = [yY] ]]; then
+    DETECTBROTLI=y
 elif [[ "$AUTODETECPHP_OVERRIDE" = [yY] ]]; then
     DETECTBROTLI=y
 fi
 
 if [[ -f "${CONFIGSCANDIR}/lz4.ini" || "$PHP_LZFOUR" = [yY] ]]; then
+    DETECTLZFOUR=y
+elif [[ ! -f "${CONFIGSCANDIR}/lz4.ini" && "$PHP_LZFOUR" = [yY] ]]; then
     DETECTLZFOUR=y
 elif [[ "$AUTODETECPHP_OVERRIDE" = [yY] ]]; then
     DETECTLZFOUR=y
@@ -99,11 +113,15 @@ fi
 
 if [[ -f "${CONFIGSCANDIR}/lzf.ini" || "$PHP_LZF" = [yY] ]]; then
     DETECTLZF=y
+elif [[ ! -f "${CONFIGSCANDIR}/lzf.ini" && "$PHP_LZF" = [yY] ]]; then
+    DETECTLZF=y
 elif [[ "$AUTODETECPHP_OVERRIDE" = [yY] ]]; then
     DETECTLZF=y
 fi
 
 if [[ -f "${CONFIGSCANDIR}/zstd.ini" || "$PHP_ZSTD" = [yY] ]]; then
+    DETECTZSTD=y
+elif [[ ! -f "${CONFIGSCANDIR}/zstd.ini" && "$PHP_ZSTD" = [yY] ]]; then
     DETECTZSTD=y
 elif [[ "$AUTODETECPHP_OVERRIDE" = [yY] ]]; then
     DETECTZSTD=y
@@ -121,6 +139,8 @@ if [ -f "${CONFIGSCANDIR}/mailparse.ini" ]; then
         echo "rm -rf ${CONFIGSCANDIR}/mailparse.ini"
         rm -rf "${CONFIGSCANDIR}/mailparse.ini"        
     fi
+elif [[ ! -f "${CONFIGSCANDIR}/mailparse.ini" && "$PHPMAILPARSE" = [yY] ]]; then
+    DETECTMAILPARSE=y
 elif [[ "$AUTODETECPHP_OVERRIDE" = [yY] ]]; then
     DETECTMAILPARSE=y
 fi
