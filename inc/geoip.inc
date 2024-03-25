@@ -226,9 +226,12 @@ geoiptwolite_install() {
     maxmind_asn_url="https://download.maxmind.com/app/geoip_download?edition_id=GeoLite2-ASN&license_key=$MM_LICENSE_KEY&suffix=tar.gz"
   else
     echo
-    maxmind_city_url="${LOCALCENTMINMOD_MIRROR}/centminmodparts/geoip2-lite/GeoLite2-City.tar.gz"
-    maxmind_country_url="${LOCALCENTMINMOD_MIRROR}/centminmodparts/geoip2-lite/GeoLite2-Country.tar.gz"
-    maxmind_asn_url="${LOCALCENTMINMOD_MIRROR}/centminmodparts/geoip2-lite/GeoLite2-ASN.tar.gz"
+    # maxmind_city_url="${LOCALCENTMINMOD_MIRROR}/centminmodparts/geoip2-lite/GeoLite2-City.tar.gz"
+    # maxmind_country_url="${LOCALCENTMINMOD_MIRROR}/centminmodparts/geoip2-lite/GeoLite2-Country.tar.gz"
+    # maxmind_asn_url="${LOCALCENTMINMOD_MIRROR}/centminmodparts/geoip2-lite/GeoLite2-ASN.tar.gz"
+    maxmind_city_url="${LOCAL_GEOLITE_TWO_DOMAIN}/GeoLite2-City.tar.gz"
+    maxmind_country_url="${LOCAL_GEOLITE_TWO_DOMAIN}/GeoLite2-Country.tar.gz"
+    maxmind_asn_url="${LOCAL_GEOLITE_TWO_DOMAIN}/GeoLite2-ASN.tar.gz"
   fi
 
   mkdir -p /usr/share/GeoIP
@@ -244,6 +247,7 @@ geoiptwolite_install() {
     wget -${ipv_forceopt} $maxmind_city_url -O /usr/share/GeoIP/GeoLite2-City.tar.gz
   else
     maxmind_city_url="${LOCALCENTMINMOD_MIRROR}/centminmodparts/geoip2-lite/GeoLite2-City.tar.gz"
+    # maxmind_city_url="${LOCAL_GEOLITE_TWO_DOMAIN}/GeoLite2-City.tar.gz"
     wget -${ipv_forceopt} $maxmind_city_url -O /usr/share/GeoIP/GeoLite2-City.tar.gz
   fi
   tar xvzf /usr/share/GeoIP/GeoLite2-City.tar.gz -C /usr/share/GeoIP
@@ -261,6 +265,7 @@ geoiptwolite_install() {
     wget -${ipv_forceopt} $maxmind_country_url -O /usr/share/GeoIP/GeoLite2-Country.tar.gz
   else
     maxmind_country_url="${LOCALCENTMINMOD_MIRROR}/centminmodparts/geoip2-lite/GeoLite2-Country.tar.gz"
+    # maxmind_country_url="${LOCAL_GEOLITE_TWO_DOMAIN}/GeoLite2-Country.tar.gz"
     wget -${ipv_forceopt} $maxmind_country_url -O /usr/share/GeoIP/GeoLite2-Country.tar.gz
   fi
   tar xvzf /usr/share/GeoIP/GeoLite2-Country.tar.gz -C /usr/share/GeoIP
@@ -278,6 +283,7 @@ geoiptwolite_install() {
     wget -${ipv_forceopt} $maxmind_asn_url -O /usr/share/GeoIP/GeoLite2-ASN.tar.gz
   else
     maxmind_asn_url="${LOCALCENTMINMOD_MIRROR}/centminmodparts/geoip2-lite/GeoLite2-ASN.tar.gz"
+    # maxmind_asn_url="${LOCAL_GEOLITE_TWO_DOMAIN}/GeoLite2-ASN.tar.gz"
     wget -${ipv_forceopt} $maxmind_asn_url -O /usr/share/GeoIP/GeoLite2-ASN.tar.gz
   fi
   tar xvzf /usr/share/GeoIP/GeoLite2-ASN.tar.gz -C /usr/share/GeoIP
