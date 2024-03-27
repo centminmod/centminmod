@@ -278,12 +278,16 @@ postgresqlinstall() {
         if [[ "$CENTOS_EIGHT" = '8' || "$CENTOS_NINE" = '9' ]]; then
           # rpm --import https://download.postgresql.org/pub/repos/yum/RPM-GPG-KEY-PGDG-16
           # rpm --import https://download.postgresql.org/pub/repos/yum/RPM-GPG-KEY-PGDG
+          rpm --import https://download.postgresql.org/pub/repos/yum/keys/PGDG-RPM-GPG-KEY-RHEL
+          yum makecache
           time $YUMDNFBIN -y list postgresql16 postgresql16-devel libpq5-devel postgresql16-contrib postgresql16-libs postgresql16-server --disableplugin=priorities${DISABLEREPO_DNF}
           echo
           time $YUMDNFBIN -y install postgresql16 postgresql16-devel libpq5-devel postgresql16-contrib postgresql16-libs postgresql16-server --disableplugin=priorities${DISABLEREPO_DNF} --skip-broken
         elif [[ "$CENTOS_SEVEN" = '7' ]]; then
           # rpm --import https://download.postgresql.org/pub/repos/yum/RPM-GPG-KEY-PGDG-16
           # rpm --import https://download.postgresql.org/pub/repos/yum/RPM-GPG-KEY-PGDG
+          rpm --import https://download.postgresql.org/pub/repos/yum/keys/PGDG-RPM-GPG-KEY-RHEL7
+          yum makecache
           time $YUMDNFBIN -y list postgresql15 postgresql15-devel libpq5-devel postgresql15-contrib postgresql15-libs postgresql15-server --disableplugin=priorities${DISABLEREPO_DNF}
           echo
           time $YUMDNFBIN -y swap -- remove postgresql-libs -- install libpq5
@@ -359,12 +363,14 @@ postgresqlinstall() {
         if [[ "$CENTOS_EIGHT" = '8' || "$CENTOS_NINE" = '9' ]]; then
           # rpm --import https://download.postgresql.org/pub/repos/yum/RPM-GPG-KEY-PGDG-16
           # rpm --import https://download.postgresql.org/pub/repos/yum/RPM-GPG-KEY-PGDG
+          rpm --import https://download.postgresql.org/pub/repos/yum/keys/PGDG-RPM-GPG-KEY-RHEL
           time $YUMDNFBIN -y list postgresql16 postgresql16-devel libpq5-devel postgresql16-contrib postgresql16-libs postgresql16-server --disableplugin=priorities${DISABLEREPO_DNF}
           echo
           time $YUMDNFBIN -y install postgresql16 postgresql16-devel libpq5-devel postgresql16-contrib postgresql16-libs postgresql16-server --disableplugin=priorities${DISABLEREPO_DNF} --skip-broken
         elif [[ "$CENTOS_SEVEN" = '7' ]]; then
           # rpm --import https://download.postgresql.org/pub/repos/yum/RPM-GPG-KEY-PGDG-16
           # rpm --import https://download.postgresql.org/pub/repos/yum/RPM-GPG-KEY-PGDG
+          rpm --import https://download.postgresql.org/pub/repos/yum/keys/PGDG-RPM-GPG-KEY-RHEL7
           time $YUMDNFBIN -y list postgresql15 postgresql15-devel libpq5-devel postgresql15-contrib postgresql15-libs postgresql15-server --disableplugin=priorities${DISABLEREPO_DNF}
           echo
           time $YUMDNFBIN -y swap -- remove postgresql-libs -- install libpq5
