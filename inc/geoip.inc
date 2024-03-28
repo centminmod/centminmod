@@ -194,7 +194,12 @@ geoiptwolite_install() {
   pushd $DIR_TMP
   install_libmaxmindb
 
-  geoiptwolite_phpext_install
+  # not for initial installs
+  if [[ "$INITIALINSTALL" != [yY] ]]; then
+    geoiptwolite_phpext_install
+  else
+    geoiptwolite_phpext_install initial_install
+  fi
 
   if [ ! -f /etc/centminmod/custom_config.inc ]; then
     CHECK_CMM_MM_LICENSE_KEY=''
@@ -208,9 +213,12 @@ geoiptwolite_install() {
     maxmind_asn_url="https://download.maxmind.com/app/geoip_download?edition_id=GeoLite2-ASN&license_key=$MM_LICENSE_KEY&suffix=tar.gz"
   else
     echo
-    maxmind_city_url="${LOCALCENTMINMOD_MIRROR}/centminmodparts/geoip2-lite/GeoLite2-City.tar.gz"
-    maxmind_country_url="${LOCALCENTMINMOD_MIRROR}/centminmodparts/geoip2-lite/GeoLite2-Country.tar.gz"
-    maxmind_asn_url="${LOCALCENTMINMOD_MIRROR}/centminmodparts/geoip2-lite/GeoLite2-ASN.tar.gz"
+    # maxmind_city_url="${LOCALCENTMINMOD_MIRROR}/centminmodparts/geoip2-lite/GeoLite2-City.tar.gz"
+    # maxmind_country_url="${LOCALCENTMINMOD_MIRROR}/centminmodparts/geoip2-lite/GeoLite2-Country.tar.gz"
+    # maxmind_asn_url="${LOCALCENTMINMOD_MIRROR}/centminmodparts/geoip2-lite/GeoLite2-ASN.tar.gz"
+    maxmind_city_url="${LOCAL_GEOLITE_TWO_DOMAIN}/GeoLite2-City.tar.gz"
+    maxmind_country_url="${LOCAL_GEOLITE_TWO_DOMAIN}/GeoLite2-Country.tar.gz"
+    maxmind_asn_url="${LOCAL_GEOLITE_TWO_DOMAIN}/GeoLite2-ASN.tar.gz"
   fi
 
   mkdir -p /usr/share/GeoIP
@@ -218,7 +226,7 @@ geoiptwolite_install() {
   echo "------------------------------------------------------"
   cecho "GeoLite2 City database download ..." $boldyellow
   echo "------------------------------------------------------"
-  curl -${ipv_forceopt}IsL --connect-timeout 30 --max-time 30 $maxmind_city_url | grep 'HTTP\/' | grep '200'
+  curl -${ipv_forceopt}IsL --connect-timeout 30 --max-time 30 "$maxmind_city_url" | grep 'HTTP\/' | grep '200'
   GEOIPTWOCITYDATA_CURLCHECK=$?
   # only overwrite existing downloaded file if the download url is working
   # if download doesn't work, do not overwrite existing downloaded file
@@ -226,6 +234,7 @@ geoiptwolite_install() {
     wget -${ipv_forceopt} $maxmind_city_url -O /usr/share/GeoIP/GeoLite2-City.tar.gz
   else
     maxmind_city_url="${LOCALCENTMINMOD_MIRROR}/centminmodparts/geoip2-lite/GeoLite2-City.tar.gz"
+    # maxmind_city_url="${LOCAL_GEOLITE_TWO_DOMAIN}/GeoLite2-City.tar.gz"
     wget -${ipv_forceopt} $maxmind_city_url -O /usr/share/GeoIP/GeoLite2-City.tar.gz
   fi
   tar xvzf /usr/share/GeoIP/GeoLite2-City.tar.gz -C /usr/share/GeoIP
@@ -235,7 +244,7 @@ geoiptwolite_install() {
   echo "------------------------------------------------------"
   cecho "GeoLite2 Country database download ..." $boldyellow
   echo "------------------------------------------------------"
-  curl -${ipv_forceopt}IsL --connect-timeout 30 --max-time 30 $maxmind_country_url | grep 'HTTP\/' | grep '200'
+  curl -${ipv_forceopt}IsL --connect-timeout 30 --max-time 30 "$maxmind_country_url" | grep 'HTTP\/' | grep '200'
   GEOIPTWOCOUNTRYDATA_CURLCHECK=$?
   # only overwrite existing downloaded file if the download url is working
   # if download doesn't work, do not overwrite existing downloaded file
@@ -243,6 +252,7 @@ geoiptwolite_install() {
     wget -${ipv_forceopt} $maxmind_country_url -O /usr/share/GeoIP/GeoLite2-Country.tar.gz
   else
     maxmind_country_url="${LOCALCENTMINMOD_MIRROR}/centminmodparts/geoip2-lite/GeoLite2-Country.tar.gz"
+    # maxmind_country_url="${LOCAL_GEOLITE_TWO_DOMAIN}/GeoLite2-Country.tar.gz"
     wget -${ipv_forceopt} $maxmind_country_url -O /usr/share/GeoIP/GeoLite2-Country.tar.gz
   fi
   tar xvzf /usr/share/GeoIP/GeoLite2-Country.tar.gz -C /usr/share/GeoIP
@@ -252,7 +262,7 @@ geoiptwolite_install() {
   echo "------------------------------------------------------"
   cecho "GeoLite2 ASN database download ..." $boldyellow
   echo "------------------------------------------------------"
-  curl -${ipv_forceopt}IsL --connect-timeout 30 --max-time 30 $maxmind_asn_url | grep 'HTTP\/' | grep '200'
+  curl -${ipv_forceopt}IsL --connect-timeout 30 --max-time 30 "$maxmind_asn_url" | grep 'HTTP\/' | grep '200'
   GEOIPTWOASNDATA_CURLCHECK=$?
   # only overwrite existing downloaded file if the download url is working
   # if download doesn't work, do not overwrite existing downloaded file
@@ -260,6 +270,7 @@ geoiptwolite_install() {
     wget -${ipv_forceopt} $maxmind_asn_url -O /usr/share/GeoIP/GeoLite2-ASN.tar.gz
   else
     maxmind_asn_url="${LOCALCENTMINMOD_MIRROR}/centminmodparts/geoip2-lite/GeoLite2-ASN.tar.gz"
+    # maxmind_asn_url="${LOCAL_GEOLITE_TWO_DOMAIN}/GeoLite2-ASN.tar.gz"
     wget -${ipv_forceopt} $maxmind_asn_url -O /usr/share/GeoIP/GeoLite2-ASN.tar.gz
   fi
   tar xvzf /usr/share/GeoIP/GeoLite2-ASN.tar.gz -C /usr/share/GeoIP
