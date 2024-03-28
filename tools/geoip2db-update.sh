@@ -21,9 +21,9 @@ fi
 if [ ! -f /etc/centminmod/custom_config.inc ]; then
   CHECK_CMM_MM_LICENSE_KEY=''
 else
-  CHECK_CMM_MM_LICENSE_KEY=$(awk -F '=' '/MM_LICENSE_KEY/ {print $2}' /etc/centminmod/custom_config.inc | sed -e 's| ||g' | sed -e 's|"||g' -e "s|'||g")
+  CHECK_CMM_MM_LICENSE_KEY=$(awk -F '=' '/^[[:space:]]*MM_LICENSE_KEY=/ {print $2}' /etc/centminmod/custom_config.inc | sed -e 's| ||g' | sed -e 's|"||g' -e "s|'||g")
 fi
-if [[ "$CHECK_CMM_MM_LICENSE_KEY" && "$MM_LICENSE_KEY" ]]; then
+if [ "$CHECK_CMM_MM_LICENSE_KEY" ]; then
   echo
   maxmind_city_url="https://download.maxmind.com/app/geoip_download?edition_id=GeoLite2-City&license_key=$MM_LICENSE_KEY&suffix=tar.gz"
   maxmind_country_url="https://download.maxmind.com/app/geoip_download?edition_id=GeoLite2-Country&license_key=$MM_LICENSE_KEY&suffix=tar.gz"

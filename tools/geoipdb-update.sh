@@ -110,7 +110,7 @@ if [[ -f /usr/share/GeoIP/GeoLite2-City.mmdb || -f /usr/share/GeoIP/GeoLite2-Cou
   if [ ! -f /etc/centminmod/custom_config.inc ]; then
     CHECK_CMM_MM_LICENSE_KEY=''
   else
-    CHECK_CMM_MM_LICENSE_KEY=$(awk -F '=' '/MM_LICENSE_KEY/ {print $2}' /etc/centminmod/custom_config.inc | sed -e 's| ||g' | sed -e 's|"||g' -e "s|'||g")
+    CHECK_CMM_MM_LICENSE_KEY=$(awk -F '=' '/^[[:space:]]*MM_LICENSE_KEY=/ {print $2}' /etc/centminmod/custom_config.inc | sed -e 's| ||g' | sed -e 's|"||g' -e "s|'||g")
   fi
   if [[ "$MM_LICENSE_KEY" ]]; then
     echo
