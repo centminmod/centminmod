@@ -1446,6 +1446,8 @@ fi
     if [[ "$NGINX_NJS" = [yY] && -f "$DIR_TMP/njs/build/njs" ]]; then
         cp -af "$DIR_TMP/njs/build/njs" /usr/local/bin/njs
     fi
+    # remove latest Nginx version cache file
+    rm -f /tmp/nginx_version_cache
     if [ -f "$(which figlet)" ]; then
         figlet -ckf standard "Nginx Updated"
     fi

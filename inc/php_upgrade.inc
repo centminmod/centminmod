@@ -1520,6 +1520,8 @@ fi
         echo
     fi
     echo "***************************************************"
+    # remove cached PHP latest version file
+    rm -f /tmp/php_version_cache
     php-config
     echo "***************************************************"
     php -v
