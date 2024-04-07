@@ -16,6 +16,7 @@ DIR_TMP='/svr-setup'
 # use at own risk as it can break the system
 # info at http://nervion.us.es/city-fan/yum-repo/
 CUSTOM_CURLRPM=y
+CUSTOM_CURL_EL89=n
 
 FORCE_IPVFOUR='y' # curl/wget commands through script force IPv4
 ###############################################################
@@ -189,7 +190,7 @@ return
 ###########################################
 # functions
 #############
-if [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]]; then
+if [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]] && [[ "$CUSTOM_CURL_EL89" != [yY] ]]; then
   echo "$0 only for CentOS 7"
   echo "aborted..."
   exit 1
@@ -265,7 +266,7 @@ if [[ "$CUSTOM_CURLRPM" = [yY] ]]; then
   ###############################################################
   elif [[ "$CENTOS_SEVEN" = '7' && "$(uname -m)" = 'x86_64' ]]; then
   ###############################################################
-  # el7 64bit
+  # el8 64bit
   cityfan_rpm_name=$(curl -${ipv_forceopt}sL --connect-timeout 30 --max-time 30 https://mirror.city-fan.org/ftp/contrib/yum-repo/| egrep -ow "city-fan.org-release-[0-9.]+\-[0-9.]+\.rhel7\.noarch\.rpm" | grep release | uniq)
   rpm --import https://mirror.city-fan.org/ftp/contrib/GPG-KEYS/RPM-GPG-KEY-city-fan.org-rhel-7
   curl -${ipv_forceopt}Is --connect-timeout 30 --max-time 30 https://mirror.city-fan.org/ftp/contrib/yum-repo/${cityfan_rpm_name}
@@ -290,6 +291,72 @@ if [[ "$CUSTOM_CURLRPM" = [yY] ]]; then
     fi
   fi # repo file check
   yum -y install curl libcurl libcurl-devel libcurl7112 libcurl7155 --enablerepo=city-fan.org --disableplugin=priorities
+  echo
+  curl -V
+  echo
+  cecho "recompile PHP via centmin.sh menu option 5 to" $boldyellow
+  cecho "complete new curl version setup on your system" $boldyellow
+  ###############################################################
+  elif [[ "$CENTOS_EIGHT" = '8' && "$(uname -m)" = 'x86_64' ]]; then
+  ###############################################################
+  # el8 64bit
+  cityfan_rpm_name=$(curl -${ipv_forceopt}sL --connect-timeout 30 --max-time 30 https://mirror.city-fan.org/ftp/contrib/yum-repo/| egrep -ow "city-fan.org-release-[0-9.]+\-[0-9.]+\.rhel${CENTOS_EIGHT}\.noarch\.rpm" | grep release | uniq)
+  rpm --import https://mirror.city-fan.org/ftp/contrib/GPG-KEYS/RPM-GPG-KEY-city-fan.org-rhel-${CENTOS_EIGHT}
+  curl -${ipv_forceopt}Is --connect-timeout 30 --max-time 30 https://mirror.city-fan.org/ftp/contrib/yum-repo/${cityfan_rpm_name}
+  CURL_NOARCHRPMCHECK=$?
+  if [[ "$CURL_NOARCHRPMCHECK" = '0' ]]; then
+    rpm -Uvh https://mirror.city-fan.org/ftp/contrib/yum-repo/${cityfan_rpm_name}
+  else
+    if [ -f "$DIR_TMP/${cityfan_rpm_name}" ]; then
+      rpm -Uvh "$DIR_TMP/${cityfan_rpm_name}"
+    fi
+  fi
+  
+  sed -i 's|enabled=1|enabled=0|g' /etc/yum.repos.d/city-fan.org.repo
+  if [ -f /etc/yum.repos.d/city-fan.org.repo ]; then
+    cp -p /etc/yum.repos.d/city-fan.org.repo /etc/yum.repos.d/city-fan.org.OLD
+    if [ -n "$(grep ^priority /etc/yum.repos.d/city-fan.org.repo)" ]; then
+      #echo priorities already set for city-fan.org.repo
+      PRIOREXISTS=1
+    else
+      echo "setting yum priorities for city-fan.org.repo"
+      sed -i 's|^gpgkey=.*|&\npriority=99\n#excludes=libtidy libtidy-devel|' /etc/yum.repos.d/city-fan.org.repo
+    fi
+  fi # repo file check
+  yum -y install curl libcurl libcurl-devel --enablerepo=city-fan.org --disableplugin=priorities
+  echo
+  curl -V
+  echo
+  cecho "recompile PHP via centmin.sh menu option 5 to" $boldyellow
+  cecho "complete new curl version setup on your system" $boldyellow
+  ###############################################################
+  elif [[ "$CENTOS_NINE" = '9' && "$(uname -m)" = 'x86_64' ]]; then
+  ###############################################################
+  # el9 64bit
+  cityfan_rpm_name=$(curl -${ipv_forceopt}sL --connect-timeout 30 --max-time 30 https://mirror.city-fan.org/ftp/contrib/yum-repo/| egrep -ow "city-fan.org-release-[0-9.]+\-[0-9.]+\.rhel${CENTOS_EIGHT}\.noarch\.rpm" | grep release | uniq)
+  rpm --import https://mirror.city-fan.org/ftp/contrib/GPG-KEYS/RPM-GPG-KEY-city-fan.org-rhel-${CENTOS_EIGHT}
+  curl -${ipv_forceopt}Is --connect-timeout 30 --max-time 30 https://mirror.city-fan.org/ftp/contrib/yum-repo/${cityfan_rpm_name}
+  CURL_NOARCHRPMCHECK=$?
+  if [[ "$CURL_NOARCHRPMCHECK" = '0' ]]; then
+    rpm -Uvh https://mirror.city-fan.org/ftp/contrib/yum-repo/${cityfan_rpm_name}
+  else
+    if [ -f "$DIR_TMP/${cityfan_rpm_name}" ]; then
+      rpm -Uvh "$DIR_TMP/${cityfan_rpm_name}"
+    fi
+  fi
+  
+  sed -i 's|enabled=1|enabled=0|g' /etc/yum.repos.d/city-fan.org.repo
+  if [ -f /etc/yum.repos.d/city-fan.org.repo ]; then
+    cp -p /etc/yum.repos.d/city-fan.org.repo /etc/yum.repos.d/city-fan.org.OLD
+    if [ -n "$(grep ^priority /etc/yum.repos.d/city-fan.org.repo)" ]; then
+      #echo priorities already set for city-fan.org.repo
+      PRIOREXISTS=1
+    else
+      echo "setting yum priorities for city-fan.org.repo"
+      sed -i 's|^gpgkey=.*|&\npriority=99\n#excludes=libtidy libtidy-devel|' /etc/yum.repos.d/city-fan.org.repo
+    fi
+  fi # repo file check
+  yum -y install curl libcurl libcurl-devel --enablerepo=city-fan.org --disableplugin=priorities
   echo
   curl -V
   echo
