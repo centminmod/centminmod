@@ -618,6 +618,7 @@ mariadb_audit() {
         mysql -e "SELECT * FROM INFORMATION_SCHEMA.PLUGINS WHERE PLUGIN_NAME='SERVER_AUDIT'\G"
         mysql -e "SET GLOBAL server_audit_logging=on;"
         mysql -e "SET GLOBAL server_audit_events='connect,query_dml';"
+        # mysql -e "SET GLOBAL server_audit_events='connect,query_dml_no_select';"
         mysql -e "SET GLOBAL server_audit_output_type=FILE;"
         mysql -e "SET GLOBAL server_audit_file_path='/var/log/mysql/audit.log';"
         mysql -e "SET GLOBAL server_audit_file_rotate_size=1000000;"
@@ -631,7 +632,9 @@ mariadb_audit() {
         sed -i '/server_audit_file_rotate_size/d' /etc/my.cnf
         sed -i '/server_audit_file_rotations/d' /etc/my.cnf
         echo "server_audit_logging=1" >> /etc/my.cnf
+        echo "#server_audit_incl_users=your_mysql_username1,your_mysql_username2" >> /etc/my.cnf
         echo "server_audit_events=connect,query_dml" >> /etc/my.cnf
+        echo "#server_audit_events=connect,query_dml_no_select" >> /etc/my.cnf
         echo "server_audit_output_type=FILE" >> /etc/my.cnf
         echo "server_audit_file_path=/var/log/mysql/audit.log" >> /etc/my.cnf
         echo "server_audit_file_rotate_size=1000000" >> /etc/my.cnf
@@ -687,7 +690,9 @@ mariadb_auditon() {
         sed -i '/server_audit_file_rotate_size/d' /etc/my.cnf
         sed -i '/server_audit_file_rotations/d' /etc/my.cnf
         echo "server_audit_logging=1" >> /etc/my.cnf
+        echo "#server_audit_incl_users=your_mysql_username1,your_mysql_username2" >> /etc/my.cnf
         echo "server_audit_events=connect,query_dml" >> /etc/my.cnf
+        echo "#server_audit_events=connect,query_dml_no_select" >> /etc/my.cnf
         echo "server_audit_output_type=FILE" >> /etc/my.cnf
         echo "server_audit_file_path=/var/log/mysql/audit.log" >> /etc/my.cnf
         echo "server_audit_file_rotate_size=1000000" >> /etc/my.cnf
