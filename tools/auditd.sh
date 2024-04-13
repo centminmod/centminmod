@@ -37,6 +37,9 @@ export LC_ALL=en_US.UTF-8
 export LANG=en_US.UTF-8
 export LANGUAGE=en_US.UTF-8
 export LC_CTYPE=en_US.UTF-8
+# disable systemd pager so it doesn't pipe systemctl output to less
+export SYSTEMD_PAGER=''
+ARCH_CHECK="$(uname -m)"
 
 shopt -s expand_aliases
 for g in "" e f; do
@@ -51,6 +54,8 @@ if [ "$CENTOSVER" == 'release' ]; then
         CENTOS_SEVEN='7'
     elif [[ "$(cat /etc/redhat-release | awk '{ print $4 }' | cut -d . -f1)" = '8' ]]; then
         CENTOS_EIGHT='8'
+    elif [[ "$(cat /etc/redhat-release | awk '{ print $4 }' | cut -d . -f1)" = '9' ]]; then
+        CENTOS_NINE='9'
     fi
 fi
 
@@ -71,6 +76,74 @@ if [[ -f /etc/system-release && "$(awk '{print $1,$2,$3}' /etc/system-release)" 
     CENTOS_SIX='6'
 fi
 
+# ensure only el8+ OS versions are being looked at for alma linux, rocky linux
+# oracle linux, vzlinux, circle linux, navy linux, euro linux
+EL_VERID=$(awk -F '=' '/VERSION_ID/ {print $2}' /etc/os-release | sed -e 's|"||g' | cut -d . -f1)
+if [ -f /etc/almalinux-release ] && [[ "$EL_VERID" -eq 8 || "$EL_VERID" -eq 9 ]]; then
+  CENTOSVER=$(awk '{ print $3 }' /etc/almalinux-release | cut -d . -f1,2)
+  if [[ "$(echo $CENTOSVER | cut -d . -f1)" -eq '8' ]]; then
+    CENTOS_EIGHT='8'
+    ALMALINUX_EIGHT='8'
+  elif [[ "$(echo $CENTOSVER | cut -d . -f1)" -eq '9' ]]; then
+    CENTOS_NINE='9'
+    ALMALINUX_NINE='9'
+  fi
+elif [ -f /etc/rocky-release ] && [[ "$EL_VERID" -eq 8 || "$EL_VERID" -eq 9 ]]; then
+  CENTOSVER=$(awk '{ print $4 }' /etc/rocky-release | cut -d . -f1,2)
+  if [[ "$(echo $CENTOSVER | cut -d . -f1)" -eq '8' ]]; then
+    CENTOS_EIGHT='8'
+    ROCKYLINUX_EIGHT='8'
+  elif [[ "$(echo $CENTOSVER | cut -d . -f1)" -eq '9' ]]; then
+    CENTOS_NINE='9'
+    ROCKYLINUX_NINE='9'
+  fi
+elif [ -f /etc/oracle-release ] && [[ "$EL_VERID" -eq 8 || "$EL_VERID" -eq 9 ]]; then
+  CENTOSVER=$(awk '{ print $5 }' /etc/oracle-release | cut -d . -f1,2)
+  if [[ "$(echo $CENTOSVER | cut -d . -f1)" -eq '8' ]]; then
+    CENTOS_EIGHT='8'
+    ORACLELINUX_EIGHT='8'
+  elif [[ "$(echo $CENTOSVER | cut -d . -f1)" -eq '9' ]]; then
+    CENTOS_NINE='9'
+    ORACLELINUX_NINE='9'
+  fi
+elif [ -f /etc/vzlinux-release ] && [[ "$EL_VERID" -eq 8 || "$EL_VERID" -eq 9 ]]; then
+  CENTOSVER=$(awk '{ print $4 }' /etc/vzlinux-release | cut -d . -f1,2)
+  if [[ "$(echo $CENTOSVER | cut -d . -f1)" -eq '8' ]]; then
+    CENTOS_EIGHT='8'
+    VZLINUX_EIGHT='8'
+  elif [[ "$(echo $CENTOSVER | cut -d . -f1)" -eq '9' ]]; then
+    CENTOS_NINE='9'
+    VZLINUX_NINE='9'
+  fi
+elif [ -f /etc/circle-release ] && [[ "$EL_VERID" -eq 8 || "$EL_VERID" -eq 9 ]]; then
+  CENTOSVER=$(awk '{ print $4 }' /etc/circle-release | cut -d . -f1,2)
+  if [[ "$(echo $CENTOSVER | cut -d . -f1)" -eq '8' ]]; then
+    CENTOS_EIGHT='8'
+    CIRCLELINUX_EIGHT='8'
+  elif [[ "$(echo $CENTOSVER | cut -d . -f1)" -eq '9' ]]; then
+    CENTOS_NINE='9'
+    CIRCLELINUX_NINE='9'
+  fi
+elif [ -f /etc/navylinux-release ] && [[ "$EL_VERID" -eq 8 || "$EL_VERID" -eq 9 ]]; then
+  CENTOSVER=$(awk '{ print $5 }' /etc/navylinux-release | cut -d . -f1,2)
+  if [[ "$(echo $CENTOSVER | cut -d . -f1)" -eq '8' ]]; then
+    CENTOS_EIGHT='8'
+    NAVYLINUX_EIGHT='8'
+  elif [[ "$(echo $CENTOSVER | cut -d . -f1)" -eq '9' ]]; then
+    CENTOS_NINE='9'
+    NAVYLINUX_NINE='9'
+  fi
+elif [ -f /etc/el-release ] && [[ "$EL_VERID" -eq 8 || "$EL_VERID" -eq 9 ]]; then
+  CENTOSVER=$(awk '{ print $3 }' /etc/el-release | cut -d . -f1,2)
+  if [[ "$(echo $CENTOSVER | cut -d . -f1)" -eq '8' ]]; then
+    CENTOS_EIGHT='8'
+    EUROLINUX_EIGHT='8'
+  elif [[ "$(echo $CENTOSVER | cut -d . -f1)" -eq '9' ]]; then
+    CENTOS_NINE='9'
+    EUROLINUX_NINE='9'
+  fi
+fi
+
 if [ -f "/etc/centminmod/custom_config.inc" ]; then
   # default is at /etc/centminmod/custom_config.inc
   dos2unix -q "/etc/centminmod/custom_config.inc"
@@ -84,23 +157,23 @@ if [[ "$AUDITD_ENABLE" != [yY] ]]; then
 fi
 
 if [[ "$AUDITD_TOTALMEM" -le '499000' ]]; then
-  AUDITD_BUFFERSIZE='2048'
-elif [[ "$AUDITD_TOTALMEM" -ge '499001' && "$AUDITD_TOTALMEM" -le '1030000' ]]; then
   AUDITD_BUFFERSIZE='4096'
-elif [[ "$AUDITD_TOTALMEM" -ge '1030001' && "$AUDITD_TOTALMEM" -le '2040000' ]]; then
+elif [[ "$AUDITD_TOTALMEM" -ge '499001' && "$AUDITD_TOTALMEM" -le '1030000' ]]; then
   AUDITD_BUFFERSIZE='8192'
-elif [[ "$AUDITD_TOTALMEM" -ge '2040001' && "$AUDITD_TOTALMEM" -le '3040000' ]]; then
+elif [[ "$AUDITD_TOTALMEM" -ge '1030001' && "$AUDITD_TOTALMEM" -le '2040000' ]]; then
   AUDITD_BUFFERSIZE='16384'
-elif [[ "$AUDITD_TOTALMEM" -ge '3040001' && "$AUDITD_TOTALMEM" -le '4000000' ]]; then
+elif [[ "$AUDITD_TOTALMEM" -ge '2040001' && "$AUDITD_TOTALMEM" -le '3040000' ]]; then
   AUDITD_BUFFERSIZE='32768'
-elif [[ "$AUDITD_TOTALMEM" -ge '4000001' && "$AUDITD_TOTALMEM" -le '6020000' ]]; then
+elif [[ "$AUDITD_TOTALMEM" -ge '3040001' && "$AUDITD_TOTALMEM" -le '4000000' ]]; then
   AUDITD_BUFFERSIZE='65536'
-elif [[ "$AUDITD_TOTALMEM" -ge '6020001' && "$AUDITD_TOTALMEM" -le '8060000' ]]; then
+elif [[ "$AUDITD_TOTALMEM" -ge '4000001' && "$AUDITD_TOTALMEM" -le '6020000' ]]; then
   AUDITD_BUFFERSIZE='131072'
-elif [[ "$AUDITD_TOTALMEM" -ge '8060001' && "$AUDITD_TOTALMEM" -le '16000000' ]]; then
+elif [[ "$AUDITD_TOTALMEM" -ge '6020001' && "$AUDITD_TOTALMEM" -le '8060000' ]]; then
   AUDITD_BUFFERSIZE='262144'
-elif [[ "$AUDITD_TOTALMEM" -ge '16000001' ]]; then
+elif [[ "$AUDITD_TOTALMEM" -ge '8060001' && "$AUDITD_TOTALMEM" -le '16000000' ]]; then
   AUDITD_BUFFERSIZE='524288'
+elif [[ "$AUDITD_TOTALMEM" -ge '16000001' ]]; then
+  AUDITD_BUFFERSIZE='1048576'
 fi
 
 ######################################################
@@ -110,14 +183,15 @@ auditd_customrules() {
             VHOSTS=$(ls /usr/local/nginx/conf/conf.d | egrep 'ssl.conf|.conf' | egrep -v 'virtual.conf|^ssl.conf|demodomain.com.conf' |  sed -e 's/.ssl.conf//' -e 's/.conf//' | uniq)
         fi
 
-sed -i "s|-b 320|-b $AUDITD_BUFFERSIZE|" "$AUDITRULE_PERMFILE"
+# echo '-b 320' >> "$AUDITRULE_PERMFILE"
+sed -i "s|^-b .*|-b $AUDITD_BUFFERSIZE|" "$AUDITRULE_PERMFILE"
 echo "" >> "$AUDITRULE_PERMFILE"
 echo "# continue loading rules when it runs rule syntax errors" >> "$AUDITRULE_PERMFILE"
 echo "#-c" >> "$AUDITRULE_PERMFILE"
 echo "#-i" >> "$AUDITRULE_PERMFILE"
 echo "" >> "$AUDITRULE_PERMFILE"
-echo "# Generate at most 1000 audit messages per second" >> "$AUDITRULE_PERMFILE"
-echo "-r 1000" >> "$AUDITRULE_PERMFILE"
+echo "# Generate at most 5000 audit messages per second" >> "$AUDITRULE_PERMFILE"
+echo "-r 5000" >> "$AUDITRULE_PERMFILE"
 echo "" >> "$AUDITRULE_PERMFILE"
 echo "# custom auditd rules for centmin mod centos environments - DO NOT DELETE THIS LINE" >> "$AUDITRULE_PERMFILE"
 echo "-w /var/log/wtmp -k sessiontmp" >> "$AUDITRULE_PERMFILE"
@@ -144,6 +218,8 @@ echo "-w /sbin/shutdown -p x -k power" >> "$AUDITRULE_PERMFILE"
 echo "-w /sbin/poweroff -p x -k power" >> "$AUDITRULE_PERMFILE"
 echo "-w /sbin/reboot -p x -k power" >> "$AUDITRULE_PERMFILE"
 echo "-w /sbin/halt -p x -k power" >> "$AUDITRULE_PERMFILE"
+echo "-w /usr/bin/chown -p x -k file_modification" >> "$AUDITRULE_PERMFILE"
+echo "-w /usr/bin/chmod -p x -k file_modification" >> "$AUDITRULE_PERMFILE"
 echo "-w /usr/sbin/groupadd -p x -k group_modification" >> "$AUDITRULE_PERMFILE"
 echo "-w /usr/sbin/groupmod -p x -k group_modification" >> "$AUDITRULE_PERMFILE"
 echo "-w /usr/sbin/addgroup -p x -k group_modification" >> "$AUDITRULE_PERMFILE"
@@ -231,17 +307,68 @@ fi
 if [ -f /etc/init.d/memcached ]; then
 echo "-w /etc/init.d/memcached -p wa -k memcachedinitd_changes" >> "$AUDITRULE_PERMFILE"
 fi
+if [ -f /usr/lib/systemd/system/memcached.service ]; then
+echo "-w /usr/lib/systemd/system/memcached.service -p wa -k memcachedservice_changes" >> "$AUDITRULE_PERMFILE"
+fi
+if [ -f /usr/lib/systemd/system/redis.service ]; then
+echo "-w /usr/lib/systemd/system/redis.service -p wa -k redisservice_changes" >> "$AUDITRULE_PERMFILE"
+fi
+if [ -f /usr/lib/systemd/system/redis6479.service ]; then
+echo "-w /usr/lib/systemd/system/redis6479.service -p wa -k redis6479service_changes" >> "$AUDITRULE_PERMFILE"
+fi
+if [ -f /usr/lib/systemd/system/redis6480.service ]; then
+echo "-w /usr/lib/systemd/system/redis6480.service -p wa -k redis6480service_changes" >> "$AUDITRULE_PERMFILE"
+fi
+if [ -f /usr/lib/systemd/system/keydb.service ]; then
+echo "-w /usr/lib/systemd/system/keydb.service -p wa -k keydbservice_changes" >> "$AUDITRULE_PERMFILE"
+fi
+if [ -f /usr/lib/systemd/system/keydb6479.service ]; then
+echo "-w /usr/lib/systemd/system/keydb6479.service -p wa -k keydb6479service_changes" >> "$AUDITRULE_PERMFILE"
+fi
+if [ -f /usr/lib/systemd/system/keydb6480.service ]; then
+echo "-w /usr/lib/systemd/system/keydb6480.service -p wa -k keydb6480service_changes" >> "$AUDITRULE_PERMFILE"
+fi
+if [ -f /usr/lib/systemd/system/mariadb.service ]; then
+echo "-w /usr/lib/systemd/system/mariadb.service -p wa -k mariadbservice_changes" >> "$AUDITRULE_PERMFILE"
+fi
+if [ -f /usr/lib/systemd/system/elasticsearch.service ]; then
+echo "-w /usr/lib/systemd/system/elasticsearch.service -p wa -k elasticsearchservice_changes" >> "$AUDITRULE_PERMFILE"
+fi
+if [ -f /usr/lib/systemd/system/postfix.service ]; then
+echo "-w /usr/lib/systemd/system/postfix.service -p wa -k postfixservice_changes" >> "$AUDITRULE_PERMFILE"
+fi
+if [ -f /usr/lib/systemd/system/csf.service ]; then
+echo "-w /usr/lib/systemd/system/csf.service -p wa -k csfservice_changes" >> "$AUDITRULE_PERMFILE"
+fi
+if [ -f /usr/lib/systemd/system/lfd.service ]; then
+echo "-w /usr/lib/systemd/system/lfd.service -p wa -k lfdservice_changes" >> "$AUDITRULE_PERMFILE"
+fi
+if [ -f /usr/lib/systemd/system/pure-ftpd.service ]; then
+echo "-w /usr/lib/systemd/system/pure-ftpd.service -p wa -k pureftpdservice_changes" >> "$AUDITRULE_PERMFILE"
+fi
+if [ -f /usr/lib/systemd/system/cockpit.service ]; then
+echo "-w /usr/lib/systemd/system/cockpit.service -p wa -k cockpitservice_changes" >> "$AUDITRULE_PERMFILE"
+fi
+if [ -f /usr/lib/systemd/system/nginx.service ]; then
+echo "-w /usr/lib/systemd/system/nginx.service -p wa -k nginxservice_changes" >> "$AUDITRULE_PERMFILE"
+fi
+if [ -f /usr/lib/systemd/system/php-fpm.service ]; then
+echo "-w /usr/lib/systemd/system/php-fpm.service -p wa -k phpfpmservice_changes" >> "$AUDITRULE_PERMFILE"
+fi
 if [ -f /etc/nsd/nsd.conf ]; then
 echo "-w /etc/nsd/nsd.conf -p wa -k nsdconf_changes" >> "$AUDITRULE_PERMFILE"
 fi
-for vhostname in $VHOSTS; do
-    if [ -d "/home/nginx/domains/${vhostname}/log" ]; then
-        echo "-a exit,always -F arch=b32 -S unlink -S unlinkat -S rmdir -F dir=/home/nginx/domains/${vhostname}/log -F success=0 -k ${vhostname}_logdeletion" >> "$AUDITRULE_PERMFILE"
-        echo "-a exit,always -F arch=b32 -S rename -S renameat -F dir=/home/nginx/domains/${vhostname}/log -F success=0 -k ${vhostname}_logrename" >> "$AUDITRULE_PERMFILE"
-        echo "-a exit,always -F arch=b64 -S unlink -S unlinkat -S rmdir -F dir=/home/nginx/domains/${vhostname}/log -F success=0 -k ${vhostname}_logdeletion" >> "$AUDITRULE_PERMFILE"
-        echo "-a exit,always -F arch=b64 -S rename -S renameat -F dir=/home/nginx/domains/${vhostname}/log -F success=0 -k ${vhostname}_logrename" >> "$AUDITRULE_PERMFILE"
-    fi
-done
+if [ -d /usr/local/nginx/conf/conf.d ]; then
+    VHOSTS=$(ls /usr/local/nginx/conf/conf.d | egrep 'ssl.conf|.conf' | egrep -v 'virtual.conf|^ssl.conf|demodomain.com.conf' |  sed -e 's/.ssl.conf//' -e 's/.conf//' | uniq)
+    for vhostname in $VHOSTS; do
+        if [ -d "/home/nginx/domains/${vhostname}/log" ]; then
+            echo "-a exit,always -F arch=b32 -S unlink -S unlinkat -S rmdir -F dir=/home/nginx/domains/${vhostname}/log -F success=0 -k ${vhostname}_logdeletion" >> "$AUDITRULE_PERMFILE"
+            echo "-a exit,always -F arch=b32 -S rename -S renameat -F dir=/home/nginx/domains/${vhostname}/log -F success=0 -k ${vhostname}_logrename" >> "$AUDITRULE_PERMFILE"
+            echo "-a exit,always -F arch=b64 -S unlink -S unlinkat -S rmdir -F dir=/home/nginx/domains/${vhostname}/log -F success=0 -k ${vhostname}_logdeletion" >> "$AUDITRULE_PERMFILE"
+            echo "-a exit,always -F arch=b64 -S rename -S renameat -F dir=/home/nginx/domains/${vhostname}/log -F success=0 -k ${vhostname}_logrename" >> "$AUDITRULE_PERMFILE"
+        fi
+    done
+fi
 cat "$AUDITRULE_PERMFILE" > "$CENTMINLOGDIR/auditd_rulesd_output_$DT.log"
 service auditd restart >/dev/null 2>&1
 chkconfig auditd on >/dev/null 2>&1    
@@ -249,6 +376,107 @@ auditctl -s; echo; auditctl -l > "$CENTMINLOGDIR/auditctl_rules_$DT.log"
 echo ""$CENTMINLOGDIR/auditd_rulesd_output_$DT.log" created"
 echo ""$CENTMINLOGDIR/auditctl_rules_$DT.log" created"
     fi
+}
+
+audit_logrotate() {
+  echo
+  echo "setup logrotation for auditd"
+  echo "at: /etc/logrotate.d/auditd"
+  if [[ "$CENTOS_SEVEN" -eq '7' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]]; then
+          VARDFSIZE=$(df --output=avail /var | tail -1)
+  else
+          VARDFSIZE=$(df -P /var | tail -1 | awk '{print $4}')
+  fi
+
+  if [[ "$TOTALMEM" -le '1153433' || "$VARDFSIZE" -le '10485760' ]]; then
+    if [[ -f /usr/local/bin/zstd && "$ZSTD_LOGROTATE_AUDITD" = [yY] ]]; then
+cat > "/etc/logrotate.d/auditd" <<END
+/var/log/audit/*.log {
+        daily
+        dateext
+        missingok
+        rotate 31
+        minsize 100k
+        maxsize 30M
+        compress
+        delaycompress
+        compresscmd /usr/local/bin/zstd
+        uncompresscmd /usr/local/bin/unzstd
+        compressoptions -9 --long -T0
+        compressext .zst
+        notifempty
+        postrotate
+          touch /var/log/audit/audit.log ||:
+          chmod 0600 /var/log/audit/audit.log ||:
+          service auditd restart
+        endscript           
+}
+END
+    else
+cat > "/etc/logrotate.d/auditd" <<END
+/var/log/audit/*.log {
+        daily
+        dateext
+        missingok
+        rotate 31
+        minsize 100k
+        maxsize 30M
+        compress
+        delaycompress
+        notifempty
+        postrotate
+          touch /var/log/audit/audit.log ||:
+          chmod 0600 /var/log/audit/audit.log ||:
+          service auditd restart
+        endscript           
+}
+END
+    fi
+  else
+    if [[ -f /usr/local/bin/zstd && "$ZSTD_LOGROTATE_AUDITD" = [yY] ]]; then
+cat > "/etc/logrotate.d/auditd" <<END
+/var/log/audit/*.log {
+        daily
+        dateext
+        missingok
+        rotate 31
+        minsize 100k
+        maxsize 200M
+        compress
+        delaycompress
+        compresscmd /usr/local/bin/zstd
+        uncompresscmd /usr/local/bin/unzstd
+        compressoptions -9 --long -T0
+        compressext .zst
+        notifempty
+        postrotate
+          touch /var/log/audit/audit.log ||:
+          chmod 0600 /var/log/audit/audit.log ||:
+          service auditd restart
+        endscript           
+}
+END
+    else
+cat > "/etc/logrotate.d/auditd" <<END
+/var/log/audit/*.log {
+        daily
+        dateext
+        missingok
+        rotate 31
+        minsize 100k
+        maxsize 200M
+        compress
+        delaycompress
+        notifempty
+        postrotate
+          touch /var/log/audit/audit.log ||:
+          chmod 0600 /var/log/audit/audit.log ||:
+          service auditd restart
+        endscript           
+}
+END
+    fi
+  fi
 }
 
 ######################################################
@@ -261,9 +489,10 @@ audit_setup() {
         fi
         if [ -f /etc/audit/auditd.conf ]; then
             cp -a /etc/audit/auditd.conf /etc/audit/auditd.conf.bak-initial
-            sed -i 's|^num_logs .*|num_logs = 20|' /etc/audit/auditd.conf
-            sed -i 's|^max_log_file .*|max_log_file = 35|' /etc/audit/auditd.conf
-            sed -i 's|^num_logs .*|num_logs = 20|' /etc/audit/auditd.conf
+            sed -i 's|^num_logs .*|num_logs = 40|' /etc/audit/auditd.conf
+            sed -i 's|^max_log_file .*|max_log_file = 0|' /etc/audit/auditd.conf
+            sed -i 's|^max_log_file_action .*|max_log_file_action = ignore|' /etc/audit/auditd.conf
+            sed -i 's|^num_logs .*|num_logs = 40|' /etc/audit/auditd.conf
             service auditd restart >/dev/null 2>&1
             chkconfig auditd on >/dev/null 2>&1
         fi
@@ -271,14 +500,31 @@ audit_setup() {
         if [ -f /etc/audisp/plugins.d/syslog.conf ]; then
             sed -i 's|args = LOG_INFO|args = LOG_AUTHPRIV6|' /etc/audisp/plugins.d/syslog.conf
         fi
-        sed -i 's|^num_logs .*|num_logs = 20|' /etc/audit/auditd.conf
-        sed -i 's|^max_log_file .*|max_log_file = 35|' /etc/audit/auditd.conf
-        sed -i 's|^num_logs .*|num_logs = 20|' /etc/audit/auditd.conf
+        sed -i 's|^num_logs .*|num_logs = 40|' /etc/audit/auditd.conf
+        sed -i 's|^max_log_file .*|max_log_file = 0|' /etc/audit/auditd.conf
+        sed -i 's|^max_log_file_action .*|max_log_file_action = ignore|' /etc/audit/auditd.conf
+        sed -i 's|^num_logs .*|num_logs = 40|' /etc/audit/auditd.conf
         service auditd restart >/dev/null 2>&1
         chkconfig auditd on >/dev/null 2>&1
     fi
     if [[ -f /sbin/aureport && ! -f /proc/user_beancounters ]]; then
-        if [[ "$CENTOS_SEVEN" = '7' ]]; then
+        if [[ "$CENTOS_NINE" -eq '9' ]]; then
+            AUDITRULE_FILE='/etc/audit/audit.rules'
+            AUDITRULE_PERMFILE='/etc/audit/rules.d/audit.rules'
+            if [ -f "$AUDITRULE_PERMFILE" ]; then
+                auditd_customrules
+                augenrules --check >/dev/null 2>&1
+                augenrules --load >/dev/null 2>&1
+            fi
+        elif [[ "$CENTOS_EIGHT" -eq '8' ]]; then
+            AUDITRULE_FILE='/etc/audit/audit.rules'
+            AUDITRULE_PERMFILE='/etc/audit/rules.d/audit.rules'
+            if [ -f "$AUDITRULE_PERMFILE" ]; then
+                auditd_customrules
+                augenrules --check >/dev/null 2>&1
+                augenrules --load >/dev/null 2>&1
+            fi
+        elif [[ "$CENTOS_SEVEN" = '7' ]]; then
             AUDITRULE_FILE='/etc/audit/audit.rules'
             AUDITRULE_PERMFILE='/etc/audit/rules.d/audit.rules'
             if [ -f "$AUDITRULE_PERMFILE" ]; then
@@ -297,6 +543,7 @@ audit_setup() {
         fi
     fi
     if [[ -f /sbin/aureport && ! -f /proc/user_beancounters ]]; then
+        audit_logrotate
         echo
         echo "auditd installed and configured"
     elif [ -f /proc/user_beancounters ]; then
@@ -310,7 +557,7 @@ audit_setup() {
 
 wipe_config() {
     if [[ -f /sbin/aureport && ! -f /proc/user_beancounters ]]; then
-        if [[ "$CENTOS_SEVEN" = '7' ]]; then
+        if [[ "$CENTOS_SEVEN" -eq '7' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]]; then
             AUDITRULE_FILE='/etc/audit/audit.rules'
             AUDITRULE_PERMFILE='/etc/audit/rules.d/audit.rules'
         elif [[ "$CENTOS_SIX" = '6' ]]; then
@@ -333,17 +580,27 @@ cat > "$AUDITRULE_PERMFILE" <<EOF
 # Feel free to add below this line. See auditctl man page
 EOF
         if [ -f /etc/audit/auditd.conf ]; then
-            sed -i 's|^num_logs .*|num_logs = 20|' /etc/audit/auditd.conf
-            sed -i 's|^max_log_file .*|max_log_file = 35|' /etc/audit/auditd.conf
-            sed -i 's|^num_logs .*|num_logs = 20|' /etc/audit/auditd.conf
+            sed -i 's|^num_logs .*|num_logs = 40|' /etc/audit/auditd.conf
+            sed -i 's|^max_log_file .*|max_log_file = 0|' /etc/audit/auditd.conf
+            sed -i 's|^max_log_file_action .*|max_log_file_action = ignore|' /etc/audit/auditd.conf
+            sed -i 's|^num_logs .*|num_logs = 40|' /etc/audit/auditd.conf
         fi
         auditd_customrules
-        if [[ "$CENTOS_SIX" = '6' || "$CENTOS_SEVEN" = '7' ]]; then
+        if [[ "$CENTOS_SIX" -eq '6' || "$CENTOS_SEVEN" -eq '7' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]]; then
             augenrules --check >/dev/null 2>&1
             augenrules --load >/dev/null 2>&1
         fi
-        service auditd restart >/dev/null 2>&1
-        chkconfig auditd on >/dev/null 2>&1
+        rm -f /var/log/audit/audit.log.*
+        audit_logrotate
+        if [[ "$CENTOS_SIX" -eq '6' ]]; then
+          service auditd restart >/dev/null 2>&1
+          chkconfig auditd on >/dev/null 2>&1
+        elif [[ "$CENTOS_SEVEN" -eq '7' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]]; then
+          # systemctl restart auditd
+          # systemctl enable auditd
+          service auditd restart >/dev/null 2>&1
+          chkconfig auditd on >/dev/null 2>&1
+        fi
         echo
         echo "auditd configuration reset"
     fi
@@ -351,6 +608,8 @@ EOF
 
 mariadb_audit() {
     if [[ "$AUDIT_MARIADB" = [yY] ]]; then
+        mkdir -p /var/log/mysql
+        chown mysql /var/log/mysql
         echo
         echo "Setup MariaDB Audit Plugin"
         echo
@@ -359,12 +618,27 @@ mariadb_audit() {
         mysql -e "SELECT * FROM INFORMATION_SCHEMA.PLUGINS WHERE PLUGIN_NAME='SERVER_AUDIT'\G"
         mysql -e "SET GLOBAL server_audit_logging=on;"
         mysql -e "SET GLOBAL server_audit_events='connect,query_dml';"
+        # mysql -e "SET GLOBAL server_audit_events='connect,query_dml_no_select';"
+        mysql -e "SET GLOBAL server_audit_output_type=FILE;"
+        mysql -e "SET GLOBAL server_audit_file_path='/var/log/mysql/audit.log';"
+        mysql -e "SET GLOBAL server_audit_file_rotate_size=1000000;"
+        mysql -e "SET GLOBAL server_audit_file_rotations=5;"
         echo
         echo "Update /etc/my.cnf for server_audit_logging"
         sed -i '/server_audit_logging/d' /etc/my.cnf
         sed -i '/server_audit_events/d' /etc/my.cnf
+        sed -i '/server_audit_output_type/d' /etc/my.cnf
+        sed -i '/server_audit_file_path/d' /etc/my.cnf
+        sed -i '/server_audit_file_rotate_size/d' /etc/my.cnf
+        sed -i '/server_audit_file_rotations/d' /etc/my.cnf
         echo "server_audit_logging=1" >> /etc/my.cnf
+        echo "#server_audit_incl_users=your_mysql_username1,your_mysql_username2" >> /etc/my.cnf
         echo "server_audit_events=connect,query_dml" >> /etc/my.cnf
+        echo "#server_audit_events=connect,query_dml_no_select" >> /etc/my.cnf
+        echo "server_audit_output_type=FILE" >> /etc/my.cnf
+        echo "server_audit_file_path=/var/log/mysql/audit.log" >> /etc/my.cnf
+        echo "server_audit_file_rotate_size=1000000" >> /etc/my.cnf
+        echo "server_audit_file_rotations=5" >> /etc/my.cnf
         echo
         echo "MariaDB Audit Plugin Installed & Configured"
         echo
@@ -381,8 +655,10 @@ mariadb_auditoff() {
         echo "Update /etc/my.cnf for server_audit_logging off"
         sed -i '/server_audit_logging/d' /etc/my.cnf
         sed -i '/server_audit_events/d' /etc/my.cnf
-        echo "server_audit_logging=0" >> /etc/my.cnf
-        echo "server_audit_events=connect,query_dml" >> /etc/my.cnf
+        sed -i '/server_audit_output_type/d' /etc/my.cnf
+        sed -i '/server_audit_file_path/d' /etc/my.cnf
+        sed -i '/server_audit_file_rotate_size/d' /etc/my.cnf
+        sed -i '/server_audit_file_rotations/d' /etc/my.cnf
         if [ -f /etc/centminmod/custom_config.inc ]; then
             sed -i 's|AUDIT_MARIADB.*|AUDIT_MARIADB='n'|' /etc/centminmod/custom_config.inc
         fi
@@ -391,6 +667,8 @@ mariadb_auditoff() {
 }
 
 mariadb_auditon() {
+        mkdir -p /var/log/mysql
+        chown mysql /var/log/mysql
         echo
         echo "Turn On MariaDB Audit Plugin"
         echo
@@ -399,12 +677,26 @@ mariadb_auditon() {
         mysql -e "SELECT * FROM INFORMATION_SCHEMA.PLUGINS WHERE PLUGIN_NAME='SERVER_AUDIT'\G"
         mysql -e "SET GLOBAL server_audit_logging=on;"
         mysql -e "SET GLOBAL server_audit_events='connect,query_dml';"
+        mysql -e "SET GLOBAL server_audit_output_type=FILE;"
+        mysql -e "SET GLOBAL server_audit_file_path='/var/log/mysql/audit.log';"
+        mysql -e "SET GLOBAL server_audit_file_rotate_size=1000000;"
+        mysql -e "SET GLOBAL server_audit_file_rotations=5;"
         echo
         echo "Update /etc/my.cnf for server_audit_logging on"
         sed -i '/server_audit_logging/d' /etc/my.cnf
         sed -i '/server_audit_events/d' /etc/my.cnf
+        sed -i '/server_audit_output_type/d' /etc/my.cnf
+        sed -i '/server_audit_file_path/d' /etc/my.cnf
+        sed -i '/server_audit_file_rotate_size/d' /etc/my.cnf
+        sed -i '/server_audit_file_rotations/d' /etc/my.cnf
         echo "server_audit_logging=1" >> /etc/my.cnf
+        echo "#server_audit_incl_users=your_mysql_username1,your_mysql_username2" >> /etc/my.cnf
         echo "server_audit_events=connect,query_dml" >> /etc/my.cnf
+        echo "#server_audit_events=connect,query_dml_no_select" >> /etc/my.cnf
+        echo "server_audit_output_type=FILE" >> /etc/my.cnf
+        echo "server_audit_file_path=/var/log/mysql/audit.log" >> /etc/my.cnf
+        echo "server_audit_file_rotate_size=1000000" >> /etc/my.cnf
+        echo "server_audit_file_rotations=5" >> /etc/my.cnf
         if [ -f /etc/centminmod/custom_config.inc ]; then
             sed -i 's|AUDIT_MARIADB.*|AUDIT_MARIADB='y'|' /etc/centminmod/custom_config.inc
         fi
@@ -414,7 +706,13 @@ mariadb_auditon() {
 
 add_rules() {
     if [[ -f /etc/audit/auditd.conf && ! -f /proc/user_beancounters ]]; then
-        if [[ "$CENTOS_SEVEN" = '7' ]]; then
+        if [[ "$CENTOS_NINE" = '9' ]]; then
+            AUDITRULE_FILE='/etc/audit/audit.rules'
+            AUDITRULE_PERMFILE='/etc/audit/rules.d/audit.rules'
+        elif [[ "$CENTOS_EIGHT" = '8' ]]; then
+            AUDITRULE_FILE='/etc/audit/audit.rules'
+            AUDITRULE_PERMFILE='/etc/audit/rules.d/audit.rules'
+        elif [[ "$CENTOS_SEVEN" = '7' ]]; then
             AUDITRULE_FILE='/etc/audit/audit.rules'
             AUDITRULE_PERMFILE='/etc/audit/rules.d/audit.rules'
         elif [[ "$CENTOS_SIX" = '6' ]]; then
@@ -423,18 +721,18 @@ add_rules() {
         fi
         if [ -d /usr/local/nginx/conf/conf.d ]; then
             VHOSTS=$(ls /usr/local/nginx/conf/conf.d | egrep 'ssl.conf|.conf' | egrep -v 'virtual.conf|^ssl.conf|demodomain.com.conf' |  sed -e 's/.ssl.conf//' -e 's/.conf//' | uniq)
+            for vhostname in $VHOSTS; do
+                if [[ -d "/home/nginx/domains/${vhostname}/log" && -z "$(fgrep "/home/nginx/domains/${vhostname}/log" "$AUDITRULE_PERMFILE")" ]]; then
+                    echo "-a exit,always -F arch=b32 -S unlink -S unlinkat -S rmdir -F dir=/home/nginx/domains/${vhostname}/log -F success=0 -k ${vhostname}_logdeletion" >> "$AUDITRULE_PERMFILE"
+                    echo "-a exit,always -F arch=b32 -S rename -S renameat -F dir=/home/nginx/domains/${vhostname}/log -F success=0 -k ${vhostname}_logrename" >> "$AUDITRULE_PERMFILE"
+                    echo "-a exit,always -F arch=b64 -S unlink -S unlinkat -S rmdir -F dir=/home/nginx/domains/${vhostname}/log -F success=0 -k ${vhostname}_logdeletion" >> "$AUDITRULE_PERMFILE"
+                    echo "-a exit,always -F arch=b64 -S rename -S renameat -F dir=/home/nginx/domains/${vhostname}/log -F success=0 -k ${vhostname}_logrename" >> "$AUDITRULE_PERMFILE"
+                fi
+            done
         fi
-        for vhostname in $VHOSTS; do
-            if [[ -d "/home/nginx/domains/${vhostname}/log" && -z "$(fgrep "/home/nginx/domains/${vhostname}/log" "$AUDITRULE_PERMFILE")" ]]; then
-                echo "-a exit,always -F arch=b32 -S unlink -S unlinkat -S rmdir -F dir=/home/nginx/domains/${vhostname}/log -F success=0 -k ${vhostname}_logdeletion" >> "$AUDITRULE_PERMFILE"
-                echo "-a exit,always -F arch=b32 -S rename -S renameat -F dir=/home/nginx/domains/${vhostname}/log -F success=0 -k ${vhostname}_logrename" >> "$AUDITRULE_PERMFILE"
-                echo "-a exit,always -F arch=b64 -S unlink -S unlinkat -S rmdir -F dir=/home/nginx/domains/${vhostname}/log -F success=0 -k ${vhostname}_logdeletion" >> "$AUDITRULE_PERMFILE"
-                echo "-a exit,always -F arch=b64 -S rename -S renameat -F dir=/home/nginx/domains/${vhostname}/log -F success=0 -k ${vhostname}_logrename" >> "$AUDITRULE_PERMFILE"
-            fi
-        done
         # if auditd rules have changed restart auditd service
         if [[ "$(augenrules --check | grep 'No change' >/dev/null 2>&1; echo $?)" != '0' ]]; then
-            if [[ "$CENTOS_SIX" = '6' || "$CENTOS_SEVEN" = '7' ]]; then
+            if [[ "$CENTOS_SIX" -eq '6' || "$CENTOS_SEVEN" -eq '7' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]]; then
                 augenrules --check >/dev/null 2>&1
                 augenrules --load >/dev/null 2>&1
             fi
