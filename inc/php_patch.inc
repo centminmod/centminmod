@@ -906,7 +906,7 @@ php_patches() {
   fi
   if [[ "$PHPVER_ID" -ge '70433' && "$PHPVER_ID" -le '70434' ]]; then
     # for 7.4.33 to 7.4.34 only
-    phpseven_bugids='81740 81744 81746 cve-2023-0662 ghsa-76gg-c692-v2mw cve-2023-3823 cve-2023-3824'
+    phpseven_bugids='81740 81744 81746 cve-2023-0662 ghsa-76gg-c692-v2mw cve-2023-3823 cve-2023-3824 cve-2024-2756 cve-2024-3096'
     for bugid in $phpseven_bugids; do
       if [[ ! -f "php742-${bugid}.patch" && -f "$CUR_DIR/patches/php/php742-${bugid}.patch" ]]; then
         echo
@@ -921,12 +921,44 @@ php_patches() {
       fi
     done
   fi
+  if [[ "$PHPVER_ID" -ge '80000' && "$PHPVER_ID" -le '80099' ]]; then
+    # for 8.1.x only
+    phpeight_bugids='cve-2024-2756 cve-2024-3096'
+    for bugid in $phpeight_bugids; do
+      if [[ ! -f "php80-${bugid}.patch" && -f "$CUR_DIR/patches/php/php80-${bugid}.patch" ]]; then
+        echo
+        if [[ "$bugid" != 'php-openssl-cert' ]]; then
+          echo "patching PHP 7.4.33 for bug #${bugid}"
+          echo "https://bugs.php.net/bug.php?id=${bugid}"
+        fi
+        echo
+        cp -a $CUR_DIR/patches/php/php80-${bugid}.patch php80-${bugid}.patch
+        dos2unix php80-${bugid}.patch
+        patch -p1 < php80-${bugid}.patch
+      fi
+    done
+  fi
   # backport PHP 8.0 OpenSSL 3 compatibility for PHP 7.4
   # only compilation fixes but not 100% working as extensive changes
   # needed for 7.4 & 8.0 for compatibility
   # "$PHP_PATCH_OPENSSL_THREE" = [yY]
+  if [[ "$CENTOS_EIGHT" -eq '8' && "$PHP_PATCH_OPENSSL_THREE" = [yY] ]] && [[ "$PHPVER_ID" -ge '70400' && "$PHPVER_ID" -lt '80000' ]]; then
+    phpsevenfour_opensslthree_bugids='php74-snmp-openssl3 php74-openssl3'
+    for bugid in $phpsevenfour_opensslthree_bugids; do
+      if [[ ! -f "${bugid}.patch" && -f "$CUR_DIR/patches/php/${bugid}.patch" ]]; then
+        echo
+        if [[ "$bugid" != 'php-openssl-cert' ]]; then
+          echo "patching PHP 7.4 for ${bugid}"
+        fi
+        echo
+        cp -a $CUR_DIR/patches/php/${bugid}.patch ${bugid}.patch
+        dos2unix ${bugid}.patch
+        patch -p1 < ${bugid}.patch
+      fi
+    done
+  fi
   if [[ "$CENTOS_NINE" -eq '9' && "$PHP_PATCH_OPENSSL_THREE" = [yY] ]] && [[ "$PHPVER_ID" -ge '70400' && "$PHPVER_ID" -lt '80000' ]]; then
-    phpsevenfour_opensslthree_bugids='php74-openssl3'
+    phpsevenfour_opensslthree_bugids='php74-snmp-openssl3 php74-openssl3'
     for bugid in $phpsevenfour_opensslthree_bugids; do
       if [[ ! -f "${bugid}.patch" && -f "$CUR_DIR/patches/php/${bugid}.patch" ]]; then
         echo
@@ -940,27 +972,45 @@ php_patches() {
       fi
     done
   fi
-  if [[ "$CENTOS_NINE" -eq '9' ]] && [[ "$PHPVER_ID" -ge '70400' && "$PHPVER_ID" -lt '80000' ]]; then
-    phpsevenfour_opensslthree_bugids='php74-snmp-openssl3'
-    for bugid in $phpsevenfour_opensslthree_bugids; do
-      if [[ ! -f "${bugid}.patch" && -f "$CUR_DIR/patches/php/${bugid}.patch" ]]; then
-        echo
-        if [[ "$bugid" != 'php-openssl-cert' ]]; then
-          echo "patching PHP 7.4 for ${bugid}"
-        fi
-        echo
-        cp -a $CUR_DIR/patches/php/${bugid}.patch ${bugid}.patch
-        dos2unix ${bugid}.patch
-        patch -p1 < ${bugid}.patch
-      fi
-    done
-  fi
+  # if [[ "$CENTOS_NINE" -eq '9' ]] && [[ "$PHPVER_ID" -ge '70400' && "$PHPVER_ID" -lt '80000' ]]; then
+  #   phpsevenfour_opensslthree_bugids='php74-snmp-openssl3'
+  #   for bugid in $phpsevenfour_opensslthree_bugids; do
+  #     if [[ ! -f "${bugid}.patch" && -f "$CUR_DIR/patches/php/${bugid}.patch" ]]; then
+  #       echo
+  #       if [[ "$bugid" != 'php-openssl-cert' ]]; then
+  #         echo "patching PHP 7.4 for ${bugid}"
+  #       fi
+  #       echo
+  #       cp -a $CUR_DIR/patches/php/${bugid}.patch ${bugid}.patch
+  #       dos2unix ${bugid}.patch
+  #       patch -p1 < ${bugid}.patch
+  #     fi
+  #   done
+  # fi
+  # if [[ "$CENTOS_NINE" -eq '9' ]] && [[ "$PHPVER_ID" -ge '80000' && "$PHPVER_ID" -lt '80100' ]]; then
+  #   # phar: switch to sha256 signature by default, backported from 8.1
+  #   # phar: implement openssl_256 and openssl_512 for signatures, backported from 8.1
+  #   # snmp: add sha256 / sha512 security protocol, backported from 8.1
+  #   phpeightzero_opensslthree_bugids='php80-openssl3-phar-sha'
+  #   for bugid in $phpeightzero_opensslthree_bugids; do
+  #     if [[ ! -f "${bugid}.patch" && -f "$CUR_DIR/patches/php/${bugid}.patch" ]]; then
+  #       echo
+  #       if [[ "$bugid" != 'php-openssl-cert' ]]; then
+  #         echo "patching PHP 8.0 for ${bugid}"
+  #       fi
+  #       echo
+  #       cp -a $CUR_DIR/patches/php/${bugid}.patch ${bugid}.patch
+  #       dos2unix ${bugid}.patch
+  #       patch -p1 < ${bugid}.patch
+  #     fi
+  #   done
+  # fi
   # backport PHP 8.0 OpenSSL 3 compatibility for PHP 8.0
   # only compilation fixes but not 100% working as extensive changes
   # needed for 7.4 & 8.0 for compatibility
   # "$PHP_PATCH_OPENSSL_THREE" = [yY]
-  if [[ "$CENTOS_NINE" -eq '9' ]] && [[ "$PHPVER_ID" -ge '80000' && "$PHPVER_ID" -lt '80100' ]]; then
-    phpeightzero_opensslthree_bugids='php80-snmp-openssl3'
+  if [[ "$CENTOS_EIGHT" -eq '8' && "$PHP_PATCH_OPENSSL_THREE" = [yY] ]] && [[ "$PHPVER_ID" -ge '80000' && "$PHPVER_ID" -lt '80100' ]]; then
+    phpeightzero_opensslthree_bugids='php80-snmp-openssl3 php80-openssl3-phar-sha php80-openssl3'
     for bugid in $phpeightzero_opensslthree_bugids; do
       if [[ ! -f "${bugid}.patch" && -f "$CUR_DIR/patches/php/${bugid}.patch" ]]; then
         echo
@@ -975,7 +1025,7 @@ php_patches() {
     done
   fi
   if [[ "$CENTOS_NINE" -eq '9' && "$PHP_PATCH_OPENSSL_THREE" = [yY] ]] && [[ "$PHPVER_ID" -ge '80000' && "$PHPVER_ID" -lt '80100' ]]; then
-    phpeightzero_opensslthree_bugids='php80-openssl3-phar-sha php80-openssl3'
+    phpeightzero_opensslthree_bugids='php80-snmp-openssl3 php80-openssl3-phar-sha php80-openssl3'
     for bugid in $phpeightzero_opensslthree_bugids; do
       if [[ ! -f "${bugid}.patch" && -f "$CUR_DIR/patches/php/${bugid}.patch" ]]; then
         echo
