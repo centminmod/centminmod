@@ -906,7 +906,7 @@ php_patches() {
   fi
   if [[ "$PHPVER_ID" -ge '70433' && "$PHPVER_ID" -le '70434' ]]; then
     # for 7.4.33 to 7.4.34 only
-    phpseven_bugids='81740 81744 81746 cve-2023-0662 ghsa-76gg-c692-v2mw cve-2023-3823 cve-2023-3824'
+    phpseven_bugids='81740 81744 81746 cve-2023-0662 ghsa-76gg-c692-v2mw cve-2023-3823 cve-2023-3824 cve-2024-2756 cve-2024-3096'
     for bugid in $phpseven_bugids; do
       if [[ ! -f "php742-${bugid}.patch" && -f "$CUR_DIR/patches/php/php742-${bugid}.patch" ]]; then
         echo
@@ -918,6 +918,23 @@ php_patches() {
         cp -a $CUR_DIR/patches/php/php742-${bugid}.patch php742-${bugid}.patch
         dos2unix php742-${bugid}.patch
         patch -p1 < php742-${bugid}.patch
+      fi
+    done
+  fi
+  if [[ "$PHPVER_ID" -ge '80000' && "$PHPVER_ID" -le '80099' ]]; then
+    # for 8.1.x only
+    phpeight_bugids='cve-2024-2756 cve-2024-3096'
+    for bugid in $phpeight_bugids; do
+      if [[ ! -f "php80-${bugid}.patch" && -f "$CUR_DIR/patches/php/php80-${bugid}.patch" ]]; then
+        echo
+        if [[ "$bugid" != 'php-openssl-cert' ]]; then
+          echo "patching PHP 7.4.33 for bug #${bugid}"
+          echo "https://bugs.php.net/bug.php?id=${bugid}"
+        fi
+        echo
+        cp -a $CUR_DIR/patches/php/php80-${bugid}.patch php80-${bugid}.patch
+        dos2unix php80-${bugid}.patch
+        patch -p1 < php80-${bugid}.patch
       fi
     done
   fi
