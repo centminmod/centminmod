@@ -714,6 +714,8 @@ fi
       echo -e "\n`date`\nError: $ERR, PHP configure failed ($SCRIPT_VERSION)\n"
         echo "report errors on the forums at community.centminmod.com/forums/8/"
         echo "with info asked at community.centminmod.com/threads/17857/"
+        echo "ensure you're using latest code by running command: cmupdate"
+        echo "and retrying centmin.sh menu option 5 first"
         echo
         echo "lscpu"
         lscpu
@@ -910,6 +912,8 @@ fi
         echo
         echo "report errors on the forums at community.centminmod.com/forums/8/"
         echo "with info asked at community.centminmod.com/threads/17857/"
+        echo "ensure you're using latest code by running command: cmupdate"
+        echo "and retrying centmin.sh menu option 5 first"
         echo
         free -mlt
         echo
@@ -1010,6 +1014,8 @@ fi
     echo -e "\n`date`\nError: $ERR, PHP wasn't installed properly ($SCRIPT_VERSION)\n"
         echo "report errors on the forums at community.centminmod.com/forums/8/"
         echo "with info asked at community.centminmod.com/threads/17857/"
+        echo "ensure you're using latest code by running command: cmupdate"
+        echo "and retrying centmin.sh menu option 5 first"
         echo
         echo "lscpu"
         lscpu

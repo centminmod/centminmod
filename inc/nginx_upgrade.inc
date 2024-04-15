@@ -826,6 +826,8 @@ fi
                 echo "make sure you type the correct nginx version"
                 echo "report errors on the forums at community.centminmod.com/forums/8/"
                 echo "with info asked at community.centminmod.com/threads/17778/"
+                echo "ensure you're using latest code by running command: cmupdate"
+                echo "and retrying centmin.sh menu option 4 first"
                 nginx_maintenance_off
             echo
             free -m
@@ -862,6 +864,8 @@ fi
             echo "make sure you type the correct nginx version"
             echo "report errors on the forums at community.centminmod.com/forums/8/"
             echo "with info asked at community.centminmod.com/threads/17778/"
+            echo "ensure you're using latest code by running command: cmupdate"
+            echo "and retrying centmin.sh menu option 4 first"
             nginx_maintenance_off
             echo
             free -m
@@ -918,6 +922,8 @@ fi
       echo -e "\n`date`\nError: $ERR, Nginx configure failed\n"
         echo "report errors on the forums at community.centminmod.com/forums/8/"
         echo "with info asked at community.centminmod.com/threads/17778/"
+        echo "ensure you're using latest code by running command: cmupdate"
+        echo "and retrying centmin.sh menu option 4 first"
         nginx_maintenance_off
         echo
         free -mlt
@@ -1038,6 +1044,8 @@ fi
       echo -e "\n`date`\nError: $ERR, Nginx make failed\n"
         echo "report errors on the forums at community.centminmod.com/forums/8/"
         echo "with info asked at community.centminmod.com/threads/17778/"
+        echo "ensure you're using latest code by running command: cmupdate"
+        echo "and retrying centmin.sh menu option 4 first"
         nginx_maintenance_off
         echo
         free -mlt
@@ -1183,6 +1191,8 @@ fi
       echo -e "\n`date`\nError: $ERR, Nginx wasn't installed properly\n"
         echo "report errors on the forums at community.centminmod.com/forums/8/"
         echo "with info asked at community.centminmod.com/threads/17778/"
+        echo "ensure you're using latest code by running command: cmupdate"
+        echo "and retrying centmin.sh menu option 4 first"
         nginx_maintenance_off
         echo
         free -m
