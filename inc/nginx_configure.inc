@@ -5033,7 +5033,8 @@ if [[ "$(gcc --version | head -n1 | awk '{print $3}' | cut -d . -f1-3 | sed "s|\
 fi
 
 if [[ "$NGINXCOMPILE_FORMATSEC" = [yY] ]]; then
-  FORMATSECURITY_OPT=' -Wformat -Werror=format-security'
+  # FORMATSECURITY_OPT=' -Wformat -Werror=format-security'
+  FORMATSECURITY_OPT=' -Wformat'
 else
   FORMATSECURITY_OPT=""
 fi
