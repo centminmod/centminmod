@@ -380,6 +380,48 @@ install_cfzlib() {
         g++ --version
     fi
 
+    if [[ "$DEVTOOLSETTWELVE" = [yY] && -f /opt/rh/gcc-toolset-12/root/usr/bin/gcc && -f /opt/rh/gcc-toolset-12/root/usr/bin/g++ ]] && [[ "$(gcc --version | head -n1 | awk '{print $3}' | cut -d . -f1,2 | sed "s|\.|0|")" -gt '407' ]]; then
+        source /opt/rh/gcc-toolset-12/enable
+        unset CC
+        unset CXX
+        if [[ "$INITIALINSTALL" != [yY] ]]; then
+            export CC="ccache gcc"
+            export CXX="ccache g++"
+        else
+            export CC="gcc"
+            export CXX="g++"
+        fi
+        ZLIB_DEVTOOLSET_FALLTHROUGH=' -Wimplicit-fallthrough=0'
+        ZLIB_DEVTOOLSET_EXTRAFLAGS=' -fcode-hoisting -Wno-cast-function-type -Wno-cast-align -Wno-implicit-function-declaration -Wno-builtin-declaration-mismatch -Wno-deprecated-declarations -Wno-int-conversion -Wno-unused-result -Wno-vla-parameter -Wno-maybe-uninitialized -Wno-unused-result -Wno-return-local-addr -Wno-maybe-uninitialized -Wno-array-parameter -Wno-alloc-size-larger-than -Wno-address -Wno-array-bounds -Wno-deprecated-declarations -Wno-discarded-qualifiers -Wno-stringop-overread -Wno-stringop-truncation -Wno-missing-field-initializers -Wno-unused-variable -Wno-format -Wno-stringop-overflow -Wno-free-nonheap-object -Wno-bad-function-cast -Wno-dangling-pointer -Wno-array-parameter'
+        gcc --version
+        g++ --version
+    fi
+
+    if [[ "$DEVTOOLSETTHIRTEEN" = [yY] && -f /opt/rh/gcc-toolset-13/root/usr/bin/gcc && -f /opt/rh/gcc-toolset-13/root/usr/bin/g++ ]] && [[ "$(gcc --version | head -n1 | awk '{print $3}' | cut -d . -f1,2 | sed "s|\.|0|")" -gt '407' ]]; then
+        source /opt/rh/gcc-toolset-13/enable
+        unset CC
+        unset CXX
+        if [[ "$INITIALINSTALL" != [yY] ]]; then
+            export CC="ccache gcc"
+            export CXX="ccache g++"
+        else
+            export CC="gcc"
+            export CXX="g++"
+        fi
+        ZLIB_DEVTOOLSET_FALLTHROUGH=' -Wimplicit-fallthrough=0'
+        ZLIB_DEVTOOLSET_EXTRAFLAGS=' -fcode-hoisting -Wno-cast-function-type -Wno-cast-align -Wno-implicit-function-declaration -Wno-builtin-declaration-mismatch -Wno-deprecated-declarations -Wno-int-conversion -Wno-unused-result -Wno-vla-parameter -Wno-maybe-uninitialized -Wno-unused-result -Wno-return-local-addr -Wno-maybe-uninitialized -Wno-array-parameter -Wno-alloc-size-larger-than -Wno-address -Wno-array-bounds -Wno-deprecated-declarations -Wno-discarded-qualifiers -Wno-stringop-overread -Wno-stringop-truncation -Wno-missing-field-initializers -Wno-unused-variable -Wno-format -Wno-stringop-overflow -Wno-free-nonheap-object -Wno-bad-function-cast -Wno-dangling-pointer -Wno-array-parameter'
+        gcc --version
+        g++ --version
+    fi
+
+         # if only 1 cpu thread use -O2 to keep compile times sane
+        if [[ "$CPUS" = '1' ]]; then
+           export CFLAGS="-O2${ZLIB_DEVTOOLSET_FALLTHROUGH}${ZLIB_DEVTOOLSET_EXTRAFLAGS} -pipe"
+        else
+           export CFLAGS="-O3${ZLIB_DEVTOOLSET_FALLTHROUGH}${ZLIB_DEVTOOLSET_EXTRAFLAGS} -pipe"
+        fi
+        export CXXFLAGS="$CFLAGS"
+
         install_cfzlibstartdir=$(pwd)
         echo
         echo "install zlib cloudflare..."
@@ -450,8 +492,11 @@ install_cfzlib() {
         # ./configure --prefix=/usr/local/zlib-cf --static
         if [[ "$NGINXCOMPILE_PIE" = [yY] ]]; then
             echo
-            echo "CFLAGS=$CFLAGS"
-            CFLAGS="-fPIC -O2 -fstack-protector-strong -D_FORTIFY_SOURCE=2" CPPFLAGS="-D_FORTIFY_SOURCE=2" CXXFLAGS="-fPIC -O2" LDFLAGS="-Wl,-z,relro,-z,now -pie" make${MAKETHREADS}
+            echo "Before NGINXCOMPILE_PIE='y' CFLAGS=$CFLAGS"
+            echo
+            CFLAGS="-fPIC -O2${ZLIB_DEVTOOLSET_FALLTHROUGH}${ZLIB_DEVTOOLSET_EXTRAFLAGS} -fstack-protector-strong -D_FORTIFY_SOURCE=2" CPPFLAGS="-D_FORTIFY_SOURCE=2" CXXFLAGS="-fPIC -O2${ZLIB_DEVTOOLSET_FALLTHROUGH}${ZLIB_DEVTOOLSET_EXTRAFLAGS}" LDFLAGS="-Wl,-z,relro,-z,now -pie" make${MAKETHREADS}
+            echo
+            echo "After NGINXCOMPILE_PIE='y' CFLAGS=$CFLAGS"
         else
             make${MAKETHREADS}
         fi
@@ -557,6 +602,12 @@ install_cfzlib() {
 
         popd
         echo
+        echo "CFLAGS=$CFLAGS"
+        echo "CXXFLAGS=$CXXFLAGS"
+        unset CFLAGS
+        unset CXXFLAGS
+        echo "CFLAGS=$CFLAGS"
+        echo "CXXFLAGS=$CXXFLAGS"
         echo "zlib cloudflare installed"
         echo
 
