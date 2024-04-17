@@ -18,7 +18,7 @@ ARCH_CHECK="$(uname -m)"
 # switch to nodesource yum repo instead of source compile
 # specify version branch so set NODEJSVER to 16 max for EL7
 # 20 for EL8 and EL9
-NODEJSVER='18'
+NODEJSVER='16'
 NODEJSVER_EL8='20'
 NODEJSVER_EL9='20'
 # for EL6 only
