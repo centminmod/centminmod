@@ -580,24 +580,24 @@ php_patches() {
         dos2unix php5640-cve-2023-3824.patch
         patch -p1 < php5640-cve-2023-3824.patch
       fi
-      # if [ ! -f php5640-cve-2024-3096.patch ]; then
-      #   echo
-      #   echo "patching PHP 5.6 for bug #cve-2024-3096"
-      #   echo "https://bugs.php.net/bug.php?id=cve-2024-3096"
-      #   echo
-      #   cp -a $CUR_DIR/patches/php/php5640-cve-2024-3096.patch php5640-cve-2024-3096.patch
-      #   dos2unix php5640-cve-2024-3096.patch
-      #   patch -p1 < php5640-cve-2024-3096.patch
-      # fi
-      # if [ ! -f php5640-cve-2024-2756.patch ]; then
-      #   echo
-      #   echo "patching PHP 5.6 for bug #cve-2024-2756"
-      #   echo "https://bugs.php.net/bug.php?id=cve-2024-2756"
-      #   echo
-      #   cp -a $CUR_DIR/patches/php/php5640-cve-2024-2756.patch php5640-cve-2024-2756.patch
-      #   dos2unix php5640-cve-2024-2756.patch
-      #   patch -p1 < php5640-cve-2024-2756.patch
-      # fi
+      if [ ! -f php5640-cve-2024-2756.patch ]; then
+        echo
+        echo "patching PHP 5.6 for bug #cve-2024-2756"
+        echo "https://bugs.php.net/bug.php?id=cve-2024-2756"
+        echo
+        cp -a $CUR_DIR/patches/php/php5640-cve-2024-2756.patch php5640-cve-2024-2756.patch
+        dos2unix php5640-cve-2024-2756.patch
+        patch -p1 < php5640-cve-2024-2756.patch
+      fi
+      if [ ! -f php5640-cve-2024-3096.patch ]; then
+        echo
+        echo "patching PHP 5.6 for bug #cve-2024-3096"
+        echo "https://bugs.php.net/bug.php?id=cve-2024-3096"
+        echo
+        cp -a $CUR_DIR/patches/php/php5640-cve-2024-3096.patch php5640-cve-2024-3096.patch
+        dos2unix php5640-cve-2024-3096.patch
+        patch -p1 < php5640-cve-2024-3096.patch
+      fi
     fi
 
     if [[ "$PHPVER_ID" = '70213' || "$PHPVER_ID" = '70125' ]]; then
@@ -630,66 +630,12 @@ php_patches() {
     fi
     if [[ "$PHPMUVER" = '7.0' || "$PHPMVER" = '7.0' ]] && [[ "$PHPVER_ID" -ge '70000' && "$PHPVER_ID" -le '70033' ]]; then
       # backport security bug patch from PHP 7.1. to 7.0.33
-      # PHP bug #77369 https://bugs.php.net/bug.php?id=77369
-      # PHP bug #77370 https://bugs.php.net/bug.php?id=77370
-      # PHP bug #77371 https://bugs.php.net/bug.php?id=77371
-      # PHP bug #77381 https://bugs.php.net/bug.php?id=77381
-      # PHP bug #77382 https://bugs.php.net/bug.php?id=77382
-      # PHP bug #77418 https://bugs.php.net/bug.php?id=77418
-      # PHP bug #77247 https://bugs.php.net/bug.php?id=77247
-      # PHP bug #77242 https://bugs.php.net/bug.php?id=77242
-      # PHP bug #77380 https://bugs.php.net/bug.php?id=77380
-      # PHP bug #77540 https://bugs.php.net/bug.php?id=77540
-      # PHP bug #77563 https://bugs.php.net/bug.php?id=77563
-      # PHP bug #77396 https://bugs.php.net/bug.php?id=77396
-      # PHP bug #77431 https://bugs.php.net/bug.php?id=77431
-      # PHP bug #77630 https://bugs.php.net/bug.php?id=77630
-      # PHP bug #76846 https://bugs.php.net/bug.php?id=76846
-      # PHP bug #76846 https://bugs.php.net/bug.php?id=77950
-      # PHP bug #77967 https://bugs.php.net/bug.php?id=77967
-      # PHP bug #77988 https://bugs.php.net/bug.php?id=77988
-      # PHP bug #78069 https://bugs.php.net/bug.php?id=78069
-      # PHP bug #77919 https://bugs.php.net/bug.php?id=77919
-      # PHP bug #78222 https://bugs.php.net/bug.php?id=78222
-      # PHP bug #78256 https://bugs.php.net/bug.php?id=78256
-      # PHP bug #75457 https://bugs.php.net/bug.php?id=75457
-      # PHP bug #78380 https://bugs.php.net/bug.php?id=78380
-      # PHP bug #78599 https://bugs.php.net/bug.php?id=78599
-      # PHP bug #78862 https://bugs.php.net/bug.php?id=78862
-      # PHP bug #78863 https://bugs.php.net/bug.php?id=78863
-      # PHP bug #78793 https://bugs.php.net/bug.php?id=78793
-      # PHP bug #78878 https://bugs.php.net/bug.php?id=78878
-      # PHP bug #78910 https://bugs.php.net/bug.php?id=78910
-      # PHP bug #79037 https://bugs.php.net/bug.php?id=79037
-      # PHP bug #79099 https://bugs.php.net/bug.php?id=79099
-      # PHP bug #77569 https://bugs.php.net/bug.php?id=77569
-      # PHP bug #79221 https://bugs.php.net/bug.php?id=79221
-      # PHP bug #79082 https://bugs.php.net/bug.php?id=79082
-      # PHP bug #79282 https://bugs.php.net/bug.php?id=79282
-      # PHP bug #79329 https://bugs.php.net/bug.php?id=79329
-      # PHP bug #79330 https://bugs.php.net/bug.php?id=79330
-      # PHP bug #79465 https://bugs.php.net/bug.php?id=79465
-      # PHP bug #78875 https://bugs.php.net/bug.php?id=78875
-      # PHP bug #78876 https://bugs.php.net/bug.php?id=78876
-      # PHP bug #79797 https://bugs.php.net/bug.php?id=79797
-      # PHP bug #79877 https://bugs.php.net/bug.php?id=79877
-      # PHP bug #79699 https://bugs.php.net/bug.php?id=79699
-      # PHP bug #77423 https://bugs.php.net/bug.php?id=77423
-      # PHP bug #81122 https://bugs.php.net/bug.php?id=81122
-      # PHP bug #76488 https://bugs.php.net/bug.php?id=76488
-      # PHP bug #81211 https://bugs.php.net/bug.php?id=81211
-      # PHP bug #81026 https://bugs.php.net/bug.php?id=81026
-      # PHP bug #79971 https://bugs.php.net/bug.php?id=79971
-      # PHP bug #81719 https://bugs.php.net/bug.php?id=81719
-      # PHP bug #81720 https://bugs.php.net/bug.php?id=81720
-      # PHP bug #81719 https://bugs.php.net/bug.php?id=81719
-      # PHP bug #81720 https://bugs.php.net/bug.php?id=81720
-      phpseven_bugids='77369 77370 77371 77381 77418 77247 77242 77380 77540 77563 77396 77431 77630 76846 php-openssl-cert 77753 77831 sqlite3-defensive 77950 77967 77988 78069 77919 78222 78256 75457 78380 78599 78862 78863 78793 78878 78910 79037 79099 77569 79221 79082 php-openssl-cert2 79282 79329 79330 79465 78875 78876 79797 79877 79699 mysqlnd-fix 77423 80672 80710 81122 76488 81211 81026 79971 81719 81720 81726 81727 81740 81744 81746 cve-2023-0662 ghsa-76gg-c692-v2mw cve-2023-3823 cve-2023-3824'
+      phpseven_bugids='77369 77370 77371 77381 77418 77247 77242 77380 77540 77563 77396 77431 77630 76846 php-openssl-cert 77753 77831 sqlite3-defensive 77950 77967 77988 78069 77919 78222 78256 75457 78380 78599 78862 78863 78793 78878 78910 79037 79099 77569 79221 79082 php-openssl-cert2 79282 79329 79330 79465 78875 78876 79797 79877 79699 mysqlnd-fix 77423 80672 80710 81122 76488 81211 81026 79971 81719 81720 81726 81727 81740 81744 81746 cve-2023-0662 ghsa-76gg-c692-v2mw cve-2023-3823 cve-2023-3824 cve-2024-2756 cve-2024-3096'
       for bugid in $phpseven_bugids; do
         if [[ ! -f "php7033-${bugid}.patch" && -f "$CUR_DIR/patches/php/php7033-${bugid}.patch" ]]; then
           echo
           if [[ "$bugid" != 'php-openssl-cert' ]]; then
-            echo "patching PHP 7.0.33+ for bug #${bugid}"
+            echo "Patching PHP 7.0.33+ for bug #${bugid}"
             echo "https://bugs.php.net/bug.php?id=${bugid}"
           elif [[ "$bugid" = 'sqlite3-defensive' ]]; then
             echo "patching PHP 7.0.33+ sqlite3-defensive patch"
@@ -706,52 +652,38 @@ php_patches() {
           fi
           if [[ "$bugid" != 'mysqlnd-fix' ]]; then
             echo
+            # Copy the patch file
             cp -a $CUR_DIR/patches/php/php7033-${bugid}.patch php7033-${bugid}.patch
             dos2unix php7033-${bugid}.patch
-            patch -p1 < php7033-${bugid}.patch
+            # Attempt to apply the patch
+            if patch -p1 < php7033-${bugid}.patch; then
+              echo "Patch applied successfully for bug #${bugid}"
+            else
+              echo "Patching failed for bug #${bugid}"
+              # Check each target file for .orig and .rej files
+              while read -r file; do
+                file=$(echo "$file" | sed 's/b\///')
+                if [[ -f "$file.orig" && -f "$file.rej" ]]; then
+                  echo "Restoring original file: $file"
+                  mv -f "$file.orig" "$file"
+                  rm "$file.rej"
+                fi
+              done < <(grep -oP '(?<=\+\+\+ )[^\s]+' php7033-${bugid}.patch)
+            fi
           fi
+        else
+          echo "php7033-${bugid}.patch patch file already applied"
         fi
       done
     fi
     if [[ "$PHPMUVER" = '7.1' || "$PHPMVER" = '7.1' ]] && [[ "$PHPVER_ID" -ge '70100' && "$PHPVER_ID" -le '70133' ]]; then
       # backport security bug patch from PHP 7.3. to 7.1.33
-      # PHP bug #78862 https://bugs.php.net/bug.php?id=78862
-      # PHP bug #78863 https://bugs.php.net/bug.php?id=78863
-      # PHP bug #78793 https://bugs.php.net/bug.php?id=78793
-      # PHP bug #78878 https://bugs.php.net/bug.php?id=78878
-      # PHP bug #78910 https://bugs.php.net/bug.php?id=78910
-      # PHP bug #79037 https://bugs.php.net/bug.php?id=79037
-      # PHP bug #79091 https://bugs.php.net/bug.php?id=79091
-      # PHP bug #79099 https://bugs.php.net/bug.php?id=79099
-      # PHP bug #77569 https://bugs.php.net/bug.php?id=77569
-      # PHP bug #79221 https://bugs.php.net/bug.php?id=79221
-      # PHP bug #79082 https://bugs.php.net/bug.php?id=79082
-      # PHP bug #79282 https://bugs.php.net/bug.php?id=79282
-      # PHP bug #79329 https://bugs.php.net/bug.php?id=79329
-      # PHP bug #79330 https://bugs.php.net/bug.php?id=79330
-      # PHP bug #79465 https://bugs.php.net/bug.php?id=79465
-      # PHP bug #78875 https://bugs.php.net/bug.php?id=78875
-      # PHP bug #78876 https://bugs.php.net/bug.php?id=78876
-      # PHP bug #79797 https://bugs.php.net/bug.php?id=79797
-      # PHP bug #79877 https://bugs.php.net/bug.php?id=79877
-      # PHP bug #79699 https://bugs.php.net/bug.php?id=79699
-      # PHP bug #79601 https://bugs.php.net/bug.php?id=79601
-      # PHP bug #77423 https://bugs.php.net/bug.php?id=77423
-      # PHP bug #80672 https://bugs.php.net/bug.php?id=80672
-      # PHP bug #80710 https://bugs.php.net/bug.php?id=80710
-      # PHP bug #81122 https://bugs.php.net/bug.php?id=81122
-      # PHP bug #76452 https://bugs.php.net/bug.php?id=76452
-      # PHP bug #81211 https://bugs.php.net/bug.php?id=81211
-      # PHP bug #81026 https://bugs.php.net/bug.php?id=81026
-      # PHP bug #79971 https://bugs.php.net/bug.php?id=79971
-      # PHP bug #81719 https://bugs.php.net/bug.php?id=81719
-      # PHP bug #81720 https://bugs.php.net/bug.php?id=81720
-      phpseven_bugids='78862 78863 78793 78878 78910 79037 79091 79099 77569 79221 79082 php-openssl-cert 79282 79329 79330 79465 78875 78876 79797 79877 79699 79601 mysqlnd-fix 77423 80672 80710 81122 76452 81211 81026 79971 81719 81720 81726 81727 81740 81744 81746 cve-2023-0662 ghsa-76gg-c692-v2mw cve-2023-3823 cve-2023-3824'
+      phpseven_bugids='78862 78863 78793 78878 78910 79037 79091 79099 77569 79221 79082 php-openssl-cert 79282 79329 79330 79465 78875 78876 79797 79877 79699 79601 mysqlnd-fix 77423 80672 80710 81122 76452 81211 81026 79971 81719 81720 81726 81727 81740 81744 81746 cve-2023-0662 ghsa-76gg-c692-v2mw cve-2023-3823 cve-2023-3824 cve-2024-2756 cve-2024-3096'
       for bugid in $phpseven_bugids; do
         if [[ ! -f "php7133-${bugid}.patch" && -f "$CUR_DIR/patches/php/php7133-${bugid}.patch" ]]; then
           echo
           if [[ "$bugid" != 'php-openssl-cert' ]]; then
-            echo "patching PHP 7.1.33+ for bug #${bugid}"
+            echo "Patching PHP 7.1.33+ for bug #${bugid}"
             echo "https://bugs.php.net/bug.php?id=${bugid}"
           elif [[ "$bugid" = 'sqlite3-defensive' ]]; then
             echo "patching PHP 7.1.33+ sqlite3-defensive patch"
@@ -766,10 +698,27 @@ php_patches() {
           fi
           if [[ "$bugid" != 'mysqlnd-fix' ]]; then
             echo
+            # Copy the patch file
             cp -a $CUR_DIR/patches/php/php7133-${bugid}.patch php7133-${bugid}.patch
             dos2unix php7133-${bugid}.patch
-            patch -p1 < php7133-${bugid}.patch
+            # Attempt to apply the patch
+            if patch -p1 < php7133-${bugid}.patch; then
+              echo "Patch applied successfully for bug #${bugid}"
+            else
+              echo "Patching failed for bug #${bugid}"
+              # Check each target file for .orig and .rej files
+              while read -r file; do
+                file=$(echo "$file" | sed 's/b\///')
+                if [[ -f "$file.orig" && -f "$file.rej" ]]; then
+                  echo "Restoring original file: $file"
+                  mv -f "$file.orig" "$file"
+                  rm "$file.rej"
+                fi
+              done < <(grep -oP '(?<=\+\+\+ )[^\s]+' php7133-${bugid}.patch)
+            fi
           fi
+        else
+          echo "php7133-${bugid}.patch patch file already applied"
         fi
       done
     fi
@@ -796,22 +745,12 @@ php_patches() {
     fi
     if [[ "$PHPMUVER" = '7.2' || "$PHPMVER" = '7.2' ]] && [[ "$PHPVER_ID" -ge '70200' && "$PHPVER_ID" -le '70234' ]]; then
       # backport security bug patch from PHP 7.3. to 7.2.34
-      # PHP bug #77423 https://bugs.php.net/bug.php?id=77423
-      # PHP bug #80672 https://bugs.php.net/bug.php?id=80672
-      # PHP bug #80710 https://bugs.php.net/bug.php?id=80710
-      # PHP bug #81122 https://bugs.php.net/bug.php?id=81122
-      # PHP bug #76452 https://bugs.php.net/bug.php?id=76452
-      # PHP bug #81211 https://bugs.php.net/bug.php?id=81211
-      # PHP bug #81026 https://bugs.php.net/bug.php?id=81026
-      # PHP bug #79971 https://bugs.php.net/bug.php?id=79971
-      # PHP bug #81719 https://bugs.php.net/bug.php?id=81719
-      # PHP bug #81720 https://bugs.php.net/bug.php?id=81720
-      phpseven_bugids='77423 80672 80710 81122 76452 81211 81026 79971 81719 81720 81726 81727 81738 81740 81744 81746 cve-2023-0662 ghsa-76gg-c692-v2mw cve-2023-3823 cve-2023-3824'
+      phpseven_bugids='77423 80672 80710 81122 76452 81211 81026 79971 81719 81720 81726 81727 81738 81740 81744 81746 cve-2023-0662 ghsa-76gg-c692-v2mw cve-2023-3823 cve-2023-3824 cve-2024-2756 cve-2024-3096'
       for bugid in $phpseven_bugids; do
         if [[ ! -f "php7234-${bugid}.patch" && -f "$CUR_DIR/patches/php/php7234-${bugid}.patch" ]]; then
           echo
           if [[ "$bugid" != 'php-openssl-cert' ]]; then
-            echo "patching PHP 7.2.34+ for bug #${bugid}"
+            echo "Patching PHP 7.2.34+ for bug #${bugid}"
             echo "https://bugs.php.net/bug.php?id=${bugid}"
           elif [[ "$bugid" = 'sqlite3-defensive' ]]; then
             echo "patching PHP 7.2.34+ sqlite3-defensive patch"
@@ -826,10 +765,27 @@ php_patches() {
           fi
           if [[ "$bugid" != 'mysqlnd-fix' ]]; then
             echo
+            # Copy the patch file
             cp -a $CUR_DIR/patches/php/php7234-${bugid}.patch php7234-${bugid}.patch
             dos2unix php7234-${bugid}.patch
-            patch -p1 < php7234-${bugid}.patch
+            # Attempt to apply the patch
+            if patch -p1 < php7234-${bugid}.patch; then
+              echo "Patch applied successfully for bug #${bugid}"
+            else
+              echo "Patching failed for bug #${bugid}"
+              # Check each target file for .orig and .rej files
+              while read -r file; do
+                file=$(echo "$file" | sed 's/b\///')
+                if [[ -f "$file.orig" && -f "$file.rej" ]]; then
+                  echo "Restoring original file: $file"
+                  mv -f "$file.orig" "$file"
+                  rm "$file.rej"
+                fi
+              done < <(grep -oP '(?<=\+\+\+ )[^\s]+' php7234-${bugid}.patch)
+            fi
           fi
+        else
+          echo "php7234-${bugid}.patch patch file already applied"
         fi
       done
     fi
@@ -853,7 +809,7 @@ php_patches() {
     fi
     if [[ "$PHPMUVER" = '7.3' || "$PHPMVER" = '7.3' ]] && [[ "$PHPVER_ID" -ge '70300' && "$PHPVER_ID" -le '70333' ]]; then
       # backport security bug patch for php 7.3
-      phpseven_bugids='81026 81719 81720 pcre1038 81726 81727 81738 81740 81744 81746 cve-2023-0662 ghsa-76gg-c692-v2mw cve-2023-3823 cve-2023-3824'
+      phpseven_bugids='81026 81719 81720 pcre1038 81726 81727 81738 81740 81744 81746 cve-2023-0662 ghsa-76gg-c692-v2mw cve-2023-3823 cve-2023-3824 cve-2024-2756 cve-2024-3096'
       for bugid in $phpseven_bugids; do
         if [[ ! -f "php7331-${bugid}.patch" && -f "$CUR_DIR/patches/php/php7331-${bugid}.patch" ]]; then
           echo
@@ -863,13 +819,30 @@ php_patches() {
             dos2unix php7331-${bugid}.patch
             patch -p1 < php7331-${bugid}.patch            
           elif [[ "$bugid" != 'php-openssl-cert' ]]; then
-            echo "patching PHP 7.3.31 for bug #${bugid}"
+            echo "Patching PHP 7.3.31 for bug #${bugid}"
             echo "https://bugs.php.net/bug.php?id=${bugid}"
           fi
           echo
+          # Copy the patch file
           cp -a $CUR_DIR/patches/php/php7331-${bugid}.patch php7331-${bugid}.patch
           dos2unix php7331-${bugid}.patch
-          patch -p1 < php7331-${bugid}.patch
+          # Attempt to apply the patch
+          if patch -p1 < php7331-${bugid}.patch; then
+            echo "Patch applied successfully for bug #${bugid}"
+          else
+            echo "Patching failed for bug #${bugid}"
+            # Check each target file for .orig and .rej files
+            while read -r file; do
+              file=$(echo "$file" | sed 's/b\///')
+              if [[ -f "$file.orig" && -f "$file.rej" ]]; then
+                echo "Restoring original file: $file"
+                mv -f "$file.orig" "$file"
+                rm "$file.rej"
+              fi
+            done < <(grep -oP '(?<=\+\+\+ )[^\s]+' php7331-${bugid}.patch)
+          fi
+        else
+          echo "php7331-${bugid}.patch patch file already applied"
         fi
       done
     fi
