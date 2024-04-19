@@ -580,15 +580,6 @@ php_patches() {
         dos2unix php5640-cve-2023-3824.patch
         patch -p1 < php5640-cve-2023-3824.patch
       fi
-      # if [ ! -f php5640-cve-2024-2756.patch ]; then
-      #   echo
-      #   echo "patching PHP 5.6 for bug #cve-2024-2756"
-      #   echo "https://bugs.php.net/bug.php?id=cve-2024-2756"
-      #   echo
-      #   cp -a $CUR_DIR/patches/php/php5640-cve-2024-2756.patch php5640-cve-2024-2756.patch
-      #   dos2unix php5640-cve-2024-2756.patch
-      #   patch -p1 < php5640-cve-2024-2756.patch
-      # fi
       # if [ ! -f php5640-cve-2024-3096.patch ]; then
       #   echo
       #   echo "patching PHP 5.6 for bug #cve-2024-3096"
@@ -597,6 +588,15 @@ php_patches() {
       #   cp -a $CUR_DIR/patches/php/php5640-cve-2024-3096.patch php5640-cve-2024-3096.patch
       #   dos2unix php5640-cve-2024-3096.patch
       #   patch -p1 < php5640-cve-2024-3096.patch
+      # fi
+      # if [ ! -f php5640-cve-2024-2756.patch ]; then
+      #   echo
+      #   echo "patching PHP 5.6 for bug #cve-2024-2756"
+      #   echo "https://bugs.php.net/bug.php?id=cve-2024-2756"
+      #   echo
+      #   cp -a $CUR_DIR/patches/php/php5640-cve-2024-2756.patch php5640-cve-2024-2756.patch
+      #   dos2unix php5640-cve-2024-2756.patch
+      #   patch -p1 < php5640-cve-2024-2756.patch
       # fi
     fi
 
@@ -923,38 +923,80 @@ php_patches() {
     done
   fi
   if [[ "$PHPVER_ID" -ge '70433' && "$PHPVER_ID" -le '70434' ]]; then
-    # for 7.4.33 to 7.4.34 only
-    phpseven_bugids='81740 81744 81746 cve-2023-0662 ghsa-76gg-c692-v2mw cve-2023-3823 cve-2023-3824 cve-2024-2756 cve-2024-3096'
-    for bugid in $phpseven_bugids; do
-      if [[ ! -f "php742-${bugid}.patch" && -f "$CUR_DIR/patches/php/php742-${bugid}.patch" ]]; then
-        echo
-        if [[ "$bugid" != 'php-openssl-cert' ]]; then
-          echo "patching PHP 7.4.33 for bug #${bugid}"
-          echo "https://bugs.php.net/bug.php?id=${bugid}"
-        fi
-        echo
-        cp -a $CUR_DIR/patches/php/php742-${bugid}.patch php742-${bugid}.patch
-        dos2unix php742-${bugid}.patch
-        patch -p1 < php742-${bugid}.patch
-      fi
-    done
+      # for 7.4.33 to 7.4.34 only
+      phpseven_bugids='81740 81744 81746 cve-2023-0662 ghsa-76gg-c692-v2mw cve-2023-3823 cve-2023-3824 cve-2024-2756 cve-2024-3096'
+
+      for bugid in $phpseven_bugids; do
+          if [[ ! -f "php742-${bugid}.patch" && -f "$CUR_DIR/patches/php/php742-${bugid}.patch" ]]; then
+              echo
+              if [[ "$bugid" != 'php-openssl-cert' ]]; then
+                  echo "Patching PHP 7.4.33 for bug #${bugid}"
+                  echo "https://bugs.php.net/bug.php?id=${bugid}"
+              fi
+              echo
+
+              # Copy the patch file
+              cp -a $CUR_DIR/patches/php/php742-${bugid}.patch php742-${bugid}.patch
+              dos2unix php742-${bugid}.patch
+
+              # Attempt to apply the patch
+              if patch -p1 < php742-${bugid}.patch; then
+                  echo "Patch applied successfully for bug #${bugid}"
+              else
+                  echo "Patching failed for bug #${bugid}"
+
+                  # Check each target file for .orig and .rej files
+                  while read -r file; do
+                      file=$(echo "$file" | sed 's/b\///')
+                      if [[ -f "$file.orig" && -f "$file.rej" ]]; then
+                          echo "Restoring original file: $file"
+                          mv -f "$file.orig" "$file"
+                          rm "$file.rej"
+                      fi
+                  done < <(grep -oP '(?<=\+\+\+ )[^\s]+' php742-${bugid}.patch)
+              fi
+          else
+            echo "php742-${bugid}.patch patch file already applied"
+          fi
+      done
   fi
   if [[ "$PHPVER_ID" -ge '80000' && "$PHPVER_ID" -le '80099' ]]; then
-    # for 8.1.x only
-    phpeight_bugids='cve-2024-2756 cve-2024-3096'
-    for bugid in $phpeight_bugids; do
-      if [[ ! -f "php80-${bugid}.patch" && -f "$CUR_DIR/patches/php/php80-${bugid}.patch" ]]; then
-        echo
-        if [[ "$bugid" != 'php-openssl-cert' ]]; then
-          echo "patching PHP 7.4.33 for bug #${bugid}"
-          echo "https://bugs.php.net/bug.php?id=${bugid}"
-        fi
-        echo
-        cp -a $CUR_DIR/patches/php/php80-${bugid}.patch php80-${bugid}.patch
-        dos2unix php80-${bugid}.patch
-        patch -p1 < php80-${bugid}.patch
-      fi
-    done
+      # for 8.1.x only
+      phpeight_bugids='cve-2024-2756 cve-2024-3096'
+
+      for bugid in $phpeight_bugids; do
+          if [[ ! -f "php80-${bugid}.patch" && -f "$CUR_DIR/patches/php/php80-${bugid}.patch" ]]; then
+              echo
+              if [[ "$bugid" != 'php-openssl-cert' ]]; then
+                  echo "Patching PHP 8.0.x for bug #${bugid}"
+                  echo "https://bugs.php.net/bug.php?id=${bugid}"
+              fi
+              echo
+
+              # Copy the patch file
+              cp -a $CUR_DIR/patches/php/php80-${bugid}.patch php80-${bugid}.patch
+              dos2unix php80-${bugid}.patch
+
+              # Attempt to apply the patch
+              if patch -p1 < php80-${bugid}.patch; then
+                  echo "Patch applied successfully for bug #${bugid}"
+              else
+                  echo "Patching failed for bug #${bugid}"
+
+                  # Check each target file for .orig and .rej files
+                  while read -r file; do
+                      file=$(echo "$file" | sed 's/b\///')
+                      if [[ -f "$file.orig" && -f "$file.rej" ]]; then
+                          echo "Restoring original file: $file"
+                          mv -f "$file.orig" "$file"
+                          rm "$file.rej"
+                      fi
+                  done < <(grep -oP '(?<=\+\+\+ )[^\s]+' php80-${bugid}.patch)
+              fi
+          else
+              echo "php80-${bugid}.patch patch file already applied"
+          fi
+      done
   fi
   # backport PHP 8.0 OpenSSL 3 compatibility for PHP 7.4
   # only compilation fixes but not 100% working as extensive changes

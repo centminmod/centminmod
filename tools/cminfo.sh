@@ -880,7 +880,7 @@ setupdate() {
 cat > "/usr/bin/cminfo_updater"<<EOF
 #!/bin/bash
 rm -rf /usr/bin/cminfo
-CMINFOLINK='https://raw.githubusercontent.com/centminmod/centminmod/master/tools/cminfo.sh'
+CMINFOLINK='https://raw.githubusercontent.com/centminmod/centminmod/${branchname}/tools/cminfo.sh'
 
 # fallback mirror
 curl -${ipv_forceopt}Is --connect-timeout 30 --max-time 30 \$CMINFOLINK | grep 'HTTP\/' | grep '200' >/dev/null 2>&1
@@ -1231,6 +1231,30 @@ service_info_json() {
     echo "$0 service-info servicename"
   fi
 }
+
+inspect_php_patch_log() {
+  latest_log=$(find $CENTMINLOGDIR -type f -name "patch_php_*.log" -printf '%T@ %p\n' | sort -n | tail -1 | cut -d' ' -f2)
+
+  if [[ -n "$latest_log" ]]; then
+      ls -lAh "$latest_log"
+      echo
+      cat "$latest_log"
+  else
+      echo "No patch_php log file found."
+  fi
+}
+
+inspect_nginx_patch_log() {
+  latest_log=$(find $CENTMINLOGDIR -type f -name "patch_patchnginx_*.log" -printf '%T@ %p\n' | sort -n | tail -1 | cut -d' ' -f2)
+
+  if [[ -n "$latest_log" ]]; then
+      ls -lAh "$latest_log"
+      echo
+      cat "$latest_log"
+  else
+      echo "No patch_patchnginx log file found."
+  fi
+}
 #########
 if [[ -z "$1" ]]; then
     infooutput
@@ -1315,10 +1339,16 @@ case "$1" in
     checkver)
     check_version
     ;;
+    nginx-patch-log)
+    inspect_nginx_patch_log
+    ;;
+    php-patch-log)
+    inspect_php_patch_log
+    ;;
     service-info)
       service_info_json "$2"
     ;;
     *)
-    echo "$0 {info|update|netstat|top|top-cron|sar-json|sar-cpu-interval|sar-cpu|sar-mem|phpmem|phpstats|phpstats-cron|listlogs|debug-menuexit|versions|checkver|service-info}"
+    echo "$0 {info|update|netstat|top|top-cron|sar-json|sar-cpu-interval|sar-cpu|sar-mem|phpmem|phpstats|phpstats-cron|listlogs|debug-menuexit|versions|checkver|service-info|nginx-patch-log|php-patch-log}"
         ;;
 esac

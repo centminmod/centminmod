@@ -4018,7 +4018,7 @@ setupdate() {
 cat > "/usr/bin/cminfo_updater"<<EOF
 #!/bin/bash
 rm -rf /usr/bin/cminfo
-wget -q --no-check-certificate -O /usr/bin/cminfo https://raw.githubusercontent.com/centminmod/centminmod/master/tools/cminfo.sh
+wget -q --no-check-certificate -O /usr/bin/cminfo https://raw.githubusercontent.com/centminmod/centminmod/${branchname}/tools/cminfo.sh
 chmod 0700 /usr/bin/cminfo
 EOF
 
