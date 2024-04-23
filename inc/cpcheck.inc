@@ -1,3 +1,37 @@
+# Define the configuration lines to check
+CIPHERS_LINE="Ciphers aes128-ctr,aes192-ctr,aes256-ctr,aes128-gcm@openssh.com,aes256-gcm@openssh.com"
+MACS_LINE="MACs umac-64@openssh.com,umac-128@openssh.com,hmac-sha2-256,hmac-sha2-512"
+
+# Function to check if the configuration lines exist in the file
+check_sshd_config() {
+    local file=$1
+    local ciphers_line="$CIPHERS_LINE"
+    local macs_line="$MACS_LINE"
+
+    if grep -q "$ciphers_line" "$file" && grep -q "$macs_line" "$file"; then
+        return 0
+    else
+        return 1
+    fi
+}
+
+apply_terrapin_fix() {
+    # Files to check
+    SSH_CONFIG_CIPHERS="/etc/ssh/ssh_config"
+    SSHD_CONFIG_CIPHERS="/etc/ssh/sshd_config"
+
+    # Check if the system is CentOS 7 (EL7)
+    if [[ "$CENTOS_SEVEN" -eq '7' && -f "${SCRIPT_DIR}/tools/terrapin-openssh-el7-fix.sh" ]]; then
+        # Check if the specific Cipher/MACs settings already exist in the configuration files
+        if check_sshd_config "$SSH_CONFIG_CIPHERS" && check_sshd_config "$SSHD_CONFIG_CIPHERS"; then
+            return 0
+        else
+            # Run the terrapin-openssh-el7-fix.sh script
+            "${SCRIPT_DIR}/tools/terrapin-openssh-el7-fix.sh" -s
+        fi
+    fi
+}
+
 fix_mount_loop_sh() {
     # https://community.centminmod.com/threads/mount-loop-service-special-device-tmpfs-does-not-exist.24652/#post-98927
     FILE="/usr/local/bin/mount-loop.sh"
@@ -3840,8 +3874,10 @@ push_check_updates_cronsetup
 tcp_bbr_setup
 normalize_accept_encoding
 rsync_backport_install
+apply_terrapin_fix
 
 if [[ "$INITIALINSTALL" != [yY] ]]; then
+  apply_terrapin_fix
   march_hostcheck
   expand_cmdprompt
   setup_pwdh
