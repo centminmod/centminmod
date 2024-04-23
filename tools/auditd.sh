@@ -753,6 +753,24 @@ add_rules() {
     fi
 }
 
+mariadb_rotatelog_now() {
+  mdb_audit_logfile=$(mysqladmin var | grep 'server_audit_file_path' | tr -s ' ' | awk '{print $4}' | head -n1)
+  if [ -f "$mdb_audit_logfile" ]; then
+    echo "Rotate MariaDB Audit Plugin Log Now"
+    echo "mysql -e \"SET GLOBAL server_audit_file_rotate_now = ON;\""
+    echo
+    mysql -e "SET GLOBAL server_audit_file_rotate_now = ON;"
+    rotate_err=$?
+    if [[ "$rotate_err" -ne '0' ]]; then
+      echo "error: an issue with MariaDB Audit log rotation occurred"
+    elif [[ "$rotate_err" -eq '0' ]]; then
+      echo "success: MariaDB Audit log rotation completed"
+    fi
+  else
+    echo "MariaDB Audit Plugin Log Not found or MariaDB Audit Plugin not enabled"
+  fi
+}
+
 ######################################################
 case "$1" in
     setup )
@@ -773,11 +791,14 @@ case "$1" in
     enable_mariadbplugin )
         mariadb_auditon
         ;;
+    mariadb_rotatelog )
+        mariadb_rotatelog_now
+        ;;
     backup )
     echo "TBA"
         ;;
     * )
-    echo "$0 {setup|resetup|updaterules|disable_mariadbplugin|enable_mariadbplugin|backup}"
+    echo "$0 {setup|resetup|updaterules|disable_mariadbplugin|enable_mariadbplugin|mariadb_rotatelog|backup}"
     echo
     echo "Command Usage:"
     echo
@@ -786,6 +807,7 @@ case "$1" in
     echo "$0 updaterules"
     echo "$0 disable_mariadbplugin"
     echo "$0 enable_mariadbplugin"
+    echo "$0 mariadb_rotatelog"
     echo "$0 backup"
         ;;
 esac
