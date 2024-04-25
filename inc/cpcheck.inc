@@ -32,6 +32,13 @@ apply_terrapin_fix() {
     fi
 }
 
+apply_iconv_fix() {
+  if [ "$(iconv -l | grep -E 'CN-?EXT')" ]; then
+    # Run the iconv-fixes.sh script
+    "${SCRIPT_DIR}/tools/iconv-fixes.sh" -s
+  fi
+}
+
 fix_mount_loop_sh() {
     # https://community.centminmod.com/threads/mount-loop-service-special-device-tmpfs-does-not-exist.24652/#post-98927
     FILE="/usr/local/bin/mount-loop.sh"
@@ -3875,9 +3882,11 @@ tcp_bbr_setup
 normalize_accept_encoding
 rsync_backport_install
 apply_terrapin_fix
+apply_iconv_fix
 
 if [[ "$INITIALINSTALL" != [yY] ]]; then
   apply_terrapin_fix
+  apply_iconv_fix
   march_hostcheck
   expand_cmdprompt
   setup_pwdh
