@@ -77,7 +77,7 @@ innodb_data_file_path= ibdata1:10M:autoextend
 innodb_buffer_pool_size = 4096M
 
 ## https://mariadb.com/kb/en/mariadb/xtradbinnodb-server-system-variables/#innodb_buffer_pool_instances
-innodb_buffer_pool_instances=4
+innodb_buffer_pool_instances=1
 
 innodb_log_files_in_group = 2
 innodb_log_file_size = 640M

@@ -703,7 +703,7 @@ case "$1" in
     {
     /usr/bin/mysql -e "show engine innodb status\G" 2>&1 > ${CENTMINLOGDIR}/setio_innodbstatus-before-${DT}.log
     cat /etc/my.cnf >> ${CENTMINLOGDIR}/setio_innodbstatus-before-${DT}.log
-    setbp
+    # setbp
     setio
     setthreads
     setpurgethreads
