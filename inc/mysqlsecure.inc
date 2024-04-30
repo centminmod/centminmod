@@ -10,6 +10,15 @@ set_mariadb_mysqldump_charset() {
   fi
 }
 
+remove_anonymous_mysqlusers() {
+  # Check for anonymous users
+  ANON_USER_EXISTS=$(mysql -BNe "SELECT User, Host FROM mysql.user WHERE User=''" | wc -l)
+  if [[ "$CENTOS_NINE" = '9' || "$CENTOS_EIGHT" = '8' || "$CENTOS_SEVEN" = '7' ]] && [[ "$(systemctl is-active mariadb)" = 'active' && "$ANON_USER_EXISTS" -gt '1' ]]; then
+    mysql -e "DROP USER ''@'localhost';" >/dev/null 2>&1
+    mysql -e "DROP USER ''@'`hostname`';" >/dev/null 2>&1
+  fi
+}
+
 securemysql() {
   if [[ "$(systemctl is-active mariadb)" != 'active' ]]; then
     systemctl start mariadb
@@ -29,9 +38,9 @@ if [[ "$CHECK_FOR_MARIADB_TENFOUR_ABOVE" = '10.4' || "$CHECK_FOR_MARIADB_TENFOUR
   echo
   mysql -e "select concat(user, '@', host, ' => ', json_detailed(priv)) from mysql.global_priv;" > "${CENTMINLOGDIR}/mariadb10.4-or-above-check-users-after.log"
   echo
+  remove_anonymous_mysqlusers
 else
-  mysql -e "DROP USER ''@'localhost';" >/dev/null 2>&1
-  mysql -e "DROP USER ''@'`hostname`';" >/dev/null 2>&1
+  remove_anonymous_mysqlusers
   mysql -e "DROP DATABASE test;" >/dev/null 2>&1
   mysql -e "UPDATE mysql.user SET Password = PASSWORD('$THEMYSQLPASS') WHERE User = 'root'; FLUSH PRIVILEGES;" >/dev/null 2>&1
 fi

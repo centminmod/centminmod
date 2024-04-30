@@ -1409,6 +1409,7 @@ fi
 mysqltmpdir
 
 cmservice mysql restart
+remove_anonymous_mysqlusers
 
 echo
 systemctl show mariadb --no-pager | egrep 'LimitNOFILE|NotifyAccess|OOM'

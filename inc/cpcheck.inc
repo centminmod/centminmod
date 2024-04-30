@@ -4031,6 +4031,7 @@ if [[ "$INITIALINSTALL" != [yY] ]]; then
   switch_mariadbtenthree_archives
   switch_mariadbtentwo_archives
   switch_mariadbtenone_archives
+  remove_anonymous_mysqlusers
   push_check_updates_cronsetup
   fix_wordpress_accept_encoding
   normalize_accept_encoding
