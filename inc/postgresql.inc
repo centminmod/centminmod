@@ -38,12 +38,15 @@ postgresqlinstall() {
         if [[ "$CENTOS_SEVEN" = '7' ]]; then
             wget${ipv_forceopt_pgsl} https://download.postgresql.org/pub/repos/yum/reporpms/EL-7-x86_64/pgdg-redhat-repo-latest.noarch.rpm -O ${DIR_TMP}/pgdg-redhat-repo-latest.noarch.rpm
             rpm -Uvh ${DIR_TMP}/pgdg-redhat-repo-latest.noarch.rpm
+            yum -y makecache
         elif [[ "$CENTOS_SIX" = '6' && "$(uname -m)" = 'x86_64' ]]; then
             wget${ipv_forceopt_pgsl} https://download.postgresql.org/pub/repos/yum/reporpms/EL-6-x86_64/pgdg-redhat-repo-latest.noarch.rpm -O ${DIR_TMP}/pgdg-redhat-repo-latest.noarch.rpm
             rpm -Uvh ${DIR_TMP}/pgdg-redhat-repo-latest.noarch.rpm
+            yum -y makecache
         elif [[ "$CENTOS_SIX" = '6' && "$(uname -m)" != 'x86_64' ]]; then        
             wget${ipv_forceopt_pgsl} https://download.postgresql.org/pub/repos/yum/reporpms/EL-6-i386/pgdg-redhat-repo-latest.noarch.rpm -O ${DIR_TMP}/pgdg-redhat-repo-latest.noarch.rpm
             rpm -Uvh ${DIR_TMP}/pgdg-redhat-repo-latest.noarch.rpm
+            yum -y makecache
         fi
     
         ls -lah /etc/yum.repos.d/pgdg-96-centos.repo
@@ -69,12 +72,15 @@ postgresqlinstall() {
         if [[ "$CENTOS_SEVEN" = '7' ]]; then
             wget${ipv_forceopt_pgsl} https://download.postgresql.org/pub/repos/yum/reporpms/EL-7-x86_64/pgdg-redhat-repo-latest.noarch.rpm -O ${DIR_TMP}/pgdg-redhat-repo-latest.noarch.rpm
             rpm -Uvh ${DIR_TMP}/pgdg-redhat-repo-latest.noarch.rpm
+            yum -y makecache
         elif [[ "$CENTOS_SIX" = '6' && "$(uname -m)" = 'x86_64' ]]; then
             wget${ipv_forceopt_pgsl} https://download.postgresql.org/pub/repos/yum/reporpms/EL-6-x86_64/pgdg-redhat-repo-latest.noarch.rpm -O ${DIR_TMP}/pgdg-redhat-repo-latest.noarch.rpm
             rpm -Uvh ${DIR_TMP}/pgdg-redhat-repo-latest.noarch.rpm
+            yum -y makecache
         elif [[ "$CENTOS_SIX" = '6' && "$(uname -m)" != 'x86_64' ]]; then        
             wget${ipv_forceopt_pgsl} https://download.postgresql.org/pub/repos/yum/reporpms/EL-6-i386/pgdg-redhat-repo-latest.noarch.rpm -O ${DIR_TMP}/pgdg-redhat-repo-latest.noarch.rpm
             rpm -Uvh ${DIR_TMP}/pgdg-redhat-repo-latest.noarch.rpm
+            yum -y makecache
         fi
     
         ls -lah /etc/yum.repos.d/pgdg-10-redhat.repo
@@ -114,12 +120,15 @@ postgresqlinstall() {
         if [[ "$CENTOS_SEVEN" = '7' ]]; then
             wget${ipv_forceopt_pgsl} https://download.postgresql.org/pub/repos/yum/reporpms/EL-7-x86_64/pgdg-redhat-repo-latest.noarch.rpm -O ${DIR_TMP}/pgdg-redhat-repo-latest.noarch.rpm
             rpm -Uvh ${DIR_TMP}/pgdg-redhat-repo-latest.noarch.rpm
+            yum -y makecache
         elif [[ "$CENTOS_SIX" = '6' && "$(uname -m)" = 'x86_64' ]]; then
             wget${ipv_forceopt_pgsl} https://download.postgresql.org/pub/repos/yum/reporpms/EL-6-x86_64/pgdg-redhat-repo-latest.noarch.rpm -O ${DIR_TMP}/pgdg-redhat-repo-latest.noarch.rpm
             rpm -Uvh ${DIR_TMP}/pgdg-redhat-repo-latest.noarch.rpm
+            yum -y makecache
         elif [[ "$CENTOS_SIX" = '6' && "$(uname -m)" != 'x86_64' ]]; then        
             wget${ipv_forceopt_pgsl} https://download.postgresql.org/pub/repos/yum/reporpms/EL-6-i386/pgdg-redhat-repo-latest.noarch.rpm -O ${DIR_TMP}/pgdg-redhat-repo-latest.noarch.rpm
             rpm -Uvh ${DIR_TMP}/pgdg-redhat-repo-latest.noarch.rpm
+            yum -y makecache
         fi
     
         ls -lah /etc/yum.repos.d/pgdg-11-redhat.repo
@@ -159,12 +168,15 @@ postgresqlinstall() {
         if [[ "$CENTOS_SEVEN" = '7' ]]; then
             wget${ipv_forceopt_pgsl} https://download.postgresql.org/pub/repos/yum/reporpms/EL-7-x86_64/pgdg-redhat-repo-latest.noarch.rpm -O ${DIR_TMP}/pgdg-redhat-repo-latest.noarch.rpm
             rpm -Uvh ${DIR_TMP}/pgdg-redhat-repo-latest.noarch.rpm
+            yum -y makecache
         elif [[ "$CENTOS_SIX" = '6' && "$(uname -m)" = 'x86_64' ]]; then
             wget${ipv_forceopt_pgsl} https://download.postgresql.org/pub/repos/yum/reporpms/EL-6-x86_64/pgdg-redhat-repo-latest.noarch.rpm -O ${DIR_TMP}/pgdg-redhat-repo-latest.noarch.rpm
             rpm -Uvh ${DIR_TMP}/pgdg-redhat-repo-latest.noarch.rpm
+            yum -y makecache
         elif [[ "$CENTOS_SIX" = '6' && "$(uname -m)" != 'x86_64' ]]; then        
             wget${ipv_forceopt_pgsl} https://download.postgresql.org/pub/repos/yum/reporpms/EL-6-i386/pgdg-redhat-repo-latest.noarch.rpm -O ${DIR_TMP}/pgdg-redhat-repo-latest.noarch.rpm
             rpm -Uvh ${DIR_TMP}/pgdg-redhat-repo-latest.noarch.rpm
+            yum -y makecache
         fi
     
         ls -lah /etc/yum.repos.d/pgdg-12-redhat.repo
@@ -204,12 +216,15 @@ postgresqlinstall() {
         if [[ "$CENTOS_SEVEN" = '7' ]]; then
             wget${ipv_forceopt_pgsl} https://download.postgresql.org/pub/repos/yum/reporpms/EL-7-x86_64/pgdg-redhat-repo-latest.noarch.rpm -O ${DIR_TMP}/pgdg-redhat-repo-latest.noarch.rpm
             rpm -Uvh ${DIR_TMP}/pgdg-redhat-repo-latest.noarch.rpm
+            yum -y makecache
         elif [[ "$CENTOS_SIX" = '6' && "$(uname -m)" = 'x86_64' ]]; then
             wget${ipv_forceopt_pgsl} https://download.postgresql.org/pub/repos/yum/reporpms/EL-6-x86_64/pgdg-redhat-repo-latest.noarch.rpm -O ${DIR_TMP}/pgdg-redhat-repo-latest.noarch.rpm
             rpm -Uvh ${DIR_TMP}/pgdg-redhat-repo-latest.noarch.rpm
+            yum -y makecache
         elif [[ "$CENTOS_SIX" = '6' && "$(uname -m)" != 'x86_64' ]]; then        
             wget${ipv_forceopt_pgsl} https://download.postgresql.org/pub/repos/yum/reporpms/EL-6-i386/pgdg-redhat-repo-latest.noarch.rpm -O ${DIR_TMP}/pgdg-redhat-repo-latest.noarch.rpm
             rpm -Uvh ${DIR_TMP}/pgdg-redhat-repo-latest.noarch.rpm
+            yum -y makecache
         fi
     
         ls -lah /etc/yum.repos.d/pgdg-13-redhat.repo
@@ -252,20 +267,25 @@ postgresqlinstall() {
             time dnf -y module disable postgresql
             wget${ipv_forceopt_pgsl} https://download.postgresql.org/pub/repos/yum/reporpms/EL-9-x86_64/pgdg-redhat-repo-latest.noarch.rpm -O ${DIR_TMP}/pgdg-redhat-repo-latest.noarch.rpm
             rpm -Uvh ${DIR_TMP}/pgdg-redhat-repo-latest.noarch.rpm
+            yum -y makecache
         elif [[ "$CENTOS_EIGHT" = '8' ]]; then
             # install postgresql 16 instead of default el9 module postgresql 13, 12, 10 and 9.6
             time dnf -y module disable postgresql
             wget${ipv_forceopt_pgsl} https://download.postgresql.org/pub/repos/yum/reporpms/EL-8-x86_64/pgdg-redhat-repo-latest.noarch.rpm -O ${DIR_TMP}/pgdg-redhat-repo-latest.noarch.rpm
             rpm -Uvh ${DIR_TMP}/pgdg-redhat-repo-latest.noarch.rpm
+            yum -y makecache
         elif [[ "$CENTOS_SEVEN" = '7' ]]; then
             wget${ipv_forceopt_pgsl} https://download.postgresql.org/pub/repos/yum/reporpms/EL-7-x86_64/pgdg-redhat-repo-latest.noarch.rpm -O ${DIR_TMP}/pgdg-redhat-repo-latest.noarch.rpm
             rpm -Uvh ${DIR_TMP}/pgdg-redhat-repo-latest.noarch.rpm
+            yum -y makecache
         elif [[ "$CENTOS_SIX" = '6' && "$(uname -m)" = 'x86_64' ]]; then
             wget${ipv_forceopt_pgsl} https://download.postgresql.org/pub/repos/yum/reporpms/EL-6-x86_64/pgdg-redhat-repo-latest.noarch.rpm -O ${DIR_TMP}/pgdg-redhat-repo-latest.noarch.rpm
             rpm -Uvh ${DIR_TMP}/pgdg-redhat-repo-latest.noarch.rpm
+            yum -y makecache
         elif [[ "$CENTOS_SIX" = '6' && "$(uname -m)" != 'x86_64' ]]; then        
             wget${ipv_forceopt_pgsl} https://download.postgresql.org/pub/repos/yum/reporpms/EL-6-i386/pgdg-redhat-repo-latest.noarch.rpm -O ${DIR_TMP}/pgdg-redhat-repo-latest.noarch.rpm
             rpm -Uvh ${DIR_TMP}/pgdg-redhat-repo-latest.noarch.rpm
+            yum -y makecache
         fi
     
         echo
@@ -337,20 +357,25 @@ postgresqlinstall() {
             time dnf -y module disable postgresql
             wget${ipv_forceopt_pgsl} https://download.postgresql.org/pub/repos/yum/reporpms/EL-9-x86_64/pgdg-redhat-repo-latest.noarch.rpm -O ${DIR_TMP}/pgdg-redhat-repo-latest.noarch.rpm
             rpm -Uvh ${DIR_TMP}/pgdg-redhat-repo-latest.noarch.rpm
+            yum -y makecache
         elif [[ "$CENTOS_EIGHT" = '8' ]]; then
             # install postgresql 16 instead of default el9 module postgresql 13, 12, 10 and 9.6
             time dnf -y module disable postgresql
             wget${ipv_forceopt_pgsl} https://download.postgresql.org/pub/repos/yum/reporpms/EL-8-x86_64/pgdg-redhat-repo-latest.noarch.rpm -O ${DIR_TMP}/pgdg-redhat-repo-latest.noarch.rpm
             rpm -Uvh ${DIR_TMP}/pgdg-redhat-repo-latest.noarch.rpm
+            yum -y makecache
         elif [[ "$CENTOS_SEVEN" = '7' ]]; then
             wget${ipv_forceopt_pgsl} https://download.postgresql.org/pub/repos/yum/reporpms/EL-7-x86_64/pgdg-redhat-repo-latest.noarch.rpm -O ${DIR_TMP}/pgdg-redhat-repo-latest.noarch.rpm
             rpm -Uvh ${DIR_TMP}/pgdg-redhat-repo-latest.noarch.rpm
+            yum -y makecache
         elif [[ "$CENTOS_SIX" = '6' && "$(uname -m)" = 'x86_64' ]]; then
             wget${ipv_forceopt_pgsl} https://download.postgresql.org/pub/repos/yum/reporpms/EL-6-x86_64/pgdg-redhat-repo-latest.noarch.rpm -O ${DIR_TMP}/pgdg-redhat-repo-latest.noarch.rpm
             rpm -Uvh ${DIR_TMP}/pgdg-redhat-repo-latest.noarch.rpm
+            yum -y makecache
         elif [[ "$CENTOS_SIX" = '6' && "$(uname -m)" != 'x86_64' ]]; then        
             wget${ipv_forceopt_pgsl} https://download.postgresql.org/pub/repos/yum/reporpms/EL-6-i386/pgdg-redhat-repo-latest.noarch.rpm -O ${DIR_TMP}/pgdg-redhat-repo-latest.noarch.rpm
             rpm -Uvh ${DIR_TMP}/pgdg-redhat-repo-latest.noarch.rpm
+            yum -y makecache
         fi
     
         echo
