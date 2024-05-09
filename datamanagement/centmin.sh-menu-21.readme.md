@@ -221,7 +221,7 @@ This option takes you back to the main Data Management menu.
 
 ### Submenu Option 3: Migrate Centmin Mod Data To New Centmin Mod Server
 
-When using the "Migrate Centmin Mod Data To New Centmin Mod Server" option, you'll be prompted to enter the following information:
+When using the "Migrate Centmin Mod Data To New Centmin Mod Server" option, you'll be prompted to enter the following information - ideally using MariaBackup (option 1) is recommended:
 
 1. Confirmation to continue with the migration process.
 2. Backup method choice: 
@@ -246,7 +246,7 @@ When using the "Migrate Centmin Mod Data To New Centmin Mod Server" option, you'
    - Remote (destination) backup directory.
    - Path to the SSH private key.
 
-After entering the required information, you'll be asked to confirm the details before proceeding with the migration process.
+After entering the required information, you'll be asked to confirm the details before proceeding with the migration process. If you choose MariaBackup (option 1), the restore process will be same as [Submenu Option 4: Backup Nginx Vhosts Data + MariaBackup MySQL Backups](#submenu-option-4-backup-nginx-vhosts-data--mariabackup-mysql-backups) after you have transferred the backup to the new Centmin Mod installed server running EL8+ or higher OS.
 
 #### Submenu Option 3 Command Line:
 
@@ -267,6 +267,8 @@ transfer_backup_dir=$(echo "$script_output" | grep 'Backup Log saved: ' | awk '{
 # transfer buffer to remote server's /home/remotebackup directory using SSH private key /root/.ssh/my1.key
 /usr/local/src/centminmod/datamanagement/tunnel-transfers.sh -p 22 -u root -h 123.123.123.123 -m nc -b 262144 -l 12345 -s ${transfer_backup_dir} -r /home/remotebackup -k /root/.ssh/my1.key
 ```
+
+If you choose MariaBackup (option 1), the restore process will be same as [Submenu Option 4: Backup Nginx Vhosts Data + MariaBackup MySQL Backups](#submenu-option-4-backup-nginx-vhosts-data--mariabackup-mysql-backups) after you have transferred the backup to the new Centmin Mod installed server running EL8+ or higher OS.
 
 ### Submenu Option 4: Backup Nginx Vhosts Data + MariaBackup MySQL Backups
 
