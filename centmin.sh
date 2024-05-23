@@ -30,7 +30,7 @@ DT=$(date +"%d%m%y-%H%M%S")
 branchname='130.00beta01'
 SCRIPT_MAJORVER='130'
 SCRIPT_MINORVER='00'
-SCRIPT_INCREMENTVER='609'
+SCRIPT_INCREMENTVER='610'
 SCRIPT_VERSIONSHORT="${branchname}"
 SCRIPT_VERSION="${SCRIPT_VERSIONSHORT}.b${SCRIPT_INCREMENTVER}"
 SCRIPT_DATE='24/02/24'
@@ -2793,7 +2793,9 @@ fi
     PHPMVER=$(echo "$PHP_VERSION" | cut -d . -f1,2)
     echo "Initial Install PHPMVER: $PHPMVER"
 
-    php_patches
+    if [[ "$INITIALINSTALL" = [yY] ]]; then
+      php_patches
+    fi
 
     if [[ "$CENTOS_SIX" -eq '6' ]]; then
         # PHP 7.3.0 + centos 6 issue https://community.centminmod.com/posts/69561/
