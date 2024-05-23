@@ -661,14 +661,26 @@ php_patches() {
             else
               echo "Patching failed for bug #${bugid}"
               # Check each target file for .orig and .rej files
+              # Create a temporary file
+              temp_file=$(mktemp)
+
+              # Use grep to find the necessary information and store it in the temporary file
+              grep -oP '(?<=\+\+\+ )[^\s]+' "php7033-${bugid}.patch" > "$temp_file"
+
+              # Read from the temporary file
               while read -r file; do
+                # Remove the 'b/' prefix from the filename
                 file=$(echo "$file" | sed 's/b\///')
+                # Check if the original and reject files exist
                 if [[ -f "$file.orig" && -f "$file.rej" ]]; then
                   echo "Restoring original file: $file"
                   mv -f "$file.orig" "$file"
                   rm "$file.rej"
                 fi
-              done < <(grep -oP '(?<=\+\+\+ )[^\s]+' php7033-${bugid}.patch)
+              done < "$temp_file"
+
+              # Remove the temporary file
+              rm "$temp_file"
             fi
           fi
         else
@@ -707,14 +719,26 @@ php_patches() {
             else
               echo "Patching failed for bug #${bugid}"
               # Check each target file for .orig and .rej files
+              # Create a temporary file
+              temp_file=$(mktemp)
+
+              # Use grep to find the necessary information and store it in the temporary file
+              grep -oP '(?<=\+\+\+ )[^\s]+' "php7133-${bugid}.patch" > "$temp_file"
+
+              # Read from the temporary file
               while read -r file; do
+                # Remove the 'b/' prefix from the filename
                 file=$(echo "$file" | sed 's/b\///')
+                # Check if the original and reject files exist
                 if [[ -f "$file.orig" && -f "$file.rej" ]]; then
                   echo "Restoring original file: $file"
                   mv -f "$file.orig" "$file"
                   rm "$file.rej"
                 fi
-              done < <(grep -oP '(?<=\+\+\+ )[^\s]+' php7133-${bugid}.patch)
+              done < "$temp_file"
+
+              # Remove the temporary file
+              rm "$temp_file"
             fi
           fi
         else
@@ -774,14 +798,26 @@ php_patches() {
             else
               echo "Patching failed for bug #${bugid}"
               # Check each target file for .orig and .rej files
+              # Create a temporary file
+              temp_file=$(mktemp)
+
+              # Use grep to find the necessary information and store it in the temporary file
+              grep -oP '(?<=\+\+\+ )[^\s]+' "php7234-${bugid}.patch" > "$temp_file"
+
+              # Read from the temporary file
               while read -r file; do
+                # Remove the 'b/' prefix from the filename
                 file=$(echo "$file" | sed 's/b\///')
+                # Check if the original and reject files exist
                 if [[ -f "$file.orig" && -f "$file.rej" ]]; then
                   echo "Restoring original file: $file"
                   mv -f "$file.orig" "$file"
                   rm "$file.rej"
                 fi
-              done < <(grep -oP '(?<=\+\+\+ )[^\s]+' php7234-${bugid}.patch)
+              done < "$temp_file"
+
+              # Remove the temporary file
+              rm "$temp_file"
             fi
           fi
         else
@@ -832,14 +868,26 @@ php_patches() {
           else
             echo "Patching failed for bug #${bugid}"
             # Check each target file for .orig and .rej files
+            # Create a temporary file
+            temp_file=$(mktemp)
+
+            # Use grep to find the necessary information and store it in the temporary file
+            grep -oP '(?<=\+\+\+ )[^\s]+' "php7331-${bugid}.patch" > "$temp_file"
+
+            # Read from the temporary file
             while read -r file; do
+              # Remove the 'b/' prefix from the filename
               file=$(echo "$file" | sed 's/b\///')
+              # Check if the original and reject files exist
               if [[ -f "$file.orig" && -f "$file.rej" ]]; then
                 echo "Restoring original file: $file"
                 mv -f "$file.orig" "$file"
                 rm "$file.rej"
               fi
-            done < <(grep -oP '(?<=\+\+\+ )[^\s]+' php7331-${bugid}.patch)
+            done < "$temp_file"
+
+            # Remove the temporary file
+            rm "$temp_file"
           fi
         else
           echo "php7331-${bugid}.patch patch file already applied"
@@ -919,14 +967,26 @@ php_patches() {
                   echo "Patching failed for bug #${bugid}"
 
                   # Check each target file for .orig and .rej files
+                  # Create a temporary file
+                  temp_file=$(mktemp)
+
+                  # Use grep to find the necessary information and store it in the temporary file
+                  grep -oP '(?<=\+\+\+ )[^\s]+' "php742-${bugid}.patch" > "$temp_file"
+
+                  # Read from the temporary file
                   while read -r file; do
-                      file=$(echo "$file" | sed 's/b\///')
-                      if [[ -f "$file.orig" && -f "$file.rej" ]]; then
-                          echo "Restoring original file: $file"
-                          mv -f "$file.orig" "$file"
-                          rm "$file.rej"
-                      fi
-                  done < <(grep -oP '(?<=\+\+\+ )[^\s]+' php742-${bugid}.patch)
+                    # Remove the 'b/' prefix from the filename
+                    file=$(echo "$file" | sed 's/b\///')
+                    # Check if the original and reject files exist
+                    if [[ -f "$file.orig" && -f "$file.rej" ]]; then
+                      echo "Restoring original file: $file"
+                      mv -f "$file.orig" "$file"
+                      rm "$file.rej"
+                    fi
+                  done < "$temp_file"
+
+                  # Remove the temporary file
+                  rm "$temp_file"
               fi
           else
             echo "php742-${bugid}.patch patch file already applied"
@@ -957,14 +1017,26 @@ php_patches() {
                   echo "Patching failed for bug #${bugid}"
 
                   # Check each target file for .orig and .rej files
+                  # Create a temporary file
+                  temp_file=$(mktemp)
+
+                  # Use grep to find the necessary information and store it in the temporary file
+                  grep -oP '(?<=\+\+\+ )[^\s]+' "php80-${bugid}.patch" > "$temp_file"
+
+                  # Read from the temporary file
                   while read -r file; do
-                      file=$(echo "$file" | sed 's/b\///')
-                      if [[ -f "$file.orig" && -f "$file.rej" ]]; then
-                          echo "Restoring original file: $file"
-                          mv -f "$file.orig" "$file"
-                          rm "$file.rej"
-                      fi
-                  done < <(grep -oP '(?<=\+\+\+ )[^\s]+' php80-${bugid}.patch)
+                    # Remove the 'b/' prefix from the filename
+                    file=$(echo "$file" | sed 's/b\///')
+                    # Check if the original and reject files exist
+                    if [[ -f "$file.orig" && -f "$file.rej" ]]; then
+                      echo "Restoring original file: $file"
+                      mv -f "$file.orig" "$file"
+                      rm "$file.rej"
+                    fi
+                  done < "$temp_file"
+
+                  # Remove the temporary file
+                  rm "$temp_file"
               fi
           else
               echo "php80-${bugid}.patch patch file already applied"
