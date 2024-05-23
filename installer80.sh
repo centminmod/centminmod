@@ -331,6 +331,12 @@ fi
 
 #############################################################
 # Formulas
+if [[ "$(rpm -qa bc | grep -o 'bc')" != 'bc' ]]; then
+  yum -q install bc
+fi
+if [[ "$(rpm -qa coreutils | grep -o 'coreutils')" != 'coreutils' ]]; then
+  yum -q install coreutils
+fi
 TOTALMEMMB=`echo "scale=0;$TOTALMEM/1024" | bc`
 ISMINMEMMB=`echo "scale=0;$ISMINMEM/1024" | bc`
 ISMINSWAPMB=`echo "scale=0;$ISMINSWAP/1024" | bc`
