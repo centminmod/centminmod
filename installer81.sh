@@ -334,8 +334,16 @@ fi
 if [[ "$(rpm -qa bc | grep -o 'bc')" != 'bc' ]]; then
   yum -y -q install bc
 fi
-if [[ "$(rpm -qa coreutils | grep -o 'coreutils')" != 'coreutils' ]]; then
-  yum -y -q install coreutils
+if [[ ! -f /usr/bin/expr && "$(rpm -qa coreutils | grep -o 'coreutils')" != 'coreutils' ]]; then
+  if [[ ! -f /.dockerenv ]]; then
+    yum -y -q install coreutils
+  else
+    if [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]]; then
+      yum -y -q install coreutils-single
+    else
+      yum -y -q install coreutils
+    fi
+  fi
 fi
 TOTALMEMMB=`echo "scale=0;$TOTALMEM/1024" | bc`
 ISMINMEMMB=`echo "scale=0;$ISMINMEM/1024" | bc`
