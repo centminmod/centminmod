@@ -334,14 +334,28 @@ fi
 if [[ "$(rpm -qa bc | grep -o 'bc')" != 'bc' ]]; then
   yum -y -q install bc
 fi
-if [[ ! -f /usr/bin/expr && "$(rpm -qa coreutils | grep -o 'coreutils')" != 'coreutils' ]]; then
-  if [[ ! -f /.dockerenv ]]; then
+if [[ ! -f /.dockerenv ]]; then
+  if [[ ! -f /usr/bin/expr ]]; then
     yum -y -q install coreutils
+  fi
+else
+  if rpm -q coreutils-single >/dev/null 2>&1; then
+    echo "coreutils-single package is already installed. expr command should be available."
+  elif rpm -q coreutils >/dev/null 2>&1; then
+    echo "coreutils package is already installed. expr command should be available."
   else
-    if [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]]; then
-      yum -y -q install coreutils-single
-    else
-      yum -y -q install coreutils
+    if [[ ! -f /usr/bin/expr ]]; then
+      if yum -y -q install coreutils-single >/dev/null 2>&1; then
+        echo "coreutils-single package installed successfully."
+      else
+        echo "Failed to install coreutils-single package. Attempting to install coreutils package..."
+        if yum -y -q install coreutils >/dev/null 2>&1; then
+          echo "coreutils package installed successfully."
+        else
+          echo "Failed to install coreutils package."
+          exit 1
+        fi
+      fi
     fi
   fi
 fi
