@@ -306,6 +306,156 @@ elif [ -f /etc/el-release ] && [[ "$EL_VERID" -eq 8 || "$EL_VERID" -eq 9 ]]; the
   fi
 fi
 
+# If set to yes, will abort centmin mod installation if the memory requirements are not met
+# you can override this setting by setting ABORTINSTALL='n' in which case centmin mod
+# install may either install successfully but very very slowly or crap out
+# and fail to successfully install.
+ABORTINSTALL='y'
+
+#############################################################
+TOTALMEM=$(awk '/MemTotal/ {print $2}' /proc/meminfo)
+TOTALMEM_T=$(awk '/MemTotal/ {print $2}' /proc/meminfo)
+TOTALMEM_SWAP=$(awk '/SwapFree/ {print $2}' /proc/meminfo)
+TOTALMEM_PHP=$(($TOTALMEM_T+$TOTALMEM_SWAP))
+
+if [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]]; then
+  ISMINMEM='1730000'  # 1.7GB in bytes
+  ISMINSWAP='3774873'  # 3.6GB in bytes
+elif [[ "$CENTOS_SEVEN" -eq '7' ]]; then
+  ISMINMEM='922624'  # 900MB in bytes
+  ISMINSWAP='2097152'  # 2GB in bytes
+else
+  ISMINMEM='262144'  # 256MB in bytes
+  ISMINSWAP='524288'  # 512MB in bytes
+fi
+
+#############################################################
+# Formulas
+TOTALMEMMB=`echo "scale=0;$TOTALMEM/1024" | bc`
+ISMINMEMMB=`echo "scale=0;$ISMINMEM/1024" | bc`
+ISMINSWAPMB=`echo "scale=0;$ISMINSWAP/1024" | bc`
+CHECKMINMEM=`expr $TOTALMEM_T \< $ISMINMEM`
+
+#############################################################
+lowmemcheck() {
+  # Check memory and swap threshold
+  if [ "$CHECKMINMEM" == "1" ]; then
+    if [ "$TOTALMEM_SWAP" -lt "$ISMINSWAP" ]; then
+      CPUS='1'
+      MAKETHREADS=" -j$CPUS"
+      echo ""
+      if [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]]; then
+        echo "For EL8 and EL9 operating system the minimum and recommended memory requirements have increased"
+        echo "Minimum: 2GB memory with 4GB swap disk"
+        echo "Recommended: 4GB memory with 4GB swap disk"
+      fi
+      echo -e "Warning: physically installed memory and swap too low for Centmin Mod\\nInstallation [Installed: $TOTALMEMMB MB < $ISMINMEMMB MB memory and $ISMINSWAPMB MB < $ISMINSWAPMB MB swap (recommended minimum)]\\n"
+      if [ "$ABORTINSTALL" == 'y' ]; then
+        echo "aborting install..."
+        sleep 20
+        exit
+      fi
+    else
+      echo ""
+      echo -e "Ok: swap is sufficient for Centmin Mod installation despite low memory\\nInstallation [Installed: $TOTALMEMMB MB < $ISMINMEMMB MB memory, but $TOTALMEM_SWAP MB >= $ISMINSWAPMB MB swap]\\n"
+    fi
+  else
+    echo ""
+    echo -e "Ok: physically installed memory is sufficient for Centmin Mod\\nInstallation [Installed: $TOTALMEMMB MB >= $ISMINMEMMB MB memory]\\n"
+  fi
+}
+
+swap_setup() {
+# swap file detection and setup routine add a 4GB swap file
+# to servers without swap setup and non-openvz based as a
+# precaution for low memory vps systems <2GB which require
+# memory intensive initial install and running i.e. php fileinfo
+# extension when enabled via PHPFINFO='y' need more memory ~2GB
+# on <2GB systems this can be a problem without a swap file as
+# an additional memory buffer
+
+FINDSWAPSIZE=$(free -m | awk '/Swap: / {print $2}' | head -n1)
+
+# if free -m output swap size = 0, create a 4GB swap file for
+# non-openvz systems or if less than 2GB of memory and swap
+# smaller than 4GB on non-openvz systems, create a 4GB additional
+# swap file
+if [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]]; then
+  if [[ "$FINDSWAPSIZE" -eq '0' && ! -f /proc/user_beancounters && "$CHECK_LXD" != [yY] && ! -f /swapfile ]] || [[ "$(awk '/MemTotal/ {print $2}' /proc/meminfo)" -le '2097152' && "$FINDSWAPSIZE" -le '4096' && ! -f /proc/user_beancounters && "$CHECK_LXD" != [yY] && ! -f /swapfile ]]; then
+    {
+      echo
+      free -m
+      echo
+      echo "create 4GB swap file";
+      if [[ "$(df -hT | grep -w xfs)" || "$(virt-what | grep -o lxc)" = 'lxc' ]]; then
+        dd if=/dev/zero of=/swapfile bs=4096 count=1048576;
+      else
+        fallocate -l 4G /swapfile
+      fi
+      ls -lah /swapfile;
+      mkswap /swapfile;
+      swapon /swapfile;
+      chown root:root /swapfile;
+      chmod 0600 /swapfile;
+      swapon -s;
+      echo "/swapfile swap swap defaults 0 0" >> /etc/fstab;
+      mount -a;
+      free -m
+      echo
+    } 2>&1 | tee "${CENTMINLOGDIR}/centminmod_swapsetup_installer_${DT}.log"
+  elif [[ "$FINDSWAPSIZE" -eq '0' && ! -f /proc/user_beancounters && "$CHECK_LXD" != [yY] && -f /swapfile && "$(grep '/swapfile' /etc/fstab)" ]] || [[ "$(awk '/MemTotal/ {print $2}' /proc/meminfo)" -le '2097152' && "$FINDSWAPSIZE" -le '4096' && ! -f /proc/user_beancounters && "$CHECK_LXD" != [yY] && -f /swapfile && "$(grep '/swapfile' /etc/fstab)" ]]; then
+    {
+      echo
+      free -mlt
+      echo
+      echo "re-create 4GB swap file";
+      swapoff -a
+      if [[ "$(df -hT | grep -w xfs)" || "$(virt-what | grep -o lxc)" = 'lxc' ]]; then
+        dd if=/dev/zero of=/swapfile bs=4096 count=1048576;
+      else
+        fallocate -l 4G /swapfile
+      fi
+      ls -lah /swapfile;
+      mkswap /swapfile;
+      swapon /swapfile;
+      chown root:root /swapfile;
+      chmod 0600 /swapfile;
+      swapon -s;
+      # echo "/swapfile swap swap defaults 0 0" >> /etc/fstab;
+      mount -a;
+      free -mlt
+      echo
+    } 2>&1 | tee "${CENTMINLOGDIR}/centminmod_swapsetup_installer_${DT}.log"
+  fi
+elif [[ "$FINDSWAPSIZE" -eq '0' && ! -f /proc/user_beancounters && "$CHECK_LXD" != [yY] && -f /swapfile && "$(grep '/swapfile' /etc/fstab)" ]] || [[ "$(awk '/MemTotal/ {print $2}' /proc/meminfo)" -le '1048576' && "$FINDSWAPSIZE" -le '512' && ! -f /proc/user_beancounters && "$CHECK_LXD" != [yY] && -f /swapfile && "$(grep '/swapfile' /etc/fstab)" ]]; then
+    {
+    echo
+    free -mlt
+    echo
+    echo "re-create 1GB swap file";
+    swapoff -a
+    if [[ "$(df -hT | grep -w xfs)" || "$(virt-what | grep -o lxc)" = 'lxc' ]]; then
+        dd if=/dev/zero of=/swapfile bs=4096 count=1024k;
+    else
+        fallocate -l 4G /swapfile
+    fi
+    ls -lah /swapfile;
+    mkswap /swapfile;
+    swapon /swapfile;
+    chown root:root /swapfile;
+    chmod 0600 /swapfile;
+    swapon -s;
+    # echo "/swapfile swap swap defaults 0 0" >> /etc/fstab;
+    mount -a;
+    free -mlt
+    echo
+    } 2>&1 | tee "${CENTMINLOGDIR}/centminmod_swapsetup_installer_${DT}.log"
+fi
+}
+
+swap_setup
+lowmemcheck
+
 if [ ! -f /usr/sbin/virt-what ]; then
   yum -q -y install virt-what
 fi
