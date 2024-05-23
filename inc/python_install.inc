@@ -20,7 +20,7 @@ python_alternatives_setup() {
             echo
         else
             echo
-            echo "Skip python3 and pip3 alternatives mapping"
+            # echo "Skip python3 and pip3 alternatives mapping"
         fi
         if [[ "$(rpm -qa python3-numpy | grep -o 'python3-numpy')" != 'python3-numpy' ]]; then
             yum -y install python3-numpy
