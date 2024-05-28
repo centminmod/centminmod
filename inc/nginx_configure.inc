@@ -397,7 +397,13 @@ fi
 
 if [[ "$INITIALINSTALL" = [yY] ]] && [[ "$NGINX_PCRE_TWO" = [yY] || "$NGX_LDMOLD" = [yY] ]]; then
     GENERAL_DEVTOOLSETGCC='y'
+    ngx_devtoolset_starttime=$(TZ=UTC date +%s.%N)
     enable_devtoolset
+    ngx_devtoolset_endtime=$(TZ=UTC date +%s.%N)
+    funct_nginxconfigure_enable_devtoolset_install_time=$(echo "scale=2;$ngx_devtoolset_endtime - $ngx_devtoolset_starttime"|bc )
+    echo
+    echo "funct_nginxconfigure: enable devtoolset completed in $funct_nginxconfigure_enable_devtoolset_install_time seconds"
+    echo
 fi
 
 # ensure HTTP/3 UDP port 443 is open

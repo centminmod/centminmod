@@ -156,26 +156,51 @@ opt_tcp
 # pcre2 initial install needs newer GCC
 if [[ "$INITIALINSTALL" = [yY] ]] && [[ "$NGINX_PCRE_TWO" = [yY] || "$NGX_LDMOLD" = [yY] ]]; then
     GENERAL_DEVTOOLSETGCC='y'
+    ngx_starttime=$(TZ=UTC date +%s.%N)
     enable_devtoolset
+    ngx_endtime=$(TZ=UTC date +%s.%N)
+    enable_devtoolset_install_time=$(echo "scale=2;$ngx_endtime - $ngx_starttime"|bc )
+    echo
+    echo "nginx install: enable devtoolset completed in $enable_devtoolset_install_time seconds"
+    echo
 fi
 
 install_gperftools
 
 pcredir_check
 perl_ipc_cmd_install
+    ngx_starttime=$(TZ=UTC date +%s.%N)
 if [[ "$recompileopenssl" = [yY] || "$LIBRESSL_SWITCH" = [yY] || "$BORINGSSL_SWITCH" = [yY] ]] && [[ "$OPENSSL_SYSTEM_USE" != [yY] ]]; then
     installopenssl
 elif [[ "$recompileopenssl" = [yY] || "$LIBRESSL_SWITCH" = [yY] || "$BORINGSSL_SWITCH" = [yY] ]] && [[ "$OPENSSL_SYSTEM_USE" = [yY] ]]; then
     installopenssl
 fi
+    ngx_endtime=$(TZ=UTC date +%s.%N)
+    install_openssl_time=$(echo "scale=2;$ngx_endtime - $ngx_starttime"|bc )
+    echo
+    echo "nginx install: install openssl completed in $install_openssl_time seconds"
+    echo
 
     if [ -f "$(which figlet)" ]; then
         figlet -ckf standard "luajit install"
     fi
 
-luajitinstall
+    ngx_starttime=$(TZ=UTC date +%s.%N)
+    luajitinstall
+    ngx_endtime=$(TZ=UTC date +%s.%N)
+    luajit_install_time=$(echo "scale=2;$ngx_endtime - $ngx_starttime"|bc )
+    echo
+    echo "nginx install: luajit install completed in $luajit_install_time seconds"
+    echo
+
 {
-nginxzlib_install
+    ngx_starttime=$(TZ=UTC date +%s.%N)
+    nginxzlib_install
+    ngx_endtime=$(TZ=UTC date +%s.%N)
+    nginx_zlib_install_time=$(echo "scale=2;$ngx_endtime - $ngx_starttime"|bc )
+    echo
+    echo "nginx install: nginx zlib install completed in $nginx_zlib_install_time seconds"
+    echo
 } 2>&1 | tee "${CENTMINLOGDIR}/nginx-install-zlib_${DT}.log"
 nginx_libuuid
 
@@ -216,10 +241,22 @@ if [[ "$NGINXPATCH" = [yY] && "$FPM_NGINX_RPM" != [yY] ]]; then
     cecho "Nginx Patch Time - NGINXPATCH_DELAY seconds delay" $boldgreen
     cecho "to allow you to patch files" $boldgreen
     echo "*************************************************"
+    ngx_starttime=$(TZ=UTC date +%s.%N)
     patchnginx
+    ngx_endtime=$(TZ=UTC date +%s.%N)
+    ngx_patch=$(echo "scale=2;$ngx_endtime - $ngx_starttime"|bc )
+    echo
+    echo "nginx install: nginx patch completed in $ngx_patch seconds"
+    echo
 fi
 
-funct_nginxconfigure
+    ngx_starttime=$(TZ=UTC date +%s.%N)
+    funct_nginxconfigure
+    ngx_endtime=$(TZ=UTC date +%s.%N)
+    ngx_configure_time=$(echo "scale=2;$ngx_endtime - $ngx_starttime"|bc )
+    echo
+    echo "nginx install: nginx configure completed in $ngx_configure_time seconds"
+    echo
 
 if [[ "$FPM_NGINX_RPM" = [yY] && "$INITIALINSTALL" = [yY] && "$CENTOS_SEVEN" -eq '7' ]]; then
   # experimental initial install Nginx custom RPM build
@@ -235,6 +272,7 @@ if [[ "$FPM_NGINX_RPM" = [yY] && "$INITIALINSTALL" = [yY] && "$CENTOS_SEVEN" -eq
   yum -y localinstall "$DIR_TMP/nginx-custom-1.21.6-1.el7.x86_64.rpm"
   echo
 else
+    ngx_starttime=$(TZ=UTC date +%s.%N)
     if [ -f "$(which figlet)" ]; then
         figlet -ckf standard "Nginx Make"
     fi
@@ -251,6 +289,11 @@ else
             time make
         fi
     fi
+    ngx_endtime=$(TZ=UTC date +%s.%N)
+    ngx_make_time=$(echo "scale=2;$ngx_endtime - $ngx_starttime"|bc )
+    echo
+    echo "nginx install: nginx make completed in $ngx_make_time seconds"
+    echo
     sar_call
 
     if [[ "$STRIPNGINX" = [yY] && "$NGINX_DEBUG" != [yY] ]]; then
@@ -267,8 +310,13 @@ else
     if [ -f "$(which figlet)" ]; then
         figlet -ckf standard "Nginx Make Install"
     fi
-
+    ngx_starttime=$(TZ=UTC date +%s.%N)
     time make install
+    ngx_endtime=$(TZ=UTC date +%s.%N)
+    ngx_make_install_time=$(echo "scale=2;$ngx_endtime - $ngx_starttime"|bc )
+    echo
+    echo "nginx install: nginx make install completed in $ngx_make_install_time seconds"
+    echo
 fi # FPM_NGINX_RPM
     sar_call
 
@@ -463,20 +511,32 @@ geoipphp
         echo
     fi
 
+    ngx_starttime=$(TZ=UTC date +%s.%N)
     countcpus
     detect_tlsonethree
     run_after_nginx_install
+    ngx_endtime=$(TZ=UTC date +%s.%N)
+    run_after_nginx_install_time=$(echo "scale=2;$ngx_endtime - $ngx_starttime"|bc )
+    echo
+    echo "nginx install: countcpus, detect_tlsonethree & run_after_nginx_install functions completed in $run_after_nginx_install_time seconds"
+    echo
 
     # zlibsymlink_fix
     if [[ "$NGINX_NJS" = [yY] && -f "$DIR_TMP/njs/build/njs" ]]; then
         cp -af "$DIR_TMP/njs/build/njs" /usr/local/bin/njs
     fi
     if [[ "$NGINX_SECURED" = [yY] ]]; then
+        ngx_starttime=$(TZ=UTC date +%s.%N)
         echo
         checksec_nginx
         echo
         echo "checksec --format=json --file=/usr/local/sbin/nginx | jq -r"
         checksec --format=json --file=/usr/local/sbin/nginx | jq -r
+        echo
+        ngx_endtime=$(TZ=UTC date +%s.%N)
+        check_sec_timed=$(echo "scale=2;$ngx_endtime - $ngx_starttime"|bc )
+        echo
+        echo "nginx install: checksec_nginx function completed in $check_sec_timed seconds"
         echo
     fi
     if [[ "$ORESTY_LUANGINX" = [yY] && "$INITIALINSTALL" = [yY] ]]; then
