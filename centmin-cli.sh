@@ -264,12 +264,12 @@ fi
 CENTOSVER_NUMERIC=$(echo $CENTOSVER | sed -e 's|\.||g')
 
 # switch el8 OSes to GCC 11 for compile routines
-if [[ "$CENTOS_EIGHT" -eq '8' && "$DEVTOOLSETTHIRTEEN" = [yY] && "$CENTOSVER_NUMERIC" -ge '89' ]]; then
+if [[ "$CENTOS_EIGHT" -eq '8' && "$CENTOSVER_NUMERIC" -ge '89' ]]; then
   DEVTOOLSETTEN='n'
   DEVTOOLSETELEVEN='n'
   DEVTOOLSETTWELVE='n'
   DEVTOOLSETTHIRTEEN='y'
-elif [[ "$CENTOS_EIGHT" -eq '8' && "$DEVTOOLSETTWELVE" = [yY] && "$CENTOSVER_NUMERIC" -ge '87' ]]; then
+elif [[ "$CENTOS_EIGHT" -eq '8' && "$CENTOSVER_NUMERIC" -ge '87' ]]; then
   DEVTOOLSETTEN='n'
   DEVTOOLSETELEVEN='n'
   DEVTOOLSETTWELVE='y'
@@ -282,12 +282,12 @@ elif [[ "$CENTOS_EIGHT" -eq '8' ]]; then
 fi
 
 # el9 GCC
-if [[ "$CENTOS_NINE" -eq '9' && "$DEVTOOLSETTHIRTEEN" = [yY] && "$CENTOSVER_NUMERIC" -ge '93' ]]; then
+if [[ "$CENTOS_NINE" -eq '9' && "$CENTOSVER_NUMERIC" -ge '93' ]]; then
   DEVTOOLSETTEN='n'
   DEVTOOLSETELEVEN='n'
   DEVTOOLSETTWELVE='n'
   DEVTOOLSETTHIRTEEN='y'
-elif [[ "$CENTOS_NINE" -eq '9' && "$DEVTOOLSETTWELVE" = [yY] && "$CENTOSVER_NUMERIC" -ge '91' ]]; then
+elif [[ "$CENTOS_NINE" -eq '9' && "$CENTOSVER_NUMERIC" -ge '91' ]]; then
   DEVTOOLSETTEN='n'
   DEVTOOLSETELEVEN='n'
   DEVTOOLSETTWELVE='y'
