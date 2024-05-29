@@ -3402,7 +3402,7 @@ fi
 
 curl -${ipv_forceopt}Is --connect-timeout 30 --max-time 30 "$OPENSSL_LINK" | grep 'HTTP\/' | grep '200'
 OPENSSL_CURLCHECK=$?
-if [[ "$OPENSSL_CURLCHECK" != '0' ]]; then
+if [[ "$OPENSSL_CURLCHECK" != '0' || "$(echo $OPENSSL_VERSION | grep -o '1.1.1')" = '1.1.1' ]]; then
   OPENSSL_MIRRORURL="${LOCALCENTMINMOD_MIRROR}/centminmodparts/openssl"
   OPENSSL_LINK="${OPENSSL_MIRRORURL}/openssl-${OPENSSL_VERSION}.tar.gz"
 fi
