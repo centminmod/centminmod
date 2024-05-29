@@ -587,9 +587,9 @@ fi
 
 # set el9 to utf8mb4 charset for MariaDB 10.6
 if [[ "$CENTOS_NINE" -eq '9' ]]; then
-  echo "DEVTOOLSETTEN='n'" >> /etc/centminmod/custom_config.inc
-  echo "DEVTOOLSETELEVEN='n'" >> /etc/centminmod/custom_config.inc
-  echo "DEVTOOLSETTWELVE='y'" >> /etc/centminmod/custom_config.inc
+  #echo "DEVTOOLSETTEN='n'" >> /etc/centminmod/custom_config.inc
+  #echo "DEVTOOLSETELEVEN='n'" >> /etc/centminmod/custom_config.inc
+  #echo "DEVTOOLSETTWELVE='y'" >> /etc/centminmod/custom_config.inc
   echo "SET_DEFAULT_MYSQLCHARSET='utf8mb4'" >> /etc/centminmod/custom_config.inc
   echo "SELFSIGNEDSSL_ECDSA='y'" >> /etc/centminmod/custom_config.inc
   echo "PHPFINFO='y'" >> /etc/centminmod/custom_config.inc
@@ -598,9 +598,9 @@ if [[ "$CENTOS_NINE" -eq '9' ]]; then
 fi
 # set el8 defaults
 if [[ "$CENTOS_EIGHT" -eq '8' ]]; then
-  echo "DEVTOOLSETTEN='n'" >> /etc/centminmod/custom_config.inc
-  echo "DEVTOOLSETELEVEN='n'" >> /etc/centminmod/custom_config.inc
-  echo "DEVTOOLSETTWELVE='y'" >> /etc/centminmod/custom_config.inc
+  #echo "DEVTOOLSETTEN='n'" >> /etc/centminmod/custom_config.inc
+  #echo "DEVTOOLSETELEVEN='n'" >> /etc/centminmod/custom_config.inc
+  #echo "DEVTOOLSETTWELVE='y'" >> /etc/centminmod/custom_config.inc
   echo "SELFSIGNEDSSL_ECDSA='y'" >> /etc/centminmod/custom_config.inc
   echo "PHPFINFO='y'" >> /etc/centminmod/custom_config.inc
   echo "PHP_OVERWRITECONF='n'" >> /etc/centminmod/custom_config.inc
