@@ -50,6 +50,7 @@ on:
       - '.github/workflows/cmm-centos9stream.yml'
       - '.github/workflows/cmm-rockylinux8-edge.yml'
       - '.github/workflows/cmm-almalinux8-edge.yml'
+      - '.github/workflows/cmm-almalinux8-hardenedoff.yml'
       - '.github/workflows/cmm-rockylinux8-php7.4.yml'
       - '.github/workflows/cmm-almalinux8-php7.4.yml'
       - '.github/workflows/cmm-rockylinux8-php8.1.yml'
