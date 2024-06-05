@@ -1,3 +1,44 @@
+# Define the configuration lines to check
+CIPHERS_LINE="Ciphers aes128-ctr,aes192-ctr,aes256-ctr,aes128-gcm@openssh.com,aes256-gcm@openssh.com"
+MACS_LINE="MACs umac-64@openssh.com,umac-128@openssh.com,hmac-sha2-256,hmac-sha2-512"
+
+# Function to check if the configuration lines exist in the file
+check_sshd_config() {
+    local file=$1
+    local ciphers_line="$CIPHERS_LINE"
+    local macs_line="$MACS_LINE"
+
+    if grep -q "$ciphers_line" "$file" && grep -q "$macs_line" "$file"; then
+        return 0
+    else
+        return 1
+    fi
+}
+
+apply_terrapin_fix() {
+    # Files to check
+    SSH_CONFIG_CIPHERS="/etc/ssh/ssh_config"
+    SSHD_CONFIG_CIPHERS="/etc/ssh/sshd_config"
+
+    # Check if the system is CentOS 7 (EL7)
+    if [[ "$CENTOS_SEVEN" -eq '7' && -f "${SCRIPT_DIR}/tools/terrapin-openssh-el7-fix.sh" ]]; then
+        # Check if the specific Cipher/MACs settings already exist in the configuration files
+        if check_sshd_config "$SSH_CONFIG_CIPHERS" && check_sshd_config "$SSHD_CONFIG_CIPHERS"; then
+            return 0
+        else
+            # Run the terrapin-openssh-el7-fix.sh script
+            "${SCRIPT_DIR}/tools/terrapin-openssh-el7-fix.sh" -s
+        fi
+    fi
+}
+
+apply_iconv_fix() {
+  if [ "$(iconv -l | grep -E 'CN-?EXT')" ]; then
+    # Run the iconv-fixes.sh script
+    "${SCRIPT_DIR}/tools/iconv-fixes.sh" -s
+  fi
+}
+
 switch_mariadbtenthree_archives() {
   if grep -q "http://yum.mariadb.org/10.3/centos7-amd64" /etc/yum.repos.d/mariadb.repo; then
       sed -i 's|http://yum.mariadb.org/10.3/centos7-amd64|https://archive.mariadb.org/mariadb-10.3/yum/centos7-amd64|' /etc/yum.repos.d/mariadb.repo
@@ -3246,6 +3287,8 @@ disable_avahi
 qrencode_setup
 initial_pip_updates initial
 jetpack_ip_whitelist_cronsetup
+apply_terrapin_fix
+apply_iconv_fix
 
 if [[ "$INITIALINSTALL" != [yY] ]]; then
   march_hostcheck
@@ -3381,6 +3424,8 @@ if [[ "$INITIALINSTALL" != [yY] ]]; then
   check_php_cainfo_file
   fix_ftp_csf_ports
   switch_mariadbtenthree_archives
+  apply_terrapin_fix
+  apply_iconv_fix
 fi
 
 }
