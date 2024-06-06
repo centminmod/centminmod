@@ -278,14 +278,18 @@ else
     fi
 
     # detect OpenSSL 1.1.0 for make -jXX support
+    echo "nginx install: initial OPENSSL_VERSION=$OPENSSL_VERSION"
     DETECTOPENSSL_ONEZERO=$(echo $OPENSSL_VERSION  | cut -d . -f1-2)
     DETECTOPENSSL_ONEONE=$(echo $OPENSSL_VERSION  | cut -d . -f1-3 | grep -o 1.1.1)
     if [[ "$LIBRESSL_SWITCH" = [yY] ]]; then
+        echo "time make${MAKETHREADS}"
         time make${MAKETHREADS}
     else
         if [[ "$DETECTOPENSSL_ONEZERO" = '1.1' ]] || [[ "$DETECTOPENSSL_ONEONE" = '1.1.1' ]]; then
+            echo "time make${MAKETHREADS}"
             time make${MAKETHREADS}
         else
+            echo "time make"
             time make
         fi
     fi
