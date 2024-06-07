@@ -3172,9 +3172,9 @@ fi
           elif [[ "$(nproc)" -ge '25' && "$(nproc)" -le '32' ]]; then
             FLTO_OPT=" -flto=4"
           elif [[ "$(nproc)" -ge '17' && "$(nproc)" -le '24' ]]; then
-            FLTO_OPT=" -flto=2"
+            FLTO_OPT=" -flto=3"
           elif [[ "$(nproc)" -ge '8' && "$(nproc)" -le '16' ]]; then
-            FLTO_OPT=" -flto=1"
+            FLTO_OPT=" -flto=2"
           else
             FLTO_OPT=""
           fi
@@ -3192,9 +3192,9 @@ fi
           elif [[ "$(nproc)" -ge '25' && "$(nproc)" -le '32' ]]; then
             FLTO_OPT=" -flto=4"
           elif [[ "$(nproc)" -ge '17' && "$(nproc)" -le '24' ]]; then
-            FLTO_OPT=" -flto=2"
+            FLTO_OPT=" -flto=3"
           elif [[ "$(nproc)" -ge '8' && "$(nproc)" -le '16' ]]; then
-            FLTO_OPT=" -flto=1"
+            FLTO_OPT=" -flto=2"
           else
             FLTO_OPT=""
           fi
