@@ -3157,6 +3157,8 @@ fi
   else
     NGINX_NJSOPT=""
     if [[ "$CENTOS_SEVEN" -eq '7' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]]; then
+      FLTO_TOTALMEM=$(awk '/MemTotal/ {print $2}' /proc/meminfo)
+      FLTO_TOTALMEMMB=`echo "scale=0;$FLTO_TOTALMEM/1024" | bc`
       if [[ "$NGX_LDMOLD" = [yY] ]]; then
         # mold linker does not support LTO
         # https://github.com/rui314/mold
@@ -3178,6 +3180,9 @@ fi
           else
             FLTO_OPT=""
           fi
+          if [[ "$FLTO_TOTALMEMMB" -le '3650' ]]; then
+            FLTO_OPT=""
+          fi
         fi
       else
         if [[ "$FLTO_OPT_COUNT" ]]; then
@@ -3196,6 +3201,9 @@ fi
           elif [[ "$(nproc)" -ge '8' && "$(nproc)" -le '16' ]]; then
             FLTO_OPT=" -flto=2"
           else
+            FLTO_OPT=""
+          fi
+          if [[ "$FLTO_TOTALMEMMB" -le '3650' ]]; then
             FLTO_OPT=""
           fi
         fi
