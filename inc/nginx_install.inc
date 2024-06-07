@@ -314,10 +314,10 @@ else
     if [ -f "$(which figlet)" ]; then
         figlet -ckf standard "Nginx Make Install"
     fi
-    ngx_starttime=$(TZ=UTC date +%s.%N)
+    ngx_make_starttime=$(TZ=UTC date +%s.%N)
     time make install
-    ngx_endtime=$(TZ=UTC date +%s.%N)
-    ngx_make_install_time=$(echo "scale=2;$ngx_endtime - $ngx_starttime"|bc )
+    ngx_make_endtime=$(TZ=UTC date +%s.%N)
+    ngx_make_install_time=$(echo "scale=2;$ngx_make_endtime - $ngx_make_starttime"|bc )
     echo
     echo "nginx install: nginx make install completed in $ngx_make_install_time seconds"
     echo

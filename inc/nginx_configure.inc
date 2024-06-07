@@ -3160,9 +3160,49 @@ fi
       if [[ "$NGX_LDMOLD" = [yY] ]]; then
         # mold linker does not support LTO
         # https://github.com/rui314/mold
-        FLTO_OPT=" -flto=$(nproc)"
+        if [[ "$FLTO_OPT_COUNT" ]]; then
+          FLTO_OPT=" -flto=$FLTO_OPT_COUNT"
+        else
+          if [[ "$(nproc)" -ge '65' ]]; then
+            FLTO_OPT=" -flto=20"
+          elif [[ "$(nproc)" -ge '49' && "$(nproc)" -le '64' ]]; then
+            FLTO_OPT=" -flto=16"
+          elif [[ "$(nproc)" -ge '33' && "$(nproc)" -le '48' ]]; then
+            FLTO_OPT=" -flto=12"
+          elif [[ "$(nproc)" -ge '25' && "$(nproc)" -le '32' ]]; then
+            FLTO_OPT=" -flto=8"
+          elif [[ "$(nproc)" -ge '17' && "$(nproc)" -le '24' ]]; then
+            FLTO_OPT=" -flto=6"
+          elif [[ "$(nproc)" -ge '9' && "$(nproc)" -le '16' ]]; then
+            FLTO_OPT=" -flto=4"
+          elif [[ "$(nproc)" -ge '4' && "$(nproc)" -le '8' ]]; then
+            FLTO_OPT=" -flto=2"
+          else
+            FLTO_OPT=""
+          fi
+        fi
       else
-        FLTO_OPT=" -flto=$(nproc)"
+        if [[ "$FLTO_OPT_COUNT" ]]; then
+          FLTO_OPT=" -flto=$FLTO_OPT_COUNT"
+        else
+          if [[ "$(nproc)" -ge '65' ]]; then
+            FLTO_OPT=" -flto=20"
+          elif [[ "$(nproc)" -ge '49' && "$(nproc)" -le '64' ]]; then
+            FLTO_OPT=" -flto=16"
+          elif [[ "$(nproc)" -ge '33' && "$(nproc)" -le '48' ]]; then
+            FLTO_OPT=" -flto=12"
+          elif [[ "$(nproc)" -ge '25' && "$(nproc)" -le '32' ]]; then
+            FLTO_OPT=" -flto=8"
+          elif [[ "$(nproc)" -ge '17' && "$(nproc)" -le '24' ]]; then
+            FLTO_OPT=" -flto=6"
+          elif [[ "$(nproc)" -ge '9' && "$(nproc)" -le '16' ]]; then
+            FLTO_OPT=" -flto=4"
+          elif [[ "$(nproc)" -ge '4' && "$(nproc)" -le '8' ]]; then
+            FLTO_OPT=" -flto=2"
+          else
+            FLTO_OPT=""
+          fi
+        fi
       fi
     else
       if [[ "$NGX_LDMOLD" = [yY] ]]; then
