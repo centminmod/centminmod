@@ -3164,18 +3164,16 @@ fi
           FLTO_OPT=" -flto=$FLTO_OPT_COUNT"
         else
           if [[ "$(nproc)" -ge '65' ]]; then
-            FLTO_OPT=" -flto=20"
-          elif [[ "$(nproc)" -ge '49' && "$(nproc)" -le '64' ]]; then
             FLTO_OPT=" -flto=16"
-          elif [[ "$(nproc)" -ge '33' && "$(nproc)" -le '48' ]]; then
+          elif [[ "$(nproc)" -ge '49' && "$(nproc)" -le '64' ]]; then
             FLTO_OPT=" -flto=12"
-          elif [[ "$(nproc)" -ge '25' && "$(nproc)" -le '32' ]]; then
+          elif [[ "$(nproc)" -ge '33' && "$(nproc)" -le '48' ]]; then
             FLTO_OPT=" -flto=8"
-          elif [[ "$(nproc)" -ge '17' && "$(nproc)" -le '24' ]]; then
+          elif [[ "$(nproc)" -ge '25' && "$(nproc)" -le '32' ]]; then
             FLTO_OPT=" -flto=6"
-          elif [[ "$(nproc)" -ge '9' && "$(nproc)" -le '16' ]]; then
+          elif [[ "$(nproc)" -ge '17' && "$(nproc)" -le '24' ]]; then
             FLTO_OPT=" -flto=4"
-          elif [[ "$(nproc)" -ge '4' && "$(nproc)" -le '8' ]]; then
+          elif [[ "$(nproc)" -ge '8' && "$(nproc)" -le '16' ]]; then
             FLTO_OPT=" -flto=2"
           else
             FLTO_OPT=""
@@ -3186,18 +3184,16 @@ fi
           FLTO_OPT=" -flto=$FLTO_OPT_COUNT"
         else
           if [[ "$(nproc)" -ge '65' ]]; then
-            FLTO_OPT=" -flto=20"
-          elif [[ "$(nproc)" -ge '49' && "$(nproc)" -le '64' ]]; then
             FLTO_OPT=" -flto=16"
-          elif [[ "$(nproc)" -ge '33' && "$(nproc)" -le '48' ]]; then
+          elif [[ "$(nproc)" -ge '49' && "$(nproc)" -le '64' ]]; then
             FLTO_OPT=" -flto=12"
-          elif [[ "$(nproc)" -ge '25' && "$(nproc)" -le '32' ]]; then
+          elif [[ "$(nproc)" -ge '33' && "$(nproc)" -le '48' ]]; then
             FLTO_OPT=" -flto=8"
-          elif [[ "$(nproc)" -ge '17' && "$(nproc)" -le '24' ]]; then
+          elif [[ "$(nproc)" -ge '25' && "$(nproc)" -le '32' ]]; then
             FLTO_OPT=" -flto=6"
-          elif [[ "$(nproc)" -ge '9' && "$(nproc)" -le '16' ]]; then
+          elif [[ "$(nproc)" -ge '17' && "$(nproc)" -le '24' ]]; then
             FLTO_OPT=" -flto=4"
-          elif [[ "$(nproc)" -ge '4' && "$(nproc)" -le '8' ]]; then
+          elif [[ "$(nproc)" -ge '8' && "$(nproc)" -le '16' ]]; then
             FLTO_OPT=" -flto=2"
           else
             FLTO_OPT=""
