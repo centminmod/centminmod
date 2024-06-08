@@ -4791,6 +4791,8 @@ egrep '\-march=|\-mtune|\-mavx|\-msse4|\-mpclmul' ${CENTMINLOGDIR}/gcc_diff_nati
   echo
   echo "GCC_NONNATIVEFLAGS=$GCC_NONNATIVEFLAGS"
   echo
+  gcc -v
+  echo
 
 NGINX_CPU_MARCH=$(gcc -c -Q -march=native --help=target | awk '/  -march/ {print $2}' | head -n1 )
 if [[ "$GCC_FALIGN_FUNCTION" = [yY] ]] && [[ "$NGINX_CPU_MARCH" = 'nehalem' || "$NGINX_CPU_MARCH" = 'westmere' || "$NGINX_CPU_MARCH" = 'core2' || "$NGINX_CPU_MARCH" = 'bonnell' || "$NGINX_CPU_MARCH" = 'silvermont' ]]; then
@@ -5221,6 +5223,8 @@ else
           echo "OPENSSL_VERION=$OPENSSL_VERSION"
           echo "OPENSSL_SYSTEM_USE=$OPENSSL_SYSTEM_USE"
           echo "HTTPTWOOPT=$HTTPTWOOPT"
+          echo
+          gcc -v
           echo
           echo "nginx configure options (alternate ordering):"
         if [[ "$TLSTHREEOPT" = [yY] && "$OPENSSL_TLSONETHREE" = [yY] ]]; then

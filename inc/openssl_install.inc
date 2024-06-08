@@ -1445,7 +1445,9 @@ fi
         if [ -f "$(which figlet)" ]; then
             figlet -ckf standard "Compiling OpenSSL"
         fi
-
+        echo
+        gcc -v
+        echo
         # Install OpenSSL
         cd $DIR_TMP
         echo "Compiling OpenSSL..."
