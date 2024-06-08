@@ -3159,24 +3159,36 @@ fi
     if [[ "$CENTOS_SEVEN" -eq '7' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]]; then
       FLTO_TOTALMEM=$(awk '/MemTotal/ {print $2}' /proc/meminfo)
       FLTO_TOTALMEMMB=`echo "scale=0;$FLTO_TOTALMEM/1024" | bc`
+      if [ -z "$FLTO_COMP_LEVEL" ]; then
+        if [[ "$FLTO_TOTALMEMMB" -le '3650' ]]; then
+          FLTO_COMP_LEVEL=1
+        else
+          FLTO_COMP_LEVEL=3
+        fi
+      fi
+      if [[ "$FLTO_COMP" = [yY] ]] && [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]]; then
+        FLTO_COMP_OPT=" -flto-compression-level=${FLTO_COMP_LEVEL}"
+      else
+        FLTO_COMP_OPT=""
+      fi
       if [[ "$NGX_LDMOLD" = [yY] ]]; then
         # mold linker does not support LTO
         # https://github.com/rui314/mold
         if [[ "$FLTO_OPT_COUNT" ]]; then
-          FLTO_OPT=" -flto=$FLTO_OPT_COUNT"
+          FLTO_OPT=" -flto=$FLTO_OPT_COUNT${FLTO_COMP_OPT}"
         else
           if [[ "$(nproc)" -ge '65' ]]; then
-            FLTO_OPT=" -flto=12"
+            FLTO_OPT=" -flto=12${FLTO_COMP_OPT}"
           elif [[ "$(nproc)" -ge '49' && "$(nproc)" -le '64' ]]; then
-            FLTO_OPT=" -flto=8"
+            FLTO_OPT=" -flto=8${FLTO_COMP_OPT}"
           elif [[ "$(nproc)" -ge '33' && "$(nproc)" -le '48' ]]; then
-            FLTO_OPT=" -flto=6"
+            FLTO_OPT=" -flto=6${FLTO_COMP_OPT}"
           elif [[ "$(nproc)" -ge '25' && "$(nproc)" -le '32' ]]; then
-            FLTO_OPT=" -flto=4"
+            FLTO_OPT=" -flto=4${FLTO_COMP_OPT}"
           elif [[ "$(nproc)" -ge '17' && "$(nproc)" -le '24' ]]; then
-            FLTO_OPT=" -flto=3"
+            FLTO_OPT=" -flto=3${FLTO_COMP_OPT}"
           elif [[ "$(nproc)" -ge '8' && "$(nproc)" -le '16' ]]; then
-            FLTO_OPT=" -flto=2"
+            FLTO_OPT=" -flto=2${FLTO_COMP_OPT}"
           else
             FLTO_OPT=""
           fi
@@ -3186,20 +3198,20 @@ fi
         fi
       else
         if [[ "$FLTO_OPT_COUNT" ]]; then
-          FLTO_OPT=" -flto=$FLTO_OPT_COUNT"
+          FLTO_OPT=" -flto=$FLTO_OPT_COUNT${FLTO_COMP_OPT}"
         else
           if [[ "$(nproc)" -ge '65' ]]; then
-            FLTO_OPT=" -flto=12"
+            FLTO_OPT=" -flto=12${FLTO_COMP_OPT}"
           elif [[ "$(nproc)" -ge '49' && "$(nproc)" -le '64' ]]; then
-            FLTO_OPT=" -flto=8"
+            FLTO_OPT=" -flto=8${FLTO_COMP_OPT}"
           elif [[ "$(nproc)" -ge '33' && "$(nproc)" -le '48' ]]; then
-            FLTO_OPT=" -flto=6"
+            FLTO_OPT=" -flto=6${FLTO_COMP_OPT}"
           elif [[ "$(nproc)" -ge '25' && "$(nproc)" -le '32' ]]; then
-            FLTO_OPT=" -flto=4"
+            FLTO_OPT=" -flto=4${FLTO_COMP_OPT}"
           elif [[ "$(nproc)" -ge '17' && "$(nproc)" -le '24' ]]; then
-            FLTO_OPT=" -flto=3"
+            FLTO_OPT=" -flto=3${FLTO_COMP_OPT}"
           elif [[ "$(nproc)" -ge '8' && "$(nproc)" -le '16' ]]; then
-            FLTO_OPT=" -flto=2"
+            FLTO_OPT=" -flto=2${FLTO_COMP_OPT}"
           else
             FLTO_OPT=""
           fi

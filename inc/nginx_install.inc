@@ -553,6 +553,8 @@ geoipphp
         fi
     fi
 
+    echo "nginx install: make time completed in $ngx_make_time seconds"
+    echo
     echo "*************************************************"
     cecho "* nginx installed, Apache disabled" $boldgreen
     echo "*************************************************"

@@ -1005,7 +1005,7 @@ fi
       touch ${BORINGSSL_DIR}/boringssl/.openssl/include/openssl/ssl.h
       ls -lah ${BORINGSSL_DIR}/boringssl/.openssl/include/openssl/ssl.h
     fi
-
+    ngx_make_starttime=$(TZ=UTC date +%s.%N)
     if [[ "$LIBRESSL_SWITCH" = [yY] ]]; then
         time make${MAKETHREADS}
     else
@@ -1017,6 +1017,8 @@ fi
     fi
     
     ERR=$?
+    ngx_make_endtime=$(TZ=UTC date +%s.%N)
+    ngx_make_time=$(echo "scale=2;$ngx_make_endtime - $ngx_make_starttime"|bc )
     sar_call
 
     if [[ "$STRIPNGINX" = [yY] && "$NGINX_DEBUG" != [yY] ]]; then
@@ -1458,6 +1460,8 @@ fi
     fi
     # remove latest Nginx version cache file
     rm -f /tmp/nginx_version_cache
+    echo "nginx upgrade: make time completed in $ngx_make_time seconds"
+    echo
     if [ -f "$(which figlet)" ]; then
         figlet -ckf standard "Nginx Updated"
     fi
