@@ -337,10 +337,18 @@ ngx_dynamicfunction() {
     pwd
     dynamicmodule_file
   if [ "$ngver" ]; then
-    DETECT_NGXVER=$(awk '/define nginx_version  / {print $3}' "/svr-setup/nginx-$ngver/src/core/nginx.h")
+    if [[ "$FREENGINX_INSTALL" = [yY] ]]; then
+      DETECT_NGXVER=$(awk '/define nginx_version  / {print $3}' "/svr-setup/freenginx-$ngver/src/core/nginx.h")
+    else
+      DETECT_NGXVER=$(awk '/define nginx_version  / {print $3}' "/svr-setup/nginx-$ngver/src/core/nginx.h")
+    fi
     echo "DETECT_NGXVER=$DETECT_NGXVER"
   else
-    DETECT_NGXVER=$(awk '/define nginx_version  / {print $3}' "/svr-setup/nginx-${NGINX_VERSION}/src/core/nginx.h")
+    if [[ "$FREENGINX_INSTALL" = [yY] ]]; then
+      DETECT_NGXVER=$(awk '/define nginx_version  / {print $3}' "/svr-setup/freenginx-${NGINX_VERSION}/src/core/nginx.h")
+    else
+      DETECT_NGXVER=$(awk '/define nginx_version  / {print $3}' "/svr-setup/nginx-${NGINX_VERSION}/src/core/nginx.h")
+    fi
     echo "DETECT_NGXVER=$DETECT_NGXVER"
   fi
   if [[ "$DETECT_NGXVER" -ge '1011005' && "$DYNAMIC_SUPPORT" = [yY] ]]; then
@@ -614,10 +622,18 @@ if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9'
     NGINX_HPACK='n'
   elif [[ "$ngver" && "$ngver" = 'quic' || "$NGINX_QUIC_SUPPORT" = [yY] ]]; then
     if [ "$ngver" ]; then
-      DETECT_NGXVER=$(awk '/define nginx_version  / {print $3}' "/svr-setup/nginx-$ngver/src/core/nginx.h")
+      if [[ "$FREENGINX_INSTALL" = [yY] ]]; then
+        DETECT_NGXVER=$(awk '/define nginx_version  / {print $3}' "/svr-setup/freenginx-$ngver/src/core/nginx.h")
+      else
+        DETECT_NGXVER=$(awk '/define nginx_version  / {print $3}' "/svr-setup/nginx-$ngver/src/core/nginx.h")
+      fi
       echo "NGINX_QUIC_SUPPORT=y DETECT_NGXVER=$DETECT_NGXVER"
     else
-      DETECT_NGXVER=$(awk '/define nginx_version  / {print $3}' "/svr-setup/nginx-${NGINX_VERSION}/src/core/nginx.h")
+      if [[ "$FREENGINX_INSTALL" = [yY] ]]; then
+        DETECT_NGXVER=$(awk '/define nginx_version  / {print $3}' "/svr-setup/freenginx-${NGINX_VERSION}/src/core/nginx.h")
+      else
+        DETECT_NGXVER=$(awk '/define nginx_version  / {print $3}' "/svr-setup/nginx-${NGINX_VERSION}/src/core/nginx.h")
+      fi
       echo "NGINX_QUIC_SUPPORT=y DETECT_NGXVER=$DETECT_NGXVER"
     fi
     if [[ "$NGINX_QUIC_HPACK_SUPPORT" != [yY] ]]; then
@@ -625,10 +641,18 @@ if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9'
       NGINX_HPACK='n'
     fi
   elif [ "$ngver" ]; then
-    DETECT_NGXVER=$(awk '/define nginx_version  / {print $3}' "/svr-setup/nginx-$ngver/src/core/nginx.h")
+    if [[ "$FREENGINX_INSTALL" = [yY] ]]; then
+      DETECT_NGXVER=$(awk '/define nginx_version  / {print $3}' "/svr-setup/freenginx-$ngver/src/core/nginx.h")
+    else
+      DETECT_NGXVER=$(awk '/define nginx_version  / {print $3}' "/svr-setup/nginx-$ngver/src/core/nginx.h")
+    fi
     echo "DETECT_NGXVER=$DETECT_NGXVER"
   else
-    DETECT_NGXVER=$(awk '/define nginx_version  / {print $3}' "/svr-setup/nginx-${NGINX_VERSION}/src/core/nginx.h")
+    if [[ "$FREENGINX_INSTALL" = [yY] ]]; then
+      DETECT_NGXVER=$(awk '/define nginx_version  / {print $3}' "/svr-setup/freenginx-${NGINX_VERSION}/src/core/nginx.h")
+    else
+      DETECT_NGXVER=$(awk '/define nginx_version  / {print $3}' "/svr-setup/nginx-${NGINX_VERSION}/src/core/nginx.h")
+    fi
     echo "DETECT_NGXVER=$DETECT_NGXVER"
   fi
 
@@ -2784,12 +2808,18 @@ else
     fi
 fi
 
-if [[ -d "${DIR_TMP}/nginx-${NGINX_VERSION}" && ! "$ngver" ]]; then
+if [[ "$FREENGINX_INSTALL" = [yY] ]] && [[ -d "${DIR_TMP}/freenginx-${NGINX_VERSION}" && ! "$ngver" ]]; then
+  cd "${DIR_TMP}/freenginx-${NGINX_VERSION}"
+elif [[ -d "${DIR_TMP}/nginx-${NGINX_VERSION}" && ! "$ngver" ]]; then
   cd "${DIR_TMP}/nginx-${NGINX_VERSION}"
 fi
 
 if [[ -d "${DIR_TMP}/nginx-${ngver}" && "$ngver" ]]; then
   cd "${DIR_TMP}/nginx-${ngver}"
+fi
+
+if [[ "$FREENGINX_INSTALL" = [yY] ]] && [[ -d "${DIR_TMP}/freenginx-${ngver}" && "$ngver" ]]; then
+  cd "${DIR_TMP}/freenginx-${ngver}"
 fi
 
 if [ -f src/http/ngx_http_header_filter_module.c ]; then

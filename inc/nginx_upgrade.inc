@@ -808,7 +808,7 @@ fi
             echo
             echo "Downloading Freenginx forked version"
             echo
-            download_cmd "https://freenginx.org/download/nginx-${ngver}.tar.gz" $WGETRETRY
+            download_cmd "https://freenginx.org/download/freenginx-${ngver}.tar.gz" $WGETRETRY
         else
             download_cmd "https://nginx.org/download/nginx-${ngver}.tar.gz" $WGETRETRY
         fi
@@ -852,11 +852,19 @@ fi
     fi
 
     if [[ ! "$(echo $ngver | egrep 'master|angie|quic')" ]]; then
-        tar xvfz "nginx-${ngver}.tar.gz"
+        if [[ "$FREENGINX_INSTALL" = [yY] ]]; then
+            tar xvfz "freenginx-${ngver}.tar.gz"
+        else
+            tar xvfz "nginx-${ngver}.tar.gz"
+        fi
         NGINXTAREXTRACT_CHECK=$?
         if [[ "$NGINXTAREXTRACT_CHECK" != '0' ]]; then
             if [ -f "$(which figlet)" ]; then
-                figlet -ckf standard "Nginx Tarball Extraction Failed"
+                if [[ "$FREENGINX_INSTALL" = [yY] ]]; then
+                    figlet -ckf standard "FreeNginx Tarball Extraction Failed"
+                else
+                    figlet -ckf standard "Nginx Tarball Extraction Failed"
+                fi
             fi
             echo
             echo "!! Nginx Tarball Extraction Failed !!"
@@ -886,10 +894,15 @@ fi
             fi
     
             rm -rf "$DIR_TMP/nginx-*.tar.gz"
+            rm -rf "$DIR_TMP/freenginx-*.tar.gz"
             exit
         fi
     fi
-    cd "nginx-${ngver}"
+    if [[ "$FREENGINX_INSTALL" = [yY] ]]; then
+        cd "freenginx-${ngver}"
+    else
+        cd "nginx-${ngver}"
+    fi
     if [[ "$INITIALINSTALL" != [yY] ]]; then
         make clean
     fi

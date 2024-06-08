@@ -49,11 +49,19 @@ ocsp_ttl_override() {
 
 iouring_patch() {
   if [ "$ngver" ]; then
-    DETECT_NGXVER=$(awk '/define nginx_version  / {print $3}' "/svr-setup/nginx-$ngver/src/core/nginx.h")
+    if [[ "$FREENGINX_INSTALL" = [yY] ]]; then
+      DETECT_NGXVER=$(awk '/define nginx_version  / {print $3}' "/svr-setup/freenginx-$ngver/src/core/nginx.h")
+    else
+      DETECT_NGXVER=$(awk '/define nginx_version  / {print $3}' "/svr-setup/nginx-$ngver/src/core/nginx.h")
+    fi
     NGINX_PUSHBASE=$ngver
     echo "$DETECT_NGXVER"
   else
-    DETECT_NGXVER=$(awk '/define nginx_version  / {print $3}' "/svr-setup/nginx-${NGINX_VERSION}/src/core/nginx.h")
+    if [[ "$FREENGINX_INSTALL" = [yY] ]]; then
+      DETECT_NGXVER=$(awk '/define nginx_version  / {print $3}' "/svr-setup/freenginx-${NGINX_VERSION}/src/core/nginx.h")
+    else
+      DETECT_NGXVER=$(awk '/define nginx_version  / {print $3}' "/svr-setup/nginx-${NGINX_VERSION}/src/core/nginx.h")
+    fi
     NGINX_PUSHBASE=$NGINX_VERSION
     echo "$DETECT_NGXVER"
   fi
@@ -116,11 +124,19 @@ iouring_patch() {
 
 ngx_maxprotocol_patch() {
   if [ "$ngver" ]; then
-    DETECT_NGXVER=$(awk '/define nginx_version  / {print $3}' "/svr-setup/nginx-$ngver/src/core/nginx.h")
+    if [[ "$FREENGINX_INSTALL" = [yY] ]]; then
+      DETECT_NGXVER=$(awk '/define nginx_version  / {print $3}' "/svr-setup/freenginx-$ngver/src/core/nginx.h")
+    else
+      DETECT_NGXVER=$(awk '/define nginx_version  / {print $3}' "/svr-setup/nginx-$ngver/src/core/nginx.h")
+    fi
     NGINX_PUSHBASE=$ngver
     echo "$DETECT_NGXVER"
   else
-    DETECT_NGXVER=$(awk '/define nginx_version  / {print $3}' "/svr-setup/nginx-${NGINX_VERSION}/src/core/nginx.h")
+    if [[ "$FREENGINX_INSTALL" = [yY] ]]; then
+      DETECT_NGXVER=$(awk '/define nginx_version  / {print $3}' "/svr-setup/freenginx-${NGINX_VERSION}/src/core/nginx.h")
+    else
+      DETECT_NGXVER=$(awk '/define nginx_version  / {print $3}' "/svr-setup/nginx-${NGINX_VERSION}/src/core/nginx.h")
+    fi
     NGINX_PUSHBASE=$NGINX_VERSION
     echo "$DETECT_NGXVER"
   fi
@@ -139,11 +155,19 @@ ngx_maxprotocol_patch() {
 
 ngx_renegotiate_patch() {
   if [ "$ngver" ]; then
-    DETECT_NGXVER=$(awk '/define nginx_version  / {print $3}' "/svr-setup/nginx-$ngver/src/core/nginx.h")
+    if [[ "$FREENGINX_INSTALL" = [yY] ]]; then
+      DETECT_NGXVER=$(awk '/define nginx_version  / {print $3}' "/svr-setup/freenginx-$ngver/src/core/nginx.h")
+    else
+      DETECT_NGXVER=$(awk '/define nginx_version  / {print $3}' "/svr-setup/nginx-$ngver/src/core/nginx.h")
+    fi
     NGINX_PUSHBASE=$ngver
     echo "$DETECT_NGXVER"
   else
-    DETECT_NGXVER=$(awk '/define nginx_version  / {print $3}' "/svr-setup/nginx-${NGINX_VERSION}/src/core/nginx.h")
+    if [[ "$FREENGINX_INSTALL" = [yY] ]]; then
+      DETECT_NGXVER=$(awk '/define nginx_version  / {print $3}' "/svr-setup/freenginx-${NGINX_VERSION}/src/core/nginx.h")
+    else
+      DETECT_NGXVER=$(awk '/define nginx_version  / {print $3}' "/svr-setup/nginx-${NGINX_VERSION}/src/core/nginx.h")
+    fi
     NGINX_PUSHBASE=$NGINX_VERSION
     echo "$DETECT_NGXVER"
   fi
@@ -163,11 +187,19 @@ ngx_renegotiate_patch() {
 ngx_prioritizechacha_patch() {
   {
   if [ "$ngver" ]; then
-    DETECT_NGXVER=$(awk '/define nginx_version  / {print $3}' "/svr-setup/nginx-$ngver/src/core/nginx.h")
+    if [[ "$FREENGINX_INSTALL" = [yY] ]]; then
+      DETECT_NGXVER=$(awk '/define nginx_version  / {print $3}' "/svr-setup/freenginx-$ngver/src/core/nginx.h")
+    else
+      DETECT_NGXVER=$(awk '/define nginx_version  / {print $3}' "/svr-setup/nginx-$ngver/src/core/nginx.h")
+    fi
     NGINX_PUSHBASE=$ngver
     echo "$DETECT_NGXVER"
   else
-    DETECT_NGXVER=$(awk '/define nginx_version  / {print $3}' "/svr-setup/nginx-${NGINX_VERSION}/src/core/nginx.h")
+    if [[ "$FREENGINX_INSTALL" = [yY] ]]; then
+      DETECT_NGXVER=$(awk '/define nginx_version  / {print $3}' "/svr-setup/freenginx-${NGINX_VERSION}/src/core/nginx.h")
+    else
+      DETECT_NGXVER=$(awk '/define nginx_version  / {print $3}' "/svr-setup/nginx-${NGINX_VERSION}/src/core/nginx.h")
+    fi
     NGINX_PUSHBASE=$NGINX_VERSION
     echo "$DETECT_NGXVER"
   fi
@@ -191,17 +223,29 @@ ngx_hpack_patch() {
   # fi
   {
   if [[ "$ngver" && "$ngver" = 'master-google' ]]; then
-    DETECT_NGXVER=$(awk '/define nginx_version  / {print $3}' "/svr-setup/nginx-$ngver/src/core/nginx.h")
+    if [[ "$FREENGINX_INSTALL" = [yY] ]]; then
+      DETECT_NGXVER=$(awk '/define nginx_version  / {print $3}' "/svr-setup/freenginx-$ngver/src/core/nginx.h")
+    else
+      DETECT_NGXVER=$(awk '/define nginx_version  / {print $3}' "/svr-setup/nginx-$ngver/src/core/nginx.h")
+    fi
     NGINX_PUSHBASE=$ngver
     echo "$DETECT_NGXVER"
     NGX_HPACK_OPT=""
     NGINX_HPACK='n'
   elif [ "$ngver" ]; then
-    DETECT_NGXVER=$(awk '/define nginx_version  / {print $3}' "/svr-setup/nginx-$ngver/src/core/nginx.h")
+    if [[ "$FREENGINX_INSTALL" = [yY] ]]; then
+      DETECT_NGXVER=$(awk '/define nginx_version  / {print $3}' "/svr-setup/freenginx-$ngver/src/core/nginx.h")
+    else
+      DETECT_NGXVER=$(awk '/define nginx_version  / {print $3}' "/svr-setup/nginx-$ngver/src/core/nginx.h")
+    fi
     NGINX_PUSHBASE=$ngver
     echo "$DETECT_NGXVER"
   else
-    DETECT_NGXVER=$(awk '/define nginx_version  / {print $3}' "/svr-setup/nginx-${NGINX_VERSION}/src/core/nginx.h")
+    if [[ "$FREENGINX_INSTALL" = [yY] ]]; then
+      DETECT_NGXVER=$(awk '/define nginx_version  / {print $3}' "/svr-setup/freenginx-${NGINX_VERSION}/src/core/nginx.h")
+    else
+      DETECT_NGXVER=$(awk '/define nginx_version  / {print $3}' "/svr-setup/nginx-${NGINX_VERSION}/src/core/nginx.h")
+    fi
     NGINX_PUSHBASE=$NGINX_VERSION
     echo "$DETECT_NGXVER"
   fi
@@ -352,11 +396,19 @@ ngx_hpack_patch() {
 ngx_httppush_patch() {
   {
   if [ "$ngver" ]; then
-    DETECT_NGXVER=$(awk '/define nginx_version  / {print $3}' "/svr-setup/nginx-$ngver/src/core/nginx.h")
+    if [[ "$FREENGINX_INSTALL" = [yY] ]]; then
+      DETECT_NGXVER=$(awk '/define nginx_version  / {print $3}' "/svr-setup/freenginx-$ngver/src/core/nginx.h")
+    else
+      DETECT_NGXVER=$(awk '/define nginx_version  / {print $3}' "/svr-setup/nginx-$ngver/src/core/nginx.h")
+    fi
     NGINX_PUSHBASE=$ngver
     echo "$DETECT_NGXVER"
   else
-    DETECT_NGXVER=$(awk '/define nginx_version  / {print $3}' "/svr-setup/nginx-${NGINX_VERSION}/src/core/nginx.h")
+    if [[ "$FREENGINX_INSTALL" = [yY] ]]; then
+      DETECT_NGXVER=$(awk '/define nginx_version  / {print $3}' "/svr-setup/freenginx-${NGINX_VERSION}/src/core/nginx.h")
+    else
+      DETECT_NGXVER=$(awk '/define nginx_version  / {print $3}' "/svr-setup/nginx-${NGINX_VERSION}/src/core/nginx.h")
+    fi
     NGINX_PUSHBASE=$NGINX_VERSION
     echo "$DETECT_NGXVER"
   fi
@@ -382,11 +434,19 @@ ngx_httppush_patch() {
 ngx_fingerprint_patch() {
   {
   if [ "$ngver" ]; then
-    DETECT_NGXVER=$(awk '/define nginx_version  / {print $3}' "/svr-setup/nginx-$ngver/src/core/nginx.h")
+    if [[ "$FREENGINX_INSTALL" = [yY] ]]; then
+      DETECT_NGXVER=$(awk '/define nginx_version  / {print $3}' "/svr-setup/freenginx-$ngver/src/core/nginx.h")
+    else
+      DETECT_NGXVER=$(awk '/define nginx_version  / {print $3}' "/svr-setup/nginx-$ngver/src/core/nginx.h")
+    fi
     NGINX_FINGERPRINT_BASE=$ngver
     echo "$DETECT_NGXVER"
   else
-    DETECT_NGXVER=$(awk '/define nginx_version  / {print $3}' "/svr-setup/nginx-${NGINX_VERSION}/src/core/nginx.h")
+    if [[ "$FREENGINX_INSTALL" = [yY] ]]; then
+      DETECT_NGXVER=$(awk '/define nginx_version  / {print $3}' "/svr-setup/freenginx-${NGINX_VERSION}/src/core/nginx.h")
+    else
+      DETECT_NGXVER=$(awk '/define nginx_version  / {print $3}' "/svr-setup/nginx-${NGINX_VERSION}/src/core/nginx.h")
+    fi
     NGINX_FINGERPRINT_BASE=$NGINX_VERSION
     echo "$DETECT_NGXVER"
   fi
@@ -415,10 +475,18 @@ ngx_fingerprint_patch() {
 ngx_headers_more_patch() {
   {
   if [ "$ngver" ]; then
-    DETECT_NGXVER=$(awk '/define nginx_version  / {print $3}' "/svr-setup/nginx-$ngver/src/core/nginx.h")
+    if [[ "$FREENGINX_INSTALL" = [yY] ]]; then
+      DETECT_NGXVER=$(awk '/define nginx_version  / {print $3}' "/svr-setup/freenginx-$ngver/src/core/nginx.h")
+    else
+      DETECT_NGXVER=$(awk '/define nginx_version  / {print $3}' "/svr-setup/nginx-$ngver/src/core/nginx.h")
+    fi
     echo "$DETECT_NGXVER"
   else
-    DETECT_NGXVER=$(awk '/define nginx_version  / {print $3}' "/svr-setup/nginx-${NGINX_VERSION}/src/core/nginx.h")
+    if [[ "$FREENGINX_INSTALL" = [yY] ]]; then
+      DETECT_NGXVER=$(awk '/define nginx_version  / {print $3}' "/svr-setup/freenginx-${NGINX_VERSION}/src/core/nginx.h")
+    else
+      DETECT_NGXVER=$(awk '/define nginx_version  / {print $3}' "/svr-setup/nginx-${NGINX_VERSION}/src/core/nginx.h")
+    fi
     echo "$DETECT_NGXVER"
   fi
   if [[ "$DETECT_NGXVER" -ge '1023000' && "$NGINX_HEADERSMORE" = '0.33' ]]; then
@@ -445,10 +513,18 @@ ngx_headers_more_patch() {
 ngx_srcache_patch() {
   {
   if [ "$ngver" ]; then
-    DETECT_NGXVER=$(awk '/define nginx_version  / {print $3}' "/svr-setup/nginx-$ngver/src/core/nginx.h")
+    if [[ "$FREENGINX_INSTALL" = [yY] ]]; then
+      DETECT_NGXVER=$(awk '/define nginx_version  / {print $3}' "/svr-setup/freenginx-$ngver/src/core/nginx.h")
+    else
+      DETECT_NGXVER=$(awk '/define nginx_version  / {print $3}' "/svr-setup/nginx-$ngver/src/core/nginx.h")
+    fi
     echo "$DETECT_NGXVER"
   else
-    DETECT_NGXVER=$(awk '/define nginx_version  / {print $3}' "/svr-setup/nginx-${NGINX_VERSION}/src/core/nginx.h")
+    if [[ "$FREENGINX_INSTALL" = [yY] ]]; then
+      DETECT_NGXVER=$(awk '/define nginx_version  / {print $3}' "/svr-setup/freenginx-${NGINX_VERSION}/src/core/nginx.h")
+    else
+      DETECT_NGXVER=$(awk '/define nginx_version  / {print $3}' "/svr-setup/nginx-${NGINX_VERSION}/src/core/nginx.h")
+    fi
     echo "$DETECT_NGXVER"
   fi
   if [[ "$DETECT_NGXVER" -ge '1023000' && "$ORESTY_SRCCACHEVER" = '0.32' ]]; then
@@ -475,10 +551,18 @@ ngx_srcache_patch() {
 ngx_cachepurge_patch() {
   {
   if [ "$ngver" ]; then
-    DETECT_NGXVER=$(awk '/define nginx_version  / {print $3}' "/svr-setup/nginx-$ngver/src/core/nginx.h")
+    if [[ "$FREENGINX_INSTALL" = [yY] ]]; then
+      DETECT_NGXVER=$(awk '/define nginx_version  / {print $3}' "/svr-setup/freenginx-$ngver/src/core/nginx.h")
+    else
+      DETECT_NGXVER=$(awk '/define nginx_version  / {print $3}' "/svr-setup/nginx-$ngver/src/core/nginx.h")
+    fi
     echo "$DETECT_NGXVER"
   else
-    DETECT_NGXVER=$(awk '/define nginx_version  / {print $3}' "/svr-setup/nginx-${NGINX_VERSION}/src/core/nginx.h")
+    if [[ "$FREENGINX_INSTALL" = [yY] ]]; then
+      DETECT_NGXVER=$(awk '/define nginx_version  / {print $3}' "/svr-setup/freenginx-${NGINX_VERSION}/src/core/nginx.h")
+    else
+      DETECT_NGXVER=$(awk '/define nginx_version  / {print $3}' "/svr-setup/nginx-${NGINX_VERSION}/src/core/nginx.h")
+    fi
     echo "$DETECT_NGXVER"
   fi
   if [[ "$NGINX_CACHEPURGE" = [yY] && "$DETECT_NGXVER" -ge '1011006' && "$NGINX_CACHEPURGEVER" = 2.[3] ]]; then
@@ -505,10 +589,18 @@ ngx_cachepurge_patch() {
 ngx_luaonetwothree_patch() {
   {
   if [ "$ngver" ]; then
-    DETECT_NGXVER=$(awk '/define nginx_version  / {print $3}' "/svr-setup/nginx-$ngver/src/core/nginx.h")
+    if [[ "$FREENGINX_INSTALL" = [yY] ]]; then
+      DETECT_NGXVER=$(awk '/define nginx_version  / {print $3}' "/svr-setup/freenginx-$ngver/src/core/nginx.h")
+    else
+      DETECT_NGXVER=$(awk '/define nginx_version  / {print $3}' "/svr-setup/nginx-$ngver/src/core/nginx.h")
+    fi
     echo "$DETECT_NGXVER"
   else
-    DETECT_NGXVER=$(awk '/define nginx_version  / {print $3}' "/svr-setup/nginx-${NGINX_VERSION}/src/core/nginx.h")
+    if [[ "$FREENGINX_INSTALL" = [yY] ]]; then
+      DETECT_NGXVER=$(awk '/define nginx_version  / {print $3}' "/svr-setup/freenginx-${NGINX_VERSION}/src/core/nginx.h")
+    else
+      DETECT_NGXVER=$(awk '/define nginx_version  / {print $3}' "/svr-setup/nginx-${NGINX_VERSION}/src/core/nginx.h")
+    fi
     echo "$DETECT_NGXVER"
   fi
   if [[ "$ORESTY_LUANGINX" = [yY] && "$DETECT_NGXVER" -ge '1023000' && "$ORESTY_LUANGINXVER" = '0.10.21' ]]; then
@@ -535,10 +627,18 @@ ngx_luaonetwothree_patch() {
 luanginx_patch() {
   {
   if [ "$ngver" ]; then
-    DETECT_NGXVER=$(awk '/define nginx_version  / {print $3}' "/svr-setup/nginx-$ngver/src/core/nginx.h")
+    if [[ "$FREENGINX_INSTALL" = [yY] ]]; then
+      DETECT_NGXVER=$(awk '/define nginx_version  / {print $3}' "/svr-setup/freenginx-$ngver/src/core/nginx.h")
+    else
+      DETECT_NGXVER=$(awk '/define nginx_version  / {print $3}' "/svr-setup/nginx-$ngver/src/core/nginx.h")
+    fi
     echo "$DETECT_NGXVER"
   else
-    DETECT_NGXVER=$(awk '/define nginx_version  / {print $3}' "/svr-setup/nginx-${NGINX_VERSION}/src/core/nginx.h")
+    if [[ "$FREENGINX_INSTALL" = [yY] ]]; then
+      DETECT_NGXVER=$(awk '/define nginx_version  / {print $3}' "/svr-setup/freenginx-${NGINX_VERSION}/src/core/nginx.h")
+    else
+      DETECT_NGXVER=$(awk '/define nginx_version  / {print $3}' "/svr-setup/nginx-${NGINX_VERSION}/src/core/nginx.h")
+    fi
     echo "$DETECT_NGXVER"
   fi
   if [[ "$ORESTY_LUANGINX" = [yY] && "$DETECT_NGXVER" -ge '1011011' && "$ORESTY_LUANGINXVER" = '0.10.7' ]] || [[ "$ORESTY_LUANGINX" = [yY] && "$DETECT_NGXVER" -ge '1011011' && "$ORESTY_LUANGINXVER" = '0.10.8' ]]; then
@@ -578,10 +678,18 @@ luanginx_patch() {
 echonginx_patch() {
   {
   if [ "$ngver" ]; then
-    DETECT_NGXVER=$(awk '/define nginx_version  / {print $3}' "/svr-setup/nginx-$ngver/src/core/nginx.h")
+    if [[ "$FREENGINX_INSTALL" = [yY] ]]; then
+      DETECT_NGXVER=$(awk '/define nginx_version  / {print $3}' "/svr-setup/freenginx-$ngver/src/core/nginx.h")
+    else
+      DETECT_NGXVER=$(awk '/define nginx_version  / {print $3}' "/svr-setup/nginx-$ngver/src/core/nginx.h")
+    fi
     echo "$DETECT_NGXVER"
   else
-    DETECT_NGXVER=$(awk '/define nginx_version  / {print $3}' "/svr-setup/nginx-${NGINX_VERSION}/src/core/nginx.h")
+    if [[ "$FREENGINX_INSTALL" = [yY] ]]; then
+      DETECT_NGXVER=$(awk '/define nginx_version  / {print $3}' "/svr-setup/freenginx-${NGINX_VERSION}/src/core/nginx.h")
+    else
+      DETECT_NGXVER=$(awk '/define nginx_version  / {print $3}' "/svr-setup/nginx-${NGINX_VERSION}/src/core/nginx.h")
+    fi
     echo "$DETECT_NGXVER"
   fi
   if [[ "$NGINX_OPENRESTY" = [yY] && "$DETECT_NGXVER" -ge '1011011' && "$ORESTY_ECHOVER" = '0.60' ]]; then
@@ -602,10 +710,18 @@ echonginx_patch() {
 ngxopenresty_patch() {
   {
   if [ "$ngver" ]; then
-    DETECT_NGXVER=$(awk '/define nginx_version  / {print $3}' "/svr-setup/nginx-$ngver/src/core/nginx.h")
+    if [[ "$FREENGINX_INSTALL" = [yY] ]]; then
+      DETECT_NGXVER=$(awk '/define nginx_version  / {print $3}' "/svr-setup/freenginx-$ngver/src/core/nginx.h")
+    else
+      DETECT_NGXVER=$(awk '/define nginx_version  / {print $3}' "/svr-setup/nginx-$ngver/src/core/nginx.h")
+    fi
     echo "$DETECT_NGXVER"
   else
-    DETECT_NGXVER=$(awk '/define nginx_version  / {print $3}' "/svr-setup/nginx-${NGINX_VERSION}/src/core/nginx.h")
+    if [[ "$FREENGINX_INSTALL" = [yY] ]]; then
+      DETECT_NGXVER=$(awk '/define nginx_version  / {print $3}' "/svr-setup/freenginx-${NGINX_VERSION}/src/core/nginx.h")
+    else
+      DETECT_NGXVER=$(awk '/define nginx_version  / {print $3}' "/svr-setup/nginx-${NGINX_VERSION}/src/core/nginx.h")
+    fi
     echo "$DETECT_NGXVER"
   fi
   # apply patches for nginx => 1.11.6
@@ -661,9 +777,17 @@ patchnginx() {
   # detect nginx <=1.11.3 or => 1.11.0 as 1.11.4+ has fix for openssl 1.1 so no patching needed
   # http://hg.nginx.org/nginx/rev/1891b2892b68
   if [ "$ngver" ]; then
-    DETECT_NGXVER=$(awk '/define nginx_version  / {print $3}' "/svr-setup/nginx-$ngver/src/core/nginx.h")
+    if [[ "$FREENGINX_INSTALL" = [yY] ]]; then
+      DETECT_NGXVER=$(awk '/define nginx_version  / {print $3}' "/svr-setup/freenginx-$ngver/src/core/nginx.h")
+    else
+      DETECT_NGXVER=$(awk '/define nginx_version  / {print $3}' "/svr-setup/nginx-$ngver/src/core/nginx.h")
+    fi
   else
-    DETECT_NGXVER=$(awk '/define nginx_version  / {print $3}' "/svr-setup/nginx-${NGINX_VERSION}/src/core/nginx.h")
+    if [[ "$FREENGINX_INSTALL" = [yY] ]]; then
+      DETECT_NGXVER=$(awk '/define nginx_version  / {print $3}' "/svr-setup/freenginx-${NGINX_VERSION}/src/core/nginx.h")
+    else
+      DETECT_NGXVER=$(awk '/define nginx_version  / {print $3}' "/svr-setup/nginx-${NGINX_VERSION}/src/core/nginx.h")
+    fi
   fi
   if [[ "$DETECTOPENSSL_ONEZERO" = '1.1' ]] && [[ "$DETECT_NGXVER" -le '1011003' && "$DETECT_NGXVER" -ge '1011000' ]]; then
     if [[ -f "$CUR_DIR/patches/nginx/openssl-110pre6.patch" && -f "$CUR_DIR/patches/nginx/openssl-110ticket.patch" ]]; then
@@ -754,9 +878,17 @@ patchnginx() {
   fi
   if [[ "$NGINX_DYNAMICTLS" = [yY] ]]; then
      if [ "$ngver" ]; then
-       DETECT_NGXVER=$(awk '/define nginx_version  / {print $3}' "/svr-setup/nginx-$ngver/src/core/nginx.h")
+       if [[ "$FREENGINX_INSTALL" = [yY] ]]; then
+      DETECT_NGXVER=$(awk '/define nginx_version  / {print $3}' "/svr-setup/freenginx-$ngver/src/core/nginx.h")
+    else
+      DETECT_NGXVER=$(awk '/define nginx_version  / {print $3}' "/svr-setup/nginx-$ngver/src/core/nginx.h")
+    fi
      else
-       DETECT_NGXVER=$(awk '/define nginx_version  / {print $3}' "/svr-setup/nginx-${NGINX_VERSION}/src/core/nginx.h")
+       if [[ "$FREENGINX_INSTALL" = [yY] ]]; then
+      DETECT_NGXVER=$(awk '/define nginx_version  / {print $3}' "/svr-setup/freenginx-${NGINX_VERSION}/src/core/nginx.h")
+    else
+      DETECT_NGXVER=$(awk '/define nginx_version  / {print $3}' "/svr-setup/nginx-${NGINX_VERSION}/src/core/nginx.h")
+    fi
      fi
      if [[ "$DETECT_NGXVER" -le '1011004' && "$DETECT_NGXVER" -ge '1011000' ]]; then
       NGINXTLSPATCH_NAME='nginx__dynamic_tls_records.patch'

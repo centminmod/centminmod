@@ -436,7 +436,7 @@ MYSQLTUNER_LINK="${LOCALCENTMINMOD_MIRROR}/centminmodparts/mysqltuner/mysqltuner
 
 NGX_LINKFILE="nginx-${NGINX_VERSION}.tar.gz"
 NGX_LINK="https://nginx.org/download/${NGX_LINKFILE}"
-FREENGX_LINKFILE="nginx-${FREENGINX_VERSION}.tar.gz"
+FREENGX_LINKFILE="freenginx-${FREENGINX_VERSION}.tar.gz"
 FREENGX_LINK="https://freenginx.org/download/${FREENGX_LINKFILE}"
 
 NGX_VTSLINK='https://github.com/vozlt/nginx-module-vts.git'
