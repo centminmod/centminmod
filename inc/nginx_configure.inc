@@ -3192,7 +3192,7 @@ fi
           else
             FLTO_OPT=""
           fi
-          if [[ "$FLTO_TOTALMEMMB" -le '3650' ]]; then
+          if [[ "$FLTO_TOTALMEMMB" -le '3650' || "$INITIALINSTALL" = [yY] ]]; then
             FLTO_OPT=""
           fi
         fi
@@ -3215,7 +3215,7 @@ fi
           else
             FLTO_OPT=""
           fi
-          if [[ "$FLTO_TOTALMEMMB" -le '3650' ]]; then
+          if [[ "$FLTO_TOTALMEMMB" -le '3650' || "$INITIALINSTALL" = [yY] ]]; then
             FLTO_OPT=""
           fi
         fi
