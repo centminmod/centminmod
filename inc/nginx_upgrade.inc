@@ -629,6 +629,9 @@ else
         echo
         exit
     fi
+    if [[ "$ngver" = 'quic' || "$NGINX_QUIC_SUPPORT" = [yY] ]]
+      OPENSSL_SYSTEM_USE='n'
+    fi
 
     service nginx reload >/dev/null 2>&1
 

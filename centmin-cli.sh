@@ -30,7 +30,7 @@ DT=$(date +"%d%m%y-%H%M%S")
 branchname='130.00beta01'
 SCRIPT_MAJORVER='130'
 SCRIPT_MINORVER='00'
-SCRIPT_INCREMENTVER='633'
+SCRIPT_INCREMENTVER='634'
 SCRIPT_VERSIONSHORT="${branchname}"
 SCRIPT_VERSION="${SCRIPT_VERSIONSHORT}.b${SCRIPT_INCREMENTVER}"
 SCRIPT_DATE='24/02/24'
@@ -1187,10 +1187,10 @@ NGINX_PRIORITIZECHACHA='n' # https://community.centminmod.com/posts/67042/
 SSL_PROTOCOL_MODERN='y'         # switch Nginx HTTPS to disabel TLSv1.0 & TLSv1.1 by default and support TLSv1.2 minimum
 DISABLE_TLSONEZERO_PROTOCOL='n' # disable TLS 1.0 protocol by default industry is moving to deprecate for security
 NOSOURCEOPENSSL='y'        # set to 'y' to disable OpenSSL source compile for system default YUM package setup
-OPENSSL_VERSION='1.1.1w'   # Use this version of OpenSSL http://openssl.org/
-OPENSSL_VERSIONFALLBACK='1.1.1w'   # fallback if OPENSSL_VERSION uses openssl 1.1.x branch
-OPENSSL_VERSION_OLDOVERRIDE='1.1.1w' # override version if persist config OPENSSL_VERSION variable is out of date
-OPENSSL_QUIC_VERSION='OpenSSL_1_1_1w+quic'
+OPENSSL_VERSION='1.1.1w'                   # Use this version of OpenSSL http://openssl.org/
+OPENSSL_VERSIONFALLBACK='1.1.1w'           # fallback if OPENSSL_VERSION uses openssl 1.1.x branch
+OPENSSL_VERSION_OLDOVERRIDE='1.1.1w'       # override version if persist config OPENSSL_VERSION variable is out of date
+OPENSSL_QUIC_VERSION='OpenSSL_1_1_1w+quic' # quicTLS OpenSSL fork version
 OPENSSL_THREADS='y'        # control whether openssl 1.1 branch uses threading or not
 OPENSSL_TLSONETHREE='y'    # whether OpenSSL 1.1.1 builds enable TLSv1.3
 OPENSSL_CUSTOMPATH='/opt/openssl'  # custom directory path for OpenSSL 1.0.2+
@@ -1745,6 +1745,11 @@ fi
 #echo "march_flag=$march_flag"
 #echo
 
+if [[ "$CENTOS_EIGHT" -eq '8' ]]; then
+  # use system OpenSSL 1.1.1 by default
+  OPENSSL_SYSTEM_USE='y'
+fi
+
 if [[ "$CENTOS_NINE" -eq '9' ]]; then
   # el9 OSes will default to MariaDB 10.6 LTS releases
   MARIADB_INSTALLTENTWO='n'
@@ -1752,6 +1757,8 @@ if [[ "$CENTOS_NINE" -eq '9' ]]; then
   MARIADB_INSTALLTENFOUR='n'
   MARIADB_INSTALLTENFIVE='n'
   MARIADB_INSTALLTENSIX='y'
+  # use system OpenSSL 3.0.7 by default
+  OPENSSL_SYSTEM_USE='y'
 fi
 
 if [[ "$VPS_GEOIPCHECK_V4" = [yY] ]]; then
@@ -1982,6 +1989,8 @@ if [[ "$LIBRESSL_SWITCH" = [yY] ]]; then
   OPENSSL_SYSTEM_USE='n'
 elif [[ "$BORINGSSL_SWITCH" = [yY] ]]; then
   # don't use system OpenSSL for Nginx
+  OPENSSL_SYSTEM_USE='n'
+elif [[ "$ngver" = 'quic' || "$NGINX_QUIC_SUPPORT" = [yY] ]]
   OPENSSL_SYSTEM_USE='n'
 fi
 
