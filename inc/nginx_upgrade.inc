@@ -629,7 +629,7 @@ else
         echo
         exit
     fi
-    if [[ "$ngver" = 'quic' || "$NGINX_QUIC_SUPPORT" = [yY] ]]
+    if [[ "$ngver" = 'quic' || "$NGINX_QUIC_SUPPORT" = [yY] ]]; then
       OPENSSL_SYSTEM_USE='n'
     fi
 
