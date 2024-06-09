@@ -30,7 +30,7 @@ DT=$(date +"%d%m%y-%H%M%S")
 branchname='130.00beta01'
 SCRIPT_MAJORVER='130'
 SCRIPT_MINORVER='00'
-SCRIPT_INCREMENTVER='634'
+SCRIPT_INCREMENTVER='635'
 SCRIPT_VERSIONSHORT="${branchname}"
 SCRIPT_VERSION="${SCRIPT_VERSIONSHORT}.b${SCRIPT_INCREMENTVER}"
 SCRIPT_DATE='24/02/24'
@@ -1990,7 +1990,7 @@ if [[ "$LIBRESSL_SWITCH" = [yY] ]]; then
 elif [[ "$BORINGSSL_SWITCH" = [yY] ]]; then
   # don't use system OpenSSL for Nginx
   OPENSSL_SYSTEM_USE='n'
-elif [[ "$ngver" = 'quic' || "$NGINX_QUIC_SUPPORT" = [yY] ]]
+elif [[ "$ngver" = 'quic' || "$NGINX_QUIC_SUPPORT" = [yY] ]]; then
   OPENSSL_SYSTEM_USE='n'
 fi
 
