@@ -30,7 +30,7 @@ DT=$(date +"%d%m%y-%H%M%S")
 branchname='130.00beta01'
 SCRIPT_MAJORVER='130'
 SCRIPT_MINORVER='00'
-SCRIPT_INCREMENTVER='636'
+SCRIPT_INCREMENTVER='637'
 SCRIPT_VERSIONSHORT="${branchname}"
 SCRIPT_VERSION="${SCRIPT_VERSIONSHORT}.b${SCRIPT_INCREMENTVER}"
 SCRIPT_DATE='24/02/24'
@@ -1218,6 +1218,11 @@ LIBRESSL_VERSION='3.8.3'   # Use this version of LibreSSL http://www.libressl.or
 BORINGSSL_SWITCH='n'       # if set to 'y' it overrides OpenSSL as the default static compiled option for Nginx server
 BORINGSSL_SHARED='y'       # build boringssl as shared library so nginx can dynamically compile boringssl
 BORINGSSL_DIR="/opt"
+
+# AWS-LC
+AWS_LC_SWITCH='n'             # if set to 'y' overrides OpenSSL as default for Nginx https://github.com/aws/aws-lc
+AWS_LC_DIR="/opt"
+AWS_LC_SWITCH_BUILD_TESTS='n' # run AWS-LC build tests
 ##################################
 
 # Choose whether to compile Nginx --with-google_perftools_module
@@ -1759,6 +1764,10 @@ if [[ "$CENTOS_NINE" -eq '9' ]]; then
   MARIADB_INSTALLTENSIX='y'
   # use system OpenSSL 3.0.7 by default
   OPENSSL_SYSTEM_USE='y'
+fi
+
+if [[ "$CENTOS_SEVEN" -eq '7' ]]; then
+  AWS_LC_SWITCH='n'
 fi
 
 if [[ "$VPS_GEOIPCHECK_V4" = [yY] ]]; then

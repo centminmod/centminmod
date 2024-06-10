@@ -641,7 +641,7 @@ if [[ "$CLOUDFLARE_PATCHSSL" = [yY] && "$DETECTOPENSSL_ONEZERO" = '1.1' ]] && [[
     fi
 fi # CLOUDFLARE_PATCHSSL
 
-if [[ "$NGINX_TLS_FINGERPRINT" = [yY] && "$DETECTOPENSSL_ONEONE" && "$DETECTOPENSSL_ONEONE" = '1.1.1' ]] && [[ "$LIBRESSL_SWITCH" = [nN] ]] && [[ "$BORINGSSL_SWITCH" = [nN] ]]; then
+if [[ "$NGINX_TLS_FINGERPRINT" = [yY] && "$DETECTOPENSSL_ONEONE" && "$DETECTOPENSSL_ONEONE" = '1.1.1' ]] && [[ "$AWS_LC_SWITCH" = [nN] ]] && [[ "$LIBRESSL_SWITCH" = [nN] ]] && [[ "$BORINGSSL_SWITCH" = [nN] ]]; then
     if [ -f "$(which figlet)" ]; then
          figlet -ckf standard "OpenSSL 1.1.1 branch nginx-ssl-fingerprint module Patch"
      fi
@@ -1278,7 +1278,7 @@ fi
         echo "" >> ${CENTMINLOGDIR}/centminmod_libresslinstalltime_${DT}.log
         echo "LibreSSL Install Time: $LIBRESSLINSTALLTIME seconds" >> ${CENTMINLOGDIR}/centminmod_libresslinstalltime_${DT}.log
         ls -lah ${CENTMINLOGDIR}/centminmod_libresslinstalltime_${DT}.log
-    elif [[ "$ngver" = 'quic' || "$NGINX_QUIC_SUPPORT" = [yY] ]] && [[ "$LIBRESSL_SWITCH" = [nN] ]] && [[ "$BORINGSSL_SWITCH" = [nN] ]]; then
+    elif [[ "$ngver" = 'quic' || "$NGINX_QUIC_SUPPORT" = [yY] ]] && [[ "$AWS_LC_SWITCH" = [nN] ]] && [[ "$LIBRESSL_SWITCH" = [nN] ]] && [[ "$BORINGSSL_SWITCH" = [nN] ]]; then
       if [[ "$ngver" = 'quic' || "$NGINX_QUIC_SUPPORT" = [yY] ]]; then
         opensslinstallstarttime=$(TZ=UTC date +%s.%N)
 
@@ -1437,7 +1437,7 @@ fi
       else
         echo "Skip OpenSSL quictls fork Compile OPENSSLVER_CHECK=$OPENSSLVER_CHECK matches OPENSSL_VERSION=$OPENSSL_VERSION" | tee "${CENTMINLOGDIR}/centminmod_opensslinstall_skipped_${DT}.log"
       fi
-    elif [[ "$LIBRESSL_SWITCH" = [nN] ]] && [[ "$BORINGSSL_SWITCH" = [nN] ]]; then
+    elif [[ "$AWS_LC_SWITCH" = [nN] ]] && [[ "$LIBRESSL_SWITCH" = [nN] ]] && [[ "$BORINGSSL_SWITCH" = [nN] ]]; then
       OPENSSLVER_CHECK=$(/opt/openssl/bin/openssl version | awk '{print $2}')
       if [[ "$OPENSSLVER_CHECK" != "$OPENSSL_VERSION" ]] || [[ "$OPENSSL_FORCECOMPILE" = [yY] ]] || [[ "$NGINX_TLS_FINGERPRINT" = [yY] ]]; then
         opensslinstallstarttime=$(TZ=UTC date +%s.%N)
@@ -1593,7 +1593,54 @@ fi
       else
         echo "Skip OpenSSL Compile OPENSSLVER_CHECK=$OPENSSLVER_CHECK matches OPENSSL_VERSION=$OPENSSL_VERSION" | tee "${CENTMINLOGDIR}/centminmod_opensslinstall_skipped_${DT}.log"
       fi
-    elif [[ "$BORINGSSL_SWITCH" = [yY] ]]; then
+    elif [[ "$AWS_LC_SWITCH" = [yY] && "$BORINGSSL_SWITCH" = [nN] ]]; then
+        aws_lc_installstarttime=$(TZ=UTC date +%s.%N)
+        OPENSSL_SYSTEM_USE='n'
+        crypto_gcc
+        dnf install -y cmake3 ninja-build clang perl golang
+        if [ -f "$(which figlet)" ]; then
+            figlet -ckf standard "Compiling AWS-LC"
+        fi
+
+        echo "Compiling AWS-LC..."
+        cmake_alternatives
+        pushd "${DIR_TMP}"
+        rm -rf aws-lc
+        rm -rf aws-lc-build
+        git clone https://github.com/aws/aws-lc.git
+        mkdir aws-lc-build && cd aws-lc-build
+        unset CC
+        unset CXX
+        unset CFLAGS
+        export CMAKE_C_COMPILER="gcc"
+        export CMAKE_CXX_COMPILER="g++"
+        export CC="gcc"
+        export CXX="g++"
+        # export GO_EXECUTABLE="/usr/local/go/bin/go"
+        mkdir -p /home/buildtmp
+        chmod 1777 /home/buildtmp
+        export TMPDIR=/home/buildtmp
+        # ln -s /usr/local/go/bin/go /usr/local/bin/go
+        echo
+        echo "time cmake3 -GNinja -DCMAKE_BUILD_TYPE=RelWithDebInfo -DCMAKE_POSITION_INDEPENDENT_CODE=TRUE -DBUILD_SHARED_LIBS=1 -DCMAKE_INSTALL_PREFIX=${AWS_LC_DIR}/aws-lc-install ../aws-lc"
+        time cmake3 -GNinja -DCMAKE_BUILD_TYPE=RelWithDebInfo -DCMAKE_POSITION_INDEPENDENT_CODE=TRUE -DBUILD_SHARED_LIBS=1 -DCMAKE_INSTALL_PREFIX=${AWS_LC_DIR}/aws-lc-install ../aws-lc
+        if [[ "$AWS_LC_SWITCH_BUILD_TESTS" = [yY] ]]; then
+            echo
+            echo "time ninja-build run_tests"
+            time ninja-build run_tests
+        fi
+        echo
+        echo "time ninja-build install"
+        time ninja-build install
+        unset TMPDIR
+        aws_lc_installendtime=$(TZ=UTC date +%s.%N)
+        AWS_LC_INSTALLTIME=$(echo "scale=2;$aws_lc_installendtime - $aws_lc_installstarttime"|bc )
+
+        echo "" >> ${CENTMINLOGDIR}/centminmod_aws_lc_installtime_${DT}.log
+        echo "BoringSSL Install Time: $AWS_LC_INSTALLTIME seconds" >> ${CENTMINLOGDIR}/centminmod_aws_lc_installtime_${DT}.log
+        ls -lah ${CENTMINLOGDIR}/centminmod_aws_lc_installtime_${DT}.log
+        popd
+    elif [[ "$BORINGSSL_SWITCH" = [yY] && "$AWS_LC_SWITCH" = [nN] ]]; then
         boringsslinstallstarttime=$(TZ=UTC date +%s.%N)
         OPENSSL_SYSTEM_USE='n'
         crypto_gcc

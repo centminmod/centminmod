@@ -766,6 +766,40 @@ ngx_dynamic_tls_message() {
      echo "######################################################################"
 }
 
+aws_lc_patch() {
+  if [[ "$AWS_LC_SWITCH" = [yY] ]]; then
+    echo
+    if [ ! -f aws-lc-nginx.patch ]; then
+      echo "download aws-lc-nginx.patch"
+      curl -sL https://github.com/aws/aws-lc/raw/main/tests/ci/integration/nginx_patch/aws-lc-nginx.patch -o aws-lc-nginx.patch
+      if [ ! $(grep 'OPENSSL_IS_AWSLC' src/event/ngx_event_openssl.h) ]; then
+        echo
+        echo "AWS-LC patch: patch -p1 < aws-lc-nginx.patch"
+        patch -p1 < aws-lc-nginx.patch
+      fi
+    fi
+    echo
+  fi
+}
+
+aws_lc_patch_make() {
+  if [[ "$AWS_LC_SWITCH" = [yY] && "$AWS_LC_SWITCH_TEST" = [yY] ]]; then
+    {
+    echo
+    if [ ! -f aws-lc-nginx-tests.patch ]; then
+      echo "download aws-lc-nginx-tests.patch"
+      curl -sL https://github.com/aws/aws-lc/raw/main/tests/ci/integration/nginx_tests_patch/aws-lc-nginx-tests.patch -o aws-lc-nginx-tests.patch
+      echo
+      if [ ! $(grep 'OPENSSL_IS_AWSLC' h3_ssl_early_data.t) ]; then
+        echo "AWS-LC patch: patch -p1 < aws-lc-nginx-tests.patch"
+        patch -p1 < aws-lc-nginx-tests.patch
+      fi
+    fi
+    echo
+    } 2>&1 | tee -a "${CENTMINLOGDIR}/patch_patchnginx_${DT}.log"
+  fi
+}
+
 patchnginx() {
   {
   sleep "$NGINXPATCH_DELAY"
@@ -988,6 +1022,7 @@ patchnginx() {
   ngx_srcache_patch
   ngx_headers_more_patch
   nginx_quic_patches
+  aws_lc_patch
 } 2>&1 | tee -a "${CENTMINLOGDIR}/patch_patchnginx_${DT}.log"
 }
 
