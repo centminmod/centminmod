@@ -1622,8 +1622,9 @@ fi
         export TMPDIR=/home/buildtmp
         # ln -s /usr/local/go/bin/go /usr/local/bin/go
         echo
-        echo "time cmake3 -GNinja -DCMAKE_BUILD_TYPE=RelWithDebInfo -DCMAKE_POSITION_INDEPENDENT_CODE=TRUE -DBUILD_SHARED_LIBS=1 -DCMAKE_INSTALL_PREFIX=${AWS_LC_DIR}/aws-lc-install ../aws-lc"
-        time cmake3 -GNinja -DCMAKE_BUILD_TYPE=RelWithDebInfo -DCMAKE_POSITION_INDEPENDENT_CODE=TRUE -DBUILD_SHARED_LIBS=1 -DCMAKE_INSTALL_PREFIX=${AWS_LC_DIR}/aws-lc-install ../aws-lc
+        ninja clean
+        echo "time cmake3 -GNinja -DCMAKE_BUILD_TYPE=RelWithDebInfo -DCMAKE_POSITION_INDEPENDENT_CODE=TRUE -DBUILD_SHARED_LIBS=1 -DCMAKE_INSTALL_PREFIX=${AWS_LC_DIR}/aws-lc-install -DCMAKE_INSTALL_RPATH=/opt/aws-lc-install/lib64 -DCMAKE_INSTALL_RPATH_USE_LINK_PATH=TRUE ../aws-lc"
+        time cmake3 -GNinja -DCMAKE_BUILD_TYPE=RelWithDebInfo -DCMAKE_POSITION_INDEPENDENT_CODE=TRUE -DBUILD_SHARED_LIBS=1 -DCMAKE_INSTALL_PREFIX=${AWS_LC_DIR}/aws-lc-install -DCMAKE_INSTALL_RPATH=/opt/aws-lc-install/lib64 -DCMAKE_INSTALL_RPATH_USE_LINK_PATH=TRUE ../aws-lc
         if [[ "$AWS_LC_SWITCH_BUILD_TESTS" = [yY] ]]; then
             echo
             echo "time ninja-build run_tests"
