@@ -187,7 +187,7 @@ detect_tlsonethree() {
     fi
   else
     if [[ "$FREENGINX_INSTALL" = [yY] ]]; then
-      NGINX_DIRINSTALL="$DIR_TMP/freenginx-${NGINX_VERSION}"
+      NGINX_DIRINSTALL="$DIR_TMP/freenginx-${FREENGINX_VERSION}"
     else
       NGINX_DIRINSTALL="$DIR_TMP/nginx-${NGINX_VERSION}"
     fi
@@ -271,9 +271,17 @@ detect_tlsonethree() {
 
 dynamicmodule_file() {
   if [ "$ngver" ]; then
-    NGINX_DIRINSTALL="$DIR_TMP/nginx-${ngver}"
+    if [[ "$FREENGINX_INSTALL" = [yY] ]]; then
+      NGINX_DIRINSTALL="$DIR_TMP/freenginx-${ngver}"
+    else
+      NGINX_DIRINSTALL="$DIR_TMP/nginx-${ngver}"
+    fi
   else
-    NGINX_DIRINSTALL="$DIR_TMP/nginx-${NGINX_VERSION}"
+    if [[ "$FREENGINX_INSTALL" = [yY] ]]; then
+      NGINX_DIRINSTALL="$DIR_TMP/freenginx-${FREENGINX_VERSION}"
+    else
+      NGINX_DIRINSTALL="$DIR_TMP/nginx-${NGINX_VERSION}"
+    fi
   fi
   NGX_DYNAMICCHECK=$(grep 'DYNAMIC_MODULES=' "$NGINX_DIRINSTALL/auto/options")
   if [ "$NGX_DYNAMICCHECK" ]; then

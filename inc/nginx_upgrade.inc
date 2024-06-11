@@ -384,7 +384,7 @@ fi
         fi
     else
         if [[ "$FREENGINX_INSTALL" = [yY] ]]; then
-            NGINX_DIRINSTALL="$DIR_TMP/freenginx-${NGINX_VERSION}"
+            NGINX_DIRINSTALL="$DIR_TMP/freenginx-${FREENGINX_VERSION}"
         else
             NGINX_DIRINSTALL="$DIR_TMP/nginx-${NGINX_VERSION}"
         fi
