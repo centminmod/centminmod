@@ -795,8 +795,9 @@ fi
     fi
     if [[ "$ngver" = 'quic' ]]; then
         rm -rf nginx-${ngver}*
-        mercurial_check
-        hg clone -b quic https://hg.nginx.org/nginx-quic nginx-quic
+        # mercurial_check
+        # hg clone -b quic https://hg.nginx.org/nginx-quic nginx-quic
+        git clone --depth=1 https://github.com/nginx/nginx/ nginx-quic
         mv nginx-quic/auto/configure nginx-quic/configure
     fi
     if [[ "$ngver" = 'master-google' ]]; then

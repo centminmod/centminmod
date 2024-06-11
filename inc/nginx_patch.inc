@@ -1021,7 +1021,7 @@ patchnginx() {
   ocsp_ttl_override
   ngx_srcache_patch
   ngx_headers_more_patch
-  nginx_quic_patches
+  # nginx_quic_patches
   aws_lc_patch
 } 2>&1 | tee -a "${CENTMINLOGDIR}/patch_patchnginx_${DT}.log"
 }
