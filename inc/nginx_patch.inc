@@ -769,7 +769,7 @@ ngx_dynamic_tls_message() {
 aws_lc_patch() {
   if [[ "$AWS_LC_SWITCH" = [yY] ]]; then
     echo
-    if [ ! -f aws-lc-nginx.patch ]; then
+    if [ ! -f aws-lc-nginx.patch ] || [[ -f aws-lc-nginx.patch && ! $(grep 'OPENSSL_IS_AWSLC' src/event/ngx_event_openssl.h) ]]; then
       echo "download aws-lc-nginx.patch"
       curl -sL https://github.com/aws/aws-lc/raw/main/tests/ci/integration/nginx_patch/aws-lc-nginx.patch -o aws-lc-nginx.patch
       if [ ! $(grep 'OPENSSL_IS_AWSLC' src/event/ngx_event_openssl.h) ]; then

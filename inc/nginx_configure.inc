@@ -180,9 +180,17 @@ mold_check() {
 
 detect_tlsonethree() {
   if [ "$ngver" ]; then
-    NGINX_DIRINSTALL="$DIR_TMP/nginx-${ngver}"
+    if [[ "$FREENGINX_INSTALL" = [yY] ]]; then
+      NGINX_DIRINSTALL="$DIR_TMP/freenginx-${ngver}"
+    else
+      NGINX_DIRINSTALL="$DIR_TMP/nginx-${ngver}"
+    fi
   else
-    NGINX_DIRINSTALL="$DIR_TMP/nginx-${NGINX_VERSION}"
+    if [[ "$FREENGINX_INSTALL" = [yY] ]]; then
+      NGINX_DIRINSTALL="$DIR_TMP/freenginx-${NGINX_VERSION}"
+    else
+      NGINX_DIRINSTALL="$DIR_TMP/nginx-${NGINX_VERSION}"
+    fi
   fi
   if [ -f /usr/local/nginx/conf/ssl-include.conf ]; then
     if [[ "$OPENSSL_TLSONETHREE" = [yY] && "$(grep -w 'define NGX_SSL_TLSv1_3' "${NGINX_DIRINSTALL}/src/event/ngx_event_openssl.h")" ]]; then
