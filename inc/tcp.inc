@@ -276,6 +276,9 @@ net.ipv4.tcp_challenge_ack_limit = 999999999
 net.ipv4.tcp_mtu_probing = 1
 net.ipv4.tcp_base_mss = 1024
 net.unix.max_dgram_qlen = 4096
+net.ipv4.udp_mem = 3145728 4194304 6291456
+net.ipv4.udp_rmem_min = 16384
+net.ipv4.udp_wmem_min = 16384
 EOF
         /sbin/sysctl --system
             fi           
