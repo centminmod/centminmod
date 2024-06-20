@@ -1700,7 +1700,10 @@ fi
         pushd "${DIR_TMP}"
         rm -rf aws-lc
         rm -rf aws-lc-build
-        git clone https://github.com/aws/aws-lc.git
+        git clone https://github.com/aws/aws-lc
+        cd aws-lc
+        git checkout $AWS_LC_VERSION -b $AWS_LC_VERSION
+        cd ../
         mkdir aws-lc-build && cd aws-lc-build
         unset CC
         unset CXX
