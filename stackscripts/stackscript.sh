@@ -226,9 +226,11 @@ fi
 # https://community.centminmod.com/posts/45818/
 if [[ "BROTLI" = 'yes' ]]; then
 echo
-echo "Set NGXDYNAMIC_BROTLI='y'"
+echo "Set NGXDYNAMIC_BROTLI='y'
+NGXDYNAMIC_ZSTD='y'"
 echo "Set NGINX_LIBBROTLI='y'"
 echo "NGXDYNAMIC_BROTLI='y'" >> /etc/centminmod/custom_config.inc
+echo "NGXDYNAMIC_ZSTD='y'" >> /etc/centminmod/custom_config.inc
 echo "NGINX_LIBBROTLI='y'" >> /etc/centminmod/custom_config.inc
 echo
 fi

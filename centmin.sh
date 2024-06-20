@@ -30,7 +30,7 @@ DT=$(date +"%d%m%y-%H%M%S")
 branchname='130.00beta01'
 SCRIPT_MAJORVER='130'
 SCRIPT_MINORVER='00'
-SCRIPT_INCREMENTVER='643'
+SCRIPT_INCREMENTVER='644'
 SCRIPT_VERSIONSHORT="${branchname}"
 SCRIPT_VERSION="${SCRIPT_VERSIONSHORT}.b${SCRIPT_INCREMENTVER}"
 SCRIPT_DATE='24/02/24'
@@ -878,6 +878,7 @@ NGXDYNAMIC_MEMC='n'
 NGXDYNAMIC_REDISTWO='n'
 NGXDYNAMIC_NGXPAGESPEED='n'
 NGXDYNAMIC_BROTLI='y'
+NGXDYNAMIC_ZSTD='y'
 NGXDYNAMIC_FANCYINDEX='y'
 NGXDYNAMIC_HIDELENGTH='y'
 NGXDYNAMIC_TESTCOOKIE='n'
@@ -962,7 +963,9 @@ NGINX_SECURELINK='y'         # http://nginx.org/en/docs/http/ngx_http_secure_lin
 NGINX_FANCYINDEX='y'         # https://github.com/aperezdc/ngx-fancyindex/releases
 NGINX_FANCYINDEXVER='0.4.2'  # https://github.com/aperezdc/ngx-fancyindex/releases
 NGINX_VHOSTSTATS='n'         # https://github.com/vozlt/nginx-module-vts
+
 NGINX_LIBBROTLI='n'          # https://github.com/eustas/ngx_brotli
+NGINX_ZSTD='n'               # https://github.com/tokers/zstd-nginx-module
 NGINX_LIBBROTLISTATIC='n'    # only enable if you want pre-compress brotli support and on the fly brotli disabled
 NGINX_BROTLIDEP_UPDATE='n'   # experimental manual update of Google Brotli dependency in ngx_brotli
 NGINX_BROTLI_NEW_METHOD='y'  # enable for ngx_brotli using brotli 1.1.0+ dependency
@@ -1477,6 +1480,7 @@ source "${SCRIPT_DIR}/inc/logrotate_mysql.inc"
 source "${SCRIPT_DIR}/inc/nginx_mimetype.inc"
 source "${SCRIPT_DIR}/inc/openssl_install.inc"
 source "${SCRIPT_DIR}/inc/brotli.inc"
+source "${SCRIPT_DIR}/inc/zstd_nginx.inc"
 source "${SCRIPT_DIR}/inc/nginx_patch.inc"
 source "${SCRIPT_DIR}/inc/fastopen.inc"
 source "${SCRIPT_DIR}/inc/mod_security.inc"
@@ -1646,6 +1650,7 @@ fi
 # https://community.centminmod.com/posts/70527/
 # if [[ "$(grep -o 'avx512' /proc/cpuinfo | uniq)" = 'avx512' ]]; then
 #   NGXDYNAMIC_BROTLI='y'
+#   NGXDYNAMIC_ZSTD='y'
 #   NGINX_LIBBROTLI='y'
 #   NGINX_BROTLIDEP_UPDATE='y'
 # fi

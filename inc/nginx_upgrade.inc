@@ -59,6 +59,10 @@ pcre_check_nginx(){
             echo "PKG_CONFIG_PATH='/usr/local/nginx-dep/lib/pkgconfig/' pkg-config --modversion libbrotlidec"
             PKG_CONFIG_PATH='/usr/local/nginx-dep/lib/pkgconfig/' pkg-config --modversion libbrotlidec
         fi
+        if [[ "$NGINX_ZSTD" = [yY] ]]; then
+            echo "PKG_CONFIG_PATH='/usr/local/nginx-dep/lib/pkgconfig/' pkg-config --modversion libzstd"
+            PKG_CONFIG_PATH='/usr/local/nginx-dep/lib/pkgconfig/' pkg-config --modversion libzstd
+        fi
         if [[ "$NGINX_MODSECURITY" = [yY] ]]; then
             echo "PKG_CONFIG_PATH='/usr/local/nginx-dep/lib/pkgconfig/' pkg-config --modversion modsecurity"
             PKG_CONFIG_PATH='/usr/local/nginx-dep/lib/pkgconfig/' pkg-config --modversion modsecurity
@@ -131,6 +135,10 @@ pcre_check_nginx(){
             PKG_CONFIG_PATH='/usr/local/nginx-dep/lib/pkgconfig/' pkg-config --modversion libbrotlienc
             echo "PKG_CONFIG_PATH='/usr/local/nginx-dep/lib/pkgconfig/' pkg-config --modversion libbrotlidec"
             PKG_CONFIG_PATH='/usr/local/nginx-dep/lib/pkgconfig/' pkg-config --modversion libbrotlidec
+        fi
+        if [[ "$NGINX_ZSTD" = [yY] ]]; then
+            echo "PKG_CONFIG_PATH='/usr/local/nginx-dep/lib/pkgconfig/' pkg-config --modversion libzstd"
+            PKG_CONFIG_PATH='/usr/local/nginx-dep/lib/pkgconfig/' pkg-config --modversion libzstd
         fi
         if [[ "$NGINX_MODSECURITY" = [yY] ]]; then
             echo "PKG_CONFIG_PATH='/usr/local/nginx-dep/lib/pkgconfig/' pkg-config --modversion modsecurity"
