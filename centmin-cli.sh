@@ -30,7 +30,7 @@ DT=$(date +"%d%m%y-%H%M%S")
 branchname='130.00beta01'
 SCRIPT_MAJORVER='130'
 SCRIPT_MINORVER='00'
-SCRIPT_INCREMENTVER='644'
+SCRIPT_INCREMENTVER='645'
 SCRIPT_VERSIONSHORT="${branchname}"
 SCRIPT_VERSION="${SCRIPT_VERSIONSHORT}.b${SCRIPT_INCREMENTVER}"
 SCRIPT_DATE='24/02/24'
@@ -878,7 +878,7 @@ NGXDYNAMIC_MEMC='n'
 NGXDYNAMIC_REDISTWO='n'
 NGXDYNAMIC_NGXPAGESPEED='n'
 NGXDYNAMIC_BROTLI='y'
-NGXDYNAMIC_ZSTD='y'
+NGXDYNAMIC_ZSTD='n'
 NGXDYNAMIC_FANCYINDEX='y'
 NGXDYNAMIC_HIDELENGTH='y'
 NGXDYNAMIC_TESTCOOKIE='n'
@@ -1649,7 +1649,7 @@ fi
 # https://community.centminmod.com/posts/70527/
 # if [[ "$(grep -o 'avx512' /proc/cpuinfo | uniq)" = 'avx512' ]]; then
 #   NGXDYNAMIC_BROTLI='y'
-#   NGXDYNAMIC_ZSTD='y'
+#   NGXDYNAMIC_ZSTD='n'
 #   NGINX_LIBBROTLI='y'
 #   NGINX_BROTLIDEP_UPDATE='y'
 # fi
@@ -1772,6 +1772,14 @@ fi
 
 if [[ "$CENTOS_SEVEN" -eq '7' ]]; then
   AWS_LC_SWITCH='n'
+fi
+if [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]]; then
+  # give AWS-LC priority over quicTLS for HTTP/3 QUIC
+  if [[ "$AWS_LC_SWITCH" = [yY] ]]; then
+    NGINX_QUIC_SUPPORT='n'
+  elif [[ "$NGINX_QUIC_SUPPORT" = [yY] ]]; then
+    AWS_LC_SWITCH='n'
+  fi
 fi
 
 if [[ "$VPS_GEOIPCHECK_V4" = [yY] ]]; then

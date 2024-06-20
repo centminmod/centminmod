@@ -2849,6 +2849,8 @@ if [[ "$NGINX_ZSTD" = [yY] ]]; then
     ZSTD_NGINX_OPT=' --add-dynamic-module=../zstd-nginx-module'
     ZSTD_NGINX_LIB_OPT="-L/usr/local/nginx-dep/lib "
     ZSTD_NGINX_INC_OPT='-I/usr/local/nginx-dep/include '
+    # export ZSTD_LIB='/usr/local/nginx-dep/lib'
+    # export ZSTD_INC="/usr/local/nginx-dep/include"
     echo "NGINX_ZSTD: NGINX_ZSTD=$NGINX_ZSTD"
     echo "DYNAMIC_SUPPORT=$DYNAMIC_SUPPORT"
     echo "NGXDYNAMIC_ZSTD=$NGXDYNAMIC_ZSTD"
@@ -2867,6 +2869,8 @@ if [[ "$NGINX_ZSTD" = [yY] ]]; then
     ZSTD_NGINX_OPT=' --add-module=../zstd-nginx-module'
     ZSTD_NGINX_LIB_OPT="-L/usr/local/nginx-dep/lib "
     ZSTD_NGINX_INC_OPT='-I/usr/local/nginx-dep/include '
+    # export ZSTD_LIB='/usr/local/nginx-dep/lib'
+    # export ZSTD_INC="/usr/local/nginx-dep/include"
     echo "NGINX_ZSTD: NGINX_ZSTD=$NGINX_ZSTD"
     echo "DYNAMIC_SUPPORT=$DYNAMIC_SUPPORT"
     echo "ZSTD_NGINX_OPT=$ZSTD_NGINX_OPT"
@@ -2884,8 +2888,12 @@ fi
 if [[ "$NGINX_ZSTD" = [yY] ]]; then
   if [[ "$DYNAMIC_SUPPORT" = [yY] && "$NGXDYNAMIC_ZSTD" = [yY] && -f /usr/local/nginx/modules/ngx_http_zstd_filter_module.so ]]; then
     ZSTD_NGINX_OPT=' --add-dynamic-module=../zstd-nginx-module'
+    # export ZSTD_LIB='/usr/local/nginx-dep/lib'
+    # export ZSTD_INC="/usr/local/nginx-dep/include"
   else
     ZSTD_NGINX_OPT=' --add-module=../zstd-nginx-module'
+    # export ZSTD_LIB='/usr/local/nginx-dep/lib'
+    # export ZSTD_INC="/usr/local/nginx-dep/include"
   fi
 else
   ZSTD_NGINX_OPT=""
