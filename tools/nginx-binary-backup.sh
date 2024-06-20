@@ -28,6 +28,7 @@ NGINXBIN_VER=$(nginx -v 2>&1 | awk '{print $3}' | awk -F '/' '{print $2}')
 NGINXBIN_COMPILER=$(nginx -V 2>&1 | awk '/built by/ {print $3}' | awk '{print tolower($0)}')
 NGINXBIN_CRYPTO=$(nginx -V 2>&1 | awk '/built with/ {print $3"-"$4}' | awk '{print tolower($0)}')
 NGINXBIN_CRYPTOBORINGSSL=$(nginx -V 2>&1 | awk '/built with/ {print $9}' | awk '{print tolower($0)}' | sed -e 's|)||g')
+NGINXBIN_CRYPTOAWS_LC=$(nginx -V 2>&1 | awk '/built with/ {print $3"-"$4"-"$6"-"$7}' | awk '{print tolower($0)}' | sed -e 's|)||g')
 NGINXBIN_PATH='/usr/local/sbin/nginx'
 NGINXTOP_DIR='/usr/local/nginx'
 NGINXBIN_MODULESDIR="$NGINXTOP_DIR/modules"
@@ -35,6 +36,9 @@ NGINXMODULE_INCLUDENAME='dynamic-modules.conf'
 NGINXMODULE_INCLUDED_INCLUDENAME='dynamic-modules-includes.conf'
 NGINXMODULE_INCLUDE="$NGINXTOP_DIR/conf/$NGINXMODULE_INCLUDENAME"
 NGINXMODULE_INCLUDED_INCLUDE="$NGINXTOP_DIR/conf/$NGINXMODULE_INCLUDED_INCLUDENAME"
+
+NGINXBIN_LIBS='/usr/local/nginx-dep/lib'
+NGINXBIN_INCLUDES='/usr/local/nginx-dep/include'
 #####################################################
 if [[ ! -d "$NGINXBIN_BACKUPDIR" ]]; then
   mkdir -p "$NGINXBIN_BACKUPDIR"
@@ -48,6 +52,10 @@ fi
 
 if [[ "$NGINXBIN_CRYPTOBORINGSSL" = 'boringssl' ]]; then
   NGINXBIN_CRYPTO='boringssl'
+fi
+
+if [[ "$(echo $NGINXBIN_CRYPTOAWS_LC | grep -o aws-lc)" = 'aws-lc' ]]; then
+  NGINXBIN_CRYPTO='aws-lc'
 fi
 
 if [[ ! -f "$(which tree)" ]]; then
@@ -126,7 +134,7 @@ bin_backup() {
     MIMALLOC_LIBRARY_PATHDIR=$(dirname $(ldd $(which nginx) | awk '/libmimalloc/ {print $3}'))
     MIMALLOC_LIBRARY_WILDCARD='libmimalloc'
   fi
-  
+ 
   backup_tag="${NGINXBIN_VER}-${NGINXBIN_COMPILERNAME}-${NGINXBIN_CRYPTO}-${DDT}${NGXDEBUG_LABEL}${NGXHPACK_LABEL}${NGXZLIB_LABEL}${NGXLTO_LABEL}${NGXFATLTO_LABEL}${NGX_PCRETWO_LABEL}${NGX_JEMALLOC_LABEL}${NGX_MIMALLOC_LABEL}"
   if [ ! -d "${NGINXBIN_BACKUPDIR}/${backup_tag}" ]; then
     echo "--------------------------------------------------------"
@@ -135,6 +143,7 @@ bin_backup() {
     echo "backup started..."
     mkdir -p "${NGINXBIN_BACKUPDIR}/${backup_tag}/bin"
     mkdir -p "${NGINXBIN_BACKUPDIR}/${backup_tag}/libs"
+    mkdir -p "${NGINXBIN_BACKUPDIR}/${backup_tag}/includes"
     cp -af "$NGINXBIN_PATH" "${NGINXBIN_BACKUPDIR}/${backup_tag}/bin"
     cp -af "$NGINXBIN_MODULESDIR" "${NGINXBIN_BACKUPDIR}/${backup_tag}"
     cp -af ${PCRE_LIBRARY_PATHDIR}/${PCRE_LIBRARY_WILDCARD}.* "${NGINXBIN_BACKUPDIR}/${backup_tag}/libs"
@@ -144,6 +153,14 @@ bin_backup() {
     fi
     if [[ "$CHECK_NGINX_CUSTOM_MIMALLOC_BUILT" = 'libmimalloc' ]]; then
       cp -af ${MIMALLOC_LIBRARY_PATHDIR}/${MIMALLOC_LIBRARY_WILDCARD}.* "${NGINXBIN_BACKUPDIR}/${backup_tag}/libs"
+    fi
+    # backup know nginx libs directory
+    if [ -d "$NGINXBIN_LIBS" ]; then
+      cp  -af ${NGINXBIN_LIBS}/* "${NGINXBIN_BACKUPDIR}/${backup_tag}/libs"
+    fi
+    # backup know nginx includes directory
+    if [ -d "$NGINXBIN_INCLUDES" ]; then
+      cp  -af ${NGINXBIN_INCLUDES}/* "${NGINXBIN_BACKUPDIR}/${backup_tag}/includes"
     fi
     # remove .so.old older dynamic nginx modules from backup
     # https://community.centminmod.com/posts/66124/
@@ -261,6 +278,14 @@ bin_restore() {
               cp -af ${MIMALLOC_LIBRARY_PATHDIR}/${MIMALLOC_LIBRARY_WILDCARD}.* "$MIMALLOC_LIBRARY_PATHDIR"
               ls -lah "$MIMALLOC_LIBRARY_PATHDIR" | grep "$MIMALLOC_LIBRARY_WILDCARD"
             fi
+          fi
+          # restore known nginx libs directory
+          if [ -d "$NGINXBIN_LIBS" ]; then
+            cp  -af ${NGINXBIN_BACKUPDIR}/${backup_tag}/libs/* ${NGINXBIN_LIBS}
+          fi
+          # restore known nginx includes directory
+          if [ -d "$NGINXBIN_INCLUDES" ]; then
+            cp  -af ${NGINXBIN_BACKUPDIR}/${backup_tag}/includes/* ${NGINXBIN_INCLUDES}
           fi
           if [ -d "${backup_path}/modules" ]; then
             echo
