@@ -352,7 +352,9 @@ ngx_dynamicfunction() {
     echo "NGX_DYNAMICCHECK nginx_configure"
     pwd
     dynamicmodule_file
-  if [ "$ngver" ]; then
+  if [[ "$ngver" = 'angie' ]]; then
+      DETECT_NGXVER=$(awk '/define nginx_version  / {print $3}' "/svr-setup/nginx-angie/src/core/nginx.h")
+  elif [ "$ngver" ]; then
     if [[ "$FREENGINX_INSTALL" = [yY] ]]; then
       DETECT_NGXVER=$(awk '/define nginx_version  / {print $3}' "/svr-setup/freenginx-$ngver/src/core/nginx.h")
     else
@@ -828,7 +830,7 @@ if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9'
         HTTPTWOOPT=' --with-http_spdy_module --with-http_v2_module'
       else
         NGINX_SPDY=n
-        if [[ "$ngver" = 'quic' ]] || [[ "$NGINX_QUIC_SUPPORT" = [yY] && "$DETECT_NGXVER" -ge '1025000' ]] || [[ "$AWS_LC_SWITCH" = [yY] && "$DETECT_NGXVER" -ge '1027000' ]]; then
+        if [[ "$ngver" = 'quic' ]] || [[ "$NGINX_QUIC_SUPPORT" = [yY] && "$DETECT_NGXVER" -ge '1025000' ]] || [[ "$AWS_LC_SWITCH" = [yY] && "$DETECT_NGXVER" -ge '1027000' ]] || [[ "$ngver" = 'angie' && "$DETECT_NGXVER" -ge '1025000' ]]; then
           if [[ "$NGINX_QUIC_DEBUG" = [yY] ]]; then
             HTTPTWOOPT=' --with-debug --with-http_v2_module --with-http_v3_module'
             NGINX_DEBUG_QUIC_OPT=' -DNGX_QUIC_DEBUG_PACKETS -DNGX_QUIC_DEBUG_FRAMES -DNGX_QUIC_DEBUG_CRYPTO '

@@ -800,6 +800,7 @@ fi
         git clone https://github.com/webserver-llc/angie nginx-angie
         pushd nginx-angie
         git checkout $NGINX_ANGIE_VERSION
+        DETECT_NGXVER=$(awk '/define nginx_version  / {print $3}' "/svr-setup/nginx-angie/src/core/nginx.h")
         popd
         angie_console_setup
         # mv nginx-angie/auto/configure nginx-master/configure
