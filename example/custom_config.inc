@@ -369,7 +369,7 @@ PRIORITIZE_CHACHA_OPENSSL='n' # https://community.centminmod.com/threads/15708/
 
 # LibreSSL
 LIBRESSL_SWITCH='n'        # if set to 'y' it overrides OpenSSL as the default static compiled option for Nginx server
-LIBRESSL_VERSION='3.8.3'   # Use this version of LibreSSL http://www.libressl.org/
+LIBRESSL_VERSION='3.9.2'   # Use this version of LibreSSL http://www.libressl.org/
 
 # BoringSSL
 BORINGSSL_SWITCH='n'       # if set to 'y' it overrides OpenSSL as the default static compiled option for Nginx server
