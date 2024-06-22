@@ -3399,12 +3399,17 @@ if [ -f "${CONFIGSCANBASE}/custom_config.inc" ]; then
     OPENSSL_LINK="https://www.openssl.org/source/${OPENSSL_LINKFILE}"
   fi
 fi
-
-curl -${ipv_forceopt}Is --connect-timeout 30 --max-time 30 "$OPENSSL_LINK" | grep 'HTTP\/' | grep '200'
+echo
+echo "openssldownload OPENSSL_LINK=$OPENSSL_LINK"
+echo 
+curl -${ipv_forceopt}IsL --connect-timeout 30 --max-time 30 "$OPENSSL_LINK" | grep 'HTTP\/' | grep '200'
 OPENSSL_CURLCHECK=$?
 if [[ "$OPENSSL_CURLCHECK" != '0' || "$(echo $OPENSSL_VERSION | grep -o '1.1.1')" = '1.1.1' ]]; then
   OPENSSL_MIRRORURL="${LOCALCENTMINMOD_MIRROR}/centminmodparts/openssl"
   OPENSSL_LINK="${OPENSSL_MIRRORURL}/openssl-${OPENSSL_VERSION}.tar.gz"
+  echo
+  echo "OPENSSL_CURLCHECK OPENSSL_LINK=$OPENSSL_LINK"
+  echo 
 fi
 
 if [[ "$CENTOSVER" > 5 && "$CENTOSVER" < 6 ]]; then
