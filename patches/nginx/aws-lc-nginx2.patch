@@ -1,0 +1,87 @@
+# HG changeset patch
+# User Piotr Sikora <piotr at aviatrix.com>
+# Date 1708977632 0
+#      Mon Feb 26 20:00:32 2024 +0000
+# Branch patch009
+# Node ID dfffc67d286b788204f60701ef4179566d933a1b
+# Parent  5e923992006199748e79b08b1e65c4ef41f07495
+SSL: add $ssl_curve when using AWS-LC.
+
+Signed-off-by: Piotr Sikora <piotr at aviatrix.com>
+
+diff -r 5e9239920061 -r dfffc67d286b src/event/ngx_event_openssl.c
+--- a/src/event/ngx_event_openssl.c Mon Feb 26 20:00:30 2024 +0000
++++ b/src/event/ngx_event_openssl.c Mon Feb 26 20:00:32 2024 +0000
+@@ -5163,6 +5163,72 @@
+         return NGX_OK;
+     }
+ 
++#elif defined(OPENSSL_IS_AWSLC)
++
++    uint16_t  curve_id;
++
++    curve_id = SSL_get_curve_id(c->ssl->connection);
++
++    /*
++     * Hardcoded table with ANSI / SECG curve names (e.g. "prime256v1"),
++     * which is the same format that OpenSSL returns for $ssl_curve.
++     *
++     * Without this table, we'd need to make 3 additional library calls
++     * to convert from curve_id to ANSI / SECG curve name:
++     *
++     *     nist_name = SSL_get_curve_name(curve_id);
++     *     nid = EC_curve_nist2nid(nist_name);
++     *     ansi_name = OBJ_nid2sn(nid);
++     */
++
++    switch (curve_id) {
++
++#ifdef SSL_CURVE_SECP224R1
++    case SSL_CURVE_SECP224R1:
++        ngx_str_set(s, "secp224r1");
++        return NGX_OK;
++#endif
++
++#ifdef SSL_CURVE_SECP256R1
++    case SSL_CURVE_SECP256R1:
++        ngx_str_set(s, "prime256v1");
++        return NGX_OK;
++#endif
++
++#ifdef SSL_CURVE_SECP384R1
++    case SSL_CURVE_SECP384R1:
++        ngx_str_set(s, "secp384r1");
++        return NGX_OK;
++#endif
++
++#ifdef SSL_CURVE_SECP521R1
++    case SSL_CURVE_SECP521R1:
++        ngx_str_set(s, "secp521r1");
++        return NGX_OK;
++#endif
++
++#ifdef SSL_CURVE_X25519
++    case SSL_CURVE_X25519:
++        ngx_str_set(s, "x25519");
++        return NGX_OK;
++#endif
++
++    case 0:
++        break;
++
++    default:
++        s->len = sizeof("0x0000") - 1;
++
++        s->data = ngx_pnalloc(pool, s->len);
++        if (s->data == NULL) {
++            return NGX_ERROR;
++        }
++
++        ngx_sprintf(s->data, "0x%04xd", curve_id);
++
++        return NGX_OK;
++    }
++
+ #endif
+ 
+     ngx_str_null(s);

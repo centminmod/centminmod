@@ -778,6 +778,18 @@ aws_lc_patch() {
         patch -p1 < aws-lc-nginx.patch
       fi
     fi
+    if [[ ! -f aws-lc-nginx2.patch && -f "$CUR_DIR/patches/nginx/aws-lc-nginx2.patch" && ! $(grep 'OPENSSL_IS_AWSLC' src/event/ngx_event_openssl.c) ]]; then
+      # add support for the $ssl_curve variable when using the AWS-LC
+      # It retrieves the negotiated elliptic curve ID (curve_id) from 
+      # the SSL connection object (SSL_get_curve_id(c->ssl->connection)
+      # patch includes a switch statement that maps common curve IDs 
+      # to their corresponding standardized names 
+      # (e.g., "prime256v1" for SSL_CURVE_SECP256R1)
+      # if a match is found in the table, the $ssl_curve variable 
+      # is set to the corresponding curve name
+      echo "AWS-LC patch: patch -p1 < $CUR_DIR/patches/nginx/aws-lc-nginx2.patch"
+      patch -p1 < "$CUR_DIR/patches/nginx/aws-lc-nginx2.patch"
+    fi
     echo
   fi
 }
