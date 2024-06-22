@@ -112,8 +112,7 @@ check_nginx_crypto() {
         NGINX_CRYPTO_LIBRARY_VERSION_NUMBER=0
     fi
 
-    echo "Nginx Crypto Library: $NGINX_CRYPTO_LIBRARY_USED"
-    echo "Nginx Crypto Library Version: $NGINX_CRYPTO_LIBRARY_VERSION"
+    echo "Nginx Crypto Library: $NGINX_CRYPTO_LIBRARY_USED $NGINX_CRYPTO_LIBRARY_VERSION"
 }
 
 check_version() {
@@ -135,12 +134,15 @@ check_version() {
             local latest_version=$(get_latest_openssl_version $current_branch)
             if [[ "$latest_version" == "unknown" ]]; then
                 echo "Unable to determine the latest version for OpenSSL $current_branch. Please check manually."
+                echo "https://community.centminmod.com/threads/25488/"
             elif (( $(version_to_number $NGINX_CRYPTO_LIBRARY_VERSION) < $(version_to_number $latest_version) )); then
                 echo "A newer version of OpenSSL $current_branch is available: $latest_version"
+                echo "https://community.centminmod.com/threads/25488/"
             fi
 
             if (( current_major == 1 )); then
-                echo "Consider upgrading to OpenSSL 3.x for long-term support and newer features."
+                echo "Consider upgrading to OpenSSL 3.x or alternative crypto libary."
+                echo "https://community.centminmod.com/threads/25488/"
             fi
             ;;
         "LibreSSL")
@@ -152,18 +154,21 @@ check_version() {
                 echo "Unable to determine the latest version for LibreSSL $current_branch. Please check manually."
             elif (( $(version_to_number $NGINX_CRYPTO_LIBRARY_VERSION) < $(version_to_number $latest_version) )); then
                 echo "A newer version of LibreSSL $current_branch is available: $latest_version"
+                echo "https://community.centminmod.com/threads/25488/"
             fi
 
             # Check if there's a newer minor version available
             if (( current_minor == 8 )); then
                 local latest_39=$(get_latest_libressl_version "3.9")
                 echo "Consider upgrading to LibreSSL 3.9.x for newer features. Latest 3.9.x version: $latest_39"
+                echo "https://community.centminmod.com/threads/25488/"
             fi
             ;;
         "AWS-LC")
             local latest_version=$(get_latest_aws_lc_version)
             if (( $(version_to_number $NGINX_CRYPTO_LIBRARY_VERSION) < $(version_to_number $latest_version) )); then
                 echo "A newer version of AWS-LC is available: $latest_version"
+                echo "https://community.centminmod.com/threads/25488/"
             fi
             ;;
     esac
