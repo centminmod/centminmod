@@ -24,7 +24,7 @@ get_latest_openssl_version() {
         case $branch in
             3.3) echo "3.3.1" ;;  # Fallback versions
             3.2) echo "3.2.2" ;;
-            3.1) echo "3.1.6" ;;
+            3.1) echo "3.1.5" ;;
             3.0) echo "3.0.14" ;;
             1.1.1) echo "1.1.1w" ;;
             *) echo "unknown" ;;
@@ -73,6 +73,7 @@ check_nginx_crypto() {
                 NGINX_CRYPTO_LIBRARY_USED="OpenSSL-FIPS"
             fi
             NGINX_CRYPTO_LIBRARY_VERSION=$(echo "$nginx_v_output" | grep -oP 'OpenSSL \K[0-9.]+[a-z]?(?=.*FIPS)' | head -n1)
+            NGINX_CRYPTO_LIBRARY_VERSION+=" (system FIPS version)"
         elif [[ $nginx_v_output =~ "built with OpenSSL" ]]; then
             NGINX_CRYPTO_LIBRARY_USED="OpenSSL"
             NGINX_CRYPTO_LIBRARY_VERSION=$(echo "$nginx_v_output" | grep -oP 'OpenSSL \K[0-9.]+' | head -n1)
@@ -111,19 +112,22 @@ check_nginx_crypto() {
     else
         NGINX_CRYPTO_LIBRARY_VERSION_NUMBER=0
     fi
-
-    echo "Nginx Crypto Library: $NGINX_CRYPTO_LIBRARY_USED $NGINX_CRYPTO_LIBRARY_VERSION"
+    if [[ "$NGINX_CRYPTO_LIBRARY_USED" != 'OpenSSL-FIPS' ]]; then
+        echo "Nginx Crypto Library: $NGINX_CRYPTO_LIBRARY_USED $NGINX_CRYPTO_LIBRARY_VERSION"
+    fi
 }
 
 check_version() {
     case $NGINX_CRYPTO_LIBRARY_USED in
-        "OpenSSL"|"OpenSSL-FIPS"|"System-OpenSSL-FIPS")
+        "OpenSSL")
             local current_major=$(echo $NGINX_CRYPTO_LIBRARY_VERSION | cut -d. -f1)
             local current_minor=$(echo $NGINX_CRYPTO_LIBRARY_VERSION | cut -d. -f2)
             local current_branch
 
             if (( current_major == 1 )); then
                 current_branch="1.1.1"
+                echo "Consider upgrading Nginx's crypto library to OpenSSL 3.x or alternative library"
+                echo "https://community.centminmod.com/threads/25488/"
             elif (( current_major == 3 )); then
                 current_branch="3.$current_minor"
             else
@@ -133,17 +137,16 @@ check_version() {
 
             local latest_version=$(get_latest_openssl_version $current_branch)
             if [[ "$latest_version" == "unknown" ]]; then
-                echo "Unable to determine the latest version for OpenSSL $current_branch. Please check manually."
+                echo "Unable to determine the latest version for OpenSSL $current_branch"
                 echo "https://community.centminmod.com/threads/25488/"
             elif (( $(version_to_number $NGINX_CRYPTO_LIBRARY_VERSION) < $(version_to_number $latest_version) )); then
-                echo "A newer version of OpenSSL $current_branch is available: $latest_version"
+                echo "A newer version of Nginx's OpenSSL $current_branch is available: $latest_version"
                 echo "https://community.centminmod.com/threads/25488/"
             fi
-
-            if (( current_major == 1 )); then
-                echo "Consider upgrading to OpenSSL 3.x or alternative crypto libary."
-                echo "https://community.centminmod.com/threads/25488/"
-            fi
+            ;;
+        "OpenSSL-FIPS"|"System-OpenSSL-FIPS")
+            # echo "This is a OpenSSL FIPS system version. Updates are managed by the YUM."
+            return
             ;;
         "LibreSSL")
             local current_minor=$(echo $NGINX_CRYPTO_LIBRARY_VERSION | cut -d. -f2)
@@ -151,7 +154,7 @@ check_version() {
 
             local latest_version=$(get_latest_libressl_version $current_branch)
             if [[ "$latest_version" == "unknown" ]]; then
-                echo "Unable to determine the latest version for LibreSSL $current_branch. Please check manually."
+                echo "Unable to determine the latest version for LibreSSL $current_branch"
             elif (( $(version_to_number $NGINX_CRYPTO_LIBRARY_VERSION) < $(version_to_number $latest_version) )); then
                 echo "A newer version of LibreSSL $current_branch is available: $latest_version"
                 echo "https://community.centminmod.com/threads/25488/"
@@ -160,7 +163,7 @@ check_version() {
             # Check if there's a newer minor version available
             if (( current_minor == 8 )); then
                 local latest_39=$(get_latest_libressl_version "3.9")
-                echo "Consider upgrading to LibreSSL 3.9.x for newer features. Latest 3.9.x version: $latest_39"
+                echo "Consider upgrading to LibreSSL 3.9.x. Latest 3.9.x version: $latest_39"
                 echo "https://community.centminmod.com/threads/25488/"
             fi
             ;;
