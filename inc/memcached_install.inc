@@ -100,16 +100,30 @@ PHPEXTDIRD=$(cat /usr/local/bin/php-config | awk '/^extension_dir/ {extdir=$1} E
 
     if [ ! "$(grep -w 'memcached' /etc/passwd)" ]; then
       echo "Update memcached server setup"
-      echo "Adding memcached user/group and adding to nginx group"
-      adduser -s /sbin/nologin -M memcached >/dev/null
-      usermod -G nginx memcached >/dev/null
+      echo "Adding memcached user/group with UID 957 and GID 957, and adding to nginx group"
+      groupadd -g 957 memcached
+      adduser -u 957 -g 957 -s /sbin/nologin -M memcached >/dev/null
+      usermod -aG nginx memcached >/dev/null
       id memcached
       SOCKETPATCH=y
     elif [[ "$(grep -w 'memcached' /etc/passwd)" && "$(grep -w 'nginx' /etc/passwd)" ]]; then
       if [[ "$(id memcached | grep -o nginx)" != 'nginx' ]]; then
-        usermod -G nginx memcached >/dev/null
+        usermod -g 957 -aG nginx memcached >/dev/null
         id memcached
         SOCKETPATCH=y
+      else
+        # Ensure UID is 957 and GID is 957 even if memcached is already in nginx group
+        if [ "$(id -u memcached)" -ne 957 ]; then
+          usermod -u 957 memcached >/dev/null
+          id memcached
+          SOCKETPATCH=y
+        fi
+        if [ "$(id -g memcached)" -ne 957 ]; then
+          groupmod -g 957 memcached
+          usermod -g 957 memcached >/dev/null
+          id memcached
+          SOCKETPATCH=y
+        fi
       fi
     fi
     if [[ "$CENTOS_SEVEN" -eq '7' ]]; then
