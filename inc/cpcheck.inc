@@ -2,6 +2,16 @@
 CIPHERS_LINE="Ciphers aes128-ctr,aes192-ctr,aes256-ctr,aes128-gcm@openssh.com,aes256-gcm@openssh.com"
 MACS_LINE="MACs umac-64@openssh.com,umac-128@openssh.com,hmac-sha2-256,hmac-sha2-512"
 
+fix_rsync_backport_redirect() {
+  # cloudflare non-http to https redirect fix for EL8/EL9
+  if [[ "$ALMALINUX_EIGHT" -eq '8' || "$ALMALINUX_NINE" -eq '9' || "$RSYNC_BACKPORT_REPO" = [yY] ]] && [ -f /etc/yum.repos.d/almalinux-backports-rsync.repo ]; then
+    if [[ "$(cat /etc/yum.repos.d/almalinux-backports-rsync.repo | grep -o '301 Moved' | uniq)" = '301 Moved' ]]; then
+      curl -sL https://repo.almalinux.org/backports/almalinux-backports-rsync.repo --output /etc/yum.repos.d/almalinux-backports-rsync.repo
+      yum -q -y update rsync
+    fi
+  fi
+}
+
 # Function to check if the configuration lines exist in the file
 check_sshd_config() {
     local file=$1
@@ -87,7 +97,7 @@ rsync_backport_install() {
   # el8 native rsync is 3.1.3 and el9 native rsync is 3.2.3
   # Almalinux backport report has rsync 3.2.7+
   if [[ "$ALMALINUX_EIGHT" -eq '8' || "$ALMALINUX_NINE" -eq '9' || "$RSYNC_BACKPORT_REPO" = [yY] ]] && [ ! -f /etc/yum.repos.d/almalinux-backports-rsync.repo ]; then
-    curl http://repo.almalinux.org/backports/almalinux-backports-rsync.repo --output /etc/yum.repos.d/almalinux-backports-rsync.repo
+    curl -L https://repo.almalinux.org/backports/almalinux-backports-rsync.repo --output /etc/yum.repos.d/almalinux-backports-rsync.repo
     yum -y update rsync
     echo
     echo "Backport Rsync 3.2.7+ YUM Repo Setup Installed"
@@ -4040,6 +4050,7 @@ if [[ "$INITIALINSTALL" != [yY] ]]; then
   normalize_accept_encoding
   elnine_perl_check
   rsync_backport_install
+  fix_rsync_backport_redirect
   fix_mount_loop_sh
   if [ -f /etc/yum.repos.d/remi.repo ]; then
     fix_remi_repo_gpgcheck
