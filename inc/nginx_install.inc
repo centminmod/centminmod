@@ -170,9 +170,17 @@ install_gperftools
 pcredir_check
 perl_ipc_cmd_install
     ngx_starttime=$(TZ=UTC date +%s.%N)
+
+echo "nginx install: recompileopenssl=$recompileopenssl"
+echo "nginx install: LIBRESSL_SWITCH=$LIBRESSL_SWITCH"
+echo "nginx install: BORINGSSL_SWITCH=$BORINGSSL_SWITCH"
+echo "nginx install: OPENSSL_SYSTEM_USE=$OPENSSL_SYSTEM_USE"
+
 if [[ "$recompileopenssl" = [yY] || "$LIBRESSL_SWITCH" = [yY] || "$BORINGSSL_SWITCH" = [yY] ]] && [[ "$OPENSSL_SYSTEM_USE" != [yY] ]]; then
     installopenssl
 elif [[ "$recompileopenssl" = [yY] || "$LIBRESSL_SWITCH" = [yY] || "$BORINGSSL_SWITCH" = [yY] ]] && [[ "$OPENSSL_SYSTEM_USE" = [yY] ]]; then
+    installopenssl
+elif [[ "$OPENSSL_SYSTEM_USE" = [nN] ]]; then
     installopenssl
 fi
     ngx_endtime=$(TZ=UTC date +%s.%N)
