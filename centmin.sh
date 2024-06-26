@@ -30,7 +30,7 @@ DT=$(date +"%d%m%y-%H%M%S")
 branchname='130.00beta01'
 SCRIPT_MAJORVER='130'
 SCRIPT_MINORVER='00'
-SCRIPT_INCREMENTVER='661'
+SCRIPT_INCREMENTVER='662'
 SCRIPT_VERSIONSHORT="${branchname}"
 SCRIPT_VERSION="${SCRIPT_VERSIONSHORT}.b${SCRIPT_INCREMENTVER}"
 SCRIPT_DATE='24/02/24'
@@ -1677,9 +1677,21 @@ ASKCMD="read $KEYPRESS_PARAM "
 CUR_DIR=$SCRIPT_DIR # Get current directory.
 CM_INSTALLDIR=$CUR_DIR
 
-    # echo "centmin.sh \${CUR_DIR} & \${CM_INSTALLDIR}"
-    # echo ${CUR_DIR}
-    # echo ${CM_INSTALLDIR}    
+if [[ "$CENTOS_EIGHT" -eq '8' ]]; then
+  # use system OpenSSL 1.1.1 by default
+  OPENSSL_SYSTEM_USE='y'
+fi
+
+if [[ "$CENTOS_NINE" -eq '9' ]]; then
+  # el9 OSes will default to MariaDB 10.6 LTS releases
+  MARIADB_INSTALLTENTWO='n'
+  MARIADB_INSTALLTENTHREE='n'
+  MARIADB_INSTALLTENFOUR='n'
+  MARIADB_INSTALLTENFIVE='n'
+  MARIADB_INSTALLTENSIX='y'
+  # use system OpenSSL 3.0.7 by default
+  OPENSSL_SYSTEM_USE='y'
+fi
 
 if [ -f "${CM_INSTALLDIR}/inc/custom_config.inc" ]; then
   if [ -f /usr/bin/dos2unix ]; then
@@ -1752,25 +1764,6 @@ if [[ "$DEVTOOLSETELEVEN" = [yY] || "$DEVTOOLSETTWELVE" = [yY] ]]; then
   fi
 else
   march_flag='x86-64'
-fi
-#echo
-#echo "march_flag=$march_flag"
-#echo
-
-if [[ "$CENTOS_EIGHT" -eq '8' ]]; then
-  # use system OpenSSL 1.1.1 by default
-  OPENSSL_SYSTEM_USE='y'
-fi
-
-if [[ "$CENTOS_NINE" -eq '9' ]]; then
-  # el9 OSes will default to MariaDB 10.6 LTS releases
-  MARIADB_INSTALLTENTWO='n'
-  MARIADB_INSTALLTENTHREE='n'
-  MARIADB_INSTALLTENFOUR='n'
-  MARIADB_INSTALLTENFIVE='n'
-  MARIADB_INSTALLTENSIX='y'
-  # use system OpenSSL 3.0.7 by default
-  OPENSSL_SYSTEM_USE='y'
 fi
 
 if [[ "$CENTOS_SEVEN" -eq '7' ]]; then
