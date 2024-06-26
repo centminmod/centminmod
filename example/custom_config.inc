@@ -176,7 +176,7 @@ NGINX_MODSECURITY_MAXMIND='y' # modsecurity built with libmaxminddb is failing t
 NGINX_REALIP='y'             # http://nginx.org/en/docs/http/ngx_http_realip_module.html
 NGINX_RDNS='n'               # https://github.com/flant/nginx-http-rdns
 NGINX_NJS='n'                # nginScript https://www.nginx.com/blog/
-NGINX_NJS_VER='0.8.3'       # nginxScript tag version https://github.com/nginx/njslaunching-nginscript-and-looking-ahead/
+NGINX_NJS_VER='0.8.5'       # nginxScript tag version https://github.com/nginx/njslaunching-nginscript-and-looking-ahead/
 NGINX_GEOIP='y'              # Nginx GEOIP module install
 NGINX_GEOIPMEM='y'           # Nginx caches GEOIP databases in memory (default), setting 'n' caches to disk instead
 NGINX_GEOIPTWOLITE='n'       # https://github.com/leev/ngx_http_geoip2_module
@@ -456,6 +456,7 @@ PYTHON_INSTALL_ALTERNATIVES='n' # For EL8+ to install Python 3.6 and set unversi
 ALT_PYTHON_VER_LABEL='3.6'    # For EL8+ OSes only i.e. python3.6 binary
 ALT_PYTHON_VER='36'           # For EL8+ OSes only i.e. python36 package
 SIEGE_VERSION='4.1.5'
+SIEGEINSTALL='n'
 
 # custom curl/libcurl RPM for 7.44 and higher
 # enable with CUSTOM_CURLRPM='y' use at own risk as it can break the system
