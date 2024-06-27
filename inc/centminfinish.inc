@@ -354,7 +354,7 @@ echo ""
   fi
 letswait
 
-if [[ "$(uname -m)" != 'aarch64' ]]; then
+if [[ "$SIEGEINSTALL" = [yY] && "$(uname -m)" != 'aarch64' ]]; then
 echo ""
   cecho "--------------------------------------------------------" $boldyellow
   cecho "Check Siege Benchmark Version:" $boldyellow
