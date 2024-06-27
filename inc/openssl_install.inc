@@ -468,6 +468,7 @@ DETECTOPENSSL_ONEONE=$(echo $OPENSSL_VERSION  | cut -d . -f1-3 | grep -o 1.1.1)
 DETECTOPENSSL_THREEZERO=$(echo $OPENSSL_VERSION  | cut -d . -f1-2 | grep -o 3.0)
 DETECTOPENSSL_THREEONE=$(echo $OPENSSL_VERSION  | cut -d . -f1-2 | grep -o 3.1)
 DETECTOPENSSL_THREETWO=$(echo $OPENSSL_VERSION  | cut -d . -f1-2 | grep -o 3.2)
+DETECTOPENSSL_THREETHREE=$(echo $OPENSSL_VERSION  | cut -d . -f1-2 | grep -o 3.3)
 
 # if [[ "$PRIORITIZE_CHACHA_OPENSSL" = [yY] && "$DETECTOPENSSL_ONEONE" = '1.1.1' ]] ; then
 if [[ "$PRIORITIZE_CHACHA_OPENSSL" = [yY] && "${OPENSSL_VERSION}" = '1.1.1' ]] || [[ "$PRIORITIZE_CHACHA_OPENSSL" = [yY] && "${OPENSSL_VERSION}" = '1.1.1a' ]]; then
@@ -1382,6 +1383,7 @@ fi
         DETECTOPENSSL_THREEZERO=$(echo $OPENSSL_QUIC_VERSION  | cut -d . -f1-2 | grep -o 3.0)
         DETECTOPENSSL_THREEONE=$(echo $OPENSSL_QUIC_VERSION  | cut -d . -f1-2 | grep -o 3.1)
         DETECTOPENSSL_THREETWO=$(echo $OPENSSL_QUIC_VERSION  | cut -d . -f1-2 | grep -o 3.2)
+        DETECTOPENSSL_THREETHREE=$(echo $OPENSSL_QUIC_VERSION  | cut -d . -f1-2 | grep -o 3.3)
 
         # Install OpenSSL
         cd $DIR_TMP
@@ -1389,6 +1391,12 @@ fi
         
         if [[ "$CENTOS_EIGHT" = '8' && ! -f /usr/bin/pod2html ]]; then
             $YUMDNFBIN -q -y install perl-Pod-Html
+        fi
+        if [[ "$CENTOS_NINE" = '9' ]] && [[ ! -f /usr/share/perl5/FindBin.pm ]]; then
+            $YUMDNFBIN -q -y install perl-FindBin
+        fi
+        if [[ "$CENTOS_EIGHT" = '8' ]] && [[ ! -f /usr/share/perl5/FindBin.pm ]]; then
+            $YUMDNFBIN -q -y install perl-interpreter
         fi
         if [ ! -f /usr/bin/makedepend ]; then
             time $YUMDNFBIN -q -y install imake${DISABLEREPO_DNF}
@@ -1467,6 +1475,9 @@ fi
             elif [[ "$DETECTOPENSSL_THREETWO" = '3.2' ]]; then
                 echo "./Configure --prefix=$STATICLIBSSL --openssldir=$STATICLIBSSL ${ECNISTP_OPT}${OPENSSL_CFZLIB_OPT} -Wl,-rpath=${OPENSSL_CFZLIB_RPATH}${STATICLIBSSL}/lib"
                 ./Configure --prefix=$STATICLIBSSL --openssldir=$STATICLIBSSL ${ECNISTP_OPT}${OPENSSL_CFZLIB_OPT} -Wl,-rpath=${OPENSSL_CFZLIB_RPATH}${STATICLIBSSL}/lib
+            elif [[ "$DETECTOPENSSL_THREETHREE" = '3.3' ]]; then
+                echo "./Configure --prefix=$STATICLIBSSL --openssldir=$STATICLIBSSL ${ECNISTP_OPT}${OPENSSL_CFZLIB_OPT} -Wl,-rpath=${OPENSSL_CFZLIB_RPATH}${STATICLIBSSL}/lib"
+                ./Configure --prefix=$STATICLIBSSL --openssldir=$STATICLIBSSL ${ECNISTP_OPT}${OPENSSL_CFZLIB_OPT} -Wl,-rpath=${OPENSSL_CFZLIB_RPATH}${STATICLIBSSL}/lib
             else
                 echo "./config --prefix=$STATICLIBSSL --openssldir=$STATICLIBSSL enable-tlsext${ECNISTP_OPT}${OPENSSL_CFZLIB_OPT} -Wl, -rpath=${OPENSSL_CFZLIB_RPATH}${STATICLIBSSL}/lib"
                 ./config --prefix=$STATICLIBSSL --openssldir=$STATICLIBSSL enable-tlsext${ECNISTP_OPT}${OPENSSL_CFZLIB_OPT} -Wl, -rpath=${OPENSSL_CFZLIB_RPATH}${STATICLIBSSL}/lib
@@ -1502,9 +1513,15 @@ fi
         # make install
         make install_sw
         if [[ "$?" = '0' ]]; then
+          if [[ "$DETECTOPENSSL_THREEZERO" = '3.0' ]] || [[ "$DETECTOPENSSL_THREEONE" = '3.1' ]] || [[ "$DETECTOPENSSL_THREETWO" = '3.2' ]] || [[ "$DETECTOPENSSL_THREETHREE" = '3.3' ]]; then
+            # OpenSSL 3.x installed to lib64
+            ln -s "${STATICLIBSSL}/lib64" "${STATICLIBSSL}/lib"
+          else
+            # Older OpenSSL versions might still install to lib
             ln -s "${STATICLIBSSL}/lib" "${STATICLIBSSL}/lib64"
+          fi
         else
-            rm -rf "${STATICLIBSSL}/lib64"
+          rm -rf "${STATICLIBSSL}/lib64"
         fi
         mkdir -p "${OPENSSL_QUIC_CUSTOMPATH}/certs/"
         \cp -Rpf /etc/ssl/certs/* "${OPENSSL_QUIC_CUSTOMPATH}/certs/"
@@ -1547,6 +1564,12 @@ fi
         
         if [[ "$CENTOS_EIGHT" = '8' && ! -f /usr/bin/pod2html ]]; then
             $YUMDNFBIN -q -y install perl-Pod-Html
+        fi
+        if [[ "$CENTOS_NINE" = '9' ]] && [[ ! -f /usr/share/perl5/FindBin.pm ]]; then
+            $YUMDNFBIN -q -y install perl-FindBin
+        fi
+        if [[ "$CENTOS_EIGHT" = '8' ]] && [[ ! -f /usr/share/perl5/FindBin.pm ]]; then
+            $YUMDNFBIN -q -y install perl-interpreter
         fi
         if [ ! -f /usr/bin/makedepend ]; then
             time $YUMDNFBIN -q -y install imake${DISABLEREPO_DNF}
@@ -1624,6 +1647,9 @@ fi
             elif [[ "$DETECTOPENSSL_THREETWO" = '3.2' ]]; then
                 echo "./Configure --prefix=$STATICLIBSSL --openssldir=$STATICLIBSSL no-shared ${ECNISTP_OPT}${OPENSSL_CFZLIB_OPT} -Wl,-rpath=${OPENSSL_CFZLIB_RPATH}${STATICLIBSSL}/lib"
                 ./Configure --prefix=$STATICLIBSSL --openssldir=$STATICLIBSSL no-shared ${ECNISTP_OPT}${OPENSSL_CFZLIB_OPT} -Wl,-rpath=${OPENSSL_CFZLIB_RPATH}${STATICLIBSSL}/lib
+            elif [[ "$DETECTOPENSSL_THREETHREE" = '3.3' ]]; then
+                echo "./Configure --prefix=$STATICLIBSSL --openssldir=$STATICLIBSSL no-shared ${ECNISTP_OPT}${OPENSSL_CFZLIB_OPT} -Wl,-rpath=${OPENSSL_CFZLIB_RPATH}${STATICLIBSSL}/lib"
+                ./Configure --prefix=$STATICLIBSSL --openssldir=$STATICLIBSSL no-shared ${ECNISTP_OPT}${OPENSSL_CFZLIB_OPT} -Wl,-rpath=${OPENSSL_CFZLIB_RPATH}${STATICLIBSSL}/lib
             else
                 echo "./config --prefix=$STATICLIBSSL --openssldir=$STATICLIBSSL no-shared enable-tlsext${ECNISTP_OPT}${OPENSSL_CFZLIB_OPT} -Wl, -rpath=${OPENSSL_CFZLIB_RPATH}${STATICLIBSSL}/lib"
                 ./config --prefix=$STATICLIBSSL --openssldir=$STATICLIBSSL no-shared enable-tlsext${ECNISTP_OPT}${OPENSSL_CFZLIB_OPT} -Wl, -rpath=${OPENSSL_CFZLIB_RPATH}${STATICLIBSSL}/lib
@@ -1659,9 +1685,15 @@ fi
         # make install
         make install_sw
         if [[ "$?" = '0' ]]; then
+          if [[ "$DETECTOPENSSL_THREEZERO" = '3.0' ]] || [[ "$DETECTOPENSSL_THREEONE" = '3.1' ]] || [[ "$DETECTOPENSSL_THREETWO" = '3.2' ]] || [[ "$DETECTOPENSSL_THREETHREE" = '3.3' ]]; then
+            # OpenSSL 3.x installed to lib64
+            ln -s "${STATICLIBSSL}/lib64" "${STATICLIBSSL}/lib"
+          else
+            # Older OpenSSL versions might still install to lib
             ln -s "${STATICLIBSSL}/lib" "${STATICLIBSSL}/lib64"
+          fi
         else
-            rm -rf "${STATICLIBSSL}/lib64"
+          rm -rf "${STATICLIBSSL}/lib64"
         fi
         mkdir -p /opt/openssl/certs/
         \cp -Rpf /etc/ssl/certs/* /opt/openssl/certs/

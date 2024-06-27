@@ -720,6 +720,8 @@ if [[ "$recompileopenssl" = [yY] || "$LIBRESSL_SWITCH" = [yY] || "$BORINGSSL_SWI
     installopenssl
 elif [[ "$recompileopenssl" = [yY] || "$LIBRESSL_SWITCH" = [yY] || "$BORINGSSL_SWITCH" = [yY] ]] && [[ "$OPENSSL_SYSTEM_USE" = [yY] ]]; then
     installopenssl
+elif [[ "$OPENSSL_SYSTEM_USE" = [nN] ]]; then
+    installopenssl
 fi # recompileopenssl
 
 if [[ "$PCRE_SOURCEINSTALL" = [yY] ]]; 
