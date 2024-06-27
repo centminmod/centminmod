@@ -243,6 +243,7 @@ fi
 EL_VERID=$(awk -F '=' '/VERSION_ID/ {print $2}' /etc/os-release | sed -e 's|"||g' | cut -d . -f1)
 if [ -f /etc/almalinux-release ] && [[ "$EL_VERID" -eq 8 || "$EL_VERID" -eq 9 ]]; then
   CENTOSVER=$(awk '{ print $3 }' /etc/almalinux-release | cut -d . -f1,2)
+  ALMALINUXVER=$(awk '{ print $3 }' /etc/almalinux-release | cut -d . -f1,2 | sed -e 's|\.|000|g')
   if [[ "$(echo $CENTOSVER | cut -d . -f1)" -eq '8' ]]; then
     CENTOS_EIGHT='8'
     ALMALINUX_EIGHT='8'
@@ -252,6 +253,7 @@ if [ -f /etc/almalinux-release ] && [[ "$EL_VERID" -eq 8 || "$EL_VERID" -eq 9 ]]
   fi
 elif [ -f /etc/rocky-release ] && [[ "$EL_VERID" -eq 8 || "$EL_VERID" -eq 9 ]]; then
   CENTOSVER=$(awk '{ print $4 }' /etc/rocky-release | cut -d . -f1,2)
+  ROCKYLINUXVER=$(awk '{ print $3 }' /etc/rocky-release | cut -d . -f1,2 | sed -e 's|\.|000|g')
   if [[ "$(echo $CENTOSVER | cut -d . -f1)" -eq '8' ]]; then
     CENTOS_EIGHT='8'
     ROCKYLINUX_EIGHT='8'
@@ -304,6 +306,12 @@ elif [ -f /etc/el-release ] && [[ "$EL_VERID" -eq 8 || "$EL_VERID" -eq 9 ]]; the
     CENTOS_NINE='9'
     EUROLINUX_NINE='9'
   fi
+fi
+
+# Almalinux 8.8 changed GPG keys breaking YUM for <=8.7
+# https://almalinux.org/blog/2023-12-20-almalinux-8-key-update/
+if [[ "$ALMALINUXVER" -ge '80000' && "$ALMALINUXVER" -le '80007' ]]; then
+  rpm --import https://repo.almalinux.org/almalinux/RPM-GPG-KEY-AlmaLinux
 fi
 
 # If set to yes, will abort centmin mod installation if the memory requirements are not met

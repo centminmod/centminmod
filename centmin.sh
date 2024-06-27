@@ -30,7 +30,7 @@ DT=$(date +"%d%m%y-%H%M%S")
 branchname='130.00beta01'
 SCRIPT_MAJORVER='130'
 SCRIPT_MINORVER='00'
-SCRIPT_INCREMENTVER='665'
+SCRIPT_INCREMENTVER='666'
 SCRIPT_VERSIONSHORT="${branchname}"
 SCRIPT_VERSION="${SCRIPT_VERSIONSHORT}.b${SCRIPT_INCREMENTVER}"
 SCRIPT_DATE='24/02/24'
@@ -198,6 +198,7 @@ fi
 EL_VERID=$(awk -F '=' '/VERSION_ID/ {print $2}' /etc/os-release | sed -e 's|"||g' | cut -d . -f1)
 if [ -f /etc/almalinux-release ] && [[ "$EL_VERID" -eq 8 || "$EL_VERID" -eq 9 ]]; then
   CENTOSVER=$(awk '{ print $3 }' /etc/almalinux-release | cut -d . -f1,2)
+  ALMALINUXVER=$(awk '{ print $3 }' /etc/almalinux-release | cut -d . -f1,2 | sed -e 's|\.|000|g')
   if [[ "$(echo $CENTOSVER | cut -d . -f1)" -eq '8' ]]; then
     CENTOS_EIGHT='8'
     ALMALINUX_EIGHT='8'
@@ -207,6 +208,7 @@ if [ -f /etc/almalinux-release ] && [[ "$EL_VERID" -eq 8 || "$EL_VERID" -eq 9 ]]
   fi
 elif [ -f /etc/rocky-release ] && [[ "$EL_VERID" -eq 8 || "$EL_VERID" -eq 9 ]]; then
   CENTOSVER=$(awk '{ print $4 }' /etc/rocky-release | cut -d . -f1,2)
+  ROCKYLINUXVER=$(awk '{ print $3 }' /etc/rocky-release | cut -d . -f1,2 | sed -e 's|\.|000|g')
   if [[ "$(echo $CENTOSVER | cut -d . -f1)" -eq '8' ]]; then
     CENTOS_EIGHT='8'
     ROCKYLINUX_EIGHT='8'
