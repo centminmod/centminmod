@@ -30,7 +30,7 @@ DT=$(date +"%d%m%y-%H%M%S")
 branchname='130.00beta01'
 SCRIPT_MAJORVER='130'
 SCRIPT_MINORVER='00'
-SCRIPT_INCREMENTVER='664'
+SCRIPT_INCREMENTVER='665'
 SCRIPT_VERSIONSHORT="${branchname}"
 SCRIPT_VERSION="${SCRIPT_VERSIONSHORT}.b${SCRIPT_INCREMENTVER}"
 SCRIPT_DATE='24/02/24'
@@ -1771,8 +1771,10 @@ fi
 if [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]]; then
   # give AWS-LC priority over quicTLS for HTTP/3 QUIC
   if [[ "$AWS_LC_SWITCH" = [yY] ]]; then
+    OPENSSL_SYSTEM_USE='n'
     NGINX_QUIC_SUPPORT='n'
   elif [[ "$NGINX_QUIC_SUPPORT" = [yY] ]]; then
+    OPENSSL_SYSTEM_USE='n'
     AWS_LC_SWITCH='n'
   fi
 fi
