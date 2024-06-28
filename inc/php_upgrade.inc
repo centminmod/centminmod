@@ -479,6 +479,14 @@ else
     if [[ "$phpfpm_stillcont" = [nN] ]];then
         exit 0
     fi
+    # PHP 7.4 & PHP 8.0 EL9 OpenSSL compatibility routines remove the directory
+    # if it exists so a fresh PHP directory can always be patched
+    if [[ "$CENTOS_NINE" -eq '9' && "$PHP_PATCH_OPENSSL_THREE" = [yY] ]] && [[ "$PHPMUVER" = '7.4' || "$PHPMUVER" = '8.0' ]]; then
+        echo
+        echo "----------------------------------------------------------------"
+        echo "EL9 PHP 7.4/8.0 compatibility..."
+        rm -rf "${DIR_TMP}/php-${phpver}"
+    fi
     echo
     echo "----------------------------------------------------------------"
     echo "existing php.ini will be backed up at /usr/local/lib/php.ini-oldversion_$DT"
@@ -740,9 +748,11 @@ fi
             popd
         fi
     echo
-    echo "Upgrade log at: ${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_php_upgrade.log"
+    echo "$(date): Upgrade log at: ${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_php_upgrade.log"
     echo
-    echo "PHP config.log at: ${DIR_TMP}/php-${phpver}/fpm-build/config.log"
+    echo "$(date): PHP Patch log at: ${CENTMINLOGDIR}/patch_php_${DT}.log"
+    echo
+    echo "$(date): PHP config.log at: ${DIR_TMP}/php-${phpver}/fpm-build/config.log"
     echo
       exit
   else
@@ -931,9 +941,11 @@ fi
             popd
         fi
     echo
-    echo "Upgrade log at: ${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_php_upgrade.log"
+    echo "$(date): Upgrade log at: ${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_php_upgrade.log"
     echo
-    echo "PHP config.log at: ${DIR_TMP}/php-${phpver}/fpm-build/config.log"
+    echo "$(date): PHP Patch log at: ${CENTMINLOGDIR}/patch_php_${DT}.log"
+    echo
+    echo "$(date): PHP config.log at: ${DIR_TMP}/php-${phpver}/fpm-build/config.log"
     echo
       exit
   else
@@ -1040,9 +1052,11 @@ fi
             popd
         fi
     echo
-    echo "Upgrade log at: ${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_php_upgrade.log"
+    echo "$(date): Upgrade log at: ${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_php_upgrade.log"
     echo
-    echo "PHP config.log at: ${DIR_TMP}/php-${phpver}/fpm-build/config.log"
+    echo "$(date): PHP Patch log at: ${CENTMINLOGDIR}/patch_php_${DT}.log"
+    echo
+    echo "$(date): PHP config.log at: ${DIR_TMP}/php-${phpver}/fpm-build/config.log"
     echo
       exit
   else
