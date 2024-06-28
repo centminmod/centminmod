@@ -2381,9 +2381,10 @@ if [[ "$GCCINTEL_PHP" = [yY] ]]; then
     echo
 
   # for PHP_LTO='y'
-  if [[ "$CPUS_LTO" -ge '8' ]]; then
+  if [[ "$PHP_LTO" = [yY] && "$CPUS_LTO" -ge '8' ]]; then
     PHP_FLTO_CPUS='=2'
     PHP_FLTO_COMP_LEVEL=1
+    PHP_FLTO_LDFLAGS=""
   fi
   if [[ "$(gcc --version | head -n1 | awk '{print $3}' | cut -d . -f1-3 | sed "s|\.|0|g")" -ge '40805' && "$PHP_GSPLITDWARF" = [yY] && "$PHP_LTO" = [yY] ]]; then
     # remove  -gsplit-dwarf when PHP_LTO='y' seems *.dwo files aren't cleaned from /tmp with it enabled
@@ -3155,11 +3156,11 @@ else
     export LIBZIP_CFLAGS='-fPIC'
     PHP_PICOPT=' --with-pic'
     if [[ "$PHP_SECURED_PIE" = [yY] ]]; then
-      echo "export PHP_LDFLAGS=\"$PHP_LDFLAGS -Wl,-z,relro,-z,now -pie\""
-      export PHP_LDFLAGS="$PHP_LDFLAGS -Wl,-z,relro,-z,now -pie"
+      echo "export PHP_LDFLAGS=\"$PHP_LDFLAGS -Wl,-z,relro,-z,now -pie${PHP_FLTO_LDFLAGS}\""
+      export PHP_LDFLAGS="$PHP_LDFLAGS -Wl,-z,relro,-z,now -pie${PHP_FLTO_LDFLAGS}"
     else
-      echo "export PHP_LDFLAGS=\"$PHP_LDFLAGS -Wl,-z,relro,-z,now\""
-      export PHP_LDFLAGS="$PHP_LDFLAGS -Wl,-z,relro,-z,now"
+      echo "export PHP_LDFLAGS=\"$PHP_LDFLAGS -Wl,-z,relro,-z,now${PHP_FLTO_LDFLAGS}\""
+      export PHP_LDFLAGS="$PHP_LDFLAGS -Wl,-z,relro,-z,now${PHP_FLTO_LDFLAGS}"
     fi
     checksec_check
   fi
