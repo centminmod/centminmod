@@ -1059,6 +1059,8 @@ php_patches() {
   if [[ "$CENTOS_EIGHT" -eq '8' && "$PHP_PATCH_OPENSSL_THREE" = [yY] ]] && [[ "$PHPVER_ID" -ge '70400' && "$PHPVER_ID" -lt '80000' ]]; then
     phpsevenfour_opensslthree_bugids='php74-snmp-openssl3 php74-openssl3'
     for bugid in $phpsevenfour_opensslthree_bugids; do
+      echo "EL8 PHP 7.4 $bugid"
+      ls -lAh "$CUR_DIR/patches/php/${bugid}.patch"
       if [[ ! -f "${bugid}.patch" && -f "$CUR_DIR/patches/php/${bugid}.patch" ]]; then
         echo
         if [[ "$bugid" != 'php-openssl-cert' ]]; then
@@ -1074,6 +1076,8 @@ php_patches() {
   if [[ "$CENTOS_NINE" -eq '9' && "$PHP_PATCH_OPENSSL_THREE" = [yY] ]] && [[ "$PHPVER_ID" -ge '70400' && "$PHPVER_ID" -lt '80000' ]]; then
     phpsevenfour_opensslthree_bugids='php74-snmp-openssl3 php74-openssl3'
     for bugid in $phpsevenfour_opensslthree_bugids; do
+      echo "EL9 PHP 7.4 $bugid"
+      ls -lAh "$CUR_DIR/patches/php/${bugid}.patch"
       if [[ ! -f "${bugid}.patch" && -f "$CUR_DIR/patches/php/${bugid}.patch" ]]; then
         echo
         if [[ "$bugid" != 'php-openssl-cert' ]]; then
@@ -1126,6 +1130,8 @@ php_patches() {
   if [[ "$CENTOS_EIGHT" -eq '8' && "$PHP_PATCH_OPENSSL_THREE" = [yY] ]] && [[ "$PHPVER_ID" -ge '80000' && "$PHPVER_ID" -lt '80100' ]]; then
     phpeightzero_opensslthree_bugids='php80-snmp-openssl3 php80-openssl3-phar-sha php80-openssl3'
     for bugid in $phpeightzero_opensslthree_bugids; do
+      echo "EL8 PHP 8.0 $bugid"
+      ls -lAh "$CUR_DIR/patches/php/${bugid}.patch"
       if [[ ! -f "${bugid}.patch" && -f "$CUR_DIR/patches/php/${bugid}.patch" ]]; then
         echo
         if [[ "$bugid" != 'php-openssl-cert' ]]; then
@@ -1141,6 +1147,8 @@ php_patches() {
   if [[ "$CENTOS_NINE" -eq '9' && "$PHP_PATCH_OPENSSL_THREE" = [yY] ]] && [[ "$PHPVER_ID" -ge '80000' && "$PHPVER_ID" -lt '80100' ]]; then
     phpeightzero_opensslthree_bugids='php80-snmp-openssl3 php80-openssl3-phar-sha php80-openssl3'
     for bugid in $phpeightzero_opensslthree_bugids; do
+      echo "EL9 PHP 8.0 $bugid"
+      ls -lAh "$CUR_DIR/patches/php/${bugid}.patch"
       if [[ ! -f "${bugid}.patch" && -f "$CUR_DIR/patches/php/${bugid}.patch" ]]; then
         echo
         if [[ "$bugid" != 'php-openssl-cert' ]]; then
