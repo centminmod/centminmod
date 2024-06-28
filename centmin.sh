@@ -30,7 +30,7 @@ DT=$(date +"%d%m%y-%H%M%S")
 branchname='130.00beta01'
 SCRIPT_MAJORVER='130'
 SCRIPT_MINORVER='00'
-SCRIPT_INCREMENTVER='675'
+SCRIPT_INCREMENTVER='676'
 SCRIPT_VERSIONSHORT="${branchname}"
 SCRIPT_VERSION="${SCRIPT_VERSIONSHORT}.b${SCRIPT_INCREMENTVER}"
 SCRIPT_DATE='24/02/24'
@@ -1517,6 +1517,7 @@ source "${SCRIPT_DIR}/inc/mariadb_install105.inc"
 source "${SCRIPT_DIR}/inc/mariadb_install106.inc"
 source "${SCRIPT_DIR}/inc/mariadb_install.inc"
 source "${SCRIPT_DIR}/inc/mysql_install.inc"
+source "${SCRIPT_DIR}/inc/mysqladmin.inc"
 source "${SCRIPT_DIR}/inc/mariadb_submenu.inc"
 source "${SCRIPT_DIR}/inc/postgresql.inc"
 source "${SCRIPT_DIR}/inc/zendopcache_tweaks.inc"
@@ -3621,7 +3622,7 @@ else
             cecho "3).  NSD setup domain name DNS" $boldgreen
             cecho "4).  Nginx Upgrade / Downgrade" $boldgreen
             cecho "5).  PHP Upgrade / Downgrade" $boldgreen
-            cecho "6).  Option Being Revised (TBA)" $boldgreen
+            cecho "6).  MySQL User Database Management" $boldgreen
             cecho "7).  Option Being Revised (TBA)" $boldgreen
             cecho "8).  Option Being Revised (TBA)" $boldgreen
             cecho "9).  Option Being Revised (TBA)" $boldgreen
@@ -3868,38 +3869,21 @@ EOF
         tail -1 "${CENTMINLOGDIR}/$(ls -Art ${CENTMINLOGDIR}/ | grep 'php_upgrade.log' | tail -1)"
         
         ;;
-        6|xcachereinstall)
-        if [ -f "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_xcache_reinstall.log" ]; then
+        6|mysqladminshell)
+        if [ -f "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_mysqladminshell.log" ]; then
             NEWDT=$(date +"%d%m%y-%H%M%S")
-            mv "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_xcache_reinstall.log" "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${NEWDT}_xcache_reinstall.log"
+            mv "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_mysqladminshell.log" "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${NEWDT}_mysqladminshell.log"
         fi
-        # set_logdate
-        CM_MENUOPT=6
-        starttime=$(TZ=UTC date +%s.%N)
-        
+        CM_MENUOPT=6       
         centminlog
         {
-        
-        if [ "$CCACHEINSTALL" == 'y' ]; then
-        ccacheinstall
-        fi
-        
-        funct_xcachereinstall
-        } 2>&1 | tee "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_xcache_reinstall.log"
-        
-        if [ "$CCACHEINSTALL" == 'y' ]; then
-        
-            # check if ccache installed first
-            if [ -f /usr/bin/ccache ]; then
-        { echo ""; source ~/.bashrc; echo "ccache stats:"; ccache -s; echo ""; } 2>&1 | tee -a "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_xcache_reinstall.log"
-            fi
-        fi
-        
-        endtime=$(TZ=UTC date +%s.%N)
-        INSTALLTIME=$(echo "scale=2;$endtime - $starttime"|bc )
-        echo "" >> "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_xcache_reinstall.log"
-        echo "Total Xcache Re-Install Time: $INSTALLTIME seconds" >> "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_xcache_reinstall.log"
-        
+          if [ "$MYSQLADMIN_SHELL" == 'y' ]; then
+            mysql_admin_menu
+            exit 0
+          else
+            echo "TBA"
+          fi
+        } 2>&1 | tee "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_mysqladminshell.log"       
         ;;
         7|apcreinstall)
         if [ -f "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_apc_reinstall.log" ]; then
