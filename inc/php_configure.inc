@@ -265,10 +265,9 @@ echo
 # compiling PHP with LTO support takes 2-4x times the memory
 # and cpu resources to do and takes 2-4x times longer to compile
 # so only do it for servers with enough cpu cores and memory
-CPUS_LTO=$(grep -c "processor" /proc/cpuinfo)
-if [[ "$CPUS_LTO" -lt '16' && "$TOTALMEMMB" -lt '31000' ]]; then
+if [[ "$PHP_LTO_FORCE" != [yY] && "$CPUS_LTO" -lt '16' && "$TOTALMEMMB" -lt '31000' ]]; then
   PHP_LTO='n'
-elif [[ "$CPUS_LTO" -lt '16' && "$TOTALMEMMB" -gt '31000' ]]; then
+elif [[ "$PHP_LTO_FORCE" != [yY] && "$CPUS_LTO" -lt '16' && "$TOTALMEMMB" -gt '31000' ]]; then
   PHP_LTO='n'
 fi
 
@@ -2382,19 +2381,30 @@ if [[ "$GCCINTEL_PHP" = [yY] ]]; then
     echo
 
   # for PHP_LTO='y'
+  if [[ "$CPUS_LTO" -ge '8' ]]; then
+    PHP_FLTO_CPUS='=2'
+    PHP_FLTO_COMP_LEVEL=1
+  fi
   if [[ "$(gcc --version | head -n1 | awk '{print $3}' | cut -d . -f1-3 | sed "s|\.|0|g")" -ge '40805' && "$PHP_GSPLITDWARF" = [yY] && "$PHP_LTO" = [yY] ]]; then
     # remove  -gsplit-dwarf when PHP_LTO='y' seems *.dwo files aren't cleaned from /tmp with it enabled
-    SET_PHPEXTRA_CFLAGS=" -flto -fno-fat-lto-objects -fuse-ld=gold -fuse-linker-plugin -flto-partition=max -Wno-deprecated-declarations${DEVTOOLSETPHP_FALLTHROUGH}${DEVTOOLSETPHP_EXTRAFLAGS}${PHPEXTRA_CFLAGS}"
+    echo "1 SET_PHPEXTRA_CFLAGS=\" -flto${PHP_FLTO_CPUS} -flto-compression-level=${PHP_FLTO_COMP_LEVEL} -fno-fat-lto-objects -fuse-ld=gold -fuse-linker-plugin -flto-partition=max -Wno-deprecated-declarations${DEVTOOLSETPHP_FALLTHROUGH}${DEVTOOLSETPHP_EXTRAFLAGS}${PHPEXTRA_CFLAGS}\""
+    SET_PHPEXTRA_CFLAGS=" -flto${PHP_FLTO_CPUS} -flto-compression-level=${PHP_FLTO_COMP_LEVEL} -fno-fat-lto-objects -fuse-ld=gold -fuse-linker-plugin -flto-partition=max -Wno-deprecated-declarations${DEVTOOLSETPHP_FALLTHROUGH}${DEVTOOLSETPHP_EXTRAFLAGS}${PHPEXTRA_CFLAGS}"
     PHPLTOOPT=' --disable-gcc-global-regs'
   elif [[ "$(gcc --version | head -n1 | awk '{print $3}' | cut -d . -f1-3 | sed "s|\.|0|g")" -ge '40805' && "$PHP_GSPLITDWARF" = [yY] && "$PHP_LTO" = [nN] ]]; then
+    echo "2 SET_PHPEXTRA_CFLAGS=\" -gsplit-dwarf -Wno-deprecated-declarations${PHP_MOLDOPT}${DEVTOOLSETPHP_FALLTHROUGH}${DEVTOOLSETPHP_EXTRAFLAGS}${PHPEXTRA_CFLAGS}\""
     SET_PHPEXTRA_CFLAGS=" -gsplit-dwarf -Wno-deprecated-declarations${PHP_MOLDOPT}${DEVTOOLSETPHP_FALLTHROUGH}${DEVTOOLSETPHP_EXTRAFLAGS}${PHPEXTRA_CFLAGS}"
     PHPLTOOPT=""
   elif [[ "$(gcc --version | head -n1 | awk '{print $3}' | cut -d . -f1-3 | sed "s|\.|0|g")" -ge '40805' && "$PHP_GSPLITDWARF" = [nN] && "$PHP_LTO" = [nN] ]]; then
+    echo "3 SET_PHPEXTRA_CFLAGS=\" -Wno-deprecated-declarations${PHP_MOLDOPT}${DEVTOOLSETPHP_FALLTHROUGH}${DEVTOOLSETPHP_EXTRAFLAGS}${PHPEXTRA_CFLAGS}\""
     SET_PHPEXTRA_CFLAGS=" -Wno-deprecated-declarations${PHP_MOLDOPT}${DEVTOOLSETPHP_FALLTHROUGH}${DEVTOOLSETPHP_EXTRAFLAGS}${PHPEXTRA_CFLAGS}"
     PHPLTOOPT=""
   elif [[ "$(gcc --version | head -n1 | awk '{print $3}' | cut -d . -f1-3 | sed "s|\.|0|g")" -ge '40805' && "$PHP_LTO" = [yY] ]]; then
-    SET_PHPEXTRA_CFLAGS=" -flto -fno-fat-lto-objects -fuse-ld=gold -fuse-linker-plugin -flto-partition=max -Wno-deprecated-declarations${DEVTOOLSETPHP_FALLTHROUGH}${DEVTOOLSETPHP_EXTRAFLAGS}${PHPEXTRA_CFLAGS}"
+    echo "4 SET_PHPEXTRA_CFLAGS=\" -flto${PHP_FLTO_CPUS} -flto-compression-level=${PHP_FLTO_COMP_LEVEL} -fno-fat-lto-objects -fuse-ld=gold -fuse-linker-plugin -flto-partition=max -Wno-deprecated-declarations${DEVTOOLSETPHP_FALLTHROUGH}${DEVTOOLSETPHP_EXTRAFLAGS}${PHPEXTRA_CFLAGS}\""
+    SET_PHPEXTRA_CFLAGS=" -flto${PHP_FLTO_CPUS} -flto-compression-level=${PHP_FLTO_COMP_LEVEL} -fno-fat-lto-objects -fuse-ld=gold -fuse-linker-plugin -flto-partition=max -Wno-deprecated-declarations${DEVTOOLSETPHP_FALLTHROUGH}${DEVTOOLSETPHP_EXTRAFLAGS}${PHPEXTRA_CFLAGS}"
     PHPLTOOPT=' --disable-gcc-global-regs'
+  else
+    echo "5 SET_PHPEXTRA_CFLAGS="
+    echo "PHPLTOOPT="
   fi
 
   if [[ "$(uname -m)" = 'x86_64' && "$CPUVENDOR" = 'GenuineIntel' && "$SSECHECK" = '[enabled]' ]] && [[ "$CLANG_PHP" = [nN] ]]; then
@@ -2579,95 +2589,129 @@ if [[ "$GCCINTEL_PHP" = [yY] ]]; then
     fi
     # if only 1 cpu thread use -O2 to keep compile times sane
     if [[ "$(grep -c "processor" /proc/cpuinfo)" -eq '1' ]]; then
+      echo "export CFLAGS=\"-O2 $PHP_MTUNEOPT -pipe${SET_PHPEXTRA_CFLAGS}\""
       export CFLAGS="-O2 $PHP_MTUNEOPT -pipe${SET_PHPEXTRA_CFLAGS}"
     elif [[ "$(grep -c "processor" /proc/cpuinfo)" -eq '2' ]]; then
+      echo "export CFLAGS=\"-O2 $PHP_MTUNEOPT -pipe${SET_PHPEXTRA_CFLAGS}\""
       export CFLAGS="-O2 $PHP_MTUNEOPT -pipe${SET_PHPEXTRA_CFLAGS}"
     else
+      echo "export CFLAGS=\"-O3 $PHP_MTUNEOPT -pipe${SET_PHPEXTRA_CFLAGS}\""
       export CFLAGS="-O3 $PHP_MTUNEOPT -pipe${SET_PHPEXTRA_CFLAGS}"
     fi
+    echo "export CXXFLAGS=\"$CFLAGS\""
     export CXXFLAGS="$CFLAGS"
   elif [[ "$(uname -m)" = 'x86_64' && "$CPUVENDOR" = 'AuthenticAMD' && "$CPU_MARCH" = 'znver1' ]] && [[ "$CLANG_PHP" = [nN] ]]; then
     CCM=64
     PHP_MTUNEOPT="-m${CCM} -march=${MARCH_TARGET}"
     # if only 1 cpu thread use -O2 to keep compile times sane
     if [[ "$(grep -c "processor" /proc/cpuinfo)" -eq '1' ]]; then
+      echo "export CFLAGS=\"-O2 $PHP_MTUNEOPT -pipe${SET_PHPEXTRA_CFLAGS}\""
       export CFLAGS="-O2 $PHP_MTUNEOPT -pipe${SET_PHPEXTRA_CFLAGS}"
     elif [[ "$(grep -c "processor" /proc/cpuinfo)" -eq '2' ]]; then
+      echo "export CFLAGS=\"-O2 $PHP_MTUNEOPT -pipe${SET_PHPEXTRA_CFLAGS}\""
       export CFLAGS="-O2 $PHP_MTUNEOPT -pipe${SET_PHPEXTRA_CFLAGS}"
     else
+      echo "export CFLAGS=\"-O3 $PHP_MTUNEOPT -pipe${SET_PHPEXTRA_CFLAGS}\""
       export CFLAGS="-O3 $PHP_MTUNEOPT -pipe${SET_PHPEXTRA_CFLAGS}"
     fi
+    echo "export CXXFLAGS=\"$CFLAGS\""
     export CXXFLAGS="$CFLAGS"
   elif [[ "$(uname -m)" = 'x86_64' && "$CPUVENDOR" = 'AuthenticAMD' && "$CPU_MARCH" = 'znver2' ]] && [[ "$CLANG_PHP" = [nN] ]]; then
     CCM=64
     PHP_MTUNEOPT="-m${CCM} -march=${MARCH_TARGET}"
     # if only 1 cpu thread use -O2 to keep compile times sane
     if [[ "$(grep -c "processor" /proc/cpuinfo)" -eq '1' ]]; then
+      echo "export CFLAGS=\"-O2 $PHP_MTUNEOPT -pipe${SET_PHPEXTRA_CFLAGS}\""
       export CFLAGS="-O2 $PHP_MTUNEOPT -pipe${SET_PHPEXTRA_CFLAGS}"
     elif [[ "$(grep -c "processor" /proc/cpuinfo)" -eq '2' ]]; then
+      echo "export CFLAGS=\"-O2 $PHP_MTUNEOPT -pipe${SET_PHPEXTRA_CFLAGS}\""
       export CFLAGS="-O2 $PHP_MTUNEOPT -pipe${SET_PHPEXTRA_CFLAGS}"
     else
+      echo "export CFLAGS=\"-O3 $PHP_MTUNEOPT -pipe${SET_PHPEXTRA_CFLAGS}\""
       export CFLAGS="-O3 $PHP_MTUNEOPT -pipe${SET_PHPEXTRA_CFLAGS}"
     fi
+    echo "export CXXFLAGS=\"$CFLAGS\""
     export CXXFLAGS="$CFLAGS"
   elif [[ "$(uname -m)" = 'x86_64' && "$CPUVENDOR" = 'AuthenticAMD' && "$CPU_MARCH" = 'znver3' ]] && [[ "$CLANG_PHP" = [nN] ]]; then
     CCM=64
     PHP_MTUNEOPT="-m${CCM} -march=${MARCH_TARGET}"
     # if only 1 cpu thread use -O2 to keep compile times sane
     if [[ "$(grep -c "processor" /proc/cpuinfo)" -eq '1' ]]; then
+      echo "export CFLAGS=\"-O2 $PHP_MTUNEOPT -pipe${SET_PHPEXTRA_CFLAGS}\""
       export CFLAGS="-O2 $PHP_MTUNEOPT -pipe${SET_PHPEXTRA_CFLAGS}"
     elif [[ "$(grep -c "processor" /proc/cpuinfo)" -eq '2' ]]; then
+      echo "export CFLAGS=\"-O2 $PHP_MTUNEOPT -pipe${SET_PHPEXTRA_CFLAGS}\""
       export CFLAGS="-O2 $PHP_MTUNEOPT -pipe${SET_PHPEXTRA_CFLAGS}"
     else
+      echo "export CFLAGS=\"-O3 $PHP_MTUNEOPT -pipe${SET_PHPEXTRA_CFLAGS}\""
       export CFLAGS="-O3 $PHP_MTUNEOPT -pipe${SET_PHPEXTRA_CFLAGS}"
     fi
+    echo "export CXXFLAGS=\"$CFLAGS\""
     export CXXFLAGS="$CFLAGS"
   elif [[ "$(uname -m)" = 'x86_64' && "$CPUVENDOR" = 'AuthenticAMD' && "$CPU_MARCH" = 'znver4' ]] && [[ "$CLANG_PHP" = [nN] ]]; then
     CCM=64
     PHP_MTUNEOPT="-m${CCM} -march=${MARCH_TARGET}"
     # if only 1 cpu thread use -O2 to keep compile times sane
     if [[ "$(grep -c "processor" /proc/cpuinfo)" -eq '1' ]]; then
+      echo "export CFLAGS=\"-O2 $PHP_MTUNEOPT -pipe${SET_PHPEXTRA_CFLAGS}\""
       export CFLAGS="-O2 $PHP_MTUNEOPT -pipe${SET_PHPEXTRA_CFLAGS}"
     elif [[ "$(grep -c "processor" /proc/cpuinfo)" -eq '2' ]]; then
+      echo "export CFLAGS=\"-O2 $PHP_MTUNEOPT -pipe${SET_PHPEXTRA_CFLAGS}\""
       export CFLAGS="-O2 $PHP_MTUNEOPT -pipe${SET_PHPEXTRA_CFLAGS}"
     else
+      echo "export CFLAGS=\"-O3 $PHP_MTUNEOPT -pipe${SET_PHPEXTRA_CFLAGS}\""
       export CFLAGS="-O3 $PHP_MTUNEOPT -pipe${SET_PHPEXTRA_CFLAGS}"
     fi
+    echo "export CXXFLAGS=\"$CFLAGS\""
     export CXXFLAGS="$CFLAGS"
   elif [[ "$(uname -m)" = 'x86_64' && "$CPUVENDOR" = 'GenuineIntel' && ! -z "$(echo $MARCHCHECK | grep 'core-avx-i')" ]] && [[ "$CLANG_PHP" = [nN] ]]; then
     CCM=64
     PHP_MTUNEOPT="-m${CCM} -mtune=native"
+    echo "export CFLAGS=\"-O2 $PHP_MTUNEOPT -pipe${SET_PHPEXTRA_CFLAGS}\""
     export CFLAGS="-O2 $PHP_MTUNEOPT -pipe${SET_PHPEXTRA_CFLAGS}"
+    echo "export CXXFLAGS=\"$CFLAGS\""
     export CXXFLAGS="$CFLAGS"
   elif [[ "$(uname -m)" = 'x86_64' && "$CPUVENDOR" = 'GenuineIntel' && ! -z "$(echo $MARCHCHECK | grep 'corei7')" ]] && [[ "$CLANG_PHP" = [nN] ]]; then
     CCM=64
     PHP_MTUNEOPT="-m${CCM} -mtune=native"
+    echo "export CFLAGS=\"-O2 $PHP_MTUNEOPT -pipe${SET_PHPEXTRA_CFLAGS}\""
     export CFLAGS="-O2 $PHP_MTUNEOPT -pipe${SET_PHPEXTRA_CFLAGS}"
+    echo "export CXXFLAGS=\"$CFLAGS\""
     export CXXFLAGS="$CFLAGS"
   elif [[ "$(uname -m)" = 'x86_64' && "$CPUVENDOR" = 'GenuineIntel' && ! -z "$(echo $MARCHCHECK | grep 'core2')" ]] && [[ "$CLANG_PHP" = [nN] ]]; then
     CCM=64
     PHP_MTUNEOPT="-m${CCM} -mtune=native"
+    echo "export CFLAGS=\"-O2 $PHP_MTUNEOPT -pipe${SET_PHPEXTRA_CFLAGS}\""
     export CFLAGS="-O2 $PHP_MTUNEOPT -pipe${SET_PHPEXTRA_CFLAGS}"
+    echo "export CXXFLAGS=\"$CFLAGS\""
     export CXXFLAGS="$CFLAGS"
   elif [[ "$(uname -m)" = 'x86_64' && "$CPUVENDOR" = 'GenuineIntel' && ! -z "$(echo $MARCHCHECK | grep 'pentium')" ]] && [[ "$CLANG_PHP" = [nN] ]]; then
     CCM=64
     PHP_MTUNEOPT="-m${CCM} -mtune=native"
+    echo "export CFLAGS=\"-O2 $PHP_MTUNEOPT -pipe${SET_PHPEXTRA_CFLAGS}\""
     export CFLAGS="-O2 $PHP_MTUNEOPT -pipe${SET_PHPEXTRA_CFLAGS}"
+    echo "export CXXFLAGS=\"$CFLAGS\""
     export CXXFLAGS="$CFLAGS"
   elif [[ "$(uname -m)" = 'x86_64' && "$CPUVENDOR" = 'GenuineIntel' && "$SSECHECK" = '[disabled]' ]] && [[ "$CLANG_PHP" = [nN] ]]; then
     CCM=64
     PHP_MTUNEOPT="-m${CCM} -mtune=native"
+    echo "export CFLAGS=\"-O3 $PHP_MTUNEOPT -pipe${SET_PHPEXTRA_CFLAGS}\""
     export CFLAGS="-O3 $PHP_MTUNEOPT -pipe${SET_PHPEXTRA_CFLAGS}"
+    echo "export CXXFLAGS=\"$CFLAGS\""
     export CXXFLAGS="$CFLAGS"
   elif [[ "$(uname -m)" = 'x86_64' && "$CPUVENDOR" = 'GenuineIntel' && -z "$SSECHECK" ]] && [[ "$CLANG_PHP" = [nN] ]]; then
     CCM=64
     PHP_MTUNEOPT="-m${CCM} -mtune=generic"
+    echo "export CFLAGS=\"-O2 $PHP_MTUNEOPT -pipe${SET_PHPEXTRA_CFLAGS}\""
     export CFLAGS="-O2 $PHP_MTUNEOPT -pipe${SET_PHPEXTRA_CFLAGS}"
+    echo "export CXXFLAGS=\"$CFLAGS\""
     export CXXFLAGS="$CFLAGS"
   elif [[ "$(uname -m)" != 'x86_64' && "$CPUVENDOR" = 'GenuineIntel' ]] && [[ "$CLANG_PHP" = [nN] ]]; then
     CCM=32
     PHP_MTUNEOPT="-m${CCM} -mtune=generic"
+    echo "export CFLAGS=\"-O2 $PHP_MTUNEOPT -pipe${SET_PHPEXTRA_CFLAGS}\""
     export CFLAGS="-O2 $PHP_MTUNEOPT -pipe${SET_PHPEXTRA_CFLAGS}"
+    echo "export CXXFLAGS=\"$CFLAGS\""
     export CXXFLAGS="$CFLAGS"
   else
     PHP_MTUNEOPT=""

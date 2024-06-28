@@ -421,6 +421,13 @@ if [ -f "${CM_INSTALLDIR}/inc/z_custom.inc" ]; then
     source "${CM_INSTALLDIR}/inc/z_custom.inc"
 fi
 
+# compiling Nginx with LTO support takes 2-4x times the memory
+# and cpu resources to do and takes 2-4x times longer to compile
+# so only do it for servers with enough cpu cores and memory
+if [[ "$NGINX_LTO_FORCE" = [yY] && "$BORINGSSL_SWITCH" != [yY] ]] || [[ "$CPUS_LTO" -ge '16' && "$TOTALMEMMB" -ge '31000' && "$BORINGSSL_SWITCH" != [yY] ]]; then
+  NGINX_FATLTO_OBJECTS='y'
+fi
+
 if [[ "$INITIALINSTALL" = [yY] ]] && [[ "$NGINX_PCRE_TWO" = [yY] || "$NGX_LDMOLD" = [yY] ]]; then
     GENERAL_DEVTOOLSETGCC='y'
     ngx_devtoolset_starttime=$(TZ=UTC date +%s.%N)

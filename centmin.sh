@@ -30,7 +30,7 @@ DT=$(date +"%d%m%y-%H%M%S")
 branchname='130.00beta01'
 SCRIPT_MAJORVER='130'
 SCRIPT_MINORVER='00'
-SCRIPT_INCREMENTVER='673'
+SCRIPT_INCREMENTVER='674'
 SCRIPT_VERSIONSHORT="${branchname}"
 SCRIPT_VERSION="${SCRIPT_VERSIONSHORT}.b${SCRIPT_INCREMENTVER}"
 SCRIPT_DATE='24/02/24'
@@ -1292,6 +1292,8 @@ GCC_OPTLEVEL='-O3'
 # https://gcc.gnu.org/onlinedocs/gcc/Optimize-Options.html
 # enabled will set -falign-functions=32 for GCC compiles of Nginx and PHP-FPM and pigz
 GCC_FALIGN_FUNCTION='n'
+# LTO CPUS
+CPUS_LTO=$(grep -c "processor" /proc/cpuinfo)
 
 # experimental custom RPM compiled packages to replace source 
 # compiled versions for 64bit systems only
