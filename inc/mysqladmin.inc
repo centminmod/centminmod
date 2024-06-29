@@ -25,9 +25,11 @@ confirm_and_execute() {
 mysql_admin_menu() {
   while true; do
     clear
-    cecho "--------------------------------------------------------" $boldyellow
+    cecho "----------------------------------------------------------------" $boldyellow
     echo " MySQL User Database Management Sub Menu"
-    cecho "--------------------------------------------------------" $boldyellow
+    cecho "----------------------------------------------------------------" $boldyellow
+    echo " Command Line Version community.centminmod.com/threads/543/"
+    cecho "----------------------------------------------------------------" $boldyellow
     cecho "1). Create MySQL User and Database" $boldgreen
     cecho "2). Add Database to Existing MySQL User" $boldgreen
     cecho "3). Add Existing Database to Existing MySQL User" $boldgreen
@@ -38,7 +40,7 @@ mysql_admin_menu() {
     cecho "8). Create Global MySQL User (access to all databases)" $boldgreen
     cecho "9). Create Multiple MySQL Databases and Users from File" $boldgreen
     cecho "10). Return to Main Menu" $boldgreen
-    cecho "--------------------------------------------------------" $boldyellow
+    cecho "----------------------------------------------------------------" $boldyellow
     read -p "Enter option [ 1 - 10 ]: " mysql_admin_option
 
     case $mysql_admin_option in
