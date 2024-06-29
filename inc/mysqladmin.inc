@@ -39,55 +39,53 @@ mysql_admin_menu() {
     cecho "7). Show Grants for MySQL User" $boldgreen
     cecho "8). Create Global MySQL User (access to all databases)" $boldgreen
     cecho "9). Create Multiple MySQL Databases and Users from File" $boldgreen
-    cecho "10). Return to Main Menu" $boldgreen
+    cecho "10). Delete MySQL Database" $boldgreen
+    cecho "11). List All MySQL Databases and Users" $boldgreen
+    cecho "12). Return to Main Menu" $boldgreen
     cecho "----------------------------------------------------------------" $boldyellow
-    read -p "Enter option [ 1 - 10 ]: " mysql_admin_option
+    read -p "Enter option [ 1 - 12 ]: " mysql_admin_option
 
     case $mysql_admin_option in
       1)
         confirm_and_execute mysqlperm create_mysql_user_and_db
-        # break
         ;;
       2)
         confirm_and_execute mysqlperm add_db_to_existing_mysql_user
-        # break
         ;;
       3)
         confirm_and_execute mysqlperm add_existing_db_to_existing_mysql_user
-        # break
         ;;
       4)
         confirm_and_execute mysqlperm add_existing_db_to_new_mysql_user
-        # break
         ;;
       5)
         confirm_and_execute mysqlperm changeuserpass
-        # break
         ;;
       6)
         confirm_and_execute mysqlperm delusername
-        # break
         ;;
       7)
         confirm_and_execute mysqlperm listgrants
-        # break
         ;;
       8)
         confirm_and_execute mysqlperm createuserglobal
-        # break
         ;;
       9)
         confirm_and_execute mysqlperm multicreatedb
-        # break
         ;;
       10)
+        confirm_and_execute mysqlperm delete_mysql_database
+        ;;
+      11)
+        confirm_and_execute mysqlperm list_mysql_databases_and_users
+        ;;
+      12)
         return
         ;;
       *)
         echo "Invalid option, please try again."
         ;;
     esac
-    # read -p "Press [Enter] key to continue..."
   done
 }
 
@@ -113,6 +111,100 @@ mysqlperm() {
 
   cecho "--------------------------------------------------------------" $boldyellow
   echo ""
+}
+
+list_mysql_databases_and_users() {
+  cecho "--------------------------------------------------------------" $boldyellow
+  cecho "List MySQL Databases, Creation Dates, and Associated Users" $boldgreen
+  cecho "--------------------------------------------------------------" $boldyellow
+
+  if [[ "$rootset" = [yY] ]]; then
+    # Get MySQL data directory
+    datadir=$(mysql ${MYSQLOPTS} -Nse "SELECT @@datadir")
+
+    # Get list of databases
+    databases=$(mysql ${MYSQLOPTS} -Nse "SHOW DATABASES;" | grep -vE '^(information_schema|mysql|performance_schema|sys)$' | sort -V)
+    
+    for db in $databases; do
+      # Use directory modification time as creation date
+      if [[ -d "${datadir}${db}" ]]; then
+        created_date=$(stat -c %y "${datadir}${db}" 2>/dev/null | cut -d. -f1)
+      else
+        created_date="N/A"
+      fi
+
+      # Get users with privileges on this database
+      users=$(mysql ${MYSQLOPTS} -Nse "SELECT DISTINCT GRANTEE FROM information_schema.SCHEMA_PRIVILEGES WHERE TABLE_SCHEMA='$db'" | sed "s/'//g" | cut -d'@' -f1 | sort -V | uniq | tr '\n' ',' | sed 's/,/, /g' | sed 's/, $//')
+      
+      if [[ -z "$users" ]]; then
+        echo "db: $db created: $created_date [users: none]"
+      else
+        echo "db: $db created: $created_date [users: $users]"
+      fi
+    done
+  else
+    cecho "Error: Root access is required to list databases and users." $boldred
+  fi
+
+  echo
+  read -ep "Press [Enter] to continue..."
+}
+
+delete_mysql_database() {
+  cecho "--------------------------------------------------------------" $boldyellow
+  cecho "Delete MySQL Database" $boldgreen
+  cecho "--------------------------------------------------------------" $boldyellow
+  echo "WARNING: Ensure you have a MySQL database backup before deletion!"
+  echo
+
+  read -ep "Enter the name of the database you want to delete: " db_to_delete
+
+  if [[ -z "$db_to_delete" ]]; then
+    cecho "Error: No database name entered. Aborting." $boldred
+    return
+  fi
+
+  # Check if the database exists
+  if [[ "$rootset" = [yY] ]]; then
+    db_exists=$(mysql ${MYSQLOPTS} -Nse "SELECT SCHEMA_NAME FROM INFORMATION_SCHEMA.SCHEMATA WHERE SCHEMA_NAME = '$db_to_delete'")
+  else
+    db_exists=$(mysql -Nse "SELECT SCHEMA_NAME FROM INFORMATION_SCHEMA.SCHEMATA WHERE SCHEMA_NAME = '$db_to_delete'")
+  fi
+
+  if [[ -z "$db_exists" ]]; then
+    cecho "Error: Database '$db_to_delete' does not exist. Aborting deletion." $boldred
+    read -ep "Press [Enter] to continue..."
+    return
+  fi
+
+  cecho "Are you absolutely sure you want to delete the database '$db_to_delete'?" $boldred
+  read -ep "Type the database name again to confirm deletion: " confirm_db_name
+
+  if [[ "$db_to_delete" != "$confirm_db_name" ]]; then
+    cecho "Error: Database names do not match. Aborting deletion." $boldred
+    read -ep "Press [Enter] to continue..."
+    return
+  fi
+
+  if [[ "$rootset" = [yY] ]]; then
+    echo "DROP DATABASE \`$db_to_delete\`;" | mysql ${MYSQLOPTS}
+    ERROR=$?
+  else
+    echo "DROP DATABASE \`$db_to_delete\`;" | mysql
+    ERROR=$?
+  fi
+
+  if [[ "$ERROR" != '0' ]]; then
+    echo ""
+    cecho "Error: Deleting database '$db_to_delete' was unsuccessful" $boldred
+    echo
+  else 
+    echo ""
+    cecho "Ok: Database '$db_to_delete' was successfully deleted" $boldgreen
+    echo
+  fi
+
+  read -ep "Press [Enter] to continue..."
 }
 
 multicreatedb() {
