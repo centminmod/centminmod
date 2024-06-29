@@ -2412,18 +2412,18 @@ if [[ "$GCCINTEL_PHP" = [yY] ]]; then
   # for PHP_LTO='y'
   if [[ "$PHP_LTO" = [yY] && "$CPUS_LTO" -ge '8' ]]; then
     PHP_FLTO_CPUS='=2'
-    PHP_FLTO_COMP_LEVEL=1
+    PHP_FLTO_COMP_LEVEL=' -flto-compression-level=1'
     PHP_FLTO_LDFLAGS=""
   fi
   if [[ "$(gcc --version | head -n1 | awk '{print $3}' | cut -d . -f1-3 | sed "s|\.|0|g")" -ge '40805' && "$PHP_GSPLITDWARF" = [yY] && "$PHP_LTO" = [yY] && "$PHP_LDMOLD" = [yY] ]] && [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]]; then
     # remove  -gsplit-dwarf when PHP_LTO='y' seems *.dwo files aren't cleaned from /tmp with it enabled
-    echo "1 SET_PHPEXTRA_CFLAGS=\" -flto${PHP_FLTO_CPUS} -flto-compression-level=${PHP_FLTO_COMP_LEVEL} -fno-fat-lto-objects${PHP_MOLDOPT} -fuse-linker-plugin -flto-partition=balanced -Wno-deprecated-declarations${DEVTOOLSETPHP_FALLTHROUGH}${DEVTOOLSETPHP_EXTRAFLAGS}${PHPEXTRA_CFLAGS}\""
-    SET_PHPEXTRA_CFLAGS=" -flto${PHP_FLTO_CPUS} -flto-compression-level=${PHP_FLTO_COMP_LEVEL} -fno-fat-lto-objects${PHP_MOLDOPT} -fuse-linker-plugin -flto-partition=balanced -Wno-deprecated-declarations${DEVTOOLSETPHP_FALLTHROUGH}${DEVTOOLSETPHP_EXTRAFLAGS}${PHPEXTRA_CFLAGS}"
+    echo "1 SET_PHPEXTRA_CFLAGS=\" -flto${PHP_FLTO_CPUS}${PHP_FLTO_COMP_LEVEL} -fno-fat-lto-objects${PHP_MOLDOPT} -fuse-linker-plugin -flto-partition=balanced -Wno-deprecated-declarations${DEVTOOLSETPHP_FALLTHROUGH}${DEVTOOLSETPHP_EXTRAFLAGS}${PHPEXTRA_CFLAGS}\""
+    SET_PHPEXTRA_CFLAGS=" -flto${PHP_FLTO_CPUS}${PHP_FLTO_COMP_LEVEL} -fno-fat-lto-objects${PHP_MOLDOPT} -fuse-linker-plugin -flto-partition=balanced -Wno-deprecated-declarations${DEVTOOLSETPHP_FALLTHROUGH}${DEVTOOLSETPHP_EXTRAFLAGS}${PHPEXTRA_CFLAGS}"
     PHPLTOOPT=' --disable-gcc-global-regs'
   elif [[ "$(gcc --version | head -n1 | awk '{print $3}' | cut -d . -f1-3 | sed "s|\.|0|g")" -ge '40805' && "$PHP_GSPLITDWARF" = [yY] && "$PHP_LTO" = [yY] ]]; then
     # remove  -gsplit-dwarf when PHP_LTO='y' seems *.dwo files aren't cleaned from /tmp with it enabled
-    echo "1 SET_PHPEXTRA_CFLAGS=\" -flto${PHP_FLTO_CPUS} -flto-compression-level=${PHP_FLTO_COMP_LEVEL} -fno-fat-lto-objects -fuse-ld=gold -fuse-linker-plugin -flto-partition=balanced -Wno-deprecated-declarations${DEVTOOLSETPHP_FALLTHROUGH}${DEVTOOLSETPHP_EXTRAFLAGS}${PHPEXTRA_CFLAGS}\""
-    SET_PHPEXTRA_CFLAGS=" -flto${PHP_FLTO_CPUS} -flto-compression-level=${PHP_FLTO_COMP_LEVEL} -fno-fat-lto-objects -fuse-ld=gold -fuse-linker-plugin -flto-partition=balanced -Wno-deprecated-declarations${DEVTOOLSETPHP_FALLTHROUGH}${DEVTOOLSETPHP_EXTRAFLAGS}${PHPEXTRA_CFLAGS}"
+    echo "1 SET_PHPEXTRA_CFLAGS=\" -flto${PHP_FLTO_CPUS}${PHP_FLTO_COMP_LEVEL} -fno-fat-lto-objects -fuse-ld=gold -fuse-linker-plugin -flto-partition=balanced -Wno-deprecated-declarations${DEVTOOLSETPHP_FALLTHROUGH}${DEVTOOLSETPHP_EXTRAFLAGS}${PHPEXTRA_CFLAGS}\""
+    SET_PHPEXTRA_CFLAGS=" -flto${PHP_FLTO_CPUS}${PHP_FLTO_COMP_LEVEL} -fno-fat-lto-objects -fuse-ld=gold -fuse-linker-plugin -flto-partition=balanced -Wno-deprecated-declarations${DEVTOOLSETPHP_FALLTHROUGH}${DEVTOOLSETPHP_EXTRAFLAGS}${PHPEXTRA_CFLAGS}"
     PHPLTOOPT=' --disable-gcc-global-regs'
   elif [[ "$(gcc --version | head -n1 | awk '{print $3}' | cut -d . -f1-3 | sed "s|\.|0|g")" -ge '40805' && "$PHP_GSPLITDWARF" = [yY] && "$PHP_LTO" = [nN] ]]; then
     echo "2 SET_PHPEXTRA_CFLAGS=\" -gsplit-dwarf -Wno-deprecated-declarations${PHP_MOLDOPT}${DEVTOOLSETPHP_FALLTHROUGH}${DEVTOOLSETPHP_EXTRAFLAGS}${PHPEXTRA_CFLAGS}\""
@@ -2434,8 +2434,8 @@ if [[ "$GCCINTEL_PHP" = [yY] ]]; then
     SET_PHPEXTRA_CFLAGS=" -Wno-deprecated-declarations${PHP_MOLDOPT}${DEVTOOLSETPHP_FALLTHROUGH}${DEVTOOLSETPHP_EXTRAFLAGS}${PHPEXTRA_CFLAGS}"
     PHPLTOOPT=""
   elif [[ "$(gcc --version | head -n1 | awk '{print $3}' | cut -d . -f1-3 | sed "s|\.|0|g")" -ge '40805' && "$PHP_LTO" = [yY] ]]; then
-    echo "4 SET_PHPEXTRA_CFLAGS=\" -flto${PHP_FLTO_CPUS} -flto-compression-level=${PHP_FLTO_COMP_LEVEL} -fno-fat-lto-objects -fuse-ld=gold -fuse-linker-plugin -flto-partition=balanced -Wno-deprecated-declarations${DEVTOOLSETPHP_FALLTHROUGH}${DEVTOOLSETPHP_EXTRAFLAGS}${PHPEXTRA_CFLAGS}\""
-    SET_PHPEXTRA_CFLAGS=" -flto${PHP_FLTO_CPUS} -flto-compression-level=${PHP_FLTO_COMP_LEVEL} -fno-fat-lto-objects -fuse-ld=gold -fuse-linker-plugin -flto-partition=balanced -Wno-deprecated-declarations${DEVTOOLSETPHP_FALLTHROUGH}${DEVTOOLSETPHP_EXTRAFLAGS}${PHPEXTRA_CFLAGS}"
+    echo "4 SET_PHPEXTRA_CFLAGS=\" -flto${PHP_FLTO_CPUS}${PHP_FLTO_COMP_LEVEL} -fno-fat-lto-objects -fuse-ld=gold -fuse-linker-plugin -flto-partition=balanced -Wno-deprecated-declarations${DEVTOOLSETPHP_FALLTHROUGH}${DEVTOOLSETPHP_EXTRAFLAGS}${PHPEXTRA_CFLAGS}\""
+    SET_PHPEXTRA_CFLAGS=" -flto${PHP_FLTO_CPUS}${PHP_FLTO_COMP_LEVEL} -fno-fat-lto-objects -fuse-ld=gold -fuse-linker-plugin -flto-partition=balanced -Wno-deprecated-declarations${DEVTOOLSETPHP_FALLTHROUGH}${DEVTOOLSETPHP_EXTRAFLAGS}${PHPEXTRA_CFLAGS}"
     PHPLTOOPT=' --disable-gcc-global-regs'
   else
     echo "5 SET_PHPEXTRA_CFLAGS="
