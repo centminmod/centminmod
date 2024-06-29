@@ -585,7 +585,14 @@ if [[ "$DETECTOPENSSL_THREEZERO" = '3.0' || "$DETECTOPENSSL_THREEONE" = '3.1' ||
   PHP_CUSTOMSSL='n'
 fi
 
-if [[ "$PHP_CUSTOMSSL" != [yY] && "$PHP_LDMOLD" = [yY] && -s /usr/local/libexec/mold ]]; then
+if [[ "$PHP_CUSTOMSSL" != [yY] && "$PHP_LDMOLD" = [yY] && -s /usr/bin/mold ]]; then
+  # PHP mold linker not compatible with custom OpenSSL 1.1.1 PHP builds
+  if [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]]; then 
+    PHP_MOLDOPT=' -fuse-ld=mold'
+  else
+    PHP_MOLDOPT=' -B/usr/bin/mold'
+  fi
+elif [[ "$PHP_CUSTOMSSL" != [yY] && "$PHP_LDMOLD" = [yY] && -s /usr/local/libexec/mold ]]; then
   # PHP mold linker not compatible with custom OpenSSL 1.1.1 PHP builds
   PHP_MOLDOPT=' -B/usr/local/libexec/mold'
 else
@@ -2163,63 +2170,63 @@ if [[ "$GCCINTEL_PHP" = [yY] ]]; then
   fi
 
   if [[ "$(gcc --version | head -n1 | awk '{print $3}' | cut -d . -f1-3 | sed "s|\.|0|g")" -ge '40805' && "$PHP_LTO" = [yY] ]]; then
-    if [[ -f /opt/rh/devtoolset-11/enable && "$DEVTOOLSETELEVEN" = [yY] ]] && [[ "$DEVTOOLSETTEN" = [yY] && "$DEVTOOLSETNINE" = [yY] && "$DEVTOOLSETEIGHT" = [yY] && "$DEVTOOLSETSEVEN" = [yY] ]]; then
-      DEVTOOLSETELEVEN='y'
-      DEVTOOLSETTEN='n'
-      DEVTOOLSETNINE='n'
-      DEVTOOLSETEIGHT='n'
-      DEVTOOLSETSEVEN='n'    
-    elif [[ -f /opt/rh/gcc-toolset-11/enable && "$DEVTOOLSETELEVEN" = [yY] ]] && [[ "$DEVTOOLSETTEN" = [yY] && "$DEVTOOLSETNINE" = [yY] && "$DEVTOOLSETEIGHT" = [yY] && "$DEVTOOLSETSEVEN" = [yY] ]]; then
-      DEVTOOLSETTEN='y'
-      DEVTOOLSETNINE='n'
-      DEVTOOLSETEIGHT='n'
-      DEVTOOLSETSEVEN='n'
-    elif [[ -f /opt/rh/gcc-toolset-10/enable && "$DEVTOOLSETTEN" = [yY] ]] && [[ "$DEVTOOLSETNINE" = [yY] && "$DEVTOOLSETEIGHT" = [yY] && "$DEVTOOLSETSEVEN" = [yY] ]]; then
-      DEVTOOLSETTEN='y'
-      DEVTOOLSETNINE='n'
-      DEVTOOLSETEIGHT='n'
-      DEVTOOLSETSEVEN='n'
-    elif [[ -f /opt/rh/gcc-toolset-9/enable && "$DEVTOOLSETNINE" = [yY] ]] && [[ "$DEVTOOLSETEIGHT" = [yY] && "$DEVTOOLSETSEVEN" = [yY] ]]; then
-      DEVTOOLSETTEN='n'
-      DEVTOOLSETNINE='y'
-      DEVTOOLSETEIGHT='n'
-      DEVTOOLSETSEVEN='n'
-    elif [[ -f /opt/rh/devtoolset-10/enable && "$DEVTOOLSETTEN" = [yY] ]] && [[ "$DEVTOOLSETNINE" = [yY] && "$DEVTOOLSETEIGHT" = [yY] && "$DEVTOOLSETSEVEN" = [yY] ]]; then
-      DEVTOOLSETTEN='y'
-      DEVTOOLSETNINE='n'
-      DEVTOOLSETEIGHT='n'
-      DEVTOOLSETSEVEN='n'
-    elif [[ -f /opt/gcc9/enable && "$DEVTOOLSETNINE" = [yY] ]] && [[ "$DEVTOOLSETEIGHT" = [yY] && "$DEVTOOLSETSEVEN" = [yY] ]]; then
-      DEVTOOLSETELEVEN='n'
-      DEVTOOLSETTEN='n'
-      DEVTOOLSETNINE='y'
-      DEVTOOLSETEIGHT='n'
-      DEVTOOLSETSEVEN='n'
-    elif [[ ! -f /opt/gcc9/enable || "$DEVTOOLSETNINE" != [yY] ]] && [[ "$DEVTOOLSETEIGHT" = [yY] && "$DEVTOOLSETSEVEN" = [yY] ]]; then
-      DEVTOOLSETELEVEN='n'
-      DEVTOOLSETTEN='n'
-      DEVTOOLSETNINE='n'
-      DEVTOOLSETEIGHT='y'
-      DEVTOOLSETSEVEN='n'
-    elif [[ -f /opt/rh/devtoolset-9/enable && "$DEVTOOLSETNINE" = [yY] ]] && [[ "$DEVTOOLSETEIGHT" = [yY] && "$DEVTOOLSETSEVEN" = [yY] ]]; then
-      DEVTOOLSETELEVEN='n'
-      DEVTOOLSETTEN='n'
-      DEVTOOLSETNINE='y'
-      DEVTOOLSETEIGHT='n'
-      DEVTOOLSETSEVEN='n'
-    elif [[ ! -f /opt/rh/devtoolset-9/enable || "$DEVTOOLSETNINE" != [yY] ]] && [[ "$DEVTOOLSETEIGHT" = [yY] && "$DEVTOOLSETSEVEN" = [yY] ]]; then
-      DEVTOOLSETELEVEN='n'
-      DEVTOOLSETTEN='n'
-      DEVTOOLSETNINE='n'
-      DEVTOOLSETEIGHT='y'
-      DEVTOOLSETSEVEN='n'
-    elif [[ "$DEVTOOLSETEIGHT" = [nN] && "$DEVTOOLSETSEVEN" = [yY] ]]; then
-      DEVTOOLSETEIGHT='y'
-      DEVTOOLSETSEVEN='n'
-    else
-      DEVTOOLSETEIGHT='y'
-      DEVTOOLSETSEVEN='y'
-    fi
+    # if [[ -f /opt/rh/devtoolset-11/enable && "$DEVTOOLSETELEVEN" = [yY] ]] && [[ "$DEVTOOLSETTEN" = [yY] && "$DEVTOOLSETNINE" = [yY] && "$DEVTOOLSETEIGHT" = [yY] && "$DEVTOOLSETSEVEN" = [yY] ]]; then
+    #   DEVTOOLSETELEVEN='y'
+    #   DEVTOOLSETTEN='n'
+    #   DEVTOOLSETNINE='n'
+    #   DEVTOOLSETEIGHT='n'
+    #   DEVTOOLSETSEVEN='n'    
+    # elif [[ -f /opt/rh/gcc-toolset-11/enable && "$DEVTOOLSETELEVEN" = [yY] ]] && [[ "$DEVTOOLSETTEN" = [yY] && "$DEVTOOLSETNINE" = [yY] && "$DEVTOOLSETEIGHT" = [yY] && "$DEVTOOLSETSEVEN" = [yY] ]]; then
+    #   DEVTOOLSETTEN='y'
+    #   DEVTOOLSETNINE='n'
+    #   DEVTOOLSETEIGHT='n'
+    #   DEVTOOLSETSEVEN='n'
+    # elif [[ -f /opt/rh/gcc-toolset-10/enable && "$DEVTOOLSETTEN" = [yY] ]] && [[ "$DEVTOOLSETNINE" = [yY] && "$DEVTOOLSETEIGHT" = [yY] && "$DEVTOOLSETSEVEN" = [yY] ]]; then
+    #   DEVTOOLSETTEN='y'
+    #   DEVTOOLSETNINE='n'
+    #   DEVTOOLSETEIGHT='n'
+    #   DEVTOOLSETSEVEN='n'
+    # elif [[ -f /opt/rh/gcc-toolset-9/enable && "$DEVTOOLSETNINE" = [yY] ]] && [[ "$DEVTOOLSETEIGHT" = [yY] && "$DEVTOOLSETSEVEN" = [yY] ]]; then
+    #   DEVTOOLSETTEN='n'
+    #   DEVTOOLSETNINE='y'
+    #   DEVTOOLSETEIGHT='n'
+    #   DEVTOOLSETSEVEN='n'
+    # elif [[ -f /opt/rh/devtoolset-10/enable && "$DEVTOOLSETTEN" = [yY] ]] && [[ "$DEVTOOLSETNINE" = [yY] && "$DEVTOOLSETEIGHT" = [yY] && "$DEVTOOLSETSEVEN" = [yY] ]]; then
+    #   DEVTOOLSETTEN='y'
+    #   DEVTOOLSETNINE='n'
+    #   DEVTOOLSETEIGHT='n'
+    #   DEVTOOLSETSEVEN='n'
+    # elif [[ -f /opt/gcc9/enable && "$DEVTOOLSETNINE" = [yY] ]] && [[ "$DEVTOOLSETEIGHT" = [yY] && "$DEVTOOLSETSEVEN" = [yY] ]]; then
+    #   DEVTOOLSETELEVEN='n'
+    #   DEVTOOLSETTEN='n'
+    #   DEVTOOLSETNINE='y'
+    #   DEVTOOLSETEIGHT='n'
+    #   DEVTOOLSETSEVEN='n'
+    # elif [[ ! -f /opt/gcc9/enable || "$DEVTOOLSETNINE" != [yY] ]] && [[ "$DEVTOOLSETEIGHT" = [yY] && "$DEVTOOLSETSEVEN" = [yY] ]]; then
+    #   DEVTOOLSETELEVEN='n'
+    #   DEVTOOLSETTEN='n'
+    #   DEVTOOLSETNINE='n'
+    #   DEVTOOLSETEIGHT='y'
+    #   DEVTOOLSETSEVEN='n'
+    # elif [[ -f /opt/rh/devtoolset-9/enable && "$DEVTOOLSETNINE" = [yY] ]] && [[ "$DEVTOOLSETEIGHT" = [yY] && "$DEVTOOLSETSEVEN" = [yY] ]]; then
+    #   DEVTOOLSETELEVEN='n'
+    #   DEVTOOLSETTEN='n'
+    #   DEVTOOLSETNINE='y'
+    #   DEVTOOLSETEIGHT='n'
+    #   DEVTOOLSETSEVEN='n'
+    # elif [[ ! -f /opt/rh/devtoolset-9/enable || "$DEVTOOLSETNINE" != [yY] ]] && [[ "$DEVTOOLSETEIGHT" = [yY] && "$DEVTOOLSETSEVEN" = [yY] ]]; then
+    #   DEVTOOLSETELEVEN='n'
+    #   DEVTOOLSETTEN='n'
+    #   DEVTOOLSETNINE='n'
+    #   DEVTOOLSETEIGHT='y'
+    #   DEVTOOLSETSEVEN='n'
+    # elif [[ "$DEVTOOLSETEIGHT" = [nN] && "$DEVTOOLSETSEVEN" = [yY] ]]; then
+    #   DEVTOOLSETEIGHT='y'
+    #   DEVTOOLSETSEVEN='n'
+    # else
+    #   DEVTOOLSETEIGHT='y'
+    #   DEVTOOLSETSEVEN='y'
+    # fi
     if [[ "$DEVTOOLSETNINE" = [yY] ]] && [[ -f /opt/gcc9/bin/gcc && -f /opt/gcc9/bin/g++ ]]; then
       GENERAL_DEVTOOLSETGCC='y'
       DEVTOOLSETPHP_FALLTHROUGH=' -Wimplicit-fallthrough=0 -Wno-implicit-function-declaration -Wno-int-conversion -Wno-unused-result -Wno-missing-profile -Wno-pointer-to-int-cast -Wno-error=strict-prototypes -Wno-attribute-warning -Wno-enum-int-mismatch -Wno-stringop-overflow'
@@ -2253,6 +2260,28 @@ if [[ "$GCCINTEL_PHP" = [yY] ]]; then
       unset CXX
       export CC="ccache /opt/rh/devtoolset-11/root/usr/bin/gcc"
       export CXX="ccache /opt/rh/devtoolset-11/root/usr/bin/g++"
+    elif [[ "$DEVTOOLSETTHIRTEEN" = [yY] && -f /opt/rh/gcc-toolset-13/root/usr/bin/gcc && -f /opt/rh/gcc-toolset-13/root/usr/bin/g++ ]]; then
+      GENERAL_DEVTOOLSETGCC='y'
+      DEVTOOLSETPHP_FALLTHROUGH=' -Wimplicit-fallthrough=0 -Wno-implicit-function-declaration -Wno-int-conversion -Wno-error=unused-result -Wno-unused-result -Wno-vla-parameter -Wno-maybe-uninitialized -Wno-array-bounds -Wno-stringop-overread -Wno-missing-profile -Wno-pointer-to-int-cast -Wno-error=strict-prototypes -Wno-attribute-warning -Wno-enum-int-mismatch -Wno-stringop-overflow'
+      DEVTOOLSETPHP_EXTRAFLAGS=' -fcode-hoisting'
+      source /opt/rh/gcc-toolset-13/enable
+      which gcc
+      which g++
+      unset CC
+      unset CXX
+      export CC="ccache /opt/rh/gcc-toolset-13/root/usr/bin/gcc"
+      export CXX="ccache /opt/rh/gcc-toolset-13/root/usr/bin/g++"
+    elif [[ "$DEVTOOLSETTWELVE" = [yY] && -f /opt/rh/gcc-toolset-12/root/usr/bin/gcc && -f /opt/rh/gcc-toolset-12/root/usr/bin/g++ ]]; then
+      GENERAL_DEVTOOLSETGCC='y'
+      DEVTOOLSETPHP_FALLTHROUGH=' -Wimplicit-fallthrough=0 -Wno-implicit-function-declaration -Wno-int-conversion -Wno-error=unused-result -Wno-unused-result -Wno-vla-parameter -Wno-maybe-uninitialized -Wno-array-bounds -Wno-stringop-overread -Wno-missing-profile -Wno-pointer-to-int-cast -Wno-error=strict-prototypes -Wno-attribute-warning -Wno-enum-int-mismatch -Wno-stringop-overflow'
+      DEVTOOLSETPHP_EXTRAFLAGS=' -fcode-hoisting'
+      source /opt/rh/gcc-toolset-12/enable
+      which gcc
+      which g++
+      unset CC
+      unset CXX
+      export CC="ccache /opt/rh/gcc-toolset-12/root/usr/bin/gcc"
+      export CXX="ccache /opt/rh/gcc-toolset-12/root/usr/bin/g++"
     elif [[ "$DEVTOOLSETELEVEN" = [yY] && -f /opt/rh/gcc-toolset-11/root/usr/bin/gcc && -f /opt/rh/gcc-toolset-11/root/usr/bin/g++ ]]; then
       GENERAL_DEVTOOLSETGCC='y'
       DEVTOOLSETPHP_FALLTHROUGH=' -Wimplicit-fallthrough=0 -Wno-implicit-function-declaration -Wno-int-conversion -Wno-error=unused-result -Wno-unused-result -Wno-vla-parameter -Wno-maybe-uninitialized -Wno-array-bounds -Wno-stringop-overread -Wno-missing-profile -Wno-pointer-to-int-cast -Wno-error=strict-prototypes -Wno-attribute-warning -Wno-enum-int-mismatch -Wno-stringop-overflow'
@@ -2386,10 +2415,15 @@ if [[ "$GCCINTEL_PHP" = [yY] ]]; then
     PHP_FLTO_COMP_LEVEL=1
     PHP_FLTO_LDFLAGS=""
   fi
-  if [[ "$(gcc --version | head -n1 | awk '{print $3}' | cut -d . -f1-3 | sed "s|\.|0|g")" -ge '40805' && "$PHP_GSPLITDWARF" = [yY] && "$PHP_LTO" = [yY] ]]; then
+  if [[ "$(gcc --version | head -n1 | awk '{print $3}' | cut -d . -f1-3 | sed "s|\.|0|g")" -ge '40805' && "$PHP_GSPLITDWARF" = [yY] && "$PHP_LTO" = [yY] && "$PHP_LDMOLD" = [yY] ]] && [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]]; then
     # remove  -gsplit-dwarf when PHP_LTO='y' seems *.dwo files aren't cleaned from /tmp with it enabled
-    echo "1 SET_PHPEXTRA_CFLAGS=\" -flto${PHP_FLTO_CPUS} -flto-compression-level=${PHP_FLTO_COMP_LEVEL} -fno-fat-lto-objects -fuse-ld=gold -fuse-linker-plugin -flto-partition=max -Wno-deprecated-declarations${DEVTOOLSETPHP_FALLTHROUGH}${DEVTOOLSETPHP_EXTRAFLAGS}${PHPEXTRA_CFLAGS}\""
-    SET_PHPEXTRA_CFLAGS=" -flto${PHP_FLTO_CPUS} -flto-compression-level=${PHP_FLTO_COMP_LEVEL} -fno-fat-lto-objects -fuse-ld=gold -fuse-linker-plugin -flto-partition=max -Wno-deprecated-declarations${DEVTOOLSETPHP_FALLTHROUGH}${DEVTOOLSETPHP_EXTRAFLAGS}${PHPEXTRA_CFLAGS}"
+    echo "1 SET_PHPEXTRA_CFLAGS=\" -flto${PHP_FLTO_CPUS} -flto-compression-level=${PHP_FLTO_COMP_LEVEL} -fno-fat-lto-objects${PHP_MOLDOPT} -fuse-linker-plugin -flto-partition=balanced -Wno-deprecated-declarations${DEVTOOLSETPHP_FALLTHROUGH}${DEVTOOLSETPHP_EXTRAFLAGS}${PHPEXTRA_CFLAGS}\""
+    SET_PHPEXTRA_CFLAGS=" -flto${PHP_FLTO_CPUS} -flto-compression-level=${PHP_FLTO_COMP_LEVEL} -fno-fat-lto-objects${PHP_MOLDOPT} -fuse-linker-plugin -flto-partition=balanced -Wno-deprecated-declarations${DEVTOOLSETPHP_FALLTHROUGH}${DEVTOOLSETPHP_EXTRAFLAGS}${PHPEXTRA_CFLAGS}"
+    PHPLTOOPT=' --disable-gcc-global-regs'
+  elif [[ "$(gcc --version | head -n1 | awk '{print $3}' | cut -d . -f1-3 | sed "s|\.|0|g")" -ge '40805' && "$PHP_GSPLITDWARF" = [yY] && "$PHP_LTO" = [yY] ]]; then
+    # remove  -gsplit-dwarf when PHP_LTO='y' seems *.dwo files aren't cleaned from /tmp with it enabled
+    echo "1 SET_PHPEXTRA_CFLAGS=\" -flto${PHP_FLTO_CPUS} -flto-compression-level=${PHP_FLTO_COMP_LEVEL} -fno-fat-lto-objects -fuse-ld=gold -fuse-linker-plugin -flto-partition=balanced -Wno-deprecated-declarations${DEVTOOLSETPHP_FALLTHROUGH}${DEVTOOLSETPHP_EXTRAFLAGS}${PHPEXTRA_CFLAGS}\""
+    SET_PHPEXTRA_CFLAGS=" -flto${PHP_FLTO_CPUS} -flto-compression-level=${PHP_FLTO_COMP_LEVEL} -fno-fat-lto-objects -fuse-ld=gold -fuse-linker-plugin -flto-partition=balanced -Wno-deprecated-declarations${DEVTOOLSETPHP_FALLTHROUGH}${DEVTOOLSETPHP_EXTRAFLAGS}${PHPEXTRA_CFLAGS}"
     PHPLTOOPT=' --disable-gcc-global-regs'
   elif [[ "$(gcc --version | head -n1 | awk '{print $3}' | cut -d . -f1-3 | sed "s|\.|0|g")" -ge '40805' && "$PHP_GSPLITDWARF" = [yY] && "$PHP_LTO" = [nN] ]]; then
     echo "2 SET_PHPEXTRA_CFLAGS=\" -gsplit-dwarf -Wno-deprecated-declarations${PHP_MOLDOPT}${DEVTOOLSETPHP_FALLTHROUGH}${DEVTOOLSETPHP_EXTRAFLAGS}${PHPEXTRA_CFLAGS}\""
@@ -2400,8 +2434,8 @@ if [[ "$GCCINTEL_PHP" = [yY] ]]; then
     SET_PHPEXTRA_CFLAGS=" -Wno-deprecated-declarations${PHP_MOLDOPT}${DEVTOOLSETPHP_FALLTHROUGH}${DEVTOOLSETPHP_EXTRAFLAGS}${PHPEXTRA_CFLAGS}"
     PHPLTOOPT=""
   elif [[ "$(gcc --version | head -n1 | awk '{print $3}' | cut -d . -f1-3 | sed "s|\.|0|g")" -ge '40805' && "$PHP_LTO" = [yY] ]]; then
-    echo "4 SET_PHPEXTRA_CFLAGS=\" -flto${PHP_FLTO_CPUS} -flto-compression-level=${PHP_FLTO_COMP_LEVEL} -fno-fat-lto-objects -fuse-ld=gold -fuse-linker-plugin -flto-partition=max -Wno-deprecated-declarations${DEVTOOLSETPHP_FALLTHROUGH}${DEVTOOLSETPHP_EXTRAFLAGS}${PHPEXTRA_CFLAGS}\""
-    SET_PHPEXTRA_CFLAGS=" -flto${PHP_FLTO_CPUS} -flto-compression-level=${PHP_FLTO_COMP_LEVEL} -fno-fat-lto-objects -fuse-ld=gold -fuse-linker-plugin -flto-partition=max -Wno-deprecated-declarations${DEVTOOLSETPHP_FALLTHROUGH}${DEVTOOLSETPHP_EXTRAFLAGS}${PHPEXTRA_CFLAGS}"
+    echo "4 SET_PHPEXTRA_CFLAGS=\" -flto${PHP_FLTO_CPUS} -flto-compression-level=${PHP_FLTO_COMP_LEVEL} -fno-fat-lto-objects -fuse-ld=gold -fuse-linker-plugin -flto-partition=balanced -Wno-deprecated-declarations${DEVTOOLSETPHP_FALLTHROUGH}${DEVTOOLSETPHP_EXTRAFLAGS}${PHPEXTRA_CFLAGS}\""
+    SET_PHPEXTRA_CFLAGS=" -flto${PHP_FLTO_CPUS} -flto-compression-level=${PHP_FLTO_COMP_LEVEL} -fno-fat-lto-objects -fuse-ld=gold -fuse-linker-plugin -flto-partition=balanced -Wno-deprecated-declarations${DEVTOOLSETPHP_FALLTHROUGH}${DEVTOOLSETPHP_EXTRAFLAGS}${PHPEXTRA_CFLAGS}"
     PHPLTOOPT=' --disable-gcc-global-regs'
   else
     echo "5 SET_PHPEXTRA_CFLAGS="

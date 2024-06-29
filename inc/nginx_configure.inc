@@ -170,11 +170,11 @@ mold_check() {
       yum -y install mold
     elif [[ "$CENTOS_EIGHT" = '8' && "$(uname -m)" = 'x86_64' ]] && [[ ! -f /usr/bin/mold ]]; then
       yum -y install mold
-    elif [[ "$CENTOS_EIGHT" = '8' && "$(uname -m)" = 'x86_64' ]] && [[ "$(rpm -qa centmin-mold | grep -o "centmin-mold-${MOLD_VERSION_EL8}")" != "centmin-mold-${MOLD_VERSION_EL8}" || ! -s /usr/local/libexec/mold ]]; then
-      echo "installing newer mold ${MOLD_VERSION_EL8}"
-      wget${ipv_forceopt_wget} -q "${LOCALCENTMINMOD_MIRROR}/centminmodparts/mold/centmin-mold-${MOLD_VERSION_EL8}-1.el8.x86_64.rpm" -O "${DIR_TMP}/centmin-mold-${MOLD_VERSION_EL8}-1.el8.x86_64.rpm"
-      echo "yum -y localinstall ${DIR_TMP}/centmin-mold-${MOLD_VERSION_EL8}-1.el8.x86_64.rpm"
-      yum -y localinstall "${DIR_TMP}/centmin-mold-${MOLD_VERSION_EL8}-1.el8.x86_64.rpm"
+    # elif [[ "$CENTOS_EIGHT" = '8' && "$(uname -m)" = 'x86_64' ]] && [[ "$(rpm -qa centmin-mold | grep -o "centmin-mold-${MOLD_VERSION_EL8}")" != "centmin-mold-${MOLD_VERSION_EL8}" || ! -s /usr/local/libexec/mold ]]; then
+    #   echo "installing newer mold ${MOLD_VERSION_EL8}"
+    #   wget${ipv_forceopt_wget} -q "${LOCALCENTMINMOD_MIRROR}/centminmodparts/mold/centmin-mold-${MOLD_VERSION_EL8}-1.el8.x86_64.rpm" -O "${DIR_TMP}/centmin-mold-${MOLD_VERSION_EL8}-1.el8.x86_64.rpm"
+    #   echo "yum -y localinstall ${DIR_TMP}/centmin-mold-${MOLD_VERSION_EL8}-1.el8.x86_64.rpm"
+    #   yum -y localinstall "${DIR_TMP}/centmin-mold-${MOLD_VERSION_EL8}-1.el8.x86_64.rpm"
     fi
 }
 

@@ -677,7 +677,11 @@ crypto_gcc() {
       if [[ "$NGX_LDMOLD" = [yY] ]]; then
         mold_check
         if [ -f /usr/bin/mold ]; then
-          MOLD_LINKER_OPT=' -B/usr/bin/mold'
+          if [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]]; then 
+            MOLD_LINKER_OPT=' -fuse-ld=mold'
+          else
+            MOLD_LINKER_OPT=' -B/usr/bin/mold'
+          fi
         elif [ -f /usr/local/libexec/mold ]; then
           MOLD_LINKER_OPT=' -B/usr/local/libexec/mold'
         else

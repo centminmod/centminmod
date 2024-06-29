@@ -64,7 +64,11 @@ enable_devtoolset() {
       if [[ "$NGX_LDMOLD" = [yY] ]]; then
         mold_check
         if [ -f /usr/bin/mold ]; then
-          MOLD_LINKER_OPT=' -B/usr/bin/mold'
+          if [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]]; then 
+            MOLD_LINKER_OPT=' -fuse-ld=mold'
+          else
+            MOLD_LINKER_OPT=' -B/usr/bin/mold'
+          fi
         elif [ -f /usr/local/libexec/mold ]; then
           MOLD_LINKER_OPT=' -B/usr/local/libexec/mold'
         else
@@ -74,6 +78,7 @@ enable_devtoolset() {
       else
         MOLD_LINKER_OPT=""
       fi
+
       # devtoolset-4 usage for ngx_pagespeed 1.10 branch which doesn't support
       # centos 6 based gcc 4.4.7
       if [[ "$CENTOS_SIX" -eq 6 || "$CENTOS_SEVEN" -eq 7 || "$CENTOS_EIGHT" -eq 8 || "$CENTOS_NINE" -eq 9 ]]; then
