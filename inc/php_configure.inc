@@ -585,7 +585,7 @@ if [[ "$DETECTOPENSSL_THREEZERO" = '3.0' || "$DETECTOPENSSL_THREEONE" = '3.1' ||
   PHP_CUSTOMSSL='n'
 fi
 
-if [[ "$PHP_CUSTOMSSL" != [yY] && "$PHP_LDMOLD" = [yY] && -s /usr/bin/mold ]]; then
+if [[ "$PHP_CUSTOMSSL" != [yY] && "$PHP_LDMOLD" = [yY] && -f /usr/bin/mold ]]; then
   # PHP mold linker not compatible with custom OpenSSL 1.1.1 PHP builds
   if [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]]; then 
     PHP_MOLDOPT=' -fuse-ld=mold'
@@ -2415,7 +2415,20 @@ if [[ "$GCCINTEL_PHP" = [yY] ]]; then
     PHP_FLTO_COMP_LEVEL=' -flto-compression-level=1'
     PHP_FLTO_LDFLAGS=""
   fi
-  if [[ "$(gcc --version | head -n1 | awk '{print $3}' | cut -d . -f1-3 | sed "s|\.|0|g")" -ge '40805' && "$PHP_GSPLITDWARF" = [yY] && "$PHP_LTO" = [yY] && "$PHP_LDMOLD" = [yY] ]] && [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]]; then
+
+  if [[ "$(gcc --version | head -n1 | awk '{print $3}' | cut -d . -f1-3 | sed "s|\.|0|g")" -ge '40805' && "$PHP_GSPLITDWARF" = [nN] && "$PHP_LTO" = [yY] && "$PHP_LDMOLD" = [yY] ]] && [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]]; then
+    # remove  -gsplit-dwarf when PHP_LTO='y' seems *.dwo files aren't cleaned from /tmp with it enabled
+    # PHP_GSPLITDWARF=n set when march_hostcheck function matches certain VPS host ASNs
+    echo "1 SET_PHPEXTRA_CFLAGS=\" -flto${PHP_FLTO_CPUS}${PHP_FLTO_COMP_LEVEL} -fno-fat-lto-objects${PHP_MOLDOPT} -fuse-linker-plugin -flto-partition=balanced -Wno-deprecated-declarations${DEVTOOLSETPHP_FALLTHROUGH}${DEVTOOLSETPHP_EXTRAFLAGS}${PHPEXTRA_CFLAGS}\""
+    SET_PHPEXTRA_CFLAGS=" -flto${PHP_FLTO_CPUS}${PHP_FLTO_COMP_LEVEL} -fno-fat-lto-objects${PHP_MOLDOPT} -fuse-linker-plugin -flto-partition=balanced -Wno-deprecated-declarations${DEVTOOLSETPHP_FALLTHROUGH}${DEVTOOLSETPHP_EXTRAFLAGS}${PHPEXTRA_CFLAGS}"
+    PHPLTOOPT=' --disable-gcc-global-regs'
+  elif [[ "$(gcc --version | head -n1 | awk '{print $3}' | cut -d . -f1-3 | sed "s|\.|0|g")" -ge '40805' && "$PHP_GSPLITDWARF" = [nN] && "$PHP_LTO" = [yY] ]]; then
+    # remove  -gsplit-dwarf when PHP_LTO='y' seems *.dwo files aren't cleaned from /tmp with it enabled
+    # PHP_GSPLITDWARF=n set when march_hostcheck function matches certain VPS host ASNs
+    echo "1 SET_PHPEXTRA_CFLAGS=\" -flto${PHP_FLTO_CPUS}${PHP_FLTO_COMP_LEVEL} -fno-fat-lto-objects -fuse-ld=gold -fuse-linker-plugin -flto-partition=balanced -Wno-deprecated-declarations${DEVTOOLSETPHP_FALLTHROUGH}${DEVTOOLSETPHP_EXTRAFLAGS}${PHPEXTRA_CFLAGS}\""
+    SET_PHPEXTRA_CFLAGS=" -flto${PHP_FLTO_CPUS}${PHP_FLTO_COMP_LEVEL} -fno-fat-lto-objects -fuse-ld=gold -fuse-linker-plugin -flto-partition=balanced -Wno-deprecated-declarations${DEVTOOLSETPHP_FALLTHROUGH}${DEVTOOLSETPHP_EXTRAFLAGS}${PHPEXTRA_CFLAGS}"
+    PHPLTOOPT=' --disable-gcc-global-regs'
+  elif [[ "$(gcc --version | head -n1 | awk '{print $3}' | cut -d . -f1-3 | sed "s|\.|0|g")" -ge '40805' && "$PHP_GSPLITDWARF" = [yY] && "$PHP_LTO" = [yY] && "$PHP_LDMOLD" = [yY] ]] && [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]]; then
     # remove  -gsplit-dwarf when PHP_LTO='y' seems *.dwo files aren't cleaned from /tmp with it enabled
     echo "1 SET_PHPEXTRA_CFLAGS=\" -flto${PHP_FLTO_CPUS}${PHP_FLTO_COMP_LEVEL} -fno-fat-lto-objects${PHP_MOLDOPT} -fuse-linker-plugin -flto-partition=balanced -Wno-deprecated-declarations${DEVTOOLSETPHP_FALLTHROUGH}${DEVTOOLSETPHP_EXTRAFLAGS}${PHPEXTRA_CFLAGS}\""
     SET_PHPEXTRA_CFLAGS=" -flto${PHP_FLTO_CPUS}${PHP_FLTO_COMP_LEVEL} -fno-fat-lto-objects${PHP_MOLDOPT} -fuse-linker-plugin -flto-partition=balanced -Wno-deprecated-declarations${DEVTOOLSETPHP_FALLTHROUGH}${DEVTOOLSETPHP_EXTRAFLAGS}${PHPEXTRA_CFLAGS}"
