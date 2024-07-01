@@ -2,16 +2,16 @@ name: Trigger Oracle Linux 9 Workflow + Nginx Modsecurity Enabled
 
 on:
   workflow_dispatch:
-    branches: [130.00beta01]
+    branches: [140.00beta01]
   push:
     branches:
-      - 130.00beta01
+      - 140.00beta01
     paths-ignore:
       - '.gitignore'
       - 'readme.txt'
       - 'README.md'
-      - 'changelog-130.00beta01.md'
-      - 'changelog-130.00beta01.html'
+      - 'changelog-140.00beta01.md'
+      - 'changelog-140.00beta01.html'
       - 'CONTRIBUTING.md'
       - '.github/workflows/main.yml'
       - 'datamanagement/centmin.sh-menu-21.readme.md'
