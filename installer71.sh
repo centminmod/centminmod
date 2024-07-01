@@ -59,7 +59,7 @@ CENTOS_ALPHATEST='y'
 #######################################################
 DNF_ENABLE='n'
 DNF_COPR='y'
-branchname='130.00beta01'
+branchname='140.00beta01'
 DOWNLOAD="${branchname}.zip"
 LOCALCENTMINMOD_MIRROR='https://centminmod.com'
 CPUS=$(nproc)

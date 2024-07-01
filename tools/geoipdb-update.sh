@@ -3,7 +3,7 @@ export PATH="/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin:/root/
 ######################################################
 # to update geoip country and city databases
 ######################################################
-branchname='130.00beta01'
+branchname='140.00beta01'
 FORCE_IPVFOUR='y' # curl/wget commands through script force IPv4
 LOCALCENTMINMOD_MIRROR='https://centminmod.com'
 

@@ -13,7 +13,7 @@ ARCH_CHECK="$(uname -m)"
 # standalone nginx vhost creation script for centminmod.com
 # .08 beta03 and higher written by George Liu
 ################################################################
-branchname='130.00beta01'
+branchname='140.00beta01'
 #CUR_DIR="/usr/local/src/centminmod-${branchname}"
 CUR_DIR="/usr/local/src/centminmod"
 

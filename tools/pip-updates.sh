@@ -6,7 +6,7 @@ export PATH="/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin:/root/
 # written by George Liu (eva2000) centminmod.com
 ######################################################
 # variables
-branchname='130.00beta01'
+branchname='140.00beta01'
 DEBUG='n'
 YUMDNFBIN='yum'
 
