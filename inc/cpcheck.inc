@@ -1,3 +1,9 @@
+update_centos7_eol_repos() {
+  if [[ "$CENTOS_SEVEN" -eq '7' && ! "$(grep 'vault.centos.org' /etc/yum.repos.d/CentOS-Base.repo)" && -f "${SCRIPT_DIR}/tools/update-el7-repo.sh" ]]; then
+    "${SCRIPT_DIR}/tools/update-el7-repo.sh"
+  fi
+}
+
 # Define the configuration lines to check
 CIPHERS_LINE="Ciphers aes128-ctr,aes192-ctr,aes256-ctr,aes128-gcm@openssh.com,aes256-gcm@openssh.com"
 MACS_LINE="MACs umac-64@openssh.com,umac-128@openssh.com,hmac-sha2-256,hmac-sha2-512"
@@ -3426,6 +3432,7 @@ if [[ "$INITIALINSTALL" != [yY] ]]; then
   switch_mariadbtenthree_archives
   apply_terrapin_fix
   apply_iconv_fix
+  update_centos7_eol_repos
 fi
 
 }
