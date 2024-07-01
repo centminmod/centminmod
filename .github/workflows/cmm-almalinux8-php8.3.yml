@@ -2,16 +2,16 @@ name: Trigger AlmaLinux 8 With PHP 8.3 Workflow
 
 on:
   workflow_dispatch:
-    branches: [130.00beta01]
+    branches: [131.00stable]
   push:
     branches:
-      - 130.00beta01
+      - 131.00stable
     paths-ignore:
       - '.gitignore'
       - 'readme.txt'
       - 'README.md'
-      - 'changelog-130.00beta01.md'
-      - 'changelog-130.00beta01.html'
+      - 'changelog-131.00stable.md'
+      - 'changelog-131.00stable.html'
       - 'CONTRIBUTING.md'
       - '.github/workflows/main.yml'
       - 'datamanagement/centmin.sh-menu-21.readme.md'
@@ -84,4 +84,4 @@ jobs:
         with:
           token: ${{ secrets.REPO_ACCESS_TOKEN }}
           repository: centminmod/centminmod-workflows
-          event-type: run-almalinux-8-workflow-php83
+          event-type: run-almalinux-8-workflow-php83-13100stable
