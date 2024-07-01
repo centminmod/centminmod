@@ -1,3 +1,12 @@
+fix_cve_2024_6387_openssh() {
+  # https://access.redhat.com/security/cve/cve-2024-6387
+  if [[ ! "$(grep '^LoginGraceTime' /etc/ssh/sshd_config)" && "$(grep '^#LoginGraceTime' /etc/ssh/sshd_config)" ]]; then
+    sed -i 's|^#LoginGraceTime .*|LoginGraceTime 0|' /etc/ssh/sshd_config
+    sed -i 's|^LoginGraceTime .*|LoginGraceTime 0|' /etc/ssh/sshd_config
+    systemctl restart sshd >/dev/null 2>&1
+  fi
+}
+
 update_centos7_eol_repos() {
   if [[ "$CENTOS_SEVEN" -eq '7' && ! "$(grep 'vault.centos.org' /etc/yum.repos.d/CentOS-Base.repo)" && -f "${SCRIPT_DIR}/tools/update-el7-repo.sh" ]]; then
     "${SCRIPT_DIR}/tools/update-el7-repo.sh"
@@ -3905,6 +3914,7 @@ apply_iconv_fix
 
 if [[ "$INITIALINSTALL" != [yY] ]]; then
   update_centos7_eol_repos
+  fix_cve_2024_6387_openssh
   apply_terrapin_fix
   apply_iconv_fix
   march_hostcheck

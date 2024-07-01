@@ -21,6 +21,10 @@ sshdtweaks() {
   if [[ ! "$(grep '^X11Forwarding no' /etc/ssh/sshd_config)" ]]; then
     sed -i 's|^X11Forwarding .*|X11Forwarding no|' /etc/ssh/sshd_config
   fi
+  # https://access.redhat.com/security/cve/cve-2024-6387
+  if [[ ! "$(grep '^LoginGraceTime' /etc/ssh/sshd_config)" && "$(grep '^#LoginGraceTime' /etc/ssh/sshd_config)" ]]; then
+    sed -i 's|^#LoginGraceTime .*|LoginGraceTime 0|' /etc/ssh/sshd_config
+  fi
 
   CHECKHOSTKEY=$(grep '#HostKey /etc/ssh/ssh_host_rsa_key' /etc/ssh/sshd_config)
   CHECKHOSTKEYB=$(grep '#HostKey /etc/ssh/ssh_host_ecdsa_key' /etc/ssh/sshd_config)
