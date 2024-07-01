@@ -30,10 +30,10 @@ DT=$(date +"%d%m%y-%H%M%S")
 branchname='130.00beta01'
 SCRIPT_MAJORVER='130'
 SCRIPT_MINORVER='00'
-SCRIPT_INCREMENTVER='684'
+SCRIPT_INCREMENTVER='685'
 SCRIPT_VERSIONSHORT="${branchname}"
 SCRIPT_VERSION="${SCRIPT_VERSIONSHORT}.b${SCRIPT_INCREMENTVER}"
-SCRIPT_DATE='24/02/24'
+SCRIPT_DATE='01/07/24'
 SCRIPT_AUTHOR='eva2000 (centminmod.com)'
 SCRIPT_MODIFICATION_AUTHOR='eva2000 (centminmod.com)'
 SCRIPT_URL='https://centminmod.com'
@@ -721,7 +721,7 @@ TIME_REDIS='n'
 #####################################################
 # Enable or disable menu mode
 ENABLE_MENU='n'
-DATA_MENU_ENABLE='n'  # centmin.sh menu option 21 menu
+DATA_MENU_ENABLE='y'  # centmin.sh menu option 21 menu
 
 #####################################################
 # CentOS 7 specific
