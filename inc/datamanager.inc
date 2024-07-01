@@ -53,9 +53,11 @@ do
   # clear
         # display menu
   echo
-  cecho "--------------------------------------------------------" $boldyellow
-  cecho "     Manage AWS CLI S3 Profile Credentials        " $boldgreen
-  cecho "--------------------------------------------------------" $boldyellow
+  cecho "---------------------------------------------------------------------" $boldyellow
+  cecho "      Manage AWS CLI S3 Profile Credentials        " $boldgreen
+  cecho "---------------------------------------------------------------------" $boldyellow
+  cecho "      Partially uses awscli-get.sh https://awscli-get.centminmod.com/" $boldgreen
+  cecho "---------------------------------------------------------------------" $boldyellow
   cecho "1).   List Registered AWS CLI S3 Profiles" $boldgreen
   cecho "2).   List AWS CLI S3 Profile Configuration" $boldgreen
   cecho "3).   Create New AWS CLI S3 Profile" $boldgreen
@@ -64,10 +66,10 @@ do
   cecho "6).   Export Existing AWS CLI S3 Profile" $boldgreen
   cecho "7).   Backup All Existing AWS CLI S3 Profiles" $boldgreen
   cecho "8).   Back to Main menu" $boldgreen
-  cecho "--------------------------------------------------------" $boldyellow
+  cecho "---------------------------------------------------------------------" $boldyellow
 
   read -ep "Enter option [ 1 - 8 ] " awscli_profiles_menu_opt
-  cecho "--------------------------------------------------------" $boldyellow
+  cecho "---------------------------------------------------------------------" $boldyellow
 
 #########################################################
 
@@ -393,9 +395,11 @@ do
   # clear
         # display menu
   echo
-  cecho "--------------------------------------------------------" $boldyellow
-  cecho "     Manage SSH Keys        " $boldgreen
-  cecho "--------------------------------------------------------" $boldyellow
+  cecho "--------------------------------------------------------------" $boldyellow
+  cecho "      Manage SSH Keys        " $boldgreen
+  cecho "--------------------------------------------------------------" $boldyellow
+  cecho "      Uses keygen.sh tool https://github.com/centminmod/keygen" $boldgreen
+  cecho "--------------------------------------------------------------" $boldyellow
   cecho "1).   List Registered SSH Keys" $boldgreen
   cecho "2).   Register Existing SSH Keys" $boldgreen
   cecho "3).   Create New SSH Key For Remote Host" $boldgreen
@@ -405,10 +409,10 @@ do
   cecho "7).   Export Existing SSH Key" $boldgreen
   cecho "8).   Backup All Existing SSH Keys" $boldgreen
   cecho "9).   Back to Main menu" $boldgreen
-  cecho "--------------------------------------------------------" $boldyellow
+  cecho "--------------------------------------------------------------" $boldyellow
 
   read -ep "Enter option [ 1 - 9 ] " sshkeys_menu_opt
-  cecho "--------------------------------------------------------" $boldyellow
+  cecho "--------------------------------------------------------------" $boldyellow
 
 #########################################################
 
@@ -865,7 +869,9 @@ do
         # display menu
   echo
   cecho "--------------------------------------------------------" $boldyellow
-  cecho "     Centmin Mod Data Management        " $boldgreen
+  cecho "      Centmin Mod Data Management        " $boldgreen
+  cecho "--------------------------------------------------------" $boldyellow
+  cecho "      Docs: https://centminmod.com/menu21-${branchname}" $boldgreen
   cecho "--------------------------------------------------------" $boldyellow
   cecho "1).   Manage SSH Keys" $boldgreen
   cecho "2).   Manage AWS CLI S3 Profile Credentials" $boldgreen

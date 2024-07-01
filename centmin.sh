@@ -30,7 +30,7 @@ DT=$(date +"%d%m%y-%H%M%S")
 branchname='130.00beta01'
 SCRIPT_MAJORVER='130'
 SCRIPT_MINORVER='00'
-SCRIPT_INCREMENTVER='683'
+SCRIPT_INCREMENTVER='684'
 SCRIPT_VERSIONSHORT="${branchname}"
 SCRIPT_VERSION="${SCRIPT_VERSIONSHORT}.b${SCRIPT_INCREMENTVER}"
 SCRIPT_DATE='24/02/24'
@@ -721,6 +721,7 @@ TIME_REDIS='n'
 #####################################################
 # Enable or disable menu mode
 ENABLE_MENU='y'
+DATA_MENU_ENABLE='n'  # centmin.sh menu option 21 menu
 
 #####################################################
 # CentOS 7 specific
@@ -4191,10 +4192,11 @@ EOF
         starttime=$(TZ=UTC date +%s.%N)
         centminlog
         {
-          if [[ -d "$SCRIPT_DIR/datamanagement" && -f "$SCRIPT_DIR/datamanagement/backups.sh" && -f "$SCRIPT_DIR/datamanagement/mariabackup-restore.sh" && -f "$SCRIPT_DIR/datamanagement/tunnel-transfers.sh" && -f "$SCRIPT_DIR/datamanagement/keygen.sh" && -f "$SCRIPT_DIR/datamanagement/awscli-get.sh" ]]; then
+          if [[ -d "$SCRIPT_DIR/datamanagement" && "$DATA_MENU_ENABLE" = [yY] ]]; then
             datamanager_menu
           else
             cecho "Place holder for future feature allowing Centmin Mod To Centmin Mod server data migration" $boldyellow
+            cecho "Read the documentation for this menu option at https://centminmod.com/menu21-${branchname}" $boldyellow
           fi
         echo
         } 2>&1 | tee "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_data_transfer.log"
