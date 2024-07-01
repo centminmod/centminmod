@@ -30,7 +30,7 @@ DT=$(date +"%d%m%y-%H%M%S")
 branchname='140.00beta01'
 SCRIPT_MAJORVER='140'
 SCRIPT_MINORVER='00'
-SCRIPT_INCREMENTVER='001'
+SCRIPT_INCREMENTVER='002'
 SCRIPT_VERSIONSHORT="${branchname}"
 SCRIPT_VERSION="${SCRIPT_VERSIONSHORT}.b${SCRIPT_INCREMENTVER}"
 SCRIPT_DATE='01/07/24'
@@ -1226,7 +1226,7 @@ BORINGSSL_DIR="/opt"
 
 # AWS-LC
 AWS_LC_SWITCH='n'             # if set to 'y' overrides OpenSSL as default for Nginx https://github.com/aws/aws-lc
-AWS_LC_VERSION='v1.30.1'      # version as per ttps://github.com/aws/aws-lc/tags
+AWS_LC_VERSION='v1.31.0'      # version as per ttps://github.com/aws/aws-lc/tags
 AWS_LC_DIR="/opt"
 AWS_LC_SWITCH_BUILD_TESTS='n' # run AWS-LC build tests
 ##################################
