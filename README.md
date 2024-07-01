@@ -13,19 +13,18 @@ After install bookmark and read the [Getting Started Guide](https://centminmod.c
 
 Fastest method of install and allows fully unattended installation. Just type this command as root user in SSH on a fresh CentOS 7 server. Installation should take between 15-30 minutes on a fast server or up to 50-70 minutes on a slower server depending on server specs and your server's network connectivity and download speed.
 
-As at May 8th, 2022, Centmin Mod versions are undergoing a transition version branch wise:
+As at July 1, 2024, Centmin Mod versions are undergoing a transition version branch wise:
 
-1. Previous 123.08stable is now moving to 124.00stable. 124.00stable is essentially based on the well tested 123.09beta01 branch. All development and changes made in 123.09beta01 are now in 124.00stable.
-2. Previous 123.09beta01 code is now in 124.00stable
-3. A new 130.00beta01 branch has started and this is also based off of 123.09ebat01 branch but with additional development and code to eventually support EL8+ operating systems like CentOS 8, Alma Linux 8 and Rocky Linux 8. This branch will take over from 123.09beta01 as the development beta branch. EL8+ operating system support is now in [public beta phase](https://community.centminmod.com/threads/centmin-mod-130-00beta01-public-almalinux-8-rocky-linux-8-beta-testing.24227/).
+1. Previous 124.00stable is now moving to 131.00stable. 131.00stable is essentially based on the well tested 130.00beta01 branch. All development and changes made in 130.00beta01 are now in 131.00stable.
+2. A new 140.00beta01 branch has started and this is also based off of 130.00ebat01 branch but with additional development and code to eventually support EL8+ operating systems like CentOS 8, Alma Linux 8 and Rocky Linux 8. This branch will take over from 130.00beta01 as the development beta branch. EL8+ operating system support is now officially supported.
 
-### For latest 124.00stable install
+### For latest 131.00stable install
 
-default PHP 7.4.x installation
+default PHP 8.0.x installation
 
     yum -y update; curl -O https://centminmod.com/installer.sh && chmod 0700 installer.sh && bash installer.sh
 
-### For latest 130.00beta01 install
+### For latest 140.00beta01 install
 
 PHP 7.4.x default beta installer.
 
@@ -51,26 +50,6 @@ PHP 7.4.x default beta installer with backported security fixes.
 
     yum -y update; curl -O https://centminmod.com/betainstaller74.sh && chmod 0700 betainstaller74.sh && bash betainstaller74.sh
 
-PHP 7.3.x default beta installer with backported security fixes. See [PHP 7.3 release information](https://community.centminmod.com/threads/php-7-3-0-7-2-13-7-1-25-7-0-33-5-6-39-released.16184/) and [PHP 7.3 vs 7.2 vs 7.1 vs 7.0 benchmarks](https://community.centminmod.com/threads/php-7-3-vs-7-2-vs-7-1-vs-7-0-php-fpm-benchmarks.16090/).
-
-    yum -y update; curl -O https://centminmod.com/betainstaller73.sh && chmod 0700 betainstaller73.sh && bash betainstaller73.sh
-
-PHP 7.2.x default beta installer with backported security fixes
-
-    yum -y update; curl -O https://centminmod.com/betainstaller72.sh && chmod 0700 betainstaller72.sh && bash betainstaller72.sh
-
-PHP 7.1.x default beta installer with backported security fixes
-
-    yum -y update; curl -O https://centminmod.com/betainstaller71.sh && chmod 0700 betainstaller71.sh && bash betainstaller71.sh
-
-PHP 7.0.x default beta installer with backported security fixes
-
-    yum -y update; curl -O https://centminmod.com/betainstaller7.sh && chmod 0700 betainstaller7.sh && bash betainstaller7.sh
-
-default PHP 5.6 beta installer with backported security fixes
-
-    yum -y update; curl -O https://centminmod.com/betainstaller56.sh && chmod 0700 betainstaller56.sh && bash betainstaller56.sh
-
 You can also customise your installs via pre-populating the persistent config file, `/etc/centminmod/custom_config.inc` with overriding variables instead of directly editing `centmin.sh` file **BEFORE** running the the `betainstaller.sh`. See examples discussed on the forums [here](https://community.centminmod.com/threads/discussion-how-do-you-initially-install-setup-your-centmin-mod-server.14736/).
 
 ## Contributing
@@ -86,7 +65,7 @@ Below are guidelines for contributing code wise.
 
 # Pull Requests
 
-* Pull requests can be done against the current [Github active branches](https://github.com/centminmod/centminmod/branches/active) - currently being [124.00stable](https://github.com/centminmod/centminmod/tree/124.00stable) and [130.00beta01](https://github.com/centminmod/centminmod/tree/130.00beta01). Usually once weekly, active branch changes are then merged into [master branch](https://github.com/centminmod/centminmod).
+* Pull requests can be done against the current [Github active branches](https://github.com/centminmod/centminmod/branches/active) - currently being [131.00stable](https://github.com/centminmod/centminmod/tree/131.00stable) and [140.00beta01](https://github.com/centminmod/centminmod/tree/140.00beta01). Usually once weekly, active branch changes are then merged into [master branch](https://github.com/centminmod/centminmod).
 
 # Suggestions
 
