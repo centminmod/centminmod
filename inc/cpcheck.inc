@@ -1,5 +1,5 @@
 update_centos7_eol_repos() {
-  if [[ ! "$(grep 'vault.centos.org' /etc/yum.repos.d/CentOS-Base.repo)" && -f "${SCRIPT_DIR}/tools/update-el7-repo.sh" ]]; then
+  if [[ "$CENTOS_SEVEN" -eq '7' && ! "$(grep 'vault.centos.org' /etc/yum.repos.d/CentOS-Base.repo)" && -f "${SCRIPT_DIR}/tools/update-el7-repo.sh" ]]; then
     "${SCRIPT_DIR}/tools/update-el7-repo.sh"
   fi
 }
