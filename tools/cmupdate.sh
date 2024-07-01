@@ -30,10 +30,10 @@ fi
 fupdate() {
   branch_opt=$1
   if [[ "$branch_opt" = 'beta' ]]; then
-    cmupdate_branchname=130.00beta01
+    cmupdate_branchname=140.00beta01
     cmupdate_branchname_new=$cmupdate_branchname
   elif [[ "$branch_opt" = 'stable' ]]; then
-    cmupdate_branchname=124.00stable
+    cmupdate_branchname=131.00stable
     cmupdate_branchname_new=$cmupdate_branchname
   fi
 
