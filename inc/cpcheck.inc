@@ -1,3 +1,9 @@
+update_centos7_eol_repos() {
+  if [[ "$CENTOS_SEVEN" -eq '7' && ! "$(grep 'vault.centos.org' /etc/yum.repos.d/CentOS-Base.repo)" && -f "${SCRIPT_DIR}/tools/update-el7-repo.sh" ]]; then
+    "${SCRIPT_DIR}/tools/update-el7-repo.sh"
+  fi
+}
+
 nginx_systemd_switch() {
 if [[ "$CENTOS_NINE" = '9' || "$CENTOS_EIGHT" = '8' || "$CENTOS_SEVEN" = '7' ]] && [[ -f /etc/init.d/nginx && "$SWITCH_NGINX_SYSTEMD" = [yY] ]]; then
     rm -f /etc/init.d/nginx
@@ -3311,6 +3317,7 @@ if [[ "$INITIALINSTALL" != [yY] ]]; then
   jetpack_ip_whitelist_cronsetup
   lets_dst_root_ca_fix
   check_php_cainfo_file
+  update_centos7_eol_repos
 fi
 
 }
