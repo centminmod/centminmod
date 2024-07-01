@@ -27,10 +27,10 @@ CMSDEBUG='n'
 #####################################################
 DT=$(date +"%d%m%y-%H%M%S")
 # for github support
-branchname='130.00beta01'
-SCRIPT_MAJORVER='130'
+branchname='131.00stable'
+SCRIPT_MAJORVER='131'
 SCRIPT_MINORVER='00'
-SCRIPT_INCREMENTVER='687'
+SCRIPT_INCREMENTVER='000'
 SCRIPT_VERSIONSHORT="${branchname}"
 SCRIPT_VERSION="${SCRIPT_VERSIONSHORT}.b${SCRIPT_INCREMENTVER}"
 SCRIPT_DATE='01/07/24'

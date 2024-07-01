@@ -14,7 +14,7 @@ ARCH_CHECK="$(uname -m)"
 # .09 beta01 and higher written by George Liu
 # modified for wordpress setup
 ################################################################
-branchname='130.00beta01'
+branchname='131.00stable'
 #CUR_DIR="/usr/local/src/centminmod-${branchname}"
 CUR_DIR="/usr/local/src/centminmod"
 
