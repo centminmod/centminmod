@@ -5,6 +5,9 @@ python_alternatives_setup() {
         if [ ! -f "/usr/bin/python${ALT_PYTHON_VER_LABEL}" ]; then
             yum -y install python${ALT_PYTHON_VER}
         fi
+        if [[ ! "$(rpm -qa python${ALT_PYTHON_VER}-devel)" ]]; then
+            yum -y install python${ALT_PYTHON_VER}-devel
+        fi
         if [ ! -f "/usr/bin/pip${ALT_PYTHON_VER_LABEL}" ]; then
             yum -y install python3-pip
         fi
@@ -33,6 +36,9 @@ python_alternatives_setup() {
         ALT_PYTHON_VER_EL9='3.11'
         if [ ! -f "/usr/bin/python${ALT_PYTHON_VER_EL9}" ]; then
             yum -y install python${ALT_PYTHON_VER_EL9}
+        fi
+        if [[ ! "$(rpm -qa python${ALT_PYTHON_VER_EL9}-devel)" ]]; then
+            yum -y install python${ALT_PYTHON_VER_EL9}-devel
         fi
         if [ ! -f "/usr/bin/pip${ALT_PYTHON_VER_EL9}" ]; then
             yum -y install python${ALT_PYTHON_VER_EL9}-pip
