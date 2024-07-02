@@ -20,35 +20,81 @@ As at July 1, 2024, Centmin Mod versions are undergoing a transition version bra
 
 ### For latest 131.00stable install
 
-default PHP 8.0.x installation
+Centmin Mod installers for fresh AlmaLinux or Rocky Linux operating system based servers with minimum 4GB installed memory requirements.
 
-    yum -y update; curl -O https://centminmod.com/installer.sh && chmod 0700 installer.sh && bash installer.sh
+PHP 8.3.x default stable installer.
+
+```
+yum -y update
+curl -O https://centminmod.com/installer83.sh && chmod 0700 installer83.sh && bash installer83.sh
+```
+
+PHP 8.2.x default stable installer.
+
+```
+yum -y update
+curl -O https://centminmod.com/installer82.sh && chmod 0700 installer82.sh && bash installer82.sh
+```
+
+PHP 8.1.x default stable installer.
+
+```
+yum -y update
+curl -O https://centminmod.com/installer81.sh && chmod 0700 installer81.sh && bash installer81.sh
+```
+
+PHP 8.0.x default stable installer with backported security fixes.
+
+```
+yum -y update
+curl -O https://centminmod.com/installer80.sh && chmod 0700 installer80.sh && bash installer80.sh
+```
+
+PHP 7.4.x default stable installer with backported security fixes.
+
+```
+yum -y update
+curl -O https://centminmod.com/installer74.sh && chmod 0700 installer74.sh && bash installer74.sh
+```
 
 ### For latest 140.00beta01 install
 
-PHP 7.4.x default beta installer.
-
-    yum -y update; curl -O https://centminmod.com/betainstaller.sh && chmod 0700 betainstaller.sh && bash betainstaller.sh
+Centmin Mod installers for fresh AlmaLinux or Rocky Linux operating system based servers with minimum 4GB installed memory requirements.
 
 PHP 8.3.x default beta installer.
 
-    yum -y update; curl -O https://centminmod.com/betainstaller83.sh && chmod 0700 betainstaller83.sh && bash betainstaller83.sh
+```
+yum -y update
+curl -O https://centminmod.com/betainstaller83.sh && chmod 0700 betainstaller83.sh && bash betainstaller83.sh
+```
 
 PHP 8.2.x default beta installer.
 
-    yum -y update; curl -O https://centminmod.com/betainstaller82.sh && chmod 0700 betainstaller82.sh && bash betainstaller82.sh
+```
+yum -y update
+curl -O https://centminmod.com/betainstaller82.sh && chmod 0700 betainstaller82.sh && bash betainstaller82.sh
+```
 
 PHP 8.1.x default beta installer.
 
-    yum -y update; curl -O https://centminmod.com/betainstaller81.sh && chmod 0700 betainstaller81.sh && bash betainstaller81.sh
+```
+yum -y update
+curl -O https://centminmod.com/betainstaller81.sh && chmod 0700 betainstaller81.sh && bash betainstaller81.sh
+```
 
-PHP 8.0.x default beta installer.
+PHP 8.0.x default beta installer with backported security fixes.
 
-    yum -y update; curl -O https://centminmod.com/betainstaller80.sh && chmod 0700 betainstaller80.sh && bash betainstaller80.sh
+```
+yum -y update
+curl -O https://centminmod.com/betainstaller80.sh && chmod 0700 betainstaller80.sh && bash betainstaller80.sh
+```
 
 PHP 7.4.x default beta installer with backported security fixes.
 
-    yum -y update; curl -O https://centminmod.com/betainstaller74.sh && chmod 0700 betainstaller74.sh && bash betainstaller74.sh
+```
+yum -y update
+curl -O https://centminmod.com/betainstaller74.sh && chmod 0700 betainstaller74.sh && bash betainstaller74.sh
+```
 
 You can also customise your installs via pre-populating the persistent config file, `/etc/centminmod/custom_config.inc` with overriding variables instead of directly editing `centmin.sh` file **BEFORE** running the the `betainstaller.sh`. See examples discussed on the forums [here](https://community.centminmod.com/threads/discussion-how-do-you-initially-install-setup-your-centmin-mod-server.14736/).
 
