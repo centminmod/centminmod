@@ -30,7 +30,7 @@ DT=$(date +"%d%m%y-%H%M%S")
 branchname='131.00stable'
 SCRIPT_MAJORVER='131'
 SCRIPT_MINORVER='00'
-SCRIPT_INCREMENTVER='005'
+SCRIPT_INCREMENTVER='006'
 SCRIPT_VERSIONSHORT="${branchname}"
 SCRIPT_VERSION="${SCRIPT_VERSIONSHORT}.b${SCRIPT_INCREMENTVER}"
 SCRIPT_DATE='01/07/24'
@@ -1146,6 +1146,8 @@ MARIADB_INSTALLTENTHREE='n' # MariaDB 10.3 YUM default install if set to yes
 MARIADB_INSTALLTENFOUR='y'  # MariaDB 10.4 YUM default install if set to yes
 MARIADB_INSTALLTENFIVE='n'  # MariaDB 10.5 YUM default install if set to yes
 MARIADB_INSTALLTENSIX='n'  # MariaDB 10.6 YUM default install if set to yes
+
+MYSQLADMIN_SHELL='y'          # enable centmin.sh menu option 6
 
 # Define current MariaDB version
 MDB_VERONLY='5.2.14'
