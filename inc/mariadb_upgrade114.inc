@@ -1111,9 +1111,9 @@ echo
 # move aside existing ib_logfile* files
 cd $MYSQLDATADIR
 ls -lah $MYSQLDATADIR
-rm -rf ib_logfile0.gz ib_logfile1.gz
-mv ib_logfile0 ib_logfile0.bak
-mv ib_logfile1 ib_logfile1.bak
+# rm -rf ib_logfile0.gz ib_logfile1.gz
+# mv ib_logfile0 ib_logfile0.bak
+# mv ib_logfile1 ib_logfile1.bak
 echo
 
 if [[ "$CENTOS_EIGHT" -eq '8' && "$(rpm -qa | grep mariadb | awk '/mariadb-server-utils/')" ]]; then

@@ -1378,7 +1378,7 @@ echo "rpm -Uvh MariaDB-devel-${MDB_VERSION}.el5.${ARCH}.rpm"
 
 #killall mysqld_safe
 #killall mysqld
-gzip /var/lib/mysql/{ibdata1,ib_logfile0,ib_logfile1}
+# gzip /var/lib/mysql/{ibdata1,ib_logfile0,ib_logfile1}
 
 echo "rpm -Uvh MariaDB-server-${MDB_VERSION}.el5.${ARCH}.rpm"
     rpm -Uvh MariaDB-server-${MDB_VERSION}.el5.${ARCH}.rpm
@@ -1512,11 +1512,7 @@ if [[ "$CENTOS_SIX" = '6' ]]; then
     cmservice mysql start
 elif [[ "$CENTOS_SEVEN" -eq '7' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]]; then
     # ensure MariaDB starts up initially
-    systemctl stop mariadb
-    sleep 2
-    rm -f /var/lib/mysql/ib_logfile*
-    rm -f /var/lib/mysql/aria_log*
-    systemctl start mariadb
+    echo
 fi
 
 # https://community.centminmod.com/posts/25691/
