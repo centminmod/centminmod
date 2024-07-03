@@ -9,6 +9,16 @@ ENABLE_MARIADBTENFIVEUPGRADE='n'
 ENABLE_MARIADBTENSIXUPGRADE='n'
 SKIP_INNODBFASTSHUTDOWNDISABLE='y'   # no longer needed as of MariaDB 10.2.5 https://mariadb.com/kb/en/library/upgrading-from-mariadb-101-to-mariadb-102/
 
+# Function to check InnoDB status
+check_innodb_status() {
+    STATUS=$(mysql -e "SHOW ENGINE INNODB STATUS\G" 2>&1 | grep "sleeping")
+    if [[ -n "$STATUS" ]]; then
+        return 0
+    else
+        return 1
+    fi
+}
+
 mariadb_upgrade_check_versionlock() {
   # Function for centmin.sh menu option 11 based major MariaDB server version
   # upgrades to check if MariaDB yum packages are yum version locked by system

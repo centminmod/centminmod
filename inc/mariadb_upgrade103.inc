@@ -3,8 +3,7 @@ backupmsg103() {
 echo ""
 cat <<EOF
 -------------------------------------------------------------------------------
- This script's MariaDB 10.3.x upgrade process is still in beta testing stages. 
- So please test on a test server and not a live production server. But if you use 
+ Please test on a test server and not a live production server. But if you use 
  on live server or if MySQL databases already exist, please back them up before 
  running this upgrade script via mysqldump - instructions at: 
  http://dev.mysql.com/doc/refman/5.6/en/mysqldump.html.
@@ -83,39 +82,39 @@ fi
 # full purge and change buffer merge before shutting down to ensure data files are in sync 
 # prior to upgrade
 if [[ "$SKIP_INNODBFASTSHUTDOWNDISABLE" = [nN] ]]; then
-echo
-mysql -e "set global innodb_fast_shutdown=0;"
-echo "continuing upgrade in ~300 seconds..."
-echo "..."
-sleep 20
-echo "..... continue in 300s"
-sleep 20
-echo "....... continue in 280s"
-sleep 20
-echo "......... continue in 260s"
-sleep 20
-echo "........... continue in 240s"
-sleep 20
-echo "............. continue in 220s"
-sleep 20
-echo "............... continue in 200s"
-sleep 20
-echo "................. continue in 180s"
-sleep 20
-echo ".................. continue in 160s"
-sleep 20
-echo ".................... continue in 140s"
-sleep 20
-echo "...................... continue in 120s"
-sleep 20
-echo "........................ continue in 80s"
-sleep 20
-echo ".......................... continue in 60s"
-sleep 20
-echo "............................ continue in 40s"
-sleep 20
-echo ".............................. continue in 20s"
-sleep 20
+    echo
+    mysql -e "set global innodb_fast_shutdown=0;"
+    echo "continuing upgrade in ~300 seconds..."
+    echo "..."
+    sleep 20
+    echo "..... continue in 300s"
+    sleep 20
+    echo "....... continue in 280s"
+    sleep 20
+    echo "......... continue in 260s"
+    sleep 20
+    echo "........... continue in 240s"
+    sleep 20
+    echo "............. continue in 220s"
+    sleep 20
+    echo "............... continue in 200s"
+    sleep 20
+    echo "................. continue in 180s"
+    sleep 20
+    echo ".................. continue in 160s"
+    sleep 20
+    echo ".................... continue in 140s"
+    sleep 20
+    echo "...................... continue in 120s"
+    sleep 20
+    echo "........................ continue in 80s"
+    sleep 20
+    echo ".......................... continue in 60s"
+    sleep 20
+    echo "............................ continue in 40s"
+    sleep 20
+    echo ".............................. continue in 20s"
+    sleep 20
 fi
 }
 
@@ -230,19 +229,8 @@ MDB_CONTINENT=$(echo "$MDB_GEOIP" | jq -r '.continent')
 MDB_CITY=$(echo "$MDB_GEOIP" | jq -r '.city')
 MDB_COLO=$(echo "$MDB_GEOIP" | jq -r '.colo')
 
-if [[ "$MARIADB_INSTALLTENTWO" = [yY] ]]; then
-    MDB_REPO_VER=10.2
-elif [[ "$MARIADB_INSTALLTENTHREE" = [yY] ]]; then
-    MDB_REPO_VER=10.3
-elif [[ "$MARIADB_INSTALLTENFOUR" = [yY] ]]; then
-    MDB_REPO_VER=10.4
-elif [[ "$MARIADB_INSTALLTENFIVE" = [yY] ]]; then
-    MDB_REPO_VER=10.5
-elif [[ "$MARIADB_INSTALLTENSIX" = [yY] ]]; then
-    MDB_REPO_VER=10.6
-else
-    MDB_REPO_VER=10.1
-fi
+MDB_REPO_VER=10.3
+
 if [[ "$CENTOS_NINE" = '9' && "$(uname -m)" == 'aarch64' ]]; then
     MDB_REPO_DIR="${MDB_REPO_VER}/centos9-aarch64"
 elif [[ "$CENTOS_NINE" = '9' && "$(uname -m)" == 'x86_64' ]]; then
