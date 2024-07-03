@@ -30,7 +30,7 @@ DT=$(date +"%d%m%y-%H%M%S")
 branchname='140.00beta01'
 SCRIPT_MAJORVER='140'
 SCRIPT_MINORVER='00'
-SCRIPT_INCREMENTVER='005'
+SCRIPT_INCREMENTVER='006'
 SCRIPT_VERSIONSHORT="${branchname}"
 SCRIPT_VERSION="${SCRIPT_VERSIONSHORT}.b${SCRIPT_INCREMENTVER}"
 SCRIPT_DATE='01/07/24'
@@ -1139,13 +1139,15 @@ REDIS_SERVER_INSTALL='y'      # Install redis server by default on initial insta
 # only applies during initial Centmin Mod install and can be overrident via
 # persistent config file /etc/centminmod/custom_config.inc prior to initial Centmin Mod install
 SET_DEFAULT_MYSQLCHARSET='utf8'
-MDB_INSTALL='n'             # Install via RPM MariaDB MySQL Server replacement (Not recommended for VPS with less than 256MB RAM!)
-MDB_YUMREPOINSTALL='y'      # Install MariaDB 5.5 via CentOS YUM Repo
-MARIADB_INSTALLTENTWO='n'   # MariaDB 10.2 YUM default install if set to yes
-MARIADB_INSTALLTENTHREE='n' # MariaDB 10.3 YUM default install if set to yes
-MARIADB_INSTALLTENFOUR='y'  # MariaDB 10.4 YUM default install if set to yes
-MARIADB_INSTALLTENFIVE='n'  # MariaDB 10.5 YUM default install if set to yes
-MARIADB_INSTALLTENSIX='n'  # MariaDB 10.6 YUM default install if set to yes
+MDB_INSTALL='n'               # Install via RPM MariaDB MySQL Server replacement (Not recommended for VPS with less than 256MB RAM!)
+MDB_YUMREPOINSTALL='y'        # Install MariaDB 5.5 via CentOS YUM Repo
+MARIADB_INSTALLTENTWO='n'     # MariaDB 10.2 YUM default install if set to yes
+MARIADB_INSTALLTENTHREE='n'   # MariaDB 10.3 YUM default install if set to yes
+MARIADB_INSTALLTENFOUR='y'    # MariaDB 10.4 YUM default install if set to yes
+MARIADB_INSTALLTENFIVE='n'    # MariaDB 10.5 YUM default install if set to yes
+MARIADB_INSTALLTENSIX='n'     # MariaDB 10.6 YUM default install if set to yes
+MARIADB_INSTALLTENELEVEN='n'  # MariaDB 10.11 YUM default install if set to yes
+MARIADB_INSTALLELEVENFOUR='n' # MariaDB 11.4 YUM default install if set to yes
 
 # Define current MariaDB version
 MDB_VERONLY='5.2.14'
@@ -1516,6 +1518,8 @@ source "${SCRIPT_DIR}/inc/mariadb_install103.inc"
 source "${SCRIPT_DIR}/inc/mariadb_install104.inc"
 source "${SCRIPT_DIR}/inc/mariadb_install105.inc"
 source "${SCRIPT_DIR}/inc/mariadb_install106.inc"
+source "${SCRIPT_DIR}/inc/mariadb_install1011.inc"
+source "${SCRIPT_DIR}/inc/mariadb_install114.inc"
 source "${SCRIPT_DIR}/inc/mariadb_install.inc"
 source "${SCRIPT_DIR}/inc/mysql_install.inc"
 source "${SCRIPT_DIR}/inc/mysqladmin.inc"
@@ -1551,6 +1555,8 @@ source "${SCRIPT_DIR}/inc/mariadb_upgrade103.inc"
 source "${SCRIPT_DIR}/inc/mariadb_upgrade104.inc"
 source "${SCRIPT_DIR}/inc/mariadb_upgrade105.inc"
 source "${SCRIPT_DIR}/inc/mariadb_upgrade106.inc"
+source "${SCRIPT_DIR}/inc/mariadb_upgrade1011.inc"
+source "${SCRIPT_DIR}/inc/mariadb_upgrade114.inc"
 source "${SCRIPT_DIR}/inc/nginx_errorpage.inc"
 source "${SCRIPT_DIR}/inc/sendmail.inc"
 source "${SCRIPT_DIR}/inc/postfix.inc"
@@ -1695,6 +1701,8 @@ if [[ "$CENTOS_NINE" -eq '9' ]]; then
   MARIADB_INSTALLTENFOUR='n'
   MARIADB_INSTALLTENFIVE='n'
   MARIADB_INSTALLTENSIX='y'
+  MARIADB_INSTALLTENELEVEN='n'
+  MARIADB_INSTALLELEVENFOUR='n'
   # use system OpenSSL 3.0.7 by default
   OPENSSL_SYSTEM_USE='y'
 fi
@@ -2821,7 +2829,11 @@ echo "" >> "${CENTMINLOGDIR}/centminmod_ngxinstalltime_${DT}.log"
 echo "Total Nginx First Time Install Time: $NGXINSTALLTIME seconds" >> "${CENTMINLOGDIR}/centminmod_ngxinstalltime_${DT}.log"
 ls -lah "${CENTMINLOGDIR}/centminmod_ngxinstalltime_${DT}.log"
 
-if [[ "$MARIADB_INSTALLTENSIX" = [yY] && "$MARIADB_INSTALLTENTWO" = [nN] ]]; then
+if [[ "$MARIADB_INSTALLELEVENFOUR" = [yY] && "$MARIADB_INSTALLTENTWO" = [nN] ]]; then
+  mariadbelevenfour_installfunct
+elif [[ "$MARIADB_INSTALLTENELEVEN" = [yY] && "$MARIADB_INSTALLTENTWO" = [nN] ]]; then
+  mariadbteneleven_installfunct
+elif [[ "$MARIADB_INSTALLTENSIX" = [yY] && "$MARIADB_INSTALLTENTWO" = [nN] ]]; then
   mariadbtensix_installfunct
 elif [[ "$MARIADB_INSTALLTENFIVE" = [yY] && "$MARIADB_INSTALLTENTWO" = [nN] ]]; then
   mariadbtenfive_installfunct
