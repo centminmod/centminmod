@@ -48,20 +48,28 @@ MDB_CONTINENT=$(echo "$MDB_GEOIP" | jq -r '.continent')
 MDB_CITY=$(echo "$MDB_GEOIP" | jq -r '.city')
 MDB_COLO=$(echo "$MDB_GEOIP" | jq -r '.colo')
 
-if [[ "$MARIADB_INSTALLTENTWO" = [yY] ]]; then
-    MDB_REPO_VER=10.2
-elif [[ "$MARIADB_INSTALLTENTHREE" = [yY] ]]; then
-    MDB_REPO_VER=10.3
-elif [[ "$MARIADB_INSTALLTENFOUR" = [yY] ]]; then
-    MDB_REPO_VER=10.4
-elif [[ "$MARIADB_INSTALLTENFIVE" = [yY] ]]; then
-    MDB_REPO_VER=10.5
-elif [[ "$MARIADB_INSTALLTENSIX" = [yY] ]]; then
-    MDB_REPO_VER=10.6
-elif [[ "$MARIADB_INSTALLTENELEVEN" = [yY] ]]; then
+if [[ "$MARIADB_INSTALLELEVENFOUR" = [yY] && "$MARIADB_INSTALLTENSIX" = [yY] ]]; then
+    MDB_REPO_VER=11.4
+elif [[ "$MARIADB_INSTALLTENELEVEN" = [yY] && "$MARIADB_INSTALLTENSIX" = [yY] ]]; then
+    MDB_REPO_VER=10.11
+elif [[ "$MARIADB_INSTALLELEVENFOUR" = [yY] && "$MARIADB_INSTALLTENFOUR" = [yY] ]]; then
+    MDB_REPO_VER=11.4
+elif [[ "$MARIADB_INSTALLTENELEVEN" = [yY] && "$MARIADB_INSTALLTENFOUR" = [yY] ]]; then
     MDB_REPO_VER=10.11
 elif [[ "$MARIADB_INSTALLELEVENFOUR" = [yY] ]]; then
     MDB_REPO_VER=11.4
+elif [[ "$MARIADB_INSTALLTENELEVEN" = [yY] ]]; then
+    MDB_REPO_VER=10.11
+elif [[ "$MARIADB_INSTALLTENSIX" = [yY] ]]; then
+    MDB_REPO_VER=10.6
+elif [[ "$MARIADB_INSTALLTENFIVE" = [yY] ]]; then
+    MDB_REPO_VER=10.5
+elif [[ "$MARIADB_INSTALLTENFOUR" = [yY] ]]; then
+    MDB_REPO_VER=10.4
+elif [[ "$MARIADB_INSTALLTENTHREE" = [yY] ]]; then
+    MDB_REPO_VER=10.3
+elif [[ "$MARIADB_INSTALLTENTWO" = [yY] ]]; then
+    MDB_REPO_VER=10.2
 else
     MDB_REPO_VER=10.1
 fi
