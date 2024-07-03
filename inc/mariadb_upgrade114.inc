@@ -1097,6 +1097,9 @@ done
 # Issue the shutdown command
 echo "mysqladmin shutdown"
 mysqladmin shutdown
+
+echo "waiting 60 seconds"
+sleep 60
 echo
 # move aside existing ib_logfile* files
 cd $MYSQLDATADIR
