@@ -27,10 +27,12 @@ FORCE_IPVFOUR='y' # curl/wget commands through script force IPv4
 ###############################################################################
 # GCC options
 GCC_SEVEN='n'
-GCC_EIGHT='y'
+GCC_EIGHT='n'
 GCC_NINE='n'
-GCC_TEN='y'
-GCC_ELEVEN='n'
+GCC_TEN='n'
+GCC_ELEVEN='y'
+GCC_TWELVE='y'
+GCC_THIRTHTEEN='y'
 OPT_LEVEL='-O3'
 MARCH_TARGETNATIVE='n' # for intel 64bit only set march=native, if no set to x86-64
 ###############################################################################
@@ -50,11 +52,11 @@ LIBOGG_VER='1.3.5'
 LIBVORBIS_VER='1.3.7'
 GD_ENABLE='n'
 NASM_SOURCEINSTALL='y'
-NASM_VER='2.14'
+NASM_VER='2.16.03rc3'
 YASM_VER='1.3.0'
-FDKAAC_VER='0.1.6'
+FDKAAC_VER='2.0.3'
 FONTCONFIG_VER='2.13.1'
-FREETYPE_VER='2.10.1'
+FREETYPE_VER='2.13.2'
 ###############################################################################
 
 shopt -s expand_aliases
@@ -572,10 +574,16 @@ if [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]]; then
     source /opt/rh/gcc-toolset-11/enable
     export CFLAGS="${OPT_LEVEL} -march=${MARCH_TARGET} -Wimplicit-fallthrough=0 -Wno-pedantic"
     export CXXFLAGS="${CFLAGS}"
-  elif [[ "$GCC_TEN" = [yY] && "$(uname -m)" = 'x86_64' && ! -f /opt/rh/gcc-toolset-11/root/usr/bin/gcc && ! -f /opt/rh/gcc-toolset-11/root/usr/bin/g++ ]]; then
-    echo "installing gcc-toolset-11 for GCC 11..."
-    yum -y install gcc-toolset-11-runtime gcc-toolset-11-toolchain gcc-toolset-11-binutils gcc-toolset-11-binutils-devel gcc-toolset-11-gcc gcc-toolset-11-gcc-c++ gcc-toolset-11-libatomic-devel gcc-toolset-11-libstdc++-devel gcc-toolset-11-ltrace gcc-toolset-11-make gcc-toolset-11-make-devel gcc-toolset-11-annobin-plugin-gcc gcc-toolset-11-annobin-annocheck gcc-toolset-11-gdb gcc-toolset-11-dwz gcc-toolset-11-elfutils gcc-toolset-11-elfutils-devel gcc-toolset-11-elfutils-libs gcc-toolset-11-strace gcc-toolset-11-gcc-gfortran gcc-toolset-11-elfutils-libelf gcc-toolset-11-elfutils-libelf-devel gcc-toolset-11-libasan-devel gcc-toolset-11-libgccjit-devel gcc-toolset-11-libitm-devel gcc-toolset-11-liblsan-devel gcc-toolset-11-libquadmath-devel gcc-toolset-11-libtsan-devel gcc-toolset-11-libubsan-devel gcc-toolset-11-elfutils-debuginfod-client gcc-toolset-11-elfutils-debuginfod-client-devel gcc-toolset-11-elfutils-libs gcc-toolset-11-annobin-docs gcc-toolset-11-libgccjit gcc-toolset-11-libgccjit-devel gcc-toolset-11-libgccjit-docs
-    source /opt/rh/gcc-toolset-11/enable
+  fi
+
+  if [[ "$GCC_TWELVE" = [yY] && "$(uname -m)" = 'x86_64' && -f /opt/rh/gcc-toolset-12/root/usr/bin/gcc && -f /opt/rh/gcc-toolset-12/root/usr/bin/g++ ]]; then
+    source /opt/rh/gcc-toolset-12/enable
+    export CFLAGS="${OPT_LEVEL} -march=${MARCH_TARGET} -Wimplicit-fallthrough=0 -Wno-pedantic"
+    export CXXFLAGS="${CFLAGS}"
+  fi
+
+  if [[ "$GCC_THIRTHTEEN" = [yY] && "$(uname -m)" = 'x86_64' && -f /opt/rh/gcc-toolset-13/root/usr/bin/gcc && -f /opt/rh/gcc-toolset-13/root/usr/bin/g++ ]]; then
+    source /opt/rh/gcc-toolset-13/enable
     export CFLAGS="${OPT_LEVEL} -march=${MARCH_TARGET} -Wimplicit-fallthrough=0 -Wno-pedantic"
     export CXXFLAGS="${CFLAGS}"
   fi
@@ -613,6 +621,28 @@ install_nasm() {
       fi
       yum -y remove nasm --disableplugin=priorities
       hash -r
+    fi
+    if [[ "$CENTOS_NINE" -eq '9' ]]; then
+        yum -y install autoconf271
+        export PATH=/opt/rh/autoconf271/bin:$PATH
+        export AUTOCONF=/opt/rh/autoconf271/bin/autoconf
+        export AUTOHEADER=/opt/rh/autoconf271/bin/autoheader
+        export AUTOM4TE=/opt/rh/autoconf271/bin/autom4te
+        export AUTORECONF=/opt/rh/autoconf271/bin/autoreconf
+        export AUTOSCAN=/opt/rh/autoconf271/bin/autoscan
+        export AUTOUPDATE=/opt/rh/autoconf271/bin/autoupdate
+        export IFNAMES=/opt/rh/autoconf271/bin/ifnames
+    elif [[ "$CENTOS_EIGHT" -eq '8' ]]; then
+        yum -y install autoconf2.7x
+        export AUTOCONF=autoconf27
+        export AUTOHEADER=autoheader27
+        export AUTOM4TE=autom4te27
+        export AUTORECONF=autoreconf27
+        export AUTOSCAN=autoscan27
+        export AUTOUPDATE=autoupdate27
+        export IFNAMES=ifnames27
+    else
+        NASM_VER='2.14'
     fi
     cd ${OPT}/ffmpeg_sources
     curl -O -L "https://www.nasm.us/pub/nasm/releasebuilds/${NASM_VER}/nasm-${NASM_VER}.tar.gz"
