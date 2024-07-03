@@ -17,6 +17,13 @@ MENUEXIT_ALWAYS_YUMCHECK='y'  # also do yum check on centmin.sh exit
 ENABLEMOTD_CSFMSG='y'         # motd banner csf message alert disaply
 ENABLEMOTD_LINKSMSG='y'       # motd centminmod.com links bookmark alert display
 
+# override minimum memory and disk swap requirements for
+# EL8 or EL9 operating systems 
+# for memory from 1.649GB to 1.43GB
+# for disk swap from 4GB to 2GB
+ISMINMEM_OVERRIDE='n'         # https://community.centminmod.com/posts/100321/
+ISMINSWAP_OVERRIDE='n'        # https://community.centminmod.com/posts/100321/
+
 #####################################################
 # SSH specific
 # setup /etc/ssh/sshd_config.d/01-permitrootlogin.conf

@@ -11,8 +11,16 @@ TOTALMEM_SWAP=$(awk '/SwapFree/ {print $2}' /proc/meminfo)
 TOTALMEM_PHP=$(($TOTALMEM_T+$TOTALMEM_SWAP))
 
 if [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]]; then
-  ISMINMEM='1730000'  # 1.7GB in bytes
-  ISMINSWAP='3774873'  # 3.6GB in bytes
+  if [[ "$ISMINMEM_OVERRIDE" = [yY] ]]; then
+    ISMINMEM='1500000'  # 1.43GB in bytes
+  else
+    ISMINMEM='1730000'  # 1.7GB in bytes
+  fi
+  if [[ "$ISMINSWAP_OVERRIDE" = [yY] ]]; then
+    ISMINSWAP='2097152'  # 2.0GB in bytes
+  else
+    ISMINSWAP='3774873'  # 3.6GB in bytes
+  fi
 elif [[ "$CENTOS_SEVEN" -eq '7' ]]; then
   ISMINMEM='922624'  # 900MB in bytes
   ISMINSWAP='2097152'  # 2GB in bytes

@@ -327,8 +327,16 @@ TOTALMEM_SWAP=$(awk '/SwapFree/ {print $2}' /proc/meminfo)
 TOTALMEM_PHP=$(($TOTALMEM_T+$TOTALMEM_SWAP))
 
 if [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]]; then
-  ISMINMEM='1730000'  # 1.7GB in bytes
-  ISMINSWAP='3774873'  # 3.6GB in bytes
+  if [[ "$ISMINMEM_OVERRIDE" = [yY] ]]; then
+    ISMINMEM='1500000'  # 1.43GB in bytes
+  else
+    ISMINMEM='1730000'  # 1.7GB in bytes
+  fi
+  if [[ "$ISMINSWAP_OVERRIDE" = [yY] ]]; then
+    ISMINSWAP='2097152'  # 2.0GB in bytes
+  else
+    ISMINSWAP='3774873'  # 3.6GB in bytes
+  fi
 elif [[ "$CENTOS_SEVEN" -eq '7' ]]; then
   ISMINMEM='922624'  # 900MB in bytes
   ISMINSWAP='2097152'  # 2GB in bytes
@@ -417,16 +425,54 @@ FINDSWAPSIZE=$(free -m | awk '/Swap: / {print $2}' | head -n1)
 # smaller than 4GB on non-openvz systems, create a 4GB additional
 # swap file
 if [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]]; then
-  if [[ "$FINDSWAPSIZE" -eq '0' && ! -f /proc/user_beancounters && "$CHECK_LXD" != [yY] && ! -f /swapfile ]] || [[ "$(awk '/MemTotal/ {print $2}' /proc/meminfo)" -le '2097152' && "$FINDSWAPSIZE" -le '4096' && ! -f /proc/user_beancounters && "$CHECK_LXD" != [yY] && ! -f /swapfile ]]; then
+  if [[ "$ISMINSWAP_OVERRIDE" = [yY] && "$FINDSWAPSIZE" -eq '0' && ! -f /proc/user_beancounters && "$CHECK_LXD" != [yY] && ! -f /swapfile ]] || [[ "$ISMINSWAP_OVERRIDE" = [yY] && "$(awk '/MemTotal/ {print $2}' /proc/meminfo)" -le '2097152' && "$FINDSWAPSIZE" -le '2047' && ! -f /proc/user_beancounters && "$CHECK_LXD" != [yY] && ! -f /swapfile ]]; then
     {
       echo
       free -m
       echo
-      echo "create 4GB swap file";
-      if [[ "$(df -hT | grep -w xfs)" || "$(virt-what | grep -o lxc)" = 'lxc' ]]; then
-        dd if=/dev/zero of=/swapfile bs=4096 count=1048576;
+      if [[ "$ISMINSWAP_OVERRIDE" = [yY] ]]; then
+        echo "create 2GB swap file";
+        dd_size=2048
+        fallocate_size=2
       else
-        fallocate -l 4G /swapfile
+        echo "create 4GB swap file";
+        dd_size=4096
+        fallocate_size=4
+      fi
+      if [[ "$(df -hT | grep -w xfs)" || "$(virt-what | grep -o lxc)" = 'lxc' ]]; then
+        dd if=/dev/zero of=/swapfile bs=$dd_size count=1048576;
+      else
+        fallocate -l ${fallocate_size}G /swapfile
+      fi
+      ls -lah /swapfile;
+      mkswap /swapfile;
+      swapon /swapfile;
+      chown root:root /swapfile;
+      chmod 0600 /swapfile;
+      swapon -s;
+      echo "/swapfile swap swap defaults 0 0" >> /etc/fstab;
+      mount -a;
+      free -m
+      echo
+    } 2>&1 | tee "${CENTMINLOGDIR}/centminmod_swapsetup_installer_${DT}.log"
+  elif [[ "$FINDSWAPSIZE" -eq '0' && ! -f /proc/user_beancounters && "$CHECK_LXD" != [yY] && ! -f /swapfile ]] || [[ "$(awk '/MemTotal/ {print $2}' /proc/meminfo)" -le '2097152' && "$FINDSWAPSIZE" -le '4096' && ! -f /proc/user_beancounters && "$CHECK_LXD" != [yY] && ! -f /swapfile ]]; then
+    {
+      echo
+      free -m
+      echo
+      if [[ "$ISMINSWAP_OVERRIDE" = [yY] ]]; then
+        echo "create 2GB swap file";
+        dd_size=2048
+        fallocate_size=2
+      else
+        echo "create 4GB swap file";
+        dd_size=4096
+        fallocate_size=4
+      fi
+      if [[ "$(df -hT | grep -w xfs)" || "$(virt-what | grep -o lxc)" = 'lxc' ]]; then
+        dd if=/dev/zero of=/swapfile bs=$dd_size count=1048576;
+      else
+        fallocate -l ${fallocate_size}G /swapfile
       fi
       ls -lah /swapfile;
       mkswap /swapfile;
@@ -600,7 +646,11 @@ if [[ "$CENTOS_NINE" -eq '9' ]]; then
   #echo "DEVTOOLSETTWELVE='y'" >> /etc/centminmod/custom_config.inc
   echo "SET_DEFAULT_MYSQLCHARSET='utf8mb4'" >> /etc/centminmod/custom_config.inc
   echo "SELFSIGNEDSSL_ECDSA='y'" >> /etc/centminmod/custom_config.inc
-  echo "PHPFINFO='y'" >> /etc/centminmod/custom_config.inc
+  if [[ "$ISMINMEM_OVERRIDE" = [yY] && "$ISMINSWAP_OVERRIDE" = [yY] ]]; then
+    echo "PHPFINFO='n'" >> /etc/centminmod/custom_config.inc
+  else
+    echo "PHPFINFO='y'" >> /etc/centminmod/custom_config.inc
+  fi
   echo "PHP_OVERWRITECONF='n'" >> /etc/centminmod/custom_config.inc
   echo "PYTHON_INSTALL_ALTERNATIVES='y'" >> /etc/centminmod/custom_config.inc
   echo "DMOTD_PHPCHECK='y'" >> /etc/centminmod/custom_config.inc
@@ -628,7 +678,11 @@ if [[ "$CENTOS_EIGHT" -eq '8' ]]; then
   #echo "DEVTOOLSETELEVEN='n'" >> /etc/centminmod/custom_config.inc
   #echo "DEVTOOLSETTWELVE='y'" >> /etc/centminmod/custom_config.inc
   echo "SELFSIGNEDSSL_ECDSA='y'" >> /etc/centminmod/custom_config.inc
-  echo "PHPFINFO='y'" >> /etc/centminmod/custom_config.inc
+  if [[ "$ISMINMEM_OVERRIDE" = [yY] && "$ISMINSWAP_OVERRIDE" = [yY] ]]; then
+    echo "PHPFINFO='n'" >> /etc/centminmod/custom_config.inc
+  else
+    echo "PHPFINFO='y'" >> /etc/centminmod/custom_config.inc
+  fi
   echo "PHP_OVERWRITECONF='n'" >> /etc/centminmod/custom_config.inc
   echo "PYTHON_INSTALL_ALTERNATIVES='y'" >> /etc/centminmod/custom_config.inc
   echo "DMOTD_PHPCHECK='y'" >> /etc/centminmod/custom_config.inc
@@ -654,7 +708,11 @@ if [[ "$CENTOS_SEVEN" -eq '7' ]]; then
   echo "DEVTOOLSETTEN='n'" >> /etc/centminmod/custom_config.inc
   echo "DEVTOOLSETELEVEN='y'" >> /etc/centminmod/custom_config.inc
   echo "SELFSIGNEDSSL_ECDSA='y'" >> /etc/centminmod/custom_config.inc
-  echo "PHPFINFO='y'" >> /etc/centminmod/custom_config.inc
+  if [[ "$ISMINMEM_OVERRIDE" = [yY] && "$ISMINSWAP_OVERRIDE" = [yY] ]]; then
+    echo "PHPFINFO='n'" >> /etc/centminmod/custom_config.inc
+  else
+    echo "PHPFINFO='y'" >> /etc/centminmod/custom_config.inc
+  fi
   echo "PHP_OVERWRITECONF='n'" >> /etc/centminmod/custom_config.inc
   echo "DMOTD_PHPCHECK='y'" >> /etc/centminmod/custom_config.inc
   echo "NGINX_GEOIPTWOLITE='y'" >> /etc/centminmod/custom_config.inc
