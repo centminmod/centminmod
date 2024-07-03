@@ -11,6 +11,16 @@ ENABLE_MARIADBTENELEVENUPGRADE='n'
 ENABLE_MARIADBELEVENFOURUPGRADE='n'
 SKIP_INNODBFASTSHUTDOWNDISABLE='y'   # no longer needed as of MariaDB 10.2.5 https://mariadb.com/kb/en/library/upgrading-from-mariadb-101-to-mariadb-102/
 
+# Function to check InnoDB status
+check_innodb_status() {
+    STATUS=$(mysql -e "SHOW ENGINE INNODB STATUS\G" 2>&1 | grep "sleeping")
+    if [[ -n "$STATUS" ]]; then
+        return 0
+    else
+        return 1
+    fi
+}
+
 mariadb_upgrade_check_versionlock() {
   # Function for centmin.sh menu option 11 based major MariaDB server version
   # upgrades to check if MariaDB yum packages are yum version locked by system
@@ -695,7 +705,11 @@ centminlog
   if [[ "$CENTOS_EIGHT" -eq '8' && "$(rpm -qa | grep mariadb | awk '/mariadb-server-utils/')" ]]; then
     MARIADBVERCHECK=`rpm -qa | grep mariadb-server | grep -v utils | awk -F "-" '{print $3}' | cut -c1-4`
   else
-    MARIADBVERCHECK=`rpm -qa | grep MariaDB-server | awk -F "-" '{print $3}' | cut -c1-4`
+    if [[ "$ENABLE_MARIADBELEVENFOURUPGRADE" = [yY] ]]; then
+      MARIADBVERCHECK=`rpm -qa | grep MariaDB-server | awk -F "-" '{print $3}' | cut -c1-5`
+    else
+      MARIADBVERCHECK=`rpm -qa | grep MariaDB-server | awk -F "-" '{print $3}' | cut -c1-4`
+    fi
   fi
   if [[ "$MARIADBVERCHECK" = '11.4' ]]; then
 
@@ -704,7 +718,7 @@ centminlog
 
   elif [ "$MARIADBVERCHECK" == '10.11' ]; then
 
-    if [[ "$ENABLE_MARIADBTENSIXUPGRADE" = [nN] ]]; then
+    if [[ "$ENABLE_MARIADBELEVENFOURUPGRADE" = [nN] ]]; then
       echo "Place holder for now until MariaDB 11.4.x is ready to be added"
       echo "11.4 LTS release officially supported until May 2029"
       echo "https://mariadb.com/kb/en/changes-improvements-in-mariadb-11-4/"

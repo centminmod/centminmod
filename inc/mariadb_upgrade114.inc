@@ -83,39 +83,39 @@ fi
 # full purge and change buffer merge before shutting down to ensure data files are in sync 
 # prior to upgrade
 if [[ "$SKIP_INNODBFASTSHUTDOWNDISABLE" = [nN] ]]; then
-echo
-mysql -e "set global innodb_fast_shutdown=0;"
-echo "continuing upgrade in ~300 seconds..."
-echo "..."
-sleep 20
-echo "..... continue in 300s"
-sleep 20
-echo "....... continue in 280s"
-sleep 20
-echo "......... continue in 260s"
-sleep 20
-echo "........... continue in 240s"
-sleep 20
-echo "............. continue in 220s"
-sleep 20
-echo "............... continue in 200s"
-sleep 20
-echo "................. continue in 180s"
-sleep 20
-echo ".................. continue in 160s"
-sleep 20
-echo ".................... continue in 140s"
-sleep 20
-echo "...................... continue in 120s"
-sleep 20
-echo "........................ continue in 80s"
-sleep 20
-echo ".......................... continue in 60s"
-sleep 20
-echo "............................ continue in 40s"
-sleep 20
-echo ".............................. continue in 20s"
-sleep 20
+    echo
+    mysql -e "set global innodb_fast_shutdown=0;"
+    echo "continuing upgrade in ~300 seconds..."
+    echo "..."
+    sleep 20
+    echo "..... continue in 300s"
+    sleep 20
+    echo "....... continue in 280s"
+    sleep 20
+    echo "......... continue in 260s"
+    sleep 20
+    echo "........... continue in 240s"
+    sleep 20
+    echo "............. continue in 220s"
+    sleep 20
+    echo "............... continue in 200s"
+    sleep 20
+    echo "................. continue in 180s"
+    sleep 20
+    echo ".................. continue in 160s"
+    sleep 20
+    echo ".................... continue in 140s"
+    sleep 20
+    echo "...................... continue in 120s"
+    sleep 20
+    echo "........................ continue in 80s"
+    sleep 20
+    echo ".......................... continue in 60s"
+    sleep 20
+    echo "............................ continue in 40s"
+    sleep 20
+    echo ".............................. continue in 20s"
+    sleep 20
 fi
 }
 
@@ -243,31 +243,8 @@ echo "MARIADB_INSTALLTENELEVEN=$MARIADB_INSTALLTENELEVEN"
 echo "MARIADB_INSTALLELEVENFOUR=$MARIADB_INSTALLELEVENFOUR"
 echo
 
-if [[ "$MARIADB_INSTALLELEVENFOUR" = [yY] && "$MARIADB_INSTALLTENSIX" = [yY] ]]; then
-    MDB_REPO_VER=11.4
-elif [[ "$MARIADB_INSTALLTENELEVEN" = [yY] && "$MARIADB_INSTALLTENSIX" = [yY] ]]; then
-    MDB_REPO_VER=10.11
-elif [[ "$MARIADB_INSTALLELEVENFOUR" = [yY] && "$MARIADB_INSTALLTENFOUR" = [yY] ]]; then
-    MDB_REPO_VER=11.4
-elif [[ "$MARIADB_INSTALLTENELEVEN" = [yY] && "$MARIADB_INSTALLTENFOUR" = [yY] ]]; then
-    MDB_REPO_VER=10.11
-elif [[ "$MARIADB_INSTALLELEVENFOUR" = [yY] ]]; then
-    MDB_REPO_VER=11.4
-elif [[ "$MARIADB_INSTALLTENELEVEN" = [yY] ]]; then
-    MDB_REPO_VER=10.11
-elif [[ "$MARIADB_INSTALLTENSIX" = [yY] ]]; then
-    MDB_REPO_VER=10.6
-elif [[ "$MARIADB_INSTALLTENFIVE" = [yY] ]]; then
-    MDB_REPO_VER=10.5
-elif [[ "$MARIADB_INSTALLTENFOUR" = [yY] ]]; then
-    MDB_REPO_VER=10.4
-elif [[ "$MARIADB_INSTALLTENTHREE" = [yY] ]]; then
-    MDB_REPO_VER=10.3
-elif [[ "$MARIADB_INSTALLTENTWO" = [yY] ]]; then
-    MDB_REPO_VER=10.2
-else
-    MDB_REPO_VER=10.1
-fi
+MDB_REPO_VER=11.4
+
 if [[ "$CENTOS_NINE" = '9' && "$(uname -m)" == 'aarch64' ]]; then
     MDB_REPO_DIR="${MDB_REPO_VER}/rhel9-aarch64"
 elif [[ "$CENTOS_NINE" = '9' && "$(uname -m)" == 'x86_64' ]]; then
@@ -1103,10 +1080,23 @@ echo
 echo "shut down existing MariaDB server for upgrade.."
 mysql -e "set global innodb_buffer_pool_dump_at_shutdown=0;"
 sleep 10
-echo "mysql -e \"SET GLOBAL innodb_fast_shutdown = 1;\""
-mysql -e "SET GLOBAL innodb_fast_shutdown = 1;"
-sleep 10
-systemctl stop mariadb
+
+echo
+mysql -e "set global innodb_fast_shutdown=0;"
+# Monitor InnoDB status until all operations are complete
+while true; do
+    if check_innodb_status; then
+        echo "InnoDB has completed all operations."
+        break
+    else
+        echo "Waiting for InnoDB to complete operations..."
+    fi
+    sleep 5  # Wait for 5 seconds before checking again
+done
+
+# Issue the shutdown command
+echo "mysqladmin shutdown"
+mysqladmin shutdown
 echo
 # move aside existing ib_logfile* files
 cd $MYSQLDATADIR
