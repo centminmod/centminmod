@@ -91,7 +91,7 @@ fi
 
 ngxinstallmain() {
 
-if [[ "$NGINX_INSTALL" = [yY] ]]; then
+if [[ "$NGINX_INSTALL" = [yY] || "$FREENGINX_INSTALL" = [yY] ]]; then
 
     if [[ "$FORCE_IPVFOUR" != [yY] ]]; then
     ipv_forceopt=""
@@ -115,7 +115,11 @@ if [[ "$NGINX_INSTALL" = [yY] ]]; then
     # echo ${CUR_DIR}
     # echo ${CM_INSTALLDIR}
 
-NGXVER_BRANCH=$(echo $NGINX_VERSION | cut -d . -f1,2 | sed -e 's|\.|00|g')
+if [[ "$FREENGINX_INSTALL" = [yY] ]]; then
+    NGXVER_BRANCH=$(echo $FREENGINX_VERSION | cut -d . -f1,2 | sed -e 's|\.|00|g')
+elif [[ "$NGINX_INSTALL" = [yY] ]]; then
+    NGXVER_BRANCH=$(echo $NGINX_VERSION | cut -d . -f1,2 | sed -e 's|\.|00|g')
+fi
 if [[ "$NGXVER_BRANCH" -ge '10023' ]] || [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]]; then
     NGINX_PAGESPEED='n'
     NGXDYNAMIC_NGXPAGESPEED='n'
@@ -229,15 +233,25 @@ if [[ "$FPM_NGINX_RPM" != [yY] ]]; then
         MBIT='32'
     fi
 
-    if [[ ! -d "nginx-${NGINX_VERSION}" && -f "${NGX_LINKFILE}" ]]; then
-        tar xzf "${NGX_LINKFILE}"
+    if [[ "$FREENGINX_INSTALL" = [yY] ]]; then
+        if [[ ! -d "nginx-${FREENGINX_VERSION}" && -f "${FREENGX_LINKFILE}" ]]; then
+            tar xzf "${FREENGX_LINKFILE}"
+        fi
+        cd nginx-${FREENGINX_VERSION}
+    elif [[ "$NGINX_INSTALL" = [yY] ]]; then
+        if [[ ! -d "nginx-${NGINX_VERSION}" && -f "${NGX_LINKFILE}" ]]; then
+            tar xzf "${NGX_LINKFILE}"
+        fi
+        cd nginx-${NGINX_VERSION}
     fi
-    cd nginx-${NGINX_VERSION}
 fi # FPM_NGINX_RPM
 
 # set_intelflags
-
-SET_NGINXVER=$(echo ${NGINX_VERSION} |sed -e 's|\.|0|g' | head -n1)
+if [[ "$FREENGINX_INSTALL" = [yY] ]]; then
+    SET_NGINXVER=$(echo ${FREENGINX_VERSION} |sed -e 's|\.|0|g' | head -n1)
+elif [[ "$NGINX_INSTALL" = [yY] ]]; then
+    SET_NGINXVER=$(echo ${NGINX_VERSION} |sed -e 's|\.|0|g' | head -n1)
+fi
 
 if [[ "$NGINXPATCH" = [yY] && "$FPM_NGINX_RPM" != [yY] ]]; then
 
@@ -408,7 +422,11 @@ fi
     fi
 
     #################################################################################
-    ngx_dynamicfunction "$NGINX_VERSION" "$NGINX_HTTP2"
+    if [[ "$FREENGINX_INSTALL" = [yY] ]]; then
+        ngx_dynamicfunction "$FREENGINX_VERSION" "$NGINX_HTTP2"
+    elif [[ "$NGINX_INSTALL" = [yY] ]]; then
+        ngx_dynamicfunction "$NGINX_VERSION" "$NGINX_HTTP2"
+    fi
     #################################################################################
     checkmapinital
 
