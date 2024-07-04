@@ -79,6 +79,12 @@ on:
       - '.github/workflows/cmm-rockylinux8-mariadb11.4.yml'
       - '.github/workflows/cmm-almalinux8-mariadb10.4.yml'
       - '.github/workflows/cmm-rockylinux8-mariadb10.4.yml'
+  workflow_run:
+    workflows: ["Trigger Rocky Linux 9 Workflow + Nginx Lua Enabled"]
+    types:
+      - completed
+    branches:
+      - 140.00beta01
 
 jobs:
   dispatch:
