@@ -1,4 +1,4 @@
-name: Trigger AlmaLinux 8 Workflow
+name: 131.00stable branch Trigger AlmaLinux 8 Workflow
 
 on:
   workflow_dispatch:

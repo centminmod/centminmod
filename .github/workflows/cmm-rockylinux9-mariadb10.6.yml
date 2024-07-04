@@ -1,4 +1,4 @@
-name: Trigger Rocky Linux 9 MariaDB 10.6 Workflow
+name: 131.00stable branch Trigger Rocky Linux 9 MariaDB 10.6 Workflow
 
 on:
   workflow_dispatch:
@@ -71,6 +71,12 @@ on:
       - '.github/workflows/cmm-rockylinux8-mariadb10.6.yml'
       - '.github/workflows/cmm-almalinux8-mariadb10.4.yml'
       - '.github/workflows/cmm-rockylinux8-mariadb10.4.yml'
+  workflow_run:
+    workflows: ["131.00stable branch Trigger Rocky Linux 9 Workflow"]
+    types:
+      - completed
+    branches:
+      - 131.00stable
 
 jobs:
   dispatch:

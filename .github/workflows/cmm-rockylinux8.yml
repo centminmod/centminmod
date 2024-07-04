@@ -1,4 +1,4 @@
-name: Trigger Rocky Linux 8 Workflow
+name: 131.00stable branch Trigger Rocky Linux 8 Workflow
 
 on:
   workflow_dispatch:
