@@ -30,7 +30,7 @@ DT=$(date +"%d%m%y-%H%M%S")
 branchname='140.00beta01'
 SCRIPT_MAJORVER='140'
 SCRIPT_MINORVER='00'
-SCRIPT_INCREMENTVER='024'
+SCRIPT_INCREMENTVER='025'
 SCRIPT_VERSIONSHORT="${branchname}"
 SCRIPT_VERSION="${SCRIPT_VERSIONSHORT}.b${SCRIPT_INCREMENTVER}"
 SCRIPT_DATE='01/07/24'
@@ -1444,7 +1444,7 @@ fi
 # source "${SCRIPT_DIR}/inc/mainmenu.inc"
 # source "${SCRIPT_DIR}/inc/mainmenu_cli.inc"
 # source "${SCRIPT_DIR}/inc/ramdisk.inc"
-source "${SCRIPT_DIR}/inc/core_functions.conf"
+source "${SCRIPT_DIR}/inc/core_functions.inc"
 source "${SCRIPT_DIR}/inc/fastmirrors.conf"
 source "${SCRIPT_DIR}/inc/sync.inc"
 source "${SCRIPT_DIR}/inc/qrencode.inc"
