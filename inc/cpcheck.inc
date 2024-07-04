@@ -1,3 +1,13 @@
+switch_nginx_uid() {
+    local current_uid
+    local current_gid
+    current_uid=$(id -u nginx)
+    current_gid=$(id -g nginx)
+    if [[ "$current_uid" -eq 956 && "$current_gid" -eq 956 && -f "${SCRIPT_DIR}/tools/switch_nginx_uid.sh" ]]; then
+        "${SCRIPT_DIR}/tools/switch_nginx_uid.sh" >/dev/null 2>&1
+    fi
+}
+
 fix_cve_2024_6387_openssh() {
   # https://access.redhat.com/security/cve/cve-2024-6387
   if [[ ! "$(grep '^LoginGraceTime' /etc/ssh/sshd_config)" && "$(grep '^#LoginGraceTime' /etc/ssh/sshd_config)" ]]; then
@@ -4072,6 +4082,7 @@ if [[ "$INITIALINSTALL" != [yY] ]]; then
   if [ -f /etc/yum.repos.d/remi.repo ]; then
     fix_remi_repo_gpgcheck
   fi
+  switch_nginx_uid
 fi
 
 }
