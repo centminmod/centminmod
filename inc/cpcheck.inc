@@ -1,12 +1,10 @@
 switch_nginx_uid() {
     local current_uid
     local current_gid
-
     current_uid=$(id -u nginx)
     current_gid=$(id -g nginx)
-
-    if [[ "$current_uid" -eq 1000 && "$current_gid" -eq 1000 ]]; then
-        "${SCRIPT_DIR}/tools/switch_nginx_uid.sh"
+    if [[ "$current_uid" -eq 956 && "$current_gid" -eq 956 && -f "${SCRIPT_DIR}/tools/switch_nginx_uid.sh" ]]; then
+        "${SCRIPT_DIR}/tools/switch_nginx_uid.sh" >/dev/null 2>&1
     fi
 }
 
