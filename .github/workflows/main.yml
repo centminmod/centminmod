@@ -6,6 +6,8 @@ on:
   push:
     branches:
       - 140.00beta01
+    branches-ignore:
+      - master
     paths-ignore:
       - '.gitignore'
       - 'readme.txt'
