@@ -591,8 +591,12 @@ if [ ! -f /etc/init.d/nginx ]; then
 fi
 fi # CENTOS_SIX = 6
 
-if [[ "$UALL" = 'y' ]]; then 
-    ngver=$NGINX_VERSION
+if [[ "$UALL" = 'y' ]]; then
+    if [[ "$FREENGINX_INSTALL" = [yY] ]]; then
+        ngver=$FREENGINX_VERSION
+    elif [[ "$NGINX_INSTALL" = [yY] ]]; then
+        ngver=$NGINX_VERSION
+    fi
     recompileopenssl='n'
 elif [[ "$CLI_NGINX_VER" ]]; then 
     ngver=$CLI_NGINX_VER
@@ -602,8 +606,13 @@ elif [[ "$CLI_NGINX_VER" ]]; then
     # enter, ngxver will be empty so should fall back to
     # the nginx version defined by NGINX_VERSION variable
     if [ -z "$ngver" ]; then
-        LASTEST_NGINXVERS=$(curl -${ipv_forceopt}sL https://nginx.org/en/download.html 2>&1 | egrep -o "nginx\-[0-9.]+\.tar[.a-z]*" | awk -F "nginx-" '/.tar.gz$/ {print $2}' | sed -e 's|.tar.gz||g' | head -n 1 2>&1)
-        ngver="$LASTEST_NGINXVERS"
+        if [[ "$FREENGINX_INSTALL" = [yY] ]]; then
+            LASTEST_NGINXVERS=$(curl -${ipv_forceopt}sL https://freenginx.org/en/download.html 2>&1 | egrep -o "freenginx\-[0-9.]+\.tar[.a-z]*" | awk -F "freenginx-" '/.tar.gz$/ {print $2}' | sed -e 's|.tar.gz||g' | head -n 1 2>&1)
+            ngver="$LASTEST_NGINXVERS"
+        elif [[ "$NGINX_INSTALL" = [yY] ]]; then
+            LASTEST_NGINXVERS=$(curl -${ipv_forceopt}sL https://nginx.org/en/download.html 2>&1 | egrep -o "nginx\-[0-9.]+\.tar[.a-z]*" | awk -F "nginx-" '/.tar.gz$/ {print $2}' | sed -e 's|.tar.gz||g' | head -n 1 2>&1)
+            ngver="$LASTEST_NGINXVERS"
+        fi
     fi
 
     nginx_maintenance_on
@@ -626,7 +635,11 @@ else
     echo
     echo "Current Nginx Version: $(nginx -v 2>&1 | awk -F "/" '{print $2}' | head -n1)"
     echo
-    read -ep "Install which version of Nginx? (version i.e. type $NGINX_VERSION): " ngver
+    if [[ "$FREENGINX_INSTALL" = [yY] ]]; then
+        read -ep "Install which version of Nginx? (version i.e. type $FREENGINX_VERSION): " ngver
+    elif [[ "$NGINX_INSTALL" = [yY] ]]; then
+        read -ep "Install which version of Nginx? (version i.e. type $NGINX_VERSION): " ngver
+    fi
     echo
     read -ep "Do you still want to continue? [y/n] " ngx_stillcont
     echo
@@ -655,8 +668,13 @@ else
     # enter, ngxver will be empty so should fall back to
     # the nginx version defined by NGINX_VERSION variable
     if [ -z "$ngver" ]; then
-        LASTEST_NGINXVERS=$(curl -${ipv_forceopt}sL https://nginx.org/en/download.html 2>&1 | egrep -o "nginx\-[0-9.]+\.tar[.a-z]*" | awk -F "nginx-" '/.tar.gz$/ {print $2}' | sed -e 's|.tar.gz||g' | head -n 1 2>&1)
-        ngver="$LASTEST_NGINXVERS"
+        if [[ "$FREENGINX_INSTALL" = [yY] ]]; then
+            LASTEST_NGINXVERS=$(curl -${ipv_forceopt}sL https://freenginx.org/en/download.html 2>&1 | egrep -o "freenginx\-[0-9.]+\.tar[.a-z]*" | awk -F "freenginx-" '/.tar.gz$/ {print $2}' | sed -e 's|.tar.gz||g' | head -n 1 2>&1)
+            ngver="$LASTEST_NGINXVERS"
+        elif [[ "$NGINX_INSTALL" = [yY] ]]; then
+            LASTEST_NGINXVERS=$(curl -${ipv_forceopt}sL https://nginx.org/en/download.html 2>&1 | egrep -o "nginx\-[0-9.]+\.tar[.a-z]*" | awk -F "nginx-" '/.tar.gz$/ {print $2}' | sed -e 's|.tar.gz||g' | head -n 1 2>&1)
+            ngver="$LASTEST_NGINXVERS"
+        fi
     fi
 
     nginx_maintenance_on
