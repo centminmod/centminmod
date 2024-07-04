@@ -1,3 +1,15 @@
+switch_nginx_uid() {
+    local current_uid
+    local current_gid
+
+    current_uid=$(id -u nginx)
+    current_gid=$(id -g nginx)
+
+    if [[ "$current_uid" -eq 1000 && "$current_gid" -eq 1000 ]]; then
+        "${SCRIPT_DIR}/tools/switch_nginx_uid.sh"
+    fi
+}
+
 update_centos7_eol_repos() {
   if [[ "$CENTOS_SEVEN" -eq '7' && ! "$(grep 'vault.centos.org' /etc/yum.repos.d/CentOS-Base.repo)" && -f "${SCRIPT_DIR}/tools/update-el7-repo.sh" ]]; then
     "${SCRIPT_DIR}/tools/update-el7-repo.sh"
@@ -4062,6 +4074,7 @@ if [[ "$INITIALINSTALL" != [yY] ]]; then
   if [ -f /etc/yum.repos.d/remi.repo ]; then
     fix_remi_repo_gpgcheck
   fi
+  switch_nginx_uid
 fi
 
 }
