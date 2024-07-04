@@ -234,10 +234,10 @@ if [[ "$FPM_NGINX_RPM" != [yY] ]]; then
     fi
 
     if [[ "$FREENGINX_INSTALL" = [yY] ]]; then
-        if [[ ! -d "nginx-${FREENGINX_VERSION}" && -f "${FREENGX_LINKFILE}" ]]; then
+        if [[ ! -d "freenginx-${FREENGINX_VERSION}" && -f "${FREENGX_LINKFILE}" ]]; then
             tar xzf "${FREENGX_LINKFILE}"
         fi
-        cd nginx-${FREENGINX_VERSION}
+        cd freenginx-${FREENGINX_VERSION}
     elif [[ "$NGINX_INSTALL" = [yY] ]]; then
         if [[ ! -d "nginx-${NGINX_VERSION}" && -f "${NGX_LINKFILE}" ]]; then
             tar xzf "${NGX_LINKFILE}"
