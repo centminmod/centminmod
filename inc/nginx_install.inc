@@ -358,17 +358,17 @@ fi
 
     mimefix
     if [ ! "$(grep -w 'nginx' /etc/passwd)" ]; then
-      echo "Creating nginx group and user with UID 956 and GID 956"
-      groupadd -g 956 nginx
-      useradd -u 956 -g 956 -d /home/nginx -s /sbin/nologin nginx
+      echo "Creating nginx group and user with UID 1000 and GID 1000"
+      groupadd -g 1000 nginx
+      useradd -u 1000 -g 1000 -d /home/nginx -s /sbin/nologin nginx
     else
-      echo "nginx user already exists. Ensuring it has UID 956 and GID 956"
-      if [ "$(id -u nginx)" -ne 956 ]; then
-        usermod -u 956 nginx >/dev/null
+      echo "nginx user already exists. Ensuring it has UID 1000 and GID 1000"
+      if [ "$(id -u nginx)" -ne 1000 ]; then
+        usermod -u 1000 nginx >/dev/null
       fi
-      if [ "$(id -g nginx)" -ne 956 ]; then
-        groupmod -g 956 nginx
-        usermod -g 956 nginx >/dev/null
+      if [ "$(id -g nginx)" -ne 1000 ]; then
+        groupmod -g 1000 nginx
+        usermod -g 1000 nginx >/dev/null
       fi
     fi
 

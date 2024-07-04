@@ -21,10 +21,10 @@
 # - Some errors related to /proc directories during file ownership changes can be safely ignored as they are transient and do not affect the actual file ownership changes.
 ################################################################################
 # Desired UIDs and GIDs
-NGINX_UID=956
-NGINX_GID=956
-MEMCACHED_UID=957
-MEMCACHED_GID=957
+NGINX_UID=1000
+NGINX_GID=1000
+MEMCACHED_UID=958
+MEMCACHED_GID=958
 ################################################################################
 
 # Function to verify uid/gid changes
