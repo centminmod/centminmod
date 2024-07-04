@@ -208,6 +208,68 @@ if [ ! -f /usr/local/bin/mytop ]; then
   echo -e "host=localhost\ndb=mysql\ndelay=2\nidle=0\nfullqueries=1" > /root/.mytop
 fi
 
+# Function to get MariaDB version
+get_mariadb_version() {
+    local version=$(mysql -V 2>&1 | awk '{print $5}' | awk -F. '{print $1"."$2}')
+    echo $version
+}
+
+# Function to set client command variables based on MariaDB version
+set_mariadb_client_commands() {
+    local version=$(get_mariadb_version)
+    
+    if (( $(echo "$version <= 10.11" | bc -l) )); then
+        ALIAS_MYSQLACCESS="mysqlaccess"
+        ALIAS_MYSQLADMIN="mysqladmin"
+        ALIAS_MYSQLCHECK="mysqlcheck"
+        ALIAS_MYSQLDUMP="mysqldump"
+        ALIAS_MYSQLDUMPSLOW="mysqldumpslow"
+        ALIAS_MYSQLHOTCOPY="mysqlhotcopy"
+        ALIAS_MYSQLIMPORT="mysqlimport"
+        ALIAS_MYSQLREPORT="mysqlreport"
+        ALIAS_MYSQLSHOW="mysqlshow"
+        ALIAS_MYSQLSLAP="mysqlslap"
+        ALIAS_MYSQL_CONVERT_TABLE_FORMAT="mysql_convert_table_format"
+        ALIAS_MYSQL_EMBEDDED="mysql_embedded"
+        ALIAS_MYSQL_FIND_ROWS="mysql_find_rows"
+        ALIAS_MYSQL_FIX_EXTENSIONS="mysql_fix_extensions"
+        ALIAS_MYSQL_INSTALL_DB="mysql_install_db"
+        ALIAS_MYSQL_PLUGIN="mysql_plugin"
+        ALIAS_MYSQL_SECURE_INSTALLATION="mysql_secure_installation"
+        ALIAS_MYSQL_SETPERMISSION="mysql_setpermission"
+        ALIAS_MYSQL_TZINFO_TO_SQL="mysql_tzinfo_to_sql"
+        ALIAS_MYSQL_UPGRADE="mysql_upgrade"
+        ALIAS_MYSQL_WAITPID="mysql_waitpid"
+        ALIAS_MYSQL="mysql"
+    else
+        ALIAS_MYSQLACCESS="mariadb-access"
+        ALIAS_MYSQLADMIN="mariadb-admin"
+        ALIAS_MYSQLCHECK="mariadb-check"
+        ALIAS_MYSQLDUMP="mariadb-dump"
+        ALIAS_MYSQLDUMPSLOW="mariadb-dumpslow"
+        ALIAS_MYSQLHOTCOPY="mariadb-hotcopy"
+        ALIAS_MYSQLIMPORT="mariadb-import"
+        ALIAS_MYSQLREPORT="mariadb-report"
+        ALIAS_MYSQLSHOW="mariadb-show"
+        ALIAS_MYSQLSLAP="mariadb-slap"
+        ALIAS_MYSQL_CONVERT_TABLE_FORMAT="mariadb-convert-table-format"
+        ALIAS_MYSQL_EMBEDDED="mariadb-embedded"
+        ALIAS_MYSQL_FIND_ROWS="mariadb-find-rows"
+        ALIAS_MYSQL_FIX_EXTENSIONS="mariadb-fix-extensions"
+        ALIAS_MYSQL_INSTALL_DB="mariadb-install-db"
+        ALIAS_MYSQL_PLUGIN="mariadb-plugin"
+        ALIAS_MYSQL_SECURE_INSTALLATION="mariadb-secure-installation"
+        ALIAS_MYSQL_SETPERMISSION="mariadb-setpermission"
+        ALIAS_MYSQL_TZINFO_TO_SQL="mariadb-tzinfo-to-sql"
+        ALIAS_MYSQL_UPGRADE="mariadb-upgrade"
+        ALIAS_MYSQL_WAITPID="mariadb-waitpid"
+        ALIAS_MYSQL="mariadb"
+    fi
+}
+
+# Run the function to set client command variables
+set_mariadb_client_commands
+
 cmservice() {
   servicename=$1
   action=$2
@@ -474,15 +536,15 @@ top_info() {
     
     # only assign variables if mysql is running
     if [[ "$(ps -o comm -C mysqld >/dev/null 2>&1; echo $?)" = '0' ]] || [[ "$(ps -o comm -C mariadbd >/dev/null 2>&1; echo $?)" = '0' ]]; then
-    DATABSELIST=$(mysql $MYSQLADMINOPT -e 'show databases;' | grep -Ev '(Database|information_schema|performance_schema)')
+    DATABSELIST=$($ALIAS_MYSQL $MYSQLADMINOPT -e 'show databases;' | grep -Ev '(Database|information_schema|performance_schema)')
       if [[ "$CENTOS_NINE" -eq '9' ]]; then
-        MYSQLUPTIME=$(mysqladmin $MYSQLADMINOPT ext | awk '/Uptime|Uptime_since_flush_status/ { print $4 }' | head -n1)
-        MYSQLUPTIMEFORMAT=$(mysqladmin $MYSQLADMINOPT ver | awk '/Uptime/ { print $2, $3, $4, $5, $6, $7, $8, $9 }')
-        MYSQLSTART=$(mysql $MYSQLADMINOPT -e "SELECT FROM_UNIXTIME(UNIX_TIMESTAMP() - variable_value) AS server_start FROM INFORMATION_SCHEMA.GLOBAL_STATUS WHERE variable_name='Uptime';" | egrep -Ev '+--|server_start')
+        MYSQLUPTIME=$($ALIAS_MYSQLADMIN $MYSQLADMINOPT ext | awk '/Uptime|Uptime_since_flush_status/ { print $4 }' | head -n1)
+        MYSQLUPTIMEFORMAT=$($ALIAS_MYSQLADMIN $MYSQLADMINOPT ver | awk '/Uptime/ { print $2, $3, $4, $5, $6, $7, $8, $9 }')
+        MYSQLSTART=$($ALIAS_MYSQL $MYSQLADMINOPT -e "SELECT FROM_UNIXTIME(UNIX_TIMESTAMP() - variable_value) AS server_start FROM INFORMATION_SCHEMA.GLOBAL_STATUS WHERE variable_name='Uptime';" | egrep -Ev '+--|server_start')
       else
-        MYSQLUPTIME=$(mysqladmin $MYSQLADMINOPT ext | awk '/Uptime|Uptime_since_flush_status/ { print $4 }' | head -n1)
-        MYSQLUPTIMEFORMAT=$(mysqladmin $MYSQLADMINOPT ver | awk '/Uptime/ { print $2, $3, $4, $5, $6, $7, $8, $9 }')
-        MYSQLSTART=$(mysql $MYSQLADMINOPT -e "SELECT FROM_UNIXTIME(UNIX_TIMESTAMP() - variable_value) AS server_start FROM INFORMATION_SCHEMA.GLOBAL_STATUS WHERE variable_name='Uptime';" | egrep -Ev '+--|server_start')
+        MYSQLUPTIME=$($ALIAS_MYSQLADMIN $MYSQLADMINOPT ext | awk '/Uptime|Uptime_since_flush_status/ { print $4 }' | head -n1)
+        MYSQLUPTIMEFORMAT=$($ALIAS_MYSQLADMIN $MYSQLADMINOPT ver | awk '/Uptime/ { print $2, $3, $4, $5, $6, $7, $8, $9 }')
+        MYSQLSTART=$($ALIAS_MYSQL $MYSQLADMINOPT -e "SELECT FROM_UNIXTIME(UNIX_TIMESTAMP() - variable_value) AS server_start FROM INFORMATION_SCHEMA.GLOBAL_STATUS WHERE variable_name='Uptime';" | egrep -Ev '+--|server_start')
       fi
     fi
     PAGESPEEDSTATUS=$(grep 'pagespeed unplugged' /usr/local/nginx/conf/pagespeed.conf)
@@ -501,7 +563,7 @@ top_info() {
         CLAMAV_INFOVER=$(clamscan -V | head -n1 | awk -F "/" '{print $1}' | awk '{print $2}')
     fi
 
-    if [[ "$(mysqladmin ping -s >/dev/null 2>&1; echo $?)" -eq '0' ]]; then
+    if [[ "$($ALIAS_MYSQLADMIN ping -s >/dev/null 2>&1; echo $?)" -eq '0' ]]; then
         echo "------------------------------------------------------------------"
         mysql --connect-timeout=5 -e "SET GLOBAL innodb_status_output=ON; SET GLOBAL innodb_status_output_locks=ON;" 2>/dev/null
         echo
@@ -678,7 +740,7 @@ top_info() {
         echo
     fi
     # ensure mysql server is running before triggering mysqlreport output
-    if [[ "$(mysqladmin ping -s >/dev/null 2>&1; echo $?)" -eq '0' ]]; then
+    if [[ "$($ALIAS_MYSQLADMIN ping -s >/dev/null 2>&1; echo $?)" -eq '0' ]]; then
         echo "------------------------------------------------------------------"
         echo "MySQL InnoDB Status"
         if [[ "$cron" != 'cron' ]]; then
@@ -704,33 +766,33 @@ top_info() {
         fi
         echo
     fi
-    if [[ "$(mysqladmin ping -s >/dev/null 2>&1; echo $?)" -eq '0' ]]; then
+    if [[ "$($ALIAS_MYSQLADMIN ping -s >/dev/null 2>&1; echo $?)" -eq '0' ]]; then
         echo "------------------------------------------------------------------"
-        echo "mysqladmin var"
-        mysqladmin var | tr -s ' ' | egrep -v '+-' 2>/dev/null
+        echo "$ALIAS_MYSQLADMIN var"
+        $ALIAS_MYSQLADMIN var | tr -s ' ' | egrep -v '+-' 2>/dev/null
         echo
-        echo "mysqladmin ext"
-        mysqladmin ext  | tr -s ' ' | egrep -v '+-' 2>/dev/null
+        echo "$ALIAS_MYSQLADMIN ext"
+        $ALIAS_MYSQLADMIN ext  | tr -s ' ' | egrep -v '+-' 2>/dev/null
         echo
     fi
-    if [[ "$CMINFO_MYSQL_PROCLIST" = [Yy] && "$(mysqladmin ping -s >/dev/null 2>&1; echo $?)" -eq '0' ]]; then
+    if [[ "$CMINFO_MYSQL_PROCLIST" = [Yy] && "$($ALIAS_MYSQLADMIN ping -s >/dev/null 2>&1; echo $?)" -eq '0' ]]; then
         echo "------------------------------------------------------------------"
         if [[ "$cron" = 'cron' ]]; then
             proc_runs=20
         else
             proc_runs=5
         fi
-        echo "mysqladmin proc -i1 -c${proc_runs}"
-        mysqladmin proc -i1 -c${proc_runs} 2>/dev/null
+        echo "$ALIAS_MYSQLADMIN proc -i1 -c${proc_runs}"
+        $ALIAS_MYSQLADMIN proc -i1 -c${proc_runs} 2>/dev/null
         echo
     fi
-    if [[ "$(mysqladmin ping -s >/dev/null 2>&1; echo $?)" -eq '0' && -f /root/mysqlreport ]]; then
+    if [[ "$($ALIAS_MYSQLADMIN ping -s >/dev/null 2>&1; echo $?)" -eq '0' && -f /root/mysqlreport ]]; then
         echo "------------------------------------------------------------------"
         echo "mysqlreport"
         /root/mysqlreport 2>/dev/null
         echo
     fi
-    if [[ "$CMINFO_MYTOP" = [Yy] && "$(mysqladmin ping -s >/dev/null 2>&1; echo $?)" -eq '0' && -f /usr/bin/mytop && -f /root/.mytop ]]; then
+    if [[ "$CMINFO_MYTOP" = [Yy] && "$($ALIAS_MYSQLADMIN ping -s >/dev/null 2>&1; echo $?)" -eq '0' && -f /usr/bin/mytop && -f /root/.mytop ]]; then
         echo "------------------------------------------------------------------"
         echo "mytop -b"
         mytop -b 2>/dev/null
@@ -741,7 +803,7 @@ top_info() {
             # 64bit OS only
             yum -q -y install percona-toolkit --enablerepo=percona-release-x86_64
         fi
-        if [[ "$(mysqladmin ping -s >/dev/null 2>&1; echo $?)" -eq '0' && -f /usr/bin/pt-summary ]]; then
+        if [[ "$($ALIAS_MYSQLADMIN ping -s >/dev/null 2>&1; echo $?)" -eq '0' && -f /usr/bin/pt-summary ]]; then
             echo "------------------------------------------------------------------"
             /usr/bin/pt-summary 2>/dev/null | sed -e 's|Percona Toolkit ||g'
             echo
@@ -951,15 +1013,15 @@ fi
 
 # only assign variables if mysql is running
 if [[ "$(ps -o comm -C mysqld >/dev/null 2>&1; echo $?)" = '0' ]] || [[ "$(ps -o comm -C mariadbd >/dev/null 2>&1; echo $?)" = '0' ]]; then
-DATABSELIST=$(mysql $MYSQLADMINOPT -e 'show databases;' | grep -Ev '(Database|information_schema|performance_schema)')
+DATABSELIST=$($ALIAS_MYSQL $MYSQLADMINOPT -e 'show databases;' | grep -Ev '(Database|information_schema|performance_schema)')
 if [[ "$CENTOS_NINE" -eq '9' ]]; then
-  MYSQLUPTIME=$(mysqladmin $MYSQLADMINOPT ext | awk '/Uptime|Uptime_since_flush_status/ { print $4 }' | head -n1)
-  MYSQLUPTIMEFORMAT=$(mysqladmin $MYSQLADMINOPT ver | awk '/Uptime/ { print $2, $3, $4, $5, $6, $7, $8, $9 }')
-  MYSQLSTART=$(mysql $MYSQLADMINOPT -e "SELECT FROM_UNIXTIME(UNIX_TIMESTAMP() - variable_value) AS server_start FROM INFORMATION_SCHEMA.GLOBAL_STATUS WHERE variable_name='Uptime';" | egrep -Ev '+--|server_start')
+  MYSQLUPTIME=$($ALIAS_MYSQLADMIN $MYSQLADMINOPT ext | awk '/Uptime|Uptime_since_flush_status/ { print $4 }' | head -n1)
+  MYSQLUPTIMEFORMAT=$($ALIAS_MYSQLADMIN $MYSQLADMINOPT ver | awk '/Uptime/ { print $2, $3, $4, $5, $6, $7, $8, $9 }')
+  MYSQLSTART=$($ALIAS_MYSQL $MYSQLADMINOPT -e "SELECT FROM_UNIXTIME(UNIX_TIMESTAMP() - variable_value) AS server_start FROM INFORMATION_SCHEMA.GLOBAL_STATUS WHERE variable_name='Uptime';" | egrep -Ev '+--|server_start')
 else
-  MYSQLUPTIME=$(mysqladmin $MYSQLADMINOPT ext | awk '/Uptime|Uptime_since_flush_status/ { print $4 }' | head -n1)
-  MYSQLUPTIMEFORMAT=$(mysqladmin $MYSQLADMINOPT ver | awk '/Uptime/ { print $2, $3, $4, $5, $6, $7, $8, $9 }')
-  MYSQLSTART=$(mysql $MYSQLADMINOPT -e "SELECT FROM_UNIXTIME(UNIX_TIMESTAMP() - variable_value) AS server_start FROM INFORMATION_SCHEMA.GLOBAL_STATUS WHERE variable_name='Uptime';" | egrep -Ev '+--|server_start')
+  MYSQLUPTIME=$($ALIAS_MYSQLADMIN $MYSQLADMINOPT ext | awk '/Uptime|Uptime_since_flush_status/ { print $4 }' | head -n1)
+  MYSQLUPTIMEFORMAT=$($ALIAS_MYSQLADMIN $MYSQLADMINOPT ver | awk '/Uptime/ { print $2, $3, $4, $5, $6, $7, $8, $9 }')
+  MYSQLSTART=$($ALIAS_MYSQL $MYSQLADMINOPT -e "SELECT FROM_UNIXTIME(UNIX_TIMESTAMP() - variable_value) AS server_start FROM INFORMATION_SCHEMA.GLOBAL_STATUS WHERE variable_name='Uptime';" | egrep -Ev '+--|server_start')
 fi
 fi
 PAGESPEEDSTATUS=$(grep 'pagespeed unplugged' /usr/local/nginx/conf/pagespeed.conf)
@@ -1081,8 +1143,8 @@ echo " MySQL Databases:"
 echo "------------------------------------------------------------------"
 echo
 for db in $DATABSELIST; do 
-DBIDXSIZE=$(mysql $MYSQLADMINOPT -e "SELECT CONCAT(ROUND(SUM(index_length)/(1024*1024), 2), ' MB') AS 'Total Index Size' FROM information_schema.TABLES WHERE table_schema LIKE '$db';" | egrep -Ev '(+-|Total Index Size)')
-DBDATASIZE=$(mysql $MYSQLADMINOPT -e "SELECT CONCAT(ROUND(SUM(data_length)/(1024*1024), 2), ' MB') AS 'Total Data Size'
+DBIDXSIZE=$($ALIAS_MYSQL $MYSQLADMINOPT -e "SELECT CONCAT(ROUND(SUM(index_length)/(1024*1024), 2), ' MB') AS 'Total Index Size' FROM information_schema.TABLES WHERE table_schema LIKE '$db';" | egrep -Ev '(+-|Total Index Size)')
+DBDATASIZE=$($ALIAS_MYSQL $MYSQLADMINOPT -e "SELECT CONCAT(ROUND(SUM(data_length)/(1024*1024), 2), ' MB') AS 'Total Data Size'
 FROM information_schema.TABLES WHERE table_schema LIKE '$db';" | egrep -Ev '(+-|Total Data Size)')
 
 if [ "$DBIDXSIZE" == 'NULL' ]; then
