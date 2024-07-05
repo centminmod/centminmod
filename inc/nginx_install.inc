@@ -1,3 +1,22 @@
+# Desired UID and GID
+DESIRED_UID=1068
+DESIRED_GID=1068
+
+# Function to check if a UID or GID is available
+id_available() {
+  ! getent passwd "$1" &>/dev/null && ! getent group "$1" &>/dev/null
+}
+
+# Function to find the next available UID/GID
+find_next_available_id() {
+  local start_id=$1
+  local current_id=$start_id
+  while ! id_available "$current_id"; do
+    ((current_id++))
+  done
+  echo "$current_id"
+}
+
 checkmapinital() {
 VTSHTTP_INCLUDECHECK=$(grep '\/usr\/local\/nginx\/conf\/vts_http.conf' /usr/local/nginx/conf/nginx.conf)
 VTSMAIN_INCLUDECHECK=$(grep '\/usr\/local\/nginx\/conf\/vts_mainserver.conf' /usr/local/nginx/conf/conf.d/virtual.conf)
@@ -357,22 +376,42 @@ fi
 # unset_intelflags
 
     mimefix
-    if [ ! "$(grep -w 'nginx' /etc/passwd)" ]; then
-      echo "Creating nginx group and user with UID 1000 and GID 1000"
-      groupadd -g 1000 nginx
-      useradd -u 1000 -g 1000 -d /home/nginx -s /sbin/nologin nginx
+
+    # Determine the UID and GID to use
+    if id_available "$DESIRED_UID"; then
+      NGINX_UID=$DESIRED_UID
+      NGINX_GID=$DESIRED_GID
     else
-      echo "nginx user already exists. Ensuring it has UID 1000 and GID 1000"
-      if [ "$(id -u nginx)" -ne 1000 ]; then
-        usermod -u 1000 nginx >/dev/null
+      echo "Desired UID/GID $DESIRED_UID is already in use. Finding next available ID."
+      NGINX_UID=$(find_next_available_id $((DESIRED_UID + 1)))
+      NGINX_GID=$NGINX_UID
+    fi
+
+    echo "Using UID/GID: $NGINX_UID"
+
+    if [ ! "$(grep -w 'nginx' /etc/passwd)" ]; then
+      echo "Creating nginx group and user with UID $NGINX_UID and GID $NGINX_GID"
+      groupadd -g "$NGINX_GID" nginx
+      useradd -u "$NGINX_UID" -g "$NGINX_GID" -d /home/nginx -s /sbin/nologin nginx
+    else
+      echo "nginx user already exists. Ensuring it has UID $NGINX_UID and GID $NGINX_GID"
+      CURRENT_UID=$(id -u nginx)
+      CURRENT_GID=$(id -g nginx)
+      
+      if [ "$CURRENT_UID" -ne "$NGINX_UID" ]; then
+        usermod -u "$NGINX_UID" nginx >/dev/null
+        echo "Updated nginx UID from $CURRENT_UID to $NGINX_UID"
       fi
-      if [ "$(id -g nginx)" -ne 1000 ]; then
-        groupmod -g 1000 nginx
-        usermod -g 1000 nginx >/dev/null
+      
+      if [ "$CURRENT_GID" -ne "$NGINX_GID" ]; then
+        groupmod -g "$NGINX_GID" nginx
+        usermod -g "$NGINX_GID" nginx >/dev/null
+        echo "Updated nginx GID from $CURRENT_GID to $NGINX_GID"
       fi
     fi
 
     # Verify the changes
+    echo "Verifying nginx user details:"
     id nginx
 
 #######################################################
