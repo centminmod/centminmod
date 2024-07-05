@@ -1195,6 +1195,10 @@ cat >>/etc/my.cnf<<FFF
 
 
 [mariadb-10.11]
+log_slow_query=0
+log_slow_query_time=1
+log_slow_query_file=/var/lib/mysql/slowq.log
+
 #innodb_file_format = Barracuda
 innodb_default_row_format = dynamic
 innodb_file_per_table = 1
@@ -1272,6 +1276,13 @@ sed -i '/^innodb_large_prefix/d' /etc/my.cnf
 # https://mariadb.com/kb/en/changes-improvements-in-mariadb-106/
 # https://jira.mariadb.org/browse/MDEV-8334
 # sed -i '/^character-set-server/d' /etc/my.cnf
+
+# changed variables for 10.11.1
+# https://jira.mariadb.org/browse/MDEV-7567
+sed -i '/^min_examined_row_limit/d' /etc/my.cnf
+sed -i '/^slow_query_log/d' /etc/my.cnf
+sed -i '/^slow_query_log_file/d' /etc/my.cnf
+sed -i '/^long_query_time/d' /etc/my.cnf
 
 echo ""
 
