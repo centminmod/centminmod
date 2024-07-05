@@ -447,9 +447,23 @@ changeuserpass() {
   cecho "--------------------------------------------------------------" $boldyellow
   cecho "Change Existing MySQL username's password:" $boldgreen
   cecho "--------------------------------------------------------------" $boldyellow
+  echo
+  echo "This is for non-root MySQL user password changes only"
+  echo "For MySQL root user password changes, use centmin.sh"
+  echo "menu option 11, submenu 0"
+  echo
 
   read -ep " Enter MySQL username you want to change password for: " changemysqluserpass
   read -ep " Enter MySQL username's new password to change to: " changenewmysqlpass
+
+  if [[ "$changemysqluserpass" = 'root' ]]; then
+    echo
+    echo "This is for non-root MySQL user password changes only"
+    echo "For MySQL root user password changes, use centmin.sh"
+    echo "menu option 11, submenu 0"
+    echo
+    exit
+  fi
 
   if [[ "$rootset" = [yY] ]]; then
     mysql ${MYSQLOPTS} -e "set password for '$changemysqluserpass'@'$MYSQLHOSTNAME' = password('$changenewmysqlpass');"
