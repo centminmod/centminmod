@@ -866,7 +866,7 @@ source_wgetinstall() {
   if [[ "$WGET_REBUILD_ALWAYS" = [yY] || "$(/usr/local/bin/wget -V | head -n1 | awk '{print $3}' | grep -q ${WGET_VERSION} >/dev/null 2>&1; echo $?)" != '0' ]]; then
   WGET_FILENAME="wget-${WGET_VERSION}.tar.gz"
   WGET_LINK="${LOCALCENTMINMOD_MIRROR}/centminmodparts/wget/${WGET_FILENAME}"
-  if [[ "$CENTOS_EIGHT" = '8' ]]; then
+  if [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]]; then
     libmetalink_install
     export METALINK_CFLAGS='-I/usr/local/include'
     export METALINK_LIBS='-L/usr/local/lib -lmetalink'
