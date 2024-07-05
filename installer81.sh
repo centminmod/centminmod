@@ -542,8 +542,17 @@ if [ ! -f /usr/sbin/virt-what ]; then
   yum -q -y install virt-what
 fi
 
-if [[ ! -f /proc/user_beancounters && -f /usr/bin/systemd-detect-virt && "$(/usr/bin/systemd-detect-virt)" = 'lxc' ]] || [[ ! -f /proc/user_beancounters && -f /usr/sbin/virt-what && $(virt-what | xargs | grep -o lxc) = 'lxc' ]]; then
-  CHECK_LXD='y'
+if [[ ! -f /proc/user_beancounters ]]; then
+    if [[ -f /usr/bin/systemd-detect-virt && "$(/usr/bin/systemd-detect-virt)" = 'lxc' ]]; then
+        CHECK_LXD='y'
+    elif [[ -f $(which virt-what) ]]; then
+        VIRT_WHAT_OUTPUT=$(virt-what | xargs)
+        if [[ $VIRT_WHAT_OUTPUT == *'openvz'* ]]; then
+            CHECK_LXD='n'
+        elif [[ $VIRT_WHAT_OUTPUT == *'lxc'* ]]; then
+            CHECK_LXD='y'
+        fi
+    fi
 fi
 
 # check for Docker environment to skip grub routines
