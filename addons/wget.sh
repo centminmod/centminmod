@@ -37,6 +37,7 @@ WGET_LINK="${LOCALCENTMINMOD_MIRROR}/centminmodparts/wget/${WGET_FILENAME}"
 WGET_LINKLOCAL="${LOCALCENTMINMOD_MIRROR}/centminmodparts/wget/${WGET_FILENAME}"
 WGET_OPENSSL='n'
 WGET_STRACE='n'
+CENTOS_ALPHATEST='y'
 FORCE_IPVFOUR='y' # curl/wget commands through script force IPv4
 ###########################################################
 shopt -s expand_aliases
