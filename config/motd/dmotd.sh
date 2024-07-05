@@ -141,6 +141,25 @@ log_message() {
     fi
 }
 
+check_git_major_branch() {
+    local repo_path="$CMSCRIPT_GITDIR"
+    local current_branch=$(git --git-dir="$repo_path/.git" --work-tree="$repo_path" rev-parse --abbrev-ref HEAD)
+    local branches_to_check=("123.08stable" "123.09beta01" "124.00stable" "130.00beta01")
+    echo -n " Current local server Centmin Mod branch installed: "
+    cecho "$current_branch " $boldyellow
+    cecho "===============================================================================" $boldgreen
+    for branch in "${branches_to_check[@]}"; do
+        if [[ "$current_branch" == "$branch" ]]; then
+            echo -n " Newer Centmin Mod branch version is available: "
+            cecho "131.00stable or 140.00beta01" $boldyellow
+            echo -n " Details at "
+            cecho "https://community.centminmod.com/threads/25572/" $boldyellow
+            cecho "===============================================================================" $boldgreen
+            break
+        fi
+    done
+}
+
 push_dmotd_alerts() {
   pushapp=$1
   pushapp_ver=$2
@@ -474,6 +493,7 @@ else
 fi
 gitenv_askupdate
 needrestart_check
+check_git_major_branch
 } 2>&1 | tee "${CENTMINLOGDIR}/cmm-login-git-checks_${DT}.log"
 
 endtime=$(TZ=UTC date +%s.%N)
