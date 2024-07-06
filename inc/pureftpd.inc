@@ -119,11 +119,20 @@ fi
     echo "ls -lAh /etc/systemd/system/pure-ftpd.service.d"
     ls -lAh /etc/systemd/system/pure-ftpd.service.d
     echo
+    if [ ! -d /etc/systemd/system/pure-ftpd.service.d ]; then
+      mkdir -p /etc/systemd/system/pure-ftpd.service.d
+      echo '[Service]' > /etc/systemd/system/pure-ftpd.service.d/pidfile.conf
+      echo 'PIDFile=/run/pure-ftpd.pid' >> /etc/systemd/system/pure-ftpd.service.d/pidfile.conf
+    fi
     echo "cat /etc/systemd/system/pure-ftpd.service.d/pidfile.conf"
     cat /etc/systemd/system/pure-ftpd.service.d/pidfile.conf
     echo
     echo "pure-ftpd installed"
+    systemctl daemon-reload
     cmservice pure-ftpd restart
+    echo
+    echo 'journalctl -u pure-ftpd --no-pager | tail -10'
+    journalctl -u pure-ftpd --no-pager | tail -10
     echo
     csf -r
 

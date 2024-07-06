@@ -1,27 +1,60 @@
 #!/bin/bash
 ################################################################################
-# Script to update UIDs and GIDs for nginx user if they are set to 956
-#
-# This script performs the following operations:
-# 1. Checks if the nginx service exists and stops it if it does.
-# 2. Checks if the nginx user exists.
-# 3. Attempts to use UID/GID 1068 first. If unavailable, finds the next available UID and GID.
-# 4. If the nginx user exists and the current UID/GID is 956, updates their UIDs and GIDs to the determined number.
-# 5. Updates the ownership of files associated with the old UIDs and GIDs.
-# 6. Restarts the nginx service if it exists.
-# 7. Verifies the changes by displaying the current UID and GID of the nginx user.
-# 8. Verifies that the chown command was successful by checking file ownership.
-#
-# Note:
-# - Ensure you have backups and have tested this script in a non-production environment before applying it to production systems.
-# - Some errors related to /proc directories during file ownership changes can be safely ignored as they are transient and do not affect the actual file ownership changes.
+# Script to update UIDs and GIDs for nginx user if they are set to specific values
 ################################################################################
 
-# Current and desired UIDs and GIDs
-CURRENT_UID=956
-CURRENT_GID=956
-DESIRED_UID=1068
-DESIRED_GID=1068
+# Function to display usage
+usage() {
+    echo "Usage: $0 --current-uid <uid> --current-gid <gid> --desired-uid <uid> --desired-gid <gid>"
+    echo "   or: $0 -uf <uid> -gf <gid> -ut <uid> -gt <gid>"
+    exit 1
+}
+
+# Initialize variables
+CURRENT_UID=""
+CURRENT_GID=""
+DESIRED_UID=""
+DESIRED_GID=""
+
+# Manual parsing of arguments
+while [[ $# -gt 0 ]]; do
+    case $1 in
+        -uf|--current-uid)
+            CURRENT_UID="$2"
+            shift 2
+            ;;
+        -gf|--current-gid)
+            CURRENT_GID="$2"
+            shift 2
+            ;;
+        -ut|--desired-uid)
+            DESIRED_UID="$2"
+            shift 2
+            ;;
+        -gt|--desired-gid)
+            DESIRED_GID="$2"
+            shift 2
+            ;;
+        -h|--help)
+            usage
+            ;;
+        *)
+            echo "Unknown option: $1"
+            usage
+            ;;
+    esac
+done
+
+# Check if all required arguments are provided
+if [ -z "$CURRENT_UID" ] || [ -z "$CURRENT_GID" ] || [ -z "$DESIRED_UID" ] || [ -z "$DESIRED_GID" ]; then
+    echo "Error: All arguments must be provided."
+    usage
+fi
+
+SCRIPT_DIR=$(readlink -f $(dirname ${BASH_SOURCE[0]}))
+SCRIPT_SOURCEBASE=$(readlink -f $(dirname ${BASH_SOURCE[0]}))
+# account for tools directory placement of tools/setio.sh
+SCRIPT_DIR=$(readlink -f $(dirname ${SCRIPT_DIR}))
 
 ################################################################################
 # Function to verify uid/gid changes
@@ -85,12 +118,12 @@ else
   echo "nginx service does not exist."
 fi
 
-# Change UID and GID if user exists and current UID/GID is 956
+# Change UID and GID if user exists and current UID/GID matches specified values
 if user_exists nginx; then
   OLD_NGINX_UID=$(id -u nginx)
   OLD_NGINX_GID=$(id -g nginx)
   if [[ "$OLD_NGINX_UID" -eq "$CURRENT_UID" && "$OLD_NGINX_GID" -eq "$CURRENT_GID" ]]; then
-    echo "Changing UID and GID of nginx user to $NGINX_UID..."
+    echo "Changing UID and GID of nginx user from $OLD_NGINX_UID:$OLD_NGINX_GID to $NGINX_UID:$NGINX_GID..."
     groupmod -g "$NGINX_GID" nginx
     usermod -u "$NGINX_UID" -g "$NGINX_GID" nginx
     echo "Updating ownership of files for nginx user..."
@@ -98,8 +131,11 @@ if user_exists nginx; then
     find / -group "$OLD_NGINX_GID" ! -path "/proc/*" -exec chgrp -h "$NGINX_GID" {} \; 2>/dev/null
     # Ensure ownership of critical directories
     chown -R "$NGINX_UID:$NGINX_GID" /home/nginx
+    # Update pure-ftpd database created virtual FTP user's uid/gid as well
+    echo
+    ${SCRIPT_DIR}/tools/switch_pureftpd_uid.sh -u "$NGINX_UID" -g "$NGINX_GID"
   else
-    echo "nginx user UID/GID is not 956. No changes made."
+    echo "nginx user UID/GID is $OLD_NGINX_UID:$OLD_NGINX_GID, not $CURRENT_UID:$CURRENT_GID. No changes made."
   fi
 else
   echo "nginx user does not exist."

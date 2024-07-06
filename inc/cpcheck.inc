@@ -4,7 +4,7 @@ switch_nginx_uid() {
     current_uid=$(id -u nginx)
     current_gid=$(id -g nginx)
     if [[ "$current_uid" -eq 956 && "$current_gid" -eq 956 && -f "${SCRIPT_DIR}/tools/switch_nginx_uid.sh" ]]; then
-        "${SCRIPT_DIR}/tools/switch_nginx_uid.sh" >/dev/null 2>&1
+        "${SCRIPT_DIR}/tools/switch_nginx_uid.sh -uf 956 -gf 956 -ut 1068 -gt 1068" >/dev/null 2>&1
     fi
 }
 
