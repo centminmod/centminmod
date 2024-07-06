@@ -641,6 +641,9 @@ info_notice
 read -ep "Enter vhost domain name to add (without www. prefix): " vhostname
 
    # if checkidn_vhost = 0 then internationalized domain name
+   if [ ! -f /usr/bin/idn ]; then
+     yum -q -y install libidn libidn-devel
+   fi
    checkidn_vhost=$(echo $vhostname | idn | grep '^xn--' >/dev/null 2>&1; echo $?)
    if [[ "$checkidn_vhost" = '0' ]]; then
      vhostname=$(echo $vhostname | idn)
