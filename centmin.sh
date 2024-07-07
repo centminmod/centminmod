@@ -30,7 +30,7 @@ DT=$(date +"%d%m%y-%H%M%S")
 branchname='140.00beta01'
 SCRIPT_MAJORVER='140'
 SCRIPT_MINORVER='00'
-SCRIPT_INCREMENTVER='038'
+SCRIPT_INCREMENTVER='039'
 SCRIPT_VERSIONSHORT="${branchname}"
 SCRIPT_VERSION="${SCRIPT_VERSIONSHORT}.b${SCRIPT_INCREMENTVER}"
 SCRIPT_DATE='01/07/24'
@@ -1447,6 +1447,7 @@ fi
 # source "${SCRIPT_DIR}/inc/mainmenu_cli.inc"
 # source "${SCRIPT_DIR}/inc/ramdisk.inc"
 source "${SCRIPT_DIR}/inc/core_functions.inc"
+source "${SCRIPT_DIR}/inc/configfile_submenu.inc"
 source "${SCRIPT_DIR}/inc/fastmirrors.conf"
 source "${SCRIPT_DIR}/inc/sync.inc"
 source "${SCRIPT_DIR}/inc/qrencode.inc"
@@ -3902,38 +3903,21 @@ EOF
           fi
         } 2>&1 | tee "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_mysqladminshell.log"       
         ;;
-        7|apcreinstall)
-        if [ -f "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_apc_reinstall.log" ]; then
+        7|persistentconfig)
+        if [ -f "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_persistent_config_override.log" ]; then
             NEWDT=$(date +"%d%m%y-%H%M%S")
-            mv "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_apc_reinstall.log" "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${NEWDT}_apc_reinstall.log"
+            mv "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_persistent_config_override.log" "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${NEWDT}_persistent_config_override.log"
         fi
         # set_logdate
-        CM_MENUOPT=7
-        starttime=$(TZ=UTC date +%s.%N)
-        
+        CM_MENUOPT=7       
         centminlog
         {
-        
-        if [ "$CCACHEINSTALL" == 'y' ]; then
-        ccacheinstall
+        if [ "$PERSISTENT_CONFIG_MENU" == 'y' ]; then
+          persistentconfig_submenu
+        else
+          echo "TBA"
         fi
-        
-        funct_apcreinstall
-        } 2>&1 | tee "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_apc_reinstall.log"
-        
-        if [ "$CCACHEINSTALL" == 'y' ]; then
-        
-            # check if ccache installed first
-            if [ -f /usr/bin/ccache ]; then
-        { echo ""; source ~/.bashrc; echo "ccache stats:"; ccache -s; echo ""; } 2>&1 | tee -a "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_apc_reinstall.log"
-            fi
-        fi
-        
-        endtime=$(TZ=UTC date +%s.%N)
-        INSTALLTIME=$(echo "scale=2;$endtime - $starttime"|bc )
-        echo "" >> "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_apc_reinstall.log"
-        echo "Total APC Cache Re-Install Time: $INSTALLTIME seconds" >> "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_apc_reinstall.log"
-        
+        } 2>&1 | tee "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_persistent_config_override.log"       
         ;;
         8|installxcache)
         if [ -f "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_xcache_install.log" ]; then
