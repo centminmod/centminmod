@@ -30,7 +30,7 @@ DT=$(date +"%d%m%y-%H%M%S")
 branchname='140.00beta01'
 SCRIPT_MAJORVER='140'
 SCRIPT_MINORVER='00'
-SCRIPT_INCREMENTVER='037'
+SCRIPT_INCREMENTVER='038'
 SCRIPT_VERSIONSHORT="${branchname}"
 SCRIPT_VERSION="${SCRIPT_VERSIONSHORT}.b${SCRIPT_INCREMENTVER}"
 SCRIPT_DATE='01/07/24'
@@ -3654,7 +3654,7 @@ else
             cecho "18). Suhosin PHP Extension install" $boldgreen
             cecho "19). Install FFMPEG and FFMPEG PHP Extension" $boldgreen
             cecho "20). NSD Install/Re-Install" $boldgreen
-            cecho "21). Data Transfer (TBA)" $boldgreen
+            cecho "21). Data Transfer" $boldgreen
             cecho "22). Add Wordpress Nginx vhost + Cache Plugin" $boldgreen
             cecho "23). Update Centmin Mod Code Base" $boldgreen
             cecho "24). Exit" $boldgreen
