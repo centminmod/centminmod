@@ -676,6 +676,8 @@ if [[ "$CENTOS_NINE" -eq '9' ]]; then
   echo "ENABLE_MARIADBTENFOURUPGRADE='y'" >> /etc/centminmod/custom_config.inc
   echo "ENABLE_MARIADBTENFIVEUPGRADE='y'" >> /etc/centminmod/custom_config.inc
   echo "ENABLE_MARIADBTENSIXUPGRADE='y'" >> /etc/centminmod/custom_config.inc
+  echo "MARIADB_INSTALLTENSIX='n'" >> /etc/centminmod/custom_config.inc
+  echo "MARIADB_INSTALLTENELEVEN='y'" >> /etc/centminmod/custom_config.inc
 fi
 # set el8 defaults
 if [[ "$CENTOS_EIGHT" -eq '8' ]]; then
@@ -706,6 +708,8 @@ if [[ "$CENTOS_EIGHT" -eq '8' ]]; then
   echo "ENABLE_MARIADBTENFOURUPGRADE='y'" >> /etc/centminmod/custom_config.inc
   echo "ENABLE_MARIADBTENFIVEUPGRADE='y'" >> /etc/centminmod/custom_config.inc
   echo "ENABLE_MARIADBTENSIXUPGRADE='y'" >> /etc/centminmod/custom_config.inc
+  echo "MARIADB_INSTALLTENFOUR='n'" >> /etc/centminmod/custom_config.inc
+  echo "MARIADB_INSTALLTENELEVEN='y'" >> /etc/centminmod/custom_config.inc
 fi
 # set el7 defaults
 if [[ "$CENTOS_SEVEN" -eq '7' ]]; then
