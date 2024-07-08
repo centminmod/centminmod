@@ -30,7 +30,7 @@ DT=$(date +"%d%m%y-%H%M%S")
 branchname='140.00beta01'
 SCRIPT_MAJORVER='140'
 SCRIPT_MINORVER='00'
-SCRIPT_INCREMENTVER='043'
+SCRIPT_INCREMENTVER='044'
 SCRIPT_VERSIONSHORT="${branchname}"
 SCRIPT_VERSION="${SCRIPT_VERSIONSHORT}.b${SCRIPT_INCREMENTVER}"
 SCRIPT_DATE='01/07/24'
@@ -3612,7 +3612,7 @@ else
             cecho "4).  Nginx Upgrade / Downgrade" $boldgreen
             cecho "5).  PHP Upgrade / Downgrade" $boldgreen
             cecho "6).  MySQL User Database Management" $boldgreen
-            cecho "7).  Option Being Revised (TBA)" $boldgreen
+            cecho "7).  Persistent Config File Management" $boldgreen
             cecho "8).  Option Being Revised (TBA)" $boldgreen
             cecho "9).  Option Being Revised (TBA)" $boldgreen
             cecho "10). Memcached Server Re-install" $boldgreen
