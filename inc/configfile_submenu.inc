@@ -28,29 +28,29 @@ persistentconfig_submenu() {
     cecho "     Centmin Mod Persistent Config File Override Options" $boldgreen
     cecho "---------------------------------------------------------------------" $boldyellow
     cecho "1).  List Persistent Config File options" $boldgreen
-    cecho "2).  Enable Letsencrypt SSL support" $boldgreen
-    cecho "3).  Enable dual SSL RSA+ECDSA certificate support" $boldgreen
-    cecho "4).  Display PHP-FPM version checks on SSH login" $boldgreen
-    cecho "5).  Switch Nginx from OpenSSL to AWS-LC" $boldgreen
-    cecho "6).  Enable Nginx Brotli support" $boldgreen
-    cecho "7).  Enable Nginx zstd support" $boldgreen
-    cecho "8).  Enable Nginx mold linker compile support" $boldgreen
-    cecho "9).  Enable Nginx pcre2 support" $boldgreen
-    cecho "10). Enable Nginx njs module support" $boldgreen
-    cecho "11). Enable Nginx Video modules (Slice, RTMP, FLV, MP4)" $boldgreen
-    cecho "12). Enable PHP-FPM mold linker compile support" $boldgreen
+    cecho "2).  Enable Letsencrypt SSL support LETSENCRYPT_DETECT='y'" $boldgreen
+    cecho "3).  Enable dual SSL RSA+ECDSA certificate support DUALCERTS='y'" $boldgreen
+    cecho "4).  Display PHP-FPM version checks on SSH login DMOTD_PHPCHECK='y'" $boldgreen
+    cecho "5).  Switch Nginx from OpenSSL to AWS-LC AWS_LC_SWITCH='y'" $boldgreen
+    cecho "6).  Enable Nginx Brotli support NGINX_LIBBROTLI='y' NGXDYNAMIC_BROTLI='y'" $boldgreen
+    cecho "7).  Enable Nginx zstd support NGINX_ZSTD='y'" $boldgreen
+    cecho "8).  Enable Nginx mold linker compile support NGX_LDMOLD='y'" $boldgreen
+    cecho "9).  Enable Nginx pcre2 support NGINX_PCRE_TWO='y'" $boldgreen
+    cecho "10). Enable Nginx njs module support NGINX_NJS='y' NGXDYNAMIC_NJS='y'" $boldgreen
+    cecho "11). Enable Nginx Video modules (Slice, RTMP, FLV, MP4) NGINX_VIDEO='y'" $boldgreen
+    cecho "12). Enable PHP-FPM mold linker compile support PHP_LDMOLD='y'" $boldgreen
     cecho "---------------------------------------------------------------------" $boldyellow
-    cecho "13). Disable Letsencrypt SSL support" $boldgreen
-    cecho "14). Disable dual SSL RSA+ECDSA certificate support" $boldgreen
-    cecho "15). Disable PHP-FPM version checks on SSH login" $boldgreen
-    cecho "16). Switch Nginx back to OpenSSL from AWS-LC" $boldgreen
-    cecho "17). Disable Nginx Brotli support" $boldgreen
-    cecho "18). Disable Nginx zstd support" $boldgreen
-    cecho "19). Disable Nginx mold linker compile support" $boldgreen
-    cecho "20). Disable Nginx pcre2 support" $boldgreen
-    cecho "21). Disable Nginx njs module support" $boldgreen
-    cecho "22). Disable Nginx Video modules (Slice, RTMP, FLV, MP4)" $boldgreen
-    cecho "23). Disable PHP-FPM mold linker compile support" $boldgreen
+    cecho "13). Disable Letsencrypt SSL support LETSENCRYPT_DETECT='n'" $boldgreen
+    cecho "14). Disable dual SSL RSA+ECDSA certificate support  DUALCERTS='n'" $boldgreen
+    cecho "15). Disable PHP-FPM version checks on SSH login DMOTD_PHPCHECK='n'" $boldgreen
+    cecho "16). Switch Nginx back to OpenSSL from AWS-LC AWS_LC_SWITCH='n'" $boldgreen
+    cecho "17). Disable Nginx Brotli support NGINX_LIBBROTLI='n' NGXDYNAMIC_BROTLI='n'" $boldgreen
+    cecho "18). Disable Nginx zstd support NGINX_ZSTD='n'" $boldgreen
+    cecho "19). Disable Nginx mold linker compile support NGX_LDMOLD='n'" $boldgreen
+    cecho "20). Disable Nginx pcre2 support NGINX_PCRE_TWO='n'" $boldgreen
+    cecho "21). Disable Nginx njs module support NGINX_NJS='n' NGXDYNAMIC_NJS='n'" $boldgreen
+    cecho "22). Disable Nginx Video modules (Slice, RTMP, FLV, MP4) NGINX_VIDEO='n'" $boldgreen
+    cecho "23). Disable PHP-FPM mold linker compile support PHP_LDMOLD='n'" $boldgreen
     cecho "24). Back to Main menu" $boldgreen
     cecho "---------------------------------------------------------------------" $boldyellow
 
