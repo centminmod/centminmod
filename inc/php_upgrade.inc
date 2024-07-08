@@ -475,6 +475,10 @@ else
         echo "#####################################################################"
         echo
     fi
+    if [[ "$REDIS_PHPCURRENTVER" = '8.4' || "$PHPMUVER" = '8.4' ]]; then
+        REDISPHP_GIT='y'
+        AUTODETECPHP_OVERRIDE='y'
+    fi
     read -ep "Do you still want to continue? [y/n] " phpfpm_stillcont
     if [[ "$phpfpm_stillcont" = [nN] ]];then
         exit 0
@@ -1439,7 +1443,7 @@ echo "$PHPSEVEN_CHECKVER"
 
 if [[ "$PHPSEVEN_CHECKVER" = '0' ]]; then
     cecho "***************************************************" $boldgreen
-    cecho "PHP 7.0/7.1/7.2/7.3/7.4/8.0/8.1/8.2 detected.. remove unsupported PHP extensions manually" $boldyellow
+    cecho "PHP 7.0/7.1/7.2/7.3/7.4/8.0/8.1/8.2/8.3/8.4 detected.. remove unsupported PHP extensions manually" $boldyellow
     cecho "by removing their ini files listed below (if list is empty = nothing to do):" $boldyellow
     cecho "***************************************************" $boldgreen
     echo

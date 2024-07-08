@@ -416,7 +416,7 @@ TWEMPERF_VER='0.1.1'
 PHPREDIS='y'                # redis PHP extension install
 REDISPHP_VER='4.3.0'        # redis PHP version for PHP <7.x
 REDISPHPSEVEN_VER='5.3.7'   # redis PHP version for PHP 7.0.x to 7.1.x
-REDISPHPSEVENTWO_VER='6.0.1'   # redis PHP version for PHP =>7.2.x
+REDISPHPSEVENTWO_VER='6.0.2'   # redis PHP version for PHP =>7.2.x
 REDISPHP_GIT='n'            # pull php 7 redis extension from git or pecl downloads
 PHPMONGODB='n'              # MongoDB PHP extension install
 MONGODBPHP_VER='1.7.5'      # MongoDB PHP version

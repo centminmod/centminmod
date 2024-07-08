@@ -46,10 +46,13 @@ checkredistar() {
     if [[ "$REDISPHP_GIT" != [yY] ]]; then
       if [[ "$REDIS_PHPCURRENTVER" = '8.4' || "$PHPMUVER" = '8.4' || "$REDIS_PHPCURRENTVER" = '8.3' || "$PHPMUVER" = '8.3' || "$REDIS_PHPCURRENTVER" = '8.2' || "$PHPMUVER" = '8.2' || "$REDIS_PHPCURRENTVER" = '8.1' || "$PHPMUVER" = '8.1' || "$REDIS_PHPCURRENTVER" = '8.0' || "$PHPMUVER" = '8.0' ]] || [[ "$REDIS_PHPCURRENTVER" = '7.4' || "$PHPMUVER" = '7.4' ]] || [[ "$REDIS_PHPCURRENTVER" = '7.3' || "$PHPMUVER" = '7.3' ]] || [[ "$REDIS_PHPCURRENTVER" = '7.2' || "$PHPMUVER" = '7.2' ]]; then
         REDISPHP_VER="$REDISPHPSEVENTWO_VER"
+        echo "checkredistar: REDISPHP_VER=$REDISPHP_VER"
       elif [[ "$INITIALINSTALL" = [yY] ]] && [[ "$PHPMVER" = '8.4' || "$PHPMVER" = '8.3' || "$PHPMVER" = '8.2' || "$PHPMVER" = '8.1' || "$PHPMVER" = '8.0' || "$PHPMVER" = '7.4' || "$PHPMVER" = '7.3' || "$PHPMVER" = '7.2' ]]; then
         REDISPHP_VER="$REDISPHPSEVENTWO_VER"
+        echo "checkredistar: REDISPHP_VER=$REDISPHP_VER"
       else
         REDISPHP_VER="$REDISPHPSEVEN_VER"
+        echo "checkredistar: REDISPHP_VER=$REDISPHP_VER"
       fi
       PHPEXT_REDISLINKFILE="phpredis-${REDISPHP_VER}.tgz"
       PHPEXT_REDISLINK="https://github.com/phpredis/phpredis/archive/${REDISPHP_VER}.tar.gz"
@@ -116,14 +119,26 @@ fi
 
 checkredistar
 
+echo
+echo "redisinstall: PHPVER_ID=$PHPVER_ID"
+echo "redisinstall: REDIS_PHPCURRENTVER=$REDIS_PHPCURRENTVER"
+echo "redisinstall: PHPMUVER=$PHPMUVER"
+echo "redisinstall: REDIS_PHPCURRENTVER=$REDIS_PHPCURRENTVER"
+echo
+
 if [[ "$REDIS_PHPCURRENTVER" = '8.4' || "$PHPMUVER" = '8.4' || "$REDIS_PHPCURRENTVER" = '8.3' || "$PHPMUVER" = '8.3' || "$REDIS_PHPCURRENTVER" = '8.2' || "$PHPMUVER" = '8.2' || "$REDIS_PHPCURRENTVER" = '8.1' || "$PHPMUVER" = '8.1' || "$REDIS_PHPCURRENTVER" = '8.0' || "$PHPMUVER" = '8.0' || "$PHPVER_ID" -ge '80000' || "$PHPMUVER" = 'NGDEBUG' || "$PHPSEVEN_CHECKVER" = '0' ]] || [[ "$REDIS_PHPCURRENTVER" = '7.4' || "$PHPMUVER" = '7.4' || "$PHPMUVER" = 'NGDEBUG' || "$PHPSEVEN_CHECKVER" = '0' ]] || [[ "$REDIS_PHPCURRENTVER" = '7.3' || "$PHPMUVER" = '7.3' || "$PHPMUVER" = 'NGDEBUG' || "$PHPSEVEN_CHECKVER" = '0' ]] || [[ "$REDIS_PHPCURRENTVER" = '7.2' || "$PHPMUVER" = '7.2' || "$PHPMUVER" = 'NGDEBUG' || "$PHPSEVEN_CHECKVER" = '0' ]] || [[ "$REDIS_PHPCURRENTVER" = '7.1' || "$PHPMUVER" = '7.1' || "$PHPMUVER" = 'NGDEBUG' || "$PHPSEVEN_CHECKVER" = '0' ]] || [[ "$REDIS_PHPCURRENTVER" = '7.0' || "$PHPMUVER" = '7.0' || "$PHPMUVER" = 'NGDEBUG' || "$PHPSEVEN_CHECKVER" = '0' ]] || [[ "$INITIALINSTALL" = [yY] && "$(echo "$PHP_VERSION" | cut -d . -f1,2)" = '7.1' ]] || [[ "$INITIALINSTALL" = [yY] && "$(echo "$PHP_VERSION" | cut -d . -f1,2)" = '7.0' ]]; then
-    cecho "Compiling PHP redis-${REDISPHP_VER} extension for PHP 7.x ..." $boldgreen
+    cecho "Compiling PHP redis-${REDISPHP_VER} extension for PHP ..." $boldgreen
+
+    if [[ "$REDIS_PHPCURRENTVER" = '8.4' || "$PHPMUVER" = '8.4' ]]; then
+        REDISPHP_GIT='y'
+        AUTODETECPHP_OVERRIDE='y'
+    fi
 
     pwd
     echo "cd $DIR_TMP"
     cd $DIR_TMP
     if [[ "$REDISPHP_GIT" = [yY] ]]; then
-        rm -rf redis-php7
+        rm -rf redis-develop
     
         PHPREDISGITLINK='https://github.com/phpredis/phpredis'
         # fallback mirror if official github is down, use gitlab mirror
@@ -132,11 +147,11 @@ if [[ "$REDIS_PHPCURRENTVER" = '8.4' || "$PHPMUVER" = '8.4' || "$REDIS_PHPCURREN
         if [[ "$PHPREDISGITCURLCHECK" != '0' ]]; then
             PHPREDISGITLINK='https://gitlab.com/centminmod-github-mirror/phpredis.git'
         fi
-        if [ ! -d redis-php7 ]; then
-            time git clone -b php7 "$PHPREDISGITLINK" redis-php7
+        if [ ! -d redis-develop ]; then
+            time git clone -b develop "$PHPREDISGITLINK" redis-develop
             git submodule update --init
         fi
-        cd redis-php7
+        cd redis-develop
         if [[ "$INITIALINSTALL" != [yY] ]]; then
             make clean
         fi
@@ -201,10 +216,13 @@ if [[ "$REDIS_PHPCURRENTVER" = '8.4' || "$PHPMUVER" = '8.4' || "$REDIS_PHPCURREN
     else
         if [[ "$REDIS_PHPCURRENTVER" = '8.4' || "$PHPMUVER" = '8.4' || "$REDIS_PHPCURRENTVER" = '8.3' || "$PHPMUVER" = '8.3' || "$REDIS_PHPCURRENTVER" = '8.2' || "$PHPMUVER" = '8.2' || "$REDIS_PHPCURRENTVER" = '8.1' || "$PHPMUVER" = '8.1' || "$REDIS_PHPCURRENTVER" = '8.0' || "$PHPMUVER" = '8.0' ]] || [[ "$REDIS_PHPCURRENTVER" = '7.4' || "$PHPMUVER" = '7.4' ]] || [[ "$REDIS_PHPCURRENTVER" = '7.3' || "$PHPMUVER" = '7.3' ]] || [[ "$REDIS_PHPCURRENTVER" = '7.2' || "$PHPMUVER" = '7.2' ]]; then
             REDISPHP_VER="$REDISPHPSEVENTWO_VER"
+            echo "REDISPHP_GIT=n: REDISPHP_VER=$REDISPHP_VER"
         elif [[ "$INITIALINSTALL" = [yY] ]] && [[ "$PHPMVER" = '8.4' || "$PHPMVER" = '8.3' || "$PHPMVER" = '8.2' || "$PHPMVER" = '8.1' || "$PHPMVER" = '8.0' || "$PHPMVER" = '7.4' || "$PHPMVER" = '7.3' || "$PHPMVER" = '7.2' ]]; then
             REDISPHP_VER="$REDISPHPSEVENTWO_VER"
+            echo "REDISPHP_GIT=n: REDISPHP_VER=$REDISPHP_VER"
         else
             REDISPHP_VER="$REDISPHPSEVEN_VER"
+            echo "REDISPHP_GIT=n: REDISPHP_VER=$REDISPHP_VER"
         fi
         pwd
         echo "cd $DIR_TMP"
