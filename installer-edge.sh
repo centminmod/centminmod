@@ -93,8 +93,8 @@ ALTPCRELINK="${LOCALCENTMINMOD_MIRROR}/centminmodparts/pcre/${ALTPCRELINKFILE}"
 
 WGET_VERSION='1.20.3'
 WGET_VERSION_SEVEN='1.20.3'
-WGET_VERSION_EIGHT='1.21.4'
-WGET_VERSION_NINE='1.21.4'
+WGET_VERSION_EIGHT='1.24.5'
+WGET_VERSION_NINE='1.24.5'
 WGET_FILENAME="wget-${WGET_VERSION}.tar.gz"
 WGET_LINK="${LOCALCENTMINMOD_MIRROR}/centminmodparts/wget/${WGET_FILENAME}"
 
@@ -678,6 +678,8 @@ if [[ "$CENTOS_NINE" -eq '9' ]]; then
   echo "ENABLE_MARIADBTENSIXUPGRADE='y'" >> /etc/centminmod/custom_config.inc
   echo "MARIADB_INSTALLTENSIX='n'" >> /etc/centminmod/custom_config.inc
   echo "MARIADB_INSTALLTENELEVEN='y'" >> /etc/centminmod/custom_config.inc
+  echo "WGET_VERSION_EIGHT='1.24.5'" >> /etc/centminmod/custom_config.inc
+  echo "WGET_VERSION_NINE='1.24.5'" >> /etc/centminmod/custom_config.inc
 fi
 # set el8 defaults
 if [[ "$CENTOS_EIGHT" -eq '8' ]]; then
@@ -710,6 +712,8 @@ if [[ "$CENTOS_EIGHT" -eq '8' ]]; then
   echo "ENABLE_MARIADBTENSIXUPGRADE='y'" >> /etc/centminmod/custom_config.inc
   echo "MARIADB_INSTALLTENFOUR='n'" >> /etc/centminmod/custom_config.inc
   echo "MARIADB_INSTALLTENELEVEN='y'" >> /etc/centminmod/custom_config.inc
+  echo "WGET_VERSION_EIGHT='1.24.5'" >> /etc/centminmod/custom_config.inc
+  echo "WGET_VERSION_NINE='1.24.5'" >> /etc/centminmod/custom_config.inc
 fi
 # set el7 defaults
 if [[ "$CENTOS_SEVEN" -eq '7' ]]; then
