@@ -30,7 +30,7 @@ DT=$(date +"%d%m%y-%H%M%S")
 branchname='140.00beta01'
 SCRIPT_MAJORVER='140'
 SCRIPT_MINORVER='00'
-SCRIPT_INCREMENTVER='045'
+SCRIPT_INCREMENTVER='046'
 SCRIPT_VERSIONSHORT="${branchname}"
 SCRIPT_VERSION="${SCRIPT_VERSIONSHORT}.b${SCRIPT_INCREMENTVER}"
 SCRIPT_DATE='01/07/24'
@@ -1171,7 +1171,7 @@ POSTFIX_INSTALL=y            # Install Postfix (and mailx) set to n and SENDMAIL
 # Nginx
 NGINX_VERSION='1.27.0'             # Use this version of Nginx
 NGINX_ANGIE_VERSION='Angie-1.6.0'
-FREENGINX_VERSION='1.27.1'   # Maxim's Freenginx fork https://freenginx.org/en/download.html
+FREENGINX_VERSION='1.27.2'   # Maxim's Freenginx fork https://freenginx.org/en/download.html
 FREENGINX_INSTALL='n'        # Use Freenginx fork instead of official Nginx
 NGINX_VHOSTSSL='y'            # enable centmin.sh menu 2 prompt to create self signed SSL vhost 2nd vhost conf
 NGINXBACKUP='y'
