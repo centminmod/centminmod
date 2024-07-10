@@ -62,6 +62,11 @@ nginx_zstd_setup() {
     git checkout 0.1.1 -b 0.1.1
     wget -O 23.patch https://patch-diff.githubusercontent.com/raw/tokers/zstd-nginx-module/pull/23.patch
     wget -O fix-module-order.patch https://github.com/tokers/zstd-nginx-module/commit/f4ba115e0b0eaecde545e5f37db6aa18917d8f4b.patch
+    echo
+    patch -p1 < 23.patch
+    echo
+    patch -p1 < fix-module-order.patch
+    echo
 
 if [ ! -f /usr/local/nginx/conf/zstd_inc.conf ]; then
 cat > "/usr/local/nginx/conf/zstd_inc.conf" <<FFE
