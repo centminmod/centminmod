@@ -812,6 +812,24 @@ aws_lc_patch_make() {
   fi
 }
 
+http2_shutdown_fix_patch() {
+  # backport freenginx fork's HTTP/2 shutdown bug fix
+  # https://freenginx.org/hg/nginx/rev/4a0cd107c0f1
+  if [[ "$NGINX_INSTALL" = [yY] && "$FREENGINX_INSTALL" != [yY] ]] && [[ "$ngver" != 'angie' ]] && [[ "$FREENGINX_BACKPORT_PATCHES" = [yY] && -f "$CUR_DIR/patches/nginx/http2-shutdown-fix.patch" && "$DETECT_NGXVER" -ge '1025000' ]]; then
+    # Perform a dry-run to check if the patch can be applied
+    if patch -p1 --dry-run < "$CUR_DIR/patches/nginx/http2-shutdown-fix.patch" > /dev/null 2>&1; then
+      # If the dry-run is successful, apply the patch
+      if patch -p1 < "$CUR_DIR/patches/nginx/http2-shutdown-fix.patch"; then
+        echo "Patch applied successfully."
+      else
+        echo "Failed to apply the patch."
+      fi
+    else
+      echo "Patch has already been applied or cannot be applied."
+    fi
+  fi
+}
+
 patchnginx() {
   {
   sleep "$NGINXPATCH_DELAY"
@@ -1035,6 +1053,7 @@ patchnginx() {
   ngx_headers_more_patch
   # nginx_quic_patches
   aws_lc_patch
+  http2_shutdown_fix_patch
 } 2>&1 | tee -a "${CENTMINLOGDIR}/patch_patchnginx_${DT}.log"
 }
 

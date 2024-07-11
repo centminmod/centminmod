@@ -1,0 +1,12 @@
+--- a/src/http/v2/ngx_http_v2.c Thu May 23 18:48:32 2024 +0300
++++ b/src/http/v2/ngx_http_v2.c Tue May 28 20:43:50 2024 +0300
+@@ -1339,7 +1339,8 @@
+     clcf = ngx_http_get_module_loc_conf(h2c->http_connection->conf_ctx,
+                                         ngx_http_core_module);
+ 
+-    if (clcf->keepalive_timeout == 0
++    if (ngx_exiting
++        || clcf->keepalive_timeout == 0
+         || h2c->connection->requests >= clcf->keepalive_requests
+         || ngx_current_msec - h2c->connection->start_time
+            > clcf->keepalive_time)
