@@ -221,6 +221,7 @@ set_mariadb_client_commands() {
     if (( $(echo "$version <= 10.11" | bc -l) )); then
         ALIAS_MYSQLACCESS="mysqlaccess"
         ALIAS_MYSQLADMIN="mysqladmin"
+        ALIAS_MYSQLBINLOG="mysqlbinlog"
         ALIAS_MYSQLCHECK="mysqlcheck"
         ALIAS_MYSQLDUMP="mysqldump"
         ALIAS_MYSQLDUMPSLOW="mysqldumpslow"
@@ -244,6 +245,7 @@ set_mariadb_client_commands() {
     else
         ALIAS_MYSQLACCESS="mariadb-access"
         ALIAS_MYSQLADMIN="mariadb-admin"
+        ALIAS_MYSQLBINLOG="mariadb-binlog"
         ALIAS_MYSQLCHECK="mariadb-check"
         ALIAS_MYSQLDUMP="mariadb-dump"
         ALIAS_MYSQLDUMPSLOW="mariadb-dumpslow"

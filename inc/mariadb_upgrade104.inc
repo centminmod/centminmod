@@ -83,7 +83,7 @@ fi
 # prior to upgrade
 if [[ "$SKIP_INNODBFASTSHUTDOWNDISABLE" = [nN] ]]; then
     echo
-    mysql -e "set global innodb_fast_shutdown=0;"
+    ${ALIAS_MYSQL} -e "set global innodb_fast_shutdown=0;"
     echo "continuing upgrade in ~300 seconds..."
     echo "..."
     sleep 20
@@ -1057,7 +1057,7 @@ fi # centos5 check
 
 mariadbtenthreetotenfourupgrade() {
 if [ -z "$OLDMARIADBVERS" ]; then
-MYSQLDATADIR=$(mysqladmin var | grep 'datadir' | awk '{ print $4}')
+MYSQLDATADIR=$(${ALIAS_MYSQLADMIN} var | grep 'datadir' | awk '{ print $4}')
 
 backupmsg104
 #mariadb103uninstall
@@ -1067,10 +1067,10 @@ mariadb_upgrade_check_versionlock
 # shutdown existing mysql server
 echo
 echo "shut down existing MariaDB server for upgrade.."
-mysql -e "set global innodb_buffer_pool_dump_at_shutdown=0;"
+${ALIAS_MYSQL} -e "set global innodb_buffer_pool_dump_at_shutdown=0;"
 sleep 10
-echo "mysql -e \"SET GLOBAL innodb_fast_shutdown = 1;\""
-mysql -e "SET GLOBAL innodb_fast_shutdown = 1;"
+echo "${ALIAS_MYSQL} -e \"SET GLOBAL innodb_fast_shutdown = 1;\""
+${ALIAS_MYSQL} -e "SET GLOBAL innodb_fast_shutdown = 1;"
 sleep 10
 systemctl stop mariadb
 echo
@@ -1285,24 +1285,24 @@ if [[ "$mysqlrootset" == [yY] ]]; then
     echo "------------------------------------------------"
     echo "Installing MariaDB 10 plugins"
     echo "------------------------------------------------"
-    echo "mysql -u root -p -e \"INSTALL SONAME 'metadata_lock_info';\""
-    mysql -u root -p -e "INSTALL SONAME 'metadata_lock_info';"
-    echo "mysql -u root -p -e \"INSTALL SONAME 'query_cache_info';\""
-    mysql -u root -p -e "INSTALL SONAME 'query_cache_info';"
-    echo "mysql -u root -p -e \"INSTALL SONAME 'query_response_time';\""
-    mysql -u root -p -e "INSTALL SONAME 'query_response_time';"
+    echo "${ALIAS_MYSQL} -u root -p -e \"INSTALL SONAME 'metadata_lock_info';\""
+    ${ALIAS_MYSQL} -u root -p -e "INSTALL SONAME 'metadata_lock_info';"
+    echo "${ALIAS_MYSQL} -u root -p -e \"INSTALL SONAME 'query_cache_info';\""
+    ${ALIAS_MYSQL} -u root -p -e "INSTALL SONAME 'query_cache_info';"
+    echo "${ALIAS_MYSQL} -u root -p -e \"INSTALL SONAME 'query_response_time';\""
+    ${ALIAS_MYSQL} -u root -p -e "INSTALL SONAME 'query_response_time';"
     # echo "------------------------------------------------"
     # echo "Installing MariaDB 10 XtraDB Engine plugin"
     # echo "------------------------------------------------"
-    # echo "mysql -u root -p -e \"INSTALL SONAME 'ha_xtradb';\""
-    # mysql -u root -p -e "INSTALL SONAME 'ha_xtradb';"
+    # echo "${ALIAS_MYSQL} -u root -p -e \"INSTALL SONAME 'ha_xtradb';\""
+    # ${ALIAS_MYSQL} -u root -p -e "INSTALL SONAME 'ha_xtradb';"
 
-    echo "mysql -u root -p -e \"SELECT * FROM mysql.plugin;\""
-    mysql -u root -p -e "SELECT * FROM mysql.plugin;"
-    echo "mysql -u root -p -e \"SHOW PLUGINS;\""
-    mysql -u root -p -e "SHOW PLUGINS;"
-    echo "mysql -u root -p -e \"SHOW ENGINES;\""
-    mysql -u root -p -e "SHOW ENGINES;"
+    echo "${ALIAS_MYSQL} -u root -p -e \"SELECT * FROM mysql.plugin;\""
+    ${ALIAS_MYSQL} -u root -p -e "SELECT * FROM mysql.plugin;"
+    echo "${ALIAS_MYSQL} -u root -p -e \"SHOW PLUGINS;\""
+    ${ALIAS_MYSQL} -u root -p -e "SHOW PLUGINS;"
+    echo "${ALIAS_MYSQL} -u root -p -e \"SHOW ENGINES;\""
+    ${ALIAS_MYSQL} -u root -p -e "SHOW ENGINES;"
 
     # echo "Enter MySQL root password when prompted"
     # echo "or hit enter to continue"
@@ -1316,23 +1316,23 @@ else
     echo "------------------------------------------------"
     echo "Installing MariaDB 10 plugins"
     echo "------------------------------------------------"
-    echo "mysql -e \"INSTALL SONAME 'metadata_lock_info';\""
-    mysql -e "INSTALL SONAME 'metadata_lock_info';"
-    echo "mysql -e \"INSTALL SONAME 'query_cache_info';\""
-    mysql -e "INSTALL SONAME 'query_cache_info';"
-    echo "mysql -e \"INSTALL SONAME 'query_response_time';\""
-    mysql -e "INSTALL SONAME 'query_response_time';"
+    echo "${ALIAS_MYSQL} -e \"INSTALL SONAME 'metadata_lock_info';\""
+    ${ALIAS_MYSQL} -e "INSTALL SONAME 'metadata_lock_info';"
+    echo "${ALIAS_MYSQL} -e \"INSTALL SONAME 'query_cache_info';\""
+    ${ALIAS_MYSQL} -e "INSTALL SONAME 'query_cache_info';"
+    echo "${ALIAS_MYSQL} -e \"INSTALL SONAME 'query_response_time';\""
+    ${ALIAS_MYSQL} -e "INSTALL SONAME 'query_response_time';"
     # echo "------------------------------------------------"
     # echo "Installing MariaDB 10 XtraDB Engine plugin"
     # echo "------------------------------------------------"
-    # echo "mysql -e \"INSTALL SONAME 'ha_xtradb';\""
-    # mysql -e "INSTALL SONAME 'ha_xtradb';"
-    echo "mysql -t -e \"SELECT * FROM mysql.plugin;\""
-    mysql -t -e "SELECT * FROM mysql.plugin;"
-    echo "mysql -t -e \"SHOW PLUGINS;\""
-    mysql -t -e "SHOW PLUGINS;"
-    echo "mysql -t -e \"SHOW ENGINES;\""
-    mysql -t -e "SHOW ENGINES;"
+    # echo "${ALIAS_MYSQL} -e \"INSTALL SONAME 'ha_xtradb';\""
+    # ${ALIAS_MYSQL} -e "INSTALL SONAME 'ha_xtradb';"
+    echo "${ALIAS_MYSQL} -t -e \"SELECT * FROM mysql.plugin;\""
+    ${ALIAS_MYSQL} -t -e "SELECT * FROM mysql.plugin;"
+    echo "${ALIAS_MYSQL} -t -e \"SHOW PLUGINS;\""
+    ${ALIAS_MYSQL} -t -e "SHOW PLUGINS;"
+    echo "${ALIAS_MYSQL} -t -e \"SHOW ENGINES;\""
+    ${ALIAS_MYSQL} -t -e "SHOW ENGINES;"
 
  #    echo "mysql_upgrade --force"
     # mysql_upgrade --force

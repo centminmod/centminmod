@@ -274,28 +274,91 @@ else
         CPUS_ZSTD=$CPUS
     fi
 fi
+
+# Function to get MariaDB version
+get_mariadb_version() {
+    local version=$(mysql -V 2>&1 | awk '{print $5}' | awk -F. '{print $1"."$2}')
+    echo $version
+}
+
+# Function to set client command variables based on MariaDB version
+set_mariadb_client_commands() {
+    local version=$(get_mariadb_version)
+    
+    if (( $(echo "$version <= 10.11" | bc -l) )); then
+        ALIAS_MYSQLACCESS="mysqlaccess"
+        ALIAS_MYSQLADMIN="mysqladmin"
+        ALIAS_MYSQLBINLOG="mysqlbinlog"
+        ALIAS_MYSQLCHECK="mysqlcheck"
+        ALIAS_MYSQLDUMP="mysqldump"
+        ALIAS_MYSQLDUMPSLOW="mysqldumpslow"
+        ALIAS_MYSQLHOTCOPY="mysqlhotcopy"
+        ALIAS_MYSQLIMPORT="mysqlimport"
+        ALIAS_MYSQLREPORT="mysqlreport"
+        ALIAS_MYSQLSHOW="mysqlshow"
+        ALIAS_MYSQLSLAP="mysqlslap"
+        ALIAS_MYSQL_CONVERT_TABLE_FORMAT="mysql_convert_table_format"
+        ALIAS_MYSQL_EMBEDDED="mysql_embedded"
+        ALIAS_MYSQL_FIND_ROWS="mysql_find_rows"
+        ALIAS_MYSQL_FIX_EXTENSIONS="mysql_fix_extensions"
+        ALIAS_MYSQL_INSTALL_DB="mysql_install_db"
+        ALIAS_MYSQL_PLUGIN="mysql_plugin"
+        ALIAS_MYSQL_SECURE_INSTALLATION="mysql_secure_installation"
+        ALIAS_MYSQL_SETPERMISSION="mysql_setpermission"
+        ALIAS_MYSQL_TZINFO_TO_SQL="mysql_tzinfo_to_sql"
+        ALIAS_MYSQL_UPGRADE="mysql_upgrade"
+        ALIAS_MYSQL_WAITPID="mysql_waitpid"
+        ALIAS_MYSQL="mysql"
+    else
+        ALIAS_MYSQLACCESS="mariadb-access"
+        ALIAS_MYSQLADMIN="mariadb-admin"
+        ALIAS_MYSQLBINLOG="mariadb-binlog"
+        ALIAS_MYSQLCHECK="mariadb-check"
+        ALIAS_MYSQLDUMP="mariadb-dump"
+        ALIAS_MYSQLDUMPSLOW="mariadb-dumpslow"
+        ALIAS_MYSQLHOTCOPY="mariadb-hotcopy"
+        ALIAS_MYSQLIMPORT="mariadb-import"
+        ALIAS_MYSQLREPORT="mariadb-report"
+        ALIAS_MYSQLSHOW="mariadb-show"
+        ALIAS_MYSQLSLAP="mariadb-slap"
+        ALIAS_MYSQL_CONVERT_TABLE_FORMAT="mariadb-convert-table-format"
+        ALIAS_MYSQL_EMBEDDED="mariadb-embedded"
+        ALIAS_MYSQL_FIND_ROWS="mariadb-find-rows"
+        ALIAS_MYSQL_FIX_EXTENSIONS="mariadb-fix-extensions"
+        ALIAS_MYSQL_INSTALL_DB="mariadb-install-db"
+        ALIAS_MYSQL_PLUGIN="mariadb-plugin"
+        ALIAS_MYSQL_SECURE_INSTALLATION="mariadb-secure-installation"
+        ALIAS_MYSQL_SETPERMISSION="mariadb-setpermission"
+        ALIAS_MYSQL_TZINFO_TO_SQL="mariadb-tzinfo-to-sql"
+        ALIAS_MYSQL_UPGRADE="mariadb-upgrade"
+        ALIAS_MYSQL_WAITPID="mariadb-waitpid"
+        ALIAS_MYSQL="mariadb"
+    fi
+}
+set_mariadb_client_commands
+
 if [[ "$COMPRESS_RSYNCABLE" = [Yy] ]]; then
   COMPRESS_RSYNCABLE_OPT=' --rsyncable'
 fi
 if [ -f "$MY_CNF" ]; then
-  MYSQL_CMD_PREFIX="mysql --defaults-extra-file=$MY_CNF -h $DBHOST"
+  MYSQL_CMD_PREFIX="${ALIAS_MYSQL} --defaults-extra-file=$MY_CNF -h $DBHOST"
   MYSQLBACKUP_CMD_PREFIX="$NICE $NICEOPT $IONICE $IONICEOPT mariabackup --defaults-extra-file=$MY_CNF -h $DBHOST"
-  MYSQLDUMP_CMD_PREFIX="$NICE $NICEOPT $IONICE $IONICEOPT mysqldump --defaults-extra-file=$MY_CNF -h $DBHOST${MYSQLDUMP_OPTS}"
-  MYSQLBINLOG_CMD_PREFIX="$NICE $NICEOPT $IONICE $IONICEOPT mysqlbinlog --defaults-extra-file=$MY_CNF -h $DBHOST"
-  MYSQLADMIN_CMD_PREFIX="mysqladmin --defaults-extra-file=$MY_CNF -h $DBHOST"
+  MYSQLDUMP_CMD_PREFIX="$NICE $NICEOPT $IONICE $IONICEOPT ${ALIAS_MYSQLDUMP} --defaults-extra-file=$MY_CNF -h $DBHOST${MYSQLDUMP_OPTS}"
+  MYSQLBINLOG_CMD_PREFIX="$NICE $NICEOPT $IONICE $IONICEOPT ${ALIAS_MYSQLBINLOG} --defaults-extra-file=$MY_CNF -h $DBHOST"
+  MYSQLADMIN_CMD_PREFIX="${ALIAS_MYSQLADMIN} --defaults-extra-file=$MY_CNF -h $DBHOST"
 else
   MYSQL_CMD_PREFIX="mysql -u $DBUSER -h $DBHOST -p$MYSQL_PWD"
   MYSQLBACKUP_CMD_PREFIX="$NICE $NICEOPT $IONICE $IONICEOPT mariabackup -u $DBUSER -h $DBHOST -p$MYSQL_PWD"
   MYSQLDUMP_CMD_PREFIX="$NICE $NICEOPT $IONICE $IONICEOPT mysqldump -u $DBUSER -h $DBHOST -p$MYSQL_PWD${MYSQLDUMP_OPTS}"
   MYSQLBINLOG_CMD_PREFIX="$NICE $NICEOPT $IONICE $IONICEOPT mysqlbinlog -u $DBUSER -h $DBHOST -p$MYSQL_PWD"
-  MYSQLADMIN_CMD_PREFIX="mysqladmin -u $DBUSER -h $DBHOST -p$MYSQL_PWD"
+  MYSQLADMIN_CMD_PREFIX="${ALIAS_MYSQLADMIN} -u $DBUSER -h $DBHOST -p$MYSQL_PWD"
 fi
 # dbdeployer
-SANDBOX_MYSQL_CMD_PREFIX="mysql --defaults-extra-file=$${MY_CNF_SANDBOX} -h $DBHOST"
+SANDBOX_MYSQL_CMD_PREFIX="${ALIAS_MYSQL} --defaults-extra-file=$${MY_CNF_SANDBOX} -h $DBHOST"
 SANDBOX_MYSQLBACKUP_CMD_PREFIX="mariabackup --defaults-extra-file=$${MY_CNF_SANDBOX} -h $DBHOST"
-SANDBOX_MYSQLDUMP_CMD_PREFIX="mysqldump --defaults-extra-file=$${MY_CNF_SANDBOX} -h $DBHOST${MYSQLDUMP_OPTS}"
-SANDBOX_MYSQLBINLOG_CMD_PREFIX="mysqlbinlog --defaults-extra-file=$${MY_CNF_SANDBOX} -h $DBHOST"
-SANDBOX_MYSQLADMIN_CMD_PREFIX="mysqladmin --defaults-extra-file=$${MY_CNF_SANDBOX} -h $DBHOST"
+SANDBOX_MYSQLDUMP_CMD_PREFIX="${ALIAS_MYSQLDUMP} --defaults-extra-file=$${MY_CNF_SANDBOX} -h $DBHOST${MYSQLDUMP_OPTS}"
+SANDBOX_MYSQLBINLOG_CMD_PREFIX="${ALIAS_MYSQLBINLOG} --defaults-extra-file=$${MY_CNF_SANDBOX} -h $DBHOST"
+SANDBOX_MYSQLADMIN_CMD_PREFIX="${ALIAS_MYSQLADMIN} --defaults-extra-file=$${MY_CNF_SANDBOX} -h $DBHOST"
 
 DATADIR=$($MYSQLADMIN_CMD_PREFIX var | grep datadir | awk '{ print $4}')
 

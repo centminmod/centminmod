@@ -156,8 +156,8 @@ fc_dbsetup() {
   DBUSER="wpdb${DBND}u${DBNB}"
   DBPASS="wpdb${SALT}p${DBNC}"
   mysqladmin create $DB
-  mysql -e "CREATE USER $DBUSER@'localhost' IDENTIFIED BY '$DBPASS';"
-  mysql -e "GRANT index, select, insert, delete, update, create, drop, alter, create temporary tables, execute, lock tables, create view, show view, create routine, alter routine, trigger ON ${DB}.* TO ${DBUSER}@'localhost'; FLUSH PRIVILEGES;"
+  ${ALIAS_MYSQL} -e "CREATE USER $DBUSER@'localhost' IDENTIFIED BY '$DBPASS';"
+  ${ALIAS_MYSQL} -e "GRANT index, select, insert, delete, update, create, drop, alter, create temporary tables, execute, lock tables, create view, show view, create routine, alter routine, trigger ON ${DB}.* TO ${DBUSER}@'localhost'; FLUSH PRIVILEGES;"
 }
 
 fc_wpinfo_notice() {

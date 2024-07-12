@@ -51,8 +51,8 @@ remove_mariadb_ten_three_native_module() {
   OLD_MARIADB_BACKUP=$(rpm -qa | grep mariadb | awk '/mariadb-backup/')
   OLDGALERA=$(rpm -qa | grep galera | awk '/galera/')
 
-  # echo "mysql -e \"SET GLOBAL innodb_fast_shutdown = 1;\""
-  # mysql -e "SET GLOBAL innodb_fast_shutdown = 1;"
+  # echo "${ALIAS_MYSQL} -e \"SET GLOBAL innodb_fast_shutdown = 1;\""
+  # ${ALIAS_MYSQL} -e "SET GLOBAL innodb_fast_shutdown = 1;"
   # sleep 10
   echo
   echo "shutdown MariaDB 10.3 server"
@@ -123,8 +123,8 @@ remove_mariadb_ten_three() {
   OLDMARIADBBACKUP=$(rpm -qa | grep MariaDB | awk '/MariaDB-backup/')
   OLDGALERA=$(rpm -qa | grep galera | awk '/galera/')
 
-  echo "mysql -e \"SET GLOBAL innodb_fast_shutdown = 1;\""
-  mysql -e "SET GLOBAL innodb_fast_shutdown = 1;"
+  echo "${ALIAS_MYSQL} -e \"SET GLOBAL innodb_fast_shutdown = 1;\""
+  ${ALIAS_MYSQL} -e "SET GLOBAL innodb_fast_shutdown = 1;"
   sleep 10
   echo
   echo "shutdown MariaDB 10.3 server"
@@ -388,23 +388,23 @@ fi # install-fresh
     echo "------------------------------------------------"
     echo "Installing MariaDB 10 plugins"
     echo "------------------------------------------------"
-    echo "mysql -e \"INSTALL SONAME 'metadata_lock_info';\""
-    mysql -e "INSTALL SONAME 'metadata_lock_info';"
-    echo "mysql -e \"INSTALL SONAME 'query_cache_info';\""
-    mysql -e "INSTALL SONAME 'query_cache_info';"
-    echo "mysql -e \"INSTALL SONAME 'query_response_time';\""
-    mysql -e "INSTALL SONAME 'query_response_time';"
+    echo "${ALIAS_MYSQL} -e \"INSTALL SONAME 'metadata_lock_info';\""
+    ${ALIAS_MYSQL} -e "INSTALL SONAME 'metadata_lock_info';"
+    echo "${ALIAS_MYSQL} -e \"INSTALL SONAME 'query_cache_info';\""
+    ${ALIAS_MYSQL} -e "INSTALL SONAME 'query_cache_info';"
+    echo "${ALIAS_MYSQL} -e \"INSTALL SONAME 'query_response_time';\""
+    ${ALIAS_MYSQL} -e "INSTALL SONAME 'query_response_time';"
     # echo "------------------------------------------------"
     # echo "Installing MariaDB 10 XtraDB Engine plugin"
     # echo "------------------------------------------------"
-    # echo "mysql -e \"INSTALL SONAME 'ha_xtradb';\""
-    # mysql -e "INSTALL SONAME 'ha_xtradb';"
-    echo "mysql -t -e \"SELECT * FROM mysql.plugin;\""
-    mysql -t -e "SELECT * FROM mysql.plugin;"
-    echo "mysql -t -e \"SHOW PLUGINS;\""
-    mysql -t -e "SHOW PLUGINS;"
-    echo "mysql -t -e \"SHOW ENGINES;\""
-    mysql -t -e "SHOW ENGINES;"
+    # echo "${ALIAS_MYSQL} -e \"INSTALL SONAME 'ha_xtradb';\""
+    # ${ALIAS_MYSQL} -e "INSTALL SONAME 'ha_xtradb';"
+    echo "${ALIAS_MYSQL} -t -e \"SELECT * FROM mysql.plugin;\""
+    ${ALIAS_MYSQL} -t -e "SELECT * FROM mysql.plugin;"
+    echo "${ALIAS_MYSQL} -t -e \"SHOW PLUGINS;\""
+    ${ALIAS_MYSQL} -t -e "SHOW PLUGINS;"
+    echo "${ALIAS_MYSQL} -t -e \"SHOW ENGINES;\""
+    ${ALIAS_MYSQL} -t -e "SHOW ENGINES;"
 
     if [ "$UNATTENDED" == 'nn' ]; then
 echo ""
@@ -416,54 +416,54 @@ echo ""
 
 if [[ "$mysqlrootset" == [yY] ]]; then
     echo "Enter MySQL root password when prompted"
-    echo "mysql_upgrade -u root -p"
-    mysql_upgrade -u root -p
+    echo "${ALIAS_MYSQL_UPGRADE} -u root -p"
+    ${ALIAS_MYSQL_UPGRADE} -u root -p
 
     echo "------------------------------------------------"
     echo "Installing MariaDB 10 plugins"
     echo "------------------------------------------------"
-    echo "mysql -u root -p -e \"INSTALL SONAME 'metadata_lock_info';\""
-    mysql -u root -p -e "INSTALL SONAME 'metadata_lock_info';"
-    echo "mysql -u root -p -e \"INSTALL SONAME 'query_cache_info';\""
-    mysql -u root -p -e "INSTALL SONAME 'query_cache_info';"
-    echo "mysql -u root -p -e \"INSTALL SONAME 'query_response_time';\""
-    mysql -u root -p -e "INSTALL SONAME 'query_response_time';"
+    echo "${ALIAS_MYSQL} -u root -p -e \"INSTALL SONAME 'metadata_lock_info';\""
+    ${ALIAS_MYSQL} -u root -p -e "INSTALL SONAME 'metadata_lock_info';"
+    echo "${ALIAS_MYSQL} -u root -p -e \"INSTALL SONAME 'query_cache_info';\""
+    ${ALIAS_MYSQL} -u root -p -e "INSTALL SONAME 'query_cache_info';"
+    echo "${ALIAS_MYSQL} -u root -p -e \"INSTALL SONAME 'query_response_time';\""
+    ${ALIAS_MYSQL} -u root -p -e "INSTALL SONAME 'query_response_time';"
     # echo "------------------------------------------------"
     # echo "Installing MariaDB 10 XtraDB Engine plugin"
     # echo "------------------------------------------------"
-    # echo "mysql -u root -p -e \"INSTALL SONAME 'ha_xtradb';\""
-    # mysql -u root -p -e "INSTALL SONAME 'ha_xtradb';"
+    # echo "${ALIAS_MYSQL} -u root -p -e \"INSTALL SONAME 'ha_xtradb';\""
+    # ${ALIAS_MYSQL} -u root -p -e "INSTALL SONAME 'ha_xtradb';"
 
-    echo "mysql -u root -p -e \"SELECT * FROM mysql.plugin;\""
-    mysql -u root -p -e "SELECT * FROM mysql.plugin;"
-    echo "mysql -u root -p -e \"SHOW PLUGINS;\""
-    mysql -u root -p -e "SHOW PLUGINS;"
-    echo "mysql -u root -p -e \"SHOW ENGINES;\""
-    mysql -u root -p -e "SHOW ENGINES;"
+    echo "${ALIAS_MYSQL} -u root -p -e \"SELECT * FROM mysql.plugin;\""
+    ${ALIAS_MYSQL} -u root -p -e "SELECT * FROM mysql.plugin;"
+    echo "${ALIAS_MYSQL} -u root -p -e \"SHOW PLUGINS;\""
+    ${ALIAS_MYSQL} -u root -p -e "SHOW PLUGINS;"
+    echo "${ALIAS_MYSQL} -u root -p -e \"SHOW ENGINES;\""
+    ${ALIAS_MYSQL} -u root -p -e "SHOW ENGINES;"
 else
-    echo "mysql_upgrade"
-    mysql_upgrade
+    echo "${ALIAS_MYSQL_UPGRADE}"
+    ${ALIAS_MYSQL_UPGRADE}
 
     echo "------------------------------------------------"
     echo "Installing MariaDB 10 plugins"
     echo "------------------------------------------------"
-    echo "mysql -e \"INSTALL SONAME 'metadata_lock_info';\""
-    mysql -e "INSTALL SONAME 'metadata_lock_info';"
-    echo "mysql -e \"INSTALL SONAME 'query_cache_info';\""
-    mysql -e "INSTALL SONAME 'query_cache_info';"
-    echo "mysql -e \"INSTALL SONAME 'query_response_time';\""
-    mysql -e "INSTALL SONAME 'query_response_time';"
+    echo "${ALIAS_MYSQL} -e \"INSTALL SONAME 'metadata_lock_info';\""
+    ${ALIAS_MYSQL} -e "INSTALL SONAME 'metadata_lock_info';"
+    echo "${ALIAS_MYSQL} -e \"INSTALL SONAME 'query_cache_info';\""
+    ${ALIAS_MYSQL} -e "INSTALL SONAME 'query_cache_info';"
+    echo "${ALIAS_MYSQL} -e \"INSTALL SONAME 'query_response_time';\""
+    ${ALIAS_MYSQL} -e "INSTALL SONAME 'query_response_time';"
     # echo "------------------------------------------------"
     # echo "Installing MariaDB 10 XtraDB Engine plugin"
     # echo "------------------------------------------------"
-    # echo "mysql -e \"INSTALL SONAME 'ha_xtradb';\""
-    # mysql -e "INSTALL SONAME 'ha_xtradb';"
-    echo "mysql -t -e \"SELECT * FROM mysql.plugin;\""
-    mysql -t -e "SELECT * FROM mysql.plugin;"
-    echo "mysql -t -e \"SHOW PLUGINS;\""
-    mysql -t -e "SHOW PLUGINS;"
-    echo "mysql -t -e \"SHOW ENGINES;\""
-    mysql -t -e "SHOW ENGINES;"
+    # echo "${ALIAS_MYSQL} -e \"INSTALL SONAME 'ha_xtradb';\""
+    # ${ALIAS_MYSQL} -e "INSTALL SONAME 'ha_xtradb';"
+    echo "${ALIAS_MYSQL} -t -e \"SELECT * FROM mysql.plugin;\""
+    ${ALIAS_MYSQL} -t -e "SELECT * FROM mysql.plugin;"
+    echo "${ALIAS_MYSQL} -t -e \"SHOW PLUGINS;\""
+    ${ALIAS_MYSQL} -t -e "SHOW PLUGINS;"
+    echo "${ALIAS_MYSQL} -t -e \"SHOW ENGINES;\""
+    ${ALIAS_MYSQL} -t -e "SHOW ENGINES;"
 
 fi
     fi #unattended
@@ -583,7 +583,7 @@ mariabackup_restore() {
     MARIABACKUP_THREADS=$(nproc)
     MARIABACKUP_TOTALMEM=$(awk '/MemAvailable:/ {print $2}' /proc/meminfo)
     MARIABACKUP_USEMEM=$(($MARIABACKUP_TOTALMEM/4))
-    MARIABACKUP_DATADIR=$(mysqladmin var | awk '/datadir/ {print $4}')
+    MARIABACKUP_DATADIR=$(${ALIAS_MYSQLADMIN} var | awk '/datadir/ {print $4}')
     # stop mariadb
     mysqladmin flush-tables
     sleep 10
@@ -619,7 +619,7 @@ mariabackup_restore_native() {
     MARIABACKUP_THREADS=$(nproc)
     MARIABACKUP_TOTALMEM=$(awk '/MemAvailable:/ {print $2}' /proc/meminfo)
     MARIABACKUP_USEMEM=$(($MARIABACKUP_TOTALMEM/4))
-    MARIABACKUP_DATADIR=$(mysqladmin var | awk '/datadir/ {print $4}')
+    MARIABACKUP_DATADIR=$(${ALIAS_MYSQLADMIN} var | awk '/datadir/ {print $4}')
     # stop mariadb
     mysqladmin flush-tables
     sleep 10

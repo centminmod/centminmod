@@ -60,6 +60,68 @@ for g in "" e f; do
     alias ${g}grep="LC_ALL=C ${g}grep"  # speed-up grep, egrep, fgrep
 done
 
+# Function to get MariaDB version
+get_mariadb_version() {
+    local version=$(mysql -V 2>&1 | awk '{print $5}' | awk -F. '{print $1"."$2}')
+    echo $version
+}
+
+# Function to set client command variables based on MariaDB version
+set_mariadb_client_commands() {
+    local version=$(get_mariadb_version)
+    
+    if (( $(echo "$version <= 10.11" | bc -l) )); then
+        ALIAS_MYSQLACCESS="mysqlaccess"
+        ALIAS_MYSQLADMIN="mysqladmin"
+        ALIAS_MYSQLBINLOG="mysqlbinlog"
+        ALIAS_MYSQLCHECK="mysqlcheck"
+        ALIAS_MYSQLDUMP="mysqldump"
+        ALIAS_MYSQLDUMPSLOW="mysqldumpslow"
+        ALIAS_MYSQLHOTCOPY="mysqlhotcopy"
+        ALIAS_MYSQLIMPORT="mysqlimport"
+        ALIAS_MYSQLREPORT="mysqlreport"
+        ALIAS_MYSQLSHOW="mysqlshow"
+        ALIAS_MYSQLSLAP="mysqlslap"
+        ALIAS_MYSQL_CONVERT_TABLE_FORMAT="mysql_convert_table_format"
+        ALIAS_MYSQL_EMBEDDED="mysql_embedded"
+        ALIAS_MYSQL_FIND_ROWS="mysql_find_rows"
+        ALIAS_MYSQL_FIX_EXTENSIONS="mysql_fix_extensions"
+        ALIAS_MYSQL_INSTALL_DB="mysql_install_db"
+        ALIAS_MYSQL_PLUGIN="mysql_plugin"
+        ALIAS_MYSQL_SECURE_INSTALLATION="mysql_secure_installation"
+        ALIAS_MYSQL_SETPERMISSION="mysql_setpermission"
+        ALIAS_MYSQL_TZINFO_TO_SQL="mysql_tzinfo_to_sql"
+        ALIAS_MYSQL_UPGRADE="mysql_upgrade"
+        ALIAS_MYSQL_WAITPID="mysql_waitpid"
+        ALIAS_MYSQL="mysql"
+    else
+        ALIAS_MYSQLACCESS="mariadb-access"
+        ALIAS_MYSQLADMIN="mariadb-admin"
+        ALIAS_MYSQLBINLOG="mariadb-binlog"
+        ALIAS_MYSQLCHECK="mariadb-check"
+        ALIAS_MYSQLDUMP="mariadb-dump"
+        ALIAS_MYSQLDUMPSLOW="mariadb-dumpslow"
+        ALIAS_MYSQLHOTCOPY="mariadb-hotcopy"
+        ALIAS_MYSQLIMPORT="mariadb-import"
+        ALIAS_MYSQLREPORT="mariadb-report"
+        ALIAS_MYSQLSHOW="mariadb-show"
+        ALIAS_MYSQLSLAP="mariadb-slap"
+        ALIAS_MYSQL_CONVERT_TABLE_FORMAT="mariadb-convert-table-format"
+        ALIAS_MYSQL_EMBEDDED="mariadb-embedded"
+        ALIAS_MYSQL_FIND_ROWS="mariadb-find-rows"
+        ALIAS_MYSQL_FIX_EXTENSIONS="mariadb-fix-extensions"
+        ALIAS_MYSQL_INSTALL_DB="mariadb-install-db"
+        ALIAS_MYSQL_PLUGIN="mariadb-plugin"
+        ALIAS_MYSQL_SECURE_INSTALLATION="mariadb-secure-installation"
+        ALIAS_MYSQL_SETPERMISSION="mariadb-setpermission"
+        ALIAS_MYSQL_TZINFO_TO_SQL="mariadb-tzinfo-to-sql"
+        ALIAS_MYSQL_UPGRADE="mariadb-upgrade"
+        ALIAS_MYSQL_WAITPID="mariadb-waitpid"
+        ALIAS_MYSQL="mariadb"
+    fi
+}
+set_mariadb_client_commands
+
 cmservice() {
   servicename=$1
   action=$2
@@ -104,9 +166,9 @@ switch_malloc() {
   
       echo
       cecho "inspect MariaDB MySQL server version_malloc_library value before switch" $boldyellow
-      mysqladmin var | grep 'version_malloc_library' | tr -s ' '
+      ${ALIAS_MYSQLADMIN} var | grep 'version_malloc_library' | tr -s ' '
   
-      if [[ ! "$(lsof -p $(pidof $jemalloc_mariadb_bin) | grep 'jemalloc')" && "$(mysqladmin var | grep 'version_malloc_library' | tr -s ' ' | grep -o 'jemalloc')" != 'jemalloc' && -f /usr/lib64/libjemalloc.so.1 && ! -f /etc/systemd/system/mariadb.service.d/jemalloc.conf ]]; then
+      if [[ ! "$(lsof -p $(pidof $jemalloc_mariadb_bin) | grep 'jemalloc')" && "$(${ALIAS_MYSQLADMIN} var | grep 'version_malloc_library' | tr -s ' ' | grep -o 'jemalloc')" != 'jemalloc' && -f /usr/lib64/libjemalloc.so.1 && ! -f /etc/systemd/system/mariadb.service.d/jemalloc.conf ]]; then
         echo
         cecho "switch malloc from glibc system to jemalloc" $boldyellow
         echo -e "[Service]\nEnvironment=\"LD_PRELOAD=/usr/lib64/libjemalloc.so.1\"" > /etc/systemd/system/mariadb.service.d/jemalloc.conf
@@ -116,7 +178,7 @@ switch_malloc() {
       if [[ "$skip" = [yY] ]]; then
         echo
         cecho "criteria for switching to jemalloc was not met" $boldyellow
-        if [[ "$(lsof -p $(pidof $jemalloc_mariadb_bin) | grep 'jemalloc')" || "$(mysqladmin var | grep 'version_malloc_library' | tr -s ' ' | grep -o 'jemalloc')" = 'jemalloc' ]]; then
+        if [[ "$(lsof -p $(pidof $jemalloc_mariadb_bin) | grep 'jemalloc')" || "$(${ALIAS_MYSQLADMIN} var | grep 'version_malloc_library' | tr -s ' ' | grep -o 'jemalloc')" = 'jemalloc' ]]; then
           if [ -f /etc/systemd/system/mariadb.service.d/jemalloc.conf ]; then
             echo
             echo "jemalloc malloc already in use by MariaDB MySQL"
@@ -138,7 +200,7 @@ switch_malloc() {
   
         echo
         cecho "inspect MariaDB MySQL server version_malloc_library value after switch" $boldyellow
-        mysqladmin var | grep 'version_malloc_library' | tr -s ' '
+        ${ALIAS_MYSQLADMIN} var | grep 'version_malloc_library' | tr -s ' '
   
         echo
         cecho "check existing $jemalloc_mariadb_bin memory usage after switch" $boldyellow
@@ -158,7 +220,7 @@ switch_malloc() {
       systemctl daemon-reload; systemctl restart mariadb; systemctl status mariadb --no-pager
       echo
       cecho "inspect MariaDB MySQL server version_malloc_library value after switch" $boldyellow
-      mysqladmin var | grep 'version_malloc_library' | tr -s ' '
+      ${ALIAS_MYSQLADMIN} var | grep 'version_malloc_library' | tr -s ' '
       echo
       cecho "check existing $jemalloc_mariadb_bin memory usage after switch" $boldyellow
       pidstat -rh -C $jemalloc_mariadb_bin | sed -e "s|$(hostname)|hostname|g"

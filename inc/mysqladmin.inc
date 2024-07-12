@@ -120,10 +120,10 @@ list_mysql_databases_and_users() {
 
   if [[ "$rootset" = [yY] ]]; then
     # Get MySQL data directory
-    datadir=$(mysql ${MYSQLOPTS} -Nse "SELECT @@datadir")
+    datadir=$(${ALIAS_MYSQL} ${MYSQLOPTS} -Nse "SELECT @@datadir")
 
     # Get list of databases
-    databases=$(mysql ${MYSQLOPTS} -Nse "SHOW DATABASES;" | grep -vE '^(information_schema|mysql|performance_schema|sys)$' | sort -V)
+    databases=$(${ALIAS_MYSQL} ${MYSQLOPTS} -Nse "SHOW DATABASES;" | grep -vE '^(information_schema|mysql|performance_schema|sys)$' | sort -V)
     
     for db in $databases; do
       # Use directory modification time as creation date
@@ -134,7 +134,7 @@ list_mysql_databases_and_users() {
       fi
 
       # Get users with privileges on this database
-      users=$(mysql ${MYSQLOPTS} -Nse "SELECT DISTINCT GRANTEE FROM information_schema.SCHEMA_PRIVILEGES WHERE TABLE_SCHEMA='$db'" | sed "s/'//g" | cut -d'@' -f1 | sort -V | uniq | tr '\n' ',' | sed 's/,/, /g' | sed 's/, $//')
+      users=$(${ALIAS_MYSQL} ${MYSQLOPTS} -Nse "SELECT DISTINCT GRANTEE FROM information_schema.SCHEMA_PRIVILEGES WHERE TABLE_SCHEMA='$db'" | sed "s/'//g" | cut -d'@' -f1 | sort -V | uniq | tr '\n' ',' | sed 's/,/, /g' | sed 's/, $//')
       
       if [[ -z "$users" ]]; then
         echo "db: $db created: $created_date [users: none]"
@@ -166,7 +166,7 @@ delete_mysql_database() {
 
   # Check if the database exists
   if [[ "$rootset" = [yY] ]]; then
-    db_exists=$(mysql ${MYSQLOPTS} -Nse "SELECT SCHEMA_NAME FROM INFORMATION_SCHEMA.SCHEMATA WHERE SCHEMA_NAME = '$db_to_delete'")
+    db_exists=$(${ALIAS_MYSQL} ${MYSQLOPTS} -Nse "SELECT SCHEMA_NAME FROM INFORMATION_SCHEMA.SCHEMATA WHERE SCHEMA_NAME = '$db_to_delete'")
   else
     db_exists=$(mysql -Nse "SELECT SCHEMA_NAME FROM INFORMATION_SCHEMA.SCHEMATA WHERE SCHEMA_NAME = '$db_to_delete'")
   fi
@@ -187,7 +187,7 @@ delete_mysql_database() {
   fi
 
   if [[ "$rootset" = [yY] ]]; then
-    echo "DROP DATABASE \`$db_to_delete\`;" | mysql ${MYSQLOPTS}
+    echo "DROP DATABASE \`$db_to_delete\`;" | ${ALIAS_MYSQL} ${MYSQLOPTS}
     ERROR=$?
   else
     echo "DROP DATABASE \`$db_to_delete\`;" | mysql
@@ -230,7 +230,7 @@ fi
 
 if [[ "$rootset" = [yY] && -f "$dbfile" ]]; then
   sort -k2 $dbfile | while read -r db u p; do
-    echo "CREATE DATABASE \`$db\`;" | mysql ${MYSQLOPTS} >/dev/null 2>&1
+    echo "CREATE DATABASE \`$db\`;" | ${ALIAS_MYSQL} ${MYSQLOPTS} >/dev/null 2>&1
     DBCHECK=$?
     if [[ "$DBCHECK" = '0' ]]; then
       if [ -f /tmp/mysqladminshell_userpass.txt ]; then
@@ -241,13 +241,13 @@ if [[ "$rootset" = [yY] && -f "$dbfile" ]]; then
         # if PREV_USER not equal to $u AND PREV_PASS not equal to $p
         # then it's not the same mysql username and pass so create the
         # mysql username
-        mysql ${MYSQLOPTS} -e "CREATE USER '$u'@'$MYSQLHOSTNAME' IDENTIFIED BY '$p';" >/dev/null 2>&1
+        ${ALIAS_MYSQL} ${MYSQLOPTS} -e "CREATE USER '$u'@'$MYSQLHOSTNAME' IDENTIFIED BY '$p';" >/dev/null 2>&1
         USERCHECK=$?
       elif [[ "$PREV_USER" != "$u" && "$PREV_PASS" = "$p" ]]; then
         # if PREV_USER not equal to $u AND PREV_PASS equal to $p
         # then it's not the same mysql username and pass so create the
         # mysql username
-        mysql ${MYSQLOPTS} -e "CREATE USER '$u'@'$MYSQLHOSTNAME' IDENTIFIED BY '$p';" >/dev/null 2>&1
+        ${ALIAS_MYSQL} ${MYSQLOPTS} -e "CREATE USER '$u'@'$MYSQLHOSTNAME' IDENTIFIED BY '$p';" >/dev/null 2>&1
         USERCHECK=$?
       elif [[ "$PREV_USER" = "$u" && "$PREV_PASS" = "$p" ]]; then
         # if PREV_USER equal to $u AND PREV_PASS equal to $p
@@ -272,14 +272,14 @@ if [[ "$rootset" = [yY] && -f "$dbfile" ]]; then
         # if PREV_USER equal to $u AND PREV_PASS equal to $p
         # then it's same mysql username and pass so add database
         # to existing mysql user and pass
-        echo "GRANT index, select, insert, delete, update, create, drop, alter, create temporary tables, execute, lock tables, create view, show view, create routine, alter routine, trigger ON \`$db\`.* TO '$u'@'$MYSQLHOSTNAME'; flush privileges; show grants for '$u'@'$MYSQLHOSTNAME';" | mysql ${MYSQLOPTS} >/dev/null 2>&1
+        echo "GRANT index, select, insert, delete, update, create, drop, alter, create temporary tables, execute, lock tables, create view, show view, create routine, alter routine, trigger ON \`$db\`.* TO '$u'@'$MYSQLHOSTNAME'; flush privileges; show grants for '$u'@'$MYSQLHOSTNAME';" | ${ALIAS_MYSQL} ${MYSQLOPTS} >/dev/null 2>&1
       elif [[ "$PREV_USER" != "$u" && "$PREV_PASS" = "$p" ]]; then
         # if PREV_USER not equal to $u AND PREV_PASS equal to $p
-        echo "GRANT index, select, insert, delete, update, create, drop, alter, create temporary tables, execute, lock tables, create view, show view, create routine, alter routine, trigger ON \`$db\`.* TO '$u'@'$MYSQLHOSTNAME'; flush privileges; show grants for '$u'@'$MYSQLHOSTNAME';" | mysql ${MYSQLOPTS} >/dev/null 2>&1
+        echo "GRANT index, select, insert, delete, update, create, drop, alter, create temporary tables, execute, lock tables, create view, show view, create routine, alter routine, trigger ON \`$db\`.* TO '$u'@'$MYSQLHOSTNAME'; flush privileges; show grants for '$u'@'$MYSQLHOSTNAME';" | ${ALIAS_MYSQL} ${MYSQLOPTS} >/dev/null 2>&1
         echo "$u $p" > /tmp/mysqladminshell_userpass.txt
       else
         # if PREV_USER not equal to $u AND PREV_PASS not equal to $p
-        echo "GRANT index, select, insert, delete, update, create, drop, alter, create temporary tables, execute, lock tables, create view, show view, create routine, alter routine, trigger ON \`$db\`.* TO '$u'@'$MYSQLHOSTNAME'; flush privileges; show grants for '$u'@'$MYSQLHOSTNAME';" | mysql ${MYSQLOPTS} >/dev/null 2>&1
+        echo "GRANT index, select, insert, delete, update, create, drop, alter, create temporary tables, execute, lock tables, create view, show view, create routine, alter routine, trigger ON \`$db\`.* TO '$u'@'$MYSQLHOSTNAME'; flush privileges; show grants for '$u'@'$MYSQLHOSTNAME';" | ${ALIAS_MYSQL} ${MYSQLOPTS} >/dev/null 2>&1
         echo "$u $p" > /tmp/mysqladminshell_userpass.txt
       fi
     elif [[ "$DBCHECK" = '0' && "$USERCHECK" != '0' ]]; then
@@ -316,10 +316,10 @@ createuserglobal() {
   read -ep " Enter new MySQL username you want to create: " globalnewmysqluser
   read -ep " Enter new MySQL username's password: " globalnewmysqluserpass
 
-  mysql ${MYSQLOPTS} -e "CREATE USER '$globalnewmysqluser'@'$MYSQLHOSTNAME' IDENTIFIED BY '$globalnewmysqluserpass';" >/dev/null 2>&1
+  ${ALIAS_MYSQL} ${MYSQLOPTS} -e "CREATE USER '$globalnewmysqluser'@'$MYSQLHOSTNAME' IDENTIFIED BY '$globalnewmysqluserpass';" >/dev/null 2>&1
   GLOBALUSERCHECK=$?
   if [[ "$GLOBALUSERCHECK" = '0' ]]; then
-    mysql ${MYSQLOPTS} -e "GRANT index, select, insert, delete, update, create, drop, alter, create temporary tables, execute, lock tables, create view, show view, create routine, alter routine, trigger ON *.* TO '$globalnewmysqluser'@'$MYSQLHOSTNAME'; flush privileges; show grants for '$globalnewmysqluser'@'$MYSQLHOSTNAME';"
+    ${ALIAS_MYSQL} ${MYSQLOPTS} -e "GRANT index, select, insert, delete, update, create, drop, alter, create temporary tables, execute, lock tables, create view, show view, create routine, alter routine, trigger ON *.* TO '$globalnewmysqluser'@'$MYSQLHOSTNAME'; flush privileges; show grants for '$globalnewmysqluser'@'$MYSQLHOSTNAME';"
     echo ""
     cecho "Ok: MySQL global user: $globalnewmysqluser created successfully" $boldyellow
     echo
@@ -344,7 +344,7 @@ create_mysql_user_and_db() {
   echo
 
   if [[ "$rootset" = [yY] ]]; then
-    echo "CREATE DATABASE \`$newdbname\`; USE \`$newdbname\`; CREATE USER '$newmysqluser'@'$MYSQLHOSTNAME' IDENTIFIED BY '$newmysqluserpass'; GRANT index, select, insert, delete, update, create, drop, alter, create temporary tables, execute, lock tables, create view, show view, create routine, alter routine, trigger ON \`$newdbname\`.* TO '$newmysqluser'@'$MYSQLHOSTNAME'; flush privileges; show grants for '$newmysqluser'@'$MYSQLHOSTNAME';" | mysql ${MYSQLOPTS}
+    echo "CREATE DATABASE \`$newdbname\`; USE \`$newdbname\`; CREATE USER '$newmysqluser'@'$MYSQLHOSTNAME' IDENTIFIED BY '$newmysqluserpass'; GRANT index, select, insert, delete, update, create, drop, alter, create temporary tables, execute, lock tables, create view, show view, create routine, alter routine, trigger ON \`$newdbname\`.* TO '$newmysqluser'@'$MYSQLHOSTNAME'; flush privileges; show grants for '$newmysqluser'@'$MYSQLHOSTNAME';" | ${ALIAS_MYSQL} ${MYSQLOPTS}
   else
     echo "CREATE DATABASE \`$newdbname\`; USE \`$newdbname\`; CREATE USER '$newmysqluser'@'$MYSQLHOSTNAME' IDENTIFIED BY '$newmysqluserpass'; GRANT index, select, insert, delete, update, create, drop, alter, create temporary tables, execute, lock tables, create view, show view, create routine, alter routine, trigger ON \`$newdbname\`.* TO '$newmysqluser'@'$MYSQLHOSTNAME'; flush privileges; show grants for '$newmysqluser'@'$MYSQLHOSTNAME';" | mysql
   fi
@@ -375,7 +375,7 @@ add_db_to_existing_mysql_user() {
   echo
 
   if [[ "$rootset" = [yY] ]]; then
-    echo "CREATE DATABASE \`$newdbname\`; USE \`$newdbname\`; GRANT index, select, insert, delete, update, create, drop, alter, create temporary tables, execute, lock tables, create view, show view, create routine, alter routine, trigger ON \`$newdbname\`.* TO '$existingmysqluser'@'$MYSQLHOSTNAME'; flush privileges; show grants for '$existingmysqluser'@'$MYSQLHOSTNAME';" | mysql ${MYSQLOPTS}
+    echo "CREATE DATABASE \`$newdbname\`; USE \`$newdbname\`; GRANT index, select, insert, delete, update, create, drop, alter, create temporary tables, execute, lock tables, create view, show view, create routine, alter routine, trigger ON \`$newdbname\`.* TO '$existingmysqluser'@'$MYSQLHOSTNAME'; flush privileges; show grants for '$existingmysqluser'@'$MYSQLHOSTNAME';" | ${ALIAS_MYSQL} ${MYSQLOPTS}
   else
     echo "CREATE DATABASE \`$newdbname\`; USE \`$newdbname\`; GRANT index, select, insert, delete, update, create, drop, alter, create temporary tables, execute, lock tables, create view, show view, create routine, alter routine, trigger ON \`$newdbname\`.* TO '$existingmysqluser'@'$MYSQLHOSTNAME'; flush privileges; show grants for '$existingmysqluser'@'$MYSQLHOSTNAME';" | mysql
   fi
@@ -400,7 +400,7 @@ add_existing_db_to_existing_mysql_user() {
   read -ep " Enter existing MySQL database name to attach to MySQL user $existingmysqluser: " existingmysqldbname
 
   if [[ "$rootset" = [yY] ]]; then
-    echo "USE \`$existingmysqldbname\`; GRANT index, select, insert, delete, update, create, drop, alter, create temporary tables, execute, lock tables, create view, show view, create routine, alter routine, trigger ON \`$existingmysqldbname\`.* TO '$existingmysqluser'@'$MYSQLHOSTNAME'; flush privileges; show grants for '$existingmysqluser'@'$MYSQLHOSTNAME';" | mysql ${MYSQLOPTS}
+    echo "USE \`$existingmysqldbname\`; GRANT index, select, insert, delete, update, create, drop, alter, create temporary tables, execute, lock tables, create view, show view, create routine, alter routine, trigger ON \`$existingmysqldbname\`.* TO '$existingmysqluser'@'$MYSQLHOSTNAME'; flush privileges; show grants for '$existingmysqluser'@'$MYSQLHOSTNAME';" | ${ALIAS_MYSQL} ${MYSQLOPTS}
   else
     echo "USE \`$existingmysqldbname\`; GRANT index, select, insert, delete, update, create, drop, alter, create temporary tables, execute, lock tables, create view, show view, create routine, alter routine, trigger ON \`$existingmysqldbname\`.* TO '$existingmysqluser'@'$MYSQLHOSTNAME'; flush privileges; show grants for '$existingmysqluser'@'$MYSQLHOSTNAME';" | mysql
   fi
@@ -426,7 +426,7 @@ add_existing_db_to_new_mysql_user() {
   read -ep " Enter existing MySQL database name to attach to new MySQL user $newmysqluser: " existingmysqldbname
 
   if [[ "$rootset" = [yY] ]]; then
-    echo "USE \`$existingmysqldbname\`; CREATE USER '$newmysqluser'@'$MYSQLHOSTNAME' IDENTIFIED BY '$newmysqluserpass'; GRANT index, select, insert, delete, update, create, drop, alter, create temporary tables, execute, lock tables, create view, show view, create routine, alter routine, trigger ON \`$existingmysqldbname\`.* TO '$newmysqluser'@'$MYSQLHOSTNAME'; flush privileges; show grants for '$newmysqluser'@'$MYSQLHOSTNAME';" | mysql ${MYSQLOPTS}
+    echo "USE \`$existingmysqldbname\`; CREATE USER '$newmysqluser'@'$MYSQLHOSTNAME' IDENTIFIED BY '$newmysqluserpass'; GRANT index, select, insert, delete, update, create, drop, alter, create temporary tables, execute, lock tables, create view, show view, create routine, alter routine, trigger ON \`$existingmysqldbname\`.* TO '$newmysqluser'@'$MYSQLHOSTNAME'; flush privileges; show grants for '$newmysqluser'@'$MYSQLHOSTNAME';" | ${ALIAS_MYSQL} ${MYSQLOPTS}
   else
     echo "USE \`$existingmysqldbname\`; CREATE USER '$newmysqluser'@'$MYSQLHOSTNAME' IDENTIFIED BY '$newmysqluserpass'; GRANT index, select, insert, delete, update, create, drop, alter, create temporary tables, execute, lock tables, create view, show view, create routine, alter routine, trigger ON \`$existingmysqldbname\`.* TO '$newmysqluser'@'$MYSQLHOSTNAME'; flush privileges; show grants for '$newmysqluser'@'$MYSQLHOSTNAME';" | mysql
   fi
@@ -466,7 +466,7 @@ changeuserpass() {
   fi
 
   if [[ "$rootset" = [yY] ]]; then
-    mysql ${MYSQLOPTS} -e "set password for '$changemysqluserpass'@'$MYSQLHOSTNAME' = password('$changenewmysqlpass');"
+    ${ALIAS_MYSQL} ${MYSQLOPTS} -e "set password for '$changemysqluserpass'@'$MYSQLHOSTNAME' = password('$changenewmysqlpass');"
     ERROR=$?
     if [[ "$ERROR" != '0' ]]; then
       echo ""
@@ -478,7 +478,7 @@ changeuserpass() {
       echo
     fi
   else
-    mysql -e "set password for '$changemysqluserpass'@'$MYSQLHOSTNAME' = password('$changenewmysqlpass');"
+    ${ALIAS_MYSQL} -e "set password for '$changemysqluserpass'@'$MYSQLHOSTNAME' = password('$changenewmysqlpass');"
     ERROR=$?
     if [[ "$ERROR" != '0' ]]; then
       echo ""
@@ -512,7 +512,7 @@ delusername() {
   fi
 
   if [[ "$rootset" = [yY] ]]; then
-    echo "drop user '$delmysqluser'@'$MYSQLHOSTNAME'; flush privileges;" | mysql ${MYSQLOPTS}
+    echo "drop user '$delmysqluser'@'$MYSQLHOSTNAME'; flush privileges;" | ${ALIAS_MYSQL} ${MYSQLOPTS}
     ERROR=$?
     if [[ "$ERROR" != '0' ]]; then
       echo ""
@@ -546,7 +546,7 @@ listgrants() {
   read -ep " Enter MySQL username to Show Grant permissions: " showmysqluser
 
   if [[ "$rootset" = [yY] ]]; then
-    echo "SHOW GRANTS for '$showmysqluser'@'$MYSQLHOSTNAME';" | mysql ${MYSQLOPTS}
+    echo "SHOW GRANTS for '$showmysqluser'@'$MYSQLHOSTNAME';" | ${ALIAS_MYSQL} ${MYSQLOPTS}
     ERROR=$?
     if [[ "$ERROR" != '0' ]]; then
       echo ""

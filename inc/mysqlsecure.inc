@@ -14,8 +14,8 @@ remove_anonymous_mysqlusers() {
   # Check for anonymous users
   ANON_USER_EXISTS=$(mysql -BNe "SELECT User, Host FROM mysql.user WHERE User=''" | wc -l)
   if [[ "$CENTOS_NINE" = '9' || "$CENTOS_EIGHT" = '8' || "$CENTOS_SEVEN" = '7' ]] && [[ "$(systemctl is-active mariadb)" = 'active' && "$ANON_USER_EXISTS" -gt '1' ]]; then
-    mysql -e "DROP USER ''@'localhost';" >/dev/null 2>&1
-    mysql -e "DROP USER ''@'`hostname`';" >/dev/null 2>&1
+    ${ALIAS_MYSQL} -e "DROP USER ''@'localhost';" >/dev/null 2>&1
+    ${ALIAS_MYSQL} -e "DROP USER ''@'`hostname`';" >/dev/null 2>&1
   fi
 }
 
@@ -25,28 +25,28 @@ securemysql() {
   fi
 THEMYSQLPASS=$(/usr/bin/openssl rand -base64 26 | tr -dc 'a-zA-Z0-9')
 
-# mysql -e "DELETE FROM mysql.user WHERE User=""; FLUSH PRIVILEGES;"
-# mysqladmin -u root password $THEMYSQLPASS
+# ${ALIAS_MYSQL} -e "DELETE FROM mysql.user WHERE User=""; FLUSH PRIVILEGES;"
+# ${ALIAS_MYSQLADMIN} -u root password $THEMYSQLPASS
 
 CHECK_FOR_MARIADB_TENFOUR_ABOVE=$(rpm -qa | grep -i MariaDB-server | head -n1 | cut -d '-' -f3 | cut -d . -f1,2)
 
 if [[ "$CHECK_FOR_MARIADB_TENFOUR_ABOVE" = '10.4' || "$CHECK_FOR_MARIADB_TENFOUR_ABOVE" = '10.5' || "$CHECK_FOR_MARIADB_TENFOUR_ABOVE" = '10.6' || "$CHECK_FOR_MARIADB_TENFOUR_ABOVE" = '10.11' || "$CHECK_FOR_MARIADB_TENFOUR_ABOVE" = '11.4' ]]; then
   echo
-  mysql -e "select concat(user, '@', host, ' => ', json_detailed(priv)) from mysql.global_priv;" > "${CENTMINLOGDIR}/mariadb10.4-or-above-check-users-before.log"
+  ${ALIAS_MYSQL} -e "select concat(user, '@', host, ' => ', json_detailed(priv)) from mysql.global_priv;" > "${CENTMINLOGDIR}/mariadb10.4-or-above-check-users-before.log"
   echo
-  mysql -e "ALTER USER root@localhost IDENTIFIED VIA mysql_native_password USING PASSWORD('$THEMYSQLPASS')"  >/dev/null 2>&1
+  ${ALIAS_MYSQL} -e "ALTER USER root@localhost IDENTIFIED VIA mysql_native_password USING PASSWORD('$THEMYSQLPASS')"  >/dev/null 2>&1
   echo
-  mysql -e "select concat(user, '@', host, ' => ', json_detailed(priv)) from mysql.global_priv;" > "${CENTMINLOGDIR}/mariadb10.4-or-above-check-users-after.log"
+  ${ALIAS_MYSQL} -e "select concat(user, '@', host, ' => ', json_detailed(priv)) from mysql.global_priv;" > "${CENTMINLOGDIR}/mariadb10.4-or-above-check-users-after.log"
   echo
   remove_anonymous_mysqlusers
 else
   remove_anonymous_mysqlusers
-  mysql -e "DROP DATABASE test;" >/dev/null 2>&1
-  mysql -e "UPDATE mysql.user SET Password = PASSWORD('$THEMYSQLPASS') WHERE User = 'root'; FLUSH PRIVILEGES;" >/dev/null 2>&1
+  ${ALIAS_MYSQL} -e "DROP DATABASE test;" >/dev/null 2>&1
+  ${ALIAS_MYSQL} -e "UPDATE mysql.user SET Password = PASSWORD('$THEMYSQLPASS') WHERE User = 'root'; FLUSH PRIVILEGES;" >/dev/null 2>&1
 fi
 
 # check
-# mysql -e "SELECT User, Host, Password FROM mysql.user;"
+# ${ALIAS_MYSQL} -e "SELECT User, Host, Password FROM mysql.user;"
 
 cat > "/root/.my.cnf" <<EOF
 [client]

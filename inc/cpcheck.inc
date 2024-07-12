@@ -2888,7 +2888,7 @@ mjemalloc() {
     elif [[ "$JEMALLOC_MARIADBVER" = 10.4 ]]; then
       jemalloc_mariadb_bin='mysqld'
     fi
-    if [[ "$MARIADB_JEMALLOC" = [yY] && -f /usr/lib64/libjemalloc.so.1 && "$(mysqladmin var | grep 'version_malloc_library' | tr -s ' ' | grep -o 'jemalloc')" != 'jemalloc' ]]; then
+    if [[ "$MARIADB_JEMALLOC" = [yY] && -f /usr/lib64/libjemalloc.so.1 && "$(${ALIAS_MYSQLADMIN} var | grep 'version_malloc_library' | tr -s ' ' | grep -o 'jemalloc')" != 'jemalloc' ]]; then
       if [[ "$JEMALLOC_MARIADBVER" = 10.[456] ]]; then
         echo "MariaDB ver: $JEMALLOC_MARIADBVER"
         # only for MariaDB 10.4, 10.5 and 10.6 or higher as they switched back to system glibc

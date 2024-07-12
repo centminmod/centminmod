@@ -46,6 +46,68 @@ for g in "" e f; do
     alias ${g}grep="LC_ALL=C ${g}grep"  # speed-up grep, egrep, fgrep
 done
 
+# Function to get MariaDB version
+get_mariadb_version() {
+    local version=$(mysql -V 2>&1 | awk '{print $5}' | awk -F. '{print $1"."$2}')
+    echo $version
+}
+
+# Function to set client command variables based on MariaDB version
+set_mariadb_client_commands() {
+    local version=$(get_mariadb_version)
+    
+    if (( $(echo "$version <= 10.11" | bc -l) )); then
+        ALIAS_MYSQLACCESS="mysqlaccess"
+        ALIAS_MYSQLADMIN="mysqladmin"
+        ALIAS_MYSQLBINLOG="mysqlbinlog"
+        ALIAS_MYSQLCHECK="mysqlcheck"
+        ALIAS_MYSQLDUMP="mysqldump"
+        ALIAS_MYSQLDUMPSLOW="mysqldumpslow"
+        ALIAS_MYSQLHOTCOPY="mysqlhotcopy"
+        ALIAS_MYSQLIMPORT="mysqlimport"
+        ALIAS_MYSQLREPORT="mysqlreport"
+        ALIAS_MYSQLSHOW="mysqlshow"
+        ALIAS_MYSQLSLAP="mysqlslap"
+        ALIAS_MYSQL_CONVERT_TABLE_FORMAT="mysql_convert_table_format"
+        ALIAS_MYSQL_EMBEDDED="mysql_embedded"
+        ALIAS_MYSQL_FIND_ROWS="mysql_find_rows"
+        ALIAS_MYSQL_FIX_EXTENSIONS="mysql_fix_extensions"
+        ALIAS_MYSQL_INSTALL_DB="mysql_install_db"
+        ALIAS_MYSQL_PLUGIN="mysql_plugin"
+        ALIAS_MYSQL_SECURE_INSTALLATION="mysql_secure_installation"
+        ALIAS_MYSQL_SETPERMISSION="mysql_setpermission"
+        ALIAS_MYSQL_TZINFO_TO_SQL="mysql_tzinfo_to_sql"
+        ALIAS_MYSQL_UPGRADE="mysql_upgrade"
+        ALIAS_MYSQL_WAITPID="mysql_waitpid"
+        ALIAS_MYSQL="mysql"
+    else
+        ALIAS_MYSQLACCESS="mariadb-access"
+        ALIAS_MYSQLADMIN="mariadb-admin"
+        ALIAS_MYSQLBINLOG="mariadb-binlog"
+        ALIAS_MYSQLCHECK="mariadb-check"
+        ALIAS_MYSQLDUMP="mariadb-dump"
+        ALIAS_MYSQLDUMPSLOW="mariadb-dumpslow"
+        ALIAS_MYSQLHOTCOPY="mariadb-hotcopy"
+        ALIAS_MYSQLIMPORT="mariadb-import"
+        ALIAS_MYSQLREPORT="mariadb-report"
+        ALIAS_MYSQLSHOW="mariadb-show"
+        ALIAS_MYSQLSLAP="mariadb-slap"
+        ALIAS_MYSQL_CONVERT_TABLE_FORMAT="mariadb-convert-table-format"
+        ALIAS_MYSQL_EMBEDDED="mariadb-embedded"
+        ALIAS_MYSQL_FIND_ROWS="mariadb-find-rows"
+        ALIAS_MYSQL_FIX_EXTENSIONS="mariadb-fix-extensions"
+        ALIAS_MYSQL_INSTALL_DB="mariadb-install-db"
+        ALIAS_MYSQL_PLUGIN="mariadb-plugin"
+        ALIAS_MYSQL_SECURE_INSTALLATION="mariadb-secure-installation"
+        ALIAS_MYSQL_SETPERMISSION="mariadb-setpermission"
+        ALIAS_MYSQL_TZINFO_TO_SQL="mariadb-tzinfo-to-sql"
+        ALIAS_MYSQL_UPGRADE="mariadb-upgrade"
+        ALIAS_MYSQL_WAITPID="mariadb-waitpid"
+        ALIAS_MYSQL="mariadb"
+    fi
+}
+set_mariadb_client_commands
+
 CENTOSVER=$(awk '{ print $3 }' /etc/redhat-release)
 
 if [ "$CENTOSVER" == 'release' ]; then
@@ -615,16 +677,16 @@ mariadb_audit() {
         echo
         echo "Setup MariaDB Audit Plugin"
         echo
-        mysql -e "INSTALL SONAME 'server_audit';"
-        mysql -t -e "SHOW PLUGINS;"
-        mysql -e "SELECT * FROM INFORMATION_SCHEMA.PLUGINS WHERE PLUGIN_NAME='SERVER_AUDIT'\G"
-        mysql -e "SET GLOBAL server_audit_logging=on;"
-        mysql -e "SET GLOBAL server_audit_events='connect,query_dml';"
-        # mysql -e "SET GLOBAL server_audit_events='connect,query_dml_no_select';"
-        mysql -e "SET GLOBAL server_audit_output_type=FILE;"
-        mysql -e "SET GLOBAL server_audit_file_path='/var/log/mysql/audit.log';"
-        mysql -e "SET GLOBAL server_audit_file_rotate_size=250000000;"
-        mysql -e "SET GLOBAL server_audit_file_rotations=10;"
+        ${ALIAS_MYSQL} -e "INSTALL SONAME 'server_audit';"
+        ${ALIAS_MYSQL} -t -e "SHOW PLUGINS;"
+        ${ALIAS_MYSQL} -e "SELECT * FROM INFORMATION_SCHEMA.PLUGINS WHERE PLUGIN_NAME='SERVER_AUDIT'\G"
+        ${ALIAS_MYSQL} -e "SET GLOBAL server_audit_logging=on;"
+        ${ALIAS_MYSQL} -e "SET GLOBAL server_audit_events='connect,query_dml';"
+        # ${ALIAS_MYSQL} -e "SET GLOBAL server_audit_events='connect,query_dml_no_select';"
+        ${ALIAS_MYSQL} -e "SET GLOBAL server_audit_output_type=FILE;"
+        ${ALIAS_MYSQL} -e "SET GLOBAL server_audit_file_path='/var/log/mysql/audit.log';"
+        ${ALIAS_MYSQL} -e "SET GLOBAL server_audit_file_rotate_size=250000000;"
+        ${ALIAS_MYSQL} -e "SET GLOBAL server_audit_file_rotations=10;"
         echo
         echo "Update /etc/my.cnf for server_audit_logging"
         sed -i '/server_audit_logging/d' /etc/my.cnf
@@ -652,8 +714,8 @@ mariadb_auditoff() {
         echo
         echo "Turn Off MariaDB Audit Plugin"
         echo
-        mysql -e "SET GLOBAL server_audit_logging=off;"
-        # mysql -e "SET GLOBAL server_audit_events='connect,query_dml';"
+        ${ALIAS_MYSQL} -e "SET GLOBAL server_audit_logging=off;"
+        # ${ALIAS_MYSQL} -e "SET GLOBAL server_audit_events='connect,query_dml';"
         echo "Update /etc/my.cnf for server_audit_logging off"
         sed -i '/server_audit_logging/d' /etc/my.cnf
         sed -i '/server_audit_events/d' /etc/my.cnf
@@ -674,15 +736,15 @@ mariadb_auditon() {
         echo
         echo "Turn On MariaDB Audit Plugin"
         echo
-        mysql -e "INSTALL SONAME 'server_audit';"
-        # mysql -t -e "SHOW PLUGINS;"
-        mysql -e "SELECT * FROM INFORMATION_SCHEMA.PLUGINS WHERE PLUGIN_NAME='SERVER_AUDIT'\G"
-        mysql -e "SET GLOBAL server_audit_logging=on;"
-        mysql -e "SET GLOBAL server_audit_events='connect,query_dml';"
-        mysql -e "SET GLOBAL server_audit_output_type=FILE;"
-        mysql -e "SET GLOBAL server_audit_file_path='/var/log/mysql/audit.log';"
-        mysql -e "SET GLOBAL server_audit_file_rotate_size=250000000;"
-        mysql -e "SET GLOBAL server_audit_file_rotations=10;"
+        ${ALIAS_MYSQL} -e "INSTALL SONAME 'server_audit';"
+        # ${ALIAS_MYSQL} -t -e "SHOW PLUGINS;"
+        ${ALIAS_MYSQL} -e "SELECT * FROM INFORMATION_SCHEMA.PLUGINS WHERE PLUGIN_NAME='SERVER_AUDIT'\G"
+        ${ALIAS_MYSQL} -e "SET GLOBAL server_audit_logging=on;"
+        ${ALIAS_MYSQL} -e "SET GLOBAL server_audit_events='connect,query_dml';"
+        ${ALIAS_MYSQL} -e "SET GLOBAL server_audit_output_type=FILE;"
+        ${ALIAS_MYSQL} -e "SET GLOBAL server_audit_file_path='/var/log/mysql/audit.log';"
+        ${ALIAS_MYSQL} -e "SET GLOBAL server_audit_file_rotate_size=250000000;"
+        ${ALIAS_MYSQL} -e "SET GLOBAL server_audit_file_rotations=10;"
         echo
         echo "Update /etc/my.cnf for server_audit_logging on"
         sed -i '/server_audit_logging/d' /etc/my.cnf
@@ -756,12 +818,12 @@ add_rules() {
 }
 
 mariadb_rotatelog_now() {
-  mdb_audit_logfile=$(mysqladmin var | grep 'server_audit_file_path' | tr -s ' ' | awk '{print $4}' | head -n1)
+  mdb_audit_logfile=$(${ALIAS_MYSQLADMIN} var | grep 'server_audit_file_path' | tr -s ' ' | awk '{print $4}' | head -n1)
   if [ -f "$mdb_audit_logfile" ]; then
     echo "Rotate MariaDB Audit Plugin Log Now"
-    echo "mysql -e \"SET GLOBAL server_audit_file_rotate_now = ON;\""
+    echo "${ALIAS_MYSQL} -e \"SET GLOBAL server_audit_file_rotate_now = ON;\""
     echo
-    mysql -e "SET GLOBAL server_audit_file_rotate_now = ON;"
+    ${ALIAS_MYSQL} -e "SET GLOBAL server_audit_file_rotate_now = ON;"
     rotate_err=$?
     if [[ "$rotate_err" -ne '0' ]]; then
       echo "error: an issue with MariaDB Audit log rotation occurred"
