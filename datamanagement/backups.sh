@@ -309,6 +309,8 @@ set_mariadb_client_commands() {
         ALIAS_MYSQL_UPGRADE="mysql_upgrade"
         ALIAS_MYSQL_WAITPID="mysql_waitpid"
         ALIAS_MYSQL="mysql"
+        ALIAS_MYSQLD="mysqld"
+        ALIAS_MYSQLDSAFE="mysqld_safe"
     else
         ALIAS_MYSQLACCESS="mariadb-access"
         ALIAS_MYSQLADMIN="mariadb-admin"
@@ -333,6 +335,8 @@ set_mariadb_client_commands() {
         ALIAS_MYSQL_UPGRADE="mariadb-upgrade"
         ALIAS_MYSQL_WAITPID="mariadb-waitpid"
         ALIAS_MYSQL="mariadb"
+        ALIAS_MYSQLD="mariadbd"
+        ALIAS_MYSQLDSAFE="mariadbd-safe"
     fi
 }
 set_mariadb_client_commands
@@ -347,7 +351,7 @@ if [ -f "$MY_CNF" ]; then
   MYSQLBINLOG_CMD_PREFIX="$NICE $NICEOPT $IONICE $IONICEOPT ${ALIAS_MYSQLBINLOG} --defaults-extra-file=$MY_CNF -h $DBHOST"
   MYSQLADMIN_CMD_PREFIX="${ALIAS_MYSQLADMIN} --defaults-extra-file=$MY_CNF -h $DBHOST"
 else
-  MYSQL_CMD_PREFIX="mysql -u $DBUSER -h $DBHOST -p$MYSQL_PWD"
+  MYSQL_CMD_PREFIX="${ALIAS_MYSQL} -u $DBUSER -h $DBHOST -p$MYSQL_PWD"
   MYSQLBACKUP_CMD_PREFIX="$NICE $NICEOPT $IONICE $IONICEOPT mariabackup -u $DBUSER -h $DBHOST -p$MYSQL_PWD"
   MYSQLDUMP_CMD_PREFIX="$NICE $NICEOPT $IONICE $IONICEOPT mysqldump -u $DBUSER -h $DBHOST -p$MYSQL_PWD${MYSQLDUMP_OPTS}"
   MYSQLBINLOG_CMD_PREFIX="$NICE $NICEOPT $IONICE $IONICEOPT mysqlbinlog -u $DBUSER -h $DBHOST -p$MYSQL_PWD"

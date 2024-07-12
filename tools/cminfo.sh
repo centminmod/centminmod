@@ -242,6 +242,8 @@ set_mariadb_client_commands() {
         ALIAS_MYSQL_UPGRADE="mysql_upgrade"
         ALIAS_MYSQL_WAITPID="mysql_waitpid"
         ALIAS_MYSQL="mysql"
+        ALIAS_MYSQLD="mysqld"
+        ALIAS_MYSQLDSAFE="mysqld_safe"
     else
         ALIAS_MYSQLACCESS="mariadb-access"
         ALIAS_MYSQLADMIN="mariadb-admin"
@@ -266,6 +268,8 @@ set_mariadb_client_commands() {
         ALIAS_MYSQL_UPGRADE="mariadb-upgrade"
         ALIAS_MYSQL_WAITPID="mariadb-waitpid"
         ALIAS_MYSQL="mariadb"
+        ALIAS_MYSQLD="mariadbd"
+        ALIAS_MYSQLDSAFE="mariadbd-safe"
     fi
 }
 

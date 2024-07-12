@@ -143,7 +143,7 @@ if [[ "$mysqlroot_reset" = [yY] ]]; then
     # sleep 10
     service nginx stop
     systemctl stop mariadb
-    mysqld_safe --skip-grant-tables > /dev/null 2>&1 &
+    ${ALIAS_MYSQLDSAFE} --skip-grant-tables > /dev/null 2>&1 &
     sleep 10
     # ${ALIAS_MYSQL} -e "FLUSH PRIVILEGES;"
   elif [[ "$STOPMYSQL" = [yY] ]] && [[ "$CENTOS_EIGHT" = '8' ]]; then
@@ -151,7 +151,7 @@ if [[ "$mysqlroot_reset" = [yY] ]]; then
     # sleep 10
     service nginx stop
     systemctl stop mariadb
-    mysqld_safe --skip-grant-tables > /dev/null 2>&1 &
+    ${ALIAS_MYSQLDSAFE} --skip-grant-tables > /dev/null 2>&1 &
     sleep 10
     # ${ALIAS_MYSQL} -e "FLUSH PRIVILEGES;"
   elif [[ "$STOPMYSQL" = [yY] && "$CENTOS_SEVEN" = '7' ]]; then
@@ -159,7 +159,7 @@ if [[ "$mysqlroot_reset" = [yY] ]]; then
     # sleep 10
     service nginx stop
     systemctl stop mariadb
-    mysqld_safe --skip-grant-tables > /dev/null 2>&1 &
+    ${ALIAS_MYSQLDSAFE} --skip-grant-tables > /dev/null 2>&1 &
     sleep 10
     # ${ALIAS_MYSQL} -e "FLUSH PRIVILEGES;"
   elif [[ "$STOPMYSQL" = [yY] && "$CENTOS_SIX" = '6' ]]; then
@@ -167,7 +167,7 @@ if [[ "$mysqlroot_reset" = [yY] ]]; then
     # sleep 10
     service nginx stop
     service mysql stop
-    mysqld --skip-grant-tables --skip-networking --user=mysql > /dev/null 2>&1 &
+    ${ALIAS_MYSQLD} --skip-grant-tables --skip-networking --user=mysql > /dev/null 2>&1 &
     sleep 10
     # ${ALIAS_MYSQL} -e "FLUSH PRIVILEGES;"
   fi
@@ -178,20 +178,20 @@ if [[ "$mysqlroot_reset" = [yY] ]]; then
   else
     rm -rf /root/.my.cnf
     if [[ "$CHECK_FOR_MARIADB_TENFOUR_ABOVE" = '10.2' || "$CHECK_FOR_MARIADB_TENFOUR_ABOVE" = '10.3' || "$CHECK_FOR_MARIADB_TENFOUR_ABOVE" = '10.4' || "$CHECK_FOR_MARIADB_TENFOUR_ABOVE" = '10.5' || "$CHECK_FOR_MARIADB_TENFOUR_ABOVE" = '10.6' ]]; then
-      # echo "mysql -u root -e \"FLUSH PRIVILEGES; ALTER USER root@localhost IDENTIFIED BY mysql_native_password USING PASSWORD('$NEWMYSQLROOTPASS');FLUSH PRIVILEGES;\""
-      # mysql -u root -e "FLUSH PRIVILEGES; ALTER USER root@localhost IDENTIFIED BY mysql_native_password USING PASSWORD('$NEWMYSQLROOTPASS');FLUSH PRIVILEGES;"
-      echo "mysql -u root -B -N -e \"FLUSH PRIVILEGES; ALTER USER 'root'@'localhost' IDENTIFIED BY '${NEWMYSQLROOTPASS}'; FLUSH PRIVILEGES;\""
-      mysql -u root -B -N -e "FLUSH PRIVILEGES; ALTER USER 'root'@'localhost' IDENTIFIED BY '${NEWMYSQLROOTPASS}'; FLUSH PRIVILEGES;"
+      # echo "${ALIAS_MYSQL} -u root -e \"FLUSH PRIVILEGES; ALTER USER root@localhost IDENTIFIED BY mysql_native_password USING PASSWORD('$NEWMYSQLROOTPASS');FLUSH PRIVILEGES;\""
+      # ${ALIAS_MYSQL} -u root -e "FLUSH PRIVILEGES; ALTER USER root@localhost IDENTIFIED BY mysql_native_password USING PASSWORD('$NEWMYSQLROOTPASS');FLUSH PRIVILEGES;"
+      echo "${ALIAS_MYSQL} -u root -B -N -e \"FLUSH PRIVILEGES; ALTER USER 'root'@'localhost' IDENTIFIED BY '${NEWMYSQLROOTPASS}'; FLUSH PRIVILEGES;\""
+      ${ALIAS_MYSQL} -u root -B -N -e "FLUSH PRIVILEGES; ALTER USER 'root'@'localhost' IDENTIFIED BY '${NEWMYSQLROOTPASS}'; FLUSH PRIVILEGES;"
     else
       sleep 5
       # echo "${ALIAS_MYSQL} -e \"select user, host, password, plugin, authentication_string from mysql.user where user='root';\""
       # ${ALIAS_MYSQL} -e "select user, host, password, plugin, authentication_string from mysql.user where user='root';"
 
-      # echo "mysql -u root -B -N -e \"FLUSH PRIVILEGES; ALTER USER 'root'@'localhost' IDENTIFIED BY '${NEWMYSQLROOTPASS}'; FLUSH PRIVILEGES;\""
-      # mysql -u root -B -N -e "FLUSH PRIVILEGES; ALTER USER 'root'@'localhost' IDENTIFIED BY '${NEWMYSQLROOTPASS}'; FLUSH PRIVILEGES;"
+      # echo "${ALIAS_MYSQL} -u root -B -N -e \"FLUSH PRIVILEGES; ALTER USER 'root'@'localhost' IDENTIFIED BY '${NEWMYSQLROOTPASS}'; FLUSH PRIVILEGES;\""
+      # ${ALIAS_MYSQL} -u root -B -N -e "FLUSH PRIVILEGES; ALTER USER 'root'@'localhost' IDENTIFIED BY '${NEWMYSQLROOTPASS}'; FLUSH PRIVILEGES;"
 
-      echo "mysql -u root -e \"UPDATE mysql.user SET Password = PASSWORD('$NEWMYSQLROOTPASS') WHERE User = 'root'; FLUSH PRIVILEGES;\""
-      mysql -u root -e "UPDATE mysql.user SET Password = PASSWORD('$NEWMYSQLROOTPASS') WHERE User = 'root'; FLUSH PRIVILEGES;"
+      echo "${ALIAS_MYSQL} -u root -e \"UPDATE mysql.user SET Password = PASSWORD('$NEWMYSQLROOTPASS') WHERE User = 'root'; FLUSH PRIVILEGES;\""
+      ${ALIAS_MYSQL} -u root -e "UPDATE mysql.user SET Password = PASSWORD('$NEWMYSQLROOTPASS') WHERE User = 'root'; FLUSH PRIVILEGES;"
     fi
   fi
   if [[ $? -ne 0 ]]; then
@@ -206,8 +206,8 @@ if [[ "$mysqlroot_reset" = [yY] ]]; then
     sleep 3
     # MYSQL_PID=$(pidof mysqld)
     # kill -9 $MYSQL_PID >/dev/null 2>&1
-    killall -9 mysqld_safe >/dev/null 2>&1
-    killall -9 mysqld >/dev/null 2>&1
+    killall -9 ${ALIAS_MYSQLDSAFE} >/dev/null 2>&1
+    killall -9 ${ALIAS_MYSQLD} >/dev/null 2>&1
     killall -9 mariadbd >/dev/null 2>&1
     sleep 10
   elif [[ "$STOPMYSQL" = [yY] ]] && [[ "$CENTOS_EIGHT" = '8' ]]; then
@@ -215,8 +215,8 @@ if [[ "$mysqlroot_reset" = [yY] ]]; then
     sleep 3
     # MYSQL_PID=$(pidof mysqld)
     # kill -9 $MYSQL_PID >/dev/null 2>&1
-    killall -9 mysqld_safe >/dev/null 2>&1
-    killall -9 mysqld >/dev/null 2>&1
+    killall -9 ${ALIAS_MYSQLDSAFE} >/dev/null 2>&1
+    killall -9 ${ALIAS_MYSQLD} >/dev/null 2>&1
     killall -9 mariadbd >/dev/null 2>&1
     sleep 10
   elif [[ "$STOPMYSQL" = [yY] && "$CENTOS_SEVEN" = '7' ]]; then
@@ -224,16 +224,16 @@ if [[ "$mysqlroot_reset" = [yY] ]]; then
     sleep 3
     # MYSQL_PID=$(pidof mysqld)
     # kill -9 $MYSQL_PID >/dev/null 2>&1
-    killall -9 mysqld_safe >/dev/null 2>&1
-    killall -9 mysqld >/dev/null 2>&1
+    killall -9 ${ALIAS_MYSQLDSAFE} >/dev/null 2>&1
+    killall -9 ${ALIAS_MYSQLD} >/dev/null 2>&1
     sleep 10
   elif [[ "$STOPMYSQL" = [yY] && "$CENTOS_SIX" = '6' ]]; then
     # ${ALIAS_MYSQLADMIN} -u root -p${NEWMYSQLROOTPASS} flush-tables >/dev/null 2>&1
     sleep 3
     # MYSQL_PID=$(pidof mysqld)
     # kill -9 $MYSQL_PID >/dev/null 2>&1
-    killall -9 mysqld_safe >/dev/null 2>&1
-    killall -9 mysqld >/dev/null 2>&1
+    killall -9 ${ALIAS_MYSQLDSAFE} >/dev/null 2>&1
+    killall -9 ${ALIAS_MYSQLD} >/dev/null 2>&1
     sleep 10
   fi
   if [[ "$STOPMYSQL" = [yY] ]] && [[ "$CENTOS_EIGHT" = '8' || "$CENTOS_NINE" = '9' ]]; then
@@ -254,8 +254,8 @@ if [[ "$mysqlroot_reset" = [yY] ]]; then
   fi
   # if [[ "$CHECK_FOR_MARIADB_TENFOUR_ABOVE" = '10.3' || "$CHECK_FOR_MARIADB_TENFOUR_ABOVE" = '10.2' || "$CHECK_FOR_MARIADB_TENFOUR_ABOVE" = '10.1' || "$CHECK_FOR_MARIADB_TENFOUR_ABOVE" = '10.0' ]]; then
   #     sleep 5
-  #     echo "mysql -u root -p${NEWMYSQLROOTPASS} -e \"SET PASSWORD FOR 'root'@'localhost' = PASSWORD('$NEWMYSQLROOTPASS'); FLUSH PRIVILEGES;\""
-  #     mysql -u root -p${NEWMYSQLROOTPASS} -e "SET PASSWORD FOR 'root'@'localhost' = PASSWORD('$NEWMYSQLROOTPASS'); FLUSH PRIVILEGES;"
+  #     echo "${ALIAS_MYSQL} -u root -p${NEWMYSQLROOTPASS} -e \"SET PASSWORD FOR 'root'@'localhost' = PASSWORD('$NEWMYSQLROOTPASS'); FLUSH PRIVILEGES;\""
+  #     ${ALIAS_MYSQL} -u root -p${NEWMYSQLROOTPASS} -e "SET PASSWORD FOR 'root'@'localhost' = PASSWORD('$NEWMYSQLROOTPASS'); FLUSH PRIVILEGES;"
   # fi
   if [[ "$STOPMYSQL" = [yY] && "$?" = '0' ]]; then
     echo "MySQL root user password updated: $NEWMYSQLROOTPASS"
