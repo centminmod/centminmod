@@ -1492,7 +1492,7 @@ location ~* ${WPSUBDIR}/(xmlrpc\.php) {
     limit_req zone=xwprpc burst=45 nodelay;
     #limit_conn xwpconlimit 30;
     include /usr/local/nginx/conf/php-wpsc.conf;
-    # https://jetpack.com/support/hosting-faq/
+    # https://jetpack.com/support/how-to-add-jetpack-ips-allowlist/
     include /usr/local/nginx/conf/jetpack_whitelist_ip.conf;
     # https://community.centminmod.com/posts/18828/
     #include /usr/local/nginx/conf/php-rediscache.conf;
@@ -1640,7 +1640,7 @@ location ~* ${WPSUBDIR}/(xmlrpc\.php) {
     limit_req zone=xwprpc burst=45 nodelay;
     #limit_conn xwpconlimit 30;
     include /usr/local/nginx/conf/php-wpsc.conf;
-    # https://jetpack.com/support/hosting-faq/
+    # https://jetpack.com/support/how-to-add-jetpack-ips-allowlist/
     include /usr/local/nginx/conf/jetpack_whitelist_ip.conf;
     ${MULTIPHP_INCLUDES}
     # https://community.centminmod.com/posts/18828/
@@ -1765,7 +1765,7 @@ location ~* ${WPSUBDIR}/(xmlrpc\.php) {
     limit_req zone=xwprpc burst=45 nodelay;
     #limit_conn xwpconlimit 30;
     include /usr/local/nginx/conf/php-wpsc.conf;
-    # https://jetpack.com/support/hosting-faq/
+    # https://jetpack.com/support/how-to-add-jetpack-ips-allowlist/
     include /usr/local/nginx/conf/jetpack_whitelist_ip.conf;
     ${MULTIPHP_INCLUDES}
     # https://community.centminmod.com/posts/18828/

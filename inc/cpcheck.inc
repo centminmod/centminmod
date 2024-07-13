@@ -594,7 +594,7 @@ lets_dst_root_ca_fix() {
 jetpack_ip_whitelist_cronsetup() {
   if [[ -f /usr/local/src/centminmod/tools/jetpackips.sh && ! -f /usr/local/nginx/conf/jetpack_whitelist_ip.conf ]]; then
       # block xml-rpc.php completely with whitelist exception for
-      # jetpack wordpress plugin's IP addresses https://jetpack.com/support/hosting-faq/
+      # jetpack wordpress plugin's IP addresses https://jetpack.com/support/how-to-add-jetpack-ips-allowlist/
       mkdir -p /etc/centminmod/cronjobs/
       crontab -l > /etc/centminmod/cronjobs/before_jetpack_ip_whitelist_cronjoblist
       sed -i '/jetpackips/d' /etc/centminmod/cronjobs/before_jetpack_ip_whitelist_cronjoblist

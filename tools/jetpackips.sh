@@ -13,7 +13,7 @@ export LC_CTYPE=en_US.UTF-8
 jetpack_ip_whitelist_cronsetup() {
   if [[ -f /usr/local/src/centminmod/tools/jetpackips.sh && -f /usr/local/nginx/conf/jetpack_whitelist_ip.conf && ! "$(crontab -l | grep -w jetpackips)" ]]; then
       # block xml-rpc.php completely with whitelist exception for
-      # jetpack wordpress plugin's IP addresses https://jetpack.com/support/hosting-faq/
+      # jetpack wordpress plugin's IP addresses https://jetpack.com/support/how-to-add-jetpack-ips-allowlist/
       mkdir -p /etc/centminmod/cronjobs/
       crontab -l > /etc/centminmod/cronjobs/before_jetpack_ip_whitelist_cronjoblist
       sed -i '/jetpackips/d' /etc/centminmod/cronjobs/before_jetpack_ip_whitelist_cronjoblist
@@ -26,7 +26,7 @@ jetpack_ip_whitelist_cronsetup
 jetpackallowips=$(curl -${ipv_forceopt}sk https://jetpack.com/ips-v4.txt | awk '{print "allow "$1";"}')
 echo "populating include file /usr/local/nginx/conf/jetpack_whitelist_ip.conf with:"
 echo
-echo -e "# jetpack ip whitelist https://jetpack.com/support/hosting-faq/\n$jetpackallowips\ndeny all;" | tee /usr/local/nginx/conf/jetpack_whitelist_ip.conf
+echo -e "# jetpack ip whitelist https://jetpack.com/support/how-to-add-jetpack-ips-allowlist/\n$jetpackallowips\ndeny all;" | tee /usr/local/nginx/conf/jetpack_whitelist_ip.conf
 
 echo -e "\nupdate your wordpress site nginx vhost's xml-rpc.php location context with"
 echo -e "include file for /usr/local/nginx/conf/jetpack_whitelist_ip.conf\n"
@@ -34,7 +34,7 @@ echo 'location ~* /(xmlrpc\.php) {
     limit_req zone=xwprpc burst=45 nodelay;
     #limit_conn xwpconlimit 30;
     include /usr/local/nginx/conf/php-wpsc.conf;
-    # https://jetpack.com/support/hosting-faq/
+    # https://jetpack.com/support/how-to-add-jetpack-ips-allowlist/
     include /usr/local/nginx/conf/jetpack_whitelist_ip.conf;
     # https://community.centminmod.com/posts/18828/
     #include /usr/local/nginx/conf/php-rediscache.conf;
@@ -46,7 +46,7 @@ echo 'location ~* /(xmlrpc\.php) {
     limit_req zone=xwprpc burst=45 nodelay;
     #limit_conn xwpconlimit 30;
     include /usr/local/nginx/conf/php-wpsc.conf;
-    # https://jetpack.com/support/hosting-faq/
+    # https://jetpack.com/support/how-to-add-jetpack-ips-allowlist/
     #include /usr/local/nginx/conf/jetpack_whitelist_ip.conf;
     # https://community.centminmod.com/posts/18828/
     #include /usr/local/nginx/conf/php-rediscache.conf;
