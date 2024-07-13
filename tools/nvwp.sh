@@ -2001,7 +2001,11 @@ fi
 echo 
 if [[ "$PUREFTPD_DISABLED" = [nN] ]]; then
 cecho "-------------------------------------------------------------" $boldyellow
-echo "FTP hostname : $CNIP"
+  if [[ "$DEMO_MODE" = [yY] ]]; then
+    echo "FTP hostname : xxx.xxx.xxx.xxx"
+  else
+    echo "FTP hostname : $CNIP"
+  fi
 echo "FTP port : 21"
 echo "FTP mode : FTP (explicit SSL)"
 echo "FTP Passive (PASV) : ensure is checked/enabled"
