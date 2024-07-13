@@ -25,14 +25,14 @@ done
 
 if [[ "$(expr $PHPCURRENTVER \= 5.7)" = 1 || "$(expr $PHPCURRENTVER \< 5.3)" = 1 ]]; then
   echo "Your current PHP version $PHPCURRENTVER is incompatible with ioncube loader"
-  echo "ioncube loader only supports PHP versions 5.3-5.6 & 7 currently"
+  echo "ioncube loader only supports PHP versions 5.3-5.6 & 7.x/8.x currently"
   echo "aborting installation"
   exit
 fi
 
 echo
 echo "ioncube loader installation started"
-echo "ioncube loader only supports PHP 5.3, 5.4, 5.5, 5.6, 7.x, 8.1, 8.2"
+echo "ioncube loader only supports PHP 5.6, 7.x, 8.1, 8.2, 8.3"
 echo "ioncube loader has skipped PHP 8.0 support"
 echo "https://blog.ioncube.com/2022/08/05/ioncube-php-8-1-support-faq-were-almost-ready/"
 # echo "ioncube loader PHP 7 currently beta supported"
@@ -73,9 +73,10 @@ if [[ "$(uname -m)" = 'x86_64' ]]; then
     echo "only PHP 8.1 is supported"
     exit
   elif [[ "$(php-config --version | cut -d . -f1-2)" = '8.3' ]]; then
-    echo "ioncube loader does not currently have PHP 8.3 support"
-    echo "only PHP 8.1 is supported"
-    exit
+    rm -rf ioncube_loaders_lin_x86-64.tar.gz
+    rm -rf ioncube
+    wget -${ipv_forceopt}cnv https://downloads.ioncube.com/loader_downloads/ioncube_loaders_lin_x86-64.tar.gz
+    tar xvzf ioncube_loaders_lin_x86-64.tar.gz
   elif [[ "$(php-config --version | cut -d . -f1-2)" = '8.2' ]]; then
     rm -rf ioncube_loaders_lin_x86-64.tar.gz
     rm -rf ioncube
@@ -125,6 +126,14 @@ if [[ "$(php-config --version | cut -d . -f1)" = '5' ]]; then
   \cp -fa ioncube/ioncube_loader_lin_${ICPHPVER}.so "${PHPEXTDIRD}/ioncube.so"
   chown root:root "${PHPEXTDIRD}/ioncube.so"
   chmod 755 "${PHPEXTDIRD}/ioncube.so"
+elif [[ "$(php-config --version | cut -d . -f1-2)" = '8.3' ]]; then
+  # for php 8 ioncube
+  ICPHPVER="$(php-config --version | cut -d . -f1,2)"
+  if [[ "$(uname -m)" = 'x86_64' ]]; then
+    \cp -fa ioncube/ioncube_loader_lin_${ICPHPVER}.so "${PHPEXTDIRD}/ioncube.so"
+    chown root:root "${PHPEXTDIRD}/ioncube.so"
+    chmod 755 "${PHPEXTDIRD}/ioncube.so"
+  fi
 elif [[ "$(php-config --version | cut -d . -f1-2)" = '8.2' ]]; then
   # for php 8 ioncube
   ICPHPVER="$(php-config --version | cut -d . -f1,2)"
@@ -181,8 +190,7 @@ if [ -f "${PHPEXTDIRD}/ioncube.so" ]; then
   echo
   echo "ioncube loader installation completed"
   echo "you'll need to rerun ioncube.sh after each major PHP version upgrades"
-  echo "PHP 5.3 to 5.4 or PHP 5.4 to PHP 5.5 to PHP 5.6 to PHP 7.0"
-  echo "7.1 to 7.2, 7.2 to 7.3, 7.3 to 7.4, 7.4 to 8.1 etc"
+  echo "PHP 7.4 to PHP 8.0 to PHP 8.1 to PHP 8.2 to PHP 8.3"
   echo
 else
   echo ""
