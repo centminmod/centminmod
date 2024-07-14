@@ -645,17 +645,20 @@ ngx_luastream_onetwoseven_patch() {
     NGX_LUANGINXDIR=$(tar -tzf "$DIR_TMP/${NGX_LUANGINXLINKFILE}" | head -1 | cut -f1 -d"/")
     NGX_LUASTREAMDIR=$(tar -tzf "$DIR_TMP/${NGX_LUASTREAMLINKFILE}" | head -1 | cut -f1 -d"/")
     if [ -d "${DIR_TMP}/${NGX_LUASTREAMDIR}" ]; then
-      rm -rf "${DIR_TMP}/${NGX_LUASTREAMDIR}"
-      pushd "${DIR_TMP}"
-      if [ -f "$DIR_TMP/${NGX_LUANGINXLINKFILE}" ]; then
-        tar xzf "$DIR_TMP/${NGX_LUANGINXLINKFILE}"
-      fi
-      popd
       pushd "${DIR_TMP}/${NGX_LUASTREAMDIR}"
       cecho "patching lua nginx module for nginx 1.25.4+ support" $boldyellow
-      cecho "patch -p1 < $CUR_DIR/patches/luanginx/luanginx-1.27.0.patch" $boldyellow
-      patch -p1 < "$CUR_DIR/patches/luanginx/luanginx-1.27.0.patch"
-      echo 
+      cecho "Performing dry-run of the patch..." $boldyellow
+      if patch -p1 --dry-run < "$CUR_DIR/patches/luanginx/luanginx-1.27.0.patch" > /dev/null 2>&1; then
+        cecho "Applying the patch..." $boldyellow
+        if patch -p1 < "$CUR_DIR/patches/luanginx/luanginx-1.27.0.patch"; then
+          echo "Patch applied successfully."
+        else
+          echo "Failed to apply the patch."
+        fi
+      else
+        echo "Patch has already been applied or cannot be applied."
+      fi
+      echo
       echo "patching lua nginx module for nginx 1.27.0+"
       popd
     fi
