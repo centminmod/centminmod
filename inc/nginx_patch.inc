@@ -646,7 +646,7 @@ ngx_luastream_onetwoseven_patch() {
     NGX_LUASTREAMDIR=$(tar -tzf "$DIR_TMP/${NGX_LUASTREAMLINKFILE}" | head -1 | cut -f1 -d"/")
     if [ -d "${DIR_TMP}/${NGX_LUASTREAMDIR}" ]; then
       pushd "${DIR_TMP}/${NGX_LUASTREAMDIR}"
-      cecho "patching lua nginx module for nginx 1.25.4+ support" $boldyellow
+      cecho "patching lua stream nginx module for nginx 1.25.4+ support" $boldyellow
       cecho "Performing dry-run of the patch..." $boldyellow
       if patch -p1 --dry-run < "$CUR_DIR/patches/luanginx/luanginx-1.27.0.patch" > /dev/null 2>&1; then
         cecho "Applying the patch..." $boldyellow
@@ -659,7 +659,7 @@ ngx_luastream_onetwoseven_patch() {
         echo "Patch has already been applied or cannot be applied."
       fi
       echo
-      echo "patching lua nginx module for nginx 1.27.0+"
+      echo "patching lua stream nginx module for nginx 1.27.0+"
       popd
     fi
   fi
