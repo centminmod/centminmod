@@ -30,7 +30,7 @@ DT=$(date +"%d%m%y-%H%M%S")
 branchname='131.00stable'
 SCRIPT_MAJORVER='131'
 SCRIPT_MINORVER='00'
-SCRIPT_INCREMENTVER='026'
+SCRIPT_INCREMENTVER='027'
 SCRIPT_VERSIONSHORT="${branchname}"
 SCRIPT_VERSION="${SCRIPT_VERSIONSHORT}.b${SCRIPT_INCREMENTVER}"
 SCRIPT_DATE='01/07/24'
@@ -1016,7 +1016,7 @@ LUAJIT_GITINSTALL='y'        # opt to install luajit 2.1 from dev branch http://
 LUAJIT_GITINSTALLVER='2.1-agentzh'   # branch version = v2.1 will override ORESTY_LUAGITVER if LUAJIT_GITINSTALL='y'
 
 ORESTY_LUANGINX='n'             # enable or disable or ORESTY_LUA* nginx modules below
-ORESTY_LUANGINXVER='0.10.25'  # openresty lua-nginx-module https://github.com/openresty/lua-nginx-module
+ORESTY_LUANGINXVER='0.10.26'  # openresty lua-nginx-module https://github.com/openresty/lua-nginx-module
 ORESTY_LUAGITVER='2.0.5'        # luagit http://luajit.org/
 ORESTY_LUAMEMCACHEDVER='0.17'   # openresty https://github.com/openresty/lua-resty-memcached
 ORESTY_LUAMYSQLVER='0.26'    # openresty https://github.com/openresty/lua-resty-mysql
@@ -1030,7 +1030,7 @@ ORESTY_LUAREDISPARSERVER='0.13'    # openresty https://github.com/openresty/lua-
 ORESTY_LUAUPSTREAMCHECKVER='0.08'  # openresty https://github.com/openresty/lua-resty-upstream-healthcheck
 ORESTY_LUALRUCACHEVER='0.13'       # openresty https://github.com/openresty/lua-resty-lrucache
 ORESTY_LUARESTYCOREVER='0.1.27'    # openresty https://github.com/openresty/lua-resty-core
-ORESTY_LUASTREAMVER='0.0.13'        # https://github.com/openresty/stream-lua-nginx-module
+ORESTY_LUASTREAMVER='0.0.14'        # https://github.com/openresty/stream-lua-nginx-module
 ORESTY_LUASTREAM='y'               # control https://github.com/openresty/stream-lua-nginx-module
 NGX_LUASTREAM_FORCED='y'           # control stream-lua-nginx enabling for nginx 1.17+
 ORESTY_LUAUPSTREAMVER='0.07'       # openresty https://github.com/openresty/lua-upstream-nginx-module

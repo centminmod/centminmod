@@ -624,6 +624,48 @@ ngx_luaonetwothree_patch() {
   } 2>&1 | tee -a "${CENTMINLOGDIR}/patch_patchnginx_${DT}.log"
 }
 
+ngx_luastream_onetwoseven_patch() {
+  {
+  if [ "$ngver" ]; then
+    if [[ "$FREENGINX_INSTALL" = [yY] ]]; then
+      DETECT_NGXVER=$(awk '/define nginx_version  / {print $3}' "/svr-setup/freenginx-$ngver/src/core/nginx.h")
+    else
+      DETECT_NGXVER=$(awk '/define nginx_version  / {print $3}' "/svr-setup/nginx-$ngver/src/core/nginx.h")
+    fi
+    echo "$DETECT_NGXVER"
+  else
+    if [[ "$FREENGINX_INSTALL" = [yY] ]]; then
+      DETECT_NGXVER=$(awk '/define nginx_version  / {print $3}' "/svr-setup/freenginx-${NGINX_VERSION}/src/core/nginx.h")
+    else
+      DETECT_NGXVER=$(awk '/define nginx_version  / {print $3}' "/svr-setup/nginx-${NGINX_VERSION}/src/core/nginx.h")
+    fi
+    echo "$DETECT_NGXVER"
+  fi
+  if [[ "$ORESTY_LUANGINX" = [yY] && "$NGX_LUASTREAM" = [yY] && "$DETECT_NGXVER" -ge '1025004' ]]; then
+    NGX_LUANGINXDIR=$(tar -tzf "$DIR_TMP/${NGX_LUANGINXLINKFILE}" | head -1 | cut -f1 -d"/")
+    NGX_LUASTREAMDIR=$(tar -tzf "$DIR_TMP/${NGX_LUASTREAMLINKFILE}" | head -1 | cut -f1 -d"/")
+    if [ -d "${DIR_TMP}/${NGX_LUASTREAMDIR}" ]; then
+      pushd "${DIR_TMP}/${NGX_LUASTREAMDIR}"
+      cecho "patching lua stream nginx module for nginx 1.25.4+ support" $boldyellow
+      cecho "Performing dry-run of the patch..." $boldyellow
+      if patch -p1 --dry-run < "$CUR_DIR/patches/luanginx/luanginx-1.27.0.patch" > /dev/null 2>&1; then
+        cecho "Applying the patch..." $boldyellow
+        if patch -p1 < "$CUR_DIR/patches/luanginx/luanginx-1.27.0.patch"; then
+          echo "Patch applied successfully."
+        else
+          echo "Failed to apply the patch."
+        fi
+      else
+        echo "Patch has already been applied or cannot be applied."
+      fi
+      echo
+      echo "patching lua stream nginx module for nginx 1.27.0+"
+      popd
+    fi
+  fi
+  } 2>&1 | tee -a "${CENTMINLOGDIR}/patch_patchnginx_${DT}.log"
+}
+
 luanginx_patch() {
   {
   if [ "$ngver" ]; then
@@ -672,6 +714,7 @@ luanginx_patch() {
     fi
   fi
   ngx_luaonetwothree_patch
+  ngx_luastream_onetwoseven_patch
   } 2>&1 | tee -a "${CENTMINLOGDIR}/patch_patchnginx_${DT}.log"
 }
 
@@ -809,6 +852,24 @@ aws_lc_patch_make() {
     fi
     echo
     } 2>&1 | tee -a "${CENTMINLOGDIR}/patch_patchnginx_${DT}.log"
+  fi
+}
+
+# http2_shutdown_fix_patch() {
+  # backport freenginx fork's HTTP/2 shutdown bug fix
+  # https://freenginx.org/hg/nginx/rev/4a0cd107c0f1
+  if [[ "$NGINX_INSTALL" = [yY] && "$FREENGINX_INSTALL" != [yY] ]] && [[ "$ngver" != 'angie' ]] && [[ "$FREENGINX_BACKPORT_PATCHES" = [yY] && -f "$CUR_DIR/patches/nginx/http2-shutdown-fix.patch" && "$DETECT_NGXVER" -ge '1025000' ]]; then
+    # Perform a dry-run to check if the patch can be applied
+    if patch -p1 --dry-run < "$CUR_DIR/patches/nginx/http2-shutdown-fix.patch" > /dev/null 2>&1; then
+      # If the dry-run is successful, apply the patch
+      if patch -p1 < "$CUR_DIR/patches/nginx/http2-shutdown-fix.patch"; then
+        echo "Patch applied successfully."
+      else
+        echo "Failed to apply the patch."
+      fi
+    else
+      echo "Patch has already been applied or cannot be applied."
+    fi
   fi
 }
 
@@ -1035,6 +1096,7 @@ patchnginx() {
   ngx_headers_more_patch
   # nginx_quic_patches
   aws_lc_patch
+  # http2_shutdown_fix_patch
 } 2>&1 | tee -a "${CENTMINLOGDIR}/patch_patchnginx_${DT}.log"
 }
 
