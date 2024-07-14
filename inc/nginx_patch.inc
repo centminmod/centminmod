@@ -624,6 +624,44 @@ ngx_luaonetwothree_patch() {
   } 2>&1 | tee -a "${CENTMINLOGDIR}/patch_patchnginx_${DT}.log"
 }
 
+ngx_luaonetwoseven_patch() {
+  {
+  if [ "$ngver" ]; then
+    if [[ "$FREENGINX_INSTALL" = [yY] ]]; then
+      DETECT_NGXVER=$(awk '/define nginx_version  / {print $3}' "/svr-setup/freenginx-$ngver/src/core/nginx.h")
+    else
+      DETECT_NGXVER=$(awk '/define nginx_version  / {print $3}' "/svr-setup/nginx-$ngver/src/core/nginx.h")
+    fi
+    echo "$DETECT_NGXVER"
+  else
+    if [[ "$FREENGINX_INSTALL" = [yY] ]]; then
+      DETECT_NGXVER=$(awk '/define nginx_version  / {print $3}' "/svr-setup/freenginx-${NGINX_VERSION}/src/core/nginx.h")
+    else
+      DETECT_NGXVER=$(awk '/define nginx_version  / {print $3}' "/svr-setup/nginx-${NGINX_VERSION}/src/core/nginx.h")
+    fi
+    echo "$DETECT_NGXVER"
+  fi
+  if [[ "$ORESTY_LUANGINX" = [yY] && "$DETECT_NGXVER" -ge '1025004' ]]; then
+    NGX_LUANGINXDIR=$(tar -tzf "$DIR_TMP/${NGX_LUANGINXLINKFILE}" | head -1 | cut -f1 -d"/")
+    if [ -d "${DIR_TMP}/${NGX_LUANGINXDIR}" ]; then
+      rm -rf "${DIR_TMP}/${NGX_LUANGINXDIR}"
+      pushd "${DIR_TMP}"
+      if [ -f "$DIR_TMP/${NGX_LUANGINXLINKFILE}" ]; then
+        tar xzf "$DIR_TMP/${NGX_LUANGINXLINKFILE}"
+      fi
+      popd
+      pushd "${DIR_TMP}/${NGX_LUANGINXDIR}"
+      cecho "patching lua nginx module for nginx 1.25.4+ support" $boldyellow
+      cecho "patch -p1 < $CUR_DIR/patches/luanginx/luanginx-1.27.0.patch" $boldyellow
+      patch -p1 < "$CUR_DIR/patches/luanginx/luanginx-1.27.0.patch"
+      echo 
+      echo "patching lua nginx module for nginx 1.27.0+"
+      popd
+    fi
+  fi
+  } 2>&1 | tee -a "${CENTMINLOGDIR}/patch_patchnginx_${DT}.log"
+}
+
 luanginx_patch() {
   {
   if [ "$ngver" ]; then
@@ -672,6 +710,7 @@ luanginx_patch() {
     fi
   fi
   ngx_luaonetwothree_patch
+  ngx_luaonetwoseven_patch
   } 2>&1 | tee -a "${CENTMINLOGDIR}/patch_patchnginx_${DT}.log"
 }
 
