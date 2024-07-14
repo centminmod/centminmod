@@ -624,7 +624,7 @@ ngx_luaonetwothree_patch() {
   } 2>&1 | tee -a "${CENTMINLOGDIR}/patch_patchnginx_${DT}.log"
 }
 
-ngx_luaonetwoseven_patch() {
+ngx_luastream_onetwoseven_patch() {
   {
   if [ "$ngver" ]; then
     if [[ "$FREENGINX_INSTALL" = [yY] ]]; then
@@ -641,16 +641,17 @@ ngx_luaonetwoseven_patch() {
     fi
     echo "$DETECT_NGXVER"
   fi
-  if [[ "$ORESTY_LUANGINX" = [yY] && "$DETECT_NGXVER" -ge '1025004' ]]; then
+  if [[ "$ORESTY_LUANGINX" = [yY] && "$NGX_LUASTREAM" = [yY] && "$DETECT_NGXVER" -ge '1025004' ]]; then
     NGX_LUANGINXDIR=$(tar -tzf "$DIR_TMP/${NGX_LUANGINXLINKFILE}" | head -1 | cut -f1 -d"/")
-    if [ -d "${DIR_TMP}/${NGX_LUANGINXDIR}" ]; then
-      rm -rf "${DIR_TMP}/${NGX_LUANGINXDIR}"
+    NGX_LUASTREAMDIR=$(tar -tzf "$DIR_TMP/${NGX_LUASTREAMLINKFILE}" | head -1 | cut -f1 -d"/")
+    if [ -d "${DIR_TMP}/${NGX_LUASTREAMDIR}" ]; then
+      rm -rf "${DIR_TMP}/${NGX_LUASTREAMDIR}"
       pushd "${DIR_TMP}"
       if [ -f "$DIR_TMP/${NGX_LUANGINXLINKFILE}" ]; then
         tar xzf "$DIR_TMP/${NGX_LUANGINXLINKFILE}"
       fi
       popd
-      pushd "${DIR_TMP}/${NGX_LUANGINXDIR}"
+      pushd "${DIR_TMP}/${NGX_LUASTREAMDIR}"
       cecho "patching lua nginx module for nginx 1.25.4+ support" $boldyellow
       cecho "patch -p1 < $CUR_DIR/patches/luanginx/luanginx-1.27.0.patch" $boldyellow
       patch -p1 < "$CUR_DIR/patches/luanginx/luanginx-1.27.0.patch"
@@ -710,7 +711,7 @@ luanginx_patch() {
     fi
   fi
   ngx_luaonetwothree_patch
-  ngx_luaonetwoseven_patch
+  ngx_luastream_onetwoseven_patch
   } 2>&1 | tee -a "${CENTMINLOGDIR}/patch_patchnginx_${DT}.log"
 }
 
