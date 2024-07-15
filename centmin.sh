@@ -30,7 +30,7 @@ DT=$(date +"%d%m%y-%H%M%S")
 branchname='140.00beta01'
 SCRIPT_MAJORVER='140'
 SCRIPT_MINORVER='00'
-SCRIPT_INCREMENTVER='065'
+SCRIPT_INCREMENTVER='066'
 SCRIPT_VERSIONSHORT="${branchname}"
 SCRIPT_VERSION="${SCRIPT_VERSIONSHORT}.b${SCRIPT_INCREMENTVER}"
 SCRIPT_DATE='01/07/24'
@@ -1794,6 +1794,8 @@ if [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]]; then
   if [[ "$AWS_LC_SWITCH" = [yY] ]]; then
     OPENSSL_SYSTEM_USE='n'
     NGINX_QUIC_SUPPORT='n'
+    ORESTY_LUASTREAM='n'
+    ORESTY_LUANGINX='n'
   elif [[ "$NGINX_QUIC_SUPPORT" = [yY] ]]; then
     OPENSSL_SYSTEM_USE='n'
     AWS_LC_SWITCH='n'
@@ -2026,6 +2028,8 @@ fi
 if [[ "$LIBRESSL_SWITCH" = [yY] ]]; then
   # don't use system OpenSSL for Nginx
   OPENSSL_SYSTEM_USE='n'
+  ORESTY_LUASTREAM='n'
+  ORESTY_LUANGINX='n'
 elif [[ "$BORINGSSL_SWITCH" = [yY] ]]; then
   # don't use system OpenSSL for Nginx
   OPENSSL_SYSTEM_USE='n'

@@ -421,6 +421,31 @@ if [ -f "${CM_INSTALLDIR}/inc/z_custom.inc" ]; then
     source "${CM_INSTALLDIR}/inc/z_custom.inc"
 fi
 
+if [[ "$LIBRESSL_SWITCH" = [yY] ]]; then
+  # don't use system OpenSSL for Nginx
+  OPENSSL_SYSTEM_USE='n'
+  ORESTY_LUASTREAM='n'
+  ORESTY_LUANGINX='n'
+elif [[ "$BORINGSSL_SWITCH" = [yY] ]]; then
+  # don't use system OpenSSL for Nginx
+  OPENSSL_SYSTEM_USE='n'
+elif [[ "$ngver" = 'quic' || "$NGINX_QUIC_SUPPORT" = [yY] ]]; then
+  OPENSSL_SYSTEM_USE='n'
+fi
+
+if [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]]; then
+  # give AWS-LC priority over quicTLS for HTTP/3 QUIC
+  if [[ "$AWS_LC_SWITCH" = [yY] ]]; then
+    OPENSSL_SYSTEM_USE='n'
+    NGINX_QUIC_SUPPORT='n'
+    ORESTY_LUASTREAM='n'
+    ORESTY_LUANGINX='n'
+  elif [[ "$NGINX_QUIC_SUPPORT" = [yY] ]]; then
+    OPENSSL_SYSTEM_USE='n'
+    AWS_LC_SWITCH='n'
+  fi
+fi
+
 # compiling Nginx with LTO support takes 2-4x times the memory
 # and cpu resources to do and takes 2-4x times longer to compile
 # so only do it for servers with enough cpu cores and memory
