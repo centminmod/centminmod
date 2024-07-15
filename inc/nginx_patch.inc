@@ -7,12 +7,15 @@ openresty_apply_patch_if_needed() {
     if patch -p1 --dry-run < "$CUR_DIR/patches/luanginx/nginx-1.27.0/$patch_file" > /dev/null 2>&1; then
       # If the dry-run is successful, apply the patch
       if patch -p1 < "$CUR_DIR/patches/luanginx/nginx-1.27.0/$patch_file"; then
-        echo "$patch_name patch applied successfully."
+        echo "$patch_name patch applied successfully with $patch_file."
+        echo
       else
-        echo "Failed to apply $patch_name patch."
+        echo "Failed to apply $patch_name patch with $patch_file."
+        echo
       fi
     else
-      echo "$patch_name patch has already been applied or cannot be applied."
+      echo "$patch_name $patch_file patch has already been applied or cannot be applied."
+      echo
     fi
   fi
 }
