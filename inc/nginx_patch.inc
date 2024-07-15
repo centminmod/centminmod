@@ -887,7 +887,7 @@ luanginx_patch() {
   ngx_luastream_onetwoseven_patch
   # openresty nginx 1.27.0+ patches
   no_Werror_patch
-  always_enable_cc_feature_tests_patch
+  #always_enable_cc_feature_tests_patch
   intercept_error_log_patch
   log_escape_non_ascii_patch
   larger_max_error_str_patch
