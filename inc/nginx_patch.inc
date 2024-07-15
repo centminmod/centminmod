@@ -855,7 +855,7 @@ aws_lc_patch_make() {
   fi
 }
 
-# http2_shutdown_fix_patch() {
+http2_shutdown_fix_patch() {
   # backport freenginx fork's HTTP/2 shutdown bug fix
   # https://freenginx.org/hg/nginx/rev/4a0cd107c0f1
   if [[ "$NGINX_INSTALL" = [yY] && "$FREENGINX_INSTALL" != [yY] ]] && [[ "$ngver" != 'angie' ]] && [[ "$FREENGINX_BACKPORT_PATCHES" = [yY] && -f "$CUR_DIR/patches/nginx/http2-shutdown-fix.patch" && "$DETECT_NGXVER" -ge '1025000' ]]; then
