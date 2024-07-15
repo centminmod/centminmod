@@ -1,3 +1,170 @@
+openresty_apply_patch_if_needed() {
+  local patch_file="$1"
+  local patch_name="$2"
+
+  if [[ "$DETECT_NGXVER" -ge '1027000' && "$DETECT_NGXVER" -lt '1028000' && "$NGINX_OPENRESTY" =~ [yY] && "$ORESTY_LUANGINX" =~ [yY] ]]; then
+    # Perform a dry-run to check if the patch can be applied
+    if patch -p1 --dry-run < "$CUR_DIR/patches/luanginx/nginx-1.27.0/$patch_file" > /dev/null 2>&1; then
+      # If the dry-run is successful, apply the patch
+      if patch -p1 < "$CUR_DIR/patches/luanginx/nginx-1.27.0/$patch_file"; then
+        echo "$patch_name patch applied successfully."
+      else
+        echo "Failed to apply $patch_name patch."
+      fi
+    else
+      echo "$patch_name patch has already been applied or cannot be applied."
+    fi
+  fi
+}
+
+no_Werror_patch() {
+  openresty_apply_patch_if_needed "nginx-1.27.0-no_Werror.patch" "No Werror"
+}
+
+always_enable_cc_feature_tests_patch() {
+  openresty_apply_patch_if_needed "nginx-1.27.0-always_enable_cc_feature_tests.patch" "Always Enable CC Feature Tests"
+}
+
+intercept_error_log_patch() {
+  openresty_apply_patch_if_needed "nginx-1.27.0-intercept_error_log.patch" "Intercept Error Log"
+}
+
+log_escape_non_ascii_patch() {
+  openresty_apply_patch_if_needed "nginx-1.27.0-log_escape_non_ascii.patch" "Log Escape Non ASCII"
+}
+
+larger_max_error_str_patch() {
+  openresty_apply_patch_if_needed "nginx-1.27.0-larger_max_error_str.patch" "Larger Max Error Str"
+}
+
+# fails
+no_pool_patch() {
+  openresty_apply_patch_if_needed "nginx-1.27.0-no_pool.patch" "No Pool"
+}
+
+daemon_destroy_pool_patch() {
+  openresty_apply_patch_if_needed "nginx-1.27.0-daemon_destroy_pool.patch" "Daemon Destroy Pool"
+}
+
+init_cycle_pool_release_patch() {
+  openresty_apply_patch_if_needed "nginx-1.27.0-init_cycle_pool_release.patch" "Init Cycle Pool Release"
+}
+
+cache_manager_exit_patch() {
+  openresty_apply_patch_if_needed "nginx-1.27.0-cache_manager_exit.patch" "Cache Manager Exit"
+}
+
+privileged_agent_process_patch() {
+  openresty_apply_patch_if_needed "nginx-1.27.0-privileged_agent_process.patch" "Privileged Agent Process"
+}
+
+privileged_agent_process_connections_patch() {
+  openresty_apply_patch_if_needed "nginx-1.27.0-privileged_agent_process_connections.patch" "Privileged Agent Process Connections"
+}
+
+privileged_agent_process_thread_pool_patch() {
+  openresty_apply_patch_if_needed "nginx-1.27.0-privileged_agent_process_thread_pool.patch" "Privileged Agent Process Thread Pool"
+}
+
+socket_cloexec_patch() {
+  openresty_apply_patch_if_needed "nginx-1.27.0-socket_cloexec.patch" "Socket CLOEXEC"
+}
+
+reuseport_close_unused_fds_patch() {
+  openresty_apply_patch_if_needed "nginx-1.27.0-reuseport_close_unused_fds.patch" "Reuseport Close Unused FDs"
+}
+
+
+# fails openssl 1.1.1 support only for OpenResty
+# openssl111f_cert_cb_yield_patch() {
+#   openresty_apply_patch_if_needed "openssl-1.1.1f-sess_set_get_cb_yield.patch" "OpenSSL 1.1.1f Cert CB Yield"
+# }
+
+#openssl111f_cert_cb_yield_patch# fails openssl 1.1.1 support only for OpenResty
+
+ssl_cert_cb_yield_patch() {
+  openresty_apply_patch_if_needed "nginx-1.27.0-ssl_cert_cb_yield.patch" "SSL Cert CB Yield"
+}
+
+# fails openssl 1.1.1 support only for OpenResty
+ssl_client_hello_cb_yield_patch() {
+  openresty_apply_patch_if_needed "nginx-1.27.0-ssl_client_hello_cb_yield.patch" "SSL Client Hello CB Yield"
+}
+
+#ssl_sess_cb_yield_patch() {
+  openresty_apply_patch_if_needed "nginx-1.27.0-ssl_sess_cb_yield.patch" "SSL Session CB Yield"
+}
+
+safe_resolver_ipv6_option_patch() {
+  openresty_apply_patch_if_needed "nginx-1.27.0-safe_resolver_ipv6_option.patch" "Safe Resolver IPv6 Option"
+}
+
+resolver_conf_parsing_patch() {
+  openresty_apply_patch_if_needed "nginx-1.27.0-resolver_conf_parsing.patch" "Resolver Conf Parsing"
+}
+
+hash_overflow_patch() {
+  openresty_apply_patch_if_needed "nginx-1.27.0-hash_overflow.patch" "Hash Overflow"
+}
+
+upstream_timeout_fields_patch() {
+  openresty_apply_patch_if_needed "nginx-1.27.0-upstream_timeout_fields.patch" "Upstream Timeout Fields"
+}
+
+balancer_pool_max_retry_patch() {
+  openresty_apply_patch_if_needed "nginx-1.27.0-balancer_pool_max_retry.patch" "Balancer Pool Max Retry"
+}
+
+balancer_status_code_patch() {
+  openresty_apply_patch_if_needed "nginx-1.27.0-balancer_status_code.patch" "Balancer Status Code"
+}
+
+upstream_pipelining_patch() {
+  openresty_apply_patch_if_needed "nginx-1.27.0-upstream_pipelining.patch" "Upstream Pipelining"
+}
+
+proxy_host_port_vars_patch() {
+  openresty_apply_patch_if_needed "nginx-1.27.0-proxy_host_port_vars.patch" "Proxy Host Port Vars"
+}
+
+stream_balancer_export_patch() {
+  openresty_apply_patch_if_needed "nginx-1.27.0-stream_balancer_export.patch" "Stream Balancer Export"
+}
+
+stream_proxy_get_next_upstream_tries_patch() {
+  openresty_apply_patch_if_needed "nginx-1.27.0-stream_proxy_get_next_upstream_tries.patch" "Stream Proxy Get Next Upstream Tries"
+}
+
+stream_proxy_timeout_fields_patch() {
+  openresty_apply_patch_if_needed "nginx-1.27.0-stream_proxy_timeout_fields.patch" "Stream Proxy Timeout Fields"
+}
+
+stream_ssl_preread_no_skip_patch() {
+  openresty_apply_patch_if_needed "nginx-1.27.0-stream_ssl_preread_no_skip.patch" "Stream SSL Preread No Skip"
+}
+
+delayed_posted_events_patch() {
+  openresty_apply_patch_if_needed "nginx-1.27.0-delayed_posted_events.patch" "Delayed Posted Events"
+}
+
+setting_args_invalidates_uri_patch() {
+  openresty_apply_patch_if_needed "nginx-1.27.0-setting_args_invalidates_uri.patch" "Setting Args Invalidates URI"
+}
+
+single_process_graceful_exit_patch() {
+  openresty_apply_patch_if_needed "nginx-1.27.0-single_process_graceful_exit.patch" "Single Process Graceful Exit"
+}
+
+builtin_error_page_footer_patch() {
+  if [[ "$NGINX_ERROR_PAGE_FOOTER" = [yY] ]]; then
+    openresty_apply_patch_if_needed "nginx-1.27.0-builtin_error_page_footer.patch" "Builtin Error Page Footer"
+  fi
+}
+
+no_error_pages_patch() {
+  openresty_apply_patch_if_needed "nginx-1.27.0-no_error_pages.patch" "No Error Pages"
+}
+
 ngx_gzip_multi_status_patch() {
   if [[ "$NGINX_GZIP_MULTI_STATUS" = [yY] && "$DETECT_NGXVER" -ge '1025003' ]]; then
     cecho "nginx-gzip-207-status.patch" $boldyellow
@@ -715,6 +882,42 @@ luanginx_patch() {
   fi
   ngx_luaonetwothree_patch
   ngx_luastream_onetwoseven_patch
+  # openresty nginx 1.27.0+ patches
+  no_Werror_patch
+  always_enable_cc_feature_tests_patch
+  intercept_error_log_patch
+  log_escape_non_ascii_patch
+  larger_max_error_str_patch
+  #no_pool_patch
+  daemon_destroy_pool_patch
+  init_cycle_pool_release_patch
+  cache_manager_exit_patch
+  privileged_agent_process_patch
+  privileged_agent_process_connections_patch
+  privileged_agent_process_thread_pool_patch
+  socket_cloexec_patch
+  reuseport_close_unused_fds_patch
+  #openssl111f_cert_cb_yield_patch
+  #ssl_cert_cb_yield_patch
+  #ssl_client_hello_cb_yield_patch
+  #ssl_sess_cb_yield_patch
+  safe_resolver_ipv6_option_patch
+  resolver_conf_parsing_patch
+  hash_overflow_patch
+  upstream_timeout_fields_patch
+  balancer_pool_max_retry_patch
+  balancer_status_code_patch
+  upstream_pipelining_patch
+  proxy_host_port_vars_patch
+  stream_balancer_export_patch
+  stream_proxy_get_next_upstream_tries_patch
+  stream_proxy_timeout_fields_patch
+  stream_ssl_preread_no_skip_patch
+  delayed_posted_events_patch
+  setting_args_invalidates_uri_patch
+  single_process_graceful_exit_patch
+  builtin_error_page_footer_patch
+  no_error_pages_patch
   } 2>&1 | tee -a "${CENTMINLOGDIR}/patch_patchnginx_${DT}.log"
 }
 
