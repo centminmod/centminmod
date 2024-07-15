@@ -80,8 +80,8 @@ reuseport_close_unused_fds_patch() {
 #   openresty_apply_patch_if_needed "openssl-1.1.1f-sess_set_get_cb_yield.patch" "OpenSSL 1.1.1f Cert CB Yield"
 # }
 
-#openssl111f_cert_cb_yield_patch# fails openssl 1.1.1 support only for OpenResty
-
+#openssl111f_cert_cb_yield_patch
+# fails openssl 1.1.1 support only for OpenResty
 ssl_cert_cb_yield_patch() {
   openresty_apply_patch_if_needed "nginx-1.27.0-ssl_cert_cb_yield.patch" "SSL Cert CB Yield"
 }
@@ -91,7 +91,7 @@ ssl_client_hello_cb_yield_patch() {
   openresty_apply_patch_if_needed "nginx-1.27.0-ssl_client_hello_cb_yield.patch" "SSL Client Hello CB Yield"
 }
 
-#ssl_sess_cb_yield_patch() {
+ssl_sess_cb_yield_patch() {
   openresty_apply_patch_if_needed "nginx-1.27.0-ssl_sess_cb_yield.patch" "SSL Session CB Yield"
 }
 
