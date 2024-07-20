@@ -517,7 +517,8 @@ sar_mem_pc() {
 
 #####################################################
 top_info() {
-    cron=$1
+    cron="$1"
+    top_load=" $2"
     SYSTYPE=$(virt-what | head -n1)
     CENTMINMOD_INFOVER=$(head -n1 /etc/centminmod-release)
     CCACHE_INFOVER=$(ccache -V | head -n1)
@@ -584,9 +585,9 @@ top_info() {
     # CMINFO_IPINFO=$(curl -${ipv_forceopt}s${CURL_TIMEOUTS} https://ipinfo.io/geo 2>&1 | sed -e 's|[{}]||' -e 's/\(^"\|"\)//g' -e 's|,||' | egrep -vi 'ip:|phone|postal|loc|readme')
     # echo "$CMINFO_IPINFO" | grep -iv 'readme'
     if [[ "$VPS_GEOIPCHECK_V3" = [yY] ]]; then
-      CMINFO_IPINFO=$(curl -${ipv_forceopt}s${CURL_TIMEOUTS} -A "$CURL_AGENT cmminfo IP CHECK" https://geoip.centminmod.com/v3 | jq -r '"  city: \(.city)\n  region: \(.region)\n  country: \(.country)\n  org: \(.data.asn) \(.data.description_short)\n  timezone \(.timezone)"')
+      CMINFO_IPINFO=$(curl -${ipv_forceopt}s${CURL_TIMEOUTS} -A "$CURL_AGENT cmminfo IP CHECK${top_load} ${CPUCORES} $CURL_CPUMODEL $CURL_CPUSPEED $NGINX_INFOVER $PHP_INFOVER $MARIADB_INFOVER" https://geoip.centminmod.com/v3 | jq -r '"  city: \(.city)\n  region: \(.region)\n  country: \(.country)\n  org: \(.data.asn) \(.data.description_short)\n  timezone \(.timezone)"')
     elif [[ "$VPS_GEOIPCHECK_V4" = [yY] ]]; then
-      CMINFO_IPINFO=$(curl -${ipv_forceopt}s${CURL_TIMEOUTS} -A "$CURL_AGENT cmminfo IP CHECK" https://geoip.centminmod.com/v4 | jq -r '"  city: \(.city)\n  region: \(.region)\n  country: \(.country)\n  org: \(.asn) \(.asOrganization)\n  timezone \(.timezone)"')
+      CMINFO_IPINFO=$(curl -${ipv_forceopt}s${CURL_TIMEOUTS} -A "$CURL_AGENT cmminfo IP CHECK${top_load} ${CPUCORES} $CURL_CPUMODEL $CURL_CPUSPEED $NGINX_INFOVER $PHP_INFOVER $MARIADB_INFOVER" https://geoip.centminmod.com/v4 | jq -r '"  city: \(.city)\n  region: \(.region)\n  country: \(.country)\n  org: \(.asn) \(.asOrganization)\n  timezone \(.timezone)"')
     fi
     echo "$CMINFO_IPINFO"
     # echo "  ASN: $(curl -${ipv_forceopt}s${CURL_TIMEOUTS} https://ipinfo.io/org 2>&1 | grep -iv 'readme')"
@@ -599,7 +600,7 @@ top_info() {
     echo "$CPUCACHE"
     echo ""
     
-    if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_EIGHT" = '8' || "$CENTOS_NINE" = '9' ]]; then
+    if [[ "$CENTOS_SEVEN" -eq '7' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]]; then
         echo -ne " System Up Since: \t"; uptime -s
         echo -ne " System Uptime: \t"; uptime -p
     else
@@ -632,7 +633,7 @@ top_info() {
     echo -e " Memcached Server: \t$MEMCACHEDSERVER_INFOVER"
     echo -e " Redis Server: \t$REDIS_INFOVER"
     echo -e " NSD Version: \t\t$NSD_INFOVER"
-    echo -e " Siege Version: \t$SIEGE_INFOVER"
+    # echo -e " Siege Version: \t$SIEGE_INFOVER"
     if [ -f /usr/local/sbin/maldet ]; then
         echo -e " Maldet Version: \t$MALDET_INFOVER"
     else
@@ -834,6 +835,7 @@ top_info() {
 }
 
 netstat_info() {
+    netstat_load=$1
     sshclient=$(echo $SSH_CLIENT | awk '{print $1}')
     nic=$(ifconfig -s 2>&1 | egrep -v '^Iface|^lo|^gre' | awk '{print $1}')
     bandwidth_avg=$(sar -n DEV 1 1)
@@ -1053,9 +1055,9 @@ echo "------------------------------------------------------------------"
 echo "Server Location Info"
 # echo
 if [[ "$VPS_GEOIPCHECK_V3" = [yY] ]]; then
-  CMINFO_IPINFO=$(curl -${ipv_forceopt}s${CURL_TIMEOUTS} -A "$CURL_AGENT cmminfo IP CHECK" https://geoip.centminmod.com/v3 | jq -r '"  city: \(.city)\n  region: \(.region)\n  country: \(.country)\n  org: \(.data.asn) \(.data.description_short)\n  timezone \(.timezone)"')
+  CMINFO_IPINFO=$(curl -${ipv_forceopt}s${CURL_TIMEOUTS} -A "$CURL_AGENT cmminfo IP CHECK ${CPUCORES} $CURL_CPUMODEL $$CURL_CPUSPEED $NGINX_INFOVER $PHP_INFOVER $MARIADB_INFOVER" https://geoip.centminmod.com/v3 | jq -r '"  city: \(.city)\n  region: \(.region)\n  country: \(.country)\n  org: \(.data.asn) \(.data.description_short)\n  timezone \(.timezone)"')
 elif [[ "$VPS_GEOIPCHECK_V4" = [yY] ]]; then
-  CMINFO_IPINFO=$(curl -${ipv_forceopt}s${CURL_TIMEOUTS} -A "$CURL_AGENT cmminfo IP CHECK" https://geoip.centminmod.com/v4 | jq -r '"  city: \(.city)\n  region: \(.region)\n  country: \(.country)\n  org: \(.asn) \(.asOrganization)\n  timezone \(.timezone)"')
+  CMINFO_IPINFO=$(curl -${ipv_forceopt}s${CURL_TIMEOUTS} -A "$CURL_AGENT cmminfo IP CHECK ${CPUCORES} $CURL_CPUMODEL $$CURL_CPUSPEED $NGINX_INFOVER $PHP_INFOVER $MARIADB_INFOVER" https://geoip.centminmod.com/v4 | jq -r '"  city: \(.city)\n  region: \(.region)\n  country: \(.country)\n  org: \(.asn) \(.asOrganization)\n  timezone \(.timezone)"')
 fi
 echo "$CMINFO_IPINFO"
 
@@ -1067,7 +1069,7 @@ echo "$CPUMODEL"
 echo "$CPUCACHE"
 echo ""
 
-if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_EIGHT" = '8' || "$CENTOS_NINE" = '9' ]]; then
+if [[ "$CENTOS_SEVEN" -eq '7' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]]; then
     echo -ne " System Up Since: \t"; uptime -s
     echo -ne " System Uptime: \t"; uptime -p
 else
@@ -1100,7 +1102,7 @@ echo -e " CSF Firewall: \t\t$CSF_INFOVER"
 echo -e " Memcached Server: \t$MEMCACHEDSERVER_INFOVER"
 echo -e " Redis Server: \t$REDIS_INFOVER"
 echo -e " NSD Version: \t\t$NSD_INFOVER"
-echo -e " Siege Version: \t$SIEGE_INFOVER"
+# echo -e " Siege Version: \t$SIEGE_INFOVER"
 if [ -f /usr/local/sbin/maldet ]; then
     echo -e " Maldet Version: \t$MALDET_INFOVER"
 else
@@ -1338,21 +1340,21 @@ case "$1" in
     setupdate
         ;;
     netstat)
-    netstat_info
+    netstat_info "$2"
         ;;
     top)
     {
-    top_info
+    top_info nocron "$2"
     } 2>&1 | tee "${CENTMINLOGDIR}/cminfo-top-${DT}.log"
         ;;
     top-cron)
     {
-    top_info cron
+    top_info cron "$2"
     } 2>&1 | tee "${CENTMINLOGDIR}/cminfo-top-cron-${DT}.log"
         ;;
     sar-json)
     {
-    sar_json $2
+    sar_json "$2"
     } 2>&1 | tee "${CENTMINLOGDIR}/cminfo-top-sar-json-${DT}.log"
         ;;
     sar-cpu-interval)
@@ -1383,7 +1385,7 @@ case "$1" in
         fpmstats
     fi
     echo
-    pidstat_php nocron $2
+    pidstat_php nocron "$2"
     } 2>&1 | tee "${CENTMINLOGDIR}/cminfo-top-php-stats-${DT}.log"
         ;;
     phpstats-cron)
@@ -1394,7 +1396,7 @@ case "$1" in
         fpmstats
     fi
     echo
-    pidstat_php cron $2
+    pidstat_php cron "$2"
     } 2>&1 | tee "${CENTMINLOGDIR}/cminfo-top-php-stats-cron-${DT}.log"
         ;;
     listlogs)

@@ -4115,7 +4115,7 @@ chmod 0700 /usr/bin/cminfo_updater
 # insert itself into cronjob for auto updates
 if [ ! -f /usr/bin/crontab ]; then
   time $YUMDNFBIN -y -q install cronie${DISABLEREPO_DNF}
-    if [[ "$CENTOS_SEVEN" != '7' ]]; then
+    if [[ "$CENTOS_SEVEN" -eq '7' ]]; then
       service crond restart
       chkconfig crond on
     else
@@ -4126,7 +4126,7 @@ fi
 
 if [ ! -f /usr/bin/sar ]; then
   time $YUMDNFBIN -y -q install sysstat${DISABLEREPO_DNF}
-    if [[ "$CENTOS_SEVEN" != '7' ]]; then
+    if [[ "$CENTOS_SEVEN" -eq '7' ]]; then
       service sysstat restart
       chkconfig sysstat on
     else

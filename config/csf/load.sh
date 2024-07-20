@@ -35,8 +35,8 @@ fi
 
 if [ -f /usr/bin/cminfo ]; then
 >/etc/csf/csf.report
-/usr/bin/cminfo top >> /etc/csf/csf.report
-/usr/bin/cminfo netstat >> /etc/csf/csf.report
+/usr/bin/cminfo top load >> /etc/csf/csf.report
+/usr/bin/cminfo netstat load >> /etc/csf/csf.report
 CHECK_LFEMAIL=$(awk -F '=' '/LF_ALERT_TO/ {print $2}' /etc/csf/csf.conf | sed -e 's|\"||g' -e 's|\s||')
 
 if [[ "$CHECK_LFEMAIL" && "$EMAILNOTIFY_SES" = [yY] && "$EMAILNOTIFY_SES_FROM_EMAIL" && "$EMAILNOTIFY_SES_TO_EMAIL" && -f /usr/local/src/centminmod/tools/emailnotify.sh ]]; then
