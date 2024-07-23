@@ -14,7 +14,7 @@ ARCH_CHECK="$(uname -m)"
 ###############################################################
 # variables
 ###############################################################
-ACMEVER='1.0.93'
+ACMEVER='1.0.94'
 DT=$(date +"%d%m%y-%H%M%S")
 ACMEDEBUG='n'
 ACMEDEBUG_LOG='y'
@@ -87,9 +87,9 @@ CF_EMAIL=''
 CF_Token=''
 CF_Account_ID=''
 ###############################################################
-UNATTENDED='n'
+UNATTENDED='y'
 NOTICE='n'
-CHECKVERSION='y'
+CHECKVERSION='n'
 SCRIPTCHECKURL='https://acmetool.centminmod.com'
 ###############################################################
 # Settings for centmin.sh menu option 2 and option 22 for
