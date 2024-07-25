@@ -1469,7 +1469,7 @@ sed -i 's|^#innodb_buffer_pool_load_at_startup|innodb_buffer_pool_load_at_startu
 
 echo ""
 
-# yum -q -y install perl-DBD-MySQL
+perdbiinstall
 
 echo ""
 
