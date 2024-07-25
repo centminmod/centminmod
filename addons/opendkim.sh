@@ -256,11 +256,12 @@ fi
 fi
 
 if [[ "$(rpm -qa opendkim | grep opendkim >/dev/null 2>&1; echo $?)" = '0' ]]; then
-hash -r
-service opendkim restart >/dev/null 2>&1
-chkconfig opendkim on >/dev/null 2>&1
+  hash -r
+  systemctl enable opendkim >/dev/null 2>&1
+  systemctl start opendkim >/dev/null 2>&1
+  # systemctl status opendkim --no-pager
 fi
-service postfix restart >/dev/null 2>&1
+systemctl restart postfix >/dev/null 2>&1
 
 fi # if /etc/opendkim.conf exists
 }
