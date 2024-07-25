@@ -1,3 +1,14 @@
+opendkim_check_enabled() {
+  if [[ -f "$(find /etc/opendkim/keys -name "default")" && "$(systemctl is-enabled opendkim)" = 'disabled' ]] && [[ "$(rpm -qa opendkim | grep opendkim >/dev/null 2>&1; echo $?)" = '0' ]]; then
+    if [[ "$(systemctl is-active opendkim)" = 'active' ]]; then
+      systemctl enable opendkim >/dev/null 2>&1
+    elif [[ "$(systemctl is-active opendkim)" = 'inactive' ]]; then
+      systemctl enable opendkim >/dev/null 2>&1
+      systemctl start opendkim >/dev/null 2>&1
+    fi
+  fi
+}
+
 switch_nginx_uid() {
     local current_uid
     local current_gid
@@ -4083,6 +4094,7 @@ if [[ "$INITIALINSTALL" != [yY] ]]; then
     fix_remi_repo_gpgcheck
   fi
   switch_nginx_uid
+  opendkim_check_enabled
 fi
 
 }
