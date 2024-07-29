@@ -1,5 +1,5 @@
 #!/bin/bash
-VER=0.5
+VER=0.6
 DT=$(date +"%d%m%y-%H%M%S")
 SSH_LOGGING='n'
 remote_port=22; remote_user="root"; remote_server=""
@@ -59,7 +59,7 @@ if [ "$os_version" -eq 7 ] || [ "$os_version" -eq 8 ] || [ "$os_version" -eq 9 ]
   for i in "${!commands[@]}"; do
     command -v "${commands[$i]}" >/dev/null 2>&1 || {
       echo "Installing package for ${commands[$i]}..."
-      sudo yum install -y "${packages[$i]}"
+      sudo yum install -y "${packages[$i]}" --enablerepo=epel
     }
   done
 else
