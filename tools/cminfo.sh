@@ -1327,6 +1327,12 @@ inspect_nginx_patch_log() {
       echo "No patch_patchnginx log file found."
   fi
 }
+
+ssl_dates() {
+  if [ -f /usr/local/src/centminmod/addons/acmetool.sh ]; then
+    /usr/local/src/centminmod/addons/acmetool.sh checkdates
+  fi
+}
 #########
 if [[ -z "$1" ]]; then
     infooutput
@@ -1338,6 +1344,11 @@ case "$1" in
         ;;
     update)
     setupdate
+        ;;
+    ssldates)
+    {
+    ssl_dates
+    } 2>&1 | tee "${CENTMINLOGDIR}/cminfo-ssldates-${DT}.log"
         ;;
     netstat)
     netstat_info "$2"
@@ -1421,6 +1432,6 @@ case "$1" in
       service_info_json "$2"
     ;;
     *)
-    echo "$0 {info|update|netstat|top|top-cron|sar-json|sar-cpu-interval|sar-cpu|sar-mem|phpmem|phpstats|phpstats-cron|listlogs|debug-menuexit|versions|checkver|service-info|nginx-patch-log|php-patch-log}"
+    echo "$0 {info|update|ssldates|netstat|top|top-cron|sar-json|sar-cpu-interval|sar-cpu|sar-mem|phpmem|phpstats|phpstats-cron|listlogs|debug-menuexit|versions|checkver|service-info|nginx-patch-log|php-patch-log}"
         ;;
 esac
