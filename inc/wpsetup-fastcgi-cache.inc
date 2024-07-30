@@ -180,12 +180,18 @@ echo "[ LETSENCRYPT_DETECT is not enabled ]"
 echo "Ignore this message if you do not want HTTPS based web site otherwise"
 echo "read below carefully."
 echo
-echo "Free letsencrypt SSL certificates integration is in beta testing if"
+echo "Free letsencrypt SSL certificates integration if"
 echo "you want to obtain free letsencrypt SSL certificate for HTTPS site,"
 echo "you will need to manually enable LETSENCRYPT_DETECT='y' outlined"
-echo "at https://centminmod.com/acmetool so exit this vhost routine first"
-echo "set LETSENCRYPT_DETECT='y' and update domain DNS A record first"
-echo "then re-run vhost site creation menu option"
+echo "at https://centminmod.com/letsencrypt-freessl.html so exit this "
+echo "routine first and set LETSENCRYPT_DETECT='y' and update domain "
+echo "DNS A record first, then re-run vhost site creation menu option"
+echo
+echo "Cloudflare users: if intended domain is behind Cloudflare,"
+echo
+echo "It's highly recommended to enable Cloudflare DNS API for Letsencrypt"
+echo "domain verification for more troublefree verifications"
+echo "Instructions at https://centminmod.com/letsencrypt-freessl.html#dns"
 cecho "---------------------------------------------------------------" $boldyellow
 fi
 # check mysql server is running
