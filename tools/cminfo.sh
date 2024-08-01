@@ -218,7 +218,11 @@ get_mariadb_version() {
 set_mariadb_client_commands() {
     local version=$(get_mariadb_version)
     
-    if (( $(echo "$version <= 10.11" | bc -l) )); then
+    # Convert version to a comparable integer (e.g., 10.3 becomes 1003)
+    version_number=$(echo "$version" | awk -F. '{printf "%d%02d\n", $1, $2}')
+
+    if (( version_number <= 1011 )); then
+        # For versions less than or equal to 10.11, use old MySQL names
         ALIAS_MYSQLACCESS="mysqlaccess"
         ALIAS_MYSQLADMIN="mysqladmin"
         ALIAS_MYSQLBINLOG="mysqlbinlog"
@@ -245,6 +249,7 @@ set_mariadb_client_commands() {
         ALIAS_MYSQLD="mysqld"
         ALIAS_MYSQLDSAFE="mysqld_safe"
     else
+        # For versions greater than 10.11, use new MariaDB names
         ALIAS_MYSQLACCESS="mariadb-access"
         ALIAS_MYSQLADMIN="mariadb-admin"
         ALIAS_MYSQLBINLOG="mariadb-binlog"
