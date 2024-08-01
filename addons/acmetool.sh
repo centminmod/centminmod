@@ -14,7 +14,7 @@ ARCH_CHECK="$(uname -m)"
 ###############################################################
 # variables
 ###############################################################
-ACMEVER='1.0.95'
+ACMEVER='1.0.96'
 DT=$(date +"%d%m%y-%H%M%S")
 ACMEDEBUG='n'
 ACMEDEBUG_LOG='y'
@@ -661,14 +661,14 @@ getuseragent() {
   _dnsagent=$1
   # build Centmin Mod's identifying letsencrypt user agent
   # --user-agent=
-  if [[ "$CENTOS_SIX" = '6' ]]; then
+  if [[ "$CENTOS_SIX" -eq '6' ]]; then
     LE_OSVER=centos6
-  elif [[ "$CENTOS_SEVEN" = '7' ]]; then
+  elif [[ "$CENTOS_SEVEN" -eq '7' ]]; then
     LE_OSVER=centos7
-  elif [[ "$CENTOS_EIGHT" = '8' ]]; then
-    LE_OSVER=centos8
-  elif [[ "$CENTOS_NINE" = '9' ]]; then
-    LE_OSVER=centos9
+  elif [[ "$CENTOS_EIGHT" -eq '8' ]]; then
+    LE_OSVER=el8
+  elif [[ "$CENTOS_NINE" -eq '9' ]]; then
+    LE_OSVER=el9
   fi
   if [[ "$_dnsagent" != 'dns' ]]; then
     LE_USERAGENT="centminmod-$LE_OSVER-acmesh-webroot"
