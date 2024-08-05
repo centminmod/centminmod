@@ -461,6 +461,11 @@ EOF
       sed -i 's/fastcgi_param GEOIP_/#fastcgi_param GEOIP_/' /usr/local/nginx/conf/php.conf
     fi
   fi
+  if [[ "$INITIALINSTALL" = [yY] && "$NGINX_GEOIPTWOLITE" = [yY] ]]; then
+    if [ -f /usr/local/nginx/conf/geoip.conf ]; then
+      sed -i 's|^#include /usr/local/nginx/conf/geoip2.conf;|include /usr/local/nginx/conf/geoip2.conf;|' /usr/local/nginx/conf/geoip.conf
+    fi
+  fi
 }
 
 ######################################################
