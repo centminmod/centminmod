@@ -16,9 +16,9 @@ Options:
   -h   remote_server     Remote server SSH hostname/IP address
   -m   tunnel_method     Tunnel method: 'nc' or 'socat' (default: nc)
   -b   buffer_size       Buffer size for socat (in bytes, e.g., 262144 for 256 KB)
-  -l  listen_port       nc or socat listen port (default: 12345)
-  -s source_directory Source backup directory
-  -r remote_directory Remote (destination) backup directory
+  -l   listen_port       nc or socat listen port (default: 12345)
+  -s   source_directory  Source backup directory
+  -r   remote_directory  Remote (destination) backup directory
   -k   private_key       Path to the SSH private key
 
 Example:
@@ -38,6 +38,20 @@ check_remote_port_available() {
   else
     return 1
   fi
+}
+
+get_available_port() {
+  local remote_host="$1"
+  local port
+  for port in $(shuf -i 1024-65535 -n 100); do
+    check_remote_port_available "$remote_host" "$port"
+    if [ $? -eq 0 ]; then
+      echo "$port"
+      return
+    fi
+  done
+  echo "No available port found" >&2
+  exit 1
 }
 
 if [ "$#" -eq 0 ]; then
@@ -109,6 +123,12 @@ if ! [[ "$buffer_size" =~ ^[1-9][0-9]*$ ]]; then
   exit 1
 fi
 
+# Check if default listen port is available, otherwise find a dynamic port
+if ! check_remote_port_available "$remote_server" "$listen_port"; then
+  listen_port=$(get_available_port "$remote_server")
+  echo "Default port 12345 is in use. Using dynamic listen port: $listen_port"
+fi
+
 if ! [[ "$listen_port" =~ ^[1-9][0-9]*$ ]] || [ "$listen_port" -lt 1 ] || [ "$listen_port" -gt 65535 ]; then
   echo "Error: Invalid listen port. Listen port must be between 1 and 65535."
   exit 1
@@ -123,22 +143,7 @@ else
 fi
 [ -n "$private_key" ] && ssh_cmd="$ssh_cmd -i $private_key"
 
-# if [[ "$remote_user" && "$remote_server" ]]; then
-#   remote_dir_check=$($ssh_cmd "$remote_user@$remote_server" 'if [ -d "'"$remote_backupdir"'" ]; then echo "1"; else echo "0"; fi')
-#   if [ "$remote_dir_check" == "0" ]; then
-#     echo "Error: Remote directory does not exist"
-#     exit 1
-#   fi
-# fi
-
 if [[ "$remote_user" && "$remote_server" ]]; then
-  # Check if the remote listen port is available
-  check_remote_port_available "${remote_server}" "${listen_port}"
-  port_check_result=$?
-  if [ "$port_check_result" -eq 1 ]; then
-    echo "Error: The remote listen port ${listen_port} is already in use."
-    exit 1
-  fi
   # Start netcat or socat listener on remote server
   if [ "${netcat}" == "y" ]; then
     listener_cmd="mkdir -p ${remote_backupdir} && nc -l ${listen_port} | zstd -d | tar -xf - -C ${remote_backupdir}"
