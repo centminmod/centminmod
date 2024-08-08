@@ -30,7 +30,7 @@ DT=$(date +"%d%m%y-%H%M%S")
 branchname='140.00beta01'
 SCRIPT_MAJORVER='140'
 SCRIPT_MINORVER='00'
-SCRIPT_INCREMENTVER='090'
+SCRIPT_INCREMENTVER='091'
 SCRIPT_VERSIONSHORT="${branchname}"
 SCRIPT_VERSION="${SCRIPT_VERSIONSHORT}.b${SCRIPT_INCREMENTVER}"
 SCRIPT_DATE='01/07/24'
@@ -1171,7 +1171,7 @@ SENDMAIL_INSTALL='n'         # Install Sendmail (and mailx) set to y and POSTFIX
 POSTFIX_INSTALL=y            # Install Postfix (and mailx) set to n and SENDMAIL_INSTALL=y for sendmail
 # Nginx
 NGINX_VERSION='1.27.0'             # Use this version of Nginx
-NGINX_ANGIE_VERSION='Angie-1.6.0'
+NGINX_ANGIE_VERSION='Angie-1.6.1'
 FREENGINX_VERSION='1.27.2'     # Maxim's Freenginx fork https://freenginx.org/en/download.html
 FREENGINX_INSTALL='n'          # Use Freenginx fork instead of official Nginx
 FREENGINX_BACKPORT_PATCHES='n' # Backport Freenginx fixes to official Nginx
