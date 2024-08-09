@@ -1016,7 +1016,7 @@ fi
           echo 'https://github.com/centminmod/centminmod-ngx-pagespeed/raw/master/downloads/1.13.35.2-x64.tar.gz' > PSOL_BINARY_URL
         fi
         psol_url=$(scripts/format_binary_url.sh PSOL_BINARY_URL)
-        wget -c $psol_url
+        wget $psol_url
         ERROR=$?
         if [[ "$ERROR" != '0' ]]; then
           cecho "Error: $psol_url download failed." $boldgreen
@@ -1027,7 +1027,7 @@ fi
         tar xzf "$(basename ${psol_url})"
       elif [[ "$PS_BRANCHVER" -ge '10012' ]]; then
         psol_url=$(scripts/format_binary_url.sh PSOL_BINARY_URL)
-        wget -c $psol_url
+        wget $psol_url
         ERROR=$?
         if [[ "$ERROR" != '0' ]]; then
           cecho "Error: $psol_url download failed." $boldgreen
@@ -1165,8 +1165,8 @@ echo ""
     if [[ -s "${NGX_ACCESSKEYLINKFILE}" && "$(tar -tzf ${NGX_ACCESSKEYLINKFILE} >/dev/null 2>&1; echo $?)" -eq '0' ]]; then
         cecho "Nginx-accesskey 2.0.3 Archive found, skipping download..." $boldgreen
     else
-        echo "wget -c ${NGX_ACCESSKEYLINK} -O ${NGX_ACCESSKEYLINKFILE} --tries=3"
-        wget -c "${NGX_ACCESSKEYLINK}" -O "${NGX_ACCESSKEYLINKFILE}" --tries=3
+        echo "wget ${NGX_ACCESSKEYLINK} -O ${NGX_ACCESSKEYLINKFILE} --tries=3"
+        wget "${NGX_ACCESSKEYLINK}" -O "${NGX_ACCESSKEYLINKFILE}" --tries=3
 ERROR=$?
   if [[ "$ERROR" != '0' ]]; then
   cecho "Error: ${NGX_ACCESSKEYLINKFILE} download failed." $boldgreen
@@ -1310,8 +1310,8 @@ echo ""
     if [[ -s "${NGX_HTTPREDISLINKFILE}" && "$(tar -tzf ${NGX_HTTPREDISLINKFILE} >/dev/null 2>&1; echo $?)" -eq '0' ]]; then
         cecho "ngx_http_redis Archive found, skipping download..." $boldgreen
     else
-        echo "wget -c ${NGX_HTTPREDISLINK} -O ${NGX_HTTPREDISLINKFILE} --tries=3"
-        wget -c "${NGX_HTTPREDISLINK}" -O "${NGX_HTTPREDISLINKFILE}" --tries=3
+        echo "wget ${NGX_HTTPREDISLINK} -O ${NGX_HTTPREDISLINKFILE} --tries=3"
+        wget "${NGX_HTTPREDISLINK}" -O "${NGX_HTTPREDISLINKFILE}" --tries=3
 ERROR=$?
     if [[ "$ERROR" != '0' ]]; then
     cecho "Error: ${NGX_HTTPREDISLINKFILE} download failed." $boldgreen
