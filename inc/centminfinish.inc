@@ -56,7 +56,7 @@ disk_cleanups() {
     rm -f /svr-setup/mongodb-1.4.0.tgz
     rm -f /svr-setup/nginx-1.13.9.tar.gz
     rm -f /svr-setup/nginx-1.23.1.tar.gz
-    rm -f /svr-setup/Nginx-accesskey-2.0.3.tar.gz
+    rm -f /svr-setup/Nginx-accesskey-2.0.5.tar.gz
     rm -f /svr-setup/nginx-dav-ext-module-0.0.3.tar.gz
     rm -f /svr-setup/nginx-develkit_v0.3.0.tar.gz
     rm -f /svr-setup/nginx-http-concat-master.tar.gz

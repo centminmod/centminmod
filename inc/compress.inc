@@ -188,7 +188,7 @@ zstdinstall() {
       echo "zstd-${ZSTD_VER}.tar.gz [found]"
       else
       echo "Error: zstd-${ZSTD_VER}.tar.gz not found!!!  Downloading now......"
-      wget -c${ipv_forceopt} https://github.com/facebook/zstd/archive/v${ZSTD_VER}.tar.gz -O zstd-${ZSTD_VER}.tar.gz --tries=3
+      wget https://github.com/facebook/zstd/archive/v${ZSTD_VER}.tar.gz -O zstd-${ZSTD_VER}.tar.gz --tries=3
     fi
     tar xvzf zstd-${ZSTD_VER}.tar.gz
     cd zstd-${ZSTD_VER}
@@ -217,7 +217,7 @@ lzfourinstall() {
       echo "lz4-${LZFOUR_VER}.tar.gz [found]"
       else
       echo "Error: lz4-${LZFOUR_VER}.tar.gz not found!!!  Downloading now......"
-      wget -c${ipv_forceopt} https://github.com/lz4/lz4/archive/v${LZFOUR_VER}.tar.gz -O lz4-${LZFOUR_VER}.tar.gz --tries=3
+      wget https://github.com/lz4/lz4/archive/v${LZFOUR_VER}.tar.gz -O lz4-${LZFOUR_VER}.tar.gz --tries=3
     fi
     tar xvzf lz4-${LZFOUR_VER}.tar.gz
     cd lz4-${LZFOUR_VER}
@@ -246,7 +246,7 @@ function funct_pigzinstall {
       echo "pigz-${PIGZ_VER}.tar.gz [found]"
       else
       echo "Error: pigz-${PIGZ_VER}.tar.gz not found!!!  Downloading now......"
-      wget -c${ipv_forceopt} https://github.com/madler/pigz/tarball/v${PIGZ_VER} -O pigz-${PIGZ_VER}.tar.gz --tries=3
+      wget https://github.com/madler/pigz/tarball/v${PIGZ_VER} -O pigz-${PIGZ_VER}.tar.gz --tries=3
     fi
     
     tar xzf pigz-${PIGZ_VER}.tar.gz
@@ -278,8 +278,8 @@ function funct_pbzip2install {
       echo "pbzip2-${PBZIP_VER}.tar.gz [found]"
       else
       echo "Error: pbzip2-${PBZIP_VER}.tar.gz not found!!! Downloading now......"
-      # wget -c${ipv_forceopt} http://compression.ca/pbzip2/pbzip2-${PBZIP_VER}.tar.gz --tries=3
-      wget -c${ipv_forceopt} https://launchpad.net/pbzip2/1.1/${PBZIP_VER}/+download/pbzip2-${PBZIP_VER}.tar.gz --tries=3
+      # wget http://compression.ca/pbzip2/pbzip2-${PBZIP_VER}.tar.gz --tries=3
+      wget https://launchpad.net/pbzip2/1.1/${PBZIP_VER}/+download/pbzip2-${PBZIP_VER}.tar.gz --tries=3
     fi
     
     tar xzf pbzip2-${PBZIP_VER}.tar.gz
@@ -310,7 +310,7 @@ function funct_lbzip2install {
       echo "lbzip2-${LBZIP_VER}.tar.gz [found]"
       else
       echo "Error: lbzip2-${LBZIP_VER}.tar.gz not found!!! Downloading now......"
-      wget -c${ipv_forceopt} https://github.com/kjn/lbzip2/archive/v${LBZIP_VER}.tar.gz -O lbzip2-${LBZIP_VER}.tar.gz --tries=3
+      wget https://github.com/kjn/lbzip2/archive/v${LBZIP_VER}.tar.gz -O lbzip2-${LBZIP_VER}.tar.gz --tries=3
     fi
     
     tar xzf lbzip2-${LBZIP_VER}.tar.gz
@@ -342,7 +342,7 @@ function funct_lzipinstall {
       echo "lzip-${LZIP_VER}.tar.gz [found]"
       else
       echo "Error: lzip-${LZIP_VER}.tar.gz not found!!! Downloading now......"
-      wget -c${ipv_forceopt} https://nongnu.askapache.com/lzip/lzip-${LZIP_VER}.tar.gz --tries=3
+      wget https://nongnu.askapache.com/lzip/lzip-${LZIP_VER}.tar.gz --tries=3
     fi
     
     tar xzf lzip-${LZIP_VER}.tar.gz
@@ -374,14 +374,14 @@ function funct_plzipinstall {
       echo "lzlib-${LZLIB_VER}.tar.gz [found]"
       else
       echo "Error: lzlib-${LZLIB_VER}.tar.gz not found!!! Downloading now......"
-      wget -c${ipv_forceopt} https://nongnu.askapache.com/lzip/lzlib/lzlib-${LZLIB_VER}.tar.gz --tries=3
+      wget https://nongnu.askapache.com/lzip/lzlib/lzlib-${LZLIB_VER}.tar.gz --tries=3
     fi
     
     if [ -s plzip-${PLZIP_VER}.tar.gz ]; then
       echo "plzip-${PLZIP_VER}.tar.gz [found]"
       else
       echo "Error: plzip-${PLZIP_VER}.tar.gz not found!!! Downloading now......"
-      wget -c${ipv_forceopt} https://nongnu.askapache.com/lzip/plzip/plzip-${PLZIP_VER}.tar.gz --tries=3
+      wget https://nongnu.askapache.com/lzip/plzip/plzip-${PLZIP_VER}.tar.gz --tries=3
     fi
     
     tar xzf lzlib-${LZLIB_VER}.tar.gz
@@ -423,7 +423,7 @@ function funct_p7zipinstall {
       echo "p7zip_${PZIP_VER}_src_all.tar.bz2 [found]"
       else
       echo "Error: p7zip_${PZIP_VER}_src_all.tar.bz2 not found!!! Downloading now......"
-      wget -c${ipv_forceopt} -O p7zip_${PZIP_VER}_src_all.tar.bz2 http://sourceforge.net/projects/p7zip/files/p7zip/${PZIP_VER}/p7zip_${PZIP_VER}_src_all.tar.bz2/download?use_mirror=softlayer-sng --tries=3
+      wget -O p7zip_${PZIP_VER}_src_all.tar.bz2 http://sourceforge.net/projects/p7zip/files/p7zip/${PZIP_VER}/p7zip_${PZIP_VER}_src_all.tar.bz2/download?use_mirror=softlayer-sng --tries=3
     fi
     
     bzip2 -d p7zip_${PZIP_VER}_src_all.tar.bz2

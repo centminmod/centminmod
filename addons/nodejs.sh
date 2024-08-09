@@ -614,7 +614,7 @@ elif [[ "$CENTOS_SIX" = '6' ]]; then
     		if [ -s node-v${NODEJSVER}.tar.gz ]; then
         		cecho "node-v${NODEJSVER}.tar.gz Archive found, skipping download..." $boldgreen
     		else
-        		wget -c${ipv_forceopt} --progress=bar https://nodejs.org/dist/v${NODEJSVER}/node-v${NODEJSVER}.tar.gz --tries=3 
+        		wget --progress=bar https://nodejs.org/dist/v${NODEJSVER}/node-v${NODEJSVER}.tar.gz --tries=3 
 		ERROR=$?
 			if [[ "$ERROR" != '0' ]]; then
 			cecho "Error: node-v${NODEJSVER}.tar.gz download failed." $boldgreen
