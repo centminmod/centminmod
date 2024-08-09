@@ -12,7 +12,7 @@ zstdinstall() {
       echo "zstd-${NGINX_ZSTD_VER}.tar.gz [found]"
       else
       echo "Error: zstd-${NGINX_ZSTD_VER}.tar.gz not found!!!  Downloading now......"
-      wget -c${ipv_forceopt} https://github.com/facebook/zstd/archive/v${NGINX_ZSTD_VER}.tar.gz -O zstd-${NGINX_ZSTD_VER}.tar.gz --tries=3
+      wget https://github.com/facebook/zstd/archive/v${NGINX_ZSTD_VER}.tar.gz -O zstd-${NGINX_ZSTD_VER}.tar.gz --tries=3
     fi
     tar xvzf zstd-${NGINX_ZSTD_VER}.tar.gz
     cd zstd-${NGINX_ZSTD_VER}

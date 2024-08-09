@@ -68,7 +68,7 @@ if [ "$IGBINARYGIT" == 'y' ]; then
         if [ -s igbinary-igbinary-1.1.2-dev.tar.gz ]; then
             cecho "igbinary-igbinary-1.1.2-dev.tar.gz Archive found, skipping download..." $boldgreen
         else
-            wget -c${ipv_forceopt} --progress=bar --no-check-certificate https://github.com/igbinary/igbinary/tarball/master -O igbinary-igbinary-1.1.2-dev.tar.gz --tries=3
+            wget --progress=bar --no-check-certificate https://github.com/igbinary/igbinary/tarball/master -O igbinary-igbinary-1.1.2-dev.tar.gz --tries=3
         fi
     
         tar -xzvf igbinary-igbinary-1.1.2-dev.tar.gz

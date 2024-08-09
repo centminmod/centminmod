@@ -225,8 +225,8 @@ MASTER_NGX_CACHEPURGEFILE="master-ngx_cache_purge-${NGINX_CACHEPURGEVER}.tar.gz"
 NGX_CACHEPURGE="https://github.com/nginx-modules/ngx_cache_purge/archive/${NGINX_CACHEPURGEVER}.tar.gz"
 #NGX_CACHEPURGE="${LOCALCENTMINMOD_MIRROR}/centminmodparts/nginx/modules/${NGX_CACHEPURGEFILE}"
 
-NGX_ACCESSKEYLINKFILE="Nginx-accesskey-2.0.3.tar.gz"
-MASTER_NGX_ACCESSKEYLINKFILE="master-Nginx-accesskey-2.0.3.tar.gz"
+NGX_ACCESSKEYLINKFILE="Nginx-accesskey-2.0.5.tar.gz"
+MASTER_NGX_ACCESSKEYLINKFILE="master-Nginx-accesskey-2.0.5.tar.gz"
 NGX_ACCESSKEYLINK="${LOCALCENTMINMOD_MIRROR}/centminmodparts/nginx/modules/${NGX_ACCESSKEYLINKFILE}"
 
 # wget renamed

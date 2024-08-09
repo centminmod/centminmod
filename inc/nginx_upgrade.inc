@@ -855,7 +855,7 @@ fi
         fi
         NGINXDOWNLOAD_CHECK=$?
         if [[ "$NGINXDOWNLOAD_CHECK" != '0' ]]; then
-            wget -c${ipv_forceopt} "https://nginx.org/download/nginx-${ngver}.tar.gz" --tries=3
+            wget "https://nginx.org/download/nginx-${ngver}.tar.gz" --tries=3
             NGINXDOWNLOAD_CHECK=$?
             if [[ "$NGINXDOWNLOAD_CHECK" != '0' ]]; then
                 if [ -f "$(which figlet)" ]; then
