@@ -3950,7 +3950,7 @@ if [[ "$INITIALINSTALL" != [yY] ]]; then
   mariadb_oomfix
   mariadb_errorlogfix
   yumfastmirror_check
-  axelcheck
+  # axelcheck
   fileperm_fixes
   selinxcheck
   setupemailcheck
