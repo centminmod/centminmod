@@ -89,8 +89,21 @@ if [ -f "/etc/centminmod/pushover.ini" ]; then
   fi
   source "/etc/centminmod/pushover.ini"
 fi
-if [[ "$(id -u)" -eq '0' && ! -d "$CENTMINLOGDIR" ]]; then
-  mkdir -p $CENTMINLOGDIR
+if [[ "$(id -u)" -eq 0 ]]; then
+  if [[ -n "$SUDO_USER" ]]; then
+    # Script is run with sudo
+    CENTMINLOGDIR="/home/$SUDO_USER/centminlogs"
+  else
+    # Script is run directly as root
+    CENTMINLOGDIR='/root/centminlogs'
+  fi
+else
+  # Script is run as a non-root user without sudo
+  CENTMINLOGDIR="$HOME/centminlogs"
+fi
+# Ensure the log directory exists
+if [ ! -d "$CENTMINLOGDIR" ]; then
+  mkdir -p "$CENTMINLOGDIR"
 fi
 if [ -f /etc/almalinux-release ]; then
   DMOTD_RELEASE=$(cat /etc/almalinux-release | tr -d '()' | cut -d' ' -f1,3)
@@ -163,29 +176,31 @@ check_git_major_branch() {
 push_dmotd_alerts() {
   pushapp=$1
   pushapp_ver=$2
-  if [[ "$pushapp" = 'nginx' ]]; then
-    PUSH_MESSAGE="nginx ${pushapp_ver} update available, run centmin.sh menu option 4"
-    PUSH_TITLE="nginx ${pushapp_ver} update available ${PUSH_HOSTNAME} ${PUSH_DATE_TIME}"
-  elif [[ "$pushapp" = 'php' ]]; then
-    PUSH_MESSAGE="php-fpm ${pushapp_ver} update available, run centmin.sh menu option 5"
-    PUSH_TITLE="php-fpm ${pushapp_ver} update available ${PUSH_HOSTNAME} ${PUSH_DATE_TIME}"
-  elif [[ "$pushapp" = 'cmm' ]]; then
-    PUSH_MESSAGE="centminmod ${pushapp_ver} update available, run cmupdate to update"
-    PUSH_TITLE="centminmod ${pushapp_ver} update available ${PUSH_HOSTNAME} ${PUSH_DATE_TIME}"
-  fi
-  if [[ "$PUSH_MOTD_ALERTS" = [yY] && "$PUSH_API_TOKEN" && "$PUSH_USER_KEY" ]]; then
-    log_message "$PUSH_MESSAGE"
-    
-    # Send Notification
-    RESPONSE=$(curl -s \
-      --form-string "token=${PUSH_API_TOKEN}" \
-      --form-string "user=${PUSH_USER_KEY}" \
-      --form-string "message=${PUSH_MESSAGE}" \
-      --form-string "title=${PUSH_TITLE}" \
-      https://api.pushover.net/1/messages.json)
-    
-    # Log the response from Pushover
-    log_message "Notification sent. Response: ${RESPONSE}"
+  if [[ "$(id -u)" -eq 0 ]] || sudo -n true 2>/dev/null; then
+    if [[ "$pushapp" = 'nginx' ]]; then
+      PUSH_MESSAGE="nginx ${pushapp_ver} update available, run centmin.sh menu option 4"
+      PUSH_TITLE="nginx ${pushapp_ver} update available ${PUSH_HOSTNAME} ${PUSH_DATE_TIME}"
+    elif [[ "$pushapp" = 'php' ]]; then
+      PUSH_MESSAGE="php-fpm ${pushapp_ver} update available, run centmin.sh menu option 5"
+      PUSH_TITLE="php-fpm ${pushapp_ver} update available ${PUSH_HOSTNAME} ${PUSH_DATE_TIME}"
+    elif [[ "$pushapp" = 'cmm' ]]; then
+      PUSH_MESSAGE="centminmod ${pushapp_ver} update available, run cmupdate to update"
+      PUSH_TITLE="centminmod ${pushapp_ver} update available ${PUSH_HOSTNAME} ${PUSH_DATE_TIME}"
+    fi
+    if [[ "$PUSH_MOTD_ALERTS" = [yY] && "$PUSH_API_TOKEN" && "$PUSH_USER_KEY" ]]; then
+      log_message "$PUSH_MESSAGE"
+      
+      # Send Notification
+      RESPONSE=$(curl -s \
+        --form-string "token=${PUSH_API_TOKEN}" \
+        --form-string "user=${PUSH_USER_KEY}" \
+        --form-string "message=${PUSH_MESSAGE}" \
+        --form-string "title=${PUSH_TITLE}" \
+        https://api.pushover.net/1/messages.json)
+      
+      # Log the response from Pushover
+      log_message "Notification sent. Response: ${RESPONSE}"
+    fi
   fi
 }
 
@@ -478,29 +493,39 @@ kernel_checks() {
   fi
 }
 
-if [[ "$(id -u)" = '0' ]]; then
+if [[ "$(id -u)" -eq 0 ]] || sudo -n true 2>/dev/null; then
 
-starttime=$(TZ=UTC date +%s.%N)
-{
-motd_output
-kernel_checks
-if [[ "$DMOTD_PHPCHECK" = [yY] && "$(which php-fpm >/dev/null 2>&1; echo $?)" = '0' ]]; then
-  ngxver_checker &
-  phpver_checker &
-  wait
-else
-  ngxver_checker
-fi
-gitenv_askupdate
-needrestart_check
-check_git_major_branch
-} 2>&1 | tee "${CENTMINLOGDIR}/cmm-login-git-checks_${DT}.log"
+  starttime=$(TZ=UTC date +%s.%N)
+  {
+  motd_output
+  kernel_checks
+  if [[ "$DMOTD_PHPCHECK" = [yY] && "$(which php-fpm >/dev/null 2>&1; echo $?)" = '0' ]]; then
+    ngxver_checker &
+    phpver_checker &
+    wait
+  else
+    ngxver_checker
+  fi
+  if [[ "$(id -u)" -eq 0 || "$SUDO_USER" ]]; then
+    gitenv_askupdate
+  else
+    cecho "===============================================================================" $boldgreen
+    echo "Detected non root/sudo elevated user: Centmin Mod update notifications disabled"
+    echo "Centmin Mod update notifications are enabled for root/sudo elevated users only"
+    echo "Only SSH logins via root/sudo elevated user, will update notifications show"
+    cecho "===============================================================================" $boldgreen
+  fi
+  needrestart_check
+  if [[ "$(id -u)" -eq 0 || "$SUDO_USER" ]]; then
+    check_git_major_branch
+  fi
+  } 2>&1 | tee "${CENTMINLOGDIR}/cmm-login-git-checks_${DT}.log"
 
-endtime=$(TZ=UTC date +%s.%N)
+  endtime=$(TZ=UTC date +%s.%N)
 
-INSTALLTIME=$(echo "scale=2;$endtime - $starttime"|bc )
-echo "" >> "${CENTMINLOGDIR}/cmm-login-git-checks_${DT}.log"
-echo "Total Git & Nginx Check Time: $INSTALLTIME seconds" >> "${CENTMINLOGDIR}/cmm-login-git-checks_${DT}.log"
+  INSTALLTIME=$(echo "scale=2;$endtime - $starttime"|bc )
+  echo "" >> "${CENTMINLOGDIR}/cmm-login-git-checks_${DT}.log"
+  echo "Total Git & Nginx Check Time: $INSTALLTIME seconds" >> "${CENTMINLOGDIR}/cmm-login-git-checks_${DT}.log"
 
   # logs older than 5 days will be removed
   if [ -d "${CENTMINLOGDIR}" ]; then
