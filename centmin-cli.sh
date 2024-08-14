@@ -30,7 +30,7 @@ DT=$(date +"%d%m%y-%H%M%S")
 branchname='131.00stable'
 SCRIPT_MAJORVER='131'
 SCRIPT_MINORVER='00'
-SCRIPT_INCREMENTVER='042'
+SCRIPT_INCREMENTVER='043'
 SCRIPT_VERSIONSHORT="${branchname}"
 SCRIPT_VERSION="${SCRIPT_VERSIONSHORT}.b${SCRIPT_INCREMENTVER}"
 SCRIPT_DATE='01/07/24'
@@ -1167,9 +1167,9 @@ MYSQL_INSTALL='n'            # Install official Oracle MySQL Server (MariaDB alt
 SENDMAIL_INSTALL='n'         # Install Sendmail (and mailx) set to y and POSTFIX_INSTALL=n for sendmail
 POSTFIX_INSTALL=y            # Install Postfix (and mailx) set to n and SENDMAIL_INSTALL=y for sendmail
 # Nginx
-NGINX_VERSION='1.27.0'             # Use this version of Nginx
+NGINX_VERSION='1.27.1'             # Use this version of Nginx
 NGINX_ANGIE_VERSION='Angie-1.6.0'
-FREENGINX_VERSION='1.27.1'   # Maxim's Freenginx fork https://freenginx.org/en/download.html
+FREENGINX_VERSION='1.27.3'   # Maxim's Freenginx fork https://freenginx.org/en/download.html
 FREENGINX_INSTALL='n'        # Use Freenginx fork instead of official Nginx
 NGINX_VHOSTSSL='y'            # enable centmin.sh menu 2 prompt to create self signed SSL vhost 2nd vhost conf
 NGINXBACKUP='y'
