@@ -498,13 +498,15 @@ if [[ "$(id -u)" -eq 0 ]] || sudo -n true 2>/dev/null; then
   starttime=$(TZ=UTC date +%s.%N)
   {
   motd_output
-  kernel_checks
-  if [[ "$DMOTD_PHPCHECK" = [yY] && "$(which php-fpm >/dev/null 2>&1; echo $?)" = '0' ]]; then
-    ngxver_checker &
-    phpver_checker &
-    wait
-  else
-    ngxver_checker
+  if [[ "$(id -u)" -eq 0 || "$SUDO_USER" ]]; then
+    kernel_checks
+    if [[ "$DMOTD_PHPCHECK" = [yY] && "$(which php-fpm >/dev/null 2>&1; echo $?)" = '0' ]]; then
+      ngxver_checker &
+      phpver_checker &
+      wait
+    else
+      ngxver_checker
+    fi
   fi
   if [[ "$(id -u)" -eq 0 || "$SUDO_USER" ]]; then
     gitenv_askupdate
