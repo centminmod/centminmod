@@ -972,7 +972,8 @@ case "$datamenu_opt" in
           } 2>&1 | tee "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_backupmethod-${backup_method}_datamanger_menu.log"
             if [ -f "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_backupmethod-${backup_method}_datamanger_menu.log" ]; then
               script_output=$(cat "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_backupmethod-${backup_method}_datamanger_menu.log")
-              transfer_backup_dir=$(echo "$script_output" | grep 'Backup Log saved: ' | awk '{print $10}' | xargs dirname)
+              # transfer_backup_dir=$(echo "$script_output" | grep 'Backup Log saved: ' | awk '{print $10}' | xargs dirname)
+              transfer_backup_dir=$(echo "$script_output" | grep 'Backup Log saved:' | sed -E 's/.*Backup Log saved: ([^ ]+).*/\1/' | xargs dirname)
               # Print the extracted information
               echo
               if [ -d "$transfer_backup_dir" ]; then
@@ -1107,7 +1108,8 @@ case "$datamenu_opt" in
               script_output=$(cat "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_backupmethod-${backup_method}_datamanger_menu.log" | egrep 'log file generated: |Backup Log saved: |Backup saved to' | sed -e 's|Backup Log saved:|Vhost Backup Log saved:|' -e 's|Backup log file generated|MySQL Backup log file generated|g')
               
               # Extract the required information using grep and awk
-              transfer_vhost_backup_dir=$(echo "$script_output" | grep "Vhost Backup Log saved:" | awk '{print $11}' | xargs dirname)
+              # transfer_vhost_backup_dir=$(echo "$script_output" | grep "Vhost Backup Log saved:" | awk '{print $11}' | xargs dirname)
+              transfer_vhost_backup_dir=$(echo "$script_output" | grep 'Vhost Backup Log saved:' | sed -E 's/.*Vhost Backup Log saved: ([^ ]+).*/\1/' | xargs dirname)
               transfer_backup_saved_mysql=$(echo "$script_output" | grep "Backup saved to" | head -n 1 | awk '{print $10}')
               transfer_backup_saved_binlog=$(echo "$script_output" | grep "Backup saved to" | tail -n 1 | awk '{print $10}')
               
@@ -1115,13 +1117,13 @@ case "$datamenu_opt" in
               echo
               if [ -d "$transfer_vhost_backup_dir" ]; then
                 echo "Vhost Backup Directory: $transfer_vhost_backup_dir"
-              else
-                echo "$vhost_backup_dir directory not found"
+              # else
+              #   echo "$transfer_vhost_backup_dir directory not found"
               fi
               if [ -d "$transfer_backup_saved_mysql" ]; then
                 echo "MySQL Backup Directory: $transfer_backup_saved_mysql"
-              else
-                echo "$backup_saved_mysql directory not found"
+              # else
+              #   echo "$transfer_backup_saved_mysql directory not found"
               fi
               if [ -d "$transfer_backup_saved_binlog" ]; then
                 echo "Binlog Backup Directory: $transfer_backup_saved_binlog"
