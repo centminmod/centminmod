@@ -171,6 +171,13 @@ scl_install() {
         sar_call
         /opt/rh/gcc-toolset-13/root/usr/bin/gcc --version
         /opt/rh/gcc-toolset-13/root/usr/bin/g++ --version
+      elif [[ "$CENTOSVER_NUMERIC" -ge '93' && "$DEVTOOLSETTWELVE" = [yY] && ! -f /opt/rh/gcc-toolset-12/root/usr/bin/gcc ]]; then
+        if [[ "$(rpm -ql gcc-toolset-12-gcc >/dev/null 2>&1; echo $?)" -ne '0' ]] || [[ "$(rpm -ql gcc-toolset-12-gcc-c++ >/dev/null 2>&1; echo $?)" -ne '0' ]] || [[ "$(rpm -ql gcc-toolset-12-binutils >/dev/null 2>&1; echo $?)" -ne '0' ]]; then
+          time yum -y install gcc-toolset-12-annobin-annocheck gcc-toolset-12-annobin-docs.noarch gcc-toolset-12-annobin-plugin-gcc gcc-toolset-12-binutils gcc-toolset-12-binutils-devel gcc-toolset-12-dwz gcc-toolset-12-gcc gcc-toolset-12-gcc-c++ gcc-toolset-12-gcc-gfortran gcc-toolset-12-gdb gcc-toolset-12-libasan-devel gcc-toolset-12-libatomic-devel gcc-toolset-12-libgccjit gcc-toolset-12-libgccjit-devel gcc-toolset-12-libgccjit-docs gcc-toolset-12-libitm-devel gcc-toolset-12-liblsan-devel gcc-toolset-12-libquadmath-devel gcc-toolset-12-libstdc++-devel gcc-toolset-12-libtsan-devel gcc-toolset-12-libubsan-devel gcc-toolset-12-runtime
+        fi
+        sar_call
+        /opt/rh/gcc-toolset-12/root/usr/bin/gcc --version
+        /opt/rh/gcc-toolset-12/root/usr/bin/g++ --version
       elif [[ "$CENTOSVER_NUMERIC" -ge '91' && "$DEVTOOLSETTWELVE" = [yY] && ! -f /opt/rh/gcc-toolset-12/root/usr/bin/gcc ]]; then
         if [[ "$(rpm -ql gcc-toolset-12-gcc >/dev/null 2>&1; echo $?)" -ne '0' ]] || [[ "$(rpm -ql gcc-toolset-12-gcc-c++ >/dev/null 2>&1; echo $?)" -ne '0' ]] || [[ "$(rpm -ql gcc-toolset-12-binutils >/dev/null 2>&1; echo $?)" -ne '0' ]]; then
           time yum -y install gcc-toolset-12-annobin-annocheck gcc-toolset-12-annobin-docs.noarch gcc-toolset-12-annobin-plugin-gcc gcc-toolset-12-binutils gcc-toolset-12-binutils-devel gcc-toolset-12-dwz gcc-toolset-12-gcc gcc-toolset-12-gcc-c++ gcc-toolset-12-gcc-gfortran gcc-toolset-12-gdb gcc-toolset-12-libasan-devel gcc-toolset-12-libatomic-devel gcc-toolset-12-libgccjit gcc-toolset-12-libgccjit-devel gcc-toolset-12-libgccjit-docs gcc-toolset-12-libitm-devel gcc-toolset-12-liblsan-devel gcc-toolset-12-libquadmath-devel gcc-toolset-12-libstdc++-devel gcc-toolset-12-libtsan-devel gcc-toolset-12-libubsan-devel gcc-toolset-12-runtime
@@ -185,6 +192,13 @@ scl_install() {
       if [[ "$CENTOSVER_NUMERIC" -ge '89' && "$DEVTOOLSETTHIRTEEN" = [yY] && ! -f /opt/rh/gcc-toolset-13/root/usr/bin/gcc ]]; then
         if [[ "$(rpm -ql gcc-toolset-13-gcc >/dev/null 2>&1; echo $?)" -ne '0' ]] || [[ "$(rpm -ql gcc-toolset-13-gcc-c++ >/dev/null 2>&1; echo $?)" -ne '0' ]] || [[ "$(rpm -ql gcc-toolset-13-binutils >/dev/null 2>&1; echo $?)" -ne '0' ]]; then
           time yum -y install gcc-toolset-13-annobin-annocheck gcc-toolset-13-annobin-docs.noarch gcc-toolset-13-annobin-plugin-gcc gcc-toolset-13-binutils gcc-toolset-13-binutils-devel gcc-toolset-13-dwz gcc-toolset-13-gcc gcc-toolset-13-gcc-c++ gcc-toolset-13-gcc-gfortran gcc-toolset-13-gdb gcc-toolset-13-libasan-devel gcc-toolset-13-libatomic-devel gcc-toolset-13-libgccjit gcc-toolset-13-libgccjit-devel gcc-toolset-13-libgccjit-docs gcc-toolset-13-libitm-devel gcc-toolset-13-liblsan-devel gcc-toolset-13-libquadmath-devel gcc-toolset-13-libstdc++-devel gcc-toolset-13-libtsan-devel gcc-toolset-13-libubsan-devel gcc-toolset-13-runtime
+        fi
+        sar_call
+        /opt/rh/gcc-toolset-12/root/usr/bin/gcc --version
+        /opt/rh/gcc-toolset-12/root/usr/bin/g++ --version
+      elif [[ "$CENTOSVER_NUMERIC" -ge '89' && "$DEVTOOLSETTWELVE" = [yY] && ! -f /opt/rh/gcc-toolset-12/root/usr/bin/gcc ]]; then
+        if [[ "$(rpm -ql gcc-toolset-12-gcc >/dev/null 2>&1; echo $?)" -ne '0' ]] || [[ "$(rpm -ql gcc-toolset-12-gcc-c++ >/dev/null 2>&1; echo $?)" -ne '0' ]] || [[ "$(rpm -ql gcc-toolset-12-binutils >/dev/null 2>&1; echo $?)" -ne '0' ]]; then
+          time yum -y install gcc-toolset-12-annobin-annocheck gcc-toolset-12-annobin-docs.noarch gcc-toolset-12-annobin-plugin-gcc gcc-toolset-12-binutils gcc-toolset-12-binutils-devel gcc-toolset-12-dwz gcc-toolset-12-gcc gcc-toolset-12-gcc-c++ gcc-toolset-12-gcc-gfortran gcc-toolset-12-gdb gcc-toolset-12-libasan-devel gcc-toolset-12-libatomic-devel gcc-toolset-12-libgccjit gcc-toolset-12-libgccjit-devel gcc-toolset-12-libgccjit-docs gcc-toolset-12-libitm-devel gcc-toolset-12-liblsan-devel gcc-toolset-12-libquadmath-devel gcc-toolset-12-libstdc++-devel gcc-toolset-12-libtsan-devel gcc-toolset-12-libubsan-devel gcc-toolset-12-runtime
         fi
         sar_call
         /opt/rh/gcc-toolset-12/root/usr/bin/gcc --version

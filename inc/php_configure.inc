@@ -1341,6 +1341,9 @@ if [[ "$GCCINTEL_PHP" = [yY] ]]; then
   if [[ "$CENTOSVER_NUMERIC" -ge '89' && "$CENTOS_EIGHT" -eq '8' ]] && [[ "$DEVTOOLSETTHIRTEEN" = [yY] && ! -f /opt/rh/gcc-toolset-13/root/usr/bin/gcc || ! -f /opt/rh/gcc-toolset-13/root/usr/bin/g++ ]]; then
       yum -y install gcc-toolset-13-annobin-annocheck gcc-toolset-13-annobin-docs.noarch gcc-toolset-13-annobin-plugin-gcc gcc-toolset-13-binutils gcc-toolset-13-binutils-devel gcc-toolset-13-dwz gcc-toolset-13-gcc gcc-toolset-13-gcc-c++ gcc-toolset-13-gcc-gfortran gcc-toolset-13-gdb gcc-toolset-13-libasan-devel gcc-toolset-13-libatomic-devel gcc-toolset-13-libgccjit gcc-toolset-13-libgccjit-devel gcc-toolset-13-libgccjit-docs gcc-toolset-13-libitm-devel gcc-toolset-13-liblsan-devel gcc-toolset-13-libquadmath-devel gcc-toolset-13-libstdc++-devel gcc-toolset-13-libtsan-devel gcc-toolset-13-libubsan-devel gcc-toolset-13-runtime
   fi
+  if [[ "$CENTOSVER_NUMERIC" -ge '89' && "$CENTOS_EIGHT" -eq '8' ]] && [[ "$DEVTOOLSETTWELVE" = [yY] && ! -f /opt/rh/gcc-toolset-12/root/usr/bin/gcc || ! -f /opt/rh/gcc-toolset-12/root/usr/bin/g++ ]]; then
+      yum -y install gcc-toolset-12-annobin-annocheck gcc-toolset-12-annobin-docs.noarch gcc-toolset-12-annobin-plugin-gcc gcc-toolset-12-binutils gcc-toolset-12-binutils-devel gcc-toolset-12-dwz gcc-toolset-12-gcc gcc-toolset-12-gcc-c++ gcc-toolset-12-gcc-gfortran gcc-toolset-12-gdb gcc-toolset-12-libasan-devel gcc-toolset-12-libatomic-devel gcc-toolset-12-libgccjit gcc-toolset-12-libgccjit-devel gcc-toolset-12-libgccjit-docs gcc-toolset-12-libitm-devel gcc-toolset-12-liblsan-devel gcc-toolset-12-libquadmath-devel gcc-toolset-12-libstdc++-devel gcc-toolset-12-libtsan-devel gcc-toolset-12-libubsan-devel gcc-toolset-12-runtime
+  fi
   if [[ "$CENTOSVER_NUMERIC" -ge '87' && "$CENTOS_EIGHT" -eq '8' ]] && [[ "$DEVTOOLSETTWELVE" = [yY] && ! -f /opt/rh/gcc-toolset-12/root/usr/bin/gcc || ! -f /opt/rh/gcc-toolset-12/root/usr/bin/g++ ]]; then
       yum -y install gcc-toolset-12-annobin-annocheck gcc-toolset-12-annobin-docs.noarch gcc-toolset-12-annobin-plugin-gcc gcc-toolset-12-binutils gcc-toolset-12-binutils-devel gcc-toolset-12-dwz gcc-toolset-12-gcc gcc-toolset-12-gcc-c++ gcc-toolset-12-gcc-gfortran gcc-toolset-12-gdb gcc-toolset-12-libasan-devel gcc-toolset-12-libatomic-devel gcc-toolset-12-libgccjit gcc-toolset-12-libgccjit-devel gcc-toolset-12-libgccjit-docs gcc-toolset-12-libitm-devel gcc-toolset-12-liblsan-devel gcc-toolset-12-libquadmath-devel gcc-toolset-12-libstdc++-devel gcc-toolset-12-libtsan-devel gcc-toolset-12-libubsan-devel gcc-toolset-12-runtime
   fi
@@ -1580,6 +1583,25 @@ if [[ "$GCCINTEL_PHP" = [yY] ]]; then
           export CXX="/opt/rh/gcc-toolset-13/root/usr/bin/g++"
         fi
         echo "EL 8.9 set gcc-toolset-13"
+        echo $CC
+        echo $CXX
+    elif [[ "$CENTOSVER_NUMERIC" -ge '89' && "$DEVTOOLSETTWELVE" = [yY] && -f /opt/rh/gcc-toolset-12/root/usr/bin/gcc && -f /opt/rh/gcc-toolset-12/root/usr/bin/g++ ]]; then
+        GENERAL_DEVTOOLSETGCC='y'
+        DEVTOOLSETPHP_FALLTHROUGH=' -Wimplicit-fallthrough=0 -Wno-implicit-function-declaration -Wno-int-conversion -Wno-error=unused-result -Wno-unused-result -Wno-return-local-addr -Wno-maybe-uninitialized -Wno-array-parameter -Wno-alloc-size-larger-than -Wno-address -Wno-array-bounds -Wno-deprecated-declarations -Wno-discarded-qualifiers -Wno-stringop-overread -Wno-stringop-truncation -Wno-missing-profile -Wno-pointer-to-int-cast -Wno-error=strict-prototypes -Wno-attribute-warning -Wno-enum-int-mismatch -Wno-stringop-overflow'
+        DEVTOOLSETPHP_EXTRAFLAGS=' -fcode-hoisting -Wno-cast-function-type -Wno-error=cast-align -Wno-implicit-function-declaration -Wno-builtin-declaration-mismatch -Wno-return-local-addr -Wno-maybe-uninitialized -Wno-array-parameter -Wno-alloc-size-larger-than -Wno-address -Wno-array-bounds -Wno-deprecated-declarations -Wno-discarded-qualifiers -Wno-stringop-overread -Wno-stringop-truncation'
+        source /opt/rh/gcc-toolset-12/enable
+        which gcc
+        which g++
+        unset CC
+        unset CXX
+        if [[ "$INITIALINSTALL" != [yY] ]]; then
+          export CC="ccache /opt/rh/gcc-toolset-12/root/usr/bin/gcc"
+          export CXX="ccache /opt/rh/gcc-toolset-12/root/usr/bin/g++"
+        else
+          export CC="/opt/rh/gcc-toolset-12/root/usr/bin/gcc"
+          export CXX="/opt/rh/gcc-toolset-12/root/usr/bin/g++"
+        fi
+        echo "EL 8.9 set gcc-toolset-12"
         echo $CC
         echo $CXX
     elif [[ "$CENTOSVER_NUMERIC" -ge '87' && "$DEVTOOLSETTWELVE" = [yY] && -f /opt/rh/gcc-toolset-12/root/usr/bin/gcc && -f /opt/rh/gcc-toolset-12/root/usr/bin/g++ ]]; then
@@ -1858,6 +1880,25 @@ if [[ "$GCCINTEL_PHP" = [yY] ]]; then
           export CXX="/opt/rh/gcc-toolset-13/root/usr/bin/g++"
         fi
         echo "EL 8.9 set gcc-toolset-13"
+        echo $CC
+        echo $CXX
+    elif [[ "$CENTOSVER_NUMERIC" -ge '89' && "$DEVTOOLSETTWELVE" = [yY] && -f /opt/rh/gcc-toolset-12/root/usr/bin/gcc && -f /opt/rh/gcc-toolset-12/root/usr/bin/g++ ]]; then
+        GENERAL_DEVTOOLSETGCC='y'
+        DEVTOOLSETPHP_FALLTHROUGH=' -Wimplicit-fallthrough=0 -Wno-implicit-function-declaration -Wno-int-conversion -Wno-error=unused-result -Wno-unused-result -Wno-return-local-addr -Wno-maybe-uninitialized -Wno-array-parameter -Wno-alloc-size-larger-than -Wno-address -Wno-array-bounds -Wno-deprecated-declarations -Wno-discarded-qualifiers -Wno-stringop-overread -Wno-stringop-truncation -Wno-missing-profile -Wno-pointer-to-int-cast -Wno-error=strict-prototypes -Wno-attribute-warning -Wno-enum-int-mismatch -Wno-stringop-overflow'
+        DEVTOOLSETPHP_EXTRAFLAGS=' -fcode-hoisting -Wno-cast-function-type -Wno-error=cast-align -Wno-implicit-function-declaration -Wno-builtin-declaration-mismatch -Wno-return-local-addr -Wno-maybe-uninitialized -Wno-array-parameter -Wno-alloc-size-larger-than -Wno-address -Wno-array-bounds -Wno-deprecated-declarations -Wno-discarded-qualifiers -Wno-stringop-overread -Wno-stringop-truncation'
+        source /opt/rh/gcc-toolset-12/enable
+        which gcc
+        which g++
+        unset CC
+        unset CXX
+        if [[ "$INITIALINSTALL" != [yY] ]]; then
+          export CC="ccache /opt/rh/gcc-toolset-12/root/usr/bin/gcc"
+          export CXX="ccache /opt/rh/gcc-toolset-12/root/usr/bin/g++"
+        else
+          export CC="/opt/rh/gcc-toolset-12/root/usr/bin/gcc"
+          export CXX="/opt/rh/gcc-toolset-12/root/usr/bin/g++"
+        fi
+        echo "EL 8.9 set gcc-toolset-12"
         echo $CC
         echo $CXX
     elif [[ "$CENTOSVER_NUMERIC" -ge '87' && "$DEVTOOLSETTWELVE" = [yY] && -f /opt/rh/gcc-toolset-12/root/usr/bin/gcc && -f /opt/rh/gcc-toolset-12/root/usr/bin/g++ ]]; then

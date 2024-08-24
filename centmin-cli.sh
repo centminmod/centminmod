@@ -30,7 +30,7 @@ DT=$(date +"%d%m%y-%H%M%S")
 branchname='140.00beta01'
 SCRIPT_MAJORVER='140'
 SCRIPT_MINORVER='00'
-SCRIPT_INCREMENTVER='103'
+SCRIPT_INCREMENTVER='104'
 SCRIPT_VERSIONSHORT="${branchname}"
 SCRIPT_VERSION="${SCRIPT_VERSIONSHORT}.b${SCRIPT_INCREMENTVER}"
 SCRIPT_DATE='01/07/24'
@@ -270,8 +270,13 @@ CENTOSVER_NUMERIC=$(echo $CENTOSVER | sed -e 's|\.||g')
 if [[ "$CENTOS_EIGHT" -eq '8' && "$CENTOSVER_NUMERIC" -ge '89' ]]; then
   DEVTOOLSETTEN='n'
   DEVTOOLSETELEVEN='n'
-  DEVTOOLSETTWELVE='n'
-  DEVTOOLSETTHIRTEEN='y'
+  if [[ "$PHP_PGO" = [yY] ]] && [[ "$PHPMVER" = '7.0' || "$PHPMUVER" = '7.0' || "$PHPMVER" = '7.1' || "$PHPMUVER" = '7.1' || "$PHPMVER" = '7.2' || "$PHPMUVER" = '7.2' || "$PHPMVER" = '7.3' || "$PHPMUVER" = '7.3' || "$PHPMVER" = '7.4' || "$PHPMUVER" = '7.4' ]]; then
+    DEVTOOLSETTWELVE='y'
+    DEVTOOLSETTHIRTEEN='n'
+  else
+    DEVTOOLSETTWELVE='n'
+    DEVTOOLSETTHIRTEEN='y'
+  fi
 elif [[ "$CENTOS_EIGHT" -eq '8' && "$CENTOSVER_NUMERIC" -ge '87' ]]; then
   DEVTOOLSETTEN='n'
   DEVTOOLSETELEVEN='n'
@@ -288,8 +293,13 @@ fi
 if [[ "$CENTOS_NINE" -eq '9' && "$CENTOSVER_NUMERIC" -ge '93' ]]; then
   DEVTOOLSETTEN='n'
   DEVTOOLSETELEVEN='n'
-  DEVTOOLSETTWELVE='n'
-  DEVTOOLSETTHIRTEEN='y'
+  if [[ "$PHP_PGO" = [yY] ]] && [[ "$PHPMVER" = '7.4' || "$PHPMUVER" = '7.4' ]]; then
+    DEVTOOLSETTWELVE='y'
+    DEVTOOLSETTHIRTEEN='n'
+  else
+    DEVTOOLSETTWELVE='n'
+    DEVTOOLSETTHIRTEEN='y'
+  fi
 elif [[ "$CENTOS_NINE" -eq '9' && "$CENTOSVER_NUMERIC" -ge '91' ]]; then
   DEVTOOLSETTEN='n'
   DEVTOOLSETELEVEN='n'
