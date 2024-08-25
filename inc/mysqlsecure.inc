@@ -12,7 +12,7 @@ set_mariadb_mysqldump_charset() {
 
 remove_anonymous_mysqlusers() {
   # Check for anonymous users
-  ANON_USER_EXISTS=$(mysql -BNe "SELECT User, Host FROM mysql.user WHERE User=''" | wc -l)
+  ANON_USER_EXISTS=$(${ALIAS_MYSQL} -BNe "SELECT User, Host FROM mysql.user WHERE User=''" | wc -l)
   if [[ "$CENTOS_NINE" = '9' || "$CENTOS_EIGHT" = '8' || "$CENTOS_SEVEN" = '7' ]] && [[ "$(systemctl is-active mariadb)" = 'active' && "$ANON_USER_EXISTS" -gt '1' ]]; then
     ${ALIAS_MYSQL} -e "DROP USER ''@'localhost';" >/dev/null 2>&1
     ${ALIAS_MYSQL} -e "DROP USER ''@'`hostname`';" >/dev/null 2>&1
