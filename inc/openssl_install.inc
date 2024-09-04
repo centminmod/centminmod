@@ -1247,7 +1247,7 @@ if [ -f "${CONFIGSCANBASE}/custom_config.inc" ]; then
     # is a workaround to jump to 1.1.1a working version for now
     OPENSSL_VERSION="$OPENSSL_VERSION_OLDOVERRIDE"
     OPENSSL_LINKFILE="openssl-${OPENSSL_VERSION}.tar.gz"
-    OPENSSL_LINK="https://www.openssl.org/source/${OPENSSL_LINKFILE}"
+    OPENSSL_LINK="https://github.com/openssl/openssl/releases/download/openssl-${OPENSSL_VERSION}/${OPENSSL_LINKFILE}"
   fi
 fi
 
@@ -1755,8 +1755,8 @@ fi
         # ln -s /usr/local/go/bin/go /usr/local/bin/go
         echo
         ninja clean
-        echo "time cmake3 -GNinja -DCMAKE_BUILD_TYPE=RelWithDebInfo -DCMAKE_POSITION_INDEPENDENT_CODE=TRUE -DBUILD_SHARED_LIBS=1 -DCMAKE_INSTALL_PREFIX=${AWS_LC_DIR}/aws-lc-install -DCMAKE_INSTALL_RPATH=/opt/aws-lc-install/lib64 -DCMAKE_INSTALL_RPATH_USE_LINK_PATH=TRUE ../aws-lc"
-        time cmake3 -GNinja -DCMAKE_BUILD_TYPE=RelWithDebInfo -DCMAKE_POSITION_INDEPENDENT_CODE=TRUE -DBUILD_SHARED_LIBS=1 -DCMAKE_INSTALL_PREFIX=${AWS_LC_DIR}/aws-lc-install -DCMAKE_INSTALL_RPATH=/opt/aws-lc-install/lib64 -DCMAKE_INSTALL_RPATH_USE_LINK_PATH=TRUE ../aws-lc
+        echo "time cmake3 -GNinja -DCMAKE_BUILD_TYPE=Release -DCMAKE_POSITION_INDEPENDENT_CODE=TRUE -DBUILD_SHARED_LIBS=1 -DCMAKE_INSTALL_PREFIX=${AWS_LC_DIR}/aws-lc-install -DCMAKE_INSTALL_RPATH=/opt/aws-lc-install/lib64 -DCMAKE_INSTALL_RPATH_USE_LINK_PATH=TRUE ../aws-lc"
+        time cmake3 -GNinja -DCMAKE_BUILD_TYPE=Release -DCMAKE_POSITION_INDEPENDENT_CODE=TRUE -DBUILD_SHARED_LIBS=1 -DCMAKE_INSTALL_PREFIX=${AWS_LC_DIR}/aws-lc-install -DCMAKE_INSTALL_RPATH=/opt/aws-lc-install/lib64 -DCMAKE_INSTALL_RPATH_USE_LINK_PATH=TRUE ../aws-lc
         if [[ "$AWS_LC_SWITCH_BUILD_TESTS" = [yY] ]]; then
             echo
             echo "time ninja-build run_tests"

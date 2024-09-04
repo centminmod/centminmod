@@ -444,7 +444,7 @@ NGX_VTSLINKGITLAB='https://gitlab.com/centminmod-github-mirror/nginx-module-vts.
 
 OPENSSL_LINKFILE="openssl-${OPENSSL_VERSION}.tar.gz"
 MASTER_OPENSSL_LINKFILE="master-openssl${OPENSSL_VERSION}.tar.gz"
-OPENSSL_LINK="https://www.openssl.org/source/${OPENSSL_LINKFILE}"
+OPENSSL_LINK="https://github.com/openssl/openssl/releases/download/openssl-${OPENSSL_VERSION}/${OPENSSL_LINKFILE}"
 OPENSSL_LINKLOCAL="${LOCALCENTMINMOD_MIRROR}/centminmodparts/openssl/${OPENSSL_LINKFILE}"
 
 LIBRESSL_LINKFILE="libressl-${LIBRESSL_VERSION}.tar.gz"
