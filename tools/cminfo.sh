@@ -145,6 +145,10 @@ if [ ! -f /usr/sbin/lshw ]; then
     yum -y -q install lshw
 fi
 
+if [ ! -f /usr/sbin/tcpdump ]; then
+    yum -y -q install tcpdump
+fi
+
 if [ ! -f /usr/bin/tree ]; then
     yum -y -q install tree
 fi
@@ -839,6 +843,41 @@ top_info() {
     echo
 }
 
+# Function to count the number of connections in SYN_RECV state
+count_syn_recv() {
+    syn_recv_count=$(ss -H state syn-recv | wc -l)
+    echo "Number of SYN_RECV connections: $syn_recv_count"
+}
+
+# Function to count the number of outgoing SYN-ACK packets with a timeout of 10 seconds
+count_syn_ack() {
+    temp_file=$(mktemp) # Create a temporary file to store tcpdump output
+
+    # Run tcpdump with timeout and capture the output in the temp file
+    timeout 10 tcpdump -n -c 100 'tcp[tcpflags] & tcp-ack != 0 and tcp[tcpflags] & tcp-syn != 0' > "$temp_file" 2>/dev/null
+    
+    # Check if there were any packet captures
+    packet_count=$(grep -c "IP" "$temp_file")  # Count lines that start with "IP" (indicating packets)
+
+    if [ "$packet_count" -gt 0 ]; then
+        echo "Number of outgoing SYN-ACK packets captured for last 100 connections: $packet_count"
+    else
+        echo "No SYN-ACK packets captured in the last 10 seconds."
+    fi
+
+    # Clean up the temporary file
+    rm -f "$temp_file"
+}
+
+syn_info() {
+  echo "------------------------------------------------------------------"
+  echo "SYN Flood Report: SYN_RECV & Outgoing SYN-ACK Connections"
+  echo "------------------------------------------------------------------"
+  count_syn_recv
+  count_syn_ack
+  echo "------------------------------------------------------------------"
+}
+
 netstat_info() {
     netstat_load=$1
     sshclient=$(echo $SSH_CLIENT | awk '{print $1}')
@@ -1358,6 +1397,9 @@ case "$1" in
     netstat)
     netstat_info "$2"
         ;;
+    syn)
+    syn_info
+        ;;
     top)
     {
     top_info nocron "$2"
@@ -1437,6 +1479,6 @@ case "$1" in
       service_info_json "$2"
     ;;
     *)
-    echo "$0 {info|update|ssldates|netstat|top|top-cron|sar-json|sar-cpu-interval|sar-cpu|sar-mem|phpmem|phpstats|phpstats-cron|listlogs|debug-menuexit|versions|checkver|service-info|nginx-patch-log|php-patch-log}"
+    echo "$0 {info|update|ssldates|netstat|syn|top|top-cron|sar-json|sar-cpu-interval|sar-cpu|sar-mem|phpmem|phpstats|phpstats-cron|listlogs|debug-menuexit|versions|checkver|service-info|nginx-patch-log|php-patch-log}"
         ;;
 esac
