@@ -1299,6 +1299,10 @@ fi
     DETECTOPENSSL_THREEZERO=$(echo $OPENSSL_VERSION  | cut -d . -f1-2 | grep -o 3.0)
     DETECTOPENSSL_THREEONE=$(echo $OPENSSL_VERSION  | cut -d . -f1-2 | grep -o 3.1)
     DETECTOPENSSL_THREETWO=$(echo $OPENSSL_VERSION  | cut -d . -f1-2 | grep -o 3.2)
+    DETECTOPENSSL_THREETHREE=$(echo $OPENSSL_VERSION  | cut -d . -f1-2 | grep -o 3.3)
+    echo
+    echo "Detected OpenSSL Version: ${DETECTOPENSSL_ONEZERO} ${DETECTOPENSSL_ONEONE} ${DETECTOPENSSL_THREEZERO} ${DETECTOPENSSL_THREEONE} ${DETECTOPENSSL_THREETWO} ${DETECTOPENSSL_THREETHREE}"
+    echo
     if [[ "$LIBRESSL_SWITCH" = [yY] ]] && [[ "$BORINGSSL_SWITCH" = [nN] ]]; then
         libresslinstallstarttime=$(TZ=UTC date +%s.%N)
 
@@ -1565,7 +1569,9 @@ fi
         # Install OpenSSL
         cd $DIR_TMP
         echo "Compiling OpenSSL..."
-        
+        echo
+        echo "Detected OpenSSL Version: ${DETECTOPENSSL_ONEZERO} ${DETECTOPENSSL_ONEONE} ${DETECTOPENSSL_THREEZERO} ${DETECTOPENSSL_THREEONE} ${DETECTOPENSSL_THREETWO} ${DETECTOPENSSL_THREETHREE}"
+        echo
         if [[ "$CENTOS_EIGHT" = '8' && ! -f /usr/bin/pod2html ]]; then
             $YUMDNFBIN -q -y install perl-Pod-Html
         fi
