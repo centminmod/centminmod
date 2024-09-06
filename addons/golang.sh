@@ -64,7 +64,7 @@ done
 CENTOSVER=$(awk '{ print $3 }' /etc/redhat-release)
 
 if [ ! -d "$CENTMINLOGDIR" ]; then
-	mkdir -p "$CENTMINLOGDIR"
+  mkdir -p "$CENTMINLOGDIR"
 fi
 
 if [[ "$(uname -m)" = 'x86_64' ]]; then
@@ -187,58 +187,59 @@ else
 fi
 
 go_install() {
-	cd $DIR_TMP
+  cd $DIR_TMP
   GO_VERSION=$(curl -${ipv_forceopt}s https://go.dev/dl/ | egrep -o "go[0-9.]+\.linux\-amd64\.tar[.a-z]*" | head -n1 | sed -e 's|.linux-amd64.tar.gz||' -e 's|go||')
-		
+    
   cecho "Download go${GO_VERSION}.linux-${GOARCH}.tar.gz ..." $boldyellow
   if [ -s go${GO_VERSION}.linux-${GOARCH}.tar.gz ]; then
-  	cecho "go${GO_VERSION}.linux-${GOARCH}.tar.gz Archive found, skipping download..." $boldgreen
+    cecho "go${GO_VERSION}.linux-${GOARCH}.tar.gz Archive found, skipping download..." $boldgreen
   else
-  	wget --progress=bar https://dl.google.com/go/go${GO_VERSION}.linux-${GOARCH}.tar.gz --tries=3 
-	ERROR=$?
-		if [[ "$ERROR" != '0' ]]; then
-			cecho "Error: go${GO_VERSION}.linux-${GOARCH}.tar.gz download failed." $boldgreen
-			checklogdetails
-			exit #$ERROR
-		else 
-  	cecho "Download done." $boldyellow
-		fi
+    wget --progress=bar https://dl.google.com/go/go${GO_VERSION}.linux-${GOARCH}.tar.gz --tries=3 
+  ERROR=$?
+    if [[ "$ERROR" != '0' ]]; then
+      cecho "Error: go${GO_VERSION}.linux-${GOARCH}.tar.gz download failed." $boldgreen
+      checklogdetails
+      exit #$ERROR
+    else 
+    cecho "Download done." $boldyellow
+    fi
   fi
-		
+    
   rm -rf /usr/local/go
   tar -C /usr/local -xzf go${GO_VERSION}.linux-${GOARCH}.tar.gz
-	ERROR=$?
-	if [[ "$ERROR" != '0' ]]; then
-		cecho "Error: go${GO_VERSION}.linux-${GOARCH}.tar.gz extraction failed." $boldgreen
-		checklogdetails
-		exit #$ERROR
-	else
-		echo "ls -lah /usr/local/go/"
-		ls -lah /usr/local/go/
+  ERROR=$?
+  if [[ "$ERROR" != '0' ]]; then
+    cecho "Error: go${GO_VERSION}.linux-${GOARCH}.tar.gz extraction failed." $boldgreen
+    checklogdetails
+    exit #$ERROR
+  else
+    echo "ls -lah /usr/local/go/"
+    ls -lah /usr/local/go/
     cecho "go${GO_VERSION}.linux-${GOARCH}.tar.gz valid file." $boldyellow
-		echo ""
-	fi
-		
-	if [[ ! -d /root/golang/packages || ! "$(grep 'GOPATH' /root/.bashrc)" ]] && [ -f /usr/local/go/bin/go ]; then
-		cecho "---------------------------" $boldyellow
-		cecho "/root/.bashrc before update: " $boldwhite
-		cat /root/.bashrc
-		cecho "---------------------------" $boldyellow
-		mkdir -p /root/golang/packages
-		export GOPATH=/root/golang/packages
-		export PATH=$PATH:/usr/local/go/bin
-		export PATH=$GOPATH/bin:$PATH
-		if [[ ! "$(grep 'golang' /root/.bashrc)" ]]; then
-			echo "export PATH=\$PATH:/usr/local/go/bin" >> /root/.bashrc
-			echo "export GOPATH=~/golang/packages" >> /root/.bashrc
-			echo "export PATH=\$GOPATH/bin:\$PATH" >> /root/.bashrc
-			. /root/.bashrc
-			cecho "---------------------------" $boldyellow
-			cecho "/root/.bashrc after update: " $boldwhite
-			cat /root/.bashrc
-			cecho "---------------------------" $boldyellow
-		fi
-	fi
+    echo ""
+  fi
+    
+  if [[ ! -d /root/golang/packages || ! "$(grep 'GOPATH' /root/.bashrc)" ]] && [ -f /usr/local/go/bin/go ]; then
+    cecho "---------------------------" $boldyellow
+    cecho "/root/.bashrc before update: " $boldwhite
+    cat /root/.bashrc
+    cecho "---------------------------" $boldyellow
+    mkdir -p /root/golang/packages
+    export GOPATH=/root/golang/packages
+    export PATH=$PATH:/usr/local/go/bin
+    export PATH=$GOPATH/bin:$PATH
+    if [[ ! "$(grep 'golang' /root/.bashrc)" ]]; then
+      echo "export PATH=\$PATH:/usr/local/go/bin" >> /root/.bashrc
+      echo "export GOPATH=~/golang/packages" >> /root/.bashrc
+      echo "export PATH=\$GOPATH/bin:\$PATH" >> /root/.bashrc
+      . /root/.bashrc
+      grep -qxF 'export PATH=$PATH:/root/go/bin' ~/.bashrc || echo 'export PATH=$PATH:/root/go/bin' >> ~/.bashrc
+      cecho "---------------------------" $boldyellow
+      cecho "/root/.bashrc after update: " $boldwhite
+      cat /root/.bashrc
+      cecho "---------------------------" $boldyellow
+    fi
+  fi
   if [[ "$(id -u)" -ne '0' ]]; then
     if [[ ! -d $HOME/golang/packages || ! "$(grep 'GOPATH' $HOME/.bashrc)" ]] && [ -f /usr/local/go/bin/go ]; then
       cecho "---------------------------" $boldyellow
@@ -254,6 +255,7 @@ go_install() {
         echo "export GOPATH=~/golang/packages" >> $HOME/.bashrc
         echo "export PATH=\$GOPATH/bin:\$PATH" >> $HOME/.bashrc
         . $HOME/.bashrc
+        grep -qxF 'export PATH=$PATH:/root/go/bin' $HOME/.bashrc || echo 'export PATH=$PATH:/root/go/bin' >> $HOME/.bashrc
         cecho "---------------------------" $boldyellow
         cecho "$HOME/.bashrc after update: " $boldwhite
         cat $HOME/.bashrc
@@ -261,19 +263,19 @@ go_install() {
       fi
     fi
   fi
-	echo
-	cecho "---------------------------" $boldyellow
-	cecho -n "golang Version: " $boldgreen
-	go version
-	cecho "---------------------------" $boldyellow
+  echo
+  cecho "---------------------------" $boldyellow
+  cecho -n "golang Version: " $boldgreen
+  go version
+  cecho "---------------------------" $boldyellow
 }
 
 ###########################################################################
 case $1 in
-	install)
+  install)
 starttime=$(TZ=UTC date +%s.%N)
 {
-		go_install
+    go_install
 } 2>&1 | tee ${CENTMINLOGDIR}/centminmod_goinstall_${DT}.log
 
 endtime=$(TZ=UTC date +%s.%N)
@@ -281,9 +283,9 @@ endtime=$(TZ=UTC date +%s.%N)
 INSTALLTIME=$(echo "scale=2;$endtime - $starttime"|bc )
 echo "" >> ${CENTMINLOGDIR}/centminmod_goinstall_${DT}.log
 echo "Total golang Install Time: $INSTALLTIME seconds" >> ${CENTMINLOGDIR}/centminmod_goinstall_${DT}.log
-	;;
-	*)
-		echo "$0 install"
-	;;
+  ;;
+  *)
+    echo "$0 install"
+  ;;
 esac
 exit
