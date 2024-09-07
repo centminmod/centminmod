@@ -6,7 +6,7 @@ max_allowed_packet = 48M
 
 [mysqld]
 local-infile=0
-ignore-db-dir=lost+found
+ignore_db_dirs=lost+found
 character-set-server=utf8
 datadir=/var/lib/mysql
 socket=/var/lib/mysql/mysql.sock
@@ -77,7 +77,7 @@ innodb_data_file_path= ibdata1:10M:autoextend
 innodb_buffer_pool_size = 192M
 
 ## https://mariadb.com/kb/en/mariadb/xtradbinnodb-server-system-variables/#innodb_buffer_pool_instances
-#innodb_buffer_pool_instances=2
+#innodb_buffer_pool_instances=1
 
 innodb_log_files_in_group = 2
 innodb_log_file_size = 128M
@@ -134,6 +134,7 @@ log-error=/var/log/mysqld.log
 open-files-limit = 8192
 
 [mysqldump]
+#default-character-set=utf8mb4
 quick
 max_allowed_packet = 48M
 

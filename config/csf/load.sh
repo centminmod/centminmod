@@ -18,6 +18,9 @@ export LC_ALL=en_US.UTF-8
 export LANG=en_US.UTF-8
 export LANGUAGE=en_US.UTF-8
 export LC_CTYPE=en_US.UTF-8
+# disable systemd pager so it doesn't pipe systemctl output to less
+export SYSTEMD_PAGER=''
+ARCH_CHECK="$(uname -m)"
 
 shopt -s expand_aliases
 for g in "" e f; do
@@ -32,8 +35,8 @@ fi
 
 if [ -f /usr/bin/cminfo ]; then
 >/etc/csf/csf.report
-/usr/bin/cminfo top >> /etc/csf/csf.report
-/usr/bin/cminfo netstat >> /etc/csf/csf.report
+/usr/bin/cminfo top load >> /etc/csf/csf.report
+/usr/bin/cminfo netstat load >> /etc/csf/csf.report
 CHECK_LFEMAIL=$(awk -F '=' '/LF_ALERT_TO/ {print $2}' /etc/csf/csf.conf | sed -e 's|\"||g' -e 's|\s||')
 
 if [[ "$CHECK_LFEMAIL" && "$EMAILNOTIFY_SES" = [yY] && "$EMAILNOTIFY_SES_FROM_EMAIL" && "$EMAILNOTIFY_SES_TO_EMAIL" && -f /usr/local/src/centminmod/tools/emailnotify.sh ]]; then

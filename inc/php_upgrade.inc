@@ -17,6 +17,8 @@ fi
 
 if [[ -f "${CONFIGSCANDIR}/mssql.ini" && "$PHPMSSQL" = [yY] ]]; then
     DETECTMSSQL=y
+elif [[ ! -f "${CONFIGSCANDIR}/mssql.ini" && "$PHPMSSQL" = [yY] ]]; then
+    DETECTMSSQL=y
 elif [[ "$AUTODETECPHP_OVERRIDE" = [yY] ]]; then
     DETECTMSSQL=y
 fi
@@ -63,11 +65,15 @@ fi
 
 if [[ -f "${CONFIGSCANDIR}/redis.ini" || "$PHPREDIS" = [yY] ]]; then
     DETECTREDIS=y
+elif [[ ! -f "${CONFIGSCANDIR}/redis.ini" && "$PHPREDIS" = [yY] ]]; then
+    DETECTREDIS=y
 elif [[ "$AUTODETECPHP_OVERRIDE" = [yY] ]]; then
     DETECTREDIS=y
 fi
 
 if [[ -f "${CONFIGSCANDIR}/mongodb.ini" || "$PHPMONGODB" = [yY] ]]; then
+    DETECTMONGODB=y
+elif [[ ! -f "${CONFIGSCANDIR}/mongodb.ini" && "$PHPMONGODB" = [yY] ]]; then
     DETECTMONGODB=y
 elif [[ "$AUTODETECPHP_OVERRIDE" = [yY] ]]; then
     DETECTMONGODB=y
@@ -75,11 +81,15 @@ fi
 
 if [[ -f "${CONFIGSCANDIR}/swoole.ini" || "$PHPSWOOLE" = [yY] ]]; then
     DETECTSWOOLE=y
+elif [[ ! -f "${CONFIGSCANDIR}/swoole.ini" && "$PHPSWOOLE" = [yY] ]]; then
+    DETECTSWOOLE=y
 elif [[ "$AUTODETECPHP_OVERRIDE" = [yY] ]]; then
     DETECTSWOOLE=y
 fi
 
 if [[ -f "${CONFIGSCANDIR}/zopfli.ini" || "$PHPZOPFLI" = [yY] ]]; then
+    DETECTZOPFLI=y
+elif [[ ! -f "${CONFIGSCANDIR}/zopfli.ini" && "$PHPZOPFLI" = [yY] ]]; then
     DETECTZOPFLI=y
 elif [[ "$AUTODETECPHP_OVERRIDE" = [yY] ]]; then
     DETECTZOPFLI=y
@@ -87,11 +97,15 @@ fi
 
 if [[ -f "${CONFIGSCANDIR}/brotli.ini" || "$PHP_BROTLI" = [yY] ]]; then
     DETECTBROTLI=y
+elif [[ ! -f "${CONFIGSCANDIR}/brotli.ini" && "$PHP_BROTLI" = [yY] ]]; then
+    DETECTBROTLI=y
 elif [[ "$AUTODETECPHP_OVERRIDE" = [yY] ]]; then
     DETECTBROTLI=y
 fi
 
 if [[ -f "${CONFIGSCANDIR}/lz4.ini" || "$PHP_LZFOUR" = [yY] ]]; then
+    DETECTLZFOUR=y
+elif [[ ! -f "${CONFIGSCANDIR}/lz4.ini" && "$PHP_LZFOUR" = [yY] ]]; then
     DETECTLZFOUR=y
 elif [[ "$AUTODETECPHP_OVERRIDE" = [yY] ]]; then
     DETECTLZFOUR=y
@@ -99,11 +113,15 @@ fi
 
 if [[ -f "${CONFIGSCANDIR}/lzf.ini" || "$PHP_LZF" = [yY] ]]; then
     DETECTLZF=y
+elif [[ ! -f "${CONFIGSCANDIR}/lzf.ini" && "$PHP_LZF" = [yY] ]]; then
+    DETECTLZF=y
 elif [[ "$AUTODETECPHP_OVERRIDE" = [yY] ]]; then
     DETECTLZF=y
 fi
 
 if [[ -f "${CONFIGSCANDIR}/zstd.ini" || "$PHP_ZSTD" = [yY] ]]; then
+    DETECTZSTD=y
+elif [[ ! -f "${CONFIGSCANDIR}/zstd.ini" && "$PHP_ZSTD" = [yY] ]]; then
     DETECTZSTD=y
 elif [[ "$AUTODETECPHP_OVERRIDE" = [yY] ]]; then
     DETECTZSTD=y
@@ -121,6 +139,8 @@ if [ -f "${CONFIGSCANDIR}/mailparse.ini" ]; then
         echo "rm -rf ${CONFIGSCANDIR}/mailparse.ini"
         rm -rf "${CONFIGSCANDIR}/mailparse.ini"        
     fi
+elif [[ ! -f "${CONFIGSCANDIR}/mailparse.ini" && "$PHPMAILPARSE" = [yY] ]]; then
+    DETECTMAILPARSE=y
 elif [[ "$AUTODETECPHP_OVERRIDE" = [yY] ]]; then
     DETECTMAILPARSE=y
 fi
@@ -323,15 +343,15 @@ elif [[ "$CLI_PHP_VER" ]]; then
     # lessphpmem='y'
 else
     if [ -f /usr/local/bin/getphpver ]; then
-      display_phpver="$(getphpver 73), $(getphpver 74), $(getphpver 80), $(getphpver 81)"
+      display_phpver="$(getphpver 73), $(getphpver 74), $(getphpver 80), $(getphpver 81), $(getphpver 82), $(getphpver 83)"
     else
-      display_phpver="7.3.33, 7.4.26, 8.0.13"
+      display_phpver="7.3.33, 7.4.33, 8.0.30, 8.1.26, 8.2.13 8.3.0"
     fi
     echo
     echo "----------------------------------------------------------------"
     echo "Install which version of PHP? (i.e. $display_phpver, NGDEBUG)"
     echo "PHP 7.x/7.1.x/7.2.x/7.3.x is GA Stable but still may have broken PHP extensions."
-    echo "NGDEBUG is PHP 8.1 dev builds minus incompatible PHP extensions"
+    echo "NGDEBUG is PHP 8.4 dev builds minus incompatible PHP extensions"
     echo "----------------------------------------------------------------"
     echo
     echo "Current PHP Version: $(php-config --version)"
@@ -346,26 +366,32 @@ else
     fi
     if [ -f /usr/local/bin/getphpver ]; then
         getlatest_phpbranch=$(php-config --version | awk  -F '.' '{print $1$2}')
-        if [[ "$getlatest_phpbranch" = '81' ]]; then
-            getlatest_phpbranchver=$(getphpver 81)
+        if [[ "$getlatest_phpbranch" = '83' ]]; then
+            getlatest_phpbranchver=$(getphpver 8 | xargs | sed -e 's| |, |g')
+            echo "Latest PHP Version Installable: $getlatest_phpbranchver"
+        elif [[ "$getlatest_phpbranch" = '82' ]]; then
+            getlatest_phpbranchver=$(getphpver 8 | xargs | sed -e 's| |, |g')
+            echo "Latest PHP Version Installable: $getlatest_phpbranchver"
+        elif [[ "$getlatest_phpbranch" = '81' ]]; then
+            getlatest_phpbranchver=$(getphpver 8 | xargs | sed -e 's| |, |g')
             echo "Latest PHP Version Installable: $getlatest_phpbranchver"
         elif [[ "$getlatest_phpbranch" = '80' ]]; then
-            getlatest_phpbranchver=$(getphpver 80)
+            getlatest_phpbranchver=$(getphpver 8 | xargs | sed -e 's| |, |g')
             echo "Latest PHP Version Installable: $getlatest_phpbranchver"
         elif [[ "$getlatest_phpbranch" = '74' ]]; then
-            getlatest_phpbranchver=$(getphpver 74)
+            getlatest_phpbranchver=$(getphpver 7 | xargs | sed -e 's| |, |g')
             echo "Latest PHP Version Installable: $getlatest_phpbranchver"
         elif [[ "$getlatest_phpbranch" = '73' ]]; then
-            getlatest_phpbranchver=$(getphpver 73)
+            getlatest_phpbranchver=$(getphpver 7 | xargs | sed -e 's| |, |g')
             echo "Latest PHP Version Installable: $getlatest_phpbranchver"
         elif [[ "$getlatest_phpbranch" = '72' ]]; then
-            getlatest_phpbranchver=$(getphpver 72)
+            getlatest_phpbranchver=$(getphpver 7 | xargs | sed -e 's| |, |g')
             echo "Latest PHP Version Installable: $getlatest_phpbranchver"
         elif [[ "$getlatest_phpbranch" = '71' ]]; then
-            getlatest_phpbranchver=$(getphpver 71)
+            getlatest_phpbranchver=$(getphpver 7 | xargs | sed -e 's| |, |g')
             echo "Latest PHP Version Installable: $getlatest_phpbranchver"
         elif [[ "$getlatest_phpbranch" = '70' ]]; then
-            getlatest_phpbranchver=$(getphpver 70)
+            getlatest_phpbranchver=$(getphpver 7 | xargs | sed -e 's| |, |g')
             echo "Latest PHP Version Installable: $getlatest_phpbranchver"
         elif [[ "$getlatest_phpbranch" = '56' ]]; then
             getlatest_phpbranchver=$(getphpver 56)
@@ -374,24 +400,51 @@ else
             getlatest_phpbranchver=$(getphpver 55)
             echo "Latest PHP Version Installable: $getlatest_phpbranchver"
         else
-            echo "Can Not Determine Latest PHP Version Installable: $getlatest_phpbranchver"
+            echo "Can Not Determine Latest PHP Version Installable:"
+            getphpver
         fi
     fi
-    echo
-    read -ep "Enter PHP Version number you want to upgrade/downgrade to: " phpver
-
-    PHP_MAX_VER=$(echo "$phpver" | cut -d . -f1,2)
-    if [[ "$PHP_MAX_VER" = 8.2 || "$PHP_MAX_VER" = 8.3 ]]; then
+    PHP_AUTOOPENSSLCHECK=$(nginx -V 2>&1 | grep -Eo "$OPENSSL_VERSION")
+    if [ "$PHP_AUTOOPENSSLCHECK" ]; then
+        php_customssl_run_nginx_notify='n'
+    else
+        php_customssl_run_nginx_notify='y'
+    fi
+    if [[ "$php_customssl_run_nginx_notify" = [yY] && "$PHP_CUSTOMSSL" = [yY] && "$LIBRESSL_SWITCH" = [nN] && "$BORINGSSL_SWITCH" = [nN] ]]; then
         echo
-        echo
-        echo "$branchname Max supported PHP version is 8.1. For PHP 8.2+ support"
-        echo "Upgrade switch to Centmin Mod 130.00beta01 or higher as per:"
-        echo "https://community.centminmod.com/threads/centmin-mod-124-00stable-130-00beta01-releases.22673/"
-        echo
+        echo "You are using PHP_CUSTOMSSL='y'. Detected new/different OpenSSL version"
+        echo "is available. Please run centmin.sh menu option 4 to update Nginx's"
+        echo "OpenSSL version first. Then run centmin.sh menu option 5 to update PHP"
         echo
         exit
     fi
-
+    echo
+    read -ep "Enter PHP Version number you want to upgrade/downgrade to: " phpver
+    # if user incorrectly enters PHP version without minor version i.e. 8.0 instead
+    # of 8.0.30 try to use getphpver to get the latest PHP version within that branch
+    declare -A php_versions
+    php_versions=(
+        ['8.3']='83'
+        ['8.2']='82'
+        ['8.1']='81'
+        ['8.0']='80'
+        ['7.4']='74'
+        ['7.3']='73'
+        ['7.2']='72'
+        ['7.1']='71'
+        ['7.0']='70'
+        ['5.6']='56'
+    )
+    
+    # Check if the entered version is in the array
+    if [[ -n ${php_versions[$phpver]} ]]; then
+        # Get full PHP version
+        phpver=$(getphpver ${php_versions[$phpver]})
+        echo
+        echo "Enter full PHP version next time i.e. $phpver"
+        echo "Setting upgrade PHP version as $phpver"
+    fi
+    PHPMUVER=$(echo "$phpver" | cut -d . -f1,2)
     echo
     # validate php version format is 7.3.x and not 7.3
     phpver_formatcheck="$(echo "$phpver" | grep '[0-9].[0-9].[0-9]')"
@@ -405,9 +458,38 @@ else
         read -ep "Enter PHP Version number you want to upgrade/downgrade to: " phpver
         echo
     fi
+    if [[ "$CENTOS_NINE" -eq '9' && "$PHP_PATCH_OPENSSL_THREE" = [yY] ]] && [[ "$PHPMUVER" = '7.4' || "$PHPMUVER" = '8.0' ]]; then
+        # note for EL9 PHP 7.4/8.0 for OpenSSL 3.0 system compatibility
+        echo
+        echo "#####################################################################"
+        echo "         EL9 OpenSSL 3.0 Compatibility Note"
+        echo "#####################################################################"
+        echo "Detected EL9 system running OpenSSL 3.0 system library ..."
+        echo "PHP 7.4 and PHP 8.0 officially do not support OpenSSL 3.0"
+        echo "For EL9 systems using OpenSSL 3.0, minimum PHP 8.1 version"
+        echo "is required. However, Centmin Mod has patched PHP 7.4.33 and"
+        echo "PHP 8.0 workarounds to be able to compile on EL9 OpenSSL 3.0."
+        echo "This may not be 100% and is provided as is."
+        echo
+        echo "If you need PHP <=8.0, you should use EL8 systems with OpenSSL 1.1.1"
+        echo "#####################################################################"
+        echo
+    fi
+    if [[ "$REDIS_PHPCURRENTVER" = '8.4' || "$PHPMUVER" = '8.4' ]]; then
+        REDISPHP_GIT='y'
+        AUTODETECPHP_OVERRIDE='y'
+    fi
     read -ep "Do you still want to continue? [y/n] " phpfpm_stillcont
     if [[ "$phpfpm_stillcont" = [nN] ]];then
         exit 0
+    fi
+    # PHP 7.4 & PHP 8.0 EL9 OpenSSL compatibility routines remove the directory
+    # if it exists so a fresh PHP directory can always be patched
+    if [[ "$CENTOS_NINE" -eq '9' && "$PHP_PATCH_OPENSSL_THREE" = [yY] ]] && [[ "$PHPMUVER" = '7.4' || "$PHPMUVER" = '8.0' ]]; then
+        echo
+        echo "----------------------------------------------------------------"
+        echo "EL9 PHP 7.4/8.0 compatibility..."
+        rm -rf "${DIR_TMP}/php-${phpver}"
     fi
     echo
     echo "----------------------------------------------------------------"
@@ -445,7 +527,6 @@ fi # UALL
 gethtpasswdsh
 
 PHPCURRENTVER=$(php-config --version | cut -d . -f1,2)
-PHPMUVER=$(echo "$phpver" | cut -d . -f1,2)
 PHPMU_ALPHAVER=$(echo "$phpver")
 
     phpng_download
@@ -483,7 +564,7 @@ funct_centos6check
 
     cd "$DIR_TMP"
 
-if [ "$(rpm -qa | grep '^php*' | egrep -v 'phonon-backend-gstreamer|php56|php70|php71|php72|php73|php74|php80')" ]; then
+if [ "$(rpm -qa | grep '^php*' | egrep -v 'phonon-backend-gstreamer|php56|php70|php71|php72|php73|php74|php80|php81|php82')" ]; then
     # IMPORTANT Erase any PHP installations first, otherwise conflicts may arise
     echo "yum -y erase php*"
     yum -y erase php*
@@ -645,8 +726,17 @@ fi
       echo -e "\n`date`\nError: $ERR, PHP configure failed ($SCRIPT_VERSION)\n"
         echo "report errors on the forums at community.centminmod.com/forums/8/"
         echo "with info asked at community.centminmod.com/threads/17857/"
+        echo "ensure you're using latest code by running command: cmupdate"
+        echo "and retrying centmin.sh menu option 5 first"
         echo
-        free -m
+        echo "lscpu"
+        lscpu
+        echo
+        echo "CFLAGS=$CFLAGS"
+        echo "CXXFLAGS=$CXXFLAGS"
+        echo "GCC_NONNATIVEFLAGS=$GCC_NONNATIVEFLAGS"
+        echo
+        free -mlt
         echo
         df -hT
         echo
@@ -661,6 +751,13 @@ fi
             git log --numstat --pretty="%n%h %an %aD %n%s" --shortstat -1
             popd
         fi
+    echo
+    echo "$(date): Upgrade log at: ${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_php_upgrade.log"
+    echo
+    echo "$(date): PHP Patch log at: ${CENTMINLOGDIR}/patch_php_${DT}.log"
+    echo
+    echo "$(date): PHP config.log at: ${DIR_TMP}/php-${phpver}/fpm-build/config.log"
+    echo
       exit
   else
       echo -e "\n`date`\nSuccess: PHP configure ok\n"
@@ -820,12 +917,19 @@ fi
     sar_call
   if [ $ERR != 0 ]; then
     echo -e "\n`date`\nError: $ERR, PHP make failed ($SCRIPT_VERSION)\n"
-        free -m
+        echo "lscpu"
+        lscpu
+        echo
+        echo "CFLAGS=$CFLAGS"
+        echo "CXXFLAGS=$CXXFLAGS"
+        echo "GCC_NONNATIVEFLAGS=$GCC_NONNATIVEFLAGS"
         echo
         echo "report errors on the forums at community.centminmod.com/forums/8/"
         echo "with info asked at community.centminmod.com/threads/17857/"
+        echo "ensure you're using latest code by running command: cmupdate"
+        echo "and retrying centmin.sh menu option 5 first"
         echo
-        free -m
+        free -mlt
         echo
         df -hT
         echo
@@ -840,6 +944,13 @@ fi
             git log --numstat --pretty="%n%h %an %aD %n%s" --shortstat -1
             popd
         fi
+    echo
+    echo "$(date): Upgrade log at: ${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_php_upgrade.log"
+    echo
+    echo "$(date): PHP Patch log at: ${CENTMINLOGDIR}/patch_php_${DT}.log"
+    echo
+    echo "$(date): PHP config.log at: ${DIR_TMP}/php-${phpver}/fpm-build/config.log"
+    echo
       exit
   else
       echo -e "\n`date`\nSuccess: PHP make ok\n"
@@ -850,11 +961,42 @@ fi
 # error check
 ################
 
+    if [[ "$PHPMAKETEST" = [yY] ]]; then
+      figlet -ckf standard "PHP: Make Test"
+      time make TEST_PHP_ARGS="-j$(nproc) -q" test | tee "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}-php-upgrade-make-test.log"
+      sar_call
+    fi
+
     if [ -f "$(which figlet)" ]; then
         figlet -ckf standard "PHP: Make Install"
     fi
 
-echo "make install"
+    echo "make install"
+    if [[ "$FPM_PHPFPM_INSTALLDIR_ENABLE" = [yY] ]]; then
+      echo
+      rm -rf "$FPM_PHPFPM_INSTALLDIR"
+      mkdir -p "$FPM_PHPFPM_INSTALLDIR"
+      echo "time make install INSTALL_ROOT=$FPM_PHPFPM_INSTALLDIR"
+      time make install INSTALL_ROOT="$FPM_PHPFPM_INSTALLDIR"
+      FPM_PHPFPM_INSTALLDIR_ERR=$?
+      if [[ "$STRIPPHP" = [yY] ]]; then
+          echo
+          echo "strip PHP binary..."
+          ls -lah ${FPM_PHPFPM_INSTALLDIR}/usr/local/bin/php
+          ls -lah ${FPM_PHPFPM_INSTALLDIR}/usr/local/bin/php-cgi
+          ls -lah ${FPM_PHPFPM_INSTALLDIR}/usr/local/sbin/php-fpm
+          echo
+          strip -s ${FPM_PHPFPM_INSTALLDIR}/usr/local/bin/php
+          strip -s ${FPM_PHPFPM_INSTALLDIR}/usr/local/bin/php-cgi
+          strip -s ${FPM_PHPFPM_INSTALLDIR}/usr/local/sbin/php-fpm
+          echo
+          echo "after strip PHP binary..."
+          ls -lah ${FPM_PHPFPM_INSTALLDIR}/usr/local/bin/php
+          ls -lah ${FPM_PHPFPM_INSTALLDIR}/usr/local/bin/php-cgi
+          ls -lah ${FPM_PHPFPM_INSTALLDIR}/usr/local/sbin/php-fpm
+          echo
+      fi
+    fi
     time make install
     ERR=$?
 
@@ -888,8 +1030,17 @@ fi
     echo -e "\n`date`\nError: $ERR, PHP wasn't installed properly ($SCRIPT_VERSION)\n"
         echo "report errors on the forums at community.centminmod.com/forums/8/"
         echo "with info asked at community.centminmod.com/threads/17857/"
+        echo "ensure you're using latest code by running command: cmupdate"
+        echo "and retrying centmin.sh menu option 5 first"
         echo
-        free -m
+        echo "lscpu"
+        lscpu
+        echo
+        echo "CFLAGS=$CFLAGS"
+        echo "CXXFLAGS=$CXXFLAGS"
+        echo "GCC_NONNATIVEFLAGS=$GCC_NONNATIVEFLAGS"
+        echo
+        free -mlt
         echo
         df -hT
         echo
@@ -904,6 +1055,13 @@ fi
             git log --numstat --pretty="%n%h %an %aD %n%s" --shortstat -1
             popd
         fi
+    echo
+    echo "$(date): Upgrade log at: ${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_php_upgrade.log"
+    echo
+    echo "$(date): PHP Patch log at: ${CENTMINLOGDIR}/patch_php_${DT}.log"
+    echo
+    echo "$(date): PHP config.log at: ${DIR_TMP}/php-${phpver}/fpm-build/config.log"
+    echo
       exit
   else
       echo -e "\n`date`\nSuccess: PHP was installed properly\n"
@@ -960,6 +1118,10 @@ if [[ "$overwritephpfpmconf" = [yY] ]]; then
         cp -f "$CUR_DIR/config/php-fpm/php-fpm.conf" /usr/local/etc/php-fpm.conf
     fi # lessphpmem
 
+    if [[ "$CENTOS_NINE" -eq '9' ]]; then
+      sed -i 's|\/var\/run\/php-fpm\/php-fpm.pid|\/run\/php-fpm\/php-fpm.pid|' /usr/local/etc/php-fpm.conf
+    fi
+
     # account for phpmyadmin.sh created php-fpm unix socket pool support
     if [ -f /usr/local/nginx/conf/phpfpmd/phpfpm_myadmin.conf ]; then
         sed -i 's/;include=\/usr\/local\/nginx\/conf\/phpfpmd\/\*.conf/include=\/usr\/local\/nginx\/conf\/phpfpmd\/\*.conf/g' /usr/local/etc/php-fpm.conf
@@ -972,6 +1134,10 @@ if [[ "$overwritephpfpmconf" = [yY] ]]; then
         autodetectinstallextensions
     else
         PHP_MAJORUPGRADE='n'
+    fi
+
+    if [[ ! -f "${CONFIGSCANDIR}/mssql.ini" || ! -f "${CONFIGSCANDIR}/mongodb.ini" || ! -f "${CONFIGSCANDIR}/swoole.ini" || ! -f "${CONFIGSCANDIR}/zopfli.ini" || ! -f "${CONFIGSCANDIR}/brotli.ini" || ! -f "${CONFIGSCANDIR}/brotli.ini" || ! -f "${CONFIGSCANDIR}/lz4.ini" || ! -f "${CONFIGSCANDIR}/lzf.ini" || ! -f "${CONFIGSCANDIR}/zstd.ini" ]] && [[ "$PHPMSSQL" = [yY] || "$PHPMONGODB" = [yY] || "$PHPSWOOLE" = [yY] || "$PHPZOPFLI" = [yY] || "$PHP_BROTLI" = [yY] || "$PHP_LZFOUR" = [yY] || "$PHP_LZF" = [yY] || "$PHP_ZSTD" = [yY] ]]; then
+        autodetectinstallextensions
     fi
 
     if [[ "$PHPMUVER" != 'NGDEBUG' ]]; then
@@ -1187,6 +1353,7 @@ fi
 
 fileinfo_standalone
 phptimezonedb_install
+run_after_php_upgrade
 
 # set php-fpm alias log inspection shotcuts
 if [[ ! "$(grep fpm-errlog /root/.bashrc)" || ! "$(grep fpm-slowlog /root/.bashrc)" || ! "$(grep fpm-phperrlog /root/.bashrc)" ]]; then
@@ -1231,8 +1398,30 @@ fi
 
 sar_call
 
-    if [[ "$CENTOS_SEVEN" -eq '7' && "$SWITCH_PHPFPM_SYSTEMD" = [yY] && -f "/usr/local/src/centminmod/tools/php-systemd.sh" && ! -f /usr/lib/systemd/system/php-fpm.service ]]; then
+    if [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]] && [[ "$SWITCH_PHPFPM_SYSTEMD" = [yY] && -f "/usr/local/src/centminmod/tools/php-systemd.sh" && ! -f /usr/lib/systemd/system/php-fpm.service ]]; then
       /usr/local/src/centminmod/tools/php-systemd.sh fpm-systemd
+        if [ ! -f /etc/systemd/system/php-fpm.service.d/failure-restart.conf ]; then
+cat > "/etc/systemd/system/php-fpm.service.d/failure-restart.conf" <<TDG
+[Unit]
+StartLimitIntervalSec=30
+StartLimitBurst=5
+
+[Service]
+Restart=on-failure
+RestartSec=5s
+TDG
+        fi
+    elif [[ "$CENTOS_SEVEN" -eq '7' ]] && [[ "$SWITCH_PHPFPM_SYSTEMD" = [yY] && -f "/usr/local/src/centminmod/tools/php-systemd.sh" && ! -f /usr/lib/systemd/system/php-fpm.service ]]; then
+      /usr/local/src/centminmod/tools/php-systemd.sh fpm-systemd
+        if [ ! -f /etc/systemd/system/php-fpm.service.d/failure-restart.conf ] || [[ "$CENTOS_SEVEN" = '7' && "$(grep -o Unit /etc/systemd/system/php-fpm.service.d/failure-restart.conf)" = 'Unit' ]]; then
+cat > "/etc/systemd/system/php-fpm.service.d/failure-restart.conf" <<TDG
+[Service]
+StartLimitInterval=30
+StartLimitBurst=5
+Restart=on-failure
+RestartSec=5s
+TDG
+        fi
     fi
     cmservice php-fpm restart
     if [ -f /usr/bin/journalctl ]; then
@@ -1248,13 +1437,13 @@ if [[ "$zendopcacheon" = [yY] && "$OLD_OPCACHEPHP" != [yY] ]]; then
 fi
 
 # notes for users if PHP 7.0 detected
-php-config --version | cut -d . -f1,2 | egrep -w '7.0|7.1|7.2|7.3|7.4|8.0|8.1'
+php-config --version | cut -d . -f1,2 | egrep -w '7.0|7.1|7.2|7.3|7.4|8.0|8.1|8.2|8.3|8.4'
 PHPSEVEN_CHECKVER=$?
 echo "$PHPSEVEN_CHECKVER"
 
 if [[ "$PHPSEVEN_CHECKVER" = '0' ]]; then
     cecho "***************************************************" $boldgreen
-    cecho "PHP 7.0/7.1/7.2/7.3/7.4/8.0/8.1 detected.. remove unsupported PHP extensions manually" $boldyellow
+    cecho "PHP 7.0/7.1/7.2/7.3/7.4/8.0/8.1/8.2/8.3/8.4 detected.. remove unsupported PHP extensions manually" $boldyellow
     cecho "by removing their ini files listed below (if list is empty = nothing to do):" $boldyellow
     cecho "***************************************************" $boldgreen
     echo
@@ -1268,7 +1457,10 @@ if [[ "$PHPSEVEN_CHECKVER" = '0' ]]; then
     #     cecho "#rm -rf ${CONFIGSCANDIR}/memcache.ini" $boldyellow
     # fi
     if [ -f "${CONFIGSCANDIR}/mongodb.ini" ]; then
-        cecho "#rm -f ${CONFIGSCANDIR}/mongodb.ini" $boldyellow
+        cecho "rm -f ${CONFIGSCANDIR}/mongodb.ini" $boldyellow
+    fi
+    if [ -f "${CONFIGSCANDIR}/swoole.ini" ]; then
+        cecho "rm -f ${CONFIGSCANDIR}/swoole.ini" $boldyellow
     fi
     # if [ -f ${CONFIGSCANDIR}/redis.ini ]; then
     #     cecho "#rm -f ${CONFIGSCANDIR}/redis.ini" $boldyellow
@@ -1336,7 +1528,14 @@ if [[ "$PHPMUVER" = '5.6' && -f "${CONFIGSCANDIR}/timezonedb.ini" ]]; then
         cmservice php-fpm restart >/dev/null 2>&1
     fi
 fi
-
+    strip_php_extensions
+    if [[ "$PHP_SECURED" = [yY] ]]; then
+        echo "***************************************************"
+        checksec_phpext
+        echo "***************************************************"
+        echo "checksec --format=json --file=/usr/local/sbin/php-fpm --extended | jq -r"
+        checksec --format=json --file=/usr/local/sbin/php-fpm --extended | jq -r
+    fi
     if [[ "$PHP_LDMOLD" = [yY] ]]; then
         echo
         echo "***************************************************"
@@ -1345,6 +1544,8 @@ fi
         echo
     fi
     echo "***************************************************"
+    # remove cached PHP latest version file
+    rm -f /tmp/php_version_cache
     php-config
     echo "***************************************************"
     php -v

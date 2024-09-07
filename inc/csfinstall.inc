@@ -14,13 +14,13 @@ csf_maxmind_geolite_two_download() {
     csf_maxmind_silent=$1
     if [[ -f /etc/csf/csf.conf && -d /var/lib/csf/ ]] && [[ ! -f /var/lib/csf/Geo/GeoLite2-Country-Blocks-IPv4.csv || ! -f /var/lib/csf/Geo/GeoLite2-Country-Blocks-IPv6.csv || ! -f GeoLite2-Country-Locations-en.csv ]]; then
         if [[ "$csf_maxmind_silent" = 'silent' ]]; then
-            wget${ipv_forceopt_wget} https://centminmod.com/centminmodparts/geoip2-lite/csf-geolite2.tar.gz -O /svr-setup/csf-geolite2.tar.gz
+            wget${ipv_forceopt_wget} ${LOCALCENTMINMOD_MIRROR}/centminmodparts/geoip2-lite/csf-geolite2.tar.gz -O /svr-setup/csf-geolite2.tar.gz
             tar xf /svr-setup/csf-geolite2.tar.gz -C /var/lib/csf/
             csf --profile backup cmm-before-maxmind-csf-database-download >/dev/null 2>&1
             sed -i 's|CC_INTERVAL = .*|CC_INTERVAL = "14"|' /etc/csf/csf.conf
             csf --profile backup cmm-after-maxmind-csf-database-download >/dev/null 2>&1
         else
-            wget${ipv_forceopt_wget} https://centminmod.com/centminmodparts/geoip2-lite/csf-geolite2.tar.gz -O /svr-setup/csf-geolite2.tar.gz
+            wget${ipv_forceopt_wget} ${LOCALCENTMINMOD_MIRROR}/centminmodparts/geoip2-lite/csf-geolite2.tar.gz -O /svr-setup/csf-geolite2.tar.gz
             tar xvf /svr-setup/csf-geolite2.tar.gz -C /var/lib/csf/
             csf --profile backup cmm-before-maxmind-csf-database-download >/dev/null 2>&1
             sed -i 's|CC_INTERVAL = .*|CC_INTERVAL = "14"|' /etc/csf/csf.conf
@@ -186,7 +186,7 @@ if [[ "$CSFINSTALLOK" = [yY] ]]; then
         yum${CACHESKIP} -y install perl-libwww-perl
         sar_call
     fi
-    if [[ "$CENTOS_SEVEN" = '7' ]]; then
+    if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]]; then
         if [[ $(rpm -q perl-LWP-Protocol-https >/dev/null 2>&1; echo $?) != '0' ]]; then
             yum${CACHESKIP} -y install perl-LWP-Protocol-https
             sar_call
@@ -217,8 +217,40 @@ if [[ "$CSFINSTALLOK" = [yY] ]]; then
 sed -i "s/TCP_OUT = \"/TCP_OUT = \"8080,2525,465,111,2049,1110,1194,9418,3306,/g" /etc/csf/csf.conf
 sed -i "s/TCP6_OUT = \"/TCP6_OUT = \"8080,2525,465,3306,/g" /etc/csf/csf.conf
 sed -i "s/UDP_IN = \"/UDP_IN = \"67,68,111,2049,1110,33434:33534,/g" /etc/csf/csf.conf
-sed -i "s/UDP_OUT = \"/UDP_OUT = \"67,68,111,2049,1110,33434:33534,/g" /etc/csf/csf.conf
+sed -i "s/UDP_OUT = \"/UDP_OUT = \"67,68,111,2049,1110,33434:33534,443,/g" /etc/csf/csf.conf
 sed -i "s/DROP_NOLOG = \"67,68,/DROP_NOLOG = \"/g" /etc/csf/csf.conf
+
+# ensure HTTP/3 UDP port 443 is open
+if [[ "$NGINX_QUIC_SUPPORT" = [yY] ]]; then
+  if [[ ! "$(grep 'UDP_IN =' /etc/csf/csf.conf | grep -o '443')" ]]; then
+    csf --profile backup http3_udp_in
+    # csf --profile list
+    sed -i "s/UDP_IN = \"/UDP_IN = \"443,/g" /etc/csf/csf.conf
+    grep 'UDP_IN =' /etc/csf/csf.conf | grep -o '443'
+    # csf -ra >/dev/null 2>&1
+  fi
+  if [[ ! "$(grep 'UDP_OUT =' /etc/csf/csf.conf | grep -o '443')" ]]; then
+    csf --profile backup http3_udp_out
+    # csf --profile list
+    sed -i "s/UDP_OUT = \"/UDP_OUT = \"443,/g" /etc/csf/csf.conf
+    grep 'UDP_OUT =' /etc/csf/csf.conf | grep -o '443'
+    # csf -ra >/dev/null 2>&1
+  fi
+  if [[ ! "$(grep 'UDP6_IN =' /etc/csf/csf.conf | grep -o '443')" ]]; then
+    csf --profile backup http3_udp6_in
+    # csf --profile list
+    sed -i "s/UDP6_IN = \"/UDP6_IN = \"443,/g" /etc/csf/csf.conf
+    grep 'UDP6_IN =' /etc/csf/csf.conf | grep -o '443'
+    # csf -ra >/dev/null 2>&1
+  fi
+  if [[ ! "$(grep 'UDP6_OUT =' /etc/csf/csf.conf | grep -o '443')" ]]; then
+    csf --profile backup http3_udp6_out
+    # csf --profile list
+    sed -i "s/UDP6_OUT = \"/UDP6_OUT = \"443,/g" /etc/csf/csf.conf
+    grep 'UDP6_OUT =' /etc/csf/csf.conf | grep -o '443'
+    # csf -ra >/dev/null 2>&1
+  fi
+fi
 
     egrep '^UDP_|^TCP_|^DROP_NOLOG' /etc/csf/csf.conf
     
@@ -320,10 +352,10 @@ fi # check to see if csf.pignore already has custom apps added
 
 # if CentOS 7 is detected disable firewalld in favour 
 # of csf iptables ip6tables for now
-if [[ "$CENTOS_EIGHT" = '8' || "$CENTOS_SEVEN" = '7' ]]; then
+if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]]; then
     if [[ "$FIREWALLD_DISABLE" = [yY] ]]; then
         # disable firewalld
-        if [[ "$CENTOS_EIGHT" = '8' ]]; then
+        if [[ "$CENTOS_EIGHT" = '8'|| "$CENTOS_NINE" -eq '9' ]]; then
             systemctl disable firewalld nftables
             systemctl stop firewalld nftables
         else

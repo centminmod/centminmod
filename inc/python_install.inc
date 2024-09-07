@@ -1,3 +1,71 @@
+python_alternatives_setup() {
+    # for EL8+ python unversion configuration
+    # default to Python 3.6
+    if [[ "$PYTHON_INSTALL_ALTERNATIVES" = [yY] && "$CENTOS_EIGHT" -eq '8' ]]; then
+        if [ ! -f "/usr/bin/python${ALT_PYTHON_VER_LABEL}" ]; then
+            yum -y install python${ALT_PYTHON_VER}
+        fi
+        if [[ ! "$(rpm -qa python${ALT_PYTHON_VER}-devel)" ]]; then
+            yum -y install python${ALT_PYTHON_VER}-devel
+        fi
+        if [ ! -f "/usr/bin/pip${ALT_PYTHON_VER_LABEL}" ]; then
+            yum -y install python3-pip
+        fi
+        if [[ ! "$(alternatives --list | grep -E 'manual.*\/usr\/bin\/python3')" && ! "$(alternatives --list | egrep -i 'pip|python' | grep -E 'manual.*\/usr\/bin\/pip3')" ]]; then
+            echo
+            echo "Setup python3 and pip3 alternatives mapping"
+            echo "you can reference pip for pip3"
+            echo "you can reference python for python3"
+            alternatives --set python /usr/bin/python3
+            alternatives --install /usr/bin/pip pip /usr/bin/pip3 1
+            alternatives --set pip /usr/bin/pip3
+            alternatives --list | egrep -i 'pip|python'
+            echo
+        else
+            echo
+            # echo "Skip python3 and pip3 alternatives mapping"
+        fi
+        if [[ "$(rpm -qa python3-numpy | grep -o 'python3-numpy')" != 'python3-numpy' ]]; then
+            yum -y install python3-numpy
+        fi
+        if [[ "$(rpm -qa python3-requests | grep -o 'python3-requests')" != 'python3-requests' ]]; then
+            yum -y install python3-requests
+        fi
+    elif [[ "$PYTHON_INSTALL_ALTERNATIVES" = [yY] && "$CENTOS_NINE" -eq '9' ]] && [[ ! -f /usr/bin/python3 && ! -f /usr/bin/pip ]]; then
+        # ALT_PYTHON_VER_LABEL='3.11'
+        ALT_PYTHON_VER_EL9='3.11'
+        if [ ! -f "/usr/bin/python${ALT_PYTHON_VER_EL9}" ]; then
+            yum -y install python${ALT_PYTHON_VER_EL9}
+        fi
+        if [[ ! "$(rpm -qa python${ALT_PYTHON_VER_EL9}-devel)" ]]; then
+            yum -y install python${ALT_PYTHON_VER_EL9}-devel
+        fi
+        if [ ! -f "/usr/bin/pip${ALT_PYTHON_VER_EL9}" ]; then
+            yum -y install python${ALT_PYTHON_VER_EL9}-pip
+        fi
+        if [[ ! "$(alternatives --list | grep -E 'manual.*\/usr\/bin\/python')" && ! "$(alternatives --list | egrep -i 'pip|python' | grep -E 'manual.*\/usr\/bin\/pip')" ]]; then
+            echo
+            echo "Setup python${ALT_PYTHON_VER_EL9} and pip${ALT_PYTHON_VER_EL9} alternatives mapping"
+            echo "you can reference pip for pip${ALT_PYTHON_VER_EL9}"
+            echo "you can reference python for python${ALT_PYTHON_VER_EL9}"
+            alternatives --set python /usr/bin/python${ALT_PYTHON_VER_EL9}
+            alternatives --install /usr/bin/pip pip /usr/bin/pip${ALT_PYTHON_VER_EL9} 1
+            alternatives --set pip /usr/bin/pip${ALT_PYTHON_VER_EL9}
+            alternatives --list | egrep -i 'pip|python'
+            echo
+        else
+            echo
+            echo "Skip python${ALT_PYTHON_VER_EL9} and pip${ALT_PYTHON_VER_EL9} alternatives mapping"
+        fi
+        if [[ "$(rpm -qa python3-numpy | grep -o 'python3-numpy')" != 'python3-numpy' ]]; then
+            yum -y install python3-numpy
+        fi
+        if [[ "$(rpm -qa python3-requests | grep -o 'python3-requests')" != 'python3-requests' ]]; then
+            yum -y install python3-requests
+        fi
+    fi
+}
+
 installpythonfuct() {
 
 #ASK "Install Python Update ? [y/n] "

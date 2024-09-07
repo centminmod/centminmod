@@ -40,4 +40,7 @@ setmycnf() {
     \cp -f $CUR_DIR/config/mysql/my-mdb10-64gb-8c.cnf /etc/my.cnf
   fi
   mysql_charset_default
+  echo
+  cat /etc/my.cnf
+  echo
 }

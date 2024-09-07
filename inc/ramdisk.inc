@@ -9,7 +9,7 @@ setramdisk() {
 		if [[ "$TOTALMEM" -ge "$TMPFSLIMIT" ]]; then
 			echo "setting up $DIR_TMP on tmpfs ramdisk for initial install"
 			mkdir -p $DIR_TMP
-			mount -t tmpfs -o size=3100M,mode=0755 tmpfs $DIR_TMP
+			mount -t tmpfs -o size=3400M,mode=0755 tmpfs $DIR_TMP
 			df -hT
 		else
         	mkdir -p $DIR_TMP
@@ -26,7 +26,8 @@ unsetramdisk() {
 		\cp -R ${DIR_TMP}/* ${DIR_TMP}_disk &>/dev/null
 		# ls -lah ${DIR_TMP}_disk
 		# diff -qr ${DIR_TMP} ${DIR_TMP}_disk &>/dev/null
-		umount ${DIR_TMP}
+		umount -l "${DIR_TMP}"
+		mkdir -p "${DIR_TMP}"
 		\cp -R ${DIR_TMP}_disk/* ${DIR_TMP} &>/dev/null
 		# ls -lahrt ${DIR_TMP}
 		rm -rf ${DIR_TMP}_disk

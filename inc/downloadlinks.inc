@@ -36,7 +36,7 @@
 VARNISH_REPOFILE='/etc/yum.repos.d/varnishcache_varnish41.repo'
 
 CURL_CACERTURL='https://curl.se/ca/cacert.pem'
-# CURL_CACERTURL='https://centminmod.com/centminmodparts/curl/cacert.pem'
+# CURL_CACERTURL='${LOCALCENTMINMOD_MIRROR}/centminmodparts/curl/cacert.pem'
 
 CCACHEFILE="ccache-${CCACHE_VER}.tar.gz"
 #CCCACHELINK="https://www.samba.org/ftp/ccache/${CCACHEFILE}"
@@ -76,7 +76,7 @@ CENTOSSIXPERCONALRELEASE="https://repo.percona.com/yum/${CENTOSSIXPERCONALRELEAS
 
 CENTOSSIXVARNISHFILE="varnish-4.1.el6.rpm"
 CENTOSSIXVARNISH="https://repo.varnish-cache.org/redhat/${CENTOSSIXVARNISHFILE}"
-CENTOSSIXVARNISHLOCAL='https://centminmod.com/centminmodparts/repos/${CENTOSSIXVARNISHFILE}'
+CENTOSSIXVARNISHLOCAL='${LOCALCENTMINMOD_MIRROR}/centminmodparts/repos/${CENTOSSIXVARNISHFILE}'
 
 CENTOSSIXAXIVOFILE="axivo-release-6-1.noarch.rpm"
 CENTOSSIXAXIVO="http://rpm.axivo.com/${CENTOSSIXAXIVOFILE}"
@@ -162,7 +162,7 @@ CENTOSSEVENPERCONALRELEASE="https://repo.percona.com/yum/${CENTOSSEVENPERCONALRE
 
 CENTOSSEVENVARNISHFILE="varnish-4.1.el7.rpm"
 CENTOSSEVENVARNISH="https://repo.varnish-cache.org/redhat/${CENTOSSEVENVARNISHFILE}"
-CENTOSSEVENVARNISHLOCAL='https://centminmod.com/centminmodparts/repos/${CENTOSSEVENVARNISHFILE}'
+CENTOSSEVENVARNISHLOCAL='${LOCALCENTMINMOD_MIRROR}/centminmodparts/repos/${CENTOSSEVENVARNISHFILE}'
 
 CENTOSSEVENAXIVOFILE="axivo-release-7-1.noarch.rpm"
 CENTOSSEVENAXIVO="http://rpm.axivo.com/${CENTOSSEVENAXIVOFILE}"
@@ -177,11 +177,13 @@ CENTOSSEVENATRPMS="http://dl.atrpms.net/all/${CENTOSSEVENATRPMSFILE}"
 CENTOSSEVENATRPMSLOCAL="${LOCALCENTMINMOD_MIRROR}/centminmodparts/repos/${CENTOSSEVENATRPMSFILE}"
 
 PCRETWOLINKFILE="pcre2-${NGINX_PCRETWOVER}.tar.gz"
+MASTER_PCRETWOLINKFILE="master-pcre2${NGINX_PCRETWOVER}.tar.gz"
 #PCRETWOLINK="https://github.com/PhilipHazel/pcre2/releases/download/pcre2-${NGINX_PCRETWOVER}/pcre2-${NGINX_PCRETWOVER}.tar.gz"
 PCRETWOLINK="${LOCALCENTMINMOD_MIRROR}/centminmodparts/pcre/${PCRETWOLINKFILE}"
 PCRETWOLINKLOCAL="${LOCALCENTMINMOD_MIRROR}/centminmodparts/pcre/${PCRETWOLINKFILE}"
 
 PCRELINKFILE="pcre-${NGINX_PCREVER}.tar.gz"
+MASTER_PCRELINKFILE="master-pcre${NGINX_PCREVER}.tar.gz"
 #PCRELINK="https://ftp.pcre.org/pub/pcre/${PCRELINKFILE}"
 PCRELINK="${LOCALCENTMINMOD_MIRROR}/centminmodparts/pcre/${PCRELINKFILE}"
 PCRELINKLOCAL="${LOCALCENTMINMOD_MIRROR}/centminmodparts/pcre/${PCRELINKFILE}"
@@ -191,6 +193,7 @@ PCRE_SOURCELINK="${LOCALCENTMINMOD_MIRROR}/centminmodparts/pcre/${PCRE_SOURCELIN
 PCRE_SOURCELINKLOCAL="${LOCALCENTMINMOD_MIRROR}/centminmodparts/pcre/${PCRE_SOURCELINKFILE}"
 
 NGX_ZLIBLINKFILE="zlib-${NGINX_ZLIBVER}.tar.gz"
+MASTER_NGX_ZLIBLINKFILE="master-zlib-${NGINX_ZLIBVER}.tar.gz"
 NGX_ZLIBLINK="${LOCALCENTMINMOD_MIRROR}/centminmodparts/zlib/${NGX_ZLIBLINKFILE}"
 NGX_ZLIBLINKLOCAL="${LOCALCENTMINMOD_MIRROR}/centminmodparts/zlib/${NGX_ZLIBLINKFILE}"
 
@@ -213,70 +216,83 @@ NGX_PAGESPEEDPSOLINKLFILE="${NGINX_PAGESPEEDPSOL_VER}.tar.gz"
 NGX_PAGESPEEDPSOLINKL="https://dl.google.com/dl/page-speed/psol/${NGX_PAGESPEEDPSOLINKLFILE}"
 
 NGX_FANCYINDEXLINKFILE="ngx-fancyindex-${NGINX_FANCYINDEXVER}.tar.gz"
+MASTER_NGX_FANCYINDEXLINKFILE="master-ngx-fancyindex-${NGINX_FANCYINDEXVER}.tar.gz"
 NGX_FANCYINDEXLINK="https://github.com/aperezdc/ngx-fancyindex/archive/v${NGINX_FANCYINDEXVER}.tar.gz"
 #NGX_FANCYINDEXLINK="${LOCALCENTMINMOD_MIRROR}/centminmodparts/nginx/modules/${NGX_FANCYINDEXLINKFILE}"
 
 NGX_CACHEPURGEFILE="ngx_cache_purge-${NGINX_CACHEPURGEVER}.tar.gz"
+MASTER_NGX_CACHEPURGEFILE="master-ngx_cache_purge-${NGINX_CACHEPURGEVER}.tar.gz"
 NGX_CACHEPURGE="https://github.com/nginx-modules/ngx_cache_purge/archive/${NGINX_CACHEPURGEVER}.tar.gz"
 #NGX_CACHEPURGE="${LOCALCENTMINMOD_MIRROR}/centminmodparts/nginx/modules/${NGX_CACHEPURGEFILE}"
 
-NGX_ACCESSKEYLINKFILE="Nginx-accesskey-2.0.3.tar.gz"
+NGX_ACCESSKEYLINKFILE="Nginx-accesskey-2.0.5.tar.gz"
+MASTER_NGX_ACCESSKEYLINKFILE="master-Nginx-accesskey-2.0.5.tar.gz"
 NGX_ACCESSKEYLINK="${LOCALCENTMINMOD_MIRROR}/centminmodparts/nginx/modules/${NGX_ACCESSKEYLINKFILE}"
 
 # wget renamed
 NGX_CONCATLINKFILE="nginx-http-concat-master.tar.gz"
+MASTER_NGX_CONCATLINKFILE="master-nginx-http-concat-master.tar.gz"
 NGX_CONCATLINK='https://github.com/alibaba/nginx-http-concat/archive/master.tar.gz'
 NGX_CONCATLINKGITLAB='https://gitlab.com/centminmod-github-mirror/nginx-http-concat/repository/archive.tar.gz?ref=master'
 
 # wget renamed
 NGX_HEADERSMORELINKFILE="headers-more-v${NGINX_HEADERSMORE}.tar.gz"
+MASTER_NGX_HEADERSMORELINKFILE="master-headers-more-v${NGINX_HEADERSMORE}.tar.gz"
 NGX_HEADERSMORELINK="https://github.com/openresty/headers-more-nginx-module/archive/v${NGINX_HEADERSMORE}.tar.gz"
 # NGX_HEADERSMORELINK="https://github.com/centminmod/headers-more-nginx-module/archive/refs/tags/v${NGINX_HEADERSMORE}.tar.gz"
 NGX_HEADERSMORELINKGITLAB="https://gitlab.com/centminmod-github-mirror/headers-more-nginx-module/repository/archive.tar.gz?ref=v${NGINX_HEADERSMORE}"
 
 # wget renamed
 NGX_STICKYLINKFILE="nginx-sticky-${NGINX_STICKYVER}.tar.gz"
+MASTER_NGX_STICKYLINKFILE="master-nginx-sticky-${NGINX_STICKYVER}.tar.gz"
 NGX_STICKYLINK="https://bitbucket.org/nginx-goodies/nginx-sticky-module-ng/get/${NGINX_STICKYVER}.tar.gz"
 NGX_STICKYLINKGITLAB="https://gitlab.com/centminmod-github-mirror/nginx-sticky-module-ng/repository/archive.tar.gz?ref=${NGINX_STICKYVER}"
 
 # wget renamed
 NGX_UPSTREAMCHECKLINKFILE="nginx-upstream-check-${NGINX_UPSTREAMCHECKVER}.tar.gz"
+MASTER_NGX_UPSTREAMCHECKLINKFILE="master-nginx-upstream-check-${NGINX_UPSTREAMCHECKVER}.tar.gz"
 NGX_UPSTREAMCHECKLINK="https://github.com/yaoweibin/nginx_upstream_check_module/archive/v${NGINX_UPSTREAMCHECKVER}.tar.gz"
 NGX_UPSTREAMCHECKLINKGITLAB="https://gitlab.com/centminmod-github-mirror/nginx_upstream_check_module/repository/archive.tar.gz?ref=${NGINX_UPSTREAMCHECKVER}"
 
 # wget renamed
 NGX_MEMCLINKFILE="memc-nginx-module_v${ORESTY_MEMCVER}.tar.gz"
+MASTER_NGX_MEMCLINKFILE="master-memc-nginx-module_v${ORESTY_MEMCVER}.tar.gz"
 NGX_MEMCLINK="https://github.com/openresty/memc-nginx-module/archive/v${ORESTY_MEMCVER}.tar.gz"
 NGX_MEMCLINKGITLAB="https://gitlab.com/centminmod-github-mirror/memc-nginx-module/repository/archive.tar.gz?ref=v${ORESTY_MEMCVER}"
 
 # wget renamed
 NGX_SRCACHELINKFILE="srcache-nginx-module_v${ORESTY_SRCCACHEVER}.tar.gz"
+MASTER_NGX_SRCACHELINKFILE="master-srcache-nginx-module_v${ORESTY_SRCCACHEVER}.tar.gz"
 NGX_SRCACHELINK="https://github.com/openresty/srcache-nginx-module/archive/v${ORESTY_SRCCACHEVER}.tar.gz"
 NGX_SRCACHELINKGITLAB="https://gitlab.com/centminmod-github-mirror/srcache-nginx-module/repository/archive.tar.gz?ref=v${ORESTY_SRCCACHEVER}"
 
 # wget renamed
 NGX_DEVELKITLINKFILE="nginx-develkit_v${ORESTY_DEVELKITVER}.tar.gz"
-NGX_DEVELKITLINK="https://github.com/simpl/ngx_devel_kit/archive/v${ORESTY_DEVELKITVER}.tar.gz"
+MASTER_NGX_DEVELKITLINKFILE="master-nginx-develkit_v${ORESTY_DEVELKITVER}.tar.gz"
+NGX_DEVELKITLINK="https://github.com/vision5/ngx_devel_kit/archive/v${ORESTY_DEVELKITVER}.tar.gz"
 NGX_DEVELKITLINKGITLAB="https://gitlab.com/centminmod-github-mirror/ngx_devel_kit/repository/archive.tar.gz?ref=v${ORESTY_DEVELKITVER}"
 
 # wget renamed
 NGX_SETMISCLINKFILE="set-misc-nginx-module_v${ORESTY_SETMISCVER}.tar.gz"
+MASTER_NGX_SETMISCLINKFILE="master-set-misc-nginx-module_v${ORESTY_SETMISCVER}.tar.gz"
 NGX_SETMISCLINK="https://github.com/openresty/set-misc-nginx-module/archive/v${ORESTY_SETMISCVER}.tar.gz"
 NGX_SETMISCLINKGITLAB="https://gitlab.com/centminmod-github-mirror/set-misc-nginx-module/repository/archive.tar.gz?ref=v${ORESTY_SETMISCVER}"
 
 # wget renamed
 NGX_ECHOLINKFILE="echo-nginx-module_v${ORESTY_ECHOVER}.tar.gz"
+MASTER_NGX_ECHOLINKFILE="master-echo-nginx-module_v${ORESTY_ECHOVER}.tar.gz"
 NGX_ECHOLINK="https://github.com/openresty/echo-nginx-module/archive/v${ORESTY_ECHOVER}.tar.gz"
 NGX_ECHOLINKGITLAB="https://gitlab.com/centminmod-github-mirror/echo-nginx-module/repository/archive.tar.gz?ref=v${ORESTY_ECHOVER}"
 
 # wget renamed
 NGX_REDISLINKFILE="redis2-nginx-module_v${ORESTY_REDISVER}.tar.gz"
+MASTER_NGX_REDISLINKFILE="master-redis2-nginx-module_v${ORESTY_REDISVER}.tar.gz"
 NGX_REDISLINK="https://github.com/openresty/redis2-nginx-module/archive/v${ORESTY_REDISVER}.tar.gz"
 NGX_REDISLINKGITLAB="https://gitlab.com/centminmod-github-mirror/redis2-nginx-module/repository/archive.tar.gz?ref=v${ORESTY_REDISVER}"
 
 # wget renamed
 NGX_HTTPREDISLINKFILE="ngx_http_redis-${NGINX_HTTPREDISVER}.tar.gz"
-# NGX_HTTPREDISLINK="http://people.freebsd.org/~osa/ngx_http_redis-${NGINX_HTTPREDISVER}.tar.gz"
+MASTER_NGX_HTTPREDISLINKFILE="master-ngx_http_redis-${NGINX_HTTPREDISVER}.tar.gz"
 # NGX_HTTPREDISLINK="https://github.com/osokin/ngx_http_redis/archive/refs/tags/${NGINX_HTTPREDISVER}.tar.gz"
 NGX_HTTPREDISLINK="https://github.com/centminmod/ngx_http_redis/archive/refs/tags/${NGINX_HTTPREDISVER}.tar.gz"
 
@@ -420,12 +436,15 @@ MYSQLTUNER_LINK="${LOCALCENTMINMOD_MIRROR}/centminmodparts/mysqltuner/mysqltuner
 
 NGX_LINKFILE="nginx-${NGINX_VERSION}.tar.gz"
 NGX_LINK="https://nginx.org/download/${NGX_LINKFILE}"
+FREENGX_LINKFILE="freenginx-${FREENGINX_VERSION}.tar.gz"
+FREENGX_LINK="https://freenginx.org/download/${FREENGX_LINKFILE}"
 
 NGX_VTSLINK='https://github.com/vozlt/nginx-module-vts.git'
 NGX_VTSLINKGITLAB='https://gitlab.com/centminmod-github-mirror/nginx-module-vts.git'
 
 OPENSSL_LINKFILE="openssl-${OPENSSL_VERSION}.tar.gz"
-OPENSSL_LINK="https://www.openssl.org/source/${OPENSSL_LINKFILE}"
+MASTER_OPENSSL_LINKFILE="master-openssl${OPENSSL_VERSION}.tar.gz"
+OPENSSL_LINK="https://github.com/openssl/openssl/releases/download/openssl-${OPENSSL_VERSION}/${OPENSSL_LINKFILE}"
 OPENSSL_LINKLOCAL="${LOCALCENTMINMOD_MIRROR}/centminmodparts/openssl/${OPENSSL_LINKFILE}"
 
 LIBRESSL_LINKFILE="libressl-${LIBRESSL_VERSION}.tar.gz"
@@ -482,7 +501,7 @@ AXEL_LINKGITLAB="https://gitlab.com/centminmod-github-mirror/axel/repository/arc
 AXEL_LINKLOCAL="https://github.com/axel-download-accelerator/axel/archive/v${AXEL_VER}.tar.gz"
 
 WGET_FILENAME="wget-${WGET_VERSION}.tar.gz"
-WGET_LINK="https://centminmod.com/centminmodparts/wget/${WGET_FILENAME}"
+WGET_LINK="${LOCALCENTMINMOD_MIRROR}/centminmodparts/wget/${WGET_FILENAME}"
 
 LIBUNWIND_LINKFILE="libunwind-${LIBUNWIND_VERSION}.tar.gz"
 LIBUNWIND_LINKDIR="libunwind-${LIBUNWIND_VERSION}"

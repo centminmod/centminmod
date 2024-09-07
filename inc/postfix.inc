@@ -18,18 +18,24 @@ if [[ "$CENTOS_SIX" = '6' ]]; then
       cecho "* sendmail installed" $boldgreen
       echo "*************************************************"
     elif [[ -f /etc/init.d/postfix ]]; then
-          if [ ! -f /bin/mailx ]; then
+          if [[ "$CENTOS_NINE" -eq '9' && ! -f /bin/s-nail ]]; then
+              $YUMDNFBIN${CACHESKIP} -y -q install s-nail
+              sar_call
+          elif [ ! -f /bin/mailx ]; then
               $YUMDNFBIN${CACHESKIP} -y -q install mailx${DISABLEREPO_DNF}
-                sar_call
+              sar_call
           fi
           postfixsetup
           echo "*************************************************"
           cecho "Postfix already detected, sendmail install aborted" $boldgreen
           echo "*************************************************"
       elif [[ -f /etc/init.d/sendmail ]]; then
-          if [ ! -f /bin/mailx ]; then
+          if [[ "$CENTOS_NINE" -eq '9' && ! -f /bin/s-nail ]]; then
+              $YUMDNFBIN${CACHESKIP} -y -q install s-nail
+              sar_call
+          elif [ ! -f /bin/mailx ]; then
               $YUMDNFBIN${CACHESKIP} -y -q install mailx${DISABLEREPO_DNF}
-                sar_call
+              sar_call
           fi
           chkconfig --levels 235 sendmail on
           funct_sendmailmc
@@ -51,9 +57,12 @@ if [[ "$CENTOS_SIX" = '6' ]]; then
           cecho "* postfix installed" $boldgreen
           echo "*************************************************"
       elif [[ -f /etc/init.d/postfix ]]; then
-          if [ ! -f /bin/mailx ]; then
+          if [[ "$CENTOS_NINE" -eq '9' && ! -f /bin/s-nail ]]; then
+              $YUMDNFBIN${CACHESKIP} -y -q install s-nail
+              sar_call
+          elif [ ! -f /bin/mailx ]; then
               $YUMDNFBIN${CACHESKIP} -y -q install mailx${DISABLEREPO_DNF}
-                sar_call
+              sar_call
           fi
           postfixsetup
           echo "*************************************************"
@@ -82,9 +91,12 @@ if [[ "$CENTOS_SIX" = '6' ]]; then
           cecho "* postfix installed" $boldgreen
           echo "*************************************************"
       elif [[ -f /etc/init.d/postfix ]]; then
-          if [ ! -f /bin/mailx ]; then
+          if [[ "$CENTOS_NINE" -eq '9' && ! -f /bin/s-nail ]]; then
+              $YUMDNFBIN${CACHESKIP} -y -q install s-nail
+              sar_call
+          elif [ ! -f /bin/mailx ]; then
               $YUMDNFBIN${CACHESKIP} -y -q install mailx${DISABLEREPO_DNF}
-                sar_call
+              sar_call
           fi
           postfixsetup
           echo "*************************************************"
@@ -108,7 +120,7 @@ if [[ "$CENTOS_SIX" = '6' ]]; then
   fi
 fi # centos6
 
-if [[ "$CENTOS_SEVEN" = '7' ]]; then
+if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]]; then
   if [[ "$SENDMAIL_INSTALL" = [yY] && "$POSTFIX_INSTALL" = [nN] ]]; then
     if [[ ! -f /usr/lib/systemd/system/postfix.service && ! -f /usr/lib/systemd/system/sendmail.service ]]; then
       echo "*************************************************"
@@ -122,18 +134,24 @@ if [[ "$CENTOS_SEVEN" = '7' ]]; then
       cecho "* sendmail installed" $boldgreen
       echo "*************************************************"
     elif [[ -f /usr/lib/systemd/system/postfix.service ]]; then
-          if [ ! -f /bin/mailx ]; then
+          if [[ "$CENTOS_NINE" -eq '9' && ! -f /bin/s-nail ]]; then
+              $YUMDNFBIN${CACHESKIP} -y -q install s-nail
+              sar_call
+          elif [ ! -f /bin/mailx ]; then
               $YUMDNFBIN${CACHESKIP} -y -q install mailx${DISABLEREPO_DNF}
-                sar_call
+              sar_call
           fi
           postfixsetup
           echo "*************************************************"
           cecho "Postfix already detected, sendmail install aborted" $boldgreen
           echo "*************************************************"
       elif [[ -f /usr/lib/systemd/system/sendmail.service ]]; then
-          if [ ! -f /bin/mailx ]; then
+          if [[ "$CENTOS_NINE" -eq '9' && ! -f /bin/s-nail ]]; then
+              $YUMDNFBIN${CACHESKIP} -y -q install s-nail
+              sar_call
+          elif [ ! -f /bin/mailx ]; then
               $YUMDNFBIN${CACHESKIP} -y -q install mailx${DISABLEREPO_DNF}
-                sar_call
+              sar_call
           fi
           chkconfig --levels 235 sendmail on
           funct_sendmailmc
@@ -155,9 +173,12 @@ if [[ "$CENTOS_SEVEN" = '7' ]]; then
           cecho "* postfix installed" $boldgreen
           echo "*************************************************"
       elif [[ -f /usr/lib/systemd/system/postfix.service ]]; then
-          if [ ! -f /bin/mailx ]; then
+          if [[ "$CENTOS_NINE" -eq '9' && ! -f /bin/s-nail ]]; then
+              $YUMDNFBIN${CACHESKIP} -y -q install s-nail
+              sar_call
+          elif [ ! -f /bin/mailx ]; then
               $YUMDNFBIN${CACHESKIP} -y -q install mailx${DISABLEREPO_DNF}
-                sar_call
+              sar_call
           fi
           postfixsetup
           echo "*************************************************"
@@ -186,9 +207,12 @@ if [[ "$CENTOS_SEVEN" = '7' ]]; then
           cecho "* postfix installed" $boldgreen
           echo "*************************************************"
       elif [[ -f /usr/lib/systemd/system/postfix.service ]]; then
-          if [ ! -f /bin/mailx ]; then
+          if [[ "$CENTOS_NINE" -eq '9' && ! -f /bin/s-nail ]]; then
+              $YUMDNFBIN${CACHESKIP} -y -q install s-nail
+              sar_call
+          elif [ ! -f /bin/mailx ]; then
               $YUMDNFBIN${CACHESKIP} -y -q install mailx${DISABLEREPO_DNF}
-                sar_call
+              sar_call
           fi
           postfixsetup
           echo "*************************************************"
@@ -318,7 +342,7 @@ cmservice postfix restart
 postconf -n | grep mailbox_size_limit | head -n1 | awk '{print $3}'
 
   cd $DIR_TMP
-  wget -${ipv_forceopt}cnv https://centminmod.com/centminmodparts/pflogsumm/pflogsumm-1.1.5.tar.gz --tries=3
+  wget -${ipv_forceopt}cnv ${LOCALCENTMINMOD_MIRROR}/centminmodparts/pflogsumm/pflogsumm-1.1.5.tar.gz --tries=3
   tar -xzf pflogsumm-1.1.5.tar.gz
   cd pflogsumm-1.1.5
   cp pflogsumm.pl /usr/bin/pflogsumm

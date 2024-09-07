@@ -39,7 +39,7 @@ if [ ! -f /var/log/mysqld.log ]; then
   #ls -lah /var/log/mysqld.log
 fi
 
-if [[ "$CENTOS_SEVEN" = '7' ]]; then
+if [[ "$CENTOS_SEVEN" -eq '7' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]]; then
         VARDFSIZE=$(df --output=avail /var | tail -1)
 else
         VARDFSIZE=$(df -P /var | tail -1 | awk '{print $4}')
@@ -60,7 +60,7 @@ cat > "/etc/logrotate.d/mysql" <<END
   postrotate
   if test -x /usr/bin/mysqladmin && /usr/bin/mysqladmin ping &>/dev/null       
   then
-    env HOME=/root/ /usr/bin/mysql -e 'select @@global.long_query_time into @lqt_save; set global long_query_time=2000; select sleep(2); FLUSH LOGS; select sleep(2); set global long_query_time=@lqt_save;'
+    env HOME=/root/ /usr/bin/${ALIAS_MYSQL} -e 'select @@global.long_query_time into @lqt_save; set global long_query_time=2000; select sleep(2); FLUSH LOGS; select sleep(2); set global long_query_time=@lqt_save;'
   fi
   endscript
 }
@@ -79,7 +79,7 @@ cat > "/etc/logrotate.d/mysql" <<END
   postrotate
   if test -x /usr/bin/mysqladmin && /usr/bin/mysqladmin ping &>/dev/null       
   then
-    env HOME=/root/ /usr/bin/mysql -e 'select @@global.long_query_time into @lqt_save; set global long_query_time=2000; select sleep(2); FLUSH LOGS; select sleep(2); set global long_query_time=@lqt_save;'
+    env HOME=/root/ /usr/bin/${ALIAS_MYSQL} -e 'select @@global.long_query_time into @lqt_save; set global long_query_time=2000; select sleep(2); FLUSH LOGS; select sleep(2); set global long_query_time=@lqt_save;'
   fi
   endscript
 }
@@ -112,7 +112,7 @@ cat > "/etc/logrotate.d/mysql-slowlog" <<END
   if test -x /usr/bin/mysqladmin &&  
     /usr/bin/mysqladmin ping &>/dev/null       
   then
-    env HOME=/root/ /usr/bin/mysql -e 'select @@global.long_query_time into @lqt_save; set global long_query_time=2000; set global slow_query_log = 0; select sleep(2); FLUSH LOGS; select sleep(2); set global long_query_time=@lqt_save; set global slow_query_log = 1;' > /var/log/mysqladmin.flush-logs 2>&1
+    env HOME=/root/ /usr/bin/${ALIAS_MYSQL} -e 'select @@global.long_query_time into @lqt_save; set global long_query_time=2000; set global slow_query_log = 0; select sleep(2); FLUSH LOGS; select sleep(2); set global long_query_time=@lqt_save; set global slow_query_log = 1;' > /var/log/mysqladmin.flush-logs 2>&1
   fi   
   endscript
 }
@@ -133,7 +133,7 @@ cat > "/etc/logrotate.d/mysql-slowlog" <<END
   if test -x /usr/bin/mysqladmin &&  
     /usr/bin/mysqladmin ping &>/dev/null       
   then
-    env HOME=/root/ /usr/bin/mysql -e 'select @@global.long_query_time into @lqt_save; set global long_query_time=2000; set global slow_query_log = 0; select sleep(2); FLUSH LOGS; select sleep(2); set global long_query_time=@lqt_save; set global slow_query_log = 1;' > /var/log/mysqladmin.flush-logs 2>&1
+    env HOME=/root/ /usr/bin/${ALIAS_MYSQL} -e 'select @@global.long_query_time into @lqt_save; set global long_query_time=2000; set global slow_query_log = 0; select sleep(2); FLUSH LOGS; select sleep(2); set global long_query_time=@lqt_save; set global slow_query_log = 1;' > /var/log/mysqladmin.flush-logs 2>&1
   fi   
   endscript
 }

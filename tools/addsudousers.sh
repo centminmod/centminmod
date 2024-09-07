@@ -21,6 +21,9 @@ export LC_ALL=en_US.UTF-8
 export LANG=en_US.UTF-8
 export LANGUAGE=en_US.UTF-8
 export LC_CTYPE=en_US.UTF-8
+# disable systemd pager so it doesn't pipe systemctl output to less
+export SYSTEMD_PAGER=''
+ARCH_CHECK="$(uname -m)"
 
 shopt -s expand_aliases
 for g in "" e f; do
@@ -51,13 +54,13 @@ if [ -d /etc/sudoers.d ]; then
   # echo "${sudo_username}:${sudo_userpass}" | chpasswd
   echo "$sudo_username with password: $sudo_userpass created"
   echo "sudo setup for $sudo_username"
-  echo "${sudo_username}    ALL=(ALL:ALL) ALL" > "/etc/sudoers.d/sudo.${sudo_username}"
-  # echo "${sudo_username}    ALL=(ALL:ALL) ALL: /usr/bin/centmin, /usr/bin/cminfo" > "/etc/sudoers.d/sudo.${sudo_username}"
-  chmod 0440 "/etc/sudoers.d/sudo.${sudo_username}"
-  visudo -c -q -f "/etc/sudoers.d/sudo.${sudo_username}"
+  echo "${sudo_username}    ALL=(ALL:ALL) ALL" > "/etc/sudoers.d/${sudo_username}"
+  # echo "${sudo_username}    ALL=(ALL:ALL) ALL: /usr/bin/centmin, /usr/bin/cminfo" > "/etc/sudoers.d/${sudo_username}"
+  chmod 0440 "/etc/sudoers.d/${sudo_username}"
+  visudo -c -q -f "/etc/sudoers.d/${sudo_username}"
   shift # shift all parameters;
   echo
-  echo "${sudo_username} sudo user setup at /etc/sudoers.d/sudo.${sudo_username}"
+  echo "${sudo_username} sudo user setup at /etc/sudoers.d/${sudo_username}"
   done
 fi
 

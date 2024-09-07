@@ -1,4 +1,13 @@
-function funct_xcachereinstall {
+funct_xcachereinstall() {
+      echo
+      cecho "* XCache is no longer supported" $boldyellow
+      cecho "* XCache developers no longer keep it up to date" $boldyellow
+      cecho "* XCache does not perform better than Zend Opcache defaults" $boldyellow
+      echo
+      exit 0
+}
+
+function funct_xcachereinstall_disabled {
     unattended_xcache=$1
 
 if [[ -f ${CONFIGSCANDIR}/zendopcache.ini ]]; then

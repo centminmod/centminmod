@@ -22,6 +22,7 @@ CENTMINLOGDIR='/root/centminlogs'
 WPCLIDIR='/root/wpcli'
 WPCLILINK='https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar'
 FORCE_IPVFOUR='y' # curl/wget commands through script force IPv4
+LOCALCENTMINMOD_MIRROR='https://centminmod.com'
 
 # set locale temporarily to english
 # due to some non-english locale issues
@@ -29,6 +30,9 @@ export LC_ALL=en_US.UTF-8
 export LANG=en_US.UTF-8
 export LANGUAGE=en_US.UTF-8
 export LC_CTYPE=en_US.UTF-8
+# disable systemd pager so it doesn't pipe systemctl output to less
+export SYSTEMD_PAGER=''
+ARCH_CHECK="$(uname -m)"
 
 shopt -s expand_aliases
 for g in "" e f; do
@@ -50,7 +54,7 @@ fi
 curl -${ipv_forceopt}Is --connect-timeout 30 --max-time 30 $WPCLILINK | grep 'HTTP\/' | grep '200' >/dev/null 2>&1
 WPCLI_CURLCHECK=$?
 if [[ "$WPCLI_CURLCHECK" != '0' ]]; then
-	WPCLILINK='https://centminmod.com/centminmodparts/wp-cli/wp-cli.phar'
+	WPCLILINK='${LOCALCENTMINMOD_MIRROR}/centminmodparts/wp-cli/wp-cli.phar'
 fi
 
 # functions
@@ -138,7 +142,7 @@ if [ -s "${WPCLIDIR}/wp-completion.bash" ]; then
   echo "${WPCLIDIR}/wp-completion.bash [found]"
   else
   echo "Error: ${WPCLIDIR}/wp-completion.bash not found !!! Downloading now......"
-  wget -${ipv_forceopt}cnv --no-check-certificate https://github.com/wp-cli/wp-cli/raw/master/utils/wp-completion.bash -O ${WPCLIDIR}/wp-completion.bash --tries=3 
+  wget -${ipv_forceopt}cnv --no-check-certificate https://raw.githubusercontent.com/wp-cli/wp-cli/main/utils/wp-completion.bash -O ${WPCLIDIR}/wp-completion.bash --tries=3 
 ERROR=$?
 	if [[ "$ERROR" != '0' ]]; then
 	echo "Error: ${WPCLIDIR}/wp-completion.bash download failed."

@@ -5,6 +5,9 @@ export LC_ALL=en_US.UTF-8
 export LANG=en_US.UTF-8
 export LANGUAGE=en_US.UTF-8
 export LC_CTYPE=en_US.UTF-8
+# disable systemd pager so it doesn't pipe systemctl output to less
+export SYSTEMD_PAGER=''
+ARCH_CHECK="$(uname -m)"
 #####################################################
 EMAIL=''          # Server notification email address enter only 1 address
 PUSHOVER_EMAIL='' # Signup pushover.net push email notifications to mobile & tablets
@@ -24,13 +27,13 @@ CMSDEBUG='n'
 #####################################################
 DT=$(date +"%d%m%y-%H%M%S")
 # for github support
-branchname='124.00stable'
-SCRIPT_MAJORVER='124'
+branchname='140.00beta01'
+SCRIPT_MAJORVER='140'
 SCRIPT_MINORVER='00'
-SCRIPT_INCREMENTVER='125'
+SCRIPT_INCREMENTVER='111'
 SCRIPT_VERSIONSHORT="${branchname}"
-SCRIPT_VERSION="${SCRIPT_VERSIONSHORT}.s${SCRIPT_INCREMENTVER}"
-SCRIPT_DATE='31/01/23'
+SCRIPT_VERSION="${SCRIPT_VERSIONSHORT}.b${SCRIPT_INCREMENTVER}"
+SCRIPT_DATE='01/07/24'
 SCRIPT_AUTHOR='eva2000 (centminmod.com)'
 SCRIPT_MODIFICATION_AUTHOR='eva2000 (centminmod.com)'
 SCRIPT_URL='https://centminmod.com'
@@ -43,9 +46,6 @@ DISCLAIMER='This software is provided "as is" in the hope that it will be useful
 # under the terms of the GNU General Public License as published by the Free
 # Software Foundation, either version 3 of the License, or (at your option)
 # any later version. See the included license.txt for futher details.
-#
-# PLEASE MODIFY VALUES BELOW THIS LINE ++++++++++++++++++++++++++++++++++++++
-# Note: Please enter y for yes or n for no.
 #####################################################
 SCRIPT_DIR=$(readlink -f $(dirname ${BASH_SOURCE[0]}))
 
@@ -59,6 +59,16 @@ if [ "$(id -u)" != 0 ]; then
   exit 1
 fi
 
+if [[ "$(id -u)" = 0 ]]; then
+  # account for if centmin mod installation is being
+  # run within a cloud-init user data scripted session
+  mkdir -p /root
+  export HOME=/root
+  touch $HOME/.rnd
+  export RANDFILE=$HOME/.rnd
+  chmod 600 $HOME/.rnd
+fi
+
 shopt -s expand_aliases
 for g in "" e f; do
     alias ${g}grep="LC_ALL=C ${g}grep"  # speed-up grep, egrep, fgrep
@@ -69,8 +79,8 @@ HN=$(uname -n)
 DIR_TMP='/svr-setup'
 CENTMINLOGDIR='/root/centminlogs'
 
-source "inc/memcheck.inc"
-TMPFSLIMIT=2900000
+source "${SCRIPT_DIR}/inc/memcheck.inc"
+TMPFSLIMIT=4000000
 if [ ! -d "$DIR_TMP" ]; then
         if [[ "$TOTALMEM" -ge "$TMPFSLIMIT" ]]; then
             TMPFSENABLED=1
@@ -78,7 +88,7 @@ if [ ! -d "$DIR_TMP" ]; then
             echo "setting up $DIR_TMP on tmpfs ramdisk for initial install"
             mkdir -p "$DIR_TMP"
             chmod 0750 "$DIR_TMP"
-            mount -t tmpfs -o size=2200M,mode=0755 tmpfs "$DIR_TMP"
+            mount -t tmpfs -o size=3400M,mode=0755 tmpfs "$DIR_TMP"
             df -hT
         else
             mkdir -p "$DIR_TMP"
@@ -151,7 +161,8 @@ if [ ! -d /var/run/php-fpm/ ]; then
     mkdir -p /var/run/php-fpm/
 fi
 
-TESTEDCENTOSVER='7.9'
+CENTOS_ALPHATEST='y'
+TESTEDCENTOSVER='9.9'
 CENTOSVER=$(awk '{ print $3 }' /etc/redhat-release)
 KERNEL_NUMERICVER=$(uname -r | awk -F. '{ printf("%d%03d%03d%03d\n", $1,$2,$3,$4); }')
 
@@ -161,6 +172,8 @@ if [ "$CENTOSVER" == 'release' ]; then
         CENTOS_SEVEN='7'
     elif [[ "$(cat /etc/redhat-release | awk '{ print $4 }' | cut -d . -f1)" = '8' ]]; then
         CENTOS_EIGHT='8'
+    elif [[ "$(cat /etc/redhat-release | awk '{ print $4 }' | cut -d . -f1)" = '9' ]]; then
+        CENTOS_NINE='9'
     fi
 fi
 
@@ -181,6 +194,125 @@ if [[ -f /etc/system-release && "$(awk '{print $1,$2,$3}' /etc/system-release)" 
     CENTOS_SIX='6'
 fi
 
+# ensure only el8+ OS versions are being looked at for alma linux, rocky linux
+# oracle linux, vzlinux, circle linux, navy linux, euro linux
+EL_VERID=$(awk -F '=' '/VERSION_ID/ {print $2}' /etc/os-release | sed -e 's|"||g' | cut -d . -f1)
+if [ -f /etc/almalinux-release ] && [[ "$EL_VERID" -eq 8 || "$EL_VERID" -eq 9 ]]; then
+  CENTOSVER=$(awk '{ print $3 }' /etc/almalinux-release | cut -d . -f1,2)
+  ALMALINUXVER=$(awk '{ print $3 }' /etc/almalinux-release | cut -d . -f1,2 | sed -e 's|\.|000|g')
+  if [[ "$(echo $CENTOSVER | cut -d . -f1)" -eq '8' ]]; then
+    CENTOS_EIGHT='8'
+    ALMALINUX_EIGHT='8'
+  elif [[ "$(echo $CENTOSVER | cut -d . -f1)" -eq '9' ]]; then
+    CENTOS_NINE='9'
+    ALMALINUX_NINE='9'
+  fi
+elif [ -f /etc/rocky-release ] && [[ "$EL_VERID" -eq 8 || "$EL_VERID" -eq 9 ]]; then
+  CENTOSVER=$(awk '{ print $4 }' /etc/rocky-release | cut -d . -f1,2)
+  ROCKYLINUXVER=$(awk '{ print $3 }' /etc/rocky-release | cut -d . -f1,2 | sed -e 's|\.|000|g')
+  if [[ "$(echo $CENTOSVER | cut -d . -f1)" -eq '8' ]]; then
+    CENTOS_EIGHT='8'
+    ROCKYLINUX_EIGHT='8'
+  elif [[ "$(echo $CENTOSVER | cut -d . -f1)" -eq '9' ]]; then
+    CENTOS_NINE='9'
+    ROCKYLINUX_NINE='9'
+  fi
+elif [ -f /etc/oracle-release ] && [[ "$EL_VERID" -eq 8 || "$EL_VERID" -eq 9 ]]; then
+  CENTOSVER=$(awk '{ print $5 }' /etc/oracle-release | cut -d . -f1,2)
+  if [[ "$(echo $CENTOSVER | cut -d . -f1)" -eq '8' ]]; then
+    CENTOS_EIGHT='8'
+    ORACLELINUX_EIGHT='8'
+  elif [[ "$(echo $CENTOSVER | cut -d . -f1)" -eq '9' ]]; then
+    CENTOS_NINE='9'
+    ORACLELINUX_NINE='9'
+  fi
+elif [ -f /etc/vzlinux-release ] && [[ "$EL_VERID" -eq 8 || "$EL_VERID" -eq 9 ]]; then
+  CENTOSVER=$(awk '{ print $4 }' /etc/vzlinux-release | cut -d . -f1,2)
+  if [[ "$(echo $CENTOSVER | cut -d . -f1)" -eq '8' ]]; then
+    CENTOS_EIGHT='8'
+    VZLINUX_EIGHT='8'
+  elif [[ "$(echo $CENTOSVER | cut -d . -f1)" -eq '9' ]]; then
+    CENTOS_NINE='9'
+    VZLINUX_NINE='9'
+  fi
+elif [ -f /etc/circle-release ] && [[ "$EL_VERID" -eq 8 || "$EL_VERID" -eq 9 ]]; then
+  CENTOSVER=$(awk '{ print $4 }' /etc/circle-release | cut -d . -f1,2)
+  if [[ "$(echo $CENTOSVER | cut -d . -f1)" -eq '8' ]]; then
+    CENTOS_EIGHT='8'
+    CIRCLELINUX_EIGHT='8'
+  elif [[ "$(echo $CENTOSVER | cut -d . -f1)" -eq '9' ]]; then
+    CENTOS_NINE='9'
+    CIRCLELINUX_NINE='9'
+  fi
+elif [ -f /etc/navylinux-release ] && [[ "$EL_VERID" -eq 8 || "$EL_VERID" -eq 9 ]]; then
+  CENTOSVER=$(awk '{ print $5 }' /etc/navylinux-release | cut -d . -f1,2)
+  if [[ "$(echo $CENTOSVER | cut -d . -f1)" -eq '8' ]]; then
+    CENTOS_EIGHT='8'
+    NAVYLINUX_EIGHT='8'
+  elif [[ "$(echo $CENTOSVER | cut -d . -f1)" -eq '9' ]]; then
+    CENTOS_NINE='9'
+    NAVYLINUX_NINE='9'
+  fi
+elif [ -f /etc/el-release ] && [[ "$EL_VERID" -eq 8 || "$EL_VERID" -eq 9 ]]; then
+  CENTOSVER=$(awk '{ print $3 }' /etc/el-release | cut -d . -f1,2)
+  if [[ "$(echo $CENTOSVER | cut -d . -f1)" -eq '8' ]]; then
+    CENTOS_EIGHT='8'
+    EUROLINUX_EIGHT='8'
+  elif [[ "$(echo $CENTOSVER | cut -d . -f1)" -eq '9' ]]; then
+    CENTOS_NINE='9'
+    EUROLINUX_NINE='9'
+  fi
+fi
+
+CENTOSVER_NUMERIC=$(echo $CENTOSVER | sed -e 's|\.||g')
+
+# switch el8 OSes to GCC 11 for compile routines
+if [[ "$CENTOS_EIGHT" -eq '8' && "$CENTOSVER_NUMERIC" -ge '89' ]]; then
+  DEVTOOLSETTEN='n'
+  DEVTOOLSETELEVEN='n'
+  if [[ "$PHP_PGO" = [yY] ]] && [[ "$PHPMVER" = '7.0' || "$PHPMUVER" = '7.0' || "$PHPMVER" = '7.1' || "$PHPMUVER" = '7.1' || "$PHPMVER" = '7.2' || "$PHPMUVER" = '7.2' || "$PHPMVER" = '7.3' || "$PHPMUVER" = '7.3' || "$PHPMVER" = '7.4' || "$PHPMUVER" = '7.4' ]]; then
+    DEVTOOLSETTWELVE='y'
+    DEVTOOLSETTHIRTEEN='n'
+  else
+    DEVTOOLSETTWELVE='n'
+    DEVTOOLSETTHIRTEEN='y'
+  fi
+elif [[ "$CENTOS_EIGHT" -eq '8' && "$CENTOSVER_NUMERIC" -ge '87' ]]; then
+  DEVTOOLSETTEN='n'
+  DEVTOOLSETELEVEN='n'
+  DEVTOOLSETTWELVE='y'
+  DEVTOOLSETTHIRTEEN='n'
+elif [[ "$CENTOS_EIGHT" -eq '8' ]]; then
+  DEVTOOLSETTEN='n'
+  DEVTOOLSETELEVEN='y'
+  DEVTOOLSETTWELVE='n'
+  DEVTOOLSETTHIRTEEN='n'
+fi
+
+# el9 GCC
+if [[ "$CENTOS_NINE" -eq '9' && "$CENTOSVER_NUMERIC" -ge '93' ]]; then
+  DEVTOOLSETTEN='n'
+  DEVTOOLSETELEVEN='n'
+  if [[ "$PHP_PGO" = [yY] ]] && [[ "$PHPMVER" = '7.4' || "$PHPMUVER" = '7.4' ]]; then
+    DEVTOOLSETTWELVE='y'
+    DEVTOOLSETTHIRTEEN='n'
+  else
+    DEVTOOLSETTWELVE='n'
+    DEVTOOLSETTHIRTEEN='y'
+  fi
+elif [[ "$CENTOS_NINE" -eq '9' && "$CENTOSVER_NUMERIC" -ge '91' ]]; then
+  DEVTOOLSETTEN='n'
+  DEVTOOLSETELEVEN='n'
+  DEVTOOLSETTWELVE='y'
+  DEVTOOLSETTHIRTEEN='n'
+elif [[ "$CENTOS_NINE" -eq '9' ]]; then
+  # el9 already defaults to GCC 11
+  DEVTOOLSETTEN='n'
+  DEVTOOLSETELEVEN='n'
+  DEVTOOLSETTWELVE='n'
+  DEVTOOLSETTHIRTEEN='n'
+fi
+
 if [[ "$FORCE_IPVFOUR" != [yY] ]]; then
   ipv_forceopt=""
   ipv_forceopt_wget=""
@@ -191,13 +323,13 @@ else
   WGETOPT="-cnv --no-dns-cache${ipv_forceopt_wget}"
 fi
 
-source "inc/centos_seven.inc"
+source "${SCRIPT_DIR}/inc/centos_seven.inc"
 seven_function
 
 cmservice() {
   servicename=$1
   action=$2
-  if [[ "$CENTOS_SEVEN" != '7' ]] && [[ "${servicename}" = 'haveged' || "${servicename}" = 'pure-ftpd' || "${servicename}" = 'mysql' || "${servicename}" = 'php-fpm' || "${servicename}" = 'nginx' || "${servicename}" = 'memcached' || "${servicename}" = 'nsd' || "${servicename}" = 'csf' || "${servicename}" = 'lfd' ]]; then
+  if [[ "$CENTOS_SIX" = '6' ]] && [[ "${servicename}" = 'haveged' || "${servicename}" = 'pure-ftpd' || "${servicename}" = 'mysql' || "${servicename}" = 'php-fpm' || "${servicename}" = 'nginx' || "${servicename}" = 'memcached' || "${servicename}" = 'nsd' || "${servicename}" = 'csf' || "${servicename}" = 'lfd' ]]; then
     echo "service ${servicename} $action"
     if [[ "$CMSDEBUG" = [nN] ]]; then
       service "${servicename}" "$action"
@@ -221,7 +353,7 @@ cmservice() {
 cmchkconfig() {
   servicename=$1
   status=$2
-  if [[ "$CENTOS_SEVEN" != '7' ]] && [[ "${servicename}" = 'haveged' || "${servicename}" = 'pure-ftpd' || "${servicename}" = 'mysql' || "${servicename}" = 'php-fpm' || "${servicename}" = 'nginx' || "${servicename}" = 'memcached' || "${servicename}" = 'nsd' || "${servicename}" = 'csf' || "${servicename}" = 'lfd' ]]; then
+  if [[ "$CENTOS_SIX" = '6' ]] && [[ "${servicename}" = 'haveged' || "${servicename}" = 'pure-ftpd' || "${servicename}" = 'mysql' || "${servicename}" = 'php-fpm' || "${servicename}" = 'nginx' || "${servicename}" = 'memcached' || "${servicename}" = 'nsd' || "${servicename}" = 'csf' || "${servicename}" = 'lfd' ]]; then
     echo "chkconfig ${servicename} $status"
     if [[ "$CMSDEBUG" = [nN] ]]; then
       chkconfig "${servicename}" "$status"
@@ -247,78 +379,296 @@ cmchkconfig() {
   fi
 }
 
+# Function to check if the CPU belongs to a specific model
+function is_epyc_model() {
+    local model="$1"
+    grep -q "$model" /proc/cpuinfo
+}
+
 if [ -f /proc/user_beancounters ]; then
     # CPUS='1'
     # MAKETHREADS=" -j$CPUS"
     # speed up make
     CPUS=$(grep -c "processor" /proc/cpuinfo)
     if [[ "$CPUS" -gt '8' ]]; then
-        if [[ "$(grep -o 'AMD EPYC 7601' /proc/cpuinfo | sort -u)" = 'AMD EPYC 7601' ]]; then
+        # EPYC 9004 Series Checks
+        if is_epyc_model "EPYC 9124" || is_epyc_model "EPYC 9174F"; then
+            [[ "$CPUS" -ge '16' ]] && CPUS=16
+        elif is_epyc_model "EPYC 9224" || is_epyc_model "EPYC 9254" || is_epyc_model "EPYC 9274F"; then
+            [[ "$CPUS" -ge '24' ]] && CPUS=24
+        elif is_epyc_model "EPYC 9334" || is_epyc_model "EPYC 9354" || is_epyc_model "EPYC 9374F"; then
+            [[ "$CPUS" -ge '32' ]] && CPUS=32
+        elif is_epyc_model "EPYC 9454" || is_epyc_model "EPYC 9474F"; then
+            [[ "$CPUS" -ge '48' ]] && CPUS=48
+        elif is_epyc_model "EPYC 9534" || is_epyc_model "EPYC 9554" || is_epyc_model "EPYC 9554P"; then
+            [[ "$CPUS" -ge '64' ]] && CPUS=64
+        elif is_epyc_model "EPYC 9634"; then
+            [[ "$CPUS" -ge '84' ]] && CPUS=84  
+        elif is_epyc_model "EPYC 9654" || is_epyc_model "EPYC 9654P"; then
+            [[ "$CPUS" -ge '96' ]] && CPUS=96
+        elif [[ "$CPUS" -ge '12' && "$(grep -o 'AMD EPYC 7601' /proc/cpuinfo | sort -u)" = 'AMD EPYC 7601' ]]; then
             # 7601 at 12 cpu cores has 3.20hz clock frequency https://en.wikichip.org/wiki/amd/epyc/7601
             # while greater than 12 cpu cores downclocks to 2.70Ghz
             CPUS=12
-        elif [[ "$(grep -o 'AMD EPYC 7551' /proc/cpuinfo | sort -u)" = 'AMD EPYC 7551' ]]; then
+        elif [[ "$CPUS" -ge '12' && "$(grep -o 'AMD EPYC 7551' /proc/cpuinfo | sort -u)" = 'AMD EPYC 7551' ]]; then
             # 7551P at 12 cpu cores has 3.0Ghz clock frequency https://en.wikichip.org/wiki/amd/epyc/7551p
             # while greater than 12 cpu cores downclocks to 2.55Ghz
             CPUS=12
-        elif [[ "$(grep -o 'AMD EPYC 7501' /proc/cpuinfo | sort -u)" = 'AMD EPYC 7501' ]]; then
+        elif [[ "$CPUS" -ge '12' && "$(grep -o 'AMD EPYC 7501' /proc/cpuinfo | sort -u)" = 'AMD EPYC 7501' ]]; then
             # 7501P at 12 cpu cores has 3.0Ghz clock frequency https://en.wikichip.org/wiki/amd/epyc/7501p
             # while greater than 12 cpu cores downclocks to 2.6Ghz
             CPUS=12
-        elif [[ "$(grep -o 'AMD EPYC 7451' /proc/cpuinfo | sort -u)" = 'AMD EPYC 7451' ]]; then
+        elif [[ "$CPUS" -ge '12' && "$(grep -o 'AMD EPYC 7451' /proc/cpuinfo | sort -u)" = 'AMD EPYC 7451' ]]; then
             # 7451 at 12 cpu cores has 3.2Ghz clock frequency https://en.wikichip.org/wiki/amd/epyc/7451
             # while greater than 12 cpu cores downclocks to 2.9Ghz
             CPUS=12
-        elif [[ "$(grep -o 'AMD EPYC 7401' /proc/cpuinfo | sort -u)" = 'AMD EPYC 7401' ]]; then
+        elif [[ "$CPUS" -ge '12' && "$(grep -o 'AMD EPYC 7401' /proc/cpuinfo | sort -u)" = 'AMD EPYC 7401' ]]; then
             # 7401P at 12 cpu cores has 3.0Ghz clock frequency https://en.wikichip.org/wiki/amd/epyc/7401p
             # while greater than 12 cpu cores downclocks to 2.8Ghz
             CPUS=12
-        elif [[ "$(grep -o 'AMD EPYC 7371' /proc/cpuinfo | sort -u)" = 'AMD EPYC 7371' ]]; then
+        elif [[ "$CPUS" -ge '8' && "$(grep -o 'AMD EPYC 7371' /proc/cpuinfo | sort -u)" = 'AMD EPYC 7371' ]]; then
             # 7371 at 8 cpu cores has 3.8Ghz clock frequency https://en.wikichip.org/wiki/amd/epyc/7371
             # while greater than 8 cpu cores downclocks to 3.6Ghz
             CPUS=8
+        elif [[ "$CPUS" -ge '16' && "$(grep -o 'AMD EPYC 7272' /proc/cpuinfo | sort -u)" = 'AMD EPYC 7272' ]]; then
+            # 7272 preferring higher clock frequency https://en.wikichip.org/wiki/amd/epyc/7272
+            CPUS=16
+        elif [[ "$CPUS" -ge '16' && "$(grep -o 'AMD EPYC 7282' /proc/cpuinfo | sort -u)" = 'AMD EPYC 7282' ]]; then
+            # 7282 preferring higher clock frequency https://en.wikichip.org/wiki/amd/epyc/7282
+            CPUS=16
+        elif [[ "$CPUS" -ge '16' && "$(grep -o 'AMD EPYC 7302' /proc/cpuinfo | sort -u)" = 'AMD EPYC 7302' ]]; then
+            # 7302 preferring higher clock frequency https://en.wikichip.org/wiki/amd/epyc/7302
+            CPUS=16
+        elif [[ "$CPUS" -ge '16' && "$(grep -o 'AMD EPYC 7352' /proc/cpuinfo | sort -u)" = 'AMD EPYC 7352' ]]; then
+            # 7352 preferring higher clock frequency https://en.wikichip.org/wiki/amd/epyc/7352
+            CPUS=16
+        elif [[ "$CPUS" -ge '16' && "$(grep -o 'AMD EPYC 7402' /proc/cpuinfo | sort -u)" = 'AMD EPYC 7402' ]]; then
+            # 7402 preferring higher clock frequency https://en.wikichip.org/wiki/amd/epyc/7402
+            CPUS=16
+        elif [[ "$CPUS" -ge '16' && "$(grep -o 'AMD EPYC 7452' /proc/cpuinfo | sort -u)" = 'AMD EPYC 7452' ]]; then
+            # 7452 preferring higher clock frequency https://en.wikichip.org/wiki/amd/epyc/7452
+            CPUS=16
+        elif [[ "$CPUS" -ge '16' && "$(grep -o 'AMD EPYC 7502' /proc/cpuinfo | sort -u)" = 'AMD EPYC 7502' ]]; then
+            # 7502 preferring higher clock frequency https://en.wikichip.org/wiki/amd/epyc/7502
+            CPUS=16
+        elif [[ "$CPUS" -ge '16' && "$(grep -o 'AMD EPYC 7532' /proc/cpuinfo | sort -u)" = 'AMD EPYC 7532' ]]; then
+            # 7532 preferring higher clock frequency https://en.wikichip.org/wiki/amd/epyc/7532
+            CPUS=16
+        elif [[ "$CPUS" -ge '16' && "$(grep -o 'AMD EPYC 7542' /proc/cpuinfo | sort -u)" = 'AMD EPYC 7542' ]]; then
+            # 7542 preferring higher clock frequency https://en.wikichip.org/wiki/amd/epyc/7542
+            CPUS=16
+        elif [[ "$CPUS" -ge '16' && "$(grep -o 'AMD EPYC 7552' /proc/cpuinfo | sort -u)" = 'AMD EPYC 7552' ]]; then
+            # 7552 preferring higher clock frequency https://en.wikichip.org/wiki/amd/epyc/7552
+            CPUS=24
+        elif [[ "$CPUS" -ge '24' && "$(grep -o 'AMD EPYC 7642' /proc/cpuinfo | sort -u)" = 'AMD EPYC 7642' ]]; then
+            # 7642 preferring higher clock frequency https://en.wikichip.org/wiki/amd/epyc/7642
+            CPUS=24
+        elif [[ "$CPUS" -ge '24' && "$(grep -o 'AMD EPYC 7662' /proc/cpuinfo | sort -u)" = 'AMD EPYC 7662' ]]; then
+            # 7662 preferring higher clock frequency https://en.wikichip.org/wiki/amd/epyc/7662
+            CPUS=24
+        elif [[ "$CPUS" -ge '24' && "$(grep -o 'AMD EPYC 7702' /proc/cpuinfo | sort -u)" = 'AMD EPYC 7702' ]]; then
+            # 7702 preferring higher clock frequency https://en.wikichip.org/wiki/amd/epyc/7702
+            CPUS=24
+        elif [[ "$CPUS" -ge '24' && "$(grep -o 'AMD EPYC 7742' /proc/cpuinfo | sort -u)" = 'AMD EPYC 7742' ]]; then
+            # 7742 preferring higher clock frequency https://en.wikichip.org/wiki/amd/epyc/7742
+            CPUS=24
+        elif [[ "$CPUS" -ge '24' && "$(grep -o 'AMD EPYC 7H12' /proc/cpuinfo | sort -u)" = 'AMD EPYC 7H12' ]]; then
+            # 7H12 preferring higher clock frequency https://en.wikichip.org/wiki/amd/epyc/7H12
+            CPUS=16
+        elif [[ "$CPUS" -ge '16' && "$(grep -o 'AMD EPYC 7F52' /proc/cpuinfo | sort -u)" = 'AMD EPYC 7F52' ]]; then
+            # 7F52 preferring higher clock frequency https://en.wikichip.org/wiki/amd/epyc/7F52
+            CPUS=16
+        elif [[ "$CPUS" -ge '16' && "$(grep -o 'AMD EPYC 7F72' /proc/cpuinfo | sort -u)" = 'AMD EPYC 7F72' ]]; then
+            # 7F72 preferring higher clock frequency https://en.wikichip.org/wiki/amd/epyc/7F72
+            CPUS=16
+        elif [[ "$CPUS" -ge '8' && "$(grep -o 'AMD EPYC 7313' /proc/cpuinfo | sort -u)" = 'AMD EPYC 7313' ]]; then
+            # 7313 preferring higher clock frequency https://en.wikichip.org/wiki/amd/epyc/7313
+            CPUS=8
+        elif [[ "$CPUS" -ge '12' && "$(grep -o 'AMD EPYC 7413' /proc/cpuinfo | sort -u)" = 'AMD EPYC 7413' ]]; then
+            # 7413 preferring higher clock frequency https://en.wikichip.org/wiki/amd/epyc/7413
+            CPUS=12
+        elif [[ "$CPUS" -ge '12' && "$(grep -o 'AMD EPYC 7443' /proc/cpuinfo | sort -u)" = 'AMD EPYC 7443' ]]; then
+            # 7443 preferring higher clock frequency https://en.wikichip.org/wiki/amd/epyc/7443
+            CPUS=12
+        elif [[ "$CPUS" -ge '14' && "$(grep -o 'AMD EPYC 7453' /proc/cpuinfo | sort -u)" = 'AMD EPYC 7453' ]]; then
+            # 7453 preferring higher clock frequency https://en.wikichip.org/wiki/amd/epyc/7453
+            CPUS=14
+        elif [[ "$CPUS" -ge '16' && "$(grep -o 'AMD EPYC 7513' /proc/cpuinfo | sort -u)" = 'AMD EPYC 7513' ]]; then
+            # 7513 preferring higher clock frequency https://en.wikichip.org/wiki/amd/epyc/7513
+            CPUS=16
+        elif [[ "$CPUS" -ge '16' && "$(grep -o 'AMD EPYC 7543' /proc/cpuinfo | sort -u)" = 'AMD EPYC 7543' ]]; then
+            # 7543 preferring higher clock frequency https://en.wikichip.org/wiki/amd/epyc/7543
+            CPUS=16
+        elif [[ "$CPUS" -ge '16' && "$(grep -o 'AMD EPYC 7643' /proc/cpuinfo | sort -u)" = 'AMD EPYC 7643' ]]; then
+            # 7643 preferring higher clock frequency https://en.wikichip.org/wiki/amd/epyc/7643
+            CPUS=16
+        elif [[ "$CPUS" -ge '16' && "$(grep -o 'AMD EPYC 7663' /proc/cpuinfo | sort -u)" = 'AMD EPYC 7663' ]]; then
+            # 7663 preferring higher clock frequency https://en.wikichip.org/wiki/amd/epyc/7663
+            CPUS=16
+        elif [[ "$CPUS" -ge '32' && "$(grep -o 'AMD EPYC 7713' /proc/cpuinfo | sort -u)" = 'AMD EPYC 7713' ]]; then
+            # 7713 preferring higher clock frequency https://en.wikichip.org/wiki/amd/epyc/7713
+            CPUS=32
+        elif [[ "$CPUS" -ge '32' && "$(grep -o 'AMD EPYC 7763' /proc/cpuinfo | sort -u)" = 'AMD EPYC 7763' ]]; then
+            # 7763 preferring higher clock frequency https://en.wikichip.org/wiki/amd/epyc/7763
+            CPUS=32
+        elif [[ "$CPUS" -ge '16' && "$(grep -o 'AMD EPYC 73F3' /proc/cpuinfo | sort -u)" = 'AMD EPYC 73F3' ]]; then
+            # 73F3 preferring higher clock frequency https://en.wikichip.org/wiki/amd/epyc/73F3
+            CPUS=16
+        elif [[ "$CPUS" -ge '24' && "$(grep -o 'AMD EPYC 74F3' /proc/cpuinfo | sort -u)" = 'AMD EPYC 74F3' ]]; then
+            # 74F3 preferring higher clock frequency https://en.wikichip.org/wiki/amd/epyc/74F3
+            CPUS=24
+        elif [[ "$CPUS" -ge '32' && "$(grep -o 'AMD EPYC 75F3' /proc/cpuinfo | sort -u)" = 'AMD EPYC 75F3' ]]; then
+            # 75F3 preferring higher clock frequency https://en.wikichip.org/wiki/amd/epyc/75F3
+            CPUS=32
         else
-            CPUS=$(echo $(($CPUS+2)))
+            CPUS=$CPUS
         fi
+    elif [[ "$CPUS" -eq '8' ]]; then
+        CPUS=$CPUS
     else
-        CPUS=$(echo $(($CPUS+1)))
+        CPUS=$CPUS
     fi
     MAKETHREADS=" -j$CPUS"
 else
     # speed up make
     CPUS=$(grep -c "processor" /proc/cpuinfo)
     if [[ "$CPUS" -gt '8' ]]; then
-        if [[ "$(grep -o 'AMD EPYC 7601' /proc/cpuinfo | sort -u)" = 'AMD EPYC 7601' ]]; then
+        # EPYC 9004 Series Checks
+        if is_epyc_model "EPYC 9124" || is_epyc_model "EPYC 9174F"; then
+            [[ "$CPUS" -ge '16' ]] && CPUS=16
+        elif is_epyc_model "EPYC 9224" || is_epyc_model "EPYC 9254" || is_epyc_model "EPYC 9274F"; then
+            [[ "$CPUS" -ge '24' ]] && CPUS=24
+        elif is_epyc_model "EPYC 9334" || is_epyc_model "EPYC 9354" || is_epyc_model "EPYC 9374F"; then
+            [[ "$CPUS" -ge '32' ]] && CPUS=32
+        elif is_epyc_model "EPYC 9454" || is_epyc_model "EPYC 9474F"; then
+            [[ "$CPUS" -ge '48' ]] && CPUS=48
+        elif is_epyc_model "EPYC 9534" || is_epyc_model "EPYC 9554" || is_epyc_model "EPYC 9554P"; then
+            [[ "$CPUS" -ge '64' ]] && CPUS=64
+        elif is_epyc_model "EPYC 9634"; then
+            [[ "$CPUS" -ge '84' ]] && CPUS=84  
+        elif is_epyc_model "EPYC 9654" || is_epyc_model "EPYC 9654P"; then
+            [[ "$CPUS" -ge '96' ]] && CPUS=96
+        elif [[ "$CPUS" -ge '12' && "$(grep -o 'AMD EPYC 7601' /proc/cpuinfo | sort -u)" = 'AMD EPYC 7601' ]]; then
             # 7601 at 12 cpu cores has 3.20hz clock frequency https://en.wikichip.org/wiki/amd/epyc/7601
             # while greater than 12 cpu cores downclocks to 2.70Ghz
             CPUS=12
-        elif [[ "$(grep -o 'AMD EPYC 7551' /proc/cpuinfo | sort -u)" = 'AMD EPYC 7551' ]]; then
+        elif [[ "$CPUS" -ge '12' && "$(grep -o 'AMD EPYC 7551' /proc/cpuinfo | sort -u)" = 'AMD EPYC 7551' ]]; then
             # 7551P at 12 cpu cores has 3.0Ghz clock frequency https://en.wikichip.org/wiki/amd/epyc/7551p
             # while greater than 12 cpu cores downclocks to 2.55Ghz
             CPUS=12
-        elif [[ "$(grep -o 'AMD EPYC 7501' /proc/cpuinfo | sort -u)" = 'AMD EPYC 7501' ]]; then
+        elif [[ "$CPUS" -ge '12' && "$(grep -o 'AMD EPYC 7501' /proc/cpuinfo | sort -u)" = 'AMD EPYC 7501' ]]; then
             # 7501P at 12 cpu cores has 3.0Ghz clock frequency https://en.wikichip.org/wiki/amd/epyc/7501p
             # while greater than 12 cpu cores downclocks to 2.6Ghz
             CPUS=12
-        elif [[ "$(grep -o 'AMD EPYC 7451' /proc/cpuinfo | sort -u)" = 'AMD EPYC 7451' ]]; then
+        elif [[ "$CPUS" -ge '12' && "$(grep -o 'AMD EPYC 7451' /proc/cpuinfo | sort -u)" = 'AMD EPYC 7451' ]]; then
             # 7451 at 12 cpu cores has 3.2Ghz clock frequency https://en.wikichip.org/wiki/amd/epyc/7451
             # while greater than 12 cpu cores downclocks to 2.9Ghz
             CPUS=12
-        elif [[ "$(grep -o 'AMD EPYC 7401' /proc/cpuinfo | sort -u)" = 'AMD EPYC 7401' ]]; then
+        elif [[ "$CPUS" -ge '12' && "$(grep -o 'AMD EPYC 7401' /proc/cpuinfo | sort -u)" = 'AMD EPYC 7401' ]]; then
             # 7401P at 12 cpu cores has 3.0Ghz clock frequency https://en.wikichip.org/wiki/amd/epyc/7401p
             # while greater than 12 cpu cores downclocks to 2.8Ghz
             CPUS=12
-        elif [[ "$(grep -o 'AMD EPYC 7371' /proc/cpuinfo | sort -u)" = 'AMD EPYC 7371' ]]; then
+        elif [[ "$CPUS" -ge '8' && "$(grep -o 'AMD EPYC 7371' /proc/cpuinfo | sort -u)" = 'AMD EPYC 7371' ]]; then
             # 7371 at 8 cpu cores has 3.8Ghz clock frequency https://en.wikichip.org/wiki/amd/epyc/7371
             # while greater than 8 cpu cores downclocks to 3.6Ghz
             CPUS=8
+        elif [[ "$CPUS" -ge '16' && "$(grep -o 'AMD EPYC 7272' /proc/cpuinfo | sort -u)" = 'AMD EPYC 7272' ]]; then
+            # 7272 preferring higher clock frequency https://en.wikichip.org/wiki/amd/epyc/7272
+            CPUS=16
+        elif [[ "$CPUS" -ge '16' && "$(grep -o 'AMD EPYC 7282' /proc/cpuinfo | sort -u)" = 'AMD EPYC 7282' ]]; then
+            # 7282 preferring higher clock frequency https://en.wikichip.org/wiki/amd/epyc/7282
+            CPUS=16
+        elif [[ "$CPUS" -ge '16' && "$(grep -o 'AMD EPYC 7302' /proc/cpuinfo | sort -u)" = 'AMD EPYC 7302' ]]; then
+            # 7302 preferring higher clock frequency https://en.wikichip.org/wiki/amd/epyc/7302
+            CPUS=16
+        elif [[ "$CPUS" -ge '16' && "$(grep -o 'AMD EPYC 7352' /proc/cpuinfo | sort -u)" = 'AMD EPYC 7352' ]]; then
+            # 7352 preferring higher clock frequency https://en.wikichip.org/wiki/amd/epyc/7352
+            CPUS=16
+        elif [[ "$CPUS" -ge '16' && "$(grep -o 'AMD EPYC 7402' /proc/cpuinfo | sort -u)" = 'AMD EPYC 7402' ]]; then
+            # 7402 preferring higher clock frequency https://en.wikichip.org/wiki/amd/epyc/7402
+            CPUS=16
+        elif [[ "$CPUS" -ge '16' && "$(grep -o 'AMD EPYC 7452' /proc/cpuinfo | sort -u)" = 'AMD EPYC 7452' ]]; then
+            # 7452 preferring higher clock frequency https://en.wikichip.org/wiki/amd/epyc/7452
+            CPUS=16
+        elif [[ "$CPUS" -ge '16' && "$(grep -o 'AMD EPYC 7502' /proc/cpuinfo | sort -u)" = 'AMD EPYC 7502' ]]; then
+            # 7502 preferring higher clock frequency https://en.wikichip.org/wiki/amd/epyc/7502
+            CPUS=16
+        elif [[ "$CPUS" -ge '16' && "$(grep -o 'AMD EPYC 7532' /proc/cpuinfo | sort -u)" = 'AMD EPYC 7532' ]]; then
+            # 7532 preferring higher clock frequency https://en.wikichip.org/wiki/amd/epyc/7532
+            CPUS=16
+        elif [[ "$CPUS" -ge '16' && "$(grep -o 'AMD EPYC 7542' /proc/cpuinfo | sort -u)" = 'AMD EPYC 7542' ]]; then
+            # 7542 preferring higher clock frequency https://en.wikichip.org/wiki/amd/epyc/7542
+            CPUS=16
+        elif [[ "$CPUS" -ge '16' && "$(grep -o 'AMD EPYC 7552' /proc/cpuinfo | sort -u)" = 'AMD EPYC 7552' ]]; then
+            # 7552 preferring higher clock frequency https://en.wikichip.org/wiki/amd/epyc/7552
+            CPUS=24
+        elif [[ "$CPUS" -ge '24' && "$(grep -o 'AMD EPYC 7642' /proc/cpuinfo | sort -u)" = 'AMD EPYC 7642' ]]; then
+            # 7642 preferring higher clock frequency https://en.wikichip.org/wiki/amd/epyc/7642
+            CPUS=24
+        elif [[ "$CPUS" -ge '24' && "$(grep -o 'AMD EPYC 7662' /proc/cpuinfo | sort -u)" = 'AMD EPYC 7662' ]]; then
+            # 7662 preferring higher clock frequency https://en.wikichip.org/wiki/amd/epyc/7662
+            CPUS=24
+        elif [[ "$CPUS" -ge '24' && "$(grep -o 'AMD EPYC 7702' /proc/cpuinfo | sort -u)" = 'AMD EPYC 7702' ]]; then
+            # 7702 preferring higher clock frequency https://en.wikichip.org/wiki/amd/epyc/7702
+            CPUS=24
+        elif [[ "$CPUS" -ge '24' && "$(grep -o 'AMD EPYC 7742' /proc/cpuinfo | sort -u)" = 'AMD EPYC 7742' ]]; then
+            # 7742 preferring higher clock frequency https://en.wikichip.org/wiki/amd/epyc/7742
+            CPUS=24
+        elif [[ "$CPUS" -ge '24' && "$(grep -o 'AMD EPYC 7H12' /proc/cpuinfo | sort -u)" = 'AMD EPYC 7H12' ]]; then
+            # 7H12 preferring higher clock frequency https://en.wikichip.org/wiki/amd/epyc/7H12
+            CPUS=16
+        elif [[ "$CPUS" -ge '16' && "$(grep -o 'AMD EPYC 7F52' /proc/cpuinfo | sort -u)" = 'AMD EPYC 7F52' ]]; then
+            # 7F52 preferring higher clock frequency https://en.wikichip.org/wiki/amd/epyc/7F52
+            CPUS=16
+        elif [[ "$CPUS" -ge '16' && "$(grep -o 'AMD EPYC 7F72' /proc/cpuinfo | sort -u)" = 'AMD EPYC 7F72' ]]; then
+            # 7F72 preferring higher clock frequency https://en.wikichip.org/wiki/amd/epyc/7F72
+            CPUS=16
+        elif [[ "$CPUS" -ge '8' && "$(grep -o 'AMD EPYC 7313' /proc/cpuinfo | sort -u)" = 'AMD EPYC 7313' ]]; then
+            # 7313 preferring higher clock frequency https://en.wikichip.org/wiki/amd/epyc/7313
+            CPUS=8
+        elif [[ "$CPUS" -ge '12' && "$(grep -o 'AMD EPYC 7413' /proc/cpuinfo | sort -u)" = 'AMD EPYC 7413' ]]; then
+            # 7413 preferring higher clock frequency https://en.wikichip.org/wiki/amd/epyc/7413
+            CPUS=12
+        elif [[ "$CPUS" -ge '12' && "$(grep -o 'AMD EPYC 7443' /proc/cpuinfo | sort -u)" = 'AMD EPYC 7443' ]]; then
+            # 7443 preferring higher clock frequency https://en.wikichip.org/wiki/amd/epyc/7443
+            CPUS=12
+        elif [[ "$CPUS" -ge '14' && "$(grep -o 'AMD EPYC 7453' /proc/cpuinfo | sort -u)" = 'AMD EPYC 7453' ]]; then
+            # 7453 preferring higher clock frequency https://en.wikichip.org/wiki/amd/epyc/7453
+            CPUS=14
+        elif [[ "$CPUS" -ge '16' && "$(grep -o 'AMD EPYC 7513' /proc/cpuinfo | sort -u)" = 'AMD EPYC 7513' ]]; then
+            # 7513 preferring higher clock frequency https://en.wikichip.org/wiki/amd/epyc/7513
+            CPUS=16
+        elif [[ "$CPUS" -ge '16' && "$(grep -o 'AMD EPYC 7543' /proc/cpuinfo | sort -u)" = 'AMD EPYC 7543' ]]; then
+            # 7543 preferring higher clock frequency https://en.wikichip.org/wiki/amd/epyc/7543
+            CPUS=16
+        elif [[ "$CPUS" -ge '16' && "$(grep -o 'AMD EPYC 7643' /proc/cpuinfo | sort -u)" = 'AMD EPYC 7643' ]]; then
+            # 7643 preferring higher clock frequency https://en.wikichip.org/wiki/amd/epyc/7643
+            CPUS=16
+        elif [[ "$CPUS" -ge '16' && "$(grep -o 'AMD EPYC 7663' /proc/cpuinfo | sort -u)" = 'AMD EPYC 7663' ]]; then
+            # 7663 preferring higher clock frequency https://en.wikichip.org/wiki/amd/epyc/7663
+            CPUS=16
+        elif [[ "$CPUS" -ge '32' && "$(grep -o 'AMD EPYC 7713' /proc/cpuinfo | sort -u)" = 'AMD EPYC 7713' ]]; then
+            # 7713 preferring higher clock frequency https://en.wikichip.org/wiki/amd/epyc/7713
+            CPUS=32
+        elif [[ "$CPUS" -ge '32' && "$(grep -o 'AMD EPYC 7763' /proc/cpuinfo | sort -u)" = 'AMD EPYC 7763' ]]; then
+            # 7763 preferring higher clock frequency https://en.wikichip.org/wiki/amd/epyc/7763
+            CPUS=32
+        elif [[ "$CPUS" -ge '16' && "$(grep -o 'AMD EPYC 73F3' /proc/cpuinfo | sort -u)" = 'AMD EPYC 73F3' ]]; then
+            # 73F3 preferring higher clock frequency https://en.wikichip.org/wiki/amd/epyc/73F3
+            CPUS=16
+        elif [[ "$CPUS" -ge '24' && "$(grep -o 'AMD EPYC 74F3' /proc/cpuinfo | sort -u)" = 'AMD EPYC 74F3' ]]; then
+            # 74F3 preferring higher clock frequency https://en.wikichip.org/wiki/amd/epyc/74F3
+            CPUS=24
+        elif [[ "$CPUS" -ge '32' && "$(grep -o 'AMD EPYC 75F3' /proc/cpuinfo | sort -u)" = 'AMD EPYC 75F3' ]]; then
+            # 75F3 preferring higher clock frequency https://en.wikichip.org/wiki/amd/epyc/75F3
+            CPUS=32
         else
-            CPUS=$(echo $(($CPUS+4)))
+            CPUS=$CPUS
         fi
     elif [[ "$CPUS" -eq '8' ]]; then
-        CPUS=$(echo $(($CPUS+2)))
+        CPUS=$CPUS
     else
-        CPUS=$(echo $(($CPUS+1)))
+        CPUS=$CPUS
     fi
     MAKETHREADS=" -j$CPUS"
 fi
@@ -382,12 +732,20 @@ TIME_REDIS='n'
 #####################################################
 # Enable or disable menu mode
 ENABLE_MENU='n'
+DATA_MENU_ENABLE='y'  # centmin.sh menu option 21 menu
 
 #####################################################
 # CentOS 7 specific
 FIREWALLD_DISABLE='y'
 DNF_ENABLE='n'
 DNF_COPR='y'
+
+#####################################################
+# SSH specific
+# setup /etc/ssh/sshd_config.d/01-permitrootlogin.conf
+# during initial install to re-enable root user SSH logins
+# for EL9 systems
+SSHD_REENABLE_ROOT_LOGINS='y'
 
 #####################################################
 # CSF FIREWALL
@@ -435,6 +793,14 @@ MM_LICENSE_KEY="$GET_CMM_MM_LICENSE_KEY"
 MM_CSF_SRC='n'
 
 #####################################################
+CHECKSEC_VERSION='2.6.0'
+
+#####################################################
+# MOTD prompt alert user if server reboot is required
+# after YUM package updates, alerts Fri-Sun only
+NEEDRESTART_CHECK='n'
+
+#####################################################
 # Networking
 # do not edit below variables but instead set them in
 # /etc/centminmod/custom_config.inc as outlined on 
@@ -444,6 +810,8 @@ MM_CSF_SRC='n'
 # disable system IPv6 support
 # https://wiki.centos.org/FAQ/CentOS7#head-8984faf811faccca74c7bcdd74de7467f2fcd8ee
 DISABLE_IPVSIX='n'
+VPS_IPSIX_CHECK_DISABLE='y' # enable will disable check server for IPv6 support and auto configure Nginx vhosts for IPv6
+VPS_IPSIX_CHECK_DISABLE_DEBUG='n' # debug mode
 
 #####################################################
 # experimental use of subshells to download some
@@ -461,6 +829,7 @@ CLANG_APC='n'                 # APC Cache
 CLANG_MEMCACHED='n'           # Memcached menu option 10 routine
 GCCINTEL_PHP='y'              # enable PHP-FPM GCC compiler with Intel cpu optimizations
 PHP_PGO='n'                   # Profile Guided Optimization https://software.intel.com/en-us/blogs/2015/10/09/pgo-let-it-go-php
+PHP_PATCH_OPENSSL_THREE='y'   # workaround compatibility patches for PHP 7.4 & 8.0 for EL9 system's OpenSSL 3.0 system library
 PHP_PGO_ALWAYS='n'            # override for PHP_PGO enable for 1 cpu thread servers too
 PHP_PGO_TRAINRUNS='10'        # number of runs done during PGO PHP 7 training runs
 PHP_PGO_APPEND_LABEL='y'          # appen PGO label to PHP binaries built with Profile Guided Optimizations
@@ -478,6 +847,7 @@ NGX_GSPLITDWARF='y'           # for Nginx compile https://community.centminmod.c
 PHP_GSPLITDWARF='y'           # for PHP compile https://community.centminmod.com/posts/44072/
 PHP_LTO='n'                   # enable -flto compiler for GCC 4.8.5+ PHP-FPM compiles currently not working with PHP 7.x
 NGX_LDGOLD='y'                # for Nginx compile i.e. passing ld.gold linker -fuse-ld=bfd or -fuse-ld=gold https://community.centminmod.com/posts/44037/
+FLTO_COMP='y'                 # for nginx LTO compiles to control LTO compression levels on EL8 & EL9 systemsr Nginx compile i.e. passing ld.gold linker -fuse-ld=bfd or -fuse-ld=gold https://community.centminmod.com/posts/44037/
 NGINX_FATLTO_OBJECTS='n'        # enable -ffat-lto-objects flag for nginx builds - much slower compile times
 NGINX_NOFATLTO_OBJECTS='n'      # enable -fno-fat-lto-objects flag for nginx builds - much slower compile times
 # recommended to keep NGINXOPENSSL_FATLTO_OBJECTS and NGINXOPENSSL_NOFATLTO_OBJECTS set to = n
@@ -486,6 +856,9 @@ NGINXOPENSSL_NOFATLTO_OBJECTS='n' # enable -fno-fat-lto-objects flag for nginx O
 NGINXCOMPILE_FORMATSEC='y'    # whether or not nginx is compiled with -Wformat -Werror=format-security flags
 NGX_LDMOLD='n'                # optional mold linker https://github.com/rui314/mold
 MOLD_VERSION='1.3.0'          # mold linker rpm version
+MOLD_VERSION_EL8='1.11.0'     # mold linker rpm version
+NGINX_SECURED='y'             # apply more secure compilation options for Nginx
+PHP_SECURED='y'               # apply more secure compilation options for PHP-FPM
 
 # When set to =y, will disable those listed installed services 
 # by default. The service is still installed but disabled 
@@ -519,6 +892,7 @@ NGXDYNAMIC_MEMC='n'
 NGXDYNAMIC_REDISTWO='n'
 NGXDYNAMIC_NGXPAGESPEED='n'
 NGXDYNAMIC_BROTLI='y'
+NGXDYNAMIC_ZSTD='n'
 NGXDYNAMIC_FANCYINDEX='y'
 NGXDYNAMIC_HIDELENGTH='y'
 NGXDYNAMIC_TESTCOOKIE='n'
@@ -531,18 +905,21 @@ PHP_UPDATEMAINTENANCE='n'
 MARIADB_UPDATEMAINTENANCE='n'
 
 # General Configuration
-NGINXCOMPILE_PIE='n'         # build nginx with Position-independent code (PIC) / Position-indendendent executables (PIEs)
+NGINXCOMPILE_PIE='y'         # build nginx with Position-independent code (PIC) / Position-indendendent executables (PIEs)
+PHP_SECURED_PIE='y'          # build php-fpm with Position-independent code (PIC) / Position-indendendent executables (PIEs)
 NGINXUPGRADESLEEP='3'
-SWITCH_NGINX_SYSTEMD='n'     # Switch to centos 7 systemd nginx service file
+SWITCH_NGINX_SYSTEMD='y'     # Switch to centos 7 systemd nginx service file
 AUTOTUNE_CLIENTMAXBODY='y'   # auto tune client_max_body_size option in nginx.conf
 AUTOHARDTUNE_NGINXBACKLOG='y' # on non-openvz systems, if enabled will override nginx default NGX_LISTEN_BACKLOG in src/os/unix/ngx_linux_config.h
 USE_NGINXMAINEXTLOGFORMAT='n' # use default combined nginx log format instead of main_ext custom format for nginx amplify
 NGINX_ALLOWOVERRIDE='y'      # allow centmin mod to update nginx.conf setting defaults when the defaults are revised
 NGINX_SSLCACHE_ALLOWOVERRIDE='n' # dynamically tune nginx ssl_session_cache in /usr/local/nginx/conf/ssl_include.conf based on system detected memory
+NGINX_GZIP_MULTI_STATUS='n'  # enable HTTP Multi Status 207 gzip compression patch for Nextcloud etc https://trac.nginx.org/nginx/ticket/394
 NSD_INSTALL='n'              # Install NSD (DNS Server)
 NSD_VERSION='3.2.18'         # NSD Version
 NTP_INSTALL='y'              # Install Network time protocol daemon
 NGINXPATCH='y'               # Set to y to allow NGINXPATCH_DELAY seconds time before Nginx configure and patching Nginx
+NGINX_DHPARAM_SIZE='2048'    # Default Nginx dhparam size = 2048 or 3072
 NGINX_IOURING_PATCH='n'      # Experimental Nginx AIO patch for Linux 5.1+ Kernel systems only
 NGINXPATCH_DELAY='1'         # Number of seconds to pause Nginx configure routine during Nginx upgrades
 STRIPNGINX='y'               # set 'y' to strip nginx binary to reduce size
@@ -552,8 +929,8 @@ NGINX_ZERODT='n'             # nginx zero downtime reloading on nginx upgrades
 NGINX_ONETWOTHREE_COMPAT='y' # whether to allow nginx 1.23+ installs
 NGINX_MAXERRBYTELIMIT='2048' # modify NGX_MAX_ERROR_STR hardcoded 2048 limit by editing value i.e. http://openresty-reference.readthedocs.io/en/latest/Lua_Nginx_API/#print
 NGINX_INSTALL='y'            # Install Nginx (Webserver)
-NGINX_HPACK_ALLOWED_VER='1022005'      # Max allowed Nginx version for Nginx HTTP/2 HPACK full encoding patch support
-NGINX_DYNAMICTLS_ALLOWED_VER='1022005' # Max allowed Nginx version for Nginx Dynamic TLS patch support
+NGINX_HPACK_ALLOWED_VER='1024005'      # Max allowed Nginx version for Nginx HTTP/2 HPACK full encoding patch support
+NGINX_DYNAMICTLS_ALLOWED_VER='1024005' # Max allowed Nginx version for Nginx Dynamic TLS patch support
 NGINX_DEBUG='n'              # Enable & reinstall Nginx debug log nginx.org/en/docs/debugging_log.html & wiki.nginx.org/Debugging
 NGINX_HTTP2='y'              # Nginx http/2 patch https://community.centminmod.com/threads/4127/
 NGINX_KTLS='n'               # Enable Nginx kTLS - TLS in Kernel support if OpenSSL 3.0.x & 5.2+ Kernel detected
@@ -563,11 +940,11 @@ NGINX_TLS_FINGERPRINT='n'    # JA3 fingerprint module https://github.com/centmin
 NGINX_MODSECURITY='n'        # modsecurity module support https://github.com/SpiderLabs/ModSecurity/wiki/Reference-Manual#Installation_for_NGINX
 NGINX_MODSECURITY_JSONLOGS='n' # enable to switch to JSON log format, to switch back manually edit /usr/local/nginx/modsec/modsecurity.conf
 NGINX_MODSECURITY_MAXMIND='y' # modsecurity built with libmaxminddb is failing to compile so disable it in favour of GeoIP legacy
-MODSECURITY_OWASPVER='3.3.4' # owasp modsecurity ruleset https://github.com/coreruleset/coreruleset/releases
+MODSECURITY_OWASPVER='4.4.0' # owasp modsecurity ruleset https://github.com/coreruleset/coreruleset/releases
 NGINX_REALIP='y'             # http://nginx.org/en/docs/http/ngx_http_realip_module.html
 NGINX_RDNS='n'               # https://github.com/flant/nginx-http-rdns
 NGINX_NJS='n'                # nginScript https://www.nginx.com/blog/
-NGINX_NJS_VER='0.7.12'       # nginxScript tag version https://github.com/nginx/njslaunching-nginscript-and-looking-ahead/
+NGINX_NJS_VER='0.8.5'       # nginxScript tag version https://github.com/nginx/njslaunching-nginscript-and-looking-ahead/
 NGINX_GEOIP='y'              # Nginx GEOIP module install
 NGINX_GEOIPMEM='y'           # Nginx caches GEOIP databases in memory (default), setting 'n' caches to disk instead
 NGINX_GEOIPTWOLITE='n'       # https://github.com/leev/ngx_http_geoip2_module
@@ -598,11 +975,13 @@ NGINX_MP4='n'                # Nginx MP4 Module http://nginx.org/en/docs/http/ng
 NGINX_AUTHREQ='n'            # http://nginx.org/en/docs/http/ngx_http_auth_request_module.html
 NGINX_SECURELINK='y'         # http://nginx.org/en/docs/http/ngx_http_secure_link_module.html
 NGINX_FANCYINDEX='y'         # https://github.com/aperezdc/ngx-fancyindex/releases
-NGINX_FANCYINDEXVER='0.4.2'  # https://github.com/aperezdc/ngx-fancyindex/releases
+NGINX_FANCYINDEXVER='0.5.2'  # https://github.com/aperezdc/ngx-fancyindex/releases
 NGINX_VHOSTSTATS='n'         # https://github.com/vozlt/nginx-module-vts
 NGINX_LIBBROTLI='n'          # https://github.com/eustas/ngx_brotli
+NGINX_ZSTD='n'               # https://github.com/tokers/zstd-nginx-module
 NGINX_LIBBROTLISTATIC='n'    # only enable if you want pre-compress brotli support and on the fly brotli disabled
 NGINX_BROTLIDEP_UPDATE='n'   # experimental manual update of Google Brotli dependency in ngx_brotli
+NGINX_BROTLI_NEW_METHOD='y'  # enable for ngx_brotli using brotli 1.1.0+ dependency
 NGINX_PAGESPEED='n'          # Install ngx_pagespeed
 NGINX_PAGESPEEDGITMASTER='n' # Install ngx_pagespeed from official github master instead  
 NGXPGSPEED_VER='1.14.33.1-RC1'
@@ -621,46 +1000,46 @@ NGINX_PCREVER='8.45'         # Version of PCRE used for pcre-jit support in Ngin
 NGINX_PCRE_TWO='n'           # optional PCRE2 for Nginx 1.21.5+
 NGINX_PCRETWOVER='10.39'     # Version of PCRE2 used for pcre-jit support in Nginx
 NGINX_ZLIBCUSTOM='y'         # Use custom zlib instead of system version
-NGINX_ZLIBVER='1.2.11'       # http://www.zlib.net/
+NGINX_ZLIBVER='1.3'       # http://www.zlib.net/
 NGINX_VIDEO='n'              # control variable when 'y' set for NGINX_SLICE='y', NGINX_RTMP='y', NGINX_FLV='y', NGINX_MP4='y'
 ORESTY_HEADERSMORE='y'       # openresty headers more https://github.com/openresty/headers-more-nginx-module
 ORESTY_HEADERSMOREGIT='n'    # use git master instead of version specific
-NGINX_HEADERSMORE='0.34'
-NGINX_CACHEPURGEVER='2.5.1'
+NGINX_HEADERSMORE='0.37'
+NGINX_CACHEPURGEVER='2.5.3'
 NGINX_STICKY='n'             # nginx sticky module https://bitbucket.org/nginx-goodies/nginx-sticky-module-ng
 NGINX_STICKYVER='master'
 NGINX_UPSTREAMCHECK='n'      # nginx upstream check https://github.com/yaoweibin/nginx_upstream_check_module
 NGINX_UPSTREAMCHECKVER='0.3.0'
 NGINX_OPENRESTY='y'          # Agentzh's openresty Nginx modules
-ORESTY_MEMCVER='0.19'        # openresty memc module https://github.com/openresty/memc-nginx-module
-ORESTY_SRCCACHEVER='0.32'    # openresty subrequest cache module https://github.com/openresty/srcache-nginx-module
-ORESTY_DEVELKITVER='0.3.0'  # openresty ngx_devel_kit module https://github.com/simpl/ngx_devel_kit
+ORESTY_MEMCVER='0.20'        # openresty memc module https://github.com/openresty/memc-nginx-module
+ORESTY_SRCCACHEVER='0.33'    # openresty subrequest cache module https://github.com/openresty/srcache-nginx-module
+ORESTY_DEVELKITVER='0.3.2'  # openresty ngx_devel_kit module https://github.com/vision5/ngx_devel_kit
 ORESTY_SETMISCGIT='n'        # use git master instead of version specific
 ORESTY_SETMISC='y'           # openresty set-misc-nginx module https://github.com/openresty/echo-nginx-module
-ORESTY_SETMISCVER='0.32'     # openresty set-misc-nginx module https://github.com/openresty/set-misc-nginx-module
+ORESTY_SETMISCVER='0.33'     # openresty set-misc-nginx module https://github.com/openresty/set-misc-nginx-module
 ORESTY_ECHOGIT='n'           # use git master instead of version specific
-ORESTY_ECHOVER='0.62'        # openresty set-misc-nginx module https://github.com/openresty/echo-nginx-module
+ORESTY_ECHOVER='0.63'        # openresty set-misc-nginx module https://github.com/openresty/echo-nginx-module
 ORESTY_REDISVER='0.15'       # openresty redis2-nginx-module https://github.com/openresty/redis2-nginx-module
 
 LUAJIT_GITINSTALL='y'        # opt to install luajit 2.1 from dev branch http://repo.or.cz/w/luajit-2.0.git/shortlog/refs/heads/v2.1
 LUAJIT_GITINSTALLVER='2.1-agentzh'   # branch version = v2.1 will override ORESTY_LUAGITVER if LUAJIT_GITINSTALL='y'
 
 ORESTY_LUANGINX='n'             # enable or disable or ORESTY_LUA* nginx modules below
-ORESTY_LUANGINXVER='0.10.21'  # openresty lua-nginx-module https://github.com/openresty/lua-nginx-module
+ORESTY_LUANGINXVER='0.10.26'  # openresty lua-nginx-module https://github.com/openresty/lua-nginx-module
 ORESTY_LUAGITVER='2.0.5'        # luagit http://luajit.org/
-ORESTY_LUAMEMCACHEDVER='0.16'   # openresty https://github.com/openresty/lua-resty-memcached
-ORESTY_LUAMYSQLVER='0.23'    # openresty https://github.com/openresty/lua-resty-mysql
+ORESTY_LUAMEMCACHEDVER='0.17'   # openresty https://github.com/openresty/lua-resty-memcached
+ORESTY_LUAMYSQLVER='0.26'    # openresty https://github.com/openresty/lua-resty-mysql
 ORESTY_LUAREDISVER='0.29'       # openresty https://github.com/openresty/lua-resty-redis
-ORESTY_LUADNSVER='0.21'         # openresty https://github.com/openresty/lua-resty-dns
-ORESTY_LUAUPLOADVER='0.10'      # openresty https://github.com/openresty/lua-resty-upload
+ORESTY_LUADNSVER='0.22'         # openresty https://github.com/openresty/lua-resty-dns
+ORESTY_LUAUPLOADVER='0.11'      # openresty https://github.com/openresty/lua-resty-upload
 ORESTY_LUAWEBSOCKETVER='0.08'   # openresty https://github.com/openresty/lua-resty-websocket
-ORESTY_LUALOCKVER='0.08'        # openresty https://github.com/openresty/lua-resty-lock
-ORESTY_LUASTRINGVER='0.12'      # openresty https://github.com/openresty/lua-resty-string
+ORESTY_LUALOCKVER='0.09'        # openresty https://github.com/openresty/lua-resty-lock
+ORESTY_LUASTRINGVER='0.15'      # openresty https://github.com/openresty/lua-resty-string
 ORESTY_LUAREDISPARSERVER='0.13'    # openresty https://github.com/openresty/lua-redis-parser
-ORESTY_LUAUPSTREAMCHECKVER='0.06'  # openresty https://github.com/openresty/lua-resty-upstream-healthcheck
-ORESTY_LUALRUCACHEVER='0.10'       # openresty https://github.com/openresty/lua-resty-lrucache
-ORESTY_LUARESTYCOREVER='0.1.23'    # openresty https://github.com/openresty/lua-resty-core
-ORESTY_LUASTREAMVER='0.0.11'        # https://github.com/openresty/stream-lua-nginx-module
+ORESTY_LUAUPSTREAMCHECKVER='0.08'  # openresty https://github.com/openresty/lua-resty-upstream-healthcheck
+ORESTY_LUALRUCACHEVER='0.13'       # openresty https://github.com/openresty/lua-resty-lrucache
+ORESTY_LUARESTYCOREVER='0.1.28'    # openresty https://github.com/openresty/lua-resty-core
+ORESTY_LUASTREAMVER='0.0.14'        # https://github.com/openresty/stream-lua-nginx-module
 ORESTY_LUASTREAM='y'               # control https://github.com/openresty/stream-lua-nginx-module
 NGX_LUASTREAM_FORCED='y'           # control stream-lua-nginx enabling for nginx 1.17+
 ORESTY_LUAUPSTREAMVER='0.07'       # openresty https://github.com/openresty/lua-upstream-nginx-module
@@ -669,17 +1048,19 @@ ORESTY_LUALOGGERSOCKETVER='0.1'    # cloudflare openresty https://github.com/clo
 ORESTY_LUACOOKIEVER='master'       # cloudflare openresty https://github.com/cloudflare/lua-resty-cookie
 ORESTY_LUAUPSTREAMCACHEVER='0.1.1' # cloudflare openresty https://github.com/cloudflare/lua-upstream-cache-nginx-module
 NGX_LUAUPSTREAMCACHE='n'           # disable https://github.com/cloudflare/lua-upstream-cache-nginx-module
-LUACJSONVER='2.1.0.8rc1'              # https://github.com/openresty/lua-cjson
+LUACJSONVER='2.1.0.9'              # https://github.com/openresty/lua-cjson
 
 STRIPPHP='y'                 # set 'y' to strip PHP binary to reduce size
 PHP_INSTALL='y'              # Install PHP /w Fast Process Manager
-SWITCH_PHPFPM_SYSTEMD='y'    # Switch to centos 7 systemd php-fpm service file https://community.centminmod.com/threads/16511/
+SWITCH_PHPFPM_SYSTEMD='y'                 # Switch to centos 7 systemd php-fpm service file https://community.centminmod.com/threads/16511/
+FPM_PHPFPM_INSTALLDIR='/home/installdir'  # default directory for PHP-FPM INSTALL_ROOT routines
 ZSTD_LOGROTATE_PHPFPM='n'    # initial install only for zstd compressed log rotation community.centminmod.com/threads/16371/
 PHP_PATCH='y'                # Apply PHP patches if they exist
 PHP_MYSQLND_PATCH_FIX='y'    # Apply PHP 7.3 backported mysqlnd patch for MariaDB for PHP <=7.2 https://community.centminmod.com/posts/86953/
 PHP_TUNING='n'               # initial php-fpm install auto tuning
 PHP_HUGEPAGES='n'            # Enable explicit huge pages support for PHP 7 on CentOS 7.x systems
 PHP_CUSTOMSSL='n'            # compile php-fpm against openssl 1.0.2+ or libressl 2.3+ whichever nginx uses
+PHP_CUSTOMSSL_FORCE='n'      # unless force enabled PHP_CUSTOMSSL is disabled on EL7 systems due to additional work needed
 PHPMAKETEST=n                # set to y to enable make test after PHP make for diagnostic purposes
 AUTODETECPHP_OVERRIDE='n'    # when enabled, php updates will always reinstall all php extensions even if minor php version
 PHP_PCREJIT_STACKSIZE_ADJUST='n' # when enabled, allows you to raise PHP's default PCRE JIT stack size https://github.com/php/php-src/pull/2910
@@ -700,12 +1081,12 @@ PHPMAILPARSE='y'             # Disable or Enable PHP mailparse extension
 PHPIONCUBE='n'               # Disable or Enable Ioncube Loader via addons/ioncube.sh
 PHPMSSQL='n'                 # Disable or Enable MSSQL server PHP extension
 PHPTIMEZONEDB='y'            # timezonedb PHP extension updated https://pecl.php.net/package/timezonedb
-PHPTIMEZONEDB_VER='2021.5'   # timezonedb PHP extension version
+PHPTIMEZONEDB_VER='2024.1'   # timezonedb PHP extension version
 PHPMSSQL_ALWAYS='n'          # mssql php extension always install on php recompiles
 PHPEMBED='y'                 # built php with php embed SAPI library support --enable-embed=shared
 
 PHPSWOOLE='n'                # https://pecl.php.net/package/swoole
-PHPSWOOLE_VER='4.8.9'
+PHPSWOOLE_VER='5.1.0'
 PHPSWOOLE_FIVE_VER='2.0.5' # max PHP 5.0 supported version
 PHPSWOOLE_SEVEN_ZERO_VER='4.3.5' # max PHP 7.0 supported version
 PHPSWOOLE_SEVEN_ONE_VER='4.5.11' # max PHP 7.1 supported version
@@ -720,19 +1101,21 @@ SUHOSINVER='0.9.38'
 
 PHPREDIS='y'                # redis PHP extension install
 REDISPHP_VER='4.3.0'        # redis PHP version for PHP <7.x
-REDISPHPSEVEN_VER='5.3.6'   # redis PHP version for PHP =>7.x
+REDISPHPSEVEN_VER='5.3.7'   # redis PHP version for PHP 7.0.x to 7.1.x
+REDISPHPSEVENTWO_VER='6.0.2'   # redis PHP version for PHP =>7.2.x
 REDISPHP_GIT='n'            # pull php 7 redis extension from git or pecl downloads
 PHPMONGODB='n'              # MongoDB PHP extension install
 MONGODBPHP_VER='1.7.5'      # MongoDB PHP version
 MONGODBPHP_SEVEN_ZERO_VER='1.9.2' # MongoDB max PHP =<7.0 version
 MONGODBPHP_SEVEN_VER='1.11.1'     # MongoDB max PHP 7.1+ version
-MONGODBPHP_EIGHT_VER='1.12.0'     # MongoDB PHP version
+MONGODBPHP_EIGHT_VER='1.13.0'
+MONGODBPHP_EIGHTTWO_VER='1.17.3'     # MongoDB PHP version
 MONGODB_SASL='n'            # SASL not working yet leave = n
 PDOPGSQL_PHPVER='11'        # pdo-pgsql PHP extension version for postgresql
 PHP_LIBZIP='n'              # use newer libzip instead of PHP embedded zip
 PHP_ARGON='n'               # alias for PHP_LIBZIP, when PHP_ARGON='y' then PHP_LIBZIP='y'
-LIBZIP_VER='1.7.3'          # required for PHP 7.2 + with libsodium & argon2
-LIBSODIUM_VER='1.0.18'      # https://github.com/jedisct1/libsodium/releases
+LIBZIP_VER='1.10.1'          # required for PHP 7.2 + with libsodium & argon2
+LIBSODIUM_VER='1.0.20'      # https://github.com/jedisct1/libsodium/releases
 LIBSODIUM_NATIVE='n'        # optimise for specific cpu not portable between different cpu modules
 LIBARGON_VER='20190702'     # https://github.com/P-H-C/phc-winner-argon2
 PHP_MCRYPTPECL='y'          # PHP 7.2 deprecated mcrypt support so this adds it back as PECL extension
@@ -747,9 +1130,12 @@ PHP_ZSTD='n'                # zstd php extension https://github.com/kjdev/php-ex
 SHORTCUTS='y'                # shortcuts
 
 POSTGRESQL='n'               # set to =y to install PostgreSQL 9.6 server, devel packages and pdo-pgsql PHP extension
-POSTGRESQL_BRANCHVER='13'   # PostgresSQL branch version https://www.postgresql.org/ i.e. 9.6, 10 or 11
+POSTGRESQL_BRANCHVER='16'   # PostgresSQL branch version https://www.postgresql.org/ i.e. 16
 
-IMAGEMAGICK_HEIF='n'         # experimental ImageMagick HEIF image format support
+IMAGEMAGICK_HEIF='n'           # experimental ImageMagick HEIF image format support
+IMAGEMAGICK_SOURCE_INSTALL='n' # ImageMagick 7 source install with HEIC support
+LIBDE265_VER='1.0.9'
+LIBHEIF_VER='1.14.0'
 
 # Redis server
 REDIS_SERVER_INSTALL='y'      # Install redis server by default on initial install
@@ -765,9 +1151,15 @@ REDIS_SERVER_INSTALL='y'      # Install redis server by default on initial insta
 SET_DEFAULT_MYSQLCHARSET='utf8'
 MDB_INSTALL='n'             # Install via RPM MariaDB MySQL Server replacement (Not recommended for VPS with less than 256MB RAM!)
 MDB_YUMREPOINSTALL='y'      # Install MariaDB 5.5 via CentOS YUM Repo
-MARIADB_INSTALLTENTWO='n'   # MariaDB 10.2 YUM default install if set to yes
-MARIADB_INSTALLTENTHREE='n' # MariaDB 10.3 YUM default install if set to yes
-MARIADB_INSTALLTENFOUR='y'  # MariaDB 10.4 YUM default install if set to yes
+MARIADB_INSTALLTENTWO='n'     # MariaDB 10.2 YUM default install if set to yes
+MARIADB_INSTALLTENTHREE='n'   # MariaDB 10.3 YUM default install if set to yes
+MARIADB_INSTALLTENFOUR='y'    # MariaDB 10.4 YUM default install if set to yes
+MARIADB_INSTALLTENFIVE='n'    # MariaDB 10.5 YUM default install if set to yes
+MARIADB_INSTALLTENSIX='n'     # MariaDB 10.6 YUM default install if set to yes
+MARIADB_INSTALLTENELEVEN='n'  # MariaDB 10.11 YUM default install if set to yes
+MARIADB_INSTALLELEVENFOUR='n' # MariaDB 11.4 YUM default install if set to yes
+
+MYSQLADMIN_SHELL='y'          # enable centmin.sh menu option 6
 
 # Define current MariaDB version
 MDB_VERONLY='5.2.14'
@@ -787,8 +1179,12 @@ MYSQL_INSTALL='n'            # Install official Oracle MySQL Server (MariaDB alt
 SENDMAIL_INSTALL='n'         # Install Sendmail (and mailx) set to y and POSTFIX_INSTALL=n for sendmail
 POSTFIX_INSTALL=y            # Install Postfix (and mailx) set to n and SENDMAIL_INSTALL=y for sendmail
 # Nginx
-NGINX_VERSION='1.26.1'       # Use this version of Nginx
-NGINX_VHOSTSSL='y'            # enable centmin.sh menu 2 prompt to create self signed SSL vhost 2nd vhost conf
+NGINX_VERSION='1.27.1'             # Use this version of Nginx
+NGINX_ANGIE_VERSION='Angie-1.6.2'
+FREENGINX_VERSION='1.27.2'     # Maxim's Freenginx fork https://freenginx.org/en/download.html
+FREENGINX_INSTALL='n'          # Use Freenginx fork instead of official Nginx
+FREENGINX_BACKPORT_PATCHES='n' # Backport Freenginx fixes to official Nginx
+NGINX_VHOSTSSL='y'             # enable centmin.sh menu 2 prompt to create self signed SSL vhost 2nd vhost conf
 NGINXBACKUP='y'
 NGINX_STAPLE_CACHE_OVERRIDE='n' # Enable will override Nginx OCSP stapling cache refresh time of 3600 seconds
 NGINX_STAPLE_CACHE_TTL='86400'  # Nginx OCSP stapling cache refresh time in seconds override default 3600
@@ -798,6 +1194,7 @@ VHOST_PRESTATICINC='y'       # add pre-staticfiles-local.conf & pre-staticfiles-
 NGINXDIR='/usr/local/nginx'
 NGINXCONFDIR="${NGINXDIR}/conf"
 NGINXBACKUPDIR='/usr/local/nginxbackup'
+NGINX_MAINHOSTNAME_BLANK_INDEX='n'  # if enabled main hostname public web root /usr/local/nginx/html/index.html will be blank
 
 # control variables post vhost creation
 # whether cloudflare.conf include file is uncommented (enabled) or commented out (disabled)
@@ -811,9 +1208,10 @@ NGINX_PRIORITIZECHACHA='n' # https://community.centminmod.com/posts/67042/
 SSL_PROTOCOL_MODERN='y'         # switch Nginx HTTPS to disabel TLSv1.0 & TLSv1.1 by default and support TLSv1.2 minimum
 DISABLE_TLSONEZERO_PROTOCOL='n' # disable TLS 1.0 protocol by default industry is moving to deprecate for security
 NOSOURCEOPENSSL='y'        # set to 'y' to disable OpenSSL source compile for system default YUM package setup
-OPENSSL_VERSION='1.1.1w'   # Use this version of OpenSSL http://openssl.org/
-OPENSSL_VERSIONFALLBACK='1.1.1w'   # fallback if OPENSSL_VERSION uses openssl 1.1.x branch
-OPENSSL_VERSION_OLDOVERRIDE='1.1.1w' # override version if persist config OPENSSL_VERSION variable is out of date
+OPENSSL_VERSION='1.1.1w'                   # Use this version of OpenSSL http://openssl.org/
+OPENSSL_VERSIONFALLBACK='1.1.1w'           # fallback if OPENSSL_VERSION uses openssl 1.1.x branch
+OPENSSL_VERSION_OLDOVERRIDE='1.1.1w'       # override version if persist config OPENSSL_VERSION variable is out of date
+OPENSSL_QUIC_VERSION='OpenSSL_1_1_1w+quic' # quicTLS OpenSSL fork version
 OPENSSL_THREADS='y'        # control whether openssl 1.1 branch uses threading or not
 OPENSSL_TLSONETHREE='y'    # whether OpenSSL 1.1.1 builds enable TLSv1.3
 OPENSSL_CUSTOMPATH='/opt/openssl'  # custom directory path for OpenSSL 1.0.2+
@@ -825,7 +1223,7 @@ CLOUDFLARE_ZLIBRESET='y'   # if CLOUDFLARE_ZLIB='n' set, then revert gzip compre
 CLOUDFLARE_ZLIBRAUTOMAX='n' # don't auto raise nginx gzip compression level to 9 if using Cloudflare zlib
 CLOUDFLARE_ZLIBPHP='n'     # use Cloudflare optimised zlib fork for PHP-FPM zlib instead of system zlib
 CLOUDFLARE_ZLIBDEBUG='n'   # make install debug verbose mode
-CLOUDFLARE_ZLIBVER='1.3.2'
+CLOUDFLARE_ZLIBVER='1.3.3'
 NGINX_DYNAMICTLS='n'          # set 'y' and recompile nginx https://blog.cloudflare.com/optimizing-tls-over-tcp-to-reduce-latency/
 OPENSSLECDSA_PATCH='n'        # https://community.centminmod.com/posts/57725/
 OPENSSLECDHX_PATCH='n'        # https://community.centminmod.com/posts/57726/
@@ -834,13 +1232,19 @@ PRIORITIZE_CHACHA_OPENSSL='n' # https://community.centminmod.com/threads/15708/
 
 # LibreSSL
 LIBRESSL_SWITCH='n'        # if set to 'y' it overrides OpenSSL as the default static compiled option for Nginx server
-LIBRESSL_VERSION='3.8.2'   # Use this version of LibreSSL http://www.libressl.org/
+LIBRESSL_VERSION='3.9.2'   # Use this version of LibreSSL http://www.libressl.org/
 
 # BoringSSL
 # not working yet just prep work
 BORINGSSL_SWITCH='n'       # if set to 'y' it overrides OpenSSL as the default static compiled option for Nginx server
 BORINGSSL_SHARED='y'       # build boringssl as shared library so nginx can dynamically compile boringssl
 BORINGSSL_DIR="/opt"
+
+# AWS-LC
+AWS_LC_SWITCH='n'             # if set to 'y' overrides OpenSSL as default for Nginx https://github.com/aws/aws-lc
+AWS_LC_VERSION='v1.34.2'      # version as per ttps://github.com/aws/aws-lc/tags
+AWS_LC_DIR="/opt"
+AWS_LC_SWITCH_BUILD_TESTS='n' # run AWS-LC build tests
 ##################################
 
 # Choose whether to compile Nginx --with-google_perftools_module
@@ -858,10 +1262,11 @@ PCRE_VERSION='8.45'          # PCRE version
 IMAGICKPHP_VER='3.4.4'         # PHP extension for imagick
 IMAGICKPHP_SEVEN_VER='3.7.0'   # PHP extension for imagick
 MAILPARSEPHP_VER='2.1.6'       # https://pecl.php.net/package/mailparse
-MAILPARSEPHP_COMPATVER='3.1.2' # For PHP 7
+MAILPARSEPHP_COMPATVER='3.1.3' # For PHP 7.0-7.3
+MAILPARSEPHPSEVENFOUR_COMPATVER='3.1.6' # For PHP 7.4+
 MEMCACHED_INSTALL='y'          # Install Memcached
-LIBEVENT_VERSION='2.1.8'      # Use this version of Libevent
-MEMCACHED_VERSION='1.6.22'    # Use this version of Memcached server
+LIBEVENT_VERSION='2.1.12'      # Use this version of Libevent
+MEMCACHED_VERSION='1.6.28'    # Use this version of Memcached server
 MEMCACHED_TLS='n'             # TLS support https://github.com/memcached/memcached/wiki/ReleaseNotes1513
 MEMCACHE_VERSION='3.0.8'      # Use this version of Memcache
 MEMCACHE_COMPATVER='4.0.5.1'  # For PHP 7
@@ -872,7 +1277,7 @@ LIBMEMCACHED_VER='1.0.18'     # libmemcached version for source compile
 TWEMPERF_VER='0.1.1'
 
 PHP_OVERWRITECONF='y'       # whether to show the php upgrade prompt to overwrite php-fpm.conf
-PHP_VERSION='7.4.32'        # Use this version of PHP
+PHP_VERSION='7.4.33'        # Use this version of PHP
 PHP_MIRRORURL='https://www.php.net'
 PHPUPGRADE_MIRRORURL="$PHP_MIRRORURL"
 XCACHE_VERSION='3.2.0'      # Use this version of Xcache
@@ -884,11 +1289,14 @@ ZOPCACHEDFT='y'
 ZOPCACHECACHE_VERSION='7.0.5'   # for PHP <=5.4 https://pecl.php.net/package/ZendOpcache
 ZOPCACHE_OVERRIDE='n'           # =y will override PHP 5.5, 5.6, 7.0 inbuilt Zend OpCache version
 # Python
-PYTHON_VERSION='2.7.10'       # Use this version of Python
-SIEGE_VERSION='4.0.4'
+PYTHON_VERSION='2.7.10'       # Use this version of Python for CentOS 7 only
+PYTHON_INSTALL_ALTERNATIVES='n' # For EL8+ to install Python 3.6 and set unversioned binary alternatives
+ALT_PYTHON_VER_LABEL='3.6'    # For EL8+ OSes only i.e. python3.6 binary
+ALT_PYTHON_VER='36'           # For EL8+ OSes only i.e. python36 package
+SIEGE_VERSION='4.1.5'
+SIEGEINSTALL='n'
 
 CURL_TIMEOUTS=' --max-time 5 --connect-timeout 5'
-
 AXEL_VER='2.6'               # Axel source compile version https://github.com/axel-download-accelerator/axel/releases
 USEAXEL='n'                  # whether to use axel download accelerator or wget
 ###############################################################
@@ -900,6 +1308,8 @@ GCC_OPTLEVEL='-O3'
 # https://gcc.gnu.org/onlinedocs/gcc/Optimize-Options.html
 # enabled will set -falign-functions=32 for GCC compiles of Nginx and PHP-FPM and pigz
 GCC_FALIGN_FUNCTION='n'
+# LTO CPUS
+CPUS_LTO=$(grep -c "processor" /proc/cpuinfo)
 
 # experimental custom RPM compiled packages to replace source 
 # compiled versions for 64bit systems only
@@ -926,9 +1336,18 @@ CUSTOM_CURLRPMLIBURL='http://mirror.city-fan.org/ftp/contrib/libraries'
 # wget source compile version
 WGET_VERSION='1.20.3'
 WGET_VERSION_SEVEN='1.20.3'
+WGET_VERSION_EIGHT='1.21.4'
+WGET_VERSION_NINE='1.21.4'
+
+# TCP BBR congestion control
+TCP_BBR_ENABLE='n'
+# TCP Fast Open
+TCP_FASTOPEN_ENABLE='n'
 
 # centmin.sh curl options
-CURL_AGENT=$(curl -V 2>&1 | head -n 1 |  awk '{print $1"/"$2}')
+OS_PRETTY_NAME=$(cat /etc/os-release | awk -F '=' '/PRETTY_NAME/ {print $2}' | sed -e 's| (| |g' -e 's|)| |g' -e 's| Core ||g' -e 's|"||g')
+CURL_AGENT_VERSION=$(curl -V 2>&1 | head -n 1 |  awk '{print $1"/"$2}')
+CURL_AGENT="${CURL_AGENT_VERSION} ${OS_PRETTY_NAME}"
 CURL_CPUMODEL=$(awk -F: '/model name/{print $2}' /proc/cpuinfo | sort | uniq -c | xargs | sed -e 's|(R)||g' -e 's|(TM)||g' -e 's|Intel Core|Intel|g' -e 's|CPU ||g' -e 's|-Core|C|g' -e 's|@ |@|g');
 CURL_CPUSPEED=$(awk -F: '/cpu MHz/{print $2}' /proc/cpuinfo | sort | uniq| sed -e s'|      ||g' | xargs | awk '{sum = 0; for (i = 1; i <= NF; i++) sum += $i; sum /= NF; printf("%.0f\n",sum)}')
 ###############################################################
@@ -1001,6 +1420,21 @@ fi
 
 if [[ "$CENTOS_SEVEN" -eq '7' ]]; then
   AXEL_VER='2.16.1'
+elif [[ "$CENTOS_EIGHT" -eq '8' ]]; then
+  AXEL_VER='2.16.1'
+elif [[ "$CENTOS_NINE" -eq '9' ]]; then
+  AXEL_VER='2.16.1'
+fi
+
+if [[ "$CENTOS_NINE" -eq '9' ]]; then
+  PHP_PID_PATH='/run/php-fpm/php-fpm.pid'
+  PHP_PID_PATHDIR='/run/php-fpm/'
+elif [[ "$CENTOS_EIGHT" -eq '8' ]]; then
+  PHP_PID_PATH='/run/php-fpm/php-fpm.pid'
+  PHP_PID_PATHDIR='/run/php-fpm/'
+else
+  PHP_PID_PATH='/var/run/php-fpm/php-fpm.pid'
+  PHP_PID_PATHDIR='/var/run/php-fpm/'
 fi
 
 if [[ "$CENTOS_SIX" -eq '6' ]]; then
@@ -1019,141 +1453,157 @@ if [[ "$1" = 'install' ]]; then
   export INITIALINSTALL='y'
 fi
 
-# source "inc/mainmenu.inc"
-# source "inc/mainmenu_cli.inc"
-# source "inc/ramdisk.inc"
-source "inc/fastmirrors.conf"
-source "inc/sync.inc"
-source "inc/qrencode.inc"
-source "inc/tcp.inc"
-source "inc/customrpms.inc"
-source "inc/pureftpd.inc"
-source "inc/htpasswdsh.inc"
-source "inc/gcc.inc"
-source "inc/entropy.inc"
-source "inc/cpucount.inc"
-source "inc/motd.inc"
-source "inc/cpcheck.inc"
-source "inc/lowmem.inc"
-source "inc/memcheck.inc"
-source "inc/ccache.inc"
-source "inc/bookmark.inc"
-source "inc/centminlogs.inc"
-source "inc/yumskip.inc"
-source "inc/questions.inc"
-source "inc/downloads_centosfive.inc"
-source "inc/downloads_centossix.inc"
-source "inc/downloads_centosseven.inc"
-source "inc/downloadlinks.inc"
-source "inc/libzip.inc"
-source "inc/downloads.inc"
-source "inc/yumpriorities.inc"
-source "inc/yuminstall.inc"
-source "inc/centoscheck.inc"
-source "inc/axelsetup.inc"
-source "inc/phpfpmdir.inc"
-source "inc/nginx_backup.inc"
-source "inc/nsd_submenu.inc"
-source "inc/nsd_install.inc"
-source "inc/nsdsetup.inc"
-source "inc/nsd_reinstall.inc"
-source "inc/compress.inc"
-source "inc/compress_php.inc"
-source "inc/nginx_logformat.inc"
-source "inc/logrotate_nginx.inc"
-source "inc/logrotate_phpfpm.inc"
-source "inc/logrotate_mysql.inc"
-source "inc/nginx_mimetype.inc"
-source "inc/openssl_install.inc"
-source "inc/brotli.inc"
-source "inc/nginx_patch.inc"
-source "inc/fastopen.inc"
-source "inc/mod_security.inc"
-source "inc/nginx_configure.inc"
-# source "inc/nginx_configure_openresty.inc"
-source "inc/geoip.inc"
-source "inc/luajit.inc"
-source "inc/phpinfo.inc"
-source "inc/nginx_install.inc"
-source "inc/nginx_upgrade.inc"
-source "inc/mailparse.inc"
-source "inc/imagick_install.inc"
-source "inc/memcached_install.inc"
-source "inc/redis_submenu.inc"
-source "inc/redis.inc"
-source "inc/mongodb.inc"
-source "inc/swoole.inc"
-source "inc/zopfli.inc"
-source "inc/php_mssql.inc"
-source "inc/mysql_proclimit.inc"
-source "inc/mysqltmp.inc"
-source "inc/setmycnf.inc"
-source "inc/mariadb_install102.inc"
-source "inc/mariadb_install103.inc"
-source "inc/mariadb_install104.inc"
-source "inc/mariadb_install.inc"
-source "inc/mysql_install.inc"
-source "inc/mariadb_submenu.inc"
-source "inc/postgresql.inc"
-source "inc/zendopcache_tweaks.inc"
-source "inc/php_extraopts.inc"
-source "inc/mysql_legacy.inc"
-source "inc/imap.inc"
-source "inc/fileinfo.inc"
-source "inc/php_configure.inc"
-source "inc/phpng_download.inc"
-source "inc/php_upgrade.inc"
-source "inc/php_patch.inc"
-source "inc/suhosin_setup.inc"
-source "inc/nginx_pagespeed.inc"
-source "inc/nginx_modules.inc"
-source "inc/nginx_modules_openresty.inc"
-source "inc/sshd.inc"
-source "inc/openvz_stack.inc"
-source "inc/siegeinstall.inc"
-source "inc/python_install.inc"
-source "inc/nginx_addvhost.inc"
-source "inc/wpsetup.inc"
-source "inc/wpsetup-fastcgi-cache.inc"
-source "inc/mariadb_upgrade.inc"
-source "inc/mariadb_upgrade53.inc"
-source "inc/mariadb_upgrade55.inc"
-source "inc/mariadb_upgrade10.inc"
-source "inc/mariadb_upgrade101.inc"
-source "inc/mariadb_upgrade102.inc"
-source "inc/mariadb_upgrade103.inc"
-source "inc/mariadb_upgrade104.inc"
-source "inc/nginx_errorpage.inc"
-source "inc/sendmail.inc"
-source "inc/postfix.inc"
-source "inc/diskalert.inc"
-source "inc/phpsededit.inc"
-source "inc/csfinstall.inc"
-source "inc/csftweaks.inc"
-source "inc/xcache_installask.inc"
-source "inc/xcache_install.inc"
-source "inc/xcache_reinstall.inc"
-source "inc/igbinary.inc"
-source "inc/apcprotect.inc"
-source "inc/apcinstall.inc"
-source "inc/apcreinstall.inc"
-source "inc/timezonedb.inc"
-source "inc/zendopcache_55ini.inc"
-source "inc/zendopcache_install.inc"
-source "inc/zendopcache_upgrade.inc"
-source "inc/zendopcache_reinstall.inc"
-source "inc/zendopcache_submenu.inc"
-source "inc/ffmpeginstall.inc"
-source "inc/shortcuts_install.inc"
-source "inc/memcacheadmin.inc"
-source "inc/mysqlsecure.inc"
-source "inc/pcre.inc"
-source "inc/jemalloc.inc"
-source "inc/zlib.inc"
-source "inc/letsdebug.inc"
-source "inc/google_perftools.inc"
-source "inc/updater_submenu.inc"
-source "inc/centminfinish.inc"
+# source "${SCRIPT_DIR}/inc/mainmenu.inc"
+# source "${SCRIPT_DIR}/inc/mainmenu_cli.inc"
+# source "${SCRIPT_DIR}/inc/ramdisk.inc"
+source "${SCRIPT_DIR}/inc/core_functions.inc"
+source "${SCRIPT_DIR}/inc/configfile_submenu.inc"
+source "${SCRIPT_DIR}/inc/fastmirrors.conf"
+source "${SCRIPT_DIR}/inc/sync.inc"
+source "${SCRIPT_DIR}/inc/qrencode.inc"
+source "${SCRIPT_DIR}/inc/tcp.inc"
+source "${SCRIPT_DIR}/inc/customrpms.inc"
+source "${SCRIPT_DIR}/inc/pureftpd.inc"
+source "${SCRIPT_DIR}/inc/htpasswdsh.inc"
+source "${SCRIPT_DIR}/inc/gcc.inc"
+source "${SCRIPT_DIR}/inc/entropy.inc"
+source "${SCRIPT_DIR}/inc/cpucount.inc"
+source "${SCRIPT_DIR}/inc/motd.inc"
+source "${SCRIPT_DIR}/inc/cpcheck.inc"
+source "${SCRIPT_DIR}/inc/lowmem.inc"
+source "${SCRIPT_DIR}/inc/memcheck.inc"
+source "${SCRIPT_DIR}/inc/ccache.inc"
+source "${SCRIPT_DIR}/inc/bookmark.inc"
+source "${SCRIPT_DIR}/inc/centminlogs.inc"
+source "${SCRIPT_DIR}/inc/yumskip.inc"
+source "${SCRIPT_DIR}/inc/questions.inc"
+source "${SCRIPT_DIR}/inc/downloads_centosfive.inc"
+source "${SCRIPT_DIR}/inc/downloads_centossix.inc"
+source "${SCRIPT_DIR}/inc/downloads_centosseven.inc"
+source "${SCRIPT_DIR}/inc/downloads_centoseight.inc"
+source "${SCRIPT_DIR}/inc/downloads_centosnine.inc"
+source "${SCRIPT_DIR}/inc/downloadlinks.inc"
+source "${SCRIPT_DIR}/inc/libzip.inc"
+source "${SCRIPT_DIR}/inc/downloads.inc"
+source "${SCRIPT_DIR}/inc/yumpriorities.inc"
+source "${SCRIPT_DIR}/inc/yuminstall.inc"
+source "${SCRIPT_DIR}/inc/centoscheck.inc"
+source "${SCRIPT_DIR}/inc/axelsetup.inc"
+source "${SCRIPT_DIR}/inc/phpfpmdir.inc"
+source "${SCRIPT_DIR}/inc/nginx_backup.inc"
+source "${SCRIPT_DIR}/inc/nsd_submenu.inc"
+source "${SCRIPT_DIR}/inc/nsd_install.inc"
+source "${SCRIPT_DIR}/inc/nsdsetup.inc"
+source "${SCRIPT_DIR}/inc/nsd_reinstall.inc"
+source "${SCRIPT_DIR}/inc/compress.inc"
+source "${SCRIPT_DIR}/inc/compress_php.inc"
+source "${SCRIPT_DIR}/inc/nginx_logformat.inc"
+source "${SCRIPT_DIR}/inc/logrotate_nginx.inc"
+source "${SCRIPT_DIR}/inc/logrotate_phpfpm.inc"
+source "${SCRIPT_DIR}/inc/logrotate_mysql.inc"
+source "${SCRIPT_DIR}/inc/nginx_mimetype.inc"
+source "${SCRIPT_DIR}/inc/openssl_install.inc"
+source "${SCRIPT_DIR}/inc/brotli.inc"
+source "${SCRIPT_DIR}/inc/zstd_nginx.inc"
+source "${SCRIPT_DIR}/inc/nginx_patch.inc"
+source "${SCRIPT_DIR}/inc/fastopen.inc"
+source "${SCRIPT_DIR}/inc/mod_security.inc"
+source "${SCRIPT_DIR}/inc/nginx_configure.inc"
+# source "${SCRIPT_DIR}/inc/nginx_configure_openresty.inc"
+source "${SCRIPT_DIR}/inc/geoip.inc"
+source "${SCRIPT_DIR}/inc/luajit.inc"
+source "${SCRIPT_DIR}/inc/phpinfo.inc"
+source "${SCRIPT_DIR}/inc/nginx_install.inc"
+source "${SCRIPT_DIR}/inc/nginx_upgrade.inc"
+source "${SCRIPT_DIR}/inc/mailparse.inc"
+source "${SCRIPT_DIR}/inc/imagick_install.inc"
+source "${SCRIPT_DIR}/inc/memcached_install.inc"
+source "${SCRIPT_DIR}/inc/redis_submenu.inc"
+source "${SCRIPT_DIR}/inc/redis.inc"
+source "${SCRIPT_DIR}/inc/mongodb.inc"
+source "${SCRIPT_DIR}/inc/swoole.inc"
+source "${SCRIPT_DIR}/inc/zopfli.inc"
+source "${SCRIPT_DIR}/inc/php_mssql.inc"
+source "${SCRIPT_DIR}/inc/mysql_proclimit.inc"
+source "${SCRIPT_DIR}/inc/mysqltmp.inc"
+source "${SCRIPT_DIR}/inc/setmycnf.inc"
+source "${SCRIPT_DIR}/inc/mariadb_switch103.inc"
+source "${SCRIPT_DIR}/inc/mariadb_install102.inc"
+source "${SCRIPT_DIR}/inc/mariadb_install103.inc"
+source "${SCRIPT_DIR}/inc/mariadb_install104.inc"
+source "${SCRIPT_DIR}/inc/mariadb_install105.inc"
+source "${SCRIPT_DIR}/inc/mariadb_install106.inc"
+source "${SCRIPT_DIR}/inc/mariadb_install1011.inc"
+source "${SCRIPT_DIR}/inc/mariadb_install114.inc"
+source "${SCRIPT_DIR}/inc/mariadb_install.inc"
+source "${SCRIPT_DIR}/inc/mysql_install.inc"
+source "${SCRIPT_DIR}/inc/mysqladmin.inc"
+source "${SCRIPT_DIR}/inc/mariadb_submenu.inc"
+source "${SCRIPT_DIR}/inc/postgresql.inc"
+source "${SCRIPT_DIR}/inc/zendopcache_tweaks.inc"
+source "${SCRIPT_DIR}/inc/php_extraopts.inc"
+source "${SCRIPT_DIR}/inc/mysql_legacy.inc"
+source "${SCRIPT_DIR}/inc/imap.inc"
+source "${SCRIPT_DIR}/inc/fileinfo.inc"
+source "${SCRIPT_DIR}/inc/php_configure.inc"
+source "${SCRIPT_DIR}/inc/phpng_download.inc"
+source "${SCRIPT_DIR}/inc/php_upgrade.inc"
+source "${SCRIPT_DIR}/inc/php_patch.inc"
+source "${SCRIPT_DIR}/inc/suhosin_setup.inc"
+source "${SCRIPT_DIR}/inc/nginx_pagespeed.inc"
+source "${SCRIPT_DIR}/inc/nginx_modules.inc"
+source "${SCRIPT_DIR}/inc/nginx_modules_openresty.inc"
+source "${SCRIPT_DIR}/inc/sshd.inc"
+source "${SCRIPT_DIR}/inc/openvz_stack.inc"
+source "${SCRIPT_DIR}/inc/siegeinstall.inc"
+source "${SCRIPT_DIR}/inc/python_install.inc"
+source "${SCRIPT_DIR}/inc/nginx_addvhost.inc"
+source "${SCRIPT_DIR}/inc/wpsetup.inc"
+source "${SCRIPT_DIR}/inc/wpsetup-fastcgi-cache.inc"
+source "${SCRIPT_DIR}/inc/mariadb_upgrade.inc"
+source "${SCRIPT_DIR}/inc/mariadb_upgrade53.inc"
+source "${SCRIPT_DIR}/inc/mariadb_upgrade55.inc"
+source "${SCRIPT_DIR}/inc/mariadb_upgrade10.inc"
+source "${SCRIPT_DIR}/inc/mariadb_upgrade101.inc"
+source "${SCRIPT_DIR}/inc/mariadb_upgrade102.inc"
+source "${SCRIPT_DIR}/inc/mariadb_upgrade103.inc"
+source "${SCRIPT_DIR}/inc/mariadb_upgrade104.inc"
+source "${SCRIPT_DIR}/inc/mariadb_upgrade105.inc"
+source "${SCRIPT_DIR}/inc/mariadb_upgrade106.inc"
+source "${SCRIPT_DIR}/inc/mariadb_upgrade1011.inc"
+source "${SCRIPT_DIR}/inc/mariadb_upgrade114.inc"
+source "${SCRIPT_DIR}/inc/nginx_errorpage.inc"
+source "${SCRIPT_DIR}/inc/sendmail.inc"
+source "${SCRIPT_DIR}/inc/postfix.inc"
+source "${SCRIPT_DIR}/inc/diskalert.inc"
+source "${SCRIPT_DIR}/inc/phpsededit.inc"
+source "${SCRIPT_DIR}/inc/csfinstall.inc"
+source "${SCRIPT_DIR}/inc/csftweaks.inc"
+source "${SCRIPT_DIR}/inc/xcache_installask.inc"
+source "${SCRIPT_DIR}/inc/xcache_install.inc"
+source "${SCRIPT_DIR}/inc/xcache_reinstall.inc"
+source "${SCRIPT_DIR}/inc/igbinary.inc"
+source "${SCRIPT_DIR}/inc/apcprotect.inc"
+source "${SCRIPT_DIR}/inc/apcinstall.inc"
+source "${SCRIPT_DIR}/inc/apcreinstall.inc"
+source "${SCRIPT_DIR}/inc/timezonedb.inc"
+source "${SCRIPT_DIR}/inc/zendopcache_55ini.inc"
+source "${SCRIPT_DIR}/inc/zendopcache_install.inc"
+source "${SCRIPT_DIR}/inc/zendopcache_upgrade.inc"
+source "${SCRIPT_DIR}/inc/zendopcache_reinstall.inc"
+source "${SCRIPT_DIR}/inc/zendopcache_submenu.inc"
+source "${SCRIPT_DIR}/inc/ffmpeginstall.inc"
+source "${SCRIPT_DIR}/inc/shortcuts_install.inc"
+source "${SCRIPT_DIR}/inc/memcacheadmin.inc"
+source "${SCRIPT_DIR}/inc/mysqlsecure.inc"
+source "${SCRIPT_DIR}/inc/pcre.inc"
+source "${SCRIPT_DIR}/inc/jemalloc.inc"
+source "${SCRIPT_DIR}/inc/zlib.inc"
+source "${SCRIPT_DIR}/inc/letsdebug.inc"
+source "${SCRIPT_DIR}/inc/google_perftools.inc"
+source "${SCRIPT_DIR}/inc/updater_submenu.inc"
+source "${SCRIPT_DIR}/inc/centminfinish.inc"
+source "${SCRIPT_DIR}/inc/datamanager.inc"
 
 checkcentosver
 mysqltmpdir
@@ -1229,6 +1679,7 @@ fi
 # https://community.centminmod.com/posts/70527/
 # if [[ "$(grep -o 'avx512' /proc/cpuinfo | uniq)" = 'avx512' ]]; then
 #   NGXDYNAMIC_BROTLI='y'
+#   NGXDYNAMIC_ZSTD='n'
 #   NGINX_LIBBROTLI='y'
 #   NGINX_BROTLIDEP_UPDATE='y'
 # fi
@@ -1253,15 +1704,29 @@ ASKCMD="read $KEYPRESS_PARAM "
 CUR_DIR=$SCRIPT_DIR # Get current directory.
 CM_INSTALLDIR=$CUR_DIR
 
-    # echo "centmin.sh \${CUR_DIR} & \${CM_INSTALLDIR}"
-    # echo ${CUR_DIR}
-    # echo ${CM_INSTALLDIR}    
+if [[ "$CENTOS_EIGHT" -eq '8' ]]; then
+  # use system OpenSSL 1.1.1 by default
+  OPENSSL_SYSTEM_USE='y'
+fi
+
+if [[ "$CENTOS_NINE" -eq '9' ]]; then
+  # el9 OSes will default to MariaDB 10.6 LTS releases
+  MARIADB_INSTALLTENTWO='n'
+  MARIADB_INSTALLTENTHREE='n'
+  MARIADB_INSTALLTENFOUR='n'
+  MARIADB_INSTALLTENFIVE='n'
+  MARIADB_INSTALLTENSIX='y'
+  MARIADB_INSTALLTENELEVEN='n'
+  MARIADB_INSTALLELEVENFOUR='n'
+  # use system OpenSSL 3.0.7 by default
+  OPENSSL_SYSTEM_USE='y'
+fi
 
 if [ -f "${CM_INSTALLDIR}/inc/custom_config.inc" ]; then
   if [ -f /usr/bin/dos2unix ]; then
     dos2unix -q "inc/custom_config.inc"
   fi
-    source "inc/custom_config.inc"
+    source "${SCRIPT_DIR}/inc/custom_config.inc"
     if [ -d "${CENTMINLOGDIR}" ]; then
         cat "inc/custom_config.inc" > "${CENTMINLOGDIR}/inc-custom-config-settings_${DT}.log"
     fi
@@ -1301,7 +1766,49 @@ if [ -f "${CONFIGSCANBASE}/custom_config.inc" ]; then
     # is a workaround to jump to 1.1.1a working version for now
     OPENSSL_VERSION="$OPENSSL_VERSION_OLDOVERRIDE"
     OPENSSL_LINKFILE="openssl-${OPENSSL_VERSION}.tar.gz"
-    OPENSSL_LINK="https://www.openssl.org/source/${OPENSSL_LINKFILE}"
+    OPENSSL_LINK="https://github.com/openssl/openssl/releases/download/openssl-${OPENSSL_VERSION}/${OPENSSL_LINKFILE}"
+
+  fi
+fi
+
+# Determine the -march flag based on the CPU flags
+cpu_flags=$(grep -m1 -o -e 'avx512f' -e 'avx2' -e 'avx' /proc/cpuinfo | tr '\n' ' ')
+if [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]]; then
+  check_cflags=$(/lib64/ld-linux-x86-64.so.2 --help | grep supported | awk '/x86-64/ {print $1}' | head -n1 | egrep 'x86-64')
+else
+  check_cflags=''
+fi
+
+# Determine the -march flag based on the CPU flags
+if [[ "$DEVTOOLSETELEVEN" = [yY] || "$DEVTOOLSETTWELVE" = [yY] ]]; then
+  if [[ $check_cflags == *'x86-64'* ]]; then
+    march_flag="$check_cflags"
+  elif [[ $cpu_flags == *'avx512f'* ]]; then
+    march_flag='x86-64-v4'
+  elif [[ $cpu_flags == *'avx2'* ]]; then
+    march_flag='x86-64-v3'
+  elif [[ $cpu_flags == *'sse4.1'* ]] || [[ $cpu_flags == *'sse4.2'* ]] || [[ $cpu_flags == *'ssse3'* ]]; then
+    march_flag='x86-64-v2'
+  else
+    march_flag='x86-64'
+  fi
+else
+  march_flag='x86-64'
+fi
+
+if [[ "$CENTOS_SEVEN" -eq '7' ]]; then
+  AWS_LC_SWITCH='n'
+fi
+if [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]]; then
+  # give AWS-LC priority over quicTLS for HTTP/3 QUIC
+  if [[ "$AWS_LC_SWITCH" = [yY] ]]; then
+    OPENSSL_SYSTEM_USE='n'
+    NGINX_QUIC_SUPPORT='n'
+    ORESTY_LUASTREAM='n'
+    ORESTY_LUANGINX='n'
+  elif [[ "$NGINX_QUIC_SUPPORT" = [yY] ]]; then
+    OPENSSL_SYSTEM_USE='n'
+    AWS_LC_SWITCH='n'
   fi
 fi
 
@@ -1313,25 +1820,46 @@ fi
 if [[ "$MARCH_TARGETNATIVE" = [yY] ]]; then
   MARCH_TARGET='native'
 else
-  MARCH_TARGET='x86-64'
+  MARCH_TARGET="${march_flag}"
 fi
 
 if [[ "$CENTOS_SEVEN" -eq '7' ]]; then
   WGET_VERSION=$WGET_VERSION_SEVEN
+  WGET_FILENAME="wget-${WGET_VERSION}.tar.gz"
+  WGET_LINK="${LOCALCENTMINMOD_MIRROR}/centminmodparts/wget/${WGET_FILENAME}"
 fi
 if [[ "$CENTOS_EIGHT" -eq '8' ]]; then
-  WGET_VERSION=$WGET_VERSION_SEVEN
+  if [[ "$INITIALINSTALL" = [yY] ]]; then
+    echo "EL${label_os_ver} Install Dependencies Start..."
+  fi
+  WGET_VERSION=$WGET_VERSION_EIGHT
+  WGET_FILENAME="wget-${WGET_VERSION}.tar.gz"
+  WGET_LINK="${LOCALCENTMINMOD_MIRROR}/centminmodparts/wget/${WGET_FILENAME}"
 
   # enable CentOS 8 PowerTools repo for -devel packages
+  if [ "$(yum repolist powertools | grep -ow 'powertools')" ]; then
+    reponame_powertools=powertools
+  elif [ "$(yum repolist all | grep -ow 'ol8_codeready_builder')" ]; then
+    reponame_powertools=ol8_codeready_builder
+  elif [ "$(yum repolist all | grep -ow 'ol9_codeready_builder')" ]; then
+    reponame_powertools=ol9_codeready_builder
+  else
+    reponame_powertools=PowerTools
+  fi
   if [ ! -f /usr/bin/yum-config-manager ]; then
-    yum -q -y install dnf-utils
-    yum-config-manager --enable PowerTools
+    yum -q -y install yum-utils tar
+    yum-config-manager --enable $reponame_powertools
   elif [ -f /usr/bin/yum-config-manager ]; then
-    yum-config-manager --enable PowerTools
+    yum-config-manager --enable $reponame_powertools
   fi
 
-  # disable native CentOS 8 AppStream repo based nginx, php & oracle mysql packages
-  yum -q -y module disable nginx mysql php:7.2
+  if [[ "$CENTOS_EIGHT" -eq '8' && "$INITIALINSTALL" = [yY] ]]; then
+    # disable native CentOS 8 AppStream repo based nginx, php & oracle mysql packages
+    yum -q -y module disable nginx mariadb mysql php redis:5 composer
+  elif [[ "$CENTOS_NINE" -eq '9' && "$INITIALINSTALL" = [yY] ]]; then
+    # disable native CentOS 8 AppStream repo based nginx, php & oracle mysql packages
+    yum -q -y module disable nginx mariadb mysql php redis:5 composer
+  fi
 
   # install missing dependencies specific to CentOS 8
   # for csf firewall installs
@@ -1340,23 +1868,151 @@ if [[ "$CENTOS_EIGHT" -eq '8' ]]; then
   fi
 fi
 
-if [[ "$CENTOS_SEVEN" -eq '7' && "$DEVTOOLSETNINE" = [yY] && "$DEVTOOLSETEIGHT" = [yY] && "$DEVTOOLSETSEVEN" = [yY] ]]; then
+if [[ "$CENTOS_NINE" -eq '9' && "$DEVTOOLSETELEVEN" = [yY] && "$DEVTOOLSETTEN" = [yY] && "$DEVTOOLSETNINE" = [yY] && "$DEVTOOLSETEIGHT" = [yY] && "$DEVTOOLSETSEVEN" = [yY] ]]; then
+  DEVTOOLSETELEVEN='y'
+  DEVTOOLSETTEN='n'
+  DEVTOOLSETNINE='n'
+  DEVTOOLSETEIGHT='n'
+  DEVTOOLSETSEVEN='n'
+elif [[ "$CENTOS_NINE" -eq '9' && "$DEVTOOLSETELEVEN" = [yY] && "$DEVTOOLSETTEN" = [yY] && "$DEVTOOLSETNINE" = [yY] && "$DEVTOOLSETEIGHT" = [yY] && "$DEVTOOLSETSEVEN" = [nN] ]]; then
+  DEVTOOLSETELEVEN='y'
+  DEVTOOLSETTEN='n'
+  DEVTOOLSETNINE='n'
+  DEVTOOLSETEIGHT='n'
+  DEVTOOLSETSEVEN='n'
+elif [[ "$CENTOS_NINE" -eq '9' && "$DEVTOOLSETELEVEN" = [yY] && "$DEVTOOLSETTEN" = [yY] && "$DEVTOOLSETNINE" = [yY] && "$DEVTOOLSETEIGHT" = [nN] && "$DEVTOOLSETSEVEN" = [yY] ]]; then
+  DEVTOOLSETELEVEN='y'
+  DEVTOOLSETTEN='n'
+  DEVTOOLSETNINE='n'
+  DEVTOOLSETEIGHT='n'
+  DEVTOOLSETSEVEN='n'
+elif [[ "$CENTOS_NINE" -eq '9' && "$DEVTOOLSETELEVEN" = [yY] && "$DEVTOOLSETTEN" = [yY] && "$DEVTOOLSETNINE" = [yY] && "$DEVTOOLSETEIGHT" = [yY] && "$DEVTOOLSETSEVEN" = [yY] ]]; then
+  DEVTOOLSETELEVEN='y'
+  DEVTOOLSETTEN='n'
+  DEVTOOLSETNINE='n'
+  DEVTOOLSETEIGHT='n'
+  DEVTOOLSETSEVEN='n'
+elif [[ "$CENTOS_NINE" -eq '9' && "$DEVTOOLSETTEN" = [yY] && "$DEVTOOLSETNINE" = [yY] && "$DEVTOOLSETEIGHT" = [yY] && "$DEVTOOLSETSEVEN" = [yY] ]]; then
+  DEVTOOLSETTEN='y'
+  DEVTOOLSETNINE='n'
+  DEVTOOLSETEIGHT='n'
+  DEVTOOLSETSEVEN='n'
+elif [[ "$CENTOS_NINE" -eq '9' && "$DEVTOOLSETTEN" = [yY] && "$DEVTOOLSETNINE" = [yY] && "$DEVTOOLSETEIGHT" = [yY] && "$DEVTOOLSETSEVEN" = [nN] ]]; then
+  DEVTOOLSETTEN='y'
+  DEVTOOLSETNINE='n'
+  DEVTOOLSETEIGHT='n'
+  DEVTOOLSETSEVEN='n'
+elif [[ "$CENTOS_NINE" -eq '9' && "$DEVTOOLSETTEN" = [yY] && "$DEVTOOLSETNINE" = [yY] && "$DEVTOOLSETEIGHT" = [nN] && "$DEVTOOLSETSEVEN" = [yY] ]]; then
+  DEVTOOLSETTEN='y'
+  DEVTOOLSETNINE='n'
+  DEVTOOLSETEIGHT='n'
+  DEVTOOLSETSEVEN='n'
+elif [[ "$CENTOS_NINE" -eq '9' && "$DEVTOOLSETTEN" = [yY] && "$DEVTOOLSETNINE" = [yY] && "$DEVTOOLSETEIGHT" = [yY] && "$DEVTOOLSETSEVEN" = [yY] ]]; then
+  DEVTOOLSETTEN='y'
+  DEVTOOLSETNINE='n'
+  DEVTOOLSETEIGHT='n'
+  DEVTOOLSETSEVEN='n'
+elif [[ "$CENTOS_EIGHT" -eq '8' && "$DEVTOOLSETELEVEN" = [yY] && "$DEVTOOLSETTEN" = [yY] && "$DEVTOOLSETNINE" = [yY] && "$DEVTOOLSETEIGHT" = [yY] && "$DEVTOOLSETSEVEN" = [yY] ]]; then
+  DEVTOOLSETELEVEN='y'
+  DEVTOOLSETTEN='n'
+  DEVTOOLSETNINE='n'
+  DEVTOOLSETEIGHT='n'
+  DEVTOOLSETSEVEN='n'
+elif [[ "$CENTOS_EIGHT" -eq '8' && "$DEVTOOLSETELEVEN" = [yY] && "$DEVTOOLSETTEN" = [yY] && "$DEVTOOLSETNINE" = [yY] && "$DEVTOOLSETEIGHT" = [yY] && "$DEVTOOLSETSEVEN" = [nN] ]]; then
+  DEVTOOLSETELEVEN='y'
+  DEVTOOLSETTEN='n'
+  DEVTOOLSETNINE='n'
+  DEVTOOLSETEIGHT='n'
+  DEVTOOLSETSEVEN='n'
+elif [[ "$CENTOS_EIGHT" -eq '8' && "$DEVTOOLSETELEVEN" = [yY] && "$DEVTOOLSETTEN" = [yY] && "$DEVTOOLSETNINE" = [yY] && "$DEVTOOLSETEIGHT" = [nN] && "$DEVTOOLSETSEVEN" = [yY] ]]; then
+  DEVTOOLSETELEVEN='y'
+  DEVTOOLSETTEN='n'
+  DEVTOOLSETNINE='n'
+  DEVTOOLSETEIGHT='n'
+  DEVTOOLSETSEVEN='n'
+elif [[ "$CENTOS_EIGHT" -eq '8' && "$DEVTOOLSETELEVEN" = [yY] && "$DEVTOOLSETTEN" = [yY] && "$DEVTOOLSETNINE" = [yY] && "$DEVTOOLSETEIGHT" = [yY] && "$DEVTOOLSETSEVEN" = [yY] ]]; then
+  DEVTOOLSETELEVEN='y'
+  DEVTOOLSETTEN='n'
+  DEVTOOLSETNINE='n'
+  DEVTOOLSETEIGHT='n'
+  DEVTOOLSETSEVEN='n'
+elif [[ "$CENTOS_EIGHT" -eq '8' && "$DEVTOOLSETTEN" = [yY] && "$DEVTOOLSETNINE" = [yY] && "$DEVTOOLSETEIGHT" = [yY] && "$DEVTOOLSETSEVEN" = [yY] ]]; then
+  DEVTOOLSETTEN='y'
+  DEVTOOLSETNINE='n'
+  DEVTOOLSETEIGHT='n'
+  DEVTOOLSETSEVEN='n'
+elif [[ "$CENTOS_EIGHT" -eq '8' && "$DEVTOOLSETTEN" = [yY] && "$DEVTOOLSETNINE" = [yY] && "$DEVTOOLSETEIGHT" = [yY] && "$DEVTOOLSETSEVEN" = [nN] ]]; then
+  DEVTOOLSETTEN='y'
+  DEVTOOLSETNINE='n'
+  DEVTOOLSETEIGHT='n'
+  DEVTOOLSETSEVEN='n'
+elif [[ "$CENTOS_EIGHT" -eq '8' && "$DEVTOOLSETTEN" = [yY] && "$DEVTOOLSETNINE" = [yY] && "$DEVTOOLSETEIGHT" = [nN] && "$DEVTOOLSETSEVEN" = [yY] ]]; then
+  DEVTOOLSETTEN='y'
+  DEVTOOLSETNINE='n'
+  DEVTOOLSETEIGHT='n'
+  DEVTOOLSETSEVEN='n'
+elif [[ "$CENTOS_EIGHT" -eq '8' && "$DEVTOOLSETTEN" = [yY] && "$DEVTOOLSETNINE" = [yY] && "$DEVTOOLSETEIGHT" = [yY] && "$DEVTOOLSETSEVEN" = [yY] ]]; then
+  DEVTOOLSETTEN='y'
+  DEVTOOLSETNINE='n'
+  DEVTOOLSETEIGHT='n'
+  DEVTOOLSETSEVEN='n'
+elif [[ "$CENTOS_SEVEN" -eq '7' && "$DEVTOOLSETELEVEN" = [yY] && "$DEVTOOLSETTEN" = [yY] && "$DEVTOOLSETNINE" = [yY] && "$DEVTOOLSETEIGHT" = [yY] && "$DEVTOOLSETSEVEN" = [yY] ]]; then
+  DEVTOOLSETELEVEN='y'
+  DEVTOOLSETTEN='n'
+  DEVTOOLSETNINE='n'
+  DEVTOOLSETEIGHT='n'
+  DEVTOOLSETSEVEN='n'
+elif [[ "$CENTOS_SEVEN" -eq '7' && "$DEVTOOLSETELEVEN" = [yY] && "$DEVTOOLSETTEN" = [yY] && "$DEVTOOLSETNINE" = [yY] && "$DEVTOOLSETEIGHT" = [yY] && "$DEVTOOLSETSEVEN" = [nN] ]]; then
+  DEVTOOLSETELEVEN='y'
+  DEVTOOLSETTEN='n'
+  DEVTOOLSETNINE='n'
+  DEVTOOLSETEIGHT='n'
+  DEVTOOLSETSEVEN='n'
+elif [[ "$CENTOS_SEVEN" -eq '7' && "$DEVTOOLSETELEVEN" = [yY] && "$DEVTOOLSETTEN" = [yY] && "$DEVTOOLSETNINE" = [yY] && "$DEVTOOLSETEIGHT" = [nN] && "$DEVTOOLSETSEVEN" = [yY] ]]; then
+  DEVTOOLSETELEVEN='y'
+  DEVTOOLSETTEN='n'
+  DEVTOOLSETNINE='n'
+  DEVTOOLSETEIGHT='n'
+  DEVTOOLSETSEVEN='n'
+elif [[ "$CENTOS_SEVEN" -eq '7' && "$DEVTOOLSETELEVEN" = [yY] && "$DEVTOOLSETTEN" = [yY] && "$DEVTOOLSETNINE" = [yY] && "$DEVTOOLSETEIGHT" = [yY] && "$DEVTOOLSETSEVEN" = [yY] ]]; then
+  DEVTOOLSETELEVEN='y'
+  DEVTOOLSETTEN='n'
+  DEVTOOLSETNINE='n'
+  DEVTOOLSETEIGHT='n'
+  DEVTOOLSETSEVEN='n'
+elif [[ "$CENTOS_SEVEN" -eq '7' && "$DEVTOOLSETTEN" = [yY] && "$DEVTOOLSETNINE" = [yY] && "$DEVTOOLSETEIGHT" = [yY] && "$DEVTOOLSETSEVEN" = [yY] ]]; then
+  DEVTOOLSETTEN='y'
+  DEVTOOLSETNINE='n'
+  DEVTOOLSETEIGHT='n'
+  DEVTOOLSETSEVEN='n'
+elif [[ "$CENTOS_SEVEN" -eq '7' && "$DEVTOOLSETTEN" = [yY] && "$DEVTOOLSETNINE" = [yY] && "$DEVTOOLSETEIGHT" = [yY] && "$DEVTOOLSETSEVEN" = [nN] ]]; then
+  DEVTOOLSETTEN='y'
+  DEVTOOLSETNINE='n'
+  DEVTOOLSETEIGHT='n'
+  DEVTOOLSETSEVEN='n'
+elif [[ "$CENTOS_SEVEN" -eq '7' && "$DEVTOOLSETTEN" = [yY] && "$DEVTOOLSETNINE" = [yY] && "$DEVTOOLSETEIGHT" = [nN] && "$DEVTOOLSETSEVEN" = [yY] ]]; then
+  DEVTOOLSETTEN='y'
+  DEVTOOLSETNINE='n'
+  DEVTOOLSETEIGHT='n'
+  DEVTOOLSETSEVEN='n'
+elif [[ "$CENTOS_SEVEN" -eq '7' && "$DEVTOOLSETTEN" = [yY] && "$DEVTOOLSETNINE" = [yY] && "$DEVTOOLSETEIGHT" = [yY] && "$DEVTOOLSETSEVEN" = [yY] ]]; then
+  DEVTOOLSETTEN='y'
+  DEVTOOLSETNINE='n'
+  DEVTOOLSETEIGHT='n'
+  DEVTOOLSETSEVEN='n'
+elif [[ "$CENTOS_SEVEN" -eq '7' && "$DEVTOOLSETELEVEN" = [nN] && "$DEVTOOLSETTEN" = [nN] && "$DEVTOOLSETNINE" = [yY] && "$DEVTOOLSETEIGHT" = [yY] && "$DEVTOOLSETSEVEN" = [nN] ]]; then
   DEVTOOLSETNINE='y'
   DEVTOOLSETEIGHT='n'
   DEVTOOLSETSEVEN='n'
-elif [[ "$CENTOS_SEVEN" -eq '7' && "$DEVTOOLSETNINE" = [yY] && "$DEVTOOLSETEIGHT" = [yY] && "$DEVTOOLSETSEVEN" = [nN] ]]; then
+elif [[ "$CENTOS_SEVEN" -eq '7' && "$DEVTOOLSETELEVEN" = [nN] && "$DEVTOOLSETTEN" = [nN] && "$DEVTOOLSETNINE" = [yY] && "$DEVTOOLSETEIGHT" = [nN] && "$DEVTOOLSETSEVEN" = [yY] ]]; then
   DEVTOOLSETNINE='y'
   DEVTOOLSETEIGHT='n'
   DEVTOOLSETSEVEN='n'
-elif [[ "$CENTOS_SEVEN" -eq '7' && "$DEVTOOLSETNINE" = [yY] && "$DEVTOOLSETEIGHT" = [nN] && "$DEVTOOLSETSEVEN" = [yY] ]]; then
-  DEVTOOLSETNINE='y'
-  DEVTOOLSETEIGHT='n'
-  DEVTOOLSETSEVEN='n'
-elif [[ "$CENTOS_SEVEN" -eq '7' && "$DEVTOOLSETNINE" = [nN] && "$DEVTOOLSETEIGHT" = [yY] && "$DEVTOOLSETSEVEN" = [yY] ]]; then
+elif [[ "$CENTOS_SEVEN" -eq '7' && "$DEVTOOLSETELEVEN" = [nN] && "$DEVTOOLSETTEN" = [nN] && "$DEVTOOLSETNINE" = [nN] && "$DEVTOOLSETEIGHT" = [yY] && "$DEVTOOLSETSEVEN" = [yY] ]]; then
   DEVTOOLSETNINE='n'
   DEVTOOLSETEIGHT='y'
   DEVTOOLSETSEVEN='n'
-elif [[ "$CENTOS_SEVEN" -eq '7' && "$DEVTOOLSETNINE" = [nN] && "$DEVTOOLSETEIGHT" = [nN] && "$DEVTOOLSETSEVEN" = [yY] ]]; then
+elif [[ "$CENTOS_SEVEN" -eq '7' && "$DEVTOOLSETELEVEN" = [nN] && "$DEVTOOLSETTEN" = [nN] && "$DEVTOOLSETNINE" = [nN] && "$DEVTOOLSETEIGHT" = [nN] && "$DEVTOOLSETSEVEN" = [yY] ]]; then
   DEVTOOLSETNINE='n'
   DEVTOOLSETEIGHT='n'
   DEVTOOLSETSEVEN='y'
@@ -1377,6 +2033,18 @@ if [[ "$CENTOS_SIX" -eq '6' && "$BORINGSSL_SWITCH" = [yY] ]]; then
   DEVTOOLSETEIGHT='n'
   DEVTOOLSETSEVEN='n'
   CRYPTO_DEVTOOLSETGCC='y'
+fi
+
+if [[ "$LIBRESSL_SWITCH" = [yY] ]]; then
+  # don't use system OpenSSL for Nginx
+  OPENSSL_SYSTEM_USE='n'
+  ORESTY_LUASTREAM='n'
+  ORESTY_LUANGINX='n'
+elif [[ "$BORINGSSL_SWITCH" = [yY] ]]; then
+  # don't use system OpenSSL for Nginx
+  OPENSSL_SYSTEM_USE='n'
+elif [[ "$ngver" = 'quic' || "$NGINX_QUIC_SUPPORT" = [yY] ]]; then
+  OPENSSL_SYSTEM_USE='n'
 fi
 
 # ensure if ORESTY_LUANGINX is enabled, that the other required
@@ -1421,10 +2089,19 @@ exclude=*.i686
 :w
 :q
 EOF
+  elif [[ "$CENTOS_NINE" = '9' ]] && [ ! "$(grep -w 'exclude' /etc/yum.conf)" ]; then
+ex -s /etc/yum.conf << EOF
+:/best=True/
+:a
+exclude=*.i686
+.
+:w
+:q
+EOF
   fi
 fi
 
-if [[ "$CENTOS_SEVEN" = '7' && "$DNF_ENABLE" = [yY] ]]; then
+if [[ "$CENTOS_SEVEN" -eq '7' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]] && [[ "$DNF_ENABLE" = [yY] ]]; then
   if [[ $(rpm -q epel-release >/dev/null 2>&1; echo $?) != '0' ]]; then
     yum -y -q install epel-release
     yum clean all
@@ -1475,27 +2152,71 @@ if [ ! -f /usr/bin/sar ]; then
   else
     SARCALL='/usr/lib/sa/sa1'
   fi
-  if [[ "$CENTOS_SEVEN" != '7' ]]; then
+  if [[ "$CENTOS_SIX" = '6' ]]; then
     sed -i 's|10|5|g' /etc/cron.d/sysstat
+    if [ -d /etc/cron.d ]; then
+      echo '* * * * * root /usr/lib64/sa/sa1 1 1' > /etc/cron.d/cmsar
+    fi
     service sysstat restart
     chkconfig sysstat on
-  else
+  elif [[ "$CENTOS_SEVEN" = '7' ]]; then
     sed -i 's|10|5|g' /etc/cron.d/sysstat
+    if [ -d /etc/cron.d ]; then
+      echo '* * * * * root /usr/lib64/sa/sa1 1 1' > /etc/cron.d/cmsar
+    fi
+    systemctl restart sysstat.service
+    systemctl enable sysstat.service
+  elif [[ "$CENTOS_EIGHT" = '8' ]]; then
+    sed -i 's|10|5|g' /usr/lib/systemd/system/sysstat-collect.timer
+    #if [ -d /etc/cron.d ]; then
+    #  echo '* * * * * root /usr/lib64/sa/sa1 1 1' > /etc/cron.d/cmsar
+    #fi
+    systemctl daemon-reload
+    systemctl restart sysstat.service
+    systemctl enable sysstat.service
+  elif [[ "$CENTOS_NINE" = '9' ]]; then
+    sed -i 's|10|5|g' /usr/lib/systemd/system/sysstat-collect.timer
+    #if [ -d /etc/cron.d ]; then
+    #  echo '* * * * * root /usr/lib64/sa/sa1 1 1' > /etc/cron.d/cmsar
+    #fi
+    systemctl daemon-reload
     systemctl restart sysstat.service
     systemctl enable sysstat.service
   fi
-else
+elif [ -f /usr/bin/sar ]; then
   if [[ "$(uname -m)" = 'x86_64' || "$(uname -m)" = 'aarch64' ]]; then
     SARCALL='/usr/lib64/sa/sa1'
   else
     SARCALL='/usr/lib/sa/sa1'
   fi
-  if [[ "$CENTOS_SEVEN" != '7' ]]; then
+  if [[ "$CENTOS_SIX" = '6' ]]; then
     sed -i 's|10|5|g' /etc/cron.d/sysstat
+    if [ -d /etc/cron.d ]; then
+      echo '* * * * * root /usr/lib64/sa/sa1 1 1' > /etc/cron.d/cmsar
+    fi
     service sysstat restart
     chkconfig sysstat on
-  else
+  elif [[ "$CENTOS_SEVEN" = '7' ]]; then
     sed -i 's|10|5|g' /etc/cron.d/sysstat
+    if [ -d /etc/cron.d ]; then
+      echo '* * * * * root /usr/lib64/sa/sa1 1 1' > /etc/cron.d/cmsar
+    fi
+    systemctl restart sysstat.service
+    systemctl enable sysstat.service
+  elif [[ "$CENTOS_EIGHT" = '8' ]]; then
+    sed -i 's|10|5|g' /usr/lib/systemd/system/sysstat-collect.timer
+    #if [ -d /etc/cron.d ]; then
+    #  echo '* * * * * root /usr/lib64/sa/sa1 1 1' > /etc/cron.d/cmsar
+    #fi
+    systemctl daemon-reload
+    systemctl restart sysstat.service
+    systemctl enable sysstat.service
+  elif [[ "$CENTOS_NINE" = '9' ]]; then
+    sed -i 's|10|5|g' /usr/lib/systemd/system/sysstat-collect.timer
+    #if [ -d /etc/cron.d ]; then
+    #  echo '* * * * * root /usr/lib64/sa/sa1 1 1' > /etc/cron.d/cmsar
+    #fi
+    systemctl daemon-reload
     systemctl restart sysstat.service
     systemctl enable sysstat.service
   fi
@@ -1618,6 +2339,7 @@ unsetramdisk() {
         cmservice nginx start
         cmservice php-fpm start
         cmservice memcached start
+        mkdir -p "${DIR_TMP}"
         \cp -R ${DIR_TMP}_disk/* "${DIR_TMP}"
         # ls -lahrt "${DIR_TMP}"
         rm -rf "${DIR_TMP}_disk"
@@ -1626,7 +2348,41 @@ unsetramdisk() {
     fi
 }
 ###
+create_loopmount() {
+  mnt_options="$1"
+  fs_type="$2" # Filesystem type argument
 
+  # Create the mount-loop.sh script
+cat > /usr/local/bin/mount-loop.sh <<EOF
+#!/bin/bash
+mount -t $fs_type -o $mnt_options
+EOF
+
+  # Make the script executable
+  chmod +x /usr/local/bin/mount-loop.sh
+
+  # Create the mount-loop.service file
+  cat > /etc/systemd/system/mount-loop.service <<EOF
+[Unit]
+Description=Mount loop device for /tmp
+After=local-fs.target
+Requires=local-fs.target
+
+[Service]
+ExecStart=/usr/local/bin/mount-loop.sh
+ExecStop=/usr/bin/umount /tmp
+Type=oneshot
+RemainAfterExit=yes
+
+[Install]
+WantedBy=multi-user.target
+EOF
+
+  # Enable the new systemd service
+  systemctl enable mount-loop.service
+}
+
+###
 funct_centmininstall() {
     INITIALINSTALL='y'
     export INITIALINSTALL='y'
@@ -1730,7 +2486,7 @@ if [[ -f /proc/user_beancounters && "$CENTOS_SEVEN" = '7' ]]; then
 # 
 # rm -rf /tmp
 # mkdir -p /tmp
-# mount -t tmpfs -o rw,noexec,nosuid tmpfs /tmp
+# mount -t tmpfs -o rw,noexec,nodev,nosuid tmpfs /tmp
 # chmod 1777 /tmp
 # echo "tmpfs /tmp tmpfs rw,noexec,nosuid 0 0" >> /etc/fstab
 # rm -rf /var/tmp
@@ -1748,7 +2504,7 @@ elif [[ ! -f /proc/user_beancounters && "$CENTOS_SEVEN" = '7' && "$CHECK_LXD" !=
        cp -ar /tmp /tmp_backup
        #rm -rf /tmp
        #mkdir -p /tmp
-       mount -t tmpfs -o rw,noexec,nosuid tmpfs /tmp
+       mount -t tmpfs -o rw,noexec,nodev,nosuid tmpfs /tmp
        chmod 1777 /tmp
        cp -ar /tmp_backup/* /tmp
        echo "tmpfs /tmp tmpfs rw,noexec,nosuid 0 0" >> /etc/fstab
@@ -1771,10 +2527,10 @@ elif [[ ! -f /proc/user_beancounters && "$CENTOS_SEVEN" = '7' && "$CHECK_LXD" !=
        fi
        echo Y | mkfs.ext4 /home/usertmp_donotdelete
        # mkdir -p /tmp
-       mount -t ext4 -o loop,rw,noexec,nosuid /home/usertmp_donotdelete /tmp
+       mount -t ext4 -o loop,rw,noexec,nodev,nosuid /home/usertmp_donotdelete /tmp
        chmod 1777 /tmp
        cp -ar /tmp_backup/* /tmp
-       echo "/home/usertmp_donotdelete /tmp ext4 loop,rw,noexec,nosuid 0 0" >> /etc/fstab
+       create_loopmount "loop,rw,noexec,nosuid /home/usertmp_donotdelete /tmp" ext4
        cp -ar /var/tmp /var/tmp_backup
        ln -s /tmp /var/tmp
        cp -ar /var/tmp_backup/* /tmp
@@ -1794,10 +2550,10 @@ elif [[ ! -f /proc/user_beancounters && "$CENTOS_SEVEN" = '7' && "$CHECK_LXD" !=
        fi
        echo Y | mkfs.ext4 /home/usertmp_donotdelete
        # mkdir -p /tmp
-       mount -t ext4 -o loop,rw,noexec,nosuid /home/usertmp_donotdelete /tmp
+       mount -t ext4 -o loop,rw,noexec,nodev,nosuid /home/usertmp_donotdelete /tmp
        chmod 1777 /tmp
        cp -ar /tmp_backup/* /tmp
-       echo "/home/usertmp_donotdelete /tmp ext4 loop,rw,noexec,nosuid 0 0" >> /etc/fstab
+       create_loopmount "loop,rw,noexec,nosuid /home/usertmp_donotdelete /tmp" ext4
        cp -ar /var/tmp /var/tmp_backup
        ln -s /tmp /var/tmp
        cp -ar /var/tmp_backup/* /tmp
@@ -1817,10 +2573,10 @@ elif [[ ! -f /proc/user_beancounters && "$CENTOS_SEVEN" = '7' && "$CHECK_LXD" !=
        fi
        echo Y | mkfs.ext4 /home/usertmp_donotdelete
        # mkdir -p /tmp
-       mount -t ext4 -o loop,rw,noexec,nosuid /home/usertmp_donotdelete /tmp
+       mount -t ext4 -o loop,rw,noexec,nodev,nosuid /home/usertmp_donotdelete /tmp
        chmod 1777 /tmp
        cp -ar /tmp_backup/* /tmp
-       echo "/home/usertmp_donotdelete /tmp ext4 loop,rw,noexec,nosuid 0 0" >> /etc/fstab
+       create_loopmount "loop,rw,noexec,nosuid /home/usertmp_donotdelete /tmp" ext4
        cp -ar /var/tmp /var/tmp_backup
        ln -s /tmp /var/tmp
        cp -ar /var/tmp_backup/* /tmp
@@ -1840,10 +2596,10 @@ elif [[ ! -f /proc/user_beancounters && "$CENTOS_SEVEN" = '7' && "$CHECK_LXD" !=
        fi
        echo Y | mkfs.ext4 /home/usertmp_donotdelete
        # mkdir -p /tmp
-       mount -t ext4 -o loop,rw,noexec,nosuid /home/usertmp_donotdelete /tmp
+       mount -t ext4 -o loop,rw,noexec,nodev,nosuid /home/usertmp_donotdelete /tmp
        chmod 1777 /tmp
        cp -ar /tmp_backup/* /tmp
-       echo "/home/usertmp_donotdelete /tmp ext4 loop,rw,noexec,nosuid 0 0" >> /etc/fstab
+       create_loopmount "loop,rw,noexec,nosuid /home/usertmp_donotdelete /tmp" ext4
        cp -ar /var/tmp /var/tmp_backup
        ln -s /tmp /var/tmp       
        cp -ar /var/tmp_backup/* /tmp
@@ -1862,10 +2618,10 @@ elif [[ ! -f /proc/user_beancounters && "$CHECK_LXD" != [yY] ]]; then
      cp -ar /tmp /tmp_backup
        rm -rf /tmp
      mkdir -p /tmp
-     mount -t tmpfs -o rw,noexec,nosuid tmpfs /tmp
+     mount -t tmpfs -o rw,noexec,nodev,nosuid tmpfs /tmp
      chmod 1777 /tmp
        cp -ar /tmp_backup/* /tmp
-     echo "tmpfs /tmp tmpfs rw,noexec,nosuid 0 0" >> /etc/fstab
+     create_loopmount "rw,noexec,nosuid tmpfs /tmp" tmpfs
        cp -ar /var/tmp /var/tmp_backup
      ln -s /tmp /var/tmp
        cp -ar /var/tmp_backup/* /tmp
@@ -1885,10 +2641,10 @@ elif [[ ! -f /proc/user_beancounters && "$CHECK_LXD" != [yY] ]]; then
        fi
        echo Y | mkfs.ext4 /home/usertmp_donotdelete
        mkdir -p /tmp
-       mount -t ext4 -o loop,rw,noexec,nosuid /home/usertmp_donotdelete /tmp
+       mount -t ext4 -o loop,rw,noexec,nodev,nosuid /home/usertmp_donotdelete /tmp
        chmod 1777 /tmp
        cp -ar /tmp_backup/* /tmp
-       echo "/home/usertmp_donotdelete /tmp ext4 loop,rw,noexec,nosuid 0 0" >> /etc/fstab
+       create_loopmount "loop,rw,noexec,nosuid /home/usertmp_donotdelete /tmp" ext4
        cp -ar /var/tmp /var/tmp_backup
        ln -s /tmp /var/tmp
        cp -ar /var/tmp_backup/* /tmp
@@ -1908,10 +2664,10 @@ elif [[ ! -f /proc/user_beancounters && "$CHECK_LXD" != [yY] ]]; then
        fi
        echo Y | mkfs.ext4 /home/usertmp_donotdelete
        mkdir -p /tmp
-       mount -t ext4 -o loop,rw,noexec,nosuid /home/usertmp_donotdelete /tmp
+       mount -t ext4 -o loop,rw,noexec,nodev,nosuid /home/usertmp_donotdelete /tmp
        chmod 1777 /tmp
        cp -ar /tmp_backup/* /tmp
-       echo "/home/usertmp_donotdelete /tmp ext4 loop,rw,noexec,nosuid 0 0" >> /etc/fstab
+       create_loopmount "loop,rw,noexec,nosuid /home/usertmp_donotdelete /tmp" ext4
        cp -ar /var/tmp /var/tmp_backup
        ln -s /tmp /var/tmp
        cp -ar /var/tmp_backup/* /tmp
@@ -1931,10 +2687,10 @@ elif [[ ! -f /proc/user_beancounters && "$CHECK_LXD" != [yY] ]]; then
        fi
        echo Y | mkfs.ext4 /home/usertmp_donotdelete
        mkdir -p /tmp
-       mount -t ext4 -o loop,rw,noexec,nosuid /home/usertmp_donotdelete /tmp
+       mount -t ext4 -o loop,rw,noexec,nodev,nosuid /home/usertmp_donotdelete /tmp
        chmod 1777 /tmp
        cp -ar /tmp_backup/* /tmp
-       echo "/home/usertmp_donotdelete /tmp ext4 loop,rw,noexec,nosuid 0 0" >> /etc/fstab
+       create_loopmount "loop,rw,noexec,nosuid /home/usertmp_donotdelete /tmp" ext4
        cp -ar /var/tmp /var/tmp_backup
        ln -s /tmp /var/tmp       
        cp -ar /var/tmp_backup/* /tmp
@@ -2024,8 +2780,16 @@ if [ -f /proc/user_beancounters ]; then
 elif [[ "$CHECK_LXD" = [yY] ]]; then
     cecho "LXC/LXD container system detected, NTP not installed" $boldgreen
 else
-    if [[ "$NTP_INSTALL" = [yY] ]]; 
-    then
+    if [[ "$CENTOS_EIGHT" = '8' || "$CENTOS_NINE" = '9' ]] && [ ! -f /sbin/chronyd ]; then
+        echo
+        time $YUMDNFBIN -y install chrony
+        systemctl start chronyd
+        systemctl enable chronyd
+        systemctl status chronyd --no-pager
+        echo "current chrony ntp servers"
+        chronyc sources
+    fi
+    if [[ "$CENTOS_SEVEN" = '7' && "$NTP_INSTALL" = [yY] ]]; then
         echo "*************************************************"
         cecho "* Installing NTP (and syncing time)" $boldgreen
         echo "*************************************************"
@@ -2085,10 +2849,22 @@ echo "" >> "${CENTMINLOGDIR}/centminmod_ngxinstalltime_${DT}.log"
 echo "Total Nginx First Time Install Time: $NGXINSTALLTIME seconds" >> "${CENTMINLOGDIR}/centminmod_ngxinstalltime_${DT}.log"
 ls -lah "${CENTMINLOGDIR}/centminmod_ngxinstalltime_${DT}.log"
 
-if [[ "$MARIADB_INSTALLTENFOUR" = [yY] && "$MARIADB_INSTALLTENTWO" = [nN] ]]; then
+if [[ "$MARIADB_INSTALLELEVENFOUR" = [yY] && "$MARIADB_INSTALLTENTWO" = [nN] ]]; then
+  mariadbelevenfour_installfunct
+elif [[ "$MARIADB_INSTALLTENELEVEN" = [yY] && "$MARIADB_INSTALLTENTWO" = [nN] ]]; then
+  mariadbteneleven_installfunct
+elif [[ "$MARIADB_INSTALLTENSIX" = [yY] && "$MARIADB_INSTALLTENTWO" = [nN] ]]; then
+  mariadbtensix_installfunct
+elif [[ "$MARIADB_INSTALLTENFIVE" = [yY] && "$MARIADB_INSTALLTENTWO" = [nN] ]]; then
+  mariadbtenfive_installfunct
+elif [[ "$MARIADB_INSTALLTENFOUR" = [yY] && "$MARIADB_INSTALLTENTWO" = [nN] ]]; then
   mariadbtenfour_installfunct
 elif [[ "$MARIADB_INSTALLTENTHREE" = [yY] && "$MARIADB_INSTALLTENTWO" = [nN] ]]; then
-  mariadbtenthree_installfunct
+  if [[ "$CENTOS_EIGHT" -eq '8' ]]; then
+    install_native_mariadb_ten_three install-fresh
+  else
+    mariadbtenthree_installfunct
+  fi
 elif [[ "$MARIADB_INSTALLTENTWO" = [yY] ]]; then
   mariadbtentwo_installfunct
 else
@@ -2128,7 +2904,9 @@ fi
     PHPMVER=$(echo "$PHP_VERSION" | cut -d . -f1,2)
     echo "Initial Install PHPMVER: $PHPMVER"
 
-    php_patches
+    if [[ "$INITIALINSTALL" = [yY] ]]; then
+      php_patches
+    fi
 
     if [[ "$CENTOS_SIX" -eq '6' ]]; then
         # PHP 7.3.0 + centos 6 issue https://community.centminmod.com/posts/69561/
@@ -2200,6 +2978,10 @@ else
     phptuning
 fi
 
+if [[ "$CENTOS_NINE" -eq '9' ]]; then
+  sed -i 's|\/var\/run\/php-fpm\/php-fpm.pid|\/run\/php-fpm\/php-fpm.pid|' /usr/local/etc/php-fpm.conf
+fi
+
 
     cp "$CUR_DIR/init/php-fpm" /etc/init.d/php-fpm
 
@@ -2219,9 +3001,9 @@ fi
 
     mkdir -p /var/run/php-fpm
     chmod 755 /var/run/php-fpm
-    touch /var/run/php-fpm/php-fpm.pid
+    touch $PHP_PID_PATH
     chown nginx:nginx /var/run/php-fpm
-    chown root:root /var/run/php-fpm/php-fpm.pid
+    chown root:root $PHP_PID_PATH
 
     mkdir /var/log/php-fpm/
     touch /var/log/php-fpm/www-error.log
@@ -2239,7 +3021,7 @@ fi
     service php-fpm start
     fileinfo_standalone
 
-    if [[ "$CENTOS_SEVEN" -eq '7' && "$SWITCH_PHPFPM_SYSTEMD" = [yY] && -f "$CUR_DIR/tools/php-systemd.sh" ]]; then
+    if [[ "$CENTOS_SEVEN" -eq '7' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]] && [[ "$SWITCH_PHPFPM_SYSTEMD" = [yY] && -f "$CUR_DIR/tools/php-systemd.sh" ]]; then
       $CUR_DIR/tools/php-systemd.sh fpm-systemd
     fi
 
@@ -2269,6 +3051,16 @@ fi
 
 max_spawn_rate_check
 funct_logphprotate
+run_after_php_install
+
+        echo
+        echo "lscpu"
+        lscpu
+        echo
+        echo "CFLAGS=$CFLAGS"
+        echo "CXXFLAGS=$CXXFLAGS"
+        echo "GCC_NONNATIVEFLAGS=$GCC_NONNATIVEFLAGS"
+        echo
 
     echo "*************************************************"
     cecho "* PHP installed" $boldgreen
@@ -2338,6 +3130,9 @@ imagickinstall
 echo "geoipphpext"
 geoipphpext
 
+echo "geoiptwolite_phpext_install"
+geoiptwolite_phpext_install
+
 if [[ "$PHPREDIS" = [yY] ]]; then
     echo "redisinstall"
     redisinstall
@@ -2406,7 +3201,7 @@ if [[ "$NSD_INSTALL" = [yY] ]]; then
     nsdinstall
 fi
 
-php-config --version | cut -d . -f1,2 | egrep -w '7.0|7.1|7.2|7.3|7.4|8.0|8.1'
+php-config --version | cut -d . -f1,2 | egrep -w '7.0|7.1|7.2|7.3|7.4|8.0|8.1|8.2|8.3|8.4'
 PHPSEVEN_CHECKVER=$?
 echo "$PHPSEVEN_CHECKVER"
 if [[ "$PHPSEVEN_CHECKVER" = '0' ]]; then
@@ -2432,7 +3227,17 @@ source_pcreinstall
 echo
 shortcutsinstall
 
-if [[ "$CENTOS_SEVEN" -eq '7' || "$CENTOS_EIGHT" -eq '8' ]] && [[ -f "$CUR_DIR/tools/journald-set.sh config" ]]; then
+echo
+python_alternatives_setup
+if [[ -f /usr/bin/python3 && -f /usr/bin/pip ]]; then
+  echo
+  echo "python3 --version"
+  python3 --version
+  echo "pip --version"
+  pip --version
+fi
+
+if [[ "$CENTOS_SEVEN" -eq '7' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]] && [[ -f "$CUR_DIR/tools/journald-set.sh config" ]]; then
   echo
   "$CUR_DIR/tools/journald-set.sh" config
 fi
@@ -2552,7 +3357,7 @@ bookmark
 
 sync 
 
-if [[ ! -f /proc/user_beancounters && "$(virt-what | grep -o lxc)" != 'lxc' ]]; then
+if [[ ! -f /.dockerenv && ! -f /proc/user_beancounters && "$(virt-what | grep -o lxc)" != 'lxc' ]]; then
   echo 3 > /proc/sys/vm/drop_caches
 fi
 
@@ -2822,10 +3627,10 @@ else
             cecho "3).  NSD setup domain name DNS" $boldgreen
             cecho "4).  Nginx Upgrade / Downgrade" $boldgreen
             cecho "5).  PHP Upgrade / Downgrade" $boldgreen
-            cecho "6).  XCache Re-install" $boldgreen
-            cecho "7).  APC Cache Re-install" $boldgreen
-            cecho "8).  XCache Install" $boldgreen
-            cecho "9).  APC Cache Install" $boldgreen
+            cecho "6).  MySQL User Database Management" $boldgreen
+            cecho "7).  Persistent Config File Management" $boldgreen
+            cecho "8).  Option Being Revised (TBA)" $boldgreen
+            cecho "9).  Option Being Revised (TBA)" $boldgreen
             cecho "10). Memcached Server Re-install" $boldgreen
             cecho "11). MariaDB MySQL Upgrade & Management" $boldgreen
             cecho "12). Zend OpCache Install/Re-install" $boldgreen
@@ -2837,7 +3642,7 @@ else
             cecho "18). Suhosin PHP Extension install" $boldgreen
             cecho "19). Install FFMPEG and FFMPEG PHP Extension" $boldgreen
             cecho "20). NSD Install/Re-Install" $boldgreen
-            cecho "21). Data Transfer (TBA)" $boldgreen
+            cecho "21). Data Transfer" $boldgreen
             cecho "22). Add Wordpress Nginx vhost + Cache Plugin" $boldgreen
             cecho "23). Update Centmin Mod Code Base" $boldgreen
             cecho "24). Exit" $boldgreen
@@ -2849,7 +3654,22 @@ else
         #########################################################
         
         case "$option" in
-        1|install)
+        1)
+            CM_MENUOPT=1
+            starttime=$(TZ=UTC date +%s.%N)
+            echo
+            echo "Submenu Option 1 Deprecated"
+            echo "Official install method at https://centminmod.com/install.html"
+            echo
+            endtime=$(TZ=UTC date +%s.%N)
+            INSTALLTIME=$(echo "scale=2;$endtime - $starttime"|bc )
+            echo "" >> "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_install_submenu1.log"
+            echo "centmin.sh submenu option 1: $INSTALLTIME seconds" >> "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_install_submenu1.log"
+            
+            exit 0
+        
+        ;;
+        install)
             CM_MENUOPT=1
             starttime=$(TZ=UTC date +%s.%N)
             INITIALINSTALL='y'
@@ -3054,71 +3874,35 @@ EOF
         tail -1 "${CENTMINLOGDIR}/$(ls -Art ${CENTMINLOGDIR}/ | grep 'php_upgrade.log' | tail -1)"
         
         ;;
-        6|xcachereinstall)
-        if [ -f "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_xcache_reinstall.log" ]; then
+        6|mysqladminshell)
+        if [ -f "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_mysqladminshell.log" ]; then
             NEWDT=$(date +"%d%m%y-%H%M%S")
-            mv "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_xcache_reinstall.log" "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${NEWDT}_xcache_reinstall.log"
+            mv "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_mysqladminshell.log" "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${NEWDT}_mysqladminshell.log"
         fi
-        # set_logdate
-        CM_MENUOPT=6
-        starttime=$(TZ=UTC date +%s.%N)
-        
+        CM_MENUOPT=6       
         centminlog
         {
-        
-        if [ "$CCACHEINSTALL" == 'y' ]; then
-        ccacheinstall
-        fi
-        
-        funct_xcachereinstall
-        } 2>&1 | tee "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_xcache_reinstall.log"
-        
-        if [ "$CCACHEINSTALL" == 'y' ]; then
-        
-            # check if ccache installed first
-            if [ -f /usr/bin/ccache ]; then
-        { echo ""; source ~/.bashrc; echo "ccache stats:"; ccache -s; echo ""; } 2>&1 | tee -a "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_xcache_reinstall.log"
-            fi
-        fi
-        
-        endtime=$(TZ=UTC date +%s.%N)
-        INSTALLTIME=$(echo "scale=2;$endtime - $starttime"|bc )
-        echo "" >> "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_xcache_reinstall.log"
-        echo "Total Xcache Re-Install Time: $INSTALLTIME seconds" >> "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_xcache_reinstall.log"
-        
+          if [ "$MYSQLADMIN_SHELL" == 'y' ]; then
+            mysql_admin_menu
+            exit 0
+          fi
+        } 2>&1 | tee "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_mysqladminshell.log"       
         ;;
-        7|apcreinstall)
-        if [ -f "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_apc_reinstall.log" ]; then
+        7|persistentconfig)
+        if [ -f "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_persistent_config_override.log" ]; then
             NEWDT=$(date +"%d%m%y-%H%M%S")
-            mv "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_apc_reinstall.log" "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${NEWDT}_apc_reinstall.log"
+            mv "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_persistent_config_override.log" "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${NEWDT}_persistent_config_override.log"
         fi
         # set_logdate
-        CM_MENUOPT=7
-        starttime=$(TZ=UTC date +%s.%N)
-        
+        CM_MENUOPT=7       
         centminlog
         {
-        
-        if [ "$CCACHEINSTALL" == 'y' ]; then
-        ccacheinstall
+        if [ "$PERSISTENT_CONFIG_MENU" == 'y' ]; then
+          persistentconfig_submenu
+        else
+          echo "TBA"
         fi
-        
-        funct_apcreinstall
-        } 2>&1 | tee "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_apc_reinstall.log"
-        
-        if [ "$CCACHEINSTALL" == 'y' ]; then
-        
-            # check if ccache installed first
-            if [ -f /usr/bin/ccache ]; then
-        { echo ""; source ~/.bashrc; echo "ccache stats:"; ccache -s; echo ""; } 2>&1 | tee -a "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_apc_reinstall.log"
-            fi
-        fi
-        
-        endtime=$(TZ=UTC date +%s.%N)
-        INSTALLTIME=$(echo "scale=2;$endtime - $starttime"|bc )
-        echo "" >> "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_apc_reinstall.log"
-        echo "Total APC Cache Re-Install Time: $INSTALLTIME seconds" >> "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_apc_reinstall.log"
-        
+        } 2>&1 | tee "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_persistent_config_override.log"       
         ;;
         8|installxcache)
         if [ -f "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_xcache_install.log" ]; then
@@ -3312,7 +4096,7 @@ EOF
         
         compressmenu_notice
         funct_pigzinstall
-        funct_pbzip2install
+        # funct_pbzip2install
         # funct_lbzip2install
         funct_lzipinstall
         funct_plzipinstall
@@ -3393,15 +4177,20 @@ EOF
         starttime=$(TZ=UTC date +%s.%N)
         centminlog
         {
-        cecho "Place holder for future feature allowing Centmin Mod To Centmin Mod server data migration" $boldyellow
+          if [[ -d "$SCRIPT_DIR/datamanagement" && "$DATA_MENU_ENABLE" = [yY] ]]; then
+            datamanager_menu
+          else
+            cecho "Place holder for future feature allowing Centmin Mod To Centmin Mod server data migration" $boldyellow
+            cecho "Read the documentation for this menu option at https://centminmod.com/menu21-${branchname}" $boldyellow
+          fi
         echo
         } 2>&1 | tee "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_data_transfer.log"
         
         endtime=$(TZ=UTC date +%s.%N)
         INSTALLTIME=$(echo "scale=2;$endtime - $starttime"|bc )
         echo "" >> "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_data_transfer.log"
-        echo "Total Data Transfer Time: $INSTALLTIME seconds" >> "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_data_transfer.log"
-        tail -1 "${CENTMINLOGDIR}/$(ls -Art ${CENTMINLOGDIR}/ | grep '_data_transfer.log' | tail -1)"
+        # echo "Total Data Transfer Time: $INSTALLTIME seconds" >> "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_data_transfer.log"
+        # tail -1 "${CENTMINLOGDIR}/$(ls -Art ${CENTMINLOGDIR}/ | grep '_data_transfer.log' | tail -1)"
         ;;
         22|addwpvhost)
         if [ -f "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_wordpress_addvhost.log" ]; then

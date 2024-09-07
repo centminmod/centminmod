@@ -82,6 +82,9 @@ export LC_ALL=en_US.UTF-8
 export LANG=en_US.UTF-8
 export LANGUAGE=en_US.UTF-8
 export LC_CTYPE=en_US.UTF-8
+# disable systemd pager so it doesn't pipe systemctl output to less
+export SYSTEMD_PAGER=''
+ARCH_CHECK="$(uname -m)"
 
 shopt -s expand_aliases
 for g in "" e f; do
@@ -179,10 +182,17 @@ EOF
 }
 
 postfix_update() {
-  if [[ -f /usr/sbin/postconf && "$(postconf -n inet_protocols | awk -F ' = ' '{print $2}')" != 'ipv4' ]]; then
+  if [[ "$FORCE_IPVFOUR" = [yY] && -f /usr/sbin/postconf && "$(postconf -n inet_protocols | awk -F ' = ' '{print $2}')" != 'ipv4' ]]; then
     # force postfix to use IPv4 address
     echo "updating postfix inet_protocols = ipv4"
     postconf -e 'inet_protocols = ipv4'
+    if [[ "$(ps -ef | grep postfix | grep -v grep)" ]]; then
+      # only restart postfix is detected that it's currently running
+      service postfix restart >/dev/null 2>&1
+    fi
+  elif [[ "$FORCE_IPVFOUR" = [nN] ]]; then
+    echo "updating postfix inet_protocols = all"
+    postconf -e 'inet_protocols = all'
     if [[ "$(ps -ef | grep postfix | grep -v grep)" ]]; then
       # only restart postfix is detected that it's currently running
       service postfix restart >/dev/null 2>&1

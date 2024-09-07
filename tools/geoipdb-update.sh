@@ -3,8 +3,9 @@ export PATH="/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin:/root/
 ######################################################
 # to update geoip country and city databases
 ######################################################
-branchname='124.00stable'
+branchname='140.00beta01'
 FORCE_IPVFOUR='y' # curl/wget commands through script force IPv4
+LOCALCENTMINMOD_MIRROR='https://centminmod.com'
 
 # Maxmind GeoLite2 database API Key
 # https://community.centminmod.com/posts/80656/
@@ -52,6 +53,9 @@ export LC_ALL=en_US.UTF-8
 export LANG=en_US.UTF-8
 export LANGUAGE=en_US.UTF-8
 export LC_CTYPE=en_US.UTF-8
+# disable systemd pager so it doesn't pipe systemctl output to less
+export SYSTEMD_PAGER=''
+ARCH_CHECK="$(uname -m)"
 
 shopt -s expand_aliases
 for g in "" e f; do
@@ -83,20 +87,20 @@ cecho "Updating GeoIP databases..." $boldyellow
     # backup existing database in case maxmind end downloads
     \cp -af /usr/share/GeoIP/GeoIP.dat.gz /usr/share/GeoIP/GeoIP.dat-backup.gz
   fi
-  curl -${ipv_forceopt}Is --connect-timeout 30 --max-time 30 https://centminmod.com/centminmodparts/geoip-legacy/GeoIP.dat.gz | grep 'HTTP\/' | grep '200'
+  curl -${ipv_forceopt}Is --connect-timeout 30 --max-time 30 ${LOCALCENTMINMOD_MIRROR}/centminmodparts/geoip-legacy/GeoIP.dat.gz | grep 'HTTP\/' | grep '200'
   GEOIPCOUNTRYDATA_CURLCHECK=$?
   # only overwrite existing downloaded file if the download url is working
   # if download doesn't work, do not overwrite existing downloaded file
   if [[ "$GEOIPCOUNTRYDATA_CURLCHECK" = '0' ]]; then
-    wget -${ipv_forceopt}cnv https://centminmod.com/centminmodparts/geoip-legacy/GeoIP.dat.gz -O /usr/share/GeoIP/GeoIP.dat.gz
+    wget -${ipv_forceopt}cnv ${LOCALCENTMINMOD_MIRROR}/centminmodparts/geoip-legacy/GeoIP.dat.gz -O /usr/share/GeoIP/GeoIP.dat.gz
   fi
   gzip -df /usr/share/GeoIP/GeoIP.dat.gz
-  curl -${ipv_forceopt}Is --connect-timeout 30 --max-time 30 https://centminmod.com/centminmodparts/geoip-legacy/GeoLiteCity.gz | grep 'HTTP\/' | grep '200'
+  curl -${ipv_forceopt}Is --connect-timeout 30 --max-time 30 ${LOCALCENTMINMOD_MIRROR}/centminmodparts/geoip-legacy/GeoLiteCity.gz | grep 'HTTP\/' | grep '200'
   GEOIPCITYDATA_CURLCHECK=$?
   # only overwrite existing downloaded file if the download url is working
   # if download doesn't work, do not overwrite existing downloaded file
   if [[ "$GEOIPCITYDATA_CURLCHECK" = '0' ]]; then
-    wget -${ipv_forceopt}cnv https://centminmod.com/centminmodparts/geoip-legacy/GeoLiteCity.gz -O /usr/share/GeoIP/GeoLiteCity.dat.gz
+    wget -${ipv_forceopt}cnv ${LOCALCENTMINMOD_MIRROR}/centminmodparts/geoip-legacy/GeoLiteCity.gz -O /usr/share/GeoIP/GeoLiteCity.dat.gz
   fi
   gzip -d -f /usr/share/GeoIP/GeoLiteCity.dat.gz
   cp -a /usr/share/GeoIP/GeoLiteCity.dat /usr/share/GeoIP/GeoIPCity.dat

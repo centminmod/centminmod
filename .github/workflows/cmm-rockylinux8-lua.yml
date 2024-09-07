@@ -1,0 +1,101 @@
+name: Trigger Rocky Linux 8 Workflow + Nginx Lua Enabled
+
+on:
+  workflow_dispatch:
+    branches: [140.00beta01]
+  push:
+    branches:
+      - 140.00beta01
+    paths-ignore:
+      - '.gitignore'
+      - 'readme.txt'
+      - 'README.md'
+      - 'changelog-140.00beta01.md'
+      - 'changelog-140.00beta01.html'
+      - 'CONTRIBUTING.md'
+      - '.github/workflows/main.yml'
+      - 'datamanagement/centmin.sh-menu-21.readme.md'
+      - '.github/workflows/cmm-almalinux8-edge.yml'
+      - '.github/workflows/cmm-almalinux8-hardenedoff.yml'
+      - '.github/workflows/cmm-almalinux8-lua.yml'
+      - '.github/workflows/cmm-almalinux8-mariadb10.11.yml'
+      - '.github/workflows/cmm-almalinux8-mariadb10.4.yml'
+      - '.github/workflows/cmm-almalinux8-mariadb10.6.yml'
+      - '.github/workflows/cmm-almalinux8-mariadb11.4.yml'
+      - '.github/workflows/cmm-almalinux8-modsecurity.yml'
+      - '.github/workflows/cmm-almalinux8-nginx-http3.yml'
+      - '.github/workflows/cmm-almalinux8-php7.4.yml'
+      - '.github/workflows/cmm-almalinux8-php8.1.yml'
+      - '.github/workflows/cmm-almalinux8-php8.2.yml'
+      - '.github/workflows/cmm-almalinux8-php8.3.yml'
+      - '.github/workflows/cmm-almalinux8-vs-rockylinux8-vs-oraclelinux8.yml'
+      - '.github/workflows/cmm-almalinux9-lua.yml'
+      - '.github/workflows/cmm-almalinux9-mariadb10.11.yml'
+      - '.github/workflows/cmm-almalinux9-mariadb10.6.yml'
+      - '.github/workflows/cmm-almalinux9-mariadb11.4.yml'
+      - '.github/workflows/cmm-almalinux9-modsecurity.yml'
+      - '.github/workflows/cmm-almalinux9-nginx-http3.yml'
+      - '.github/workflows/cmm-almalinux9-php8.2.yml'
+      - '.github/workflows/cmm-almalinux9-php8.3.yml'
+      - '.github/workflows/cmm-almalinux9-vs-rockylinux9-vs-oraclelinux9.yml'
+      - '.github/workflows/cmm-almalinux9.yml'
+      - '.github/workflows/cmm-centos7.yml'
+      - '.github/workflows/cmm-centos8stream-lua.yml'
+      - '.github/workflows/cmm-centos8stream-modsecurity.yml'
+      - '.github/workflows/cmm-centos8stream-nginx-http3.yml'
+      - '.github/workflows/cmm-centos8stream.yml'
+      - '.github/workflows/cmm-centos9stream-lua.yml'
+      - '.github/workflows/cmm-centos9stream-modsecurity.yml'
+      - '.github/workflows/cmm-centos9stream-nginx-http3.yml'
+      - '.github/workflows/cmm-centos9stream.yml'
+      - '.github/workflows/cmm-oraclelinux8-edge.yml'
+      - '.github/workflows/cmm-oraclelinux8-lua.yml'
+      - '.github/workflows/cmm-oraclelinux8-modsecurity.yml'
+      - '.github/workflows/cmm-oraclelinux8-nginx-http3.yml'
+      - '.github/workflows/cmm-oraclelinux8.yml'
+      - '.github/workflows/cmm-oraclelinux9-lua.yml'
+      - '.github/workflows/cmm-oraclelinux9-modsecurity.yml'
+      - '.github/workflows/cmm-oraclelinux9-nginx-http3.yml'
+      - '.github/workflows/cmm-oraclelinux9.yml'
+      - '.github/workflows/cmm-rockylinux8-edge.yml'
+      - '.github/workflows/cmm-rockylinux8-lua.yml'
+      - '.github/workflows/cmm-rockylinux8-mariadb10.11.yml'
+      - '.github/workflows/cmm-rockylinux8-mariadb10.4.yml'
+      - '.github/workflows/cmm-rockylinux8-mariadb10.6.yml'
+      - '.github/workflows/cmm-rockylinux8-mariadb11.4.yml'
+      - '.github/workflows/cmm-rockylinux8-modsecurity.yml'
+      - '.github/workflows/cmm-rockylinux8-nginx-http3.yml'
+      - '.github/workflows/cmm-rockylinux8-php7.4.yml'
+      - '.github/workflows/cmm-rockylinux8-php8.1.yml'
+      - '.github/workflows/cmm-rockylinux8-php8.2.yml'
+      - '.github/workflows/cmm-rockylinux8-php8.3.yml'
+      - '.github/workflows/cmm-rockylinux8.yml'
+      - '.github/workflows/cmm-rockylinux9-lua.yml'
+      - '.github/workflows/cmm-rockylinux9-mariadb10.11.yml'
+      - '.github/workflows/cmm-rockylinux9-mariadb10.6.yml'
+      - '.github/workflows/cmm-rockylinux9-mariadb11.4.yml'
+      - '.github/workflows/cmm-rockylinux9-modsecurity.yml'
+      - '.github/workflows/cmm-rockylinux9-nginx-http3.yml'
+      - '.github/workflows/cmm-rockylinux9-php8.2.yml'
+      - '.github/workflows/cmm-rockylinux9-php8.3.yml'
+      - '.github/workflows/cmm-rockylinux9.yml'
+  workflow_run:
+    workflows: ["Trigger Rocky Linux 8 Workflow + Nginx HTTP/3"]
+    types:
+      - completed
+    branches:
+      - 140.00beta01
+
+jobs:
+  dispatch:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Trigger centminmod-workflows workflow
+        uses: peter-evans/repository-dispatch@v3
+        with:
+          token: ${{ secrets.REPO_ACCESS_TOKEN }}
+          repository: centminmod/centminmod-workflows
+          event-type: run-rockylinux-8-workflow-lua

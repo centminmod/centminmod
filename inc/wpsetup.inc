@@ -63,8 +63,8 @@ dbsetup() {
   DBUSER="wpdb${DBND}u${DBNB}"
   DBPASS="wpdb${SALT}p${DBNC}"
   mysqladmin create $DB
-  mysql -e "CREATE USER $DBUSER@'localhost' IDENTIFIED BY '$DBPASS';"
-  mysql -e "GRANT index, select, insert, delete, update, create, drop, alter, create temporary tables, execute, lock tables, create view, show view, create routine, alter routine, trigger ON ${DB}.* TO ${DBUSER}@'localhost'; FLUSH PRIVILEGES;"
+  ${ALIAS_MYSQL} -e "CREATE USER $DBUSER@'localhost' IDENTIFIED BY '$DBPASS';"
+  ${ALIAS_MYSQL} -e "GRANT index, select, insert, delete, update, create, drop, alter, create temporary tables, execute, lock tables, create view, show view, create routine, alter routine, trigger ON ${DB}.* TO ${DBUSER}@'localhost'; FLUSH PRIVILEGES;"
 }
 
 wpinfo_notice() {
@@ -87,12 +87,18 @@ echo "[ LETSENCRYPT_DETECT is not enabled ]"
 echo "Ignore this message if you do not want HTTPS based web site otherwise"
 echo "read below carefully."
 echo
-echo "Free letsencrypt SSL certificates integration is in beta testing if"
+echo "Free letsencrypt SSL certificates integration if"
 echo "you want to obtain free letsencrypt SSL certificate for HTTPS site,"
 echo "you will need to manually enable LETSENCRYPT_DETECT='y' outlined"
-echo "at https://centminmod.com/acmetool so exit this vhost routine first"
-echo "set LETSENCRYPT_DETECT='y' and update domain DNS A record first"
-echo "then re-run vhost site creation menu option"
+echo "at https://centminmod.com/letsencrypt-freessl.html so exit this "
+echo "routine first and set LETSENCRYPT_DETECT='y' and update domain "
+echo "DNS A record first, then re-run vhost site creation menu option"
+echo
+echo "Cloudflare users: if intended domain is behind Cloudflare,"
+echo
+echo "It's highly recommended to enable Cloudflare DNS API for Letsencrypt"
+echo "domain verification for more troublefree verifications"
+echo "Instructions at https://centminmod.com/letsencrypt-freessl.html#dns"
 cecho "---------------------------------------------------------------" $boldyellow
 fi
 # check mysql server is running
@@ -135,10 +141,12 @@ if [[ "$(nginx -V 2>&1 | grep -Eo 'with-http_v2_module')" = 'with-http_v2_module
   #HTTPTWO_MAXREQUESTS='http2_max_requests 50000;'
 elif [[ "$(nginx -V 2>&1 | grep -Eo 'with-http_v2_module')" = 'with-http_v2_module' ]]; then
   HTTPTWO=y
-  if [[ "$(grep -rn listen /usr/local/nginx/conf/conf.d/*.conf | grep -v '#' | grep 443 | grep ' ssl' | grep ' http2' | grep -m1 -o reuseport )" != 'reuseport' ]]; then
+  if [[ "$(grep -rn listen /usr/local/nginx/conf/conf.d/*.conf | grep -v '#' | grep 443 | grep ' ssl' | grep -m1 -o reuseport )" != 'reuseport' ]]; then
     # check if reuseport is supported for listen 443 port - only needs to be added once globally for all nginx vhosts
-    NGXVHOST_CHECKREUSEPORT=$(grep --color -Ro SO_REUSEPORT /usr/src/kernels/* | head -n1 | awk -F ":" '{print $2}')
-    if [[ "$NGXVHOST_CHECKREUSEPORT" = 'SO_REUSEPORT' ]]; then
+    if [[ "$CENTOS_SEVEN" -eq '7' ]]; then
+      NGXVHOST_CHECKREUSEPORT=$(grep --color -Ro SO_REUSEPORT /usr/src/kernels | head -n1 | awk -F ":" '{print $2}')
+    fi
+    if [[ "$NGXVHOST_CHECKREUSEPORT" = 'SO_REUSEPORT' ]] || [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]]; then
       ADD_REUSEPORT=' reuseport'
     else
       ADD_REUSEPORT=""
@@ -174,9 +182,9 @@ fi
 # setup https://community.centminmod.com/threads/13847/
 if [ ! -d /usr/local/nginx/conf/ssl/cloudflare/${vhostname} ]; then
   mkdir -p /usr/local/nginx/conf/ssl/cloudflare/${vhostname}
-  wget${ipv_forceopt_wget} $CLOUDFLARE_AUTHORIGINPULLCERT -O /usr/local/nginx/conf/ssl/cloudflare/${vhostname}/origin.crt
+  wget -4 $CLOUDFLARE_AUTHORIGINPULLCERT -O /usr/local/nginx/conf/ssl/cloudflare/${vhostname}/origin.crt
 elif [ -d /usr/local/nginx/conf/ssl/cloudflare/${vhostname} ]; then
-  wget${ipv_forceopt_wget} $CLOUDFLARE_AUTHORIGINPULLCERT -O /usr/local/nginx/conf/ssl/cloudflare/${vhostname}/origin.crt
+  wget -4 $CLOUDFLARE_AUTHORIGINPULLCERT -O /usr/local/nginx/conf/ssl/cloudflare/${vhostname}/origin.crt
 fi
 
 if [ ! -f /usr/local/nginx/conf/ssl_include.conf ]; then
@@ -347,12 +355,61 @@ pureftpinstall
 # any new nginx vhosts created via centmin.sh menu option 2 or
 # /usr/bin/nv or centmin.sh menu option 22, will have pre-defined
 # SECOND_IP ip address set in the nginx vhost's listen directive
+#
+# also check if system can resolve to a public IPv6 address to determine
+# if nginx vhost should support IPv6 listen directive
+if [[ "$VPS_IPSIX_CHECK_DISABLE_DEBUG" = [yY] ]]; then
+  echo
+  echo "VPS_IPSIX_CHECK_DISABLE=$VPS_IPSIX_CHECK_DISABLE"
+fi
+if [[ "$VPS_IPSIX_CHECK_DISABLE" != [yY] ]]; then
+  IP_SYSTEM_CHECK_V4=$(curl -4s${CURL_TIMEOUTS} -A "${CURL_AGENT} Nginx Vhost Listener IPv4 CHECK $SCRIPT_VERSION $CURL_CPUMODEL $CURL_CPUSPEED $VPS_VIRTWHAT" https://geoip.centminmod.com/v4 | jq -r '.ip')
+  IP_SYSTEM_CHECK_V6=$(curl -6s${CURL_TIMEOUTS} -A "${CURL_AGENT} Nginx Vhost Listener IPv6 CHECK $SCRIPT_VERSION $CURL_CPUMODEL $CURL_CPUSPEED $VPS_VIRTWHAT" https://geoip.centminmod.com/v4 | jq -r '.ip')
+  if [ ! -f /usr/bin/ipcalc ]; then
+    yum -q -y install ipcalc
+    IP_SYSTEM_VALIDATE_V4=$(/usr/bin/ipcalc -s4c "$IP_SYSTEM_CHECK_V4" >/dev/null 2>&1; echo $?)
+    IP_SYSTEM_VALIDATE_V6=$(/usr/bin/ipcalc -s6c "$IP_SYSTEM_CHECK_V6" >/dev/null 2>&1; echo $?)
+  elif [ -f /usr/bin/ipcalc ]; then
+    IP_SYSTEM_VALIDATE_V4=$(/usr/bin/ipcalc -s4c "$IP_SYSTEM_CHECK_V4" >/dev/null 2>&1; echo $?)
+    IP_SYSTEM_VALIDATE_V6=$(/usr/bin/ipcalc -s6c "$IP_SYSTEM_CHECK_V6" >/dev/null 2>&1; echo $?)
+  fi
+fi
+if [[ "$VPS_IPSIX_CHECK_DISABLE_DEBUG" = [yY] ]]; then
+  echo "IP_SYSTEM_VALIDATE_V4=$IP_SYSTEM_VALIDATE_V4"
+  echo "IP_SYSTEM_VALIDATE_V6=$IP_SYSTEM_VALIDATE_V6"
+fi
 if [[ -z "$SECOND_IP" ]]; then
   DEDI_IP=""
-  DEDI_LISTEN=""
+  # if VPS_IPSIX_CHECK_DISABLE=y then set default ipv4 listener
+  # if VPS_IPSIX_CHECK_DISABLE != y then set listeners based on
+  # IP_SYSTEM_VALIDATE_V4 and IP_SYSTEM_VALIDATE_V6 values where
+  # 0 = valid and 1 = not valid
+  if [[ "$VPS_IPSIX_CHECK_DISABLE" = [yY] ]]; then
+    DEDI_LISTEN="listen   80;"
+    echo "DEDI_LISTEN=\"listen   80;\""
+  elif [[ "$VPS_IPSIX_CHECK_DISABLE" != [yY] && "$IP_SYSTEM_VALIDATE_V4" -eq '0' ]]; then
+    DEDI_LISTEN="listen   80;"
+    echo "DEDI_LISTEN=\"listen   80;\""
+  elif [[ "$VPS_IPSIX_CHECK_DISABLE" != [yY] && "$IP_SYSTEM_VALIDATE_V4" -ne '0' ]]; then
+    DEDI_LISTEN=""
+  fi
+  if [[ "$VPS_IPSIX_CHECK_DISABLE" != [yY] && "$IP_SYSTEM_VALIDATE_V6" -eq '0' ]]; then
+    DEDI_LISTEN_V6="listen   [::]:80;"
+    echo "DEDI_LISTEN_V6=\"listen   [::]:80;\""
+    DEDI_LISTEN_HTTPS_V6="listen   [::]:443 ssl http2;"
+    echo "DEDI_LISTEN_HTTPS_V6=\"listen   [::]:443 ssl http2;\""
+  elif [[ "$VPS_IPSIX_CHECK_DISABLE" != [yY] && "$IP_SYSTEM_VALIDATE_V6" -ne '0' ]]; then
+    DEDI_LISTEN_V6=""
+  else
+    DEDI_LISTEN_V6=""
+  fi
 elif [[ "$SECOND_IP" ]]; then
   DEDI_IP=$(echo $(echo ${SECOND_IP}:))
   DEDI_LISTEN="listen   ${DEDI_IP}80;"
+fi
+if [[ "$VPS_IPSIX_CHECK_DISABLE_DEBUG" = [yY] ]]; then
+  echo "DEDI_LISTEN=$DEDI_LISTEN"
+  echo "DEDI_LISTEN_V6=$DEDI_LISTEN_V6"
 fi
 
 wpinstall
@@ -736,7 +793,6 @@ cat > "/home/nginx/domains/$vhostname/public/index.html" <<END
   <li>Latest Centmin Mod version - <a href="https://centminmod.com" target="_blank">https://centminmod.com</a></li>
   <li>Centmin Mod FAQ - <a href="https://centminmod.com/faq.html" target="_blank">https://centminmod.com/faq.html</a></li>
   <li>Change Log - <a href="https://centminmod.com/changelog.html" target="_blank">https://centminmod.com/changelog.html</a></li>
-  <li>Google+ Page latest news <a href="https://centminmod.com/gpage" target="_blank">https://centminmod.com/gpage</a></li>
   <li>Centmin Mod Community Forum <a href="https://community.centminmod.com/" target="_blank">https://community.centminmod.com/</a></li>
   <li>Centmin Mod Twitter <a href="https://twitter.com/centminmod" target="_blank">https://twitter.com/centminmod</a></li>
   <li>Centmin Mod Facebook Page <a href="https://www.facebook.com/centminmodcom" target="_blank">https://www.facebook.com/centminmodcom</a></li>
@@ -915,7 +971,7 @@ location ~ [^/]\.php(/|\$) {
         return 404;
     }
 
-    set \$key "nginx-cache:\$scheme\$request_method\$host\$request_uri";
+    set \$key "nginx-cache:\$scheme\$request_method\$host\$request_uri\$normalized_encoding";
     srcache_fetch_skip \$skip_cache;
     srcache_store_skip \$skip_cache;
     srcache_response_cache_control off;
@@ -926,7 +982,7 @@ location ~ [^/]\.php(/|\$) {
     more_set_headers 'X-Cache-2 \$srcache_store_status';
 
     fastcgi_pass   127.0.0.1:9000;
-    #fastcgi_pass   unix:/var/run/php-fpm/php-fpm.sock;
+    #fastcgi_pass   unix:${PHP_PID_PATHDIR}/php-fpm.sock;
     fastcgi_index  index.php;
     #fastcgi_param  SCRIPT_FILENAME  \$document_root\$fastcgi_script_name;
     fastcgi_param  SCRIPT_FILENAME    \$request_filename;
@@ -1018,7 +1074,7 @@ location ~ [^/]\.php(/|\$) {
         return 404;
     }
 
-    set \$key "nginx-cache:\$scheme\$request_method\$host\$request_uri";
+    set \$key "nginx-cache:\$scheme\$request_method\$host\$request_uri\$normalized_encoding";
     srcache_fetch_skip \$skip_cache;
     srcache_store_skip \$skip_cache;
     srcache_response_cache_control off;
@@ -1029,7 +1085,7 @@ location ~ [^/]\.php(/|\$) {
     more_set_headers 'X-Cache-2 \$srcache_store_status';
 
     fastcgi_pass   127.0.0.1:9000;
-    #fastcgi_pass   unix:/var/run/php-fpm/php-fpm.sock;
+    #fastcgi_pass   unix:${PHP_PID_PATHDIR}/php-fpm.sock;
     fastcgi_index  index.php;
     #fastcgi_param  SCRIPT_FILENAME  \$document_root\$fastcgi_script_name;
     fastcgi_param  SCRIPT_FILENAME    \$request_filename;
@@ -1163,52 +1219,182 @@ else
   TLSONETHREE_CIPHERS=""
 fi
 
-if [[ -f /usr/bin/php74 && -f /usr/bin/php73 && -f /usr/bin/php72 && -f /usr/bin/php71 && -f /usr/bin/php70 && -f /usr/bin/php56 ]]; then
-  MULTIPHP_INCLUDES='#include /usr/local/nginx/conf/php74-remi.conf;
-  #include /usr/local/nginx/conf/php73-remi.conf;
-  #include /usr/local/nginx/conf/php72-remi.conf;
-  #include /usr/local/nginx/conf/php71-remi.conf;
-  #include /usr/local/nginx/conf/php70-remi.conf;
-  #include /usr/local/nginx/conf/php56-remi.conf;'
-elif [[ -f /usr/bin/php74 && -f /usr/bin/php73 && -f /usr/bin/php72 && -f /usr/bin/php71 && ! -f /usr/bin/php70 && ! -f /usr/bin/php56 ]]; then
-  MULTIPHP_INCLUDES='#include /usr/local/nginx/conf/php74-remi.conf;
-  #include /usr/local/nginx/conf/php73-remi.conf;
-  #include /usr/local/nginx/conf/php72-remi.conf;
-  #include /usr/local/nginx/conf/php71-remi.conf;'
-elif [[ -f /usr/bin/php74 && -f /usr/bin/php73 && -f /usr/bin/php72 && ! -f /usr/bin/php71 && ! -f /usr/bin/php70 && ! -f /usr/bin/php56 ]]; then
-  MULTIPHP_INCLUDES='#include /usr/local/nginx/conf/php74-remi.conf;
-  #include /usr/local/nginx/conf/php73-remi.conf;
-  #include /usr/local/nginx/conf/php72-remi.conf;'
-elif [[ -f /usr/bin/php74 && -f /usr/bin/php73 && ! -f /usr/bin/php72 && ! -f /usr/bin/php71 && ! -f /usr/bin/php70 && ! -f /usr/bin/php56 ]]; then
-  MULTIPHP_INCLUDES='#include /usr/local/nginx/conf/php74-remi.conf;
-  #include /usr/local/nginx/conf/php73-remi.conf;'
-elif [[ -f /usr/bin/php73 && -f /usr/bin/php72 && -f /usr/bin/php71 && -f /usr/bin/php70 && -f /usr/bin/php56 ]]; then
-  MULTIPHP_INCLUDES='#include /usr/local/nginx/conf/php73-remi.conf;
-  #include /usr/local/nginx/conf/php72-remi.conf;
-  #include /usr/local/nginx/conf/php71-remi.conf;
-  #include /usr/local/nginx/conf/php70-remi.conf;
-  #include /usr/local/nginx/conf/php56-remi.conf;'
-elif [[ -f /usr/bin/php72 && -f /usr/bin/php71 && -f /usr/bin/php70 && -f /usr/bin/php56 ]]; then
-  MULTIPHP_INCLUDES='#include /usr/local/nginx/conf/php72-remi.conf;
-  #include /usr/local/nginx/conf/php71-remi.conf;
-  #include /usr/local/nginx/conf/php70-remi.conf;
-  #include /usr/local/nginx/conf/php56-remi.conf;'
-elif [[ -f /usr/bin/php71 && -f /usr/bin/php70 && -f /usr/bin/php56 ]]; then
-  MULTIPHP_INCLUDES='#include /usr/local/nginx/conf/php71-remi.conf;
-  #include /usr/local/nginx/conf/php70-remi.conf;
-  #include /usr/local/nginx/conf/php56-remi.conf;'
-elif [[ -f /usr/bin/php71 && -f /usr/bin/php70 && ! -f /usr/bin/php56 ]]; then
-  MULTIPHP_INCLUDES='#include /usr/local/nginx/conf/php71-remi.conf;
-  #include /usr/local/nginx/conf/php70-remi.conf;'
-elif [[ -f /usr/bin/php71 && ! -f /usr/bin/php70 && ! -f /usr/bin/php56 ]]; then
-  MULTIPHP_INCLUDES='#include /usr/local/nginx/conf/php71-remi.conf;'
-elif [[ ! -f /usr/bin/php71 && -f /usr/bin/php70 && ! -f /usr/bin/php56 ]]; then
-  MULTIPHP_INCLUDES='#include /usr/local/nginx/conf/php70-remi.conf;'
-elif [[ ! -f /usr/bin/php71 && ! -f /usr/bin/php70 && -f /usr/bin/php56 ]]; then
-  MULTIPHP_INCLUDES='#include /usr/local/nginx/conf/php56-remi.conf;'
-elif [[ ! -f /usr/bin/php71 && ! -f /usr/bin/php70 && ! -f /usr/bin/php56 ]]; then
-  MULTIPHP_INCLUDES=""
-fi
+if [[ "$CENTOS_SEVEN" -eq '7' ]]; then
+  if [[ -f /usr/bin/php82 && -f /usr/bin/php81 && -f /usr/bin/php80 && ! -f /usr/bin/php74 && ! -f /usr/bin/php73 && ! -f /usr/bin/php72 && ! -f /usr/bin/php71 && ! -f /usr/bin/php70 && ! -f /usr/bin/php56 ]]; then
+    MULTIPHP_INCLUDES='#include /usr/local/nginx/conf/php82-remi.conf;
+    #include /usr/local/nginx/conf/php81-remi.conf;
+    #include /usr/local/nginx/conf/php80-remi.conf;'
+  elif [[ ! -f /usr/bin/php82 && -f /usr/bin/php81 && -f /usr/bin/php80 && ! -f /usr/bin/php74 && ! -f /usr/bin/php73 && ! -f /usr/bin/php72 && ! -f /usr/bin/php71 && ! -f /usr/bin/php70 && ! -f /usr/bin/php56 ]]; then
+    MULTIPHP_INCLUDES='#include /usr/local/nginx/conf/php81-remi.conf;
+    #include /usr/local/nginx/conf/php80-remi.conf;'
+  elif [[ ! -f /usr/bin/php82 && -f /usr/bin/php81 && ! -f /usr/bin/php80 && ! -f /usr/bin/php74 && ! -f /usr/bin/php73 && ! -f /usr/bin/php72 && ! -f /usr/bin/php71 && ! -f /usr/bin/php70 && ! -f /usr/bin/php56 ]]; then
+    MULTIPHP_INCLUDES='#include /usr/local/nginx/conf/php81-remi.conf;'
+  elif [[ ! -f /usr/bin/php82 && ! -f /usr/bin/php81 && -f /usr/bin/php80 && ! -f /usr/bin/php74 && ! -f /usr/bin/php73 && ! -f /usr/bin/php72 && ! -f /usr/bin/php71 && ! -f /usr/bin/php70 && ! -f /usr/bin/php56 ]]; then
+    MULTIPHP_INCLUDES='#include /usr/local/nginx/conf/php80-remi.conf;'
+  elif [[ -f /usr/bin/php82 && -f /usr/bin/php81 && -f /usr/bin/php80 && -f /usr/bin/php74 && ! -f /usr/bin/php73 && ! -f /usr/bin/php72 && ! -f /usr/bin/php71 && ! -f /usr/bin/php70 && ! -f /usr/bin/php56 ]]; then
+    MULTIPHP_INCLUDES='#include /usr/local/nginx/conf/php82-remi.conf;
+    #include /usr/local/nginx/conf/php81-remi.conf;
+    #include /usr/local/nginx/conf/php80-remi.conf;
+    #include /usr/local/nginx/conf/php74-remi.conf;'
+  elif [[ -f /usr/bin/php81 && -f /usr/bin/php80 && -f /usr/bin/php74 && ! -f /usr/bin/php73 && ! -f /usr/bin/php72 && ! -f /usr/bin/php71 && ! -f /usr/bin/php70 && ! -f /usr/bin/php56 ]]; then
+    MULTIPHP_INCLUDES='#include /usr/local/nginx/conf/php81-remi.conf;
+    #include /usr/local/nginx/conf/php80-remi.conf;
+    #include /usr/local/nginx/conf/php74-remi.conf;'
+  elif [[ -f /usr/bin/php80 && -f /usr/bin/php74 && ! -f /usr/bin/php73 && ! -f /usr/bin/php72 && ! -f /usr/bin/php71 && ! -f /usr/bin/php70 && ! -f /usr/bin/php56 ]]; then
+    MULTIPHP_INCLUDES='#include /usr/local/nginx/conf/php80-remi.conf;
+    #include /usr/local/nginx/conf/php74-remi.conf;'
+  elif [[ -f /usr/bin/php82 && -f /usr/bin/php81 && -f /usr/bin/php80 && -f /usr/bin/php74 && -f /usr/bin/php73 && ! -f /usr/bin/php72 && ! -f /usr/bin/php71 && ! -f /usr/bin/php70 && ! -f /usr/bin/php56 ]]; then
+    MULTIPHP_INCLUDES='#include /usr/local/nginx/conf/php82-remi.conf;
+    #include /usr/local/nginx/conf/php81-remi.conf;
+    #include /usr/local/nginx/conf/php80-remi.conf;
+    #include /usr/local/nginx/conf/php74-remi.conf;
+    #include /usr/local/nginx/conf/php73-remi.conf;'
+  elif [[ -f /usr/bin/php81 && -f /usr/bin/php80 && -f /usr/bin/php74 && -f /usr/bin/php73 && ! -f /usr/bin/php72 && ! -f /usr/bin/php71 && ! -f /usr/bin/php70 && ! -f /usr/bin/php56 ]]; then
+    MULTIPHP_INCLUDES='#include /usr/local/nginx/conf/php81-remi.conf;
+    #include /usr/local/nginx/conf/php80-remi.conf;
+    #include /usr/local/nginx/conf/php74-remi.conf;
+    #include /usr/local/nginx/conf/php73-remi.conf;'
+  elif [[ -f /usr/bin/php80 && -f /usr/bin/php74 && -f /usr/bin/php73 && ! -f /usr/bin/php72 && ! -f /usr/bin/php71 && ! -f /usr/bin/php70 && ! -f /usr/bin/php56 ]]; then
+    MULTIPHP_INCLUDES='#include /usr/local/nginx/conf/php80-remi.conf;
+    #include /usr/local/nginx/conf/php74-remi.conf;
+    #include /usr/local/nginx/conf/php73-remi.conf;'
+  elif [[ -f /usr/bin/php82 && -f /usr/bin/php81 && -f /usr/bin/php80 && -f /usr/bin/php74 && -f /usr/bin/php73 && -f /usr/bin/php72 && ! -f /usr/bin/php71 && ! -f /usr/bin/php70 && ! -f /usr/bin/php56 ]]; then
+    MULTIPHP_INCLUDES='#include /usr/local/nginx/conf/php82-remi.conf;
+    #include /usr/local/nginx/conf/php81-remi.conf;
+    #include /usr/local/nginx/conf/php80-remi.conf;
+    #include /usr/local/nginx/conf/php74-remi.conf;
+    #include /usr/local/nginx/conf/php73-remi.conf;
+    #include /usr/local/nginx/conf/php72-remi.conf;'
+  elif [[ -f /usr/bin/php81 && -f /usr/bin/php80 && -f /usr/bin/php74 && -f /usr/bin/php73 && -f /usr/bin/php72 && ! -f /usr/bin/php71 && ! -f /usr/bin/php70 && ! -f /usr/bin/php56 ]]; then
+    MULTIPHP_INCLUDES='#include /usr/local/nginx/conf/php81-remi.conf;
+    #include /usr/local/nginx/conf/php80-remi.conf;
+    #include /usr/local/nginx/conf/php74-remi.conf;
+    #include /usr/local/nginx/conf/php73-remi.conf;
+    #include /usr/local/nginx/conf/php72-remi.conf;'
+  elif [[ -f /usr/bin/php80 && -f /usr/bin/php74 && -f /usr/bin/php73 && -f /usr/bin/php72 && ! -f /usr/bin/php71 && ! -f /usr/bin/php70 && ! -f /usr/bin/php56 ]]; then
+    MULTIPHP_INCLUDES='#include /usr/local/nginx/conf/php80-remi.conf;
+    #include /usr/local/nginx/conf/php74-remi.conf;
+    #include /usr/local/nginx/conf/php73-remi.conf;
+    #include /usr/local/nginx/conf/php72-remi.conf;'
+  elif [[ -f /usr/bin/php82 && -f /usr/bin/php81 && -f /usr/bin/php80 && -f /usr/bin/php74 && -f /usr/bin/php73 && -f /usr/bin/php72 && -f /usr/bin/php71 && ! -f /usr/bin/php70 && ! -f /usr/bin/php56 ]]; then
+    MULTIPHP_INCLUDES='#include /usr/local/nginx/conf/php82-remi.conf;
+    #include /usr/local/nginx/conf/php81-remi.conf;
+    #include /usr/local/nginx/conf/php80-remi.conf;
+    #include /usr/local/nginx/conf/php74-remi.conf;
+    #include /usr/local/nginx/conf/php73-remi.conf;
+    #include /usr/local/nginx/conf/php72-remi.conf;
+    #include /usr/local/nginx/conf/php71-remi.conf;'
+  elif [[ -f /usr/bin/php81 && -f /usr/bin/php80 && -f /usr/bin/php74 && -f /usr/bin/php73 && -f /usr/bin/php72 && -f /usr/bin/php71 && ! -f /usr/bin/php70 && ! -f /usr/bin/php56 ]]; then
+    MULTIPHP_INCLUDES='#include /usr/local/nginx/conf/php81-remi.conf;
+    #include /usr/local/nginx/conf/php80-remi.conf;
+    #include /usr/local/nginx/conf/php74-remi.conf;
+    #include /usr/local/nginx/conf/php73-remi.conf;
+    #include /usr/local/nginx/conf/php72-remi.conf;
+    #include /usr/local/nginx/conf/php71-remi.conf;'
+  elif [[ -f /usr/bin/php80 && -f /usr/bin/php74 && -f /usr/bin/php73 && -f /usr/bin/php72 && -f /usr/bin/php71 && ! -f /usr/bin/php70 && ! -f /usr/bin/php56 ]]; then
+    MULTIPHP_INCLUDES='#include /usr/local/nginx/conf/php80-remi.conf;
+    #include /usr/local/nginx/conf/php74-remi.conf;
+    #include /usr/local/nginx/conf/php73-remi.conf;
+    #include /usr/local/nginx/conf/php72-remi.conf;
+    #include /usr/local/nginx/conf/php71-remi.conf;'
+  elif [[ -f /usr/bin/php82 && -f /usr/bin/php81 && -f /usr/bin/php80 && -f /usr/bin/php74 && -f /usr/bin/php73 && -f /usr/bin/php72 && -f /usr/bin/php71 && -f /usr/bin/php70 && ! -f /usr/bin/php56 ]]; then
+    MULTIPHP_INCLUDES='#include /usr/local/nginx/conf/php82-remi.conf;
+    #include /usr/local/nginx/conf/php81-remi.conf;
+    #include /usr/local/nginx/conf/php80-remi.conf;
+    #include /usr/local/nginx/conf/php74-remi.conf;
+    #include /usr/local/nginx/conf/php73-remi.conf;
+    #include /usr/local/nginx/conf/php72-remi.conf;
+    #include /usr/local/nginx/conf/php71-remi.conf;
+    #include /usr/local/nginx/conf/php70-remi.conf;'
+  elif [[ -f /usr/bin/php81 && -f /usr/bin/php80 && -f /usr/bin/php74 && -f /usr/bin/php73 && -f /usr/bin/php72 && -f /usr/bin/php71 && -f /usr/bin/php70 && ! -f /usr/bin/php56 ]]; then
+    MULTIPHP_INCLUDES='#include /usr/local/nginx/conf/php81-remi.conf;
+    #include /usr/local/nginx/conf/php80-remi.conf;
+    #include /usr/local/nginx/conf/php74-remi.conf;
+    #include /usr/local/nginx/conf/php73-remi.conf;
+    #include /usr/local/nginx/conf/php72-remi.conf;
+    #include /usr/local/nginx/conf/php71-remi.conf;
+    #include /usr/local/nginx/conf/php70-remi.conf;'
+  elif [[ -f /usr/bin/php80 && -f /usr/bin/php74 && -f /usr/bin/php73 && -f /usr/bin/php72 && -f /usr/bin/php71 && -f /usr/bin/php70 && ! -f /usr/bin/php56 ]]; then
+    MULTIPHP_INCLUDES='#include /usr/local/nginx/conf/php80-remi.conf;
+    #include /usr/local/nginx/conf/php74-remi.conf;
+    #include /usr/local/nginx/conf/php73-remi.conf;
+    #include /usr/local/nginx/conf/php72-remi.conf;
+    #include /usr/local/nginx/conf/php71-remi.conf;
+    #include /usr/local/nginx/conf/php70-remi.conf;'
+  elif [[ -f /usr/bin/php82 && -f /usr/bin/php81 && -f /usr/bin/php80 && -f /usr/bin/php74 && -f /usr/bin/php73 && -f /usr/bin/php72 && -f /usr/bin/php71 && -f /usr/bin/php70 && -f /usr/bin/php56 ]]; then
+    MULTIPHP_INCLUDES='#include /usr/local/nginx/conf/php82-remi.conf;
+    #include /usr/local/nginx/conf/php81-remi.conf;
+    #include /usr/local/nginx/conf/php80-remi.conf;
+    #include /usr/local/nginx/conf/php74-remi.conf;
+    #include /usr/local/nginx/conf/php73-remi.conf;
+    #include /usr/local/nginx/conf/php72-remi.conf;
+    #include /usr/local/nginx/conf/php71-remi.conf;
+    #include /usr/local/nginx/conf/php70-remi.conf;
+    #include /usr/local/nginx/conf/php56-remi.conf;'
+  elif [[ -f /usr/bin/php81 && -f /usr/bin/php80 && -f /usr/bin/php74 && -f /usr/bin/php73 && -f /usr/bin/php72 && -f /usr/bin/php71 && -f /usr/bin/php70 && -f /usr/bin/php56 ]]; then
+    MULTIPHP_INCLUDES='#include /usr/local/nginx/conf/php81-remi.conf;
+    #include /usr/local/nginx/conf/php80-remi.conf;
+    #include /usr/local/nginx/conf/php74-remi.conf;
+    #include /usr/local/nginx/conf/php73-remi.conf;
+    #include /usr/local/nginx/conf/php72-remi.conf;
+    #include /usr/local/nginx/conf/php71-remi.conf;
+    #include /usr/local/nginx/conf/php70-remi.conf;
+    #include /usr/local/nginx/conf/php56-remi.conf;'
+  elif [[ -f /usr/bin/php80 && -f /usr/bin/php74 && -f /usr/bin/php73 && -f /usr/bin/php72 && -f /usr/bin/php71 && -f /usr/bin/php70 && -f /usr/bin/php56 ]]; then
+    MULTIPHP_INCLUDES='#include /usr/local/nginx/conf/php80-remi.conf;
+    #include /usr/local/nginx/conf/php74-remi.conf;
+    #include /usr/local/nginx/conf/php73-remi.conf;
+    #include /usr/local/nginx/conf/php72-remi.conf;
+    #include /usr/local/nginx/conf/php71-remi.conf;
+    #include /usr/local/nginx/conf/php70-remi.conf;
+    #include /usr/local/nginx/conf/php56-remi.conf;'
+  elif [[ -f /usr/bin/php74 && -f /usr/bin/php73 && -f /usr/bin/php72 && -f /usr/bin/php71 && -f /usr/bin/php70 && -f /usr/bin/php56 ]]; then
+    MULTIPHP_INCLUDES='#include /usr/local/nginx/conf/php74-remi.conf;
+    #include /usr/local/nginx/conf/php73-remi.conf;
+    #include /usr/local/nginx/conf/php72-remi.conf;
+    #include /usr/local/nginx/conf/php71-remi.conf;
+    #include /usr/local/nginx/conf/php70-remi.conf;
+    #include /usr/local/nginx/conf/php56-remi.conf;'
+  elif [[ -f /usr/bin/php74 && -f /usr/bin/php73 && -f /usr/bin/php72 && -f /usr/bin/php71 && ! -f /usr/bin/php70 && ! -f /usr/bin/php56 ]]; then
+    MULTIPHP_INCLUDES='#include /usr/local/nginx/conf/php74-remi.conf;
+    #include /usr/local/nginx/conf/php73-remi.conf;
+    #include /usr/local/nginx/conf/php72-remi.conf;
+    #include /usr/local/nginx/conf/php71-remi.conf;'
+  elif [[ -f /usr/bin/php74 && -f /usr/bin/php73 && -f /usr/bin/php72 && ! -f /usr/bin/php71 && ! -f /usr/bin/php70 && ! -f /usr/bin/php56 ]]; then
+    MULTIPHP_INCLUDES='#include /usr/local/nginx/conf/php74-remi.conf;
+    #include /usr/local/nginx/conf/php73-remi.conf;
+    #include /usr/local/nginx/conf/php72-remi.conf;'
+  elif [[ -f /usr/bin/php74 && -f /usr/bin/php73 && ! -f /usr/bin/php72 && ! -f /usr/bin/php71 && ! -f /usr/bin/php70 && ! -f /usr/bin/php56 ]]; then
+    MULTIPHP_INCLUDES='#include /usr/local/nginx/conf/php74-remi.conf;
+    #include /usr/local/nginx/conf/php73-remi.conf;'
+  elif [[ -f /usr/bin/php73 && -f /usr/bin/php72 && -f /usr/bin/php71 && -f /usr/bin/php70 && -f /usr/bin/php56 ]]; then
+    MULTIPHP_INCLUDES='#include /usr/local/nginx/conf/php73-remi.conf;
+    #include /usr/local/nginx/conf/php72-remi.conf;
+    #include /usr/local/nginx/conf/php71-remi.conf;
+    #include /usr/local/nginx/conf/php70-remi.conf;
+    #include /usr/local/nginx/conf/php56-remi.conf;'
+  elif [[ -f /usr/bin/php72 && -f /usr/bin/php71 && -f /usr/bin/php70 && -f /usr/bin/php56 ]]; then
+    MULTIPHP_INCLUDES='#include /usr/local/nginx/conf/php72-remi.conf;
+    #include /usr/local/nginx/conf/php71-remi.conf;
+    #include /usr/local/nginx/conf/php70-remi.conf;
+    #include /usr/local/nginx/conf/php56-remi.conf;'
+  elif [[ -f /usr/bin/php71 && -f /usr/bin/php70 && -f /usr/bin/php56 ]]; then
+    MULTIPHP_INCLUDES='#include /usr/local/nginx/conf/php71-remi.conf;
+    #include /usr/local/nginx/conf/php70-remi.conf;
+    #include /usr/local/nginx/conf/php56-remi.conf;'
+  elif [[ -f /usr/bin/php71 && -f /usr/bin/php70 && ! -f /usr/bin/php56 ]]; then
+    MULTIPHP_INCLUDES='#include /usr/local/nginx/conf/php71-remi.conf;
+    #include /usr/local/nginx/conf/php70-remi.conf;'
+  elif [[ -f /usr/bin/php71 && ! -f /usr/bin/php70 && ! -f /usr/bin/php56 ]]; then
+    MULTIPHP_INCLUDES='#include /usr/local/nginx/conf/php71-remi.conf;'
+  elif [[ ! -f /usr/bin/php71 && -f /usr/bin/php70 && ! -f /usr/bin/php56 ]]; then
+    MULTIPHP_INCLUDES='#include /usr/local/nginx/conf/php70-remi.conf;'
+  elif [[ ! -f /usr/bin/php71 && ! -f /usr/bin/php70 && -f /usr/bin/php56 ]]; then
+    MULTIPHP_INCLUDES='#include /usr/local/nginx/conf/php56-remi.conf;'
+  elif [[ ! -f /usr/bin/php71 && ! -f /usr/bin/php70 && ! -f /usr/bin/php56 ]]; then
+    MULTIPHP_INCLUDES=""
+  fi
+fi # centos 7 only
 
 if [[ "$VHOST_PRESTATICINC" = [yY] ]]; then
   PRESTATIC_INCLUDES="include /usr/local/nginx/conf/pre-staticfiles-local-${vhostname}.conf;
@@ -1237,6 +1423,7 @@ cat > "/usr/local/nginx/conf/conf.d/$vhostname.conf"<<ENSS
 # if unsure use return 302 before using return 301
 #server {
 #            listen   ${DEDI_IP}80;
+#            $DEDI_LISTEN_V6
 #            server_name $vhostname;
 #            return 301 \$scheme://www.${vhostname}\$request_uri;
 #       }
@@ -1260,6 +1447,7 @@ server {
   # ssi  on;
 
   access_log /home/nginx/domains/$vhostname/log/access.log $NGX_LOGFORMAT buffer=256k flush=5m;
+  #access_log /home/nginx/domains/$vhostname/log/access.json main_json buffer=256k flush=5m;
   error_log /home/nginx/domains/$vhostname/log/error.log;
 
   include /usr/local/nginx/conf/autoprotect/$vhostname/autoprotect-$vhostname.conf;
@@ -1310,7 +1498,7 @@ location ~* ${WPSUBDIR}/(xmlrpc\.php) {
     limit_req zone=xwprpc burst=45 nodelay;
     #limit_conn xwpconlimit 30;
     include /usr/local/nginx/conf/php-wpsc.conf;
-    # https://jetpack.com/support/hosting-faq/
+    # https://jetpack.com/support/how-to-add-jetpack-ips-allowlist/
     include /usr/local/nginx/conf/jetpack_whitelist_ip.conf;
     # https://community.centminmod.com/posts/18828/
     #include /usr/local/nginx/conf/php-rediscache.conf;
@@ -1362,6 +1550,7 @@ cat > "/usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf"<<ESS
 
 server {
   listen ${DEDI_IP}443 $LISTENOPT;
+  $DEDI_LISTEN_HTTPS_V6
   server_name $vhostname www.$vhostname;
 
   ssl_dhparam /usr/local/nginx/conf/ssl/${vhostname}/dhparam.pem;
@@ -1374,7 +1563,7 @@ server {
   $HTTPTWO_MAXHEADERSIZE
   $HTTPTWO_MAXREQUESTS
   # mozilla recommended
-  ssl_ciphers ${TLSONETHREE_CIPHERS}ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-GCM-SHA384:${CHACHACIPHERS}DHE-RSA-AES128-GCM-SHA256:DHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-AES128-SHA256:ECDHE-RSA-AES128-SHA256:ECDHE-ECDSA-AES128-SHA:ECDHE-RSA-AES256-SHA384:ECDHE-RSA-AES128-SHA:ECDHE-ECDSA-AES256-SHA384:ECDHE-ECDSA-AES256-SHA:ECDHE-RSA-AES256-SHA:DHE-RSA-AES128-SHA256:DHE-RSA-AES128-SHA:DHE-RSA-AES256-SHA256:DHE-RSA-AES256-SHA:ECDHE-ECDSA-DES-CBC3-SHA:ECDHE-RSA-DES-CBC3-SHA:EDH-RSA-DES-CBC3-SHA:AES128-GCM-SHA256:AES256-GCM-SHA384:AES128-SHA256:AES256-SHA256:AES128-SHA:AES256-SHA:DES-CBC3-SHA:!DSS;
+  ssl_ciphers ${TLSONETHREE_CIPHERS}ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-CHACHA20-POLY1305:ECDHE-RSA-CHACHA20-POLY1305:DHE-RSA-AES128-GCM-SHA256:DHE-RSA-AES256-GCM-SHA384;
   ssl_prefer_server_ciphers   on;
   $SPDY_HEADER
 
@@ -1405,6 +1594,7 @@ server {
   # ssi  on;
 
   access_log /home/nginx/domains/$vhostname/log/access.log $NGX_LOGFORMAT buffer=256k flush=5m;
+  #access_log /home/nginx/domains/$vhostname/log/access.json main_json buffer=256k flush=5m;
   error_log /home/nginx/domains/$vhostname/log/error.log;
 
   include /usr/local/nginx/conf/autoprotect/$vhostname/autoprotect-$vhostname.conf;
@@ -1456,7 +1646,7 @@ location ~* ${WPSUBDIR}/(xmlrpc\.php) {
     limit_req zone=xwprpc burst=45 nodelay;
     #limit_conn xwpconlimit 30;
     include /usr/local/nginx/conf/php-wpsc.conf;
-    # https://jetpack.com/support/hosting-faq/
+    # https://jetpack.com/support/how-to-add-jetpack-ips-allowlist/
     include /usr/local/nginx/conf/jetpack_whitelist_ip.conf;
     ${MULTIPHP_INCLUDES}
     # https://community.centminmod.com/posts/18828/
@@ -1505,6 +1695,7 @@ cat > "/usr/local/nginx/conf/conf.d/$vhostname.conf"<<END
 # if unsure use return 302 before using return 301
 #server {
 #            listen   ${DEDI_IP}80;
+#            $DEDI_LISTEN_V6
 #            server_name $vhostname;
 #            return 301 \$scheme://www.${vhostname}\$request_uri;
 #       }
@@ -1528,6 +1719,7 @@ server {
   # ssi  on;
 
   access_log /home/nginx/domains/$vhostname/log/access.log $NGX_LOGFORMAT buffer=256k flush=5m;
+  #access_log /home/nginx/domains/$vhostname/log/access.json main_json buffer=256k flush=5m;
   error_log /home/nginx/domains/$vhostname/log/error.log;
 
   include /usr/local/nginx/conf/autoprotect/$vhostname/autoprotect-$vhostname.conf;
@@ -1579,7 +1771,7 @@ location ~* ${WPSUBDIR}/(xmlrpc\.php) {
     limit_req zone=xwprpc burst=45 nodelay;
     #limit_conn xwpconlimit 30;
     include /usr/local/nginx/conf/php-wpsc.conf;
-    # https://jetpack.com/support/hosting-faq/
+    # https://jetpack.com/support/how-to-add-jetpack-ips-allowlist/
     include /usr/local/nginx/conf/jetpack_whitelist_ip.conf;
     ${MULTIPHP_INCLUDES}
     # https://community.centminmod.com/posts/18828/
@@ -2487,7 +2679,7 @@ if [[ -z "$(crontab -l 2>&1 | grep '\/${vhostname}/wp-cron.php')" ]]; then
     cp cronjoblist /home/nginx/domains/${vhostname}/cronjobs/cronjoblist-before-wp-cron.txt
     # only insert cronjob if one doesn't already exist
     if [[ -z $(grep "${vhostname}\/wp-cron.php" cronjoblist) ]]; then
-      if [[ "$wpcli_ssldefault" = '1' ]]; then
+      if [[ "$wpcli_ssldefault" = '1' ]] || [[ "$vhostssl" = [yY] ]] || [[ "$vhostssl" = 'le' ]] || [[ "$vhostssl" = 'led' ]] || [[ "$vhostssl" = 'lelive' ]] || [[ "$vhostssl" = 'lelived' ]]; then
         echo "#*/15 * * * * sleep ${DELAY}s > /dev/null 2>&1; curl -skD - -H \"Cookie: wordpress_logged_in\" \"https://${vhostname}/wp-cron.php?doing_wp_cron\" -o /dev/null 2>&1" >> cronjoblist
       else
         echo "#*/15 * * * * sleep ${DELAY}s > /dev/null 2>&1; curl -skD - -H \"Cookie: wordpress_logged_in\" \"http://${vhostname}/wp-cron.php?doing_wp_cron\" -o /dev/null 2>&1" >> cronjoblist
@@ -2665,10 +2857,10 @@ define('WP_CACHE', true);\
     echo
     echo "configure autoptimize-gzip https://community.centminmod.com/threads/15314/"
     mkdir -p "/home/nginx/domains/${vhostname}/public${WPSUBDIR}/wp-content/plugins/autoptimize-gzip"
-    wget${ipv_forceopt_wget} -cnv -O "/home/nginx/domains/${vhostname}/public${WPSUBDIR}/wp-content/plugins/autoptimize-gzip/autoptimize-gzip.php" https://github.com/centminmod/autoptimize-gzip/raw/master/autoptimize-gzip.php
-    wget${ipv_forceopt_wget} -cnv -O "/home/nginx/domains/${vhostname}/public${WPSUBDIR}/wp-content/plugins/autoptimize-gzip/index.html" https://github.com/centminmod/autoptimize-gzip/raw/master/index.html
-    wget${ipv_forceopt_wget} -cnv -O "/home/nginx/domains/${vhostname}/public${WPSUBDIR}/wp-content/plugins/autoptimize-gzip/readme.md" https://github.com/centminmod/autoptimize-gzip/blob/master/readme.md
-    wget${ipv_forceopt_wget} -cnv -O "/home/nginx/domains/${vhostname}/public${WPSUBDIR}/wp-content/plugins/autoptimize-gzip/LICENSE" https://github.com/centminmod/autoptimize-gzip/raw/master/LICENSE
+    wget -4 -cnv -O "/home/nginx/domains/${vhostname}/public${WPSUBDIR}/wp-content/plugins/autoptimize-gzip/autoptimize-gzip.php" https://github.com/centminmod/autoptimize-gzip/raw/master/autoptimize-gzip.php
+    wget -4 -cnv -O "/home/nginx/domains/${vhostname}/public${WPSUBDIR}/wp-content/plugins/autoptimize-gzip/index.html" https://github.com/centminmod/autoptimize-gzip/raw/master/index.html
+    wget -4 -cnv -O "/home/nginx/domains/${vhostname}/public${WPSUBDIR}/wp-content/plugins/autoptimize-gzip/readme.md" https://github.com/centminmod/autoptimize-gzip/blob/master/readme.md
+    wget -4 -cnv -O "/home/nginx/domains/${vhostname}/public${WPSUBDIR}/wp-content/plugins/autoptimize-gzip/LICENSE" https://github.com/centminmod/autoptimize-gzip/raw/master/LICENSE
     chown -R nginx:nginx "/home/nginx/domains/${vhostname}/public${WPSUBDIR}/wp-content/plugins/autoptimize-gzip"
     \wp plugin activate autoptimize-gzip --allow-root
     \wp plugin status autoptimize-gzip --allow-root
@@ -2693,10 +2885,10 @@ if [[ "$wpscache" = 'redis' ]]; then
     echo
     echo "configure autoptimize-gzip https://community.centminmod.com/threads/15314/"
     mkdir -p "/home/nginx/domains/${vhostname}/public${WPSUBDIR}/wp-content/plugins/autoptimize-gzip"
-    wget${ipv_forceopt_wget} -cnv -O "/home/nginx/domains/${vhostname}/public${WPSUBDIR}/wp-content/plugins/autoptimize-gzip/autoptimize-gzip.php" https://github.com/centminmod/autoptimize-gzip/raw/master/autoptimize-gzip.php
-    wget${ipv_forceopt_wget} -cnv -O "/home/nginx/domains/${vhostname}/public${WPSUBDIR}/wp-content/plugins/autoptimize-gzip/index.html" https://github.com/centminmod/autoptimize-gzip/raw/master/index.html
-    wget${ipv_forceopt_wget} -cnv -O "/home/nginx/domains/${vhostname}/public${WPSUBDIR}/wp-content/plugins/autoptimize-gzip/readme.md" https://github.com/centminmod/autoptimize-gzip/blob/master/readme.md
-    wget${ipv_forceopt_wget} -cnv -O "/home/nginx/domains/${vhostname}/public${WPSUBDIR}/wp-content/plugins/autoptimize-gzip/LICENSE" https://github.com/centminmod/autoptimize-gzip/raw/master/LICENSE
+    wget -4 -cnv -O "/home/nginx/domains/${vhostname}/public${WPSUBDIR}/wp-content/plugins/autoptimize-gzip/autoptimize-gzip.php" https://github.com/centminmod/autoptimize-gzip/raw/master/autoptimize-gzip.php
+    wget -4 -cnv -O "/home/nginx/domains/${vhostname}/public${WPSUBDIR}/wp-content/plugins/autoptimize-gzip/index.html" https://github.com/centminmod/autoptimize-gzip/raw/master/index.html
+    wget -4 -cnv -O "/home/nginx/domains/${vhostname}/public${WPSUBDIR}/wp-content/plugins/autoptimize-gzip/readme.md" https://github.com/centminmod/autoptimize-gzip/blob/master/readme.md
+    wget -4 -cnv -O "/home/nginx/domains/${vhostname}/public${WPSUBDIR}/wp-content/plugins/autoptimize-gzip/LICENSE" https://github.com/centminmod/autoptimize-gzip/raw/master/LICENSE
     chown -R nginx:nginx "/home/nginx/domains/${vhostname}/public${WPSUBDIR}/wp-content/plugins/autoptimize-gzip"
     \wp plugin activate autoptimize-gzip --allow-root
     \wp plugin status autoptimize-gzip --allow-root
@@ -2925,7 +3117,11 @@ rm -rf /usr/local/nginx/conf/ssl/${vhostname}/${vhostname}.csr
 rm -rf /usr/local/nginx/conf/ssl/${vhostname}
 rm -rf /usr/local/nginx/conf/wpincludes/${vhostname}/rediscache_${vhostname}.conf
 rm -rf /usr/local/nginx/conf/wpincludes/${vhostname}/wpcacheenabler_${vhostname}.conf
+rm -rf /usr/local/nginx/conf/wpincludes/${vhostname}/wpinfo.sh
 rm -rf /root/.acme.sh/${vhostname}
+rm -rf /root/.acme.sh/${vhostname}_ecc
+rm -rf /usr/local/nginx/conf/acmevhostbackup/${vhostname}.ssl.conf-acmebackup-*
+rm -rf /usr/local/nginx/conf/acmevhostbackup/${vhostname}.conf-backup-removal-https-default-*
 crontab -l > cronjoblist
 sed -i "/wp_updater_${vhostname}.sh/d" cronjoblist
 sed -i "/\/${vhostname}\/wp-cron.php/d" cronjoblist
@@ -3083,6 +3279,15 @@ echo
 nginx -t
 echo
 
+# check if Centmin Mod fail2ban implementation is running
+# if running, restart fail2ban on new nginx vhost creation
+# to register it's logpathw ith fail2ban
+if systemctl is-active fail2ban >/dev/null 2>&1; then
+  if [ -f "${SCRIPT_DIR}/tools/fail2ban-register-vhost.sh" ]; then
+  "${SCRIPT_DIR}/tools/fail2ban-register-vhost.sh" "${vhostname}"
+  fi
+fi
+
 cmservice php-fpm restart
 if [[ "$PUREFTPD_DISABLED" = [nN] ]]; then
   cmservice pure-ftpd restart
@@ -3136,7 +3341,7 @@ if [[ "$LETSENCRYPT_DETECT" = [yY] ]]; then
   fi
 fi
 
-if [[ "$wpcli_ssldefault" = '1' ]]; then
+if [[ "$wpcli_ssldefault" = '1' ]] || [[ "$vhostssl" = [yY] ]] || [[ "$vhostssl" = 'le' ]] || [[ "$vhostssl" = 'led' ]] || [[ "$vhostssl" = 'lelive' ]] || [[ "$vhostssl" = 'lelived' ]]; then
   \wp option update home "https://${vhostname}${WPSUBDIR}"  --allow-root
   \wp option update siteurl "https://${vhostname}${WPSUBDIR}"  --allow-root
 fi
@@ -3163,7 +3368,11 @@ fi
 echo 
 if [[ "$PUREFTPD_DISABLED" = [nN] ]]; then
 cecho "-------------------------------------------------------------" $boldyellow
-echo "FTP hostname : $CNIP"
+  if [[ "$DEMO_MODE" = [yY] ]]; then
+    echo "FTP hostname : xxx.xxx.xxx.xxx"
+  else
+    echo "FTP hostname : $CNIP"
+  fi
 echo "FTP port : 21"
 echo "FTP mode : FTP (explicit SSL)"
 echo "FTP Passive (PASV) : ensure is checked/enabled"
@@ -3172,6 +3381,7 @@ echo "FTP password created for $vhostname : $ftppass"
 fi
 cecho "-------------------------------------------------------------" $boldyellow
 cecho "vhost for $vhostname created successfully" $boldwhite
+nginx_auditd_sync
 echo
 if [[ "$wpcli_ssldefault" != '1' ]]; then
   cecho "domain: http://$vhostname" $boldyellow
@@ -3227,7 +3437,7 @@ if [[ "$disablepwdprotect" != [yY] ]]; then
     cecho "wp-login.php protection file /home/nginx/domains/$vhostname/htpasswd_wplogin" $boldyellow
     cecho "wp-login.php protection Username: $HTUSER" $boldyellow
     cecho "wp-login.php protection Password: $HTPASS" $boldyellow
-    if [[ "$wpcli_ssldefault" = '1' ]]; then
+    if [[ "$wpcli_ssldefault" = '1' ]] || [[ "$vhostssl" = [yY] ]] || [[ "$vhostssl" = 'le' ]] || [[ "$vhostssl" = 'led' ]] || [[ "$vhostssl" = 'lelive' ]] || [[ "$vhostssl" = 'lelived' ]]; then
       cecho "https://${HTUSER}:${HTPASS}@${vhostname}${WPSUBDIR}/wp-login.php" $boldyellow
     else
       cecho "http://${HTUSER}:${HTPASS}@${vhostname}${WPSUBDIR}/wp-login.php" $boldyellow
@@ -3306,7 +3516,7 @@ if [[ "$wpscache" = [nN] ]]; then
 elif [[ "$wpscache" = [yY] ]]; then
   cecho "  1. Enable Permalinks (DO NOT use links with .html extensions for performance reasons) i.e. /%post_id%/%postname%/
   2. Settings Menu > Super Cache > Easy tab and enable it by checking Caching On (Recommended) and hit Update Status
-  3. Advanced tab & check Use mod_rewrite serve cache files & Don’t cache pages with GET parameters and Known User. 
+  3. Advance tab & check Cache Delivery Method = Expert to serve cache files & Don’t cache pages with GET parameters and Known User and enabling Tracking Parameters. 
     (Recommended), Cache rebuild for anonymous users, clear all cache when a post or page updated & hit Update Status
   4. Appearance > Theme Options (Responsive theme) > Home Page nav bar > Uncheck Overrides Wordpress front page option"
   if [[ "$WPPLUGINS_ALL" = [yY] ]]; then
@@ -3440,7 +3650,7 @@ if [[ "$disablepwdprotect" != [yY] ]]; then
     echo "wp-login.php protection file /home/nginx/domains/$vhostname/htpasswd_wplogin" >> "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_wordpress_addvhost_${vhostname}-logins-http-pass.log"
     echo "wp-login.php protection Username: $HTUSER" >> "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_wordpress_addvhost_${vhostname}-logins-http-pass.log"
     echo "wp-login.php protection Password: $HTPASS" >> "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_wordpress_addvhost_${vhostname}-logins-http-pass.log"
-    if [[ "$wpcli_ssldefault" = '1' ]]; then
+    if [[ "$wpcli_ssldefault" = '1' ]] || [[ "$vhostssl" = [yY] ]] || [[ "$vhostssl" = 'le' ]] || [[ "$vhostssl" = 'led' ]] || [[ "$vhostssl" = 'lelive' ]] || [[ "$vhostssl" = 'lelived' ]]; then
       echo "https://${HTUSER}:${HTPASS}@${vhostname}${WPSUBDIR}/wp-login.php" >> "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_wordpress_addvhost_${vhostname}-logins-http-pass.log"
     else
       echo "http://${HTUSER}:${HTPASS}@${vhostname}${WPSUBDIR}/wp-login.php" >> "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_wordpress_addvhost_${vhostname}-logins-http-pass.log"

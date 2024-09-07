@@ -10,11 +10,31 @@ export LC_ALL=en_US.UTF-8
 export LANG=en_US.UTF-8
 export LANGUAGE=en_US.UTF-8
 export LC_CTYPE=en_US.UTF-8
+# disable systemd pager so it doesn't pipe systemctl output to less
+export SYSTEMD_PAGER=''
+ARCH_CHECK="$(uname -m)"
 #######################################################
+# check if Centmin Mod already installed
+FIRSTYUM_FILE=""
+
+# Only run the find command if the directory exists
+if [[ -d /root/centminlogs/ ]]; then
+  FIRSTYUM_FILE=$(find /root/centminlogs/ -maxdepth 1 -type f -name "firstyum_installtime_*.log" | head -n 1)
+fi
+
+if [[ -f "$FIRSTYUM_FILE" ]] || [[ -f /usr/local/src/centminmod/centmin.sh && -f /usr/local/bin/php && -f /usr/local/sbin/nginx ]]; then
+  echo
+  echo "error: Detected that Centmin Mod has already been installed on this system"
+  echo "       You are only meant to run initial installer once"
+  echo "       If you want to reinstall Centmin Mod, you need to reinstall"
+  echo "       your operating system first."
+  echo
+  exit
+fi
 DT=$(date +"%d%m%y-%H%M%S")
 DNF_ENABLE='n'
 DNF_COPR='y'
-branchname='124.00stable'
+branchname='140.00beta01'
 DOWNLOAD="${branchname}.zip"
 LOCALCENTMINMOD_MIRROR='https://centminmod.com'
 
@@ -47,8 +67,10 @@ ALTPCRELINK="${LOCALCENTMINMOD_MIRROR}/centminmodparts/pcre/${ALTPCRELINKFILE}"
 
 WGET_VERSION='1.20.3'
 WGET_VERSION_SEVEN='1.20.3'
+WGET_VERSION_EIGHT='1.21.4'
+WGET_VERSION_NINE='1.21.4'
 WGET_FILENAME="wget-${WGET_VERSION}.tar.gz"
-WGET_LINK="https://centminmod.com/centminmodparts/wget/${WGET_FILENAME}"
+WGET_LINK="${LOCALCENTMINMOD_MIRROR}/centminmodparts/wget/${WGET_FILENAME}"
 
 CPUSPEED=$(awk -F: '/cpu MHz/{print $2}' /proc/cpuinfo | sort | uniq -c | sed -e s'|      ||g' | xargs); 
 CPUMODEL=$(awk -F: '/model name/{print $2}' /proc/cpuinfo | sort | uniq -c | xargs);
@@ -95,6 +117,16 @@ if [ "$(id -u)" != 0 ]; then
     echo "sudo -i" >&2
   fi
   exit 1
+fi
+
+if [[ "$(id -u)" = 0 ]]; then
+  # account for if centmin mod installation is being
+  # run within a cloud-init user data scripted session
+  mkdir -p /root
+  export HOME=/root
+  touch $HOME/.rnd
+  export RANDFILE=$HOME/.rnd
+  chmod 600 $HOME/.rnd
 fi
 
 shopt -s expand_aliases
@@ -167,6 +199,8 @@ if [ "$CENTOSVER" == 'release' ]; then
         CENTOS_SEVEN='7'
     elif [[ "$(cat /etc/redhat-release | awk '{ print $4 }' | cut -d . -f1)" = '8' ]]; then
         CENTOS_EIGHT='8'
+    elif [[ "$(cat /etc/redhat-release | awk '{ print $4 }' | cut -d . -f1)" = '9' ]]; then
+        CENTOS_NINE='9'
     fi
 fi
 
@@ -187,35 +221,184 @@ if [[ -f /etc/system-release && "$(awk '{print $1,$2,$3}' /etc/system-release)" 
     CENTOS_SIX='6'
 fi
 
-if [[ "$CENTOS_ALPHATEST" != [yY] && "$CENTOS_EIGHT" = '8' ]]; then
+# ensure only el8+ OS versions are being looked at for alma linux, rocky linux
+# oracle linux, vzlinux, circle linux, navy linux, euro linux
+EL_VERID=$(awk -F '=' '/VERSION_ID/ {print $2}' /etc/os-release | sed -e 's|"||g' | cut -d . -f1)
+if [ -f /etc/almalinux-release ] && [[ "$EL_VERID" -eq 8 || "$EL_VERID" -eq 9 ]]; then
+  CENTOSVER=$(awk '{ print $3 }' /etc/almalinux-release | cut -d . -f1,2)
+  ALMALINUXVER=$(awk '{ print $3 }' /etc/almalinux-release | cut -d . -f1,2 | sed -e 's|\.|000|g')
+  if [[ "$(echo $CENTOSVER | cut -d . -f1)" -eq '8' ]]; then
+    CENTOS_EIGHT='8'
+    ALMALINUX_EIGHT='8'
+  elif [[ "$(echo $CENTOSVER | cut -d . -f1)" -eq '9' ]]; then
+    CENTOS_NINE='9'
+    ALMALINUX_NINE='9'
+  fi
+elif [ -f /etc/rocky-release ] && [[ "$EL_VERID" -eq 8 || "$EL_VERID" -eq 9 ]]; then
+  CENTOSVER=$(awk '{ print $4 }' /etc/rocky-release | cut -d . -f1,2)
+  ROCKYLINUXVER=$(awk '{ print $3 }' /etc/rocky-release | cut -d . -f1,2 | sed -e 's|\.|000|g')
+  if [[ "$(echo $CENTOSVER | cut -d . -f1)" -eq '8' ]]; then
+    CENTOS_EIGHT='8'
+    ROCKYLINUX_EIGHT='8'
+  elif [[ "$(echo $CENTOSVER | cut -d . -f1)" -eq '9' ]]; then
+    CENTOS_NINE='9'
+    ROCKYLINUX_NINE='9'
+  fi
+elif [ -f /etc/oracle-release ] && [[ "$EL_VERID" -eq 8 || "$EL_VERID" -eq 9 ]]; then
+  CENTOSVER=$(awk '{ print $5 }' /etc/oracle-release | cut -d . -f1,2)
+  if [[ "$(echo $CENTOSVER | cut -d . -f1)" -eq '8' ]]; then
+    CENTOS_EIGHT='8'
+    ORACLELINUX_EIGHT='8'
+  elif [[ "$(echo $CENTOSVER | cut -d . -f1)" -eq '9' ]]; then
+    CENTOS_NINE='9'
+    ORACLELINUX_NINE='9'
+  fi
+elif [ -f /etc/vzlinux-release ] && [[ "$EL_VERID" -eq 8 || "$EL_VERID" -eq 9 ]]; then
+  CENTOSVER=$(awk '{ print $4 }' /etc/vzlinux-release | cut -d . -f1,2)
+  if [[ "$(echo $CENTOSVER | cut -d . -f1)" -eq '8' ]]; then
+    CENTOS_EIGHT='8'
+    VZLINUX_EIGHT='8'
+  elif [[ "$(echo $CENTOSVER | cut -d . -f1)" -eq '9' ]]; then
+    CENTOS_NINE='9'
+    VZLINUX_NINE='9'
+  fi
+elif [ -f /etc/circle-release ] && [[ "$EL_VERID" -eq 8 || "$EL_VERID" -eq 9 ]]; then
+  CENTOSVER=$(awk '{ print $4 }' /etc/circle-release | cut -d . -f1,2)
+  if [[ "$(echo $CENTOSVER | cut -d . -f1)" -eq '8' ]]; then
+    CENTOS_EIGHT='8'
+    CIRCLELINUX_EIGHT='8'
+  elif [[ "$(echo $CENTOSVER | cut -d . -f1)" -eq '9' ]]; then
+    CENTOS_NINE='9'
+    CIRCLELINUX_NINE='9'
+  fi
+elif [ -f /etc/navylinux-release ] && [[ "$EL_VERID" -eq 8 || "$EL_VERID" -eq 9 ]]; then
+  CENTOSVER=$(awk '{ print $5 }' /etc/navylinux-release | cut -d . -f1,2)
+  if [[ "$(echo $CENTOSVER | cut -d . -f1)" -eq '8' ]]; then
+    CENTOS_EIGHT='8'
+    NAVYLINUX_EIGHT='8'
+  elif [[ "$(echo $CENTOSVER | cut -d . -f1)" -eq '9' ]]; then
+    CENTOS_NINE='9'
+    NAVYLINUX_NINE='9'
+  fi
+elif [ -f /etc/el-release ] && [[ "$EL_VERID" -eq 8 || "$EL_VERID" -eq 9 ]]; then
+  CENTOSVER=$(awk '{ print $3 }' /etc/el-release | cut -d . -f1,2)
+  if [[ "$(echo $CENTOSVER | cut -d . -f1)" -eq '8' ]]; then
+    CENTOS_EIGHT='8'
+    EUROLINUX_EIGHT='8'
+  elif [[ "$(echo $CENTOSVER | cut -d . -f1)" -eq '9' ]]; then
+    CENTOS_NINE='9'
+    EUROLINUX_NINE='9'
+  fi
+fi
+
+CENTOSVER_NUMERIC=$(echo $CENTOSVER | sed -e 's|\.||g')
+
+if [[ "$CENTOS_ALPHATEST" != [yY] && "$CENTOS_EIGHT" -eq '8' ]] || [[ "$CENTOS_ALPHATEST" != [yY] && "$CENTOS_NINE" -eq '9' ]]; then
+  if [[ "$ORACLELINUX_NINE" -eq '9' ]]; then
+    label_os=OracleLinux
+    label_os_ver=9
+    label_prefix='https://community.centminmod.com/forums/31/'
+  elif [[ "$ROCKYLINUX_NINE" -eq '9' ]]; then
+    label_os=RockyLinux
+    label_os_ver=9
+    label_prefix='https://community.centminmod.com/forums/31/?prefix_id=84'
+  elif [[ "$ALMALINUX_NINE" -eq '9' ]]; then
+    label_os=AlmaLinux
+    label_os_ver=9
+    label_prefix='https://community.centminmod.com/forums/31/?prefix_id=83'
+  elif [[ "$ORACLELINUX_EIGHT" -eq '8' ]]; then
+    label_os=OracleLinux
+    label_os_ver=8
+    label_prefix='https://community.centminmod.com/forums/31/'
+  elif [[ "$ROCKYLINUX_EIGHT" -eq '8' ]]; then
+    label_os=RockyLinux
+    label_os_ver=8
+    label_prefix='https://community.centminmod.com/forums/31/?prefix_id=84'
+  elif [[ "$ALMALINUX_EIGHT" -eq '8' ]]; then
+    label_os=AlmaLinux
+    label_os_ver=8
+    label_prefix='https://community.centminmod.com/forums/31/?prefix_id=83'
+  elif [[ "$CENTOS_NINE" = '9' ]]; then
+    label_os_ver=9
+    label_os=CentOS
+    label_prefix='https://community.centminmod.com/forums/31/?prefix_id=81'
+  elif [[ "$CENTOS_EIGHT" = '8' ]]; then
+    label_os_ver=8
+    label_os=CentOS
+    label_prefix='https://community.centminmod.com/forums/31/?prefix_id=81'
+  fi
   echo
-  echo "CentOS 8 is currently not supported by Centmin Mod, please use CentOS 7.7+"
-  echo "To follow CentOS 8 compatibility progress read & subscribe to thread at:"
-  echo "https://community.centminmod.com/threads/centmin-mod-centos-8-compatibility-worklog.18372/"
+  echo "$label_os ${label_os_ver} is currently not supported by Centmin Mod, please use CentOS 7.9+"
+  echo "To follow EL${label_os_ver} compatibility for CentOS ${label_os_ver} / AlmaLinux ${label_os_ver} read thread at:"
+  echo "https://community.centminmod.com/threads/18372/"
   echo "You can read CentOS 8 specific discussions via prefix tag link at:"
-  echo "https://community.centminmod.com/forums/centos-redhat-oracle-linux-news.31/?prefix_id=81"
+  echo "$label_prefix"
   exit 1
   echo
 fi
 
 if [[ "$CENTOS_SEVEN" -eq '7' ]]; then
   WGET_VERSION=$WGET_VERSION_SEVEN
+  WGET_FILENAME="wget-${WGET_VERSION}.tar.gz"
+  WGET_LINK="${LOCALCENTMINMOD_MIRROR}/centminmodparts/wget/${WGET_FILENAME}"
 fi
 if [[ "$CENTOS_EIGHT" -eq '8' ]]; then
-  WGET_VERSION=$WGET_VERSION_SEVEN
+  echo "EL${label_os_ver} Install Dependencies Start..."
+  WGET_VERSION=$WGET_VERSION_EIGHT
+  WGET_FILENAME="wget-${WGET_VERSION}.tar.gz"
+  WGET_LINK="${LOCALCENTMINMOD_MIRROR}/centminmodparts/wget/${WGET_FILENAME}"
 
   # enable CentOS 8 PowerTools repo for -devel packages
+  if [ "$(yum repolist powertools | grep -ow 'powertools')" ]; then
+    reponame_powertools=powertools
+  elif [ "$(yum repolist all | grep -ow 'ol8_codeready_builder')" ]; then
+    reponame_powertools=ol8_codeready_builder
+  elif [ "$(yum repolist all | grep -ow 'ol9_codeready_builder')" ]; then
+    reponame_powertools=ol9_codeready_builder
+  else
+    reponame_powertools=PowerTools
+  fi
   if [ ! -f /usr/bin/yum-config-manager ]; then
-    yum -q -y install dnf-utils
-    yum-config-manager --enable PowerTools
+    yum -q -y install yum-utils tar
+    yum-config-manager --enable $reponame_powertools
   elif [ -f /usr/bin/yum-config-manager ]; then
-    yum-config-manager --enable PowerTools
+    yum-config-manager --enable $reponame_powertools
   fi
 
   # disable native CentOS 8 AppStream repo based nginx, php & oracle mysql packages
-  yum -q -y module disable nginx mysql php:7.2
+  yum -q -y module disable nginx mariadb mysql php redis:5
 
   # install missing dependencies specific to CentOS 8
+  # for csf firewall installs
+  if [ ! -f /usr/share/perl5/vendor_perl/Math/BigInt.pm ]; then
+    yum -q -y install perl-Math-BigInt
+  fi
+fi
+if [[ "$CENTOS_NINE" -eq '9' ]]; then
+  echo "EL${label_os_ver} Install Dependencies Start..."
+  WGET_VERSION=$WGET_VERSION_NINE
+  WGET_FILENAME="wget-${WGET_VERSION}.tar.gz"
+  WGET_LINK="${LOCALCENTMINMOD_MIRROR}/centminmodparts/wget/${WGET_FILENAME}"
+
+  if [ "$(yum repolist all | grep -ow 'ol9_codeready_builder')" ]; then
+    # oracle linux 9
+    reponame_powertools=ol9_codeready_builder
+  else
+    # enable CentOS 9 crb repo for -devel packages
+    reponame_powertools=crb
+  fi
+
+  if [ ! -f /usr/bin/yum-config-manager ]; then
+    yum -q -y install yum-utils tar
+    yum-config-manager --enable $reponame_powertools
+  elif [ -f /usr/bin/yum-config-manager ]; then
+    yum-config-manager --enable $reponame_powertools
+  fi
+
+  # disable native CentOS 9 AppStream repo based nginx, php & oracle mysql packages
+  yum -q -y module disable nginx mariadb mysql php redis:6
+
+  # install missing dependencies specific to CentOS 9
   # for csf firewall installs
   if [ ! -f /usr/share/perl5/vendor_perl/Math/BigInt.pm ]; then
     yum -q -y install perl-Math-BigInt
@@ -252,6 +435,93 @@ if [ -f /proc/user_beancounters ]; then
             # 7371 at 8 cpu cores has 3.8Ghz clock frequency https://en.wikichip.org/wiki/amd/epyc/7371
             # while greater than 8 cpu cores downclocks to 3.6Ghz
             CPUS=8
+        elif [[ "$(grep -o 'AMD EPYC 7272' /proc/cpuinfo | sort -u)" = 'AMD EPYC 7272' ]]; then
+            # 7272 preferring higher clock frequency https://en.wikichip.org/wiki/amd/epyc/7272
+            CPUS=16
+        elif [[ "$(grep -o 'AMD EPYC 7282' /proc/cpuinfo | sort -u)" = 'AMD EPYC 7282' ]]; then
+            # 7282 preferring higher clock frequency https://en.wikichip.org/wiki/amd/epyc/7282
+            CPUS=16
+        elif [[ "$(grep -o 'AMD EPYC 7302' /proc/cpuinfo | sort -u)" = 'AMD EPYC 7302' ]]; then
+            # 7302 preferring higher clock frequency https://en.wikichip.org/wiki/amd/epyc/7302
+            CPUS=16
+        elif [[ "$(grep -o 'AMD EPYC 7352' /proc/cpuinfo | sort -u)" = 'AMD EPYC 7352' ]]; then
+            # 7352 preferring higher clock frequency https://en.wikichip.org/wiki/amd/epyc/7352
+            CPUS=16
+        elif [[ "$(grep -o 'AMD EPYC 7402' /proc/cpuinfo | sort -u)" = 'AMD EPYC 7402' ]]; then
+            # 7402 preferring higher clock frequency https://en.wikichip.org/wiki/amd/epyc/7402
+            CPUS=16
+        elif [[ "$(grep -o 'AMD EPYC 7452' /proc/cpuinfo | sort -u)" = 'AMD EPYC 7452' ]]; then
+            # 7452 preferring higher clock frequency https://en.wikichip.org/wiki/amd/epyc/7452
+            CPUS=16
+        elif [[ "$(grep -o 'AMD EPYC 7502' /proc/cpuinfo | sort -u)" = 'AMD EPYC 7502' ]]; then
+            # 7502 preferring higher clock frequency https://en.wikichip.org/wiki/amd/epyc/7502
+            CPUS=16
+        elif [[ "$(grep -o 'AMD EPYC 7532' /proc/cpuinfo | sort -u)" = 'AMD EPYC 7532' ]]; then
+            # 7532 preferring higher clock frequency https://en.wikichip.org/wiki/amd/epyc/7532
+            CPUS=16
+        elif [[ "$(grep -o 'AMD EPYC 7542' /proc/cpuinfo | sort -u)" = 'AMD EPYC 7542' ]]; then
+            # 7542 preferring higher clock frequency https://en.wikichip.org/wiki/amd/epyc/7542
+            CPUS=16
+        elif [[ "$(grep -o 'AMD EPYC 7552' /proc/cpuinfo | sort -u)" = 'AMD EPYC 7552' ]]; then
+            # 7552 preferring higher clock frequency https://en.wikichip.org/wiki/amd/epyc/7552
+            CPUS=24
+        elif [[ "$(grep -o 'AMD EPYC 7642' /proc/cpuinfo | sort -u)" = 'AMD EPYC 7642' ]]; then
+            # 7642 preferring higher clock frequency https://en.wikichip.org/wiki/amd/epyc/7642
+            CPUS=24
+        elif [[ "$(grep -o 'AMD EPYC 7662' /proc/cpuinfo | sort -u)" = 'AMD EPYC 7662' ]]; then
+            # 7662 preferring higher clock frequency https://en.wikichip.org/wiki/amd/epyc/7662
+            CPUS=24
+        elif [[ "$(grep -o 'AMD EPYC 7702' /proc/cpuinfo | sort -u)" = 'AMD EPYC 7702' ]]; then
+            # 7702 preferring higher clock frequency https://en.wikichip.org/wiki/amd/epyc/7702
+            CPUS=24
+        elif [[ "$(grep -o 'AMD EPYC 7742' /proc/cpuinfo | sort -u)" = 'AMD EPYC 7742' ]]; then
+            # 7742 preferring higher clock frequency https://en.wikichip.org/wiki/amd/epyc/7742
+            CPUS=24
+        elif [[ "$(grep -o 'AMD EPYC 7H12' /proc/cpuinfo | sort -u)" = 'AMD EPYC 7H12' ]]; then
+            # 7H12 preferring higher clock frequency https://en.wikichip.org/wiki/amd/epyc/7H12
+            CPUS=16
+        elif [[ "$(grep -o 'AMD EPYC 7F52' /proc/cpuinfo | sort -u)" = 'AMD EPYC 7F52' ]]; then
+            # 7F52 preferring higher clock frequency https://en.wikichip.org/wiki/amd/epyc/7F52
+            CPUS=16
+        elif [[ "$(grep -o 'AMD EPYC 7F72' /proc/cpuinfo | sort -u)" = 'AMD EPYC 7F72' ]]; then
+            # 7F72 preferring higher clock frequency https://en.wikichip.org/wiki/amd/epyc/7F72
+            CPUS=16
+        elif [[ "$(grep -o 'AMD EPYC 7313' /proc/cpuinfo | sort -u)" = 'AMD EPYC 7313' ]]; then
+            # 7313 preferring higher clock frequency https://en.wikichip.org/wiki/amd/epyc/7313
+            CPUS=8
+        elif [[ "$(grep -o 'AMD EPYC 7413' /proc/cpuinfo | sort -u)" = 'AMD EPYC 7413' ]]; then
+            # 7413 preferring higher clock frequency https://en.wikichip.org/wiki/amd/epyc/7413
+            CPUS=12
+        elif [[ "$(grep -o 'AMD EPYC 7443' /proc/cpuinfo | sort -u)" = 'AMD EPYC 7443' ]]; then
+            # 7443 preferring higher clock frequency https://en.wikichip.org/wiki/amd/epyc/7443
+            CPUS=12
+        elif [[ "$(grep -o 'AMD EPYC 7453' /proc/cpuinfo | sort -u)" = 'AMD EPYC 7453' ]]; then
+            # 7453 preferring higher clock frequency https://en.wikichip.org/wiki/amd/epyc/7453
+            CPUS=14
+        elif [[ "$(grep -o 'AMD EPYC 7513' /proc/cpuinfo | sort -u)" = 'AMD EPYC 7513' ]]; then
+            # 7513 preferring higher clock frequency https://en.wikichip.org/wiki/amd/epyc/7513
+            CPUS=16
+        elif [[ "$(grep -o 'AMD EPYC 7543' /proc/cpuinfo | sort -u)" = 'AMD EPYC 7543' ]]; then
+            # 7543 preferring higher clock frequency https://en.wikichip.org/wiki/amd/epyc/7543
+            CPUS=16
+        elif [[ "$(grep -o 'AMD EPYC 7643' /proc/cpuinfo | sort -u)" = 'AMD EPYC 7643' ]]; then
+            # 7643 preferring higher clock frequency https://en.wikichip.org/wiki/amd/epyc/7643
+            CPUS=16
+        elif [[ "$(grep -o 'AMD EPYC 7663' /proc/cpuinfo | sort -u)" = 'AMD EPYC 7663' ]]; then
+            # 7663 preferring higher clock frequency https://en.wikichip.org/wiki/amd/epyc/7663
+            CPUS=16
+        elif [[ "$(grep -o 'AMD EPYC 7713' /proc/cpuinfo | sort -u)" = 'AMD EPYC 7713' ]]; then
+            # 7713 preferring higher clock frequency https://en.wikichip.org/wiki/amd/epyc/7713
+            CPUS=32
+        elif [[ "$(grep -o 'AMD EPYC 73F3' /proc/cpuinfo | sort -u)" = 'AMD EPYC 73F3' ]]; then
+            # 73F3 preferring higher clock frequency https://en.wikichip.org/wiki/amd/epyc/73F3
+            CPUS=16
+        elif [[ "$(grep -o 'AMD EPYC 74F3' /proc/cpuinfo | sort -u)" = 'AMD EPYC 74F3' ]]; then
+            # 74F3 preferring higher clock frequency https://en.wikichip.org/wiki/amd/epyc/74F3
+            CPUS=24
+        elif [[ "$(grep -o 'AMD EPYC 75F3' /proc/cpuinfo | sort -u)" = 'AMD EPYC 75F3' ]]; then
+            # 75F3 preferring higher clock frequency https://en.wikichip.org/wiki/amd/epyc/75F3
+            CPUS=32
         else
             CPUS=$(echo $(($CPUS+2)))
         fi
@@ -287,6 +557,93 @@ else
             # 7371 at 8 cpu cores has 3.8Ghz clock frequency https://en.wikichip.org/wiki/amd/epyc/7371
             # while greater than 8 cpu cores downclocks to 3.6Ghz
             CPUS=8
+        elif [[ "$(grep -o 'AMD EPYC 7272' /proc/cpuinfo | sort -u)" = 'AMD EPYC 7272' ]]; then
+            # 7272 preferring higher clock frequency https://en.wikichip.org/wiki/amd/epyc/7272
+            CPUS=16
+        elif [[ "$(grep -o 'AMD EPYC 7282' /proc/cpuinfo | sort -u)" = 'AMD EPYC 7282' ]]; then
+            # 7282 preferring higher clock frequency https://en.wikichip.org/wiki/amd/epyc/7282
+            CPUS=16
+        elif [[ "$(grep -o 'AMD EPYC 7302' /proc/cpuinfo | sort -u)" = 'AMD EPYC 7302' ]]; then
+            # 7302 preferring higher clock frequency https://en.wikichip.org/wiki/amd/epyc/7302
+            CPUS=16
+        elif [[ "$(grep -o 'AMD EPYC 7352' /proc/cpuinfo | sort -u)" = 'AMD EPYC 7352' ]]; then
+            # 7352 preferring higher clock frequency https://en.wikichip.org/wiki/amd/epyc/7352
+            CPUS=16
+        elif [[ "$(grep -o 'AMD EPYC 7402' /proc/cpuinfo | sort -u)" = 'AMD EPYC 7402' ]]; then
+            # 7402 preferring higher clock frequency https://en.wikichip.org/wiki/amd/epyc/7402
+            CPUS=16
+        elif [[ "$(grep -o 'AMD EPYC 7452' /proc/cpuinfo | sort -u)" = 'AMD EPYC 7452' ]]; then
+            # 7452 preferring higher clock frequency https://en.wikichip.org/wiki/amd/epyc/7452
+            CPUS=16
+        elif [[ "$(grep -o 'AMD EPYC 7502' /proc/cpuinfo | sort -u)" = 'AMD EPYC 7502' ]]; then
+            # 7502 preferring higher clock frequency https://en.wikichip.org/wiki/amd/epyc/7502
+            CPUS=16
+        elif [[ "$(grep -o 'AMD EPYC 7532' /proc/cpuinfo | sort -u)" = 'AMD EPYC 7532' ]]; then
+            # 7532 preferring higher clock frequency https://en.wikichip.org/wiki/amd/epyc/7532
+            CPUS=16
+        elif [[ "$(grep -o 'AMD EPYC 7542' /proc/cpuinfo | sort -u)" = 'AMD EPYC 7542' ]]; then
+            # 7542 preferring higher clock frequency https://en.wikichip.org/wiki/amd/epyc/7542
+            CPUS=16
+        elif [[ "$(grep -o 'AMD EPYC 7552' /proc/cpuinfo | sort -u)" = 'AMD EPYC 7552' ]]; then
+            # 7552 preferring higher clock frequency https://en.wikichip.org/wiki/amd/epyc/7552
+            CPUS=24
+        elif [[ "$(grep -o 'AMD EPYC 7642' /proc/cpuinfo | sort -u)" = 'AMD EPYC 7642' ]]; then
+            # 7642 preferring higher clock frequency https://en.wikichip.org/wiki/amd/epyc/7642
+            CPUS=24
+        elif [[ "$(grep -o 'AMD EPYC 7662' /proc/cpuinfo | sort -u)" = 'AMD EPYC 7662' ]]; then
+            # 7662 preferring higher clock frequency https://en.wikichip.org/wiki/amd/epyc/7662
+            CPUS=24
+        elif [[ "$(grep -o 'AMD EPYC 7702' /proc/cpuinfo | sort -u)" = 'AMD EPYC 7702' ]]; then
+            # 7702 preferring higher clock frequency https://en.wikichip.org/wiki/amd/epyc/7702
+            CPUS=24
+        elif [[ "$(grep -o 'AMD EPYC 7742' /proc/cpuinfo | sort -u)" = 'AMD EPYC 7742' ]]; then
+            # 7742 preferring higher clock frequency https://en.wikichip.org/wiki/amd/epyc/7742
+            CPUS=24
+        elif [[ "$(grep -o 'AMD EPYC 7H12' /proc/cpuinfo | sort -u)" = 'AMD EPYC 7H12' ]]; then
+            # 7H12 preferring higher clock frequency https://en.wikichip.org/wiki/amd/epyc/7H12
+            CPUS=16
+        elif [[ "$(grep -o 'AMD EPYC 7F52' /proc/cpuinfo | sort -u)" = 'AMD EPYC 7F52' ]]; then
+            # 7F52 preferring higher clock frequency https://en.wikichip.org/wiki/amd/epyc/7F52
+            CPUS=16
+        elif [[ "$(grep -o 'AMD EPYC 7F72' /proc/cpuinfo | sort -u)" = 'AMD EPYC 7F72' ]]; then
+            # 7F72 preferring higher clock frequency https://en.wikichip.org/wiki/amd/epyc/7F72
+            CPUS=16
+        elif [[ "$(grep -o 'AMD EPYC 7313' /proc/cpuinfo | sort -u)" = 'AMD EPYC 7313' ]]; then
+            # 7313 preferring higher clock frequency https://en.wikichip.org/wiki/amd/epyc/7313
+            CPUS=8
+        elif [[ "$(grep -o 'AMD EPYC 7413' /proc/cpuinfo | sort -u)" = 'AMD EPYC 7413' ]]; then
+            # 7413 preferring higher clock frequency https://en.wikichip.org/wiki/amd/epyc/7413
+            CPUS=12
+        elif [[ "$(grep -o 'AMD EPYC 7443' /proc/cpuinfo | sort -u)" = 'AMD EPYC 7443' ]]; then
+            # 7443 preferring higher clock frequency https://en.wikichip.org/wiki/amd/epyc/7443
+            CPUS=12
+        elif [[ "$(grep -o 'AMD EPYC 7453' /proc/cpuinfo | sort -u)" = 'AMD EPYC 7453' ]]; then
+            # 7453 preferring higher clock frequency https://en.wikichip.org/wiki/amd/epyc/7453
+            CPUS=14
+        elif [[ "$(grep -o 'AMD EPYC 7513' /proc/cpuinfo | sort -u)" = 'AMD EPYC 7513' ]]; then
+            # 7513 preferring higher clock frequency https://en.wikichip.org/wiki/amd/epyc/7513
+            CPUS=16
+        elif [[ "$(grep -o 'AMD EPYC 7543' /proc/cpuinfo | sort -u)" = 'AMD EPYC 7543' ]]; then
+            # 7543 preferring higher clock frequency https://en.wikichip.org/wiki/amd/epyc/7543
+            CPUS=16
+        elif [[ "$(grep -o 'AMD EPYC 7643' /proc/cpuinfo | sort -u)" = 'AMD EPYC 7643' ]]; then
+            # 7643 preferring higher clock frequency https://en.wikichip.org/wiki/amd/epyc/7643
+            CPUS=16
+        elif [[ "$(grep -o 'AMD EPYC 7663' /proc/cpuinfo | sort -u)" = 'AMD EPYC 7663' ]]; then
+            # 7663 preferring higher clock frequency https://en.wikichip.org/wiki/amd/epyc/7663
+            CPUS=16
+        elif [[ "$(grep -o 'AMD EPYC 7713' /proc/cpuinfo | sort -u)" = 'AMD EPYC 7713' ]]; then
+            # 7713 preferring higher clock frequency https://en.wikichip.org/wiki/amd/epyc/7713
+            CPUS=32
+        elif [[ "$(grep -o 'AMD EPYC 73F3' /proc/cpuinfo | sort -u)" = 'AMD EPYC 73F3' ]]; then
+            # 73F3 preferring higher clock frequency https://en.wikichip.org/wiki/amd/epyc/73F3
+            CPUS=16
+        elif [[ "$(grep -o 'AMD EPYC 74F3' /proc/cpuinfo | sort -u)" = 'AMD EPYC 74F3' ]]; then
+            # 74F3 preferring higher clock frequency https://en.wikichip.org/wiki/amd/epyc/74F3
+            CPUS=24
+        elif [[ "$(grep -o 'AMD EPYC 75F3' /proc/cpuinfo | sort -u)" = 'AMD EPYC 75F3' ]]; then
+            # 75F3 preferring higher clock frequency https://en.wikichip.org/wiki/amd/epyc/75F3
+            CPUS=32
         else
             CPUS=$(echo $(($CPUS+4)))
         fi
@@ -298,7 +655,7 @@ else
     MAKETHREADS=" -j$CPUS"
 fi
 
-if [[ "$CENTOS_SEVEN" = '7' ]]; then
+if [[ "$CENTOS_SEVEN" -eq '7' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]]; then
   AXEL_VER='2.16.1'
   AXEL_LINKFILE="axel-${AXEL_VER}.tar.gz"
   AXEL_LINK="${LOCALCENTMINMOD_MIRROR}/centminmodparts/axel/v${AXEL_VER}.tar.gz"
@@ -351,19 +708,30 @@ exclude=*.i686
 :w
 :q
 EOF
+  elif [[ "$CENTOS_NINE" = '9' ]] && [ ! "$(grep -w 'exclude' /etc/yum.conf)" ]; then
+ex -s /etc/yum.conf << EOF
+:/best=True/
+:a
+exclude=*.i686
+.
+:w
+:q
+EOF
   fi
 fi
 
 # some centos images don't even install tar by default !
-if [[ "$CENTOS_EIGHT" = '8' && ! -f /usr/bin/tar ]]; then
+if [[ "$CENTOS_NINE" -eq '9' && ! -f /usr/bin/tar ]]; then
   yum -y -q install tar
-elif [[ "$CENTOS_SEVEN" = '7' && ! -f /usr/bin/tar ]]; then
+elif [[ "$CENTOS_EIGHT" -eq '8' && ! -f /usr/bin/tar ]]; then
   yum -y -q install tar
-elif [[ "$CENTOS_SIX" = '6' && ! -f /bin/tar ]]; then
+elif [[ "$CENTOS_SEVEN" -eq '7' && ! -f /usr/bin/tar ]]; then
+  yum -y -q install tar
+elif [[ "$CENTOS_SIX" -eq '6' && ! -f /bin/tar ]]; then
   yum -y -q install tar
 fi
 
-if [[ "$CENTOS_SEVEN" = '7' && "$DNF_ENABLE" = [yY] ]]; then
+if [[ "$CENTOS_SEVEN" -eq '7' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]] && [[ "$DNF_ENABLE" = [yY] ]]; then
   if [[ $(rpm -q epel-release >/dev/null 2>&1; echo $?) != '0' ]]; then
     yum -y -q install epel-release
     yum clean all
@@ -437,6 +805,14 @@ if [ ! -f /usr/bin/sar ]; then
     systemctl daemon-reload
     systemctl restart sysstat.service
     systemctl enable sysstat.service
+  elif [[ "$CENTOS_NINE" = '9' ]]; then
+    sed -i 's|10|5|g' /usr/lib/systemd/system/sysstat-collect.timer
+    #if [ -d /etc/cron.d ]; then
+    #  echo '* * * * * root /usr/lib64/sa/sa1 1 1' > /etc/cron.d/cmsar
+    #fi
+    systemctl daemon-reload
+    systemctl restart sysstat.service
+    systemctl enable sysstat.service
   fi
 elif [ -f /usr/bin/sar ]; then
   if [[ "$(uname -m)" = 'x86_64' || "$(uname -m)" = 'aarch64' ]]; then
@@ -466,6 +842,14 @@ elif [ -f /usr/bin/sar ]; then
     systemctl daemon-reload
     systemctl restart sysstat.service
     systemctl enable sysstat.service
+  elif [[ "$CENTOS_NINE" = '9' ]]; then
+    sed -i 's|10|5|g' /usr/lib/systemd/system/sysstat-collect.timer
+    #if [ -d /etc/cron.d ]; then
+    #  echo '* * * * * root /usr/lib64/sa/sa1 1 1' > /etc/cron.d/cmsar
+    #fi
+    systemctl daemon-reload
+    systemctl restart sysstat.service
+    systemctl enable sysstat.service
   fi
 fi
 
@@ -484,7 +868,7 @@ else
     time $YUMDNFBIN -y install chrony
     systemctl start chronyd
     systemctl enable chronyd
-    systemctl status chronyd
+    systemctl status chronyd --no-pager
     echo "current chrony ntp servers"
     chronyc sources
 else
@@ -527,7 +911,7 @@ fi
 fi
 
 # only run for CentOS 6.x
-if [[ "$CENTOS_SEVEN" != '7' ]]; then
+if [[ "$CENTOS_SIX" = '6' ]]; then
     echo ""
     echo "Check for existing mysql-server packages"
     OLDMYSQLSERVER=`rpm -qa | grep 'mysql-server' | head -n1`
@@ -788,7 +1172,7 @@ source_pcreinstall() {
   if [ -s "$ALTPCRELINKFILE" ]; then
     cecho "$ALTPCRELINKFILE Archive found, skipping download..." $boldgreen
   else
-    wget -c${ipv_forceopt} --progress=bar "$ALTPCRELINK" --tries=3 
+    wget --progress=bar "$ALTPCRELINK" --tries=3 
     ERROR=$?
     if [[ "$ERROR" != '0' ]]; then
       cecho "Error: $ALTPCRELINKFILE download failed." $boldgreen
@@ -808,7 +1192,7 @@ source_pcreinstall() {
     echo ""
   fi
   cd "pcre-${ALTPCRE_VERSION}"
-  ./configure --enable-utf8 --enable-unicode-properties --enable-pcre16 --enable-pcre32 --enable-pcregrep-libz --enable-pcregrep-libbz2 --enable-pcretest-libreadline --enable-jit
+  CFLAGS="-fPIC -O2 -fstack-protector-strong -D_FORTIFY_SOURCE=2" CPPFLAGS="-D_FORTIFY_SOURCE=2" CXXFLAGS="-fPIC -O2" LDFLAGS="-Wl,-z,relro,-z,now -pie" ./configure --enable-utf8 --enable-unicode-properties --enable-pcre16 --enable-pcre32 --enable-pcregrep-libz --enable-pcregrep-libbz2 --enable-pcretest-libreadline --enable-jit
   sar_call
   make${MAKETHREADS}
   sar_call
@@ -825,7 +1209,7 @@ source_wgetinstall() {
   if [ -s "$WGET_FILENAME" ]; then
     cecho "$WGET_FILENAME Archive found, skipping download..." $boldgreen
   else
-    wget -c${ipv_forceopt} --progress=bar "$WGET_LINK" -O "$WGET_FILENAME" --tries=3 
+    wget --progress=bar "$WGET_LINK" -O "$WGET_FILENAME" --tries=3 
     ERROR=$?
     if [[ "$ERROR" != '0' ]]; then
       cecho "Error: $WGET_FILENAME download failed." $boldgreen
@@ -845,7 +1229,9 @@ source_wgetinstall() {
     echo ""
   fi
   cd "wget-${WGET_VERSION}"
-  gccdevtools
+  if [[ "$CENTOS_SEVEN" -eq '7' ]]; then
+    gccdevtools
+  fi
   make clean
   if [[ "$(uname -m)" = 'x86_64' ]]; then
     export CFLAGS="-O2 -g -pipe -Wall -Wp,-D_FORTIFY_SOURCE=2 -fexceptions -fstack-protector-strong --param=ssp-buffer-size=4 -grecord-gcc-switches -m64 -mtune=generic"
@@ -898,7 +1284,9 @@ source_wgetinstall() {
   cecho "--------------------------------------------------------" $boldgreen
   cecho "wget ${WGET_VERSION} installed at /usr/local/bin/wget" $boldyellow
   cecho "--------------------------------------------------------" $boldgreen
-  unset CFLAGS
+  if [[ "$CENTOS_SEVEN" -eq '7' ]]; then
+    unset CFLAGS
+  fi
   echo
   fi
 }
@@ -916,14 +1304,20 @@ fileperm_fixes() {
 
 libc_fix() {
   # https://community.centminmod.com/posts/52555/
-  if [[ "$CENTOS_SEVEN" -eq '7' && ! -f /etc/yum/pluginconf.d/versionlock.conf && "$(rpm -qa libc-client)" = 'libc-client-2007f-16.el7.x86_64' ]]; then
+  if [[ "$CENTOS_NINE" -eq '9' && ! -f /etc/yum/pluginconf.d/versionlock.conf && "$(rpm -qa libc-client)" = 'libc-client-2007f-30.el9.remi.x86_64' ]]; then
+    yum -y -q install python3-dnf-plugin-versionlock
+    yum versionlock libc-client uw-imap-devel -q >/dev/null 2>&1
+  elif [[ "$CENTOS_EIGHT" -eq '8' && ! -f /etc/yum/pluginconf.d/versionlock.conf && "$(rpm -qa libc-client)" = 'libc-client-2007f-24.el8.x86_64' ]]; then
+    yum -y -q install python3-dnf-plugin-versionlock
+    yum versionlock libc-client uw-imap-devel -q >/dev/null 2>&1
+  elif [[ "$CENTOS_SEVEN" -eq '7' && ! -f /etc/yum/pluginconf.d/versionlock.conf && "$(rpm -qa libc-client)" = 'libc-client-2007f-16.el7.x86_64' ]]; then
     yum -y install yum-plugin-versionlock uw-imap-devel
     yum versionlock libc-client uw-imap-devel
   elif [[ "$CENTOS_SEVEN" -eq '7' && ! -f /etc/yum/pluginconf.d/versionlock.conf && "$(rpm -qa libc-client)" != 'libc-client-2007f-16.el7.x86_64' ]]; then
     INIT_DIR=$(echo $PWD)
     cd /svr-setup
-    wget https://centminmod.com/centminmodparts/uw-imap/libc-client-2007f-16.el7.x86_64.rpm
-    wget https://centminmod.com/centminmodparts/uw-imap/uw-imap-devel-2007f-16.el7.x86_64.rpm
+    wget ${LOCALCENTMINMOD_MIRROR}/centminmodparts/uw-imap/libc-client-2007f-16.el7.x86_64.rpm
+    wget ${LOCALCENTMINMOD_MIRROR}/centminmodparts/uw-imap/uw-imap-devel-2007f-16.el7.x86_64.rpm
     yum -y remove libc-client
     yum -y localinstall libc-client-2007f-16.el7.x86_64.rpm uw-imap-devel-2007f-16.el7.x86_64.rpm
     yum -y install yum-plugin-versionlock
@@ -932,8 +1326,8 @@ libc_fix() {
    elif [[ "$CENTOS_SEVEN" -eq '7' && -f /etc/yum/pluginconf.d/versionlock.conf && "$(rpm -qa libc-client)" != 'libc-client-2007f-16.el7.x86_64' ]]; then
     INIT_DIR=$(echo $PWD)
     cd /svr-setup
-    wget https://centminmod.com/centminmodparts/uw-imap/libc-client-2007f-16.el7.x86_64.rpm
-    wget https://centminmod.com/centminmodparts/uw-imap/uw-imap-devel-2007f-16.el7.x86_64.rpm
+    wget ${LOCALCENTMINMOD_MIRROR}/centminmodparts/uw-imap/libc-client-2007f-16.el7.x86_64.rpm
+    wget ${LOCALCENTMINMOD_MIRROR}/centminmodparts/uw-imap/uw-imap-devel-2007f-16.el7.x86_64.rpm
     yum versionlock delete libc-client uw-imap-devel
     yum -y remove libc-client
     yum -y localinstall libc-client-2007f-16.el7.x86_64.rpm uw-imap-devel-2007f-16.el7.x86_64.rpm
@@ -951,7 +1345,7 @@ opt_tcp() {
         echo "* soft nofile 524288" >>/etc/security/limits.conf
         echo "* hard nofile 524288" >>/etc/security/limits.conf
 # https://community.centminmod.com/posts/52406/
-if [[ "$CENTOS_SEVEN" = '7' && ! -f /etc/rc.d/rc.local ]]; then
+if [[ "$CENTOS_SEVEN" -eq '7' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]] && [ ! -f /etc/rc.d/rc.local ]; then
 
 
 cat > /usr/lib/systemd/system/rc-local.service <<EOF
@@ -1000,7 +1394,7 @@ fi
   pushd /etc; ln -s rc.d/rc.local /etc/rc.local; popd
   systemctl daemon-reload
   systemctl start rc-local.service
-  systemctl status rc-local.service
+  systemctl status rc-local.service --no-pager
 fi
         ulimit -n 524288
         echo "ulimit -n 524288" >> /etc/rc.local
@@ -1009,7 +1403,22 @@ fi
         fi
     fi # check if custom open file descriptor limits already exist
 
-    if [[ "$CENTOS_SEVEN" = '7' ]]; then
+    if [[ "$CENTOS_EIGHT" = '8' || "$CENTOS_NINE" = '9' ]]; then
+        # centos 8
+        if [[ -f /etc/security/limits.d/20-nproc.conf ]]; then
+cat > "/etc/security/limits.d/20-nproc.conf" <<EOF
+# Default limit for number of user's processes to prevent
+# accidental fork bombs.
+# See rhbz #432903 for reasoning.
+
+*          soft    nproc     8192
+*          hard    nproc     8192
+nginx      soft    nproc     32278
+nginx      hard    nproc     32278
+root       soft    nproc     unlimited
+EOF
+      fi
+    elif [[ "$CENTOS_SEVEN" = '7' ]]; then
         # centos 7
         if [[ -f /etc/security/limits.d/20-nproc.conf ]]; then
 cat > "/etc/security/limits.d/20-nproc.conf" <<EOF
@@ -1042,7 +1451,18 @@ EOF
     fi
 
 if [[ ! -f /proc/user_beancounters ]]; then
-    if [[ "$CENTOS_SEVEN" = '7' ]]; then
+    if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_EIGHT" = '8' || "$CENTOS_NINE" = '9' ]]; then
+        TCPMEMTOTAL=$(awk '/MemTotal/ {print $2}' /proc/meminfo)
+        if [ "$TCPMEMTOTAL" -le '3000000' ]; then
+          TCP_OPTMEM_MAX='8192'
+        else
+          TCP_OPTMEM_MAX='81920'
+        fi
+        if [[ "$CENTOS_EIGHT" = '8' || "$CENTOS_NINE" = '9' ]]; then
+          TCP_PID_MAX='4194300'
+        elif [[ "$CENTOS_SEVEN" = '7' ]]; then
+          TCP_PID_MAX='65535'
+        fi
         if [ -d /etc/sysctl.d ]; then
             # centos 7
             touch /etc/sysctl.d/101-sysctl.conf
@@ -1054,7 +1474,7 @@ if [[ ! -f /proc/user_beancounters ]]; then
             fi
 cat >> "/etc/sysctl.d/101-sysctl.conf" <<EOF
 # centminmod added
-kernel.pid_max=65536
+kernel.pid_max=$TCP_PID_MAX
 kernel.printk=4 1 1 7
 fs.nr_open=12000000
 fs.file-max=9000000
@@ -1064,8 +1484,8 @@ net.ipv4.tcp_rmem=8192 87380 16777216
 net.ipv4.tcp_wmem=8192 65536 16777216
 net.core.netdev_max_backlog=65536
 net.core.somaxconn=65535
-net.core.optmem_max=8192
-net.ipv4.tcp_fin_timeout=10
+net.core.optmem_max=$TCP_OPTMEM_MAX
+net.ipv4.tcp_fin_timeout=30
 net.ipv4.tcp_keepalive_intvl=30
 net.ipv4.tcp_keepalive_probes=3
 net.ipv4.tcp_keepalive_time=240
@@ -1132,7 +1552,7 @@ net.ipv4.tcp_wmem=8192 65536 16777216
 net.core.netdev_max_backlog=65536
 net.core.somaxconn=65535
 net.core.optmem_max=8192
-net.ipv4.tcp_fin_timeout=10
+net.ipv4.tcp_fin_timeout=30
 net.ipv4.tcp_keepalive_intvl=30
 net.ipv4.tcp_keepalive_probes=3
 net.ipv4.tcp_keepalive_time=240
@@ -1230,7 +1650,7 @@ if [[ ! -f /usr/bin/git || ! -f /usr/bin/bc || ! -f /usr/bin/wget || ! -f /bin/n
     fi
   fi
 
-  if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_EIGHT" = '8' ]]; then
+  if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_EIGHT" = '8' || "$CENTOS_NINE" = '9' ]]; then
     if [[ $(rpm -q nmap-ncat >/dev/null 2>&1; echo $?) != '0' ]]; then
       time $YUMDNFBIN -y install nmap-ncat${DISABLEREPO_DNF}
       sar_call
@@ -1253,23 +1673,34 @@ if [[ ! -f /usr/bin/git || ! -f /usr/bin/bc || ! -f /usr/bin/wget || ! -f /bin/n
     USER_PKGS=" ipset ipset-devel"
   fi
 
-  time $YUMDNFBIN -y install systemd-libs open-sans-fonts virt-what acl libacl-devel attr libattr-devel lz4-devel python-devel gawk unzip pyOpenSSL python-dateutil libuuid-devel sqlite-devel bc wget lynx screen deltarpm ca-certificates yum-utils bash mlocate subversion rsyslog dos2unix boost-program-options net-tools imake bind-utils libatomic_ops-devel time coreutils autoconf cronie crontabs cronie-anacron gcc gcc-c++ automake libtool make libXext-devel unzip patch sysstat openssh flex bison file libtool-ltdl-devel  krb5-devel libXpm-devel nano gmp-devel aspell-devel numactl lsof pkgconfig gdbm-devel tk-devel bluez-libs-devel iptables* rrdtool diffutils which perl-Test-Simple perl-ExtUtils-Embed perl-ExtUtils-MakeMaker perl-Time-HiRes perl-libwww-perl perl-Crypt-SSLeay perl-Net-SSLeay cyrus-imapd cyrus-sasl-md5 cyrus-sasl-plain strace cmake git net-snmp-libs net-snmp-utils iotop libvpx libvpx-devel t1lib t1lib-devel expect expect-devel readline readline-devel libedit libedit-devel libxslt libxslt-devel openssl openssl-devel curl curl-devel openldap openldap-devel zlib zlib-devel gd gd-devel pcre pcre-devel gettext gettext-devel libidn libidn-devel libjpeg libjpeg-devel libpng libpng-devel freetype freetype-devel libxml2 libxml2-devel glib2 glib2-devel bzip2 bzip2-devel ncurses ncurses-devel e2fsprogs e2fsprogs-devel libc-client libc-client-devel cyrus-sasl cyrus-sasl-devel pam pam-devel libaio libaio-devel libevent libevent-devel recode recode-devel libtidy libtidy-devel net-snmp net-snmp-devel enchant enchant-devel lua lua-devel mailx perl-LWP-Protocol-https OpenEXR-devel OpenEXR-libs atk cups-libs fftw-libs-double fribidi gdk-pixbuf2 ghostscript-devel ghostscript-fonts gl-manpages graphviz gtk2 hicolor-icon-theme ilmbase ilmbase-devel jasper-devel jasper-libs jbigkit-devel jbigkit-libs lcms2 lcms2-devel libICE-devel libSM-devel libXaw libXcomposite libXcursor libXdamage-devel libXfixes-devel libXfont libXi libXinerama libXmu libXrandr libXt-devel libXxf86vm-devel libdrm-devel libfontenc librsvg2 libtiff libtiff-devel libwebp libwebp-devel libwmf-lite mesa-libGL-devel mesa-libGLU mesa-libGLU-devel poppler-data urw-fonts xorg-x11-font-utils${USER_PKGS}${DISABLEREPO_DNF}
+if [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]]; then
+  time $YUMDNFBIN -y install systemd-devel systemd-libs open-sans-fonts libidn2-devel libpsl-devel gpgme-devel gnutls-devel virt-what acl libacl-devel attr libattr-devel lz4-devel gawk unzip libuuid-devel sqlite-devel bc wget lynx screen ca-certificates yum-utils bash mlocate subversion rsyslog dos2unix boost-program-options net-tools imake bind-utils libatomic_ops-devel time coreutils autoconf cronie crontabs cronie-anacron gcc gcc-c++ automake libtool make libXext-devel unzip patch sysstat openssh flex bison file libtool-ltdl-devel krb5-devel libXpm-devel nano gmp-devel aspell-devel numactl lsof pkgconfig gdbm-devel tk-devel bluez-libs-devel iptables* rrdtool diffutils which perl-Test-Simple perl-ExtUtils-Embed perl-ExtUtils-MakeMaker perl-Time-HiRes perl-libwww-perl perl-Net-SSLeay cyrus-imapd cyrus-sasl-md5 cyrus-sasl-plain strace cmake git net-snmp-libs net-snmp-utils iotop libvpx libvpx-devel t1lib t1lib-devel expect readline readline-devel libedit libedit-devel libxslt libxslt-devel openssl openssl-devel curl curl-devel openldap openldap-devel zlib zlib-devel gd gd-devel pcre pcre-devel gettext gettext-devel libidn libidn-devel libjpeg libjpeg-devel libpng libpng-devel freetype freetype-devel libxml2 libxml2-devel glib2 glib2-devel bzip2 bzip2-devel ncurses ncurses-devel e2fsprogs e2fsprogs-devel libc-client libc-client-devel cyrus-sasl cyrus-sasl-devel pam pam-devel libaio libaio-devel libevent libevent-devel recode recode-devel libtidy libtidy-devel net-snmp net-snmp-devel enchant enchant-devel lua lua-devel mailx perl-LWP-Protocol-https OpenEXR-devel OpenEXR-libs atk cups-libs fftw-libs-double fribidi gdk-pixbuf2 ghostscript-devel gl-manpages graphviz gtk2 hicolor-icon-theme ilmbase ilmbase-devel jasper-devel jasper-libs jbigkit-devel jbigkit-libs lcms2 lcms2-devel libICE-devel libSM-devel libXaw libXcomposite libXcursor libXdamage-devel libXfixes-devel libXi libXinerama libXmu libXrandr libXt-devel libXxf86vm-devel libdrm-devel libfontenc librsvg2 libtiff libtiff-devel libwebp libwebp-devel libwmf-lite mesa-libGL-devel mesa-libGLU mesa-libGLU-devel poppler-data urw-fonts xorg-x11-font-utils${USER_PKGS}${DISABLEREPO_DNF} --skip-broken
+else
+  time $YUMDNFBIN -y install systemd-libs open-sans-fonts virt-what acl libacl-devel attr libattr-devel lz4-devel python-devel gawk unzip pyOpenSSL python-dateutil libuuid-devel sqlite-devel bc wget lynx screen deltarpm ca-certificates yum-utils bash mlocate subversion rsyslog dos2unix boost-program-options net-tools imake bind-utils libatomic_ops-devel time coreutils autoconf cronie crontabs cronie-anacron gcc gcc-c++ automake libtool make libXext-devel unzip patch sysstat openssh flex bison file libtool-ltdl-devel krb5-devel libXpm-devel nano gmp-devel aspell-devel numactl lsof pkgconfig gdbm-devel tk-devel bluez-libs-devel iptables* rrdtool diffutils which perl-Test-Simple perl-ExtUtils-Embed perl-ExtUtils-MakeMaker perl-Time-HiRes perl-libwww-perl perl-Crypt-SSLeay perl-Net-SSLeay cyrus-imapd cyrus-sasl-md5 cyrus-sasl-plain strace cmake git net-snmp-libs net-snmp-utils iotop libvpx libvpx-devel t1lib t1lib-devel expect expect-devel readline readline-devel libedit libedit-devel libxslt libxslt-devel openssl openssl-devel curl curl-devel openldap openldap-devel zlib zlib-devel gd gd-devel pcre pcre-devel gettext gettext-devel libidn libidn-devel libjpeg libjpeg-devel libpng libpng-devel freetype freetype-devel libxml2 libxml2-devel glib2 glib2-devel bzip2 bzip2-devel ncurses ncurses-devel e2fsprogs e2fsprogs-devel libc-client libc-client-devel cyrus-sasl cyrus-sasl-devel pam pam-devel libaio libaio-devel libevent libevent-devel recode recode-devel libtidy libtidy-devel net-snmp net-snmp-devel enchant enchant-devel lua lua-devel mailx perl-LWP-Protocol-https OpenEXR-devel OpenEXR-libs atk cups-libs fftw-libs-double fribidi gdk-pixbuf2 ghostscript-devel ghostscript-fonts gl-manpages graphviz gtk2 hicolor-icon-theme ilmbase ilmbase-devel jasper-devel jasper-libs jbigkit-devel jbigkit-libs lcms2 lcms2-devel libICE-devel libSM-devel libXaw libXcomposite libXcursor libXdamage-devel libXfixes-devel libXfont libXi libXinerama libXmu libXrandr libXt-devel libXxf86vm-devel libdrm-devel libfontenc librsvg2 libtiff libtiff-devel libwebp libwebp-devel libwmf-lite mesa-libGL-devel mesa-libGLU mesa-libGLU-devel poppler-data urw-fonts xorg-x11-font-utils${USER_PKGS}${DISABLEREPO_DNF}
+fi
   sar_call
   # allows curl install to skip checking for already installed yum packages 
   # later on in initial curl installations
   touch /tmp/curlinstaller-yum
   time $YUMDNFBIN -y install epel-release${DISABLEREPO_DNF}
-  $YUMDNFBIN makecache fast
+  # $YUMDNFBIN makecache fast
   sar_call
-  if [[ "$CENTOS_EIGHT" = '8' ]]; then
-    time $YUMDNFBIN -y install systemd-libs xxhash-devel libzstd xxhash libzstd-devel datamash qrencode jq clang clang-devel jemalloc jemalloc-devel zstd python2-pip libmcrypt libmcrypt-devel libraqm oniguruma5php oniguruma5php-devel figlet moreutils nghttp2 libnghttp2 libnghttp2-devel pngquant optipng jpegoptim pwgen pigz pbzip2 xz pxz lz4 bash-completion bash-completion-extras mlocate re2c kernel-headers kernel-devel${DISABLEREPO_DNF} --enablerepo=epel,epel-playground,epel-testing
+  if [[ "$CENTOS_NINE" = '9' ]]; then
+    time $YUMDNFBIN -y install checksec systemd-libs xxhash-devel libzstd xxhash libzstd-devel datamash qrencode jq clang clang-devel jemalloc jemalloc-devel zstd python2-pip libmcrypt libmcrypt-devel libraqm oniguruma5php oniguruma5php-devel figlet moreutils nghttp2 libnghttp2 libnghttp2-devel pngquant optipng jpegoptim pwgen pigz pbzip2 xz pxz lz4 bash-completion mlocate re2c kernel-headers kernel-devel${DISABLEREPO_DNF} --enablerepo=epel,epel-testing,remi --skip-broken
+    libc_fix
+    if [ -f /usr/bin/pip ]; then
+      PYTHONWARNINGS=ignore:::pip._internal.cli.base_command pip install --upgrade pip
+    fi
+    sar_call
+  elif [[ "$CENTOS_EIGHT" = '8' ]]; then
+    time $YUMDNFBIN -y install checksec systemd-libs xxhash-devel libzstd xxhash libzstd-devel datamash qrencode jq clang clang-devel jemalloc jemalloc-devel zstd python2-pip libmcrypt libmcrypt-devel libraqm oniguruma5php oniguruma5php-devel figlet moreutils nghttp2 libnghttp2 libnghttp2-devel pngquant optipng jpegoptim pwgen pigz pbzip2 xz pxz lz4 bash-completion mlocate re2c kernel-headers kernel-devel${DISABLEREPO_DNF} --enablerepo=epel,epel-testing,remi --skip-broken
     libc_fix
     if [ -f /usr/bin/pip ]; then
       PYTHONWARNINGS=ignore:::pip._internal.cli.base_command pip install --upgrade pip
     fi
     sar_call
   elif [[ "$CENTOS_SEVEN" = '7' ]]; then
-    time $YUMDNFBIN -y install systemd-libs xxhash-devel libzstd xxhash libzstd-devel datamash qrencode jq clang clang-devel jemalloc jemalloc-devel zstd python2-pip libmcrypt libmcrypt-devel libraqm oniguruma5php oniguruma5php-devel figlet moreutils nghttp2 libnghttp2 libnghttp2-devel pngquant optipng jpegoptim pwgen pigz pbzip2 xz pxz lz4 bash-completion bash-completion-extras mlocate re2c kernel-headers kernel-devel${DISABLEREPO_DNF} --enablerepo=epel
+    time $YUMDNFBIN -y install checksec systemd-libs xxhash-devel libzstd xxhash libzstd-devel datamash qrencode jq clang clang-devel jemalloc jemalloc-devel zstd python2-pip libmcrypt libmcrypt-devel libraqm oniguruma5php oniguruma5php-devel figlet moreutils nghttp2 libnghttp2 libnghttp2-devel pngquant optipng jpegoptim pwgen pigz pbzip2 xz pxz lz4 bash-completion bash-completion-extras mlocate re2c kernel-headers kernel-devel${DISABLEREPO_DNF} --enablerepo=epel
     libc_fix
     if [ -f /usr/bin/pip ]; then
       PYTHONWARNINGS=ignore:::pip._internal.cli.base_command pip install --upgrade pip==20.3.4
@@ -1368,6 +1799,9 @@ cd $INSTALLDIR
       time git clone -b ${branchname} --depth=5 ${CMGIT} centminmod
       getcmendtime=$(TZ=UTC date +%s.%N)
       sar_call
+      if [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]]; then
+        git config --global pull.rebase false
+      fi
       cd centminmod
       chmod +x centmin.sh
     fi
@@ -1378,7 +1812,7 @@ cd $INSTALLDIR
     if [[ -f /usr/local/bin/axel && $AXEL = [yY] ]]; then
       /usr/bin/axel https://github.com/centminmod/centminmod/archive/${DOWNLOAD}
     else
-      wget -c${ipv_forceopt} --no-check-certificate https://github.com/centminmod/centminmod/archive/${DOWNLOAD} --tries=3
+      wget --no-check-certificate https://github.com/centminmod/centminmod/archive/${DOWNLOAD} --tries=3
     fi
     getcmendtime=$(TZ=UTC date +%s.%N)
     rm -rf centminmod-*

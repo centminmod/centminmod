@@ -1,5 +1,6 @@
 #!/bin/bash
 #####################################################
+export PATH="/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin:/root/bin"
 # set locale temporarily to english
 # due to some non-english locale issues
 export LC_ALL=en_US.UTF-8
@@ -8,10 +9,11 @@ export LANGUAGE=en_US.UTF-8
 export LC_CTYPE=en_US.UTF-8
 # disable systemd pager so it doesn't pipe systemctl output to less
 export SYSTEMD_PAGER=''
+ARCH_CHECK="$(uname -m)"
 #####################################################
 # quick info overview for centminmod.com installs
 #####################################################
-branchname='124.00stable'
+branchname='140.00beta01'
 DT=$(date +"%d%m%y-%H%M%S")
 CENTMINLOGDIR='/root/centminlogs'
 #####################################################
@@ -68,6 +70,7 @@ fi
 EL_VERID=$(awk -F '=' '/VERSION_ID/ {print $2}' /etc/os-release | sed -e 's|"||g' | cut -d . -f1)
 if [ -f /etc/almalinux-release ] && [[ "$EL_VERID" -eq 8 || "$EL_VERID" -eq 9 ]]; then
   CENTOSVER=$(awk '{ print $3 }' /etc/almalinux-release | cut -d . -f1,2)
+  ALMALINUXVER=$(awk '{ print $3 }' /etc/almalinux-release | cut -d . -f1,2 | sed -e 's|\.|000|g')
   if [[ "$(echo $CENTOSVER | cut -d . -f1)" -eq '8' ]]; then
     CENTOS_EIGHT='8'
     ALMALINUX_EIGHT='8'
@@ -77,6 +80,7 @@ if [ -f /etc/almalinux-release ] && [[ "$EL_VERID" -eq 8 || "$EL_VERID" -eq 9 ]]
   fi
 elif [ -f /etc/rocky-release ] && [[ "$EL_VERID" -eq 8 || "$EL_VERID" -eq 9 ]]; then
   CENTOSVER=$(awk '{ print $4 }' /etc/rocky-release | cut -d . -f1,2)
+  ROCKYLINUXVER=$(awk '{ print $3 }' /etc/rocky-release | cut -d . -f1,2 | sed -e 's|\.|000|g')
   if [[ "$(echo $CENTOSVER | cut -d . -f1)" -eq '8' ]]; then
     CENTOS_EIGHT='8'
     ROCKYLINUX_EIGHT='8'
@@ -131,12 +135,18 @@ elif [ -f /etc/el-release ] && [[ "$EL_VERID" -eq 8 || "$EL_VERID" -eq 9 ]]; the
   fi
 fi
 
+CENTOSVER_NUMERIC=$(echo $CENTOSVER | sed -e 's|\.||g')
+
 if [ ! -f /usr/sbin/virt-what ]; then
     yum -y -q install virt-what
 fi
 
 if [ ! -f /usr/sbin/lshw ]; then
     yum -y -q install lshw
+fi
+
+if [ ! -f /usr/sbin/tcpdump ]; then
+    yum -y -q install tcpdump
 fi
 
 if [ ! -f /usr/bin/tree ]; then
@@ -201,6 +211,79 @@ if [ ! -f /usr/local/bin/mytop ]; then
   chmod +x /usr/local/bin/mytop
   echo -e "host=localhost\ndb=mysql\ndelay=2\nidle=0\nfullqueries=1" > /root/.mytop
 fi
+
+# Function to get MariaDB version
+get_mariadb_version() {
+    local version=$(mysql -V 2>&1 | awk '{print $5}' | awk -F. '{print $1"."$2}')
+    echo $version
+}
+
+# Function to set client command variables based on MariaDB version
+set_mariadb_client_commands() {
+    local version=$(get_mariadb_version)
+    
+    # Convert version to a comparable integer (e.g., 10.3 becomes 1003)
+    version_number=$(echo "$version" | awk -F. '{printf "%d%02d\n", $1, $2}')
+
+    if (( version_number <= 1011 )); then
+        # For versions less than or equal to 10.11, use old MySQL names
+        ALIAS_MYSQLACCESS="mysqlaccess"
+        ALIAS_MYSQLADMIN="mysqladmin"
+        ALIAS_MYSQLBINLOG="mysqlbinlog"
+        ALIAS_MYSQLCHECK="mysqlcheck"
+        ALIAS_MYSQLDUMP="mysqldump"
+        ALIAS_MYSQLDUMPSLOW="mysqldumpslow"
+        ALIAS_MYSQLHOTCOPY="mysqlhotcopy"
+        ALIAS_MYSQLIMPORT="mysqlimport"
+        ALIAS_MYSQLREPORT="mysqlreport"
+        ALIAS_MYSQLSHOW="mysqlshow"
+        ALIAS_MYSQLSLAP="mysqlslap"
+        ALIAS_MYSQL_CONVERT_TABLE_FORMAT="mysql_convert_table_format"
+        ALIAS_MYSQL_EMBEDDED="mysql_embedded"
+        ALIAS_MYSQL_FIND_ROWS="mysql_find_rows"
+        ALIAS_MYSQL_FIX_EXTENSIONS="mysql_fix_extensions"
+        ALIAS_MYSQL_INSTALL_DB="mysql_install_db"
+        ALIAS_MYSQL_PLUGIN="mysql_plugin"
+        ALIAS_MYSQL_SECURE_INSTALLATION="mysql_secure_installation"
+        ALIAS_MYSQL_SETPERMISSION="mysql_setpermission"
+        ALIAS_MYSQL_TZINFO_TO_SQL="mysql_tzinfo_to_sql"
+        ALIAS_MYSQL_UPGRADE="mysql_upgrade"
+        ALIAS_MYSQL_WAITPID="mysql_waitpid"
+        ALIAS_MYSQL="mysql"
+        ALIAS_MYSQLD="mysqld"
+        ALIAS_MYSQLDSAFE="mysqld_safe"
+    else
+        # For versions greater than 10.11, use new MariaDB names
+        ALIAS_MYSQLACCESS="mariadb-access"
+        ALIAS_MYSQLADMIN="mariadb-admin"
+        ALIAS_MYSQLBINLOG="mariadb-binlog"
+        ALIAS_MYSQLCHECK="mariadb-check"
+        ALIAS_MYSQLDUMP="mariadb-dump"
+        ALIAS_MYSQLDUMPSLOW="mariadb-dumpslow"
+        ALIAS_MYSQLHOTCOPY="mariadb-hotcopy"
+        ALIAS_MYSQLIMPORT="mariadb-import"
+        ALIAS_MYSQLREPORT="mariadb-report"
+        ALIAS_MYSQLSHOW="mariadb-show"
+        ALIAS_MYSQLSLAP="mariadb-slap"
+        ALIAS_MYSQL_CONVERT_TABLE_FORMAT="mariadb-convert-table-format"
+        ALIAS_MYSQL_EMBEDDED="mariadb-embedded"
+        ALIAS_MYSQL_FIND_ROWS="mariadb-find-rows"
+        ALIAS_MYSQL_FIX_EXTENSIONS="mariadb-fix-extensions"
+        ALIAS_MYSQL_INSTALL_DB="mariadb-install-db"
+        ALIAS_MYSQL_PLUGIN="mariadb-plugin"
+        ALIAS_MYSQL_SECURE_INSTALLATION="mariadb-secure-installation"
+        ALIAS_MYSQL_SETPERMISSION="mariadb-setpermission"
+        ALIAS_MYSQL_TZINFO_TO_SQL="mariadb-tzinfo-to-sql"
+        ALIAS_MYSQL_UPGRADE="mariadb-upgrade"
+        ALIAS_MYSQL_WAITPID="mariadb-waitpid"
+        ALIAS_MYSQL="mariadb"
+        ALIAS_MYSQLD="mariadbd"
+        ALIAS_MYSQLDSAFE="mariadbd-safe"
+    fi
+}
+
+# Run the function to set client command variables
+set_mariadb_client_commands
 
 cmservice() {
   servicename=$1
@@ -443,14 +526,19 @@ sar_mem_pc() {
 
 #####################################################
 top_info() {
-    cron=$1
+    cron="$1"
+    top_load=" $2"
     SYSTYPE=$(virt-what | head -n1)
     CENTMINMOD_INFOVER=$(head -n1 /etc/centminmod-release)
     CCACHE_INFOVER=$(ccache -V | head -n1)
     NGINX_INFOVER=$(nginx -v 2>&1 | awk -F "/" '{print $2}' | head -n1)
     PHP_INFOVER=$(php-config --version)
+    PHPOPENSSL_INFOVER=$(php --ri openssl | awk '/Library Version/ {print $6}')
+    PHPCURL_INFOVER=$(php --ri curl | awk '/cURL Information/ {print $4}')
+    PHPCURLSSL_INFOVER=$(php --ri curl | awk '/SSL Version/ {print $4}')
     MARIADB_INFOVER=$(rpm -qa | grep -i MariaDB-server | head -n1 | cut -d '-' -f3)
     MEMCACHEDSERVER_INFOVER=$(/usr/local/bin/memcached -h | head -n1 | awk '{print $2}')
+    REDIS_INFOVER=$(/usr/bin/redis-cli --version | head -n1 | awk '{print $2}')
     CSF_INFOVER=$(csf -v | head -n1 | awk '{print $2}')
     SIEGE_INFOVER=$(siege -V 2>&1 | head -n1 | awk '{print $2}')
     APC_INFOVER=$(php --ri apc | awk '/Version/ {print $3}' | head -n1)
@@ -464,15 +552,15 @@ top_info() {
     
     # only assign variables if mysql is running
     if [[ "$(ps -o comm -C mysqld >/dev/null 2>&1; echo $?)" = '0' ]] || [[ "$(ps -o comm -C mariadbd >/dev/null 2>&1; echo $?)" = '0' ]]; then
-    DATABSELIST=$(mysql $MYSQLADMINOPT -e 'show databases;' | grep -Ev '(Database|information_schema|performance_schema)')
+    DATABSELIST=$($ALIAS_MYSQL $MYSQLADMINOPT -e 'show databases;' | grep -Ev '(Database|information_schema|performance_schema)')
       if [[ "$CENTOS_NINE" -eq '9' ]]; then
-        MYSQLUPTIME=$(mysqladmin $MYSQLADMINOPT ext | awk '/Uptime|Uptime_since_flush_status/ { print $4 }' | head -n1)
-        MYSQLUPTIMEFORMAT=$(mysqladmin $MYSQLADMINOPT ver | awk '/Uptime/ { print $2, $3, $4, $5, $6, $7, $8, $9 }')
-        MYSQLSTART=$(mysql $MYSQLADMINOPT -e "SELECT FROM_UNIXTIME(UNIX_TIMESTAMP() - variable_value) AS server_start FROM INFORMATION_SCHEMA.GLOBAL_STATUS WHERE variable_name='Uptime';" | egrep -Ev '+--|server_start')
+        MYSQLUPTIME=$($ALIAS_MYSQLADMIN $MYSQLADMINOPT ext | awk '/Uptime|Uptime_since_flush_status/ { print $4 }' | head -n1)
+        MYSQLUPTIMEFORMAT=$($ALIAS_MYSQLADMIN $MYSQLADMINOPT ver | awk '/Uptime/ { print $2, $3, $4, $5, $6, $7, $8, $9 }')
+        MYSQLSTART=$($ALIAS_MYSQL $MYSQLADMINOPT -e "SELECT FROM_UNIXTIME(UNIX_TIMESTAMP() - variable_value) AS server_start FROM INFORMATION_SCHEMA.GLOBAL_STATUS WHERE variable_name='Uptime';" | egrep -Ev '+--|server_start')
       else
-        MYSQLUPTIME=$(mysqladmin $MYSQLADMINOPT ext | awk '/Uptime|Uptime_since_flush_status/ { print $4 }' | head -n1)
-        MYSQLUPTIMEFORMAT=$(mysqladmin $MYSQLADMINOPT ver | awk '/Uptime/ { print $2, $3, $4, $5, $6, $7, $8, $9 }')
-        MYSQLSTART=$(mysql $MYSQLADMINOPT -e "SELECT FROM_UNIXTIME(UNIX_TIMESTAMP() - variable_value) AS server_start FROM INFORMATION_SCHEMA.GLOBAL_STATUS WHERE variable_name='Uptime';" | egrep -Ev '+--|server_start')
+        MYSQLUPTIME=$($ALIAS_MYSQLADMIN $MYSQLADMINOPT ext | awk '/Uptime|Uptime_since_flush_status/ { print $4 }' | head -n1)
+        MYSQLUPTIMEFORMAT=$($ALIAS_MYSQLADMIN $MYSQLADMINOPT ver | awk '/Uptime/ { print $2, $3, $4, $5, $6, $7, $8, $9 }')
+        MYSQLSTART=$($ALIAS_MYSQL $MYSQLADMINOPT -e "SELECT FROM_UNIXTIME(UNIX_TIMESTAMP() - variable_value) AS server_start FROM INFORMATION_SCHEMA.GLOBAL_STATUS WHERE variable_name='Uptime';" | egrep -Ev '+--|server_start')
       fi
     fi
     PAGESPEEDSTATUS=$(grep 'pagespeed unplugged' /usr/local/nginx/conf/pagespeed.conf)
@@ -491,7 +579,7 @@ top_info() {
         CLAMAV_INFOVER=$(clamscan -V | head -n1 | awk -F "/" '{print $1}' | awk '{print $2}')
     fi
 
-    if [[ "$(mysqladmin ping -s >/dev/null 2>&1; echo $?)" -eq '0' ]]; then
+    if [[ "$($ALIAS_MYSQLADMIN ping -s >/dev/null 2>&1; echo $?)" -eq '0' ]]; then
         echo "------------------------------------------------------------------"
         mysql --connect-timeout=5 -e "SET GLOBAL innodb_status_output=ON; SET GLOBAL innodb_status_output_locks=ON;" 2>/dev/null
         echo
@@ -506,9 +594,9 @@ top_info() {
     # CMINFO_IPINFO=$(curl -${ipv_forceopt}s${CURL_TIMEOUTS} https://ipinfo.io/geo 2>&1 | sed -e 's|[{}]||' -e 's/\(^"\|"\)//g' -e 's|,||' | egrep -vi 'ip:|phone|postal|loc|readme')
     # echo "$CMINFO_IPINFO" | grep -iv 'readme'
     if [[ "$VPS_GEOIPCHECK_V3" = [yY] ]]; then
-      CMINFO_IPINFO=$(curl -${ipv_forceopt}s${CURL_TIMEOUTS} -A "$CURL_AGENT cmminfo IP CHECK" https://geoip.centminmod.com/v3 | jq -r '"  city: \(.city)\n  region: \(.region)\n  country: \(.country)\n  org: \(.data.asn) \(.data.description_short)\n  timezone \(.timezone)"')
+      CMINFO_IPINFO=$(curl -${ipv_forceopt}s${CURL_TIMEOUTS} -A "$CURL_AGENT cmminfo IP CHECK${top_load} ${CPUCORES} $CURL_CPUMODEL $CURL_CPUSPEED $NGINX_INFOVER $PHP_INFOVER $MARIADB_INFOVER" https://geoip.centminmod.com/v3 | jq -r '"  city: \(.city)\n  region: \(.region)\n  country: \(.country)\n  org: \(.data.asn) \(.data.description_short)\n  timezone \(.timezone)"')
     elif [[ "$VPS_GEOIPCHECK_V4" = [yY] ]]; then
-      CMINFO_IPINFO=$(curl -${ipv_forceopt}s${CURL_TIMEOUTS} -A "$CURL_AGENT cmminfo IP CHECK" https://geoip.centminmod.com/v4 | jq -r '"  city: \(.city)\n  region: \(.region)\n  country: \(.country)\n  org: \(.asn) \(.asOrganization)\n  timezone \(.timezone)"')
+      CMINFO_IPINFO=$(curl -${ipv_forceopt}s${CURL_TIMEOUTS} -A "$CURL_AGENT cmminfo IP CHECK${top_load} ${CPUCORES} $CURL_CPUMODEL $CURL_CPUSPEED $NGINX_INFOVER $PHP_INFOVER $MARIADB_INFOVER" https://geoip.centminmod.com/v4 | jq -r '"  city: \(.city)\n  region: \(.region)\n  country: \(.country)\n  org: \(.asn) \(.asOrganization)\n  timezone \(.timezone)"')
     fi
     echo "$CMINFO_IPINFO"
     # echo "  ASN: $(curl -${ipv_forceopt}s${CURL_TIMEOUTS} https://ipinfo.io/org 2>&1 | grep -iv 'readme')"
@@ -521,7 +609,7 @@ top_info() {
     echo "$CPUCACHE"
     echo ""
     
-    if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_EIGHT" = '8' || "$CENTOS_NINE" = '9' ]]; then
+    if [[ "$CENTOS_SEVEN" -eq '7' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]]; then
         echo -ne " System Up Since: \t"; uptime -s
         echo -ne " System Uptime: \t"; uptime -p
     else
@@ -546,11 +634,15 @@ top_info() {
     echo -e " Nginx PageSpeed: \t$PS"
     echo -e " Nginx Version: \t$NGINX_INFOVER"
     echo -e " PHP-FPM Version: \t$PHP_INFOVER"
+    echo -e " PHP-FPM OpenSSL: \t$PHPOPENSSL_INFOVER"
+    echo -e " PHP-FPM CURL Version: \t$PHPCURL_INFOVER"
+    echo -e " PHP-FPM CURL SSL: \t$PHPCURLSSL_INFOVER"
     echo -e " MariaDB Version: \t$MARIADB_INFOVER"
     echo -e " CSF Firewall: \t\t$CSF_INFOVER"
     echo -e " Memcached Server: \t$MEMCACHEDSERVER_INFOVER"
+    echo -e " Redis Server: \t$REDIS_INFOVER"
     echo -e " NSD Version: \t\t$NSD_INFOVER"
-    echo -e " Siege Version: \t$SIEGE_INFOVER"
+    # echo -e " Siege Version: \t$SIEGE_INFOVER"
     if [ -f /usr/local/sbin/maldet ]; then
         echo -e " Maldet Version: \t$MALDET_INFOVER"
     else
@@ -664,7 +756,7 @@ top_info() {
         echo
     fi
     # ensure mysql server is running before triggering mysqlreport output
-    if [[ "$(mysqladmin ping -s >/dev/null 2>&1; echo $?)" -eq '0' ]]; then
+    if [[ "$($ALIAS_MYSQLADMIN ping -s >/dev/null 2>&1; echo $?)" -eq '0' ]]; then
         echo "------------------------------------------------------------------"
         echo "MySQL InnoDB Status"
         if [[ "$cron" != 'cron' ]]; then
@@ -690,33 +782,33 @@ top_info() {
         fi
         echo
     fi
-    if [[ "$(mysqladmin ping -s >/dev/null 2>&1; echo $?)" -eq '0' ]]; then
+    if [[ "$($ALIAS_MYSQLADMIN ping -s >/dev/null 2>&1; echo $?)" -eq '0' ]]; then
         echo "------------------------------------------------------------------"
-        echo "mysqladmin var"
-        mysqladmin var | tr -s ' ' | egrep -v '+-' 2>/dev/null
+        echo "$ALIAS_MYSQLADMIN var"
+        $ALIAS_MYSQLADMIN var | tr -s ' ' | egrep -v '+-' 2>/dev/null
         echo
-        echo "mysqladmin ext"
-        mysqladmin ext  | tr -s ' ' | egrep -v '+-' 2>/dev/null
+        echo "$ALIAS_MYSQLADMIN ext"
+        $ALIAS_MYSQLADMIN ext  | tr -s ' ' | egrep -v '+-' 2>/dev/null
         echo
     fi
-    if [[ "$CMINFO_MYSQL_PROCLIST" = [Yy] && "$(mysqladmin ping -s >/dev/null 2>&1; echo $?)" -eq '0' ]]; then
+    if [[ "$CMINFO_MYSQL_PROCLIST" = [Yy] && "$($ALIAS_MYSQLADMIN ping -s >/dev/null 2>&1; echo $?)" -eq '0' ]]; then
         echo "------------------------------------------------------------------"
         if [[ "$cron" = 'cron' ]]; then
             proc_runs=20
         else
             proc_runs=5
         fi
-        echo "mysqladmin proc -i1 -c${proc_runs}"
-        mysqladmin proc -i1 -c${proc_runs} 2>/dev/null
+        echo "$ALIAS_MYSQLADMIN proc -i1 -c${proc_runs}"
+        $ALIAS_MYSQLADMIN proc -i1 -c${proc_runs} 2>/dev/null
         echo
     fi
-    if [[ "$(mysqladmin ping -s >/dev/null 2>&1; echo $?)" -eq '0' && -f /root/mysqlreport ]]; then
+    if [[ "$($ALIAS_MYSQLADMIN ping -s >/dev/null 2>&1; echo $?)" -eq '0' && -f /root/mysqlreport ]]; then
         echo "------------------------------------------------------------------"
         echo "mysqlreport"
         /root/mysqlreport 2>/dev/null
         echo
     fi
-    if [[ "$CMINFO_MYTOP" = [Yy] && "$(mysqladmin ping -s >/dev/null 2>&1; echo $?)" -eq '0' && -f /usr/bin/mytop && -f /root/.mytop ]]; then
+    if [[ "$CMINFO_MYTOP" = [Yy] && "$($ALIAS_MYSQLADMIN ping -s >/dev/null 2>&1; echo $?)" -eq '0' && -f /usr/bin/mytop && -f /root/.mytop ]]; then
         echo "------------------------------------------------------------------"
         echo "mytop -b"
         mytop -b 2>/dev/null
@@ -727,7 +819,7 @@ top_info() {
             # 64bit OS only
             yum -q -y install percona-toolkit --enablerepo=percona-release-x86_64
         fi
-        if [[ "$(mysqladmin ping -s >/dev/null 2>&1; echo $?)" -eq '0' && -f /usr/bin/pt-summary ]]; then
+        if [[ "$($ALIAS_MYSQLADMIN ping -s >/dev/null 2>&1; echo $?)" -eq '0' && -f /usr/bin/pt-summary ]]; then
             echo "------------------------------------------------------------------"
             /usr/bin/pt-summary 2>/dev/null | sed -e 's|Percona Toolkit ||g'
             echo
@@ -751,7 +843,43 @@ top_info() {
     echo
 }
 
+# Function to count the number of connections in SYN_RECV state
+count_syn_recv() {
+    syn_recv_count=$(ss -H state syn-recv | wc -l)
+    echo "Number of SYN_RECV connections: $syn_recv_count"
+}
+
+# Function to count the number of outgoing SYN-ACK packets with a timeout of 10 seconds
+count_syn_ack() {
+    temp_file=$(mktemp) # Create a temporary file to store tcpdump output
+
+    # Run tcpdump with timeout and capture the output in the temp file
+    timeout 10 tcpdump -n -c 100 'tcp[tcpflags] & tcp-ack != 0 and tcp[tcpflags] & tcp-syn != 0' > "$temp_file" 2>/dev/null
+    
+    # Check if there were any packet captures
+    packet_count=$(grep -c "IP" "$temp_file")  # Count lines that start with "IP" (indicating packets)
+
+    if [ "$packet_count" -gt 0 ]; then
+        echo "Number of outgoing SYN-ACK packets captured for last 100 connections: $packet_count"
+    else
+        echo "No SYN-ACK packets captured in the last 10 seconds."
+    fi
+
+    # Clean up the temporary file
+    rm -f "$temp_file"
+}
+
+syn_info() {
+  echo "------------------------------------------------------------------"
+  echo "SYN Flood Report: SYN_RECV & Outgoing SYN-ACK Connections"
+  echo "------------------------------------------------------------------"
+  count_syn_recv
+  count_syn_ack
+  echo "------------------------------------------------------------------"
+}
+
 netstat_info() {
+    netstat_load=$1
     sshclient=$(echo $SSH_CLIENT | awk '{print $1}')
     nic=$(ifconfig -s 2>&1 | egrep -v '^Iface|^lo|^gre' | awk '{print $1}')
     bandwidth_avg=$(sar -n DEV 1 1)
@@ -868,7 +996,7 @@ setupdate() {
 cat > "/usr/bin/cminfo_updater"<<EOF
 #!/bin/bash
 rm -rf /usr/bin/cminfo
-CMINFOLINK='https://raw.githubusercontent.com/centminmod/centminmod/master/tools/cminfo.sh'
+CMINFOLINK='https://raw.githubusercontent.com/centminmod/centminmod/${branchname}/tools/cminfo.sh'
 
 # fallback mirror
 curl -${ipv_forceopt}Is --connect-timeout 30 --max-time 30 \$CMINFOLINK | grep 'HTTP\/' | grep '200' >/dev/null 2>&1
@@ -919,6 +1047,9 @@ CENTMINMOD_INFOVER=$(head -n1 /etc/centminmod-release)
 CCACHE_INFOVER=$(ccache -V | head -n1)
 NGINX_INFOVER=$(nginx -v 2>&1 | awk -F "/" '{print $2}' | head -n1)
 PHP_INFOVER=$(php-config --version)
+PHPOPENSSL_INFOVER=$(php --ri openssl | awk '/Library Version/ {print $6}')
+PHPCURL_INFOVER=$(php --ri curl | awk '/cURL Information/ {print $4}')
+PHPCURLSSL_INFOVER=$(php --ri curl | awk '/SSL Version/ {print $4}')
 MARIADB_INFOVER=$(rpm -qa | grep -i MariaDB-server | head -n1 | cut -d '-' -f3)
 MEMCACHEDSERVER_INFOVER=$(/usr/local/bin/memcached -h | head -n1 | awk '{print $2}')
 CSF_INFOVER=$(csf -v | head -n1 | awk '{print $2}')
@@ -934,15 +1065,15 @@ fi
 
 # only assign variables if mysql is running
 if [[ "$(ps -o comm -C mysqld >/dev/null 2>&1; echo $?)" = '0' ]] || [[ "$(ps -o comm -C mariadbd >/dev/null 2>&1; echo $?)" = '0' ]]; then
-DATABSELIST=$(mysql $MYSQLADMINOPT -e 'show databases;' | grep -Ev '(Database|information_schema|performance_schema)')
+DATABSELIST=$($ALIAS_MYSQL $MYSQLADMINOPT -e 'show databases;' | grep -Ev '(Database|information_schema|performance_schema)')
 if [[ "$CENTOS_NINE" -eq '9' ]]; then
-  MYSQLUPTIME=$(mysqladmin $MYSQLADMINOPT ext | awk '/Uptime|Uptime_since_flush_status/ { print $4 }' | head -n1)
-  MYSQLUPTIMEFORMAT=$(mysqladmin $MYSQLADMINOPT ver | awk '/Uptime/ { print $2, $3, $4, $5, $6, $7, $8, $9 }')
-  MYSQLSTART=$(mysql $MYSQLADMINOPT -e "SELECT FROM_UNIXTIME(UNIX_TIMESTAMP() - variable_value) AS server_start FROM INFORMATION_SCHEMA.GLOBAL_STATUS WHERE variable_name='Uptime';" | egrep -Ev '+--|server_start')
+  MYSQLUPTIME=$($ALIAS_MYSQLADMIN $MYSQLADMINOPT ext | awk '/Uptime|Uptime_since_flush_status/ { print $4 }' | head -n1)
+  MYSQLUPTIMEFORMAT=$($ALIAS_MYSQLADMIN $MYSQLADMINOPT ver | awk '/Uptime/ { print $2, $3, $4, $5, $6, $7, $8, $9 }')
+  MYSQLSTART=$($ALIAS_MYSQL $MYSQLADMINOPT -e "SELECT FROM_UNIXTIME(UNIX_TIMESTAMP() - variable_value) AS server_start FROM INFORMATION_SCHEMA.GLOBAL_STATUS WHERE variable_name='Uptime';" | egrep -Ev '+--|server_start')
 else
-  MYSQLUPTIME=$(mysqladmin $MYSQLADMINOPT ext | awk '/Uptime|Uptime_since_flush_status/ { print $4 }' | head -n1)
-  MYSQLUPTIMEFORMAT=$(mysqladmin $MYSQLADMINOPT ver | awk '/Uptime/ { print $2, $3, $4, $5, $6, $7, $8, $9 }')
-  MYSQLSTART=$(mysql $MYSQLADMINOPT -e "SELECT FROM_UNIXTIME(UNIX_TIMESTAMP() - variable_value) AS server_start FROM INFORMATION_SCHEMA.GLOBAL_STATUS WHERE variable_name='Uptime';" | egrep -Ev '+--|server_start')
+  MYSQLUPTIME=$($ALIAS_MYSQLADMIN $MYSQLADMINOPT ext | awk '/Uptime|Uptime_since_flush_status/ { print $4 }' | head -n1)
+  MYSQLUPTIMEFORMAT=$($ALIAS_MYSQLADMIN $MYSQLADMINOPT ver | awk '/Uptime/ { print $2, $3, $4, $5, $6, $7, $8, $9 }')
+  MYSQLSTART=$($ALIAS_MYSQL $MYSQLADMINOPT -e "SELECT FROM_UNIXTIME(UNIX_TIMESTAMP() - variable_value) AS server_start FROM INFORMATION_SCHEMA.GLOBAL_STATUS WHERE variable_name='Uptime';" | egrep -Ev '+--|server_start')
 fi
 fi
 PAGESPEEDSTATUS=$(grep 'pagespeed unplugged' /usr/local/nginx/conf/pagespeed.conf)
@@ -968,9 +1099,9 @@ echo "------------------------------------------------------------------"
 echo "Server Location Info"
 # echo
 if [[ "$VPS_GEOIPCHECK_V3" = [yY] ]]; then
-  CMINFO_IPINFO=$(curl -${ipv_forceopt}s${CURL_TIMEOUTS} -A "$CURL_AGENT cmminfo IP CHECK" https://geoip.centminmod.com/v3 | jq -r '"  city: \(.city)\n  region: \(.region)\n  country: \(.country)\n  org: \(.data.asn) \(.data.description_short)\n  timezone \(.timezone)"')
+  CMINFO_IPINFO=$(curl -${ipv_forceopt}s${CURL_TIMEOUTS} -A "$CURL_AGENT cmminfo IP CHECK ${CPUCORES} $CURL_CPUMODEL $$CURL_CPUSPEED $NGINX_INFOVER $PHP_INFOVER $MARIADB_INFOVER" https://geoip.centminmod.com/v3 | jq -r '"  city: \(.city)\n  region: \(.region)\n  country: \(.country)\n  org: \(.data.asn) \(.data.description_short)\n  timezone \(.timezone)"')
 elif [[ "$VPS_GEOIPCHECK_V4" = [yY] ]]; then
-  CMINFO_IPINFO=$(curl -${ipv_forceopt}s${CURL_TIMEOUTS} -A "$CURL_AGENT cmminfo IP CHECK" https://geoip.centminmod.com/v4 | jq -r '"  city: \(.city)\n  region: \(.region)\n  country: \(.country)\n  org: \(.asn) \(.asOrganization)\n  timezone \(.timezone)"')
+  CMINFO_IPINFO=$(curl -${ipv_forceopt}s${CURL_TIMEOUTS} -A "$CURL_AGENT cmminfo IP CHECK ${CPUCORES} $CURL_CPUMODEL $$CURL_CPUSPEED $NGINX_INFOVER $PHP_INFOVER $MARIADB_INFOVER" https://geoip.centminmod.com/v4 | jq -r '"  city: \(.city)\n  region: \(.region)\n  country: \(.country)\n  org: \(.asn) \(.asOrganization)\n  timezone \(.timezone)"')
 fi
 echo "$CMINFO_IPINFO"
 
@@ -982,7 +1113,7 @@ echo "$CPUMODEL"
 echo "$CPUCACHE"
 echo ""
 
-if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_EIGHT" = '8' || "$CENTOS_NINE" = '9' ]]; then
+if [[ "$CENTOS_SEVEN" -eq '7' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]]; then
     echo -ne " System Up Since: \t"; uptime -s
     echo -ne " System Uptime: \t"; uptime -p
 else
@@ -1007,11 +1138,15 @@ echo -e " Centmin Mod: \t\t$CENTMINMOD_INFOVER"
 echo -e " Nginx PageSpeed: \t$PS"
 echo -e " Nginx Version: \t$NGINX_INFOVER"
 echo -e " PHP-FPM Version: \t$PHP_INFOVER"
+echo -e " PHP-FPM OpenSSL: \t$PHPOPENSSL_INFOVER"
+echo -e " PHP-FPM CURL Version: \t$PHPCURL_INFOVER"
+echo -e " PHP-FPM CURL SSL: \t$PHPCURLSSL_INFOVER"
 echo -e " MariaDB Version: \t$MARIADB_INFOVER"
 echo -e " CSF Firewall: \t\t$CSF_INFOVER"
 echo -e " Memcached Server: \t$MEMCACHEDSERVER_INFOVER"
+echo -e " Redis Server: \t$REDIS_INFOVER"
 echo -e " NSD Version: \t\t$NSD_INFOVER"
-echo -e " Siege Version: \t$SIEGE_INFOVER"
+# echo -e " Siege Version: \t$SIEGE_INFOVER"
 if [ -f /usr/local/sbin/maldet ]; then
     echo -e " Maldet Version: \t$MALDET_INFOVER"
 else
@@ -1060,8 +1195,8 @@ echo " MySQL Databases:"
 echo "------------------------------------------------------------------"
 echo
 for db in $DATABSELIST; do 
-DBIDXSIZE=$(mysql $MYSQLADMINOPT -e "SELECT CONCAT(ROUND(SUM(index_length)/(1024*1024), 2), ' MB') AS 'Total Index Size' FROM information_schema.TABLES WHERE table_schema LIKE '$db';" | egrep -Ev '(+-|Total Index Size)')
-DBDATASIZE=$(mysql $MYSQLADMINOPT -e "SELECT CONCAT(ROUND(SUM(data_length)/(1024*1024), 2), ' MB') AS 'Total Data Size'
+DBIDXSIZE=$($ALIAS_MYSQL $MYSQLADMINOPT -e "SELECT CONCAT(ROUND(SUM(index_length)/(1024*1024), 2), ' MB') AS 'Total Index Size' FROM information_schema.TABLES WHERE table_schema LIKE '$db';" | egrep -Ev '(+-|Total Index Size)')
+DBDATASIZE=$($ALIAS_MYSQL $MYSQLADMINOPT -e "SELECT CONCAT(ROUND(SUM(data_length)/(1024*1024), 2), ' MB') AS 'Total Data Size'
 FROM information_schema.TABLES WHERE table_schema LIKE '$db';" | egrep -Ev '(+-|Total Data Size)')
 
 if [ "$DBIDXSIZE" == 'NULL' ]; then
@@ -1120,7 +1255,7 @@ echo "------------------------------------------------------------------"
 echo " PHP-FPM Configuration:"
 echo "------------------------------------------------------------------"
 echo
-php -i | grep configure
+php-config
 
 echo
 echo "------------------------------------------------------------------"
@@ -1212,6 +1347,36 @@ service_info_json() {
     echo "$0 service-info servicename"
   fi
 }
+
+inspect_php_patch_log() {
+  latest_log=$(find $CENTMINLOGDIR -type f -name "patch_php_*.log" -printf '%T@ %p\n' | sort -n | tail -1 | cut -d' ' -f2)
+
+  if [[ -n "$latest_log" ]]; then
+      ls -lAh "$latest_log"
+      echo
+      cat "$latest_log"
+  else
+      echo "No patch_php log file found."
+  fi
+}
+
+inspect_nginx_patch_log() {
+  latest_log=$(find $CENTMINLOGDIR -type f -name "patch_patchnginx_*.log" -printf '%T@ %p\n' | sort -n | tail -1 | cut -d' ' -f2)
+
+  if [[ -n "$latest_log" ]]; then
+      ls -lAh "$latest_log"
+      echo
+      cat "$latest_log"
+  else
+      echo "No patch_patchnginx log file found."
+  fi
+}
+
+ssl_dates() {
+  if [ -f /usr/local/src/centminmod/addons/acmetool.sh ]; then
+    /usr/local/src/centminmod/addons/acmetool.sh checkdates
+  fi
+}
 #########
 if [[ -z "$1" ]]; then
     infooutput
@@ -1224,22 +1389,30 @@ case "$1" in
     update)
     setupdate
         ;;
+    ssldates)
+    {
+    ssl_dates
+    } 2>&1 | tee "${CENTMINLOGDIR}/cminfo-ssldates-${DT}.log"
+        ;;
     netstat)
-    netstat_info
+    netstat_info "$2"
+        ;;
+    syn)
+    syn_info
         ;;
     top)
     {
-    top_info
+    top_info nocron "$2"
     } 2>&1 | tee "${CENTMINLOGDIR}/cminfo-top-${DT}.log"
         ;;
     top-cron)
     {
-    top_info cron
+    top_info cron "$2"
     } 2>&1 | tee "${CENTMINLOGDIR}/cminfo-top-cron-${DT}.log"
         ;;
     sar-json)
     {
-    sar_json $2
+    sar_json "$2"
     } 2>&1 | tee "${CENTMINLOGDIR}/cminfo-top-sar-json-${DT}.log"
         ;;
     sar-cpu-interval)
@@ -1270,7 +1443,7 @@ case "$1" in
         fpmstats
     fi
     echo
-    pidstat_php nocron $2
+    pidstat_php nocron "$2"
     } 2>&1 | tee "${CENTMINLOGDIR}/cminfo-top-php-stats-${DT}.log"
         ;;
     phpstats-cron)
@@ -1281,7 +1454,7 @@ case "$1" in
         fpmstats
     fi
     echo
-    pidstat_php cron $2
+    pidstat_php cron "$2"
     } 2>&1 | tee "${CENTMINLOGDIR}/cminfo-top-php-stats-cron-${DT}.log"
         ;;
     listlogs)
@@ -1296,10 +1469,16 @@ case "$1" in
     checkver)
     check_version
     ;;
+    nginx-patch-log)
+    inspect_nginx_patch_log
+    ;;
+    php-patch-log)
+    inspect_php_patch_log
+    ;;
     service-info)
       service_info_json "$2"
     ;;
     *)
-    echo "$0 {info|update|netstat|top|top-cron|sar-json|sar-cpu-interval|sar-cpu|sar-mem|phpmem|phpstats|phpstats-cron|listlogs|debug-menuexit|versions|checkver|service-info}"
+    echo "$0 {info|update|ssldates|netstat|syn|top|top-cron|sar-json|sar-cpu-interval|sar-cpu|sar-mem|phpmem|phpstats|phpstats-cron|listlogs|debug-menuexit|versions|checkver|service-info|nginx-patch-log|php-patch-log}"
         ;;
 esac

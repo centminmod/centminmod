@@ -112,7 +112,14 @@ if [[ "$REMIREPO_DISABLE" = [nN] ]]; then
     rpm --import https://rpms.remirepo.net/RPM-GPG-KEY-remi2017
     rpm --import https://rpms.remirepo.net/RPM-GPG-KEY-remi2018
     rpm --import https://rpms.remirepo.net/RPM-GPG-KEY-remi2019
+    rpm --import https://rpms.remirepo.net/RPM-GPG-KEY-remi2020
+    rpm --import https://rpms.remirepo.net/RPM-GPG-KEY-remi2021
+    rpm --import https://rpms.remirepo.net/RPM-GPG-KEY-remi2022
+    rpm --import https://rpms.remirepo.net/RPM-GPG-KEY-remi2023
+    echo
+    echo "rpm -q gpg-pubkey --qf \"%{summary} ->%{version}-%{release}\n\""
     rpm -q gpg-pubkey --qf "%{summary} ->%{version}-%{release}\n"
+    echo
     rpm -Uvh --nosignature ${CENTOSSEVENREMIFILE}
     ERR=$?
     CCREMICHECK="$ERR"
@@ -139,7 +146,14 @@ if [[ "$REMIREPO_DISABLE" = [nN] ]]; then
     rpm --import https://rpms.remirepo.net/RPM-GPG-KEY-remi2017
     rpm --import https://rpms.remirepo.net/RPM-GPG-KEY-remi2018
     rpm --import https://rpms.remirepo.net/RPM-GPG-KEY-remi2019
+    rpm --import https://rpms.remirepo.net/RPM-GPG-KEY-remi2020
+    rpm --import https://rpms.remirepo.net/RPM-GPG-KEY-remi2021
+    rpm --import https://rpms.remirepo.net/RPM-GPG-KEY-remi2022
+    rpm --import https://rpms.remirepo.net/RPM-GPG-KEY-remi2023
+    echo
+    echo "rpm -q gpg-pubkey --qf \"%{summary} ->%{version}-%{release}\n\""
     rpm -q gpg-pubkey --qf "%{summary} ->%{version}-%{release}\n"
+    echo
     rpm -Uvh --nosignature ${CENTOSSEVENREMIFILE}
     ERR=$?
     CCREMICHECK="$ERR"
@@ -378,7 +392,9 @@ echo "--------------------------------------------------------------------------
 echo "----------------------------------------------------------------------------------"
 cecho "Installing $pkgs" $boldyellow
 echo "----------------------------------------------------------------------------------"
-      if [[ "$pkgs" = 'libzip5' || "$pkgs" = 'libzip5-devel' ]]; then
+      if [[ "$pkgs" = 'oniguruma5php' || "$pkgs" = 'oniguruma5php-devel' ]]; then
+        ${YUMDNFBIN}${CACHESKIP} -q -y install $pkgs --enablerepo=remi
+      elif [[ "$pkgs" = 'libzip5' || "$pkgs" = 'libzip5-devel' ]]; then
         ${YUMDNFBIN}${CACHESKIP} -q -y install $pkgs --enablerepo=remi
       else
         ${YUMDNFBIN}${CACHESKIP} -q -y install $pkgs

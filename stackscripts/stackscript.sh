@@ -226,9 +226,11 @@ fi
 # https://community.centminmod.com/posts/45818/
 if [[ "BROTLI" = 'yes' ]]; then
 echo
-echo "Set NGXDYNAMIC_BROTLI='y'"
+echo "Set NGXDYNAMIC_BROTLI='y'
+NGXDYNAMIC_ZSTD='n'"
 echo "Set NGINX_LIBBROTLI='y'"
 echo "NGXDYNAMIC_BROTLI='y'" >> /etc/centminmod/custom_config.inc
+echo "NGXDYNAMIC_ZSTD='n'" >> /etc/centminmod/custom_config.inc
 echo "NGINX_LIBBROTLI='y'" >> /etc/centminmod/custom_config.inc
 echo
 fi
@@ -357,7 +359,7 @@ systemctl daemon-reload
 systemctl start docker
 systemctl enable docker
 echo
-systemctl status docker
+systemctl status docker --no-pager
 echo
 journalctl -u docker --no-pager
 echo

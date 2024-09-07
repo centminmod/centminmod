@@ -14,10 +14,10 @@ check_pythonthree_six() {
   #     # workaround for premature EPEL python36 package retirement before CentOS 7.7 is ready
   #     # https://community.centminmod.com/threads/18142/
   #     if [ ! -f "${DIR_TMP}/python36-libs-3.6.8-1.el7.x86_64.rpm" ]; then
-  #       wget${ipv_forceopt_wget} -q -O "${DIR_TMP}/python36-libs-3.6.8-1.el7.x86_64.rpm" https://centminmod.com/centminmodparts/epel/el7/x86_64/python36-libs-3.6.8-1.el7.x86_64.rpm
+  #       wget -4 -q -O "${DIR_TMP}/python36-libs-3.6.8-1.el7.x86_64.rpm" ${LOCALCENTMINMOD_MIRROR}/centminmodparts/epel/el7/x86_64/python36-libs-3.6.8-1.el7.x86_64.rpm
   #     fi
   #     if [ ! -f "${DIR_TMP}/python36-3.6.8-1.el7.x86_64.rpm" ]; then
-  #       wget${ipv_forceopt_wget} -q -O "${DIR_TMP}/python36-3.6.8-1.el7.x86_64.rpm" https://centminmod.com/centminmodparts/epel/el7/x86_64/python36-3.6.8-1.el7.x86_64.rpm
+  #       wget -4 -q -O "${DIR_TMP}/python36-3.6.8-1.el7.x86_64.rpm" ${LOCALCENTMINMOD_MIRROR}/centminmodparts/epel/el7/x86_64/python36-3.6.8-1.el7.x86_64.rpm
   #     fi
   #     yum -y localinstall "${DIR_TMP}/python36-3.6.8-1.el7.x86_64.rpm" "${DIR_TMP}/python36-libs-3.6.8-1.el7.x86_64.rpm"
   #   fi
@@ -25,7 +25,7 @@ check_pythonthree_six() {
   #     # workaround for premature EPEL python36 package retirement before CentOS 7.7 is ready
   #     # https://community.centminmod.com/threads/18142/
   #     if [ ! -f "${DIR_TMP}/python36-libs-3.6.8-1.el7.x86_64.rpm" ]; then
-  #       wget${ipv_forceopt_wget} -q -O "${DIR_TMP}/python36-libs-3.6.8-1.el7.x86_64.rpm" https://centminmod.com/centminmodparts/epel/el7/x86_64/python36-libs-3.6.8-1.el7.x86_64.rpm
+  #       wget -4 -q -O "${DIR_TMP}/python36-libs-3.6.8-1.el7.x86_64.rpm" ${LOCALCENTMINMOD_MIRROR}/centminmodparts/epel/el7/x86_64/python36-libs-3.6.8-1.el7.x86_64.rpm
   #     fi
   #     yum -y localinstall "${DIR_TMP}/python36-libs-3.6.8-1.el7.x86_64.rpm"
   #   fi
@@ -48,8 +48,8 @@ libzip_install() {
   if [ -s "${LIBZIP_LINKFILE}" ]; then
       cecho "${LIBZIP_LINKFILE} found, skipping download..." $boldgreen
   else
-      echo "wget -c${ipv_forceopt} --progress=bar $LIBZIP_LINK --tries=3"
-      wget -c${ipv_forceopt} --progress=bar $LIBZIP_LINK --tries=3
+      echo "wget --progress=bar $LIBZIP_LINK --tries=3"
+      wget --progress=bar $LIBZIP_LINK --tries=3
       ERROR=$?
       if [[ "$ERROR" != '0' ]]; then
           cecho "Error: ${LIBZIP_LINKFILE} download failed." $boldgreen
@@ -62,10 +62,13 @@ libzip_install() {
   rm -rf build
   mkdir -p build
   cd build/
-  cmake3 ..
+  cmake3 .. \
+  -DCMAKE_C_FLAGS="-fPIC -O2 -fstack-protector-strong -D_FORTIFY_SOURCE=2" \
+  -DCMAKE_CXX_FLAGS="-fPIC -O2" \
+  -DCMAKE_SHARED_LINKER_FLAGS="-Wl,-z,relro,-z,now -pie"
   make${MAKETHREADS}
   make install
-    if [[ "$PHPMVER" = '7.4' || "$PHPMUVER" = '7.4' || "$PHPMVER" = '8.0' || "$PHPMUVER" = '8.0' || "$PHPMVER" = '8.1' || "$PHPMUVER" = '8.1' || "$PHPVER_ID" -ge '80000' ]]; then
+    if [[ "$PHPMVER" = '7.4' || "$PHPMUVER" = '7.4' || "$PHPMVER" = '8.0' || "$PHPMUVER" = '8.0' || "$PHPMVER" = '8.1' || "$PHPMUVER" = '8.1' || "$PHPMVER" = '8.2' || "$PHPMUVER" = '8.2' || "$PHPMVER" = '8.3' || "$PHPMUVER" = '8.3' || "$PHPMVER" = '8.4' || "$PHPMUVER" = '8.4' || "$PHPVER_ID" -ge '80000' ]]; then
       if [[ "$(uname -m)" = 'x86_64' ]]; then
         LIBDIR_LIBZIP='lib64'
       else

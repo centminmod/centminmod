@@ -17,10 +17,29 @@ MENUEXIT_ALWAYS_YUMCHECK='y'  # also do yum check on centmin.sh exit
 ENABLEMOTD_CSFMSG='y'         # motd banner csf message alert disaply
 ENABLEMOTD_LINKSMSG='y'       # motd centminmod.com links bookmark alert display
 
+# override minimum memory and disk swap requirements for
+# EL8 or EL9 operating systems 
+# for memory from 1.649GB to 1.43GB
+# for disk swap from 4GB to 2GB
+ISMINMEM_OVERRIDE='n'         # https://community.centminmod.com/posts/100321/
+ISMINSWAP_OVERRIDE='n'        # https://community.centminmod.com/posts/100321/
+
+#####################################################
+# SSH specific
+# setup /etc/ssh/sshd_config.d/01-permitrootlogin.conf
+# during initial install to re-enable root user SSH logins
+# for EL9 systems
+SSHD_REENABLE_ROOT_LOGINS='y'
+
 #####################################################
 # local geoip server version used
 VPS_GEOIPCHECK_V3='n'
 VPS_GEOIPCHECK_V4='y'
+
+#####################################################
+# MOTD prompt alert user if server reboot is required
+# after YUM package updates, alerts Fri-Sun only
+NEEDRESTART_CHECK='n'
 
 #####################################################
 TIME_NGINX='n'
@@ -52,6 +71,7 @@ CLANG_APC='n'                 # APC Cache
 CLANG_MEMCACHED='n'           # Memcached menu option 10 routine
 GCCINTEL_PHP='y'              # enable PHP-FPM GCC compiler with Intel cpu optimizations
 PHP_PGO='n'                   # Profile Guided Optimization https://software.intel.com/en-us/blogs/2015/10/09/pgo-let-it-go-php
+PHP_PATCH_OPENSSL_THREE='y'   # workaround compatibility patches for PHP 7.4 & 8.0 for EL9 system's OpenSSL 3.0 system library
 PHP_PGO_ALWAYS='n'            # override for PHP_PGO enable for 1 cpu thread servers too
 PHP_PGO_TRAINRUNS='10'        # number of runs done during PGO PHP 7 training runs
 PHP_PGO_APPEND_LABEL='y'          # appen PGO label to PHP binaries built with Profile Guided Optimizations
@@ -67,6 +87,7 @@ NGX_GSPLITDWARF='y'           # for Nginx compile https://community.centminmod.c
 PHP_GSPLITDWARF='y'           # for PHP compile https://community.centminmod.com/posts/44072/
 PHP_LTO='n'                   # enable -flto compiler for GCC 4.8.5+ PHP-FPM compiles currently not working with PHP 7.x
 NGX_LDGOLD='y'                # for Nginx compile i.e. passing ld.gold linker -fuse-ld=bfd or -fuse-ld=gold https://community.centminmod.com/posts/44037/
+FLTO_COMP='y'                 # for nginx LTO compiles to control LTO compression levels on EL8 & EL9 systemsr Nginx compile i.e. passing ld.gold linker -fuse-ld=bfd or -fuse-ld=gold https://community.centminmod.com/posts/44037/
 NGINX_FATLTO_OBJECTS='n'        # enable -ffat-lto-objects flag for nginx builds - much slower compile times
 NGINX_NOFATLTO_OBJECTS='n'      # enable -fno-fat-lto-objects flag for nginx builds - much slower compile times
 # recommended to keep NGINXOPENSSL_FATLTO_OBJECTS and NGINXOPENSSL_NOFATLTO_OBJECTS set to = n
@@ -74,7 +95,10 @@ NGINXOPENSSL_FATLTO_OBJECTS='n' # enable -ffat-lto-objects flag for nginx OpenSS
 NGINXOPENSSL_NOFATLTO_OBJECTS='n' # enable -fno-fat-lto-objects flag for nginx OpenSSL builds - much slower compile times
 NGINXCOMPILE_FORMATSEC='y'    # whether or not nginx is compiled with -Wformat -Werror=format-security flags
 NGX_LDMOLD='n'                # optional mold linker https://github.com/rui314/mold
-MOLD_VERSION='1.2.1'          # mold linker rpm version
+MOLD_VERSION='1.3.0'          # mold linker rpm version
+MOLD_VERSION_EL8='1.11.0'     # mold linker rpm version
+NGINX_SECURED='y'             # apply more secure compilation options for Nginx
+PHP_SECURED='y'               # apply more secure compilation options for PHP-FPM
 
 # Nginx Dynamic Module Switches
 NGXDYNAMIC_MANUALOVERRIDE='n' # set to 'y' if you want to manually drop in nginx dynamic modules into /usr/local/nginx/modules
@@ -97,6 +121,7 @@ NGXDYNAMIC_MEMC='n'
 NGXDYNAMIC_REDISTWO='n'
 NGXDYNAMIC_NGXPAGESPEED='n'
 NGXDYNAMIC_BROTLI='y'
+NGXDYNAMIC_ZSTD='n'
 NGXDYNAMIC_FANCYINDEX='y'
 NGXDYNAMIC_HIDELENGTH='y'
 NGXDYNAMIC_TESTCOOKIE='n'
@@ -110,7 +135,8 @@ PHP_UPDATEMAINTENANCE='n'
 MARIADB_UPDATEMAINTENANCE='n'
 
 # Nginx
-NGINXCOMPILE_PIE='n'         # build nginx with Position-independent code (PIC) / Position-indendendent executables (PIEs)
+NGINXCOMPILE_PIE='y'         # build nginx with Position-independent code (PIC) / Position-indendendent executables (PIEs)
+PHP_SECURED_PIE='y'          # build php-fpm with Position-independent code (PIC) / Position-indendendent executables (PIEs)
 NGINX_VERSION='1.21.4'      # Use this version of Nginx
 NGINX_VHOSTSSL='y'           # enable centmin.sh menu 2 prompt to create self signed SSL vhost 2nd vhost conf
 NGINXBACKUP='y'
@@ -125,12 +151,15 @@ AUTOHARDTUNE_NGINXBACKLOG='y' # on non-openvz systems, if enabled will override 
 USE_NGINXMAINEXTLOGFORMAT='n' # use default combined nginx log format instead of main_ext custom format for nginx amplify
 NGINX_ALLOWOVERRIDE='y'      # allow centmin mod to update nginx.conf setting defaults when the defaults are revised
 NGINX_SSLCACHE_ALLOWOVERRIDE='n' # dynamically tune nginx ssl_session_cache in /usr/local/nginx/conf/ssl_include.conf based on system detected memory
+NGINX_GZIP_MULTI_STATUS='n'  # enable HTTP Multi Status 207 gzip compression patch for Nextcloud etc https://trac.nginx.org/nginx/ticket/394
 NGINXUPGRADESLEEP='3'
-SWITCH_NGINX_SYSTEMD='n'     # Switch to centos 7 systemd nginx service file
+NGINX_MAINHOSTNAME_BLANK_INDEX='n'  # if enabled main hostname public web root /usr/local/nginx/html/index.html will be blank
+SWITCH_NGINX_SYSTEMD='y'     # Switch to centos 7 systemd nginx service file
 NSD_INSTALL='y'              # Install NSD (DNS Server)
 NSD_VERSION='3.2.18'         # NSD Version
 NTP_INSTALL='y'              # Install Network time protocol daemon
 NGINXPATCH='y'               # Set to y to allow NGINXPATCH_DELAY seconds time before Nginx configure and patching Nginx
+NGINX_DHPARAM_SIZE='2048'    # Default Nginx dhparam size = 2048 or 3072
 NGINX_IOURING_PATCH='n'      # Experimental Nginx AIO patch for Linux 5.1+ Kernel systems only
 NGINXPATCH_DELAY='1'         # Number of seconds to pause Nginx configure routine during Nginx upgrades
 STRIPNGINX='y'               # set 'y' to strip nginx binary to reduce size
@@ -140,8 +169,8 @@ NGINX_ZERODT='n'             # nginx zero downtime reloading on nginx upgrades
 NGINX_ONETWOTHREE_COMPAT='y' # whether to allow nginx 1.23+ installs
 NGINX_MAXERRBYTELIMIT='2048' # modify NGX_MAX_ERROR_STR hardcoded 2048 limit by editing value i.e. http://openresty-reference.readthedocs.io/en/latest/Lua_Nginx_API/#print
 NGINX_INSTALL='y'            # Install Nginx (Webserver)
-NGINX_HPACK_ALLOWED_VER='1021006'      # Max allowed Nginx version for Nginx HTTP/2 HPACK full encoding patch support
-NGINX_DYNAMICTLS_ALLOWED_VER='1021006' # Max allowed Nginx version for Nginx Dynamic TLS patch support
+NGINX_HPACK_ALLOWED_VER='1024005'      # Max allowed Nginx version for Nginx HTTP/2 HPACK full encoding patch support
+NGINX_DYNAMICTLS_ALLOWED_VER='1024005' # Max allowed Nginx version for Nginx Dynamic TLS patch support
 NGINX_DEBUG='n'              # Enable & reinstall Nginx debug log nginx.org/en/docs/debugging_log.html & wiki.nginx.org/Debugging
 NGINX_HTTP2='y'              # Nginx http/2 patch https://community.centminmod.com/threads/4127/
 NGINX_KTLS='n'               # Enable Nginx kTLS - TLS in Kernel support if OpenSSL 3.0.x & 5.2+ Kernel detected
@@ -154,7 +183,7 @@ NGINX_MODSECURITY_MAXMIND='y' # modsecurity built with libmaxminddb is failing t
 NGINX_REALIP='y'             # http://nginx.org/en/docs/http/ngx_http_realip_module.html
 NGINX_RDNS='n'               # https://github.com/flant/nginx-http-rdns
 NGINX_NJS='n'                # nginScript https://www.nginx.com/blog/
-NGINX_NJS_VER='0.7.12'       # nginxScript tag version https://github.com/nginx/njslaunching-nginscript-and-looking-ahead/
+NGINX_NJS_VER='0.8.5'       # nginxScript tag version https://github.com/nginx/njslaunching-nginscript-and-looking-ahead/
 NGINX_GEOIP='y'              # Nginx GEOIP module install
 NGINX_GEOIPMEM='y'           # Nginx caches GEOIP databases in memory (default), setting 'n' caches to disk instead
 NGINX_GEOIPTWOLITE='n'       # https://github.com/leev/ngx_http_geoip2_module
@@ -185,11 +214,13 @@ NGINX_MP4='n'                # Nginx MP4 Module http://nginx.org/en/docs/http/ng
 NGINX_AUTHREQ='n'            # http://nginx.org/en/docs/http/ngx_http_auth_request_module.html
 NGINX_SECURELINK='y'         # http://nginx.org/en/docs/http/ngx_http_secure_link_module.html
 NGINX_FANCYINDEX='y'         # http://wiki.nginx.org/NgxFancyIndex
-NGINX_FANCYINDEXVER='0.4.2'  # https://github.com/aperezdc/ngx-fancyindex/releases
+NGINX_FANCYINDEXVER='0.5.2'  # https://github.com/aperezdc/ngx-fancyindex/releases
 NGINX_VHOSTSTATS='n'         # https://github.com/vozlt/nginx-module-vts
 NGINX_LIBBROTLI='n'          # https://github.com/eustas/ngx_brotli
+NGINX_ZSTD='n'               # https://github.com/tokers/zstd-nginx-module
 NGINX_LIBBROTLISTATIC='n'    # only enable if you want pre-compress brotli support and on the fly brotli disabled
 NGINX_BROTLIDEP_UPDATE='n'   # experimental manual update of Google Brotli dependency in ngx_brotli
+NGINX_BROTLI_NEW_METHOD='y'  # enable for ngx_brotli using brotli 1.1.0+ dependency
 NGINX_PAGESPEED='n'          # Install ngx_pagespeed
 NGINX_PAGESPEEDGITMASTER='n' # Install ngx_pagespeed from official github master instead  
 NGXPGSPEED_VER='1.14.33.1-RC1'
@@ -208,46 +239,46 @@ NGINX_PCREVER='8.45'         # Version of PCRE used for pcre-jit support in Ngin
 NGINX_PCRE_TWO='n'           # optional PCRE2 for Nginx 1.21.5+
 NGINX_PCRETWOVER='10.39'     # Version of PCRE2 used for pcre-jit support in Nginx
 NGINX_ZLIBCUSTOM='y'         # Use custom zlib instead of system version
-NGINX_ZLIBVER='1.2.11'       # http://www.zlib.net/
+NGINX_ZLIBVER='1.3'       # http://www.zlib.net/
 NGINX_VIDEO='n'              # control variable when 'y' set for NGINX_SLICE='y', NGINX_RTMP='y', NGINX_FLV='y', NGINX_MP4='y'
 ORESTY_HEADERSMORE='y'       # openresty headers more https://github.com/openresty/headers-more-nginx-module
 ORESTY_HEADERSMOREGIT='n'    # use git master instead of version specific
-NGINX_HEADERSMORE='0.34-cmm'
-NGINX_CACHEPURGEVER='2.5.1'
+NGINX_HEADERSMORE='0.37'
+NGINX_CACHEPURGEVER='2.5.3'
 NGINX_STICKY='n'             # nginx sticky module https://bitbucket.org/nginx-goodies/nginx-sticky-module-ng
 NGINX_STICKYVER='master'
 NGINX_UPSTREAMCHECK='n'      # nginx upstream check https://github.com/yaoweibin/nginx_upstream_check_module
 NGINX_UPSTREAMCHECKVER='0.3.0'
 NGINX_OPENRESTY='y'          # Agentzh's openresty Nginx modules
-ORESTY_MEMCVER='0.19'        # openresty memc module https://github.com/openresty/memc-nginx-module
-ORESTY_SRCCACHEVER='0.32'    # openresty subrequest cache module https://github.com/openresty/srcache-nginx-module
-ORESTY_DEVELKITVER='0.3.0'  # openresty ngx_devel_kit module https://github.com/simpl/ngx_devel_kit
+ORESTY_MEMCVER='0.20'        # openresty memc module https://github.com/openresty/memc-nginx-module
+ORESTY_SRCCACHEVER='0.33'    # openresty subrequest cache module https://github.com/openresty/srcache-nginx-module
+ORESTY_DEVELKITVER='0.3.2'  # openresty ngx_devel_kit module https://github.com/vision5/ngx_devel_kit
 ORESTY_SETMISCGIT='n'        # use git master instead of version specific
 ORESTY_SETMISC='y'           # openresty set-misc-nginx module https://github.com/openresty/echo-nginx-module
-ORESTY_SETMISCVER='0.32'     # openresty set-misc-nginx module https://github.com/openresty/set-misc-nginx-module
+ORESTY_SETMISCVER='0.33'     # openresty set-misc-nginx module https://github.com/openresty/set-misc-nginx-module
 ORESTY_ECHOGIT='n'           # use git master instead of version specific
-ORESTY_ECHOVER='0.62'        # openresty set-misc-nginx module https://github.com/openresty/echo-nginx-module
+ORESTY_ECHOVER='0.63'        # openresty set-misc-nginx module https://github.com/openresty/echo-nginx-module
 ORESTY_REDISVER='0.15'       # openresty redis2-nginx-module https://github.com/openresty/redis2-nginx-module
 
 LUAJIT_GITINSTALL='y'        # opt to install luajit 2.1 from dev branch http://repo.or.cz/w/luajit-2.0.git/shortlog/refs/heads/v2.1
 LUAJIT_GITINSTALLVER='2.1-agentzh'   # branch version = v2.1 will override ORESTY_LUAGITVER if LUAJIT_GITINSTALL='y'
 
 ORESTY_LUANGINX='n'             # enable or disable or ORESTY_LUA* nginx modules below
-ORESTY_LUANGINXVER='0.10.19'  # openresty lua-nginx-module https://github.com/openresty/lua-nginx-module
+ORESTY_LUANGINXVER='0.10.26'  # openresty lua-nginx-module https://github.com/openresty/lua-nginx-module
 ORESTY_LUAGITVER='2.0.5'        # luagit http://luajit.org/
-ORESTY_LUAMEMCACHEDVER='0.15'   # openresty https://github.com/openresty/lua-resty-memcached
-ORESTY_LUAMYSQLVER='0.23'    # openresty https://github.com/openresty/lua-resty-mysql
+ORESTY_LUAMEMCACHEDVER='0.17'   # openresty https://github.com/openresty/lua-resty-memcached
+ORESTY_LUAMYSQLVER='0.26'    # openresty https://github.com/openresty/lua-resty-mysql
 ORESTY_LUAREDISVER='0.29'       # openresty https://github.com/openresty/lua-resty-redis
-ORESTY_LUADNSVER='0.21'         # openresty https://github.com/openresty/lua-resty-dns
-ORESTY_LUAUPLOADVER='0.10'      # openresty https://github.com/openresty/lua-resty-upload
+ORESTY_LUADNSVER='0.22'         # openresty https://github.com/openresty/lua-resty-dns
+ORESTY_LUAUPLOADVER='0.11'      # openresty https://github.com/openresty/lua-resty-upload
 ORESTY_LUAWEBSOCKETVER='0.08'   # openresty https://github.com/openresty/lua-resty-websocket
-ORESTY_LUALOCKVER='0.08'        # openresty https://github.com/openresty/lua-resty-lock
-ORESTY_LUASTRINGVER='0.12'      # openresty https://github.com/openresty/lua-resty-string
+ORESTY_LUALOCKVER='0.09'        # openresty https://github.com/openresty/lua-resty-lock
+ORESTY_LUASTRINGVER='0.15'      # openresty https://github.com/openresty/lua-resty-string
 ORESTY_LUAREDISPARSERVER='0.13'    # openresty https://github.com/openresty/lua-redis-parser
-ORESTY_LUAUPSTREAMCHECKVER='0.06'  # openresty https://github.com/openresty/lua-resty-upstream-healthcheck
-ORESTY_LUALRUCACHEVER='0.10'       # openresty https://github.com/openresty/lua-resty-lrucache
-ORESTY_LUARESTYCOREVER='0.1.21'    # openresty https://github.com/openresty/lua-resty-core
-ORESTY_LUASTREAMVER='0.0.9'        # https://github.com/openresty/stream-lua-nginx-module
+ORESTY_LUAUPSTREAMCHECKVER='0.08'  # openresty https://github.com/openresty/lua-resty-upstream-healthcheck
+ORESTY_LUALRUCACHEVER='0.13'       # openresty https://github.com/openresty/lua-resty-lrucache
+ORESTY_LUARESTYCOREVER='0.1.28'    # openresty https://github.com/openresty/lua-resty-core
+ORESTY_LUASTREAMVER='0.0.14'        # https://github.com/openresty/stream-lua-nginx-module
 ORESTY_LUASTREAM='y'               # control https://github.com/openresty/stream-lua-nginx-module
 NGX_LUASTREAM_FORCED='y'           # control stream-lua-nginx enabling for nginx 1.17+
 ORESTY_LUAUPSTREAMVER='0.07'       # openresty https://github.com/openresty/lua-upstream-nginx-module
@@ -256,7 +287,7 @@ ORESTY_LUALOGGERSOCKETVER='0.1'    # cloudflare openresty https://github.com/clo
 ORESTY_LUACOOKIEVER='master'       # cloudflare openresty https://github.com/cloudflare/lua-resty-cookie
 ORESTY_LUAUPSTREAMCACHEVER='0.1.1' # cloudflare openresty https://github.com/cloudflare/lua-upstream-cache-nginx-module
 NGX_LUAUPSTREAMCACHE='n'           # disable https://github.com/cloudflare/lua-upstream-cache-nginx-module
-LUACJSONVER='2.1.0.8rc1'              # https://github.com/openresty/lua-cjson
+LUACJSONVER='2.1.0.9'              # https://github.com/openresty/lua-cjson
 
 STRIPPHP='y'                 # set 'y' to strip PHP binary to reduce size
 PHP_INSTALL='y'              # Install PHP /w Fast Process Manager
@@ -267,6 +298,7 @@ PHP_MYSQLND_PATCH_FIX='y'    # Apply PHP 7.3 backported mysqlnd patch for MariaD
 PHP_TUNING='n'               # initial php-fpm install auto tuning
 PHP_HUGEPAGES='n'            # Enable explicit huge pages support for PHP 7 on CentOS 7.x systems
 PHP_CUSTOMSSL='n'            # compile php-fpm against openssl 1.0.2+ or libressl 2.3+ whichever nginx uses
+PHP_CUSTOMSSL_FORCE='n'      # unless force enabled PHP_CUSTOMSSL is disabled on EL7 systems due to additional work needed
 PHPMAKETEST='n'              # set to y to enable make test after PHP make for diagnostic purposes
 AUTODETECPHP_OVERRIDE='n'    # when enabled, php updates will always reinstall all php extensions even if minor php version
 PHP_PCREJIT_STACKSIZE_ADJUST='n' # when enabled, allows you to raise PHP's default PCRE JIT stack size https://github.com/php/php-src/pull/2910
@@ -292,14 +324,17 @@ PHPMSSQL_ALWAYS='n'          # mssql php extension always install on php recompi
 PHPEMBED='y'                 # built php with php embed SAPI library support --enable-embed=shared
 SHORTCUTS='y'                # shortcuts
 PHPSWOOLE='n'                # https://pecl.php.net/package/swoole
-PHPSWOOLE_VER='4.8.5'
+PHPSWOOLE_VER='5.1.0'
 PHPSWOOLE_FIVE_VER='2.0.5' # max PHP 5.0 supported version
 PHPSWOOLE_SEVEN_ZERO_VER='4.3.5' # max PHP 7.0 supported version
-PHPSWOOLE_SEVEN_ONE_VER='4.5.10' # max PHP 7.1 supported version
+PHPSWOOLE_SEVEN_ONE_VER='4.5.11' # max PHP 7.1 supported version
 PHP_LIBGD_EXTERNAL='n'       # optional use external libgd instead of bundled PHP gd version
 LIBGD_EXTERNAL_VER='2.3.3'   # https://github.com/libgd/libgd/releases
 
-IMAGEMAGICK_HEIF='n'         # experimental ImageMagick HEIF image format support
+IMAGEMAGICK_HEIF='n'           # experimental ImageMagick HEIF image format support
+IMAGEMAGICK_SOURCE_INSTALL='n' # ImageMagick 7 source install with HEIC support
+LIBDE265_VER='1.0.9'
+LIBHEIF_VER='1.14.0'
 
 # Redis server
 REDIS_SERVER_INSTALL='y'      # Install redis server by default on initial install
@@ -317,9 +352,10 @@ NGINX_PRIORITIZECHACHA='n' # https://community.centminmod.com/posts/67042/
 SSL_PROTOCOL_MODERN='y'         # switch Nginx HTTPS to disabel TLSv1.0 & TLSv1.1 by default and support TLSv1.2 minimum
 DISABLE_TLSONEZERO_PROTOCOL='n' # disable TLS 1.0 protocol by default industry is moving to deprecate for security
 NOSOURCEOPENSSL='y'        # set to 'y' to disable OpenSSL source compile for system default YUM package setup
-OPENSSL_VERSION='1.1.1w'   # Use this version of OpenSSL http://openssl.org/
-OPENSSL_VERSIONFALLBACK='1.1.1w'   # fallback if OPENSSL_VERSION uses openssl 1.1.x branch
-OPENSSL_VERSION_OLDOVERRIDE='1.1.1w' # override version if persist config OPENSSL_VERSION variable is out of date
+OPENSSL_VERSION='1.1.1w'                   # Use this version of OpenSSL http://openssl.org/
+OPENSSL_VERSIONFALLBACK='1.1.1w'           # fallback if OPENSSL_VERSION uses openssl 1.1.x branch
+OPENSSL_VERSION_OLDOVERRIDE='1.1.1w'       # override version if persist config OPENSSL_VERSION variable is out of date
+OPENSSL_QUIC_VERSION='OpenSSL_1_1_1w+quic' # quicTLS OpenSSL fork version
 OPENSSL_THREADS='y'        # control whether openssl 1.1 branch uses threading or not
 OPENSSL_TLSONETHREE='y'    # whether OpenSSL 1.1.1 builds enable TLSv1.3
 OPENSSL_CUSTOMPATH='/opt/openssl'  # custom directory path for OpenSSL 1.0.2+
@@ -331,7 +367,7 @@ CLOUDFLARE_ZLIBRESET='y'   # if CLOUDFLARE_ZLIB='n' set, then revert gzip compre
 CLOUDFLARE_ZLIBRAUTOMAX='n' # don't auto raise nginx gzip compression level to 9 if using Cloudflare zlib
 CLOUDFLARE_ZLIBPHP='n'     # use Cloudflare optimised zlib fork for PHP-FPM zlib instead of system zlib
 CLOUDFLARE_ZLIBDEBUG='n'   # make install debug verbose mode
-CLOUDFLARE_ZLIBVER='1.3.2'
+CLOUDFLARE_ZLIBVER='1.3.3'
 NGINX_DYNAMICTLS='n'          # set 'y' and recompile nginx https://blog.cloudflare.com/optimizing-tls-over-tcp-to-reduce-latency/
 OPENSSLECDSA_PATCH='n'        # https://community.centminmod.com/posts/57725/
 OPENSSLECDHX_PATCH='n'        # https://community.centminmod.com/posts/57726/
@@ -339,8 +375,8 @@ OPENSSLEQUALCIPHER_PATCH='n'  # https://community.centminmod.com/posts/57916/
 PRIORITIZE_CHACHA_OPENSSL='n' # https://community.centminmod.com/threads/15708/
 
 # LibreSSL
-LIBRESSL_SWITCH='y'        # if set to 'y' it overrides OpenSSL as the default static compiled option for Nginx server
-LIBRESSL_VERSION='3.8.2'   # Use this version of LibreSSL http://www.libressl.org/
+LIBRESSL_SWITCH='n'        # if set to 'y' it overrides OpenSSL as the default static compiled option for Nginx server
+LIBRESSL_VERSION='3.9.2'   # Use this version of LibreSSL http://www.libressl.org/
 
 # BoringSSL
 BORINGSSL_SWITCH='n'       # if set to 'y' it overrides OpenSSL as the default static compiled option for Nginx server
@@ -363,10 +399,11 @@ PCRE_VERSION='8.45'          # PCRE version
 IMAGICKPHP_VER='3.4.4'         # PHP extension for imagick
 IMAGICKPHP_SEVEN_VER='3.7.0'   # PHP extension for imagick
 MAILPARSEPHP_VER='2.1.6'      # https://pecl.php.net/package/mailparse
-MAILPARSEPHP_COMPATVER='3.1.2' # For PHP 7
+MAILPARSEPHP_COMPATVER='3.1.3' # For PHP 7.0-7.3
+MAILPARSEPHPSEVENFOUR_COMPATVER='3.1.6' # For PHP 7.4+
 MEMCACHED_INSTALL='y'         # Install Memcached
-LIBEVENT_VERSION='2.1.8'      # Use this version of Libevent
-MEMCACHED_VERSION='1.6.22'    # Use this version of Memcached server
+LIBEVENT_VERSION='2.1.12'      # Use this version of Libevent
+MEMCACHED_VERSION='1.6.28'    # Use this version of Memcached server
 MEMCACHED_TLS='n'             # TLS support https://github.com/memcached/memcached/wiki/ReleaseNotes1513
 MEMCACHE_VERSION='3.0.8'      # Use this version of Memcache
 MEMCACHE_COMPATVER='4.0.5.1'  # For PHP 7
@@ -378,19 +415,21 @@ TWEMPERF_VER='0.1.1'
 
 PHPREDIS='y'                # redis PHP extension install
 REDISPHP_VER='4.3.0'        # redis PHP version for PHP <7.x
-REDISPHPSEVEN_VER='5.3.6'   # redis PHP version for PHP =>7.x
+REDISPHPSEVEN_VER='5.3.7'   # redis PHP version for PHP 7.0.x to 7.1.x
+REDISPHPSEVENTWO_VER='6.0.2'   # redis PHP version for PHP =>7.2.x
 REDISPHP_GIT='n'            # pull php 7 redis extension from git or pecl downloads
 PHPMONGODB='n'              # MongoDB PHP extension install
 MONGODBPHP_VER='1.7.5'      # MongoDB PHP version
 MONGODBPHP_SEVEN_ZERO_VER='1.9.2' # MongoDB max PHP =<7.0 version
 MONGODBPHP_SEVEN_VER='1.11.1'     # MongoDB max PHP 7.1+ version
-MONGODBPHP_EIGHT_VER='1.12.0'     # MongoDB PHP version
+MONGODBPHP_EIGHT_VER='1.13.0'
+MONGODBPHP_EIGHTTWO_VER='1.17.3'     # MongoDB PHP version
 MONGODB_SASL='n'            # SASL not working yet leave = n
 PDOPGSQL_PHPVER='11'       # pdo-pgsql PHP extension version for postgresql
 PHP_LIBZIP='n'              # use newer libzip instead of PHP embedded zip
 PHP_ARGON='n'               # alias for PHP_LIBZIP, when PHP_ARGON='y' then PHP_LIBZIP='y'
-LIBZIP_VER='1.7.3'          # required for PHP 7.2 + with libsodium & argon2
-LIBSODIUM_VER='1.0.18'      # https://github.com/jedisct1/libsodium/releases
+LIBZIP_VER='1.10.1'          # required for PHP 7.2 + with libsodium & argon2
+LIBSODIUM_VER='1.0.20'      # https://github.com/jedisct1/libsodium/releases
 LIBSODIUM_NATIVE='n'        # optimise for specific cpu not portable between different cpu modules
 LIBARGON_VER='20190702'     # https://github.com/P-H-C/phc-winner-argon2
 PHP_MCRYPTPECL='y'          # PHP 7.2 deprecated mcrypt support so this adds it back as PECL extension
@@ -407,7 +446,7 @@ PHP_MEMCACHE='y'            # memcache PHP extension
 PHP_MEMCACHED='y'           # memcached PHP extension
 FFMPEGVER='0.6.0'
 SUHOSINVER='0.9.38'
-PHP_VERSION='7.4.32'        # Use this version of PHP
+PHP_VERSION='7.4.33'        # Use this version of PHP
 PHP_MIRRORURL='https://www.php.net'
 PHPUPGRADE_MIRRORURL="$PHP_MIRRORURL"
 XCACHE_VERSION='3.2.0'      # Use this version of Xcache
@@ -419,8 +458,12 @@ ZOPCACHEDFT='y'
 ZOPCACHECACHE_VERSION='7.0.5'   # for PHP <=5.4 https://pecl.php.net/package/ZendOpcache
 ZOPCACHE_OVERRIDE='n'           # ='y'ill override PHP 5.5, 5.6, 7.0 inbuilt Zend OpCache version
 # Python
-PYTHON_VERSION='2.7.10'     # Use this version of Python
-SIEGE_VERSION='4.0.4'
+PYTHON_VERSION='2.7.10'       # Use this version of Python for CentOS 7 only
+PYTHON_INSTALL_ALTERNATIVES='n' # For EL8+ to install Python 3.6 and set unversioned binary alternatives
+ALT_PYTHON_VER_LABEL='3.6'    # For EL8+ OSes only i.e. python3.6 binary
+ALT_PYTHON_VER='36'           # For EL8+ OSes only i.e. python36 package
+SIEGE_VERSION='4.1.5'
+SIEGEINSTALL='n'
 
 # custom curl/libcurl RPM for 7.44 and higher
 # enable with CUSTOM_CURLRPM='y' use at own risk as it can break the system
@@ -491,6 +534,8 @@ PORTFLOOD_INTERVAL=300
 MARIADB_INSTALLTENTWO='n'   # MariaDB 10.2 YUM default install if set to yes
 MARIADB_INSTALLTENTHREE='n' # MariaDB 10.3 YUM default install if set to yes
 MARIADB_INSTALLTENFOUR='n'  # MariaDB 10.4 YUM default install if set to yes
+MARIADB_INSTALLTENFIVE='n'  # MariaDB 10.5 YUM default install if set to yes
+MARIADB_INSTALLTENSIX='n'  # MariaDB 10.6 YUM default install if set to yes
 ###############################################################
 # centmin.sh menu trigger settings
 SKIP_INITIAL_PIP_UPDATES='n'
@@ -500,4 +545,9 @@ SKIP_FIXWP_UPDATER='n'
 SKIP_CSF_MAXMIND_REGO='n'
 SKIP_CHECKIPVSIX='n'
 SKIP_LIBC_FIX='n'
+###############################################################
+# TCP BBR congestion control
+TCP_BBR_ENABLE='n'
+# TCP Fast Open
+TCP_FASTOPEN_ENABLE='n'
 ###############################################################

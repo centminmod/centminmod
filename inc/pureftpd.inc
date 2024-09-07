@@ -1,6 +1,6 @@
 pureftpinstall() {
 
-if [[ "$CENTOS_SEVEN" = '7' && "$DNF_ENABLE" = [yY] ]]; then
+if [[ "$CENTOS_SEVEN" -eq '7' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]] && [[ "$DNF_ENABLE" = [yY] ]]; then
   if [ -f /etc/yum.repos.d/rpmforge.repo ]; then
       DISABLEREPO_DNF=' --disablerepo=rpmforge'
       YUMDNFBIN="dnf${DISABLEREPO_DNF}"
@@ -53,7 +53,11 @@ fi
     # tweak /etc/pure-ftpd/pure-ftpd.conf
     sed -i 's/# UnixAuthentication  /UnixAuthentication  /' /etc/pure-ftpd/pure-ftpd.conf
     sed -i 's/VerboseLog .*/VerboseLog yes/' /etc/pure-ftpd/pure-ftpd.conf
-    sed -i 's/# PureDB                        \/etc\/pure-ftpd\/pureftpd.pdb/PureDB                        \/etc\/pure-ftpd\/pureftpd.pdb/' /etc/pure-ftpd/pure-ftpd.conf
+    if [[ "$CENTOS_SEVEN" -eq '7' ]]; then
+      sed -i 's/# PureDB                        \/etc\/pure-ftpd\/pureftpd.pdb/PureDB                        \/etc\/pure-ftpd\/pureftpd.pdb/' /etc/pure-ftpd/pure-ftpd.conf
+    elif [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]]; then
+      sed -i 's/# PureDB                       \@sysconfigdir\@\/pureftpd.pdb/PureDB                        \/etc\/pure-ftpd\/pureftpd.pdb/' /etc/pure-ftpd/pure-ftpd.conf
+    fi
     sed -i 's/# CreateHomeDir .*/CreateHomeDir               yes/' /etc/pure-ftpd/pure-ftpd.conf
     sed -i 's/# TLS .*/TLS                      2/' /etc/pure-ftpd/pure-ftpd.conf
     sed -i 's/# PassivePortRange .*/PassivePortRange    30001 50011/' /etc/pure-ftpd/pure-ftpd.conf
@@ -110,9 +114,26 @@ fi
     echo "self-signed ssl cert generated"
 
     pureftpd_symlink_fix
-      
+    # checks
+    echo
+    echo "ls -lAh /etc/systemd/system/pure-ftpd.service.d"
+    ls -lAh /etc/systemd/system/pure-ftpd.service.d
+    echo
+    if [ ! -d /etc/systemd/system/pure-ftpd.service.d ]; then
+      mkdir -p /etc/systemd/system/pure-ftpd.service.d
+      echo '[Service]' > /etc/systemd/system/pure-ftpd.service.d/pidfile.conf
+      echo 'PIDFile=/run/pure-ftpd.pid' >> /etc/systemd/system/pure-ftpd.service.d/pidfile.conf
+    fi
+    echo "cat /etc/systemd/system/pure-ftpd.service.d/pidfile.conf"
+    cat /etc/systemd/system/pure-ftpd.service.d/pidfile.conf
+    echo
     echo "pure-ftpd installed"
+    systemctl daemon-reload
     cmservice pure-ftpd restart
+    echo
+    echo 'journalctl -u pure-ftpd --no-pager | tail -10'
+    journalctl -u pure-ftpd --no-pager | tail -10
+    echo
     csf -r
 
     echo

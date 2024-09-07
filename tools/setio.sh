@@ -6,6 +6,9 @@ export LC_ALL=en_US.UTF-8
 export LANG=en_US.UTF-8
 export LANGUAGE=en_US.UTF-8
 export LC_CTYPE=en_US.UTF-8
+# disable systemd pager so it doesn't pipe systemctl output to less
+export SYSTEMD_PAGER=''
+ARCH_CHECK="$(uname -m)"
 ########################################################################################
 # https://community.centminmod.com/threads/help-test-innodbio-sh-for-mysql-tuning.6012/
 # for centminmod.com /etc/my.cnf
@@ -15,9 +18,81 @@ VER=0.4
 DEBUG='n'
 CPUS=$(grep -c "processor" /proc/cpuinfo)
 TIME='n'
-MDB_SVER=$(/usr/bin/mysql -V | awk '{print $5}' | cut -d . -f1,2 | head -n1)
-MDB_DATADIRSIZE=$(df $(mysqladmin var | grep datadir | tr -s ' ' | awk '{print $4}') | tail -1 | awk '{print $4}')
-MDB_DATADIR=$(mysqladmin var | grep datadir | tr -s ' ' | awk '{print $4}' | tail -1)
+
+# Function to get MariaDB version
+get_mariadb_version() {
+    local version=$(mysql -V 2>&1 | awk '{print $5}' | awk -F. '{print $1"."$2}')
+    echo $version
+}
+
+# Function to set client command variables based on MariaDB version
+set_mariadb_client_commands() {
+    local version=$(get_mariadb_version)
+    
+    # Convert version to a comparable integer (e.g., 10.3 becomes 1003)
+    version_number=$(echo "$version" | awk -F. '{printf "%d%02d\n", $1, $2}')
+
+    if (( version_number <= 1011 )); then
+        # For versions less than or equal to 10.11, use old MySQL names
+        ALIAS_MYSQLACCESS="mysqlaccess"
+        ALIAS_MYSQLADMIN="mysqladmin"
+        ALIAS_MYSQLBINLOG="mysqlbinlog"
+        ALIAS_MYSQLCHECK="mysqlcheck"
+        ALIAS_MYSQLDUMP="mysqldump"
+        ALIAS_MYSQLDUMPSLOW="mysqldumpslow"
+        ALIAS_MYSQLHOTCOPY="mysqlhotcopy"
+        ALIAS_MYSQLIMPORT="mysqlimport"
+        ALIAS_MYSQLREPORT="mysqlreport"
+        ALIAS_MYSQLSHOW="mysqlshow"
+        ALIAS_MYSQLSLAP="mysqlslap"
+        ALIAS_MYSQL_CONVERT_TABLE_FORMAT="mysql_convert_table_format"
+        ALIAS_MYSQL_EMBEDDED="mysql_embedded"
+        ALIAS_MYSQL_FIND_ROWS="mysql_find_rows"
+        ALIAS_MYSQL_FIX_EXTENSIONS="mysql_fix_extensions"
+        ALIAS_MYSQL_INSTALL_DB="mysql_install_db"
+        ALIAS_MYSQL_PLUGIN="mysql_plugin"
+        ALIAS_MYSQL_SECURE_INSTALLATION="mysql_secure_installation"
+        ALIAS_MYSQL_SETPERMISSION="mysql_setpermission"
+        ALIAS_MYSQL_TZINFO_TO_SQL="mysql_tzinfo_to_sql"
+        ALIAS_MYSQL_UPGRADE="mysql_upgrade"
+        ALIAS_MYSQL_WAITPID="mysql_waitpid"
+        ALIAS_MYSQL="mysql"
+        ALIAS_MYSQLD="mysqld"
+        ALIAS_MYSQLDSAFE="mysqld_safe"
+    else
+        # For versions greater than 10.11, use new MariaDB names
+        ALIAS_MYSQLACCESS="mariadb-access"
+        ALIAS_MYSQLADMIN="mariadb-admin"
+        ALIAS_MYSQLBINLOG="mariadb-binlog"
+        ALIAS_MYSQLCHECK="mariadb-check"
+        ALIAS_MYSQLDUMP="mariadb-dump"
+        ALIAS_MYSQLDUMPSLOW="mariadb-dumpslow"
+        ALIAS_MYSQLHOTCOPY="mariadb-hotcopy"
+        ALIAS_MYSQLIMPORT="mariadb-import"
+        ALIAS_MYSQLREPORT="mariadb-report"
+        ALIAS_MYSQLSHOW="mariadb-show"
+        ALIAS_MYSQLSLAP="mariadb-slap"
+        ALIAS_MYSQL_CONVERT_TABLE_FORMAT="mariadb-convert-table-format"
+        ALIAS_MYSQL_EMBEDDED="mariadb-embedded"
+        ALIAS_MYSQL_FIND_ROWS="mariadb-find-rows"
+        ALIAS_MYSQL_FIX_EXTENSIONS="mariadb-fix-extensions"
+        ALIAS_MYSQL_INSTALL_DB="mariadb-install-db"
+        ALIAS_MYSQL_PLUGIN="mariadb-plugin"
+        ALIAS_MYSQL_SECURE_INSTALLATION="mariadb-secure-installation"
+        ALIAS_MYSQL_SETPERMISSION="mariadb-setpermission"
+        ALIAS_MYSQL_TZINFO_TO_SQL="mariadb-tzinfo-to-sql"
+        ALIAS_MYSQL_UPGRADE="mariadb-upgrade"
+        ALIAS_MYSQL_WAITPID="mariadb-waitpid"
+        ALIAS_MYSQL="mariadb"
+        ALIAS_MYSQLD="mariadbd"
+        ALIAS_MYSQLDSAFE="mariadbd-safe"
+    fi
+}
+set_mariadb_client_commands
+
+MDB_SVER=$(${ALIAS_MYSQL} -V | awk '{print $5}' | cut -d . -f1,2 | head -n1)
+MDB_DATADIRSIZE=$(df $(${ALIAS_MYSQLADMIN} var | grep datadir | tr -s ' ' | awk '{print $4}') | tail -1 | awk '{print $4}')
+MDB_DATADIR=$(${ALIAS_MYSQLADMIN} var | grep datadir | tr -s ' ' | awk '{print $4}' | tail -1)
 FIOBASEDIR="$MDB_DATADIR/cmsetiofiotest"
 CENTMINLOGDIR='/root/centminlogs'
 
@@ -41,10 +116,11 @@ if [ ! -d "$FIOBASEDIR" ]; then
   mkdir -p $FIOBASEDIR
   if [[ ! "$(grep 'cmsetiofiotest' /etc/my.cnf)" ]]; then
     cp -a /etc/my.cnf /etc/my.cnf-setiobackup
-    sed -i 's|\[mysqld\]|\[mysqld\]\nignore-db-dir=cmsetiofiotest|' /etc/my.cnf
+    sed -i 's|\[mysqld\]|\[mysqld\]\nignore_db_dirs=cmsetiofiotest|' /etc/my.cnf
     MARIADBVERCHECK=$(rpm -qa | grep MariaDB-server | awk -F "-" '{print $3}' | cut -c1-4)
-    if [[ "$MARIADBVERCHECK" == '10.1' || "$MARIADBVERCHECK" == '10.2' || "$MARIADBVERCHECK" == '10.3' ]]; then
-      sed -i 's|ignore-db-dir|ignore_db_dirs|g' /etc/my.cnf
+    if [[ "$MARIADBVERCHECK" == '10.1' || "$MARIADBVERCHECK" == '10.2' || "$MARIADBVERCHECK" == '10.3' || "$MARIADBVERCHECK" == '10.4' || "$MARIADBVERCHECK" == '10.5' || "$MARIADBVERCHECK" == '10.6' ]]; then
+      sed -i 's|ignore-db-dir=|ignore_db_dirs=|g' /etc/my.cnf
+      sed -i 's|ignore_db_dir=|ignore_db_dirs=|g' /etc/my.cnf
     fi
     # /usr/bin/mysqlreload
   fi
@@ -68,6 +144,8 @@ if [ "$CENTOSVER" == 'release' ]; then
         CENTOS_SEVEN='7'
     elif [[ "$(cat /etc/redhat-release | awk '{ print $4 }' | cut -d . -f1)" = '8' ]]; then
         CENTOS_EIGHT='8'
+    elif [[ "$(cat /etc/redhat-release | awk '{ print $4 }' | cut -d . -f1)" = '9' ]]; then
+        CENTOS_NINE='9'
     fi
 fi
 
@@ -88,12 +166,88 @@ if [[ -f /etc/system-release && "$(awk '{print $1,$2,$3}' /etc/system-release)" 
     CENTOS_SIX='6'
 fi
 
+# ensure only el8+ OS versions are being looked at for alma linux, rocky linux
+# oracle linux, vzlinux, circle linux, navy linux, euro linux
+EL_VERID=$(awk -F '=' '/VERSION_ID/ {print $2}' /etc/os-release | sed -e 's|"||g' | cut -d . -f1)
+if [ -f /etc/almalinux-release ] && [[ "$EL_VERID" -eq 8 || "$EL_VERID" -eq 9 ]]; then
+  CENTOSVER=$(awk '{ print $3 }' /etc/almalinux-release | cut -d . -f1,2)
+  ALMALINUXVER=$(awk '{ print $3 }' /etc/almalinux-release | cut -d . -f1,2 | sed -e 's|\.|000|g')
+  if [[ "$(echo $CENTOSVER | cut -d . -f1)" -eq '8' ]]; then
+    CENTOS_EIGHT='8'
+    ALMALINUX_EIGHT='8'
+  elif [[ "$(echo $CENTOSVER | cut -d . -f1)" -eq '9' ]]; then
+    CENTOS_NINE='9'
+    ALMALINUX_NINE='9'
+  fi
+elif [ -f /etc/rocky-release ] && [[ "$EL_VERID" -eq 8 || "$EL_VERID" -eq 9 ]]; then
+  CENTOSVER=$(awk '{ print $4 }' /etc/rocky-release | cut -d . -f1,2)
+  ROCKYLINUXVER=$(awk '{ print $3 }' /etc/rocky-release | cut -d . -f1,2 | sed -e 's|\.|000|g')
+  if [[ "$(echo $CENTOSVER | cut -d . -f1)" -eq '8' ]]; then
+    CENTOS_EIGHT='8'
+    ROCKYLINUX_EIGHT='8'
+  elif [[ "$(echo $CENTOSVER | cut -d . -f1)" -eq '9' ]]; then
+    CENTOS_NINE='9'
+    ROCKYLINUX_NINE='9'
+  fi
+elif [ -f /etc/oracle-release ] && [[ "$EL_VERID" -eq 8 || "$EL_VERID" -eq 9 ]]; then
+  CENTOSVER=$(awk '{ print $5 }' /etc/oracle-release | cut -d . -f1,2)
+  if [[ "$(echo $CENTOSVER | cut -d . -f1)" -eq '8' ]]; then
+    CENTOS_EIGHT='8'
+    ORACLELINUX_EIGHT='8'
+  elif [[ "$(echo $CENTOSVER | cut -d . -f1)" -eq '9' ]]; then
+    CENTOS_NINE='9'
+    ORACLELINUX_NINE='9'
+  fi
+elif [ -f /etc/vzlinux-release ] && [[ "$EL_VERID" -eq 8 || "$EL_VERID" -eq 9 ]]; then
+  CENTOSVER=$(awk '{ print $4 }' /etc/vzlinux-release | cut -d . -f1,2)
+  if [[ "$(echo $CENTOSVER | cut -d . -f1)" -eq '8' ]]; then
+    CENTOS_EIGHT='8'
+    VZLINUX_EIGHT='8'
+  elif [[ "$(echo $CENTOSVER | cut -d . -f1)" -eq '9' ]]; then
+    CENTOS_NINE='9'
+    VZLINUX_NINE='9'
+  fi
+elif [ -f /etc/circle-release ] && [[ "$EL_VERID" -eq 8 || "$EL_VERID" -eq 9 ]]; then
+  CENTOSVER=$(awk '{ print $4 }' /etc/circle-release | cut -d . -f1,2)
+  if [[ "$(echo $CENTOSVER | cut -d . -f1)" -eq '8' ]]; then
+    CENTOS_EIGHT='8'
+    CIRCLELINUX_EIGHT='8'
+  elif [[ "$(echo $CENTOSVER | cut -d . -f1)" -eq '9' ]]; then
+    CENTOS_NINE='9'
+    CIRCLELINUX_NINE='9'
+  fi
+elif [ -f /etc/navylinux-release ] && [[ "$EL_VERID" -eq 8 || "$EL_VERID" -eq 9 ]]; then
+  CENTOSVER=$(awk '{ print $5 }' /etc/navylinux-release | cut -d . -f1,2)
+  if [[ "$(echo $CENTOSVER | cut -d . -f1)" -eq '8' ]]; then
+    CENTOS_EIGHT='8'
+    NAVYLINUX_EIGHT='8'
+  elif [[ "$(echo $CENTOSVER | cut -d . -f1)" -eq '9' ]]; then
+    CENTOS_NINE='9'
+    NAVYLINUX_NINE='9'
+  fi
+elif [ -f /etc/el-release ] && [[ "$EL_VERID" -eq 8 || "$EL_VERID" -eq 9 ]]; then
+  CENTOSVER=$(awk '{ print $3 }' /etc/el-release | cut -d . -f1,2)
+  if [[ "$(echo $CENTOSVER | cut -d . -f1)" -eq '8' ]]; then
+    CENTOS_EIGHT='8'
+    EUROLINUX_EIGHT='8'
+  elif [[ "$(echo $CENTOSVER | cut -d . -f1)" -eq '9' ]]; then
+    CENTOS_NINE='9'
+    EUROLINUX_NINE='9'
+  fi
+fi
+
+CENTOSVER_NUMERIC=$(echo $CENTOSVER | sed -e 's|\.||g')
+
 if [[ "$CENTOS_SIX" = '6' ]]; then
   IFREEMEM=$(cat /proc/meminfo | grep MemFree | awk '{print $2}')
   CACHEDMEM=$(cat /proc/meminfo | grep '^Cached' | awk '{print $2}')
   FREEMEM=$(echo "$IFREEMEM + $CACHEDMEM" | bc)
 elif [[ "$CENTOS_SEVEN" = '7' ]]; then
   FREEMEM=$(cat /proc/meminfo | grep MemAvailable | awk '{print $2}')
+fi
+
+if [[ "$(systemctl is-active mariadb)" != 'active' ]]; then
+  systemctl start mariadb
 fi
 
 baseinfo() {
@@ -242,22 +396,22 @@ infocheck() {
 }
 
 setbp() {
-  INNODB_BPSIZE=$(mysqladmin var | grep 'innodb_buffer_pool_size' | tr -s ' ' | awk '{print $4}')
+  INNODB_BPSIZE=$(${ALIAS_MYSQLADMIN} var | grep 'innodb_buffer_pool_size' | tr -s ' ' | awk '{print $4}')
   INNODB_BPTHRESHOLD='1073741824'
   for i in $(seq 1 ${CPUS});
     do
       if [[ "$(echo $(($INNODB_BPSIZE/$INNODB_BPTHRESHOLD)))" -eq "$i" ]]; then
         sed -i "s|#innodb_buffer_pool_instances=.*|innodb_buffer_pool_instances=$i|g" /etc/my.cnf
         sed -i "s|innodb_buffer_pool_instances=.*|innodb_buffer_pool_instances=$i|g" /etc/my.cnf
-        # /usr/bin/mysql -e "SET GLOBAL innodb_buffer_pool_instances = $i;"
-        # /usr/bin/mysql -e "SHOW VARIABLES like '%innodb_buffer_pool_instances%'"
+        # /usr/bin/${ALIAS_MYSQL} -e "SET GLOBAL innodb_buffer_pool_instances = $i;"
+        # /usr/bin/${ALIAS_MYSQL} -e "SHOW VARIABLES like '%innodb_buffer_pool_instances%'"
       fi
   done
   if [[ "$(echo $(($INNODB_BPSIZE/$INNODB_BPTHRESHOLD)))" -le '1' ]]; then
     sed -i "s|#innodb_buffer_pool_instances=.*|innodb_buffer_pool_instances=1|g" /etc/my.cnf
     sed -i "s|innodb_buffer_pool_instances=.*|innodb_buffer_pool_instances=1|g" /etc/my.cnf
-    # /usr/bin/mysql -e "SET GLOBAL innodb_buffer_pool_instances = 1;"
-    # /usr/bin/mysql -e "SHOW VARIABLES like '%innodb_buffer_pool_instances%'"
+    # /usr/bin/${ALIAS_MYSQL} -e "SET GLOBAL innodb_buffer_pool_instances = 1;"
+    # /usr/bin/${ALIAS_MYSQL} -e "SHOW VARIABLES like '%innodb_buffer_pool_instances%'"
   fi
 }
 
@@ -323,7 +477,7 @@ setconcurrency() {
   sed -i 's|^#innodb_thread_concurrency|innodb_thread_concurrency|g' /etc/my.cnf
   sed -i "s|innodb_thread_concurrency=.*|innodb_thread_concurrency = $INNODB_CONCURRENT|g" /etc/my.cnf
   sed -i "s|innodb_thread_concurrency = .*|innodb_thread_concurrency = $INNODB_CONCURRENT|g" /etc/my.cnf
-  /usr/bin/mysql -e "SET GLOBAL innodb_thread_concurrency = $INNODB_CONCURRENT;"
+  /usr/bin/${ALIAS_MYSQL} -e "SET GLOBAL innodb_thread_concurrency = $INNODB_CONCURRENT;"
 }
 
 ariatune() {
@@ -338,9 +492,9 @@ ariatune() {
     if [[ "$MDB_DATADIRSIZE" -gt '1000000' ]]; then
       sed -i "s|aria_log_file_size=.*|aria_log_file_size = $ARIA_LOGFILESIZE|g" /etc/my.cnf
       sed -i "s|aria_log_file_size = .*|aria_log_file_size = $ARIA_LOGFILESIZE|g" /etc/my.cnf
-      # /usr/bin/mysql -e "SET GLOBAL aria_log_file_size = $ARIA_LOGFILESIZE;"
+      # /usr/bin/${ALIAS_MYSQL} -e "SET GLOBAL aria_log_file_size = $ARIA_LOGFILESIZE;"
     fi
-      # /usr/bin/mysql -e "SET GLOBAL aria_sort_buffer_size = $ARIA_SORTBUFFERSIZE;"
+      # /usr/bin/${ALIAS_MYSQL} -e "SET GLOBAL aria_sort_buffer_size = $ARIA_SORTBUFFERSIZE;"
   elif [[ "$FREEMEM" -gt '2080001' && "$FREEMEM" -lt '3120000' ]]; then
     ARIA_BUFFERSIZE='256M'
     ARIA_SORTBUFFERSIZE='64M'
@@ -352,9 +506,9 @@ ariatune() {
     if [[ "$MDB_DATADIRSIZE" -gt '1400000' ]]; then
       sed -i "s|aria_log_file_size=.*|aria_log_file_size = $ARIA_LOGFILESIZE|g" /etc/my.cnf
       sed -i "s|aria_log_file_size = .*|aria_log_file_size = $ARIA_LOGFILESIZE|g" /etc/my.cnf
-      # /usr/bin/mysql -e "SET GLOBAL aria_log_file_size = $ARIA_LOGFILESIZE;"
+      # /usr/bin/${ALIAS_MYSQL} -e "SET GLOBAL aria_log_file_size = $ARIA_LOGFILESIZE;"
     fi
-      # /usr/bin/mysql -e "SET GLOBAL aria_sort_buffer_size = $ARIA_SORTBUFFERSIZE;"
+      # /usr/bin/${ALIAS_MYSQL} -e "SET GLOBAL aria_sort_buffer_size = $ARIA_SORTBUFFERSIZE;"
   elif [[ "$FREEMEM" -gt '3120001' && "$FREEMEM" -lt '4160000' ]]; then
     ARIA_BUFFERSIZE='384M'
     ARIA_SORTBUFFERSIZE='96M'
@@ -366,9 +520,9 @@ ariatune() {
     if [[ "$MDB_DATADIRSIZE" -gt '2000000' ]]; then
       sed -i "s|aria_log_file_size=.*|aria_log_file_size = $ARIA_LOGFILESIZE|g" /etc/my.cnf
       sed -i "s|aria_log_file_size = .*|aria_log_file_size = $ARIA_LOGFILESIZE|g" /etc/my.cnf
-      # /usr/bin/mysql -e "SET GLOBAL aria_log_file_size = $ARIA_LOGFILESIZE;"
+      # /usr/bin/${ALIAS_MYSQL} -e "SET GLOBAL aria_log_file_size = $ARIA_LOGFILESIZE;"
     fi
-      # /usr/bin/mysql -e "SET GLOBAL aria_sort_buffer_size = $ARIA_SORTBUFFERSIZE;"
+      # /usr/bin/${ALIAS_MYSQL} -e "SET GLOBAL aria_sort_buffer_size = $ARIA_SORTBUFFERSIZE;"
   elif [[ "$FREEMEM" -gt '4160001' && "$FREEMEM" -lt '5200000' ]]; then
     ARIA_BUFFERSIZE='512M'
     ARIA_SORTBUFFERSIZE='128M'
@@ -380,9 +534,9 @@ ariatune() {
     if [[ "$MDB_DATADIRSIZE" -gt '2000000' ]]; then
       sed -i "s|aria_log_file_size=.*|aria_log_file_size = $ARIA_LOGFILESIZE|g" /etc/my.cnf
       sed -i "s|aria_log_file_size = .*|aria_log_file_size = $ARIA_LOGFILESIZE|g" /etc/my.cnf
-      # /usr/bin/mysql -e "SET GLOBAL aria_log_file_size = $ARIA_LOGFILESIZE;"
+      # /usr/bin/${ALIAS_MYSQL} -e "SET GLOBAL aria_log_file_size = $ARIA_LOGFILESIZE;"
     fi
-      # /usr/bin/mysql -e "SET GLOBAL aria_sort_buffer_size = $ARIA_SORTBUFFERSIZE;"
+      # /usr/bin/${ALIAS_MYSQL} -e "SET GLOBAL aria_sort_buffer_size = $ARIA_SORTBUFFERSIZE;"
   elif [[ "$FREEMEM" -gt '5200001' && "$FREEMEM" -lt '6240000' ]]; then
     ARIA_BUFFERSIZE='640M'
     ARIA_SORTBUFFERSIZE='160M'
@@ -394,9 +548,9 @@ ariatune() {
     if [[ "$MDB_DATADIRSIZE" -gt '2000000' ]]; then
       sed -i "s|aria_log_file_size=.*|aria_log_file_size = $ARIA_LOGFILESIZE|g" /etc/my.cnf
       sed -i "s|aria_log_file_size = .*|aria_log_file_size = $ARIA_LOGFILESIZE|g" /etc/my.cnf
-      # /usr/bin/mysql -e "SET GLOBAL aria_log_file_size = $ARIA_LOGFILESIZE;"
+      # /usr/bin/${ALIAS_MYSQL} -e "SET GLOBAL aria_log_file_size = $ARIA_LOGFILESIZE;"
     fi
-      # /usr/bin/mysql -e "SET GLOBAL aria_sort_buffer_size = $ARIA_SORTBUFFERSIZE;"
+      # /usr/bin/${ALIAS_MYSQL} -e "SET GLOBAL aria_sort_buffer_size = $ARIA_SORTBUFFERSIZE;"
   elif [[ "$FREEMEM" -gt '6240001' && "$FREEMEM" -lt '8320000' ]]; then
     ARIA_BUFFERSIZE='768M'
     ARIA_SORTBUFFERSIZE='192M'
@@ -408,9 +562,9 @@ ariatune() {
     if [[ "$MDB_DATADIRSIZE" -gt '2500000' ]]; then
       sed -i "s|aria_log_file_size=.*|aria_log_file_size = $ARIA_LOGFILESIZE|g" /etc/my.cnf
       sed -i "s|aria_log_file_size = .*|aria_log_file_size = $ARIA_LOGFILESIZE|g" /etc/my.cnf
-      # /usr/bin/mysql -e "SET GLOBAL aria_log_file_size = $ARIA_LOGFILESIZE;"
+      # /usr/bin/${ALIAS_MYSQL} -e "SET GLOBAL aria_log_file_size = $ARIA_LOGFILESIZE;"
     fi
-      # /usr/bin/mysql -e "SET GLOBAL aria_sort_buffer_size = $ARIA_SORTBUFFERSIZE;"
+      # /usr/bin/${ALIAS_MYSQL} -e "SET GLOBAL aria_sort_buffer_size = $ARIA_SORTBUFFERSIZE;"
   elif [[ "$FREEMEM" -gt '8320001' ]]; then
     ARIA_BUFFERSIZE='1024M'
     ARIA_SORTBUFFERSIZE='256M'
@@ -422,19 +576,19 @@ ariatune() {
     if [[ "$MDB_DATADIRSIZE" -gt '4000000' ]]; then
       sed -i "s|aria_log_file_size=.*|aria_log_file_size = $ARIA_LOGFILESIZE|g" /etc/my.cnf
       sed -i "s|aria_log_file_size = .*|aria_log_file_size = $ARIA_LOGFILESIZE|g" /etc/my.cnf
-      # /usr/bin/mysql -e "SET GLOBAL aria_log_file_size = $ARIA_LOGFILESIZE;"
+      # /usr/bin/${ALIAS_MYSQL} -e "SET GLOBAL aria_log_file_size = $ARIA_LOGFILESIZE;"
     elif [[ "$MDB_DATADIRSIZE" -gt '2500000' && "$MDB_DATADIRSIZE" -le '3999999' ]]; then
       ARIA_LOGFILESIZE='768M'
       sed -i "s|aria_log_file_size=.*|aria_log_file_size = $ARIA_LOGFILESIZE|g" /etc/my.cnf
       sed -i "s|aria_log_file_size = .*|aria_log_file_size = $ARIA_LOGFILESIZE|g" /etc/my.cnf
-      # /usr/bin/mysql -e "SET GLOBAL aria_log_file_size = $ARIA_LOGFILESIZE;"
+      # /usr/bin/${ALIAS_MYSQL} -e "SET GLOBAL aria_log_file_size = $ARIA_LOGFILESIZE;"
     elif [[ "$MDB_DATADIRSIZE" -gt '2000000' && "$MDB_DATADIRSIZE" -le '2499999' ]]; then
       ARIA_LOGFILESIZE='512M'
       sed -i "s|aria_log_file_size=.*|aria_log_file_size = $ARIA_LOGFILESIZE|g" /etc/my.cnf
       sed -i "s|aria_log_file_size = .*|aria_log_file_size = $ARIA_LOGFILESIZE|g" /etc/my.cnf
-      # /usr/bin/mysql -e "SET GLOBAL aria_log_file_size = $ARIA_LOGFILESIZE;"
+      # /usr/bin/${ALIAS_MYSQL} -e "SET GLOBAL aria_log_file_size = $ARIA_LOGFILESIZE;"
     fi
-      # /usr/bin/mysql -e "SET GLOBAL aria_sort_buffer_size = $ARIA_SORTBUFFERSIZE;"
+      # /usr/bin/${ALIAS_MYSQL} -e "SET GLOBAL aria_sort_buffer_size = $ARIA_SORTBUFFERSIZE;"
   fi
 }
 
@@ -465,21 +619,21 @@ setio() {
     # detect appropriate variable differences between MariaDB 
     # 5.5 VS 10.x
     if [[ "$FIOW" -ge '500' ]]; then
-      if [[ "$(echo $(mysqladmin var | awk -F '|' '/innodb_flush_neighbors/ { print $2"="$3}') | grep 'innodb_flush_neighbors' >/dev/null 2>&1; echo $?)" = '0' ]]; then
+      if [[ "$(echo $(${ALIAS_MYSQLADMIN} var | awk -F '|' '/innodb_flush_neighbors/ { print $2"="$3}') | grep 'innodb_flush_neighbors' >/dev/null 2>&1; echo $?)" = '0' ]]; then
         # MariaDB 10.x
         echo -e "\nset innodb_flush_neighbors = 0\n"
         sed -i "s|innodb_flush_neighbors = .*|innodb_flush_neighbors = 0|g" /etc/my.cnf
-        /usr/bin/mysql -e "SET GLOBAL innodb_flush_neighbors = 0;"
+        /usr/bin/${ALIAS_MYSQL} -e "SET GLOBAL innodb_flush_neighbors = 0;"
         # append right after innodb_write_io_threads if innodb_flush_neighbors doesn't exist
         # in /etc/my.cnf
         if [[ "$(grep 'innodb_flush_neighbors' /etc/my.cnf >/dev/null 2>&1; echo $?)" != '0' ]]; then
           sed -i '/innodb_write_io_threads = .*/a innodb_flush_neighbors = 0' /etc/my.cnf
         fi
-      elif [[ "$(echo $(mysqladmin var | awk -F '|' '/innodb_flush_neighbor_pages/ { print $2"="$3}') | grep 'innodb_flush_neighbor_pages' >/dev/null 2>&1; echo $?)" = '0' ]]; then
+      elif [[ "$(echo $(${ALIAS_MYSQLADMIN} var | awk -F '|' '/innodb_flush_neighbor_pages/ { print $2"="$3}') | grep 'innodb_flush_neighbor_pages' >/dev/null 2>&1; echo $?)" = '0' ]]; then
         # MariaDB 5.5.x
         echo -e "\nset innodb_flush_neighbor_pages = 0\n"
         sed -i "s|innodb_flush_neighbor_pages = .*|innodb_flush_neighbor_pages = 0|g" /etc/my.cnf
-        /usr/bin/mysql -e "SET GLOBAL innodb_flush_neighbor_pages = 0;"
+        /usr/bin/${ALIAS_MYSQL} -e "SET GLOBAL innodb_flush_neighbor_pages = 0;"
         # append right after innodb_write_io_threads if innodb_flush_neighbors doesn't exist
         # in /etc/my.cnf
         if [[ "$(grep 'innodb_flush_neighbor_pages' /etc/my.cnf >/dev/null 2>&1; echo $?)" != '0' ]]; then
@@ -489,16 +643,16 @@ setio() {
       # only need to insert missing variable if disk I/O writes greater than 500 IOPs
       # as variable defaults to 1 even without variable set specifically in /etc/my.cnf
     elif [[ "$FIOW" -lt '500' ]]; then
-      if [[ "$(echo $(mysqladmin var | awk -F '|' '/innodb_flush_neighbors/ { print $2"="$3}') | grep 'innodb_flush_neighbors' >/dev/null 2>&1; echo $?)" = '0' ]]; then
+      if [[ "$(echo $(${ALIAS_MYSQLADMIN} var | awk -F '|' '/innodb_flush_neighbors/ { print $2"="$3}') | grep 'innodb_flush_neighbors' >/dev/null 2>&1; echo $?)" = '0' ]]; then
         # MariaDB 10.x
         echo -e "\nset innodb_flush_neighbors = 1\n"
         sed -i "s|innodb_flush_neighbors = .*|innodb_flush_neighbors = 1|g" /etc/my.cnf
-        /usr/bin/mysql -e "SET GLOBAL innodb_flush_neighbors = 1;"
-      elif [[ "$(echo $(mysqladmin var | awk -F '|' '/innodb_flush_neighbor_pages/ { print $2"="$3}') | grep 'innodb_flush_neighbor_pages' >/dev/null 2>&1; echo $?)" = '0' ]]; then
+        /usr/bin/${ALIAS_MYSQL} -e "SET GLOBAL innodb_flush_neighbors = 1;"
+      elif [[ "$(echo $(${ALIAS_MYSQLADMIN} var | awk -F '|' '/innodb_flush_neighbor_pages/ { print $2"="$3}') | grep 'innodb_flush_neighbor_pages' >/dev/null 2>&1; echo $?)" = '0' ]]; then
         # MariaDB 5.5.x
         echo -e "\nset innodb_flush_neighbor_pages = 1\n"
         sed -i "s|innodb_flush_neighbor_pages = .*|innodb_flush_neighbor_pages = 1|g" /etc/my.cnf
-        /usr/bin/mysql -e "SET GLOBAL innodb_flush_neighbor_pages = 1;"
+        /usr/bin/${ALIAS_MYSQL} -e "SET GLOBAL innodb_flush_neighbor_pages = 1;"
       fi
     fi
 
@@ -592,13 +746,13 @@ setio() {
   # echo
   echo "existing value: "
   # grep 'innodb_io_capacity' /etc/my.cnf
-  /usr/bin/mysql -e "SHOW VARIABLES like '%innodb_io_capacity%'"
+  /usr/bin/${ALIAS_MYSQL} -e "SHOW VARIABLES like '%innodb_io_capacity%'"
 
   # sed -e "s|innodb_io_capacity = .*|innodb_io_capacity = $FIOWSET|g" /etc/my.cnf | grep 'innodb_io_capacity'
   sed -i "s|innodb_io_capacity = .*|innodb_io_capacity = $FIOWSET|g" /etc/my.cnf
   echo "new value: "
   # grep 'innodb_io_capacity' /etc/my.cnf
-  /usr/bin/mysql -e "SET GLOBAL innodb_io_capacity = $FIOWSET;"
+  /usr/bin/${ALIAS_MYSQL} -e "SET GLOBAL innodb_io_capacity = $FIOWSET;"
   IOMAX=$((FIOWSET*5/3))
   if [[ "$IOMAX" -gt "$FIOW" ]]; then
     IOMAX=$(echo "$IOMAX*0.66/1"|bc)
@@ -611,8 +765,8 @@ setio() {
   fi
   # echo "new value: "
   # grep 'innodb_io_capacity_max' /etc/my.cnf
-  /usr/bin/mysql -e "SET GLOBAL innodb_io_capacity_max = $IOMAX;"
-  /usr/bin/mysql -e "SHOW VARIABLES like '%innodb_io_capacity%'"
+  /usr/bin/${ALIAS_MYSQL} -e "SET GLOBAL innodb_io_capacity_max = $IOMAX;"
+  /usr/bin/${ALIAS_MYSQL} -e "SHOW VARIABLES like '%innodb_io_capacity%'"
 }
 
 case "$1" in
@@ -621,15 +775,15 @@ case "$1" in
     ;;
   set )
     {
-    /usr/bin/mysql -e "show engine innodb status\G" 2>&1 > ${CENTMINLOGDIR}/setio_innodbstatus-before-${DT}.log
+    /usr/bin/${ALIAS_MYSQL} -e "show engine innodb status\G" 2>&1 > ${CENTMINLOGDIR}/setio_innodbstatus-before-${DT}.log
     cat /etc/my.cnf >> ${CENTMINLOGDIR}/setio_innodbstatus-before-${DT}.log
-    setbp
+    # setbp
     setio
     setthreads
     setpurgethreads
-    setconcurrency
+    # setconcurrency
     ariatune
-    /usr/bin/mysql -e "show engine innodb status\G" 2>&1 > ${CENTMINLOGDIR}/setio_innodbstatus-after-${DT}.log
+    /usr/bin/${ALIAS_MYSQL} -e "show engine innodb status\G" 2>&1 > ${CENTMINLOGDIR}/setio_innodbstatus-after-${DT}.log
     cat /etc/my.cnf >> ${CENTMINLOGDIR}/setio_innodbstatus-after-${DT}.log
     } 2>&1 | tee ${CENTMINLOGDIR}/centminmod_setio_${DT}.log
     ;;

@@ -1,12 +1,20 @@
 apcdevfix() {
     cd $DIR_TMP
   rm -rf APC-3.1.13*
-  wget -c https://centminmod.com/centminmodparts/apc/php550/APC-3.1.13.tgz
+  wget ${LOCALCENTMINMOD_MIRROR}/centminmodparts/apc/php550/APC-3.1.13.tgz
   tar xfz APC-3.1.13.tgz
   cd APC-3.1.13
 }
 
-function funct_apcsourceinstall {
+funct_apcsourceinstall() {
+      echo
+      cecho "* APC Cache is no longer supported" $boldyellow
+      cecho "* APC Cache does not perform better than Zend Opcache defaults" $boldyellow
+      echo
+      exit 0
+}
+
+function funct_apcsourceinstall_disabled {
 
     echo "*************************************************"
     cecho "* Installing Alternative PHP Cache" $boldgreen

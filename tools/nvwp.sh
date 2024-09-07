@@ -6,12 +6,15 @@ export LC_ALL=en_US.UTF-8
 export LANG=en_US.UTF-8
 export LANGUAGE=en_US.UTF-8
 export LC_CTYPE=en_US.UTF-8
+# disable systemd pager so it doesn't pipe systemctl output to less
+export SYSTEMD_PAGER=''
+ARCH_CHECK="$(uname -m)"
 ###############################################################
 # standalone nginx vhost creation script for centminmod.com
 # .09 beta01 and higher written by George Liu
 # modified for wordpress setup
 ################################################################
-branchname='124.00stable'
+branchname='140.00beta01'
 #CUR_DIR="/usr/local/src/centminmod-${branchname}"
 CUR_DIR="/usr/local/src/centminmod"
 
@@ -105,6 +108,10 @@ if [ ! -d /root/tools ]; then
   mkdir -p /root/tools
 fi
 
+if [ ! -f /usr/bin/idn ]; then
+  yum -q -y install libidn
+fi
+
   # extended custom nginx log format = main_ext for nginx amplify metric support
   # https://github.com/nginxinc/nginx-amplify-doc/blob/master/amplify-guide.md#additional-nginx-metrics
   if [ -f /usr/local/nginx/conf/nginx.conf ]; then
@@ -130,10 +137,12 @@ if [[ "$(nginx -V 2>&1 | grep -Eo 'with-http_v2_module')" = 'with-http_v2_module
   #HTTPTWO_MAXREQUESTS='http2_max_requests 50000;'
 elif [[ "$(nginx -V 2>&1 | grep -Eo 'with-http_v2_module')" = 'with-http_v2_module' ]]; then
   HTTPTWO=y
-  if [[ "$(grep -rn listen /usr/local/nginx/conf/conf.d/*.conf | grep -v '#' | grep 443 | grep ' ssl' | grep ' http2' | grep -m1 -o reuseport )" != 'reuseport' ]]; then
+  if [[ "$(grep -rn listen /usr/local/nginx/conf/conf.d/*.conf | grep -v '#' | grep 443 | grep ' ssl' | grep -m1 -o reuseport )" != 'reuseport' ]]; then
     # check if reuseport is supported for listen 443 port - only needs to be added once globally for all nginx vhosts
-    NGXVHOST_CHECKREUSEPORT=$(grep --color -Ro SO_REUSEPORT /usr/src/kernels/* | head -n1 | awk -F ":" '{print $2}')
-    if [[ "$NGXVHOST_CHECKREUSEPORT" = 'SO_REUSEPORT' ]]; then
+    if [[ "$CENTOS_SEVEN" -eq '7' ]]; then
+      NGXVHOST_CHECKREUSEPORT=$(grep --color -Ro SO_REUSEPORT /usr/src/kernels | head -n1 | awk -F ":" '{print $2}')
+    fi
+    if [[ "$NGXVHOST_CHECKREUSEPORT" = 'SO_REUSEPORT' ]] || [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]]; then
       ADD_REUSEPORT=' reuseport'
     else
       ADD_REUSEPORT=""
@@ -162,6 +171,16 @@ if [ ! -d "$CUR_DIR" ]; then
   echo "check $0 branchname variable is set correctly"
   exit 1
 fi
+
+nginx_auditd_sync() {
+  # if tools/auditd.sh is setup for auditd services
+  # then ensure everytime a new nginx vhost is added
+  # that auditd rules configuration is updated to
+  # add that new nginx vhost for auditd rule tracking
+  if [[ "$(systemctl is-enabled auditd)" = 'enabled' && -f "${CUR_DIR}/tools/auditd.sh" ]]; then
+    "${CUR_DIR}/tools/auditd.sh" updaterules
+  fi
+}
 
 usage() { 
 # if pure-ftpd service running = 0
@@ -233,6 +252,77 @@ if [[ "$RUN" = [yY] && "$DEBUG" = [yY] ]]; then
   cecho "$ftpuser" $boldyellow
 fi
 
+# Function to get MariaDB version
+get_mariadb_version() {
+    local version=$(mysql -V 2>&1 | awk '{print $5}' | awk -F. '{print $1"."$2}')
+    echo $version
+}
+
+# Function to set client command variables based on MariaDB version
+set_mariadb_client_commands() {
+    local version=$(get_mariadb_version)
+    
+    # Convert version to a comparable integer (e.g., 10.3 becomes 1003)
+    version_number=$(echo "$version" | awk -F. '{printf "%d%02d\n", $1, $2}')
+
+    if (( version_number <= 1011 )); then
+        # For versions less than or equal to 10.11, use old MySQL names
+        ALIAS_MYSQLACCESS="mysqlaccess"
+        ALIAS_MYSQLADMIN="mysqladmin"
+        ALIAS_MYSQLBINLOG="mysqlbinlog"
+        ALIAS_MYSQLCHECK="mysqlcheck"
+        ALIAS_MYSQLDUMP="mysqldump"
+        ALIAS_MYSQLDUMPSLOW="mysqldumpslow"
+        ALIAS_MYSQLHOTCOPY="mysqlhotcopy"
+        ALIAS_MYSQLIMPORT="mysqlimport"
+        ALIAS_MYSQLREPORT="mysqlreport"
+        ALIAS_MYSQLSHOW="mysqlshow"
+        ALIAS_MYSQLSLAP="mysqlslap"
+        ALIAS_MYSQL_CONVERT_TABLE_FORMAT="mysql_convert_table_format"
+        ALIAS_MYSQL_EMBEDDED="mysql_embedded"
+        ALIAS_MYSQL_FIND_ROWS="mysql_find_rows"
+        ALIAS_MYSQL_FIX_EXTENSIONS="mysql_fix_extensions"
+        ALIAS_MYSQL_INSTALL_DB="mysql_install_db"
+        ALIAS_MYSQL_PLUGIN="mysql_plugin"
+        ALIAS_MYSQL_SECURE_INSTALLATION="mysql_secure_installation"
+        ALIAS_MYSQL_SETPERMISSION="mysql_setpermission"
+        ALIAS_MYSQL_TZINFO_TO_SQL="mysql_tzinfo_to_sql"
+        ALIAS_MYSQL_UPGRADE="mysql_upgrade"
+        ALIAS_MYSQL_WAITPID="mysql_waitpid"
+        ALIAS_MYSQL="mysql"
+        ALIAS_MYSQLD="mysqld"
+        ALIAS_MYSQLDSAFE="mysqld_safe"
+    else
+        # For versions greater than 10.11, use new MariaDB names
+        ALIAS_MYSQLACCESS="mariadb-access"
+        ALIAS_MYSQLADMIN="mariadb-admin"
+        ALIAS_MYSQLBINLOG="mariadb-binlog"
+        ALIAS_MYSQLCHECK="mariadb-check"
+        ALIAS_MYSQLDUMP="mariadb-dump"
+        ALIAS_MYSQLDUMPSLOW="mariadb-dumpslow"
+        ALIAS_MYSQLHOTCOPY="mariadb-hotcopy"
+        ALIAS_MYSQLIMPORT="mariadb-import"
+        ALIAS_MYSQLREPORT="mariadb-report"
+        ALIAS_MYSQLSHOW="mariadb-show"
+        ALIAS_MYSQLSLAP="mariadb-slap"
+        ALIAS_MYSQL_CONVERT_TABLE_FORMAT="mariadb-convert-table-format"
+        ALIAS_MYSQL_EMBEDDED="mariadb-embedded"
+        ALIAS_MYSQL_FIND_ROWS="mariadb-find-rows"
+        ALIAS_MYSQL_FIX_EXTENSIONS="mariadb-fix-extensions"
+        ALIAS_MYSQL_INSTALL_DB="mariadb-install-db"
+        ALIAS_MYSQL_PLUGIN="mariadb-plugin"
+        ALIAS_MYSQL_SECURE_INSTALLATION="mariadb-secure-installation"
+        ALIAS_MYSQL_SETPERMISSION="mariadb-setpermission"
+        ALIAS_MYSQL_TZINFO_TO_SQL="mariadb-tzinfo-to-sql"
+        ALIAS_MYSQL_UPGRADE="mariadb-upgrade"
+        ALIAS_MYSQL_WAITPID="mariadb-waitpid"
+        ALIAS_MYSQL="mariadb"
+        ALIAS_MYSQLD="mariadbd"
+        ALIAS_MYSQLDSAFE="mariadbd-safe"
+    fi
+}
+set_mariadb_client_commands
+
 CENTOSVER=$(awk '{ print $3 }' /etc/redhat-release)
 
 if [ "$CENTOSVER" == 'release' ]; then
@@ -241,6 +331,8 @@ if [ "$CENTOSVER" == 'release' ]; then
         CENTOS_SEVEN='7'
     elif [[ "$(cat /etc/redhat-release | awk '{ print $4 }' | cut -d . -f1)" = '8' ]]; then
         CENTOS_EIGHT='8'
+    elif [[ "$(cat /etc/redhat-release | awk '{ print $4 }' | cut -d . -f1)" = '9' ]]; then
+        CENTOS_NINE='9'
     fi
 fi
 
@@ -261,10 +353,82 @@ if [[ -f /etc/system-release && "$(awk '{print $1,$2,$3}' /etc/system-release)" 
     CENTOS_SIX='6'
 fi
 
+# ensure only el8+ OS versions are being looked at for alma linux, rocky linux
+# oracle linux, vzlinux, circle linux, navy linux, euro linux
+EL_VERID=$(awk -F '=' '/VERSION_ID/ {print $2}' /etc/os-release | sed -e 's|"||g' | cut -d . -f1)
+if [ -f /etc/almalinux-release ] && [[ "$EL_VERID" -eq 8 || "$EL_VERID" -eq 9 ]]; then
+  CENTOSVER=$(awk '{ print $3 }' /etc/almalinux-release | cut -d . -f1,2)
+  ALMALINUXVER=$(awk '{ print $3 }' /etc/almalinux-release | cut -d . -f1,2 | sed -e 's|\.|000|g')
+  if [[ "$(echo $CENTOSVER | cut -d . -f1)" -eq '8' ]]; then
+    CENTOS_EIGHT='8'
+    ALMALINUX_EIGHT='8'
+  elif [[ "$(echo $CENTOSVER | cut -d . -f1)" -eq '9' ]]; then
+    CENTOS_NINE='9'
+    ALMALINUX_NINE='9'
+  fi
+elif [ -f /etc/rocky-release ] && [[ "$EL_VERID" -eq 8 || "$EL_VERID" -eq 9 ]]; then
+  CENTOSVER=$(awk '{ print $4 }' /etc/rocky-release | cut -d . -f1,2)
+  ROCKYLINUXVER=$(awk '{ print $3 }' /etc/rocky-release | cut -d . -f1,2 | sed -e 's|\.|000|g')
+  if [[ "$(echo $CENTOSVER | cut -d . -f1)" -eq '8' ]]; then
+    CENTOS_EIGHT='8'
+    ROCKYLINUX_EIGHT='8'
+  elif [[ "$(echo $CENTOSVER | cut -d . -f1)" -eq '9' ]]; then
+    CENTOS_NINE='9'
+    ROCKYLINUX_NINE='9'
+  fi
+elif [ -f /etc/oracle-release ] && [[ "$EL_VERID" -eq 8 || "$EL_VERID" -eq 9 ]]; then
+  CENTOSVER=$(awk '{ print $5 }' /etc/oracle-release | cut -d . -f1,2)
+  if [[ "$(echo $CENTOSVER | cut -d . -f1)" -eq '8' ]]; then
+    CENTOS_EIGHT='8'
+    ORACLELINUX_EIGHT='8'
+  elif [[ "$(echo $CENTOSVER | cut -d . -f1)" -eq '9' ]]; then
+    CENTOS_NINE='9'
+    ORACLELINUX_NINE='9'
+  fi
+elif [ -f /etc/vzlinux-release ] && [[ "$EL_VERID" -eq 8 || "$EL_VERID" -eq 9 ]]; then
+  CENTOSVER=$(awk '{ print $4 }' /etc/vzlinux-release | cut -d . -f1,2)
+  if [[ "$(echo $CENTOSVER | cut -d . -f1)" -eq '8' ]]; then
+    CENTOS_EIGHT='8'
+    VZLINUX_EIGHT='8'
+  elif [[ "$(echo $CENTOSVER | cut -d . -f1)" -eq '9' ]]; then
+    CENTOS_NINE='9'
+    VZLINUX_NINE='9'
+  fi
+elif [ -f /etc/circle-release ] && [[ "$EL_VERID" -eq 8 || "$EL_VERID" -eq 9 ]]; then
+  CENTOSVER=$(awk '{ print $4 }' /etc/circle-release | cut -d . -f1,2)
+  if [[ "$(echo $CENTOSVER | cut -d . -f1)" -eq '8' ]]; then
+    CENTOS_EIGHT='8'
+    CIRCLELINUX_EIGHT='8'
+  elif [[ "$(echo $CENTOSVER | cut -d . -f1)" -eq '9' ]]; then
+    CENTOS_NINE='9'
+    CIRCLELINUX_NINE='9'
+  fi
+elif [ -f /etc/navylinux-release ] && [[ "$EL_VERID" -eq 8 || "$EL_VERID" -eq 9 ]]; then
+  CENTOSVER=$(awk '{ print $5 }' /etc/navylinux-release | cut -d . -f1,2)
+  if [[ "$(echo $CENTOSVER | cut -d . -f1)" -eq '8' ]]; then
+    CENTOS_EIGHT='8'
+    NAVYLINUX_EIGHT='8'
+  elif [[ "$(echo $CENTOSVER | cut -d . -f1)" -eq '9' ]]; then
+    CENTOS_NINE='9'
+    NAVYLINUX_NINE='9'
+  fi
+elif [ -f /etc/el-release ] && [[ "$EL_VERID" -eq 8 || "$EL_VERID" -eq 9 ]]; then
+  CENTOSVER=$(awk '{ print $3 }' /etc/el-release | cut -d . -f1,2)
+  if [[ "$(echo $CENTOSVER | cut -d . -f1)" -eq '8' ]]; then
+    CENTOS_EIGHT='8'
+    EUROLINUX_EIGHT='8'
+  elif [[ "$(echo $CENTOSVER | cut -d . -f1)" -eq '9' ]]; then
+    CENTOS_NINE='9'
+    EUROLINUX_NINE='9'
+  fi
+fi
+
+CENTOSVER_NUMERIC=$(echo $CENTOSVER | sed -e 's|\.||g')
+
 cmservice() {
   servicename=$1
   action=$2
-  if [[ "$CENTOS_SEVEN" != '7' ]] && [[ "${servicename}" = 'haveged' || "${servicename}" = 'pure-ftpd' || "${servicename}" = 'mysql' || "${servicename}" = 'php-fpm' || "${servicename}" = 'nginx' || "${servicename}" = 'memcached' || "${servicename}" = 'nsd' || "${servicename}" = 'csf' || "${servicename}" = 'lfd' ]]; then
+  if [[ "$CENTOS_SIX" = '6' ]] && [[ "${servicename}" = 'haveged' || "${servicename}" = 'pure-ftpd' || "${servicename}" = 'mysql' || "${servicename}" = 'php-fpm' || "${servicename}" = 'nginx' || "${servicename}" = 'memcached' || "${servicename}" = 'nsd' || "${servicename}" = 'csf' || "${servicename}" = 'lfd' ]]; then
     echo "service ${servicename} $action"
     if [[ "$CMSDEBUG" = [nN] ]]; then
       service "${servicename}" "$action"
@@ -288,7 +452,7 @@ cmservice() {
 cmchkconfig() {
   servicename=$1
   status=$2
-  if [[ "$CENTOS_SEVEN" != '7' ]] && [[ "${servicename}" = 'haveged' || "${servicename}" = 'pure-ftpd' || "${servicename}" = 'mysql' || "${servicename}" = 'php-fpm' || "${servicename}" = 'nginx' || "${servicename}" = 'memcached' || "${servicename}" = 'nsd' || "${servicename}" = 'csf' || "${servicename}" = 'lfd' ]]; then
+  if [[ "$CENTOS_SIX" = '6' ]] && [[ "${servicename}" = 'haveged' || "${servicename}" = 'pure-ftpd' || "${servicename}" = 'mysql' || "${servicename}" = 'php-fpm' || "${servicename}" = 'nginx' || "${servicename}" = 'memcached' || "${servicename}" = 'nsd' || "${servicename}" = 'csf' || "${servicename}" = 'lfd' ]]; then
     echo "chkconfig ${servicename} $status"
     if [[ "$CMSDEBUG" = [nN] ]]; then
       chkconfig "${servicename}" "$status"
@@ -325,8 +489,8 @@ dbsetup() {
   DBUSER="wpdb${DBND}u${DBNB}"
   DBPASS="wpdb${SALT}p${DBNC}"
   mysqladmin create $DB
-  mysql -e "CREATE USER $DBUSER@'localhost' IDENTIFIED BY '$DBPASS';"
-  mysql -e "GRANT SELECT, INSERT, UPDATE, DELETE, CREATE, DROP, INDEX, ALTER, LOCK TABLES, CREATE TEMPORARY TABLES ON ${DB}.* TO ${DBUSER}@'localhost'; FLUSH PRIVILEGES;"
+  ${ALIAS_MYSQL} -e "CREATE USER $DBUSER@'localhost' IDENTIFIED BY '$DBPASS';"
+  ${ALIAS_MYSQL} -e "GRANT SELECT, INSERT, UPDATE, DELETE, CREATE, DROP, INDEX, ALTER, LOCK TABLES, CREATE TEMPORARY TABLES ON ${DB}.* TO ${DBUSER}@'localhost'; FLUSH PRIVILEGES;"
 }
 
 pureftpinstall() {
@@ -337,9 +501,9 @@ pureftpinstall() {
       CNIP="$SECOND_IP"
     else
       if [[ "$VPS_GEOIPCHECK_V3" = [yY] ]]; then
-        CNIP=$(curl -${ipv_forceopt}s${CURL_TIMEOUTS} -A "$CURL_AGENT nvwp Vhost IP CHECK $SCRIPT_VERSION $CURL_CPUMODEL $CURL_CPUSPEED $VPS_VIRTWHAT" https://geoip.centminmod.com/v3 | jq -r '.ip')
+        CNIP=$(curl -${ipv_forceopt}s${CURL_TIMEOUTS} -A "$CURL_AGENT nvwp Vhost IP CHECK" https://geoip.centminmod.com/v3 | jq -r '.ip')
       elif [[ "$VPS_GEOIPCHECK_V4" = [yY] ]]; then
-        CNIP=$(curl -${ipv_forceopt}s${CURL_TIMEOUTS} -A "$CURL_AGENT nvwp Vhost IP CHECK $SCRIPT_VERSION $CURL_CPUMODEL $CURL_CPUSPEED $VPS_VIRTWHAT" https://geoip.centminmod.com/v4 | jq -r '.ip')
+        CNIP=$(curl -${ipv_forceopt}s${CURL_TIMEOUTS} -A "$CURL_AGENT nvwp Vhost IP CHECK" https://geoip.centminmod.com/v4 | jq -r '.ip')
       fi
     fi
 
@@ -436,9 +600,9 @@ fi
 # setup https://community.centminmod.com/threads/13847/
 if [ ! -d /usr/local/nginx/conf/ssl/cloudflare/${vhostname} ]; then
   mkdir -p /usr/local/nginx/conf/ssl/cloudflare/${vhostname}
-  wget${ipv_forceopt_wget} $CLOUDFLARE_AUTHORIGINPULLCERT -O /usr/local/nginx/conf/ssl/cloudflare/${vhostname}/origin.crt
+  wget $CLOUDFLARE_AUTHORIGINPULLCERT -O /usr/local/nginx/conf/ssl/cloudflare/${vhostname}/origin.crt
 elif [ -d /usr/local/nginx/conf/ssl/cloudflare/${vhostname} ]; then
-  wget${ipv_forceopt_wget} $CLOUDFLARE_AUTHORIGINPULLCERT -O /usr/local/nginx/conf/ssl/cloudflare/${vhostname}/origin.crt
+  wget $CLOUDFLARE_AUTHORIGINPULLCERT -O /usr/local/nginx/conf/ssl/cloudflare/${vhostname}/origin.crt
 fi
 
 if [ ! -f /usr/local/nginx/conf/ssl_include.conf ]; then
@@ -626,9 +790,9 @@ PUREGROUP=nginx
       CNIP="$SECOND_IP"
     else
       if [[ "$VPS_GEOIPCHECK_V3" = [yY] ]]; then
-        CNIP=$(curl -${ipv_forceopt}s${CURL_TIMEOUTS} -A "$CURL_AGENT nv Vhost IP CHECK $SCRIPT_VERSION $CURL_CPUMODEL $CURL_CPUSPEED $VPS_VIRTWHAT" https://geoip.centminmod.com/v3 | jq -r '.ip')
+        CNIP=$(curl -${ipv_forceopt}s${CURL_TIMEOUTS} -A "$CURL_AGENT nvwp Vhost IP CHECK" https://geoip.centminmod.com/v3 | jq -r '.ip')
       elif [[ "$VPS_GEOIPCHECK_V4" = [yY] ]]; then
-        CNIP=$(curl -${ipv_forceopt}s${CURL_TIMEOUTS} -A "$CURL_AGENT nv Vhost IP CHECK $SCRIPT_VERSION $CURL_CPUMODEL $CURL_CPUSPEED $VPS_VIRTWHAT" https://geoip.centminmod.com/v4 | jq -r '.ip')
+        CNIP=$(curl -${ipv_forceopt}s${CURL_TIMEOUTS} -A "$CURL_AGENT nvwp Vhost IP CHECK" https://geoip.centminmod.com/v4 | jq -r '.ip')
       fi
     fi
 if [[ "$PUREFTPD_INSTALLED" = [nN] ]]; then
@@ -647,12 +811,61 @@ fi
 # any new nginx vhosts created via centmin.sh menu option 2 or
 # /usr/bin/nv or centmin.sh menu option 22, will have pre-defined
 # SECOND_IP ip address set in the nginx vhost's listen directive
+#
+# also check if system can resolve to a public IPv6 address to determine
+# if nginx vhost should support IPv6 listen directive
+if [[ "$VPS_IPSIX_CHECK_DISABLE_DEBUG" = [yY] ]]; then
+  echo
+  echo "VPS_IPSIX_CHECK_DISABLE=$VPS_IPSIX_CHECK_DISABLE"
+fi
+if [[ "$VPS_IPSIX_CHECK_DISABLE" != [yY] ]]; then
+  IP_SYSTEM_CHECK_V4=$(curl -4s${CURL_TIMEOUTS} -A "${CURL_AGENT} Nginx Vhost Listener IPv4 CHECK $SCRIPT_VERSION $CURL_CPUMODEL $CURL_CPUSPEED $VPS_VIRTWHAT" https://geoip.centminmod.com/v4 | jq -r '.ip')
+  IP_SYSTEM_CHECK_V6=$(curl -6s${CURL_TIMEOUTS} -A "${CURL_AGENT} Nginx Vhost Listener IPv6 CHECK $SCRIPT_VERSION $CURL_CPUMODEL $CURL_CPUSPEED $VPS_VIRTWHAT" https://geoip.centminmod.com/v4 | jq -r '.ip')
+  if [ ! -f /usr/bin/ipcalc ]; then
+    yum -q -y install ipcalc
+    IP_SYSTEM_VALIDATE_V4=$(/usr/bin/ipcalc -s4c "$IP_SYSTEM_CHECK_V4" >/dev/null 2>&1; echo $?)
+    IP_SYSTEM_VALIDATE_V6=$(/usr/bin/ipcalc -s6c "$IP_SYSTEM_CHECK_V6" >/dev/null 2>&1; echo $?)
+  elif [ -f /usr/bin/ipcalc ]; then
+    IP_SYSTEM_VALIDATE_V4=$(/usr/bin/ipcalc -s4c "$IP_SYSTEM_CHECK_V4" >/dev/null 2>&1; echo $?)
+    IP_SYSTEM_VALIDATE_V6=$(/usr/bin/ipcalc -s6c "$IP_SYSTEM_CHECK_V6" >/dev/null 2>&1; echo $?)
+  fi
+fi
+if [[ "$VPS_IPSIX_CHECK_DISABLE_DEBUG" = [yY] ]]; then
+  echo "IP_SYSTEM_VALIDATE_V4=$IP_SYSTEM_VALIDATE_V4"
+  echo "IP_SYSTEM_VALIDATE_V6=$IP_SYSTEM_VALIDATE_V6"
+fi
 if [[ -z "$SECOND_IP" ]]; then
   DEDI_IP=""
-  DEDI_LISTEN=""
+  # if VPS_IPSIX_CHECK_DISABLE=y then set default ipv4 listener
+  # if VPS_IPSIX_CHECK_DISABLE != y then set listeners based on
+  # IP_SYSTEM_VALIDATE_V4 and IP_SYSTEM_VALIDATE_V6 values where
+  # 0 = valid and 1 = not valid
+  if [[ "$VPS_IPSIX_CHECK_DISABLE" = [yY] ]]; then
+    DEDI_LISTEN="listen   80;"
+    echo "DEDI_LISTEN=\"listen   80;\""
+  elif [[ "$VPS_IPSIX_CHECK_DISABLE" != [yY] && "$IP_SYSTEM_VALIDATE_V4" -eq '0' ]]; then
+    DEDI_LISTEN="listen   80;"
+    echo "DEDI_LISTEN=\"listen   80;\""
+  elif [[ "$VPS_IPSIX_CHECK_DISABLE" != [yY] && "$IP_SYSTEM_VALIDATE_V4" -ne '0' ]]; then
+    DEDI_LISTEN=""
+  fi
+  if [[ "$VPS_IPSIX_CHECK_DISABLE" != [yY] && "$IP_SYSTEM_VALIDATE_V6" -eq '0' ]]; then
+    DEDI_LISTEN_V6="listen   [::]:80;"
+    echo "DEDI_LISTEN_V6=\"listen   [::]:80;\""
+    DEDI_LISTEN_HTTPS_V6="listen   [::]:443 ssl http2;"
+    echo "DEDI_LISTEN_HTTPS_V6=\"listen   [::]:443 ssl http2;\""
+  elif [[ "$VPS_IPSIX_CHECK_DISABLE" != [yY] && "$IP_SYSTEM_VALIDATE_V6" -ne '0' ]]; then
+    DEDI_LISTEN_V6=""
+  else
+    DEDI_LISTEN_V6=""
+  fi
 elif [[ "$SECOND_IP" ]]; then
   DEDI_IP=$(echo $(echo ${SECOND_IP}:))
   DEDI_LISTEN="listen   ${DEDI_IP}80;"
+fi
+if [[ "$VPS_IPSIX_CHECK_DISABLE_DEBUG" = [yY] ]]; then
+  echo "DEDI_LISTEN=$DEDI_LISTEN"
+  echo "DEDI_LISTEN_V6=$DEDI_LISTEN_V6"
 fi
 
 cecho "---------------------------------------------------------------" $boldyellow
@@ -744,7 +957,6 @@ cat > "/home/nginx/domains/$vhostname/public/index.html" <<END
   <li>Latest Centmin Mod version - <a href="https://centminmod.com" target="_blank">https://centminmod.com</a></li>
   <li>Centmin Mod FAQ - <a href="https://centminmod.com/faq.html" target="_blank">https://centminmod.com/faq.html</a></li>
   <li>Change Log - <a href="https://centminmod.com/changelog.html" target="_blank">https://centminmod.com/changelog.html</a></li>
-  <li>Google+ Page latest news <a href="https://centminmod.com/gpage" target="_blank">https://centminmod.com/gpage</a></li>
   <li>Centmin Mod Community Forum <a href="https://community.centminmod.com/" target="_blank">https://community.centminmod.com/</a></li>
   <li>Centmin Mod Twitter <a href="https://twitter.com/centminmod" target="_blank">https://twitter.com/centminmod</a></li>
   <li>Centmin Mod Facebook Page <a href="https://www.facebook.com/centminmodcom" target="_blank">https://www.facebook.com/centminmodcom</a></li>
@@ -826,6 +1038,7 @@ cat > "/usr/local/nginx/conf/conf.d/$vhostname.conf"<<ENSS
 # if unsure use return 302 before using return 301
 #server {
 #            listen   ${DEDI_IP}80;
+#            $DEDI_LISTEN_V6
 #            server_name $vhostname;
 #            return 301 \$scheme://www.${vhostname}\$request_uri;
 #       }
@@ -849,6 +1062,7 @@ server {
   # ssi  on;
 
   access_log /home/nginx/domains/$vhostname/log/access.log $NGX_LOGFORMAT buffer=256k flush=5m;
+  #access_log /home/nginx/domains/$vhostname/log/access.json main_json buffer=256k flush=5m;
   error_log /home/nginx/domains/$vhostname/log/error.log;
 
   include /usr/local/nginx/conf/autoprotect/$vhostname/autoprotect-$vhostname.conf;
@@ -919,6 +1133,7 @@ cat > "/usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf"<<ESS
 
 server {
   listen ${DEDI_IP}443 $LISTENOPT;
+  $DEDI_LISTEN_HTTPS_V6
   server_name $vhostname www.$vhostname;
 
   ssl_dhparam /usr/local/nginx/conf/ssl/${vhostname}/dhparam.pem;
@@ -962,6 +1177,7 @@ server {
   # ssi  on;
 
   access_log /home/nginx/domains/$vhostname/log/access.log $NGX_LOGFORMAT buffer=256k flush=5m;
+  #access_log /home/nginx/domains/$vhostname/log/access.json main_json buffer=256k flush=5m;
   error_log /home/nginx/domains/$vhostname/log/error.log;
 
   include /usr/local/nginx/conf/autoprotect/$vhostname/autoprotect-$vhostname.conf;
@@ -1026,6 +1242,7 @@ cat > "/usr/local/nginx/conf/conf.d/$vhostname.conf"<<END
 # if unsure use return 302 before using return 301
 #server {
 #            listen   ${DEDI_IP}80;
+#            $DEDI_LISTEN_V6
 #            server_name $vhostname;
 #            return 301 \$scheme://www.${vhostname}\$request_uri;
 #       }
@@ -1049,6 +1266,7 @@ server {
   # ssi  on;
 
   access_log /home/nginx/domains/$vhostname/log/access.log $NGX_LOGFORMAT buffer=256k flush=5m;
+  #access_log /home/nginx/domains/$vhostname/log/access.json main_json buffer=256k flush=5m;
   error_log /home/nginx/domains/$vhostname/log/error.log;
 
   include /usr/local/nginx/conf/autoprotect/$vhostname/autoprotect-$vhostname.conf;
@@ -1653,7 +1871,7 @@ fi
 # change admin userid from 1 to a random 6 digit number
 # WP_PREFIX=$(wp eval 'echo $GLOBALS["table_prefix"];')
 # WUID=$(echo $RANDOM$RANDOM |cut -c1-6)
-# mysql -e "UPDATE wp_users SET ID=${WUID} WHERE ID=1; UPDATE wp_usermeta SET user_id=${WUID} WHERE user_id=1" ${DB}
+# ${ALIAS_MYSQL} -e "UPDATE wp_users SET ID=${WUID} WHERE ID=1; UPDATE wp_usermeta SET user_id=${WUID} WHERE user_id=1" ${DB}
 
   chown nginx:nginx /home/nginx/domains/${vhostname}/public
   chown -R nginx:nginx /home/nginx/domains/${vhostname}/public
@@ -1776,10 +1994,23 @@ if [ -f "$FINDUPPERDIR/addons/acmetool.sh" ] && [[ "$sslconfig" = 'le' ]]; then
   echo
 fi
 
+# check if Centmin Mod fail2ban implementation is running
+# if running, restart fail2ban on new nginx vhost creation
+# to register it's logpathw ith fail2ban
+if systemctl is-active fail2ban >/dev/null 2>&1; then
+  if [ -f "${FINDUPPERDIR}/tools/fail2ban-register-vhost.sh" ]; then
+  "${FINDUPPERDIR}/tools/fail2ban-register-vhost.sh" "${vhostname}"
+  fi
+fi
+
 echo 
 if [[ "$PUREFTPD_DISABLED" = [nN] ]]; then
 cecho "-------------------------------------------------------------" $boldyellow
-echo "FTP hostname : $CNIP"
+  if [[ "$DEMO_MODE" = [yY] ]]; then
+    echo "FTP hostname : xxx.xxx.xxx.xxx"
+  else
+    echo "FTP hostname : $CNIP"
+  fi
 echo "FTP port : 21"
 echo "FTP mode : FTP (explicit SSL)"
 echo "FTP Passive (PASV) : ensure is checked/enabled"
@@ -1788,6 +2019,7 @@ echo "FTP password created for $vhostname : $ftppass"
 fi
 cecho "-------------------------------------------------------------" $boldyellow
 cecho "vhost for $vhostname created successfully" $boldwhite
+nginx_auditd_sync
 echo
 cecho "domain: http://$vhostname" $boldyellow
 cecho "vhost conf file for $vhostname created: /usr/local/nginx/conf/conf.d/$vhostname.conf" $boldwhite

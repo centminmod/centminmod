@@ -146,7 +146,7 @@ zlibng_install() {
     fi
     time git clone https://github.com/zlib-ng/zlib-ng
     cd zlib-ng
-    ./configure --zlib-compat --prefix=/usr/local/zlib-ng
+    CFLAGS="-fPIC -O2 -fstack-protector-strong -D_FORTIFY_SOURCE=2" CPPFLAGS="-D_FORTIFY_SOURCE=2" CXXFLAGS="-fPIC -O2" LDFLAGS="-Wl,-z,relro,-z,now -pie" ./configure --zlib-compat --prefix=/usr/local/zlib-ng
     make${MAKETHREADS}
     make -d install
     zlibng_check=$?
@@ -380,6 +380,48 @@ install_cfzlib() {
         g++ --version
     fi
 
+    if [[ "$DEVTOOLSETTWELVE" = [yY] && -f /opt/rh/gcc-toolset-12/root/usr/bin/gcc && -f /opt/rh/gcc-toolset-12/root/usr/bin/g++ ]] && [[ "$(gcc --version | head -n1 | awk '{print $3}' | cut -d . -f1,2 | sed "s|\.|0|")" -gt '407' ]]; then
+        source /opt/rh/gcc-toolset-12/enable
+        unset CC
+        unset CXX
+        if [[ "$INITIALINSTALL" != [yY] ]]; then
+            export CC="ccache gcc"
+            export CXX="ccache g++"
+        else
+            export CC="gcc"
+            export CXX="g++"
+        fi
+        ZLIB_DEVTOOLSET_FALLTHROUGH=' -Wimplicit-fallthrough=0'
+        ZLIB_DEVTOOLSET_EXTRAFLAGS=' -fcode-hoisting -Wno-cast-function-type -Wno-cast-align -Wno-implicit-function-declaration -Wno-builtin-declaration-mismatch -Wno-deprecated-declarations -Wno-int-conversion -Wno-unused-result -Wno-vla-parameter -Wno-maybe-uninitialized -Wno-unused-result -Wno-return-local-addr -Wno-maybe-uninitialized -Wno-array-parameter -Wno-alloc-size-larger-than -Wno-address -Wno-array-bounds -Wno-deprecated-declarations -Wno-discarded-qualifiers -Wno-stringop-overread -Wno-stringop-truncation -Wno-missing-field-initializers -Wno-unused-variable -Wno-format -Wno-stringop-overflow -Wno-free-nonheap-object -Wno-bad-function-cast -Wno-dangling-pointer -Wno-array-parameter'
+        gcc --version
+        g++ --version
+    fi
+
+    if [[ "$DEVTOOLSETTHIRTEEN" = [yY] && -f /opt/rh/gcc-toolset-13/root/usr/bin/gcc && -f /opt/rh/gcc-toolset-13/root/usr/bin/g++ ]] && [[ "$(gcc --version | head -n1 | awk '{print $3}' | cut -d . -f1,2 | sed "s|\.|0|")" -gt '407' ]]; then
+        source /opt/rh/gcc-toolset-13/enable
+        unset CC
+        unset CXX
+        if [[ "$INITIALINSTALL" != [yY] ]]; then
+            export CC="ccache gcc"
+            export CXX="ccache g++"
+        else
+            export CC="gcc"
+            export CXX="g++"
+        fi
+        ZLIB_DEVTOOLSET_FALLTHROUGH=' -Wimplicit-fallthrough=0'
+        ZLIB_DEVTOOLSET_EXTRAFLAGS=' -fcode-hoisting -Wno-cast-function-type -Wno-cast-align -Wno-implicit-function-declaration -Wno-builtin-declaration-mismatch -Wno-deprecated-declarations -Wno-int-conversion -Wno-unused-result -Wno-vla-parameter -Wno-maybe-uninitialized -Wno-unused-result -Wno-return-local-addr -Wno-maybe-uninitialized -Wno-array-parameter -Wno-alloc-size-larger-than -Wno-address -Wno-array-bounds -Wno-deprecated-declarations -Wno-discarded-qualifiers -Wno-stringop-overread -Wno-stringop-truncation -Wno-missing-field-initializers -Wno-unused-variable -Wno-format -Wno-stringop-overflow -Wno-free-nonheap-object -Wno-bad-function-cast -Wno-dangling-pointer -Wno-array-parameter'
+        gcc --version
+        g++ --version
+    fi
+
+         # if only 1 cpu thread use -O2 to keep compile times sane
+        if [[ "$CPUS" = '1' ]]; then
+           export CFLAGS="-O2${ZLIB_DEVTOOLSET_FALLTHROUGH}${ZLIB_DEVTOOLSET_EXTRAFLAGS} -pipe"
+        else
+           export CFLAGS="-O3${ZLIB_DEVTOOLSET_FALLTHROUGH}${ZLIB_DEVTOOLSET_EXTRAFLAGS} -pipe"
+        fi
+        export CXXFLAGS="$CFLAGS"
+
         install_cfzlibstartdir=$(pwd)
         echo
         echo "install zlib cloudflare..."
@@ -404,11 +446,21 @@ install_cfzlib() {
             fi
         fi
         LAST_CFZLIB_COMMIT=$(git rev-parse --short HEAD)
-        # if [[ "$LAST_CFZLIB_COMMIT" = '47f1285' ]]; then
+        TARGET_CFZLIB_COMMIT='47f1285'
+        COMMON_ANCESTOR=$(git rev-parse --short $(git merge-base HEAD ${TARGET_CFZLIB_COMMIT}))
+        
+        if [[ "${COMMON_ANCESTOR}" = "${TARGET_CFZLIB_COMMIT}" ]]; then
+            # Workaround Oct 13, 2023 commited rebase changes
+            # https://github.com/cloudflare/zlib/pull/46
+            # If TARGET_CFZLIB_COMMIT is the current commit or an ancestor of the current commit
+            sed -i.bak 's/clean: minizip-clean/clean: #minizip-clean/' Makefile.in
+        else
             # Workaround Oct 13, 2023 commited rebase changes
             # https://github.com/cloudflare/zlib/pull/46
             # git checkout d213e64378ec4c289429145ac0e5ee35d1214cd4
-        # fi
+            git checkout d213e64378ec4c289429145ac0e5ee35d1214cd4
+        fi
+
         # CVE-2018-25032 patch
         # ls -lah CVE-2018-25032.patch
         # if [[ ! -f CVE-2018-25032.patch && "$LAST_CFZLIB_COMMIT" = '959b4ea' ]] || [[ "$ZLIB_STASHED" = [yY] ]]; then
@@ -422,9 +474,32 @@ install_cfzlib() {
         # sed -i "s|\#define ZLIB_VERSION .*|\#define ZLIB_VERSION \"${CLOUDFLARE_ZLIBVER}\"|" zlib.h
         # ldconfig
         make -f Makefile.in distclean
-        ./configure --prefix=/usr/local/zlib-cf
+        if [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_EIGHT" -eq '9' ]] && [[ "$NGINXCOMPILE_PIE" = [yY] ]]; then
+            echo
+            echo "CFLAGS=$CFLAGS"
+            ./configure --prefix=/usr/local/zlib-cf
+            if [ ! "$(grep '^CFLAGS=' Makefile | grep -w 'fPIC')" ]; then
+                sed -i '/^CFLAGS=/ s|$| -fPIC|' Makefile
+            fi
+        else
+            echo
+            echo "CFLAGS=$CFLAGS"
+            ./configure --prefix=/usr/local/zlib-cf
+            if [ "$(grep '^CFLAGS=' Makefile | grep -w 'fPIC')" ]; then
+                sed -i '/^CFLAGS=/ s/ -fPIC$//' Makefile
+            fi
+        fi
         # ./configure --prefix=/usr/local/zlib-cf --static
-        make${MAKETHREADS}
+        if [[ "$NGINXCOMPILE_PIE" = [yY] ]]; then
+            echo
+            echo "Before NGINXCOMPILE_PIE='y' CFLAGS=$CFLAGS"
+            echo
+            CFLAGS="-fPIC -O2${ZLIB_DEVTOOLSET_FALLTHROUGH}${ZLIB_DEVTOOLSET_EXTRAFLAGS} -fstack-protector-strong -D_FORTIFY_SOURCE=2" CPPFLAGS="-D_FORTIFY_SOURCE=2" CXXFLAGS="-fPIC -O2${ZLIB_DEVTOOLSET_FALLTHROUGH}${ZLIB_DEVTOOLSET_EXTRAFLAGS}" LDFLAGS="-Wl,-z,relro,-z,now -pie" make${MAKETHREADS}
+            echo
+            echo "After NGINXCOMPILE_PIE='y' CFLAGS=$CFLAGS"
+        else
+            make${MAKETHREADS}
+        fi
         # ps aufxwww > zlib-process.log
         if [[ "$CLOUDFLARE_ZLIBDEBUG" = [Yy] ]]; then
             make -d install
@@ -527,6 +602,12 @@ install_cfzlib() {
 
         popd
         echo
+        echo "CFLAGS=$CFLAGS"
+        echo "CXXFLAGS=$CXXFLAGS"
+        unset CFLAGS
+        unset CXXFLAGS
+        echo "CFLAGS=$CFLAGS"
+        echo "CXXFLAGS=$CXXFLAGS"
         echo "zlib cloudflare installed"
         echo
 

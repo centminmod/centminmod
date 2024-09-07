@@ -1,3 +1,54 @@
+tcp_bbr_setup() {
+  if [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]] && [[ "$TCP_BBR_ENABLE" = [yY] ]]; then
+    if [[ ! "$(sysctl net.core.default_qdisc | grep -ow 'net.core.default_qdisc = fq')" ]]; then
+      if [[ ! "$(grep -ow 'net.core.default_qdisc' /etc/sysctl.conf)" ]]; then
+        echo "net.core.default_qdisc = fq" >> /etc/sysctl.conf
+      else
+        sed -i 's|net.core.default_qdisc = .*|net.core.default_qdisc = fq|' /etc/sysctl.conf
+      fi
+    fi
+    if [[ ! "$(sysctl net.ipv4.tcp_congestion_control | grep -ow 'net.ipv4.tcp_congestion_control = bbr')" ]]; then
+      if [[ ! "$(grep -ow 'net.ipv4.tcp_congestion_control' /etc/sysctl.conf)" ]]; then
+        echo "net.ipv4.tcp_congestion_control = bbr" >> /etc/sysctl.conf
+      else
+        sed -i 's|net.ipv4.tcp_congestion_control = .*|net.ipv4.tcp_congestion_control = bbr|' /etc/sysctl.conf
+      fi
+    fi
+    if [[ ! "$(sysctl net.ipv4.tcp_notsent_lowat | grep -ow 'net.ipv4.tcp_notsent_lowat = 16384')" ]]; then
+      if [[ ! "$(grep -ow 'net.ipv4.tcp_notsent_lowat' /etc/sysctl.conf)" ]]; then
+        echo "net.ipv4.tcp_notsent_lowat = 16384" >> /etc/sysctl.conf
+      else
+        sed -i 's|net.ipv4.tcp_notsent_lowat = .*|net.ipv4.tcp_notsent_lowat = 16384|' /etc/sysctl.conf
+      fi
+    fi
+    sysctl -p >/dev/null 2>&1
+  elif [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]] && [[ "$TCP_BBR_ENABLE" != [yY] ]]; then
+    if [[ ! "$(sysctl net.core.default_qdisc | grep -ow 'net.core.default_qdisc = fq_codel')" ]]; then
+      if [[ ! "$(grep -ow 'net.core.default_qdisc' /etc/sysctl.conf)" ]]; then
+        echo "net.core.default_qdisc = fq_codel" >> /etc/sysctl.conf
+      else
+        sed -i 's|net.core.default_qdisc = .*|net.core.default_qdisc = fq_codel|' /etc/sysctl.conf
+      fi
+    fi
+    if [[ ! "$(sysctl net.ipv4.tcp_congestion_control | grep -ow 'net.ipv4.tcp_congestion_control = cubic')" ]]; then
+      if [[ ! "$(grep -ow 'net.ipv4.tcp_congestion_control' /etc/sysctl.conf)" ]]; then
+        echo "net.ipv4.tcp_congestion_control = cubic" >> /etc/sysctl.conf
+      else
+        sed -i 's|net.ipv4.tcp_congestion_control = .*|net.ipv4.tcp_congestion_control = cubic|' /etc/sysctl.conf
+      fi
+    fi
+    if [[ ! "$(sysctl net.ipv4.tcp_notsent_lowat | grep -ow 'net.ipv4.tcp_notsent_lowat = 4294967295')" ]]; then
+      if [[ ! "$(grep -ow 'net.ipv4.tcp_notsent_lowat' /etc/sysctl.conf)" ]]; then
+        echo "net.ipv4.tcp_notsent_lowat = 4294967295" >> /etc/sysctl.conf
+      else
+        sed -i 's|net.ipv4.tcp_notsent_lowat = .*|net.ipv4.tcp_notsent_lowat = 4294967295|' /etc/sysctl.conf
+      fi
+    fi
+    sysctl -p >/dev/null 2>&1
+    # sysctl net.core.default_qdisc net.ipv4.tcp_congestion_control net.ipv4.tcp_notsent_lowat
+  fi
+}
+
 opt_tcp() {
 #######################################################
 # check if custom open file descriptor limits already exist
@@ -7,7 +58,7 @@ opt_tcp() {
         echo "* soft nofile 524288" >>/etc/security/limits.conf
         echo "* hard nofile 524288" >>/etc/security/limits.conf
 # https://community.centminmod.com/posts/52406/
-if [[ "$CENTOS_SEVEN" = '7' && ! -f /etc/rc.d/rc.local ]]; then
+if [[ "$CENTOS_SEVEN" -eq '7' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]] && [ ! -f /etc/rc.d/rc.local ]; then
 
 
 cat > /usr/lib/systemd/system/rc-local.service <<EOF
@@ -56,7 +107,7 @@ fi
   pushd /etc; ln -s rc.d/rc.local /etc/rc.local; popd
   systemctl daemon-reload
   systemctl start rc-local.service
-  systemctl status rc-local.service
+  systemctl status rc-local.service --no-pager
 fi
         ulimit -n 524288
         echo "ulimit -n 524288" >> /etc/rc.local
@@ -65,7 +116,7 @@ fi
         fi
     fi # check if custom open file descriptor limits already exist
 
-    if [[ "$CENTOS_SEVEN" = '7' ]]; then
+    if [[ "$CENTOS_SEVEN" -eq '7' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]]; then
         # centos 7
         if [[ -f /etc/security/limits.d/20-nproc.conf ]]; then
 cat > "/etc/security/limits.d/20-nproc.conf" <<EOF
@@ -143,7 +194,20 @@ EOF
   fi
 
 if [[ ! -f /proc/user_beancounters ]]; then
-    if [[ "$CENTOS_SEVEN" = '7' ]]; then
+    if [[ "$CENTOS_SEVEN" -eq '7' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]]; then
+        # TCPMEMTOTAL=$(awk '/MemTotal/ {print $2}' /proc/meminfo)
+        if [ "$TCPMEMTOTAL" -le '3000000' ]; then
+          TCP_OPTMEM_MAX='8192'
+        else
+          TCP_OPTMEM_MAX='81920'
+        fi
+        if [[ "$CENTOS_EIGHT" = '8' || "$CENTOS_NINE" = '9' ]]; then
+          TCP_PID_MAX='4194300'
+          TCP_BACKLOG='524280'
+        elif [[ "$CENTOS_SEVEN" = '7' ]]; then
+          TCP_PID_MAX='65535'
+          TCP_BACKLOG='65535'
+        fi
         if [ -d /etc/sysctl.d ]; then
             # raise hashsize for conntrack entries
             if [[ "$(virt-what | grep -o lxc)" != 'lxc' ]]; then
@@ -159,7 +223,7 @@ if [[ ! -f /proc/user_beancounters ]]; then
             if [[ "$(grep 'centminmod added' /etc/sysctl.d/101-sysctl.conf >/dev/null 2>&1; echo $?)" != '0' ]]; then
 cat >> "/etc/sysctl.d/101-sysctl.conf" <<EOF
 # centminmod added
-kernel.pid_max=65536
+kernel.pid_max=$TCP_PID_MAX
 kernel.printk=4 1 1 7
 fs.nr_open=12000000
 fs.file-max=9000000
@@ -171,13 +235,13 @@ net.core.rmem_max=16777216
 net.ipv4.tcp_rmem=8192 87380 16777216                                          
 net.ipv4.tcp_wmem=8192 65536 16777216
 net.core.netdev_max_backlog=65536
-net.core.somaxconn=65535
-net.core.optmem_max=8192
-net.ipv4.tcp_fin_timeout=10
+net.core.somaxconn=$TCP_BACKLOG
+net.core.optmem_max=$TCP_OPTMEM_MAX
+net.ipv4.tcp_fin_timeout=30
 net.ipv4.tcp_keepalive_intvl=30
 net.ipv4.tcp_keepalive_probes=3
 net.ipv4.tcp_keepalive_time=240
-net.ipv4.tcp_max_syn_backlog=65536
+net.ipv4.tcp_max_syn_backlog=$TCP_BACKLOG
 net.ipv4.tcp_sack=1
 net.ipv4.tcp_syn_retries=3
 net.ipv4.tcp_synack_retries = 2
@@ -212,6 +276,9 @@ net.ipv4.tcp_challenge_ack_limit = 999999999
 net.ipv4.tcp_mtu_probing = 1
 net.ipv4.tcp_base_mss = 1024
 net.unix.max_dgram_qlen = 4096
+net.ipv4.udp_mem = 3145728 4194304 6291456
+net.ipv4.udp_rmem_min = 16384
+net.ipv4.udp_wmem_min = 16384
 EOF
         /sbin/sysctl --system
             fi           
@@ -246,7 +313,7 @@ net.ipv4.tcp_wmem=8192 65536 16777216
 net.core.netdev_max_backlog=65536
 net.core.somaxconn=65535
 net.core.optmem_max=8192
-net.ipv4.tcp_fin_timeout=10
+net.ipv4.tcp_fin_timeout=30
 net.ipv4.tcp_keepalive_intvl=30
 net.ipv4.tcp_keepalive_probes=3
 net.ipv4.tcp_keepalive_time=240

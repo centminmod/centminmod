@@ -1,3 +1,20 @@
+checksec_check(){
+  if [ ! -f /usr/bin/checksec ]; then
+    echo
+    yum -y install checksec
+    echo
+  fi
+  if [[ ! -f /usr/local/bin/checksec || ! -f "${DIR_TMP}/checksec-${CHECKSEC_VERSION}.tar.gz" ]]; then
+    echo
+    pushd "$DIR_TMP"
+    wget -q "https://github.com/slimm609/checksec.sh/archive/refs/tags/${CHECKSEC_VERSION}.tar.gz" -O "checksec-${CHECKSEC_VERSION}.tar.gz"
+    tar xzf "checksec-${CHECKSEC_VERSION}.tar.gz"
+    \cp -af "${DIR_TMP}/checksec.sh-${CHECKSEC_VERSION}/checksec" /usr/local/bin/checksec
+    echo
+    popd
+  fi
+}
+
 validcheck_downloads() {
   {
   echo
@@ -37,12 +54,22 @@ phpxz_detect() {
     PHPTAR_FLAGS='xzf'
   fi
   
-  if [[ "$CENTOS_SEVEN" = 7 && "$USEAXEL" = [yY] ]]; then
+  if [[ "$CENTOS_NINE" -eq 9 && "$USEAXEL" = [yY] ]]; then
     DOWNLOADAPP_PHP="curl${ipv_forceopt_wget}"
     WGETRETRY_PHP=''
     AXELPHPTARGZ_PHP="-o php-${PHP_VERSION}.tar.${PHPEXTSION}"
     AXELPHPUPGRADETARGZ_PHP="-o php-${phpver}.tar.${PHPEXTSION}"
-  elif [[ "$CENTOS_SIX" = 6 && "$USEAXEL" = [yY] ]]; then
+  elif [[ "$CENTOS_EIGHT" -eq 8 && "$USEAXEL" = [yY] ]]; then
+    DOWNLOADAPP_PHP="curl${ipv_forceopt_wget}"
+    WGETRETRY_PHP=''
+    AXELPHPTARGZ_PHP="-o php-${PHP_VERSION}.tar.${PHPEXTSION}"
+    AXELPHPUPGRADETARGZ_PHP="-o php-${phpver}.tar.${PHPEXTSION}"
+  elif [[ "$CENTOS_SEVEN" -eq 7 && "$USEAXEL" = [yY] ]]; then
+    DOWNLOADAPP_PHP="curl${ipv_forceopt_wget}"
+    WGETRETRY_PHP=''
+    AXELPHPTARGZ_PHP="-o php-${PHP_VERSION}.tar.${PHPEXTSION}"
+    AXELPHPUPGRADETARGZ_PHP="-o php-${phpver}.tar.${PHPEXTSION}"
+  elif [[ "$CENTOS_SIX" -eq 6 && "$USEAXEL" = [yY] ]]; then
     DOWNLOADAPP_PHP="curl${ipv_forceopt_wget}"
     WGETRETRY_PHP=''
     AXELPHPTARGZ_PHP="-o php-${PHP_VERSION}.tar.${PHPEXTSION}"
@@ -741,12 +768,18 @@ nginxpcretarball() {
     cd "$DIR_TMP"
 
         cecho "Download ${PCRELINKFILE} ..." $boldyellow
+    # consult master file if it exists copy it over rather than re-downloading
+    if [ -f "${MASTER_PCRELINKFILE}" ]; then
+      \cp -f "${MASTER_PCRELINKFILE}" "${PCRELINKFILE}"
+    fi
     if [[ -s "${PCRELINKFILE}" && "$(tar -tzf ${PCRELINKFILE} >/dev/null 2>&1; echo $?)" -eq '0' ]]; then
         cecho "${PCRELINKFILE} Archive found, skipping download..." $boldgreen
     else
-        echo "wget -c${ipv_forceopt} --progress=bar ${PCRELINK} -O ${PCRELINKFILE} --tries=3"
-        wget -c${ipv_forceopt} --progress=bar "${PCRELINK}" -O "${PCRELINKFILE}" --tries=3
+        echo "wget --progress=bar ${PCRELINK} -O ${PCRELINKFILE} --tries=3"
+        wget --progress=bar "${PCRELINK}" -O "${PCRELINKFILE}" --tries=3
 ERROR=$?
+        # copy download to master copy for reuse without needing to re-download
+        \cp -f "${PCRELINKFILE}" "${MASTER_PCRELINKFILE}"
   if [[ "$ERROR" != '0' ]]; then
   cecho "Error: ${PCRELINKFILE} download failed." $boldgreen
 checklogdetails
@@ -773,13 +806,19 @@ nginxpcretwotarball() {
 
     cd "$DIR_TMP"
 
-        cecho "Download ${PCRETWOLINKFILE} ..." $boldyellow
+    cecho "Download ${PCRETWOLINKFILE} ..." $boldyellow
+    # consult master file if it exists copy it over rather than re-downloading
+    if [ -f "${MASTER_PCRETWOLINKFILE}" ]; then
+      \cp -f "${MASTER_PCRETWOLINKFILE}" "${PCRETWOLINKFILE}"
+    fi
     if [[ -s "${PCRETWOLINKFILE}" && "$(tar -tzf ${PCRETWOLINKFILE} >/dev/null 2>&1; echo $?)" -eq '0' ]]; then
         cecho "${PCRETWOLINKFILE} Archive found, skipping download..." $boldgreen
     else
-        echo "wget -c${ipv_forceopt} --progress=bar ${PCRETWOLINK} -O ${PCRETWOLINKFILE} --tries=3"
-        wget -c${ipv_forceopt} --progress=bar "${PCRETWOLINK}" -O "${PCRETWOLINKFILE}" --tries=3
+        echo "wget --progress=bar ${PCRETWOLINK} -O ${PCRETWOLINKFILE} --tries=3"
+        wget --progress=bar "${PCRETWOLINK}" -O "${PCRETWOLINKFILE}" --tries=3
 ERROR=$?
+        # copy download to master copy for reuse without needing to re-download
+        \cp -f "${PCRETWOLINKFILE}" "${MASTER_PCRETWOLINKFILE}"
   if [[ "$ERROR" != '0' ]]; then
   cecho "Error: ${PCRETWOLINKFILE} download failed." $boldgreen
 checklogdetails
@@ -810,8 +849,8 @@ nginxzlibtarball() {
     if [[ -s "${NGX_ZLIBLINKFILE}" && "$(tar -tzf ${NGX_ZLIBLINKFILE} >/dev/null 2>&1; echo $?)" -eq '0' ]]; then
         cecho "${NGX_ZLIBLINKFILE} Archive found, skipping download..." $boldgreen
     else
-        echo "wget -c${ipv_forceopt} --progress=bar ${NGX_ZLIBLINK} -O ${NGX_ZLIBLINKFILE} --tries=3"
-        wget -c${ipv_forceopt} --progress=bar "${NGX_ZLIBLINK}" -O "${NGX_ZLIBLINKFILE}" --tries=3
+        echo "wget --progress=bar ${NGX_ZLIBLINK} -O ${NGX_ZLIBLINKFILE} --tries=3"
+        wget --progress=bar "${NGX_ZLIBLINK}" -O "${NGX_ZLIBLINKFILE}" --tries=3
 ERROR=$?
   if [[ "$ERROR" != '0' ]]; then
   cecho "Error: ${NGX_ZLIBLINKFILE} download failed." $boldgreen
@@ -843,8 +882,8 @@ nginxwebdavtarball() {
     if [[ -s "${NGX_WEBDAVLINKFILE}" && "$(tar -tzf ${NGX_WEBDAVLINKFILE} >/dev/null 2>&1; echo $?)" -eq '0' ]]; then
         cecho "${NGX_WEBDAVLINKFILE} Archive found, skipping download..." $boldgreen
     else
-        echo 'wget -c${ipv_forceopt} --progress=bar "${NGX_WEBDAVLINK}" -O "${NGX_WEBDAVLINKFILE}" --tries=3'
-        wget -c${ipv_forceopt} --progress=bar "${NGX_WEBDAVLINK}" -O "${NGX_WEBDAVLINKFILE}" --tries=3
+        echo 'wget --progress=bar "${NGX_WEBDAVLINK}" -O "${NGX_WEBDAVLINKFILE}" --tries=3'
+        wget --progress=bar "${NGX_WEBDAVLINK}" -O "${NGX_WEBDAVLINKFILE}" --tries=3
 ERROR=$?
   if [[ "$ERROR" != '0' ]]; then
   cecho "Error: ${NGX_WEBDAVLINKFILE} download failed." $boldgreen
@@ -885,8 +924,8 @@ nginxpgspeedtarball() {
           ls -lah "${NGX_PAGESPEEDGITLINKFILE}"
     else
           echo '#1'
-          echo "wget -c${ipv_forceopt} --progress=bar ${NGX_PAGESPEEDGITLINK} -O ${NGX_PAGESPEEDGITLINKFILE} --tries=3"
-          wget -c${ipv_forceopt} --progress=bar "${NGX_PAGESPEEDGITLINK}" -O "${NGX_PAGESPEEDGITLINKFILE}" --tries=3
+          echo "wget --progress=bar ${NGX_PAGESPEEDGITLINK} -O ${NGX_PAGESPEEDGITLINKFILE} --tries=3"
+          wget --progress=bar "${NGX_PAGESPEEDGITLINK}" -O "${NGX_PAGESPEEDGITLINKFILE}" --tries=3
       ERROR=$?
         if [[ "$ERROR" != '0' ]]; then
           cecho "Error: ${NGX_PAGESPEEDGITLINKFILE} download failed." $boldgreen
@@ -920,8 +959,8 @@ if [[ "$NGINX_PAGESPEEDGITMASTER" = [nN] ]]; then
           ls -lah ${NGX_PAGESPEEDLINKFILE}
       else
           echo '#2'
-          echo "wget -c${ipv_forceopt} --progress=bar ${NGX_PAGESPEEDLINK} -O ${NGX_PAGESPEEDLINKFILE} --tries=3"
-          wget -c${ipv_forceopt} --progress=bar "${NGX_PAGESPEEDLINK}" -O "${NGX_PAGESPEEDLINKFILE}" --tries=3
+          echo "wget --progress=bar ${NGX_PAGESPEEDLINK} -O ${NGX_PAGESPEEDLINKFILE} --tries=3"
+          wget --progress=bar "${NGX_PAGESPEEDLINK}" -O "${NGX_PAGESPEEDLINKFILE}" --tries=3
   ERROR=$?
     if [[ "$ERROR" != '0' ]]; then
     cecho "Error: ${NGX_PAGESPEEDLINKFILE} download failed." $boldgreen
@@ -977,7 +1016,7 @@ fi
           echo 'https://github.com/centminmod/centminmod-ngx-pagespeed/raw/master/downloads/1.13.35.2-x64.tar.gz' > PSOL_BINARY_URL
         fi
         psol_url=$(scripts/format_binary_url.sh PSOL_BINARY_URL)
-        wget -c $psol_url
+        wget $psol_url
         ERROR=$?
         if [[ "$ERROR" != '0' ]]; then
           cecho "Error: $psol_url download failed." $boldgreen
@@ -988,7 +1027,7 @@ fi
         tar xzf "$(basename ${psol_url})"
       elif [[ "$PS_BRANCHVER" -ge '10012' ]]; then
         psol_url=$(scripts/format_binary_url.sh PSOL_BINARY_URL)
-        wget -c $psol_url
+        wget $psol_url
         ERROR=$?
         if [[ "$ERROR" != '0' ]]; then
           cecho "Error: $psol_url download failed." $boldgreen
@@ -1001,8 +1040,8 @@ fi
         if [[ -s "${NGX_PAGESPEEDPSOLINKLFILE}" && "$(tar -tzf ${NGX_PAGESPEEDPSOLINKLFILE} >/dev/null 2>&1; echo $?)" -eq '0' ]]; then
           cecho "${NGX_PAGESPEEDPSOLINKLFILE} Archive found, skipping download..." $boldgreen
         else
-          echo "wget -c${ipv_forceopt} --progress=bar ${NGX_PAGESPEEDPSOLINKL} -O ${NGX_PAGESPEEDPSOLINKLFILE} --tries=3"
-          wget -c${ipv_forceopt} --progress=bar "${NGX_PAGESPEEDPSOLINKL}" -O "${NGX_PAGESPEEDPSOLINKLFILE}" --tries=3
+          echo "wget --progress=bar ${NGX_PAGESPEEDPSOLINKL} -O ${NGX_PAGESPEEDPSOLINKLFILE} --tries=3"
+          wget --progress=bar "${NGX_PAGESPEEDPSOLINKL}" -O "${NGX_PAGESPEEDPSOLINKLFILE}" --tries=3
           ERROR=$?
           if [[ "$ERROR" != '0' ]]; then
             cecho "Error: ${NGX_PAGESPEEDPSOLINKLFILE} download failed." $boldgreen
@@ -1038,8 +1077,8 @@ ngxmoduletarball() {
     if [[ -s "${NGX_FANCYINDEXLINKFILE}" && "$(tar -tzf ${NGX_FANCYINDEXLINKFILE} >/dev/null 2>&1; echo $?)" -eq '0' ]]; then
         cecho "ngx-fancyindex $NGINX_FANCYINDEXVER Archive found, skipping download..." $boldgreen
     else
-        echo "wget -c${ipv_forceopt} --progress=bar -O ${NGX_FANCYINDEXLINKFILE} ${NGX_FANCYINDEXLINK} --tries=3"
-        wget -c${ipv_forceopt} --progress=bar -O "${NGX_FANCYINDEXLINKFILE}" "${NGX_FANCYINDEXLINK}" --tries=3
+        echo "wget --progress=bar -O ${NGX_FANCYINDEXLINKFILE} ${NGX_FANCYINDEXLINK} --tries=3"
+        wget --progress=bar -O "${NGX_FANCYINDEXLINKFILE}" "${NGX_FANCYINDEXLINK}" --tries=3
 ERROR=$?
   if [[ "$ERROR" != '0' ]]; then
   cecho "Error: ${NGX_FANCYINDEXLINKFILE} download failed." $boldgreen
@@ -1069,8 +1108,8 @@ rm -rf "${NGX_FANCYINDEXLINKFILE}"
     if [[ -s "${NGX_FANCYINDEXLINKFILE}" && "$(tar -tzf ${NGX_FANCYINDEXLINKFILE} >/dev/null 2>&1; echo $?)" -eq '0' ]]; then
         cecho "ngx-fancyindex $NGINX_FANCYINDEXVER Archive found, skipping download..." $boldgreen
     else
-        echo "wget -c${ipv_forceopt} --progress=bar -O ${NGX_FANCYINDEXLINKFILE} ${NGX_FANCYINDEXLINK} --tries=3"
-        wget -c${ipv_forceopt} --progress=bar -O "${NGX_FANCYINDEXLINKFILE}" "${NGX_FANCYINDEXLINK}" --tries=3
+        echo "wget --progress=bar -O ${NGX_FANCYINDEXLINKFILE} ${NGX_FANCYINDEXLINK} --tries=3"
+        wget --progress=bar -O "${NGX_FANCYINDEXLINKFILE}" "${NGX_FANCYINDEXLINK}" --tries=3
 ERROR=$?
   if [[ "$ERROR" != '0' ]]; then
   cecho "Error: ${NGX_FANCYINDEXLINKFILE} download failed." $boldgreen
@@ -1098,8 +1137,8 @@ echo ""
     if [[ -s "${NGX_CACHEPURGEFILE}" && "$(tar -tzf ${NGX_CACHEPURGEFILE} >/dev/null 2>&1; echo $?)" -eq '0' ]]; then
         cecho "ngx_cache_purge ${NGINX_CACHEPURGEVER} Archive found, skipping download..." $boldgreen
     else
-        echo "wget -c${ipv_forceopt} --progress=bar -O ${NGX_CACHEPURGEFILE} ${NGX_CACHEPURGE} --tries=3"
-        wget -c${ipv_forceopt} --progress=bar -O "${NGX_CACHEPURGEFILE}" "${NGX_CACHEPURGE}" --tries=3
+        echo "wget --progress=bar -O ${NGX_CACHEPURGEFILE} ${NGX_CACHEPURGE} --tries=3"
+        wget --progress=bar -O "${NGX_CACHEPURGEFILE}" "${NGX_CACHEPURGE}" --tries=3
 ERROR=$?
   if [[ "$ERROR" != '0' ]]; then
   cecho "Error: ${NGX_CACHEPURGEFILE} download failed." $boldgreen
@@ -1126,8 +1165,8 @@ echo ""
     if [[ -s "${NGX_ACCESSKEYLINKFILE}" && "$(tar -tzf ${NGX_ACCESSKEYLINKFILE} >/dev/null 2>&1; echo $?)" -eq '0' ]]; then
         cecho "Nginx-accesskey 2.0.3 Archive found, skipping download..." $boldgreen
     else
-        echo "wget -c ${NGX_ACCESSKEYLINK} -O ${NGX_ACCESSKEYLINKFILE} --tries=3"
-        wget -c "${NGX_ACCESSKEYLINK}" -O "${NGX_ACCESSKEYLINKFILE}" --tries=3
+        echo "wget ${NGX_ACCESSKEYLINK} -O ${NGX_ACCESSKEYLINKFILE} --tries=3"
+        wget "${NGX_ACCESSKEYLINK}" -O "${NGX_ACCESSKEYLINKFILE}" --tries=3
 ERROR=$?
   if [[ "$ERROR" != '0' ]]; then
   cecho "Error: ${NGX_ACCESSKEYLINKFILE} download failed." $boldgreen
@@ -1154,8 +1193,8 @@ echo ""
     if [[ -s "${NGX_CONCATLINKFILE}" && "$(tar -tzf ${NGX_CONCATLINKFILE} >/dev/null 2>&1; echo $?)" -eq '0' ]]; then
         cecho "${NGX_CONCATLINKFILE} Archive found, skipping download..." $boldgreen
     else
-        echo "wget -c${ipv_forceopt} --progress=bar ${NGX_CONCATLINK} -O ${NGX_CONCATLINKFILE} --tries=3"
-        wget -c${ipv_forceopt} --progress=bar "${NGX_CONCATLINK}" -O "${NGX_CONCATLINKFILE}" --tries=3
+        echo "wget --progress=bar ${NGX_CONCATLINK} -O ${NGX_CONCATLINKFILE} --tries=3"
+        wget --progress=bar "${NGX_CONCATLINK}" -O "${NGX_CONCATLINKFILE}" --tries=3
 ERROR=$?
   if [[ "$ERROR" != '0' ]]; then
   cecho "Error: ${NGX_CONCATLINKFILE} download failed." $boldgreen
@@ -1183,8 +1222,8 @@ echo ""
     if [[ -s "${NGX_HEADERSMORELINKFILE}" && "$(tar -tzf ${NGX_HEADERSMORELINKFILE} >/dev/null 2>&1; echo $?)" -eq '0' ]]; then
         cecho "${NGX_HEADERSMORELINKFILE} Archive found, skipping download..." $boldgreen
     else
-        echo "wget -c${ipv_forceopt} --progress=bar ${NGX_HEADERSMORELINK} -O ${NGX_HEADERSMORELINKFILE} --tries=3"
-        wget -c${ipv_forceopt} --progress=bar "${NGX_HEADERSMORELINK}" -O "${NGX_HEADERSMORELINKFILE}" --tries=3
+        echo "wget --progress=bar ${NGX_HEADERSMORELINK} -O ${NGX_HEADERSMORELINKFILE} --tries=3"
+        wget --progress=bar "${NGX_HEADERSMORELINK}" -O "${NGX_HEADERSMORELINKFILE}" --tries=3
 ERROR=$?
   if [[ "$ERROR" != '0' ]]; then
   cecho "Error: ${NGX_HEADERSMORELINKFILE} download failed." $boldgreen
@@ -1212,8 +1251,8 @@ echo ""
     if [[ -s "${NGX_STICKYLINKFILE}" && "$(tar -tzf ${NGX_STICKYLINKFILE} >/dev/null 2>&1; echo $?)" -eq '0' ]]; then
         cecho "${NGX_STICKYLINKFILE} Archive found, skipping download..." $boldgreen
     else
-        echo "wget -c${ipv_forceopt} --progress=bar ${NGX_STICKYLINK} -O ${NGX_STICKYLINKFILE} --tries=3"
-        wget -c${ipv_forceopt} --progress=bar "${NGX_STICKYLINK}" -O "${NGX_STICKYLINKFILE}" --tries=3
+        echo "wget --progress=bar ${NGX_STICKYLINK} -O ${NGX_STICKYLINKFILE} --tries=3"
+        wget --progress=bar "${NGX_STICKYLINK}" -O "${NGX_STICKYLINKFILE}" --tries=3
 ERROR=$?
   if [[ "$ERROR" != '0' ]]; then
   cecho "Error: ${NGX_STICKYLINKFILE} download failed." $boldgreen
@@ -1242,8 +1281,8 @@ echo ""
     if [[ -s "${NGX_UPSTREAMCHECKLINKFILE}" && "$(tar -tzf ${NGX_UPSTREAMCHECKLINKFILE} >/dev/null 2>&1; echo $?)" -eq '0' ]]; then
         cecho "${NGX_UPSTREAMCHECKLINKFILE} Archive found, skipping download..." $boldgreen
     else
-        echo "wget -c${ipv_forceopt} --progress=bar ${NGX_UPSTREAMCHECKLINK} -O ${NGX_UPSTREAMCHECKLINKFILE} --tries=3"
-        wget -c${ipv_forceopt} --progress=bar "${NGX_UPSTREAMCHECKLINK}" -O "${NGX_UPSTREAMCHECKLINKFILE}" --tries=3
+        echo "wget --progress=bar ${NGX_UPSTREAMCHECKLINK} -O ${NGX_UPSTREAMCHECKLINKFILE} --tries=3"
+        wget --progress=bar "${NGX_UPSTREAMCHECKLINK}" -O "${NGX_UPSTREAMCHECKLINKFILE}" --tries=3
 ERROR=$?
   if [[ "$ERROR" != '0' ]]; then
   cecho "Error: ${NGX_UPSTREAMCHECKLINKFILE} download failed." $boldgreen
@@ -1271,8 +1310,8 @@ echo ""
     if [[ -s "${NGX_HTTPREDISLINKFILE}" && "$(tar -tzf ${NGX_HTTPREDISLINKFILE} >/dev/null 2>&1; echo $?)" -eq '0' ]]; then
         cecho "ngx_http_redis Archive found, skipping download..." $boldgreen
     else
-        echo "wget -c ${NGX_HTTPREDISLINK} -O ${NGX_HTTPREDISLINKFILE} --tries=3"
-        wget -c "${NGX_HTTPREDISLINK}" -O "${NGX_HTTPREDISLINKFILE}" --tries=3
+        echo "wget ${NGX_HTTPREDISLINK} -O ${NGX_HTTPREDISLINKFILE} --tries=3"
+        wget "${NGX_HTTPREDISLINK}" -O "${NGX_HTTPREDISLINKFILE}" --tries=3
 ERROR=$?
     if [[ "$ERROR" != '0' ]]; then
     cecho "Error: ${NGX_HTTPREDISLINKFILE} download failed." $boldgreen
@@ -1314,8 +1353,8 @@ if [[ -s "${NGX_MEMCLINKFILE}" && "$(tar -tzf ${NGX_MEMCLINKFILE} >/dev/null 2>&
   else
   cecho "Error: ${NGX_MEMCLINKFILE} not found!!! Downloading now......" $boldgreen
   rm -rf "${NGX_MEMCLINKFILE}"
-        echo "wget -c${ipv_forceopt} --progress=bar ${NGX_MEMCLINK} -O ${NGX_MEMCLINKFILE} --tries=3"
-        wget -c${ipv_forceopt} --progress=bar "${NGX_MEMCLINK}" -O "${NGX_MEMCLINKFILE}" --tries=3
+        echo "wget --progress=bar ${NGX_MEMCLINK} -O ${NGX_MEMCLINKFILE} --tries=3"
+        wget --progress=bar "${NGX_MEMCLINK}" -O "${NGX_MEMCLINKFILE}" --tries=3
 ERROR=$?
   if [[ "$ERROR" != '0' ]]; then
   cecho "Error: ${NGX_MEMCLINKFILE} download failed." $boldgreen
@@ -1344,8 +1383,8 @@ if [[ -s "${NGX_SRCACHELINKFILE}" && "$(tar -tzf ${NGX_SRCACHELINKFILE} >/dev/nu
   else
   cecho "Error: ${NGX_SRCACHELINKFILE} not found!!! Downloading now......" $boldgreen
   rm -rf "${NGX_SRCACHELINKFILE}"
-        echo "wget -c${ipv_forceopt} --progress=bar ${NGX_SRCACHELINK} -O ${NGX_SRCACHELINKFILE} --tries=3"
-        wget -c${ipv_forceopt} --progress=bar "${NGX_SRCACHELINK}" -O "${NGX_SRCACHELINKFILE}" --tries=3
+        echo "wget --progress=bar ${NGX_SRCACHELINK} -O ${NGX_SRCACHELINKFILE} --tries=3"
+        wget --progress=bar "${NGX_SRCACHELINK}" -O "${NGX_SRCACHELINKFILE}" --tries=3
 ERROR=$?
   if [[ "$ERROR" != '0' ]]; then
   cecho "Error: ${NGX_SRCACHELINKFILE} download failed." $boldgreen
@@ -1374,8 +1413,8 @@ if [[ -s "${NGX_DEVELKITLINKFILE}" && "$(tar -tzf ${NGX_DEVELKITLINKFILE} >/dev/
   else
   cecho "Error: ${NGX_DEVELKITLINKFILE} not found!!! Downloading now......" $boldgreen
   rm -rf "${NGX_DEVELKITLINKFILE}"
-        echo "wget -c${ipv_forceopt} --progress=bar ${NGX_DEVELKITLINK} -O ${NGX_DEVELKITLINKFILE} --tries=3"
-        wget -c${ipv_forceopt} --progress=bar "${NGX_DEVELKITLINK}" -O "${NGX_DEVELKITLINKFILE}" --tries=3
+        echo "wget --progress=bar ${NGX_DEVELKITLINK} -O ${NGX_DEVELKITLINKFILE} --tries=3"
+        wget --progress=bar "${NGX_DEVELKITLINK}" -O "${NGX_DEVELKITLINKFILE}" --tries=3
 ERROR=$?
     if [[ "$ERROR" != '0' ]]; then
     cecho "Error: ${NGX_DEVELKITLINKFILE} download failed." $boldgreen
@@ -1404,8 +1443,8 @@ if [[ -s "${NGX_SETMISCLINKFILE}" && "$(tar -tzf ${NGX_SETMISCLINKFILE} >/dev/nu
   else
   cecho "Error: ${NGX_SETMISCLINKFILE} not found!!! Downloading now......" $boldgreen
   rm -rf "${NGX_SETMISCLINKFILE}"
-        echo "wget -c${ipv_forceopt} --progress=bar ${NGX_SETMISCLINK} -O ${NGX_SETMISCLINKFILE} --tries=3"
-        wget -c${ipv_forceopt} --progress=bar "${NGX_SETMISCLINK}" -O "${NGX_SETMISCLINKFILE}" --tries=3
+        echo "wget --progress=bar ${NGX_SETMISCLINK} -O ${NGX_SETMISCLINKFILE} --tries=3"
+        wget --progress=bar "${NGX_SETMISCLINK}" -O "${NGX_SETMISCLINKFILE}" --tries=3
 ERROR=$?
     if [[ "$ERROR" != '0' ]]; then
     cecho "Error: ${NGX_SETMISCLINKFILE} download failed." $boldgreen
@@ -1434,8 +1473,8 @@ if [[ -s "${NGX_ECHOLINKFILE}" && "$(tar -tzf ${NGX_ECHOLINKFILE} >/dev/null 2>&
   else
   cecho "Error: ${NGX_ECHOLINKFILE} not found!!! Downloading now......" $boldgreen
   rm -rf "${NGX_ECHOLINKFILE}"
-        echo "wget -c${ipv_forceopt} --progress=bar ${NGX_ECHOLINK} -O ${NGX_ECHOLINKFILE} --tries=3"
-        wget -c${ipv_forceopt} --progress=bar "${NGX_ECHOLINK}" -O "${NGX_ECHOLINKFILE}" --tries=3
+        echo "wget --progress=bar ${NGX_ECHOLINK} -O ${NGX_ECHOLINKFILE} --tries=3"
+        wget --progress=bar "${NGX_ECHOLINK}" -O "${NGX_ECHOLINKFILE}" --tries=3
 ERROR=$?
     if [[ "$ERROR" != '0' ]]; then
     cecho "Error: ${NGX_ECHOLINKFILE} download failed." $boldgreen
@@ -1464,8 +1503,8 @@ if [[ -s "${NGX_REDISLINKFILE}" && "$(tar -tzf ${NGX_REDISLINKFILE} >/dev/null 2
   else
   cecho "Error: ${NGX_REDISLINKFILE} not found!!! Downloading now......" $boldgreen
   rm -rf "${NGX_REDISLINKFILE}"
-        echo "wget -c${ipv_forceopt} --progress=bar ${NGX_REDISLINK} -O ${NGX_REDISLINKFILE} --tries=3"
-        wget -c${ipv_forceopt} --progress=bar "${NGX_REDISLINK}" -O "${NGX_REDISLINKFILE}" --tries=3
+        echo "wget --progress=bar ${NGX_REDISLINK} -O ${NGX_REDISLINKFILE} --tries=3"
+        wget --progress=bar "${NGX_REDISLINK}" -O "${NGX_REDISLINKFILE}" --tries=3
 ERROR=$?
     if [[ "$ERROR" != '0' ]]; then
     cecho "Error: ${NGX_REDISLINKFILE} download failed." $boldgreen
@@ -1497,8 +1536,8 @@ if [[ -s "${NGX_LUANGINXLINKFILE}" && "$(tar -tzf ${NGX_LUANGINXLINKFILE} >/dev/
   else
   cecho "Error: ${NGX_LUANGINXLINKFILE} not found!!! Downloading now......" $boldgreen
   rm -rf "${NGX_LUANGINXLINKFILE}"
-        echo "wget -c${ipv_forceopt} --progress=bar ${NGX_LUANGINXLINK} -O ${NGX_LUANGINXLINKFILE} --tries=3"
-        wget -c${ipv_forceopt} --progress=bar "${NGX_LUANGINXLINK}" -O "${NGX_LUANGINXLINKFILE}" --tries=3
+        echo "wget --progress=bar ${NGX_LUANGINXLINK} -O ${NGX_LUANGINXLINKFILE} --tries=3"
+        wget --progress=bar "${NGX_LUANGINXLINK}" -O "${NGX_LUANGINXLINKFILE}" --tries=3
 ERROR=$?
     if [[ "$ERROR" != '0' ]]; then
     cecho "Error: ${NGX_LUANGINXLINKFILE} download failed." $boldgreen
@@ -1530,8 +1569,8 @@ if [[ -s "${NGX_LUASTREAMLINKFILE}" && "$(tar -tzf ${NGX_LUASTREAMLINKFILE} >/de
   else
   cecho "Error: ${NGX_LUASTREAMLINKFILE} not found!!! Downloading now......" $boldgreen
   rm -rf "${NGX_LUASTREAMLINKFILE}"
-        echo "wget -c${ipv_forceopt} --progress=bar ${NGX_LUASTREAMLINK} -O ${NGX_LUASTREAMLINKFILE} --tries=3"
-        wget -c${ipv_forceopt} --progress=bar "${NGX_LUASTREAMLINK}" -O "${NGX_LUASTREAMLINKFILE}" --tries=3
+        echo "wget --progress=bar ${NGX_LUASTREAMLINK} -O ${NGX_LUASTREAMLINKFILE} --tries=3"
+        wget --progress=bar "${NGX_LUASTREAMLINK}" -O "${NGX_LUASTREAMLINKFILE}" --tries=3
 ERROR=$?
     if [[ "$ERROR" != '0' ]]; then
     cecho "Error: ${NGX_LUASTREAMLINKFILE} download failed." $boldgreen
@@ -1561,8 +1600,8 @@ if [[ -s "${NGX_LUAGITLINKFILE}" && "$(tar -tzf ${NGX_LUAGITLINKFILE} >/dev/null
   else
   cecho "Error: ${NGX_LUAGITLINKFILE} not found!!! Downloading now......" $boldgreen
   rm -rf "${NGX_LUAGITLINKFILE}"
-        echo "wget -c${ipv_forceopt} --progress=bar ${NGX_LUAGITLINK} -O ${NGX_LUAGITLINKFILE} --tries=3"
-        wget -c${ipv_forceopt} --progress=bar "${NGX_LUAGITLINK}" -O "${NGX_LUAGITLINKFILE}" --tries=3
+        echo "wget --progress=bar ${NGX_LUAGITLINK} -O ${NGX_LUAGITLINKFILE} --tries=3"
+        wget --progress=bar "${NGX_LUAGITLINK}" -O "${NGX_LUAGITLINKFILE}" --tries=3
 ERROR=$?
     if [[ "$ERROR" != '0' ]]; then
     cecho "Error: ${NGX_LUAGITLINKFILE} download failed." $boldgreen
@@ -1591,8 +1630,8 @@ if [[ -s "${NGX_LUAMEMCACHEDLINKFILE}" && "$(tar -tzf ${NGX_LUAMEMCACHEDLINKFILE
   else
   cecho "Error: ${NGX_LUAMEMCACHEDLINKFILE} not found!!! Downloading now......" $boldgreen
   rm -rf "${NGX_LUAMEMCACHEDLINKFILE}"
-        echo "wget -c${ipv_forceopt} --progress=bar ${NGX_LUAMEMCACHEDLINK} -O ${NGX_LUAMEMCACHEDLINKFILE} --tries=3"
-        wget -c${ipv_forceopt} --progress=bar "${NGX_LUAMEMCACHEDLINK}" -O "${NGX_LUAMEMCACHEDLINKFILE}" --tries=3
+        echo "wget --progress=bar ${NGX_LUAMEMCACHEDLINK} -O ${NGX_LUAMEMCACHEDLINKFILE} --tries=3"
+        wget --progress=bar "${NGX_LUAMEMCACHEDLINK}" -O "${NGX_LUAMEMCACHEDLINKFILE}" --tries=3
 ERROR=$?
     if [[ "$ERROR" != '0' ]]; then
     cecho "Error: ${NGX_LUAMEMCACHEDLINKFILE} download failed." $boldgreen
@@ -1621,8 +1660,8 @@ if [[ -s "${NGX_LUAMYSQLLINKFILE}" && "$(tar -tzf ${NGX_LUAMYSQLLINKFILE} >/dev/
   else
   cecho "Error: ${NGX_LUAMYSQLLINKFILE} not found!!! Downloading now......" $boldgreen
   rm -rf "${NGX_LUAMYSQLLINKFILE}"
-        echo "wget -c${ipv_forceopt} --progress=bar ${NGX_LUAMYSQLLINK} -O ${NGX_LUAMYSQLLINKFILE} --tries=3"
-        wget -c${ipv_forceopt} --progress=bar "${NGX_LUAMYSQLLINK}" -O "${NGX_LUAMYSQLLINKFILE}" --tries=3
+        echo "wget --progress=bar ${NGX_LUAMYSQLLINK} -O ${NGX_LUAMYSQLLINKFILE} --tries=3"
+        wget --progress=bar "${NGX_LUAMYSQLLINK}" -O "${NGX_LUAMYSQLLINKFILE}" --tries=3
 ERROR=$?
     if [[ "$ERROR" != '0' ]]; then
     cecho "Error: ${NGX_LUAMYSQLLINKFILE} download failed." $boldgreen
@@ -1651,8 +1690,8 @@ if [[ -s "${NGX_LUAREDISLINKFILE}" && "$(tar -tzf ${NGX_LUAREDISLINKFILE} >/dev/
   else
   cecho "Error: ${NGX_LUAREDISLINKFILE} not found!!! Downloading now......" $boldgreen
   rm -rf "${NGX_LUAREDISLINKFILE}"
-        echo "wget -c${ipv_forceopt} --progress=bar ${NGX_LUAREDISLINK} -O ${NGX_LUAREDISLINKFILE} --tries=3"
-        wget -c${ipv_forceopt} --progress=bar "${NGX_LUAREDISLINK}" -O "${NGX_LUAREDISLINKFILE}" --tries=3
+        echo "wget --progress=bar ${NGX_LUAREDISLINK} -O ${NGX_LUAREDISLINKFILE} --tries=3"
+        wget --progress=bar "${NGX_LUAREDISLINK}" -O "${NGX_LUAREDISLINKFILE}" --tries=3
 ERROR=$?
     if [[ "$ERROR" != '0' ]]; then
     cecho "Error: ${NGX_LUAREDISLINKFILE} download failed." $boldgreen
@@ -1681,8 +1720,8 @@ if [[ -s "${NGX_LUADNSLINKFILE}" && "$(tar -tzf ${NGX_LUADNSLINKFILE} >/dev/null
   else
   cecho "Error: ${NGX_LUADNSLINKFILE} not found!!! Downloading now......" $boldgreen
   rm -rf "${NGX_LUADNSLINKFILE}"
-        echo "wget -c${ipv_forceopt} --progress=bar ${NGX_LUADNSLINK} -O ${NGX_LUADNSLINKFILE} --tries=3"
-        wget -c${ipv_forceopt} --progress=bar "${NGX_LUADNSLINK}" -O "${NGX_LUADNSLINKFILE}" --tries=3
+        echo "wget --progress=bar ${NGX_LUADNSLINK} -O ${NGX_LUADNSLINKFILE} --tries=3"
+        wget --progress=bar "${NGX_LUADNSLINK}" -O "${NGX_LUADNSLINKFILE}" --tries=3
 ERROR=$?
     if [[ "$ERROR" != '0' ]]; then
     cecho "Error: ${NGX_LUADNSLINKFILE} download failed." $boldgreen
@@ -1711,8 +1750,8 @@ if [[ -s "${NGX_LUAUPLOADLINKFILE}" && "$(tar -tzf ${NGX_LUAUPLOADLINKFILE} >/de
   else
   cecho "Error: ${NGX_LUAUPLOADLINKFILE} not found!!! Downloading now......" $boldgreen
   rm -rf "${NGX_LUAUPLOADLINKFILE}"
-        echo "wget -c${ipv_forceopt} --progress=bar ${NGX_LUAUPLOADLINK} -O ${NGX_LUAUPLOADLINKFILE} --tries=3"
-        wget -c${ipv_forceopt} --progress=bar "${NGX_LUAUPLOADLINK}" -O "${NGX_LUAUPLOADLINKFILE}" --tries=3
+        echo "wget --progress=bar ${NGX_LUAUPLOADLINK} -O ${NGX_LUAUPLOADLINKFILE} --tries=3"
+        wget --progress=bar "${NGX_LUAUPLOADLINK}" -O "${NGX_LUAUPLOADLINKFILE}" --tries=3
 ERROR=$?
     if [[ "$ERROR" != '0' ]]; then
     cecho "Error: ${NGX_LUAUPLOADLINKFILE} download failed." $boldgreen
@@ -1741,8 +1780,8 @@ if [[ -s "${NGX_LUAWEBSOCKETLINKFILE}" && "$(tar -tzf ${NGX_LUAWEBSOCKETLINKFILE
   else
   cecho "Error: ${NGX_LUAWEBSOCKETLINKFILE} not found!!! Downloading now......" $boldgreen
   rm -rf "${NGX_LUAWEBSOCKETLINKFILE}"
-        echo "wget -c${ipv_forceopt} --progress=bar ${NGX_LUAWEBSOCKETLINK} -O ${NGX_LUAWEBSOCKETLINKFILE} --tries=3"
-        wget -c${ipv_forceopt} --progress=bar "${NGX_LUAWEBSOCKETLINK}" -O "${NGX_LUAWEBSOCKETLINKFILE}" --tries=3
+        echo "wget --progress=bar ${NGX_LUAWEBSOCKETLINK} -O ${NGX_LUAWEBSOCKETLINKFILE} --tries=3"
+        wget --progress=bar "${NGX_LUAWEBSOCKETLINK}" -O "${NGX_LUAWEBSOCKETLINKFILE}" --tries=3
 ERROR=$?
     if [[ "$ERROR" != '0' ]]; then
     cecho "Error: ${NGX_LUAWEBSOCKETLINKFILE} download failed." $boldgreen
@@ -1771,8 +1810,8 @@ if [[ -s "${NGX_LUALOCKLINKFILE}" && "$(tar -tzf ${NGX_LUALOCKLINKFILE} >/dev/nu
   else
   cecho "Error: ${NGX_LUALOCKLINKFILE} not found!!! Downloading now......" $boldgreen
   rm -rf "${NGX_LUALOCKLINKFILE}"
-        echo "wget -c${ipv_forceopt} --progress=bar ${NGX_LUALOCKLINK} -O ${NGX_LUALOCKLINKFILE} --tries=3"
-        wget -c${ipv_forceopt} --progress=bar "${NGX_LUALOCKLINK}" -O "${NGX_LUALOCKLINKFILE}" --tries=3
+        echo "wget --progress=bar ${NGX_LUALOCKLINK} -O ${NGX_LUALOCKLINKFILE} --tries=3"
+        wget --progress=bar "${NGX_LUALOCKLINK}" -O "${NGX_LUALOCKLINKFILE}" --tries=3
 ERROR=$?
     if [[ "$ERROR" != '0' ]]; then
     cecho "Error: ${NGX_LUALOCKLINKFILE} download failed." $boldgreen
@@ -1801,8 +1840,8 @@ if [[ -s "${NGX_LUASTRINGLINKFILE}" && "$(tar -tzf ${NGX_LUASTRINGLINKFILE} >/de
   else
   cecho "Error: ${NGX_LUASTRINGLINKFILE} not found!!! Downloading now......" $boldgreen
   rm -rf "${NGX_LUASTRINGLINKFILE}"
-        echo "wget -c${ipv_forceopt} --progress=bar ${NGX_LUASTRINGLINK} -O ${NGX_LUASTRINGLINKFILE} --tries=3"
-        wget -c${ipv_forceopt} --progress=bar "${NGX_LUASTRINGLINK}" -O "${NGX_LUASTRINGLINKFILE}" --tries=3
+        echo "wget --progress=bar ${NGX_LUASTRINGLINK} -O ${NGX_LUASTRINGLINKFILE} --tries=3"
+        wget --progress=bar "${NGX_LUASTRINGLINK}" -O "${NGX_LUASTRINGLINKFILE}" --tries=3
 ERROR=$?
     if [[ "$ERROR" != '0' ]]; then
     cecho "Error: ${NGX_LUASTRINGLINKFILE} download failed." $boldgreen
@@ -1831,8 +1870,8 @@ if [[ -s "${NGX_LUAREDISPARSERLINKFILE}" && "$(tar -tzf ${NGX_LUAREDISPARSERLINK
   else
   cecho "Error: ${NGX_LUAREDISPARSERLINKFILE} not found!!! Downloading now......" $boldgreen
   rm -rf "${NGX_LUAREDISPARSERLINKFILE}"
-        echo "wget -c${ipv_forceopt} --progress=bar ${NGX_LUAREDISPARSERLINK} -O ${NGX_LUAREDISPARSERLINKFILE} --tries=3"
-        wget -c${ipv_forceopt} --progress=bar "${NGX_LUAREDISPARSERLINK}" -O "${NGX_LUAREDISPARSERLINKFILE}" --tries=3
+        echo "wget --progress=bar ${NGX_LUAREDISPARSERLINK} -O ${NGX_LUAREDISPARSERLINKFILE} --tries=3"
+        wget --progress=bar "${NGX_LUAREDISPARSERLINK}" -O "${NGX_LUAREDISPARSERLINKFILE}" --tries=3
 ERROR=$?
     if [[ "$ERROR" != '0' ]]; then
     cecho "Error: ${NGX_LUAREDISPARSERLINKFILE} download failed." $boldgreen
@@ -1861,8 +1900,8 @@ if [[ -s "${NGX_LUAUPSTREAMCHECKLINKFILE}" && "$(tar -tzf ${NGX_LUAUPSTREAMCHECK
   else
   cecho "Error: ${NGX_LUAUPSTREAMCHECKLINKFILE} not found!!! Downloading now......" $boldgreen
   rm -rf "${NGX_LUAUPSTREAMCHECKLINKFILE}"
-        echo "wget -c${ipv_forceopt} --progress=bar ${NGX_LUAUPSTREAMCHECKLINK} -O ${NGX_LUAUPSTREAMCHECKLINKFILE} --tries=3"
-        wget -c${ipv_forceopt} --progress=bar "${NGX_LUAUPSTREAMCHECKLINK}" -O "${NGX_LUAUPSTREAMCHECKLINKFILE}" --tries=3
+        echo "wget --progress=bar ${NGX_LUAUPSTREAMCHECKLINK} -O ${NGX_LUAUPSTREAMCHECKLINKFILE} --tries=3"
+        wget --progress=bar "${NGX_LUAUPSTREAMCHECKLINK}" -O "${NGX_LUAUPSTREAMCHECKLINKFILE}" --tries=3
 ERROR=$?
     if [[ "$ERROR" != '0' ]]; then
     cecho "Error: ${NGX_LUAUPSTREAMCHECKLINKFILE} download failed." $boldgreen
@@ -1891,8 +1930,8 @@ if [[ -s "${NGX_LUALRUCACHELINKFILE}" && "$(tar -tzf ${NGX_LUALRUCACHELINKFILE} 
   else
   cecho "Error: ${NGX_LUALRUCACHELINKFILE} not found!!! Downloading now......" $boldgreen
   rm -rf "${NGX_LUALRUCACHELINKFILE}"
-        echo "wget -c${ipv_forceopt} --progress=bar ${NGX_LUALRUCACHELINK} -O ${NGX_LUALRUCACHELINKFILE} --tries=3"
-        wget -c${ipv_forceopt} --progress=bar "${NGX_LUALRUCACHELINK}" -O "${NGX_LUALRUCACHELINKFILE}" --tries=3
+        echo "wget --progress=bar ${NGX_LUALRUCACHELINK} -O ${NGX_LUALRUCACHELINKFILE} --tries=3"
+        wget --progress=bar "${NGX_LUALRUCACHELINK}" -O "${NGX_LUALRUCACHELINKFILE}" --tries=3
 ERROR=$?
     if [[ "$ERROR" != '0' ]]; then
     cecho "Error: ${NGX_LUALRUCACHELINKFILE} download failed." $boldgreen
@@ -1921,8 +1960,8 @@ if [[ -s "${NGX_LUARESTYCORELINKFILE}" && "$(tar -tzf ${NGX_LUARESTYCORELINKFILE
   else
   cecho "Error: ${NGX_LUARESTYCORELINKFILE} not found!!! Downloading now......" $boldgreen
   rm -rf "${NGX_LUARESTYCORELINKFILE}"
-        echo "wget -c${ipv_forceopt} --progress=bar ${NGX_LUARESTYCORELINK} -O ${NGX_LUARESTYCORELINKFILE} --tries=3"
-        wget -c${ipv_forceopt} --progress=bar "${NGX_LUARESTYCORELINK}" -O "${NGX_LUARESTYCORELINKFILE}" --tries=3
+        echo "wget --progress=bar ${NGX_LUARESTYCORELINK} -O ${NGX_LUARESTYCORELINKFILE} --tries=3"
+        wget --progress=bar "${NGX_LUARESTYCORELINK}" -O "${NGX_LUARESTYCORELINKFILE}" --tries=3
 ERROR=$?
     if [[ "$ERROR" != '0' ]]; then
     cecho "Error: ${NGX_LUARESTYCORELINKFILE} download failed." $boldgreen
@@ -1951,8 +1990,8 @@ if [[ -s "${NGX_LUAUPSTREAMLINKFILE}" && "$(tar -tzf ${NGX_LUAUPSTREAMLINKFILE} 
   else
   cecho "Error: ${NGX_LUAUPSTREAMLINKFILE} not found!!! Downloading now......" $boldgreen
   rm -rf "${NGX_LUAUPSTREAMLINKFILE}"
-        echo "wget -c${ipv_forceopt} --progress=bar ${NGX_LUAUPSTREAMLINK} -O ${NGX_LUAUPSTREAMLINKFILE} --tries=3"
-        wget -c${ipv_forceopt} --progress=bar "${NGX_LUAUPSTREAMLINK}" -O "${NGX_LUAUPSTREAMLINKFILE}" --tries=3
+        echo "wget --progress=bar ${NGX_LUAUPSTREAMLINK} -O ${NGX_LUAUPSTREAMLINKFILE} --tries=3"
+        wget --progress=bar "${NGX_LUAUPSTREAMLINK}" -O "${NGX_LUAUPSTREAMLINKFILE}" --tries=3
 ERROR=$?
     if [[ "$ERROR" != '0' ]]; then
     cecho "Error: ${NGX_LUAUPSTREAMLINKFILE} download failed." $boldgreen
@@ -1981,8 +2020,8 @@ if [[ -s "${NGX_LUALOGGERSOCKETLINKFILE}" && "$(tar -tzf ${NGX_LUALOGGERSOCKETLI
   else
   cecho "Error: ${NGX_LUALOGGERSOCKETLINKFILE} not found!!! Downloading now......" $boldgreen
   rm -rf "${NGX_LUALOGGERSOCKETLINKFILE}"
-        echo "wget -c${ipv_forceopt} --progress=bar ${NGX_LUALOGGERSOCKETLINK} -O ${NGX_LUALOGGERSOCKETLINKFILE} --tries=3"
-        wget -c${ipv_forceopt} --progress=bar "${NGX_LUALOGGERSOCKETLINK}" -O "${NGX_LUALOGGERSOCKETLINKFILE}" --tries=3
+        echo "wget --progress=bar ${NGX_LUALOGGERSOCKETLINK} -O ${NGX_LUALOGGERSOCKETLINKFILE} --tries=3"
+        wget --progress=bar "${NGX_LUALOGGERSOCKETLINK}" -O "${NGX_LUALOGGERSOCKETLINKFILE}" --tries=3
 ERROR=$?
     if [[ "$ERROR" != '0' ]]; then
     cecho "Error: ${NGX_LUALOGGERSOCKETLINKFILE} download failed." $boldgreen
@@ -2011,8 +2050,8 @@ if [[ -s "${NGX_LUACOOKIELINKFILE}" && "$(tar -tzf ${NGX_LUACOOKIELINKFILE} >/de
   else
   cecho "Error: ${NGX_LUACOOKIELINKFILE} not found!!! Downloading now......" $boldgreen
   rm -rf "${NGX_LUACOOKIELINKFILE}"
-        echo "wget -c${ipv_forceopt} --progress=bar ${NGX_LUACOOKIELINK} -O ${NGX_LUACOOKIELINKFILE} --tries=3"
-        wget -c${ipv_forceopt} --progress=bar "${NGX_LUACOOKIELINK}" -O "${NGX_LUACOOKIELINKFILE}" --tries=3
+        echo "wget --progress=bar ${NGX_LUACOOKIELINK} -O ${NGX_LUACOOKIELINKFILE} --tries=3"
+        wget --progress=bar "${NGX_LUACOOKIELINK}" -O "${NGX_LUACOOKIELINKFILE}" --tries=3
 ERROR=$?
     if [[ "$ERROR" != '0' ]]; then
     cecho "Error: ${NGX_LUACOOKIELINKFILE} download failed." $boldgreen
@@ -2041,8 +2080,8 @@ if [[ -s "${NGX_LUAUPSTREAMCACHELINKFILE}" && "$(tar -tzf ${NGX_LUAUPSTREAMCACHE
   else
   cecho "Error: ${NGX_LUAUPSTREAMCACHELINKFILE} not found!!! Downloading now......" $boldgreen
   rm -rf "${NGX_LUAUPSTREAMCACHELINKFILE}"
-        echo "wget -c${ipv_forceopt} --progress=bar ${NGX_LUAUPSTREAMCACHELINK} -O ${NGX_LUAUPSTREAMCACHELINKFILE} --tries=3"
-        wget -c${ipv_forceopt} --progress=bar "${NGX_LUAUPSTREAMCACHELINK}" -O "${NGX_LUAUPSTREAMCACHELINKFILE}" --tries=3
+        echo "wget --progress=bar ${NGX_LUAUPSTREAMCACHELINK} -O ${NGX_LUAUPSTREAMCACHELINKFILE} --tries=3"
+        wget --progress=bar "${NGX_LUAUPSTREAMCACHELINK}" -O "${NGX_LUAUPSTREAMCACHELINKFILE}" --tries=3
 ERROR=$?
     if [[ "$ERROR" != '0' ]]; then
     cecho "Error: ${NGX_LUAUPSTREAMCACHELINKFILE} download failed." $boldgreen
@@ -2071,8 +2110,8 @@ if [[ -s "${NGX_LUACJSONLINKFILE}" && "$(tar -tzf ${NGX_LUACJSONLINKFILE} >/dev/
   else
   cecho "Error: ${NGX_LUACJSONLINKFILE} not found!!! Downloading now......" $boldgreen
   rm -rf "${NGX_LUACJSONLINKFILE}"
-        echo "wget -c${ipv_forceopt} --progress=bar ${NGX_LUACJSONLINK} -O ${NGX_LUACJSONLINKFILE} --tries=3"
-        wget -c${ipv_forceopt} --progress=bar "${NGX_LUACJSONLINK}" -O "${NGX_LUACJSONLINKFILE}" --tries=3
+        echo "wget --progress=bar ${NGX_LUACJSONLINK} -O ${NGX_LUACJSONLINKFILE} --tries=3"
+        wget --progress=bar "${NGX_LUACJSONLINK}" -O "${NGX_LUACJSONLINKFILE}" --tries=3
 ERROR=$?
     if [[ "$ERROR" != '0' ]]; then
     cecho "Error: ${NGX_LUACJSONLINKFILE} download failed." $boldgreen
@@ -2157,6 +2196,62 @@ fi # NGINX INSTALL
 }
 
 ###############################################
+freenginxtarball() {
+
+if [[ "$NGINX_INSTALL" = [yY] && "$FREENGINX_INSTALL" = [yY] ]]; 
+then
+
+echo ""
+  if [ "$UNATTENDED" == 'n' ]; then
+    read -ep "Would you like to compile nginx with IPv6 support? [y/n] " asknginxipv
+  else
+  asknginxipv="$NGINX_IPV"
+  fi #unattended
+
+    cd "$DIR_TMP"
+
+        cecho "Download ${FREENGX_LINKFILE} ..." $boldyellow
+    if [[ -s "${FREENGX_LINKFILE}" && "$(tar -tzf ${FREENGX_LINKFILE} >/dev/null 2>&1; echo $?)" -eq '0' ]]; then
+        cecho "${FREENGX_LINKFILE} found, skipping download..." $boldgreen
+    else
+        rm -rf "${FREENGX_LINKFILE}"
+        download_cmd "${FREENGX_LINK}" "$WGETRETRY" 
+ERROR=$?
+  if [[ "$ERROR" != '0' ]]; then
+  cecho "Error: ${FREENGX_LINKFILE} download failed." $boldgreen
+checklogdetails
+  exit #$ERROR
+else 
+         cecho "Download done." $boldyellow
+#echo ""
+  fi
+    fi
+
+tar xzf "${FREENGX_LINKFILE}"
+ERROR=$?
+  if [[ "$ERROR" != '0' ]]; then
+  cecho "Error: ${FREENGX_LINKFILE} extraction failed." $boldgreen
+checklogdetails
+  exit #$ERROR
+else 
+         cecho "${FREENGX_LINKFILE} valid file." $boldyellow
+echo ""
+  fi
+
+if [[ "$PARALLEL_MODE" = [yY] ]] && [[ "$(grep -c "processor" /proc/cpuinfo)" -gt '1' ]]; then
+  ngxmoduletarball &
+  openrestytarball &
+  wait
+else
+  ngxmoduletarball
+  openrestytarball
+fi
+
+fi # FREENGINX INSTALL
+
+}
+
+###############################################
 libeventtarball() {
 
     cd "$DIR_TMP"
@@ -2232,7 +2327,29 @@ echo ""
 ###############################################
 mailparsephpexttarball() {
 
-    cd "$DIR_TMP"
+  if [[ "$INITIALINSTALL" != [yY] ]]; then
+      php-config --version | cut -d . -f1,2 | egrep -w '7.0|7.1|7.2|7.3|7.4|8.0|8.1|8.2|8.3|8.4'
+  else
+      echo $PHP_VERSION | cut -d . -f1,2 | egrep -w '7.0|7.1|7.2|7.3|7.4|8.0|8.1|8.2|8.3|8.4'
+  fi
+  PHPSEVEN_CHECKVER=$?
+  echo $PHPSEVEN_CHECKVER
+
+  # mailparse 3.0.0 only works with PHP 7.0 branch
+  # so use 2.1.6 if not PHP 7.0 branch
+  if [[ "$PHPSEVEN_CHECKVER" = '0' ]]; then
+      if [[ "$PHPMVER" = '8.4' || "$PHPMVER" = '8.3' || "$PHPMVER" = '8.2' || "$PHPMVER" = '8.1' || "$PHPMVER" = '8.0' || "$REDIS_PHPCURRENTVER" = '8.4' || "$PHPMUVER" = '8.4' || "$REDIS_PHPCURRENTVER" = '8.3' || "$PHPMUVER" = '8.3' || "$REDIS_PHPCURRENTVER" = '8.2' || "$PHPMUVER" = '8.2' || "$REDIS_PHPCURRENTVER" = '8.1' || "$PHPMUVER" = '8.1' || "$REDIS_PHPCURRENTVER" = '8.0' || "$PHPMUVER" = '8.0' ]] || [[ "$PHPMVER" = '7.4' || "$REDIS_PHPCURRENTVER" = '7.4' || "$PHPMUVER" = '7.4' ]]; then
+          MAILPARSEPHP_VER="$MAILPARSEPHPSEVENFOUR_COMPATVER"
+      else
+          MAILPARSEPHP_VER="$MAILPARSEPHP_COMPATVER"
+      fi
+      PHPEXT_MAILPARSELINKFILE="mailparse-${MAILPARSEPHP_VER}.tgz"
+      PHPEXT_MAILPARSELINK="https://pecl.php.net/get/${PHPEXT_MAILPARSELINKFILE}"
+      PHPEXT_MAILPARSELINKLOCAL="${LOCALCENTMINMOD_MIRROR}/centminmodparts/mailparse/${PHPEXT_MAILPARSELINKFILE}"
+  fi
+  echo "download MAILPARSEPHP_VER=$MAILPARSEPHP_VER"
+
+  cd "$DIR_TMP"
 
         cecho "Download ${PHPEXT_MAILPARSELINKFILE} ..." $boldyellow
 if [[ -s "${PHPEXT_MAILPARSELINKFILE}" && "$(tar -tzf ${PHPEXT_MAILPARSELINKFILE} >/dev/null 2>&1; echo $?)" -eq '0' ]]; then
@@ -2269,7 +2386,7 @@ echo ""
 ###############################################
 imagickphpextlocaltarball() {
 
-  if [[ "$CENTOS_SEVEN" -eq '7' ]] && [[ "$PHPMVER" = '7.0' || "$PHPMUVER" = '7.0' || "$PHPMVER" = '7.1' || "$PHPMUVER" = '7.1' || "$PHPMVER" = '7.2' || "$PHPMUVER" = '7.2' || "$PHPMVER" = '7.3' || "$PHPMUVER" = '7.3' || "$PHPMVER" = '7.4' || "$PHPMUVER" = '7.4' || "$PHPMVER" = '8.0' || "$PHPMUVER" = '8.0' || "$PHPMVER" = '8.1' || "$PHPMUVER" = '8.1' || "$PHPVER_ID" -ge '80000' ]]; then
+  if [[ "$CENTOS_SEVEN" -eq '7' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]] && [[ "$PHPMVER" = '7.0' || "$PHPMUVER" = '7.0' || "$PHPMVER" = '7.1' || "$PHPMUVER" = '7.1' || "$PHPMVER" = '7.2' || "$PHPMUVER" = '7.2' || "$PHPMVER" = '7.3' || "$PHPMUVER" = '7.3' || "$PHPMVER" = '7.4' || "$PHPMUVER" = '7.4' || "$PHPMVER" = '8.0' || "$PHPMUVER" = '8.0' || "$PHPMVER" = '8.1' || "$PHPMUVER" = '8.1' || "$PHPMVER" = '8.2' || "$PHPMUVER" = '8.2' || "$PHPMVER" = '8.3' || "$PHPMUVER" = '8.3' || "$PHPMVER" = '8.4' || "$PHPMUVER" = '8.4' || "$PHPVER_ID" -ge '80000' ]]; then
     # PHP 7+ requires imagick >3.4.4 i.e. 3.6.0+
     # PHP 5.x requires imagick <=3.4.4
     IMAGICKPHP_VER="$IMAGICKPHP_SEVEN_VER"
@@ -2314,7 +2431,7 @@ echo ""
 ###############################################
 imagickphpexttarball() {
 
-  if [[ "$CENTOS_SEVEN" -eq '7' ]] && [[ "$PHPMVER" = '7.0' || "$PHPMUVER" = '7.0' || "$PHPMVER" = '7.1' || "$PHPMUVER" = '7.1' || "$PHPMVER" = '7.2' || "$PHPMUVER" = '7.2' || "$PHPMVER" = '7.3' || "$PHPMUVER" = '7.3' || "$PHPMVER" = '7.4' || "$PHPMUVER" = '7.4' || "$PHPMVER" = '8.0' || "$PHPMUVER" = '8.0' || "$PHPMVER" = '8.1' || "$PHPMUVER" = '8.1' || "$PHPVER_ID" -ge '80000' ]]; then
+  if [[ "$CENTOS_SEVEN" -eq '7' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]] && [[ "$PHPMVER" = '7.0' || "$PHPMUVER" = '7.0' || "$PHPMVER" = '7.1' || "$PHPMUVER" = '7.1' || "$PHPMVER" = '7.2' || "$PHPMUVER" = '7.2' || "$PHPMVER" = '7.3' || "$PHPMUVER" = '7.3' || "$PHPMVER" = '7.4' || "$PHPMUVER" = '7.4' || "$PHPMVER" = '8.0' || "$PHPMUVER" = '8.0' || "$PHPMVER" = '8.1' || "$PHPMUVER" = '8.1' || "$PHPMVER" = '8.2' || "$PHPMUVER" = '8.2' || "$PHPMVER" = '8.3' || "$PHPMUVER" = '8.3' || "$PHPMVER" = '8.4' || "$PHPMUVER" = '8.4' || "$PHPVER_ID" -ge '80000' ]]; then
     # PHP 7+ requires imagick >3.4.4 i.e. 3.6.0+
     # PHP 5.x requires imagick <=3.4.4
     IMAGICKPHP_VER="$IMAGICKPHP_SEVEN_VER"
@@ -2579,7 +2696,7 @@ echo ""
 ###############################################
 mongodbphplocaltarball() {
 
-  if [[ "$CENTOS_SEVEN" -eq '7' ]] && [[ "$PHPMVER" = '7.0' || "$PHPMUVER" = '7.0' ]]; then
+  if [[ "$CENTOS_SEVEN" -eq '7' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]] && [[ "$PHPMVER" = '7.0' || "$PHPMUVER" = '7.0' ]]; then
     # PHP 8 requires mongodb =>1.12.0
     # PHP 7.1+ requires mongodb 1.11.1
     # PHP 7.0 requires mongodb 1.9.2
@@ -2588,7 +2705,7 @@ mongodbphplocaltarball() {
     PHPEXT_MONGODBLINKFILE="mongodb-${MONGODBPHP_VER}.tgz"
     PHPEXT_MONGODBLINK="https://pecl.php.net/get/${PHPEXT_MONGODBLINKFILE}"
     PHPEXT_MONGODBLINKLOCAL="${LOCALCENTMINMOD_MIRROR}/centminmodparts/mongodb/${PHPEXT_MONGODBLINKFILE}"
-  elif [[ "$CENTOS_SEVEN" -eq '7' ]] && [[ "$PHPMVER" = '7.1' || "$PHPMUVER" = '7.1' || "$PHPMVER" = '7.2' || "$PHPMUVER" = '7.2' || "$PHPMVER" = '7.3' || "$PHPMUVER" = '7.3' || "$PHPMVER" = '7.4' || "$PHPMUVER" = '7.4' ]]; then
+  elif [[ "$CENTOS_SEVEN" -eq '7' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]] && [[ "$PHPMVER" = '7.1' || "$PHPMUVER" = '7.1' || "$PHPMVER" = '7.2' || "$PHPMUVER" = '7.2' || "$PHPMVER" = '7.3' || "$PHPMUVER" = '7.3' || "$PHPMVER" = '7.4' || "$PHPMUVER" = '7.4' ]]; then
     # PHP 8 requires mongodb =>1.12.0
     # PHP 7 requires mongodb 1.11.1+
     # PHP 5.x requires mongodb <=1.7.5
@@ -2596,11 +2713,19 @@ mongodbphplocaltarball() {
     PHPEXT_MONGODBLINKFILE="mongodb-${MONGODBPHP_VER}.tgz"
     PHPEXT_MONGODBLINK="https://pecl.php.net/get/${PHPEXT_MONGODBLINKFILE}"
     PHPEXT_MONGODBLINKLOCAL="${LOCALCENTMINMOD_MIRROR}/centminmodparts/mongodb/${PHPEXT_MONGODBLINKFILE}"
-  elif [[ "$CENTOS_SEVEN" -eq '7' ]] && [[ "$PHPMVER" = '8.0' || "$PHPMUVER" = '8.0' || "$PHPMVER" = '8.1' || "$PHPMUVER" = '8.1' || "$PHPVER_ID" -ge '80000' ]]; then
+  elif [[ "$CENTOS_SEVEN" -eq '7' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]] && [[ "$PHPMVER" = '8.0' || "$PHPMUVER" = '8.0' || "$PHPMVER" = '8.1' || "$PHPMUVER" = '8.1' ]]; then
     # PHP 8 requires mongodb =>1.12.0
     # PHP 7 requires mongodb 1.11.1+
     # PHP 5.x requires mongodb <=1.7.5
     MONGODBPHP_VER="$MONGODBPHP_EIGHT_VER"
+    PHPEXT_MONGODBLINKFILE="mongodb-${MONGODBPHP_VER}.tgz"
+    PHPEXT_MONGODBLINK="https://pecl.php.net/get/${PHPEXT_MONGODBLINKFILE}"
+    PHPEXT_MONGODBLINKLOCAL="${LOCALCENTMINMOD_MIRROR}/centminmodparts/mongodb/${PHPEXT_MONGODBLINKFILE}"
+  elif [[ "$CENTOS_SEVEN" -eq '7' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]] && [[ "$PHPMVER" = '8.2' || "$PHPMUVER" = '8.2' || "$PHPVER_ID" -ge '80000' ]]; then
+    # PHP 8 requires mongodb =>1.12.0
+    # PHP 7 requires mongodb 1.11.1+
+    # PHP 5.x requires mongodb <=1.7.5
+    MONGODBPHP_VER="$MONGODBPHP_EIGHTTWO_VER"
     PHPEXT_MONGODBLINKFILE="mongodb-${MONGODBPHP_VER}.tgz"
     PHPEXT_MONGODBLINK="https://pecl.php.net/get/${PHPEXT_MONGODBLINKFILE}"
     PHPEXT_MONGODBLINKLOCAL="${LOCALCENTMINMOD_MIRROR}/centminmodparts/mongodb/${PHPEXT_MONGODBLINKFILE}"
@@ -2642,7 +2767,7 @@ echo ""
 ###############################################
 mongodbphptarball() {
 
-  if [[ "$CENTOS_SEVEN" -eq '7' ]] && [[ "$PHPMVER" = '7.0' || "$PHPMUVER" = '7.0' ]]; then
+  if [[ "$CENTOS_SEVEN" -eq '7' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]] && [[ "$PHPMVER" = '7.0' || "$PHPMUVER" = '7.0' ]]; then
     # PHP 8 requires mongodb =>1.12.0
     # PHP 7.1+ requires mongodb 1.11.1
     # PHP 7.0 requires mongodb 1.9.2
@@ -2651,7 +2776,7 @@ mongodbphptarball() {
     PHPEXT_MONGODBLINKFILE="mongodb-${MONGODBPHP_VER}.tgz"
     PHPEXT_MONGODBLINK="https://pecl.php.net/get/${PHPEXT_MONGODBLINKFILE}"
     PHPEXT_MONGODBLINKLOCAL="${LOCALCENTMINMOD_MIRROR}/centminmodparts/mongodb/${PHPEXT_MONGODBLINKFILE}"
-  elif [[ "$CENTOS_SEVEN" -eq '7' ]] && [[ "$PHPMVER" = '7.1' || "$PHPMUVER" = '7.1' || "$PHPMVER" = '7.2' || "$PHPMUVER" = '7.2' || "$PHPMVER" = '7.3' || "$PHPMUVER" = '7.3' || "$PHPMVER" = '7.4' || "$PHPMUVER" = '7.4' ]]; then
+  elif [[ "$CENTOS_SEVEN" -eq '7' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]] && [[ "$PHPMVER" = '7.1' || "$PHPMUVER" = '7.1' || "$PHPMVER" = '7.2' || "$PHPMUVER" = '7.2' || "$PHPMVER" = '7.3' || "$PHPMUVER" = '7.3' || "$PHPMVER" = '7.4' || "$PHPMUVER" = '7.4' ]]; then
     # PHP 8 requires mongodb =>1.12.0
     # PHP 7 requires mongodb 1.11.1+
     # PHP 5.x requires mongodb <=1.7.5
@@ -2659,7 +2784,7 @@ mongodbphptarball() {
     PHPEXT_MONGODBLINKFILE="mongodb-${MONGODBPHP_VER}.tgz"
     PHPEXT_MONGODBLINK="https://pecl.php.net/get/${PHPEXT_MONGODBLINKFILE}"
     PHPEXT_MONGODBLINKLOCAL="${LOCALCENTMINMOD_MIRROR}/centminmodparts/mongodb/${PHPEXT_MONGODBLINKFILE}"
-  elif [[ "$CENTOS_SEVEN" -eq '7' ]] && [[ "$PHPMVER" = '8.0' || "$PHPMUVER" = '8.0' || "$PHPMVER" = '8.1' || "$PHPMUVER" = '8.1' || "$PHPVER_ID" -ge '80000' ]]; then
+  elif [[ "$CENTOS_SEVEN" -eq '7' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]] && [[ "$PHPMVER" = '8.0' || "$PHPMUVER" = '8.0' || "$PHPMVER" = '8.1' || "$PHPMUVER" = '8.1' || "$PHPMVER" = '8.2' || "$PHPMUVER" = '8.2' || "$PHPMVER" = '8.3' || "$PHPMUVER" = '8.3' || "$PHPMVER" = '8.4' || "$PHPMUVER" = '8.4' || "$PHPVER_ID" -ge '80000' ]]; then
     # PHP 8 requires mongodb =>1.12.0
     # PHP 7 requires mongodb 1.11.1+
     # PHP 5.x requires mongodb <=1.7.5
@@ -2706,7 +2831,7 @@ echo ""
 ###############################################
 swoolephplocaltarball() {
 
-    if [[ "$PHPMVER" = '7.2' || "$PHPMUVER" = '7.2' || "$PHPMVER" = '7.3' || "$PHPMUVER" = '7.3' || "$PHPMVER" = '7.4' || "$PHPMUVER" = '7.4' || "$PHPMVER" = '8.0' || "$PHPMUVER" = '8.0' || "$PHPMVER" = '8.1' || "$PHPMUVER" = '8.1' ]]; then
+    if [[ "$PHPMVER" = '7.2' || "$PHPMUVER" = '7.2' || "$PHPMVER" = '7.3' || "$PHPMUVER" = '7.3' || "$PHPMVER" = '7.4' || "$PHPMUVER" = '7.4' || "$PHPMVER" = '8.0' || "$PHPMUVER" = '8.0' || "$PHPMVER" = '8.1' || "$PHPMUVER" = '8.1' || "$PHPMVER" = '8.2' || "$PHPMUVER" = '8.2' || "$PHPMVER" = '8.3' || "$PHPMUVER" = '8.3' || "$PHPMVER" = '8.4' || "$PHPMUVER" = '8.4' ]]; then
         PHPSWOOLE_VER="$PHPSWOOLE_VER"
         PHPEXT_SWOOLELINKFILE="swoole-${PHPSWOOLE_VER}.tgz"
         PHPEXT_SWOOLELINK="https://pecl.php.net/get/${PHPEXT_SWOOLELINKFILE}"
@@ -2764,7 +2889,7 @@ echo ""
 ###############################################
 swoolephptarball() {
 
-    if [[ "$PHPMVER" = '7.2' || "$PHPMUVER" = '7.2' || "$PHPMVER" = '7.3' || "$PHPMUVER" = '7.3' || "$PHPMVER" = '7.4' || "$PHPMUVER" = '7.4' || "$PHPMVER" = '8.0' || "$PHPMUVER" = '8.0' || "$PHPMVER" = '8.1' || "$PHPMUVER" = '8.1' ]]; then
+    if [[ "$PHPMVER" = '7.2' || "$PHPMUVER" = '7.2' || "$PHPMVER" = '7.3' || "$PHPMUVER" = '7.3' || "$PHPMVER" = '7.4' || "$PHPMUVER" = '7.4' || "$PHPMVER" = '8.0' || "$PHPMUVER" = '8.0' || "$PHPMVER" = '8.1' || "$PHPMUVER" = '8.1' || "$PHPMVER" = '8.2' || "$PHPMUVER" = '8.2' || "$PHPMVER" = '8.3' || "$PHPMUVER" = '8.3' || "$PHPMVER" = '8.4' || "$PHPMUVER" = '8.4' ]]; then
         PHPSWOOLE_VER="$PHPSWOOLE_VER"
         PHPEXT_SWOOLELINKFILE="swoole-${PHPSWOOLE_VER}.tgz"
         PHPEXT_SWOOLELINK="https://pecl.php.net/get/${PHPEXT_SWOOLELINKFILE}"
@@ -3271,15 +3396,20 @@ if [ -f "${CONFIGSCANBASE}/custom_config.inc" ]; then
     # is a workaround to jump to 1.1.1a working version for now
     OPENSSL_VERSION="$OPENSSL_VERSION_OLDOVERRIDE"
     OPENSSL_LINKFILE="openssl-${OPENSSL_VERSION}.tar.gz"
-    OPENSSL_LINK="https://www.openssl.org/source/${OPENSSL_LINKFILE}"
+    OPENSSL_LINK="https://github.com/openssl/openssl/releases/download/openssl-${OPENSSL_VERSION}/${OPENSSL_LINKFILE}"
   fi
 fi
-
-curl -${ipv_forceopt}Is --connect-timeout 30 --max-time 30 "$OPENSSL_LINK" | grep 'HTTP\/' | grep '200'
+echo
+echo "openssldownload OPENSSL_LINK=$OPENSSL_LINK"
+echo 
+curl -${ipv_forceopt}IsL --connect-timeout 30 --max-time 30 "$OPENSSL_LINK" | grep 'HTTP\/' | grep '200'
 OPENSSL_CURLCHECK=$?
 if [[ "$OPENSSL_CURLCHECK" != '0' || "$(echo $OPENSSL_VERSION | grep -o '1.1.1')" = '1.1.1' ]]; then
   OPENSSL_MIRRORURL="${LOCALCENTMINMOD_MIRROR}/centminmodparts/openssl"
   OPENSSL_LINK="${OPENSSL_MIRRORURL}/openssl-${OPENSSL_VERSION}.tar.gz"
+  echo
+  echo "OPENSSL_CURLCHECK OPENSSL_LINK=$OPENSSL_LINK"
+  echo 
 fi
 
 if [[ "$CENTOSVER" > 5 && "$CENTOSVER" < 6 ]]; then
@@ -3291,8 +3421,8 @@ if [[ "$CENTOSVER" > 5 && "$CENTOSVER" < 6 ]]; then
         cecho "openssl ${OPENSSL_VERSION} found, skipping download..." $boldgreen
     else
         if [[ "$CENTOS_SIX" = '6' ]]; then
-          echo "wget -c${ipv_forceopt} --progress=bar "${OPENSSL_LINK}" "$WGETRETRY""
-          wget -c${ipv_forceopt} --progress=bar "${OPENSSL_LINK}" "$WGETRETRY"
+          echo "wget --progress=bar "${OPENSSL_LINK}" "$WGETRETRY""
+          wget --progress=bar "${OPENSSL_LINK}" "$WGETRETRY"
           ERROR=$?
           echo $ERROR
         else
@@ -3330,12 +3460,15 @@ if [[ "$CENTOSVER" > 6 ]]; then
     cd "$DIR_TMP"
 
         cecho "Download ${OPENSSL_LINKFILE} ..." $boldyellow
+    if [ -f "${MASTER_OPENSSL_LINKFILE}" ]; then
+      \cp -f "${MASTER_OPENSSL_LINKFILE}" "${OPENSSL_LINKFILE}"
+    fi
     if [[ -s "${OPENSSL_LINKFILE}" && "$(tar -tzf ${OPENSSL_LINKFILE} >/dev/null 2>&1; echo $?)" -eq '0' ]]; then
         cecho "openssl ${OPENSSL_VERSION} found, skipping download..." $boldgreen
     else
         if [[ "$CENTOS_SIX" = '6' ]]; then
-          echo "wget -c${ipv_forceopt} --progress=bar "${OPENSSL_LINK}" "$WGETRETRY""
-          wget -c${ipv_forceopt} --progress=bar "${OPENSSL_LINK}" "$WGETRETRY"
+          echo "wget --progress=bar "${OPENSSL_LINK}" "$WGETRETRY""
+          wget --progress=bar "${OPENSSL_LINK}" "$WGETRETRY"
           ERROR=$?
           echo $ERROR
         else
@@ -3343,6 +3476,8 @@ if [[ "$CENTOSVER" > 6 ]]; then
           download_cmd "${OPENSSL_LINK}" "$WGETRETRY"
           ERROR=$?
           echo $ERROR
+          # copy download to master copy for reuse without needing to re-download
+          \cp -f "${OPENSSL_LINKFILE}" "${MASTER_OPENSSL_LINKFILE}"
         fi
 
   if [[ "$ERROR" != '0' ]]; then
@@ -3495,7 +3630,7 @@ echo ""
     if [[ -s "${SPROXY_LINKFILE}" && "$(tar -tzf ${SPROXY_LINKFILE} >/dev/null 2>&1; echo $?)" -eq '0' ]]; then
         cecho "sproxy-latest found, skipping download..." $boldgreen
     else
-        download_cmd "https://centminmod.com/centminmodparts/siege/${SPROXY_LINKFILE}" $WGETRETRY
+        download_cmd "${LOCALCENTMINMOD_MIRROR}/centminmodparts/siege/${SPROXY_LINKFILE}" $WGETRETRY
 ERROR=$?
   if [[ "$ERROR" != '0' ]]; then
   cecho "Error: ${SPROXY_LINKFILE} download failed." $boldgreen
@@ -3571,8 +3706,8 @@ if [ -s "${PYTHON_SETUPTOOLSLINKFILE}" ]; then
   cecho "${PYTHON_SETUPTOOLSLINKFILE} found, skipping download..." $boldgreen
   else
   echo "Error: ${PYTHON_SETUPTOOLSLINKFILE} not found !!! Downloading now......" $boldgreen
-        echo 'wget -c${ipv_forceopt} --progress=bar "${PYTHON_SETUPTOOLSLINK}" --tries=3'
-        wget -c${ipv_forceopt} --progress=bar "${PYTHON_SETUPTOOLSLINK}" --tries=3
+        echo 'wget --progress=bar "${PYTHON_SETUPTOOLSLINK}" --tries=3'
+        wget --progress=bar "${PYTHON_SETUPTOOLSLINK}" --tries=3
 ERROR=$?
   if [[ "$ERROR" != '0' ]]; then
   cecho "${PYTHON_SETUPTOOLSLINKFILE} download failed." $boldgreen
@@ -4015,9 +4150,9 @@ yuminstall
 questions
 
 if [[ "$INITIALINSTALL" != [yY] ]]; then
-    php-config --version | cut -d . -f1,2 | egrep -w '7.0|7.1|7.2|7.3|7.4|8.0|8.1'
+    php-config --version | cut -d . -f1,2 | egrep -w '7.0|7.1|7.2|7.3|7.4|8.0|8.1|8.2|8.3|8.4'
 else
-    echo "$PHP_VERSION" | cut -d . -f1,2 | egrep -w '7.0|7.1|7.2|7.3|7.4|8.0|8.1'
+    echo "$PHP_VERSION" | cut -d . -f1,2 | egrep -w '7.0|7.1|7.2|7.3|7.4|8.0|8.1|8.2|8.3|8.4'
 fi
 PHPSEVEN_CHECKVER=$?
 echo "$PHPSEVEN_CHECKVER"
@@ -4043,6 +4178,7 @@ ccacheinstall
 
 axelsetup
 nginxtarball
+freenginxtarball
 
 if [[ "$PARALLEL_MODE" = [yY] ]] && [[ "$(grep -c "processor" /proc/cpuinfo)" -gt '1' ]]; then
   csftarball &

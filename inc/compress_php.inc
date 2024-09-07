@@ -13,7 +13,7 @@ php_ext_brotli() {
     git clone --recursive --depth=1 https://github.com/kjdev/php-ext-brotli.git
     cd php-ext-brotli
     phpize
-    ./configure
+    CFLAGS="-fPIC -O2 -fstack-protector-strong -D_FORTIFY_SOURCE=2" CPPFLAGS="-D_FORTIFY_SOURCE=2" CXXFLAGS="-fPIC -O2" LDFLAGS="-Wl,-z,relro,-z,now -pie" ./configure
     time make -j$(nproc)
     time make install
     echo "extension=brotli.so" > "${CONFIGSCANDIR}/brotli.ini"
@@ -49,7 +49,7 @@ php_ext_lzfour() {
     cd php-ext-lz4
     make clean
     phpize
-    ./configure --with-php-config=/usr/local/bin/php-config
+    CFLAGS="-fPIC -O2 -fstack-protector-strong -D_FORTIFY_SOURCE=2" CPPFLAGS="-D_FORTIFY_SOURCE=2" CXXFLAGS="-fPIC -O2" LDFLAGS="-Wl,-z,relro,-z,now -pie" ./configure --with-php-config=/usr/local/bin/php-config
     time make -j$(nproc)
     time make install
     echo "extension=lz4.so" > "${CONFIGSCANDIR}/lz4.ini"
@@ -80,7 +80,7 @@ php_ext_lzf() {
     cd php-ext-lzf
     make clean
     phpize
-    ./configure --with-php-config=/usr/local/bin/php-config
+    CFLAGS="-fPIC -O2 -fstack-protector-strong -D_FORTIFY_SOURCE=2" CPPFLAGS="-D_FORTIFY_SOURCE=2" CXXFLAGS="-fPIC -O2" LDFLAGS="-Wl,-z,relro,-z,now -pie" ./configure --with-php-config=/usr/local/bin/php-config
     time make -j$(nproc)
     time make install
     echo "extension=lzf.so" > "${CONFIGSCANDIR}/lzf.ini"
@@ -111,7 +111,7 @@ php_ext_zopfli() {
     cd php-ext-zopfli
     git submodule update --init
     phpize
-    ./configure --with-php-config=/usr/local/bin/php-config
+    CFLAGS="-fPIC -O2 -fstack-protector-strong -D_FORTIFY_SOURCE=2" CPPFLAGS="-D_FORTIFY_SOURCE=2" CXXFLAGS="-fPIC -O2" LDFLAGS="-Wl,-z,relro,-z,now -pie" ./configure --with-php-config=/usr/local/bin/php-config
     time make -j$(nproc)
     time make install
     echo "extension=zopfli.so" > "${CONFIGSCANDIR}/zopfli.ini"
@@ -139,7 +139,7 @@ php_ext_zstd() {
     git clone --recursive --depth=1 https://github.com/kjdev/php-ext-zstd.git
     cd php-ext-zstd
     phpize
-    ./configure --with-php-config=/usr/local/bin/php-config
+    CFLAGS="-fPIC -O2 -fstack-protector-strong -D_FORTIFY_SOURCE=2" CPPFLAGS="-D_FORTIFY_SOURCE=2" CXXFLAGS="-fPIC -O2" LDFLAGS="-Wl,-z,relro,-z,now -pie" ./configure --with-php-config=/usr/local/bin/php-config
     time make -j$(nproc)
     time make install
     echo "extension=zstd.so" > "${CONFIGSCANDIR}/zstd.ini"

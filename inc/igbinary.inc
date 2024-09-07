@@ -6,7 +6,7 @@ if [ "$IGBINARY_INSTALL" == 'y' ]; then
 if [ "$IGBINARYGIT" == 'y' ]; then
     cd $DIR_TMP
 
-    php-config --version | cut -d . -f1,2 | egrep -w '7.0|7.1|7.2|7.3|7.4|8.0|8.1'
+    php-config --version | cut -d . -f1,2 | egrep -w '7.0|7.1|7.2|7.3|7.4|8.0|8.1|8.2|8.3|8.4'
     PHPSEVEN_CHECKVER=$?
     echo $PHPSEVEN_CHECKVER
 
@@ -59,7 +59,7 @@ if [ "$IGBINARYGIT" == 'y' ]; then
         /usr/local/bin/phpize -clean
         /usr/local/bin/phpize
         pwd
-        ./configure CFLAGS="-O2 -g" --enable-igbinary --with-php-config=/usr/local/bin/php-config
+        CFLAGS="-fPIC -O2 -fstack-protector-strong -D_FORTIFY_SOURCE=2" CPPFLAGS="-D_FORTIFY_SOURCE=2" CXXFLAGS="-fPIC -O2" LDFLAGS="-Wl,-z,relro,-z,now -pie" ./configure --enable-igbinary --with-php-config=/usr/local/bin/php-config
         make${MAKETHREADS}
         #make test
         make install    
@@ -68,7 +68,7 @@ if [ "$IGBINARYGIT" == 'y' ]; then
         if [ -s igbinary-igbinary-1.1.2-dev.tar.gz ]; then
             cecho "igbinary-igbinary-1.1.2-dev.tar.gz Archive found, skipping download..." $boldgreen
         else
-            wget -c${ipv_forceopt} --progress=bar --no-check-certificate https://github.com/igbinary/igbinary/tarball/master -O igbinary-igbinary-1.1.2-dev.tar.gz --tries=3
+            wget --progress=bar --no-check-certificate https://github.com/igbinary/igbinary/tarball/master -O igbinary-igbinary-1.1.2-dev.tar.gz --tries=3
         fi
     
         tar -xzvf igbinary-igbinary-1.1.2-dev.tar.gz
@@ -84,7 +84,7 @@ if [ "$IGBINARYGIT" == 'y' ]; then
         /usr/local/bin/phpize -clean
         /usr/local/bin/phpize
         pwd
-        ./configure CFLAGS="-O2 -g" --enable-igbinary --with-php-config=/usr/local/bin/php-config
+        CFLAGS="-fPIC -O2 -fstack-protector-strong -D_FORTIFY_SOURCE=2" CPPFLAGS="-D_FORTIFY_SOURCE=2" CXXFLAGS="-fPIC -O2" LDFLAGS="-Wl,-z,relro,-z,now -pie" ./configure --enable-igbinary --with-php-config=/usr/local/bin/php-config
         make${MAKETHREADS}
         #make test
         make install

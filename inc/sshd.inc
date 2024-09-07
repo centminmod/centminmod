@@ -1,3 +1,18 @@
+sshdtweaks_nine() {
+  if [[ "$CENTOS_NINE" -eq '9' && "$SSHD_REENABLE_ROOT_LOGINS" = [yY] ]]; then
+    echo ""
+    cecho "--------------------------------------------------------" $boldyellow
+    cecho "sshd config tweak to re-enable el9 support for: PermitRootLogin yes" $boldyellow
+    cecho "to remove this change, delete: /etc/ssh/sshd_config.d/01-permitrootlogin.conf" $boldyellow
+    # re-enable and allow root user SSH logins
+    # el9 disabled them by default
+    if [[ "$(sshd -T | awk '/permitrootlogin/ {print $2}')" != 'yes' ]]; then
+      echo "PermitRootLogin yes" > /etc/ssh/sshd_config.d/01-permitrootlogin.conf
+    fi
+    cecho "--------------------------------------------------------" $boldyellow
+  fi
+}
+
 sshdtweaks() {
   # uncomment sshd default port if there's only one entry #Port in sshd_config
   if [[ "$(grep '^#Port' /etc/ssh/sshd_config)" && "$(egrep '^#Port|^Port' /etc/ssh/sshd_config | wc -l)" -eq '1' ]]; then
@@ -5,6 +20,10 @@ sshdtweaks() {
   fi
   if [[ ! "$(grep '^X11Forwarding no' /etc/ssh/sshd_config)" ]]; then
     sed -i 's|^X11Forwarding .*|X11Forwarding no|' /etc/ssh/sshd_config
+  fi
+  # https://access.redhat.com/security/cve/cve-2024-6387
+  if [[ ! "$(grep '^LoginGraceTime' /etc/ssh/sshd_config)" && "$(grep '^#LoginGraceTime' /etc/ssh/sshd_config)" ]]; then
+    sed -i 's|^#LoginGraceTime .*|LoginGraceTime 0|' /etc/ssh/sshd_config
   fi
 
   CHECKHOSTKEY=$(grep '#HostKey /etc/ssh/ssh_host_rsa_key' /etc/ssh/sshd_config)

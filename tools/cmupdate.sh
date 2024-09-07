@@ -10,7 +10,7 @@ CM_INSTALLDIR='/usr/local/src/centminmod'
 #############
 # variables
 #############
-cmupdate_branchname='124.00stable'
+cmupdate_branchname='140.00beta01'
 cmupdate_branchname_new=$cmupdate_branchname
 DT=$(date +"%d%m%y-%H%M%S")
 ######################################################
@@ -22,25 +22,38 @@ export LC_ALL=en_US.UTF-8
 export LANG=en_US.UTF-8
 export LANGUAGE=en_US.UTF-8
 export LC_CTYPE=en_US.UTF-8
+# disable systemd pager so it doesn't pipe systemctl output to less
+export SYSTEMD_PAGER=''
+ARCH_CHECK="$(uname -m)"
 
 if [ -f "${MAINDIR}/custom_config.inc" ]; then
     # default is at /etc/centminmod/custom_config.inc
     source "${MAINDIR}/custom_config.inc"
 fi
 
+if [[ "$FORCE_IPVFOUR" != [yY] ]]; then
+  ipv_forceopt=""
+  ipv_forceopt_wget=""
+  WGETOPT="-cnv --no-dns-cache${ipv_forceopt_wget}"
+else
+  ipv_forceopt='4'
+  ipv_forceopt_wget=' -4'
+  WGETOPT="-cnv --no-dns-cache${ipv_forceopt_wget}"
+fi
+
 fupdate() {
   branch_opt=$1
   if [[ "$branch_opt" = 'beta' ]]; then
-    cmupdate_branchname=130.00beta01
+    cmupdate_branchname=140.00beta01
     cmupdate_branchname_new=$cmupdate_branchname
   elif [[ "$branch_opt" = 'stable' ]]; then
-    cmupdate_branchname=124.00stable
+    cmupdate_branchname=131.00stable
     cmupdate_branchname_new=$cmupdate_branchname
   fi
 
-  CMUPDATE_GITCURLSTATUS=$(curl -sI https://raw.githubusercontent.com/centminmod/centminmod/${cmupdate_branchname}/gitclean.txt | grep 'HTTP\/' | awk '/200/ {print $2}')
+  CMUPDATE_GITCURLSTATUS=$(curl -${ipv_forceopt}sL --connect-timeout 20 -sI https://raw.githubusercontent.com/centminmod/centminmod/${cmupdate_branchname}/gitclean.txt | grep 'HTTP\/' | awk '/200/ {print $2}')
     if [[ "$CMUPDATE_GITCURLSTATUS" = '200' ]]; then
-      CHECK_GITCLEAN=$(curl -${ipv_forceopt}sLk https://raw.githubusercontent.com/centminmod/centminmod/${cmupdate_branchname}/gitclean.txt)
+      CHECK_GITCLEAN=$(curl -${ipv_forceopt}sLk --connect-timeout 20 https://raw.githubusercontent.com/centminmod/centminmod/${cmupdate_branchname}/gitclean.txt)
     else
       echo
       echo "Error: unable to connect to Github.com repo right now"

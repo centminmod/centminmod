@@ -17,6 +17,10 @@ if [ ! -f /usr/bin/curl ]; then
 	echo "Installing curl please wait..."
 	yum -y -q install curl
 fi
+if [ ! -f /usr/bin/ipcalc ]; then
+	echo "Installing ipcalc please wait..."
+	yum -y -q install ipcalc
+fi
 ###############################
 # set locale temporarily to english
 # due to some non-english locale issues
@@ -24,6 +28,9 @@ export LC_ALL=en_US.UTF-8
 export LANG=en_US.UTF-8
 export LANGUAGE=en_US.UTF-8
 export LC_CTYPE=en_US.UTF-8
+# disable systemd pager so it doesn't pipe systemctl output to less
+export SYSTEMD_PAGER=''
+ARCH_CHECK="$(uname -m)"
 
 shopt -s expand_aliases
 for g in "" e f; do

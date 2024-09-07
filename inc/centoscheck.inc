@@ -1,3 +1,11 @@
+yumlog_check() {
+  if [[ "$CENTOS_EIGHT" = '8' || "$CENTOS_NINE" = '9' ]]; then
+    YUMLOG_FILE='/var/log/dnf.log'
+  else
+    YUMLOG_FILE='/var/log/yum.log'
+  fi
+}
+
 grub_efi_fix() {
     if [[ "$VPS_GEOIPCHECK_V3" = [yY] ]]; then
       VPS_GEOIPCHECK=$(curl -${ipv_forceopt}s${CURL_TIMEOUTS} -A "$CURL_AGENT VPS GRUB CHECK $SCRIPT_VERSION $CURL_CPUMODEL $CURL_CPUSPEED $VPS_VIRTWHAT" https://geoip.centminmod.com/v3 | jq -r)
@@ -42,17 +50,28 @@ if [[ "$INITIALINSTALL" = [yY] ]]; then
     if [[ "$VERCOMPARE" = "1"  ]]; then
     
      echo "-----------------------------------------------------"
-            echo "Detected CentOS version greater than > CentOS $TESTEDCENTOSVER"
-            echo "CentOS $TESTEDCENTOSVER is the latest tested version for Centmin Mod"
-            echo "No guarantee 100% working install with your CentOS $CENTOSVER"
-            if [[ "$CENTOS_EIGHT" = '8' ]]; then
+            if [[ "$ALMALINUX_EIGHT" -eq '8' || "$ALMALINUX_NINE" -eq '9' ]]; then
+              echo "Detected AlmaLinux OS"
               echo
-              echo "CentOS 8 is currently not supported by Centmin Mod, please use CentOS 7.7+"
+              echo "AlmaLinux 8/9 is currently not supported by Centmin Mod, please use CentOS 7.9+"
+              echo
+            elif [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]]; then
+              echo "Detected CentOS version greater than > CentOS $TESTEDCENTOSVER"
+              echo "CentOS $TESTEDCENTOSVER is the latest tested version for Centmin Mod"
+              echo "No guarantee 100% working install with your CentOS $CENTOSVER"
+              echo
+              echo "CentOS 8 is currently not supported by Centmin Mod, please use CentOS 7.9+"
               echo
             fi
      echo "-----------------------------------------------------"
-            echo ""
-            read -ep "Do you still want to continue with install ? [y/n]: " centoscheckcont
+            if [[ "$CENTOS_ALPHATEST" = [yY] && "$CENTOS_NINE" -eq '9' ]]; then
+              centoscheckcont='y'
+            elif [[ "$CENTOS_ALPHATEST" = [yY] && "$CENTOS_EIGHT" -eq '8' ]]; then
+              centoscheckcont='y'
+            else
+              echo ""
+              read -ep "Do you still want to continue with install ? [y/n]: " centoscheckcont
+            fi
     
             if [[ "$centoscheckcont" != [yY] ]]; then
     
@@ -89,11 +108,11 @@ sshdtweaks
     echo
     free -m
     echo
-    echo "create 1GB swap file"; 
+    echo "create 4GB swap file"; 
     if [[ "$(df -hT | grep -w xfs)" || "$(virt-what | grep -o lxc)" = 'lxc' ]]; then
-        dd if=/dev/zero of=/swapfile bs=1024 count=1024k;
+        dd if=/dev/zero of=/swapfile bs=4096 count=1024k;
     else
-        fallocate -l 1G /swapfile
+        fallocate -l 4G /swapfile
     fi
     ls -lah /swapfile;
     mkswap /swapfile;
@@ -114,9 +133,9 @@ sshdtweaks
     echo "re-create 1GB swap file";
     swapoff -a
     if [[ "$(df -hT | grep -w xfs)" || "$(virt-what | grep -o lxc)" = 'lxc' ]]; then
-        dd if=/dev/zero of=/swapfile bs=1024 count=1024k;
+        dd if=/dev/zero of=/swapfile bs=4096 count=1024k;
     else
-        fallocate -l 1G /swapfile
+        fallocate -l 4G /swapfile
     fi
     ls -lah /swapfile;
     mkswap /swapfile;
@@ -254,5 +273,7 @@ fi
 countcpus
 
 nano_highlight
+
+yumlog_check
 
 }

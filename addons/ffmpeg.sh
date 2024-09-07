@@ -6,6 +6,9 @@ export LC_ALL=en_US.UTF-8
 export LANG=en_US.UTF-8
 export LANGUAGE=en_US.UTF-8
 export LC_CTYPE=en_US.UTF-8
+# disable systemd pager so it doesn't pipe systemctl output to less
+export SYSTEMD_PAGER=''
+ARCH_CHECK="$(uname -m)"
 ###############################################################################
 # ffmpeg installer for centminmod.com LEMP stack
 # based on instructions at https://trac.ffmpeg.org/wiki/CompilationGuide/Centos
@@ -24,10 +27,12 @@ FORCE_IPVFOUR='y' # curl/wget commands through script force IPv4
 ###############################################################################
 # GCC options
 GCC_SEVEN='n'
-GCC_EIGHT='y'
+GCC_EIGHT='n'
 GCC_NINE='n'
-GCC_TEN='y'
-GCC_ELEVEN='n'
+GCC_TEN='n'
+GCC_ELEVEN='y'
+GCC_TWELVE='y'
+GCC_THIRTHTEEN='y'
 OPT_LEVEL='-O3'
 MARCH_TARGETNATIVE='n' # for intel 64bit only set march=native, if no set to x86-64
 ###############################################################################
@@ -47,11 +52,11 @@ LIBOGG_VER='1.3.5'
 LIBVORBIS_VER='1.3.7'
 GD_ENABLE='n'
 NASM_SOURCEINSTALL='y'
-NASM_VER='2.14'
+NASM_VER='2.16.03rc3'
 YASM_VER='1.3.0'
-FDKAAC_VER='0.1.6'
+FDKAAC_VER='2.0.3'
 FONTCONFIG_VER='2.13.1'
-FREETYPE_VER='2.10.1'
+FREETYPE_VER='2.13.2'
 ###############################################################################
 
 shopt -s expand_aliases
@@ -68,6 +73,108 @@ if [ -f "/etc/centminmod/ffmpeg_config.inc" ]; then
   dos2unix -q "/etc/centminmod/ffmpeg_config.inc"
   . "/etc/centminmod/ffmpeg_config.inc"
 fi
+
+CENTOSVER=$(awk '{ print $3 }' /etc/redhat-release)
+
+if [ "$CENTOSVER" == 'release' ]; then
+    CENTOSVER=$(awk '{ print $4 }' /etc/redhat-release | cut -d . -f1,2)
+    if [[ "$(cat /etc/redhat-release | awk '{ print $4 }' | cut -d . -f1)" = '7' ]]; then
+        CENTOS_SEVEN='7'
+    elif [[ "$(cat /etc/redhat-release | awk '{ print $4 }' | cut -d . -f1)" = '8' ]]; then
+        CENTOS_EIGHT='8'
+    elif [[ "$(cat /etc/redhat-release | awk '{ print $4 }' | cut -d . -f1)" = '9' ]]; then
+        CENTOS_NINE='9'
+    fi
+fi
+
+if [[ "$(cat /etc/redhat-release | awk '{ print $3 }' | cut -d . -f1)" = '6' ]]; then
+    CENTOS_SIX='6'
+fi
+
+# Check for Redhat Enterprise Linux 7.x
+if [ "$CENTOSVER" == 'Enterprise' ]; then
+    CENTOSVER=$(awk '{ print $7 }' /etc/redhat-release)
+    if [[ "$(awk '{ print $1,$2 }' /etc/redhat-release)" = 'Red Hat' && "$(awk '{ print $7 }' /etc/redhat-release | cut -d . -f1)" = '7' ]]; then
+        CENTOS_SEVEN='7'
+        REDHAT_SEVEN='y'
+    fi
+fi
+
+if [[ -f /etc/system-release && "$(awk '{print $1,$2,$3}' /etc/system-release)" = 'Amazon Linux AMI' ]]; then
+    CENTOS_SIX='6'
+fi
+
+# ensure only el8+ OS versions are being looked at for alma linux, rocky linux
+# oracle linux, vzlinux, circle linux, navy linux, euro linux
+EL_VERID=$(awk -F '=' '/VERSION_ID/ {print $2}' /etc/os-release | sed -e 's|"||g' | cut -d . -f1)
+if [ -f /etc/almalinux-release ] && [[ "$EL_VERID" -eq 8 || "$EL_VERID" -eq 9 ]]; then
+  CENTOSVER=$(awk '{ print $3 }' /etc/almalinux-release | cut -d . -f1,2)
+  ALMALINUXVER=$(awk '{ print $3 }' /etc/almalinux-release | cut -d . -f1,2 | sed -e 's|\.|000|g')
+  if [[ "$(echo $CENTOSVER | cut -d . -f1)" -eq '8' ]]; then
+    CENTOS_EIGHT='8'
+    ALMALINUX_EIGHT='8'
+  elif [[ "$(echo $CENTOSVER | cut -d . -f1)" -eq '9' ]]; then
+    CENTOS_NINE='9'
+    ALMALINUX_NINE='9'
+  fi
+elif [ -f /etc/rocky-release ] && [[ "$EL_VERID" -eq 8 || "$EL_VERID" -eq 9 ]]; then
+  CENTOSVER=$(awk '{ print $4 }' /etc/rocky-release | cut -d . -f1,2)
+  ROCKYLINUXVER=$(awk '{ print $3 }' /etc/rocky-release | cut -d . -f1,2 | sed -e 's|\.|000|g')
+  if [[ "$(echo $CENTOSVER | cut -d . -f1)" -eq '8' ]]; then
+    CENTOS_EIGHT='8'
+    ROCKYLINUX_EIGHT='8'
+  elif [[ "$(echo $CENTOSVER | cut -d . -f1)" -eq '9' ]]; then
+    CENTOS_NINE='9'
+    ROCKYLINUX_NINE='9'
+  fi
+elif [ -f /etc/oracle-release ] && [[ "$EL_VERID" -eq 8 || "$EL_VERID" -eq 9 ]]; then
+  CENTOSVER=$(awk '{ print $5 }' /etc/oracle-release | cut -d . -f1,2)
+  if [[ "$(echo $CENTOSVER | cut -d . -f1)" -eq '8' ]]; then
+    CENTOS_EIGHT='8'
+    ORACLELINUX_EIGHT='8'
+  elif [[ "$(echo $CENTOSVER | cut -d . -f1)" -eq '9' ]]; then
+    CENTOS_NINE='9'
+    ORACLELINUX_NINE='9'
+  fi
+elif [ -f /etc/vzlinux-release ] && [[ "$EL_VERID" -eq 8 || "$EL_VERID" -eq 9 ]]; then
+  CENTOSVER=$(awk '{ print $4 }' /etc/vzlinux-release | cut -d . -f1,2)
+  if [[ "$(echo $CENTOSVER | cut -d . -f1)" -eq '8' ]]; then
+    CENTOS_EIGHT='8'
+    VZLINUX_EIGHT='8'
+  elif [[ "$(echo $CENTOSVER | cut -d . -f1)" -eq '9' ]]; then
+    CENTOS_NINE='9'
+    VZLINUX_NINE='9'
+  fi
+elif [ -f /etc/circle-release ] && [[ "$EL_VERID" -eq 8 || "$EL_VERID" -eq 9 ]]; then
+  CENTOSVER=$(awk '{ print $4 }' /etc/circle-release | cut -d . -f1,2)
+  if [[ "$(echo $CENTOSVER | cut -d . -f1)" -eq '8' ]]; then
+    CENTOS_EIGHT='8'
+    CIRCLELINUX_EIGHT='8'
+  elif [[ "$(echo $CENTOSVER | cut -d . -f1)" -eq '9' ]]; then
+    CENTOS_NINE='9'
+    CIRCLELINUX_NINE='9'
+  fi
+elif [ -f /etc/navylinux-release ] && [[ "$EL_VERID" -eq 8 || "$EL_VERID" -eq 9 ]]; then
+  CENTOSVER=$(awk '{ print $5 }' /etc/navylinux-release | cut -d . -f1,2)
+  if [[ "$(echo $CENTOSVER | cut -d . -f1)" -eq '8' ]]; then
+    CENTOS_EIGHT='8'
+    NAVYLINUX_EIGHT='8'
+  elif [[ "$(echo $CENTOSVER | cut -d . -f1)" -eq '9' ]]; then
+    CENTOS_NINE='9'
+    NAVYLINUX_NINE='9'
+  fi
+elif [ -f /etc/el-release ] && [[ "$EL_VERID" -eq 8 || "$EL_VERID" -eq 9 ]]; then
+  CENTOSVER=$(awk '{ print $3 }' /etc/el-release | cut -d . -f1,2)
+  if [[ "$(echo $CENTOSVER | cut -d . -f1)" -eq '8' ]]; then
+    CENTOS_EIGHT='8'
+    EUROLINUX_EIGHT='8'
+  elif [[ "$(echo $CENTOSVER | cut -d . -f1)" -eq '9' ]]; then
+    CENTOS_NINE='9'
+    EUROLINUX_NINE='9'
+  fi
+fi
+
+CENTOSVER_NUMERIC=$(echo $CENTOSVER | sed -e 's|\.||g')
 
 if [ -f /proc/user_beancounters ]; then
     # CPUS='1'
@@ -99,6 +206,93 @@ if [ -f /proc/user_beancounters ]; then
             # 7371 at 8 cpu cores has 3.8Ghz clock frequency https://en.wikichip.org/wiki/amd/epyc/7371
             # while greater than 8 cpu cores downclocks to 3.6Ghz
             CPUS=8
+        elif [[ "$(grep -o 'AMD EPYC 7272' /proc/cpuinfo | sort -u)" = 'AMD EPYC 7272' ]]; then
+            # 7272 preferring higher clock frequency https://en.wikichip.org/wiki/amd/epyc/7272
+            CPUS=16
+        elif [[ "$(grep -o 'AMD EPYC 7282' /proc/cpuinfo | sort -u)" = 'AMD EPYC 7282' ]]; then
+            # 7282 preferring higher clock frequency https://en.wikichip.org/wiki/amd/epyc/7282
+            CPUS=16
+        elif [[ "$(grep -o 'AMD EPYC 7302' /proc/cpuinfo | sort -u)" = 'AMD EPYC 7302' ]]; then
+            # 7302 preferring higher clock frequency https://en.wikichip.org/wiki/amd/epyc/7302
+            CPUS=16
+        elif [[ "$(grep -o 'AMD EPYC 7352' /proc/cpuinfo | sort -u)" = 'AMD EPYC 7352' ]]; then
+            # 7352 preferring higher clock frequency https://en.wikichip.org/wiki/amd/epyc/7352
+            CPUS=16
+        elif [[ "$(grep -o 'AMD EPYC 7402' /proc/cpuinfo | sort -u)" = 'AMD EPYC 7402' ]]; then
+            # 7402 preferring higher clock frequency https://en.wikichip.org/wiki/amd/epyc/7402
+            CPUS=16
+        elif [[ "$(grep -o 'AMD EPYC 7452' /proc/cpuinfo | sort -u)" = 'AMD EPYC 7452' ]]; then
+            # 7452 preferring higher clock frequency https://en.wikichip.org/wiki/amd/epyc/7452
+            CPUS=16
+        elif [[ "$(grep -o 'AMD EPYC 7502' /proc/cpuinfo | sort -u)" = 'AMD EPYC 7502' ]]; then
+            # 7502 preferring higher clock frequency https://en.wikichip.org/wiki/amd/epyc/7502
+            CPUS=16
+        elif [[ "$(grep -o 'AMD EPYC 7532' /proc/cpuinfo | sort -u)" = 'AMD EPYC 7532' ]]; then
+            # 7532 preferring higher clock frequency https://en.wikichip.org/wiki/amd/epyc/7532
+            CPUS=16
+        elif [[ "$(grep -o 'AMD EPYC 7542' /proc/cpuinfo | sort -u)" = 'AMD EPYC 7542' ]]; then
+            # 7542 preferring higher clock frequency https://en.wikichip.org/wiki/amd/epyc/7542
+            CPUS=16
+        elif [[ "$(grep -o 'AMD EPYC 7552' /proc/cpuinfo | sort -u)" = 'AMD EPYC 7552' ]]; then
+            # 7552 preferring higher clock frequency https://en.wikichip.org/wiki/amd/epyc/7552
+            CPUS=24
+        elif [[ "$(grep -o 'AMD EPYC 7642' /proc/cpuinfo | sort -u)" = 'AMD EPYC 7642' ]]; then
+            # 7642 preferring higher clock frequency https://en.wikichip.org/wiki/amd/epyc/7642
+            CPUS=24
+        elif [[ "$(grep -o 'AMD EPYC 7662' /proc/cpuinfo | sort -u)" = 'AMD EPYC 7662' ]]; then
+            # 7662 preferring higher clock frequency https://en.wikichip.org/wiki/amd/epyc/7662
+            CPUS=24
+        elif [[ "$(grep -o 'AMD EPYC 7702' /proc/cpuinfo | sort -u)" = 'AMD EPYC 7702' ]]; then
+            # 7702 preferring higher clock frequency https://en.wikichip.org/wiki/amd/epyc/7702
+            CPUS=24
+        elif [[ "$(grep -o 'AMD EPYC 7742' /proc/cpuinfo | sort -u)" = 'AMD EPYC 7742' ]]; then
+            # 7742 preferring higher clock frequency https://en.wikichip.org/wiki/amd/epyc/7742
+            CPUS=24
+        elif [[ "$(grep -o 'AMD EPYC 7H12' /proc/cpuinfo | sort -u)" = 'AMD EPYC 7H12' ]]; then
+            # 7H12 preferring higher clock frequency https://en.wikichip.org/wiki/amd/epyc/7H12
+            CPUS=16
+        elif [[ "$(grep -o 'AMD EPYC 7F52' /proc/cpuinfo | sort -u)" = 'AMD EPYC 7F52' ]]; then
+            # 7F52 preferring higher clock frequency https://en.wikichip.org/wiki/amd/epyc/7F52
+            CPUS=16
+        elif [[ "$(grep -o 'AMD EPYC 7F72' /proc/cpuinfo | sort -u)" = 'AMD EPYC 7F72' ]]; then
+            # 7F72 preferring higher clock frequency https://en.wikichip.org/wiki/amd/epyc/7F72
+            CPUS=16
+        elif [[ "$(grep -o 'AMD EPYC 7313' /proc/cpuinfo | sort -u)" = 'AMD EPYC 7313' ]]; then
+            # 7313 preferring higher clock frequency https://en.wikichip.org/wiki/amd/epyc/7313
+            CPUS=8
+        elif [[ "$(grep -o 'AMD EPYC 7413' /proc/cpuinfo | sort -u)" = 'AMD EPYC 7413' ]]; then
+            # 7413 preferring higher clock frequency https://en.wikichip.org/wiki/amd/epyc/7413
+            CPUS=12
+        elif [[ "$(grep -o 'AMD EPYC 7443' /proc/cpuinfo | sort -u)" = 'AMD EPYC 7443' ]]; then
+            # 7443 preferring higher clock frequency https://en.wikichip.org/wiki/amd/epyc/7443
+            CPUS=12
+        elif [[ "$(grep -o 'AMD EPYC 7453' /proc/cpuinfo | sort -u)" = 'AMD EPYC 7453' ]]; then
+            # 7453 preferring higher clock frequency https://en.wikichip.org/wiki/amd/epyc/7453
+            CPUS=14
+        elif [[ "$(grep -o 'AMD EPYC 7513' /proc/cpuinfo | sort -u)" = 'AMD EPYC 7513' ]]; then
+            # 7513 preferring higher clock frequency https://en.wikichip.org/wiki/amd/epyc/7513
+            CPUS=16
+        elif [[ "$(grep -o 'AMD EPYC 7543' /proc/cpuinfo | sort -u)" = 'AMD EPYC 7543' ]]; then
+            # 7543 preferring higher clock frequency https://en.wikichip.org/wiki/amd/epyc/7543
+            CPUS=16
+        elif [[ "$(grep -o 'AMD EPYC 7643' /proc/cpuinfo | sort -u)" = 'AMD EPYC 7643' ]]; then
+            # 7643 preferring higher clock frequency https://en.wikichip.org/wiki/amd/epyc/7643
+            CPUS=16
+        elif [[ "$(grep -o 'AMD EPYC 7663' /proc/cpuinfo | sort -u)" = 'AMD EPYC 7663' ]]; then
+            # 7663 preferring higher clock frequency https://en.wikichip.org/wiki/amd/epyc/7663
+            CPUS=16
+        elif [[ "$(grep -o 'AMD EPYC 7713' /proc/cpuinfo | sort -u)" = 'AMD EPYC 7713' ]]; then
+            # 7713 preferring higher clock frequency https://en.wikichip.org/wiki/amd/epyc/7713
+            CPUS=32
+        elif [[ "$(grep -o 'AMD EPYC 73F3' /proc/cpuinfo | sort -u)" = 'AMD EPYC 73F3' ]]; then
+            # 73F3 preferring higher clock frequency https://en.wikichip.org/wiki/amd/epyc/73F3
+            CPUS=16
+        elif [[ "$(grep -o 'AMD EPYC 74F3' /proc/cpuinfo | sort -u)" = 'AMD EPYC 74F3' ]]; then
+            # 74F3 preferring higher clock frequency https://en.wikichip.org/wiki/amd/epyc/74F3
+            CPUS=24
+        elif [[ "$(grep -o 'AMD EPYC 75F3' /proc/cpuinfo | sort -u)" = 'AMD EPYC 75F3' ]]; then
+            # 75F3 preferring higher clock frequency https://en.wikichip.org/wiki/amd/epyc/75F3
+            CPUS=32
         else
             CPUS=$(echo $(($CPUS+2)))
         fi
@@ -134,6 +328,93 @@ else
             # 7371 at 8 cpu cores has 3.8Ghz clock frequency https://en.wikichip.org/wiki/amd/epyc/7371
             # while greater than 8 cpu cores downclocks to 3.6Ghz
             CPUS=8
+        elif [[ "$(grep -o 'AMD EPYC 7272' /proc/cpuinfo | sort -u)" = 'AMD EPYC 7272' ]]; then
+            # 7272 preferring higher clock frequency https://en.wikichip.org/wiki/amd/epyc/7272
+            CPUS=16
+        elif [[ "$(grep -o 'AMD EPYC 7282' /proc/cpuinfo | sort -u)" = 'AMD EPYC 7282' ]]; then
+            # 7282 preferring higher clock frequency https://en.wikichip.org/wiki/amd/epyc/7282
+            CPUS=16
+        elif [[ "$(grep -o 'AMD EPYC 7302' /proc/cpuinfo | sort -u)" = 'AMD EPYC 7302' ]]; then
+            # 7302 preferring higher clock frequency https://en.wikichip.org/wiki/amd/epyc/7302
+            CPUS=16
+        elif [[ "$(grep -o 'AMD EPYC 7352' /proc/cpuinfo | sort -u)" = 'AMD EPYC 7352' ]]; then
+            # 7352 preferring higher clock frequency https://en.wikichip.org/wiki/amd/epyc/7352
+            CPUS=16
+        elif [[ "$(grep -o 'AMD EPYC 7402' /proc/cpuinfo | sort -u)" = 'AMD EPYC 7402' ]]; then
+            # 7402 preferring higher clock frequency https://en.wikichip.org/wiki/amd/epyc/7402
+            CPUS=16
+        elif [[ "$(grep -o 'AMD EPYC 7452' /proc/cpuinfo | sort -u)" = 'AMD EPYC 7452' ]]; then
+            # 7452 preferring higher clock frequency https://en.wikichip.org/wiki/amd/epyc/7452
+            CPUS=16
+        elif [[ "$(grep -o 'AMD EPYC 7502' /proc/cpuinfo | sort -u)" = 'AMD EPYC 7502' ]]; then
+            # 7502 preferring higher clock frequency https://en.wikichip.org/wiki/amd/epyc/7502
+            CPUS=16
+        elif [[ "$(grep -o 'AMD EPYC 7532' /proc/cpuinfo | sort -u)" = 'AMD EPYC 7532' ]]; then
+            # 7532 preferring higher clock frequency https://en.wikichip.org/wiki/amd/epyc/7532
+            CPUS=16
+        elif [[ "$(grep -o 'AMD EPYC 7542' /proc/cpuinfo | sort -u)" = 'AMD EPYC 7542' ]]; then
+            # 7542 preferring higher clock frequency https://en.wikichip.org/wiki/amd/epyc/7542
+            CPUS=16
+        elif [[ "$(grep -o 'AMD EPYC 7552' /proc/cpuinfo | sort -u)" = 'AMD EPYC 7552' ]]; then
+            # 7552 preferring higher clock frequency https://en.wikichip.org/wiki/amd/epyc/7552
+            CPUS=24
+        elif [[ "$(grep -o 'AMD EPYC 7642' /proc/cpuinfo | sort -u)" = 'AMD EPYC 7642' ]]; then
+            # 7642 preferring higher clock frequency https://en.wikichip.org/wiki/amd/epyc/7642
+            CPUS=24
+        elif [[ "$(grep -o 'AMD EPYC 7662' /proc/cpuinfo | sort -u)" = 'AMD EPYC 7662' ]]; then
+            # 7662 preferring higher clock frequency https://en.wikichip.org/wiki/amd/epyc/7662
+            CPUS=24
+        elif [[ "$(grep -o 'AMD EPYC 7702' /proc/cpuinfo | sort -u)" = 'AMD EPYC 7702' ]]; then
+            # 7702 preferring higher clock frequency https://en.wikichip.org/wiki/amd/epyc/7702
+            CPUS=24
+        elif [[ "$(grep -o 'AMD EPYC 7742' /proc/cpuinfo | sort -u)" = 'AMD EPYC 7742' ]]; then
+            # 7742 preferring higher clock frequency https://en.wikichip.org/wiki/amd/epyc/7742
+            CPUS=24
+        elif [[ "$(grep -o 'AMD EPYC 7H12' /proc/cpuinfo | sort -u)" = 'AMD EPYC 7H12' ]]; then
+            # 7H12 preferring higher clock frequency https://en.wikichip.org/wiki/amd/epyc/7H12
+            CPUS=16
+        elif [[ "$(grep -o 'AMD EPYC 7F52' /proc/cpuinfo | sort -u)" = 'AMD EPYC 7F52' ]]; then
+            # 7F52 preferring higher clock frequency https://en.wikichip.org/wiki/amd/epyc/7F52
+            CPUS=16
+        elif [[ "$(grep -o 'AMD EPYC 7F72' /proc/cpuinfo | sort -u)" = 'AMD EPYC 7F72' ]]; then
+            # 7F72 preferring higher clock frequency https://en.wikichip.org/wiki/amd/epyc/7F72
+            CPUS=16
+        elif [[ "$(grep -o 'AMD EPYC 7313' /proc/cpuinfo | sort -u)" = 'AMD EPYC 7313' ]]; then
+            # 7313 preferring higher clock frequency https://en.wikichip.org/wiki/amd/epyc/7313
+            CPUS=8
+        elif [[ "$(grep -o 'AMD EPYC 7413' /proc/cpuinfo | sort -u)" = 'AMD EPYC 7413' ]]; then
+            # 7413 preferring higher clock frequency https://en.wikichip.org/wiki/amd/epyc/7413
+            CPUS=12
+        elif [[ "$(grep -o 'AMD EPYC 7443' /proc/cpuinfo | sort -u)" = 'AMD EPYC 7443' ]]; then
+            # 7443 preferring higher clock frequency https://en.wikichip.org/wiki/amd/epyc/7443
+            CPUS=12
+        elif [[ "$(grep -o 'AMD EPYC 7453' /proc/cpuinfo | sort -u)" = 'AMD EPYC 7453' ]]; then
+            # 7453 preferring higher clock frequency https://en.wikichip.org/wiki/amd/epyc/7453
+            CPUS=14
+        elif [[ "$(grep -o 'AMD EPYC 7513' /proc/cpuinfo | sort -u)" = 'AMD EPYC 7513' ]]; then
+            # 7513 preferring higher clock frequency https://en.wikichip.org/wiki/amd/epyc/7513
+            CPUS=16
+        elif [[ "$(grep -o 'AMD EPYC 7543' /proc/cpuinfo | sort -u)" = 'AMD EPYC 7543' ]]; then
+            # 7543 preferring higher clock frequency https://en.wikichip.org/wiki/amd/epyc/7543
+            CPUS=16
+        elif [[ "$(grep -o 'AMD EPYC 7643' /proc/cpuinfo | sort -u)" = 'AMD EPYC 7643' ]]; then
+            # 7643 preferring higher clock frequency https://en.wikichip.org/wiki/amd/epyc/7643
+            CPUS=16
+        elif [[ "$(grep -o 'AMD EPYC 7663' /proc/cpuinfo | sort -u)" = 'AMD EPYC 7663' ]]; then
+            # 7663 preferring higher clock frequency https://en.wikichip.org/wiki/amd/epyc/7663
+            CPUS=16
+        elif [[ "$(grep -o 'AMD EPYC 7713' /proc/cpuinfo | sort -u)" = 'AMD EPYC 7713' ]]; then
+            # 7713 preferring higher clock frequency https://en.wikichip.org/wiki/amd/epyc/7713
+            CPUS=32
+        elif [[ "$(grep -o 'AMD EPYC 73F3' /proc/cpuinfo | sort -u)" = 'AMD EPYC 73F3' ]]; then
+            # 73F3 preferring higher clock frequency https://en.wikichip.org/wiki/amd/epyc/73F3
+            CPUS=16
+        elif [[ "$(grep -o 'AMD EPYC 74F3' /proc/cpuinfo | sort -u)" = 'AMD EPYC 74F3' ]]; then
+            # 74F3 preferring higher clock frequency https://en.wikichip.org/wiki/amd/epyc/74F3
+            CPUS=24
+        elif [[ "$(grep -o 'AMD EPYC 75F3' /proc/cpuinfo | sort -u)" = 'AMD EPYC 75F3' ]]; then
+            # 75F3 preferring higher clock frequency https://en.wikichip.org/wiki/amd/epyc/75F3
+            CPUS=32
         else
             CPUS=$(echo $(($CPUS+4)))
         fi
@@ -215,52 +496,97 @@ else
   MARCH_TARGET='x86-64'
 fi
 
-if [[ "$GCC_SEVEN" = [yY] && "$(uname -m)" = 'x86_64' && -f /opt/rh/devtoolset-7/root/usr/bin/gcc && -f /opt/rh/devtoolset-7/root/usr/bin/g++ ]]; then
-  source /opt/rh/devtoolset-7/enable
-  export CFLAGS="${OPT_LEVEL} -march=${MARCH_TARGET} -Wimplicit-fallthrough=0 -Wno-pedantic"
-  export CXXFLAGS="${CFLAGS}"
+if [[ "$CENTOS_SEVEN" -eq '7' ]]; then
+  if [[ "$GCC_SEVEN" = [yY] && "$(uname -m)" = 'x86_64' && -f /opt/rh/devtoolset-7/root/usr/bin/gcc && -f /opt/rh/devtoolset-7/root/usr/bin/g++ ]]; then
+    source /opt/rh/devtoolset-7/enable
+    export CFLAGS="${OPT_LEVEL} -march=${MARCH_TARGET} -Wimplicit-fallthrough=0 -Wno-pedantic"
+    export CXXFLAGS="${CFLAGS}"
+  fi
+  
+  if [[ "$GCC_EIGHT" = [yY] && "$(uname -m)" = 'x86_64' && -f /opt/rh/devtoolset-8/root/usr/bin/gcc && -f /opt/rh/devtoolset-8/root/usr/bin/g++ ]]; then
+    source /opt/rh/devtoolset-8/enable
+    export CFLAGS="${OPT_LEVEL} -march=${MARCH_TARGET} -Wimplicit-fallthrough=0 -Wno-pedantic"
+    export CXXFLAGS="${CFLAGS}"
+  elif [[ "$GCC_EIGHT" = [yY] && "$(uname -m)" = 'x86_64' && ! -f /opt/rh/devtoolset-8/root/usr/bin/gcc && ! -f /opt/rh/devtoolset-8/root/usr/bin/g++ ]]; then
+    echo "installing devtoolset-8 for GCC 8..."
+    yum -y install devtoolset-8-gcc devtoolset-8-gcc-c++ devtoolset-8-binutils
+    source /opt/rh/devtoolset-8/enable
+    export CFLAGS="${OPT_LEVEL} -march=${MARCH_TARGET} -Wimplicit-fallthrough=0 -Wno-pedantic"
+    export CXXFLAGS="${CFLAGS}"
+  fi
+  
+  if [[ "$GCC_NINE" = [yY] && "$(uname -m)" = 'x86_64' && -f /opt/rh/devtoolset-9/root/usr/bin/gcc && -f /opt/rh/devtoolset-9/root/usr/bin/g++ ]]; then
+    source /opt/rh/devtoolset-9/enable
+    export CFLAGS="${OPT_LEVEL} -march=${MARCH_TARGET} -Wimplicit-fallthrough=0 -Wno-pedantic"
+    export CXXFLAGS="${CFLAGS}"
+  elif [[ "$GCC_NINE" = [yY] && "$(uname -m)" = 'x86_64' && ! -f /opt/rh/devtoolset-9/root/usr/bin/gcc && ! -f /opt/rh/devtoolset-9/root/usr/bin/g++ ]]; then
+    echo "installing devtoolset-9 for GCC 9..."
+    yum -y install devtoolset-9-gcc devtoolset-9-gcc-c++ devtoolset-9-binutils
+    source /opt/rh/devtoolset-9/enable
+    export CFLAGS="${OPT_LEVEL} -march=${MARCH_TARGET} -Wimplicit-fallthrough=0 -Wno-pedantic"
+    export CXXFLAGS="${CFLAGS}"
+  fi
+  
+  if [[ "$GCC_TEN" = [yY] && "$(uname -m)" = 'x86_64' && -f /opt/rh/devtoolset-10/root/usr/bin/gcc && -f /opt/rh/devtoolset-10/root/usr/bin/g++ ]]; then
+    source /opt/rh/devtoolset-10/enable
+    export CFLAGS="${OPT_LEVEL} -march=${MARCH_TARGET} -Wimplicit-fallthrough=0 -Wno-pedantic"
+    export CXXFLAGS="${CFLAGS}"
+  elif [[ "$GCC_TEN" = [yY] && "$(uname -m)" = 'x86_64' && ! -f /opt/rh/devtoolset-10/root/usr/bin/gcc && ! -f /opt/rh/devtoolset-10/root/usr/bin/g++ ]]; then
+    echo "installing devtoolset-10 for GCC 10..."
+    yum -y install devtoolset-10-gcc devtoolset-10-gcc-c++ devtoolset-10-binutils
+    source /opt/rh/devtoolset-10/enable
+    export CFLAGS="${OPT_LEVEL} -march=${MARCH_TARGET} -Wimplicit-fallthrough=0 -Wno-pedantic"
+    export CXXFLAGS="${CFLAGS}"
+  fi
+  
+  if [[ "$GCC_ELEVEN" = [yY] && "$(uname -m)" = 'x86_64' && -f /opt/rh/devtoolset-11/root/usr/bin/gcc && -f /opt/rh/devtoolset-11/root/usr/bin/g++ ]]; then
+    source /opt/rh/devtoolset-11/enable
+    export CFLAGS="${OPT_LEVEL} -march=${MARCH_TARGET} -Wimplicit-fallthrough=0 -Wno-pedantic"
+    export CXXFLAGS="${CFLAGS}"
+  fi
 fi
+if [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]]; then
+  if [[ "$GCC_NINE" = [yY] && "$(uname -m)" = 'x86_64' && -f /opt/rh/gcc-toolset-9/root/usr/bin/gcc && -f /opt/rh/gcc-toolset-9/root/usr/bin/g++ ]]; then
+    source /opt/rh/gcc-toolset-9/enable
+    export CFLAGS="${OPT_LEVEL} -march=${MARCH_TARGET} -Wimplicit-fallthrough=0 -Wno-pedantic"
+    export CXXFLAGS="${CFLAGS}"
+  elif [[ "$GCC_NINE" = [yY] && "$(uname -m)" = 'x86_64' && ! -f /opt/rh/gcc-toolset-9/root/usr/bin/gcc && ! -f /opt/rh/gcc-toolset-9/root/usr/bin/g++ ]]; then
+    echo "installing devtoolset-9 for GCC 9..."
+    yum -y install gcc-toolset-9-binutils gcc-toolset-9-gcc gcc-toolset-9-gcc-c++
+    source /opt/rh/gcc-toolset-9/enable
+    export CFLAGS="${OPT_LEVEL} -march=${MARCH_TARGET} -Wimplicit-fallthrough=0 -Wno-pedantic"
+    export CXXFLAGS="${CFLAGS}"
+  fi
+  
+  if [[ "$GCC_TEN" = [yY] && "$(uname -m)" = 'x86_64' && -f /opt/rh/gcc-toolset-10/root/usr/bin/gcc && -f /opt/rh/gcc-toolset-10/root/usr/bin/g++ ]]; then
+    source /opt/rh/gcc-toolset-10/enable
+    export CFLAGS="${OPT_LEVEL} -march=${MARCH_TARGET} -Wimplicit-fallthrough=0 -Wno-pedantic"
+    export CXXFLAGS="${CFLAGS}"
+  elif [[ "$GCC_TEN" = [yY] && "$(uname -m)" = 'x86_64' && ! -f /opt/rh/gcc-toolset-10/root/usr/bin/gcc && ! -f /opt/rh/gcc-toolset-10/root/usr/bin/g++ ]]; then
+    echo "installing gcc-toolset-10 for GCC 10..."
+    yum -y install gcc-toolset-10-binutils gcc-toolset-10-gcc gcc-toolset-10-gcc-c++
+    source /opt/rh/gcc-toolset-10/enable
+    export CFLAGS="${OPT_LEVEL} -march=${MARCH_TARGET} -Wimplicit-fallthrough=0 -Wno-pedantic"
+    export CXXFLAGS="${CFLAGS}"
+  fi
 
-if [[ "$GCC_EIGHT" = [yY] && "$(uname -m)" = 'x86_64' && -f /opt/rh/devtoolset-8/root/usr/bin/gcc && -f /opt/rh/devtoolset-8/root/usr/bin/g++ ]]; then
-  source /opt/rh/devtoolset-8/enable
-  export CFLAGS="${OPT_LEVEL} -march=${MARCH_TARGET} -Wimplicit-fallthrough=0 -Wno-pedantic"
-  export CXXFLAGS="${CFLAGS}"
-elif [[ "$GCC_EIGHT" = [yY] && "$(uname -m)" = 'x86_64' && ! -f /opt/rh/devtoolset-8/root/usr/bin/gcc && ! -f /opt/rh/devtoolset-8/root/usr/bin/g++ ]]; then
-  echo "installing devtoolset-8 for GCC 8..."
-  yum -y install devtoolset-8-gcc devtoolset-8-gcc-c++ devtoolset-8-binutils
-  source /opt/rh/devtoolset-8/enable
-  export CFLAGS="${OPT_LEVEL} -march=${MARCH_TARGET} -Wimplicit-fallthrough=0 -Wno-pedantic"
-  export CXXFLAGS="${CFLAGS}"
-fi
+  if [[ "$GCC_ELEVEN" = [yY] && "$(uname -m)" = 'x86_64' && -f /opt/rh/gcc-toolset-11/root/usr/bin/gcc && -f /opt/rh/gcc-toolset-11/root/usr/bin/g++ ]]; then
+    source /opt/rh/gcc-toolset-11/enable
+    export CFLAGS="${OPT_LEVEL} -march=${MARCH_TARGET} -Wimplicit-fallthrough=0 -Wno-pedantic"
+    export CXXFLAGS="${CFLAGS}"
+  fi
 
-if [[ "$GCC_NINE" = [yY] && "$(uname -m)" = 'x86_64' && -f /opt/rh/devtoolset-9/root/usr/bin/gcc && -f /opt/rh/devtoolset-9/root/usr/bin/g++ ]]; then
-  source /opt/rh/devtoolset-9/enable
-  export CFLAGS="${OPT_LEVEL} -march=${MARCH_TARGET} -Wimplicit-fallthrough=0 -Wno-pedantic"
-  export CXXFLAGS="${CFLAGS}"
-elif [[ "$GCC_NINE" = [yY] && "$(uname -m)" = 'x86_64' && ! -f /opt/rh/devtoolset-9/root/usr/bin/gcc && ! -f /opt/rh/devtoolset-9/root/usr/bin/g++ ]]; then
-  echo "installing devtoolset-9 for GCC 9..."
-  yum -y install devtoolset-9-gcc devtoolset-9-gcc-c++ devtoolset-9-binutils
-  source /opt/rh/devtoolset-9/enable
-  export CFLAGS="${OPT_LEVEL} -march=${MARCH_TARGET} -Wimplicit-fallthrough=0 -Wno-pedantic"
-  export CXXFLAGS="${CFLAGS}"
-fi
+  if [[ "$GCC_TWELVE" = [yY] && "$(uname -m)" = 'x86_64' && -f /opt/rh/gcc-toolset-12/root/usr/bin/gcc && -f /opt/rh/gcc-toolset-12/root/usr/bin/g++ ]]; then
+    source /opt/rh/gcc-toolset-12/enable
+    export CFLAGS="${OPT_LEVEL} -march=${MARCH_TARGET} -Wimplicit-fallthrough=0 -Wno-pedantic"
+    export CXXFLAGS="${CFLAGS}"
+  fi
 
-if [[ "$GCC_TEN" = [yY] && "$(uname -m)" = 'x86_64' && -f /opt/rh/devtoolset-10/root/usr/bin/gcc && -f /opt/rh/devtoolset-10/root/usr/bin/g++ ]]; then
-  source /opt/rh/devtoolset-10/enable
-  export CFLAGS="${OPT_LEVEL} -march=${MARCH_TARGET} -Wimplicit-fallthrough=0 -Wno-pedantic"
-  export CXXFLAGS="${CFLAGS}"
-elif [[ "$GCC_TEN" = [yY] && "$(uname -m)" = 'x86_64' && ! -f /opt/rh/devtoolset-10/root/usr/bin/gcc && ! -f /opt/rh/devtoolset-10/root/usr/bin/g++ ]]; then
-  echo "installing devtoolset-10 for GCC 10..."
-  yum -y install devtoolset-10-gcc devtoolset-10-gcc-c++ devtoolset-10-binutils
-  source /opt/rh/devtoolset-10/enable
-  export CFLAGS="${OPT_LEVEL} -march=${MARCH_TARGET} -Wimplicit-fallthrough=0 -Wno-pedantic"
-  export CXXFLAGS="${CFLAGS}"
-fi
-
-if [[ "$GCC_ELEVEN" = [yY] && "$(uname -m)" = 'x86_64' && -f /opt/rh/devtoolset-11/root/usr/bin/gcc && -f /opt/rh/devtoolset-11/root/usr/bin/g++ ]]; then
-  source /opt/rh/devtoolset-11/enable
-  export CFLAGS="${OPT_LEVEL} -march=${MARCH_TARGET} -Wimplicit-fallthrough=0 -Wno-pedantic"
-  export CXXFLAGS="${CFLAGS}"
+  if [[ "$GCC_THIRTHTEEN" = [yY] && "$(uname -m)" = 'x86_64' && -f /opt/rh/gcc-toolset-13/root/usr/bin/gcc && -f /opt/rh/gcc-toolset-13/root/usr/bin/g++ ]]; then
+    source /opt/rh/gcc-toolset-13/enable
+    export CFLAGS="${OPT_LEVEL} -march=${MARCH_TARGET} -Wimplicit-fallthrough=0 -Wno-pedantic"
+    export CXXFLAGS="${CFLAGS}"
+  fi
 fi
 
 do_continue() {
@@ -295,6 +621,28 @@ install_nasm() {
       fi
       yum -y remove nasm --disableplugin=priorities
       hash -r
+    fi
+    if [[ "$CENTOS_NINE" -eq '9' ]]; then
+        yum -y install autoconf271
+        export PATH=/opt/rh/autoconf271/bin:$PATH
+        export AUTOCONF=/opt/rh/autoconf271/bin/autoconf
+        export AUTOHEADER=/opt/rh/autoconf271/bin/autoheader
+        export AUTOM4TE=/opt/rh/autoconf271/bin/autom4te
+        export AUTORECONF=/opt/rh/autoconf271/bin/autoreconf
+        export AUTOSCAN=/opt/rh/autoconf271/bin/autoscan
+        export AUTOUPDATE=/opt/rh/autoconf271/bin/autoupdate
+        export IFNAMES=/opt/rh/autoconf271/bin/ifnames
+    elif [[ "$CENTOS_EIGHT" -eq '8' ]]; then
+        yum -y install autoconf2.7x
+        export AUTOCONF=autoconf27
+        export AUTOHEADER=autoheader27
+        export AUTOM4TE=autom4te27
+        export AUTORECONF=autoreconf27
+        export AUTOSCAN=autoscan27
+        export AUTOUPDATE=autoupdate27
+        export IFNAMES=ifnames27
+    else
+        NASM_VER='2.14'
     fi
     cd ${OPT}/ffmpeg_sources
     curl -O -L "https://www.nasm.us/pub/nasm/releasebuilds/${NASM_VER}/nasm-${NASM_VER}.tar.gz"
@@ -343,6 +691,7 @@ install_zimg() {
   rm -rf zimg
   git clone --depth=1 https://github.com/sekrit-twc/zimg
   cd zimg
+  git submodule update --init --recursive
   make clean
   ./autogen.sh
   ./configure --prefix="${OPT}/ffmpeg" --bindir="${OPT}/bin" --enable-static  --enable-shared --with-pic
@@ -385,7 +734,13 @@ install_yasm
 if [[ "$ENABLE_FONTCONFIG" = [yY] ]]; then
   install_freetype
 fi
-if [[ "$ENABLE_ZIMG" = [yY] ]]; then
+if [[ "$CENTOS_NINE" -eq '9' && "$ENABLE_ZIMG" = [yY] ]]; then
+  yum -y install zimg zimg-devel
+elif [[ "$CENTOS_EIGHT" -eq '8' && "$ENABLE_ZIMG" = [yY] ]]; then
+  yum -y install zimg zimg-devel
+elif [[ "$CENTOS_SEVEN" -eq '7' && "$ENABLE_ZIMG" = [yY] ]]; then
+  yum -y install zimg zimg-devel
+elif [[ "$ENABLE_ZIMG" = [yY] ]]; then
   install_zimg
 fi
 

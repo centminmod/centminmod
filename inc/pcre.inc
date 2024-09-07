@@ -1,3 +1,19 @@
+pcredir_check() {
+  is_upgrade=$1
+  PCRELINKDIR=$(tar -tzf "$DIR_TMP/${PCRELINKFILE}" | head -1 | cut -f1 -d"/")
+  if [[ ! -f "${DIR_TMP}/${PCRELINKFILE}" || "$(ls -d ${DIR_TMP}/${PCRELINKDIR} >/dev/null 2>&1; echo $?)" != '0' ]]; then
+    {
+      nginxpcretarball
+    } 2>&1 | tee "${CENTMINLOGDIR}/nginx_pcre_download_${DT}.log"
+  elif [[ -f "${DIR_TMP}/${PCRELINKFILE}" || "$(ls -d ${DIR_TMP}/${PCRELINKDIR} >/dev/null 2>&1; echo $?)" != '0' ]]; then
+    # in case pcre tarball download is incomplete, redownload again
+    rm -rf "${DIR_TMP}/${PCRELINKFILE}"
+    {
+      nginxpcretarball
+    } 2>&1 | tee "${CENTMINLOGDIR}/nginx_pcre_download_${DT}.log"
+  fi
+}
+
 pcre_two_dir_check() {
   is_upgrade=$1
   PCRETWOLINKDIR=$(tar -tzf "$DIR_TMP/${PCRETWOLINKFILE}" | head -1 | cut -f1 -d"/")
@@ -25,7 +41,7 @@ source_pcre_two_install() {
     echo "Compiling PCRE2..."
     cd pcre2-${NGINX_PCRETWOVER}
     make clean
-    ./configure --prefix=/usr/local/nginx-dep --enable-pcre2-16 --enable-pcre2-32 --enable-jit --enable-pcre2grep-libz --enable-pcre2grep-libbz2 --enable-pcre2test-libreadline
+    CFLAGS="-fPIC -O2 -fstack-protector-strong -D_FORTIFY_SOURCE=2" CPPFLAGS="-D_FORTIFY_SOURCE=2" CXXFLAGS="-fPIC -O2" LDFLAGS="-Wl,-z,relro,-z,now -pie" ./configure --prefix=/usr/local/nginx-dep --enable-pcre2-16 --enable-pcre2-32 --enable-jit --enable-pcre2grep-libz --enable-pcre2grep-libbz2 --enable-pcre2test-libreadline
     ngx_pcretwo_install_config_err=$?
     if [ "$ngx_pcretwo_install_config_err" -ne '0' ]; then
       echo
@@ -83,7 +99,7 @@ nginx_pcreinstall() {
     echo "Compiling PCRE For Nginx..."
     cd pcre-${PCRE_VERSION}
     make clean
-    ./configure --prefix=/usr/local/nginx-dep --enable-utf8 --enable-unicode-properties --enable-pcre16 --enable-pcre32 --enable-pcregrep-libz --enable-pcregrep-libbz2 --enable-pcretest-libreadline --enable-jit
+    CFLAGS="-fPIC -O2 -fstack-protector-strong -D_FORTIFY_SOURCE=2" CPPFLAGS="-D_FORTIFY_SOURCE=2" CXXFLAGS="-fPIC -O2" LDFLAGS="-Wl,-z,relro,-z,now -pie" ./configure --prefix=/usr/local/nginx-dep --enable-utf8 --enable-unicode-properties --enable-pcre16 --enable-pcre32 --enable-pcregrep-libz --enable-pcregrep-libbz2 --enable-pcretest-libreadline --enable-jit
     ngx_pcreinstall_config_err=$?
     if [ "$ngx_pcreinstall_config_err" -ne '0' ]; then
       echo
@@ -138,25 +154,9 @@ source_pcreinstall() {
     echo "Compiling PCRE..."
     cd pcre-${PCRE_VERSION}
     make clean
-    ./configure --enable-utf8 --enable-unicode-properties --enable-pcre16 --enable-pcre32 --enable-pcregrep-libz --enable-pcregrep-libbz2 --enable-pcretest-libreadline --enable-jit
+    CFLAGS="-fPIC -O2 -fstack-protector-strong -D_FORTIFY_SOURCE=2" CPPFLAGS="-D_FORTIFY_SOURCE=2" CXXFLAGS="-fPIC -O2" LDFLAGS="-Wl,-z,relro,-z,now -pie" ./configure --enable-utf8 --enable-unicode-properties --enable-pcre16 --enable-pcre32 --enable-pcregrep-libz --enable-pcregrep-libbz2 --enable-pcretest-libreadline --enable-jit
     make$MAKETHREADS
     make install
   } 2>&1 | tee "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_pcre_install.log"
-  fi
-}
-
-pcredir_check() {
-  is_upgrade=$1
-  PCRELINKDIR=$(tar -tzf "$DIR_TMP/${PCRELINKFILE}" | head -1 | cut -f1 -d"/")
-  if [[ ! -f "${DIR_TMP}/${PCRELINKFILE}" || "$(ls -d ${DIR_TMP}/${PCRELINKDIR} >/dev/null 2>&1; echo $?)" != '0' ]]; then
-    {
-      nginxpcretarball
-    } 2>&1 | tee "${CENTMINLOGDIR}/nginx_pcre_download_${DT}.log"
-  elif [[ -f "${DIR_TMP}/${PCRELINKFILE}" || "$(ls -d ${DIR_TMP}/${PCRELINKDIR} >/dev/null 2>&1; echo $?)" != '0' ]]; then
-    # in case pcre tarball download is incomplete, redownload again
-    rm -rf "${DIR_TMP}/${PCRELINKFILE}"
-    {
-      nginxpcretarball
-    } 2>&1 | tee "${CENTMINLOGDIR}/nginx_pcre_download_${DT}.log"
   fi
 }

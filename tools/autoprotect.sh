@@ -28,11 +28,31 @@ export LC_ALL=en_US.UTF-8
 export LANG=en_US.UTF-8
 export LANGUAGE=en_US.UTF-8
 export LC_CTYPE=en_US.UTF-8
+# disable systemd pager so it doesn't pipe systemctl output to less
+export SYSTEMD_PAGER=''
+ARCH_CHECK="$(uname -m)"
 
 shopt -s expand_aliases
 for g in "" e f; do
     alias ${g}grep="LC_ALL=C ${g}grep"  # speed-up grep, egrep, fgrep
 done
+
+check_location_block() {
+    domain=$1
+    location_block=$2
+    # Check both HTTP and HTTPS vhost config files
+    for config in "/usr/local/nginx/conf/conf.d/${domain}.conf" "/usr/local/nginx/conf/conf.d/${domain}.ssl.conf"; do
+        if [ -f "$config" ]; then
+            # Search for the location block in the config file
+            if grep -Eq "location\s+$location_block\s+\{" $config; then
+                # If found, return 1 to indicate it should be skipped
+                return 1
+            fi
+        fi
+    done
+    # If not found in any config file, return 0 to indicate it should be added
+    return 0
+}
 
 genprotect() {
   # need to restart to ensure all existing or recently 403 denied directory settings
@@ -51,8 +71,13 @@ for domain in $(ls $TOPLEVEL_DIR); do
 	arrays=(${HTPATHS})
   for d in "${arrays[@]}"; do
     if [[ "$(echo "$d" | grep "${domain}/public/")" ]]; then
-      # get directory path which contains .htaccess file
       PROTECTDIR=$(dirname "$d");
+      # derive the location block path
+      if [ "$PROTECTDIR" == "/home/nginx/domains/$domain/public" ]; then
+          PROTECTDIR_PATH="/"
+      else
+          PROTECTDIR_PATH=$(echo "$PROTECTDIR" | sed -e "s|/home/nginx/domains/${domain}/public||")
+      fi
       # get the web url path for the .htaccess file
       URL_WEB=$(echo "$PROTECTDIR" |sed -e 's|\/home\/nginx\/domains\/||' -e 's|\/public||')
       # check if 'Deny from all' exists in .htaccess and only generate nginx deny all location
@@ -60,14 +85,13 @@ for domain in $(ls $TOPLEVEL_DIR); do
       # autoprotect.sh script and NOT create a nginx deny all location match by manually creating
       # a .autoprotect-bypass file within the directory you want to bypass and exclude from autoprotect.sh
       if [ -f "${PROTECTDIR}/.htaccess" ]; then
-        if [[ "$(cat "${PROTECTDIR}/.htaccess" | grep -v "\#" | grep -i 'Deny from all' >/dev/null 2>&1; echo $?)" = '0' && ! -f "${PROTECTDIR}/.autoprotect-bypass" ]]; then
+        if check_location_block "$domain" "$PROTECTDIR_PATH" && [[ "$(cat "${PROTECTDIR}/.htaccess" | grep -v "\#" | grep -i 'Deny from all' >/dev/null 2>&1; echo $?)" = '0' && ! -f "${PROTECTDIR}/.autoprotect-bypass" ]]; then
           # check the web url for .htaccess directory path to see if it's already deny all / 403 protected
           # only generate nginx deny all rules for .htaccess directory paths which are not already returning
           # 403 permission denied http status codes (also include check for 404)
           # 
           # if [[ "$(curl -sI ${URL_WEB}/ | grep 'HTTP\/' | egrep -o '403|404' >/dev/null 2>&1; echo $?)" != '0' ]]; then
-            PROTECTDIR_PATH=$(echo "$PROTECTDIR" |sed -e "s|\/home\/nginx\/domains\/${domain}\/public||")
-            if [[ "$(echo $PROTECTDIR_PATH | grep 'akismet' )" ]]; then
+            if check_location_block "$domain" "$PROTECTDIR_PATH" && [[ "$(echo $PROTECTDIR_PATH | grep 'akismet' )" ]]; then
               # proper akismet secure lock down
 echo -e "# $PROTECTDIR\n
 location $PROTECTDIR_PATH/ {
@@ -80,20 +104,20 @@ location $PROTECTDIR_PATH/ {
   }
 }
 "
-            elif [[ "$(echo $PROTECTDIR_PATH | grep 'library' )" && -d "$(echo "$(dirname $PROTECTDIR)/styles/default/xenforo")" ]]; then
+            elif check_location_block "$domain" "$PROTECTDIR_PATH" && [[ "$(echo $PROTECTDIR_PATH | grep 'library' )" && -d "$(echo "$(dirname $PROTECTDIR)/styles/default/xenforo")" ]]; then
 echo -e "# Xenforo bypass $PROTECTDIR\n"
-            elif [[ "$(echo $PROTECTDIR_PATH | grep 'internal_data' )" && -d "$(echo "$(dirname $PROTECTDIR)/styles/default/xenforo")" ]]; then
+            elif check_location_block "$domain" "$PROTECTDIR_PATH" && [[ "$(echo $PROTECTDIR_PATH | grep 'internal_data' )" && -d "$(echo "$(dirname $PROTECTDIR)/styles/default/xenforo")" ]]; then
 echo -e "# Xenforo bypass $PROTECTDIR\n"
-            elif [[ "$(echo $PROTECTDIR_PATH | grep 'install\/templates' )" && -d "$(echo "$(dirname $(dirname $PROTECTDIR))/styles/default/xenforo")" ]]; then
+            elif check_location_block "$domain" "$PROTECTDIR_PATH" && [[ "$(echo $PROTECTDIR_PATH | grep 'install\/templates' )" && -d "$(echo "$(dirname $(dirname $PROTECTDIR))/styles/default/xenforo")" ]]; then
 echo -e "# Xenforo bypass $PROTECTDIR\n"
-            elif [[ "$(echo $PROTECTDIR_PATH | grep 'install\/data' )" && -d "$(echo "$(dirname $(dirname $PROTECTDIR))/styles/default/xenforo")" ]]; then
+            elif check_location_block "$domain" "$PROTECTDIR_PATH" && [[ "$(echo $PROTECTDIR_PATH | grep 'install\/data' )" && -d "$(echo "$(dirname $(dirname $PROTECTDIR))/styles/default/xenforo")" ]]; then
 echo -e "# Xenforo bypass $PROTECTDIR\n"
-            elif [[ "$(echo $PROTECTDIR_PATH | grep 'src' )" && -d "$(echo "$(dirname $PROTECTDIR)/styles/default/xenforo")" ]]; then
+            elif check_location_block "$domain" "$PROTECTDIR_PATH" && [[ "$(echo $PROTECTDIR_PATH | grep 'src' )" && -d "$(echo "$(dirname $PROTECTDIR)/styles/default/xenforo")" ]]; then
 echo -e "# Xenforo bypass $PROTECTDIR\n"
-            elif [[ "$(echo $PROTECTDIR_PATH | grep 'wp-content\/uploads' )" && -d "$(echo "$(dirname $(dirname $PROTECTDIR))/wp-content/uploads")" && -f "/usr/local/nginx/conf/wpincludes/${domain}/wpsecure_${domain}.conf" ]]; then
+            elif check_location_block "$domain" "$PROTECTDIR_PATH" && [[ "$(echo $PROTECTDIR_PATH | grep 'wp-content\/uploads' )" && -d "$(echo "$(dirname $(dirname $PROTECTDIR))/wp-content/uploads")" && -f "/usr/local/nginx/conf/wpincludes/${domain}/wpsecure_${domain}.conf" ]]; then
 echo -e "# centmin.sh menu option 22 installed WP bypass $PROTECTDIR\n"
 
-            elif [[ "$(echo $PROTECTDIR_PATH | grep 'sucuri-scanner' )" ]]; then
+            elif check_location_block "$domain" "$PROTECTDIR_PATH" && [[ "$(echo $PROTECTDIR_PATH | grep 'sucuri-scanner' )" ]]; then
               # proper sucuri-scanner secure lock down
 echo -e "# $PROTECTDIR\n
 location $PROTECTDIR_PATH/ {
@@ -102,20 +126,20 @@ location $PROTECTDIR_PATH/ {
   deny all;
 }
 "
-            elif [[ "$(cat "${PROTECTDIR}/.htaccess" | egrep 'ipb-protection|Content-Disposition attachment' | grep 'Header set')" ]]; then
+            elif check_location_block "$domain" "$PROTECTDIR_PATH" && [[ "$(cat "${PROTECTDIR}/.htaccess" | egrep 'ipb-protection|Content-Disposition attachment' | grep 'Header set')" ]]; then
 echo -e "# https://community.centminmod.com/posts/33989/\n# $PROTECTDIR\n
 location $PROTECTDIR_PATH/ {
   location ~ ^$PROTECTDIR_PATH/(.*)\.(php|cgi|pl|php3|php4|php5|php6|phtml|shtml)\$ { allow 127.0.0.1; deny all; }
   location ~ ^$PROTECTDIR_PATH/(.*)\.(ipb)\$ { add_header 'Content-Disposition' "attachment"; }
 }
 "
-            elif [[ "$(cat "${PROTECTDIR}/.htaccess" | egrep 'ipb-protection')" ]]; then
+            elif check_location_block "$domain" "$PROTECTDIR_PATH" && [[ "$(cat "${PROTECTDIR}/.htaccess" | egrep 'ipb-protection')" ]]; then
 echo -e "# https://community.centminmod.com/posts/35382/\n# $PROTECTDIR\n
 location $PROTECTDIR_PATH/ {
   location ~ ^$PROTECTDIR_PATH/(.*)\.(php|cgi|pl|php3|php4|php5|php6|phtml|shtml)\$ { allow 127.0.0.1; deny all; }
 }
 "
-            elif [[ "$(cat "${PROTECTDIR}/.htaccess" | grep -iv 'Order allow' | grep 'allow')" ]]; then
+            elif check_location_block "$domain" "$PROTECTDIR_PATH" && [[ "$(cat "${PROTECTDIR}/.htaccess" | grep -iv 'Order allow' | grep 'allow')" ]]; then
 echo -e "# https://community.centminmod.com/posts/35394/\n# $PROTECTDIR\n
 location $PROTECTDIR_PATH/ {
   location ~ ^$PROTECTDIR_PATH/(.+/)?(.+)\.(js)\$ { allow all; expires 30d; }
@@ -124,6 +148,8 @@ location $PROTECTDIR_PATH/ {
   location ~ ^$PROTECTDIR_PATH/(.+/)?(.+)\.(php|cgi|pl|php3|php4|php5|php6|phtml|shtml)\$ { allow 127.0.0.1; deny all; }
 }
 "
+            elif check_location_block "$domain" "$PROTECTDIR_PATH" && [[ "$(cat "${PROTECTDIR}/.htaccess" | egrep -i 'cloudflare')" ]]; then
+              echo -e "# Cloudflare bypass $PROTECTDIR\n"
             else
               echo -e "# $PROTECTDIR\nlocation ~* ^$PROTECTDIR_PATH/ { allow 127.0.0.1; deny all; }"
             fi
@@ -173,10 +199,9 @@ fi
 # only trigger nginx reload service when there are new differences detected
 # in current and previous autoprotect include conf files
 NGX_RESTARTCMD=$(grep y /tmp/diffcheck.txt >/dev/null 2>&1; echo $?)
-if [[ -f /etc/init.d/nginx && "$NGX_RESTARTCMD" = '0' ]]; then
-   # service nginx restart >/dev/null 2>&1
+if [[ "$NGX_RESTARTCMD" = '0' ]]; then
    sleep 2
-   service nginx reload
+   systemctl reload nginx
    rm -rf /usr/local/nginx/conf/autoprotect/status-restart
 fi
   if [ -f /tmp/diffcheck.txt ]; then

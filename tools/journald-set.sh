@@ -46,6 +46,9 @@ export LC_ALL=en_US.UTF-8
 export LANG=en_US.UTF-8
 export LANGUAGE=en_US.UTF-8
 export LC_CTYPE=en_US.UTF-8
+# disable systemd pager so it doesn't pipe systemctl output to less
+export SYSTEMD_PAGER=''
+ARCH_CHECK="$(uname -m)"
 
 shopt -s expand_aliases
 for g in "" e f; do
@@ -98,7 +101,7 @@ journald_diskusage() {
 
 journald_status() {
   if [ -f /usr/lib/systemd/system/systemd-journald.service ]; then
-    systemctl status systemd-journald | sed -e "s|$(hostname)|hostname|g"
+    systemctl status systemd-journald --no-pager | sed -e "s|$(hostname)|hostname|g"
     journald_diskusage
   fi
 }

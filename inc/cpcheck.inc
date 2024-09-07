@@ -1,6 +1,56 @@
+opendkim_check_enabled() {
+  if [[ "$CENTOS_NINE" -eq '9' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_SEVEN" -eq '7' ]]; then
+    if [ -d /etc/opendkim/keys ]; then
+      if [[ -f "$(find /etc/opendkim/keys -name "default")" && "$(systemctl is-enabled opendkim)" = 'disabled' ]] && [[ "$(rpm -qa opendkim | grep opendkim >/dev/null 2>&1; echo $?)" = '0' ]]; then
+        if [[ "$(systemctl is-active opendkim)" = 'active' ]]; then
+          systemctl enable opendkim >/dev/null 2>&1
+        elif [[ "$(systemctl is-active opendkim)" = 'inactive' ]]; then
+          systemctl enable opendkim >/dev/null 2>&1
+          systemctl start opendkim >/dev/null 2>&1
+        fi
+      fi
+    fi
+  fi
+}
+
+switch_nginx_uid() {
+    local current_uid
+    local current_gid
+    current_uid=$(id -u nginx)
+    current_gid=$(id -g nginx)
+    if [[ "$current_uid" -eq 956 && "$current_gid" -eq 956 && -f "${SCRIPT_DIR}/tools/switch_nginx_uid.sh" ]]; then
+        "${SCRIPT_DIR}/tools/switch_nginx_uid.sh -uf 956 -gf 956 -ut 1068 -gt 1068" >/dev/null 2>&1
+    fi
+}
+
+fix_cve_2024_6387_openssh() {
+  # https://access.redhat.com/security/cve/cve-2024-6387
+  if [[ ! "$(grep '^LoginGraceTime' /etc/ssh/sshd_config)" && "$(grep '^#LoginGraceTime' /etc/ssh/sshd_config)" ]]; then
+    sed -i 's|^#LoginGraceTime .*|LoginGraceTime 0|' /etc/ssh/sshd_config
+    sed -i 's|^LoginGraceTime .*|LoginGraceTime 0|' /etc/ssh/sshd_config
+    systemctl restart sshd >/dev/null 2>&1
+  fi
+}
+
+update_centos7_eol_repos() {
+  if [[ "$CENTOS_SEVEN" -eq '7' && ! "$(grep 'vault.centos.org' /etc/yum.repos.d/CentOS-Base.repo)" && -f "${SCRIPT_DIR}/tools/update-el7-repo.sh" ]]; then
+    "${SCRIPT_DIR}/tools/update-el7-repo.sh"
+  fi
+}
+
 # Define the configuration lines to check
 CIPHERS_LINE="Ciphers aes128-ctr,aes192-ctr,aes256-ctr,aes128-gcm@openssh.com,aes256-gcm@openssh.com"
 MACS_LINE="MACs umac-64@openssh.com,umac-128@openssh.com,hmac-sha2-256,hmac-sha2-512"
+
+fix_rsync_backport_redirect() {
+  # cloudflare non-http to https redirect fix for EL8/EL9
+  if [[ "$ALMALINUX_EIGHT" -eq '8' || "$ALMALINUX_NINE" -eq '9' || "$RSYNC_BACKPORT_REPO" = [yY] ]] && [ -f /etc/yum.repos.d/almalinux-backports-rsync.repo ]; then
+    if [[ "$(cat /etc/yum.repos.d/almalinux-backports-rsync.repo | grep -o '301 Moved' | uniq)" = '301 Moved' ]]; then
+      curl -sL https://repo.almalinux.org/backports/almalinux-backports-rsync.repo --output /etc/yum.repos.d/almalinux-backports-rsync.repo
+      yum -q -y update rsync
+    fi
+  fi
+}
 
 # Function to check if the configuration lines exist in the file
 check_sshd_config() {
@@ -39,25 +89,233 @@ apply_iconv_fix() {
   fi
 }
 
-switch_mariadbtenthree_archives() {
-  if grep -q "http://yum.mariadb.org/10.3/centos7-amd64" /etc/yum.repos.d/mariadb.repo; then
-      sed -i 's|http://yum.mariadb.org/10.3/centos7-amd64|https://archive.mariadb.org/mariadb-10.3/yum/centos7-amd64|' /etc/yum.repos.d/mariadb.repo
-      sed -i 's|https://yum.mariadb.org/RPM-GPG-KEY-MariaDB|https://supplychain.mariadb.com/MariaDB-Server-GPG-KEY|' /etc/yum.repos.d/mariadb.repo
-      rpm --import https://supplychain.mariadb.com/MariaDB-Server-GPG-KEY
-      yum -q clean all
+fix_mount_loop_sh() {
+    # https://community.centminmod.com/threads/mount-loop-service-special-device-tmpfs-does-not-exist.24652/#post-98927
+    FILE="/usr/local/bin/mount-loop.sh"
+    
+    # First pattern
+    INCORRECT_MOUNT1="mount -o rw,noexec,nodev,nosuid tmpfs /tmp"
+    CORRECT_MOUNT1="mount -t tmpfs -o rw,noexec,nodev,nosuid tmpfs /tmp"
+
+    # Second pattern
+    INCORRECT_MOUNT2="mount -o loop,rw,noexec,nosuid /home/usertmp_donotdelete /tmp"
+    CORRECT_MOUNT2="mount -t ext4 -o loop,rw,noexec,nodev,nosuid /home/usertmp_donotdelete /tmp"
+
+    if [ -f "$FILE" ]; then
+        # Check and correct the first pattern
+        if grep -qF -- "$INCORRECT_MOUNT1" "$FILE"; then
+            # echo "Incorrect mount command found (first pattern). Correcting it now..."
+            sed -i "s|${INCORRECT_MOUNT1}|${CORRECT_MOUNT1}|g" "$FILE"
+            # Unmount /tmp if it's currently mounted to avoid the error
+            if [ "$(lsof /tmp | tail -n +2 | egrep -v 'deleted' | wc -l)" -eq 0 ]; then
+                if mountpoint -q /tmp; then
+                  umount -l /tmp
+                  $FILE
+                fi
+            fi
+        fi
+        
+        # Check and correct the second pattern
+        if grep -qF -- "$INCORRECT_MOUNT2" "$FILE"; then
+            # echo "Incorrect mount command found (second pattern). Correcting it now..."
+            sed -i "s|${INCORRECT_MOUNT2}|${CORRECT_MOUNT2}|g" "$FILE"
+            # Unmount /tmp if it's currently mounted to avoid the error
+            if [ "$(lsof /tmp | tail -n +2 | egrep -v 'deleted' | wc -l)" -eq 0 ]; then
+                if mountpoint -q /tmp; then
+                  umount -l /tmp
+                  $FILE
+                fi
+            fi
+        fi
+    fi
+}
+
+rsync_backport_install() {
+  # Almalinux provides a Rsync backport YUM repo that supports latest
+  # rsync 3.2.3+ versions which support zstd and xxhash 
+  # like outlined at https://community.centminmod.com/threads/custom-rsync-3-2-3-rpm-builds-with-xxhash-zstd-support-for-centos-7.20768/
+  # el8 native rsync is 3.1.3 and el9 native rsync is 3.2.3
+  # Almalinux backport report has rsync 3.2.7+
+  if [[ "$ALMALINUX_EIGHT" -eq '8' || "$ALMALINUX_NINE" -eq '9' || "$RSYNC_BACKPORT_REPO" = [yY] ]] && [ ! -f /etc/yum.repos.d/almalinux-backports-rsync.repo ]; then
+    curl -L https://repo.almalinux.org/backports/almalinux-backports-rsync.repo --output /etc/yum.repos.d/almalinux-backports-rsync.repo
+    yum -y update rsync
+    echo
+    echo "Backport Rsync 3.2.7+ YUM Repo Setup Installed"
+    echo
+    echo "EL7 default uses Rsync 3.1.2"
+    echo "EL8 default uses Rsync 3.1.3"
+    echo "EL9 default uses Rsync 3.2.3"
+    echo
+    echo "Rsync 3.2.3 adds zstd & xxhash support"
+    echo "https://community.centminmod.com/threads/custom-rsync-3-2-3-rpm-builds-with-xxhash-zstd-support-for-centos-7.20768/"
+    echo
+    /usr/bin/rsync --version
+    echo
   fi
+}
+
+elnine_perl_check() {
+  if [[ "$CENTOS_NINE" -eq '9' && ! -f /usr/share/perl5/diagnostics.pm ]]; then
+    # required for mysqltuner.pl
+    $YUMDNFBIN -q -y install perl-diagnostics
+  fi
+}
+
+fix_wordpress_accept_encoding() {
+  #/usr/local/nginx/conf/wpincludes/${vhostname}/php-fastcgicache.conf
+  #/usr/local/nginx/conf/php-rediscache.conf
+  #/usr/local/nginx/conf/php-rediscache-shortttl.conf
+  files=(
+    "/usr/local/nginx/conf/php-rediscache.conf"
+    "/usr/local/nginx/conf/php-rediscache-shortttl.conf"
+  )
+   
+  # Check and modify specified files
+  for file in "${files[@]}"; do
+    if [ -f "$file" ]; then
+      if grep -q "\$request_uri\$http_accept_encoding" "$file" 2>/dev/null; then
+        sed -i 's/\$request_uri\$http_accept_encoding/\$request_uri\$normalized_encoding/g' "$file"
+        # echo "Modified: $file"
+      fi
+    fi
+  done
   
-  if grep -q "http://yum.mariadb.org/10.3/centos8-amd64" /etc/yum.repos.d/mariadb.repo; then
-      sed -i 's|http://yum.mariadb.org/10.3/centos8-amd64|https://archive.mariadb.org/mariadb-10.3/yum/centos8-amd64|' /etc/yum.repos.d/mariadb.repo
-      sed -i 's|https://yum.mariadb.org/RPM-GPG-KEY-MariaDB|https://supplychain.mariadb.com/MariaDB-Server-GPG-KEY|' /etc/yum.repos.d/mariadb.repo
-      rpm --import https://supplychain.mariadb.com/MariaDB-Server-GPG-KEY
-      yum -q clean all
+  # Check and modify files matching the wildcard pattern
+  if [ -d /usr/local/nginx/conf/wpincludes ]; then
+    find /usr/local/nginx/conf/wpincludes -type f -name "php-fastcgicache.conf" | while read file; do
+      if [ -f "$file" ]; then
+        if grep -q "\$request_uri\$http_accept_encoding" "$file"; then
+          sed -i 's/\$request_uri\$http_accept_encoding/\$request_uri\$normalized_encoding/g' "$file"
+          # echo "Modified: $file"
+        fi
+      fi
+    done
+  fi
+}
+
+normalize_accept_encoding() {
+  # https://community.centminmod.com/posts/98553/
+  if [ ! -f /usr/local/nginx/conf/normalize_encoding.conf ]; then
+cat > /usr/local/nginx/conf/normalize_encoding.conf <<EOF
+map \$http_accept_encoding \$normalized_encoding {
+    ~*br     br;
+    ~*gzip   gzip;
+    default  "";
+}
+EOF
   fi
 
-  if grep -q "https://archive.mariadb.org/PublicKey" /etc/yum.repos.d/mariadb.repo; then
-      sed -i 's|https://archive.mariadb.org/PublicKey|https://supplychain.mariadb.com/MariaDB-Server-GPG-KEY|' /etc/yum.repos.d/mariadb.repo
-      rpm --import https://supplychain.mariadb.com/MariaDB-Server-GPG-KEY
-      yum -q clean all
+  NORMALIZE_ACCEPT_ENCODING_INCLUDECHECK=$(grep '\/usr\/local\/nginx\/conf\/normalize_encoding.conf' /usr/local/nginx/conf/nginx.conf)
+  if [[ -z "$NORMALIZE_ACCEPT_ENCODING_INCLUDECHECK" ]]; then
+    # echo
+    # echo "include file /usr/local/nginx/conf/normalize_encoding.conf add to nginx.conf"
+    sed -i 's|\/usr\/local\/nginx\/conf\/fastcgi_param_https_map.conf;|\/usr\/local\/nginx\/conf\/fastcgi_param_https_map.conf;\ninclude \/usr\/local\/nginx\/conf\/normalize_encoding.conf;|g' /usr/local/nginx/conf/nginx.conf
+    service nginx restart >/dev/null 2>&1
+    service nginx php-fpm >/dev/null 2>&1
+  fi
+}
+
+push_check_updates_cronsetup() {
+  if [[ -z "$(crontab -l 2>&1 | grep '\/usr\/local\/src\/centminmod\/tools\/check-for-updates.sh')" && -f "/usr/local/src/centminmod/tools/check-for-updates.sh" ]]; then
+    mkdir -p /etc/centminmod/cronjobs/
+    crontab -l > /etc/centminmod/cronjobs/cronjoblist-before-check-forum-updates.txt
+    sed -i '/check-for-updates.sh/d' /etc/centminmod/cronjobs/cronjoblist-before-check-forum-updates.txt
+    echo "20 2,14 * * * /usr/local/src/centminmod/tools/check-for-updates.sh all >/dev/null 2>&1" >> /etc/centminmod/cronjobs/cronjoblist-before-check-forum-updates.txt
+    crontab /etc/centminmod/cronjobs/cronjoblist-before-check-forum-updates.txt
+  fi
+}
+
+fix_remi_repo_gpgcheck() {
+  if [[ "$CENTOS_NINE" = '9' || "$CENTOS_EIGHT" = '8' ]] && [[ "$(grep repo_gpgcheck=1 /etc/yum.repos.d/remi.repo)" ]]; then
+    echo
+    echo "disabling repo_gpgcheck for REMI... please wait"
+    sed -i 's|repo_gpgcheck=1|repo_gpgcheck=0|g' /etc/yum.repos.d/remi*.repo
+    yum -q clean all
+    yum -q makecache
+    grep repo_gpgcheck /etc/yum.repos.d/remi*.repo
+    echo "disabled repo_gpgcheck for REMI..."
+  fi
+}
+
+switch_mariadbtenthree_archives() {
+  if [ -f /etc/yum.repos.d/mariadb.repo ]; then
+    if grep -q "http://yum.mariadb.org/10.3/centos7-amd64" /etc/yum.repos.d/mariadb.repo; then
+        sed -i 's|http://yum.mariadb.org/10.3/centos7-amd64|https://archive.mariadb.org/mariadb-10.3/yum/centos7-amd64|' /etc/yum.repos.d/mariadb.repo
+        sed -i 's|https://yum.mariadb.org/RPM-GPG-KEY-MariaDB|https://supplychain.mariadb.com/MariaDB-Server-GPG-KEY|' /etc/yum.repos.d/mariadb.repo
+        rpm --import https://supplychain.mariadb.com/MariaDB-Server-GPG-KEY
+        yum -q clean all
+    fi
+    
+    if grep -q "http://yum.mariadb.org/10.3/centos8-amd64" /etc/yum.repos.d/mariadb.repo; then
+        sed -i 's|http://yum.mariadb.org/10.3/centos8-amd64|https://archive.mariadb.org/mariadb-10.3/yum/centos8-amd64|' /etc/yum.repos.d/mariadb.repo
+        sed -i 's|https://yum.mariadb.org/RPM-GPG-KEY-MariaDB|https://supplychain.mariadb.com/MariaDB-Server-GPG-KEY|' /etc/yum.repos.d/mariadb.repo
+        rpm --import https://supplychain.mariadb.com/MariaDB-Server-GPG-KEY
+        yum -q clean all
+    fi
+  
+    if grep -q "https://archive.mariadb.org/PublicKey" /etc/yum.repos.d/mariadb.repo; then
+        sed -i 's|https://archive.mariadb.org/PublicKey|https://supplychain.mariadb.com/MariaDB-Server-GPG-KEY|' /etc/yum.repos.d/mariadb.repo
+        rpm --import https://supplychain.mariadb.com/MariaDB-Server-GPG-KEY
+        yum -q clean all
+    fi
+  fi
+}
+
+switch_mariadbtentwo_archives() {
+  if [ -f /etc/yum.repos.d/mariadb.repo ]; then
+    if grep -q "http://yum.mariadb.org/10.2/centos7-amd64" /etc/yum.repos.d/mariadb.repo; then
+        sed -i 's|http://yum.mariadb.org/10.2/centos7-amd64|https://archive.mariadb.org/mariadb-10.2/yum/centos7-amd64|' /etc/yum.repos.d/mariadb.repo
+        # sed -i 's|https://yum.mariadb.org/RPM-GPG-KEY-MariaDB|https://supplychain.mariadb.com/MariaDB-Server-GPG-KEY|' /etc/yum.repos.d/mariadb.repo
+        rpm --import https://supplychain.mariadb.com/MariaDB-Server-GPG-KEY
+        yum -q clean all
+    fi
+    
+    if grep -q "http://yum.mariadb.org/10.2/centos8-amd64" /etc/yum.repos.d/mariadb.repo; then
+        sed -i 's|http://yum.mariadb.org/10.2/centos8-amd64|https://archive.mariadb.org/mariadb-10.2/yum/centos8-amd64|' /etc/yum.repos.d/mariadb.repo
+        # sed -i 's|https://yum.mariadb.org/RPM-GPG-KEY-MariaDB|https://supplychain.mariadb.com/MariaDB-Server-GPG-KEY|' /etc/yum.repos.d/mariadb.repo
+        rpm --import https://supplychain.mariadb.com/MariaDB-Server-GPG-KEY
+        yum -q clean all
+    fi
+  
+    if grep -q "https://archive.mariadb.org/PublicKey" /etc/yum.repos.d/mariadb.repo; then
+        # sed -i 's|https://archive.mariadb.org/PublicKey|https://supplychain.mariadb.com/MariaDB-Server-GPG-KEY|' /etc/yum.repos.d/mariadb.repo
+        rpm --import https://supplychain.mariadb.com/MariaDB-Server-GPG-KEY
+        yum -q clean all
+    fi
+  fi
+}
+
+switch_mariadbtenone_archives() {
+  if [ -f /etc/yum.repos.d/mariadb.repo ]; then
+    if grep -q "http://yum.mariadb.org/10.1/centos7-amd64" /etc/yum.repos.d/mariadb.repo; then
+        sed -i 's|http://yum.mariadb.org/10.1/centos7-amd64|https://archive.mariadb.org/mariadb-10.1/yum/centos7-amd64|' /etc/yum.repos.d/mariadb.repo
+        # sed -i 's|https://yum.mariadb.org/RPM-GPG-KEY-MariaDB|https://supplychain.mariadb.com/MariaDB-Server-GPG-KEY|' /etc/yum.repos.d/mariadb.repo
+        rpm --import https://supplychain.mariadb.com/MariaDB-Server-GPG-KEY
+        yum -q clean all
+    fi
+    
+    if grep -q "http://yum.mariadb.org/10.1/centos8-amd64" /etc/yum.repos.d/mariadb.repo; then
+        sed -i 's|http://yum.mariadb.org/10.1/centos8-amd64|https://archive.mariadb.org/mariadb-10.1/yum/centos8-amd64|' /etc/yum.repos.d/mariadb.repo
+        # sed -i 's|https://yum.mariadb.org/RPM-GPG-KEY-MariaDB|https://supplychain.mariadb.com/MariaDB-Server-GPG-KEY|' /etc/yum.repos.d/mariadb.repo
+        rpm --import https://supplychain.mariadb.com/MariaDB-Server-GPG-KEY
+        yum -q clean all
+    fi
+  
+    if grep -q "https://archive.mariadb.org/PublicKey" /etc/yum.repos.d/mariadb.repo; then
+        # sed -i 's|https://archive.mariadb.org/PublicKey|https://supplychain.mariadb.com/MariaDB-Server-GPG-KEY|' /etc/yum.repos.d/mariadb.repo
+        rpm --import https://supplychain.mariadb.com/MariaDB-Server-GPG-KEY
+        yum -q clean all
+    fi
+  fi
+}
+
+setup_initial_csf_block_cronjob() {
+  if [[ -f /usr/local/src/centminmod/tools/initial-csf-blocks.sh && ! "$(crontab -l | grep -F '33 */2 * * * /usr/local/src/centminmod/tools/initial-csf-blocks.sh >/dev/null 2>&1')" ]]; then
+    mkdir -p /etc/centminmod/cronjobs/
+    crontab -l > /etc/centminmod/cronjobs/before_initial_csf_blocklist_cronjoblist
+    sed -i '/initial-csf-blocks.sh/d' /etc/centminmod/cronjobs/before_initial_csf_blocklist_cronjoblist
+    echo "33 */2 * * * /usr/local/src/centminmod/tools/initial-csf-blocks.sh >/dev/null 2>&1" >> /etc/centminmod/cronjobs/before_initial_csf_blocklist_cronjoblist
+    crontab /etc/centminmod/cronjobs/before_initial_csf_blocklist_cronjoblist
   fi
 }
 
@@ -73,6 +331,97 @@ fix_ftp_csf_ports() {
   if [ -f /usr/local/src/centminmod/tools/fix-csf-ftp-ports.sh ]; then
     chmod +x /usr/local/src/centminmod/tools/fix-csf-ftp-ports.sh
     /usr/local/src/centminmod/tools/fix-csf-ftp-ports.sh >/dev/null 2>&1
+  fi
+}
+
+check_and_fix_cache_keys() {
+    # fix to ensure $http_accept_encoding is included in cache keys
+    TARGET_DIR1="/usr/local/nginx/conf/wpincludes"
+    TARGET_DIR2="/usr/local/nginx/conf"
+    SEARCH_FILE1="php-fastcgicache.conf"
+    SEARCH_FILE2="php-rediscache.conf"
+    # Paths to the configuration files
+    CONF_PATH1="${TARGET_DIR1}/*/${SEARCH_FILE1}"
+    CONF_PATH2="${TARGET_DIR2}/${SEARCH_FILE2}"
+
+    # Check the content of each file to see if it contains the expected value
+    if [ -d /usr/local/nginx/conf/wpincludes ]; then
+      if ! grep -q "\$http_accept_encoding" $CONF_PATH1 2>/dev/null; then
+          # echo "${SEARCH_FILE1} requires updates..."
+          NEED_UPDATE=1
+      fi
+    fi
+    
+    if ! grep -q "\$http_accept_encoding" $CONF_PATH2 2>/dev/null; then
+        # echo "${SEARCH_FILE2} requires updates..."
+        NEED_UPDATE=1
+    fi
+
+    # If any of the files need to be updated, run the script
+    if [[ "$NEED_UPDATE" -eq 1 ]]; then
+        # echo "Running fix script..."
+        chmod +x "${SCRIPT_DIR}/tools/fix-cache-keys.sh"
+        "${SCRIPT_DIR}/tools/fix-cache-keys.sh" silent
+    else
+        # echo "Cache keys are already updated."
+        echo
+    fi
+}
+
+fix_pure_ftpd_el8() {
+  if [[ -f /etc/pure-ftpd/pure-ftpd.conf && "$(grep '@sysconfigdir\@\/pureftpd.pdb' /etc/pure-ftpd/pure-ftpd.conf)" ]] && [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]]; then
+    sed -i 's/# PureDB                       \@sysconfigdir\@\/pureftpd.pdb/PureDB                        \/etc\/pure-ftpd\/pureftpd.pdb/' /etc/pure-ftpd/pure-ftpd.conf
+    service pure-ftpd restart >/dev/null 2>&1
+  fi
+}
+
+fix_phpfpm_systemd_switch() {
+if [[ "$CENTOS_SEVEN" -eq '7' && "$SWITCH_PHPFPM_SYSTEMD" = [yY] ]]; then
+        if [[ -f /etc/systemd/system/php-fpm.service.d/failure-restart.conf && "$(grep -o Unit /etc/systemd/system/php-fpm.service.d/failure-restart.conf)" = 'Unit' ]]; then
+cat > "/etc/systemd/system/php-fpm.service.d/failure-restart.conf" <<TDG
+[Service]
+StartLimitInterval=30
+StartLimitBurst=5
+Restart=on-failure
+RestartSec=5s
+TDG
+          systemctl daemon-reload
+        fi
+fi
+}
+
+start_limit_burst_adjust() {
+  if [[ "$CENTOS_NINE" = '9' || "$CENTOS_EIGHT" = '8' ]]; then
+    if [ -d /etc/systemd/system/nginx.service.d ]; then
+      nginx_startlimitburst=$(awk -F '=' '/StartLimitBurst=/ {print $2}' /etc/systemd/system/nginx.service.d/failure-restart.conf)
+      if [[ -f /etc/systemd/system/nginx.service.d/failure-restart.conf && "${nginx_startlimitburst}" -eq '15' ]]; then
+        sed -i "s|StartLimitBurst=.*|StartLimitBurst=5|" /etc/systemd/system/nginx.service.d/failure-restart.conf
+        systemctl daemon-reload
+      elif [[ -f /etc/systemd/system/nginx.service.d/failure-restart.conf && "${nginx_startlimitburst}" -lt '5' ]]; then
+        sed -i "s|StartLimitBurst=.*|StartLimitBurst=5|" /etc/systemd/system/nginx.service.d/failure-restart.conf
+        systemctl daemon-reload
+      fi
+    fi
+    if [ -d /etc/systemd/system/php-fpm.service.d ]; then
+      phpfpm_startlimitburst=$(awk -F '=' '/StartLimitBurst=/ {print $2}' /etc/systemd/system/php-fpm.service.d/failure-restart.conf)
+      if [[ -f /etc/systemd/system/php-fpm.service.d/failure-restart.conf && "${phpfpm_startlimitburst}" -eq '15' ]]; then
+        sed -i "s|StartLimitBurst=.*|StartLimitBurst=5|" /etc/systemd/system/php-fpm.service.d/failure-restart.conf
+        systemctl daemon-reload
+      elif [[ -f /etc/systemd/system/php-fpm.service.d/failure-restart.conf && "${phpfpm_startlimitburst}" -lt '5' ]]; then
+        sed -i "s|StartLimitBurst=.*|StartLimitBurst=5|" /etc/systemd/system/php-fpm.service.d/failure-restart.conf
+        systemctl daemon-reload
+      fi
+    fi
+    if [ -d /etc/systemd/system/redis.service.d/ ]; then
+      redis_startlimitburst=$(awk -F '=' '/StartLimitBurst=/ {print $2}' /etc/systemd/system/redis.service.d/failure-restart.conf)
+      if [[ -f /etc/systemd/system/redis.service.d/failure-restart.conf && "${redis_startlimitburst}" -eq '15' ]]; then
+        sed -i "s|StartLimitBurst=.*|StartLimitBurst=5|" /etc/systemd/system/redis.service.d/failure-restart.conf
+        systemctl daemon-reload
+      elif [[ -f /etc/systemd/system/redis.service.d/failure-restart.conf && "${redis_startlimitburst}" -lt '5' ]]; then
+        sed -i "s|StartLimitBurst=.*|StartLimitBurst=5|" /etc/systemd/system/redis.service.d/failure-restart.conf
+        systemctl daemon-reload
+      fi
+    fi
   fi
 }
 
@@ -95,6 +444,29 @@ LimitNOFILE=1048576
 TDG
         systemctl daemon-reload
     fi
+    if [[ "$CENTOS_NINE" = '9' || "$CENTOS_EIGHT" = '8' ]] && [[ ! -f /etc/systemd/system/nginx.service.d/failure-restart.conf ]]; then
+        echo "setup /etc/systemd/system/nginx.service.d/failure-restart.conf"
+cat > "/etc/systemd/system/nginx.service.d/failure-restart.conf" <<TDG
+[Unit]
+StartLimitIntervalSec=30
+StartLimitBurst=5
+
+[Service]
+Restart=on-failure
+RestartSec=5s
+TDG
+        systemctl daemon-reload
+    elif [[ "$CENTOS_SEVEN" = '7' && ! -f /etc/systemd/system/nginx.service.d/failure-restart.conf ]] || [[ "$CENTOS_SEVEN" = '7' && "$(grep -o Unit /etc/systemd/system/nginx.service.d/failure-restart.conf)" = 'Unit' ]]; then
+        echo "setup /etc/systemd/system/nginx.service.d/failure-restart.conf"
+cat > "/etc/systemd/system/nginx.service.d/failure-restart.conf" <<TDG
+[Service]
+StartLimitInterval=30
+StartLimitBurst=5
+Restart=on-failure
+RestartSec=5s
+TDG
+        systemctl daemon-reload
+    fi
 
 cat > /usr/lib/systemd/system/nginx.service <<EOF
 [Unit]
@@ -114,11 +486,76 @@ ExecStop=/bin/sh -c "/bin/kill -s TERM \$(/bin/cat /usr/local/nginx/logs/nginx.p
 WantedBy=multi-user.target
 EOF
 
-service nginx start >/dev/null 2>&1
-service nginx status >/dev/null 2>&1
-chkconfig nginx on >/dev/null 2>&1
+echo "service nginx stop" >/usr/bin/ngxstop ; chmod 700 /usr/bin/ngxstop
+echo "service nginx start" >/usr/bin/ngxstart ; chmod 700 /usr/bin/ngxstart
+echo "service nginx restart" >/usr/bin/ngxrestart ; chmod 700 /usr/bin/ngxrestart
+echo "service nginx reload" >/usr/bin/ngxreload ; chmod 700 /usr/bin/ngxreload
+
+echo "service nginx stop;service php-fpm stop" >/usr/bin/npstop ; chmod 700 /usr/bin/npstop
+echo "service nginx start;service php-fpm start" >/usr/bin/npstart ; chmod 700 /usr/bin/npstart
+echo "service nginx restart;service php-fpm restart" >/usr/bin/nprestart ; chmod 700 /usr/bin/nprestart
+echo "service nginx reload;service php-fpm reload" >/usr/bin/npreload ; chmod 700 /usr/bin/npreload
+
+systemctl start nginx >/dev/null 2>&1
+systemctl enable nginx >/dev/null 2>&1
+systemctl status nginx --no-pager >/dev/null 2>&1
 
 fi # CENTOS_EIGHT = 8 nginx systemd service file
+if [[ "$CENTOS_SEVEN" = '7' && -f /etc/systemd/system/nginx.service.d/failure-restart.conf && "$(grep -o Unit /etc/systemd/system/nginx.service.d/failure-restart.conf)" = 'Unit' ]]; then
+        # echo "fix setup /etc/systemd/system/nginx.service.d/failure-restart.conf"
+cat > "/etc/systemd/system/nginx.service.d/failure-restart.conf" <<TDG
+[Service]
+StartLimitInterval=30
+StartLimitBurst=5
+Restart=on-failure
+RestartSec=5s
+TDG
+        systemctl daemon-reload
+fi
+if [[ "$CENTOS_NINE" = '9' || "$CENTOS_EIGHT" = '8' || "$CENTOS_SEVEN" = '7' ]] && [[ ! -f /etc/init.d/nginx && "$SWITCH_NGINX_SYSTEMD" = [yY] && "$(grep 'init.d' /usr/bin/ngxreload)" ]]; then
+  echo "service nginx stop" >/usr/bin/ngxstop ; chmod 700 /usr/bin/ngxstop
+  echo "service nginx start" >/usr/bin/ngxstart ; chmod 700 /usr/bin/ngxstart
+  echo "service nginx restart" >/usr/bin/ngxrestart ; chmod 700 /usr/bin/ngxrestart
+  echo "service nginx reload" >/usr/bin/ngxreload ; chmod 700 /usr/bin/ngxreload
+  
+  echo "service nginx stop;service php-fpm stop" >/usr/bin/npstop ; chmod 700 /usr/bin/npstop
+  echo "service nginx start;service php-fpm start" >/usr/bin/npstart ; chmod 700 /usr/bin/npstart
+  echo "service nginx restart;service php-fpm restart" >/usr/bin/nprestart ; chmod 700 /usr/bin/nprestart
+  echo "service nginx reload;service php-fpm reload" >/usr/bin/npreload ; chmod 700 /usr/bin/npreload
+  
+  systemctl start nginx >/dev/null 2>&1
+  systemctl enable nginx >/dev/null 2>&1
+  systemctl status nginx --no-pager >/dev/null 2>&1
+elif [[ "$CENTOS_NINE" = '9' || "$CENTOS_EIGHT" = '8' || "$CENTOS_SEVEN" = '7' ]] && [[ ! -f /etc/init.d/nginx && "$SWITCH_NGINX_SYSTEMD" = [yY] && "$(systemctl is-enabled nginx)" = 'disabled' ]]; then
+  systemctl enable nginx >/dev/null 2>&1
+fi
+}
+
+ngx_modern_ciphers_setup() {
+  if [[ -d /usr/local/nginx/conf/ssl && ! -f /usr/local/nginx/conf/ssl/dhparam.pem ]]; then
+if [[ "$NGINX_DHPARAM_SIZE" = '3072' ]]; then
+  echo '-----BEGIN DH PARAMETERS-----
+MIIBiAKCAYEA//////////+t+FRYortKmq/cViAnPTzx2LnFg84tNpWp4TZBFGQz
++8yTnc4kmz75fS/jY2MMddj2gbICrsRhetPfHtXV/WVhJDP1H18GbtCFY2VVPe0a
+87VXE15/V8k1mE8McODmi3fipona8+/och3xWKE2rec1MKzKT0g6eXq8CrGCsyT7
+YdEIqUuyyOP7uWrat2DX9GgdT0Kj3jlN9K5W7edjcrsZCwenyO4KbXCeAvzhzffi
+7MA0BM0oNC9hkXL+nOmFg/+OTxIy7vKBg8P+OxtMb61zO7X8vC7CIAXFjvGDfRaD
+ssbzSibBsu/6iGtCOGEfz9zeNVs7ZRkDW7w09N75nAI4YbRvydbmyQd62R0mkff3
+7lmMsPrBhtkcrv4TCYUTknC0EwyTvEN5RPT9RFLi103TZPLiHnH1S/9croKrnJ32
+nuhtK8UiNjoNq8Uhl5sN6todv5pC1cRITgq80Gv6U93vPBsg7j/VnXwl5B0rZsYu
+N///////////AgEC
+-----END DH PARAMETERS-----' > /usr/local/nginx/conf/ssl/dhparam.pem
+elif [[ "$NGINX_DHPARAM_SIZE" = '2048' ]]; then
+  echo '-----BEGIN DH PARAMETERS-----
+MIIBCAKCAQEA//////////+t+FRYortKmq/cViAnPTzx2LnFg84tNpWp4TZBFGQz
++8yTnc4kmz75fS/jY2MMddj2gbICrsRhetPfHtXV/WVhJDP1H18GbtCFY2VVPe0a
+87VXE15/V8k1mE8McODmi3fipona8+/och3xWKE2rec1MKzKT0g6eXq8CrGCsyT7
+YdEIqUuyyOP7uWrat2DX9GgdT0Kj3jlN9K5W7edjcrsZCwenyO4KbXCeAvzhzffi
+7MA0BM0oNC9hkXL+nOmFg/+OTxIy7vKBg8P+OxtMb61zO7X8vC7CIAXFjvGDfRaD
+ssbzSibBsu/6iGtCOGEoXJf//////////wIBAg==
+-----END DH PARAMETERS-----' > /usr/local/nginx/conf/ssl/dhparam.pem
+fi
+  fi
 }
 
 disable_rpmforge() {
@@ -172,7 +609,7 @@ lets_dst_root_ca_fix() {
 jetpack_ip_whitelist_cronsetup() {
   if [[ -f /usr/local/src/centminmod/tools/jetpackips.sh && ! -f /usr/local/nginx/conf/jetpack_whitelist_ip.conf ]]; then
       # block xml-rpc.php completely with whitelist exception for
-      # jetpack wordpress plugin's IP addresses https://jetpack.com/support/hosting-faq/
+      # jetpack wordpress plugin's IP addresses https://jetpack.com/support/how-to-add-jetpack-ips-allowlist/
       mkdir -p /etc/centminmod/cronjobs/
       crontab -l > /etc/centminmod/cronjobs/before_jetpack_ip_whitelist_cronjoblist
       sed -i '/jetpackips/d' /etc/centminmod/cronjobs/before_jetpack_ip_whitelist_cronjoblist
@@ -252,7 +689,18 @@ fix_nasm() {
 }
 
 imagemagick_heif() {
-  if [[ -f /etc/yum.repos.d/remi.repo && "$IMAGEMAGICK_HEIF" = [yY] && "$CENTOS_SEVEN" = '7' && ! "$(rpm -qa ImageMagick6-heic | grep -o 'ImageMagick6-heic')" ]]; then
+  if [[ -f /etc/yum.repos.d/remi.repo && "$IMAGEMAGICK_HEIF" = [yY] && "$CENTOS_EIGHT" = '8' && ! "$(rpm -qa ImageMagick-heic)" ]]; then
+    echo
+    echo "Install ImageMagick-heic one time only"
+    echo "https://blog.remirepo.net/post/2019/05/22/HEIC-HEIF-images-support"
+    libheif_install
+    yum -q -y install ImageMagick-heic --enablerepo=remi
+    echo "ImageMagick-heic installed"
+    if [[ "$(rpm -qa ImageMagick-heic | grep -o 'ImageMagick-heic')" ]]; then
+      yum -q versionlock delete ImageMagick-heic
+      yum -q versionlock ImageMagick-heic
+    fi
+  elif [[ -f /etc/yum.repos.d/remi.repo && "$IMAGEMAGICK_HEIF" = [yY] && "$CENTOS_SEVEN" = '7' && ! "$(rpm -qa ImageMagick6-heic)" ]]; then
     echo
     echo "Install ImageMagick6-heic one time only"
     echo "https://blog.remirepo.net/post/2019/05/22/HEIC-HEIF-images-support"
@@ -263,7 +711,7 @@ imagemagick_heif() {
       yum -q versionlock delete ImageMagick6-heic
       yum -q versionlock ImageMagick6-heic
     fi
-  elif [[ -f /etc/yum.repos.d/remi.repo && "$IMAGEMAGICK_HEIF" = [yY] && "$CENTOS_SIX" = '6' && ! "$(rpm -qa ImageMagick6-heic | grep -o 'ImageMagick6-heic')" ]]; then
+  elif [[ -f /etc/yum.repos.d/remi.repo && "$IMAGEMAGICK_HEIF" = [yY] && "$CENTOS_SIX" = '6' && ! "$(rpm -qa ImageMagick6-heic)" ]]; then
     echo
     echo "Install ImageMagick6-heic one time only"
     echo "https://blog.remirepo.net/post/2019/05/22/HEIC-HEIF-images-support"
@@ -342,20 +790,42 @@ mytop_setup() {
 
 pureftpd_symlink_fix() {
   # workaround for too many levels of symbolic links
-  # messages on openvz vpses
-  if [[ "$CENTOS_SEVEN" = '7' && -f /proc/user_beancounters && ! -f /etc/systemd/system/pure-ftpd.service.d/pidfile.conf ]]; then
+  # messages on openvz vpses & for docker el8/el9 environements
+  if [[ "$CENTOS_SEVEN" -eq '7' ]] && [[ -f /proc/user_beancounters && ! -f /etc/systemd/system/pure-ftpd.service.d/pidfile.conf ]]; then
     echo
-    # echo "create /etc/systemd/system/pure-ftpd.service.d/pidfile.conf"
     mkdir -p /etc/systemd/system/pure-ftpd.service.d
     echo '[Service]' > /etc/systemd/system/pure-ftpd.service.d/pidfile.conf
     echo 'PIDFile=/run/pure-ftpd.pid' >> /etc/systemd/system/pure-ftpd.service.d/pidfile.conf
     systemctl daemon-reload >/dev/null 2>&1
-    #cat /etc/systemd/system/pure-ftpd.service.d/pidfile.conf
+  elif [[ "$CENTOS_EIGHT" -eq '8' ]] && [[ -f /proc/user_beancounters && ! -f /etc/systemd/system/pure-ftpd.service.d/pidfile.conf ]]; then
+    echo
+    mkdir -p /etc/systemd/system/pure-ftpd.service.d
+    echo '[Service]' > /etc/systemd/system/pure-ftpd.service.d/pidfile.conf
+    echo 'PIDFile=/run/pure-ftpd.pid' >> /etc/systemd/system/pure-ftpd.service.d/pidfile.conf
+    systemctl daemon-reload >/dev/null 2>&1
+  elif [[ "$CENTOS_EIGHT" -eq '8' ]] && [[ -f /.dockerenv && ! -f /etc/systemd/system/pure-ftpd.service.d/pidfile.conf ]]; then
+    echo
+    mkdir -p /etc/systemd/system/pure-ftpd.service.d
+    echo '[Service]' > /etc/systemd/system/pure-ftpd.service.d/pidfile.conf
+    echo 'PIDFile=/run/pure-ftpd.pid' >> /etc/systemd/system/pure-ftpd.service.d/pidfile.conf
+    systemctl daemon-reload >/dev/null 2>&1
+  elif [[ "$CENTOS_NINE" -eq '9' ]] && [[ -f /proc/user_beancounters && ! -f /etc/systemd/system/pure-ftpd.service.d/pidfile.conf ]]; then
+    echo
+    mkdir -p /etc/systemd/system/pure-ftpd.service.d
+    echo '[Service]' > /etc/systemd/system/pure-ftpd.service.d/pidfile.conf
+    echo 'PIDFile=/run/pure-ftpd.pid' >> /etc/systemd/system/pure-ftpd.service.d/pidfile.conf
+    systemctl daemon-reload >/dev/null 2>&1
+  elif [[ "$CENTOS_NINE" -eq '9' ]] && [[ -f /.dockerenv && ! -f /etc/systemd/system/pure-ftpd.service.d/pidfile.conf ]]; then
+    echo
+    mkdir -p /etc/systemd/system/pure-ftpd.service.d
+    echo '[Service]' > /etc/systemd/system/pure-ftpd.service.d/pidfile.conf
+    echo 'PIDFile=/run/pure-ftpd.pid' >> /etc/systemd/system/pure-ftpd.service.d/pidfile.conf
+    systemctl daemon-reload >/dev/null 2>&1
   fi
 }
 
 symlink_setup_mariadb() {
-  if [[ "$CENTOS_SEVEN" = '7' && "$MYSQLSERVICE_DISABLED" = [nN] && ! -h /etc/systemd/system/multi-user.target.wants/mariadb.service ]]; then
+  if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]] && [[ "$MYSQLSERVICE_DISABLED" = [nN] && ! -h /etc/systemd/system/multi-user.target.wants/mariadb.service ]]; then
     # ensure MariaDB service startup symlink is setup
     systemctl enable mariadb >/dev/null 2>&1
   fi
@@ -368,7 +838,7 @@ symlink_setup_emailnotify() {
 }
 
 add_versionlocks() {
-  if [[ ! "$(yum versionlock list | grep 'LibRaw')" ]]; then
+  if [[ -f /etc/yum/pluginconf.d/versionlock.list && $(grep -c "LibRaw-.*$" /etc/yum/pluginconf.d/versionlock.list) -eq 0 ]]; then
     yum -q versionlock LibRaw >/dev/null 2>&1
   fi
 }
@@ -493,24 +963,51 @@ redetect_tlsonethree() {
       # Nginx supports TLS 1.3 ssl_protocols directive
       if [[ "$SSL_PROTOCOL_MODERN" = [yY] ]]; then
         sed -i "s|ssl_protocols .*|ssl_protocols  TLSv1.2 TLSv1.3;|" /usr/local/nginx/conf/ssl-include.conf
+        if [ -f /usr/local/nginx/conf/conf.d/phpmyadmin_ssl.conf ]; then
+          sed -i "s|ssl_protocols .*|ssl_protocols  TLSv1.2 TLSv1.3;|" /usr/local/nginx/conf/conf.d/phpmyadmin_ssl.conf
+        fi
       elif [[ "$(grep -w "ssl_protocols  TLSv1 TLSv1.1 TLSv1.2 TLSv1.3;" /usr/local/nginx/conf/ssl-include.conf)" ]]; then
         sed -i "s|ssl_protocols .*|ssl_protocols  ${TLSONEONEPROTOCOL_OPT}TLSv1.1 TLSv1.2 TLSv1.3;|" /usr/local/nginx/conf/ssl-include.conf
+        if [ -f /usr/local/nginx/conf/conf.d/phpmyadmin_ssl.conf ]; then
+          sed -i "s|ssl_protocols .*|ssl_protocols  ${TLSONEONEPROTOCOL_OPT}TLSv1.1 TLSv1.2 TLSv1.3;|" /usr/local/nginx/conf/conf.d/phpmyadmin_ssl.conf
+        fi
       elif [[ "$(grep -w "ssl_protocols  ${TLSONEONEPROTOCOL_OPT}TLSv1.1 TLSv1.2;" /usr/local/nginx/conf/ssl-include.conf)" ]]; then
         sed -i "s|ssl_protocols .*|ssl_protocols  ${TLSONEONEPROTOCOL_OPT}TLSv1.1 TLSv1.2 TLSv1.3;|" /usr/local/nginx/conf/ssl-include.conf
+        if [ -f /usr/local/nginx/conf/conf.d/phpmyadmin_ssl.conf ]; then
+          sed -i "s|ssl_protocols .*|ssl_protocols  ${TLSONEONEPROTOCOL_OPT}TLSv1.1 TLSv1.2 TLSv1.3;|" /usr/local/nginx/conf/conf.d/phpmyadmin_ssl.conf
+        fi
       elif [[ "$(grep -w 'ssl_protocols  TLSv1.1 TLSv1.2;' /usr/local/nginx/conf/ssl-include.conf)" ]]; then
         sed -i "s|ssl_protocols .*|ssl_protocols  TLSv1.1 TLSv1.2 TLSv1.3;|" /usr/local/nginx/conf/ssl-include.conf
+        if [ -f /usr/local/nginx/conf/conf.d/phpmyadmin_ssl.conf ]; then
+          sed -i "s|ssl_protocols .*|ssl_protocols  TLSv1.1 TLSv1.2 TLSv1.3;|" /usr/local/nginx/conf/conf.d/phpmyadmin_ssl.conf
+        fi
       elif [[ "$(grep -w 'ssl_protocols  TLSv1.2;' /usr/local/nginx/conf/ssl-include.conf)" ]]; then
         sed -i "s|ssl_protocols .*|ssl_protocols  TLSv1.2 TLSv1.3;|" /usr/local/nginx/conf/ssl-include.conf
+        if [ -f /usr/local/nginx/conf/conf.d/phpmyadmin_ssl.conf ]; then
+          sed -i "s|ssl_protocols .*|ssl_protocols  TLSv1.2 TLSv1.3;|" /usr/local/nginx/conf/conf.d/phpmyadmin_ssl.conf
+        fi
       fi
     else
       if [[ "$SSL_PROTOCOL_MODERN" = [yY] ]]; then
         sed -i "s|ssl_protocols .*|ssl_protocols  TLSv1.2;|" /usr/local/nginx/conf/ssl-include.conf
+        if [ -f /usr/local/nginx/conf/conf.d/phpmyadmin_ssl.conf ]; then
+          sed -i "s|ssl_protocols .*|ssl_protocols  TLSv1.2;|" /usr/local/nginx/conf/conf.d/phpmyadmin_ssl.conf
+        fi
       elif [[ "$(grep -w "ssl_protocols  ${TLSONEONEPROTOCOL_OPT}TLSv1.1 TLSv1.2 TLSv1.3;" /usr/local/nginx/conf/ssl-include.conf)" ]]; then
         sed -i "s|ssl_protocols .*|ssl_protocols  ${TLSONEONEPROTOCOL_OPT}TLSv1.1 TLSv1.2;|" /usr/local/nginx/conf/ssl-include.conf
+        if [ -f /usr/local/nginx/conf/conf.d/phpmyadmin_ssl.conf ]; then
+          sed -i "s|ssl_protocols .*|ssl_protocols  ${TLSONEONEPROTOCOL_OPT}TLSv1.1 TLSv1.2;|" /usr/local/nginx/conf/conf.d/phpmyadmin_ssl.conf
+        fi
       elif [[ "$(grep -w 'ssl_protocols  TLSv1.1 TLSv1.2 TLSv1.3;' /usr/local/nginx/conf/ssl-include.conf)" ]]; then
         sed -i "s|ssl_protocols .*|ssl_protocols  TLSv1.1 TLSv1.2;|" /usr/local/nginx/conf/ssl-include.conf
+        if [ -f /usr/local/nginx/conf/conf.d/phpmyadmin_ssl.conf ]; then
+          sed -i "s|ssl_protocols .*|ssl_protocols  TLSv1.1 TLSv1.2;|" /usr/local/nginx/conf/conf.d/phpmyadmin_ssl.conf
+        fi
       elif [[ "$(grep -w 'ssl_protocols  TLSv1.2 TLSv1.3;' /usr/local/nginx/conf/ssl-include.conf)" ]]; then
         sed -i "s|ssl_protocols .*|ssl_protocols  TLSv1.2;|" /usr/local/nginx/conf/ssl-include.conf
+        if [ -f /usr/local/nginx/conf/conf.d/phpmyadmin_ssl.conf ]; then
+          sed -i "s|ssl_protocols .*|ssl_protocols  TLSv1.2;|" /usr/local/nginx/conf/conf.d/phpmyadmin_ssl.conf
+        fi
       fi
     fi
   elif [ -f /usr/local/nginx/conf/ssl_include.conf ]; then
@@ -518,24 +1015,51 @@ redetect_tlsonethree() {
       # Nginx supports TLS 1.3 ssl_protocols directive
       if [[ "$SSL_PROTOCOL_MODERN" = [yY] ]]; then
         sed -i "s|ssl_protocols .*|ssl_protocols  TLSv1.2 TLSv1.3;|" /usr/local/nginx/conf/ssl_include.conf
+        if [ -f /usr/local/nginx/conf/conf.d/phpmyadmin_ssl.conf ]; then
+          sed -i "s|ssl_protocols .*|ssl_protocols  TLSv1.2 TLSv1.3;|" /usr/local/nginx/conf/conf.d/phpmyadmin_ssl.conf
+        fi
       elif [[ "$(grep -w "ssl_protocols  TLSv1 TLSv1.1 TLSv1.2 TLSv1.3;" /usr/local/nginx/conf/ssl_include.conf)" ]]; then
         sed -i "s|ssl_protocols .*|ssl_protocols  ${TLSONEONEPROTOCOL_OPT}TLSv1.1 TLSv1.2 TLSv1.3;|" /usr/local/nginx/conf/ssl_include.conf
+        if [ -f /usr/local/nginx/conf/conf.d/phpmyadmin_ssl.conf ]; then
+          sed -i "s|ssl_protocols .*|ssl_protocols  ${TLSONEONEPROTOCOL_OPT}TLSv1.1 TLSv1.2 TLSv1.3;|" /usr/local/nginx/conf/conf.d/phpmyadmin_ssl.conf
+        fi
       elif [[ "$(grep -w "ssl_protocols  ${TLSONEONEPROTOCOL_OPT}TLSv1.1 TLSv1.2;" /usr/local/nginx/conf/ssl_include.conf)" ]]; then
         sed -i "s|ssl_protocols .*|ssl_protocols  ${TLSONEONEPROTOCOL_OPT}TLSv1.1 TLSv1.2 TLSv1.3;|" /usr/local/nginx/conf/ssl_include.conf
+        if [ -f /usr/local/nginx/conf/conf.d/phpmyadmin_ssl.conf ]; then
+          sed -i "s|ssl_protocols .*|ssl_protocols  ${TLSONEONEPROTOCOL_OPT}TLSv1.1 TLSv1.2 TLSv1.3;|" /usr/local/nginx/conf/conf.d/phpmyadmin_ssl.conf
+        fi
       elif [[ "$(grep -w 'ssl_protocols  TLSv1.1 TLSv1.2;' /usr/local/nginx/conf/ssl_include.conf)" ]]; then
         sed -i "s|ssl_protocols .*|ssl_protocols  TLSv1.1 TLSv1.2 TLSv1.3;|" /usr/local/nginx/conf/ssl_include.conf
+        if [ -f /usr/local/nginx/conf/conf.d/phpmyadmin_ssl.conf ]; then
+          sed -i "s|ssl_protocols .*|ssl_protocols  TLSv1.1 TLSv1.2 TLSv1.3;|" /usr/local/nginx/conf/conf.d/phpmyadmin_ssl.conf
+        fi
       elif [[ "$(grep -w 'ssl_protocols  TLSv1.2;' /usr/local/nginx/conf/ssl_include.conf)" ]]; then
         sed -i "s|ssl_protocols .*|ssl_protocols  TLSv1.2 TLSv1.3;|" /usr/local/nginx/conf/ssl_include.conf
+        if [ -f /usr/local/nginx/conf/conf.d/phpmyadmin_ssl.conf ]; then
+          sed -i "s|ssl_protocols .*|ssl_protocols  TLSv1.2 TLSv1.3;|" /usr/local/nginx/conf/conf.d/phpmyadmin_ssl.conf
+        fi
       fi
     else
       if [[ "$SSL_PROTOCOL_MODERN" = [yY] ]]; then
         sed -i "s|ssl_protocols .*|ssl_protocols  TLSv1.2;|" /usr/local/nginx/conf/ssl_include.conf
+        if [ -f /usr/local/nginx/conf/conf.d/phpmyadmin_ssl.conf ]; then
+          sed -i "s|ssl_protocols .*|ssl_protocols  TLSv1.2;|" /usr/local/nginx/conf/conf.d/phpmyadmin_ssl.conf
+        fi
       elif [[ "$(grep -w "ssl_protocols  ${TLSONEONEPROTOCOL_OPT}TLSv1.1 TLSv1.2 TLSv1.3;" /usr/local/nginx/conf/ssl_include.conf)" ]]; then
         sed -i "s|ssl_protocols .*|ssl_protocols  ${TLSONEONEPROTOCOL_OPT}TLSv1.1 TLSv1.2;|" /usr/local/nginx/conf/ssl_include.conf
+        if [ -f /usr/local/nginx/conf/conf.d/phpmyadmin_ssl.conf ]; then
+          sed -i "s|ssl_protocols .*|ssl_protocols  ${TLSONEONEPROTOCOL_OPT}TLSv1.1 TLSv1.2;|" /usr/local/nginx/conf/conf.d/phpmyadmin_ssl.conf
+        fi
       elif [[ "$(grep -w 'ssl_protocols  TLSv1.1 TLSv1.2 TLSv1.3;' /usr/local/nginx/conf/ssl_include.conf)" ]]; then
         sed -i "s|ssl_protocols .*|ssl_protocols  TLSv1.1 TLSv1.2;|" /usr/local/nginx/conf/ssl_include.conf
+        if [ -f /usr/local/nginx/conf/conf.d/phpmyadmin_ssl.conf ]; then
+          sed -i "s|ssl_protocols .*|ssl_protocols  TLSv1.1 TLSv1.2;|" /usr/local/nginx/conf/conf.d/phpmyadmin_ssl.conf
+        fi
       elif [[ "$(grep -w 'ssl_protocols  TLSv1.2 TLSv1.3;' /usr/local/nginx/conf/ssl_include.conf)" ]]; then
         sed -i "s|ssl_protocols .*|ssl_protocols  TLSv1.2;|" /usr/local/nginx/conf/ssl_include.conf
+        if [ -f /usr/local/nginx/conf/conf.d/phpmyadmin_ssl.conf ]; then
+          sed -i "s|ssl_protocols .*|ssl_protocols  TLSv1.2;|" /usr/local/nginx/conf/conf.d/phpmyadmin_ssl.conf
+        fi
       fi
     fi
   fi
@@ -545,6 +1069,15 @@ pzcat_install() {
   if [[ "$(nproc)" -ge '2' && ! -f /usr/bin/pzcat && -f /usr/bin/zcat && -f /usr/bin/pigz ]]; then 
     \cp -af /usr/bin/zcat /usr/bin/pzcat
     sed -i 's|exec gzip -cd|exec pigz -cd|' /usr/bin/pzcat
+  fi
+}
+
+csf_udpfix() {
+  # fix CSF bug to properly allow HTTP/3 QUIC UDP port 443 outbound connections
+  if [[ -f /etc/csf/csf.conf && "$(grep ',44320,21,' /etc/csf/csf.conf)" ]]; then
+    csf --profile backup udpout_quic_fix >/dev/null 2>&1
+    sed -i 's|,44320,21,|,443,20,21,|' /etc/csf/csf.conf
+    csf -ra >/dev/null 2>&1
   fi
 }
 
@@ -603,9 +1136,9 @@ check_memcachedflush() {
 
 ngxmaster_openfiles() {
   # raise nginx process' open files limit from 1024
-  if [[ -f /etc/init.d/nginx && ! "$(grep -w 'ulimit -n 524288' /etc/init.d/nginx)" ]]; then
+  if [[ "$CENTOS_SEVEN" -eq '7' && -f /etc/init.d/nginx && ! "$(grep -w 'ulimit -n 524288' /etc/init.d/nginx)" ]]; then
     sed -i 's/#!\/bin\/sh/#!\/bin\/sh\nulimit -n 524288\n/' /etc/init.d/nginx
-    if [[ "$CENTOS_SEVEN" -eq '7' ]]; then
+    if [[ "$CENTOS_SEVEN" -eq '7' || "$CENTOS_EIGHT" -eq '8' ]]; then
       systemctl daemon-reload -q
     fi
     service nginx restart >/dev/null 2>&1
@@ -986,7 +1519,9 @@ varnishfour_setup() {
     fi
     if [ ! -f "$VARNISH_REPOFILE" ]; then
       os=centos
-      if [[ "$CENTOS_SEVEN" -eq '7' ]]; then
+      if [[ "$CENTOS_EIGHT" -eq '8' ]]; then
+          dist=8
+      elif [[ "$CENTOS_SEVEN" -eq '7' ]]; then
           dist=7
       else
           dist=6
@@ -1024,24 +1559,42 @@ varnishfour_setup() {
 
 libc_fix() {
   # https://community.centminmod.com/posts/52555/
-  if [[ "$CENTOS_SEVEN" -eq '7' && ! -f /etc/yum/pluginconf.d/versionlock.conf && "$(rpm -qa libc-client)" = 'libc-client-2007f-16.el7.x86_64' ]]; then
+  if [[ "$CENTOS_NINE" -eq '9' ]]; then
+    if [[ "$INITIALINSTALL" = [yY] ]]; then
+      yum -y -q install python3-dnf-plugin-versionlock
+      yum -y -q install libc-client uw-imap-devel
+      yum versionlock libc-client uw-imap-devel -q >/dev/null 2>&1
+    fi
+  elif [[ "$CENTOS_EIGHT" -eq '8' ]]; then
+    if [[ "$INITIALINSTALL" = [yY] ]]; then
+      yum -y -q install python3-dnf-plugin-versionlock
+      yum -y -q install libc-client uw-imap-devel
+      yum versionlock libc-client uw-imap-devel -q >/dev/null 2>&1
+    fi
+  elif [[ "$CENTOS_NINE" -eq '9' && ! -f /etc/yum/pluginconf.d/versionlock.conf && "$(rpm -qa libc-client)" = 'libc-client-2007f-30.el9.remi.x86_64' ]]; then
+    yum -y -q install python3-dnf-plugin-versionlock
+    yum versionlock libc-client uw-imap-devel -q >/dev/null 2>&1
+  elif [[ "$CENTOS_EIGHT" -eq '8' && ! -f /etc/yum/pluginconf.d/versionlock.conf && "$(rpm -qa libc-client)" = 'libc-client-2007f-24.el8.x86_64' ]]; then
+    yum -y -q install python3-dnf-plugin-versionlock
+    yum versionlock libc-client uw-imap-devel -q >/dev/null 2>&1
+  elif [[ "$CENTOS_SEVEN" -eq '7' && ! -f /etc/yum/pluginconf.d/versionlock.conf && "$(rpm -qa libc-client)" = 'libc-client-2007f-16.el7.x86_64' ]]; then
     yum -y -q install yum-plugin-versionlock
     yum versionlock libc-client uw-imap-devel -q >/dev/null 2>&1
   elif [[ "$CENTOS_SEVEN" -eq '7' && ! -f /etc/yum/pluginconf.d/versionlock.conf && "$(rpm -qa libc-client)" != 'libc-client-2007f-16.el7.x86_64' ]]; then
     INIT_DIR=$(echo $PWD)
     cd /svr-setup
-    wget -q https://centminmod.com/centminmodparts/uw-imap/libc-client-2007f-16.el7.x86_64.rpm
-    wget -q https://centminmod.com/centminmodparts/uw-imap/uw-imap-devel-2007f-16.el7.x86_64.rpm
+    wget -q ${LOCALCENTMINMOD_MIRROR}/centminmodparts/uw-imap/libc-client-2007f-16.el7.x86_64.rpm
+    wget -q ${LOCALCENTMINMOD_MIRROR}/centminmodparts/uw-imap/uw-imap-devel-2007f-16.el7.x86_64.rpm
     yum -y -q remove libc-client
     yum -y -q localinstall libc-client-2007f-16.el7.x86_64.rpm uw-imap-devel-2007f-16.el7.x86_64.rpm
     yum -y -q install yum-plugin-versionlock
     yum versionlock libc-client uw-imap-devel -q >/dev/null 2>&1
     cd "$INIT_DIR"
-   elif [[ "$CENTOS_SEVEN" -eq '7' && -f /etc/yum/pluginconf.d/versionlock.conf && "$(rpm -qa libc-client)" != 'libc-client-2007f-16.el7.x86_64' ]]; then
+  elif [[ "$CENTOS_SEVEN" -eq '7' && -f /etc/yum/pluginconf.d/versionlock.conf && "$(rpm -qa libc-client)" != 'libc-client-2007f-16.el7.x86_64' ]]; then
     INIT_DIR=$(echo $PWD)
     cd /svr-setup
-    wget -q https://centminmod.com/centminmodparts/uw-imap/libc-client-2007f-16.el7.x86_64.rpm
-    wget -q https://centminmod.com/centminmodparts/uw-imap/uw-imap-devel-2007f-16.el7.x86_64.rpm
+    wget -q ${LOCALCENTMINMOD_MIRROR}/centminmodparts/uw-imap/libc-client-2007f-16.el7.x86_64.rpm
+    wget -q ${LOCALCENTMINMOD_MIRROR}/centminmodparts/uw-imap/uw-imap-devel-2007f-16.el7.x86_64.rpm
     yum versionlock delete libc-client uw-imap-devel -q >/dev/null 2>&1
     yum -y -q remove libc-client
     yum -y -q localinstall libc-client-2007f-16.el7.x86_64.rpm uw-imap-devel-2007f-16.el7.x86_64.rpm
@@ -1057,10 +1610,10 @@ cityfan_fix() {
 }
 
 update_initphpfpm() {
-  if [[ -f /etc/init.d/php-fpm && "$(grep -qw 'configtest' /etc/init.d/php-fpm >/dev/null 2>&1; echo $?)" != '0' ]]; then
+  if [[ "$CENTOS_SEVEN" = '7' ]] && [[ -f /etc/init.d/php-fpm && "$(grep -qw 'configtest' /etc/init.d/php-fpm >/dev/null 2>&1; echo $?)" != '0' ]]; then
     \cp -f "${SCRIPT_DIR}/init/php-fpm" /etc/init.d/php-fpm
     chmod +x /etc/init.d/php-fpm
-    if [[ "$CENTOS_SEVEN" = '7' ]]; then
+    if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]]; then
       systemctl daemon-reload
     fi
   fi
@@ -1173,8 +1726,12 @@ update_nginxconf() {
       # http://hg.nginx.org/nginx/rev/f790816a0e87
       sed -i 's|keepalive_requests .*|keepalive_requests  50000;|' /usr/local/nginx/conf/nginx.conf
     fi
-    if [[ "$NGX_WRKCON" -eq '4096' || "$NGX_WRKCON" -eq '10000' || "$NGX_WRKCON" -eq '50000' || "$NGX_WRKCON" -eq '80000' ]]; then
-      sed -i 's|worker_connections .*|worker_connections  100000;|' /usr/local/nginx/conf/nginx.conf
+    if [[ "$NGX_KEEPALIVEREQUESTS" -eq '50000' ]]; then
+      # http://hg.nginx.org/nginx/rev/f790816a0e87
+      sed -i 's|keepalive_requests .*|keepalive_requests  100000;|' /usr/local/nginx/conf/nginx.conf
+    fi
+    if [[ "$NGX_WRKCON" -eq '4096' || "$NGX_WRKCON" -eq '10000' || "$NGX_WRKCON" -eq '50000' || "$NGX_WRKCON" -eq '80000' || "$NGX_WRKCON" -eq '100000' ]]; then
+      sed -i 's|worker_connections .*|worker_connections  300000;|' /usr/local/nginx/conf/nginx.conf
     fi
     if [[ "$(echo $NGX_KT | grep -o 's')" = 's' ]]; then
       NGX_KT=$(echo $NGX_KT | sed -e 's|s||g')
@@ -1220,7 +1777,7 @@ checkipvsix() {
     fi
     # address centos 7.4+ rpcbind failure to start if IPv6 is disabled
     # https://community.centminmod.com/threads/13353/
-    if [[ "$CENTOS_SEVEN" -eq '7' && -f /usr/lib/systemd/system/rpcbind.socket && "$(systemctl is-active rpcbind.socket -q; echo $?)" -eq '0' ]]; then
+    if [[ "$CENTOS_SEVEN" -eq '7' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]] && [[ -f /usr/lib/systemd/system/rpcbind.socket && "$(systemctl is-active rpcbind.socket -q; echo $?)" -eq '0' ]]; then
       # rpcbind.socket is active so needs restart
       mkdir -p /etc/systemd/system/rpcbind.socket.d
 cat > "/etc/systemd/system/rpcbind.socket.d/no-ipv6.conf" <<ROF
@@ -1232,7 +1789,7 @@ ROF
       systemctl daemon-reload -q
       systemctl stop rpcbind.socket rpcbind.service -q
       systemctl start rpcbind.socket rpcbind.service -q
-    elif [[ "$CENTOS_SEVEN" -eq '7' && -f /usr/lib/systemd/system/rpcbind.socket && "$(systemctl is-active rpcbind.socket -q; echo $?)" -ne '0' ]]; then
+    elif [[ "$CENTOS_SEVEN" -eq '7' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]] && [[ -f /usr/lib/systemd/system/rpcbind.socket && "$(systemctl is-active rpcbind.socket -q; echo $?)" -ne '0' ]]; then
       # rpcbind.socket is not active so does not needs restart
       mkdir -p /etc/systemd/system/rpcbind.socket.d
 cat > "/etc/systemd/system/rpcbind.socket.d/no-ipv6.conf" <<ROF
@@ -1274,7 +1831,7 @@ ROF
     fi
     # address centos 7.4+ rpcbind failure to start if IPv6 is disabled
     # https://community.centminmod.com/threads/13353/
-    if [[ "$CENTOS_SEVEN" -eq '7' && -f /usr/lib/systemd/system/rpcbind.socket && "$(systemctl is-active rpcbind.socket -q; echo $?)" -eq '0' ]]; then
+    if [[ "$CENTOS_SEVEN" -eq '7' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]] && [[ -f /usr/lib/systemd/system/rpcbind.socket && "$(systemctl is-active rpcbind.socket -q; echo $?)" -eq '0' ]]; then
       # rpcbind.socket is active so needs restart
       if [ -f /etc/systemd/system/rpcbind.socket.d/no-ipv6.conf ]; then
         rm -rf /etc/systemd/system/rpcbind.socket.d/no-ipv6.conf
@@ -1282,7 +1839,7 @@ ROF
       systemctl daemon-reload -q
       systemctl stop rpcbind.socket rpcbind.service -q
       systemctl start rpcbind.socket rpcbind.service -q
-    elif [[ "$CENTOS_SEVEN" -eq '7' && -f /usr/lib/systemd/system/rpcbind.socket && "$(systemctl is-active rpcbind.socket -q; echo $?)" -ne '0' ]]; then
+    elif [[ "$CENTOS_SEVEN" -eq '7' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]] && [[ -f /usr/lib/systemd/system/rpcbind.socket && "$(systemctl is-active rpcbind.socket -q; echo $?)" -ne '0' ]]; then
       # rpcbind.socket is not active so does not needs restart
       if [ -f /etc/systemd/system/rpcbind.socket.d/no-ipv6.conf ]; then
         rm -rf /etc/systemd/system/rpcbind.socket.d/no-ipv6.conf
@@ -1294,20 +1851,28 @@ ROF
   fi
   if [[ -f /etc/csf/csf.conf && -f /etc/sysconfig/network && "$(awk -F "=" '/NETWORKING_IPV6/ {print $2}' /etc/sysconfig/network | grep 'yes' >/dev/null 2>&1; echo $?)" = '0' ]] && [[ "$(cat /proc/sys/net/ipv6/conf/all/disable_ipv6)" -eq '0' && "$(cat /proc/sys/net/ipv6/conf/default/disable_ipv6)" -eq '0' ]]; then
     # ensure CSF Firewall has IPV6 = '1' enabled if system has IPv6 networking configured
-    sed -i "s|^IPV6 = .*|IPV6 = \"1\"|" /etc/csf/csf.conf
-    csf -ra >/dev/null 2>&1
-    NGINX_IPV='y'     # for nginx < 1.11.5 IPV6 support
+    if [[ ! "$(grep 'IPV6 = "1"' /etc/csf/csf.conf)" ]]; then
+      sed -i "s|^IPV6 = .*|IPV6 = \"1\"|" /etc/csf/csf.conf
+      csf -ra >/dev/null 2>&1
+      NGINX_IPV='y'     # for nginx < 1.11.5 IPV6 support
+    fi
   elif [[ -f /etc/csf/csf.conf && -f /etc/sysconfig/network && "$(awk -F "=" '/NETWORKING_IPV6/ {print $2}' /etc/sysconfig/network | grep 'yes' >/dev/null 2>&1; echo $?)" != '0' ]] && [[ "$(cat /proc/sys/net/ipv6/conf/all/disable_ipv6)" -eq '1' && "$(cat /proc/sys/net/ipv6/conf/default/disable_ipv6)" -eq '1' ]]; then
-    sed -i "s|^IPV6 = .*|IPV6 = \"0\"|" /etc/csf/csf.conf
-    csf -ra >/dev/null 2>&1
+    if [[ ! "$(grep 'IPV6 = "0"' /etc/csf/csf.conf)" ]]; then
+      sed -i "s|^IPV6 = .*|IPV6 = \"0\"|" /etc/csf/csf.conf
+      csf -ra >/dev/null 2>&1
+    fi
   elif [[ "$(cat /proc/sys/net/ipv6/conf/all/disable_ipv6)" -eq '0' && "$(cat /proc/sys/net/ipv6/conf/default/disable_ipv6)" -eq '0' ]]; then
     # ensure CSF Firewall has IPV6 = '1' enabled if system has IPv6 networking configured
-    sed -i "s|^IPV6 = .*|IPV6 = \"1\"|" /etc/csf/csf.conf
-    csf -ra >/dev/null 2>&1
-    NGINX_IPV='y'     # for nginx < 1.11.5 IPV6 support
+    if [[ ! "$(grep 'IPV6 = "1"' /etc/csf/csf.conf)" ]]; then
+      sed -i "s|^IPV6 = .*|IPV6 = \"1\"|" /etc/csf/csf.conf
+      csf -ra >/dev/null 2>&1
+      NGINX_IPV='y'     # for nginx < 1.11.5 IPV6 support
+    fi
   elif [[ "$(cat /proc/sys/net/ipv6/conf/all/disable_ipv6)" -eq '1' && "$(cat /proc/sys/net/ipv6/conf/default/disable_ipv6)" -eq '1' ]]; then
-    sed -i "s|^IPV6 = .*|IPV6 = \"0\"|" /etc/csf/csf.conf
-    csf -ra >/dev/null 2>&1
+    if [[ ! "$(grep 'IPV6 = "0"' /etc/csf/csf.conf)" ]]; then
+      sed -i "s|^IPV6 = .*|IPV6 = \"0\"|" /etc/csf/csf.conf
+      csf -ra >/dev/null 2>&1
+    fi
   fi
   if [[ "$DETECH_CHANGES" = [yY] ]]; then
     service network restart >/dev/null 2>&1
@@ -1368,7 +1933,7 @@ fixlshw_rpmforge() {
 }
 
 fixnoarch_percona() {
-  if [[ "$(yum-config-manager percona-release-noarch | awk '/enabled = / {print $3}')" != 'False' ]]; then
+  if [[ "$CENTOS_SEVEN" = '7' && "$(yum-config-manager percona-release-noarch | awk '/enabled = / {print $3}')" != 'False' ]]; then
     yum-config-manager --disable percona-release-noarch >/dev/null 2>&1
   fi
 }
@@ -1446,7 +2011,7 @@ fixclamav_epel() {
 c7mariadb_tmpdir() {
   # fix for mariadb 10.1.16 introduced ProtecHome=true setting
   # https://jira.mariadb.org/browse/MDEV-10399
-  if [[ "$CENTOS_SEVEN" = '7' && ! -f /etc/systemd/system/mariadb.service.d/protecthome.conf && -d /etc/systemd/system/mariadb.service.d/ ]]; then
+  if [[ "$CENTOS_SEVEN" -eq '7' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]] && [[ ! -f /etc/systemd/system/mariadb.service.d/protecthome.conf && -d /etc/systemd/system/mariadb.service.d/ ]]; then
     echo "Update MariaDB 10 setting for ProtectHome=false"
 cat > "/etc/systemd/system/mariadb.service.d/protecthome.conf" <<TDF
 [Service]
@@ -1455,7 +2020,7 @@ ProtectHome=false
 TDF
   systemctl daemon-reload
   systemctl restart mysql
- elif [[ "$CENTOS_SEVEN" = '7' && -f /etc/systemd/system/mariadb.service.d/protecthome.conf && -z "$(grep 'ProtectSystem=false' /etc/systemd/system/mariadb.service.d/protecthome.conf)" ]]; then
+ elif [[ "$CENTOS_SEVEN" -eq '7' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]] && [[ -f /etc/systemd/system/mariadb.service.d/protecthome.conf && -z "$(grep 'ProtectSystem=false' /etc/systemd/system/mariadb.service.d/protecthome.conf)" ]]; then
     # fix https://community.centminmod.com/posts/54571/ CentOS 7.4 changes
     echo "Update MariaDB 10 setting for ProtectSystem=false addition"
 cat > "/etc/systemd/system/mariadb.service.d/protecthome.conf" <<TDF
@@ -1469,11 +2034,23 @@ TDF
 }
 
 mariadb_openfilesfix() {
-  if [[ "$CENTOS_SEVEN" = '7' && ! -f /etc/systemd/system/mariadb.service.d/openfileslimit.conf && -d /etc/systemd/system/mariadb.service.d/ ]]; then
+  if [[ "$CENTOS_SEVEN" -eq '7' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]] && [[ ! -f /etc/systemd/system/mariadb.service.d/openfileslimit.conf && -d /etc/systemd/system/mariadb.service.d/ ]]; then
     echo "Update MariaDB 10 setting for LimitNOFILE=524288"
 cat > "/etc/systemd/system/mariadb.service.d/openfileslimit.conf" <<TDG
 [Service]
 LimitNOFILE=524288
+TDG
+  systemctl daemon-reload
+  systemctl restart mysql
+  fi
+}
+
+mariadb_oomfix() {
+  if [[ "$CENTOS_SEVEN" -eq '7' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]] && [[ ! -f /etc/systemd/system/mariadb.service.d/oomscoreadjust.conf && -d /etc/systemd/system/mariadb.service.d/ ]]; then
+    echo "Update MariaDB 10 setting for OOMScoreAdjust=-1000"
+cat > "/etc/systemd/system/mariadb.service.d/oomscoreadjust.conf" <<TDG
+[Service]
+OOMScoreAdjust=-1000
 TDG
   systemctl daemon-reload
   systemctl restart mysql
@@ -1573,7 +2150,8 @@ nginx_mutexoff() {
 }
 
 check_jemstatsfile() {
-  if [[ ! -f /usr/bin/jemalloc-stats && -f /usr/bin/jemalloc.sh ]]; then
+  # skip for el9
+  if [[ "$CENTOS_SEVEN" -eq '7' || "$CENTOS_EIGHT" -eq '8' ]] && [[ ! -f /usr/bin/jemalloc-stats && -f /usr/bin/jemalloc.sh ]]; then
     jemalloc_printstats
   fi
 }
@@ -1644,6 +2222,18 @@ gitenv_askupdate() {
 wgetver_check() {
   if [[ "$CENTOS_SEVEN" -eq '7' ]]; then
     WGET_VERSION=$WGET_VERSION_SEVEN
+    WGET_FILENAME="wget-${WGET_VERSION}.tar.gz"
+    WGET_LINK="${LOCALCENTMINMOD_MIRROR}/centminmodparts/wget/${WGET_FILENAME}"
+  fi
+  if [[ "$CENTOS_EIGHT" -eq '8' ]]; then
+    WGET_VERSION=$WGET_VERSION_EIGHT
+    WGET_FILENAME="wget-${WGET_VERSION}.tar.gz"
+    WGET_LINK="${LOCALCENTMINMOD_MIRROR}/centminmodparts/wget/${WGET_FILENAME}"
+  fi
+  if [[ "$CENTOS_NINE" -eq '9' ]]; then
+    WGET_VERSION=$WGET_VERSION_NINE
+    WGET_FILENAME="wget-${WGET_VERSION}.tar.gz"
+    WGET_LINK="${LOCALCENTMINMOD_MIRROR}/centminmodparts/wget/${WGET_FILENAME}"
   fi
   # only check if on 64bit OS
   if [[ "$(uname -m)" = 'x86_64' ]]; then
@@ -1677,11 +2267,11 @@ wgetver_check() {
 
 axelcheck() {
   if [[ -f /usr/local/bin/axel || -f /usr/bin/axel ]]; then
-  if [[ "$(axel -V | awk '/version/ {print $3}')" != "${AXEL_VER}" ]] || [[ -f /usr/local/bin/axel && ! -d "${DIR_TMP}/axel-${AXEL_VER}" && ! -f "${DIR_TMP}/${AXEL_LINKFILE}" ]]; then
-    echo "update axel version... one time task"
-    sleep 3
-    install_axel silent
-  fi
+    if [[ "$(axel -V | awk '/version/ {print $3}')" != "${AXEL_VER}" ]] || [[ -f /usr/local/bin/axel && ! -d "${DIR_TMP}/axel-${AXEL_VER}" && ! -f "${DIR_TMP}/${AXEL_LINKFILE}" ]]; then
+      echo "update axel version... one time task"
+      sleep 3
+      install_axel silent
+    fi
   fi
 }
 
@@ -1769,7 +2359,7 @@ yumupdatechecker() {
     echo
     echo " checking for YUM updates... please wait..."
     # only check if last yum update was over 24hrs ago
-    LASTYUMCHECK_EPOCHDATE=$(date -d "$(awk '/Updated: / {print $1,$2,$3}' /var/log/yum.log | tail -1)" +%s)
+    LASTYUMCHECK_EPOCHDATE=$(date -d "$(awk '/Updated: / {print $1,$2,$3}' "$YUMLOG_FILE" | tail -1)" +%s)
     # LASTYUMHISTORYCHECK_EPOCHDATE=$(date -d $(history | grep 'yum' | grep update | grep -v list | tail -1 | awk '{print $2}' | sed -e 's|\[||g' -e 's|\]||g' -e 's|\.|\/|g') +%s)
     TODAY_EPOCHDATE=$(date +%s)
     SEC_SINCELASTUPDATE=$(echo ${TODAY_EPOCHDATE} - ${LASTYUMCHECK_EPOCHDATE} | bc)
@@ -1821,12 +2411,26 @@ yumupdatechecker() {
       cecho "-------------------------------------------------------------" $boldgreen
       cecho "  Following Updates are available: " $boldyellow
       cecho "-------------------------------------------------------------" $boldgreen
-      if [[ "$CENTOS_SIX" = '6' ]]; then
+      if [[ "$CENTOS_NINE" = '9' ]]; then
+        REMI_IMAGEMAGICK_PKGNAME=''
+      elif [[ "$CENTOS_EIGHT" = '8' ]]; then
+        REMI_IMAGEMAGICK_PKGNAME=''
+      elif [[ "$CENTOS_SEVEN" = '7' ]]; then
+        REMI_IMAGEMAGICK_PKGNAME='6'
+      elif [[ "$CENTOS_SIX" = '6' ]]; then
         REMI_IMAGEMAGICK_PKGNAME='6'
       else
         REMI_IMAGEMAGICK_PKGNAME="6"
       fi
-      if [[ -f /etc/yum.repos.d/remi.repo && -f /etc/yum.repos.d/city-fan.org.repo ]] && [[ -f /usr/bin/php56 || -f /usr/bin/php70 || -f /usr/bin/php71 || -f /usr/bin/php72 || -f /usr/bin/php73 || -f /usr/bin/php74 || -f /usr/bin/php80 ]]; then
+      if [[ "$CENTOS_NINE" -eq '9' ]] && [[ -f /etc/yum.repos.d/remi.repo && -f /etc/yum.repos.d/city-fan.org.repo ]] && [[ -f /usr/bin/php56 || -f /usr/bin/php70 || -f /usr/bin/php71 || -f /usr/bin/php72 || -f /usr/bin/php73 || -f /usr/bin/php74 || -f /usr/bin/php80 || -f /usr/bin/php81 || -f /usr/bin/php82 ]]; then
+        yum -q list updates $YYUM_PARAMETER --enablerepo=${YENABLEREPOS}${YUM_EXCLUDE_PYTHON} --disableexcludes=main,remi | grep -v 'Updated Packages' | tee "/root/centminlogs/yumcheck-imagemagick-$DT.txt"
+        IMAGEMAGICK_UPDATECHECK=$(grep "ImageMagick${REMI_IMAGEMAGICK_PKGNAME}" "/root/centminlogs/yumcheck-imagemagick-$DT.txt" >/dev/null 2>&1; echo $?)
+        rm -rf "/root/centminlogs/yumcheck-imagemagick-$DT.txt"
+      elif [[ "$CENTOS_EIGHT" -eq '8' ]] && [[ -f /etc/yum.repos.d/remi.repo && -f /etc/yum.repos.d/city-fan.org.repo ]] && [[ -f /usr/bin/php56 || -f /usr/bin/php70 || -f /usr/bin/php71 || -f /usr/bin/php72 || -f /usr/bin/php73 || -f /usr/bin/php74 || -f /usr/bin/php80 || -f /usr/bin/php81 || -f /usr/bin/php82 ]]; then
+        yum -q list updates $YYUM_PARAMETER --enablerepo=${YENABLEREPOS}${YUM_EXCLUDE_PYTHON} --disableexcludes=main,remi | grep -v 'Updated Packages' | tee "/root/centminlogs/yumcheck-imagemagick-$DT.txt"
+        IMAGEMAGICK_UPDATECHECK=$(grep "ImageMagick${REMI_IMAGEMAGICK_PKGNAME}" "/root/centminlogs/yumcheck-imagemagick-$DT.txt" >/dev/null 2>&1; echo $?)
+        rm -rf "/root/centminlogs/yumcheck-imagemagick-$DT.txt"
+      elif [[ "$CENTOS_SEVEN" -eq '7' ]] && [[ -f /etc/yum.repos.d/remi.repo && -f /etc/yum.repos.d/city-fan.org.repo ]] && [[ -f /usr/bin/php56 || -f /usr/bin/php70 || -f /usr/bin/php71 || -f /usr/bin/php72 || -f /usr/bin/php73 || -f /usr/bin/php74 || -f /usr/bin/php80 || -f /usr/bin/php81 || -f /usr/bin/php82 ]]; then
         yum -q list updates $YYUM_PARAMETER --enablerepo=${YENABLEREPOS}${YUM_EXCLUDE_PYTHON} --disableexcludes=main,remi | grep -v 'Updated Packages' | tee "/root/centminlogs/yumcheck-imagemagick-$DT.txt"
         IMAGEMAGICK_UPDATECHECK=$(grep "ImageMagick${REMI_IMAGEMAGICK_PKGNAME}" "/root/centminlogs/yumcheck-imagemagick-$DT.txt" >/dev/null 2>&1; echo $?)
         rm -rf "/root/centminlogs/yumcheck-imagemagick-$DT.txt"
@@ -1844,7 +2448,7 @@ yumupdatechecker() {
       cecho "-------------------------------------------------------------" $boldgreen
       cecho "  To update type these commands: " $boldyellow
       cecho "-------------------------------------------------------------" $boldgreen
-      if [[ -f /etc/yum.repos.d/remi.repo && -f /etc/yum.repos.d/city-fan.org.repo ]] && [[ -f /usr/bin/php56 || -f /usr/bin/php70 || -f /usr/bin/php71 || -f /usr/bin/php72 || -f /usr/bin/php73 || -f /usr/bin/php74 || -f /usr/bin/php80 ]]; then
+      if [[ "$CENTOS_SEVEN" -eq '7' ]] && [[ -f /etc/yum.repos.d/remi.repo && -f /etc/yum.repos.d/city-fan.org.repo ]] && [[ -f /usr/bin/php56 || -f /usr/bin/php70 || -f /usr/bin/php71 || -f /usr/bin/php72 || -f /usr/bin/php73 || -f /usr/bin/php74 || -f /usr/bin/php80 || -f /usr/bin/php81 || -f /usr/bin/php82 ]]; then
         if [ "$IMAGEMAGICK_UPDATECHECK" -eq '0' ]; then
           echo "  run centmin.sh menu option 15 to update imagick PHP ext then run: "
           echo
@@ -1951,8 +2555,10 @@ selinxcheck() {
 
 reuseportchecks() {
   if [[ "$INITIALINSTALL" = [yY] ]]; then
-    CHECKREUSEPORT=$(grep --color -Ro SO_REUSEPORT /usr/src/kernels/* | head -n1 | awk -F ":" '{print $2}')
-    if [[ "$CHECKREUSEPORT" = 'SO_REUSEPORT' ]]; then
+    if [[ "$CENTOS_SEVEN" -eq '7' ]]; then
+      CHECKREUSEPORT=$(grep --color -Ro SO_REUSEPORT /usr/src/kernels | head -n1 | awk -F ":" '{print $2}')
+    fi
+    if [[ "$CHECKREUSEPORT" = 'SO_REUSEPORT' ]] || [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]]; then
       SUPPORT_REUSEPORT=y
       if [ -f /usr/local/nginx/conf/nginx.conf ]; then
         sed -i 's|accept_mutex .*|accept_mutex off;|' /usr/local/nginx/conf/nginx.conf
@@ -1967,14 +2573,15 @@ reuseportchecks() {
 }
 
 rclocalchecks() {
-  if [[ "$CENTOS_SEVEN" = '7' && ! "$(grep '/var/run/php-fpm' /etc/rc.local)" ]]; then
+  if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]] && [ ! "$(grep '/var/run/php-fpm' /etc/rc.local)" ]; then
     echo 'if [ ! -d /var/run/php-fpm/ ]; then mkdir -p /var/run/php-fpm/; fi' >> /etc/rc.local
   fi
 
 # https://community.centminmod.com/posts/52406/
-if [[ "$CENTOS_SEVEN" = '7' && ! -f /etc/rc.d/rc.local ]]; then
+if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]] && [ ! -f /etc/rc.d/rc.local ]; then
 
 
+if [[ "$CENTOS_SEVEN" = '7' ]]; then
 cat > /usr/lib/systemd/system/rc-local.service <<EOF
 # This unit gets pulled automatically into multi-user.target by
 # systemd-rc-local-generator if /etc/rc.d/rc.local is executable.
@@ -1989,6 +2596,35 @@ ExecStart=/etc/rc.d/rc.local start
 TimeoutSec=0
 RemainAfterExit=yes
 EOF
+fi
+
+if [[ "$CENTOS_EIGHT" = '8' ]]; then
+cat > /usr/lib/systemd/system/rc-local.service <<EOF
+#  SPDX-License-Identifier: LGPL-2.1+
+#
+#  This file is part of systemd.
+#
+#  systemd is free software; you can redistribute it and/or modify it
+#  under the terms of the GNU Lesser General Public License as published by
+#  the Free Software Foundation; either version 2.1 of the License, or
+#  (at your option) any later version.
+
+# This unit gets pulled automatically into multi-user.target by
+# systemd-rc-local-generator if /etc/rc.d/rc.local is executable.
+[Unit]
+Description=/etc/rc.d/rc.local Compatibility
+Documentation=man:systemd-rc-local-generator(8)
+ConditionFileIsExecutable=/etc/rc.d/rc.local
+After=network.target
+
+[Service]
+Type=forking
+ExecStart=/etc/rc.d/rc.local start
+TimeoutSec=0
+RemainAfterExit=yes
+GuessMainPID=no
+EOF
+fi
 
 cat > /etc/rc.d/rc.local <<EOF
 #!/bin/bash
@@ -2021,7 +2657,7 @@ fi
   cd /etc; ln -s rc.d/rc.local /etc/rc.local;
   systemctl daemon-reload >/dev/null 2>&1
   systemctl start rc-local.service >/dev/null 2>&1
-  systemctl status rc-local.service >/dev/null 2>&1
+  systemctl status rc-local.service --no-pager >/dev/null 2>&1
 fi
   if [[ -f /etc/rc.d/rc.local && ! -x /etc/rc.d/rc.local ]]; then
     # centos 7 doesn't give rc.local executable permissions
@@ -2199,6 +2835,9 @@ nvcheck() {
 cmupdatecheck() {
   if [ ! -h /usr/bin/cmupdate ]; then
     rm -rf /usr/bin/cmupdate
+    if [[ "$INITIALINSTALL" = [yY] && "$CENTOS_EIGHT" = '8' ]]; then
+      sed -i "s|^cmupdate_branchname=.*|cmupdate_branchname=${branchname}|" "${SCRIPT_DIR}/tools/cmupdate.sh"
+    fi
     ln -s "${SCRIPT_DIR}/tools/cmupdate.sh" /usr/bin/cmupdate
     chmod +x /usr/bin/cmupdate
   fi
@@ -2264,7 +2903,7 @@ mjemalloc() {
     elif [[ "$JEMALLOC_MARIADBVER" = 10.4 ]]; then
       jemalloc_mariadb_bin='mysqld'
     fi
-    if [[ "$MARIADB_JEMALLOC" = [yY] && -f /usr/lib64/libjemalloc.so.1 && "$(mysqladmin var | grep 'version_malloc_library' | tr -s ' ' | grep -o 'jemalloc')" != 'jemalloc' ]]; then
+    if [[ "$MARIADB_JEMALLOC" = [yY] && -f /usr/lib64/libjemalloc.so.1 && "$(${ALIAS_MYSQLADMIN} var | grep 'version_malloc_library' | tr -s ' ' | grep -o 'jemalloc')" != 'jemalloc' ]]; then
       if [[ "$JEMALLOC_MARIADBVER" = 10.[456] ]]; then
         echo "MariaDB ver: $JEMALLOC_MARIADBVER"
         # only for MariaDB 10.4, 10.5 and 10.6 or higher as they switched back to system glibc
@@ -2292,7 +2931,7 @@ fixlogrotate() {
   if [ -f /etc/logrotate.d/nginx ]; then
   if [[ -z "$(grep 'maxsize' /etc/logrotate.d/nginx)" || "$(grep -w 'su nginx' /etc/logrotate.d/nginx)" ]]; then
     # sed -i "s|kill.*|kill -SIGUSR1 \$(cat \/usr\/local\/nginx\/logs\/nginx.pid 2>\/dev\/null) 2>\/dev\/null \|\| true|g" /etc/logrotate.d/nginx
-  if [[ "$CENTOS_SEVEN" = '7' ]]; then
+  if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]]; then
     VARDFSIZE=$(df --output=avail /var | tail -1)
   else
     VARDFSIZE=$(df -P /var | tail -1 | awk '{print $4}')
@@ -2335,7 +2974,7 @@ fi
   if [ -f /etc/logrotate.d/php-fpm ]; then
   if [[ -z "$(grep '\$' /etc/logrotate.d/php-fpm)" || -z "$(grep 'maxsize' /etc/logrotate.d/php-fpm)" ]]; then
 
-  if [[ "$CENTOS_SEVEN" = '7' ]]; then
+  if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]]; then
     VARDFSIZE=$(df --output=avail /var | tail -1)
   else
     VARDFSIZE=$(df -P /var | tail -1 | awk '{print $4}')
@@ -2353,7 +2992,7 @@ cat > "/etc/logrotate.d/php-fpm" <<END
         delaycompress
         notifempty
         postrotate
-        /bin/kill -SIGUSR1 \$(cat /var/run/php-fpm/php-fpm.pid 2>/dev/null) 2>/dev/null || true
+        /bin/kill -SIGUSR1 \$(cat $PHP_PID_PATH 2>/dev/null) 2>/dev/null || true
         endscript            
 }
 END
@@ -2368,7 +3007,7 @@ cat > "/etc/logrotate.d/php-fpm" <<END
         delaycompress
         notifempty
         postrotate
-        /bin/kill -SIGUSR1 \$(cat /var/run/php-fpm/php-fpm.pid 2>/dev/null) 2>/dev/null || true
+        /bin/kill -SIGUSR1 \$(cat $PHP_PID_PATH 2>/dev/null) 2>/dev/null || true
         endscript            
 }
 END
@@ -2527,7 +3166,7 @@ leupdates() {
 
 memcachedupdatechecks() {
   # 1.4.25 added options https://community.centminmod.com/threads/memcached-1-4-25-released.5007/
-  if [[ "$INITIALINSTALL" != [yY] ]]; then
+  if [[ "$CENTOS_SEVEN" -eq '7' && "$INITIALINSTALL" != [yY] ]]; then
     if [ -f /etc/init.d/memcached ]; then
       if [[ -z "$(grep 'MEM_CURVER' /etc/init.d/memcached)" ]]; then
         if [[ -f "${SCRIPT_DIR}/config/memcached/memcached1425.patch" && -f /etc/init.d/memcached ]]; then
@@ -2571,7 +3210,7 @@ memcachedupdatechecks() {
               pushd /etc/init.d/
               patch -s < memcached-socketfix.patch >/dev/null 2>&1
               rm -rf memcached-socketfix.patch
-              if [[ "$CENTOS_SEVEN" = '7' ]]; then
+              if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]]; then
                 systemctl daemon-reload
               fi
               if [ "$(ps -C memcached | grep -w memcached)" ]; then
@@ -2587,7 +3226,7 @@ memcachedupdatechecks() {
               pushd /etc/init.d/
               patch -s < memcached-socketfix.patch >/dev/null 2>&1
               rm -rf memcached-socketfix.patch
-              if [[ "$CENTOS_SEVEN" = '7' ]]; then
+              if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]]; then
                 systemctl daemon-reload
               fi
               if [ "$(ps -C memcached | grep -w memcached)" ]; then
@@ -2776,7 +3415,7 @@ wpcompfix() {
 }
 
 entropy_centosseven() {
-if [[ -f /usr/lib/systemd/system/haveged.service ]] && [[ "$CENTOS_SEVEN" = '7' ]]; then
+if [ -f /usr/lib/systemd/system/haveged.service ] && [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]]; then
   if [[ ! -d /etc/systemd/system/haveged.service.d || ! -f /etc/systemd/system/haveged.service.d/haveged.conf ]]; then
     mkdir -p /etc/systemd/system/haveged.service.d
 cat > "/etc/systemd/system/haveged.service.d/haveged.conf" <<EFF
@@ -2882,7 +3521,7 @@ tcpcheck_centos() {
 
 if [[ ! -f /proc/user_beancounters ]]; then
     # create /etc/sysctl.d/101-sysctl.conf if doesn't exist on centos 7
-    if [[ "$CENTOS_SEVEN" = '7' && ! -f /etc/sysctl.d/101-sysctl.conf ]]; then
+    if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]] && [ ! -f /etc/sysctl.d/101-sysctl.conf ]; then
         if [ -d /etc/sysctl.d ]; then
             if [[ ! -z "$NF_CTHASHSIZE" && -f /sys/module/nf_conntrack/parameters/hashsize ]]; then
               echo "$NF_CTHASHSIZE" > /sys/module/nf_conntrack/parameters/hashsize
@@ -2907,7 +3546,7 @@ net.ipv4.tcp_wmem=8192 65536 16777216
 net.core.netdev_max_backlog=65536
 net.core.somaxconn=65535
 net.core.optmem_max=8192
-net.ipv4.tcp_fin_timeout=10
+net.ipv4.tcp_fin_timeout=30
 net.ipv4.tcp_keepalive_intvl=30
 net.ipv4.tcp_keepalive_probes=3
 net.ipv4.tcp_keepalive_time=240
@@ -2946,6 +3585,9 @@ net.ipv4.tcp_challenge_ack_limit = 999999999
 net.ipv4.tcp_mtu_probing = 1
 net.ipv4.tcp_base_mss = 1024
 net.unix.max_dgram_qlen = 4096
+net.ipv4.udp_mem = 3145728 4194304 6291456
+net.ipv4.udp_rmem_min = 16384
+net.ipv4.udp_wmem_min = 16384
 EOF
         /sbin/sysctl --system >/dev/null 2>&1
             fi           
@@ -2994,7 +3636,7 @@ fi
 if [[ ! -f /proc/user_beancounters ]]; then
   # fix for https://community.centminmod.com/posts/34527/
   # CVE-2016-5696
-  if [[ "$CENTOS_SEVEN" = '7' && -f /etc/sysctl.d/101-sysctl.conf ]]; then
+  if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]] && [ -f /etc/sysctl.d/101-sysctl.conf ]; then
     if [[ -z "$(grep 'tcp_challenge_ack_limit' /etc/sysctl.d/101-sysctl.conf)" ]]; then
       echo "net.ipv4.tcp_challenge_ack_limit = 999999999" >> /etc/sysctl.d/101-sysctl.conf
       /sbin/sysctl --system >/dev/null 2>&1
@@ -3014,7 +3656,7 @@ if [[ ! -f /proc/user_beancounters ]]; then
 fi
 if [[ ! -f /proc/user_beancounters ]]; then
   # https://blog.cloudflare.com/path-mtu-discovery-in-practice/
-  if [[ "$CENTOS_SEVEN" = '7' && -f /etc/sysctl.d/101-sysctl.conf ]]; then
+  if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]] && [ -f /etc/sysctl.d/101-sysctl.conf ]; then
     if [[ -z "$(grep 'net.ipv4.tcp_mtu_probing' /etc/sysctl.d/101-sysctl.conf)" ]]; then
       echo "net.ipv4.tcp_mtu_probing = 1" >> /etc/sysctl.d/101-sysctl.conf
       /sbin/sysctl --system >/dev/null 2>&1
@@ -3029,7 +3671,7 @@ if [[ ! -f /proc/user_beancounters ]]; then
 fi
 if [[ ! -f /proc/user_beancounters ]]; then
   # https://blog.cloudflare.com/path-mtu-discovery-in-practice/
-  if [[ "$CENTOS_SEVEN" = '7' && -f /etc/sysctl.d/101-sysctl.conf ]]; then
+  if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]] && [ -f /etc/sysctl.d/101-sysctl.conf ]; then
     if [[ -z "$(grep 'net.ipv4.tcp_base_mss' /etc/sysctl.d/101-sysctl.conf)" ]]; then
       echo "net.ipv4.tcp_base_mss = 1024" >> /etc/sysctl.d/101-sysctl.conf
       /sbin/sysctl --system >/dev/null 2>&1
@@ -3044,7 +3686,7 @@ if [[ ! -f /proc/user_beancounters ]]; then
 fi
 if [[ ! -f /proc/user_beancounters ]]; then
   # fix for https://community.centminmod.com/posts/35910/
-  if [[ "$CENTOS_SEVEN" = '7' && -f /etc/sysctl.d/101-sysctl.conf ]]; then
+  if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]] && [ -f /etc/sysctl.d/101-sysctl.conf ]; then
     if [[ "$(sysctl -a 2>&1 | awk '/net.ipv4.tcp_tw_recycle/ {print $3}')" = '1' ]]; then
       sed -i 's|net.ipv4.tcp_tw_recycle.*|net.ipv4.tcp_tw_recycle = 0|' /etc/sysctl.d/101-sysctl.conf
       if [ -f /etc/sysctl.conf ]; then
@@ -3062,7 +3704,7 @@ if [[ ! -f /proc/user_beancounters ]]; then
 fi
 if [[ ! -f /proc/user_beancounters ]]; then
   # fix for https://community.centminmod.com/posts/35922/
-  if [[ "$CENTOS_SEVEN" = '7' && -f /etc/sysctl.d/101-sysctl.conf ]]; then
+  if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]] && [ -f /etc/sysctl.d/101-sysctl.conf ]; then
     if [[ "$(sysctl -a 2>&1 | awk '/net.ipv4.tcp_tw_reuse/ {print $3}')" = '1' ]]; then
       sed -i 's|net.ipv4.tcp_tw_reuse.*|net.ipv4.tcp_tw_reuse = 0|' /etc/sysctl.d/101-sysctl.conf
       if [ -f /etc/sysctl.conf ]; then
@@ -3135,7 +3777,7 @@ yumfastmirror_check() {
   # disable yum fastmirror plugin if not enough detected system memory available
   # for yum fastmirror operation
   if [ -f /etc/yum/pluginconf.d/fastestmirror.conf ]; then
-    if [[ "$(awk '/MemTotal/ {print $2}' /proc/meminfo)" -lt '1018000' && "$CENTOS_SEVEN" = '7' ]]; then
+    if [ "$(awk '/MemTotal/ {print $2}' /proc/meminfo)" -lt '1018000' ] && [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]]; then
       sed -i 's|enabled = 1|enabled = 0|' /etc/yum/pluginconf.d/fastestmirror.conf
     elif [[ "$(awk '/MemTotal/ {print $2}' /proc/meminfo)" -lt '263000' ]]; then
       sed -i 's|enabled = 1|enabled = 0|' /etc/yum/pluginconf.d/fastestmirror.conf
@@ -3230,7 +3872,7 @@ echo "aborting script..."
 exit
 fi
 
-if [[ "$CENTOS_SEVEN" = '7' && "$DNF_ENABLE" = [yY] ]]; then
+if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]] &&  [[ "$DNF_ENABLE" = [yY] ]]; then
   # yum -y -q install epel-release
   if [[ "$DNF_COPR" = [yY] ]]; then
 cat > "/etc/yum.repos.d/dnf-centos.repo" <<EOF
@@ -3282,23 +3924,33 @@ setup_pwdh
 cmupdatecheck
 pzcat_install
 csf_portflood
+csf_udpfix
 python_centossix_sclfix
 disable_avahi
 qrencode_setup
 initial_pip_updates initial
 jetpack_ip_whitelist_cronsetup
+push_check_updates_cronsetup
+tcp_bbr_setup
+normalize_accept_encoding
+rsync_backport_install
 apply_terrapin_fix
 apply_iconv_fix
 
 if [[ "$INITIALINSTALL" != [yY] ]]; then
+  update_centos7_eol_repos
+  fix_cve_2024_6387_openssh
+  apply_terrapin_fix
+  apply_iconv_fix
   march_hostcheck
   expand_cmdprompt
   setup_pwdh
   c7mariadb_tmpdir
   mariadb_openfilesfix
+  mariadb_oomfix
   mariadb_errorlogfix
   yumfastmirror_check
-  axelcheck
+  # axelcheck
   fileperm_fixes
   selinxcheck
   setupemailcheck
@@ -3371,6 +4023,7 @@ if [[ "$INITIALINSTALL" != [yY] ]]; then
   fi
   update_nginxconf
   nginx_systemd_switch
+  fix_phpfpm_systemd_switch
   update_cmdshortcuts
   update_initphpfpm
   update_phpfpmconfg
@@ -3422,10 +4075,30 @@ if [[ "$INITIALINSTALL" != [yY] ]]; then
   jetpack_ip_whitelist_cronsetup
   lets_dst_root_ca_fix
   check_php_cainfo_file
+  ngx_modern_ciphers_setup
+  tcp_bbr_setup
+  start_limit_burst_adjust
+  fix_pure_ftpd_el8
+  python_alternatives_setup
+  check_and_fix_cache_keys
   fix_ftp_csf_ports
+  setup_initial_csf_block_cronjob
   switch_mariadbtenthree_archives
-  apply_terrapin_fix
-  apply_iconv_fix
+  switch_mariadbtentwo_archives
+  switch_mariadbtenone_archives
+  remove_anonymous_mysqlusers
+  push_check_updates_cronsetup
+  fix_wordpress_accept_encoding
+  normalize_accept_encoding
+  elnine_perl_check
+  rsync_backport_install
+  fix_rsync_backport_redirect
+  fix_mount_loop_sh
+  if [ -f /etc/yum.repos.d/remi.repo ]; then
+    fix_remi_repo_gpgcheck
+  fi
+  switch_nginx_uid
+  opendkim_check_enabled
 fi
 
 }
@@ -3449,7 +4122,7 @@ setupdate() {
 cat > "/usr/bin/cminfo_updater"<<EOF
 #!/bin/bash
 rm -rf /usr/bin/cminfo
-wget -q --no-check-certificate -O /usr/bin/cminfo https://raw.githubusercontent.com/centminmod/centminmod/master/tools/cminfo.sh
+wget -q --no-check-certificate -O /usr/bin/cminfo https://raw.githubusercontent.com/centminmod/centminmod/${branchname}/tools/cminfo.sh
 chmod 0700 /usr/bin/cminfo
 EOF
 
@@ -3458,7 +4131,7 @@ chmod 0700 /usr/bin/cminfo_updater
 # insert itself into cronjob for auto updates
 if [ ! -f /usr/bin/crontab ]; then
   time $YUMDNFBIN -y -q install cronie${DISABLEREPO_DNF}
-    if [[ "$CENTOS_SEVEN" != '7' ]]; then
+    if [[ "$CENTOS_SEVEN" -eq '7' ]]; then
       service crond restart
       chkconfig crond on
     else
@@ -3469,7 +4142,7 @@ fi
 
 if [ ! -f /usr/bin/sar ]; then
   time $YUMDNFBIN -y -q install sysstat${DISABLEREPO_DNF}
-    if [[ "$CENTOS_SEVEN" != '7' ]]; then
+    if [[ "$CENTOS_SEVEN" -eq '7' ]]; then
       service sysstat restart
       chkconfig sysstat on
     else

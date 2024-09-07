@@ -1,0 +1,16 @@
+# These defaults will be used by every memcached instance, unless overridden
+# by values in /etc/sysconfig/memcached.<port>
+USER="memcached"
+MAXCONN="2048"
+CACHESIZE="8"
+OPTIONS='-o modern'
+
+BACKLOG=2048
+MAXREQ=200
+THREADS=4
+MINSP=72
+CHUNKF=1.25
+
+# The PORT variable will only be used by memcached.service, not by
+# memcached@xxxxx services, which will use the xxxxx
+PORT="11211"

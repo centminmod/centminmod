@@ -22,14 +22,14 @@ function funct_openvz_stacksize {
     echo "********************************************************************"
     cecho "* Correct service's stack size for OpenVZ systems. Please wait...." $boldgreen
     echo "********************************************************************"
-    if [[ "$CENTOS_SEVEN" != '7' ]]; then
+    if [[ "$CENTOS_SIX" -eq '6' ]]; then
       if [ -f /etc/init.d/rsyslog ]; then
         sed -i 's/#!\/bin\/bash/#!\/bin\/bash\nif [ -f \/proc\/user_beancounters ]; then\nulimit -s 128\nfi\n/g' /etc/init.d/rsyslog
       fi
       if [ -f /etc/init.d/nsd ]; then
         sed -i 's/#!\/bin\/bash/#!\/bin\/bash\nif [ -f \/proc\/user_beancounters ]; then\nulimit -s 128\nfi\n/g' /etc/init.d/nsd
       fi
-      if [ -f /etc/init.d/nginx ]; then
+      if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_SIX" = '6' ]] && [ -f /etc/init.d/nginx ]; then
         sed -i 's/#!\/bin\/sh/#!\/bin\/sh\nif [ -f \/proc\/user_beancounters ]; then\nulimit -s 256\nfi\n/g' /etc/init.d/nginx
       fi
       if [ -f /etc/init.d/lfd ]; then
@@ -49,7 +49,7 @@ function funct_openvz_stacksize {
       if [ -f /etc/init.d/nsd ]; then
         head -n 5 /etc/init.d/nsd
       fi
-      if [ -f /etc/init.d/nginx ]; then
+      if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_SIX" = '6' ]] && [ -f /etc/init.d/nginx ]; then
         head -n 5 /etc/init.d/nginx
       fi
       if [ -f /etc/init.d/lfd ]; then
@@ -75,7 +75,7 @@ EFF
       if [ -f /etc/init.d/nsd ]; then
         sed -i 's/#!\/bin\/bash/#!\/bin\/bash\nif [ -f \/proc\/user_beancounters ]; then\nulimit -s 128\nfi\n/g' /etc/init.d/nsd
       fi
-      if [ -f /etc/init.d/nginx ]; then
+      if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_SIX" = '6' ]] && [ -f /etc/init.d/nginx ]; then
         sed -i 's/#!\/bin\/sh/#!\/bin\/sh\nif [ -f \/proc\/user_beancounters ]; then\nulimit -s 256\nfi\n/g' /etc/init.d/nginx
       fi
       if [[ ! -d /etc/systemd/system/lfd.service.d || ! -f /etc/systemd/system/lfd.service.d/lfd.conf ]]; then
@@ -104,7 +104,7 @@ EFF
       fi
     fi # centos 6 or centos 7
 
-    if [[ "$CENTOS_SEVEN" != '7' ]]; then
+    if [[ "$CENTOS_SIX" -eq '6' ]]; then
       RSYSLOGRUNNING=$(service rsyslog status | awk '{ print $5 }' | sed 's/running.\.\./running/g')
       if [[ "$RSYSLOGRUNNING" = 'running' ]]; then
         service rsyslog restart

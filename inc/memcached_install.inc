@@ -100,57 +100,73 @@ PHPEXTDIRD=$(cat /usr/local/bin/php-config | awk '/^extension_dir/ {extdir=$1} E
 
     if [ ! "$(grep -w 'memcached' /etc/passwd)" ]; then
       echo "Update memcached server setup"
-      echo "Adding memcached user/group and adding to nginx group"
-      adduser -s /sbin/nologin -M memcached >/dev/null
-      usermod -G nginx memcached >/dev/null
+      echo "Adding memcached user/group with UID 957 and GID 957, and adding to nginx group"
+      groupadd -g 957 memcached
+      adduser -u 957 -g 957 -s /sbin/nologin -M memcached >/dev/null
+      usermod -aG nginx memcached >/dev/null
       id memcached
       SOCKETPATCH=y
     elif [[ "$(grep -w 'memcached' /etc/passwd)" && "$(grep -w 'nginx' /etc/passwd)" ]]; then
       if [[ "$(id memcached | grep -o nginx)" != 'nginx' ]]; then
-        usermod -G nginx memcached >/dev/null
+        usermod -g 957 -aG nginx memcached >/dev/null
         id memcached
         SOCKETPATCH=y
+      else
+        # Ensure UID is 957 and GID is 957 even if memcached is already in nginx group
+        if [ "$(id -u memcached)" -ne 957 ]; then
+          usermod -u 957 memcached >/dev/null
+          id memcached
+          SOCKETPATCH=y
+        fi
+        if [ "$(id -g memcached)" -ne 957 ]; then
+          groupmod -g 957 memcached
+          usermod -g 957 memcached >/dev/null
+          id memcached
+          SOCKETPATCH=y
+        fi
       fi
     fi
-    if [[ "$(grep -w "USER=nobody" /etc/init.d/memcached)" && "$SOCKETPATCH" = [Yy] ]]; then
-        echo "Changing memcached server user from nobody to memcached"
-        sed -i 's|USER=nobody|USER=memcached|' /etc/init.d/memcached
-        grep -w "USER=memcached" /etc/init.d/memcached
-        echo "${SCRIPT_DIR}/config/memcached/memcached-socketfix.patch"
-        if [[ -f "${SCRIPT_DIR}/config/memcached/memcached-socketfix.patch" && -f /etc/init.d/memcached ]]; then
-            \cp -f "${SCRIPT_DIR}/config/memcached/memcached-socketfix.patch" /etc/init.d/memcached-socketfix.patch
-            pushd /etc/init.d/
-            patch -s < memcached-socketfix.patch >/dev/null 2>&1
-            rm -rf memcached-socketfix.patch
-            if [[ "$CENTOS_SEVEN" = '7' ]]; then
-                systemctl daemon-reload
+    if [[ "$CENTOS_SEVEN" -eq '7' ]]; then
+        if [[ "$(grep -w "USER=nobody" /etc/init.d/memcached)" && "$SOCKETPATCH" = [Yy] ]]; then
+            echo "Changing memcached server user from nobody to memcached"
+            sed -i 's|USER=nobody|USER=memcached|' /etc/init.d/memcached
+            grep -w "USER=memcached" /etc/init.d/memcached
+            echo "${SCRIPT_DIR}/config/memcached/memcached-socketfix.patch"
+            if [[ -f "${SCRIPT_DIR}/config/memcached/memcached-socketfix.patch" && -f /etc/init.d/memcached ]]; then
+                \cp -f "${SCRIPT_DIR}/config/memcached/memcached-socketfix.patch" /etc/init.d/memcached-socketfix.patch
+                pushd /etc/init.d/
+                patch -s < memcached-socketfix.patch >/dev/null 2>&1
+                rm -rf memcached-socketfix.patch
+                if [[ "$CENTOS_SEVEN" -eq '7' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]]; then
+                    systemctl daemon-reload
+                fi
+                if [ "$(ps -C memcached | grep -w memcached)" ]; then
+                    /usr/bin/memcachedstop >/dev/null
+                    /usr/bin/memcachedstart >/dev/null
+                fi
+                popd
             fi
-            if [ "$(ps -C memcached | grep -w memcached)" ]; then
-                /usr/bin/memcachedstop >/dev/null
-                /usr/bin/memcachedstart >/dev/null
+        elif [[ "$SOCKETPATCH" = [Yy] ]]; then
+            echo "${SCRIPT_DIR}/config/memcached/memcached-socketfix.patch"
+            if [[ -f "${SCRIPT_DIR}/config/memcached/memcached-socketfix.patch" && -f /etc/init.d/memcached ]]; then
+                \cp -f "${SCRIPT_DIR}/config/memcached/memcached-socketfix.patch" /etc/init.d/memcached-socketfix.patch
+                pushd /etc/init.d/
+                patch -s < memcached-socketfix.patch >/dev/null 2>&1
+                rm -rf memcached-socketfix.patch
+                if [[ "$CENTOS_SEVEN" -eq '7' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]]; then
+                    systemctl daemon-reload
+                fi
+                if [ "$(ps -C memcached | grep -w memcached)" ]; then
+                    /usr/bin/memcachedstop >/dev/null
+                    /usr/bin/memcachedstart >/dev/null
+                fi
+                popd
             fi
-            popd
         fi
-    elif [[ "$SOCKETPATCH" = [Yy] ]]; then
-        echo "${SCRIPT_DIR}/config/memcached/memcached-socketfix.patch"
-        if [[ -f "${SCRIPT_DIR}/config/memcached/memcached-socketfix.patch" && -f /etc/init.d/memcached ]]; then
-            \cp -f "${SCRIPT_DIR}/config/memcached/memcached-socketfix.patch" /etc/init.d/memcached-socketfix.patch
-            pushd /etc/init.d/
-            patch -s < memcached-socketfix.patch >/dev/null 2>&1
-            rm -rf memcached-socketfix.patch
-            if [[ "$CENTOS_SEVEN" = '7' ]]; then
-                systemctl daemon-reload
-            fi
-            if [ "$(ps -C memcached | grep -w memcached)" ]; then
-                /usr/bin/memcachedstop >/dev/null
-                /usr/bin/memcachedstart >/dev/null
-            fi
-            popd
-        fi
+        if [[ ! "$(grep -w '\-a 0766' /etc/init.d/memcached)" ]]; then
+        sed -i 's|0775|0766|g' /etc/init.d/memcached
+        fi # 766 fix
     fi
-    if [[ ! "$(grep -w '\-a 0766' /etc/init.d/memcached)" ]]; then
-      sed -i 's|0775|0766|g' /etc/init.d/memcached
-    fi # 766 fix
 
     echo "Downloading memcached..."
     cd "$DIR_TMP"
@@ -191,7 +207,7 @@ if [[ "$FPMRPM_LIBEVENT" = [yY] && "$(uname -m)" = 'x86_64' ]]; then
     if [ -s libevent-2.0.21-1.x86_64.rpm ]; then
         cecho "libevent-2.0.21-1.x86_64.rpm found, skipping download..." $boldgreen
     else
-        wget -${ipv_forceopt}cnv https://centminmod.com/centminmodparts/customrpms/fpm/libevent-2.0.21-1.x86_64.rpm --tries=3
+        wget -${ipv_forceopt}cnv ${LOCALCENTMINMOD_MIRROR}/centminmodparts/customrpms/fpm/libevent-2.0.21-1.x86_64.rpm --tries=3
         rpm -Uvh libevent-2.0.21-1.x86_64.rpm
     fi
 else
@@ -202,7 +218,7 @@ else
         make clean
     fi
     ./autogen.sh
-    ./configure --prefix="/usr/${LIBDIR}"
+    CFLAGS="-fPIC -O2 -fstack-protector-strong -D_FORTIFY_SOURCE=2" CPPFLAGS="-D_FORTIFY_SOURCE=2" CXXFLAGS="-fPIC -O2" LDFLAGS="-Wl,-z,relro,-z,now -pie" ./configure --prefix="/usr/${LIBDIR}"
     make${MAKETHREADS}
     make install
 
@@ -220,7 +236,7 @@ if [[ "$FPMRPM_MEMCACHED" = [yY] && "$(uname -m)" = 'x86_64' ]]; then
     if [ -s memcached-1.4.18-1.x86_64.rpm ]; then
         cecho "memcached-1.4.18-1.x86_64.rpm found, skipping download..." $boldgreen
     else
-        wget -${ipv_forceopt}cnv https://centminmod.com/centminmodparts/customrpms/fpm/memcached-1.4.18-1.x86_64.rpm --tries=3
+        wget -${ipv_forceopt}cnv ${LOCALCENTMINMOD_MIRROR}/centminmodparts/customrpms/fpm/memcached-1.4.18-1.x86_64.rpm --tries=3
         rpm -Uvh memcached-1.4.18-1.x86_64.rpm
         cd "${DIR_TMP}/memcached-${MEMCACHED_VERSION}"
         cp -f "$DIR_TMP/memcached-${MEMCACHED_VERSION}/scripts/memcached-tool" /usr/local/bin
@@ -251,11 +267,15 @@ else
     cp -f "$DIR_TMP/memcached-${MEMCACHED_VERSION}/scripts/memcached-tool" /usr/local/bin
 fi # FPMRPM_MEMCACHED
 
+    # if [[ -f /usr/local/bin/memcached && ! -f /usr/bin/memcached ]]; then
+    #     setup_initd_memcached
+    # fi
+
     cecho "Compiled memcached server..." $boldgreen
 
 if [[ "$CENTOS_SIX" = '6' ]]; then
     kill -9 $(pidof memcached)
-elif [[ "$CENTOS_SEVEN" = '7' ]]; then
+elif [[ "$CENTOS_SEVEN" -eq '7' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]]; then
     kill -9 $(pidof memcached)
 fi
 sleep 2
@@ -333,7 +353,7 @@ if [ "$PHP_MEMCACHE" == 'y' ]; then
            echo "skip git checkout 4a9e4ab0d1"
         fi
         /usr/local/bin/phpize
-        ./configure --enable-memcache --with-php-config=/usr/local/bin/php-config
+        CFLAGS="-fPIC -O2 -fstack-protector-strong -D_FORTIFY_SOURCE=2" CPPFLAGS="-D_FORTIFY_SOURCE=2" CXXFLAGS="-fPIC -O2" LDFLAGS="-Wl,-z,relro,-z,now -pie" ./configure --enable-memcache --with-php-config=/usr/local/bin/php-config
         make${MAKETHREADS}
         make install
         cecho "PHP memcache extension installed" $boldgreen
@@ -360,7 +380,7 @@ if [ "$PHP_MEMCACHE" == 'y' ]; then
             make clean
         fi
         /usr/local/bin/phpize
-        ./configure --enable-memcache --with-php-config=/usr/local/bin/php-config
+        CFLAGS="-fPIC -O2 -fstack-protector-strong -D_FORTIFY_SOURCE=2" CPPFLAGS="-D_FORTIFY_SOURCE=2" CXXFLAGS="-fPIC -O2" LDFLAGS="-Wl,-z,relro,-z,now -pie" ./configure --enable-memcache --with-php-config=/usr/local/bin/php-config
         make${MAKETHREADS}
         make install
         cecho "PHP memcache extension installed" $boldgreen
@@ -375,7 +395,13 @@ fi # PHP_MEMCACHE = y
 #############################################
 if [ "$PHP_MEMCACHED" == 'y' ]; then
 if [[ "$LIBMEMCACHED_YUM" = [yY] ]]; then
-    if [[ "$CENTOS_SEVEN" = '7' ]]; then
+    if [[ "$CENTOS_NINE" -eq '9' ]]; then
+        cecho "Installing libmemcached via crb YUM repo ..." $boldgreen
+        ${YUMDNFBIN}${CACHESKIP} -q -y install libmemcached-awesome libmemcached-awesome-devel --disablerepo=remi --disablerepo=epel --disableplugin=priorities
+    elif [[ "$CENTOS_EIGHT" -eq '8' ]]; then
+        cecho "Installing libmemcached via CentOS base YUM repo ..." $boldgreen
+        ${YUMDNFBIN}${CACHESKIP} -q -y install libmemcached libmemcached-devel --disablerepo=remi --disablerepo=epel --disableplugin=priorities
+    elif [[ "$CENTOS_SEVEN" -eq '7' ]]; then
         cecho "Installing libmemcached via CentOS base YUM repo ..." $boldgreen
         if [ -f /etc/yum.repos.d/rpmforge.repo ]; then
             ${YUMDNFBIN}${CACHESKIP} -q -y install libmemcached libmemcached-devel --disablerepo=remi --disablerepo=epel --disablerepo=rpmforge --disableplugin=priorities
@@ -437,7 +463,7 @@ if [ -f /usr/bin/re2c ]; then
     fi
 fi
 
-php-config --version | cut -d . -f1,2 | egrep -w '7.0|7.1|7.2|7.3|7.4|8.0|8.1'
+php-config --version | cut -d . -f1,2 | egrep -w '7.0|7.1|7.2|7.3|7.4|8.0|8.1|8.2|8.3|8.4'
 PHPSEVEN_CHECKVER=$?
 echo "$PHPSEVEN_CHECKVER"
 
@@ -482,11 +508,11 @@ if [[ "$PHPMUVER" > 7 || "$PHPSEVEN_CHECKVER" = '0' ]]; then
     fi
     /usr/local/bin/phpize
     if [[ "$LIBMEMCACHED_YUM" = [nN] ]]; then
-        ./configure --with-php-config=/usr/local/bin/php-config --enable-memcached-json --with-libmemcached-dir=/usr/local
+        CFLAGS="-fPIC -O2 -fstack-protector-strong -D_FORTIFY_SOURCE=2" CPPFLAGS="-D_FORTIFY_SOURCE=2" CXXFLAGS="-fPIC -O2" LDFLAGS="-Wl,-z,relro,-z,now -pie" ./configure --with-php-config=/usr/local/bin/php-config --enable-memcached-json --with-libmemcached-dir=/usr/local
     elif [[ "$LIBMEMCACHED_YUM" = [yY] && -f /etc/yum.repos.d/remi.repo ]]; then
-        ./configure --with-php-config=/usr/local/bin/php-config --enable-memcached-json --with-libmemcached-dir=/usr
+        CFLAGS="-fPIC -O2 -fstack-protector-strong -D_FORTIFY_SOURCE=2" CPPFLAGS="-D_FORTIFY_SOURCE=2" CXXFLAGS="-fPIC -O2" LDFLAGS="-Wl,-z,relro,-z,now -pie" ./configure --with-php-config=/usr/local/bin/php-config --enable-memcached-json --with-libmemcached-dir=/usr
     elif [ ! -f /etc/yum.repos.d/remi.repo ]; then
-        ./configure --with-php-config=/usr/local/bin/php-config --enable-memcached-json --with-libmemcached-dir=/usr/local        
+        CFLAGS="-fPIC -O2 -fstack-protector-strong -D_FORTIFY_SOURCE=2" CPPFLAGS="-D_FORTIFY_SOURCE=2" CXXFLAGS="-fPIC -O2" LDFLAGS="-Wl,-z,relro,-z,now -pie" ./configure --with-php-config=/usr/local/bin/php-config --enable-memcached-json --with-libmemcached-dir=/usr/local        
     fi
     make${MAKETHREADS}
     make install
@@ -504,11 +530,11 @@ else
     fi
     /usr/local/bin/phpize
     if [[ "$LIBMEMCACHED_YUM" = [nN] ]]; then
-        ./configure --with-php-config=/usr/local/bin/php-config --enable-memcached-json --with-libmemcached-dir=/usr/local
+        CFLAGS="-fPIC -O2 -fstack-protector-strong -D_FORTIFY_SOURCE=2" CPPFLAGS="-D_FORTIFY_SOURCE=2" CXXFLAGS="-fPIC -O2" LDFLAGS="-Wl,-z,relro,-z,now -pie" ./configure --with-php-config=/usr/local/bin/php-config --enable-memcached-json --with-libmemcached-dir=/usr/local
     elif [[ "$LIBMEMCACHED_YUM" = [yY] && -f /etc/yum.repos.d/remi.repo ]]; then
-        ./configure --with-php-config=/usr/local/bin/php-config --enable-memcached-json --with-libmemcached-dir=/usr
+        CFLAGS="-fPIC -O2 -fstack-protector-strong -D_FORTIFY_SOURCE=2" CPPFLAGS="-D_FORTIFY_SOURCE=2" CXXFLAGS="-fPIC -O2" LDFLAGS="-Wl,-z,relro,-z,now -pie" ./configure --with-php-config=/usr/local/bin/php-config --enable-memcached-json --with-libmemcached-dir=/usr
     elif [ ! -f /etc/yum.repos.d/remi.repo ]; then
-        ./configure --with-php-config=/usr/local/bin/php-config --enable-memcached-json --with-libmemcached-dir=/usr/local        
+        CFLAGS="-fPIC -O2 -fstack-protector-strong -D_FORTIFY_SOURCE=2" CPPFLAGS="-D_FORTIFY_SOURCE=2" CXXFLAGS="-fPIC -O2" LDFLAGS="-Wl,-z,relro,-z,now -pie" ./configure --with-php-config=/usr/local/bin/php-config --enable-memcached-json --with-libmemcached-dir=/usr/local        
     fi
     make${MAKETHREADS}
     make install
@@ -537,18 +563,16 @@ MEMCACHESOCHECKB=$(grep 'memcache.so' "${CONFIGSCANDIR}/memcache.ini")
 PHPEXTDIR=$(cat /usr/local/bin/php-config | awk '/^extension_dir/ {extdir=$1} END {gsub(/\047|extension_dir|=|)/,"",extdir); print extdir}')
 
 if [[ -z "$MEMCACHESOCHECK" || -z "$MEMCACHESOCHECKB" ]]; then
-
-#echo "" >> /usr/local/lib/php.ini
-#echo "extension=${PHPEXTDIR}/memcache.so" >> /usr/local/lib/php.ini
-echo "extension=${PHPEXTDIR}/memcache.so" > "${CONFIGSCANDIR}/memcache.ini"
-
+    echo ""
+    if [ "$PHP_MEMCACHE" == 'y' ]; then
+        echo ""
+        echo "extension=${PHPEXTDIR}/memcache.so" > "${CONFIGSCANDIR}/memcache.ini"
+    fi
 else
-
-echo ""
-echo "memcache.so already loaded in ${CONFIGSCANDIR}/memcache.ini"
-echo "$MEMCACHESOCHECK"
-echo ""
-
+    echo ""
+    echo "memcache.so already loaded in ${CONFIGSCANDIR}/memcache.ini"
+    echo "$MEMCACHESOCHECK"
+    echo ""
 fi # memcache.so check
 
 #######################################################
@@ -560,24 +584,23 @@ MEMCACHEDSOCHECKB=$(grep 'memcached.so' "${CONFIGSCANDIR}/memcached.ini")
 PHPEXTDIRD=$(cat /usr/local/bin/php-config | awk '/^extension_dir/ {extdir=$1} END {gsub(/\047|extension_dir|=|)/,"",extdir); print extdir}')
 
 if [[ -z "$MEMCACHEDSOCHECK" || -z "$MEMCACHEDSOCHECKB" ]]; then
-
-#echo "" >> /usr/local/lib/php.ini
-echo "extension=${PHPEXTDIRD}/memcached.so" > "${CONFIGSCANDIR}/memcached.ini"
-echo "memcached.sess_connect_timeout=3000" >> "${CONFIGSCANDIR}/memcached.ini"
-echo "; http://php.net/manual/en/memcached.configuration.php" >> "${CONFIGSCANDIR}/memcached.ini"
-echo "memcached.sess_consistent_hash=0" >> "${CONFIGSCANDIR}/memcached.ini"
-echo "memcached.sess_number_of_replicas=0" >> "${CONFIGSCANDIR}/memcached.ini"
-echo "memcached.sess_randomize_replica_read=0" >> "${CONFIGSCANDIR}/memcached.ini"
-echo "memcached.sess_remove_failed=0" >> "${CONFIGSCANDIR}/memcached.ini"
-echo "memcached.sess_binary=0" >> "${CONFIGSCANDIR}/memcached.ini"
-
+    echo ""
+    if [ "$PHP_MEMCACHED" == 'y' ]; then
+        echo ""
+        echo "extension=${PHPEXTDIRD}/memcached.so" > "${CONFIGSCANDIR}/memcached.ini"
+        echo "memcached.sess_connect_timeout=3000" >> "${CONFIGSCANDIR}/memcached.ini"
+        echo "; http://php.net/manual/en/memcached.configuration.php" >> "${CONFIGSCANDIR}/memcached.ini"
+        echo "memcached.sess_consistent_hash=0" >> "${CONFIGSCANDIR}/memcached.ini"
+        echo "memcached.sess_number_of_replicas=0" >> "${CONFIGSCANDIR}/memcached.ini"
+        echo "memcached.sess_randomize_replica_read=0" >> "${CONFIGSCANDIR}/memcached.ini"
+        echo "memcached.sess_remove_failed=0" >> "${CONFIGSCANDIR}/memcached.ini"
+        echo "memcached.sess_binary=0" >> "${CONFIGSCANDIR}/memcached.ini"
+    fi
 else
-
-echo ""
-echo "memcached.so already loaded in ${CONFIGSCANDIR}/memcached.ini"
-echo "$MEMCACHEDSOCHECK"
-echo ""
-
+    echo ""
+    echo "memcached.so already loaded in ${CONFIGSCANDIR}/memcached.ini"
+    echo "$MEMCACHEDSOCHECK"
+    echo ""
 fi # memcached.so check
 
         if [[ "$CLANG_MEMCACHED" = [yY] ]]; then
@@ -600,7 +623,7 @@ fi # PHP_MEMCACHED = y
 
 if [[ "$CENTOS_SIX" = '6' ]]; then
     kill -9 "$(pidof memcached)"
-elif [[ "$CENTOS_SEVEN" = '7' ]]; then
+elif [[ "$CENTOS_SEVEN" -eq '7' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]]; then
     kill -9 $(pidof memcached)
 fi
 sleep 2
@@ -627,114 +650,108 @@ cecho "memcache/memcached routines completed" $boldgreen
 #######################################################
 incmemcachedinstall() {
 
+if [[ "$CENTOS_NINE" -eq '9' ]]; then
+    mkdir -p /etc/init.d
+fi
 if [[ "$MEMCACHED_INSTALL" = [yY] ]]; then
     MEMCINSTALL='y'
     nomemcachedservers='1'
 fi
 
 #ASK "Install Memcached Server? (default uses 8MB RAM each) [y/n] "
-if [[ "$MEMCINSTALL" = [yY] ]];
-then
+if [[ "$MEMCINSTALL" = [yY] ]]; then
+    funct_memcachedreinstall
+    cd "$SCRIPT_DIR"
 
-funct_memcachedreinstall
-
-cd "$SCRIPT_DIR"
-
-#######################################################
-# check /etc/init.d/memcached
-
-# # only run for CentOS 6.x
-# if [[ "$CENTOS_SEVEN" != '7' ]]; then
-if [[ ! -f /etc/init.d/memcached ]]; then
-    echo "Setup /etc/init.d/memcached with $nomemcachedservers Memcached servers"
-    
-    if [[ "$nomemcachedservers" = '1' ]]; then
-        echo "setup /etc/init.d/memcached"
-        echo "cp $CUR_DIR/config/memcached/memcached /etc/init.d/memcached"
-        cp "$CUR_DIR/config/memcached/memcached" /etc/init.d/memcached
+    # only run for CentOS 7
+    if [[ "$CENTOS_NINE" -eq '9' ]]; then
+        echo "setup memcached service file"
+        mkdir -p /etc/sysconfig/
+        \cp -af "$CUR_DIR/config/memcached/memcached.sysconfig" /etc/sysconfig/memcached
+        \cp -af "$CUR_DIR/config/memcached/memcached.service" /usr/lib/systemd/system/memcached.service
+        mkdir -p /etc/systemd/system/memcached.service.d
+        if [[ ! -f /etc/systemd/system/memcached.service.d/openfileslimit.conf && -d /etc/systemd/system/memcached.service.d/ ]]; then
+cat > "/etc/systemd/system/memcached.service.d/openfileslimit.conf" <<TDG
+[Service]
+LimitNOFILE=524288
+TDG
+        fi
+        systemctl daemon-reload
+        systemctl start memcached
+        systemctl enable memcached
+    elif [[ "$CENTOS_EIGHT" -eq '8' ]]; then
+        echo "setup memcached service file"
+        mkdir -p /etc/sysconfig/
+        \cp -af "$CUR_DIR/config/memcached/memcached.sysconfig" /etc/sysconfig/memcached
+        \cp -af "$CUR_DIR/config/memcached/memcached.service" /usr/lib/systemd/system/memcached.service
+        mkdir -p /etc/systemd/system/memcached.service.d
+        if [[ ! -f /etc/systemd/system/memcached.service.d/openfileslimit.conf && -d /etc/systemd/system/memcached.service.d/ ]]; then
+cat > "/etc/systemd/system/memcached.service.d/openfileslimit.conf" <<TDG
+[Service]
+LimitNOFILE=524288
+TDG
+        fi
+        systemctl daemon-reload
+        systemctl start memcached
+        systemctl enable memcached
+    elif [[ "$CENTOS_SEVEN" -eq '7' ]]; then
+        #######################################################
+        # check /etc/init.d/memcached
+        if [[ ! -f /etc/init.d/memcached ]]; then
+            echo "Setup /etc/init.d/memcached with $nomemcachedservers Memcached servers"
+            
+            if [[ "$nomemcachedservers" = '1' ]]; then
+                echo "setup /etc/init.d/memcached"
+                echo "cp $CUR_DIR/config/memcached/memcached /etc/init.d/memcached"
+                cp "$CUR_DIR/config/memcached/memcached" /etc/init.d/memcached
+            fi
+            
+            if [[ "$nomemcachedservers" = '2' ]]; then
+                echo "setup /etc/init.d/memcached"
+                echo "cp $CUR_DIR/config/memcached/memcached2 /etc/init.d/memcached"
+                cp "$CUR_DIR/config/memcached/memcached2" /etc/init.d/memcached
+            fi
+        fi # check /etc/init.d/memcached
+        
+        if [[ ! "$(grep PIDA /etc/init.d/memcached)" ]]; then
+            # ensure newest init.d/memcached file is in place
+            echo "Check /etc/init.d/memcached for PIDA / PIDB options"
+        
+            # transfer existing MEMSIZE memory allocation to newer init.d/memcached file
+            MEMCACHED_EXISTMEMSIZE=$(awk -F "=" '/^MEMSIZE/ {print $2}' /etc/init.d/memcached)
+            
+            if [[ "$nomemcachedservers" = '1' ]]; then
+                echo "setup /etc/init.d/memcached"
+                echo "\cp -f $CUR_DIR/config/memcached/memcached /etc/init.d/memcached"
+                \cp -f "$CUR_DIR/config/memcached/memcached" /etc/init.d/memcached
+                sed -i "s|^MEMSIZE=.*|MEMSIZE=$MEMCACHED_EXISTMEMSIZE|" /etc/init.d/memcached
+            fi
+            
+            if [[ "$nomemcachedservers" = '2' ]]; then
+                echo "setup /etc/init.d/memcached"
+                echo "\cp -f $CUR_DIR/config/memcached/memcached2 /etc/init.d/memcached"
+                \cp -f "$CUR_DIR/config/memcached/memcached2" /etc/init.d/memcached
+                sed -i "s|^MEMSIZE=.*|MEMSIZE=$MEMCACHED_EXISTMEMSIZE|" /etc/init.d/memcached
+            fi
+        fi # check /etc/init.d/memcached for PIDA/PIDB
+        
+        # add check for Windows CLRF line endings
+        if [ ! -f /usr/bin/file ]; then
+            yum -q -y install file
+        fi
+        if [[ $(file /etc/init.d/memcached) =~ CRLF && -f /etc/init.d/memcached ]]; then
+            if [ ! -f /usr/bin/dos2unix ]; then
+                yum -q -y install dos2unix
+            fi
+            echo "detected CRLF line endings converting to Unix LF"
+            dos2unix /etc/init.d/memcached
+        fi
+        
+        chmod +x /etc/init.d/memcached
+        chkconfig --add memcached
+        chkconfig --level 345 memcached on
     fi
-    
-    if [[ "$nomemcachedservers" = '2' ]]; then
-        echo "setup /etc/init.d/memcached"
-        echo "cp $CUR_DIR/config/memcached/memcached2 /etc/init.d/memcached"
-        cp "$CUR_DIR/config/memcached/memcached2" /etc/init.d/memcached
-    fi
-fi # check /etc/init.d/memcached
-
-if [[ ! "$(grep PIDA /etc/init.d/memcached)" ]]; then
-    # ensure newest init.d/memcached file is in place
-    echo "Check /etc/init.d/memcached for PIDA / PIDB options"
-
-    # transfer existing MEMSIZE memory allocation to newer init.d/memcached file
-    MEMCACHED_EXISTMEMSIZE=$(awk -F "=" '/^MEMSIZE/ {print $2}' /etc/init.d/memcached)
-    
-    if [[ "$nomemcachedservers" = '1' ]]; then
-        echo "setup /etc/init.d/memcached"
-        echo "\cp -f $CUR_DIR/config/memcached/memcached /etc/init.d/memcached"
-        \cp -f "$CUR_DIR/config/memcached/memcached" /etc/init.d/memcached
-        sed -i "s|^MEMSIZE=.*|MEMSIZE=$MEMCACHED_EXISTMEMSIZE|" /etc/init.d/memcached
-    fi
-    
-    if [[ "$nomemcachedservers" = '2' ]]; then
-        echo "setup /etc/init.d/memcached"
-        echo "\cp -f $CUR_DIR/config/memcached/memcached2 /etc/init.d/memcached"
-        \cp -f "$CUR_DIR/config/memcached/memcached2" /etc/init.d/memcached
-        sed -i "s|^MEMSIZE=.*|MEMSIZE=$MEMCACHED_EXISTMEMSIZE|" /etc/init.d/memcached
-    fi
-fi # check /etc/init.d/memcached for PIDA/PIDB
-
-# add check for Windows CLRF line endings
-if [ ! -f /usr/bin/file ]; then
-    yum -q -y install file
-fi
-if [[ $(file /etc/init.d/memcached) =~ CRLF && -f /etc/init.d/memcached ]]; then
-    if [ ! -f /usr/bin/dos2unix ]; then
-        yum -q -y install dos2unix
-    fi
-    echo "detected CRLF line endings converting to Unix LF"
-    dos2unix /etc/init.d/memcached
-fi
-
-chmod +x /etc/init.d/memcached
-chkconfig --add memcached
-chkconfig --level 345 memcached on
-service memcached start
-# fi # CENTOS_SEVEN != 7
-
-#     if [[ "$PHP_INSTALL" = [yY] ]]; then
-#     cecho "Compiling PHP memcache extension..." $boldgreen
-
-# cd "$DIR_TMP"
-# tar -xvf "memcache-${MEMCACHE_VERSION}.tgz"
-# cd "memcache-${MEMCACHE_VERSION}"
-# /usr/local/bin/phpize
-# ./configure --enable-memcache --with-php-config=/usr/local/bin/php-config
-# make${MAKETHREADS} && make install
-
-# #######################################################
-# # check to see if memcache.so already loaded in php.ini
-
-# MEMCACHESOCHECK=$(grep 'memcache.so' /usr/local/lib/php.ini)
-# MEMCACHESOCHECKB=$(grep 'memcache.so' "${CONFIGSCANDIR}/memcache.ini")
-# PHPEXTDIR=$(cat /usr/local/bin/php-config | awk '/^extension_dir/ {extdir=$1} END {gsub(/\047|extension_dir|=|)/,"",extdir); print extdir}')
-
-# if [[ -z "$MEMCACHESOCHECK" || -z "$MEMCACHESOCHECKB" ]]; then
-
-# #echo "" >> /usr/local/lib/php.ini
-# #echo "extension=${PHPEXTDIR}/memcache.so" >> /usr/local/lib/php.ini
-# echo "extension=${PHPEXTDIR}/memcache.so" > "${CONFIGSCANDIR}/memcache.ini"
-
-# else
-
-# echo ""
-# echo "memcache.so already loaded in /usr/local/lib/php.ini"
-# echo "$MEMCACHESOCHECK"
-# echo ""
-
-# fi # memcache.so check
-
-# service php-fpm restart
-#     fi # PHP_INSTALL=y
+    service memcached start
 
     echo "*************************************************"
     cecho "* memcached installed" $boldgreen
@@ -742,4 +759,71 @@ service memcached start
 
 fi
 
+}
+
+#######################################################
+setup_initd_memcached() {
+    if [[ "$CENTOS_NINE" -eq '9' ]]; then
+        mkdir -p /etc/init.d
+    fi
+    if [[ "$MEMCACHED_INSTALL" = [yY] ]]; then
+        nomemcachedservers='1'
+    fi
+    
+    pushd "$SCRIPT_DIR"
+    if [[ ! -f /etc/init.d/memcached ]]; then
+        echo "Setup /etc/init.d/memcached with $nomemcachedservers Memcached servers"
+        
+        if [[ "$nomemcachedservers" = '1' ]]; then
+            echo "setup /etc/init.d/memcached"
+            echo "cp $CUR_DIR/config/memcached/memcached /etc/init.d/memcached"
+            cp "$CUR_DIR/config/memcached/memcached" /etc/init.d/memcached
+        fi
+        
+        if [[ "$nomemcachedservers" = '2' ]]; then
+            echo "setup /etc/init.d/memcached"
+            echo "cp $CUR_DIR/config/memcached/memcached2 /etc/init.d/memcached"
+            cp "$CUR_DIR/config/memcached/memcached2" /etc/init.d/memcached
+        fi
+    fi # check /etc/init.d/memcached
+    
+    if [[ ! "$(grep PIDA /etc/init.d/memcached)" ]]; then
+        # ensure newest init.d/memcached file is in place
+        echo "Check /etc/init.d/memcached for PIDA / PIDB options"
+    
+        # transfer existing MEMSIZE memory allocation to newer init.d/memcached file
+        MEMCACHED_EXISTMEMSIZE=$(awk -F "=" '/^MEMSIZE/ {print $2}' /etc/init.d/memcached)
+        
+        if [[ "$nomemcachedservers" = '1' ]]; then
+            echo "setup /etc/init.d/memcached"
+            echo "\cp -f $CUR_DIR/config/memcached/memcached /etc/init.d/memcached"
+            \cp -f "$CUR_DIR/config/memcached/memcached" /etc/init.d/memcached
+            sed -i "s|^MEMSIZE=.*|MEMSIZE=$MEMCACHED_EXISTMEMSIZE|" /etc/init.d/memcached
+        fi
+        
+        if [[ "$nomemcachedservers" = '2' ]]; then
+            echo "setup /etc/init.d/memcached"
+            echo "\cp -f $CUR_DIR/config/memcached/memcached2 /etc/init.d/memcached"
+            \cp -f "$CUR_DIR/config/memcached/memcached2" /etc/init.d/memcached
+            sed -i "s|^MEMSIZE=.*|MEMSIZE=$MEMCACHED_EXISTMEMSIZE|" /etc/init.d/memcached
+        fi
+    fi # check /etc/init.d/memcached for PIDA/PIDB
+    
+    # add check for Windows CLRF line endings
+    if [ ! -f /usr/bin/file ]; then
+        yum -q -y install file
+    fi
+    if [[ $(file /etc/init.d/memcached) =~ CRLF && -f /etc/init.d/memcached ]]; then
+        if [ ! -f /usr/bin/dos2unix ]; then
+            yum -q -y install dos2unix
+        fi
+        echo "detected CRLF line endings converting to Unix LF"
+        dos2unix /etc/init.d/memcached
+    fi
+    
+    chmod +x /etc/init.d/memcached
+    chkconfig --add memcached
+    chkconfig --level 345 memcached on
+    service memcached start
+    popd
 }

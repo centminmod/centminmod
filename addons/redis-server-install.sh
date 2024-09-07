@@ -61,7 +61,9 @@ if [ ! -f /etc/yum.repos.d/epel.repo ]; then
 fi
 
 if [ -f /proc/user_beancounters ]; then
-    CPUS=$(grep -c "processor" /proc/cpuinfo)
+    CPUS=$(nproc)
+    CPUS=${CPUS:-1}
+    REDIS_IOTHREAD_CPUS=${CPUS:-1}
     if [[ "$CPUS" -gt '8' ]]; then
         CPUS=$(echo $(($CPUS+2)))
     else
@@ -69,7 +71,9 @@ if [ -f /proc/user_beancounters ]; then
     fi
     MAKETHREADS=" -j$CPUS"
 else
-    CPUS=$(grep -c "processor" /proc/cpuinfo)
+    CPUS=$(nproc)
+    CPUS=${CPUS:-1}
+    REDIS_IOTHREAD_CPUS=${CPUS:-1}
     if [[ "$CPUS" -gt '8' ]]; then
         CPUS=$(echo $(($CPUS+4)))
     elif [[ "$CPUS" -eq '8' ]]; then
@@ -116,6 +120,7 @@ fi
 EL_VERID=$(awk -F '=' '/VERSION_ID/ {print $2}' /etc/os-release | sed -e 's|"||g' | cut -d . -f1)
 if [ -f /etc/almalinux-release ] && [[ "$EL_VERID" -eq 8 || "$EL_VERID" -eq 9 ]]; then
   CENTOSVER=$(awk '{ print $3 }' /etc/almalinux-release | cut -d . -f1,2)
+  ALMALINUXVER=$(awk '{ print $3 }' /etc/almalinux-release | cut -d . -f1,2 | sed -e 's|\.|000|g')
   if [[ "$(echo $CENTOSVER | cut -d . -f1)" -eq '8' ]]; then
     CENTOS_EIGHT='8'
     ALMALINUX_EIGHT='8'
@@ -125,6 +130,7 @@ if [ -f /etc/almalinux-release ] && [[ "$EL_VERID" -eq 8 || "$EL_VERID" -eq 9 ]]
   fi
 elif [ -f /etc/rocky-release ] && [[ "$EL_VERID" -eq 8 || "$EL_VERID" -eq 9 ]]; then
   CENTOSVER=$(awk '{ print $4 }' /etc/rocky-release | cut -d . -f1,2)
+  ROCKYLINUXVER=$(awk '{ print $3 }' /etc/rocky-release | cut -d . -f1,2 | sed -e 's|\.|000|g')
   if [[ "$(echo $CENTOSVER | cut -d . -f1)" -eq '8' ]]; then
     CENTOS_EIGHT='8'
     ROCKYLINUX_EIGHT='8'
@@ -179,12 +185,68 @@ elif [ -f /etc/el-release ] && [[ "$EL_VERID" -eq 8 || "$EL_VERID" -eq 9 ]]; the
   fi
 fi
 
+CENTOSVER_NUMERIC=$(echo $CENTOSVER | sed -e 's|\.||g')
+
+redisupgrade_el() {
+  if [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]]; then
+    # Check the current version of Redis
+    current_version=$(dnf module list redis --enabled | grep remi-6.2 | awk '{print $2}')
+
+    # Check if the current version is 6.2
+    if [[ "$current_version" == "remi-6.2" ]]; then
+      echo "Detected Redis REMI 6.2 Enabled Module"
+      echo "Switching to Redis REMI 7.2 Enabled Module version..."
+      echo
+      echo "dnf module list redis"
+      dnf module list redis
+      echo
+      echo "dnf -y module reset redis:remi-6.2"
+      dnf -y module reset redis:remi-6.2
+      echo
+      echo "dnf -y module enable -y redis:remi-7.2"
+      dnf -y module enable -y redis:remi-7.2
+      echo
+      echo "dnf module list redis"
+      dnf module list redis
+      echo
+      echo "yum -y install redis --enablerepo=remi"
+      yum -y install redis --enablerepo=remi
+      echo
+      echo "Redis REMI MODULE Switched to 7.2 version"
+    else
+      echo "Current Redis version is not 6.2. No upgrade needed."
+    fi
+  fi
+}
+
 redisinstall() {
   echo "install redis server..."
   if [[ -f /etc/yum/pluginconf.d/priorities.conf && "$(grep 'enabled = 1' /etc/yum/pluginconf.d/priorities.conf)" ]]; then
     yum -y install redis --enablerepo=remi --disableplugin=priorities
   else
-    yum -y install redis --enablerepo=remi
+    if [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]]; then
+      # Check the current version of Redis
+      current_version=$(dnf module list redis --enabled | grep remi-6.2 | awk '{print $2}')
+      if [[ "$current_version" == "remi-6.2" ]]; then
+        echo
+        echo "dnf module list redis"
+        dnf module list redis
+        echo
+        echo "dnf -y module reset redis:remi-6.2"
+        dnf -y module reset redis:remi-6.2
+        echo
+        echo "dnf -y module enable -y redis:remi-7.2"
+        dnf -y module enable -y redis:remi-7.2
+        echo
+        echo "dnf module list redis"
+        dnf module list redis
+      fi
+      echo
+      echo "yum -y install redis --enablerepo=remi"
+      yum -y install redis --enablerepo=remi
+    else
+      yum -y install redis --enablerepo=remi
+    fi
   fi
   sed -i 's|LimitNOFILE=.*|LimitNOFILE=524288|' /etc/systemd/system/redis.service.d/limit.conf
   # echo -e "[Service]\nExecStartPre=/usr/sbin/sysctl vm.overcommit_memory=1" > /etc/systemd/system/redis.service.d/vm.conf
@@ -219,20 +281,34 @@ if [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]]; then
 cat > "/etc/systemd/system/redis.service.d/failure-restart.conf" <<TDG
 [Unit]
 StartLimitIntervalSec=30
-StartLimitBurst=2
+StartLimitBurst=5
 
 [Service]
 Restart=on-failure
 RestartSec=5s
 TDG
-elif [ "$CENTOS_SEVEN" -eq '7' ]; then
+elif [[ "$CENTOS_SEVEN" -eq '7' ]]; then
 cat > "/etc/systemd/system/redis.service.d/failure-restart.conf" <<TDG
 [Service]
 StartLimitInterval=30
-StartLimitBurst=2
+StartLimitBurst=5
 Restart=on-failure
 RestartSec=5s
 TDG
+fi
+
+if [ -f /etc/redis/redis.conf ]; then
+  \cp -af /etc/redis/redis.conf "/etc/redis/redis.conf-backup-${DT}"
+  if [[ "$REDIS_IOTHREAD_CPUS" -ge '16' ]]; then
+    sed -i "s|^# io-threads 2|io-threads 8|" /etc/redis/redis.conf
+  elif [[ "$REDIS_IOTHREAD_CPUS" -ge '12' && "$REDIS_IOTHREAD_CPUS" -le '15' ]]; then
+    sed -i "s|^# io-threads 2|io-threads 6|" /etc/redis/redis.conf
+  elif [[ "$REDIS_IOTHREAD_CPUS" -ge '7' && "$REDIS_IOTHREAD_CPUS" -le '11' ]]; then
+    sed -i "s|^# io-threads 2|io-threads 4|" /etc/redis/redis.conf
+  elif [[ "$REDIS_IOTHREAD_CPUS" -ge '4' && "$REDIS_IOTHREAD_CPUS" -le '6' ]]; then
+    sed -i "s|^# io-threads 2|io-threads 2|" /etc/redis/redis.conf
+  fi
+  sed -i 's|^# io-threads-do-reads yes|io-threads-do-reads yes|' /etc/redis/redis.conf 
 fi
 
 if [ -f /etc/systemd/system/disable-thp.service ]; then
@@ -366,6 +442,9 @@ case "$1" in
   install )
     redisinstall
     ;;
+  upgrade )
+    redisupgrade_el
+    ;;
   install-source )
     redisinstall_source
     ;;
@@ -373,7 +452,7 @@ case "$1" in
     echo
     echo "Usage:"
     echo
-    echo "$0 {install|install-source}"
+    echo "$0 {install|upgrade|install-source}"
     echo
     ;;
 esac

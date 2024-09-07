@@ -67,7 +67,7 @@ if [ ! -d /var/run/nsd ]; then
     cd /etc/sysconfig/
     cp $CUR_DIR/sysconfig/nsd nsd
     # only run for CentOS 6.x
-    if [[ "$CENTOS_SEVEN" != '7' ]]; then
+    if [[ "$CENTOS_SIX" -eq '6' ]]; then
     cd /etc/init.d/
     cp $CUR_DIR/init/nsd nsd
     chmod +x /etc/init.d/nsd
@@ -75,7 +75,7 @@ if [ ! -d /var/run/nsd ]; then
     fi # CENTOS_SEVEN != 7
 fi
 
-if [[ "$CENTOS_SEVEN" = '7' ]]; then
+if [[ "$CENTOS_SEVEN" -eq '7' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]]; then
     sed -i 's/\/var\/run\/nsd\/nsd.pid/\/run\/nsd\/nsd.pid/' /etc/nsd/nsd.conf
     sed -i 's/\/var\/run\/nsd\/nsd.pid/\/run\/nsd\/nsd.pid/' /etc/init.d/nsd
 fi

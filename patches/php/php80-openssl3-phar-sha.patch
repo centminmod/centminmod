@@ -1,0 +1,515 @@
+Backported for 8.0 from
+
+
+From 8bb0c74e24359a11216824117ac3adf3d5ef7b71 Mon Sep 17 00:00:00 2001
+From: Remi Collet <remi@remirepo.net>
+Date: Thu, 5 Aug 2021 11:10:15 +0200
+Subject: [PATCH] switch phar to use sha256 signature by default
+
+---
+ ext/phar/phar/pharcommand.inc                  | 2 +-
+ ext/phar/tests/create_new_and_modify.phpt      | 4 ++--
+ ext/phar/tests/create_new_phar_c.phpt          | 4 ++--
+ ext/phar/tests/phar_setsignaturealgo2.phpt     | 2 +-
+ ext/phar/tests/tar/phar_setsignaturealgo2.phpt | 2 +-
+ ext/phar/tests/zip/phar_setsignaturealgo2.phpt | 2 +-
+ ext/phar/util.c                                | 6 +++---
+ ext/phar/zip.c                                 | 2 +-
+ 8 files changed, 12 insertions(+), 12 deletions(-)
+
+diff --git a/ext/phar/phar/pharcommand.inc b/ext/phar/phar/pharcommand.inc
+index a31290eee75fe..5f698b4bec26b 100644
+--- a/ext/phar/phar/pharcommand.inc
++++ b/ext/phar/phar/pharcommand.inc
+@@ -92,7 +92,7 @@ class PharCommand extends CLICommand
+                 'typ' => 'select',
+                 'val' => NULL,
+                 'inf' => '<method> Selects the hash algorithm.',
+-                'select' => array('md5' => 'MD5','sha1' => 'SHA1')
++                'select' => array('md5' => 'MD5','sha1' => 'SHA1', 'sha256' => 'SHA256', 'sha512' => 'SHA512', 'openssl' => 'OPENSSL')
+             ),
+             'i' => array(
+                 'typ' => 'regex',
+diff --git a/ext/phar/tests/create_new_and_modify.phpt b/ext/phar/tests/create_new_and_modify.phpt
+index 02e36c6cea2fe..32defcae8a639 100644
+--- a/ext/phar/tests/create_new_and_modify.phpt
++++ b/ext/phar/tests/create_new_and_modify.phpt
+@@ -49,8 +49,8 @@ include $pname . '/b.php';
+ <?php unlink(__DIR__ . '/' . basename(__FILE__, '.clean.php') . '.phar.php'); ?>
+ --EXPECTF--
+ brand new!
+-string(40) "%s"
+-string(40) "%s"
++string(%d) "%s"
++string(%d) "%s"
+ bool(true)
+ modified!
+ another!
+diff --git a/ext/phar/tests/create_new_phar_c.phpt b/ext/phar/tests/create_new_phar_c.phpt
+index 566d3c4d5f8ad..bf6d740fd1d10 100644
+--- a/ext/phar/tests/create_new_phar_c.phpt
++++ b/ext/phar/tests/create_new_phar_c.phpt
+@@ -20,7 +20,7 @@ var_dump($phar->getSignature());
+ --EXPECTF--
+ array(2) {
+   ["hash"]=>
+-  string(40) "%s"
++  string(64) "%s"
+   ["hash_type"]=>
+-  string(5) "SHA-1"
++  string(7) "SHA-256"
+ }
+diff --git a/ext/phar/tests/phar_setsignaturealgo2.phpt b/ext/phar/tests/phar_setsignaturealgo2.phpt
+index 293d3196713d8..4f31836fbbbcc 100644
+--- a/ext/phar/tests/phar_setsignaturealgo2.phpt
++++ b/ext/phar/tests/phar_setsignaturealgo2.phpt
+@@ -52,7 +52,7 @@ array(2) {
+   ["hash"]=>
+   string(%d) "%s"
+   ["hash_type"]=>
+-  string(5) "SHA-1"
++  string(7) "SHA-256"
+ }
+ array(2) {
+   ["hash"]=>
+diff --git a/ext/phar/tests/tar/phar_setsignaturealgo2.phpt b/ext/phar/tests/tar/phar_setsignaturealgo2.phpt
+index 9923ac5c88476..cc10a241d739b 100644
+--- a/ext/phar/tests/tar/phar_setsignaturealgo2.phpt
++++ b/ext/phar/tests/tar/phar_setsignaturealgo2.phpt
+@@ -51,7 +51,7 @@ array(2) {
+   ["hash"]=>
+   string(%d) "%s"
+   ["hash_type"]=>
+-  string(5) "SHA-1"
++  string(7) "SHA-256"
+ }
+ array(2) {
+   ["hash"]=>
+diff --git a/ext/phar/tests/zip/phar_setsignaturealgo2.phpt b/ext/phar/tests/zip/phar_setsignaturealgo2.phpt
+index 8de77479d7825..60fec578ee894 100644
+--- a/ext/phar/tests/zip/phar_setsignaturealgo2.phpt
++++ b/ext/phar/tests/zip/phar_setsignaturealgo2.phpt
+@@ -78,7 +78,7 @@ array(2) {
+   ["hash"]=>
+   string(%d) "%s"
+   ["hash_type"]=>
+-  string(5) "SHA-1"
++  string(7) "SHA-256"
+ }
+ array(2) {
+   ["hash"]=>
+diff --git a/ext/phar/util.c b/ext/phar/util.c
+index 314acfe81a788..8d2db03b69601 100644
+--- a/ext/phar/util.c
++++ b/ext/phar/util.c
+@@ -1798,6 +1798,8 @@ int phar_create_signature(phar_archive_d
+ 			*signature_length = 64;
+ 			break;
+ 		}
++		default:
++			phar->sig_flags = PHAR_SIG_SHA256;
+ 		case PHAR_SIG_SHA256: {
+ 			unsigned char digest[32];
+ 			PHP_SHA256_CTX  context;
+@@ -1894,8 +1896,6 @@ int phar_create_signature(phar_archive_d
+ 			*signature_length = siglen;
+ 		}
+ 		break;
+-		default:
+-			phar->sig_flags = PHAR_SIG_SHA1;
+ 		case PHAR_SIG_SHA1: {
+ 			unsigned char digest[20];
+ 			PHP_SHA1_CTX  context;
+diff --git a/ext/phar/zip.c b/ext/phar/zip.c
+index 31d4bd2998215..c5e38cabf7b87 100644
+--- a/ext/phar/zip.c
++++ b/ext/phar/zip.c
+@@ -1423,7 +1423,7 @@ int phar_zip_flush(phar_archive_data *phar, char *user_stub, zend_long len, int
+ 
+ 	memcpy(eocd.signature, "PK\5\6", 4);
+ 	if (!phar->is_data && !phar->sig_flags) {
+-		phar->sig_flags = PHAR_SIG_SHA1;
++		phar->sig_flags = PHAR_SIG_SHA256;
+ 	}
+ 	if (phar->sig_flags) {
+ 		PHAR_SET_16(eocd.counthere, zend_hash_num_elements(&phar->manifest) + 1);
+
+From c51af22fef988c1b2f92b7b9e3a9d745f7084815 Mon Sep 17 00:00:00 2001
+From: Remi Collet <remi@remirepo.net>
+Date: Thu, 5 Aug 2021 16:49:48 +0200
+Subject: [PATCH] implement openssl_256 and openssl_512 for phar singatures
+
+---
+ ext/openssl/openssl.c                         |   1 +
+ ext/phar/phar.1.in                            |  10 +++-
+ ext/phar/phar.c                               |   8 +++-
+ ext/phar/phar/pharcommand.inc                 |  14 +++++-
+ ext/phar/phar_internal.h                      |   2 +
+ ext/phar/phar_object.c                        |  24 ++++++++--
+ ext/phar/tests/files/openssl256.phar          | Bin 0 -> 7129 bytes
+ ext/phar/tests/files/openssl256.phar.pubkey   |   6 +++
+ ext/phar/tests/files/openssl512.phar          | Bin 0 -> 7129 bytes
+ ext/phar/tests/files/openssl512.phar.pubkey   |   6 +++
+ .../phar_get_supported_signatures_002a.phpt   |   6 ++-
+ .../tests/tar/phar_setsignaturealgo2.phpt     |  16 +++++++
+ ext/phar/tests/test_signaturealgos.phpt       |   8 ++++
+ ext/phar/util.c                               |  45 ++++++++++++++----
+ 14 files changed, 128 insertions(+), 18 deletions(-)
+ create mode 100644 ext/phar/tests/files/openssl256.phar
+ create mode 100644 ext/phar/tests/files/openssl256.phar.pubkey
+ create mode 100644 ext/phar/tests/files/openssl512.phar
+ create mode 100644 ext/phar/tests/files/openssl512.phar.pubkey
+
+diff --git a/ext/phar/phar.1.in b/ext/phar/phar.1.in
+index 77912b241dfd5..323e77b0e2a3b 100644
+--- a/ext/phar/phar.1.in
++++ b/ext/phar/phar.1.in
+@@ -475,7 +475,15 @@ SHA512
+ .TP
+ .PD
+ .B openssl
+-OpenSSL
++OpenSSL using SHA-1
++.TP
++.PD
++.B openssl_sha256
++OpenSSL using SHA-256
++.TP
++.PD
++.B openssl_sha512
++OpenSSL using SHA-512
+ 
+ .SH SEE ALSO
+ For a more or less complete description of PHAR look here:
+diff --git a/ext/phar/phar.c b/ext/phar/phar.c
+index 77f21cef9da53..bc08e4edde05d 100644
+--- a/ext/phar/phar.c
++++ b/ext/phar/phar.c
+@@ -869,6 +869,8 @@ static int phar_parse_pharfile(php_stream *fp, char *fname, size_t fname_len, ch
+ 		PHAR_GET_32(sig_ptr, sig_flags);
+ 
+ 		switch(sig_flags) {
++			case PHAR_SIG_OPENSSL_SHA512:
++			case PHAR_SIG_OPENSSL_SHA256:
+ 			case PHAR_SIG_OPENSSL: {
+ 				uint32_t signature_len;
+ 				char *sig;
+@@ -903,7 +905,7 @@ static int phar_parse_pharfile(php_stream *fp, char *fname, size_t fname_len, ch
+ 					return FAILURE;
+ 				}
+ 
+-				if (FAILURE == phar_verify_signature(fp, end_of_phar, PHAR_SIG_OPENSSL, sig, signature_len, fname, &signature, &sig_len, error)) {
++				if (FAILURE == phar_verify_signature(fp, end_of_phar, sig_flags, sig, signature_len, fname, &signature, &sig_len, error)) {
+ 					efree(savebuf);
+ 					efree(sig);
+ 					php_stream_close(fp);
+@@ -3162,7 +3164,9 @@ int phar_flush(phar_archive_data *phar, char *user_stub, zend_long len, int conv
+ 
+ 				php_stream_write(newfile, digest, digest_len);
+ 				efree(digest);
+-				if (phar->sig_flags == PHAR_SIG_OPENSSL) {
++				if (phar->sig_flags == PHAR_SIG_OPENSSL ||
++					phar->sig_flags == PHAR_SIG_OPENSSL_SHA256 ||
++					phar->sig_flags == PHAR_SIG_OPENSSL_SHA512) {
+ 					phar_set_32(sig_buf, digest_len);
+ 					php_stream_write(newfile, sig_buf, 4);
+ 				}
+diff --git a/ext/phar/phar/pharcommand.inc b/ext/phar/phar/pharcommand.inc
+index 5f698b4bec26b..1b1eeca59c560 100644
+--- a/ext/phar/phar/pharcommand.inc
++++ b/ext/phar/phar/pharcommand.inc
+@@ -92,7 +92,7 @@ class PharCommand extends CLICommand
+                 'typ' => 'select',
+                 'val' => NULL,
+                 'inf' => '<method> Selects the hash algorithm.',
+-                'select' => array('md5' => 'MD5','sha1' => 'SHA1', 'sha256' => 'SHA256', 'sha512' => 'SHA512', 'openssl' => 'OPENSSL')
++                'select' => ['md5' => 'MD5','sha1' => 'SHA1', 'sha256' => 'SHA256', 'sha512' => 'SHA512', 'openssl' => 'OPENSSL', 'openssl_sha256' => 'OPENSSL_SHA256', 'openssl_sha512' => 'OPENSSL_SHA512']
+             ),
+             'i' => array(
+                 'typ' => 'regex',
+@@ -156,6 +156,8 @@ class PharCommand extends CLICommand
+         $hash_avail = Phar::getSupportedSignatures();
+         $hash_optional = array('SHA-256' => 'SHA256',
+                                'SHA-512' => 'SHA512',
++                               'OpenSSL_sha256' => 'OpenSSL_SHA256',
++                               'OpenSSL_sha512' => 'OpenSSL_SHA512',
+                                'OpenSSL' => 'OpenSSL');
+         if (!in_array('OpenSSL', $hash_avail)) {
+             unset($phar_args['y']);
+@@ -429,6 +431,16 @@ class PharCommand extends CLICommand
+                     self::error("Cannot use OpenSSL signing without key.\n");
+                 }
+                 return Phar::OPENSSL;
++            case 'openssl_sha256':
++                if (!$privkey) {
++                    self::error("Cannot use OpenSSL signing without key.\n");
++                }
++                return Phar::OPENSSL_SHA256;
++            case 'openssl_sha512':
++                if (!$privkey) {
++                    self::error("Cannot use OpenSSL signing without key.\n");
++                }
++                return Phar::OPENSSL_SHA512;
+         }
+     }
+     // }}}
+diff --git a/ext/phar/phar_internal.h b/ext/phar/phar_internal.h
+index a9f81e2ab994a..30b408a8c4462 100644
+--- a/ext/phar/phar_internal.h
++++ b/ext/phar/phar_internal.h
+@@ -88,6 +88,8 @@
+ #define PHAR_SIG_SHA256           0x0003
+ #define PHAR_SIG_SHA512           0x0004
+ #define PHAR_SIG_OPENSSL          0x0010
++#define PHAR_SIG_OPENSSL_SHA256   0x0011
++#define PHAR_SIG_OPENSSL_SHA512   0x0012
+ 
+ /* flags byte for each file adheres to these bitmasks.
+    All unused values are reserved */
+diff --git a/ext/phar/phar_object.c b/ext/phar/phar_object.c
+index 9c1e5f2fa1eef..c05970e657f18 100644
+--- a/ext/phar/phar_object.c
++++ b/ext/phar/phar_object.c
+@@ -1246,9 +1246,13 @@ PHP_METHOD(Phar, getSupportedSignatures)
+ 	add_next_index_stringl(return_value, "SHA-512", 7);
+ #ifdef PHAR_HAVE_OPENSSL
+ 	add_next_index_stringl(return_value, "OpenSSL", 7);
++	add_next_index_stringl(return_value, "OpenSSL_SHA256", 14);
++	add_next_index_stringl(return_value, "OpenSSL_SHA512", 14);
+ #else
+ 	if (zend_hash_str_exists(&module_registry, "openssl", sizeof("openssl")-1)) {
+ 		add_next_index_stringl(return_value, "OpenSSL", 7);
++		add_next_index_stringl(return_value, "OpenSSL_SHA256", 14);
++		add_next_index_stringl(return_value, "OpenSSL_SHA512", 14);
+ 	}
+ #endif
+ }
+@@ -3028,6 +3032,8 @@ PHP_METHOD(Phar, setSignatureAlgorithm)
+ 		case PHAR_SIG_MD5:
+ 		case PHAR_SIG_SHA1:
+ 		case PHAR_SIG_OPENSSL:
++		case PHAR_SIG_OPENSSL_SHA256:
++		case PHAR_SIG_OPENSSL_SHA512:
+ 			if (phar_obj->archive->is_persistent && FAILURE == phar_copy_on_write(&(phar_obj->archive))) {
+ 				zend_throw_exception_ex(phar_ce_PharException, 0, "phar \"%s\" is persistent, unable to copy on write", phar_obj->archive->fname);
+ 				RETURN_THROWS();
+@@ -3066,19 +3072,25 @@ PHP_METHOD(Phar, getSignature)
+ 		add_assoc_stringl(return_value, "hash", phar_obj->archive->signature, phar_obj->archive->sig_len);
+ 		switch(phar_obj->archive->sig_flags) {
+ 			case PHAR_SIG_MD5:
+-				add_assoc_stringl(return_value, "hash_type", "MD5", 3);
++				add_assoc_string(return_value, "hash_type", "MD5");
+ 				break;
+ 			case PHAR_SIG_SHA1:
+-				add_assoc_stringl(return_value, "hash_type", "SHA-1", 5);
++				add_assoc_string(return_value, "hash_type", "SHA-1");
+ 				break;
+ 			case PHAR_SIG_SHA256:
+-				add_assoc_stringl(return_value, "hash_type", "SHA-256", 7);
++				add_assoc_string(return_value, "hash_type", "SHA-256");
+ 				break;
+ 			case PHAR_SIG_SHA512:
+-				add_assoc_stringl(return_value, "hash_type", "SHA-512", 7);
++				add_assoc_string(return_value, "hash_type", "SHA-512");
+ 				break;
+ 			case PHAR_SIG_OPENSSL:
+-				add_assoc_stringl(return_value, "hash_type", "OpenSSL", 7);
++				add_assoc_string(return_value, "hash_type", "OpenSSL");
++				break;
++			case PHAR_SIG_OPENSSL_SHA256:
++				add_assoc_string(return_value, "hash_type", "OpenSSL_SHA256");
++				break;
++			case PHAR_SIG_OPENSSL_SHA512:
++				add_assoc_string(return_value, "hash_type", "OpenSSL_SHA512");
+ 				break;
+ 			default:
+ 				unknown = strpprintf(0, "Unknown (%u)", phar_obj->archive->sig_flags);
+@@ -5103,6 +5115,8 @@ void phar_object_init(void) /* {{{ */
+ 	REGISTER_PHAR_CLASS_CONST_LONG(phar_ce_archive, "PHPS", PHAR_MIME_PHPS)
+ 	REGISTER_PHAR_CLASS_CONST_LONG(phar_ce_archive, "MD5", PHAR_SIG_MD5)
+ 	REGISTER_PHAR_CLASS_CONST_LONG(phar_ce_archive, "OPENSSL", PHAR_SIG_OPENSSL)
++	REGISTER_PHAR_CLASS_CONST_LONG(phar_ce_archive, "OPENSSL_SHA256", PHAR_SIG_OPENSSL_SHA256)
++	REGISTER_PHAR_CLASS_CONST_LONG(phar_ce_archive, "OPENSSL_SHA512", PHAR_SIG_OPENSSL_SHA512)
+ 	REGISTER_PHAR_CLASS_CONST_LONG(phar_ce_archive, "SHA1", PHAR_SIG_SHA1)
+ 	REGISTER_PHAR_CLASS_CONST_LONG(phar_ce_archive, "SHA256", PHAR_SIG_SHA256)
+ 	REGISTER_PHAR_CLASS_CONST_LONG(phar_ce_archive, "SHA512", PHAR_SIG_SHA512)
+diff --git a/ext/phar/tests/phar_get_supported_signatures_002a.phpt b/ext/phar/tests/phar_get_supported_signatures_002a.phpt
+index 06d811f2c35c2..639143b3d2c90 100644
+--- a/ext/phar/tests/phar_get_supported_signatures_002a.phpt
++++ b/ext/phar/tests/phar_get_supported_signatures_002a.phpt
+@@ -14,7 +14,7 @@ phar.readonly=0
+ var_dump(Phar::getSupportedSignatures());
+ ?>
+ --EXPECT--
+-array(5) {
++array(7) {
+   [0]=>
+   string(3) "MD5"
+   [1]=>
+@@ -25,4 +25,8 @@ array(5) {
+   string(7) "SHA-512"
+   [4]=>
+   string(7) "OpenSSL"
++  [5]=>
++  string(14) "OpenSSL_SHA256"
++  [6]=>
++  string(14) "OpenSSL_SHA512"
+ }
+diff --git a/ext/phar/tests/tar/phar_setsignaturealgo2.phpt b/ext/phar/tests/tar/phar_setsignaturealgo2.phpt
+index cc10a241d739b..c2eb5d77a5bf0 100644
+--- a/ext/phar/tests/tar/phar_setsignaturealgo2.phpt
++++ b/ext/phar/tests/tar/phar_setsignaturealgo2.phpt
+@@ -38,6 +38,10 @@ $pkey = '';
+ openssl_pkey_export($private, $pkey, NULL, $config_arg);
+ $p->setSignatureAlgorithm(Phar::OPENSSL, $pkey);
+ var_dump($p->getSignature());
++$p->setSignatureAlgorithm(Phar::OPENSSL_SHA512, $pkey);
++var_dump($p->getSignature());
++$p->setSignatureAlgorithm(Phar::OPENSSL_SHA256, $pkey);
++var_dump($p->getSignature());
+ } catch (Exception $e) {
+ echo $e->getMessage();
+ }
+@@ -83,3 +87,15 @@ array(2) {
+   ["hash_type"]=>
+   string(7) "OpenSSL"
+ }
++array(2) {
++  ["hash"]=>
++  string(%d) "%s"
++  ["hash_type"]=>
++  string(14) "OpenSSL_SHA512"
++}
++array(2) {
++  ["hash"]=>
++  string(%d) "%s"
++  ["hash_type"]=>
++  string(14) "OpenSSL_SHA256"
++}
+diff --git a/ext/phar/util.c b/ext/phar/util.c
+index 8d2db03b69601..515830bf2c70a 100644
+--- a/ext/phar/util.c
++++ b/ext/phar/util.c
+@@ -34,7 +34,7 @@
+ #include <openssl/ssl.h>
+ #include <openssl/pkcs12.h>
+ #else
+-static int phar_call_openssl_signverify(int is_sign, php_stream *fp, zend_off_t end, char *key, size_t key_len, char **signature, size_t *signature_len);
++static int phar_call_openssl_signverify(int is_sign, php_stream *fp, zend_off_t end, char *key, size_t key_len, char **signature, size_t *signature_len, php_uint32 sig_type);
+ #endif
+ 
+ /* for links to relative location, prepend cwd of the entry */
+@@ -1381,11 +1381,11 @@ static int phar_hex_str(const char *digest, size_t digest_len, char **signature)
+ /* }}} */
+ 
+ #ifndef PHAR_HAVE_OPENSSL
+-static int phar_call_openssl_signverify(int is_sign, php_stream *fp, zend_off_t end, char *key, size_t key_len, char **signature, size_t *signature_len) /* {{{ */
++static int phar_call_openssl_signverify(int is_sign, php_stream *fp, zend_off_t end, char *key, size_t key_len, char **signature, size_t *signature_len, php_uint32 sig_type) /* {{{ */
+ {
+ 	zend_fcall_info fci;
+ 	zend_fcall_info_cache fcc;
+-	zval retval, zp[3], openssl;
++	zval retval, zp[4], openssl;
+ 	zend_string *str;
+ 
+ 	ZVAL_STRINGL(&openssl, is_sign ? "openssl_sign" : "openssl_verify", is_sign ? sizeof("openssl_sign")-1 : sizeof("openssl_verify")-1);
+@@ -1402,6 +1402,14 @@ static int phar_call_openssl_signverify(int is_sign, php_stream *fp, zend_off_t
+ 	} else {
+ 		ZVAL_EMPTY_STRING(&zp[0]);
+ 	}
++	if (sig_type == PHAR_SIG_OPENSSL_SHA512) {
++		ZVAL_LONG(&zp[3], 9); /* value from openssl.c #define OPENSSL_ALGO_SHA512 9 */
++	} else if (sig_type == PHAR_SIG_OPENSSL_SHA256) {
++		ZVAL_LONG(&zp[3], 7); /* value from openssl.c #define OPENSSL_ALGO_SHA256 7 */
++	} else {
++		/* don't rely on default value which may change in the future */
++		ZVAL_LONG(&zp[3], 1); /* value from openssl.c #define OPENSSL_ALGO_SHA1   1 */
++	}
+ 
+ 	if ((size_t)end != Z_STRLEN(zp[0])) {
+ 		zval_ptr_dtor_str(&zp[0]);
+@@ -1419,7 +1427,7 @@ static int phar_call_openssl_signverify(int is_sign, php_stream *fp, zend_off_t
+ 		return FAILURE;
+ 	}
+ 
+-	fci.param_count = 3;
++	fci.param_count = 4;
+ 	fci.params = zp;
+ 	Z_ADDREF(zp[0]);
+ 	if (is_sign) {
+@@ -1482,12 +1490,22 @@ int phar_verify_signature(php_stream *fp, size_t end_of_phar, uint32_t sig_type,
+ 	php_stream_rewind(fp);
+ 
+ 	switch (sig_type) {
++		case PHAR_SIG_OPENSSL_SHA512:
++		case PHAR_SIG_OPENSSL_SHA256:
+ 		case PHAR_SIG_OPENSSL: {
+ #ifdef PHAR_HAVE_OPENSSL
+ 			BIO *in;
+ 			EVP_PKEY *key;
+-			EVP_MD *mdtype = (EVP_MD *) EVP_sha1();
++			const EVP_MD *mdtype;
+ 			EVP_MD_CTX *md_ctx;
++
++			if (sig_type == PHAR_SIG_OPENSSL_SHA512) {
++				mdtype = EVP_sha512();
++			} else if (sig_type == PHAR_SIG_OPENSSL_SHA256) {
++				mdtype = EVP_sha256();
++			} else {
++				mdtype = EVP_sha1();
++			}
+ #else
+ 			size_t tempsig;
+ #endif
+@@ -1521,7 +1539,7 @@ int phar_verify_signature(php_stream *fp, size_t end_of_phar, uint32_t sig_type,
+ #ifndef PHAR_HAVE_OPENSSL
+ 			tempsig = sig_len;
+ 
+-			if (FAILURE == phar_call_openssl_signverify(0, fp, end_of_phar, pubkey ? ZSTR_VAL(pubkey) : NULL, pubkey ? ZSTR_LEN(pubkey) : 0, &sig, &tempsig)) {
++			if (FAILURE == phar_call_openssl_signverify(0, fp, end_of_phar, pubkey ? ZSTR_VAL(pubkey) : NULL, pubkey ? ZSTR_LEN(pubkey) : 0, &sig, &tempsig, sig_type)) {
+ 				if (pubkey) {
+ 					zend_string_release_ex(pubkey, 0);
+ 				}
+@@ -1815,6 +1833,8 @@ int phar_create_signature(phar_archive_data *phar, php_stream *fp, char **signat
+ 			*signature_length = 32;
+ 			break;
+ 		}
++		case PHAR_SIG_OPENSSL_SHA512:
++		case PHAR_SIG_OPENSSL_SHA256:
+ 		case PHAR_SIG_OPENSSL: {
+ 			unsigned char *sigbuf;
+ #ifdef PHAR_HAVE_OPENSSL
+@@ -1822,6 +1842,15 @@ int phar_create_signature(phar_archive_data *phar, php_stream *fp, char **signat
+ 			BIO *in;
+ 			EVP_PKEY *key;
+ 			EVP_MD_CTX *md_ctx;
++			const EVP_MD *mdtype;
++
++			if (phar->sig_flags == PHAR_SIG_OPENSSL_SHA512) {
++				mdtype = EVP_sha512();
++			} else if (phar->sig_flags == PHAR_SIG_OPENSSL_SHA256) {
++				mdtype = EVP_sha256();
++			} else {
++				mdtype = EVP_sha1();
++			}
+ 
+ 			in = BIO_new_mem_buf(PHAR_G(openssl_privatekey), PHAR_G(openssl_privatekey_len));
+ 
+@@ -1847,7 +1876,7 @@ int phar_create_signature(phar_archive_data *phar, php_stream *fp, char **signat
+ 			siglen = EVP_PKEY_size(key);
+ 			sigbuf = emalloc(siglen + 1);
+ 
+-			if (!EVP_SignInit(md_ctx, EVP_sha1())) {
++			if (!EVP_SignInit(md_ctx, mdtype)) {
+ 				EVP_PKEY_free(key);
+ 				efree(sigbuf);
+ 				if (error) {
+@@ -1885,7 +1914,7 @@ int phar_create_signature(phar_archive_data *phar, php_stream *fp, char **signat
+ 			siglen = 0;
+ 			php_stream_seek(fp, 0, SEEK_END);
+ 
+-			if (FAILURE == phar_call_openssl_signverify(1, fp, php_stream_tell(fp), PHAR_G(openssl_privatekey), PHAR_G(openssl_privatekey_len), (char **)&sigbuf, &siglen)) {
++			if (FAILURE == phar_call_openssl_signverify(1, fp, php_stream_tell(fp), PHAR_G(openssl_privatekey), PHAR_G(openssl_privatekey_len), (char **)&sigbuf, &siglen, phar->sig_flags)) {
+ 				if (error) {
+ 					spprintf(error, 0, "unable to write phar \"%s\" with requested openssl signature", phar->fname);
+ 				}

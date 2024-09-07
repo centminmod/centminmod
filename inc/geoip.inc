@@ -14,7 +14,7 @@ install_libmaxmindb() {
     make$MAKETHREADS
     make install
     popd
-    ./configure --prefix=/usr/local/nginx-dep
+    CFLAGS="-fPIC -O2 -fstack-protector-strong -D_FORTIFY_SOURCE=2" CPPFLAGS="-D_FORTIFY_SOURCE=2" CXXFLAGS="-fPIC -O2" LDFLAGS="-Wl,-z,relro,-z,now -pie" ./configure --prefix=/usr/local/nginx-dep
     make$MAKETHREADS
     make install
     ldconfig
@@ -37,15 +37,27 @@ ngxgeoipmemtweak() {
 }
 
 geoiptwolite_phpext_install() {
-  if [[ "$NGINX_GEOIPTWOLITE" = [yY] ]]; then
+  initial_installation=$1
+  if [[ "$NGINX_GEOIPTWOLITE" = [yY] && -z "$initial_installation" ]]; then
+    if [[ "$INITIALINSTALL" = [yY] ]]; then
+      GENERAL_DEVTOOLSETGCC='y'
+      enable_devtoolset
+    fi
+    GEOIPTWOLITE_PHP_VER_NUM=$(/usr/local/bin/php-config --vernum)
+
     cecho "compiling MaxMind DB Reader PHP API extension..." $boldyellow
     pushd $DIR_TMP
     rm -rf MaxMind-DB-Reader-php
-    git clone --depth=1 https://github.com/maxmind/MaxMind-DB-Reader-php
+    git clone https://github.com/maxmind/MaxMind-DB-Reader-php
     cd MaxMind-DB-Reader-php
+    # Fetch and checkout specific tag for PHP version <= 7.1
+    if [[ "$GEOIPTWOLITE_PHP_VER_NUM" -le 70199 ]]; then
+      git fetch --depth=1 origin tag v1.6.0
+      git checkout v1.6.0
+    fi
     cd ext
     /usr/local/bin/phpize
-    PKG_CONFIG_PATH=/usr/lib64/pkgconfig:/usr/share/pkgconfig:/usr/local/nginx-dep/lib/pkgconfig ./configure --prefix=/usr/local/nginx-dep --with-php-config=/usr/local/bin/php-config
+    PKG_CONFIG_PATH=/usr/lib64/pkgconfig:/usr/share/pkgconfig:/usr/local/nginx-dep/lib/pkgconfig CFLAGS="-fPIC -O2 -fstack-protector-strong -D_FORTIFY_SOURCE=2" CPPFLAGS="-D_FORTIFY_SOURCE=2" CXXFLAGS="-fPIC -O2" LDFLAGS="-Wl,-z,relro,-z,now -pie" ./configure --prefix=/usr/local/nginx-dep --with-php-config=/usr/local/bin/php-config
     make$MAKETHREADS
     # make test
     make install
@@ -57,6 +69,7 @@ EOF
 }
 
 geoipphpext() {
+    initial_installation=$1
     if [[ "$PHP_INSTALL" = [yY] ]]; then
       # set extra cflags fro devtoolset-7 and devtoolset-8 compatibility
       check_devtoolset_php
@@ -107,7 +120,7 @@ if [[ -d /usr/share/GeoIP ]]; then
         fi
     fi
     /usr/local/bin/phpize
-    ./configure --with-php-config=/usr/local/bin/php-config
+    CFLAGS="-fPIC -O2 -fstack-protector-strong -D_FORTIFY_SOURCE=2" CPPFLAGS="-D_FORTIFY_SOURCE=2" CXXFLAGS="-fPIC -O2" LDFLAGS="-Wl,-z,relro,-z,now -pie" ./configure --with-php-config=/usr/local/bin/php-config
     sar_call
     make$MAKETHREADS
     sar_call
@@ -118,7 +131,7 @@ cat > "${CONFIGSCANDIR}/geoip.ini" <<EOF
 extension=geoip.so
 geoip.custom_directory=/usr/share/GeoIP
 EOF
-  geoiptwolite_phpext_install
+  geoiptwolite_phpext_install "$initial_installation"
   else
     echo "Error: geoip php extension not installed. Could not find ${DIR_TMP}/geoip directory" > ${CENTMINLOGDIR}/centminmod_errors_install_${DT}.log
 fi
@@ -154,35 +167,35 @@ geoipinstall() {
     # backup existing database in case maxmind end downloads
     \cp -af /usr/share/GeoIP/GeoIP.dat.gz /usr/share/GeoIP/GeoIP.dat-backup.gz
   fi
-  curl -${ipv_forceopt}Is --connect-timeout 30 --max-time 30 https://centminmod.com/centminmodparts/geoip-legacy/GeoIP.dat.gz | grep 'HTTP\/' | grep '200'
+  curl -${ipv_forceopt}Is --connect-timeout 30 --max-time 30 ${LOCALCENTMINMOD_MIRROR}/centminmodparts/geoip-legacy/GeoIP.dat.gz | grep 'HTTP\/' | grep '200'
   GEOIPCOUNTRYDATA_CURLCHECK=$?
   echo "GEOIPCOUNTRYDATA_CURLCHECK=$GEOIPCOUNTRYDATA_CURLCHECK"
   # only overwrite existing downloaded file if the download url is working
   # if download doesn't work, do not overwrite existing downloaded file
   if [[ "$GEOIPCOUNTRYDATA_CURLCHECK" = '0' ]]; then
-    wget -${ipv_forceopt} https://centminmod.com/centminmodparts/geoip-legacy/GeoIP.dat.gz -O /usr/share/GeoIP/GeoIP.dat.gz
+    wget -${ipv_forceopt} ${LOCALCENTMINMOD_MIRROR}/centminmodparts/geoip-legacy/GeoIP.dat.gz -O /usr/share/GeoIP/GeoIP.dat.gz
   fi
   gzip -df /usr/share/GeoIP/GeoIP.dat.gz
   
-  curl -${ipv_forceopt}Is --connect-timeout 30 --max-time 30 https://centminmod.com/centminmodparts/geoip-legacy/GeoLiteCity.gz | grep 'HTTP\/' | grep '200'
+  curl -${ipv_forceopt}Is --connect-timeout 30 --max-time 30 ${LOCALCENTMINMOD_MIRROR}/centminmodparts/geoip-legacy/GeoLiteCity.gz | grep 'HTTP\/' | grep '200'
   GEOIPCITYDATA_CURLCHECK=$?
   echo "GEOIPCITYDATA_CURLCHECK=$GEOIPCITYDATA_CURLCHECK"
   # only overwrite existing downloaded file if the download url is working
   # if download doesn't work, do not overwrite existing downloaded file
   if [[ "$GEOIPCITYDATA_CURLCHECK" = '0' ]]; then
-    wget -${ipv_forceopt} https://centminmod.com/centminmodparts/geoip-legacy/GeoLiteCity.gz -O /usr/share/GeoIP/GeoLiteCity.dat.gz
+    wget -${ipv_forceopt} ${LOCALCENTMINMOD_MIRROR}/centminmodparts/geoip-legacy/GeoLiteCity.gz -O /usr/share/GeoIP/GeoLiteCity.dat.gz
   fi
   gzip -d -f /usr/share/GeoIP/GeoLiteCity.dat.gz
   cp -a /usr/share/GeoIP/GeoLiteCity.dat /usr/share/GeoIP/GeoIPCity.dat
   # double check if /usr/share/GeoIP/GeoIPCity.dat exists
   if [ ! -f /usr/share/GeoIP/GeoIPCity.dat ]; then
-    curl -${ipv_forceopt}Is --connect-timeout 30 --max-time 30 https://centminmod.com/centminmodparts/geoip-legacy/GeoLiteCity.gz | grep 'HTTP\/' | grep '200'
+    curl -${ipv_forceopt}Is --connect-timeout 30 --max-time 30 ${LOCALCENTMINMOD_MIRROR}/centminmodparts/geoip-legacy/GeoLiteCity.gz | grep 'HTTP\/' | grep '200'
     GEOIPCITYDATA_CURLCHECK=$?
     echo "GEOIPCITYDATA_CURLCHECK=$GEOIPCITYDATA_CURLCHECK"
     # only overwrite existing downloaded file if the download url is working
     # if download doesn't work, do not overwrite existing downloaded file
     if [[ "$GEOIPCITYDATA_CURLCHECK" = '0' ]]; then
-      wget -${ipv_forceopt} https://centminmod.com/centminmodparts/geoip-legacy/GeoLiteCity.gz -O /usr/share/GeoIP/GeoLiteCity.dat.gz
+      wget -${ipv_forceopt} ${LOCALCENTMINMOD_MIRROR}/centminmodparts/geoip-legacy/GeoLiteCity.gz -O /usr/share/GeoIP/GeoLiteCity.dat.gz
     fi
     gzip -d -f /usr/share/GeoIP/GeoLiteCity.dat.gz
     cp -a /usr/share/GeoIP/GeoLiteCity.dat /usr/share/GeoIP/GeoIPCity.dat
@@ -448,6 +461,11 @@ EOF
       sed -i 's/fastcgi_param GEOIP_/#fastcgi_param GEOIP_/' /usr/local/nginx/conf/php.conf
     fi
   fi
+  if [[ "$INITIALINSTALL" = [yY] && "$NGINX_GEOIPTWOLITE" = [yY] ]]; then
+    if [ -f /usr/local/nginx/conf/geoip.conf ]; then
+      sed -i 's|^#include /usr/local/nginx/conf/geoip2.conf;|include /usr/local/nginx/conf/geoip2.conf;|' /usr/local/nginx/conf/geoip.conf
+    fi
+  fi
 }
 
 ######################################################
@@ -539,5 +557,3 @@ echo "geolite2 database build date: " . gmdate('r', \$city_db_build_date) . "<br
 END
 
 }
-
-

@@ -1,5 +1,14 @@
 ###############################################
-function funct_xcachesourceinstall {
+funct_xcachesourceinstall() {
+      echo
+      cecho "* XCache is no longer supported" $boldyellow
+      cecho "* XCache developers no longer keep it up to date" $boldyellow
+      cecho "* XCache does not perform better than Zend Opcache defaults" $boldyellow
+      echo
+      exit 0
+}
+
+function funct_xcachesourceinstall_disabled {
 
     echo "*************************************************"
     cecho "* Installing XCache" $boldgreen

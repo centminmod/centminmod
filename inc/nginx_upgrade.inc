@@ -24,8 +24,6 @@ nginx_maintenance_off(){
     fi
 }
 
-
-
 pcre_check_nginx(){
     # checks for $NGINX_PCRE_TWO='y'
     {
@@ -49,11 +47,21 @@ pcre_check_nginx(){
         PKG_CONFIG_PATH='/usr/local/nginx-dep/lib/pkgconfig/' pkg-config --modversion libpcre2-8
         echo "PKG_CONFIG_PATH='/usr/local/nginx-dep/lib/pkgconfig/' pkg-config --modversion atomic_ops"
         PKG_CONFIG_PATH='/usr/local/nginx-dep/lib/pkgconfig/' pkg-config --modversion atomic_ops
+        # if [[ "$ngver" = 'quic' || "$NGINX_QUIC_SUPPORT" = [yY] ]]; then
+        #     echo "PKG_CONFIG_PATH='/opt/el-compat-quic/lib/pkgconfig/' pkg-config --modversion libssl"
+        #     PKG_CONFIG_PATH='/opt/el-compat-quic/lib/pkgconfig/' pkg-config --modversion libssl
+        #     echo "PKG_CONFIG_PATH='/opt/el-compat-quic/lib/pkgconfig/' pkg-config --modversion libcrypto"
+        #     PKG_CONFIG_PATH='/opt/el-compat-quic/lib/pkgconfig/' pkg-config --modversion libcrypto
+        # fi
         if [[ "$NGINX_LIBBROTLI" = [yY] ]]; then
             echo "PKG_CONFIG_PATH='/usr/local/nginx-dep/lib/pkgconfig/' pkg-config --modversion libbrotlienc"
             PKG_CONFIG_PATH='/usr/local/nginx-dep/lib/pkgconfig/' pkg-config --modversion libbrotlienc
             echo "PKG_CONFIG_PATH='/usr/local/nginx-dep/lib/pkgconfig/' pkg-config --modversion libbrotlidec"
             PKG_CONFIG_PATH='/usr/local/nginx-dep/lib/pkgconfig/' pkg-config --modversion libbrotlidec
+        fi
+        if [[ "$NGINX_ZSTD" = [yY] ]]; then
+            echo "PKG_CONFIG_PATH='/usr/local/nginx-dep/lib/pkgconfig/' pkg-config --modversion libzstd"
+            PKG_CONFIG_PATH='/usr/local/nginx-dep/lib/pkgconfig/' pkg-config --modversion libzstd
         fi
         if [[ "$NGINX_MODSECURITY" = [yY] ]]; then
             echo "PKG_CONFIG_PATH='/usr/local/nginx-dep/lib/pkgconfig/' pkg-config --modversion modsecurity"
@@ -84,6 +92,18 @@ pcre_check_nginx(){
             echo "NGINXOPENSSL_FATLTO_OBJECTS=$NGINXOPENSSL_FATLTO_OBJECTS"
             echo "NGINXOPENSSL_NOFATLTO_OBJECTS=$NGINXOPENSSL_NOFATLTO_OBJECTS"
             echo "OPENSSL_VERION=$OPENSSL_VERSION"
+            echo "HTTPTWOOPT=$HTTPTWOOPT"
+            echo "ECNISTP_CHECK=$ECNISTP_CHECK"
+            echo "ECNISTP_OPT=$ECNISTP_OPT"
+            echo "ECNISTP_ENDIAN=$ECNISTP_ENDIAN"
+            echo "NGINX_MIMALLOC=$NGINX_MIMALLOC"
+            echo "NGINX_MIMALLOC_VERSION=$NGINX_MIMALLOC_VERSION"
+            # if [[ "$ngver" = 'quic' || "$NGINX_QUIC_SUPPORT" = [yY] ]]; then
+            #     echo
+            #     echo "Check ${DIR_TMP}/${OPENSSL_QUIC_DIR}"
+            #     echo "ls -lah ${DIR_TMP}/${OPENSSL_QUIC_DIR}"
+            #     ls -lah "${DIR_TMP}/${OPENSSL_QUIC_DIR}"
+            # fi
             echo
             echo "ls -lAhrt /usr/local/nginx-dep/lib | egrep 'libpcre.so|libpcre2-8.so'"
             ls -lAhrt /usr/local/nginx-dep/lib | egrep 'libpcre.so|libpcre2-8.so'
@@ -104,11 +124,21 @@ pcre_check_nginx(){
         PKG_CONFIG_PATH='/usr/local/nginx-dep/lib/pkgconfig/' pkg-config --modversion libpcre
         echo "PKG_CONFIG_PATH='/usr/local/nginx-dep/lib/pkgconfig/' pkg-config --modversion atomic_ops"
         PKG_CONFIG_PATH='/usr/local/nginx-dep/lib/pkgconfig/' pkg-config --modversion atomic_ops
+        # if [[ "$ngver" = 'quic' || "$NGINX_QUIC_SUPPORT" = [yY] ]]; then
+        #     echo "PKG_CONFIG_PATH='/opt/el-compat-quic/lib/pkgconfig/' pkg-config --modversion libssl"
+        #     PKG_CONFIG_PATH='/opt/el-compat-quic/lib/pkgconfig/' pkg-config --modversion libssl
+        #     echo "PKG_CONFIG_PATH='/opt/el-compat-quic/lib/pkgconfig/' pkg-config --modversion libcrypto"
+        #     PKG_CONFIG_PATH='/opt/el-compat-quic/lib/pkgconfig/' pkg-config --modversion libcrypto
+        # fi
         if [[ "$NGINX_LIBBROTLI" = [yY] ]]; then
             echo "PKG_CONFIG_PATH='/usr/local/nginx-dep/lib/pkgconfig/' pkg-config --modversion libbrotlienc"
             PKG_CONFIG_PATH='/usr/local/nginx-dep/lib/pkgconfig/' pkg-config --modversion libbrotlienc
             echo "PKG_CONFIG_PATH='/usr/local/nginx-dep/lib/pkgconfig/' pkg-config --modversion libbrotlidec"
             PKG_CONFIG_PATH='/usr/local/nginx-dep/lib/pkgconfig/' pkg-config --modversion libbrotlidec
+        fi
+        if [[ "$NGINX_ZSTD" = [yY] ]]; then
+            echo "PKG_CONFIG_PATH='/usr/local/nginx-dep/lib/pkgconfig/' pkg-config --modversion libzstd"
+            PKG_CONFIG_PATH='/usr/local/nginx-dep/lib/pkgconfig/' pkg-config --modversion libzstd
         fi
         if [[ "$NGINX_MODSECURITY" = [yY] ]]; then
             echo "PKG_CONFIG_PATH='/usr/local/nginx-dep/lib/pkgconfig/' pkg-config --modversion modsecurity"
@@ -139,6 +169,18 @@ pcre_check_nginx(){
             echo "NGINXOPENSSL_FATLTO_OBJECTS=$NGINXOPENSSL_FATLTO_OBJECTS"
             echo "NGINXOPENSSL_NOFATLTO_OBJECTS=$NGINXOPENSSL_NOFATLTO_OBJECTS"
             echo "OPENSSL_VERION=$OPENSSL_VERSION"
+            echo "HTTPTWOOPT=$HTTPTWOOPT"
+            echo "ECNISTP_CHECK=$ECNISTP_CHECK"
+            echo "ECNISTP_OPT=$ECNISTP_OPT"
+            echo "ECNISTP_ENDIAN=$ECNISTP_ENDIAN"
+            echo "NGINX_MIMALLOC=$NGINX_MIMALLOC"
+            echo "NGINX_MIMALLOC_VERSION=$NGINX_MIMALLOC_VERSION"
+            # if [[ "$ngver" = 'quic' || "$NGINX_QUIC_SUPPORT" = [yY] ]]; then
+            #     echo
+            #     echo "Check ${DIR_TMP}/${OPENSSL_QUIC_DIR}"
+            #     echo "ls -lah ${DIR_TMP}/${OPENSSL_QUIC_DIR}"
+            #     ls -lah "${DIR_TMP}/${OPENSSL_QUIC_DIR}"
+            # fi
             echo
             echo "ls -lAhrt /usr/local/nginx-dep/lib | egrep 'libpcre.so|libpcre2-8.so'"
             ls -lAhrt /usr/local/nginx-dep/lib | egrep 'libpcre.so|libpcre2-8.so'
@@ -146,6 +188,7 @@ pcre_check_nginx(){
         echo
     fi
     if [[ "$NGX_LDMOLD" = [yY] ]]; then
+        echo 'readelf -p .comment $(which nginx)'
         readelf -p .comment $(which nginx)
     fi
     } 2>&1 | tee "${CENTMINLOGDIR}/nginx_pcre_checks_${DT}.log"
@@ -317,7 +360,7 @@ if [ -f "${CONFIGSCANBASE}/custom_config.inc" ]; then
     # is a workaround to jump to 1.1.1a working version for now
     OPENSSL_VERSION="$OPENSSL_VERSION_OLDOVERRIDE"
     OPENSSL_LINKFILE="openssl-${OPENSSL_VERSION}.tar.gz"
-    OPENSSL_LINK="https://www.openssl.org/source/${OPENSSL_LINKFILE}"
+    OPENSSL_LINK="https://github.com/openssl/openssl/releases/download/openssl-${OPENSSL_VERSION}/${OPENSSL_LINKFILE}"
   fi
 fi
 
@@ -326,7 +369,7 @@ if [[ "$ORESTY_LUANGINX" = [yY] ]]; then
     # so fall back to 1.0.2 branch if lua nginx module is enabled
     OPENSSL_VERSION="$OPENSSL_VERSIONFALLBACK"
     OPENSSL_LINKFILE="openssl-${OPENSSL_VERSION}.tar.gz"
-    OPENSSL_LINK="https://www.openssl.org/source/${OPENSSL_LINKFILE}"
+    OPENSSL_LINK="https://github.com/openssl/openssl/releases/download/openssl-${OPENSSL_VERSION}/${OPENSSL_LINKFILE}"
 fi
 
     if [ -f "$(which figlet)" ]; then
@@ -342,9 +385,17 @@ fi
     echo "nginx dynamic module support detected"
     echo
     if [ "$ngver" ]; then
-        NGINX_DIRINSTALL="$DIR_TMP/nginx-${ngver}"
+        if [[ "$FREENGINX_INSTALL" = [yY] ]]; then
+            NGINX_DIRINSTALL="$DIR_TMP/freenginx-${ngver}"
+        else
+            NGINX_DIRINSTALL="$DIR_TMP/nginx-${ngver}"
+        fi
     else
-        NGINX_DIRINSTALL="$DIR_TMP/nginx-${NGINX_VERSION}"
+        if [[ "$FREENGINX_INSTALL" = [yY] ]]; then
+            NGINX_DIRINSTALL="$DIR_TMP/freenginx-${FREENGINX_VERSION}"
+        else
+            NGINX_DIRINSTALL="$DIR_TMP/nginx-${NGINX_VERSION}"
+        fi
     fi
 
     NGX_DYNAMICCHECK=$(grep 'DYNAMIC_MODULES=' "$NGINX_DIRINSTALL/auto/options" >/dev/null 2>&1; echo $?)
@@ -529,18 +580,23 @@ mkdir "$DIR_TMP"
 fi
 
 funct_mktempfile
+perl_ipc_cmd_install
 
 # only run for CentOS 6.x
-if [[ "$CENTOS_SEVEN" != '7' ]]; then
+if [[ "$CENTOS_SIX" = '6' ]]; then
 if [ ! -f /etc/init.d/nginx ]; then
     cp $CUR_DIR/init/nginx /etc/init.d/nginx
     chmod +x /etc/init.d/nginx
     chkconfig --levels 235 nginx on
 fi
-fi # CENTOS_SEVEN != 7
+fi # CENTOS_SIX = 6
 
-if [[ "$UALL" = 'y' ]]; then 
-    ngver=$NGINX_VERSION
+if [[ "$UALL" = 'y' ]]; then
+    if [[ "$FREENGINX_INSTALL" = [yY] ]]; then
+        ngver=$FREENGINX_VERSION
+    elif [[ "$NGINX_INSTALL" = [yY] ]]; then
+        ngver=$NGINX_VERSION
+    fi
     recompileopenssl='n'
 elif [[ "$CLI_NGINX_VER" ]]; then 
     ngver=$CLI_NGINX_VER
@@ -550,8 +606,13 @@ elif [[ "$CLI_NGINX_VER" ]]; then
     # enter, ngxver will be empty so should fall back to
     # the nginx version defined by NGINX_VERSION variable
     if [ -z "$ngver" ]; then
-        LASTEST_NGINXVERS=$(curl -${ipv_forceopt}sL https://nginx.org/en/download.html 2>&1 | egrep -o "nginx\-[0-9.]+\.tar[.a-z]*" | awk -F "nginx-" '/.tar.gz$/ {print $2}' | sed -e 's|.tar.gz||g' | head -n 1 2>&1)
-        ngver="$LASTEST_NGINXVERS"
+        if [[ "$FREENGINX_INSTALL" = [yY] ]]; then
+            LASTEST_NGINXVERS=$(curl -${ipv_forceopt}sL https://freenginx.org/en/download.html 2>&1 | egrep -o "freenginx\-[0-9.]+\.tar[.a-z]*" | awk -F "freenginx-" '/.tar.gz$/ {print $2}' | sed -e 's|.tar.gz||g' | head -n 1 2>&1)
+            ngver="$LASTEST_NGINXVERS"
+        elif [[ "$NGINX_INSTALL" = [yY] ]]; then
+            LASTEST_NGINXVERS=$(curl -${ipv_forceopt}sL https://nginx.org/en/download.html 2>&1 | egrep -o "nginx\-[0-9.]+\.tar[.a-z]*" | awk -F "nginx-" '/.tar.gz$/ {print $2}' | sed -e 's|.tar.gz||g' | head -n 1 2>&1)
+            ngver="$LASTEST_NGINXVERS"
+        fi
     fi
 
     nginx_maintenance_on
@@ -561,7 +622,9 @@ elif [[ "$CLI_NGINX_VER" ]]; then
     # if doesn't match then auto recompile the statically set
     # OPENSSL_VERSION
     AUTOOPENSSLCHECK=$(nginx -V 2>&1 | grep -Eo "$OPENSSL_VERSION")
-    if [[ "$AUTOOPENSSLCHECK" ]]; then
+    if [[ "$ngver" = 'quic' ]] || [[ "$NGINX_QUIC_SUPPORT" = [yY] && "$DETECT_NGXVER" -ge '1025000' ]]; then
+        recompileopenssl='y'
+    elif [[ "$AUTOOPENSSLCHECK" ]]; then
         recompileopenssl='y'
     else
         recompileopenssl='y'
@@ -572,7 +635,11 @@ else
     echo
     echo "Current Nginx Version: $(nginx -v 2>&1 | awk -F "/" '{print $2}' | head -n1)"
     echo
-    read -ep "Install which version of Nginx? (version i.e. type $NGINX_VERSION): " ngver
+    if [[ "$FREENGINX_INSTALL" = [yY] ]]; then
+        read -ep "Install which version of Nginx? (version i.e. type $FREENGINX_VERSION): " ngver
+    elif [[ "$NGINX_INSTALL" = [yY] ]]; then
+        read -ep "Install which version of Nginx? (version i.e. type $NGINX_VERSION): " ngver
+    fi
     echo
     read -ep "Do you still want to continue? [y/n] " ngx_stillcont
     echo
@@ -580,7 +647,7 @@ else
         exit 0
     fi
     ngver_branch=$(echo $ngver | cut -d . -f1,2 | sed -e 's|\.|00|g')
-    if [[ "$ngver_branch" -ge '10023' ]]; then
+    if [[ "$ngver_branch" -ge '10023' ]] || [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]]; then
         NGINX_PAGESPEED='n'
         NGXDYNAMIC_NGXPAGESPEED='n'
     fi
@@ -591,6 +658,9 @@ else
         echo
         exit
     fi
+    if [[ "$ngver" = 'quic' || "$NGINX_QUIC_SUPPORT" = [yY] ]]; then
+      OPENSSL_SYSTEM_USE='n'
+    fi
 
     service nginx reload >/dev/null 2>&1
 
@@ -598,8 +668,13 @@ else
     # enter, ngxver will be empty so should fall back to
     # the nginx version defined by NGINX_VERSION variable
     if [ -z "$ngver" ]; then
-        LASTEST_NGINXVERS=$(curl -${ipv_forceopt}sL https://nginx.org/en/download.html 2>&1 | egrep -o "nginx\-[0-9.]+\.tar[.a-z]*" | awk -F "nginx-" '/.tar.gz$/ {print $2}' | sed -e 's|.tar.gz||g' | head -n 1 2>&1)
-        ngver="$LASTEST_NGINXVERS"
+        if [[ "$FREENGINX_INSTALL" = [yY] ]]; then
+            LASTEST_NGINXVERS=$(curl -${ipv_forceopt}sL https://freenginx.org/en/download.html 2>&1 | egrep -o "freenginx\-[0-9.]+\.tar[.a-z]*" | awk -F "freenginx-" '/.tar.gz$/ {print $2}' | sed -e 's|.tar.gz||g' | head -n 1 2>&1)
+            ngver="$LASTEST_NGINXVERS"
+        elif [[ "$NGINX_INSTALL" = [yY] ]]; then
+            LASTEST_NGINXVERS=$(curl -${ipv_forceopt}sL https://nginx.org/en/download.html 2>&1 | egrep -o "nginx\-[0-9.]+\.tar[.a-z]*" | awk -F "nginx-" '/.tar.gz$/ {print $2}' | sed -e 's|.tar.gz||g' | head -n 1 2>&1)
+            ngver="$LASTEST_NGINXVERS"
+        fi
     fi
 
     nginx_maintenance_on
@@ -650,14 +725,20 @@ pagespeeduptasks
   cecho "Installing nginx Modules / Prerequisites..." $boldgreen
 
 checknginxmodules
+{
 nginxzlib_install
+} 2>&1 | tee "${CENTMINLOGDIR}/nginx-upgrade-zlib_${DT}.log"
 install_gperftools
 
 # echo ""
 # read -ep "Do you want to recompile OpenSSL ? Only needed if you updated OpenSSL version in centmin.sh [y/n]: " recompileopenssl 
 # echo ""
 
-if [[ "$recompileopenssl" = [yY] || "$LIBRESSL_SWITCH" = [yY] ]]; then
+if [[ "$recompileopenssl" = [yY] || "$LIBRESSL_SWITCH" = [yY] || "$BORINGSSL_SWITCH" = [yY] ]] && [[ "$OPENSSL_SYSTEM_USE" != [yY] ]]; then
+    installopenssl
+elif [[ "$recompileopenssl" = [yY] || "$LIBRESSL_SWITCH" = [yY] || "$BORINGSSL_SWITCH" = [yY] ]] && [[ "$OPENSSL_SYSTEM_USE" = [yY] ]]; then
+    installopenssl
+elif [[ "$OPENSSL_SYSTEM_USE" = [nN] ]]; then
     installopenssl
 fi # recompileopenssl
 
@@ -734,23 +815,47 @@ fi
     fi
 
     echo "Compiling nginx..."
+    if [[ "$ngver" = 'angie' ]]; then
+        rm -rf nginx-angie*
+        git clone https://github.com/webserver-llc/angie nginx-angie
+        pushd nginx-angie
+        git checkout $NGINX_ANGIE_VERSION
+        DETECT_NGXVER=$(awk '/define nginx_version  / {print $3}' "/svr-setup/nginx-angie/src/core/nginx.h")
+        popd
+        angie_console_setup
+        # mv nginx-angie/auto/configure nginx-master/configure
+    fi
     if [[ "$ngver" = 'master' ]]; then
         rm -rf nginx-${ngver}*
         git clone --depth=1 https://github.com/nginx/nginx nginx-master
         mv nginx-master/auto/configure nginx-master/configure
+    fi
+    if [[ "$ngver" = 'quic' ]]; then
+        rm -rf nginx-${ngver}*
+        # mercurial_check
+        # hg clone -b quic https://hg.nginx.org/nginx-quic nginx-quic
+        git clone --depth=1 https://github.com/nginx/nginx/ nginx-quic
+        mv nginx-quic/auto/configure nginx-quic/configure
     fi
     if [[ "$ngver" = 'master-google' ]]; then
         rm -rf nginx-${ngver}*
         git clone --depth=1 https://nginx.googlesource.com/nginx nginx-master-google
         mv nginx-master-google/auto/configure nginx-master-google/configure
     fi
-    if [[ -s "nginx-${ngver}.tar.gz" || "$ngver" = 'master' || "$ngver" = 'master-google' ]]; then
+    if [[ -s "nginx-${ngver}.tar.gz" || "$ngver" = 'angie' || "$ngver" = 'master' || "$ngver" = 'master-google' || "$ngver" = 'quic' ]]; then
         cecho "nginx ${ngver} download found, skipping download..." $boldgreen
     else
-        download_cmd "https://nginx.org/download/nginx-${ngver}.tar.gz" $WGETRETRY
+        if [[ "$FREENGINX_INSTALL" = [yY] ]]; then
+            echo
+            echo "Downloading Freenginx forked version"
+            echo
+            download_cmd "https://freenginx.org/download/freenginx-${ngver}.tar.gz" $WGETRETRY
+        else
+            download_cmd "https://nginx.org/download/nginx-${ngver}.tar.gz" $WGETRETRY
+        fi
         NGINXDOWNLOAD_CHECK=$?
         if [[ "$NGINXDOWNLOAD_CHECK" != '0' ]]; then
-            wget -c${ipv_forceopt} "https://nginx.org/download/nginx-${ngver}.tar.gz" --tries=3
+            wget "https://nginx.org/download/nginx-${ngver}.tar.gz" --tries=3
             NGINXDOWNLOAD_CHECK=$?
             if [[ "$NGINXDOWNLOAD_CHECK" != '0' ]]; then
                 if [ -f "$(which figlet)" ]; then
@@ -762,6 +867,8 @@ fi
                 echo "make sure you type the correct nginx version"
                 echo "report errors on the forums at community.centminmod.com/forums/8/"
                 echo "with info asked at community.centminmod.com/threads/17778/"
+                echo "ensure you're using latest code by running command: cmupdate"
+                echo "and retrying centmin.sh menu option 4 first"
                 nginx_maintenance_off
             echo
             free -m
@@ -785,12 +892,20 @@ fi
         fi
     fi
 
-    if [[ ! "$(echo $ngver | grep 'master')" ]]; then
-        tar xvfz "nginx-${ngver}.tar.gz"
+    if [[ ! "$(echo $ngver | egrep 'master|angie|quic')" ]]; then
+        if [[ "$FREENGINX_INSTALL" = [yY] ]]; then
+            tar xvfz "freenginx-${ngver}.tar.gz"
+        else
+            tar xvfz "nginx-${ngver}.tar.gz"
+        fi
         NGINXTAREXTRACT_CHECK=$?
         if [[ "$NGINXTAREXTRACT_CHECK" != '0' ]]; then
             if [ -f "$(which figlet)" ]; then
-                figlet -ckf standard "Nginx Tarball Extraction Failed"
+                if [[ "$FREENGINX_INSTALL" = [yY] ]]; then
+                    figlet -ckf standard "FreeNginx Tarball Extraction Failed"
+                else
+                    figlet -ckf standard "Nginx Tarball Extraction Failed"
+                fi
             fi
             echo
             echo "!! Nginx Tarball Extraction Failed !!"
@@ -798,6 +913,8 @@ fi
             echo "make sure you type the correct nginx version"
             echo "report errors on the forums at community.centminmod.com/forums/8/"
             echo "with info asked at community.centminmod.com/threads/17778/"
+            echo "ensure you're using latest code by running command: cmupdate"
+            echo "and retrying centmin.sh menu option 4 first"
             nginx_maintenance_off
             echo
             free -m
@@ -818,10 +935,15 @@ fi
             fi
     
             rm -rf "$DIR_TMP/nginx-*.tar.gz"
+            rm -rf "$DIR_TMP/freenginx-*.tar.gz"
             exit
         fi
     fi
-    cd "nginx-${ngver}"
+    if [[ "$FREENGINX_INSTALL" = [yY] ]]; then
+        cd "freenginx-${ngver}"
+    else
+        cd "nginx-${ngver}"
+    fi
     if [[ "$INITIALINSTALL" != [yY] ]]; then
         make clean
     fi
@@ -854,6 +976,8 @@ fi
       echo -e "\n`date`\nError: $ERR, Nginx configure failed\n"
         echo "report errors on the forums at community.centminmod.com/forums/8/"
         echo "with info asked at community.centminmod.com/threads/17778/"
+        echo "ensure you're using latest code by running command: cmupdate"
+        echo "and retrying centmin.sh menu option 4 first"
         nginx_maintenance_off
         echo
         free -mlt
@@ -935,7 +1059,7 @@ fi
       touch ${BORINGSSL_DIR}/boringssl/.openssl/include/openssl/ssl.h
       ls -lah ${BORINGSSL_DIR}/boringssl/.openssl/include/openssl/ssl.h
     fi
-
+    ngx_make_starttime=$(TZ=UTC date +%s.%N)
     if [[ "$LIBRESSL_SWITCH" = [yY] ]]; then
         time make${MAKETHREADS}
     else
@@ -947,12 +1071,21 @@ fi
     fi
     
     ERR=$?
+    ngx_make_endtime=$(TZ=UTC date +%s.%N)
+    ngx_make_time=$(echo "scale=2;$ngx_make_endtime - $ngx_make_starttime"|bc )
     sar_call
 
     if [[ "$STRIPNGINX" = [yY] && "$NGINX_DEBUG" != [yY] ]]; then
         if [ -f objs/nginx ]; then
             echo
             echo "strip nginx binary..."
+            \cp -af objs/nginx objs/nginx.b4strip
+            if [[ "$NGX_LDMOLD" = [yY] ]]; then
+                echo
+                echo 'readelf -p .comment objs/nginx.b4strip'
+                readelf -p .comment objs/nginx.b4strip
+                echo
+            fi
             ls -lah objs/nginx
             strip -s objs/nginx
             ls -lah objs/nginx
@@ -967,6 +1100,8 @@ fi
       echo -e "\n`date`\nError: $ERR, Nginx make failed\n"
         echo "report errors on the forums at community.centminmod.com/forums/8/"
         echo "with info asked at community.centminmod.com/threads/17778/"
+        echo "ensure you're using latest code by running command: cmupdate"
+        echo "and retrying centmin.sh menu option 4 first"
         nginx_maintenance_off
         echo
         free -mlt
@@ -986,6 +1121,7 @@ fi
         echo "NGXEXTRA_LDGOLDCCOPT=$NGXEXTRA_LDGOLDCCOPT"
         echo "NGINX_KTLS=$NGINX_KTLS"
         echo "OPENSSL_VERSION=$OPENSSL_VERSION"
+        echo "HTTPTWOOPT=$HTTPTWOOPT"
         echo
         echo "ls -lAhrt /usr/local/lib | egrep 'libpcre.so|libpcre2-8.so'"
         ls -lAhrt /usr/local/lib | egrep 'libpcre.so|libpcre2-8.so'
@@ -1032,12 +1168,13 @@ fi
       exit
   else
      echo -e "\n`date`\nSuccess: Nginx make ok\n"
+     aws_lc_patch_make
   fi
 
 # error check
 ################
 
-        if [[ "$CENTOS_SEVEN" = '7' ]]; then
+        if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]]; then
             systemctl daemon-reload
         fi
 
@@ -1082,6 +1219,14 @@ fi
 
     time make install
     ERR=$?
+    if [[ "$FPM_NGINX_INSTALLDIR_ENABLE" = [yY] ]]; then
+      echo
+      rm -rf "$FPM_NGINX_INSTALLDIR"
+      mkdir -p "$FPM_NGINX_INSTALLDIR"
+      echo "time make install DESTDIR=$FPM_NGINX_INSTALLDIR"
+      time make install DESTDIR="$FPM_NGINX_INSTALLDIR"
+      FPM_NGINX_INSTALLDIR_ERR=$?
+    fi
     sar_call
 
 if [[ "$CLANG" = [yY] ]]; then
@@ -1103,6 +1248,8 @@ fi
       echo -e "\n`date`\nError: $ERR, Nginx wasn't installed properly\n"
         echo "report errors on the forums at community.centminmod.com/forums/8/"
         echo "with info asked at community.centminmod.com/threads/17778/"
+        echo "ensure you're using latest code by running command: cmupdate"
+        echo "and retrying centmin.sh menu option 4 first"
         nginx_maintenance_off
         echo
         free -m
@@ -1132,6 +1279,7 @@ fi
         if [ -f objs/autoconf.err ]; then
             cat objs/autoconf.err > "${CENTMINLOGDIR}/nginx_autoconf.err.${DT}.log"
         fi
+      run_after_nginx_upgrade
       echo -e "\n`date`\nSuccess: Nginx was installed properly\n"
 
     if [[ "$NGINX_HTTP2" = [yY] && "$NGINX_SPDYPATCHED" = [yY] ]] && [[ "$NGX_VEREVAL" -ge '10907' ]]; then
@@ -1201,7 +1349,8 @@ fi
         fi
         echo
     fi
-        if [[ "$CENTOS_SEVEN" = '7' ]]; then
+    nginx_deprecate_httptwo_param
+        if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]]; then
             systemctl daemon-reload
         fi
         # empty pagespeed cache
@@ -1279,18 +1428,13 @@ if [[ "$NGINX_STICKY" = [yY] ]]; then
 fi
 
 # clean up /svr-setup downloads directory of older PHP source tarball/directories
-find "$DIR_TMP" -maxdepth 1 \( -name 'nginx-1*' ! -name "nginx-${ngver}*" \) -print
-find "$DIR_TMP" -maxdepth 1 \( -name 'nginx-1*' ! -name "nginx-${ngver}*" \) -exec rm -rf {} \;
-find "$DIR_TMP" -maxdepth 1 \( -name 'ngx_pagespeed*' ! -name "ngx_pagespeed-${NGXPGSPEED_VER}*" \) -print
-find "$DIR_TMP" -maxdepth 1 \( -name 'ngx_pagespeed*' ! -name "ngx_pagespeed-${NGXPGSPEED_VER}*" \) -exec rm -rf {} \;
-find "$DIR_TMP" -maxdepth 1 \( -name 'incubator-pagespeed-ngx*' ! -name "incubator-pagespeed-ngx-${NGXPGSPEED_VER}*" ! -name "incubator-pagespeed-ngx-master" \) -print
-find "$DIR_TMP" -maxdepth 1 \( -name 'incubator-pagespeed-ngx*' ! -name "incubator-pagespeed-ngx-${NGXPGSPEED_VER}*" ! -name "incubator-pagespeed-ngx-master" \) -exec rm -rf {} \;
-find "$DIR_TMP" -maxdepth 1 \( -name 'libressl*' ! -name "libressl-${LIBRESSL_VERSION}*" \) -print
-find "$DIR_TMP" -maxdepth 1 \( -name 'libressl*' ! -name "libressl-${LIBRESSL_VERSION}*" \) -exec rm -rf {} \;
-find "$DIR_TMP" -maxdepth 1 \( -name 'openssl*' ! -name "openssl-${OPENSSL_VERSION}*" \) -print
-find "$DIR_TMP" -maxdepth 1 \( -name 'openssl*' ! -name "openssl-${OPENSSL_VERSION}*" \) -exec rm -rf {} \;
-find "$DIR_TMP" -maxdepth 1 \( -name 'pcre-*' ! -name "pcre-${NGINX_PCREVER}*" \) -print
-find "$DIR_TMP" -maxdepth 1 \( -name 'pcre-*' ! -name "pcre-${NGINX_PCREVER}*" \) -exec rm -rf {} \;
+for pattern in "nginx-1*" "ngx_pagespeed*" "incubator-pagespeed-ngx*" "libressl*" "openssl*" "pcre-*"; do
+  latest_version=$(ls -v "$DIR_TMP"/"$pattern" 2>/dev/null | tail -n 1)
+  if [ -n "$latest_version" ]; then
+    find "$DIR_TMP" -maxdepth 1 \( -name "$pattern" ! -name "$latest_version" \) -print
+    find "$DIR_TMP" -maxdepth 1 \( -name "$pattern" ! -name "$latest_version" \) -exec rm -rf {} \;
+  fi
+done
 
 # nginx upgrade logs older than 90 days will be gzip compressed to save space 
 # & older logs than 120 days deleted
@@ -1309,7 +1453,14 @@ fi
             # echo
             # nginx -t
         fi
-
+        if [[ "$NGINX_SECURED" = [yY] ]]; then
+            echo
+            checksec_nginx
+            echo
+            echo "checksec --format=json --file=/usr/local/sbin/nginx --extended | jq -r"
+            checksec --format=json --file=/usr/local/sbin/nginx --extended | jq -r
+            echo
+        fi
         if [[ "$DYNAMIC_SUPPORT" = [yY] ]]; then
             echo
             echo "dynamic modules include file /usr/local/nginx/conf/dynamic-modules.conf"
@@ -1347,6 +1498,9 @@ fi
             cecho "* NGINX_STAPLE_CACHE_OVERRIDE='y' detected NGINX_STAPLE_CACHE_TTL='${NGINX_STAPLE_CACHE_TTL}' set" $boldgreen
         fi
         cecho "* nginx updated" $boldgreen
+        if [[ "$ngver" = 'angie' ]]; then
+            cecho "* angie nginx fork build https://github.com/webserver-llc/angie" $boldgreen
+        fi
         if [[ "$ngver" = 'master' ]]; then
             cecho "* nginx github master build" $boldgreen
         fi
@@ -1359,6 +1513,10 @@ fi
     if [[ "$NGINX_NJS" = [yY] && -f "$DIR_TMP/njs/build/njs" ]]; then
         cp -af "$DIR_TMP/njs/build/njs" /usr/local/bin/njs
     fi
+    # remove latest Nginx version cache file
+    rm -f /tmp/nginx_version_cache
+    echo "nginx upgrade: make time completed in $ngx_make_time seconds"
+    echo
     if [ -f "$(which figlet)" ]; then
         figlet -ckf standard "Nginx Updated"
     fi
