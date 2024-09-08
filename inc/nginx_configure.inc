@@ -5041,7 +5041,7 @@ if [[ "$(gcc --version | head -n1 | awk '{print $3}' | cut -d . -f1-3 | sed "s|\
       elif [[ "$CLANG_SIX" = [Yy] ]]; then
         NGXEXTRA_LDGOLDCCOPT="$NGXEXTRA_LDGOLDCCOPT"
       else
-        if [[ "$NGINX_GEOIPTWOLITE" = [yY] ]]; then
+        if [[ "$NGINX_GEOIPTWOLITE" = [yY] || "$CLANG" = [yY] ]]; then
           # GeoIP2 Lite fails to compile with -fuse-ld=gold
           NGXEXTRA_LDGOLDCCOPT="$NGXEXTRA_LDGOLDCCOPT"
         else
