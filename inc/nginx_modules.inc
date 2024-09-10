@@ -3,24 +3,24 @@ function funct_nginxmodules {
     # nginx Modules
     cd ${DIR_TMP}
 
-    if [ -s ngx-fancyindex-0.3.1.tar.gz ]; then
-        cecho "ngx-fancyindex 0.3.1 Archive found, skipping download..." $boldgreen
+    if [ -s "$NGX_FANCYINDEXLINKFILE" ]; then
+        cecho "ngx-fancyindex ${NGINX_FANCYINDEXVER} Archive found, skipping download..." $boldgreen
     else
-        wget --progress=bar ${LOCALCENTMINMOD_MIRROR}/centminmodparts/nginx/modules/ngx-fancyindex-0.3.1.tar.gz --tries=3
+        wget --progress=bar -O "${NGX_FANCYINDEXLINKFILE}" "${NGX_FANCYINDEXLINK}" --tries=3
     fi
 
-    tar zvxf ngx-fancyindex-0.3.1.tar.gz
+    tar zvxf "$NGX_FANCYINDEXLINKFILE"
 
 if [ ! -d ${DIR_TMP}/ngx-fancyindex-ngx-fancyindex ]; then
-rm -rf ngx-fancyindex-0.3.1.tar.gz
+rm -rf "$NGX_FANCYINDEXLINKFILE"
 
-    if [ -s ngx-fancyindex-0.3.1.tar.gz ]; then
-        cecho "ngx-fancyindex 0.3.1 Archive found, skipping download..." $boldgreen
+    if [ -s "$NGX_FANCYINDEXLINKFILE" ]; then
+        cecho "ngx-fancyindex ${NGINX_FANCYINDEXVER} Archive found, skipping download..." $boldgreen
     else
-        wget --progress=bar ${LOCALCENTMINMOD_MIRROR}/centminmodparts/nginx/modules/ngx-fancyindex-0.3.1.tar.gz --tries=3
+        wget --progress=bar -O "${NGX_FANCYINDEXLINKFILE}" "${NGX_FANCYINDEXLINK}" --tries=3
     fi
 
-    tar zvxf ngx-fancyindex-0.3.1.tar.gz
+    tar zvxf "$NGX_FANCYINDEXLINKFILE"
 
 fi
 
@@ -33,7 +33,7 @@ fi
     tar zvxf "$NGX_CACHEPURGEFILE"
 
     if [ -s Nginx-accesskey-2.0.5.tar.gz ]; then
-        cecho "Nginx-accesskey 2.0.5 Archive found, skipping download..." $boldgreen
+        cecho "Nginx-accesskey 2.0.3 Archive found, skipping download..." $boldgreen
     else
         download_cmd "$NGX_ACCESSKEYLINK" $WGETRETRY
     fi
