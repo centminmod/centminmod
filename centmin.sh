@@ -821,6 +821,7 @@ PARALLEL_MODE=y
 MARCH_TARGETNATIVE='y'        # for intel 64bit only set march=native, if no set to x86-64
 MARCH_TARGETNATIVE_ALWAYS='n' # force native compiler to override smarter vps detection routine
 CLANG='n'                     # Build Nginx with Clang compiler instead of default GCC compiler
+CLANG_LTO_ENABLE='y'          # Build Nginx with Clang LTO enabled
 CLANG_LTO_FULL='n'            # use full Clang LTO linker instead of LTO Thin linker for Nginx
 CLANG_FOUR='n'                # Clang 4.0+ optional support https://community.centminmod.com/threads/13729/
 CLANG_FIVE='n'                # Clang 5.0+ optional support https://community.centminmod.com/threads/13729/
