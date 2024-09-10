@@ -30,7 +30,7 @@ DT=$(date +"%d%m%y-%H%M%S")
 branchname='140.00beta01'
 SCRIPT_MAJORVER='140'
 SCRIPT_MINORVER='00'
-SCRIPT_INCREMENTVER='116'
+SCRIPT_INCREMENTVER='117'
 SCRIPT_VERSIONSHORT="${branchname}"
 SCRIPT_VERSION="${SCRIPT_VERSIONSHORT}.b${SCRIPT_INCREMENTVER}"
 SCRIPT_DATE='01/07/24'
@@ -861,6 +861,7 @@ NGX_LDMOLD='n'                # optional mold linker https://github.com/rui314/m
 MOLD_VERSION='1.3.0'          # mold linker rpm version
 MOLD_VERSION_EL8='1.11.0'     # mold linker rpm version
 NGINX_SECURED='y'             # apply more secure compilation options for Nginx
+NGINX_SYMBOLIC_AS_NEEDED='y'  # enable nginx options for -Wl,-Bsymbolic-functions -Wl,--as-needed
 PHP_SECURED='y'               # apply more secure compilation options for PHP-FPM
 
 # When set to =y, will disable those listed installed services 

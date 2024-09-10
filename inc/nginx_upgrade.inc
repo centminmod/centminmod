@@ -1085,6 +1085,11 @@ fi
                 echo 'readelf -p .comment objs/nginx.b4strip'
                 readelf -p .comment objs/nginx.b4strip
                 echo
+            else
+                echo
+                echo 'readelf -p .comment objs/nginx.b4strip'
+                readelf -p .comment objs/nginx.b4strip
+                echo
             fi
             ls -lah objs/nginx
             strip -s objs/nginx
