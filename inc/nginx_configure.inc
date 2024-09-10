@@ -3326,9 +3326,16 @@ fi
       fi
       if [[ "$FLTO_COMP" = [yY] && "$CLANG" = [yY] ]] && [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]]; then
         FLTO_COMP_OPT=""
-        # CLANG_FLTO_OPT=" -flto=thin"
-        CLANG_FLTO_LDOPT=""
-        CLANG_FLTO_OPT=""
+        if [ ! -f /usr/bin/ld.lld ]; then
+          yum -y install lld
+        fi
+        # default to Clang LTO Thin linker unless CLANG_LTO_FULL='y'
+        if [[ "$CLANG_LTO_FULL" = [yY] ]]; then
+          CLANG_FLTO_OPT=" -flto"
+        else
+          CLANG_FLTO_OPT=" -flto=thin"
+        fi
+        CLANG_FLTO_LDOPT=" -fuse-ld=lld"
       elif [[ "$FLTO_COMP" = [yY] ]] && [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]]; then
         FLTO_COMP_OPT=" -flto-compression-level=${FLTO_COMP_LEVEL}"
       else

@@ -30,7 +30,7 @@ DT=$(date +"%d%m%y-%H%M%S")
 branchname='140.00beta01'
 SCRIPT_MAJORVER='140'
 SCRIPT_MINORVER='00'
-SCRIPT_INCREMENTVER='115'
+SCRIPT_INCREMENTVER='116'
 SCRIPT_VERSIONSHORT="${branchname}"
 SCRIPT_VERSION="${SCRIPT_VERSIONSHORT}.b${SCRIPT_INCREMENTVER}"
 SCRIPT_DATE='01/07/24'
@@ -820,7 +820,8 @@ PARALLEL_MODE=y
 # compiler related
 MARCH_TARGETNATIVE='y'        # for intel 64bit only set march=native, if no set to x86-64
 MARCH_TARGETNATIVE_ALWAYS='n' # force native compiler to override smarter vps detection routine
-CLANG='n'                     # Nginx and LibreSSL
+CLANG='n'                     # Build Nginx with Clang compiler instead of default GCC compiler
+CLANG_LTO_FULL='n'            # use full Clang LTO linker instead of LTO Thin linker for Nginx
 CLANG_FOUR='n'                # Clang 4.0+ optional support https://community.centminmod.com/threads/13729/
 CLANG_FIVE='n'                # Clang 5.0+ optional support https://community.centminmod.com/threads/13729/
 CLANG_SIX='n'                 # Clang 6.0+ optional support https://community.centminmod.com/threads/13729/
