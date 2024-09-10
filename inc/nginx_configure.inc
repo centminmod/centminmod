@@ -3336,9 +3336,9 @@ fi
           else
             CLANG_FLTO_OPT=" -flto=thin"
           fi
-          CLANG_FLTO_LDOPT=" -fuse-ld=lld"
+          CLANG_FLTO_LDOPT="-fuse-ld=lld"
         else
-          CLANG_FLTO_LDOPT=" -fuse-ld=lld"
+          CLANG_FLTO_LDOPT="-fuse-ld=lld"
         fi
       elif [[ "$FLTO_COMP" = [yY] ]] && [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]]; then
         FLTO_COMP_OPT=" -flto-compression-level=${FLTO_COMP_LEVEL}"
@@ -5567,6 +5567,10 @@ else
     SETBUILD_VALUE=$(echo "$SETBUILD_VALUE" | sed -e 's|\-redhat||g')
     if [[ "$NGINX_SECURED" = [yY] ]]; then
       checksec_check
+    fi
+    if [[ "$CCACHE_CPP2_DISABLE" = [yY] ]]; then
+      # preprocessor and compiler can run together in a single step
+      export CCACHE_CPP2=no
     fi
     if [[ "$NGXMODULE_ALTORDER" = [yY] ]]; then
       if [[ "$asknginxipv" = [yY] || "$NGINX_IPV" = [yY] ]]; then
