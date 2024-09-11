@@ -691,7 +691,23 @@ crypto_gcc() {
       else
         MOLD_LINKER_OPT=""
       fi
-      if [[ "$CENTOS_NINE" -eq '9' && "$CENTOSVER_NUMERIC" -ge '93' && "$DEVTOOLSETTHIRTEEN" = [yY] ]] && [[ ! -f /opt/rh/gcc-toolset-13/root/usr/bin/gcc || ! -f /opt/rh/gcc-toolset-13/root/usr/bin/g++ ]]; then
+      if [[ "$CENTOS_NINE" -eq '9' && "$CENTOSVER_NUMERIC" -ge '93' && "$DEVTOOLSETFOURTEEN" = [yY] ]] && [[ ! -f /opt/rh/gcc-toolset-14/root/usr/bin/gcc || ! -f /opt/rh/gcc-toolset-14/root/usr/bin/g++ ]]; then
+        scl_install
+        source /opt/rh/gcc-toolset-14/enable
+        CRYPTODEVTOOLSETFOURTEEN_FALLTHROUGH=' -Wimplicit-fallthrough=0 -Wno-implicit-function-declaration -Wno-int-conversion -Wno-unused-result'
+        CRYPTODEVTOOLSETFOURTEEN_EXTRAFLAGS=' -fcode-hoisting -Wno-cast-function-type -Wno-format-extra-args -Wformat=0  -Wno-error=implicit-function-declaration -Wno-builtin-declaration-mismatch -Wno-unused-result -Wno-return-local-addr -Wno-maybe-uninitialized -Wno-array-parameter -Wno-alloc-size-larger-than -Wno-address -Wno-array-bounds -Wno-deprecated-declarations -Wno-discarded-qualifiers -Wno-stringop-overread -Wno-stringop-truncation -Wno-missing-field-initializers'
+        which gcc
+        which g++
+        unset CC
+        unset CXX
+        if [[ "$INITIALINSTALL" != [yY] ]]; then
+            export CC="ccache /opt/rh/gcc-toolset-14/root/usr/bin/gcc${MOLD_LINKER_OPT}"
+            export CXX="ccache /opt/rh/gcc-toolset-14/root/usr/bin/g++${MOLD_LINKER_OPT}"
+        else
+            export CC="/opt/rh/gcc-toolset-14/root/usr/bin/gcc${MOLD_LINKER_OPT}"
+            export CXX="/opt/rh/gcc-toolset-14/root/usr/bin/g++${MOLD_LINKER_OPT}"
+        fi
+      elif [[ "$CENTOS_NINE" -eq '9' && "$CENTOSVER_NUMERIC" -ge '93' && "$DEVTOOLSETTHIRTEEN" = [yY] ]] && [[ ! -f /opt/rh/gcc-toolset-13/root/usr/bin/gcc || ! -f /opt/rh/gcc-toolset-13/root/usr/bin/g++ ]]; then
         scl_install
         source /opt/rh/gcc-toolset-13/enable
         CRYPTODEVTOOLSETTHIRTEEN_FALLTHROUGH=' -Wimplicit-fallthrough=0 -Wno-implicit-function-declaration -Wno-int-conversion -Wno-unused-result'
@@ -722,6 +738,22 @@ crypto_gcc() {
         else
             export CC="/opt/rh/gcc-toolset-12/root/usr/bin/gcc${MOLD_LINKER_OPT}"
             export CXX="/opt/rh/gcc-toolset-12/root/usr/bin/g++${MOLD_LINKER_OPT}"
+        fi
+      elif [[ "$CENTOS_EIGHT" -eq '8' && "$CENTOSVER_NUMERIC" -ge '89' && "$DEVTOOLSETFOURTEEN" = [yY] ]] && [[ ! -f /opt/rh/gcc-toolset-14/root/usr/bin/gcc || ! -f /opt/rh/gcc-toolset-14/root/usr/bin/g++ ]]; then
+        scl_install
+        source /opt/rh/gcc-toolset-14/enable
+        CRYPTODEVTOOLSETFOURTEEN_FALLTHROUGH=' -Wimplicit-fallthrough=0 -Wno-implicit-function-declaration -Wno-int-conversion -Wno-unused-result'
+        CRYPTODEVTOOLSETFOURTEEN_EXTRAFLAGS=' -fcode-hoisting -Wno-cast-function-type -Wno-format-extra-args -Wformat=0  -Wno-error=implicit-function-declaration -Wno-builtin-declaration-mismatch -Wno-unused-result -Wno-return-local-addr -Wno-maybe-uninitialized -Wno-array-parameter -Wno-alloc-size-larger-than -Wno-address -Wno-array-bounds -Wno-deprecated-declarations -Wno-discarded-qualifiers -Wno-stringop-overread -Wno-stringop-truncation -Wno-missing-field-initializers'
+        which gcc
+        which g++
+        unset CC
+        unset CXX
+        if [[ "$INITIALINSTALL" != [yY] ]]; then
+            export CC="ccache /opt/rh/gcc-toolset-14/root/usr/bin/gcc${MOLD_LINKER_OPT}"
+            export CXX="ccache /opt/rh/gcc-toolset-14/root/usr/bin/g++${MOLD_LINKER_OPT}"
+        else
+            export CC="/opt/rh/gcc-toolset-14/root/usr/bin/gcc${MOLD_LINKER_OPT}"
+            export CXX="/opt/rh/gcc-toolset-14/root/usr/bin/g++${MOLD_LINKER_OPT}"
         fi
       elif [[ "$CENTOS_EIGHT" -eq '8' && "$CENTOSVER_NUMERIC" -ge '89' && "$DEVTOOLSETTHIRTEEN" = [yY] ]] && [[ ! -f /opt/rh/gcc-toolset-13/root/usr/bin/gcc || ! -f /opt/rh/gcc-toolset-13/root/usr/bin/g++ ]]; then
         scl_install
@@ -897,6 +929,21 @@ crypto_gcc() {
             export CC="/opt/rh/devtoolset-9/root/usr/bin/gcc"
             export CXX="/opt/rh/devtoolset-9/root/usr/bin/g++"
         fi
+      elif [[ "$CENTOS_NINE" -eq '9' && "$CENTOSVER_NUMERIC" -ge '93' && "$DEVTOOLSETFOURTEEN" = [yY] ]] && [[ -f /opt/rh/gcc-toolset-14/root/usr/bin/gcc || -f /opt/rh/gcc-toolset-14/root/usr/bin/g++ ]]; then
+        source /opt/rh/gcc-toolset-14/enable
+        CRYPTODEVTOOLSETFOURTEEN_FALLTHROUGH=' -Wimplicit-fallthrough=0 -Wno-implicit-function-declaration -Wno-int-conversion -Wno-unused-result'
+        CRYPTODEVTOOLSETFOURTEEN_EXTRAFLAGS=' -fcode-hoisting -Wno-cast-function-type -Wno-format-extra-args -Wformat=0  -Wno-error=implicit-function-declaration -Wno-builtin-declaration-mismatch -Wno-unused-result -Wno-return-local-addr -Wno-maybe-uninitialized -Wno-array-parameter -Wno-alloc-size-larger-than -Wno-address -Wno-array-bounds -Wno-deprecated-declarations -Wno-discarded-qualifiers -Wno-stringop-overread -Wno-stringop-truncation -Wno-missing-field-initializers'
+        which gcc
+        which g++
+        unset CC
+        unset CXX
+        if [[ "$INITIALINSTALL" != [yY] ]]; then
+            export CC="ccache /opt/rh/gcc-toolset-14/root/usr/bin/gcc${MOLD_LINKER_OPT}"
+            export CXX="ccache /opt/rh/gcc-toolset-14/root/usr/bin/g++${MOLD_LINKER_OPT}"
+        else
+            export CC="/opt/rh/gcc-toolset-14/root/usr/bin/gcc${MOLD_LINKER_OPT}"
+            export CXX="/opt/rh/gcc-toolset-14/root/usr/bin/g++${MOLD_LINKER_OPT}"
+        fi
       elif [[ "$CENTOS_NINE" -eq '9' && "$CENTOSVER_NUMERIC" -ge '93' && "$DEVTOOLSETTHIRTEEN" = [yY] ]] && [[ -f /opt/rh/gcc-toolset-13/root/usr/bin/gcc || -f /opt/rh/gcc-toolset-13/root/usr/bin/g++ ]]; then
         source /opt/rh/gcc-toolset-13/enable
         CRYPTODEVTOOLSETTHIRTEEN_FALLTHROUGH=' -Wimplicit-fallthrough=0 -Wno-implicit-function-declaration -Wno-int-conversion -Wno-unused-result'
@@ -926,6 +973,21 @@ crypto_gcc() {
         else
             export CC="/opt/rh/gcc-toolset-12/root/usr/bin/gcc${MOLD_LINKER_OPT}"
             export CXX="/opt/rh/gcc-toolset-12/root/usr/bin/g++${MOLD_LINKER_OPT}"
+        fi
+      elif [[ "$CENTOS_EIGHT" -eq '8' && "$CENTOSVER_NUMERIC" -ge '89' && "$DEVTOOLSETFOURTEEN" = [yY] ]] && [[ -f /opt/rh/gcc-toolset-14/root/usr/bin/gcc || -f /opt/rh/gcc-toolset-14/root/usr/bin/g++ ]]; then
+        source /opt/rh/gcc-toolset-14/enable
+        CRYPTODEVTOOLSETFOURTEEN_FALLTHROUGH=' -Wimplicit-fallthrough=0 -Wno-implicit-function-declaration -Wno-int-conversion -Wno-unused-result'
+        CRYPTODEVTOOLSETFOURTEEN_EXTRAFLAGS=' -fcode-hoisting -Wno-cast-function-type -Wno-format-extra-args -Wformat=0  -Wno-error=implicit-function-declaration -Wno-builtin-declaration-mismatch -Wno-unused-result -Wno-return-local-addr -Wno-maybe-uninitialized -Wno-array-parameter -Wno-alloc-size-larger-than -Wno-address -Wno-array-bounds -Wno-deprecated-declarations -Wno-discarded-qualifiers -Wno-stringop-overread -Wno-stringop-truncation -Wno-missing-field-initializers'
+        which gcc
+        which g++
+        unset CC
+        unset CXX
+        if [[ "$INITIALINSTALL" != [yY] ]]; then
+            export CC="ccache /opt/rh/gcc-toolset-14/root/usr/bin/gcc${MOLD_LINKER_OPT}"
+            export CXX="ccache /opt/rh/gcc-toolset-14/root/usr/bin/g++${MOLD_LINKER_OPT}"
+        else
+            export CC="/opt/rh/gcc-toolset-14/root/usr/bin/gcc${MOLD_LINKER_OPT}"
+            export CXX="/opt/rh/gcc-toolset-14/root/usr/bin/g++${MOLD_LINKER_OPT}"
         fi
       elif [[ "$CENTOS_EIGHT" -eq '8' && "$CENTOSVER_NUMERIC" -ge '89' && "$DEVTOOLSETTHIRTEEN" = [yY] ]] && [[ -f /opt/rh/gcc-toolset-13/root/usr/bin/gcc || -f /opt/rh/gcc-toolset-13/root/usr/bin/g++ ]]; then
         source /opt/rh/gcc-toolset-13/enable
@@ -1201,7 +1263,7 @@ crypto_gcc() {
         
         if [[ "$(uname -m)" = 'x86_64' && "$CPUVENDOR" = 'GenuineIntel' && "$SSECHECK" = '[enabled]' ]]; then
             CCM=64
-            CRYPTOGCC_OPT="-m${CCM} -march=${MARCH_TARGET}${CRYPTODEVTOOLSETSEVEN_FALLTHROUGH}${CRYPTODEVTOOLSETSEVEN_EXTRAFLAGS}${CRYPTODEVTOOLSETEIGHT_FALLTHROUGH}${CRYPTODEVTOOLSETEIGHT_EXTRAFLAGS}${CRYPTODEVTOOLSETNINE_FALLTHROUGH}${CRYPTODEVTOOLSETNINE_EXTRAFLAGS}${CRYPTODEVTOOLSETTEN_FALLTHROUGH}${CRYPTODEVTOOLSETTEN_EXTRAFLAGS}${CRYPTODEVTOOLSETELEVEN_FALLTHROUGH}${CRYPTODEVTOOLSETELEVEN_EXTRAFLAGS}${CRYPTODEVTOOLSETTWELVE_FALLTHROUGH}${CRYPTODEVTOOLSETTWELVE_EXTRAFLAGS}${CRYPTODEVTOOLSETTHIRTEEN_FALLTHROUGH}${CRYPTODEVTOOLSETTHIRTEEN_EXTRAFLAGS}"
+            CRYPTOGCC_OPT="-m${CCM} -march=${MARCH_TARGET}${CRYPTODEVTOOLSETSEVEN_FALLTHROUGH}${CRYPTODEVTOOLSETSEVEN_EXTRAFLAGS}${CRYPTODEVTOOLSETEIGHT_FALLTHROUGH}${CRYPTODEVTOOLSETEIGHT_EXTRAFLAGS}${CRYPTODEVTOOLSETNINE_FALLTHROUGH}${CRYPTODEVTOOLSETNINE_EXTRAFLAGS}${CRYPTODEVTOOLSETTEN_FALLTHROUGH}${CRYPTODEVTOOLSETTEN_EXTRAFLAGS}${CRYPTODEVTOOLSETELEVEN_FALLTHROUGH}${CRYPTODEVTOOLSETELEVEN_EXTRAFLAGS}${CRYPTODEVTOOLSETTWELVE_FALLTHROUGH}${CRYPTODEVTOOLSETTWELVE_EXTRAFLAGS}${CRYPTODEVTOOLSETTHIRTEEN_FALLTHROUGH}${CRYPTODEVTOOLSETTHIRTEEN_EXTRAFLAGS}${CRYPTODEVTOOLSETFOURTEEN_FALLTHROUGH}${CRYPTODEVTOOLSETFOURTEEN_EXTRAFLAGS}"
             # if only 1 cpu thread use -O2 to keep compile times sane
             if [[ "$CPUS" = '1' ]]; then
             export CFLAGS="-O2 $CRYPTOGCC_OPT -pipe"

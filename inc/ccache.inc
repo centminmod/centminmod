@@ -129,6 +129,8 @@ if [ "$CCACHEINSTALL" == 'y' ]; then
           source /opt/rh/gcc-toolset-12/enable
         elif [ -f /opt/rh/gcc-toolset-13/enable ]; then
           source /opt/rh/gcc-toolset-13/enable
+        elif [ -f /opt/rh/gcc-toolset-14/enable ]; then
+          source /opt/rh/gcc-toolset-14/enable
         fi
       fi
       if [[ ! -s /usr/local/lib/libhiredis.so ]]; then

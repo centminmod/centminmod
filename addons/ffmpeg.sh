@@ -33,6 +33,7 @@ GCC_TEN='n'
 GCC_ELEVEN='y'
 GCC_TWELVE='y'
 GCC_THIRTHTEEN='y'
+GCC_FOURTEEN='n'
 OPT_LEVEL='-O3'
 MARCH_TARGETNATIVE='n' # for intel 64bit only set march=native, if no set to x86-64
 ###############################################################################
@@ -584,6 +585,12 @@ if [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]]; then
 
   if [[ "$GCC_THIRTHTEEN" = [yY] && "$(uname -m)" = 'x86_64' && -f /opt/rh/gcc-toolset-13/root/usr/bin/gcc && -f /opt/rh/gcc-toolset-13/root/usr/bin/g++ ]]; then
     source /opt/rh/gcc-toolset-13/enable
+    export CFLAGS="${OPT_LEVEL} -march=${MARCH_TARGET} -Wimplicit-fallthrough=0 -Wno-pedantic"
+    export CXXFLAGS="${CFLAGS}"
+  fi
+
+  if [[ "$GCC_FOURTEEN" = [yY] && "$(uname -m)" = 'x86_64' && -f /opt/rh/gcc-toolset-14/root/usr/bin/gcc && -f /opt/rh/gcc-toolset-14/root/usr/bin/g++ ]]; then
+    source /opt/rh/gcc-toolset-14/enable
     export CFLAGS="${OPT_LEVEL} -march=${MARCH_TARGET} -Wimplicit-fallthrough=0 -Wno-pedantic"
     export CXXFLAGS="${CFLAGS}"
   fi
