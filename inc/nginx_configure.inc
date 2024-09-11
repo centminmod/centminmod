@@ -421,6 +421,10 @@ if [ -f "${CM_INSTALLDIR}/inc/z_custom.inc" ]; then
     source "${CM_INSTALLDIR}/inc/z_custom.inc"
 fi
 
+if [[ ! "$(rpm -qa gd | grep -o gd)" || ! "$(rpm -qa gd-devel | grep -o gd-devel)" ]]; then
+  yum -y install gd gd-devel
+fi
+
 # compiling Nginx with LTO support takes 2-4x times the memory
 # and cpu resources to do and takes 2-4x times longer to compile
 # so only do it for servers with enough cpu cores and memory
