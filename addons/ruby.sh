@@ -1,6 +1,6 @@
 #!/bin/bash
 export PATH="/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin:/root/bin"
-VER='0.0.8'
+VER='0.1.0'
 #####################################################
 # set locale temporarily to english
 # due to some non-english locale issues
@@ -18,7 +18,7 @@ ARCH_CHECK="$(uname -m)"
 # https://rvm.io/
 ######################################################
 # https://rvm_io.global.ssl.fastly.net/binaries/centos/7/x86_64/
-RUBYVER='2.6.10'
+RUBYVER='3.1.6'
 RUBYBUILD=''
 
 DT=$(date +"%d%m%y-%H%M%S")
@@ -480,6 +480,7 @@ if [[ -z $(which ruby >/dev/null 2>&1) || -z $(which rvm >/dev/null 2>&1) || -z 
     echo "rvm_silence_path_mismatch_check_flag=1" >> ~/.rvmrc
   fi
   source /etc/profile.d/rvm.sh
+  export RUBY_CONFIGURE_OPTS="--with-openssl-dir=/usr"
   echo "--------------------------------"
   echo "export PATH="$PATH""
   export PATH="$PATH"
@@ -495,7 +496,7 @@ if [[ -z $(which ruby >/dev/null 2>&1) || -z $(which rvm >/dev/null 2>&1) || -z 
   type rvm | head -1
   echo "--------------------------------"
   
-  echo "rvm install ${RUBYVER}"
+  echo "rvm install ${RUBYVER} --with-openssl-dir=/usr"
   echo "rvm use ${RUBYVER} --default"
   echo "rvm rubygems current --force"
   echo "--------------------------------" 
@@ -508,7 +509,7 @@ if [[ -z $(which ruby >/dev/null 2>&1) || -z $(which rvm >/dev/null 2>&1) || -z 
     
   echo "--------------------------------"
   # RUBYVER=$(rvm list | awk -F " " '/^\=\*/ {print $2}' | awk -F "-" '{print $2}')
-  rvm install ${RUBYVER} 
+  rvm install ${RUBYVER} --with-openssl-dir=/usr 
   echo "--------------------------------"
   rvm use ${RUBYVER} --default
   echo "--------------------------------"
@@ -531,6 +532,8 @@ if [[ -z $(which ruby >/dev/null 2>&1) || -z $(which rvm >/dev/null 2>&1) || -z 
   echo "more checks..."
   echo "--------------------------------"
   ruby -v
+  echo "--------------------------------"
+  ruby -ropenssl -e 'puts OpenSSL::OPENSSL_LIBRARY_VERSION'
   echo "--------------------------------"
   rails --version
   echo "--------------------------------"
@@ -559,7 +562,7 @@ starttime=$(TZ=UTC date +%s.%N)
         dnf module -y update ruby:3.0
     elif [[ "$CENTOS_NINE" -eq '9' ]]; then
         echo "EL9 install"
-        yum -y install ruby rubygem rubygem-bundler ruby-libs
+        yum -y install ruby rubygem rubygem-bundler ruby-libs --skip-broken
     fi
 } 2>&1 | tee ${CENTMINLOGDIR}/centminmod_ruby_install_${DT}.log
 
