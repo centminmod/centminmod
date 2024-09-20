@@ -431,6 +431,23 @@ install_cfzlib() {
         g++ --version
     fi
 
+    if [[ "$DEVTOOLSETFIFTTEEN" = [yY] && -f /opt/gcc-custom/gcc15/bin/gcc && -f /opt/gcc-custom/gcc15/bin/g++ ]] && [[ "$(gcc --version | head -n1 | awk '{print $3}' | cut -d . -f1,2 | sed "s|\.|0|")" -gt '407' ]]; then
+        source /etc/profile.d/gcc15-custom.sh
+        unset CC
+        unset CXX
+        if [[ "$INITIALINSTALL" != [yY] ]]; then
+            export CC="ccache gcc"
+            export CXX="ccache g++"
+        else
+            export CC="gcc"
+            export CXX="g++"
+        fi
+        ZLIB_DEVTOOLSET_FALLTHROUGH=' -Wimplicit-fallthrough=0'
+        ZLIB_DEVTOOLSET_EXTRAFLAGS=' -fcode-hoisting -Wno-cast-function-type -Wno-cast-align -Wno-implicit-function-declaration -Wno-builtin-declaration-mismatch -Wno-deprecated-declarations -Wno-int-conversion -Wno-unused-result -Wno-vla-parameter -Wno-maybe-uninitialized -Wno-unused-result -Wno-return-local-addr -Wno-maybe-uninitialized -Wno-array-parameter -Wno-alloc-size-larger-than -Wno-address -Wno-array-bounds -Wno-deprecated-declarations -Wno-discarded-qualifiers -Wno-stringop-overread -Wno-stringop-truncation -Wno-missing-field-initializers -Wno-unused-variable -Wno-format -Wno-stringop-overflow -Wno-free-nonheap-object -Wno-bad-function-cast -Wno-dangling-pointer -Wno-array-parameter'
+        gcc --version
+        g++ --version
+    fi
+
          # if only 1 cpu thread use -O2 to keep compile times sane
         if [[ "$CPUS" = '1' ]]; then
            export CFLAGS="-O2${ZLIB_DEVTOOLSET_FALLTHROUGH}${ZLIB_DEVTOOLSET_EXTRAFLAGS} -pipe"

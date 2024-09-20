@@ -157,6 +157,27 @@ compgcc_fourteen() {
   COMP_CPU_MARCH=$(gcc -c -Q -march=native --help=target | awk '/  -march/ {print $2}' | head -n1 )
 }
 
+compgcc_fifteen() {
+  if [[ -f /opt/rh/devtoolset-15/root/usr/bin/gcc && -f /opt/rh/devtoolset-15/root/usr/bin/g++ ]]; then
+    label='gcc14 built'
+    source /opt/rh/devtoolset-15/enable
+    export CFLAGS="-Wimplicit-fallthrough=0 -Wno-implicit-function-declaration -Wno-int-conversion -Wno-unused-result -Wno-unused-result -Wno-missing-profile -Wno-stringop-overflow -Wno-alloc-size-larger-than"
+    export CXXFLAGS="${CFLAGS}"
+  else
+    label=""
+  fi
+  COMP_CPU_MARCH=$(gcc -c -Q -march=native --help=target | awk '/  -march/ {print $2}' | head -n1 )
+  if [[ -f /opt/gcc-custom/gcc15/bin/gcc && -f /opt/gcc-custom/gcc15/bin/g++ ]]; then
+    label='gcc14 built'
+    source /etc/profile.d/gcc15-custom.sh
+    export CFLAGS="-Wimplicit-fallthrough=0 -Wno-implicit-function-declaration -Wno-int-conversion -Wno-error=unused-result -Wno-unused-result"
+    export CXXFLAGS="${CFLAGS}"
+  else
+    label=""
+  fi
+  COMP_CPU_MARCH=$(gcc -c -Q -march=native --help=target | awk '/  -march/ {print $2}' | head -n1 )
+}
+
 pgo_export_compress() {
   if [[ "$GCC_FALIGN_FUNCTION" = [yY] ]] && [[ "$COMP_CPU_MARCH" = 'nehalem' || "$COMP_CPU_MARCH" = 'westmere' || "$COMP_CPU_MARCH" = 'core2' || "$COMP_CPU_MARCH" = 'bonnell' || "$COMP_CPU_MARCH" = 'silvermont' ]]; then
     COMP_FALIGN_FUCTION_OPT=''
@@ -200,6 +221,7 @@ compressmenu_notice() {
   compgcc_twelve
   compgcc_thirteen
   compgcc_fourteen
+  compgcc_fifteen
   # pgo_export_compress
 }
 
