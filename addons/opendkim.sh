@@ -8,20 +8,39 @@ DT=$(date +"%d%m%y-%H%M%S")
 CENTMINLOGDIR='/root/centminlogs'
 FORCE_IPVFOUR='y' # curl/wget commands through script force IPv4
 
-# DKIM key length of 1024bit, 2048bit or 4096bit
+# DKIM key length of 1024bit, 2048bit, or 4096bit
 DKIM_LENGTH='2048'
 
 # DKIM selector definition
 CURRENT_YEAR=$(date +"%Y")
 SELECTOR="default${CURRENT_YEAR}"
+
 ###################################################################
 # Backup directory for previous DKIM files
 DKIM_BACKUPDIR='/etc/centminmod/dkim_backups'
+
+# Initialize variables
 FORCE_UPDATE=0
-if [[ "$1" == "--force" ]]; then
-    FORCE_UPDATE=1
-    shift  # Remove --force from arguments
-fi
+CLEANONLY=0
+vhostname=""
+
+# Process command-line arguments
+while [[ $# -gt 0 ]]; do
+    case "$1" in
+        --force)
+            FORCE_UPDATE=1
+            shift
+            ;;
+        clean)
+            CLEANONLY=1
+            shift
+            ;;
+        *)
+            vhostname="$1"
+            shift
+            ;;
+    esac
+done
 
 # Set locale temporarily to English
 export LC_ALL=en_US.UTF-8
@@ -58,7 +77,7 @@ if [[ "$(cat /etc/redhat-release | awk '{ print $3 }' | cut -d . -f1)" = '6' ]];
     CENTOS_SIX='6'
 fi
 
-# Check for Redhat Enterprise Linux 7.x
+# Check for Red Hat Enterprise Linux 7.x
 if [ "$CENTOSVER" == 'Enterprise' ]; then
     CENTOSVER=$(awk '{ print $7 }' /etc/redhat-release)
     if [[ "$(awk '{ print $1,$2 }' /etc/redhat-release)" = 'Red Hat' && "$(awk '{ print $7 }' /etc/redhat-release | cut -d . -f1)" = '7' ]]; then
@@ -71,80 +90,79 @@ if [[ -f /etc/system-release && "$(awk '{print $1,$2,$3}' /etc/system-release)" 
     CENTOS_SIX='6'
 fi
 
-# ensure only el8+ OS versions are being looked at for alma linux, rocky linux
-# oracle linux, vzlinux, circle linux, navy linux, euro linux
+# Ensure only EL8+ OS versions are being looked at for various distributions
 EL_VERID=$(awk -F '=' '/VERSION_ID/ {print $2}' /etc/os-release | sed -e 's|"||g' | cut -d . -f1)
 if [ -f /etc/almalinux-release ] && [[ "$EL_VERID" -eq 8 || "$EL_VERID" -eq 9 ]]; then
-  CENTOSVER=$(awk '{ print $3 }' /etc/almalinux-release | cut -d . -f1,2)
-  ALMALINUXVER=$(awk '{ print $3 }' /etc/almalinux-release | cut -d . -f1,2 | sed -e 's|\.|000|g')
-  if [[ "$(echo $CENTOSVER | cut -d . -f1)" -eq '8' ]]; then
-    CENTOS_EIGHT='8'
-    ALMALINUX_EIGHT='8'
-  elif [[ "$(echo $CENTOSVER | cut -d . -f1)" -eq '9' ]]; then
-    CENTOS_NINE='9'
-    ALMALINUX_NINE='9'
-  fi
+    CENTOSVER=$(awk '{ print $3 }' /etc/almalinux-release | cut -d . -f1,2)
+    ALMALINUXVER=$(awk '{ print $3 }' /etc/almalinux-release | cut -d . -f1,2 | sed -e 's|\.|000|g')
+    if [[ "$(echo $CENTOSVER | cut -d . -f1)" -eq '8' ]]; then
+        CENTOS_EIGHT='8'
+        ALMALINUX_EIGHT='8'
+    elif [[ "$(echo $CENTOSVER | cut -d . -f1)" -eq '9' ]]; then
+        CENTOS_NINE='9'
+        ALMALINUX_NINE='9'
+    fi
 elif [ -f /etc/rocky-release ] && [[ "$EL_VERID" -eq 8 || "$EL_VERID" -eq 9 ]]; then
-  CENTOSVER=$(awk '{ print $4 }' /etc/rocky-release | cut -d . -f1,2)
-  ROCKYLINUXVER=$(awk '{ print $3 }' /etc/rocky-release | cut -d . -f1,2 | sed -e 's|\.|000|g')
-  if [[ "$(echo $CENTOSVER | cut -d . -f1)" -eq '8' ]]; then
-    CENTOS_EIGHT='8'
-    ROCKYLINUX_EIGHT='8'
-  elif [[ "$(echo $CENTOSVER | cut -d . -f1)" -eq '9' ]]; then
-    CENTOS_NINE='9'
-    ROCKYLINUX_NINE='9'
-  fi
+    CENTOSVER=$(awk '{ print $4 }' /etc/rocky-release | cut -d . -f1,2)
+    ROCKYLINUXVER=$(awk '{ print $3 }' /etc/rocky-release | cut -d . -f1,2 | sed -e 's|\.|000|g')
+    if [[ "$(echo $CENTOSVER | cut -d . -f1)" -eq '8' ]]; then
+        CENTOS_EIGHT='8'
+        ROCKYLINUX_EIGHT='8'
+    elif [[ "$(echo $CENTOSVER | cut -d . -f1)" -eq '9' ]]; then
+        CENTOS_NINE='9'
+        ROCKYLINUX_NINE='9'
+    fi
 elif [ -f /etc/oracle-release ] && [[ "$EL_VERID" -eq 8 || "$EL_VERID" -eq 9 ]]; then
-  CENTOSVER=$(awk '{ print $5 }' /etc/oracle-release | cut -d . -f1,2)
-  if [[ "$(echo $CENTOSVER | cut -d . -f1)" -eq '8' ]]; then
-    CENTOS_EIGHT='8'
-    ORACLELINUX_EIGHT='8'
-  elif [[ "$(echo $CENTOSVER | cut -d . -f1)" -eq '9' ]]; then
-    CENTOS_NINE='9'
-    ORACLELINUX_NINE='9'
-  fi
+    CENTOSVER=$(awk '{ print $5 }' /etc/oracle-release | cut -d . -f1,2)
+    if [[ "$(echo $CENTOSVER | cut -d . -f1)" -eq '8' ]]; then
+        CENTOS_EIGHT='8'
+        ORACLELINUX_EIGHT='8'
+    elif [[ "$(echo $CENTOSVER | cut -d . -f1)" -eq '9' ]]; then
+        CENTOS_NINE='9'
+        ORACLELINUX_NINE='9'
+    fi
 elif [ -f /etc/vzlinux-release ] && [[ "$EL_VERID" -eq 8 || "$EL_VERID" -eq 9 ]]; then
-  CENTOSVER=$(awk '{ print $4 }' /etc/vzlinux-release | cut -d . -f1,2)
-  if [[ "$(echo $CENTOSVER | cut -d . -f1)" -eq '8' ]]; then
-    CENTOS_EIGHT='8'
-    VZLINUX_EIGHT='8'
-  elif [[ "$(echo $CENTOSVER | cut -d . -f1)" -eq '9' ]]; then
-    CENTOS_NINE='9'
-    VZLINUX_NINE='9'
-  fi
+    CENTOSVER=$(awk '{ print $4 }' /etc/vzlinux-release | cut -d . -f1,2)
+    if [[ "$(echo $CENTOSVER | cut -d . -f1)" -eq '8' ]]; then
+        CENTOS_EIGHT='8'
+        VZLINUX_EIGHT='8'
+    elif [[ "$(echo $CENTOSVER | cut -d . -f1)" -eq '9' ]]; then
+        CENTOS_NINE='9'
+        VZLINUX_NINE='9'
+    fi
 elif [ -f /etc/circle-release ] && [[ "$EL_VERID" -eq 8 || "$EL_VERID" -eq 9 ]]; then
-  CENTOSVER=$(awk '{ print $4 }' /etc/circle-release | cut -d . -f1,2)
-  if [[ "$(echo $CENTOSVER | cut -d . -f1)" -eq '8' ]]; then
-    CENTOS_EIGHT='8'
-    CIRCLELINUX_EIGHT='8'
-  elif [[ "$(echo $CENTOSVER | cut -d . -f1)" -eq '9' ]]; then
-    CENTOS_NINE='9'
-    CIRCLELINUX_NINE='9'
-  fi
+    CENTOSVER=$(awk '{ print $4 }' /etc/circle-release | cut -d . -f1,2)
+    if [[ "$(echo $CENTOSVER | cut -d . -f1)" -eq '8' ]]; then
+        CENTOS_EIGHT='8'
+        CIRCLELINUX_EIGHT='8'
+    elif [[ "$(echo $CENTOSVER | cut -d . -f1)" -eq '9' ]]; then
+        CENTOS_NINE='9'
+        CIRCLELINUX_NINE='9'
+    fi
 elif [ -f /etc/navylinux-release ] && [[ "$EL_VERID" -eq 8 || "$EL_VERID" -eq 9 ]]; then
-  CENTOSVER=$(awk '{ print $5 }' /etc/navylinux-release | cut -d . -f1,2)
-  if [[ "$(echo $CENTOSVER | cut -d . -f1)" -eq '8' ]]; then
-    CENTOS_EIGHT='8'
-    NAVYLINUX_EIGHT='8'
-  elif [[ "$(echo $CENTOSVER | cut -d . -f1)" -eq '9' ]]; then
-    CENTOS_NINE='9'
-    NAVYLINUX_NINE='9'
-  fi
+    CENTOSVER=$(awk '{ print $5 }' /etc/navylinux-release | cut -d . -f1,2)
+    if [[ "$(echo $CENTOSVER | cut -d . -f1)" -eq '8' ]]; then
+        CENTOS_EIGHT='8'
+        NAVYLINUX_EIGHT='8'
+    elif [[ "$(echo $CENTOSVER | cut -d . -f1)" -eq '9' ]]; then
+        CENTOS_NINE='9'
+        NAVYLINUX_NINE='9'
+    fi
 elif [ -f /etc/el-release ] && [[ "$EL_VERID" -eq 8 || "$EL_VERID" -eq 9 ]]; then
-  CENTOSVER=$(awk '{ print $3 }' /etc/el-release | cut -d . -f1,2)
-  if [[ "$(echo $CENTOSVER | cut -d . -f1)" -eq '8' ]]; then
-    CENTOS_EIGHT='8'
-    EUROLINUX_EIGHT='8'
-  elif [[ "$(echo $CENTOSVER | cut -d . -f1)" -eq '9' ]]; then
-    CENTOS_NINE='9'
-    EUROLINUX_NINE='9'
-  fi
+    CENTOSVER=$(awk '{ print $3 }' /etc/el-release | cut -d . -f1,2)
+    if [[ "$(echo $CENTOSVER | cut -d . -f1)" -eq '8' ]]; then
+        CENTOS_EIGHT='8'
+        EUROLINUX_EIGHT='8'
+    elif [[ "$(echo $CENTOSVER | cut -d . -f1)" -eq '9' ]]; then
+        CENTOS_NINE='9'
+        EUROLINUX_NINE='9'
+    fi
 fi
 
 CENTOSVER_NUMERIC=$(echo $CENTOSVER | sed -e 's|\.||g')
 
 if [ ! -d "$CENTMINLOGDIR" ]; then
-	mkdir -p "$CENTMINLOGDIR"
+    mkdir -p "$CENTMINLOGDIR"
 fi
 
 opendkimsetup() {
@@ -173,13 +191,13 @@ opendkimsetup() {
         fi
 
         if grep -q "^#Socket\s*inet:8891@localhost" /etc/opendkim.conf; then
-	# ensure socket isn't commented out
+            # Ensure socket isn't commented out
             sed -i 's/^#\s*Socket\s\+inet:8891@localhost/Socket inet:8891@localhost/' /etc/opendkim.conf
             echo "Socket configuration updated."
         fi
 
         if [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]]; then
-	# ensure only one Socket option is set
+            # Ensure only one Socket option is set
             sed -i.bak '/Socket local:\/run\/opendkim\/opendkim.sock/d' /etc/opendkim.conf
         fi
 
@@ -189,9 +207,9 @@ opendkimsetup() {
             postconf -e 'non_smtpd_milters       = $smtpd_milters'
             postconf -e "milter_default_action   = accept"
             if [[ "$(postconf -d milter_protocol | awk -F "= " '{print $2}')" = '6' ]]; then
-            	postconf -e "milter_protocol         = 6"
+                postconf -e "milter_protocol         = 6"
             elif [[ "$(postconf -d milter_protocol | awk -F "= " '{print $2}')" = '2' ]]; then
-            	postconf -e "milter_protocol         = 2"
+                postconf -e "milter_protocol         = 2"
             fi
             postconf -n smtpd_milters non_smtpd_milters milter_default_action milter_protocol | tee "${CENTMINLOGDIR}/dkim_postfix_after.txt"
         fi
@@ -225,7 +243,7 @@ opendkimsetup() {
             if [ -f "/etc/opendkim/keys/$h_vhostname/${SELECTOR}" ]; then
                 echo
                 echo "check /etc/opendkim/keys/$h_vhostname/${SELECTOR}"
-                openssl rsa -in /etc/opendkim/keys/$h_vhostname/${SELECTOR} -text -noout | head -n1
+                openssl rsa -in "/etc/opendkim/keys/$h_vhostname/${SELECTOR}" -text -noout | head -n1
                 echo
             fi
 
@@ -240,7 +258,7 @@ opendkimsetup() {
             fi
             echo "---------------------------------------------------------------------------" | tee "$CENTMINLOGDIR/dkim_spf_dns_${h_vhostname}_${DT}.txt"
             echo "$h_vhostname DKIM DNS Entry" | tee -a "$CENTMINLOGDIR/dkim_spf_dns_${h_vhostname}_${DT}.txt"
-            cat "/etc/opendkim/keys/$h_vhostname/${SELECTOR}.txt" | tr '\n' ' ' | sed -e "s| \"        \"|\" \"|" -e "s|( \"|\"|" -e "s| )  ; ----- DKIM key default for $h_vhostname||" -e "s|${SELECTOR}._domainkey|${SELECTOR}._domainkey.$h_vhostname|" -e "s|     IN      TXT   | IN TXT|" | sed 's|[[:space:]]| |g' | sed -e "s|\; \"   |\;|" | sed -e "s|\"p=|p=|" | tee -a "$CENTMINLOGDIR/dkim_spf_dns_${h_vhostname}_${DT}.txt"
+            cat "/etc/opendkim/keys/$h_vhostname/${SELECTOR}.txt" | tr '\n' ' ' | sed -e "s| \"        \"|\" \"|" -e "s|( \"|\"|" -e "s| )  ; ----- DKIM key $SELECTOR for $h_vhostname||" -e "s|${SELECTOR}._domainkey|${SELECTOR}._domainkey.$h_vhostname|" -e "s|     IN      TXT   | IN TXT|" | sed 's|[[:space:]]| |g' | sed -e "s|\; \"   |\;|" | sed -e "s|\"p=|p=|" | tee -a "$CENTMINLOGDIR/dkim_spf_dns_${h_vhostname}_${DT}.txt"
             echo -e "\n------------------------------------------------------------" | tee -a "$CENTMINLOGDIR/dkim_spf_dns_${h_vhostname}_${DT}.txt"
             echo "$h_vhostname SPF DNS Entry" | tee -a "$CENTMINLOGDIR/dkim_spf_dns_${h_vhostname}_${DT}.txt"
             echo "$h_vhostname. 14400 IN TXT \"v=spf1 a mx ~all\"" | tee -a "$CENTMINLOGDIR/dkim_spf_dns_${h_vhostname}_${DT}.txt"
@@ -280,7 +298,7 @@ opendkimsetup() {
                 if [ -f "/etc/opendkim/keys/$vhostname/${SELECTOR}" ]; then
                     echo
                     echo "check /etc/opendkim/keys/$vhostname/${SELECTOR}"
-                    openssl rsa -in /etc/opendkim/keys/$vhostname/${SELECTOR} -text -noout | head -n1
+                    openssl rsa -in "/etc/opendkim/keys/$vhostname/${SELECTOR}" -text -noout | head -n1
                     echo
                 fi
 
@@ -295,7 +313,7 @@ opendkimsetup() {
                 fi
                 echo "---------------------------------------------------------------------------" | tee "$CENTMINLOGDIR/dkim_spf_dns_${vhostname}_${DT}.txt"
                 echo "$vhostname DKIM DNS Entry" | tee -a "$CENTMINLOGDIR/dkim_spf_dns_${vhostname}_${DT}.txt"
-                cat "/etc/opendkim/keys/$vhostname/${SELECTOR}.txt" | tr '\n' ' ' | sed -e "s| \"        \"|\" \"|" -e "s|( \"|\"|" -e "s| )  ; ----- DKIM key default for $vhostname||" -e "s|${SELECTOR}._domainkey|${SELECTOR}._domainkey.$vhostname|" -e "s|     IN      TXT   | IN TXT|" | sed 's|[[:space:]]| |g' | sed -e "s|\; \"   |\;|" | sed -e "s|\"p=|p=|" | tee -a "$CENTMINLOGDIR/dkim_spf_dns_${vhostname}_${DT}.txt"
+                cat "/etc/opendkim/keys/$vhostname/${SELECTOR}.txt" | tr '\n' ' ' | sed -e "s| \"        \"|\" \"|" -e "s|( \"|\"|" -e "s| )  ; ----- DKIM key $SELECTOR for $vhostname||" -e "s|${SELECTOR}._domainkey|${SELECTOR}._domainkey.$vhostname|" -e "s|     IN      TXT   | IN TXT|" | sed 's|[[:space:]]| |g' | sed -e "s|\; \"   |\;|" | sed -e "s|\"p=|p=|" | tee -a "$CENTMINLOGDIR/dkim_spf_dns_${vhostname}_${DT}.txt"
                 echo -e "\n------------------------------------------------------------" | tee -a "$CENTMINLOGDIR/dkim_spf_dns_${vhostname}_${DT}.txt"
                 echo "$vhostname SPF DNS Entry" | tee -a "$CENTMINLOGDIR/dkim_spf_dns_${vhostname}_${DT}.txt"
                 echo "$vhostname. 14400 IN TXT \"v=spf1 a mx ~all\"" | tee -a "$CENTMINLOGDIR/dkim_spf_dns_${vhostname}_${DT}.txt"
@@ -305,12 +323,6 @@ opendkimsetup() {
                 echo "DKIM & SPF TXT details saved at $CENTMINLOGDIR/dkim_spf_dns_${vhostname}_${DT}.txt"
                 echo "---------------------------------------------------------------------------"
                 echo
-            else
-                echo "---------------------------------------------------------------------------"
-                echo "! Error: domain name not specified on cmd line:"
-                echo "   Please use the format below: "
-                echo "   $0 domain.com"
-                echo "---------------------------------------------------------------------------"
             fi
         fi
 
@@ -328,23 +340,19 @@ opendkimsetup() {
 
 starttime=$(TZ=UTC date +%s.%N)
 {
-    if [[ "$1" = 'clean' ]]; then
+    # Handle the 'clean' operation
+    if [[ "$CLEANONLY" -eq 1 ]]; then
         h_vhostname=$(hostname -f 2>/dev/null || hostname)
-        CLEANONLY=1
         rm -rf "/etc/opendkim/keys/$h_vhostname"
-      	if [ -f /etc/opendkim/KeyTable ]; then
-      		sed -in "/$h_vhostname/d" /etc/opendkim/KeyTable
-      	fi
-      	if [ -f /etc/opendkim/SigningTable ]; then
-      		sed -in "/$h_vhostname/d" /etc/opendkim/SigningTable
-      	fi
-    fi
-    if [[ "$1" != 'clean' && "$CLEANONLY" != '1' ]] && [[ ! -z "$1" ]]; then
-        vhostname=$1
-    else
-        vhostname=""
+        if [ -f /etc/opendkim/KeyTable ]; then
+            sed -in "/$h_vhostname/d" /etc/opendkim/KeyTable
+        fi
+        if [ -f /etc/opendkim/SigningTable ]; then
+            sed -in "/$h_vhostname/d" /etc/opendkim/SigningTable
+        fi
     fi
 
+    # Start the setup process
     opendkimsetup
 } 2>&1 | tee "${CENTMINLOGDIR}/opendkim_${DT}.log"
 
