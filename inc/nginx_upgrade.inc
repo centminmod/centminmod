@@ -1085,6 +1085,11 @@ fi
                 echo 'readelf -p .comment objs/nginx.b4strip'
                 readelf -p .comment objs/nginx.b4strip
                 echo
+            else
+                echo
+                echo 'readelf -p .comment objs/nginx.b4strip'
+                readelf -p .comment objs/nginx.b4strip
+                echo
             fi
             ls -lah objs/nginx
             strip -s objs/nginx
@@ -1456,10 +1461,12 @@ fi
         if [[ "$NGINX_SECURED" = [yY] ]]; then
             echo
             checksec_nginx
-            echo
-            echo "checksec --format=json --file=/usr/local/sbin/nginx --extended | jq -r"
-            checksec --format=json --file=/usr/local/sbin/nginx --extended | jq -r
-            echo
+            if [ -f /usr/local/bin/checksec ]; then
+                echo
+                echo "checksec --format=json --file=/usr/local/sbin/nginx --extended | jq -r"
+                checksec --format=json --file=/usr/local/sbin/nginx --extended | jq -r
+                echo
+            fi
         fi
         if [[ "$DYNAMIC_SUPPORT" = [yY] ]]; then
             echo

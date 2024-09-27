@@ -62,7 +62,9 @@ FORCE_IPVFOUR='y' # curl/wget commands through script force IPv4
 # Clang & GCC Compilers
 MARCH_TARGETNATIVE='y'        # for intel 64bit only set march=native, if no set to x86-64
 MARCH_TARGETNATIVE_ALWAYS='n' # force native compiler to override smarter vps detection routine
-CLANG='y'                     # Nginx and LibreSSL
+CLANG='n'                     # Build Nginx with Clang compiler instead of default GCC compiler
+CLANG_LTO_ENABLE='y'          # Build Nginx with Clang LTO enabled
+CLANG_LTO_FULL='n'            # use full Clang LTO linker instead of LTO Thin linker for Nginx
 CLANG_FOUR='n'                # Clang 4.0+ optional support https://community.centminmod.com/threads/13729/
 CLANG_FIVE='n'                # Clang 5.0+ optional support https://community.centminmod.com/threads/13729/
 CLANG_SIX='n'                 # Clang 6.0+ optional support https://community.centminmod.com/threads/13729/
@@ -98,6 +100,7 @@ NGX_LDMOLD='n'                # optional mold linker https://github.com/rui314/m
 MOLD_VERSION='1.3.0'          # mold linker rpm version
 MOLD_VERSION_EL8='1.11.0'     # mold linker rpm version
 NGINX_SECURED='y'             # apply more secure compilation options for Nginx
+NGINX_SYMBOLIC_AS_NEEDED='y'  # enable nginx options for -Wl,-Bsymbolic-functions -Wl,--as-needed
 PHP_SECURED='y'               # apply more secure compilation options for PHP-FPM
 
 # Nginx Dynamic Module Switches
@@ -239,7 +242,7 @@ NGINX_PCREVER='8.45'         # Version of PCRE used for pcre-jit support in Ngin
 NGINX_PCRE_TWO='n'           # optional PCRE2 for Nginx 1.21.5+
 NGINX_PCRETWOVER='10.39'     # Version of PCRE2 used for pcre-jit support in Nginx
 NGINX_ZLIBCUSTOM='y'         # Use custom zlib instead of system version
-NGINX_ZLIBVER='1.3'       # http://www.zlib.net/
+NGINX_ZLIBVER='1.3.1'        # http://www.zlib.net/
 NGINX_VIDEO='n'              # control variable when 'y' set for NGINX_SLICE='y', NGINX_RTMP='y', NGINX_FLV='y', NGINX_MP4='y'
 ORESTY_HEADERSMORE='y'       # openresty headers more https://github.com/openresty/headers-more-nginx-module
 ORESTY_HEADERSMOREGIT='n'    # use git master instead of version specific

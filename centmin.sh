@@ -30,7 +30,7 @@ DT=$(date +"%d%m%y-%H%M%S")
 branchname='140.00beta01'
 SCRIPT_MAJORVER='140'
 SCRIPT_MINORVER='00'
-SCRIPT_INCREMENTVER='111'
+SCRIPT_INCREMENTVER='133'
 SCRIPT_VERSIONSHORT="${branchname}"
 SCRIPT_VERSION="${SCRIPT_VERSIONSHORT}.b${SCRIPT_INCREMENTVER}"
 SCRIPT_DATE='01/07/24'
@@ -196,7 +196,11 @@ fi
 
 # ensure only el8+ OS versions are being looked at for alma linux, rocky linux
 # oracle linux, vzlinux, circle linux, navy linux, euro linux
-EL_VERID=$(awk -F '=' '/VERSION_ID/ {print $2}' /etc/os-release | sed -e 's|"||g' | cut -d . -f1)
+if [ -f /etc/os-release ]; then
+  EL_VERID=$(awk -F '=' '/VERSION_ID/ {print $2}' /etc/os-release | sed -e 's|"||g' | cut -d . -f1)
+else
+  EL_VERID="6"
+fi
 if [ -f /etc/almalinux-release ] && [[ "$EL_VERID" -eq 8 || "$EL_VERID" -eq 9 ]]; then
   CENTOSVER=$(awk '{ print $3 }' /etc/almalinux-release | cut -d . -f1,2)
   ALMALINUXVER=$(awk '{ print $3 }' /etc/almalinux-release | cut -d . -f1,2 | sed -e 's|\.|000|g')
@@ -273,20 +277,28 @@ if [[ "$CENTOS_EIGHT" -eq '8' && "$CENTOSVER_NUMERIC" -ge '89' ]]; then
   if [[ "$PHP_PGO" = [yY] ]] && [[ "$PHPMVER" = '7.0' || "$PHPMUVER" = '7.0' || "$PHPMVER" = '7.1' || "$PHPMUVER" = '7.1' || "$PHPMVER" = '7.2' || "$PHPMUVER" = '7.2' || "$PHPMVER" = '7.3' || "$PHPMUVER" = '7.3' || "$PHPMVER" = '7.4' || "$PHPMUVER" = '7.4' ]]; then
     DEVTOOLSETTWELVE='y'
     DEVTOOLSETTHIRTEEN='n'
+    DEVTOOLSETFOURTEEN='n'
+    DEVTOOLSETFIFTTEEN='n'
   else
     DEVTOOLSETTWELVE='n'
     DEVTOOLSETTHIRTEEN='y'
+    DEVTOOLSETFOURTEEN='n'
+    DEVTOOLSETFIFTTEEN='n'
   fi
 elif [[ "$CENTOS_EIGHT" -eq '8' && "$CENTOSVER_NUMERIC" -ge '87' ]]; then
   DEVTOOLSETTEN='n'
   DEVTOOLSETELEVEN='n'
   DEVTOOLSETTWELVE='y'
   DEVTOOLSETTHIRTEEN='n'
+  DEVTOOLSETFOURTEEN='n'
+  DEVTOOLSETFIFTTEEN='n'
 elif [[ "$CENTOS_EIGHT" -eq '8' ]]; then
   DEVTOOLSETTEN='n'
   DEVTOOLSETELEVEN='y'
   DEVTOOLSETTWELVE='n'
   DEVTOOLSETTHIRTEEN='n'
+  DEVTOOLSETFOURTEEN='n'
+  DEVTOOLSETFIFTTEEN='n'
 fi
 
 # el9 GCC
@@ -296,21 +308,29 @@ if [[ "$CENTOS_NINE" -eq '9' && "$CENTOSVER_NUMERIC" -ge '93' ]]; then
   if [[ "$PHP_PGO" = [yY] ]] && [[ "$PHPMVER" = '7.4' || "$PHPMUVER" = '7.4' ]]; then
     DEVTOOLSETTWELVE='y'
     DEVTOOLSETTHIRTEEN='n'
+    DEVTOOLSETFOURTEEN='n'
+    DEVTOOLSETFIFTTEEN='n'
   else
     DEVTOOLSETTWELVE='n'
     DEVTOOLSETTHIRTEEN='y'
+    DEVTOOLSETFOURTEEN='n'
+    DEVTOOLSETFIFTTEEN='n'
   fi
 elif [[ "$CENTOS_NINE" -eq '9' && "$CENTOSVER_NUMERIC" -ge '91' ]]; then
   DEVTOOLSETTEN='n'
   DEVTOOLSETELEVEN='n'
   DEVTOOLSETTWELVE='y'
   DEVTOOLSETTHIRTEEN='n'
+  DEVTOOLSETFOURTEEN='n'
+  DEVTOOLSETFIFTTEEN='n'
 elif [[ "$CENTOS_NINE" -eq '9' ]]; then
   # el9 already defaults to GCC 11
   DEVTOOLSETTEN='n'
   DEVTOOLSETELEVEN='n'
   DEVTOOLSETTWELVE='n'
   DEVTOOLSETTHIRTEEN='n'
+  DEVTOOLSETFOURTEEN='n'
+  DEVTOOLSETFIFTTEEN='n'
 fi
 
 if [[ "$FORCE_IPVFOUR" != [yY] ]]; then
@@ -774,6 +794,7 @@ MARIADB_JEMALLOC='n'
 #####################################################
 # CCACHE Configuration
 CCACHEINSTALL='y'
+CCACHE_CPP2_DISABLE='n'
 CCACHE_VER="3.7.12"
 CCACHESIZE='2.5G'
 
@@ -820,7 +841,9 @@ PARALLEL_MODE=y
 # compiler related
 MARCH_TARGETNATIVE='y'        # for intel 64bit only set march=native, if no set to x86-64
 MARCH_TARGETNATIVE_ALWAYS='n' # force native compiler to override smarter vps detection routine
-CLANG='n'                     # Nginx and LibreSSL
+CLANG='n'                     # Build Nginx with Clang compiler instead of default GCC compiler
+CLANG_LTO_ENABLE='y'          # Build Nginx with Clang LTO enabled
+CLANG_LTO_FULL='n'            # use full Clang LTO linker instead of LTO Thin linker for Nginx
 CLANG_FOUR='n'                # Clang 4.0+ optional support https://community.centminmod.com/threads/13729/
 CLANG_FIVE='n'                # Clang 5.0+ optional support https://community.centminmod.com/threads/13729/
 CLANG_SIX='n'                 # Clang 6.0+ optional support https://community.centminmod.com/threads/13729/
@@ -858,6 +881,7 @@ NGX_LDMOLD='n'                # optional mold linker https://github.com/rui314/m
 MOLD_VERSION='1.3.0'          # mold linker rpm version
 MOLD_VERSION_EL8='1.11.0'     # mold linker rpm version
 NGINX_SECURED='y'             # apply more secure compilation options for Nginx
+NGINX_SYMBOLIC_AS_NEEDED='y'  # enable nginx options for -Wl,-Bsymbolic-functions -Wl,--as-needed
 PHP_SECURED='y'               # apply more secure compilation options for PHP-FPM
 
 # When set to =y, will disable those listed installed services 
@@ -1001,7 +1025,7 @@ NGINX_PCREVER='8.45'         # Version of PCRE used for pcre-jit support in Ngin
 NGINX_PCRE_TWO='n'           # optional PCRE2 for Nginx 1.21.5+
 NGINX_PCRETWOVER='10.39'     # Version of PCRE2 used for pcre-jit support in Nginx
 NGINX_ZLIBCUSTOM='y'         # Use custom zlib instead of system version
-NGINX_ZLIBVER='1.3'       # http://www.zlib.net/
+NGINX_ZLIBVER='1.3.1'        # http://www.zlib.net/
 NGINX_VIDEO='n'              # control variable when 'y' set for NGINX_SLICE='y', NGINX_RTMP='y', NGINX_FLV='y', NGINX_MP4='y'
 ORESTY_HEADERSMORE='y'       # openresty headers more https://github.com/openresty/headers-more-nginx-module
 ORESTY_HEADERSMOREGIT='n'    # use git master instead of version specific
@@ -1181,8 +1205,8 @@ SENDMAIL_INSTALL='n'         # Install Sendmail (and mailx) set to y and POSTFIX
 POSTFIX_INSTALL=y            # Install Postfix (and mailx) set to n and SENDMAIL_INSTALL=y for sendmail
 # Nginx
 NGINX_VERSION='1.27.1'             # Use this version of Nginx
-NGINX_ANGIE_VERSION='Angie-1.6.2'
-FREENGINX_VERSION='1.27.2'     # Maxim's Freenginx fork https://freenginx.org/en/download.html
+NGINX_ANGIE_VERSION='Angie-1.7.0'
+FREENGINX_VERSION='1.27.4'     # Maxim's Freenginx fork https://freenginx.org/en/download.html
 FREENGINX_INSTALL='n'          # Use Freenginx fork instead of official Nginx
 FREENGINX_BACKPORT_PATCHES='n' # Backport Freenginx fixes to official Nginx
 NGINX_VHOSTSSL='y'             # enable centmin.sh menu 2 prompt to create self signed SSL vhost 2nd vhost conf
@@ -1243,7 +1267,7 @@ BORINGSSL_DIR="/opt"
 
 # AWS-LC
 AWS_LC_SWITCH='n'             # if set to 'y' overrides OpenSSL as default for Nginx https://github.com/aws/aws-lc
-AWS_LC_VERSION='v1.34.2'      # version as per ttps://github.com/aws/aws-lc/tags
+AWS_LC_VERSION='v1.35.1'      # version as per ttps://github.com/aws/aws-lc/tags
 AWS_LC_DIR="/opt"
 AWS_LC_SWITCH_BUILD_TESTS='n' # run AWS-LC build tests
 ##################################
@@ -1346,7 +1370,11 @@ TCP_BBR_ENABLE='n'
 TCP_FASTOPEN_ENABLE='n'
 
 # centmin.sh curl options
-OS_PRETTY_NAME=$(cat /etc/os-release | awk -F '=' '/PRETTY_NAME/ {print $2}' | sed -e 's| (| |g' -e 's|)| |g' -e 's| Core ||g' -e 's|"||g')
+if [ -f /etc/os-release ]; then
+  OS_PRETTY_NAME=$(cat /etc/os-release | awk -F '=' '/PRETTY_NAME/ {print $2}' | sed -e 's| (| |g' -e 's|)| |g' -e 's| Core ||g' -e 's|"||g')
+else
+  OS_PRETTY_NAME="CentOS 6.10 Final"
+fi
 CURL_AGENT_VERSION=$(curl -V 2>&1 | head -n 1 |  awk '{print $1"/"$2}')
 CURL_AGENT="${CURL_AGENT_VERSION} ${OS_PRETTY_NAME}"
 CURL_CPUMODEL=$(awk -F: '/model name/{print $2}' /proc/cpuinfo | sort | uniq -c | xargs | sed -e 's|(R)||g' -e 's|(TM)||g' -e 's|Intel Core|Intel|g' -e 's|CPU ||g' -e 's|-Core|C|g' -e 's|@ |@|g');
@@ -1771,29 +1799,124 @@ if [ -f "${CONFIGSCANBASE}/custom_config.inc" ]; then
   fi
 fi
 
-# Determine the -march flag based on the CPU flags
-cpu_flags=$(grep -m1 -o -e 'avx512f' -e 'avx2' -e 'avx' /proc/cpuinfo | tr '\n' ' ')
-if [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]]; then
-  check_cflags=$(/lib64/ld-linux-x86-64.so.2 --help | grep supported | awk '/x86-64/ {print $1}' | head -n1 | egrep 'x86-64')
-else
-  check_cflags=''
-fi
-
-# Determine the -march flag based on the CPU flags
-if [[ "$DEVTOOLSETELEVEN" = [yY] || "$DEVTOOLSETTWELVE" = [yY] ]]; then
-  if [[ $check_cflags == *'x86-64'* ]]; then
-    march_flag="$check_cflags"
-  elif [[ $cpu_flags == *'avx512f'* ]]; then
-    march_flag='x86-64-v4'
-  elif [[ $cpu_flags == *'avx2'* ]]; then
-    march_flag='x86-64-v3'
-  elif [[ $cpu_flags == *'sse4.1'* ]] || [[ $cpu_flags == *'sse4.2'* ]] || [[ $cpu_flags == *'ssse3'* ]]; then
-    march_flag='x86-64-v2'
+# Determine the architecture
+arch_detect=$(uname -m)
+if [[ "$arch_detect" == "x86_64" ]]; then
+  # Existing x86_64 code
+  cpu_flags=$(grep -m1 -o -e 'avx512f' -e 'avx2' -e 'avx' /proc/cpuinfo | tr '\n' ' ')
+  if [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]]; then
+    check_cflags=$(/lib64/ld-linux-x86-64.so.2 --help | grep supported | awk '/x86-64/ {print $1}' | head -n1 | egrep 'x86-64')
+  else
+    check_cflags=''
+  fi
+  # Determine the -march flag based on the CPU flags
+  if [[ "$DEVTOOLSETELEVEN" = [yY] || "$DEVTOOLSETTWELVE" = [yY] || "$DEVTOOLSETTHIRTEEN" = [yY] || "$DEVTOOLSETFOURTEEN" = [yY] || "$DEVTOOLSETFIFTTEEN" = [yY] ]]; then
+    if [[ $check_cflags == *'x86-64'* ]]; then
+      march_flag="$check_cflags"
+    elif [[ $cpu_flags == *'avx512f'* ]]; then
+      march_flag='x86-64-v4'
+    elif [[ $cpu_flags == *'avx2'* ]]; then
+      march_flag='x86-64-v3'
+    elif [[ $cpu_flags == *'sse4.1'* ]] || [[ $cpu_flags == *'sse4.2'* ]] || [[ $cpu_flags == *'ssse3'* ]]; then
+      march_flag='x86-64-v2'
+    else
+      march_flag='x86-64'
+    fi
   else
     march_flag='x86-64'
   fi
-else
-  march_flag='x86-64'
+elif [[ "$arch_detect" == "aarch64" ]]; then
+  # ARM64 specific code
+  if [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]]; then
+    # For AlmaLinux 8/9, we'll use /lib/ld-linux-aarch64.so.1
+    check_cflags=$(/lib/ld-linux-aarch64.so.1 --help | grep supported | awk '/aarch64/ {print $1}' | head -n1)
+  else
+    check_cflags=''
+  fi
+  # Determine ARM features
+  cpu_part=$(grep -m1 'CPU part' /proc/cpuinfo | awk '{print $4}')
+  
+  case "$cpu_part" in
+    0xd04) march_flag='armv8-a' ;; # Cortex-A35
+    0xd03) march_flag='armv8-a' ;; # Cortex-A53
+    0xd07) march_flag='armv8-a' ;; # Cortex-A57
+    0xd08) march_flag='armv8-a' ;; # Cortex-A72
+    0xd09) march_flag='armv8-a' ;; # Cortex-A73
+    0xd05) march_flag='armv8.2-a' ;; # Cortex-A55
+    0xd06) march_flag='armv8.2-a' ;; # Cortex-A65
+    0xd43) march_flag='armv8.2-a' ;; # Cortex-A65AE
+    0xd0a) march_flag='armv8.2-a' ;; # Cortex-A75
+    0xd0b) march_flag='armv8.2-a' ;; # Cortex-A76
+    0xd0e) march_flag='armv8.2-a' ;; # Cortex-A76AE
+    0xd0d) march_flag='armv8.2-a' ;; # Cortex-A77
+    0xd41) march_flag='armv8.2-a' ;; # Cortex-A78
+    0xd42) march_flag='armv8.2-a' ;; # Cortex-A78AE
+    0xd4b) march_flag='armv8.2-a' ;; # Cortex-A78C
+    0xd44) march_flag='armv8.2-a' ;; # Cortex-X1
+    0xd4c) march_flag='armv8.2-a' ;; # Cortex-X1C
+    0xd4a) march_flag='armv8.2-a' ;; # Neoverse-E1
+    0xd0c) march_flag='armv8.2-a' ;; # Neoverse-N1
+    0xd40) march_flag='armv8.4-a' ;; # Neoverse-V1
+    0xd46) march_flag='armv9-a' ;; # Cortex-A510
+    0xd47) march_flag='armv9-a' ;; # Cortex-A710
+    0xd4d) march_flag='armv9-a' ;; # Cortex-A715
+    0xd48) march_flag='armv9-a' ;; # Cortex-X2
+    0xd4e) march_flag='armv9-a' ;; # Cortex-X3
+    0xd49) march_flag='armv9-a' ;; # Neoverse-N2
+    0xd4f) march_flag='armv9-a' ;; # Neoverse-V2
+    0xd80) march_flag='armv9.2-a' ;; # Cortex-A520
+    0xd81) march_flag='armv9.2-a' ;; # Cortex-A720
+    0xd87) march_flag='armv9.2-a' ;; # Cortex-A725
+    0xd85) march_flag='armv9.2-a' ;; # Cortex-A925
+    0xd82) march_flag='armv9.2-a' ;; # Cortex-X4
+    0xd8e) march_flag='armv9.2-a' ;; # Neoverse-N3
+    0xd84) march_flag='armv9.2-a' ;; # Neoverse-V3
+    *)
+      # Fallback detection based on CPU features
+      if grep -q 'ARMv9' /proc/cpuinfo; then
+        if grep -q 'ARMv9.2' /proc/cpuinfo; then
+          march_flag='armv9.2-a'
+        else
+          march_flag='armv9-a'
+        fi
+      elif grep -q 'ARMv8.6' /proc/cpuinfo; then
+        march_flag='armv8.6-a'
+      elif grep -q 'ARMv8.5' /proc/cpuinfo; then
+        march_flag='armv8.5-a'
+      elif grep -q 'ARMv8.4' /proc/cpuinfo; then
+        march_flag='armv8.4-a'
+      elif grep -q 'ARMv8.3' /proc/cpuinfo; then
+        march_flag='armv8.3-a'
+      elif grep -q 'ARMv8.2' /proc/cpuinfo; then
+        march_flag='armv8.2-a'
+      elif grep -q 'ARMv8.1' /proc/cpuinfo; then
+        march_flag='armv8.1-a'
+      else
+        march_flag='armv8-a'
+      fi
+      ;;
+  esac
+
+  # Add common extensions
+  march_flag+="+crc+crypto"
+
+  # Check for NEON support (it's standard on aarch64, but we'll check anyway)
+  if grep -q 'neon' /proc/cpuinfo; then
+    march_flag+="+neon"
+  fi
+
+  # Check for SVE support and add if present
+  if grep -q 'sve' /proc/cpuinfo; then
+    march_flag+="+sve"
+  fi
+fi
+
+if [[ "$INITIALINSTALL" = [yY] ]]; then
+  echo
+  echo "Detected architecture: $arch_detect"
+  echo "CPU Part: $cpu_part"
+  echo "Selected -march flag: $march_flag"
+  echo
 fi
 
 if [[ "$CENTOS_SEVEN" -eq '7' ]]; then
