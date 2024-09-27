@@ -30,7 +30,7 @@ DT=$(date +"%d%m%y-%H%M%S")
 branchname='140.00beta01'
 SCRIPT_MAJORVER='140'
 SCRIPT_MINORVER='00'
-SCRIPT_INCREMENTVER='131'
+SCRIPT_INCREMENTVER='132'
 SCRIPT_VERSIONSHORT="${branchname}"
 SCRIPT_VERSION="${SCRIPT_VERSIONSHORT}.b${SCRIPT_INCREMENTVER}"
 SCRIPT_DATE='01/07/24'
@@ -196,7 +196,11 @@ fi
 
 # ensure only el8+ OS versions are being looked at for alma linux, rocky linux
 # oracle linux, vzlinux, circle linux, navy linux, euro linux
-EL_VERID=$(awk -F '=' '/VERSION_ID/ {print $2}' /etc/os-release | sed -e 's|"||g' | cut -d . -f1)
+if [ -f /etc/os-release ]; then
+  EL_VERID=$(awk -F '=' '/VERSION_ID/ {print $2}' /etc/os-release | sed -e 's|"||g' | cut -d . -f1)
+else
+  EL_VERID="6"
+fi
 if [ -f /etc/almalinux-release ] && [[ "$EL_VERID" -eq 8 || "$EL_VERID" -eq 9 ]]; then
   CENTOSVER=$(awk '{ print $3 }' /etc/almalinux-release | cut -d . -f1,2)
   ALMALINUXVER=$(awk '{ print $3 }' /etc/almalinux-release | cut -d . -f1,2 | sed -e 's|\.|000|g')
@@ -1366,7 +1370,11 @@ TCP_BBR_ENABLE='n'
 TCP_FASTOPEN_ENABLE='n'
 
 # centmin.sh curl options
-OS_PRETTY_NAME=$(cat /etc/os-release | awk -F '=' '/PRETTY_NAME/ {print $2}' | sed -e 's| (| |g' -e 's|)| |g' -e 's| Core ||g' -e 's|"||g')
+if [ -f /etc/os-release ]; then
+  OS_PRETTY_NAME=$(cat /etc/os-release | awk -F '=' '/PRETTY_NAME/ {print $2}' | sed -e 's| (| |g' -e 's|)| |g' -e 's| Core ||g' -e 's|"||g')
+else
+  OS_PRETTY_NAME="CentOS 6.10 Final"
+fi
 CURL_AGENT_VERSION=$(curl -V 2>&1 | head -n 1 |  awk '{print $1"/"$2}')
 CURL_AGENT="${CURL_AGENT_VERSION} ${OS_PRETTY_NAME}"
 CURL_CPUMODEL=$(awk -F: '/model name/{print $2}' /proc/cpuinfo | sort | uniq -c | xargs | sed -e 's|(R)||g' -e 's|(TM)||g' -e 's|Intel Core|Intel|g' -e 's|CPU ||g' -e 's|-Core|C|g' -e 's|@ |@|g');
