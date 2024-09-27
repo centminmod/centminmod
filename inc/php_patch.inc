@@ -639,7 +639,7 @@ php_patches() {
     fi
     if [[ "$PHPMUVER" = '7.0' || "$PHPMVER" = '7.0' ]] && [[ "$PHPVER_ID" -ge '70000' && "$PHPVER_ID" -le '70033' ]]; then
       # backport security bug patch from PHP 7.1. to 7.0.33
-      phpseven_bugids='77369 77370 77371 77381 77418 77247 77242 77380 77540 77563 77396 77431 77630 76846 php-openssl-cert 77753 77831 sqlite3-defensive 77950 77967 77988 78069 77919 78222 78256 75457 78380 78599 78862 78863 78793 78878 78910 79037 79099 77569 79221 79082 php-openssl-cert2 79282 79329 79330 79465 78875 78876 79797 79877 79699 mysqlnd-fix 77423 80672 80710 81122 76488 81211 81026 79971 81719 81720 81726 81727 81740 81744 81746 cve-2023-0662 ghsa-76gg-c692-v2mw cve-2023-3823 cve-2023-3824 cve-2024-2756 cve-2024-3096 cve-2024-5458'
+      phpseven_bugids='77369 77370 77371 77381 77418 77247 77242 77380 77540 77563 77396 77431 77630 76846 php-openssl-cert 77753 77831 sqlite3-defensive 77950 77967 77988 78069 77919 78222 78256 75457 78380 78599 78862 78863 78793 78878 78910 79037 79099 77569 79221 79082 php-openssl-cert2 79282 79329 79330 79465 78875 78876 79797 79877 79699 mysqlnd-fix 77423 80672 80710 81122 76488 81211 81026 79971 81719 81720 81726 81727 81740 81744 81746 cve-2023-0662 ghsa-76gg-c692-v2mw cve-2023-3823 cve-2023-3824 cve-2024-2756 cve-2024-3096 cve-2024-5458 cve-2024-8925 cve-2024-8926 cve-2024-8927'
       for bugid in $phpseven_bugids; do
         if [[ ! -f "php7033-${bugid}.patch" && -f "$CUR_DIR/patches/php/php7033-${bugid}.patch" ]]; then
           echo
@@ -699,7 +699,7 @@ php_patches() {
     fi
     if [[ "$PHPMUVER" = '7.1' || "$PHPMVER" = '7.1' ]] && [[ "$PHPVER_ID" -ge '70100' && "$PHPVER_ID" -le '70133' ]]; then
       # backport security bug patch from PHP 7.3. to 7.1.33
-      phpseven_bugids='78862 78863 78793 78878 78910 79037 79091 79099 77569 79221 79082 php-openssl-cert 79282 79329 79330 79465 78875 78876 79797 79877 79699 79601 mysqlnd-fix 77423 80672 80710 81122 76452 81211 81026 79971 81719 81720 81726 81727 81740 81744 81746 cve-2023-0662 ghsa-76gg-c692-v2mw cve-2023-3823 cve-2023-3824 cve-2024-2756 cve-2024-3096 cve-2024-5458'
+      phpseven_bugids='78862 78863 78793 78878 78910 79037 79091 79099 77569 79221 79082 php-openssl-cert 79282 79329 79330 79465 78875 78876 79797 79877 79699 79601 mysqlnd-fix 77423 80672 80710 81122 76452 81211 81026 79971 81719 81720 81726 81727 81740 81744 81746 cve-2023-0662 ghsa-76gg-c692-v2mw cve-2023-3823 cve-2023-3824 cve-2024-2756 cve-2024-3096 cve-2024-5458 cve-2024-8925 cve-2024-8926 cve-2024-8927'
       for bugid in $phpseven_bugids; do
         if [[ ! -f "php7133-${bugid}.patch" && -f "$CUR_DIR/patches/php/php7133-${bugid}.patch" ]]; then
           echo
@@ -778,7 +778,7 @@ php_patches() {
     fi
     if [[ "$PHPMUVER" = '7.2' || "$PHPMVER" = '7.2' ]] && [[ "$PHPVER_ID" -ge '70200' && "$PHPVER_ID" -le '70234' ]]; then
       # backport security bug patch from PHP 7.3. to 7.2.34
-      phpseven_bugids='77423 80672 80710 81122 76452 81211 81026 79971 81719 81720 81726 81727 81738 81740 81744 81746 cve-2023-0662 ghsa-76gg-c692-v2mw cve-2023-3823 cve-2023-3824 cve-2024-2756 cve-2024-3096 cve-2024-5458'
+      phpseven_bugids='77423 80672 80710 81122 76452 81211 81026 79971 81719 81720 81726 81727 81738 81740 81744 81746 cve-2023-0662 ghsa-76gg-c692-v2mw cve-2023-3823 cve-2023-3824 cve-2024-2756 cve-2024-3096 cve-2024-5458 cve-2024-8925 cve-2024-8926 cve-2024-8927'
       for bugid in $phpseven_bugids; do
         if [[ ! -f "php7234-${bugid}.patch" && -f "$CUR_DIR/patches/php/php7234-${bugid}.patch" ]]; then
           echo
@@ -854,7 +854,7 @@ php_patches() {
     fi
     if [[ "$PHPMUVER" = '7.3' || "$PHPMVER" = '7.3' ]] && [[ "$PHPVER_ID" -ge '70300' && "$PHPVER_ID" -le '70333' ]]; then
       # backport security bug patch for php 7.3
-      phpseven_bugids='81026 81719 81720 pcre1038 81726 81727 81738 81740 81744 81746 cve-2023-0662 ghsa-76gg-c692-v2mw cve-2023-3823 cve-2023-3824 cve-2024-2756 cve-2024-3096 cve-2024-5458'
+      phpseven_bugids='81026 81719 81720 pcre1038 81726 81727 81738 81740 81744 81746 cve-2023-0662 ghsa-76gg-c692-v2mw cve-2023-3823 cve-2023-3824 cve-2024-2756 cve-2024-3096 cve-2024-5458 cve-2024-8925 cve-2024-8926 cve-2024-8927'
       for bugid in $phpseven_bugids; do
         if [[ ! -f "php7331-${bugid}.patch" && -f "$CUR_DIR/patches/php/php7331-${bugid}.patch" ]]; then
           echo
@@ -954,7 +954,7 @@ php_patches() {
   fi
   if [[ "$PHPVER_ID" -ge '70433' && "$PHPVER_ID" -le '70434' ]]; then
       # for 7.4.33 to 7.4.34 only
-      phpseven_bugids='81740 81744 81746 cve-2023-0662 ghsa-76gg-c692-v2mw cve-2023-3823 cve-2023-3824 cve-2024-2756 cve-2024-3096 cve-2024-5458'
+      phpseven_bugids='81740 81744 81746 cve-2023-0662 ghsa-76gg-c692-v2mw cve-2023-3823 cve-2023-3824 cve-2024-2756 cve-2024-3096 cve-2024-5458 cve-2024-8925 cve-2024-8926 cve-2024-8927 cve-2024-9026'
 
       for bugid in $phpseven_bugids; do
           if [[ ! -f "php742-${bugid}.patch" && -f "$CUR_DIR/patches/php/php742-${bugid}.patch" ]]; then
@@ -1004,7 +1004,7 @@ php_patches() {
   fi
   if [[ "$PHPVER_ID" -ge '80000' && "$PHPVER_ID" -le '80099' ]]; then
       # for 8.1.x only
-      phpeight_bugids='cve-2024-2756 cve-2024-3096 cve-2024-5458'
+      phpeight_bugids='cve-2024-2756 cve-2024-3096 cve-2024-5458 cve-2024-8925 cve-2024-8926 cve-2024-8927 cve-2024-9026'
 
       for bugid in $phpeight_bugids; do
           if [[ ! -f "php80-${bugid}.patch" && -f "$CUR_DIR/patches/php/php80-${bugid}.patch" ]]; then
