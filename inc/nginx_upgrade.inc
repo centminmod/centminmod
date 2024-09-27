@@ -1461,10 +1461,12 @@ fi
         if [[ "$NGINX_SECURED" = [yY] ]]; then
             echo
             checksec_nginx
-            echo
-            echo "checksec --format=json --file=/usr/local/sbin/nginx --extended | jq -r"
-            checksec --format=json --file=/usr/local/sbin/nginx --extended | jq -r
-            echo
+            if [ -f /usr/local/bin/checksec ]; then
+                echo
+                echo "checksec --format=json --file=/usr/local/sbin/nginx --extended | jq -r"
+                checksec --format=json --file=/usr/local/sbin/nginx --extended | jq -r
+                echo
+            fi
         fi
         if [[ "$DYNAMIC_SUPPORT" = [yY] ]]; then
             echo
