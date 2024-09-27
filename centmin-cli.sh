@@ -30,7 +30,7 @@ DT=$(date +"%d%m%y-%H%M%S")
 branchname='140.00beta01'
 SCRIPT_MAJORVER='140'
 SCRIPT_MINORVER='00'
-SCRIPT_INCREMENTVER='130'
+SCRIPT_INCREMENTVER='131'
 SCRIPT_VERSIONSHORT="${branchname}"
 SCRIPT_VERSION="${SCRIPT_VERSIONSHORT}.b${SCRIPT_INCREMENTVER}"
 SCRIPT_DATE='01/07/24'
@@ -1903,11 +1903,13 @@ elif [[ "$arch_detect" == "aarch64" ]]; then
   fi
 fi
 
-echo
-echo "Detected architecture: $arch_detect"
-echo "CPU Part: $cpu_part"
-echo "Selected -march flag: $march_flag"
-echo
+if [[ "$INITIALINSTALL" = [yY] ]]; then
+  echo
+  echo "Detected architecture: $arch_detect"
+  echo "CPU Part: $cpu_part"
+  echo "Selected -march flag: $march_flag"
+  echo
+fi
 
 if [[ "$CENTOS_SEVEN" -eq '7' ]]; then
   AWS_LC_SWITCH='n'
