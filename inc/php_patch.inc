@@ -607,6 +607,33 @@ php_patches() {
         dos2unix php5640-cve-2024-5458.patch
         patch -p1 < php5640-cve-2024-5458.patch
       fi
+      if [ ! -f php5640-cve-2024-8925.patch ]; then
+        echo
+        echo "patching PHP 5.6 for bug #cve-2024-8925"
+        echo "https://bugs.php.net/bug.php?id=cve-2024-8925"
+        echo
+        cp -a $CUR_DIR/patches/php/php5640-cve-2024-8925.patch php5640-cve-2024-8925.patch
+        dos2unix php5640-cve-2024-8925.patch
+        patch -p1 < php5640-cve-2024-8925.patch
+      fi
+      if [ ! -f php5640-cve-2024-8926.patch ]; then
+        echo
+        echo "patching PHP 5.6 for bug #cve-2024-8926"
+        echo "https://bugs.php.net/bug.php?id=cve-2024-8926"
+        echo
+        cp -a $CUR_DIR/patches/php/php5640-cve-2024-8926.patch php5640-cve-2024-8926.patch
+        dos2unix php5640-cve-2024-8926.patch
+        patch -p1 < php5640-cve-2024-8926.patch
+      fi
+      if [ ! -f php5640-cve-2024-8927.patch ]; then
+        echo
+        echo "patching PHP 5.6 for bug #cve-2024-8927"
+        echo "https://bugs.php.net/bug.php?id=cve-2024-8927"
+        echo
+        cp -a $CUR_DIR/patches/php/php5640-cve-2024-8927.patch php5640-cve-2024-8927.patch
+        dos2unix php5640-cve-2024-8927.patch
+        patch -p1 < php5640-cve-2024-8927.patch
+      fi
     fi
 
     if [[ "$PHPVER_ID" = '70213' || "$PHPVER_ID" = '70125' ]]; then
