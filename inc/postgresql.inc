@@ -6,25 +6,41 @@ postgresqlinstall() {
     # 
     # to update postgresql server via yum use
     # yum -y update postgresql16 postgresql16-devel postgresql16-contrib postgresql16-libs postgresql16-server --disableplugin=priorities
-  if [[ -f /usr/pgsql-9.6/bin/pg_config ]]; then
-    POSTGRESQL_BRANCHVER='9.6'
-    PDOPGSQL_PHPVER='9.6'
-  elif [[ -f /usr/pgsql-10/bin/pg_config ]]; then
-    POSTGRESQL_BRANCHVER='10'
-    PDOPGSQL_PHPVER='10'
-  elif [[ -f /usr/pgsql-11/bin/pg_config ]]; then
-    POSTGRESQL_BRANCHVER='11'
-    PDOPGSQL_PHPVER='11'
-  elif [[ -f /usr/pgsql-12/bin/pg_config ]]; then
-    POSTGRESQL_BRANCHVER='12'
-    PDOPGSQL_PHPVER='12'
-  elif [[ -f /usr/pgsql-13/bin/pg_config ]]; then
-    POSTGRESQL_BRANCHVER='13'
-    PDOPGSQL_PHPVER='13'
-  elif [[ -f /usr/pgsql-16/bin/pg_config ]]; then
-      POSTGRESQL_BRANCHVER='16'
-      PDOPGSQL_PHPVER='16'
-  fi
+    # Only check versions if POSTGRESQL_BRANCHVER is not already set
+    if [[ -z "$POSTGRESQL_BRANCHVER" ]]; then
+      if [[ -f /usr/pgsql-9.6/bin/pg_config ]]; then
+        POSTGRESQL_BRANCHVER='9.6'
+        PDOPGSQL_PHPVER='9.6'
+      elif [[ -f /usr/pgsql-10/bin/pg_config ]]; then
+        POSTGRESQL_BRANCHVER='10'
+        PDOPGSQL_PHPVER='10'
+      elif [[ -f /usr/pgsql-11/bin/pg_config ]]; then
+        POSTGRESQL_BRANCHVER='11'
+        PDOPGSQL_PHPVER='11'
+      elif [[ -f /usr/pgsql-12/bin/pg_config ]]; then
+        POSTGRESQL_BRANCHVER='12'
+        PDOPGSQL_PHPVER='12'
+      elif [[ -f /usr/pgsql-13/bin/pg_config ]]; then
+        POSTGRESQL_BRANCHVER='13'
+        PDOPGSQL_PHPVER='13'
+      elif [[ -f /usr/pgsql-16/bin/pg_config ]]; then
+        POSTGRESQL_BRANCHVER='16'
+        PDOPGSQL_PHPVER='16'
+      elif [[ -f /usr/pgsql-17/bin/pg_config ]]; then
+        POSTGRESQL_BRANCHVER='17'
+        PDOPGSQL_PHPVER='17'
+      fi
+    else
+      # If POSTGRESQL_BRANCHVER is set, check if the correct version is installed
+      if [[ "$POSTGRESQL_BRANCHVER" = '17' && -f /usr/pgsql-17/bin/pg_config ]]; then
+        PDOPGSQL_PHPVER='17'
+      elif [[ "$POSTGRESQL_BRANCHVER" = '16' && -f /usr/pgsql-16/bin/pg_config ]]; then
+        PDOPGSQL_PHPVER='16'
+      else
+        echo "Error: PostgreSQL version $POSTGRESQL_BRANCHVER is set but not installed."
+      fi
+    fi
+
   if [[ "$POSTGRESQL_BRANCHVER" = '9.6' ]]; then
     if [[ ! -f /usr/pgsql-9.6/bin/pg_config || ! -f /usr/pgsql-9.6/lib/libpq.a || ! -f /etc/yum.repos.d/pgdg-96-centos.repo ]]; then
         echo
@@ -434,6 +450,102 @@ postgresqlinstall() {
           chkconfig postgresql-16 on
           service postgresql-16 start
           service postgresql-16 status
+        fi
+    fi
+  fi
+  if [[ "$CENTOS_EIGHT" = '8' || "$CENTOS_NINE" = '9' ]] && [[ "$POSTGRESQL_BRANCHVER" = '17' && ! -d /var/lib/psql/17/data ]]; then
+    # https://www.postgresql.org/download/linux/redhat/
+    if [[ ! -f /usr/pgsql-17/bin/pg_config || ! -f /usr/pgsql-17/lib/libpq.a || ! -f /etc/yum.repos.d/pgdg-17-redhat.repo ]]; then
+        echo
+        echo "install and setup PostgreSQL server and devel packages"
+        if [[ "$FORCE_IPVFOUR" != [yY] ]]; then
+            ipv_forceopt_pgsl=""
+        else
+            ipv_forceopt_pgsl=' -4'
+        fi
+        # cd $DIR_TMP
+        if [[ "$CENTOS_NINE" = '9' ]]; then
+            # install postgresql 17 instead of default el9 module postgresql 13
+            time dnf -y module disable postgresql
+            wget${ipv_forceopt_pgsl} https://download.postgresql.org/pub/repos/yum/reporpms/EL-9-x86_64/pgdg-redhat-repo-latest.noarch.rpm -O ${DIR_TMP}/pgdg-redhat-repo-latest.noarch.rpm
+            # rpm --import https://download.postgresql.org/pub/repos/yum/RPM-GPG-KEY-PGDG-17
+            # rpm --import https://download.postgresql.org/pub/repos/yum/RPM-GPG-KEY-PGDG
+            rpm --import https://download.postgresql.org/pub/repos/yum/keys/PGDG-RPM-GPG-KEY-RHEL
+            rpm -Uvh ${DIR_TMP}/pgdg-redhat-repo-latest.noarch.rpm
+            sed -i 's/gpgcheck=9/gpgcheck=1/g' /etc/yum.repos.d/pgdg-redhat-all.repo
+            yum -y makecache
+        elif [[ "$CENTOS_EIGHT" = '8' ]]; then
+            # install postgresql 17 instead of default el9 module postgresql 13, 12, 10 and 9.6
+            time dnf -y module disable postgresql
+            wget${ipv_forceopt_pgsl} https://download.postgresql.org/pub/repos/yum/reporpms/EL-8-x86_64/pgdg-redhat-repo-latest.noarch.rpm -O ${DIR_TMP}/pgdg-redhat-repo-latest.noarch.rpm
+            # rpm --import https://download.postgresql.org/pub/repos/yum/RPM-GPG-KEY-PGDG-17
+            # rpm --import https://download.postgresql.org/pub/repos/yum/RPM-GPG-KEY-PGDG
+            rpm --import https://download.postgresql.org/pub/repos/yum/keys/PGDG-RPM-GPG-KEY-RHEL
+            rpm -Uvh ${DIR_TMP}/pgdg-redhat-repo-latest.noarch.rpm
+            sed -i 's/gpgcheck=9/gpgcheck=1/g' /etc/yum.repos.d/pgdg-redhat-all.repo
+            yum -y makecache
+        elif [[ "$CENTOS_SEVEN" = '7' ]]; then
+            wget${ipv_forceopt_pgsl} https://download.postgresql.org/pub/repos/yum/reporpms/EL-7-x86_64/pgdg-redhat-repo-latest.noarch.rpm -O ${DIR_TMP}/pgdg-redhat-repo-latest.noarch.rpm
+            # rpm --import https://download.postgresql.org/pub/repos/yum/RPM-GPG-KEY-PGDG-17
+            # rpm --import https://download.postgresql.org/pub/repos/yum/RPM-GPG-KEY-PGDG
+            rpm --import https://download.postgresql.org/pub/repos/yum/keys/PGDG-RPM-GPG-KEY-RHEL7
+            rpm -Uvh ${DIR_TMP}/pgdg-redhat-repo-latest.noarch.rpm
+            sed -i 's/gpgcheck=9/gpgcheck=1/g' /etc/yum.repos.d/pgdg-redhat-all.repo
+            yum -y makecache
+        elif [[ "$CENTOS_SIX" = '6' && "$(uname -m)" = 'x86_64' ]]; then
+            wget${ipv_forceopt_pgsl} https://download.postgresql.org/pub/repos/yum/reporpms/EL-6-x86_64/pgdg-redhat-repo-latest.noarch.rpm -O ${DIR_TMP}/pgdg-redhat-repo-latest.noarch.rpm
+            rpm -Uvh ${DIR_TMP}/pgdg-redhat-repo-latest.noarch.rpm
+            sed -i 's/gpgcheck=9/gpgcheck=1/g' /etc/yum.repos.d/pgdg-redhat-all.repo
+            yum -y makecache
+        elif [[ "$CENTOS_SIX" = '6' && "$(uname -m)" != 'x86_64' ]]; then        
+            wget${ipv_forceopt_pgsl} https://download.postgresql.org/pub/repos/yum/reporpms/EL-6-i386/pgdg-redhat-repo-latest.noarch.rpm -O ${DIR_TMP}/pgdg-redhat-repo-latest.noarch.rpm
+            rpm -Uvh ${DIR_TMP}/pgdg-redhat-repo-latest.noarch.rpm
+            sed -i 's/gpgcheck=9/gpgcheck=1/g' /etc/yum.repos.d/pgdg-redhat-all.repo
+            yum -y makecache
+        fi
+    
+        echo
+        ls -lAhrt /etc/yum.repos.d/
+        echo
+        echo "cat /etc/yum.repos.d/pgdg-redhat-all.repo"
+        cat /etc/yum.repos.d/pgdg-redhat-all.repo
+    
+        echo
+        if [[ "$CENTOS_EIGHT" = '8' || "$CENTOS_NINE" = '9' ]]; then
+          time $YUMDNFBIN -y list postgresql17 postgresql17-devel libpq5-devel postgresql17-contrib postgresql17-libs postgresql17-server --disableplugin=priorities${DISABLEREPO_DNF}
+          echo
+          time $YUMDNFBIN -y install postgresql17 postgresql17-devel libpq5-devel postgresql17-contrib postgresql17-libs postgresql17-server --disableplugin=priorities${DISABLEREPO_DNF} --skip-broken
+        elif [[ "$CENTOS_SEVEN" = '7' ]]; then
+          time $YUMDNFBIN -y list postgresql15 postgresql15-devel libpq5-devel postgresql15-contrib postgresql15-libs postgresql15-server --disableplugin=priorities${DISABLEREPO_DNF}
+          echo
+          time $YUMDNFBIN -y swap -- remove postgresql-libs -- install libpq5
+          time $YUMDNFBIN -y install postgresql15 postgresql15-devel libpq5-devel postgresql15-contrib postgresql15-libs postgresql15-server --disableplugin=priorities${DISABLEREPO_DNF}
+        fi
+
+        if [[ "$CENTOS_NINE" = '9' ]]; then
+          echo
+          /usr/pgsql-17/bin/postgresql-17-setup initdb
+          systemctl enable postgresql-17
+          systemctl start postgresql-17
+          systemctl status postgresql-17 --no-pager
+        elif [[ "$CENTOS_EIGHT" = '8' ]]; then
+          echo
+          /usr/pgsql-17/bin/postgresql-17-setup initdb
+          systemctl enable postgresql-17
+          systemctl start postgresql-17
+          systemctl status postgresql-17 --no-pager
+        elif [[ "$CENTOS_SEVEN" = '7' ]]; then
+          echo
+          /usr/pgsql-15/bin/postgresql-15-setup initdb
+          systemctl enable postgresql-15
+          systemctl start postgresql-15
+          systemctl status postgresql-15 --no-pager
+        elif [[ "$CENTOS_SIX" = '6' ]]; then
+          echo
+          service postgresql-17 initdb
+          chkconfig postgresql-17 on
+          service postgresql-17 start
+          service postgresql-17 status
         fi
     fi
   fi

@@ -1154,7 +1154,7 @@ PHP_ZSTD='n'                # zstd php extension https://github.com/kjdev/php-ex
 SHORTCUTS='y'                # shortcuts
 
 POSTGRESQL='n'               # set to =y to install PostgreSQL 9.6 server, devel packages and pdo-pgsql PHP extension
-POSTGRESQL_BRANCHVER='16'   # PostgresSQL branch version https://www.postgresql.org/ i.e. 16
+POSTGRESQL_BRANCHVER='17'   # PostgresSQL branch version https://www.postgresql.org/ i.e. 16
 
 IMAGEMAGICK_HEIF='n'           # experimental ImageMagick HEIF image format support
 IMAGEMAGICK_SOURCE_INSTALL='n' # ImageMagick 7 source install with HEIC support
