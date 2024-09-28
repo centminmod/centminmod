@@ -26,16 +26,20 @@ postgresqlinstall() {
       elif [[ -f /usr/pgsql-16/bin/pg_config ]]; then
         POSTGRESQL_BRANCHVER='16'
         PDOPGSQL_PHPVER='16'
+        PGSQL16_DATA_DIR="/var/lib/pgsql/16/data"
       elif [[ -f /usr/pgsql-17/bin/pg_config ]]; then
         POSTGRESQL_BRANCHVER='17'
         PDOPGSQL_PHPVER='17'
+        PGSQL17_DATA_DIR="/var/lib/pgsql/17/data"
       fi
     else
       # If POSTGRESQL_BRANCHVER is set, check if the correct version is installed
       if [[ "$POSTGRESQL_BRANCHVER" = '17' && -f /usr/pgsql-17/bin/pg_config ]]; then
         PDOPGSQL_PHPVER='17'
+        PGSQL17_DATA_DIR="/var/lib/pgsql/17/data"
       elif [[ "$POSTGRESQL_BRANCHVER" = '16' && -f /usr/pgsql-16/bin/pg_config ]]; then
         PDOPGSQL_PHPVER='16'
+        PGSQL16_DATA_DIR="/var/lib/pgsql/16/data"
       else
         echo "Error: PostgreSQL version $POSTGRESQL_BRANCHVER is set but not installed."
       fi
@@ -267,7 +271,7 @@ postgresqlinstall() {
         fi
     fi
   fi
-  if [[ "$CENTOS_SEVEN" = '7' && "$POSTGRESQL_BRANCHVER" = '16' && ! -d /var/lib/psql/15/data ]]; then
+  if [[ "$CENTOS_SEVEN" = '7' && "$POSTGRESQL_BRANCHVER" = '16' && ! -d /var/lib/pgsql/15/data ]]; then
     # https://www.postgresql.org/download/linux/redhat/
     if [[ ! -f /usr/pgsql-15/bin/pg_config || ! -f /usr/pgsql-15/lib/libpq.a || ! -f /etc/yum.repos.d/pgdg-15-redhat.repo ]]; then
         echo
@@ -332,13 +336,17 @@ postgresqlinstall() {
 
         if [[ "$CENTOS_NINE" = '9' ]]; then
           echo
-          /usr/pgsql-16/bin/postgresql-16-setup initdb
+          if [[ ! -d "$PGSQL16_DATA_DIR" && ! -f "$PGSQL16_DATA_DIR/PG_VERSION" && ! -d "$PGSQL16_DATA_DIR/base" ]]; then
+            /usr/pgsql-16/bin/postgresql-16-setup initdb
+          fi
           systemctl enable postgresql-16
           systemctl start postgresql-16
           systemctl status postgresql-16 --no-pager
         elif [[ "$CENTOS_EIGHT" = '8' ]]; then
           echo
-          /usr/pgsql-16/bin/postgresql-16-setup initdb
+          if [[ ! -d "$PGSQL16_DATA_DIR" && ! -f "$PGSQL16_DATA_DIR/PG_VERSION" && ! -d "$PGSQL16_DATA_DIR/base" ]]; then
+            /usr/pgsql-16/bin/postgresql-16-setup initdb
+          fi
           systemctl enable postgresql-16
           systemctl start postgresql-16
           systemctl status postgresql-16 --no-pager
@@ -357,7 +365,7 @@ postgresqlinstall() {
         fi
     fi
   fi
-  if [[ "$CENTOS_EIGHT" = '8' || "$CENTOS_NINE" = '9' ]] && [[ "$POSTGRESQL_BRANCHVER" = '16' && ! -d /var/lib/psql/16/data ]]; then
+  if [[ "$CENTOS_EIGHT" = '8' || "$CENTOS_NINE" = '9' ]] && [[ "$POSTGRESQL_BRANCHVER" = '16' && ! -d "$PGSQL16_DATA_DIR" ]]; then
     # https://www.postgresql.org/download/linux/redhat/
     if [[ ! -f /usr/pgsql-16/bin/pg_config || ! -f /usr/pgsql-16/lib/libpq.a || ! -f /etc/yum.repos.d/pgdg-16-redhat.repo ]]; then
         echo
@@ -428,13 +436,17 @@ postgresqlinstall() {
 
         if [[ "$CENTOS_NINE" = '9' ]]; then
           echo
-          /usr/pgsql-16/bin/postgresql-16-setup initdb
+          if [[ ! -d "$PGSQL16_DATA_DIR" && ! -f "$PGSQL16_DATA_DIR/PG_VERSION" && ! -d "$PGSQL16_DATA_DIR/base" ]]; then
+            /usr/pgsql-16/bin/postgresql-16-setup initdb
+          fi
           systemctl enable postgresql-16
           systemctl start postgresql-16
           systemctl status postgresql-16 --no-pager
         elif [[ "$CENTOS_EIGHT" = '8' ]]; then
           echo
-          /usr/pgsql-16/bin/postgresql-16-setup initdb
+          if [[ ! -d "$PGSQL16_DATA_DIR" && ! -f "$PGSQL16_DATA_DIR/PG_VERSION" && ! -d "$PGSQL16_DATA_DIR/base" ]]; then
+            /usr/pgsql-16/bin/postgresql-16-setup initdb
+          fi
           systemctl enable postgresql-16
           systemctl start postgresql-16
           systemctl status postgresql-16 --no-pager
@@ -453,7 +465,7 @@ postgresqlinstall() {
         fi
     fi
   fi
-  if [[ "$CENTOS_EIGHT" = '8' || "$CENTOS_NINE" = '9' ]] && [[ "$POSTGRESQL_BRANCHVER" = '17' && ! -d /var/lib/psql/17/data ]]; then
+  if [[ "$CENTOS_EIGHT" = '8' || "$CENTOS_NINE" = '9' ]] && [[ "$POSTGRESQL_BRANCHVER" = '17' && ! -d "$PGSQL17_DATA_DIR" ]]; then
     # https://www.postgresql.org/download/linux/redhat/
     if [[ ! -f /usr/pgsql-17/bin/pg_config || ! -f /usr/pgsql-17/lib/libpq.a || ! -f /etc/yum.repos.d/pgdg-17-redhat.repo ]]; then
         echo
@@ -524,13 +536,17 @@ postgresqlinstall() {
 
         if [[ "$CENTOS_NINE" = '9' ]]; then
           echo
-          /usr/pgsql-17/bin/postgresql-17-setup initdb
+          if [[ ! -d "$PGSQL17_DATA_DIR" && ! -f "$PGSQL17_DATA_DIR/PG_VERSION" && ! -d "$PGSQL17_DATA_DIR/base" ]]; then
+            /usr/pgsql-17/bin/postgresql-17-setup initdb
+          fi
           systemctl enable postgresql-17
           systemctl start postgresql-17
           systemctl status postgresql-17 --no-pager
         elif [[ "$CENTOS_EIGHT" = '8' ]]; then
           echo
-          /usr/pgsql-17/bin/postgresql-17-setup initdb
+          if [[ ! -d "$PGSQL17_DATA_DIR" && ! -f "$PGSQL17_DATA_DIR/PG_VERSION" && ! -d "$PGSQL17_DATA_DIR/base" ]]; then
+            /usr/pgsql-17/bin/postgresql-17-setup initdb
+          fi
           systemctl enable postgresql-17
           systemctl start postgresql-17
           systemctl status postgresql-17 --no-pager
