@@ -237,6 +237,69 @@ fi
 
 fpmconfdir
 
+# switch el8 OSes to GCC 11 for compile routines
+if [[ "$CENTOS_EIGHT" -eq '8' && "$CENTOSVER_NUMERIC" -ge '89' ]]; then
+  DEVTOOLSETTEN='n'
+  DEVTOOLSETELEVEN='n'
+  if [[ "$PHP_PGO_FALLBACK_GCC" = [yY] && "$PHP_PGO" = [yY] ]] && [[ "$PHPMVER" = '7.0' || "$PHPMUVER" = '7.0' || "$PHPMVER" = '7.1' || "$PHPMUVER" = '7.1' || "$PHPMVER" = '7.2' || "$PHPMUVER" = '7.2' || "$PHPMVER" = '7.3' || "$PHPMUVER" = '7.3' || "$PHPMVER" = '7.4' || "$PHPMUVER" = '7.4' || "$PHPMVER" = '8.0' || "$PHPMUVER" = '8.0' || "$PHPMVER" = '8.1' || "$PHPMUVER" = '8.1' || "$PHPMVER" = '8.2' || "$PHPMUVER" = '8.2' || "$PHPMVER" = '8.3' || "$PHPMUVER" = '8.3' || "$PHPMVER" = '8.4' || "$PHPMUVER" = '8.4' ]]; then
+    DEVTOOLSETTWELVE='y'
+    DEVTOOLSETTHIRTEEN='n'
+    DEVTOOLSETFOURTEEN='n'
+    DEVTOOLSETFIFTTEEN='n'
+  else
+    DEVTOOLSETTWELVE='n'
+    DEVTOOLSETTHIRTEEN='y'
+    DEVTOOLSETFOURTEEN='n'
+    DEVTOOLSETFIFTTEEN='n'
+  fi
+elif [[ "$CENTOS_EIGHT" -eq '8' && "$CENTOSVER_NUMERIC" -ge '87' ]]; then
+  DEVTOOLSETTEN='n'
+  DEVTOOLSETELEVEN='n'
+  DEVTOOLSETTWELVE='y'
+  DEVTOOLSETTHIRTEEN='n'
+  DEVTOOLSETFOURTEEN='n'
+  DEVTOOLSETFIFTTEEN='n'
+elif [[ "$CENTOS_EIGHT" -eq '8' ]]; then
+  DEVTOOLSETTEN='n'
+  DEVTOOLSETELEVEN='y'
+  DEVTOOLSETTWELVE='n'
+  DEVTOOLSETTHIRTEEN='n'
+  DEVTOOLSETFOURTEEN='n'
+  DEVTOOLSETFIFTTEEN='n'
+fi
+
+# el9 GCC
+if [[ "$CENTOS_NINE" -eq '9' && "$CENTOSVER_NUMERIC" -ge '93' ]]; then
+  DEVTOOLSETTEN='n'
+  DEVTOOLSETELEVEN='n'
+  if [[ "$PHP_PGO_FALLBACK_GCC" = [yY] && "$PHP_PGO" = [yY] ]] && [[ "$PHPMVER" = '7.4' || "$PHPMUVER" = '7.4' || "$PHPMVER" = '8.0' || "$PHPMUVER" = '8.0' || "$PHPMVER" = '8.1' || "$PHPMUVER" = '8.1' || "$PHPMVER" = '8.2' || "$PHPMUVER" = '8.2' || "$PHPMVER" = '8.3' || "$PHPMUVER" = '8.3' || "$PHPMVER" = '8.4' || "$PHPMUVER" = '8.4' ]]; then
+    DEVTOOLSETTWELVE='y'
+    DEVTOOLSETTHIRTEEN='n'
+    DEVTOOLSETFOURTEEN='n'
+    DEVTOOLSETFIFTTEEN='n'
+  else
+    DEVTOOLSETTWELVE='n'
+    DEVTOOLSETTHIRTEEN='y'
+    DEVTOOLSETFOURTEEN='n'
+    DEVTOOLSETFIFTTEEN='n'
+  fi
+elif [[ "$CENTOS_NINE" -eq '9' && "$CENTOSVER_NUMERIC" -ge '91' ]]; then
+  DEVTOOLSETTEN='n'
+  DEVTOOLSETELEVEN='n'
+  DEVTOOLSETTWELVE='y'
+  DEVTOOLSETTHIRTEEN='n'
+  DEVTOOLSETFOURTEEN='n'
+  DEVTOOLSETFIFTTEEN='n'
+elif [[ "$CENTOS_NINE" -eq '9' ]]; then
+  # el9 already defaults to GCC 11
+  DEVTOOLSETTEN='n'
+  DEVTOOLSETELEVEN='n'
+  DEVTOOLSETTWELVE='n'
+  DEVTOOLSETTHIRTEEN='n'
+  DEVTOOLSETFOURTEEN='n'
+  DEVTOOLSETFIFTTEEN='n'
+fi
+
 if [[ "$FORCE_IPVFOUR" != [yY] ]]; then
   ipv_forceopt=""
   ipv_forceopt_wget=""
