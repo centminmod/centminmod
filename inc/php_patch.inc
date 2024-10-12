@@ -1,3 +1,52 @@
+imagick_php_patches() {
+  echo "imagick patch routine: PHPMVER=$PHPMVER"
+  echo "imagick patch routine: PHPMUVER=$PHPMUVER"
+  echo "imagick patch routine: PHPVER_ID=$PHPVER_ID"
+  if [[ "$PHPMVER" = '8.4' || "$PHPMUVER" = '8.4' || "$PHPVER_ID" -ge '80400' ]]; then
+    # Define the new patch for imagick PHP 8.4 support
+    IMAGICK_PATCH="php84-remove-strtolower.patch"
+    echo "$CUR_DIR/patches/imagick/$IMAGICK_PATCH"
+    if [ -f "$CUR_DIR/patches/imagick/$IMAGICK_PATCH" ]; then
+      echo
+      echo "Patching imagick for PHP 8.4 support"
+      cp -a "$CUR_DIR/patches/imagick/$IMAGICK_PATCH" "$IMAGICK_PATCH"
+      dos2unix "$IMAGICK_PATCH"
+
+      # Attempt to apply the patch
+      if patch -p1 < "$IMAGICK_PATCH"; then
+        echo "Patch applied successfully for imagick PHP 8.4 support"
+      else
+        echo "Patching failed for imagick PHP 8.4 support"
+        # Create a temporary file to store list of patched files
+        temp_file=$(mktemp)
+
+        # Extract the filenames from the patch to determine which files to restore
+        grep -oP '(?<=\+\+\+ )[^\s]+' "$IMAGICK_PATCH" > "$temp_file"
+
+        # Read each file from the temporary file and restore the original if patch failed
+        while read -r file; do
+          # Remove any 'b/' or other prefixes from the filename
+          file=$(echo "$file" | sed 's/b\///')
+          
+          # Check if the original (.orig) and reject (.rej) files exist, and restore them if needed
+          if [[ -f "$file.orig" && -f "$file.rej" ]]; then
+            echo "Restoring original file: $file"
+            mv -f "$file.orig" "$file"
+            rm "$file.rej"
+          fi
+        done < "$temp_file"
+
+        # Remove the temporary file
+        rm "$temp_file"
+      fi
+    else
+      echo "$IMAGICK_PATCH patch file already applied or not available"
+    fi
+  else
+    echo "skipped imagick_php_patches function"
+  fi
+}
+
 php_patches() {
   {
   if [[ "$PHP_PATCH" = [yY] ]]; then
