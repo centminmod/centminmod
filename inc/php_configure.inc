@@ -3519,6 +3519,7 @@ else
   # located at /usr/local/ or /usr prefix won't 
   # conflict and impact php-fpm builds
   if [[ "$ENSURE_SYSTEM_PHP_CURL_USED" = [yY] ]]; then
+    export CURL_CONFIG="/usr/bin/curl-config"
     export CURL_CFLAGS="-I/usr/include"
     export CURL_LIBS="-L/usr/lib64 -lcurl"
     CURL_SYSTEM_PREFIX='=/usr'
