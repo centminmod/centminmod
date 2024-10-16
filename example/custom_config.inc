@@ -431,7 +431,7 @@ MONGODBPHP_EIGHTTWO_VER='1.20.0'     # MongoDB PHP version
 MONGODB_SASL='n'            # SASL not working yet leave = n
 PDOPGSQL_PHPVER='11'       # pdo-pgsql PHP extension version for postgresql
 PHP_LIBZIP='n'              # use newer libzip instead of PHP embedded zip
-PHP_ARGON='n'               # alias for PHP_LIBZIP, when PHP_ARGON='y' then PHP_LIBZIP='y'
+PHP_ARGON='y'               # alias for PHP_LIBZIP, when PHP_ARGON='y' then PHP_LIBZIP='y'
 LIBZIP_VER='1.10.1'          # required for PHP 7.2 + with libsodium & argon2
 LIBSODIUM_VER='1.0.20'      # https://github.com/jedisct1/libsodium/releases
 LIBSODIUM_NATIVE='n'        # optimise for specific cpu not portable between different cpu modules

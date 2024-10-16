@@ -30,7 +30,7 @@ DT=$(date +"%d%m%y-%H%M%S")
 branchname='140.00beta01'
 SCRIPT_MAJORVER='140'
 SCRIPT_MINORVER='00'
-SCRIPT_INCREMENTVER='142'
+SCRIPT_INCREMENTVER='143'
 SCRIPT_VERSIONSHORT="${branchname}"
 SCRIPT_VERSION="${SCRIPT_VERSIONSHORT}.b${SCRIPT_INCREMENTVER}"
 SCRIPT_DATE='01/07/24'
@@ -1138,7 +1138,7 @@ MONGODBPHP_EIGHTTWO_VER='1.20.0'     # MongoDB PHP version
 MONGODB_SASL='n'            # SASL not working yet leave = n
 PDOPGSQL_PHPVER='11'        # pdo-pgsql PHP extension version for postgresql
 PHP_LIBZIP='n'              # use newer libzip instead of PHP embedded zip
-PHP_ARGON='n'               # alias for PHP_LIBZIP, when PHP_ARGON='y' then PHP_LIBZIP='y'
+PHP_ARGON='y'               # alias for PHP_LIBZIP, when PHP_ARGON='y' then PHP_LIBZIP='y'
 LIBZIP_VER='1.10.1'          # required for PHP 7.2 + with libsodium & argon2
 LIBSODIUM_VER='1.0.20'      # https://github.com/jedisct1/libsodium/releases
 LIBSODIUM_NATIVE='n'        # optimise for specific cpu not portable between different cpu modules
@@ -1346,6 +1346,11 @@ AXIVOREPO_DISABLE='y'
 REMIREPO_DISABLE='n'
 ATRPMSREPO_DISABLE='y'
 VARNISHREPO_DISABLE='y'
+
+# ensure any attempts of building custom curl version that is 
+# located at /usr/local/ or /usr prefix won't 
+# conflict and impact php-fpm builds
+ENSURE_SYSTEM_PHP_CURL_USED='n'
 
 # custom curl/libcurl RPM for 7.44 and higher
 # enable with CUSTOM_CURLRPM='y'
