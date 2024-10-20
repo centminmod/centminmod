@@ -30,7 +30,7 @@ DT=$(date +"%d%m%y-%H%M%S")
 branchname='140.00beta01'
 SCRIPT_MAJORVER='140'
 SCRIPT_MINORVER='00'
-SCRIPT_INCREMENTVER='145'
+SCRIPT_INCREMENTVER='146'
 SCRIPT_VERSIONSHORT="${branchname}"
 SCRIPT_VERSION="${SCRIPT_VERSIONSHORT}.b${SCRIPT_INCREMENTVER}"
 SCRIPT_DATE='01/07/24'
@@ -1159,6 +1159,7 @@ POSTGRESQL='n'               # set to =y to install PostgreSQL 9.6 server, devel
 POSTGRESQL_BRANCHVER='17'   # PostgresSQL branch version https://www.postgresql.org/ i.e. 16
 
 IMAGEMAGICK_HEIF='n'           # experimental ImageMagick HEIF image format support
+IMAGEMAGICK_SEVEN='n'          # for EL8/EL9 ImageMagick7 7.x install instead of ImageMagick 6.x
 IMAGEMAGICK_SOURCE_INSTALL='n' # ImageMagick 7 source install with HEIC support
 LIBDE265_VER='1.0.9'
 LIBHEIF_VER='1.14.0'
