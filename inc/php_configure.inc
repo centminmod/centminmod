@@ -3236,6 +3236,7 @@ if [[ "$PHP_LIBZIP" = [yY] || "$PHP_ARGON" = [yY] ]] && [[ "$PHPMVER" = '7.2' ||
       LIBZIP_OPT=' --with-libzip=/opt/remi/libzip'
       LIBZIP_LD_PATH="/opt/remi/libzip/include:"
       LIBZIP_PKG_CONFIG_PATH="/opt/remi/libzip/lib64/pkgconfig:"
+      libzip_remove
     else
       export LIBZIP_CFLAGS='-I/usr/local/include'
       export LIBZIP_LIBS="-L/usr/local/${LIBDIR_LIBZIP} -lzip"
@@ -3252,6 +3253,7 @@ if [[ "$PHP_LIBZIP" = [yY] || "$PHP_ARGON" = [yY] ]] && [[ "$PHPMVER" = '7.2' ||
       LIBZIP_OPT=' --with-libzip=/opt/remi/libzip'
       LIBZIP_LD_PATH="/opt/remi/libzip/include:"
       LIBZIP_PKG_CONFIG_PATH="/opt/remi/libzip/lib64/pkgconfig:"
+      libzip_remove
     else
       export LIBZIP_CFLAGS='-I/usr/local/include'
       export LIBZIP_LIBS="-L/usr/local/${LIBDIR_LIBZIP} -lzip"
@@ -3267,22 +3269,18 @@ if [[ "$PHP_LIBZIP" = [yY] || "$PHP_ARGON" = [yY] ]] && [[ "$PHPMVER" = '7.2' ||
       LIBZIP_OPT=' --with-libzip=/opt/remi/libzip'
       LIBZIP_LD_PATH="/opt/remi/libzip/include:"
       LIBZIP_PKG_CONFIG_PATH="/opt/remi/libzip/lib64/pkgconfig:"
+      libzip_remove
     else
       export LIBZIP_CFLAGS='-I/usr/local/include'
       export LIBZIP_LIBS="-L/usr/local/${LIBDIR_LIBZIP} -lzip"
       echo "non php 7.4 libzip"
       LIBZIP_OPT=' --with-libzip'
     fi
-    # if [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]]; then
-    #   export LD_LIBRARY_PATH=/usr/local/${LIBDIR_LIBZIP} 
-    #   export PKG_CONFIG_PATH="/usr/local/${LIBDIR_LIBZIP}/pkgconfig"
-    # fi
   fi
-  # if [[ ! -f /usr/include/zip.h ]]; then
-  #   time $YUMDNFBIN${CACHESKIP} -q -y install libzip5 libzip5-devel --enablerepo=remi
-  # fi
-  if [[ ! -f /usr/local/include/zip.h || ! -d "${DIR_TMP}/libzip-${LIBZIP_VER}" ]]; then
+  if [[ "$CENTOS_SEVEN" -eq '7' ]] && [[ ! -f /usr/local/include/zip.h || ! -d "${DIR_TMP}/libzip-${LIBZIP_VER}" ]]; then
     libzip_install
+  elif [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]] && [[ -f /usr/local/include/zip.h ]]; then
+    libzip_remove
   fi
   if [[ "$(uname -m)" = 'x86_64' ]]; then
     LIBDIR_ARGONSODIUM='lib64'

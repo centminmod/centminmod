@@ -32,6 +32,20 @@ check_pythonthree_six() {
   fi
 }
 
+libzip_remove() {
+  if [[ -f /usr/local/include/zip.h ]]; then
+    # EL8/EL9 uses remi-libzip package now so no longer uses custom libzip_install
+    echo "EL8/EL9 detected: removing older custom libzip from /usr/local"
+    rm -rf /usr/local/include/zip.h
+    rm -rf /usr/local/include/zipconfig.h
+    rm -rf /usr/local/share/man/man1/zip*
+    rm -rf /usr/local/share/man/man3/zip*
+    rm -f /usr/local/lib64/libzip.so*
+    rm -rf /usr/local/lib64/pkgconfig/libzip.pc
+    ldconfig
+  fi
+}
+
 libzip_install() {
   check_pythonthree_six
   if [ ! -f /usr/bin/cmake3 ]; then
