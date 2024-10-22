@@ -469,6 +469,7 @@ DETECTOPENSSL_THREEZERO=$(echo $OPENSSL_VERSION  | cut -d . -f1-2 | grep -o 3.0)
 DETECTOPENSSL_THREEONE=$(echo $OPENSSL_VERSION  | cut -d . -f1-2 | grep -o 3.1)
 DETECTOPENSSL_THREETWO=$(echo $OPENSSL_VERSION  | cut -d . -f1-2 | grep -o 3.2)
 DETECTOPENSSL_THREETHREE=$(echo $OPENSSL_VERSION  | cut -d . -f1-2 | grep -o 3.3)
+DETECTOPENSSL_THREEFOUR=$(echo $OPENSSL_VERSION  | cut -d . -f1-2 | grep -o 3.4)
 
 # if [[ "$PRIORITIZE_CHACHA_OPENSSL" = [yY] && "$DETECTOPENSSL_ONEONE" = '1.1.1' ]] ; then
 if [[ "$PRIORITIZE_CHACHA_OPENSSL" = [yY] && "${OPENSSL_VERSION}" = '1.1.1' ]] || [[ "$PRIORITIZE_CHACHA_OPENSSL" = [yY] && "${OPENSSL_VERSION}" = '1.1.1a' ]]; then
@@ -1424,8 +1425,9 @@ fi
     DETECTOPENSSL_THREEONE=$(echo $OPENSSL_VERSION  | cut -d . -f1-2 | grep -o 3.1)
     DETECTOPENSSL_THREETWO=$(echo $OPENSSL_VERSION  | cut -d . -f1-2 | grep -o 3.2)
     DETECTOPENSSL_THREETHREE=$(echo $OPENSSL_VERSION  | cut -d . -f1-2 | grep -o 3.3)
+    DETECTOPENSSL_THREEFOUR=$(echo $OPENSSL_VERSION  | cut -d . -f1-2 | grep -o 3.4)
     echo
-    echo "Detected OpenSSL Version: ${DETECTOPENSSL_ONEZERO} ${DETECTOPENSSL_ONEONE} ${DETECTOPENSSL_THREEZERO} ${DETECTOPENSSL_THREEONE} ${DETECTOPENSSL_THREETWO} ${DETECTOPENSSL_THREETHREE}"
+    echo "Detected OpenSSL Version: ${DETECTOPENSSL_ONEZERO} ${DETECTOPENSSL_ONEONE} ${DETECTOPENSSL_THREEZERO} ${DETECTOPENSSL_THREEONE} ${DETECTOPENSSL_THREETWO} ${DETECTOPENSSL_THREETHREE} ${DETECTOPENSSL_THREEFOUR}"
     echo
     if [[ "$LIBRESSL_SWITCH" = [yY] ]] && [[ "$BORINGSSL_SWITCH" = [nN] ]]; then
         libresslinstallstarttime=$(TZ=UTC date +%s.%N)
@@ -1516,6 +1518,7 @@ fi
         DETECTOPENSSL_THREEONE=$(echo $OPENSSL_QUIC_VERSION  | cut -d . -f1-2 | grep -o 3.1)
         DETECTOPENSSL_THREETWO=$(echo $OPENSSL_QUIC_VERSION  | cut -d . -f1-2 | grep -o 3.2)
         DETECTOPENSSL_THREETHREE=$(echo $OPENSSL_QUIC_VERSION  | cut -d . -f1-2 | grep -o 3.3)
+        DETECTOPENSSL_THREEFOUR=$(echo $OPENSSL_QUIC_VERSION  | cut -d . -f1-2 | grep -o 3.4)
 
         # Install OpenSSL
         cd $DIR_TMP
@@ -1610,6 +1613,9 @@ fi
             elif [[ "$DETECTOPENSSL_THREETHREE" = '3.3' ]]; then
                 echo "./Configure --prefix=$STATICLIBSSL --openssldir=$STATICLIBSSL ${ECNISTP_OPT}${OPENSSL_CFZLIB_OPT} -Wl,-rpath=${OPENSSL_CFZLIB_RPATH}${STATICLIBSSL}/lib"
                 ./Configure --prefix=$STATICLIBSSL --openssldir=$STATICLIBSSL ${ECNISTP_OPT}${OPENSSL_CFZLIB_OPT} -Wl,-rpath=${OPENSSL_CFZLIB_RPATH}${STATICLIBSSL}/lib
+            elif [[ "$DETECTOPENSSL_THREEFOUR" = '3.4' ]]; then
+                echo "./Configure --prefix=$STATICLIBSSL --openssldir=$STATICLIBSSL ${ECNISTP_OPT}${OPENSSL_CFZLIB_OPT} -Wl,-rpath=${OPENSSL_CFZLIB_RPATH}${STATICLIBSSL}/lib"
+                ./Configure --prefix=$STATICLIBSSL --openssldir=$STATICLIBSSL ${ECNISTP_OPT}${OPENSSL_CFZLIB_OPT} -Wl,-rpath=${OPENSSL_CFZLIB_RPATH}${STATICLIBSSL}/lib
             else
                 echo "./config --prefix=$STATICLIBSSL --openssldir=$STATICLIBSSL enable-tlsext${ECNISTP_OPT}${OPENSSL_CFZLIB_OPT} -Wl, -rpath=${OPENSSL_CFZLIB_RPATH}${STATICLIBSSL}/lib"
                 ./config --prefix=$STATICLIBSSL --openssldir=$STATICLIBSSL enable-tlsext${ECNISTP_OPT}${OPENSSL_CFZLIB_OPT} -Wl, -rpath=${OPENSSL_CFZLIB_RPATH}${STATICLIBSSL}/lib
@@ -1645,7 +1651,7 @@ fi
         # make install
         make install_sw
         if [[ "$?" = '0' ]]; then
-          if [[ "$DETECTOPENSSL_THREEZERO" = '3.0' ]] || [[ "$DETECTOPENSSL_THREEONE" = '3.1' ]] || [[ "$DETECTOPENSSL_THREETWO" = '3.2' ]] || [[ "$DETECTOPENSSL_THREETHREE" = '3.3' ]]; then
+          if [[ "$DETECTOPENSSL_THREEZERO" = '3.0' ]] || [[ "$DETECTOPENSSL_THREEONE" = '3.1' ]] || [[ "$DETECTOPENSSL_THREETWO" = '3.2' ]] || [[ "$DETECTOPENSSL_THREETHREE" = '3.3' ]] || [[ "$DETECTOPENSSL_THREEFOUR" = '3.4' ]]; then
             # OpenSSL 3.x installed to lib64
             ln -s "${STATICLIBSSL}/lib64" "${STATICLIBSSL}/lib"
           else
@@ -1784,6 +1790,9 @@ fi
             elif [[ "$DETECTOPENSSL_THREETHREE" = '3.3' ]]; then
                 echo "./Configure --prefix=$STATICLIBSSL --openssldir=$STATICLIBSSL no-shared ${ECNISTP_OPT}${OPENSSL_CFZLIB_OPT} -Wl,-rpath=${OPENSSL_CFZLIB_RPATH}${STATICLIBSSL}/lib"
                 ./Configure --prefix=$STATICLIBSSL --openssldir=$STATICLIBSSL no-shared ${ECNISTP_OPT}${OPENSSL_CFZLIB_OPT} -Wl,-rpath=${OPENSSL_CFZLIB_RPATH}${STATICLIBSSL}/lib
+            elif [[ "$DETECTOPENSSL_THREEFOUR" = '3.4' ]]; then
+                echo "./Configure --prefix=$STATICLIBSSL --openssldir=$STATICLIBSSL no-shared ${ECNISTP_OPT}${OPENSSL_CFZLIB_OPT} -Wl,-rpath=${OPENSSL_CFZLIB_RPATH}${STATICLIBSSL}/lib"
+                ./Configure --prefix=$STATICLIBSSL --openssldir=$STATICLIBSSL no-shared ${ECNISTP_OPT}${OPENSSL_CFZLIB_OPT} -Wl,-rpath=${OPENSSL_CFZLIB_RPATH}${STATICLIBSSL}/lib
             else
                 echo "./config --prefix=$STATICLIBSSL --openssldir=$STATICLIBSSL no-shared enable-tlsext${ECNISTP_OPT}${OPENSSL_CFZLIB_OPT} -Wl, -rpath=${OPENSSL_CFZLIB_RPATH}${STATICLIBSSL}/lib"
                 ./config --prefix=$STATICLIBSSL --openssldir=$STATICLIBSSL no-shared enable-tlsext${ECNISTP_OPT}${OPENSSL_CFZLIB_OPT} -Wl, -rpath=${OPENSSL_CFZLIB_RPATH}${STATICLIBSSL}/lib
@@ -1819,7 +1828,7 @@ fi
         # make install
         make install_sw
         if [[ "$?" = '0' ]]; then
-          if [[ "$DETECTOPENSSL_THREEZERO" = '3.0' ]] || [[ "$DETECTOPENSSL_THREEONE" = '3.1' ]] || [[ "$DETECTOPENSSL_THREETWO" = '3.2' ]] || [[ "$DETECTOPENSSL_THREETHREE" = '3.3' ]]; then
+          if [[ "$DETECTOPENSSL_THREEZERO" = '3.0' ]] || [[ "$DETECTOPENSSL_THREEONE" = '3.1' ]] || [[ "$DETECTOPENSSL_THREETWO" = '3.2' ]] || [[ "$DETECTOPENSSL_THREETHREE" = '3.3' ]] || [[ "$DETECTOPENSSL_THREEFOUR" = '3.4' ]]; then
             # OpenSSL 3.x installed to lib64
             ln -s "${STATICLIBSSL}/lib64" "${STATICLIBSSL}/lib"
           else
