@@ -558,7 +558,7 @@ if [[ "$ORESTY_LUANGINX" = [yY] ]]; then
   # https://github.com/openresty/lua-nginx-module/issues/1984
   NGINX_PCRE_TWO='n'
 fi
-if [[ "$NGINX_KTLS" = [yY] && "$KERNEL_NUMERICVER" -ge '5002000000' ]] && [[ "$DETECTOPENSSL_THREEZERO" = '3.0' || "$DETECTOPENSSL_THREEONE" = '3.1' || "$DETECTOPENSSL_THREETWO" = '3.2' ]]; then
+if [[ "$NGINX_KTLS" = [yY] && "$KERNEL_NUMERICVER" -ge '5002000000' ]] && [[ "$DETECTOPENSSL_THREEZERO" = '3.0' || "$DETECTOPENSSL_THREEONE" = '3.1' || "$DETECTOPENSSL_THREETWO" = '3.2' || "$DETECTOPENSSL_THREETHREE" = '3.3' || "$DETECTOPENSSL_THREEFOUR" = '3.4' ]]; then
   KTLS_BUILD_TAG='-ktls'
   NGINX_KTLS_OPT=' enable-ktls'
   NGINX_KTLS_OPT_ALT='enable-ktls'

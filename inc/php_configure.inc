@@ -613,6 +613,8 @@ DETECTOPENSSL_ONEONE=$(echo $OPENSSL_VERSION  | cut -d . -f1-3 | grep -o 1.1.1)
 DETECTOPENSSL_THREEZERO=$(echo $OPENSSL_VERSION  | cut -d . -f1-2 | grep -o 3.0)
 DETECTOPENSSL_THREEONE=$(echo $OPENSSL_VERSION  | cut -d . -f1-2 | grep -o 3.1)
 DETECTOPENSSL_THREETWO=$(echo $OPENSSL_VERSION  | cut -d . -f1-2 | grep -o 3.2)
+DETECTOPENSSL_THREETHREE=$(echo $OPENSSL_VERSION  | cut -d . -f1-2 | grep -o 3.3)
+DETECTOPENSSL_THREEFOUR=$(echo $OPENSSL_VERSION  | cut -d . -f1-2 | grep -o 3.4)
 # el9 uses OpenSSL 3.0 and is not supported for PHP builds <=8.0
 # for PHP 7.4 to 8.0, use OpenSSL 1.1.1 instead
 # https://bugs.php.net/bug.php?id=81540
@@ -644,7 +646,7 @@ fi
 # if OpenSSL 3.0/3.1/3.2 are detected and PHP <=7.3.x used, disable custom
 # PHP OpenSSL compiles as PHP 5.x to 7.3 do not support OpenSSL 3.x
 # PHP 7.4 and 8.0 have backported OpenSSL 3.x supporting patches enabled
-if [[ "$DETECTOPENSSL_THREEZERO" = '3.0' || "$DETECTOPENSSL_THREEONE" = '3.1' || "$DETECTOPENSSL_THREETWO" = '3.2' ]] && [[ "$PHPMVER" = '5.6' || "$PHPMUVER" = '5.6' || "$PHPMVER" = '7.0' || "$PHPMUVER" = '7.0' || "$PHPMVER" = '7.1' || "$PHPMUVER" = '7.1' || "$PHPMVER" = '7.2' || "$PHPMUVER" = '7.2' || "$PHPMVER" = '7.3' || "$PHPMUVER" = '7.3' ]] && [[ "$LIBRESSL_SWITCH" = [nN] && "$BORINGSSL_SWITCH" = [nN] ]]; then
+if [[ "$DETECTOPENSSL_THREEZERO" = '3.0' || "$DETECTOPENSSL_THREEONE" = '3.1' || "$DETECTOPENSSL_THREETWO" = '3.2' || "$DETECTOPENSSL_THREETHREE" = '3.3' || "$DETECTOPENSSL_THREEFOUR" = '3.4' ]] && [[ "$PHPMVER" = '5.6' || "$PHPMUVER" = '5.6' || "$PHPMVER" = '7.0' || "$PHPMUVER" = '7.0' || "$PHPMVER" = '7.1' || "$PHPMUVER" = '7.1' || "$PHPMVER" = '7.2' || "$PHPMUVER" = '7.2' || "$PHPMVER" = '7.3' || "$PHPMUVER" = '7.3' ]] && [[ "$LIBRESSL_SWITCH" = [nN] && "$BORINGSSL_SWITCH" = [nN] ]]; then
   PHP_CUSTOMSSL='n'
 fi
 
