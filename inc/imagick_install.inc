@@ -126,7 +126,7 @@ libheif_install() {
 }
 
 imagemagick_source_uninstall() {
-    if [[ "$IMAGEMAGICK_SOURCE_INSTALL" != [yY] -f /usr/local/share/doc/ImageMagick-7 ]]; then
+    if [[ "$IMAGEMAGICK_SOURCE_INSTALL" != [yY] && -f /usr/local/share/doc/ImageMagick-7 ]]; then
         # uninstall source compiled ImageMagick 7 if found
         pushd "$DIR_TMP"
         echo
