@@ -65,6 +65,7 @@ libheif_install() {
     rm -rf x265
     git clone https://bitbucket.org/multicoreware/x265_git x265
     cd x265/build/linux
+    git checkout Release_3.6
     cmake -G "Unix Makefiles" -DENABLE_PIC=:BOOL=1 -DENABLE_SHARED:BOOL=1 -DCMAKE_C_COMPILER=gcc -DCMAKE_CXX_COMPILER=g++ ../../source
     make -s -j$(nproc)
     make install
@@ -122,20 +123,49 @@ libheif_install() {
     # unset libde265_LIBS
     # unset x265_CFLAGS
     # unset x265_LIBS
+}
+
+imagemagick_source_uninstall() {
+    if [[ "$IMAGEMAGICK_SOURCE_INSTALL" != [yY] -f /usr/local/share/doc/ImageMagick-7 ]]; then
+        # uninstall source compiled ImageMagick 7 if found
+        pushd "$DIR_TMP"
+        echo
+        echo "ImageMagick 7 source uninstall start..."
+        cd ImageMagick-7*
+        make uninstall
+        ldconfig
+        echo "ImageMagick 7 source uninstall completed"
+        popd
+    fi
+}
+
+imagemagick_source_install() {
     if [[ "$IMAGEMAGICK_SOURCE_INSTALL" = [yY] ]]; then
+        pushd "$DIR_TMP"
         echo
         echo "ImageMagick 7 source install start..."
-        wget -q https://www.imagemagick.org/download/ImageMagick.tar.gz -O ImageMagick.tar.gz
-        tar xzf ImageMagick.tar.gz
+        wget -q https://imagemagick.org/archive/ImageMagick.tar.gz -O ImageMagick.tar.gz
         rm -rf ImageMagick-7*
+        tar xzf ImageMagick.tar.gz
         cd ImageMagick-7*
         make clean
-        PKG_CONFIG_PATH="/usr/lib64/pkgconfig:/usr/share/pkgconfig:/usr/local/lib/pkgconfig" LD_LIBRARY_PATH=/usr/local/lib:/usr/lib64 LDFLAGS="-L/usr/local/lib -L/usr/lib64" CPPFLAGS="-I/usr/local/include -I/usr/include" ./configure --with-heic=yes --with-jemalloc=yes --with-modules=yes --with-djvu=yes --with-pango=yes --with-raw=yes
+        if [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]] && [[ -d /opt/libheif/lib64 && -d /opt/libheif/include ]]; then
+            echo
+            echo "libheif detected for EL8/EL9"
+            IMAGEMAGICK_PKG_CONFIG_PATH="/opt/libheif/lib64/pkgconfig:${PKG_CONFIG_PATH}:"
+            IMAGEMAGICK_CFLAGS="-I/opt/libheif/include "
+            IMAGEMAGICK_LDFLAGS="-L/opt/libheif/lib64 "
+            IMAGEMAGICK_LD_LIBRARY_PATH="/opt/libheif/lib64:"
+            PHP_IMAGICK_LIBHEIF_LIB=' -L/opt/libheif/lib64'
+        fi
+        # PKG_CONFIG_PATH="${IMAGEMAGICK_PKG_CONFIG_PATH}/usr/lib64/pkgconfig:/usr/share/pkgconfig:/usr/local/lib/pkgconfig" LD_LIBRARY_PATH=${IMAGEMAGICK_LD_LIBRARY_PATH}/usr/local/lib:/usr/lib64 LDFLAGS="${IMAGEMAGICK_LDFLAGS}-L/usr/local/lib -L/usr/lib64" CPPFLAGS="${IMAGEMAGICK_CFLAGS}-I/usr/local/include -I/usr/include" ./configure --with-heic=yes --with-jemalloc=yes --with-modules=yes --with-djvu=yes --with-pango=yes --with-raw=yes
+        PKG_CONFIG_PATH="${IMAGEMAGICK_PKG_CONFIG_PATH}/usr/lib64/pkgconfig:/usr/share/pkgconfig:/usr/local/lib/pkgconfig" LD_LIBRARY_PATH=${IMAGEMAGICK_LD_LIBRARY_PATH}/usr/local/lib:/usr/lib64 LDFLAGS="${IMAGEMAGICK_LDFLAGS}-L/usr/local/lib -L/usr/lib64" CPPFLAGS="${IMAGEMAGICK_CFLAGS}-I/usr/local/include -I/usr/include" ./configure --with-heic=yes --without-jemalloc --with-modules=yes --with-djvu=yes --with-pango=yes --with-raw=yes
         make -s -j$(nproc)
         make install
         ldconfig
         echo
         echo "ImageMagick 7 source install completed"
+        popd
     fi
 }
 
@@ -452,7 +482,21 @@ imagickinstall() {
         echo "*************************************************"
         cecho "* Installing libheif dependencies & ImageMagick 7" $boldgreen
         echo "*************************************************"
-        libheif_install
+        if [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]] && [[ ! -d /opt/libheif/lib64 && ! -d /opt/libheif/include ]]; then
+            libheif_install
+        fi
+        imagemagick_source_install
+    else
+        imagemagick_source_uninstall
+    fi
+
+    if [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]] && [[ -d /opt/libheif/lib64 && -d /opt/libheif/include ]]; then
+        echo
+        echo "libheif detected for EL8/EL9"
+        export PKG_CONFIG_PATH="/opt/libheif/lib64/pkgconfig:$PKG_CONFIG_PATH"
+        export CFLAGS="-I/opt/libheif/include"
+        export LDFLAGS="-L/opt/libheif/lib64"
+        PHP_IMAGICK_LIBHEIF_LIB=' -L/opt/libheif/lib64'
     fi
 
     echo "*************************************************"
@@ -515,9 +559,9 @@ if [[ "$PHPMUVER" = '8.4' || "$PHPVER_ID" -ge '80400' || "$PHPMUVER" = 'NGDEBUG'
     export PHP_AUTOHEADER=/usr/bin/autoheader
     /usr/local/bin/phpize
     if [[ "$IMAGEMAGICK_SOURCE_INSTALL" = [yY] ]]; then
-        CFLAGS="-fPIC -O2 -fstack-protector-strong -Wno-deprecated-declarations -D_FORTIFY_SOURCE=2" CPPFLAGS="-D_FORTIFY_SOURCE=2" CXXFLAGS="-fPIC -O2" LDFLAGS="-Wl,-z,relro,-z,now -pie" ./configure --with-php-config=/usr/local/bin/php-config --with-imagick=/usr/local
+        CFLAGS="-fPIC -O2 -fstack-protector-strong -Wno-deprecated-declarations -D_FORTIFY_SOURCE=2" CPPFLAGS="-D_FORTIFY_SOURCE=2" CXXFLAGS="-fPIC -O2" LDFLAGS="-Wl,-z,relro,-z,now -pie${PHP_IMAGICK_LIBHEIF_LIB}" ./configure --with-php-config=/usr/local/bin/php-config --with-imagick=/usr/local
     else
-        CFLAGS="-fPIC -O2 -fstack-protector-strong -Wno-deprecated-declarations -D_FORTIFY_SOURCE=2" CPPFLAGS="-D_FORTIFY_SOURCE=2" CXXFLAGS="-fPIC -O2" LDFLAGS="-Wl,-z,relro,-z,now -pie" ./configure --with-php-config=/usr/local/bin/php-config --with-imagick=/usr
+        CFLAGS="-fPIC -O2 -fstack-protector-strong -Wno-deprecated-declarations -D_FORTIFY_SOURCE=2" CPPFLAGS="-D_FORTIFY_SOURCE=2" CXXFLAGS="-fPIC -O2" LDFLAGS="-Wl,-z,relro,-z,now -pie${PHP_IMAGICK_LIBHEIF_LIB}" ./configure --with-php-config=/usr/local/bin/php-config --with-imagick=/usr
     fi
     sar_call
     make${MAKETHREADS}
@@ -557,9 +601,9 @@ elif [[ "$PHPMUVER" = '8.0' || "$PHPVER_ID" -ge '80000' || "$PHPMUVER" = 'NGDEBU
     export PHP_AUTOHEADER=/usr/bin/autoheader
     /usr/local/bin/phpize
     if [[ "$IMAGEMAGICK_SOURCE_INSTALL" = [yY] ]]; then
-        CFLAGS="-fPIC -O2 -fstack-protector-strong -Wno-deprecated-declarations -D_FORTIFY_SOURCE=2" CPPFLAGS="-D_FORTIFY_SOURCE=2" CXXFLAGS="-fPIC -O2" LDFLAGS="-Wl,-z,relro,-z,now -pie" ./configure --with-php-config=/usr/local/bin/php-config --with-imagick=/usr/local
+        CFLAGS="-fPIC -O2 -fstack-protector-strong -Wno-deprecated-declarations -D_FORTIFY_SOURCE=2" CPPFLAGS="-D_FORTIFY_SOURCE=2" CXXFLAGS="-fPIC -O2" LDFLAGS="-Wl,-z,relro,-z,now -pie${PHP_IMAGICK_LIBHEIF_LIB}" ./configure --with-php-config=/usr/local/bin/php-config --with-imagick=/usr/local
     else
-        CFLAGS="-fPIC -O2 -fstack-protector-strong -Wno-deprecated-declarations -D_FORTIFY_SOURCE=2" CPPFLAGS="-D_FORTIFY_SOURCE=2" CXXFLAGS="-fPIC -O2" LDFLAGS="-Wl,-z,relro,-z,now -pie" ./configure --with-php-config=/usr/local/bin/php-config --with-imagick=/usr
+        CFLAGS="-fPIC -O2 -fstack-protector-strong -Wno-deprecated-declarations -D_FORTIFY_SOURCE=2" CPPFLAGS="-D_FORTIFY_SOURCE=2" CXXFLAGS="-fPIC -O2" LDFLAGS="-Wl,-z,relro,-z,now -pie${PHP_IMAGICK_LIBHEIF_LIB}" ./configure --with-php-config=/usr/local/bin/php-config --with-imagick=/usr
     fi
     sar_call
     make${MAKETHREADS}
@@ -598,9 +642,9 @@ elif [[ "$PHPMUVER" = '7.0' || "$PHPMUVER" = '7.1' || "$PHPMUVER" = '7.2' || "$P
     export PHP_AUTOHEADER=/usr/bin/autoheader
     /usr/local/bin/phpize
     if [[ "$IMAGEMAGICK_SOURCE_INSTALL" = [yY] ]]; then
-        CFLAGS="-fPIC -O2 -fstack-protector-strong -Wno-deprecated-declarations -D_FORTIFY_SOURCE=2" CPPFLAGS="-D_FORTIFY_SOURCE=2" CXXFLAGS="-fPIC -O2" LDFLAGS="-Wl,-z,relro,-z,now -pie" ./configure --with-php-config=/usr/local/bin/php-config --with-imagick=/usr/local
+        CFLAGS="-fPIC -O2 -fstack-protector-strong -Wno-deprecated-declarations -D_FORTIFY_SOURCE=2" CPPFLAGS="-D_FORTIFY_SOURCE=2" CXXFLAGS="-fPIC -O2" LDFLAGS="-Wl,-z,relro,-z,now -pie${PHP_IMAGICK_LIBHEIF_LIB}" ./configure --with-php-config=/usr/local/bin/php-config --with-imagick=/usr/local
     else
-        CFLAGS="-fPIC -O2 -fstack-protector-strong -Wno-deprecated-declarations -D_FORTIFY_SOURCE=2" CPPFLAGS="-D_FORTIFY_SOURCE=2" CXXFLAGS="-fPIC -O2" LDFLAGS="-Wl,-z,relro,-z,now -pie" ./configure --with-php-config=/usr/local/bin/php-config --with-imagick=/usr
+        CFLAGS="-fPIC -O2 -fstack-protector-strong -Wno-deprecated-declarations -D_FORTIFY_SOURCE=2" CPPFLAGS="-D_FORTIFY_SOURCE=2" CXXFLAGS="-fPIC -O2" LDFLAGS="-Wl,-z,relro,-z,now -pie${PHP_IMAGICK_LIBHEIF_LIB}" ./configure --with-php-config=/usr/local/bin/php-config --with-imagick=/usr
     fi
     sar_call
     make${MAKETHREADS}
@@ -617,9 +661,9 @@ else
     export PHP_AUTOHEADER=/usr/bin/autoheader
     /usr/local/bin/phpize
     if [[ "$IMAGEMAGICK_SOURCE_INSTALL" = [yY] ]]; then
-        CFLAGS="-fPIC -O2 -fstack-protector-strong -Wno-deprecated-declarations -D_FORTIFY_SOURCE=2" CPPFLAGS="-D_FORTIFY_SOURCE=2" CXXFLAGS="-fPIC -O2" LDFLAGS="-Wl,-z,relro,-z,now -pie" ./configure --with-php-config=/usr/local/bin/php-config --with-imagick=/usr/local
+        CFLAGS="-fPIC -O2 -fstack-protector-strong -Wno-deprecated-declarations -D_FORTIFY_SOURCE=2" CPPFLAGS="-D_FORTIFY_SOURCE=2" CXXFLAGS="-fPIC -O2" LDFLAGS="-Wl,-z,relro,-z,now -pie${PHP_IMAGICK_LIBHEIF_LIB}" ./configure --with-php-config=/usr/local/bin/php-config --with-imagick=/usr/local
     else
-        CFLAGS="-fPIC -O2 -fstack-protector-strong -Wno-deprecated-declarations -D_FORTIFY_SOURCE=2" CPPFLAGS="-D_FORTIFY_SOURCE=2" CXXFLAGS="-fPIC -O2" LDFLAGS="-Wl,-z,relro,-z,now -pie" ./configure --with-php-config=/usr/local/bin/php-config --with-imagick=/usr
+        CFLAGS="-fPIC -O2 -fstack-protector-strong -Wno-deprecated-declarations -D_FORTIFY_SOURCE=2" CPPFLAGS="-D_FORTIFY_SOURCE=2" CXXFLAGS="-fPIC -O2" LDFLAGS="-Wl,-z,relro,-z,now -pie${PHP_IMAGICK_LIBHEIF_LIB}" ./configure --with-php-config=/usr/local/bin/php-config --with-imagick=/usr
     fi
     sar_call
     make${MAKETHREADS}

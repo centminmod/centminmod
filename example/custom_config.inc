@@ -338,8 +338,8 @@ LIBGD_EXTERNAL_VER='2.3.3'   # https://github.com/libgd/libgd/releases
 IMAGEMAGICK_HEIF='n'           # experimental ImageMagick HEIF image format support
 IMAGEMAGICK_SEVEN='n'          # for EL8/EL9 ImageMagick7 7.x install instead of ImageMagick 6.x
 IMAGEMAGICK_SOURCE_INSTALL='n' # ImageMagick 7 source install with HEIC support
-LIBDE265_VER='1.0.9'
-LIBHEIF_VER='1.14.0'
+LIBDE265_VER='1.0.15'
+LIBHEIF_VER='1.18.2'
 
 # Redis server
 REDIS_SERVER_INSTALL='y'      # Install redis server by default on initial install
