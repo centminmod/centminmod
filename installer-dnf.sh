@@ -1467,6 +1467,10 @@ if [[ ! -f /proc/user_beancounters ]]; then
         elif [[ "$CENTOS_SEVEN" = '7' ]]; then
           TCP_PID_MAX='65535'
         fi
+        if [[ ! -d /etc/sysctl.d || ! -f /usr/sbin/sysctl ]]; then
+          # ensure sysctl is installed
+          yum -y install procps-ng
+        fi
         if [ -d /etc/sysctl.d ]; then
             # centos 7
             touch /etc/sysctl.d/101-sysctl.conf

@@ -1896,10 +1896,12 @@ if [[ ! -f /proc/user_beancounters ]]; then
         fi
         if [[ "$CENTOS_EIGHT" = '8' || "$CENTOS_NINE" = '9' ]]; then
           TCP_PID_MAX='4194300'
-          TCP_BACKLOG='524280'
         elif [[ "$CENTOS_SEVEN" = '7' ]]; then
           TCP_PID_MAX='65535'
-          TCP_BACKLOG='65535'
+        fi
+        if [[ ! -d /etc/sysctl.d || ! -f /usr/sbin/sysctl ]]; then
+          # ensure sysctl is installed
+          yum -y install procps-ng
         fi
         if [ -d /etc/sysctl.d ]; then
             # centos 7
@@ -2305,11 +2307,11 @@ else
   PHPVERLATEST=$(curl -${ipv_forceopt}sL https://www.php.net/downloads.php| egrep -o "php\-[0-9.]+\.tar[.a-z]*" | grep -v '.asc' | awk -F "php-" '/.tar.gz$/ {print $2}' | sed -e 's|.tar.gz||g' | uniq | grep '8.2' | head -n1)
 fi
 if [[ "$CENTOS_NINE" -eq '9' ]]; then
-  PHPVERLATEST=${PHPVERLATEST:-"8.2.24"}
+  PHPVERLATEST=${PHPVERLATEST:-"8.2.25"}
 elif [[ "$CENTOS_EIGHT" -eq '8' ]]; then
-  PHPVERLATEST=${PHPVERLATEST:-"8.2.24"}
+  PHPVERLATEST=${PHPVERLATEST:-"8.2.25"}
 else
-  PHPVERLATEST=${PHPVERLATEST:-"8.2.24"}
+  PHPVERLATEST=${PHPVERLATEST:-"8.2.25"}
 fi
 sed -i "s|^PHP_VERSION='.*'|PHP_VERSION='$PHPVERLATEST'|" centmin.sh
 sed -i "s|ZOPCACHEDFT='n'|ZOPCACHEDFT='y'|" centmin.sh
