@@ -30,7 +30,7 @@ DT=$(date +"%d%m%y-%H%M%S")
 branchname='140.00beta01'
 SCRIPT_MAJORVER='140'
 SCRIPT_MINORVER='00'
-SCRIPT_INCREMENTVER='153'
+SCRIPT_INCREMENTVER='154'
 SCRIPT_VERSIONSHORT="${branchname}"
 SCRIPT_VERSION="${SCRIPT_VERSIONSHORT}.b${SCRIPT_INCREMENTVER}"
 SCRIPT_DATE='01/07/24'
@@ -1115,7 +1115,9 @@ PHPSWOOLE_VER='5.1.0'
 PHPSWOOLE_FIVE_VER='2.0.5' # max PHP 5.0 supported version
 PHPSWOOLE_SEVEN_ZERO_VER='4.3.5' # max PHP 7.0 supported version
 PHPSWOOLE_SEVEN_ONE_VER='4.5.11' # max PHP 7.1 supported version
-PHP_LIBGD_EXTERNAL='n'       # optional use external libgd instead of bundled PHP gd version
+PHP_LIBGD_EXTERNAL='y'       # optional use external libgd instead of bundled PHP gd version
+PHP_GD_AVIF='y'              # enable external libgd with AVIF support for PHP >8.1
+
 LIBGD_EXTERNAL_VER='2.3.3'   # https://github.com/libgd/libgd/releases
 
 PHP_FTPEXT='y'              # ftp PHP extension
