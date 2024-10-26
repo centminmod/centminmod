@@ -1460,8 +1460,10 @@ if [[ ! -f /proc/user_beancounters ]]; then
         fi
         if [[ "$CENTOS_EIGHT" = '8' || "$CENTOS_NINE" = '9' ]]; then
           TCP_PID_MAX='4194300'
+          TCP_BACKLOG='524280'
         elif [[ "$CENTOS_SEVEN" = '7' ]]; then
           TCP_PID_MAX='65535'
+          TCP_BACKLOG='65535'
         fi
         if [[ ! -d /etc/sysctl.d || ! -f /usr/sbin/sysctl ]]; then
           # ensure sysctl is installed
