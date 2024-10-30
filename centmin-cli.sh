@@ -30,7 +30,7 @@ DT=$(date +"%d%m%y-%H%M%S")
 branchname='140.00beta01'
 SCRIPT_MAJORVER='140'
 SCRIPT_MINORVER='00'
-SCRIPT_INCREMENTVER='157'
+SCRIPT_INCREMENTVER='158'
 SCRIPT_VERSIONSHORT="${branchname}"
 SCRIPT_VERSION="${SCRIPT_VERSIONSHORT}.b${SCRIPT_INCREMENTVER}"
 SCRIPT_DATE='01/07/24'
@@ -1162,6 +1162,7 @@ POSTGRESQL_BRANCHVER='17'   # PostgresSQL branch version https://www.postgresql.
 IMAGEMAGICK_HEIF='n'           # experimental ImageMagick HEIF image format support
 IMAGEMAGICK_SEVEN='n'          # for EL8/EL9 ImageMagick7 7.x install instead of ImageMagick 6.x
 IMAGEMAGICK_SOURCE_INSTALL='n' # ImageMagick 7 source install with HEIC support
+PHP_IMAGEMAGICK_SEVEN_USE_REMI_LIBZIP='y' # If IMAGEMAGICK_SEVEN is enabled use REMI libzip
 LIBDE265_VER='1.0.15'
 LIBHEIF_VER='1.18.2'
 

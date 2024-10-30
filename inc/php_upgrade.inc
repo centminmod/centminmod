@@ -704,6 +704,8 @@ fi # PHPDIFF
     cd fpm-build
 
     make clean
+    make distclean
+    rm -f config.cache
 
     #mkdir -p /usr/${LIBDIR}/mysql
     #ln -s /usr/${LIBDIR}/libmysqlclient.so /usr/${LIBDIR}/mysql/libmysqlclient.so

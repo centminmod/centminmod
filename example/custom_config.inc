@@ -340,6 +340,7 @@ LIBGD_EXTERNAL_VER='2.3.3'   # https://github.com/libgd/libgd/releases
 IMAGEMAGICK_HEIF='n'           # experimental ImageMagick HEIF image format support
 IMAGEMAGICK_SEVEN='n'          # for EL8/EL9 ImageMagick7 7.x install instead of ImageMagick 6.x
 IMAGEMAGICK_SOURCE_INSTALL='n' # ImageMagick 7 source install with HEIC support
+PHP_IMAGEMAGICK_SEVEN_USE_REMI_LIBZIP='y' # If IMAGEMAGICK_SEVEN is enabled use REMI libzip
 LIBDE265_VER='1.0.15'
 LIBHEIF_VER='1.18.2'
 
@@ -435,7 +436,7 @@ MONGODB_SASL='n'            # SASL not working yet leave = n
 PDOPGSQL_PHPVER='11'       # pdo-pgsql PHP extension version for postgresql
 PHP_LIBZIP='n'              # use newer libzip instead of PHP embedded zip
 PHP_ARGON='y'               # alias for PHP_LIBZIP, when PHP_ARGON='y' then PHP_LIBZIP='y'
-LIBZIP_VER='1.10.1'          # required for PHP 7.2 + with libsodium & argon2
+LIBZIP_VER='1.11.1'          # required for PHP 7.2 + with libsodium & argon2
 LIBSODIUM_VER='1.0.20'      # https://github.com/jedisct1/libsodium/releases
 LIBSODIUM_NATIVE='n'        # optimise for specific cpu not portable between different cpu modules
 LIBARGON_VER='20190702'     # https://github.com/P-H-C/phc-winner-argon2

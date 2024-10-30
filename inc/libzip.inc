@@ -44,6 +44,10 @@ libzip_remove() {
     rm -rf /usr/local/lib64/pkgconfig/libzip.pc
     ldconfig
   fi
+  if [[ "$CENTOS_EIGHT" = '8' || "$CENTOS_NINE" = '9' ]] && [[ "$IMAGEMAGICK_SEVEN" != [yY] && -f "$(rpm -ql libzip | grep -m1 '.so')" ]]; then
+    # remove ImageMgick7 installed libzip
+    yum -y remove libzip libzip-devel
+  fi
 }
 
 libzip_install() {
@@ -91,6 +95,16 @@ libzip_install() {
       # PHP 7.4 not finding libzip paths
       export LIBZIP_CFLAGS='-I/usr/local/include'
       export LIBZIP_LIBS="-L/usr/local/${LIBDIR_LIBZIP} -lzip"
+      LIBZIP_LD_PATH="/usr/local/${LIBDIR_LIBZIP}:"
+      LIBZIP_OPT=" --with-libzip=/usr/local/${LIBDIR_LIBZIP}"
+      LIBZIP_RPATH=" -Wl,-rpath,/usr/local/${LIBDIR_LIBZIP}"
+      LIBZIP_PKG_CONFIG_PATH="/usr/local/${LIBDIR_LIBZIP}/pkgconfig:"
+      echo "/usr/local/${LIBDIR_LIBZIP}" | tee /etc/ld.so.conf.d/libzip.conf
+      ldconfig
+      echo
+      echo "ldconfig -p | grep libzip"
+      ldconfig -p | grep libzip
+      echo
     fi
   popd
 }

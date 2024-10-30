@@ -304,6 +304,10 @@ checkimagicksys() {
                                 fi
                                 echo "############## ImageMagick6 Routine End ##############"
                             fi
+                            if [[ "$(rpm -qi libzip | grep -o libzip >/dev/null 2>&1; echo $?)" = '0' ]]; then
+                                # remove ImageMgick7 installed libzip
+                                yum -y remove libzip libzip-devel
+                            fi
                         fi
                         if [[ "$CENTOS_NINE" -eq '9' ]]; then
                             echo "time $YUMDNFBIN -y install ImageMagick${REMI_IMAGEMAGICK_PKGNAME}-libs ImageMagick${REMI_IMAGEMAGICK_PKGNAME} ImageMagick${REMI_IMAGEMAGICK_PKGNAME}-devel ImageMagick${REMI_IMAGEMAGICK_PKGNAME}-c++-devel --disablerepo=epel --enablerepo=remi${DISABLEREPO_DNF} --disableplugin=priorities${VERSIONLOCK_REPO} --skip-broken"
