@@ -14,6 +14,7 @@ OTTCHECK=$(grep otf /usr/local/nginx/conf/mime.types)
 WOFFCHECK=$(grep woff /usr/local/nginx/conf/mime.types)
 WOFFTWOCHECK=$(grep woff2 /usr/local/nginx/conf/mime.types)
 AVIFCHECK=$(grep avif /usr/local/nginx/conf/mime.types)
+XMLCHECK=$(grep 'application/xml' /usr/local/nginx/conf/mime.types)
 
 if [ -z "$silence" ]; then
   echo $EOTCHECK
@@ -22,8 +23,16 @@ if [ -z "$silence" ]; then
   echo $WOFFCHECK
   echo $WOFFTWOCHECK
   echo $AVIFCHECK
+  echo $XMLCHECK
 fi
 
+if [ -z "$XMLCHECK" ]; then
+  sed -i 's/}//' /usr/local/nginx/conf/mime.types
+
+cat >> "/usr/local/nginx/conf/mime.types" <<EOF
+    application/xml                                  xml;
+}
+EOF
 if [ -z "$TTFCHECK" ]; then
   sed -i 's/}//' /usr/local/nginx/conf/mime.types
 
