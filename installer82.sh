@@ -2309,11 +2309,11 @@ else
   PHPVERLATEST=$(curl -${ipv_forceopt}sL https://www.php.net/downloads.php| egrep -o "php\-[0-9.]+\.tar[.a-z]*" | grep -v '.asc' | awk -F "php-" '/.tar.gz$/ {print $2}' | sed -e 's|.tar.gz||g' | uniq | grep '8.2' | head -n1)
 fi
 if [[ "$CENTOS_NINE" -eq '9' ]]; then
-  PHPVERLATEST=${PHPVERLATEST:-"8.2.25"}
+  PHPVERLATEST=${PHPVERLATEST:-"8.2.26"}
 elif [[ "$CENTOS_EIGHT" -eq '8' ]]; then
-  PHPVERLATEST=${PHPVERLATEST:-"8.2.25"}
+  PHPVERLATEST=${PHPVERLATEST:-"8.2.26"}
 else
-  PHPVERLATEST=${PHPVERLATEST:-"8.2.25"}
+  PHPVERLATEST=${PHPVERLATEST:-"8.2.26"}
 fi
 sed -i "s|^PHP_VERSION='.*'|PHP_VERSION='$PHPVERLATEST'|" centmin.sh
 sed -i "s|ZOPCACHEDFT='n'|ZOPCACHEDFT='y'|" centmin.sh
