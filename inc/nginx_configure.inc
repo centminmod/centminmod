@@ -41,7 +41,7 @@ checksec_nginx() {
     find $checksec_ngxlibs_dir -name "*.so" | while read ngxlib; do
       if [ -f "${ngxlib}" ]; then
         if [ -f /usr/local/bin/checksec ]; then
-          checksec --file="${ngxlib}" --format=json --extended | jq -r
+          checksec --file="${ngxlib}" --format=json --extended 2>/dev/null | jq -r
         fi
       fi
     done
@@ -51,7 +51,7 @@ checksec_nginx() {
     find $checksec_openssllibs_dir -name "*.so" | while read openssllib; do
       if [ -f "${openssllib}" ]; then
         if [ -f /usr/local/bin/checksec ]; then
-          checksec --file="${openssllib}" --format=json --extended | jq -r
+          checksec --file="${openssllib}" --format=json --extended 2>/dev/null | jq -r
         fi
       fi
     done
@@ -61,7 +61,7 @@ checksec_nginx() {
     find $checksec_opensslquiclibs_dir -name "*.so" | while read opensslquiclib; do
       if [ -f "${opensslquiclib}" ]; then
         if [ -f /usr/local/bin/checksec ]; then
-          checksec --file="${opensslquiclib}" --format=json --extended | jq -r
+          checksec --file="${opensslquiclib}" --format=json --extended 2>/dev/null | jq -r
         fi
       fi
     done
@@ -71,7 +71,7 @@ checksec_nginx() {
     find $checksec_ngxmodules_dir -name "*.so" | while read ngxmodules; do
       if [ -f "${ngxmodules}" ]; then
         if [ -f /usr/local/bin/checksec ]; then
-          checksec --file="${ngxmodules}" --format=json --extended | jq -r
+          checksec --file="${ngxmodules}" --format=json --extended 2>/dev/null | jq -r
         fi
       fi
     done  

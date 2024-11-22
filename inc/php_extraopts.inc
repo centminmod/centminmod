@@ -25,7 +25,7 @@ run_after_php_install() {
       echo "***************************************************"
       checksec_phpext
       echo "***************************************************"
-      echo "checksec --format=json --file=/usr/local/sbin/php-fpm --extended | jq -r"
-      checksec --format=json --file=/usr/local/sbin/php-fpm --extended | jq -r
+      echo "checksec --format=json --file=/usr/local/sbin/php-fpm --extended 2>/dev/null | jq -r"
+      checksec --format=json --file=/usr/local/sbin/php-fpm --extended 2>/dev/null | jq -r
   fi
 }
