@@ -930,7 +930,7 @@ php_patches() {
     fi
     if [[ "$PHPMUVER" = '7.3' || "$PHPMVER" = '7.3' ]] && [[ "$PHPVER_ID" -ge '70300' && "$PHPVER_ID" -le '70333' ]]; then
       # backport security bug patch for php 7.3
-      phpseven_bugids='81026 81719 81720 pcre1038 81726 81727 81738 81740 81744 81746 cve-2023-0662 ghsa-76gg-c692-v2mw cve-2023-3823 cve-2023-3824 cve-2024-2756 cve-2024-3096 cve-2024-5458 cve-2024-8925 cve-2024-8926 cve-2024-8927'
+      phpseven_bugids='81026 81719 81720 pcre1038 81726 81727 81738 81740 81744 81746 cve-2023-0662 ghsa-76gg-c692-v2mw cve-2023-3823 cve-2023-3824 cve-2024-2756 cve-2024-3096 cve-2024-5458 cve-2024-8925 cve-2024-8926 cve-2024-8927 cve-2024-11236 cve-2024-11234 cve-2024-8932 cve-2024-11233 ghsa-4w77-75f9-2c8w'
       for bugid in $phpseven_bugids; do
         if [[ ! -f "php7331-${bugid}.patch" && -f "$CUR_DIR/patches/php/php7331-${bugid}.patch" ]]; then
           echo
@@ -1030,7 +1030,7 @@ php_patches() {
   fi
   if [[ "$PHPVER_ID" -ge '70433' && "$PHPVER_ID" -le '70434' ]]; then
       # for 7.4.33 to 7.4.34 only
-      phpseven_bugids='81740 81744 81746 cve-2023-0662 ghsa-76gg-c692-v2mw cve-2023-3823 cve-2023-3824 cve-2024-2756 cve-2024-3096 cve-2024-5458 cve-2024-8925 cve-2024-8926 cve-2024-8927 cve-2024-9026'
+      phpseven_bugids='81740 81744 81746 cve-2023-0662 ghsa-76gg-c692-v2mw cve-2023-3823 cve-2023-3824 cve-2024-2756 cve-2024-3096 cve-2024-5458 cve-2024-8925 cve-2024-8926 cve-2024-8927 cve-2024-9026 cve-2024-11236 cve-2024-11234 cve-2024-8932 cve-2024-11233 ghsa-4w77-75f9-2c8w'
 
       for bugid in $phpseven_bugids; do
           if [[ ! -f "php742-${bugid}.patch" && -f "$CUR_DIR/patches/php/php742-${bugid}.patch" ]]; then
@@ -1080,7 +1080,7 @@ php_patches() {
   fi
   if [[ "$PHPVER_ID" -ge '80000' && "$PHPVER_ID" -le '80099' ]]; then
       # for 8.1.x only
-      phpeight_bugids='cve-2024-2756 cve-2024-3096 cve-2024-5458 cve-2024-8925 cve-2024-8926 cve-2024-8927 cve-2024-9026'
+      phpeight_bugids='cve-2024-2756 cve-2024-3096 cve-2024-5458 cve-2024-8925 cve-2024-8926 cve-2024-8927 cve-2024-9026 cve-2024-11236 cve-2024-11234 cve-2024-8932 cve-2024-11233 ghsa-4w77-75f9-2c8w'
 
       for bugid in $phpeight_bugids; do
           if [[ ! -f "php80-${bugid}.patch" && -f "$CUR_DIR/patches/php/php80-${bugid}.patch" ]]; then
