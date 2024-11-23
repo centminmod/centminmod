@@ -409,7 +409,7 @@ install_libgd_external() {
       patch -p1 < gdflip.patch
     fi
     make clean
-    if [[ "$PHP_GD_AVIF" = [yY] ]]; then
+    if [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]] && [[ "$PHP_GD_AVIF" = [yY] ]]; then
       GD_AVIF_OPT=' --with-avif'
     fi
     ./configure --prefix="/usr/local/libgd/${LIBGD_EXTERNAL_VER}"${GD_AVIF_OPT}
