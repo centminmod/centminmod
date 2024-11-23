@@ -1,3 +1,52 @@
+imagick_php_patches() {
+  echo "imagick patch routine: PHPMVER=$PHPMVER"
+  echo "imagick patch routine: PHPMUVER=$PHPMUVER"
+  echo "imagick patch routine: PHPVER_ID=$PHPVER_ID"
+  if [[ "$PHPMVER" = '8.4' || "$PHPMUVER" = '8.4' || "$PHPVER_ID" -ge '80400' ]]; then
+    # Define the new patch for imagick PHP 8.4 support
+    IMAGICK_PATCH="php84-remove-strtolower.patch"
+    echo "$CUR_DIR/patches/imagick/$IMAGICK_PATCH"
+    if [ -f "$CUR_DIR/patches/imagick/$IMAGICK_PATCH" ]; then
+      echo
+      echo "Patching imagick for PHP 8.4 support"
+      cp -a "$CUR_DIR/patches/imagick/$IMAGICK_PATCH" "$IMAGICK_PATCH"
+      dos2unix "$IMAGICK_PATCH"
+
+      # Attempt to apply the patch
+      if patch -p1 < "$IMAGICK_PATCH"; then
+        echo "Patch applied successfully for imagick PHP 8.4 support"
+      else
+        echo "Patching failed for imagick PHP 8.4 support"
+        # Create a temporary file to store list of patched files
+        temp_file=$(mktemp)
+
+        # Extract the filenames from the patch to determine which files to restore
+        grep -oP '(?<=\+\+\+ )[^\s]+' "$IMAGICK_PATCH" > "$temp_file"
+
+        # Read each file from the temporary file and restore the original if patch failed
+        while read -r file; do
+          # Remove any 'b/' or other prefixes from the filename
+          file=$(echo "$file" | sed 's/b\///')
+          
+          # Check if the original (.orig) and reject (.rej) files exist, and restore them if needed
+          if [[ -f "$file.orig" && -f "$file.rej" ]]; then
+            echo "Restoring original file: $file"
+            mv -f "$file.orig" "$file"
+            rm "$file.rej"
+          fi
+        done < "$temp_file"
+
+        # Remove the temporary file
+        rm "$temp_file"
+      fi
+    else
+      echo "$IMAGICK_PATCH patch file already applied or not available"
+    fi
+  else
+    echo "skipped imagick_php_patches function"
+  fi
+}
+
 php_patches() {
   {
   if [[ "$PHP_PATCH" = [yY] ]]; then
@@ -881,7 +930,7 @@ php_patches() {
     fi
     if [[ "$PHPMUVER" = '7.3' || "$PHPMVER" = '7.3' ]] && [[ "$PHPVER_ID" -ge '70300' && "$PHPVER_ID" -le '70333' ]]; then
       # backport security bug patch for php 7.3
-      phpseven_bugids='81026 81719 81720 pcre1038 81726 81727 81738 81740 81744 81746 cve-2023-0662 ghsa-76gg-c692-v2mw cve-2023-3823 cve-2023-3824 cve-2024-2756 cve-2024-3096 cve-2024-5458 cve-2024-8925 cve-2024-8926 cve-2024-8927'
+      phpseven_bugids='81026 81719 81720 pcre1038 81726 81727 81738 81740 81744 81746 cve-2023-0662 ghsa-76gg-c692-v2mw cve-2023-3823 cve-2023-3824 cve-2024-2756 cve-2024-3096 cve-2024-5458 cve-2024-8925 cve-2024-8926 cve-2024-8927 cve-2024-11236 cve-2024-11234 cve-2024-8932 cve-2024-11233 ghsa-4w77-75f9-2c8w'
       for bugid in $phpseven_bugids; do
         if [[ ! -f "php7331-${bugid}.patch" && -f "$CUR_DIR/patches/php/php7331-${bugid}.patch" ]]; then
           echo
@@ -981,7 +1030,7 @@ php_patches() {
   fi
   if [[ "$PHPVER_ID" -ge '70433' && "$PHPVER_ID" -le '70434' ]]; then
       # for 7.4.33 to 7.4.34 only
-      phpseven_bugids='81740 81744 81746 cve-2023-0662 ghsa-76gg-c692-v2mw cve-2023-3823 cve-2023-3824 cve-2024-2756 cve-2024-3096 cve-2024-5458 cve-2024-8925 cve-2024-8926 cve-2024-8927 cve-2024-9026'
+      phpseven_bugids='81740 81744 81746 cve-2023-0662 ghsa-76gg-c692-v2mw cve-2023-3823 cve-2023-3824 cve-2024-2756 cve-2024-3096 cve-2024-5458 cve-2024-8925 cve-2024-8926 cve-2024-8927 cve-2024-9026 cve-2024-11236 cve-2024-11234 cve-2024-8932 cve-2024-11233 ghsa-4w77-75f9-2c8w'
 
       for bugid in $phpseven_bugids; do
           if [[ ! -f "php742-${bugid}.patch" && -f "$CUR_DIR/patches/php/php742-${bugid}.patch" ]]; then
@@ -1031,7 +1080,7 @@ php_patches() {
   fi
   if [[ "$PHPVER_ID" -ge '80000' && "$PHPVER_ID" -le '80099' ]]; then
       # for 8.1.x only
-      phpeight_bugids='cve-2024-2756 cve-2024-3096 cve-2024-5458 cve-2024-8925 cve-2024-8926 cve-2024-8927 cve-2024-9026'
+      phpeight_bugids='cve-2024-2756 cve-2024-3096 cve-2024-5458 cve-2024-8925 cve-2024-8926 cve-2024-8927 cve-2024-9026 cve-2024-11236 cve-2024-11234 cve-2024-8932 cve-2024-11233 ghsa-4w77-75f9-2c8w'
 
       for bugid in $phpeight_bugids; do
           if [[ ! -f "php80-${bugid}.patch" && -f "$CUR_DIR/patches/php/php80-${bugid}.patch" ]]; then
