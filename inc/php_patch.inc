@@ -1128,6 +1128,128 @@ php_patches() {
           fi
       done
   fi
+
+  if [[ "$PHPVER_ID" -eq '80226' ]]; then
+    phpeight_bugids='revert-gmp'
+
+    for bugid in $phpeight_bugids; do
+      if [[ ! -f "php8226-${bugid}.patch" && -f "$CUR_DIR/patches/php/php8226-${bugid}.patch" ]]; then
+        echo
+        echo "Patching PHP 8.0.x for bug #${bugid}"
+        echo "https://bugs.php.net/bug.php?id=${bugid}"
+        echo
+
+        # Copy the patch file
+        cp -a $CUR_DIR/patches/php/php8226-${bugid}.patch php8226-${bugid}.patch
+        dos2unix php8226-${bugid}.patch
+
+        # Attempt to apply the patch
+        patch -p1 < php8226-${bugid}.patch
+        if [[ $? -ne 0 || $(find . -name "*.rej" | wc -l) -ne 0 ]]; then
+          echo "Patching failed for bug #${bugid}"
+          
+          # Revert changes
+          temp_file=$(mktemp)
+          grep -oP '(?<=\+\+\+ )[^\s]+' "php8226-${bugid}.patch" > "$temp_file"
+          while read -r file; do
+            file=$(echo "$file" | sed 's/b\///')
+            if [[ -f "$file.orig" && -f "$file.rej" ]]; then
+              echo "Restoring original file: $file"
+              mv -f "$file.orig" "$file"
+              rm "$file.rej"
+            fi
+          done < "$temp_file"
+          rm "$temp_file"
+        else
+          echo "Patch applied successfully for bug #${bugid}"
+        fi
+      else
+        echo "php8226-${bugid}.patch patch file already applied"
+      fi
+    done
+  fi
+
+  if [[ "$PHPVER_ID" -eq '80314' ]]; then
+    phpeight_bugids='revert-gmp'
+
+    for bugid in $phpeight_bugids; do
+      if [[ ! -f "php8314-${bugid}.patch" && -f "$CUR_DIR/patches/php/php8314-${bugid}.patch" ]]; then
+        echo
+        echo "Patching PHP 8.0.x for bug #${bugid}"
+        echo "https://bugs.php.net/bug.php?id=${bugid}"
+        echo
+
+        # Copy the patch file
+        cp -a $CUR_DIR/patches/php/php8314-${bugid}.patch php8314-${bugid}.patch
+        dos2unix php8314-${bugid}.patch
+
+        # Attempt to apply the patch
+        patch -p1 < php8314-${bugid}.patch
+        if [[ $? -ne 0 || $(find . -name "*.rej" | wc -l) -ne 0 ]]; then
+          echo "Patching failed for bug #${bugid}"
+          
+          # Revert changes
+          temp_file=$(mktemp)
+          grep -oP '(?<=\+\+\+ )[^\s]+' "php8314-${bugid}.patch" > "$temp_file"
+          while read -r file; do
+            file=$(echo "$file" | sed 's/b\///')
+            if [[ -f "$file.orig" && -f "$file.rej" ]]; then
+              echo "Restoring original file: $file"
+              mv -f "$file.orig" "$file"
+              rm "$file.rej"
+            fi
+          done < "$temp_file"
+          rm "$temp_file"
+        else
+          echo "Patch applied successfully for bug #${bugid}"
+        fi
+      else
+        echo "php8314-${bugid}.patch patch file already applied"
+      fi
+    done
+  fi
+
+  if [[ "$PHPVER_ID" -eq '80401' ]]; then
+    phpeight_bugids='revert-gmp'
+
+    for bugid in $phpeight_bugids; do
+      if [[ ! -f "php841-${bugid}.patch" && -f "$CUR_DIR/patches/php/php841-${bugid}.patch" ]]; then
+        echo
+        echo "Patching PHP 8.0.x for bug #${bugid}"
+        echo "https://bugs.php.net/bug.php?id=${bugid}"
+        echo
+
+        # Copy the patch file
+        cp -a $CUR_DIR/patches/php/php841-${bugid}.patch php841-${bugid}.patch
+        dos2unix php841-${bugid}.patch
+
+        # Attempt to apply the patch
+        patch -p1 < php841-${bugid}.patch
+        if [[ $? -ne 0 || $(find . -name "*.rej" | wc -l) -ne 0 ]]; then
+          echo "Patching failed for bug #${bugid}"
+          
+          # Revert changes
+          temp_file=$(mktemp)
+          grep -oP '(?<=\+\+\+ )[^\s]+' "php841-${bugid}.patch" > "$temp_file"
+          while read -r file; do
+            file=$(echo "$file" | sed 's/b\///')
+            if [[ -f "$file.orig" && -f "$file.rej" ]]; then
+              echo "Restoring original file: $file"
+              mv -f "$file.orig" "$file"
+              rm "$file.rej"
+            fi
+          done < "$temp_file"
+          rm "$temp_file"
+        else
+          echo "Patch applied successfully for bug #${bugid}"
+        fi
+      else
+        echo "php841-${bugid}.patch patch file already applied"
+      fi
+    done
+  fi
+
+
   # backport PHP 8.0 OpenSSL 3 compatibility for PHP 7.4
   # only compilation fixes but not 100% working as extensive changes
   # needed for 7.4 & 8.0 for compatibility

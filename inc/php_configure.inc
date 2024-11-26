@@ -401,13 +401,48 @@ install_libgd_external() {
     pushd "$DIR_TMP"
     if [ ! -f "libgd-${LIBGD_EXTERNAL_VER}.tar.gz" ]; then
     wget${ipv_forceopt_wget} "https://github.com/libgd/libgd/releases/download/gd-${LIBGD_EXTERNAL_VER}/libgd-${LIBGD_EXTERNAL_VER}.tar.gz"
-    tar xvfz "libgd-${LIBGD_EXTERNAL_VER}.tar.gz"
+    tar xvzf "libgd-${LIBGD_EXTERNAL_VER}.tar.gz"
     fi
     cd "libgd-${LIBGD_EXTERNAL_VER}"
     if [[ "$LIBGD_EXTERNAL_VER" = '2.3.3' ]]; then
-      wget${ipv_forceopt_wget} https://github.com/libgd/libgd/commit/f4bc1f5c26925548662946ed7cfa473c190a104a.patch -O gdflip.patch
-      patch -p1 < gdflip.patch
+      echo "Downloading and applying libgd patch for version 2.3.3..."
+      
+      # Define the patch name
+      libgd_patch_name="gdflip.patch"
+      
+      # Download the patch
+      wget${ipv_forceopt_wget} https://github.com/libgd/libgd/commit/f4bc1f5c26925548662946ed7cfa473c190a104a.patch -O $libgd_patch_name
+      
+      # Attempt to apply the patch
+      if patch -p1 < $libgd_patch_name; then
+        echo "Patch applied successfully for libgd version 2.3.3"
+      else
+        echo "Patching failed for libgd version 2.3.3"
+        
+        # Check each target file for .orig and .rej files
+        # Create a temporary file
+        temp_file=$(mktemp)
+        
+        # Use grep to find the necessary information and store it in the temporary file
+        grep -oP '(?<=\+\+\+ )[^\s]+' "$libgd_patch_name" > "$temp_file"
+        
+        # Read from the temporary file
+        while read -r file; do
+          # Remove the 'b/' prefix from the filename
+          file=$(echo "$file" | sed 's/b\///')
+          # Check if the original and reject files exist
+          if [[ -f "$file.orig" && -f "$file.rej" ]]; then
+            echo "Restoring original file: $file"
+            mv -f "$file.orig" "$file"
+            rm "$file.rej"
+          fi
+        done < "$temp_file"
+        
+        # Remove the temporary file
+        rm "$temp_file"
+      fi
     fi
+
     make clean
     if [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]] && [[ "$PHP_GD_AVIF" = [yY] ]]; then
       GD_AVIF_OPT=' --with-avif'
