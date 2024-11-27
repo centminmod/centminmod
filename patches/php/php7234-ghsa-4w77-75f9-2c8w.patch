@@ -1,0 +1,139 @@
+From b7c951d47acae54aab5ce896b8ec151d661c8fd0 Mon Sep 17 00:00:00 2001
+From: Niels Dossche <7771979+nielsdos@users.noreply.github.com>
+Date: Sat, 9 Nov 2024 15:29:52 +0100
+Subject: [PATCH 8/9] Fix GHSA-4w77-75f9-2c8w
+
+(cherry picked from commit 7dd336ae838bbf2c62dc47e3c900d657d3534c02)
+(cherry picked from commit 462092a48aa0dbad24d9fa8a4a9d418faa14d309)
+(cherry picked from commit 56488a8a4ec68e58eecc9e78dd75e41adf56984c)
+(cherry picked from commit 6b8357c22f83a93104c2682d5cba9104c8de636d)
+---
+ sapi/cli/php_cli_server.c               |  6 +---
+ sapi/cli/tests/ghsa-4w77-75f9-2c8w.phpt | 41 +++++++++++++++++++++++++
+ 2 files changed, 42 insertions(+), 5 deletions(-)
+ create mode 100644 sapi/cli/tests/ghsa-4w77-75f9-2c8w.phpt
+
+diff --git a/sapi/cli/php_cli_server.c b/sapi/cli/php_cli_server.c
+index cdcd93ac72..5de98ad1c7 100644
+--- a/sapi/cli/php_cli_server.c
++++ b/sapi/cli/php_cli_server.c
+@@ -1801,8 +1801,6 @@ static size_t php_cli_server_client_send_through(php_cli_server_client *client,
+ 
+ static void php_cli_server_client_populate_request_info(const php_cli_server_client *client, sapi_request_info *request_info) /* {{{ */
+ {
+-	char *val;
+-
+ 	request_info->request_method = php_http_method_str(client->request.request_method);
+ 	request_info->proto_num = client->request.protocol_version;
+ 	request_info->request_uri = client->request.request_uri;
+@@ -1810,9 +1808,7 @@ static void php_cli_server_client_populate_request_info(const php_cli_server_cli
+ 	request_info->query_string = client->request.query_string;
+ 	request_info->content_length = client->request.content_len;
+ 	request_info->auth_user = request_info->auth_password = request_info->auth_digest = NULL;
+-	if (NULL != (val = zend_hash_str_find_ptr(&client->request.headers, "content-type", sizeof("content-type")-1))) {
+-		request_info->content_type = val;
+-	}
++	request_info->content_type = zend_hash_str_find_ptr(&client->request.headers, "content-type", sizeof("content-type")-1);
+ } /* }}} */
+ 
+ static void destroy_request_info(sapi_request_info *request_info) /* {{{ */
+diff --git a/sapi/cli/tests/ghsa-4w77-75f9-2c8w.phpt b/sapi/cli/tests/ghsa-4w77-75f9-2c8w.phpt
+new file mode 100644
+index 0000000000..44667e8389
+--- /dev/null
++++ b/sapi/cli/tests/ghsa-4w77-75f9-2c8w.phpt
+@@ -0,0 +1,41 @@
++--TEST--
++GHSA-4w77-75f9-2c8w (Heap-Use-After-Free in sapi_read_post_data Processing in CLI SAPI Interface)
++--INI--
++allow_url_fopen=1
++--SKIPIF--
++<?php
++include "skipif.inc";
++?>
++--FILE--
++<?php
++include "php_cli_server.inc";
++
++$serverCode = <<<'CODE'
++var_dump(file_get_contents('php://input'));
++CODE;
++
++php_cli_server_start($serverCode, null);
++
++$options = [
++    "http" => [
++        "method" => "POST",
++        "header" => "Content-Type: application/x-www-form-urlencoded",
++        "content" => "AAAAA",
++    ],
++];
++$context = stream_context_create($options);
++
++echo file_get_contents("http://" . PHP_CLI_SERVER_ADDRESS . "/", false, $context);
++
++$options = [
++    "http" => [
++        "method" => "POST",
++    ],
++];
++$context = stream_context_create($options);
++
++echo file_get_contents("http://" . PHP_CLI_SERVER_ADDRESS . "/", false, $context);
++?>
++--EXPECT--
++string(5) "AAAAA"
++string(0) ""
+-- 
+2.47.0
+
+From 46f3d442aae8d8caca33a4d4ff9c9470568aee80 Mon Sep 17 00:00:00 2001
+From: Remi Collet <remi@remirepo.net>
+Date: Fri, 22 Nov 2024 08:58:10 +0100
+Subject: [PATCH 9/9] NEWS for 8.1.31 backports
+
+(cherry picked from commit 22bdb43da0ecd6e72d63b63aa6c1f3a25d1bca3a)
+(cherry picked from commit d8d682d3d6a4d027771806c8fc77128cae078d29)
+(cherry picked from commit b97a41a47f77df92771b3c01fbf7cf445c0e7a1b)
+---
+ NEWS | 24 ++++++++++++++++++++++++
+ 1 file changed, 24 insertions(+)
+
+diff --git a/NEWS b/NEWS
+index ced91f9577..cc2d877d94 100644
+--- a/NEWS
++++ b/NEWS
+@@ -1,6 +1,30 @@
+ PHP                                                                        NEWS
+ |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+ 
++Backported from 8.1.31
++
++- CLI:
++  . Fixed bug GHSA-4w77-75f9-2c8w (Heap-Use-After-Free in sapi_read_post_data
++    Processing in CLI SAPI Interface). (nielsdos)
++
++- LDAP:
++  . Fixed bug GHSA-g665-fm4p-vhff (OOB access in ldap_escape). (CVE-2024-8932)
++    (nielsdos)
++
++- PDO DBLIB:
++  . Fixed bug GHSA-5hqh-c84r-qjcv (Integer overflow in the dblib quoter causing
++    OOB writes). (CVE-2024-11236) (nielsdos)
++
++- PDO Firebird:
++  . Fixed bug GHSA-5hqh-c84r-qjcv (Integer overflow in the firebird quoter
++    causing OOB writes). (CVE-2024-11236) (nielsdos)
++
++- Streams:
++  . Fixed bug GHSA-c5f2-jwm7-mmq2 (Configuring a proxy in a stream context
++    might allow for CRLF injection in URIs). (CVE-2024-11234) (Jakub Zelenka)
++  . Fixed bug GHSA-r977-prxv-hc43 (Single byte overread with
++    convert.quoted-printable-decode filter). (CVE-2024-11233) (nielsdos)
++
+ Backported from 8.1.30
+ 
+ - CGI:
+-- 
+2.47.0
+
