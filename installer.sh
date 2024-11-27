@@ -1901,6 +1901,10 @@ if [[ ! -f /proc/user_beancounters ]]; then
           TCP_PID_MAX='65535'
           TCP_BACKLOG='65535'
         fi
+        if [[ ! -d /etc/sysctl.d || ! -f /usr/sbin/sysctl ]]; then
+          # ensure sysctl is installed
+          yum -y install procps-ng
+        fi
         if [ -d /etc/sysctl.d ]; then
             # centos 7
             touch /etc/sysctl.d/101-sysctl.conf
@@ -2305,7 +2309,7 @@ else
   PHPVERLATEST=$(curl -${ipv_forceopt}sL https://www.php.net/downloads.php| egrep -o "php\-[0-9.]+\.tar[.a-z]*" | grep -v '.asc' | awk -F "php-" '/.tar.gz$/ {print $2}' | sed -e 's|.tar.gz||g' | uniq | grep '7.4' | head -n1)
 fi
 if [[ "$CENTOS_NINE" -eq '9' ]]; then
-  PHPVERLATEST=${PHPVERLATEST:-"8.1.30"}
+  PHPVERLATEST=${PHPVERLATEST:-"8.1.31"}
 elif [[ "$CENTOS_EIGHT" -eq '8' ]]; then
   PHPVERLATEST=${PHPVERLATEST:-"8.0.30"}
 else

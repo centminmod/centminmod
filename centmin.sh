@@ -30,7 +30,7 @@ DT=$(date +"%d%m%y-%H%M%S")
 branchname='140.00beta01'
 SCRIPT_MAJORVER='140'
 SCRIPT_MINORVER='00'
-SCRIPT_INCREMENTVER='142'
+SCRIPT_INCREMENTVER='171'
 SCRIPT_VERSIONSHORT="${branchname}"
 SCRIPT_VERSION="${SCRIPT_VERSIONSHORT}.b${SCRIPT_INCREMENTVER}"
 SCRIPT_DATE='01/07/24'
@@ -969,7 +969,7 @@ MODSECURITY_OWASPVER='4.4.0' # owasp modsecurity ruleset https://github.com/core
 NGINX_REALIP='y'             # http://nginx.org/en/docs/http/ngx_http_realip_module.html
 NGINX_RDNS='n'               # https://github.com/flant/nginx-http-rdns
 NGINX_NJS='n'                # nginScript https://www.nginx.com/blog/
-NGINX_NJS_VER='0.8.5'       # nginxScript tag version https://github.com/nginx/njslaunching-nginscript-and-looking-ahead/
+NGINX_NJS_VER='0.8.7'        # nginxScript tag version https://github.com/nginx/njslaunching-nginscript-and-looking-ahead/
 NGINX_GEOIP='y'              # Nginx GEOIP module install
 NGINX_GEOIPMEM='y'           # Nginx caches GEOIP databases in memory (default), setting 'n' caches to disk instead
 NGINX_GEOIPTWOLITE='n'       # https://github.com/leev/ngx_http_geoip2_module
@@ -1116,7 +1116,9 @@ PHPSWOOLE_VER='5.1.4'
 PHPSWOOLE_FIVE_VER='2.0.5' # max PHP 5.0 supported version
 PHPSWOOLE_SEVEN_ZERO_VER='4.3.5' # max PHP 7.0 supported version
 PHPSWOOLE_SEVEN_ONE_VER='4.5.11' # max PHP 7.1 supported version
-PHP_LIBGD_EXTERNAL='n'       # optional use external libgd instead of bundled PHP gd version
+PHP_LIBGD_EXTERNAL='y'       # optional use external libgd instead of bundled PHP gd version
+PHP_GD_AVIF='y'              # enable external libgd with AVIF support for PHP >8.1
+
 LIBGD_EXTERNAL_VER='2.3.3'   # https://github.com/libgd/libgd/releases
 
 PHP_FTPEXT='y'              # ftp PHP extension
@@ -1139,7 +1141,7 @@ MONGODBPHP_EIGHTTWO_VER='1.20.0'     # MongoDB PHP version
 MONGODB_SASL='n'            # SASL not working yet leave = n
 PDOPGSQL_PHPVER='11'        # pdo-pgsql PHP extension version for postgresql
 PHP_LIBZIP='n'              # use newer libzip instead of PHP embedded zip
-PHP_ARGON='n'               # alias for PHP_LIBZIP, when PHP_ARGON='y' then PHP_LIBZIP='y'
+PHP_ARGON='y'               # alias for PHP_LIBZIP, when PHP_ARGON='y' then PHP_LIBZIP='y'
 LIBZIP_VER='1.10.1'          # required for PHP 7.2 + with libsodium & argon2
 LIBSODIUM_VER='1.0.20'      # https://github.com/jedisct1/libsodium/releases
 LIBSODIUM_NATIVE='n'        # optimise for specific cpu not portable between different cpu modules
@@ -1159,9 +1161,11 @@ POSTGRESQL='n'               # set to =y to install PostgreSQL 9.6 server, devel
 POSTGRESQL_BRANCHVER='17'   # PostgresSQL branch version https://www.postgresql.org/ i.e. 16
 
 IMAGEMAGICK_HEIF='n'           # experimental ImageMagick HEIF image format support
+IMAGEMAGICK_SEVEN='n'          # for EL8/EL9 ImageMagick7 7.x install instead of ImageMagick 6.x
 IMAGEMAGICK_SOURCE_INSTALL='n' # ImageMagick 7 source install with HEIC support
-LIBDE265_VER='1.0.9'
-LIBHEIF_VER='1.14.0'
+PHP_IMAGEMAGICK_SEVEN_USE_REMI_LIBZIP='y' # If IMAGEMAGICK_SEVEN is enabled use REMI libzip
+LIBDE265_VER='1.0.15'
+LIBHEIF_VER='1.18.2'
 
 # Redis server
 REDIS_SERVER_INSTALL='y'      # Install redis server by default on initial install
@@ -1268,7 +1272,7 @@ BORINGSSL_DIR="/opt"
 
 # AWS-LC
 AWS_LC_SWITCH='n'             # if set to 'y' overrides OpenSSL as default for Nginx https://github.com/aws/aws-lc
-AWS_LC_VERSION='v1.36.1'      # version as per ttps://github.com/aws/aws-lc/tags
+AWS_LC_VERSION='v1.40.0'      # version as per ttps://github.com/aws/aws-lc/tags
 AWS_LC_DIR="/opt"
 AWS_LC_SWITCH_BUILD_TESTS='n' # run AWS-LC build tests
 ##################################
@@ -1292,7 +1296,7 @@ MAILPARSEPHP_COMPATVER='3.1.3' # For PHP 7.0-7.3
 MAILPARSEPHPSEVENFOUR_COMPATVER='3.1.8' # For PHP 7.4+
 MEMCACHED_INSTALL='y'          # Install Memcached
 LIBEVENT_VERSION='2.1.12'      # Use this version of Libevent
-MEMCACHED_VERSION='1.6.28'    # Use this version of Memcached server
+MEMCACHED_VERSION='1.6.32'    # Use this version of Memcached server
 MEMCACHED_TLS='n'             # TLS support https://github.com/memcached/memcached/wiki/ReleaseNotes1513
 MEMCACHE_VERSION='3.0.8'      # Use this version of Memcache
 MEMCACHE_COMPATVER='4.0.5.1'  # For PHP 7
@@ -1347,6 +1351,11 @@ AXIVOREPO_DISABLE='y'
 REMIREPO_DISABLE='n'
 ATRPMSREPO_DISABLE='y'
 VARNISHREPO_DISABLE='y'
+
+# ensure any attempts of building custom curl version that is 
+# located at /usr/local/ or /usr prefix won't 
+# conflict and impact php-fpm builds
+ENSURE_SYSTEM_PHP_CURL_USED='n'
 
 # custom curl/libcurl RPM for 7.44 and higher
 # enable with CUSTOM_CURLRPM='y'

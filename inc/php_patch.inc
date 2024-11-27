@@ -854,7 +854,7 @@ php_patches() {
     fi
     if [[ "$PHPMUVER" = '7.2' || "$PHPMVER" = '7.2' ]] && [[ "$PHPVER_ID" -ge '70200' && "$PHPVER_ID" -le '70234' ]]; then
       # backport security bug patch from PHP 7.3. to 7.2.34
-      phpseven_bugids='77423 80672 80710 81122 76452 81211 81026 79971 81719 81720 81726 81727 81738 81740 81744 81746 cve-2023-0662 ghsa-76gg-c692-v2mw cve-2023-3823 cve-2023-3824 cve-2024-2756 cve-2024-3096 cve-2024-5458 cve-2024-8925 cve-2024-8926 cve-2024-8927'
+      phpseven_bugids='77423 80672 80710 81122 76452 81211 81026 79971 81719 81720 81726 81727 81738 81740 81744 81746 cve-2023-0662 ghsa-76gg-c692-v2mw cve-2023-3823 cve-2023-3824 cve-2024-2756 cve-2024-3096 cve-2024-5458 cve-2024-8925 cve-2024-8926 cve-2024-8927 cve-2024-11236 cve-2024-11234 cve-2024-8932 cve-2024-11233 ghsa-4w77-75f9-2c8w'
       for bugid in $phpseven_bugids; do
         if [[ ! -f "php7234-${bugid}.patch" && -f "$CUR_DIR/patches/php/php7234-${bugid}.patch" ]]; then
           echo
@@ -930,7 +930,7 @@ php_patches() {
     fi
     if [[ "$PHPMUVER" = '7.3' || "$PHPMVER" = '7.3' ]] && [[ "$PHPVER_ID" -ge '70300' && "$PHPVER_ID" -le '70333' ]]; then
       # backport security bug patch for php 7.3
-      phpseven_bugids='81026 81719 81720 pcre1038 81726 81727 81738 81740 81744 81746 cve-2023-0662 ghsa-76gg-c692-v2mw cve-2023-3823 cve-2023-3824 cve-2024-2756 cve-2024-3096 cve-2024-5458 cve-2024-8925 cve-2024-8926 cve-2024-8927'
+      phpseven_bugids='81026 81719 81720 pcre1038 81726 81727 81738 81740 81744 81746 cve-2023-0662 ghsa-76gg-c692-v2mw cve-2023-3823 cve-2023-3824 cve-2024-2756 cve-2024-3096 cve-2024-5458 cve-2024-8925 cve-2024-8926 cve-2024-8927 cve-2024-11236 cve-2024-11234 cve-2024-8932 cve-2024-11233 ghsa-4w77-75f9-2c8w'
       for bugid in $phpseven_bugids; do
         if [[ ! -f "php7331-${bugid}.patch" && -f "$CUR_DIR/patches/php/php7331-${bugid}.patch" ]]; then
           echo
@@ -1030,7 +1030,7 @@ php_patches() {
   fi
   if [[ "$PHPVER_ID" -ge '70433' && "$PHPVER_ID" -le '70434' ]]; then
       # for 7.4.33 to 7.4.34 only
-      phpseven_bugids='81740 81744 81746 cve-2023-0662 ghsa-76gg-c692-v2mw cve-2023-3823 cve-2023-3824 cve-2024-2756 cve-2024-3096 cve-2024-5458 cve-2024-8925 cve-2024-8926 cve-2024-8927 cve-2024-9026'
+      phpseven_bugids='81740 81744 81746 cve-2023-0662 ghsa-76gg-c692-v2mw cve-2023-3823 cve-2023-3824 cve-2024-2756 cve-2024-3096 cve-2024-5458 cve-2024-8925 cve-2024-8926 cve-2024-8927 cve-2024-9026 cve-2024-11236 cve-2024-11234 cve-2024-8932 cve-2024-11233 ghsa-4w77-75f9-2c8w'
 
       for bugid in $phpseven_bugids; do
           if [[ ! -f "php742-${bugid}.patch" && -f "$CUR_DIR/patches/php/php742-${bugid}.patch" ]]; then
@@ -1080,7 +1080,7 @@ php_patches() {
   fi
   if [[ "$PHPVER_ID" -ge '80000' && "$PHPVER_ID" -le '80099' ]]; then
       # for 8.1.x only
-      phpeight_bugids='cve-2024-2756 cve-2024-3096 cve-2024-5458 cve-2024-8925 cve-2024-8926 cve-2024-8927 cve-2024-9026'
+      phpeight_bugids='cve-2024-2756 cve-2024-3096 cve-2024-5458 cve-2024-8925 cve-2024-8926 cve-2024-8927 cve-2024-9026 cve-2024-11236 cve-2024-11234 cve-2024-8932 cve-2024-11233 ghsa-4w77-75f9-2c8w'
 
       for bugid in $phpeight_bugids; do
           if [[ ! -f "php80-${bugid}.patch" && -f "$CUR_DIR/patches/php/php80-${bugid}.patch" ]]; then
@@ -1128,6 +1128,128 @@ php_patches() {
           fi
       done
   fi
+
+  if [[ "$PHPVER_ID" -eq '80226' ]]; then
+    phpeight_bugids='revert-gmp'
+
+    for bugid in $phpeight_bugids; do
+      if [[ ! -f "php8226-${bugid}.patch" && -f "$CUR_DIR/patches/php/php8226-${bugid}.patch" ]]; then
+        echo
+        echo "Patching PHP 8.0.x for bug #${bugid}"
+        echo "https://bugs.php.net/bug.php?id=${bugid}"
+        echo
+
+        # Copy the patch file
+        cp -a $CUR_DIR/patches/php/php8226-${bugid}.patch php8226-${bugid}.patch
+        dos2unix php8226-${bugid}.patch
+
+        # Attempt to apply the patch
+        patch -p1 < php8226-${bugid}.patch
+        if [[ $? -ne 0 || $(find . -name "*.rej" | wc -l) -ne 0 ]]; then
+          echo "Patching failed for bug #${bugid}"
+          
+          # Revert changes
+          temp_file=$(mktemp)
+          grep -oP '(?<=\+\+\+ )[^\s]+' "php8226-${bugid}.patch" > "$temp_file"
+          while read -r file; do
+            file=$(echo "$file" | sed 's/b\///')
+            if [[ -f "$file.orig" && -f "$file.rej" ]]; then
+              echo "Restoring original file: $file"
+              mv -f "$file.orig" "$file"
+              rm "$file.rej"
+            fi
+          done < "$temp_file"
+          rm "$temp_file"
+        else
+          echo "Patch applied successfully for bug #${bugid}"
+        fi
+      else
+        echo "php8226-${bugid}.patch patch file already applied"
+      fi
+    done
+  fi
+
+  if [[ "$PHPVER_ID" -eq '80314' ]]; then
+    phpeight_bugids='revert-gmp'
+
+    for bugid in $phpeight_bugids; do
+      if [[ ! -f "php8314-${bugid}.patch" && -f "$CUR_DIR/patches/php/php8314-${bugid}.patch" ]]; then
+        echo
+        echo "Patching PHP 8.0.x for bug #${bugid}"
+        echo "https://bugs.php.net/bug.php?id=${bugid}"
+        echo
+
+        # Copy the patch file
+        cp -a $CUR_DIR/patches/php/php8314-${bugid}.patch php8314-${bugid}.patch
+        dos2unix php8314-${bugid}.patch
+
+        # Attempt to apply the patch
+        patch -p1 < php8314-${bugid}.patch
+        if [[ $? -ne 0 || $(find . -name "*.rej" | wc -l) -ne 0 ]]; then
+          echo "Patching failed for bug #${bugid}"
+          
+          # Revert changes
+          temp_file=$(mktemp)
+          grep -oP '(?<=\+\+\+ )[^\s]+' "php8314-${bugid}.patch" > "$temp_file"
+          while read -r file; do
+            file=$(echo "$file" | sed 's/b\///')
+            if [[ -f "$file.orig" && -f "$file.rej" ]]; then
+              echo "Restoring original file: $file"
+              mv -f "$file.orig" "$file"
+              rm "$file.rej"
+            fi
+          done < "$temp_file"
+          rm "$temp_file"
+        else
+          echo "Patch applied successfully for bug #${bugid}"
+        fi
+      else
+        echo "php8314-${bugid}.patch patch file already applied"
+      fi
+    done
+  fi
+
+  if [[ "$PHPVER_ID" -eq '80401' ]]; then
+    phpeight_bugids='revert-gmp'
+
+    for bugid in $phpeight_bugids; do
+      if [[ ! -f "php841-${bugid}.patch" && -f "$CUR_DIR/patches/php/php841-${bugid}.patch" ]]; then
+        echo
+        echo "Patching PHP 8.0.x for bug #${bugid}"
+        echo "https://bugs.php.net/bug.php?id=${bugid}"
+        echo
+
+        # Copy the patch file
+        cp -a $CUR_DIR/patches/php/php841-${bugid}.patch php841-${bugid}.patch
+        dos2unix php841-${bugid}.patch
+
+        # Attempt to apply the patch
+        patch -p1 < php841-${bugid}.patch
+        if [[ $? -ne 0 || $(find . -name "*.rej" | wc -l) -ne 0 ]]; then
+          echo "Patching failed for bug #${bugid}"
+          
+          # Revert changes
+          temp_file=$(mktemp)
+          grep -oP '(?<=\+\+\+ )[^\s]+' "php841-${bugid}.patch" > "$temp_file"
+          while read -r file; do
+            file=$(echo "$file" | sed 's/b\///')
+            if [[ -f "$file.orig" && -f "$file.rej" ]]; then
+              echo "Restoring original file: $file"
+              mv -f "$file.orig" "$file"
+              rm "$file.rej"
+            fi
+          done < "$temp_file"
+          rm "$temp_file"
+        else
+          echo "Patch applied successfully for bug #${bugid}"
+        fi
+      else
+        echo "php841-${bugid}.patch patch file already applied"
+      fi
+    done
+  fi
+
+
   # backport PHP 8.0 OpenSSL 3 compatibility for PHP 7.4
   # only compilation fixes but not 100% working as extensive changes
   # needed for 7.4 & 8.0 for compatibility

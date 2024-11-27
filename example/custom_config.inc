@@ -187,7 +187,7 @@ NGINX_MODSECURITY_MAXMIND='y' # modsecurity built with libmaxminddb is failing t
 NGINX_REALIP='y'             # http://nginx.org/en/docs/http/ngx_http_realip_module.html
 NGINX_RDNS='n'               # https://github.com/flant/nginx-http-rdns
 NGINX_NJS='n'                # nginScript https://www.nginx.com/blog/
-NGINX_NJS_VER='0.8.5'       # nginxScript tag version https://github.com/nginx/njslaunching-nginscript-and-looking-ahead/
+NGINX_NJS_VER='0.8.7'        # nginxScript tag version https://github.com/nginx/njslaunching-nginscript-and-looking-ahead/
 NGINX_GEOIP='y'              # Nginx GEOIP module install
 NGINX_GEOIPMEM='y'           # Nginx caches GEOIP databases in memory (default), setting 'n' caches to disk instead
 NGINX_GEOIPTWOLITE='n'       # https://github.com/leev/ngx_http_geoip2_module
@@ -332,13 +332,17 @@ PHPSWOOLE_VER='5.1.0'
 PHPSWOOLE_FIVE_VER='2.0.5' # max PHP 5.0 supported version
 PHPSWOOLE_SEVEN_ZERO_VER='4.3.5' # max PHP 7.0 supported version
 PHPSWOOLE_SEVEN_ONE_VER='4.5.11' # max PHP 7.1 supported version
-PHP_LIBGD_EXTERNAL='n'       # optional use external libgd instead of bundled PHP gd version
+PHP_LIBGD_EXTERNAL='y'       # optional use external libgd instead of bundled PHP gd version
+PHP_GD_AVIF='y'              # enable external libgd with AVIF support for PHP >8.1
+
 LIBGD_EXTERNAL_VER='2.3.3'   # https://github.com/libgd/libgd/releases
 
 IMAGEMAGICK_HEIF='n'           # experimental ImageMagick HEIF image format support
+IMAGEMAGICK_SEVEN='n'          # for EL8/EL9 ImageMagick7 7.x install instead of ImageMagick 6.x
 IMAGEMAGICK_SOURCE_INSTALL='n' # ImageMagick 7 source install with HEIC support
-LIBDE265_VER='1.0.9'
-LIBHEIF_VER='1.14.0'
+PHP_IMAGEMAGICK_SEVEN_USE_REMI_LIBZIP='y' # If IMAGEMAGICK_SEVEN is enabled use REMI libzip
+LIBDE265_VER='1.0.15'
+LIBHEIF_VER='1.18.2'
 
 # Redis server
 REDIS_SERVER_INSTALL='y'      # Install redis server by default on initial install
@@ -407,7 +411,7 @@ MAILPARSEPHP_COMPATVER='3.1.3' # For PHP 7.0-7.3
 MAILPARSEPHPSEVENFOUR_COMPATVER='3.1.8' # For PHP 7.4+
 MEMCACHED_INSTALL='y'         # Install Memcached
 LIBEVENT_VERSION='2.1.12'      # Use this version of Libevent
-MEMCACHED_VERSION='1.6.28'    # Use this version of Memcached server
+MEMCACHED_VERSION='1.6.32'    # Use this version of Memcached server
 MEMCACHED_TLS='n'             # TLS support https://github.com/memcached/memcached/wiki/ReleaseNotes1513
 MEMCACHE_VERSION='3.0.8'      # Use this version of Memcache
 MEMCACHE_COMPATVER='4.0.5.1'  # For PHP 7
@@ -431,8 +435,8 @@ MONGODBPHP_EIGHTTWO_VER='1.20.0'     # MongoDB PHP version
 MONGODB_SASL='n'            # SASL not working yet leave = n
 PDOPGSQL_PHPVER='11'       # pdo-pgsql PHP extension version for postgresql
 PHP_LIBZIP='n'              # use newer libzip instead of PHP embedded zip
-PHP_ARGON='n'               # alias for PHP_LIBZIP, when PHP_ARGON='y' then PHP_LIBZIP='y'
-LIBZIP_VER='1.10.1'          # required for PHP 7.2 + with libsodium & argon2
+PHP_ARGON='y'               # alias for PHP_LIBZIP, when PHP_ARGON='y' then PHP_LIBZIP='y'
+LIBZIP_VER='1.11.1'          # required for PHP 7.2 + with libsodium & argon2
 LIBSODIUM_VER='1.0.20'      # https://github.com/jedisct1/libsodium/releases
 LIBSODIUM_NATIVE='n'        # optimise for specific cpu not portable between different cpu modules
 LIBARGON_VER='20190702'     # https://github.com/P-H-C/phc-winner-argon2

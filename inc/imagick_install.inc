@@ -65,6 +65,7 @@ libheif_install() {
     rm -rf x265
     git clone https://bitbucket.org/multicoreware/x265_git x265
     cd x265/build/linux
+    git checkout Release_3.6
     cmake -G "Unix Makefiles" -DENABLE_PIC=:BOOL=1 -DENABLE_SHARED:BOOL=1 -DCMAKE_C_COMPILER=gcc -DCMAKE_CXX_COMPILER=g++ ../../source
     make -s -j$(nproc)
     make install
@@ -122,20 +123,49 @@ libheif_install() {
     # unset libde265_LIBS
     # unset x265_CFLAGS
     # unset x265_LIBS
+}
+
+imagemagick_source_uninstall() {
+    if [[ "$IMAGEMAGICK_SOURCE_INSTALL" != [yY] && -f /usr/local/share/doc/ImageMagick-7 ]]; then
+        # uninstall source compiled ImageMagick 7 if found
+        pushd "$DIR_TMP"
+        echo
+        echo "ImageMagick 7 source uninstall start..."
+        cd ImageMagick-7*
+        make uninstall
+        ldconfig
+        echo "ImageMagick 7 source uninstall completed"
+        popd
+    fi
+}
+
+imagemagick_source_install() {
     if [[ "$IMAGEMAGICK_SOURCE_INSTALL" = [yY] ]]; then
+        pushd "$DIR_TMP"
         echo
         echo "ImageMagick 7 source install start..."
-        wget -q https://www.imagemagick.org/download/ImageMagick.tar.gz -O ImageMagick.tar.gz
-        tar xzf ImageMagick.tar.gz
+        wget -q https://imagemagick.org/archive/ImageMagick.tar.gz -O ImageMagick.tar.gz
         rm -rf ImageMagick-7*
+        tar xzf ImageMagick.tar.gz
         cd ImageMagick-7*
         make clean
-        PKG_CONFIG_PATH="/usr/lib64/pkgconfig:/usr/share/pkgconfig:/usr/local/lib/pkgconfig" LD_LIBRARY_PATH=/usr/local/lib:/usr/lib64 LDFLAGS="-L/usr/local/lib -L/usr/lib64" CPPFLAGS="-I/usr/local/include -I/usr/include" ./configure --with-heic=yes --with-jemalloc=yes --with-modules=yes --with-djvu=yes --with-pango=yes --with-raw=yes
+        if [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]] && [[ -d /opt/libheif/lib64 && -d /opt/libheif/include ]]; then
+            echo
+            echo "libheif detected for EL8/EL9"
+            IMAGEMAGICK_PKG_CONFIG_PATH="/opt/libheif/lib64/pkgconfig:${PKG_CONFIG_PATH}:"
+            IMAGEMAGICK_CFLAGS="-I/opt/libheif/include "
+            IMAGEMAGICK_LDFLAGS="-L/opt/libheif/lib64 "
+            IMAGEMAGICK_LD_LIBRARY_PATH="/opt/libheif/lib64:"
+            PHP_IMAGICK_LIBHEIF_LIB=' -L/opt/libheif/lib64'
+        fi
+        # PKG_CONFIG_PATH="${IMAGEMAGICK_PKG_CONFIG_PATH}/usr/lib64/pkgconfig:/usr/share/pkgconfig:/usr/local/lib/pkgconfig" LD_LIBRARY_PATH=${IMAGEMAGICK_LD_LIBRARY_PATH}/usr/local/lib:/usr/lib64 LDFLAGS="${IMAGEMAGICK_LDFLAGS}-L/usr/local/lib -L/usr/lib64" CPPFLAGS="${IMAGEMAGICK_CFLAGS}-I/usr/local/include -I/usr/include" ./configure --with-heic=yes --with-jemalloc=yes --with-modules=yes --with-djvu=yes --with-pango=yes --with-raw=yes
+        PKG_CONFIG_PATH="${IMAGEMAGICK_PKG_CONFIG_PATH}/usr/lib64/pkgconfig:/usr/share/pkgconfig:/usr/local/lib/pkgconfig" LD_LIBRARY_PATH=${IMAGEMAGICK_LD_LIBRARY_PATH}/usr/local/lib:/usr/lib64 LDFLAGS="${IMAGEMAGICK_LDFLAGS}-L/usr/local/lib -L/usr/lib64" CPPFLAGS="${IMAGEMAGICK_CFLAGS}-I/usr/local/include -I/usr/include" ./configure --with-heic=yes --without-jemalloc --with-modules=yes --with-djvu=yes --with-pango=yes --with-raw=yes
         make -s -j$(nproc)
         make install
         ldconfig
         echo
         echo "ImageMagick 7 source install completed"
+        popd
     fi
 }
 
@@ -168,16 +198,20 @@ checkimagicksys() {
     else
         VERSIONLOCK_REPO=""
     fi
-    if [[ "$CENTOS_NINE" = '9' ]]; then
-      REMI_IMAGEMAGICK_PKGNAME=''
-    elif [[ "$CENTOS_EIGHT" = '8' ]]; then
-      REMI_IMAGEMAGICK_PKGNAME=''
-    elif [[ "$CENTOS_SEVEN" = '7' ]]; then
-      REMI_IMAGEMAGICK_PKGNAME='6'
-    elif [[ "$CENTOS_SIX" = '6' ]]; then
-      REMI_IMAGEMAGICK_PKGNAME='6'
+    if [[ "$CENTOS_EIGHT" = '8' || "$CENTOS_NINE" = '9' ]] && [[ "$IMAGEMAGICK_SEVEN" = [yY] ]]; then
+        REMI_IMAGEMAGICK_PKGNAME='7'
     else
-      REMI_IMAGEMAGICK_PKGNAME="6"
+        if [[ "$CENTOS_NINE" = '9' ]]; then
+            REMI_IMAGEMAGICK_PKGNAME=''
+        elif [[ "$CENTOS_EIGHT" = '8' ]]; then
+            REMI_IMAGEMAGICK_PKGNAME=''
+        elif [[ "$CENTOS_SEVEN" = '7' ]]; then
+            REMI_IMAGEMAGICK_PKGNAME='6'
+        elif [[ "$CENTOS_SIX" = '6' ]]; then
+            REMI_IMAGEMAGICK_PKGNAME='6'
+        else
+            REMI_IMAGEMAGICK_PKGNAME="6"
+        fi
     fi
     if [[ "$IMAGEMAGICK_HEIF" = [yY] ]]; then
         IMG_HEIFOPT=' ImageMagick${REMI_IMAGEMAGICK_PKGNAME}-heic'
@@ -225,21 +259,80 @@ checkimagicksys() {
         $YUMDNFBIN -y install open-sans-fonts
     fi
 
+    if [[ "$CENTOS_EIGHT" = '8' || "$CENTOS_NINE" = '9' ]] && [ -z "$(rpm -qa openjpeg2-devel)" ]; then
+        $YUMDNFBIN -y install openjpeg2-devel
+    fi
+
+    if [[ "$CENTOS_EIGHT" = '8' || "$CENTOS_NINE" = '9' ]] && [[ -z "$(rpm -qa libjxl)" || -z "$(rpm -qa liblqr)" ]]; then
+        $YUMDNFBIN -y install openjpeg2-devel djvulibre-libs highway jxl-pixbuf-loader libaom libdav1d libheif libjxl liblqr-1 libvmaf
+    fi
+
     # whether to skip ImageMagick YUM updates
     if [[ "$SKIP_IMAGEMAGICK_YUM_UPDATES" != [yY] ]]; then
         cecho "Check for ImageMagicK System Updates (YUM)" $boldyellow
         if [[ "$REMIREPO_DISABLE" = [nN] ]]; then
             if [ -f /etc/yum.repos.d/remi.repo ]; then
-                if [[ "$(rpm -qi ImageMagick | grep 'Release' | grep -o remi >/dev/null 2>&1; echo $?)" = '0' || "$(rpm -qi ImageMagick6 | grep 'Release' | grep -o remi >/dev/null 2>&1; echo $?)" = '0' ]]; then
+                if [[ "$(rpm -qi ImageMagick | grep 'Release' | grep -o remi >/dev/null 2>&1; echo $?)" = '0' || "$(rpm -qi ImageMagick6 | grep 'Release' | grep -o remi >/dev/null 2>&1; echo $?)" = '0' || "$(rpm -qi ImageMagick7 | grep 'Release' | grep -o remi >/dev/null 2>&1; echo $?)" = '0' ]]; then
                     # skip for initial installs to speed up install
                     if [[ "$INITIALINSTALL" != [yY] ]]; then
                         # yum clean all >/dev/null 2>&1
-                        if [[ "$CENTOS_EIGHT" = '8' ]]; then
-                            time $YUMDNFBIN -y install ImageMagick-devel ImageMagick-c++-devel --disablerepo=epel --enablerepo=remi${DISABLEREPO_DNF} --disableplugin=priorities${VERSIONLOCK_REPO}
+                        if [[ "$CENTOS_EIGHT" = '8' || "$CENTOS_NINE" = '9' ]] && [[ "$IMAGEMAGICK_SEVEN" = [yY] ]]; then
+                            if [[ ! "$(rpm -qi ImageMagick7 | grep 'Release' | grep -o remi >/dev/null 2>&1; echo $?)" = '0' ]]; then
+                                echo "############## ImageMagick7 Routine Start ##############"
+                                echo "$YUMDNFBIN versionlock delete ImageMagick${REMI_IMAGEMAGICK_PKGNAME} ImageMagick${REMI_IMAGEMAGICK_PKGNAME}-devel ImageMagick${REMI_IMAGEMAGICK_PKGNAME}-c++ ImageMagick${REMI_IMAGEMAGICK_PKGNAME}-c++-devel ImageMagick${REMI_IMAGEMAGICK_PKGNAME}-libs${IMG_HEIFOPT} ImageMagick${REMI_IMAGEMAGICK_PKGNAME}-heic ImageMagick${REMI_IMAGEMAGICK_PKGNAME}-djvu LibRaw"
+                                $YUMDNFBIN versionlock delete ImageMagick${REMI_IMAGEMAGICK_PKGNAME} ImageMagick${REMI_IMAGEMAGICK_PKGNAME}-devel ImageMagick${REMI_IMAGEMAGICK_PKGNAME}-c++ ImageMagick${REMI_IMAGEMAGICK_PKGNAME}-c++-devel ImageMagick${REMI_IMAGEMAGICK_PKGNAME}-libs${IMG_HEIFOPT} ImageMagick${REMI_IMAGEMAGICK_PKGNAME}-heic ImageMagick${REMI_IMAGEMAGICK_PKGNAME}-djvu LibRaw
+                                echo "$YUMDNFBIN versionlock delete ImageMagick ImageMagick-devel ImageMagick-c++ ImageMagick-c++-devel ImageMagick-libs${IMG_HEIFOPT} ImageMagick-heic ImageMagick${REMI_IMAGEMAGICK_PKGNAME}-djvu LibRaw"
+                                $YUMDNFBIN versionlock delete ImageMagick ImageMagick-devel ImageMagick-c++ ImageMagick-c++-devel ImageMagick-libs${IMG_HEIFOPT} ImageMagick-heic ImageMagick${REMI_IMAGEMAGICK_PKGNAME}-djvu LibRaw
+                                echo "$YUMDNFBIN -y remove ImageMagick ImageMagick-c++ ImageMagick-c++-devel ImageMagick-devel ImageMagick-djvu ImageMagick-libs"
+                                $YUMDNFBIN -y remove ImageMagick ImageMagick-c++ ImageMagick-c++-devel ImageMagick-devel ImageMagick-djvu ImageMagick-libs
+                                if [[ "$CENTOS_EIGHT" = '8' || "$CENTOS_NINE" = '9' ]] && [[ -z "$(rpm -qa libjxl)" || -z "$(rpm -qa liblqr)" ]]; then
+                                    $YUMDNFBIN -y install openjpeg2-devel djvulibre-libs highway jxl-pixbuf-loader libaom libdav1d libheif libjxl liblqr-1 libvmaf
+                                fi
+                                echo "############## ImageMagick7 Routine End ##############"
+                            fi
+                        elif [[ "$CENTOS_EIGHT" = '8' || "$CENTOS_NINE" = '9' ]] && [[ "$IMAGEMAGICK_SEVEN" != [yY] ]]; then
+                            if [[ ! "$(rpm -qi ImageMagick6 | grep 'Release' | grep -o remi >/dev/null 2>&1; echo $?)" = '0' ]]; then
+                                echo "############## ImageMagick6 Routine Start ##############"
+                                echo "$YUMDNFBIN versionlock delete ImageMagick${REMI_IMAGEMAGICK_PKGNAME} ImageMagick${REMI_IMAGEMAGICK_PKGNAME}-devel ImageMagick${REMI_IMAGEMAGICK_PKGNAME}-c++ ImageMagick${REMI_IMAGEMAGICK_PKGNAME}-c++-devel ImageMagick${REMI_IMAGEMAGICK_PKGNAME}-libs${IMG_HEIFOPT} ImageMagick${REMI_IMAGEMAGICK_PKGNAME}-heic ImageMagick${REMI_IMAGEMAGICK_PKGNAME}-djvu LibRaw"
+                                $YUMDNFBIN versionlock delete ImageMagick${REMI_IMAGEMAGICK_PKGNAME} ImageMagick${REMI_IMAGEMAGICK_PKGNAME}-devel ImageMagick${REMI_IMAGEMAGICK_PKGNAME}-c++ ImageMagick${REMI_IMAGEMAGICK_PKGNAME}-c++-devel ImageMagick${REMI_IMAGEMAGICK_PKGNAME}-libs${IMG_HEIFOPT} ImageMagick${REMI_IMAGEMAGICK_PKGNAME}-heic ImageMagick${REMI_IMAGEMAGICK_PKGNAME}-djvu LibRaw
+                                echo "$YUMDNFBIN versionlock delete ImageMagick ImageMagick-devel ImageMagick-c++ ImageMagick-c++-devel ImageMagick-libs${IMG_HEIFOPT} ImageMagick-heic ImageMagick${REMI_IMAGEMAGICK_PKGNAME}-djvu LibRaw"
+                                $YUMDNFBIN versionlock delete ImageMagick ImageMagick-devel ImageMagick-c++ ImageMagick-c++-devel ImageMagick-libs${IMG_HEIFOPT} ImageMagick-heic ImageMagick${REMI_IMAGEMAGICK_PKGNAME}-djvu LibRaw
+                                echo "$YUMDNFBIN -y remove ImageMagick ImageMagick-c++ ImageMagick-c++-devel ImageMagick-devel ImageMagick-djvu ImageMagick-libs"
+                                $YUMDNFBIN -y remove ImageMagick ImageMagick-c++ ImageMagick-c++-devel ImageMagick-devel ImageMagick-djvu ImageMagick-libs
+                                if [[ "$CENTOS_EIGHT" = '8' || "$CENTOS_NINE" = '9' ]] && [[ -z "$(rpm -qa libjxl)" || -z "$(rpm -qa liblqr)" ]]; then
+                                    $YUMDNFBIN -y install openjpeg2-devel djvulibre-libs highway jxl-pixbuf-loader libaom libdav1d libheif libjxl liblqr-1 libvmaf
+                                fi
+                                echo "############## ImageMagick6 Routine End ##############"
+                            fi
+                            if [[ "$(rpm -qi libzip | grep -o libzip >/dev/null 2>&1; echo $?)" = '0' ]]; then
+                                # remove ImageMgick7 installed libzip
+                                yum -y remove libzip libzip-devel
+                            fi
                         fi
-                        if [[ "$CENTOS_SEVEN" = '7' && "$(rpm -qa libwebp-devel)" ]]; then
+                        if [[ "$CENTOS_NINE" -eq '9' ]]; then
+                            echo "time $YUMDNFBIN -y install ImageMagick${REMI_IMAGEMAGICK_PKGNAME}-libs ImageMagick${REMI_IMAGEMAGICK_PKGNAME} ImageMagick${REMI_IMAGEMAGICK_PKGNAME}-devel ImageMagick${REMI_IMAGEMAGICK_PKGNAME}-c++-devel --disablerepo=epel --enablerepo=remi${DISABLEREPO_DNF} --disableplugin=priorities${VERSIONLOCK_REPO} --skip-broken"
+                            time $YUMDNFBIN -y install ImageMagick${REMI_IMAGEMAGICK_PKGNAME}-libs ImageMagick${REMI_IMAGEMAGICK_PKGNAME} ImageMagick${REMI_IMAGEMAGICK_PKGNAME}-devel ImageMagick${REMI_IMAGEMAGICK_PKGNAME}-c++-devel --disablerepo=epel --enablerepo=remi${DISABLEREPO_DNF} --disableplugin=priorities${VERSIONLOCK_REPO} --skip-broken
+                        fi      
+                        if [[ "$CENTOS_EIGHT" -eq '8' ]]; then
+                            # for el8 libzip is an appstream module tied to php and nginx modules which disabled by default
+                            # so temp re-enable nginx and php modules in order to get libzip installed and then re-disable them
+                            echo
+                            echo "dnf module enable nginx:1.24 -y"
+                            dnf module enable nginx:1.24 -y
+                            echo "dnf module enable php:8.2 -y"
+                            dnf module enable php:8.2 -y
+                            echo "dnf -y install libzip libzip-devel"
+                            dnf -y install libzip libzip-devel
+                            echo "dnf module disable php:8.2 -y"
+                            dnf module disable php:8.2 -y
+                            echo "dnf module disable nginx:1.24 -y"
+                            dnf module disable nginx:1.24 -y
+                            echo
+                            time $YUMDNFBIN -y install ImageMagick${REMI_IMAGEMAGICK_PKGNAME} ImageMagick${REMI_IMAGEMAGICK_PKGNAME}-devel ImageMagick${REMI_IMAGEMAGICK_PKGNAME}-c++-devel --disablerepo=epel --enablerepo=remi${DISABLEREPO_DNF} --disableplugin=priorities${VERSIONLOCK_REPO} --skip-broken
+                        fi
+                        if [[ "$CENTOS_SEVEN" -eq '7' && "$(rpm -qa libwebp-devel)" ]]; then
                             yum -y swap libwebp-devel libwebp7-devel --enablerepo=remi
-                            time $YUMDNFBIN -y install ImageMagick${REMI_IMAGEMAGICK_PKGNAME}-devel ImageMagick${REMI_IMAGEMAGICK_PKGNAME}-c++-devel --enablerepo=remi${DISABLEREPO_DNF} --disableplugin=priorities${VERSIONLOCK_REPO}
+                            time $YUMDNFBIN -y install ImageMagick${REMI_IMAGEMAGICK_PKGNAME} ImageMagick${REMI_IMAGEMAGICK_PKGNAME}-devel ImageMagick${REMI_IMAGEMAGICK_PKGNAME}-c++-devel --enablerepo=remi${DISABLEREPO_DNF} --disableplugin=priorities${VERSIONLOCK_REPO}
                         fi
                         if [[ "$(convert --version | grep -q '6.9.11'; echo $?)" -eq '0' ]]; then
                             echo "time $YUMDNFBIN -y swap ImageMagick ImageMagick${REMI_IMAGEMAGICK_PKGNAME} --enablerepo=remi${DISABLEREPO_DNF} --disableplugin=priorities${VERSIONLOCK_REPO} -x ImageMagick7* --disablerepo=base"
@@ -360,13 +453,13 @@ checkimagicksys() {
             # lock imagemagick system version from general yum updates
             # allowing only centmin.sh menu option 15 to update system
             # imagemagick version by doing an unlock of the version
-            yum versionlock delete ImageMagick6 ImageMagick6-devel ImageMagick6-c++ ImageMagick6-c++-devel ImageMagick6-libs${IMG_HEIFOPT} LibRaw
-            yum versionlock delete ImageMagick ImageMagick-devel ImageMagick-c++ ImageMagick-c++-devel ImageMagick-libs${IMG_HEIFOPT} LibRaw
+            yum versionlock delete ImageMagick6 ImageMagick6-devel ImageMagick6-c++ ImageMagick6-c++-devel ImageMagick6-libs${IMG_HEIFOPT} ImageMagick-djvu LibRaw
+            yum versionlock delete ImageMagick${REMI_IMAGEMAGICK_PKGNAME} ImageMagick${REMI_IMAGEMAGICK_PKGNAME}-devel ImageMagick${REMI_IMAGEMAGICK_PKGNAME}-c++ ImageMagick${REMI_IMAGEMAGICK_PKGNAME}-c++-devel ImageMagick${REMI_IMAGEMAGICK_PKGNAME}-libs${IMG_HEIFOPT} ImageMagick${REMI_IMAGEMAGICK_PKGNAME}-djvu LibRaw
             if [[ "$CENTOS_EIGHT" = '8' || "$CENTOS_NINE" = '9' ]]; then
-                yum versionlock delete ImageMagick-djvu ImageMagick-heic
+                yum versionlock delete ImageMagick${REMI_IMAGEMAGICK_PKGNAME}-djvu ImageMagick${REMI_IMAGEMAGICK_PKGNAME}-heic
             fi
             if [[ "$CENTOS_EIGHT" = '8' || "$CENTOS_NINE" = '9' ]]; then
-                yum versionlock ImageMagick${REMI_IMAGEMAGICK_PKGNAME} ImageMagick${REMI_IMAGEMAGICK_PKGNAME}-devel ImageMagick${REMI_IMAGEMAGICK_PKGNAME}-c++ ImageMagick${REMI_IMAGEMAGICK_PKGNAME}-c++-devel ImageMagick${REMI_IMAGEMAGICK_PKGNAME}-libs${IMG_HEIFOPT} LibRaw ImageMagick-djvu ImageMagick-heic
+                yum versionlock ImageMagick${REMI_IMAGEMAGICK_PKGNAME} ImageMagick${REMI_IMAGEMAGICK_PKGNAME}-devel ImageMagick${REMI_IMAGEMAGICK_PKGNAME}-c++ ImageMagick${REMI_IMAGEMAGICK_PKGNAME}-c++-devel ImageMagick${REMI_IMAGEMAGICK_PKGNAME}-libs${IMG_HEIFOPT} LibRaw ImageMagick${REMI_IMAGEMAGICK_PKGNAME}-djvu ImageMagick${REMI_IMAGEMAGICK_PKGNAME}-heic
             elif [[ "$CENTOS_SIX" = '6' ]]; then
                 yum versionlock ImageMagick${REMI_IMAGEMAGICK_PKGNAME} ImageMagick${REMI_IMAGEMAGICK_PKGNAME}-devel ImageMagick${REMI_IMAGEMAGICK_PKGNAME}-c++ ImageMagick${REMI_IMAGEMAGICK_PKGNAME}-c++-devel ImageMagick${REMI_IMAGEMAGICK_PKGNAME}-libs${IMG_HEIFOPT} LibRaw
             else
@@ -393,7 +486,21 @@ imagickinstall() {
         echo "*************************************************"
         cecho "* Installing libheif dependencies & ImageMagick 7" $boldgreen
         echo "*************************************************"
-        libheif_install
+        if [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]] && [[ ! -d /opt/libheif/lib64 && ! -d /opt/libheif/include ]]; then
+            libheif_install
+        fi
+        imagemagick_source_install
+    else
+        imagemagick_source_uninstall
+    fi
+
+    if [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]] && [[ -d /opt/libheif/lib64 && -d /opt/libheif/include ]]; then
+        echo
+        echo "libheif detected for EL8/EL9"
+        export PKG_CONFIG_PATH="/opt/libheif/lib64/pkgconfig:$PKG_CONFIG_PATH"
+        export CFLAGS="-I/opt/libheif/include"
+        export LDFLAGS="-L/opt/libheif/lib64"
+        PHP_IMAGICK_LIBHEIF_LIB=' -L/opt/libheif/lib64'
     fi
 
     echo "*************************************************"
@@ -456,9 +563,9 @@ if [[ "$PHPMUVER" = '8.4' || "$PHPVER_ID" -ge '80400' || "$PHPMUVER" = 'NGDEBUG'
     export PHP_AUTOHEADER=/usr/bin/autoheader
     /usr/local/bin/phpize
     if [[ "$IMAGEMAGICK_SOURCE_INSTALL" = [yY] ]]; then
-        CFLAGS="-fPIC -O2 -fstack-protector-strong -Wno-deprecated-declarations -D_FORTIFY_SOURCE=2" CPPFLAGS="-D_FORTIFY_SOURCE=2" CXXFLAGS="-fPIC -O2" LDFLAGS="-Wl,-z,relro,-z,now -pie" ./configure --with-php-config=/usr/local/bin/php-config --with-imagick=/usr/local
+        CFLAGS="-fPIC -O2 -fstack-protector-strong -Wno-deprecated-declarations -D_FORTIFY_SOURCE=2" CPPFLAGS="-D_FORTIFY_SOURCE=2" CXXFLAGS="-fPIC -O2" LDFLAGS="-Wl,-z,relro,-z,now -pie${PHP_IMAGICK_LIBHEIF_LIB}" ./configure --with-php-config=/usr/local/bin/php-config --with-imagick=/usr/local
     else
-        CFLAGS="-fPIC -O2 -fstack-protector-strong -Wno-deprecated-declarations -D_FORTIFY_SOURCE=2" CPPFLAGS="-D_FORTIFY_SOURCE=2" CXXFLAGS="-fPIC -O2" LDFLAGS="-Wl,-z,relro,-z,now -pie" ./configure --with-php-config=/usr/local/bin/php-config --with-imagick=/usr
+        CFLAGS="-fPIC -O2 -fstack-protector-strong -Wno-deprecated-declarations -D_FORTIFY_SOURCE=2" CPPFLAGS="-D_FORTIFY_SOURCE=2" CXXFLAGS="-fPIC -O2" LDFLAGS="-Wl,-z,relro,-z,now -pie${PHP_IMAGICK_LIBHEIF_LIB}" ./configure --with-php-config=/usr/local/bin/php-config --with-imagick=/usr
     fi
     sar_call
     make${MAKETHREADS}
@@ -498,9 +605,9 @@ elif [[ "$PHPMUVER" = '8.0' || "$PHPVER_ID" -ge '80000' || "$PHPMUVER" = 'NGDEBU
     export PHP_AUTOHEADER=/usr/bin/autoheader
     /usr/local/bin/phpize
     if [[ "$IMAGEMAGICK_SOURCE_INSTALL" = [yY] ]]; then
-        CFLAGS="-fPIC -O2 -fstack-protector-strong -Wno-deprecated-declarations -D_FORTIFY_SOURCE=2" CPPFLAGS="-D_FORTIFY_SOURCE=2" CXXFLAGS="-fPIC -O2" LDFLAGS="-Wl,-z,relro,-z,now -pie" ./configure --with-php-config=/usr/local/bin/php-config --with-imagick=/usr/local
+        CFLAGS="-fPIC -O2 -fstack-protector-strong -Wno-deprecated-declarations -D_FORTIFY_SOURCE=2" CPPFLAGS="-D_FORTIFY_SOURCE=2" CXXFLAGS="-fPIC -O2" LDFLAGS="-Wl,-z,relro,-z,now -pie${PHP_IMAGICK_LIBHEIF_LIB}" ./configure --with-php-config=/usr/local/bin/php-config --with-imagick=/usr/local
     else
-        CFLAGS="-fPIC -O2 -fstack-protector-strong -Wno-deprecated-declarations -D_FORTIFY_SOURCE=2" CPPFLAGS="-D_FORTIFY_SOURCE=2" CXXFLAGS="-fPIC -O2" LDFLAGS="-Wl,-z,relro,-z,now -pie" ./configure --with-php-config=/usr/local/bin/php-config --with-imagick=/usr
+        CFLAGS="-fPIC -O2 -fstack-protector-strong -Wno-deprecated-declarations -D_FORTIFY_SOURCE=2" CPPFLAGS="-D_FORTIFY_SOURCE=2" CXXFLAGS="-fPIC -O2" LDFLAGS="-Wl,-z,relro,-z,now -pie${PHP_IMAGICK_LIBHEIF_LIB}" ./configure --with-php-config=/usr/local/bin/php-config --with-imagick=/usr
     fi
     sar_call
     make${MAKETHREADS}
@@ -539,9 +646,9 @@ elif [[ "$PHPMUVER" = '7.0' || "$PHPMUVER" = '7.1' || "$PHPMUVER" = '7.2' || "$P
     export PHP_AUTOHEADER=/usr/bin/autoheader
     /usr/local/bin/phpize
     if [[ "$IMAGEMAGICK_SOURCE_INSTALL" = [yY] ]]; then
-        CFLAGS="-fPIC -O2 -fstack-protector-strong -Wno-deprecated-declarations -D_FORTIFY_SOURCE=2" CPPFLAGS="-D_FORTIFY_SOURCE=2" CXXFLAGS="-fPIC -O2" LDFLAGS="-Wl,-z,relro,-z,now -pie" ./configure --with-php-config=/usr/local/bin/php-config --with-imagick=/usr/local
+        CFLAGS="-fPIC -O2 -fstack-protector-strong -Wno-deprecated-declarations -D_FORTIFY_SOURCE=2" CPPFLAGS="-D_FORTIFY_SOURCE=2" CXXFLAGS="-fPIC -O2" LDFLAGS="-Wl,-z,relro,-z,now -pie${PHP_IMAGICK_LIBHEIF_LIB}" ./configure --with-php-config=/usr/local/bin/php-config --with-imagick=/usr/local
     else
-        CFLAGS="-fPIC -O2 -fstack-protector-strong -Wno-deprecated-declarations -D_FORTIFY_SOURCE=2" CPPFLAGS="-D_FORTIFY_SOURCE=2" CXXFLAGS="-fPIC -O2" LDFLAGS="-Wl,-z,relro,-z,now -pie" ./configure --with-php-config=/usr/local/bin/php-config --with-imagick=/usr
+        CFLAGS="-fPIC -O2 -fstack-protector-strong -Wno-deprecated-declarations -D_FORTIFY_SOURCE=2" CPPFLAGS="-D_FORTIFY_SOURCE=2" CXXFLAGS="-fPIC -O2" LDFLAGS="-Wl,-z,relro,-z,now -pie${PHP_IMAGICK_LIBHEIF_LIB}" ./configure --with-php-config=/usr/local/bin/php-config --with-imagick=/usr
     fi
     sar_call
     make${MAKETHREADS}
@@ -558,9 +665,9 @@ else
     export PHP_AUTOHEADER=/usr/bin/autoheader
     /usr/local/bin/phpize
     if [[ "$IMAGEMAGICK_SOURCE_INSTALL" = [yY] ]]; then
-        CFLAGS="-fPIC -O2 -fstack-protector-strong -Wno-deprecated-declarations -D_FORTIFY_SOURCE=2" CPPFLAGS="-D_FORTIFY_SOURCE=2" CXXFLAGS="-fPIC -O2" LDFLAGS="-Wl,-z,relro,-z,now -pie" ./configure --with-php-config=/usr/local/bin/php-config --with-imagick=/usr/local
+        CFLAGS="-fPIC -O2 -fstack-protector-strong -Wno-deprecated-declarations -D_FORTIFY_SOURCE=2" CPPFLAGS="-D_FORTIFY_SOURCE=2" CXXFLAGS="-fPIC -O2" LDFLAGS="-Wl,-z,relro,-z,now -pie${PHP_IMAGICK_LIBHEIF_LIB}" ./configure --with-php-config=/usr/local/bin/php-config --with-imagick=/usr/local
     else
-        CFLAGS="-fPIC -O2 -fstack-protector-strong -Wno-deprecated-declarations -D_FORTIFY_SOURCE=2" CPPFLAGS="-D_FORTIFY_SOURCE=2" CXXFLAGS="-fPIC -O2" LDFLAGS="-Wl,-z,relro,-z,now -pie" ./configure --with-php-config=/usr/local/bin/php-config --with-imagick=/usr
+        CFLAGS="-fPIC -O2 -fstack-protector-strong -Wno-deprecated-declarations -D_FORTIFY_SOURCE=2" CPPFLAGS="-D_FORTIFY_SOURCE=2" CXXFLAGS="-fPIC -O2" LDFLAGS="-Wl,-z,relro,-z,now -pie${PHP_IMAGICK_LIBHEIF_LIB}" ./configure --with-php-config=/usr/local/bin/php-config --with-imagick=/usr
     fi
     sar_call
     make${MAKETHREADS}

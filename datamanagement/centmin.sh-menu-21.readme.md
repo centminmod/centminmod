@@ -2,6 +2,19 @@
 
 This guide provides an overview of centmin.sh menu option 21 in Centmin Mod, which focuses on data management tasks. You'll learn about the available menu and submenu options, as well as their functionalities. If you appreciate the work and effort, please consider [supporting Centmin Mod](https://community.centminmod.com/threads/ways-to-support-centmin-mod.11435/). Shorten url to [PayPal donation link](https://centminmod.com/donate/).
 
+**Getting Started**
+
+If it's first time using centmin.sh menu option 21, you'd want to at least do the following:
+
+1. In CSF Firewall on both source and destination Centmin Mod servers, whitelist allow their IP addresses i.e. `csf -a remoteip_address` on source server and on destination server `csf -a sourcedata_ip_address`.
+2. centmin.sh menu option 21, submenu option 1 `Manage SSH keys` select [3. Create New SSH Key For Remote Host](#3-create-new-ssh-key-for-remote-host). This will give you the ability to transfer data remotely in unattended manner. 
+   **Tip:** ensure remote server supports root user SSH with a password for this process for initial SSH key setup. Otherise if you're using an existing SSH key, you'd be prompted for the SSH private key path during the process.
+3. centmin.sh menu option 21, submenu option 2 `Manage AWS CLI S3 Profile Credentials` select [3. Create New AWS CLI S3 Profile](#3-create-new-aws-cli-s3-profile). This will give you the ability to transfer data to your S3 compatible provider.
+
+Then if you are concerned with migrating all Centmin Mod data to a new server, centmin.sh menu option 21, submenu option 3 for [Migrate Centmin Mod Data To New Centmin Mod Server](#submenu-option-3-migrate-centmin-mod-data-to-new-centmin-mod-server) would be the one where it's essentially same as [Submenu Option 4: Backup Nginx Vhosts Data + MariaBackup MySQL Backups](#submenu-option-4-backup-nginx-vhosts-data--mariabackup-mysql-backups) just with auto transfer part. As such restoration is the same.
+
+Migrations aren't finalised until you change domain's DNS records, so you can do test migrations on test remote servers until you're comfortable with the final move.
+
 ## Table of Contents
 
 - [Menu Option 21: Data Management](#menu-option-21-data-management)

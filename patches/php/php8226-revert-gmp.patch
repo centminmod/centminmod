@@ -1,0 +1,323 @@
+From 22155d5024750ace1e68dbfe8f8f4801b49fc1a7 Mon Sep 17 00:00:00 2001
+From: David Carlier <devnexen@gmail.com>
+Date: Mon, 25 Nov 2024 18:11:59 +0000
+Subject: [PATCH 1/2] Revert "ext/gmp: gmp_pow fix FPE with large values."
+
+This reverts commit e0a0e216a909dc4ee4ea7c113a5f41d49525f02e.
+---
+ NEWS                              |  2 -
+ ext/gmp/gmp.c                     | 38 +++++++++------
+ ext/gmp/tests/gmp_pow.phpt        |  2 -
+ ext/gmp/tests/gmp_pow_32bits.phpt | 77 -------------------------------
+ ext/gmp/tests/gmp_pow_fpe.phpt    | 35 ++++----------
+ 5 files changed, 35 insertions(+), 119 deletions(-)
+ delete mode 100644 ext/gmp/tests/gmp_pow_32bits.phpt
+
+diff --git a/NEWS b/NEWS
+index 7a460ba142486..c00d9189e8ada 100644
+--- a/NEWS
++++ b/NEWS
+@@ -122,8 +122,6 @@ PHP                                                                        NEWS
+   . Fixed bug GH-16411 (gmp_export() can cause overflow). (cmb)
+   . Fixed bug GH-16501 (gmp_random_bits() can cause overflow).
+     (David Carlier)
+-  . Fixed gmp_pow() overflow bug with large base/exponents.
+-    (David Carlier)
+   . Fixed segfaults and other issues related to operator overloading with
+     GMP objects. (Girgias)
+ 
+diff --git a/ext/gmp/gmp.c b/ext/gmp/gmp.c
+index c9603c8fb21e8..fc5464e90542d 100644
+--- a/ext/gmp/gmp.c
++++ b/ext/gmp/gmp.c
+@@ -1350,27 +1350,39 @@ ZEND_FUNCTION(gmp_pow)
+ 		RETURN_THROWS();
+ 	}
+ 
+-    double powmax = log((double)ZEND_LONG_MAX);
+-
+ 	if (Z_TYPE_P(base_arg) == IS_LONG && Z_LVAL_P(base_arg) >= 0) {
+ 		INIT_GMP_RETVAL(gmpnum_result);
+-		if ((log(Z_LVAL_P(base_arg)) * exp) > powmax) {
+-			zend_value_error("base and exponent overflow");
+-			RETURN_THROWS();
++		if (exp >= INT_MAX) {
++			mpz_t base_num, exp_num, mod;
++			mpz_init(base_num);
++			mpz_init(exp_num);
++			mpz_init(mod);
++			mpz_set_si(base_num, Z_LVAL_P(base_arg));
++			mpz_set_si(exp_num, exp);
++			mpz_set_ui(mod, UINT_MAX);
++			mpz_powm(gmpnum_result, base_num, exp_num, mod);
++			mpz_clear(mod);
++			mpz_clear(exp_num);
++			mpz_clear(base_num);
++		} else {
++			mpz_ui_pow_ui(gmpnum_result, Z_LVAL_P(base_arg), exp);
+ 		}
+-		mpz_ui_pow_ui(gmpnum_result, Z_LVAL_P(base_arg), exp);
+ 	} else {
+ 		mpz_ptr gmpnum_base;
+-		zend_ulong gmpnum;
+ 		FETCH_GMP_ZVAL(gmpnum_base, base_arg, temp_base, 1);
+ 		INIT_GMP_RETVAL(gmpnum_result);
+-		gmpnum = mpz_get_ui(gmpnum_base);
+-		if ((log(gmpnum) * exp) > powmax) {
+-			FREE_GMP_TEMP(temp_base);
+-			zend_value_error("base and exponent overflow");
+-			RETURN_THROWS();
++		if (exp >= INT_MAX) {
++			mpz_t exp_num, mod;
++			mpz_init(exp_num);
++			mpz_init(mod);
++			mpz_set_si(exp_num, exp);
++			mpz_set_ui(mod, UINT_MAX);
++			mpz_powm(gmpnum_result, gmpnum_base, exp_num, mod);
++			mpz_clear(mod);
++			mpz_clear(exp_num);
++		} else {
++			mpz_pow_ui(gmpnum_result, gmpnum_base, exp);
+ 		}
+-		mpz_pow_ui(gmpnum_result, gmpnum_base, exp);
+ 		FREE_GMP_TEMP(temp_base);
+ 	}
+ }
+diff --git a/ext/gmp/tests/gmp_pow.phpt b/ext/gmp/tests/gmp_pow.phpt
+index 1d77bd5e96c80..f42e44e31abed 100644
+--- a/ext/gmp/tests/gmp_pow.phpt
++++ b/ext/gmp/tests/gmp_pow.phpt
+@@ -2,8 +2,6 @@
+ gmp_pow() basic tests
+ --EXTENSIONS--
+ gmp
+---SKIPIF--
+-<?php if (PHP_INT_SIZE != 8) die("skip this test is for 64bit platform only"); ?>
+ --FILE--
+ <?php
+ 
+diff --git a/ext/gmp/tests/gmp_pow_32bits.phpt b/ext/gmp/tests/gmp_pow_32bits.phpt
+deleted file mode 100644
+index 785e1fce16f63..0000000000000
+--- a/ext/gmp/tests/gmp_pow_32bits.phpt
++++ /dev/null
+@@ -1,77 +0,0 @@
+---TEST--
+-gmp_pow() basic tests
+---EXTENSIONS--
+-gmp
+---SKIPIF--
+-<?php if (PHP_INT_SIZE != 4) die("skip this test is for 32bit platform only"); ?>
+---FILE--
+-<?php
+-
+-var_dump(gmp_strval(gmp_pow(2,10)));
+-var_dump(gmp_strval(gmp_pow(-2,10)));
+-var_dump(gmp_strval(gmp_pow(-2,11)));
+-var_dump(gmp_strval(gmp_pow("2",10)));
+-var_dump(gmp_strval(gmp_pow("2",0)));
+-try {
+-    gmp_pow("2", -1);
+-} catch (ValueError $exception) {
+-    echo $exception->getMessage() . "\n";
+-}
+-var_dump(gmp_strval(gmp_pow("-2",10)));
+-try {
+-    gmp_pow(20,10);
+-} catch (ValueError $exception) {
+-    echo $exception->getMessage() . "\n";
+-}
+-try {
+-    gmp_pow(50,10);
+-} catch (ValueError $exception) {
+-    echo $exception->getMessage() . "\n";
+-}
+-try {
+-    gmp_pow(50,-5);
+-} catch (ValueError $exception) {
+-    echo $exception->getMessage() . "\n";
+-}
+-try {
+-    $n = gmp_init("20");
+-    gmp_pow($n,10);
+-} catch (ValueError $exception) {
+-    echo $exception->getMessage() . "\n";
+-}
+-try {
+-    $n = gmp_init("-20");
+-    gmp_pow($n,10);
+-} catch (ValueError $exception) {
+-    echo $exception->getMessage() . "\n";
+-}
+-try {
+-    var_dump(gmp_pow(2,array()));
+-} catch (TypeError $e) {
+-    echo $e->getMessage(), "\n";
+-}
+-
+-try {
+-    var_dump(gmp_pow(array(),10));
+-} catch (\TypeError $e) {
+-    echo $e->getMessage() . \PHP_EOL;
+-}
+-
+-echo "Done\n";
+-?>
+---EXPECT--
+-string(4) "1024"
+-string(4) "1024"
+-string(5) "-2048"
+-string(4) "1024"
+-string(1) "1"
+-gmp_pow(): Argument #2 ($exponent) must be greater than or equal to 0
+-string(4) "1024"
+-base and exponent overflow
+-base and exponent overflow
+-gmp_pow(): Argument #2 ($exponent) must be greater than or equal to 0
+-base and exponent overflow
+-base and exponent overflow
+-gmp_pow(): Argument #2 ($exponent) must be of type int, array given
+-gmp_pow(): Argument #1 ($num) must be of type GMP|string|int, array given
+-Done
+diff --git a/ext/gmp/tests/gmp_pow_fpe.phpt b/ext/gmp/tests/gmp_pow_fpe.phpt
+index 248922e80514d..d564853799c8d 100644
+--- a/ext/gmp/tests/gmp_pow_fpe.phpt
++++ b/ext/gmp/tests/gmp_pow_fpe.phpt
+@@ -6,30 +6,15 @@ gmp
+ <?php
+ $g = gmp_init(256);
+ 
+-try {
+-	gmp_pow($g, PHP_INT_MAX);
+-} catch (\ValueError $e) {
+-	echo $e->getMessage() . PHP_EOL;
+-}
+-try {
+-	gmp_pow(256, PHP_INT_MAX);
+-} catch (\ValueError $e) {
+-	echo $e->getMessage() . PHP_EOL;
+-}
+-
+-try {
+-    gmp_pow(gmp_add(gmp_mul(gmp_init(PHP_INT_MAX), gmp_init(PHP_INT_MAX)), 3), 256);
+-} catch (\ValueError $e) {
+-	echo $e->getMessage() . PHP_EOL;
+-}
+-try {
+-    gmp_pow(gmp_init(PHP_INT_MAX), 256);
+-} catch (\ValueError $e) {
+-	echo $e->getMessage();
+-}
++var_dump(gmp_pow($g, PHP_INT_MAX));
++var_dump(gmp_pow(256, PHP_INT_MAX));
+ ?>
+ --EXPECTF--
+-base and exponent overflow
+-base and exponent overflow
+-base and exponent overflow
+-base and exponent overflow
++object(GMP)#2 (1) {
++  ["num"]=>
++  string(%d) "%s"
++}
++object(GMP)#2 (1) {
++  ["num"]=>
++  string(%d) "%s"
++}
+
+From 4891463993a50db2ac2ad8a99e5fe42e395996e8 Mon Sep 17 00:00:00 2001
+From: David Carlier <devnexen@gmail.com>
+Date: Mon, 25 Nov 2024 18:12:22 +0000
+Subject: [PATCH 2/2] Revert "ext/gmp: gmp_pow fix FPE with large values."
+
+This reverts commit d70b7811b0248a36b06d70a04e350801a1fede8e.
+---
+ NEWS                           |  2 --
+ ext/gmp/gmp.c                  | 29 ++---------------------------
+ ext/gmp/tests/gmp_pow_fpe.phpt | 20 --------------------
+ 3 files changed, 2 insertions(+), 49 deletions(-)
+ delete mode 100644 ext/gmp/tests/gmp_pow_fpe.phpt
+
+diff --git a/NEWS b/NEWS
+index c00d9189e8ada..0a483f70eeca2 100644
+--- a/NEWS
++++ b/NEWS
+@@ -117,8 +117,6 @@ PHP                                                                        NEWS
+     (nielsdos)
+ 
+ - GMP:
+-  . Fixed floating point exception bug with gmp_pow when using
+-    large exposant values. (David Carlier).
+   . Fixed bug GH-16411 (gmp_export() can cause overflow). (cmb)
+   . Fixed bug GH-16501 (gmp_random_bits() can cause overflow).
+     (David Carlier)
+diff --git a/ext/gmp/gmp.c b/ext/gmp/gmp.c
+index fc5464e90542d..f31d6ab810232 100644
+--- a/ext/gmp/gmp.c
++++ b/ext/gmp/gmp.c
+@@ -1352,37 +1352,12 @@ ZEND_FUNCTION(gmp_pow)
+ 
+ 	if (Z_TYPE_P(base_arg) == IS_LONG && Z_LVAL_P(base_arg) >= 0) {
+ 		INIT_GMP_RETVAL(gmpnum_result);
+-		if (exp >= INT_MAX) {
+-			mpz_t base_num, exp_num, mod;
+-			mpz_init(base_num);
+-			mpz_init(exp_num);
+-			mpz_init(mod);
+-			mpz_set_si(base_num, Z_LVAL_P(base_arg));
+-			mpz_set_si(exp_num, exp);
+-			mpz_set_ui(mod, UINT_MAX);
+-			mpz_powm(gmpnum_result, base_num, exp_num, mod);
+-			mpz_clear(mod);
+-			mpz_clear(exp_num);
+-			mpz_clear(base_num);
+-		} else {
+-			mpz_ui_pow_ui(gmpnum_result, Z_LVAL_P(base_arg), exp);
+-		}
++		mpz_ui_pow_ui(gmpnum_result, Z_LVAL_P(base_arg), exp);
+ 	} else {
+ 		mpz_ptr gmpnum_base;
+ 		FETCH_GMP_ZVAL(gmpnum_base, base_arg, temp_base, 1);
+ 		INIT_GMP_RETVAL(gmpnum_result);
+-		if (exp >= INT_MAX) {
+-			mpz_t exp_num, mod;
+-			mpz_init(exp_num);
+-			mpz_init(mod);
+-			mpz_set_si(exp_num, exp);
+-			mpz_set_ui(mod, UINT_MAX);
+-			mpz_powm(gmpnum_result, gmpnum_base, exp_num, mod);
+-			mpz_clear(mod);
+-			mpz_clear(exp_num);
+-		} else {
+-			mpz_pow_ui(gmpnum_result, gmpnum_base, exp);
+-		}
++		mpz_pow_ui(gmpnum_result, gmpnum_base, exp);
+ 		FREE_GMP_TEMP(temp_base);
+ 	}
+ }
+diff --git a/ext/gmp/tests/gmp_pow_fpe.phpt b/ext/gmp/tests/gmp_pow_fpe.phpt
+deleted file mode 100644
+index d564853799c8d..0000000000000
+--- a/ext/gmp/tests/gmp_pow_fpe.phpt
++++ /dev/null
+@@ -1,20 +0,0 @@
+---TEST--
+-gmp_pow() floating point exception
+---EXTENSIONS--
+-gmp
+---FILE--
+-<?php
+-$g = gmp_init(256);
+-
+-var_dump(gmp_pow($g, PHP_INT_MAX));
+-var_dump(gmp_pow(256, PHP_INT_MAX));
+-?>
+---EXPECTF--
+-object(GMP)#2 (1) {
+-  ["num"]=>
+-  string(%d) "%s"
+-}
+-object(GMP)#2 (1) {
+-  ["num"]=>
+-  string(%d) "%s"
+-}

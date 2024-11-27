@@ -564,7 +564,7 @@ funct_centos6check
 
     cd "$DIR_TMP"
 
-if [ "$(rpm -qa | grep '^php*' | egrep -v 'phonon-backend-gstreamer|php56|php70|php71|php72|php73|php74|php80|php81|php82')" ]; then
+if [ "$(rpm -qa | grep '^php*' | egrep -v 'phonon-backend-gstreamer|php56|php70|php71|php72|php73|php74|php80|php81|php82|php83|php84')" ]; then
     # IMPORTANT Erase any PHP installations first, otherwise conflicts may arise
     echo "yum -y erase php*"
     yum -y erase php*
@@ -704,6 +704,8 @@ fi # PHPDIFF
     cd fpm-build
 
     make clean
+    make distclean
+    rm -f config.cache
 
     #mkdir -p /usr/${LIBDIR}/mysql
     #ln -s /usr/${LIBDIR}/libmysqlclient.so /usr/${LIBDIR}/mysql/libmysqlclient.so
@@ -1533,8 +1535,8 @@ fi
         echo "***************************************************"
         checksec_phpext
         echo "***************************************************"
-        echo "checksec --format=json --file=/usr/local/sbin/php-fpm --extended | jq -r"
-        checksec --format=json --file=/usr/local/sbin/php-fpm --extended | jq -r
+        echo "checksec --format=json --file=/usr/local/sbin/php-fpm --extended 2>/dev/null | jq -r"
+        checksec --format=json --file=/usr/local/sbin/php-fpm --extended 2>/dev/null | jq -r
     fi
     if [[ "$PHP_LDMOLD" = [yY] ]]; then
         echo

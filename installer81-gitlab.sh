@@ -1464,8 +1464,14 @@ if [[ ! -f /proc/user_beancounters ]]; then
         fi
         if [[ "$CENTOS_EIGHT" = '8' || "$CENTOS_NINE" = '9' ]]; then
           TCP_PID_MAX='4194300'
+          TCP_BACKLOG='524280'
         elif [[ "$CENTOS_SEVEN" = '7' ]]; then
           TCP_PID_MAX='65535'
+          TCP_BACKLOG='65535'
+        fi
+        if [[ ! -d /etc/sysctl.d || ! -f /usr/sbin/sysctl ]]; then
+          # ensure sysctl is installed
+          yum -y install procps-ng
         fi
         if [ -d /etc/sysctl.d ]; then
             # centos 7
@@ -1863,7 +1869,7 @@ cd $INSTALLDIR
 # switch from PHP 5.4.41 to 5.6.9 default with Zend Opcache
 PHPVERLATEST=$(curl -${ipv_forceopt}sL https://www.php.net/downloads.php| egrep -o "php\-[0-9.]+\.tar[.a-z]*" | grep -v '.asc' | awk -F "php-" '/.tar.gz$/ {print $2}' | sed -e 's|.tar.gz||g' | uniq | grep '8.1' | head -n1)
 sed -i "s|^PHP_VERSION='.*'|PHP_VERSION='$PHPVERLATEST'|" centmin.sh
-PHPVERLATEST=${PHPVERLATEST:-"8.1.30"}
+PHPVERLATEST=${PHPVERLATEST:-"8.1.31"}
 sed -i "s|ZOPCACHEDFT='n'|ZOPCACHEDFT='y'|" centmin.sh
 
 # disable axivo yum repo

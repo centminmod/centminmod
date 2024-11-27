@@ -1,3 +1,54 @@
+php_imagemagick_seven_detected_libzip() {
+  # if PHP_IMAGEMAGICK_SEVEN_USE_REMI_LIBZIP='y' use remi-libzip otherwise
+  # source compile libzip for PHP 8.1+
+  if [[ "$PHP_IMAGEMAGICK_SEVEN_USE_REMI_LIBZIP" = [yY] ]]; then
+    if ! rpm -qa | grep -qw remi-libzip-devel; then
+      "$YUMDNFBIN" -y install remi-libzip remi-libzip-devel --enablerepo=remi
+    fi
+    export LIBZIP_CFLAGS='-I/opt/remi/libzip/include'
+    export LIBZIP_LIBS="-L/opt/remi/libzip/lib64 -lzip"
+    echo "remi libzip"
+    LIBZIP_OPT=' --with-libzip=/opt/remi/libzip/lib64'
+    LIBZIP_LD_PATH="/opt/remi/libzip/lib64:"
+    LIBZIP_RPATH=' -Wl,-rpath,/opt/remi/libzip/lib64'
+    LIBZIP_PKG_CONFIG_PATH="/opt/remi/libzip/lib64/pkgconfig:"
+    libzip_remove
+    if [ -f /etc/ld.so.conf.d/libzip.conf ]; then
+      rm -f /etc/ld.so.conf.d/libzip.conf
+      ldconfig
+    fi
+  else
+    # remove both system libzip and remi libzip for source compiled version
+    if rpm libzip-devel -qa | grep -qw libzip-devel; then
+      rpm -e libzip libzip-devel
+      ldconfig
+    fi
+    if rpm -qa | grep -qw remi-libzip-devel; then
+      "$YUMDNFBIN" -y remove remi-libzip remi-libzip-devel --enablerepo=remi
+      ldconfig
+    fi
+    PHP_LIBZIP='y'
+    # LIBZIP_RPATH=' -Wl,-rpath,/usr/lib64'
+    # LIBZIP_PKG_CONFIG_PATH="/usr/lib64/pkgconfig:"
+    # LIBZIP_OPT=' --with-libzip=/usr/lib64'
+    if [[ "$PHPMVER" = '7.4' || "$PHPMUVER" = '7.4' || "$PHPMVER" = '8.0' || "$PHPMUVER" = '8.0' || "$PHPMVER" = '8.1' || "$PHPMUVER" = '8.1' || "$PHPMVER" = '8.2' || "$PHPMUVER" = '8.2' || "$PHPMVER" = '8.3' || "$PHPMUVER" = '8.3' || "$PHPMVER" = '8.4' || "$PHPMUVER" = '8.4' || "$PHPVER_ID" -ge '80000' ]]; then
+      if [[ "$(uname -m)" = 'x86_64' ]]; then
+        LIBDIR_LIBZIP='lib64'
+      else
+        LIBDIR_LIBZIP='lib'
+      fi
+      # PHP 7.4 not finding libzip paths
+      export LIBZIP_CFLAGS='-I/usr/local/include'
+      export LIBZIP_LIBS="-L/usr/local/${LIBDIR_LIBZIP} -lzip"
+      LIBZIP_LD_PATH="/usr/local/${LIBDIR_LIBZIP}:"
+      LIBZIP_OPT=" --with-libzip=/usr/local/${LIBDIR_LIBZIP}"
+      LIBZIP_RPATH=" -Wl,-rpath,/usr/local/${LIBDIR_LIBZIP}"
+      LIBZIP_PKG_CONFIG_PATH="/usr/local/${LIBDIR_LIBZIP}/pkgconfig:"
+      libzip_install
+    fi
+  fi
+}
+
 strip_php_extensions() {
     strip_php_ext_dir=$(php-config --extension-dir)
     echo "Stripping PHP Extensions in $strip_php_ext_dir"
@@ -13,17 +64,17 @@ strip_php_extensions() {
 checksec_phpext() {
   if [ ! -f /usr/bin/checksec ]; then
     echo
-    yum -y install checksec
+    "$YUMDNFBIN" -y install checksec
     echo
   fi
   checksec_phpext_dir=$(php-config --extension-dir)
   find $checksec_phpext_dir -name "*.so" | while read slib; do
     if [ -f "${slib}" ]; then
-      checksec --file="${slib}" --format=json --extended | jq -r
+      checksec --file="${slib}" --format=json --extended 2>/dev/null | jq -r
     fi
   done
   if [ -f /usr/local/lib/libpcre.so ]; then
-    checksec --file=/usr/local/lib/libpcre.so --format=json --extended | jq -r
+    checksec --file=/usr/local/lib/libpcre.so --format=json --extended 2>/dev/null | jq -r
   fi
 }
 
@@ -156,22 +207,22 @@ oniguruma_check() {
     echo
     echo "swap oniguruma5 oniguruma5php"
     echo
-    yum -y swap oniguruma5 oniguruma5php --enablerepo=remi
+    "$YUMDNFBIN" -y swap oniguruma5 oniguruma5php --enablerepo=remi
     echo
     echo "swap oniguruma5-devel oniguruma5php-devel"
     echo
-    yum -y swap oniguruma5-devel oniguruma5php-devel --enablerepo=remi
+    "$YUMDNFBIN" -y swap oniguruma5-devel oniguruma5php-devel --enablerepo=remi
   fi
   if [[ "$(rpm -qa oniguruma5php oniguruma5php-devel | wc -l)" -lt '2' ]]; then
     echo
     echo "install oniguruma5php oniguruma5php-devel"
     echo
-    yum -y install oniguruma5php oniguruma5php-devel --enablerepo=remi
+    "$YUMDNFBIN" -y install oniguruma5php oniguruma5php-devel --enablerepo=remi
     oni_err=$?
     echo "oni_err=$oni_err"
     if [ ! -f /usr/include/oniggnu.h ]; then
       yum clean all
-      yum -y install oniguruma5php oniguruma5php-devel --enablerepo=remi
+      "$YUMDNFBIN" -y install oniguruma5php oniguruma5php-devel --enablerepo=remi
       oni_err=$?
       echo "oni_err=$oni_err"
     fi
@@ -236,6 +287,13 @@ if [ -f "${CM_INSTALLDIR}/inc/z_custom.inc" ]; then
 fi
 
 fpmconfdir
+
+# if [[ "$PHP_GD_AVIF" = [yY] ]]; then
+#   "$YUMDNFBIN" -y remove libavif libavif-devel
+#   pushd $DIR_TMP
+#   wget https://github.com/AOMediaCodec/libavif/archive/refs/tags/v1.1.1.tar.gz
+#   popd
+# fi
 
 # switch el8 OSes to GCC 11 for compile routines
 if [[ "$CENTOS_EIGHT" -eq '8' && "$CENTOSVER_NUMERIC" -ge '89' ]]; then
@@ -343,15 +401,53 @@ install_libgd_external() {
     pushd "$DIR_TMP"
     if [ ! -f "libgd-${LIBGD_EXTERNAL_VER}.tar.gz" ]; then
     wget${ipv_forceopt_wget} "https://github.com/libgd/libgd/releases/download/gd-${LIBGD_EXTERNAL_VER}/libgd-${LIBGD_EXTERNAL_VER}.tar.gz"
-    tar xvfz "libgd-${LIBGD_EXTERNAL_VER}.tar.gz"
+    tar xvzf "libgd-${LIBGD_EXTERNAL_VER}.tar.gz"
     fi
     cd "libgd-${LIBGD_EXTERNAL_VER}"
     if [[ "$LIBGD_EXTERNAL_VER" = '2.3.3' ]]; then
-      wget${ipv_forceopt_wget} https://github.com/libgd/libgd/commit/f4bc1f5c26925548662946ed7cfa473c190a104a.patch -O gdflip.patch
-      patch -p1 < gdflip.patch
+      echo "Downloading and applying libgd patch for version 2.3.3..."
+      
+      # Define the patch name
+      libgd_patch_name="gdflip.patch"
+      
+      # Download the patch
+      wget${ipv_forceopt_wget} https://github.com/libgd/libgd/commit/f4bc1f5c26925548662946ed7cfa473c190a104a.patch -O $libgd_patch_name
+      
+      # Attempt to apply the patch
+      if patch -p1 < $libgd_patch_name; then
+        echo "Patch applied successfully for libgd version 2.3.3"
+      else
+        echo "Patching failed for libgd version 2.3.3"
+        
+        # Check each target file for .orig and .rej files
+        # Create a temporary file
+        temp_file=$(mktemp)
+        
+        # Use grep to find the necessary information and store it in the temporary file
+        grep -oP '(?<=\+\+\+ )[^\s]+' "$libgd_patch_name" > "$temp_file"
+        
+        # Read from the temporary file
+        while read -r file; do
+          # Remove the 'b/' prefix from the filename
+          file=$(echo "$file" | sed 's/b\///')
+          # Check if the original and reject files exist
+          if [[ -f "$file.orig" && -f "$file.rej" ]]; then
+            echo "Restoring original file: $file"
+            mv -f "$file.orig" "$file"
+            rm "$file.rej"
+          fi
+        done < "$temp_file"
+        
+        # Remove the temporary file
+        rm "$temp_file"
+      fi
     fi
+
     make clean
-    ./configure --prefix="/usr/local/libgd/${LIBGD_EXTERNAL_VER}"
+    if [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]] && [[ "$PHP_GD_AVIF" = [yY] ]]; then
+      GD_AVIF_OPT=' --with-avif'
+    fi
+    ./configure --prefix="/usr/local/libgd/${LIBGD_EXTERNAL_VER}"${GD_AVIF_OPT}
     make -j$(nproc)
     make install
     check_libgd_external=$?
@@ -360,6 +456,8 @@ install_libgd_external() {
       export GDLIB_CFLAGS="-I/usr/local/libgd/${LIBGD_EXTERNAL_VER}/include"
       echo "export GDLIB_LIBS='-L/usr/local/libgd/${LIBGD_EXTERNAL_VER}/lib -lgd'"
       export GDLIB_LIBS="-L/usr/local/libgd/${LIBGD_EXTERNAL_VER}/lib -lgd"
+      #LIBGD_RPATH=" -Wl,-rpath,/usr/local/libgd/${LIBGD_EXTERNAL_VER}/lib"
+      #LIBGD_PKG_CONFIG_PATH="/usr/local/libgd/${LIBGD_EXTERNAL_VER}/lib/pkgconfig:"
       # if [[ "$PHPMVER" = '7.0' || "$PHPMUVER" = '7.0' || "$PHPMVER" = '7.1' || "$PHPMUVER" = '7.1' || "$PHPMVER" = '7.2' || "$PHPMUVER" = '7.2' || "$PHPMVER" = '7.3' || "$PHPMUVER" = '7.3' ]]; then
       #   echo "export LD_LIBRARY_PATH=/usr/local/libgd/${LIBGD_EXTERNAL_VER}/lib:$LD_LIBRARY_PATH"
       #   export LD_LIBRARY_PATH=/usr/local/libgd/${LIBGD_EXTERNAL_VER}/lib:$LD_LIBRARY_PATH
@@ -381,6 +479,15 @@ else
   SWOOLE_OPT=""
 fi
 
+if [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]] && [[ "$PHP_GD_AVIF" = [yY] ]] && [[ "$PHPMVER" = '8.1' || "$PHPMUVER" = '8.1' || "$PHPMVER" = '8.2' || "$PHPMUVER" = '8.2' || "$PHPMVER" = '8.3' || "$PHPMUVER" = '8.3' || "$PHPMVER" = '8.4' || "$PHPMUVER" = '8.4' || "$PHPVER_ID" -ge '80000' ]]; then
+  if [[ -z "$(rpm -qa libavif-devel)" ]]; then 
+    "$YUMDNFBIN" -y install libavif-devel
+  fi
+  PHP_LIBAVIF_OPT=' --with-avif'
+else
+  PHP_LIBAVIF_OPT=""
+fi
+
 # Enable Foreign Function Interface FFI extension
 # for PHP 7.4+ https://wiki.php.net/rfc/ffi
 if [[ "$CENTOS_SEVEN" -eq '7' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]] && [[ "$PHPMVER" = '7.4' || "$PHPMUVER" = '7.4' || "$PHPMVER" = '8.0' || "$PHPMUVER" = '8.0' || "$PHPMVER" = '8.1' || "$PHPMUVER" = '8.1' || "$PHPMVER" = '8.2' || "$PHPMUVER" = '8.2' || "$PHPMVER" = '8.3' || "$PHPMUVER" = '8.3' || "$PHPMVER" = '8.4' || "$PHPMUVER" = '8.4' || "$PHPVER_ID" -ge '80000' ]]; then
@@ -397,7 +504,7 @@ fi
 if [[ "$CENTOS_SEVEN" -eq '7' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]]; then
   if [[ "$PHPMVER" = 5.5 || "$PHPMUVER" = 5.5 || "$PHPMVER" = 5.6 || "$PHPMUVER" = 5.6 || "$PHPMVER" = 7.0 || "$PHPMUVER" = 7.0 || "$PHPMVER" = 7.1 || "$PHPMUVER" = 7.1 || "$PHPMVER" = 7.2 || "$PHPMUVER" = 7.2 || "$PHPMVER" = 7.3 || "$PHPMUVER" = 7.3 || "$PHPMVER" = 7.4 || "$PHPMUVER" = 7.4 || "$PHPMVER" = 7.5 || "$PHPMUVER" = 7.5 || "$PHPMVER" = 8.0 || "$PHPMUVER" = 8.0 || "$PHPMVER" = 8.1 || "$PHPMUVER" = 8.1 || "$PHPMVER" = 8.2 || "$PHPMUVER" = 8.2 || "$PHPMVER" = 8.3 || "$PHPMUVER" = 8.3 || "$PHPVER_ID" -ge '80000' ]]; then
     if [[ $(rpm -q systemd-devel >/dev/null 2>&1; echo $?) != '0' ]]; then
-      yum -y install systemd-devel --disableplugin=priorities >/dev/null 2>&1
+      "$YUMDNFBIN" -y install systemd-devel --disableplugin=priorities >/dev/null 2>&1
     fi
     FPMSYSTEMD_INTEGRATEOPT=' --with-fpm-systemd'
   else
@@ -613,6 +720,8 @@ DETECTOPENSSL_ONEONE=$(echo $OPENSSL_VERSION  | cut -d . -f1-3 | grep -o 1.1.1)
 DETECTOPENSSL_THREEZERO=$(echo $OPENSSL_VERSION  | cut -d . -f1-2 | grep -o 3.0)
 DETECTOPENSSL_THREEONE=$(echo $OPENSSL_VERSION  | cut -d . -f1-2 | grep -o 3.1)
 DETECTOPENSSL_THREETWO=$(echo $OPENSSL_VERSION  | cut -d . -f1-2 | grep -o 3.2)
+DETECTOPENSSL_THREETHREE=$(echo $OPENSSL_VERSION  | cut -d . -f1-2 | grep -o 3.3)
+DETECTOPENSSL_THREEFOUR=$(echo $OPENSSL_VERSION  | cut -d . -f1-2 | grep -o 3.4)
 # el9 uses OpenSSL 3.0 and is not supported for PHP builds <=8.0
 # for PHP 7.4 to 8.0, use OpenSSL 1.1.1 instead
 # https://bugs.php.net/bug.php?id=81540
@@ -644,7 +753,7 @@ fi
 # if OpenSSL 3.0/3.1/3.2 are detected and PHP <=7.3.x used, disable custom
 # PHP OpenSSL compiles as PHP 5.x to 7.3 do not support OpenSSL 3.x
 # PHP 7.4 and 8.0 have backported OpenSSL 3.x supporting patches enabled
-if [[ "$DETECTOPENSSL_THREEZERO" = '3.0' || "$DETECTOPENSSL_THREEONE" = '3.1' || "$DETECTOPENSSL_THREETWO" = '3.2' ]] && [[ "$PHPMVER" = '5.6' || "$PHPMUVER" = '5.6' || "$PHPMVER" = '7.0' || "$PHPMUVER" = '7.0' || "$PHPMVER" = '7.1' || "$PHPMUVER" = '7.1' || "$PHPMVER" = '7.2' || "$PHPMUVER" = '7.2' || "$PHPMVER" = '7.3' || "$PHPMUVER" = '7.3' ]] && [[ "$LIBRESSL_SWITCH" = [nN] && "$BORINGSSL_SWITCH" = [nN] ]]; then
+if [[ "$DETECTOPENSSL_THREEZERO" = '3.0' || "$DETECTOPENSSL_THREEONE" = '3.1' || "$DETECTOPENSSL_THREETWO" = '3.2' || "$DETECTOPENSSL_THREETHREE" = '3.3' || "$DETECTOPENSSL_THREEFOUR" = '3.4' ]] && [[ "$PHPMVER" = '5.6' || "$PHPMUVER" = '5.6' || "$PHPMVER" = '7.0' || "$PHPMUVER" = '7.0' || "$PHPMVER" = '7.1' || "$PHPMUVER" = '7.1' || "$PHPMVER" = '7.2' || "$PHPMUVER" = '7.2' || "$PHPMVER" = '7.3' || "$PHPMUVER" = '7.3' ]] && [[ "$LIBRESSL_SWITCH" = [nN] && "$BORINGSSL_SWITCH" = [nN] ]]; then
   PHP_CUSTOMSSL='n'
 fi
 
@@ -1405,7 +1514,7 @@ if [[ "$GCCINTEL_PHP" = [yY] ]]; then
       yum -y install ${DIR_TMP}/gcc-custom-15.0.0-1.el8.x86_64.rpm
   fi
   if [[ "$CENTOSVER_NUMERIC" -ge '89' && "$CENTOS_EIGHT" -eq '8' ]] && [[ "$DEVTOOLSETFOURTEEN" = [yY] && ! -f /opt/rh/gcc-toolset-14/root/usr/bin/gcc || ! -f /opt/rh/gcc-toolset-14/root/usr/bin/g++ ]]; then
-      yum -y install gcc-toolset-14-annobin-annocheck gcc-toolset-14-annobin-docs.noarch gcc-toolset-14-annobin-plugin-gcc gcc-toolset-14-binutils gcc-toolset-14-binutils-devel gcc-toolset-14-dwz gcc-toolset-14-gcc gcc-toolset-14-gcc-c++ gcc-toolset-14-gcc-gfortran gcc-toolset-14-gdb gcc-toolset-14-libasan-devel gcc-toolset-14-libatomic-devel gcc-toolset-14-libgccjit gcc-toolset-14-libgccjit-devel gcc-toolset-14-libitm-devel gcc-toolset-14-liblsan-devel gcc-toolset-14-libquadmath-devel gcc-toolset-14-libstdc++-devel gcc-toolset-14-libtsan-devel gcc-toolset-14-libubsan-devel gcc-toolset-14-runtime
+      yum -y install gcc-toolset-14-annobin-annocheck gcc-toolset-14-annobin-docs.noarch gcc-toolset-14-annobin-plugin-gcc gcc-toolset-14-binutils gcc-toolset-14-binutils-devel gcc-toolset-14-dwz gcc-toolset-14-gcc gcc-toolset-14-gcc-c++ gcc-toolset-14-gcc-gfortran gcc-toolset-14-libasan-devel gcc-toolset-14-libatomic-devel gcc-toolset-14-libgccjit gcc-toolset-14-libgccjit-devel gcc-toolset-14-libitm-devel gcc-toolset-14-liblsan-devel gcc-toolset-14-libquadmath-devel gcc-toolset-14-libstdc++-devel gcc-toolset-14-libtsan-devel gcc-toolset-14-libubsan-devel gcc-toolset-14-runtime
   fi
   if [[ "$CENTOSVER_NUMERIC" -ge '89' && "$CENTOS_EIGHT" -eq '8' ]] && [[ "$DEVTOOLSETTHIRTEEN" = [yY] && ! -f /opt/rh/gcc-toolset-13/root/usr/bin/gcc || ! -f /opt/rh/gcc-toolset-13/root/usr/bin/g++ ]]; then
       yum -y install gcc-toolset-13-annobin-annocheck gcc-toolset-13-annobin-docs.noarch gcc-toolset-13-annobin-plugin-gcc gcc-toolset-13-binutils gcc-toolset-13-binutils-devel gcc-toolset-13-dwz gcc-toolset-13-gcc gcc-toolset-13-gcc-c++ gcc-toolset-13-gcc-gfortran gcc-toolset-13-gdb gcc-toolset-13-libasan-devel gcc-toolset-13-libatomic-devel gcc-toolset-13-libgccjit gcc-toolset-13-libgccjit-devel gcc-toolset-13-libgccjit-docs gcc-toolset-13-libitm-devel gcc-toolset-13-liblsan-devel gcc-toolset-13-libquadmath-devel gcc-toolset-13-libstdc++-devel gcc-toolset-13-libtsan-devel gcc-toolset-13-libubsan-devel gcc-toolset-13-runtime
@@ -3189,7 +3298,7 @@ fi
 
 if [[ "$PHPMVER" = '7.3' || "$PHPMUVER" = '7.3' || "$PHPMVER" = '7.4' || "$PHPMUVER" = '7.4' || "$PHPMVER" = '8.0' || "$PHPMUVER" = '8.0' || "$PHPMVER" = '8.1' || "$PHPMUVER" = '8.1' || "$PHPMVER" = '8.2' || "$PHPMUVER" = '8.2' || "$PHPMVER" = '8.3' || "$PHPMUVER" = '8.3' || "$PHPMVER" = '8.4' || "$PHPMUVER" = '8.4' || "$PHPVER_ID" -ge '80000' ]]; then
   # seems PHP 7.3 must use libzip unlike PHP 7.2 which can compile without it
-  if [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]]; then
+  if [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]] && [[ "$IMAGEMAGICK_SEVEN" != [yY] ]]; then
     PHP_LIBZIP='n'
     if ! rpm -qa | grep -qw remi-libzip-devel; then
       yum -y install remi-libzip remi-libzip-devel --enablerepo=remi
@@ -3197,17 +3306,28 @@ if [[ "$PHPMVER" = '7.3' || "$PHPMUVER" = '7.3' || "$PHPMVER" = '7.4' || "$PHPMU
     export LIBZIP_CFLAGS='-I/opt/remi/libzip/include'
     export LIBZIP_LIBS="-L/opt/remi/libzip/lib64 -lzip"
     echo "remi libzip"
-    LIBZIP_OPT=' --with-libzip=/opt/remi/libzip'
-    LIBZIP_LD_PATH="/opt/remi/libzip/include:"
+    LIBZIP_OPT=' --with-libzip=/opt/remi/libzip/lib64'
+    LIBZIP_LD_PATH="/opt/remi/libzip/lib64:"
+    LIBZIP_RPATH=' -Wl,-rpath,/opt/remi/libzip/lib64'
     LIBZIP_PKG_CONFIG_PATH="/opt/remi/libzip/lib64/pkgconfig:"
+    if [ -f /etc/ld.so.conf.d/libzip.conf ]; then
+      rm -f /etc/ld.so.conf.d/libzip.conf
+      ldconfig
+    fi
+  elif [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]] && [[ "$IMAGEMAGICK_SEVEN" = [yY] ]]; then
+    php_imagemagick_seven_detected_libzip
   elif [[ "$CENTOS_SEVEN" -eq '7' ]]; then
-    PHP_LIBZIP='y'
+    LIBZIP_RPATH=' -Wl,-rpath,/usr/lib64'
+    LIBZIP_PKG_CONFIG_PATH="/usr/lib64/pkgconfig:"
   fi
 fi
 if [[ "$PHP_ARGON" = [yY] ]]; then
   # alias for PHP 7.2 argon support
-  if [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]]; then
+  if [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]] && [[ "$IMAGEMAGICK_SEVEN" != [yY] ]]; then
     PHP_LIBZIP='n'
+    PHP_ARGON='y'
+  elif [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]] && [[ "$IMAGEMAGICK_SEVEN" = [yY] ]]; then
+    php_imagemagick_seven_detected_libzip
   else
     PHP_LIBZIP='y'
   fi
@@ -3215,7 +3335,7 @@ elif [[ "$PHP_ARGON" = [nN] && "$PHP_LIBZIP" = [nN] ]]; then
   # alias for PHP 7.2 argon support
   PHP_LIBZIP='n'
 fi
-if [[ "$PHP_LIBZIP" = [yY] ]] && [[ "$PHPMVER" = '7.2' || "$PHPMUVER" = '7.2' || "$PHPMVER" = '7.3' || "$PHPMUVER" = '7.3' || "$PHPMVER" = '7.4' || "$PHPMUVER" = '7.4' || "$PHPMVER" = '8.0' || "$PHPMUVER" = '8.0' || "$PHPMVER" = '8.1' || "$PHPMUVER" = '8.1' || "$PHPMVER" = '8.2' || "$PHPMUVER" = '8.2' || "$PHPMVER" = '8.3' || "$PHPMUVER" = '8.3' || "$PHPMVER" = '8.4' || "$PHPMUVER" = '8.4' || "$PHPVER_ID" -ge '80000' ]]; then
+if [[ "$PHP_LIBZIP" = [yY] || "$PHP_ARGON" = [yY] ]] && [[ "$PHPMVER" = '7.2' || "$PHPMUVER" = '7.2' || "$PHPMVER" = '7.3' || "$PHPMUVER" = '7.3' || "$PHPMVER" = '7.4' || "$PHPMUVER" = '7.4' || "$PHPMVER" = '8.0' || "$PHPMUVER" = '8.0' || "$PHPMVER" = '8.1' || "$PHPMUVER" = '8.1' || "$PHPMVER" = '8.2' || "$PHPMUVER" = '8.2' || "$PHPMVER" = '8.3' || "$PHPMUVER" = '8.3' || "$PHPMVER" = '8.4' || "$PHPMUVER" = '8.4' || "$PHPVER_ID" -ge '80000' ]]; then
   ARGONTWO_OPT=' --with-password-argon2'
   LIBSODIUM_OPT=' --with-sodium'
   echo "libzip check PHPMVER = $PHPMVER"
@@ -3228,40 +3348,91 @@ if [[ "$PHP_LIBZIP" = [yY] ]] && [[ "$PHPMVER" = '7.2' || "$PHPMUVER" = '7.2' ||
   if [[ "$PHPMVER" = '8.0' || "$PHPMUVER" = '8.0' || "$PHPMVER" = '8.1' || "$PHPMUVER" = '8.1' || "$PHPMVER" = '8.2' || "$PHPMUVER" = '8.2' || "$PHPMVER" = '8.3' || "$PHPMUVER" = '8.3' || "$PHPMVER" = '8.4' || "$PHPMUVER" = '8.4' || "$PHPVER_ID" -ge '80000' ]]; then
     # https://bugs.php.net/bug.php?id=76483
     # PHP 7.4 not finding libzip paths
-    export LIBZIP_CFLAGS='-I/usr/local/include'
-    export LIBZIP_LIBS="-L/usr/local/${LIBDIR_LIBZIP} -lzip"
-    echo "php 8.x libzip"
-    LIBZIP_OPT=' --with-libzip'
+    if [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]] && [[ "$IMAGEMAGICK_SEVEN" != [yY] ]]; then
+      export LIBZIP_CFLAGS='-I/opt/remi/libzip/include'
+      export LIBZIP_LIBS="-L/opt/remi/libzip/lib64 -lzip"
+      echo "remi libzip"
+      LIBZIP_OPT=' --with-libzip=/opt/remi/libzip/lib64'
+      LIBZIP_LD_PATH="/opt/remi/libzip/lib64:"
+      LIBZIP_RPATH=' -Wl,-rpath,/opt/remi/libzip/lib64'
+      LIBZIP_PKG_CONFIG_PATH="/opt/remi/libzip/lib64/pkgconfig:"
+      if [ -f /etc/ld.so.conf.d/libzip.conf ]; then
+        rm -f /etc/ld.so.conf.d/libzip.conf
+        ldconfig
+      fi
+      libzip_remove
+    elif [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]] && [[ "$IMAGEMAGICK_SEVEN" = [yY] ]]; then
+      php_imagemagick_seven_detected_libzip
+      echo "php 8.x libzip"
+    else
+      export LIBZIP_CFLAGS='-I/usr/local/include'
+      export LIBZIP_LIBS="-L/usr/local/${LIBDIR_LIBZIP} -lzip"
+      echo "php 8.x libzip"
+      LIBZIP_OPT=' --with-libzip'
+    fi
   elif [[ "$PHPMVER" = '7.4' || "$PHPMUVER" = '7.4' ]]; then
     # https://bugs.php.net/bug.php?id=76483
     # PHP 7.4 not finding libzip paths
-    export LIBZIP_CFLAGS='-I/usr/local/include'
-    export LIBZIP_LIBS="-L/usr/local/${LIBDIR_LIBZIP} -lzip"
-    echo "php 7.4 libzip"
-    LIBZIP_OPT=' --with-libzip'
+    if [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]] && [[ "$IMAGEMAGICK_SEVEN" != [yY] ]]; then
+      export LIBZIP_CFLAGS='-I/opt/remi/libzip/include'
+      export LIBZIP_LIBS="-L/opt/remi/libzip/lib64 -lzip"
+      echo "remi libzip"
+      LIBZIP_OPT=' --with-libzip=/opt/remi/libzip/lib64'
+      LIBZIP_LD_PATH="/opt/remi/libzip/lib64:"
+      LIBZIP_RPATH=' -Wl,-rpath,/opt/remi/libzip/lib64'
+      LIBZIP_PKG_CONFIG_PATH="/opt/remi/libzip/lib64/pkgconfig:"
+      if [ -f /etc/ld.so.conf.d/libzip.conf ]; then
+        rm -f /etc/ld.so.conf.d/libzip.conf
+        ldconfig
+      fi
+      libzip_remove
+    elif [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]] && [[ "$IMAGEMAGICK_SEVEN" = [yY] ]]; then
+      php_imagemagick_seven_detected_libzip
+      echo "php 7.4 libzip"
+    else
+      export LIBZIP_CFLAGS='-I/usr/local/include'
+      export LIBZIP_LIBS="-L/usr/local/${LIBDIR_LIBZIP} -lzip"
+      echo "php 7.4 libzip"
+      LIBZIP_OPT=' --with-libzip'
+    fi
   else
     # PHP 7.4 not finding libzip paths
-    export LIBZIP_CFLAGS='-I/usr/local/include'
-    export LIBZIP_LIBS="-L/usr/local/${LIBDIR_LIBZIP} -lzip"
-    echo "non php 7.4 libzip"
-    LIBZIP_OPT=' --with-libzip'
-    # if [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]]; then
-    #   export LD_LIBRARY_PATH=/usr/local/${LIBDIR_LIBZIP} 
-    #   export PKG_CONFIG_PATH="/usr/local/${LIBDIR_LIBZIP}/pkgconfig"
-    # fi
+    if [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]] && [[ "$IMAGEMAGICK_SEVEN" != [yY] ]]; then
+      export LIBZIP_CFLAGS='-I/opt/remi/libzip/include'
+      export LIBZIP_LIBS="-L/opt/remi/libzip/lib64 -lzip"
+      echo "remi libzip"
+      LIBZIP_OPT=' --with-libzip=/opt/remi/libzip/lib64'
+      LIBZIP_LD_PATH="/opt/remi/libzip/lib64:"
+      LIBZIP_RPATH=' -Wl,-rpath,/opt/remi/libzip/lib64'
+      LIBZIP_PKG_CONFIG_PATH="/opt/remi/libzip/lib64/pkgconfig:"
+      if [ -f /etc/ld.so.conf.d/libzip.conf ]; then
+        rm -f /etc/ld.so.conf.d/libzip.conf
+        ldconfig
+      fi
+      libzip_remove
+    elif [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]] && [[ "$IMAGEMAGICK_SEVEN" = [yY] ]]; then
+      php_imagemagick_seven_detected_libzip
+      echo "non php 7.4 libzip"
+    else
+      export LIBZIP_CFLAGS='-I/usr/local/include'
+      export LIBZIP_LIBS="-L/usr/local/${LIBDIR_LIBZIP} -lzip"
+      echo "non php 7.4 libzip"
+      LIBZIP_OPT=' --with-libzip'
+    fi
   fi
-  # if [[ ! -f /usr/include/zip.h ]]; then
-  #   time $YUMDNFBIN${CACHESKIP} -q -y install libzip5 libzip5-devel --enablerepo=remi
-  # fi
-  if [[ ! -f /usr/local/include/zip.h || ! -d "${DIR_TMP}/libzip-${LIBZIP_VER}" ]]; then
+  if [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]] && [[ "$IMAGEMAGICK_SEVEN" = [yY] ]]; then
+    php_imagemagick_seven_detected_libzip
+  elif [[ "$CENTOS_SEVEN" -eq '7' ]] && [[ ! -f /usr/local/include/zip.h || ! -d "${DIR_TMP}/libzip-${LIBZIP_VER}" ]]; then
     libzip_install
+  elif [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]] && [[ -f /usr/local/include/zip.h || -f "$(rpm -ql libzip | grep -m1 '.so')" ]] && [[ "$IMAGEMAGICK_SEVEN" != [yY] ]]; then
+    libzip_remove
   fi
   if [[ "$(uname -m)" = 'x86_64' ]]; then
     LIBDIR_ARGONSODIUM='lib64'
   else
     LIBDIR_ARGONSODIUM='lib'
   fi
-  if [[ "$PHP_LIBZIP" = [yY] ]] && [[ ! -f "/usr/local/${LIBDIR_ARGONSODIUM}/libsodium.so" || ! -f "libsodium-${LIBSODIUM_VER}.tar.gz" ]]; then
+  if [[ "$PHP_LIBZIP" = [yY] || "$PHP_ARGON" = [yY] ]] && [[ ! -f "/usr/local/${LIBDIR_ARGONSODIUM}/libsodium.so" || ! -f "libsodium-${LIBSODIUM_VER}.tar.gz" ]]; then
     pushd "$DIR_TMP"
     if [ -s "libsodium-${LIBSODIUM_VER}.tar.gz" ]; then
         cecho "libsodium-${LIBSODIUM_VER}.tar.gz found, skipping download..." $boldgreen
@@ -3306,11 +3477,11 @@ if [[ "$PHP_LIBZIP" = [yY] ]] && [[ "$PHPMVER" = '7.2' || "$PHPMUVER" = '7.2' ||
     fi
     popd
   fi
-  if [[ "$PHP_LIBZIP" = [yY] ]] && [[ -f "/usr/local/${LIBDIR_ARGONSODIUM}/libsodium.so" ]]; then
+  if [[ "$PHP_LIBZIP" = [yY] || "$PHP_ARGON" = [yY] ]] && [[ -f "/usr/local/${LIBDIR_ARGONSODIUM}/libsodium.so" ]]; then
     export LIBSODIUM_CFLAGS='-I/usr/local/include'
     export LIBSODIUM_LIBS="-L/usr/local/${LIBDIR_ARGONSODIUM} -lsodium"
   fi
-  if [[ "$PHP_LIBZIP" = [yY] ]] && [[ ! -f "/usr/local/${LIBDIR_ARGONSODIUM}/libargon2.so" || ! -f "${LIBARGON_VER}.tar.gz" ]]; then
+  if [[ "$PHP_LIBZIP" = [yY] || "$PHP_ARGON" = [yY] ]] && [[ ! -f "/usr/local/${LIBDIR_ARGONSODIUM}/libargon2.so" || ! -f "${LIBARGON_VER}.tar.gz" ]]; then
     pushd "$DIR_TMP"
     if [ -s "${LIBARGON_VER}.tar.gz" ]; then
         cecho "${LIBARGON_VER}.tar.gz found, skipping download..." $boldgreen
@@ -3354,25 +3525,36 @@ if [[ "$PHP_LIBZIP" = [yY] ]] && [[ "$PHPMVER" = '7.2' || "$PHPMUVER" = '7.2' ||
     # fi
     popd
   fi
-  if [[ "$PHP_LIBZIP" = [yY] ]] && [[ -f "/usr/local/${LIBDIR_ARGONSODIUM}/libargon2.so" ]]; then
+  if [[ "$PHP_LIBZIP" = [yY] || "$PHP_ARGON" = [yY] ]] && [[ -f "/usr/local/${LIBDIR_ARGONSODIUM}/libargon2.so" ]]; then
     export ARGON2_CFLAGS='-I/usr/local/include'
     export ARGON2_LIBS="-L/usr/local/${LIBDIR_ARGONSODIUM} -largon2"
   fi
   # if libzip, libsodium or libargon2 libraries still don't exit, disable from php configuration
-  if [[ ! -f "/usr/local/${LIBDIR_ARGONSODIUM}/libargon2.so" || ! -f "/usr/local/${LIBDIR_ARGONSODIUM}/libsodium.so" || ! -f /usr/local/include/zip.h ]]; then
-    echo
-    echo "disable libzip, libsodium or libargon2 libraries"
-    echo
-    ARGONTWO_OPT=""
-    LIBSODIUM_OPT=""
-    LIBZIP_OPT=""
+  if [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]] && [[ "$IMAGEMAGICK_SEVEN" != [yY] ]]; then
+    if [[ ! -f "/usr/local/${LIBDIR_ARGONSODIUM}/libargon2.so" || ! -f "/usr/local/${LIBDIR_ARGONSODIUM}/libsodium.so" ]]; then
+      echo
+      echo "disable libzip, libsodium or libargon2 libraries"
+      echo
+      ARGONTWO_OPT=""
+      LIBSODIUM_OPT=""
+      LIBZIP_OPT=""
+    fi
+  else
+    if [[ ! -f "/usr/local/${LIBDIR_ARGONSODIUM}/libargon2.so" || ! -f "/usr/local/${LIBDIR_ARGONSODIUM}/libsodium.so" || ! -f /usr/local/include/zip.h ]] && [[ "$IMAGEMAGICK_SEVEN" != [yY] ]]; then
+      echo
+      echo "disable libzip, libsodium or libargon2 libraries"
+      echo
+      ARGONTWO_OPT=""
+      LIBSODIUM_OPT=""
+      LIBZIP_OPT=""
+    fi
   fi
 else
-  ARGONTWO_OPT=""
-  LIBSODIUM_OPT=""
-  if [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]]; then
-    LIBZIP_OPT=' --with-libzip=/opt/remi/libzip'
+  if [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]] && [[ "$IMAGEMAGICK_SEVEN" != [yY] ]]; then
+    LIBZIP_OPT=' --with-libzip=/opt/remi/libzip/lib64'
   else
+    ARGONTWO_OPT=""
+    LIBSODIUM_OPT=""
     LIBZIP_OPT=""
   fi
 fi
@@ -3470,11 +3652,11 @@ else
     export LIBZIP_CFLAGS="$LIBZIP_CFLAGS -fPIC"
     PHP_PICOPT=' --with-pic'
     if [[ "$PHP_SECURED_PIE" = [yY] ]]; then
-      echo "export PHP_LDFLAGS=\"$PHP_LDFLAGS -Wl,-z,relro,-z,now -pie${PHP_FLTO_LDFLAGS}\""
-      export PHP_LDFLAGS="$PHP_LDFLAGS -Wl,-z,relro,-z,now -pie${PHP_FLTO_LDFLAGS}"
+      echo "export PHP_LDFLAGS=\"$PHP_LDFLAGS -Wl,-z,relro,-z,now -pie${PHP_FLTO_LDFLAGS}${LIBGD_RPATH}${LIBZIP_RPATH}\""
+      export PHP_LDFLAGS="$PHP_LDFLAGS -Wl,-z,relro,-z,now -pie${PHP_FLTO_LDFLAGS}${LIBGD_RPATH}${LIBZIP_RPATH}"
     else
-      echo "export PHP_LDFLAGS=\"$PHP_LDFLAGS -Wl,-z,relro,-z,now${PHP_FLTO_LDFLAGS}\""
-      export PHP_LDFLAGS="$PHP_LDFLAGS -Wl,-z,relro,-z,now${PHP_FLTO_LDFLAGS}"
+      echo "export PHP_LDFLAGS=\"$PHP_LDFLAGS -Wl,-z,relro,-z,now${PHP_FLTO_LDFLAGS}${LIBGD_RPATH}${LIBZIP_RPATH}\""
+      export PHP_LDFLAGS="$PHP_LDFLAGS -Wl,-z,relro,-z,now${PHP_FLTO_LDFLAGS}${LIBGD_RPATH}${LIBZIP_RPATH}"
     fi
     checksec_check
   fi
@@ -3487,26 +3669,47 @@ else
     PHP_CUSTOMSSL_LD_LIBRARY_PATH=""
   fi
 
+  # ensure any attempts of building custom curl version that is 
+  # located at /usr/local/ or /usr prefix won't 
+  # conflict and impact php-fpm builds
+  if [[ "$ENSURE_SYSTEM_PHP_CURL_USED" = [yY] ]]; then
+    export CURL_CONFIG="/usr/bin/curl-config"
+    export CURL_CFLAGS="-I/usr/include"
+    export CURL_LIBS="-L/usr/lib64 -lcurl"
+    CURL_SYSTEM_PREFIX='=/usr'
+    PHP_OPENSSL_CURL_OPT=""
+    if [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]]; then
+      CURL_PHP_PKG_CONFIG_PATH="/usr/lib64/pkgconfig:"
+    else
+      CURL_PHP_PKG_CONFIG_PATH=":/usr/lib64/pkgconfig:"
+    fi
+    CURL_PHP_LD_LIBRARY_PATH=":/usr/lib64:"
+    # CURL_CUSTOM_FLAGS=' CURL_CFLAGS="-I/usr/include" CURL_LIBS="-L/usr/lib64 -lcurl"'
+    # Reorder PATH to prioritize system binaries while keeping gcc-toolset
+    # OLD_PATH="$PATH"
+    # PATH="/usr/bin:/usr/sbin:/bin:/sbin:$(echo $PATH | sed -e 's|/usr/bin||g' -e 's|/usr/sbin||g' -e 's|/bin||g' -e 's|/sbin||g' -e 's|::*|:|g' -e 's|^:||' -e 's|:$||')"
+  fi
+
   if [[ "$MDB_INSTALL" = [yY] || "$MYSQL_INSTALL" = [yY] ]]; then
     echo "1"
-    echo "LD_LIBRARY_PATH=${LIBZIP_LD_PATH}${PHP_CUSTOMSSL_LD_LIBRARY_PATH}/usr/local/${LIBDIR} PKG_CONFIG_PATH=\"${LIBZIP_PKG_CONFIG_PATH}/usr/local/${LIBDIR}/pkgconfig:${PHP_CUSTOMSSL_PKG_CONFIG_PATH}\" ../configure --enable-fpm${OPCACHEOPT}${PHPINTLOPT}${PCNTLOPT}${MCRYPT}${RECODEOPT}${SNMPOPT}${PHPEMBEDOPT}${PHPLTOOPT} --with-mhash ${ZLIBPHP_OPT} --with-gettext --enable-exif ${ZIPOPT}${LIBZIP_OPT} --with-bz2 --enable-soap --enable-sockets --enable-sysvmsg --enable-sysvsem --enable-sysvshm --enable-shmop --with-pear --enable-mbstring $PHP_OPENSSLOPT --with-mysql=mysqlnd --with-libdir=${LIBDIR} --with-mysqli=mysqlnd --with-mysql-sock=${PHP_MYSQLSOCKPATH}/mysql.sock --with-curl${PHP_OPENSSL_CURL_OPT} ${PHPGDOPT}${LIBGD_EXT_OPT} --with-xmlrpc --enable-bcmath --enable-calendar${FTPEXTOPT} --enable-gd-native-ttf ${PHPFREETYPEOPT} ${PHPJPEGOPT} --with-png-dir=${PLIBDIR} ${PHPXPMOPT}${LIBVPXOPT}${TLIBOPT} --enable-pdo${PDOSQLLITE_OPT} --with-pdo-mysql=mysqlnd${MSSQLOPT} --enable-inline-optimization${IMAPOPT} --with-kerberos --with-readline --with-libedit --with-gmp --with-pspell --with-tidy --with-enchant --with-fpm-user=nginx --with-fpm-group=nginx${FILEINFOOPT}${SQLLITEOPT}${LDAPOPT}${PDOPGSQL_OPT}${OPCACHEHUGEPAGES_OPT}${ARGONTWO_OPT}${LIBSODIUM_OPT}${PHP_PICOPT} --with-config-file-scan-dir=${CONFIGSCANDIR}${PHPDEBUGOPT}${FPMSYSTEMD_INTEGRATEOPT}${FFI_OPT}${SWOOLE_OPT}${PHP_EXTRAOPTS}"
-    LD_LIBRARY_PATH=${LIBZIP_LD_PATH}${PHP_CUSTOMSSL_LD_LIBRARY_PATH}/usr/local/${LIBDIR} PKG_CONFIG_PATH="${LIBZIP_PKG_CONFIG_PATH}/usr/local/${LIBDIR}/pkgconfig:${PHP_CUSTOMSSL_PKG_CONFIG_PATH}" ../configure --enable-fpm${OPCACHEOPT}${PHPINTLOPT}${PCNTLOPT}${MCRYPT}${RECODEOPT}${SNMPOPT}${PHPEMBEDOPT}${PHPLTOOPT} --with-mhash ${ZLIBPHP_OPT} --with-gettext --enable-exif ${ZIPOPT}${LIBZIP_OPT} --with-bz2 --enable-soap --enable-sockets --enable-sysvmsg --enable-sysvsem --enable-sysvshm --enable-shmop --with-pear --enable-mbstring $PHP_OPENSSLOPT --with-mysql=mysqlnd --with-libdir=${LIBDIR} --with-mysqli=mysqlnd --with-mysql-sock=${PHP_MYSQLSOCKPATH}/mysql.sock --with-curl${PHP_OPENSSL_CURL_OPT} ${PHPGDOPT}${LIBGD_EXT_OPT} --with-xmlrpc --enable-bcmath --enable-calendar${FTPEXTOPT} --enable-gd-native-ttf ${PHPFREETYPEOPT} ${PHPJPEGOPT} --with-png-dir=${PLIBDIR} ${PHPXPMOPT}${LIBVPXOPT}${TLIBOPT} --enable-pdo${PDOSQLLITE_OPT} --with-pdo-mysql=mysqlnd${MSSQLOPT} --enable-inline-optimization${IMAPOPT} --with-kerberos --with-readline --with-libedit --with-gmp --with-pspell --with-tidy --with-enchant --with-fpm-user=nginx --with-fpm-group=nginx${FILEINFOOPT}${SQLLITEOPT}${LDAPOPT}${PDOPGSQL_OPT}${OPCACHEHUGEPAGES_OPT}${ARGONTWO_OPT}${LIBSODIUM_OPT}${PHP_PICOPT} --with-config-file-scan-dir=${CONFIGSCANDIR}${PHPDEBUGOPT}${FPMSYSTEMD_INTEGRATEOPT}${FFI_OPT}${SWOOLE_OPT}${PHP_EXTRAOPTS}
+    echo "LD_LIBRARY_PATH=${LIBZIP_LD_PATH}${PHP_CUSTOMSSL_LD_LIBRARY_PATH}${CURL_PHP_LD_LIBRARY_PATH}/usr/local/${LIBDIR} PKG_CONFIG_PATH=\"${LIBGD_PKG_CONFIG_PATH}${LIBZIP_PKG_CONFIG_PATH}${CURL_PHP_PKG_CONFIG_PATH}/usr/local/${LIBDIR}/pkgconfig:${PHP_CUSTOMSSL_PKG_CONFIG_PATH}\" ../configure --enable-fpm${OPCACHEOPT}${PHPINTLOPT}${PCNTLOPT}${MCRYPT}${RECODEOPT}${SNMPOPT}${PHPEMBEDOPT}${PHPLTOOPT} --with-mhash ${ZLIBPHP_OPT} --with-gettext --enable-exif ${ZIPOPT} --with-bz2 --enable-soap --enable-sockets --enable-sysvmsg --enable-sysvsem --enable-sysvshm --enable-shmop --with-pear --enable-mbstring $PHP_OPENSSLOPT --with-mysql=mysqlnd --with-libdir=${LIBDIR} --with-mysqli=mysqlnd --with-mysql-sock=${PHP_MYSQLSOCKPATH}/mysql.sock --with-curl${CURL_SYSTEM_PREFIX}${PHP_OPENSSL_CURL_OPT}${CURL_CUSTOM_FLAGS} ${PHPGDOPT}${LIBGD_EXT_OPT}${PHP_LIBAVIF_OPT} --with-xmlrpc --enable-bcmath --enable-calendar${FTPEXTOPT} --enable-gd-native-ttf ${PHPFREETYPEOPT} ${PHPJPEGOPT} --with-png-dir=${PLIBDIR} ${PHPXPMOPT}${LIBVPXOPT}${TLIBOPT} --enable-pdo${PDOSQLLITE_OPT} --with-pdo-mysql=mysqlnd${MSSQLOPT} --enable-inline-optimization${IMAPOPT} --with-kerberos --with-readline --with-libedit --with-gmp --with-pspell --with-tidy --with-enchant --with-fpm-user=nginx --with-fpm-group=nginx${FILEINFOOPT}${SQLLITEOPT}${LDAPOPT}${PDOPGSQL_OPT}${OPCACHEHUGEPAGES_OPT}${PHP_PICOPT} --with-config-file-scan-dir=${CONFIGSCANDIR}${PHPDEBUGOPT}${FPMSYSTEMD_INTEGRATEOPT}${FFI_OPT}${SWOOLE_OPT}${LIBZIP_OPT}${ARGONTWO_OPT}${LIBSODIUM_OPT}${PHP_EXTRAOPTS}"
+    LD_LIBRARY_PATH=${LIBZIP_LD_PATH}${PHP_CUSTOMSSL_LD_LIBRARY_PATH}${CURL_PHP_LD_LIBRARY_PATH}/usr/local/${LIBDIR} PKG_CONFIG_PATH="${LIBGD_PKG_CONFIG_PATH}${LIBZIP_PKG_CONFIG_PATH}${CURL_PHP_PKG_CONFIG_PATH}/usr/local/${LIBDIR}/pkgconfig:${PHP_CUSTOMSSL_PKG_CONFIG_PATH}" ../configure --enable-fpm${OPCACHEOPT}${PHPINTLOPT}${PCNTLOPT}${MCRYPT}${RECODEOPT}${SNMPOPT}${PHPEMBEDOPT}${PHPLTOOPT} --with-mhash ${ZLIBPHP_OPT} --with-gettext --enable-exif ${ZIPOPT} --with-bz2 --enable-soap --enable-sockets --enable-sysvmsg --enable-sysvsem --enable-sysvshm --enable-shmop --with-pear --enable-mbstring $PHP_OPENSSLOPT --with-mysql=mysqlnd --with-libdir=${LIBDIR} --with-mysqli=mysqlnd --with-mysql-sock=${PHP_MYSQLSOCKPATH}/mysql.sock --with-curl${CURL_SYSTEM_PREFIX}${PHP_OPENSSL_CURL_OPT}${CURL_CUSTOM_FLAGS} ${PHPGDOPT}${LIBGD_EXT_OPT}${PHP_LIBAVIF_OPT} --with-xmlrpc --enable-bcmath --enable-calendar${FTPEXTOPT} --enable-gd-native-ttf ${PHPFREETYPEOPT} ${PHPJPEGOPT} --with-png-dir=${PLIBDIR} ${PHPXPMOPT}${LIBVPXOPT}${TLIBOPT} --enable-pdo${PDOSQLLITE_OPT} --with-pdo-mysql=mysqlnd${MSSQLOPT} --enable-inline-optimization${IMAPOPT} --with-kerberos --with-readline --with-libedit --with-gmp --with-pspell --with-tidy --with-enchant --with-fpm-user=nginx --with-fpm-group=nginx${FILEINFOOPT}${SQLLITEOPT}${LDAPOPT}${PDOPGSQL_OPT}${OPCACHEHUGEPAGES_OPT}${PHP_PICOPT} --with-config-file-scan-dir=${CONFIGSCANDIR}${PHPDEBUGOPT}${FPMSYSTEMD_INTEGRATEOPT}${FFI_OPT}${SWOOLE_OPT}${LIBZIP_OPT}${ARGONTWO_OPT}${LIBSODIUM_OPT}${PHP_EXTRAOPTS}
   # elif [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]] && [[ "$PHP_SECURED_PIE" = [yY] ]]; then
   #   echo "2 PIE"
-  #   echo "LD_LIBRARY_PATH=${LIBZIP_LD_PATH}${PHP_CUSTOMSSL_LD_LIBRARY_PATH}/usr/local/${LIBDIR} PKG_CONFIG_PATH=\"${LIBZIP_PKG_CONFIG_PATH}/usr/local/${LIBDIR}/pkgconfig:${PHP_CUSTOMSSL_PKG_CONFIG_PATH}\" PHP_LDFLAGS=\"$PHP_LDFLAGS -Wl,-z,relro,-z,now -pie\" ../configure --enable-fpm${OPCACHEOPT}${PHPINTLOPT}${PCNTLOPT}${MCRYPT}${RECODEOPT}${SNMPOPT}${PHPEMBEDOPT}${PHPLTOOPT} --with-mhash ${ZLIBPHP_OPT} --with-gettext --enable-exif ${ZIPOPT}${LIBZIP_OPT} --with-bz2 --enable-soap --enable-sockets --enable-sysvmsg --enable-sysvsem --enable-sysvshm --enable-shmop --with-pear --enable-mbstring $PHP_OPENSSLOPT --with-mysql=mysqlnd --with-libdir=${LIBDIR} --with-mysqli=mysqlnd --with-mysql-sock=${PHP_MYSQLSOCKPATH}/mysql.sock --with-curl${PHP_OPENSSL_CURL_OPT} ${PHPGDOPT}${LIBGD_EXT_OPT} --with-xmlrpc --enable-bcmath --enable-calendar${FTPEXTOPT} --enable-gd-native-ttf ${PHPFREETYPEOPT} ${PHPJPEGOPT} --with-png-dir=${PLIBDIR} ${PHPXPMOPT}${LIBVPXOPT}${TLIBOPT} --enable-shmop --with-pear --enable-mbstring $PHP_OPENSSLOPT --with-mysql=mysqlnd --with-libdir=${LIBDIR} --with-mysqli=mysqlnd --enable-pdo${PDOSQLLITE_OPT} --with-pdo-mysql=mysqlnd${MSSQLOPT} --enable-inline-optimization${IMAPOPT} --with-kerberos --with-readline --with-libedit --with-gmp --with-pspell --with-tidy --with-enchant --with-fpm-user=nginx --with-fpm-group=nginx${FILEINFOOPT}${SQLLITEOPT}${LDAPOPT}${PDOPGSQL_OPT}${OPCACHEHUGEPAGES_OPT}${ARGONTWO_OPT}${LIBSODIUM_OPT}${PHP_PICOPT} --with-config-file-scan-dir=${CONFIGSCANDIR}${PHPDEBUGOPT}${FPMSYSTEMD_INTEGRATEOPT}${FFI_OPT}${SWOOLE_OPT}${PHP_EXTRAOPTS}"
-  #   LD_LIBRARY_PATH=${LIBZIP_LD_PATH}${PHP_CUSTOMSSL_LD_LIBRARY_PATH}/usr/local/${LIBDIR} PKG_CONFIG_PATH="${LIBZIP_PKG_CONFIG_PATH}/usr/local/${LIBDIR}/pkgconfig:${PHP_CUSTOMSSL_PKG_CONFIG_PATH}" PHP_LDFLAGS="$PHP_LDFLAGS -Wl,-z,relro,-z,now -pie" ../configure --enable-fpm${OPCACHEOPT}${PHPINTLOPT}${PCNTLOPT}${MCRYPT}${RECODEOPT}${SNMPOPT}${PHPEMBEDOPT}${PHPLTOOPT} --with-mhash ${ZLIBPHP_OPT} --with-gettext --enable-exif ${ZIPOPT}${LIBZIP_OPT} --with-bz2 --enable-soap --enable-sockets --enable-sysvmsg --enable-sysvsem --enable-sysvshm --enable-shmop --with-pear --enable-mbstring $PHP_OPENSSLOPT --with-mysql=mysqlnd --with-libdir=${LIBDIR} --with-mysqli=mysqlnd --with-mysql-sock=${PHP_MYSQLSOCKPATH}/mysql.sock --with-curl${PHP_OPENSSL_CURL_OPT} ${PHPGDOPT}${LIBGD_EXT_OPT} --with-xmlrpc --enable-bcmath --enable-calendar${FTPEXTOPT} --enable-gd-native-ttf ${PHPFREETYPEOPT} ${PHPJPEGOPT} --with-png-dir=${PLIBDIR} ${PHPXPMOPT}${LIBVPXOPT}${TLIBOPT} --enable-shmop --with-pear --enable-mbstring $PHP_OPENSSLOPT --with-mysql=mysqlnd --with-libdir=${LIBDIR} --with-mysqli=mysqlnd --enable-pdo${PDOSQLLITE_OPT} --with-pdo-mysql=mysqlnd${MSSQLOPT} --enable-inline-optimization${IMAPOPT} --with-kerberos --with-readline --with-libedit --with-gmp --with-pspell --with-tidy --with-enchant --with-fpm-user=nginx --with-fpm-group=nginx${FILEINFOOPT}${SQLLITEOPT}${LDAPOPT}${PDOPGSQL_OPT}${OPCACHEHUGEPAGES_OPT}${ARGONTWO_OPT}${LIBSODIUM_OPT}${PHP_PICOPT} --with-config-file-scan-dir=${CONFIGSCANDIR}${PHPDEBUGOPT}${FPMSYSTEMD_INTEGRATEOPT}${FFI_OPT}${SWOOLE_OPT}${PHP_EXTRAOPTS}
+  #   echo "LD_LIBRARY_PATH=${LIBZIP_LD_PATH}${PHP_CUSTOMSSL_LD_LIBRARY_PATH}${CURL_PHP_LD_LIBRARY_PATH}/usr/local/${LIBDIR} PKG_CONFIG_PATH=\"${LIBGD_PKG_CONFIG_PATH}${LIBZIP_PKG_CONFIG_PATH}${CURL_PHP_PKG_CONFIG_PATH}/usr/local/${LIBDIR}/pkgconfig:${PHP_CUSTOMSSL_PKG_CONFIG_PATH}\" PHP_LDFLAGS=\"$PHP_LDFLAGS -Wl,-z,relro,-z,now -pie\" ../configure --enable-fpm${OPCACHEOPT}${PHPINTLOPT}${PCNTLOPT}${MCRYPT}${RECODEOPT}${SNMPOPT}${PHPEMBEDOPT}${PHPLTOOPT} --with-mhash ${ZLIBPHP_OPT} --with-gettext --enable-exif ${ZIPOPT} --with-bz2 --enable-soap --enable-sockets --enable-sysvmsg --enable-sysvsem --enable-sysvshm --enable-shmop --with-pear --enable-mbstring $PHP_OPENSSLOPT --with-mysql=mysqlnd --with-libdir=${LIBDIR} --with-mysqli=mysqlnd --with-mysql-sock=${PHP_MYSQLSOCKPATH}/mysql.sock --with-curl${CURL_SYSTEM_PREFIX}${PHP_OPENSSL_CURL_OPT}${CURL_CUSTOM_FLAGS} ${PHPGDOPT}${LIBGD_EXT_OPT}${PHP_LIBAVIF_OPT} --with-xmlrpc --enable-bcmath --enable-calendar${FTPEXTOPT} --enable-gd-native-ttf ${PHPFREETYPEOPT} ${PHPJPEGOPT} --with-png-dir=${PLIBDIR} ${PHPXPMOPT}${LIBVPXOPT}${TLIBOPT} --enable-shmop --with-pear --enable-mbstring $PHP_OPENSSLOPT --with-mysql=mysqlnd --with-libdir=${LIBDIR} --with-mysqli=mysqlnd --enable-pdo${PDOSQLLITE_OPT} --with-pdo-mysql=mysqlnd${MSSQLOPT} --enable-inline-optimization${IMAPOPT} --with-kerberos --with-readline --with-libedit --with-gmp --with-pspell --with-tidy --with-enchant --with-fpm-user=nginx --with-fpm-group=nginx${FILEINFOOPT}${SQLLITEOPT}${LDAPOPT}${PDOPGSQL_OPT}${OPCACHEHUGEPAGES_OPT}${PHP_PICOPT} --with-config-file-scan-dir=${CONFIGSCANDIR}${PHPDEBUGOPT}${FPMSYSTEMD_INTEGRATEOPT}${FFI_OPT}${SWOOLE_OPT}${LIBZIP_OPT}${ARGONTWO_OPT}${LIBSODIUM_OPT}${PHP_EXTRAOPTS}"
+  #   LD_LIBRARY_PATH=${LIBZIP_LD_PATH}${PHP_CUSTOMSSL_LD_LIBRARY_PATH}${CURL_PHP_LD_LIBRARY_PATH}/usr/local/${LIBDIR} PKG_CONFIG_PATH="${LIBGD_PKG_CONFIG_PATH}${LIBZIP_PKG_CONFIG_PATH}${CURL_PHP_PKG_CONFIG_PATH}/usr/local/${LIBDIR}/pkgconfig:${PHP_CUSTOMSSL_PKG_CONFIG_PATH}" PHP_LDFLAGS="$PHP_LDFLAGS -Wl,-z,relro,-z,now -pie" ../configure --enable-fpm${OPCACHEOPT}${PHPINTLOPT}${PCNTLOPT}${MCRYPT}${RECODEOPT}${SNMPOPT}${PHPEMBEDOPT}${PHPLTOOPT} --with-mhash ${ZLIBPHP_OPT} --with-gettext --enable-exif ${ZIPOPT} --with-bz2 --enable-soap --enable-sockets --enable-sysvmsg --enable-sysvsem --enable-sysvshm --enable-shmop --with-pear --enable-mbstring $PHP_OPENSSLOPT --with-mysql=mysqlnd --with-libdir=${LIBDIR} --with-mysqli=mysqlnd --with-mysql-sock=${PHP_MYSQLSOCKPATH}/mysql.sock --with-curl${CURL_SYSTEM_PREFIX}${PHP_OPENSSL_CURL_OPT}${CURL_CUSTOM_FLAGS} ${PHPGDOPT}${LIBGD_EXT_OPT}${PHP_LIBAVIF_OPT} --with-xmlrpc --enable-bcmath --enable-calendar${FTPEXTOPT} --enable-gd-native-ttf ${PHPFREETYPEOPT} ${PHPJPEGOPT} --with-png-dir=${PLIBDIR} ${PHPXPMOPT}${LIBVPXOPT}${TLIBOPT} --enable-shmop --with-pear --enable-mbstring $PHP_OPENSSLOPT --with-mysql=mysqlnd --with-libdir=${LIBDIR} --with-mysqli=mysqlnd --enable-pdo${PDOSQLLITE_OPT} --with-pdo-mysql=mysqlnd${MSSQLOPT} --enable-inline-optimization${IMAPOPT} --with-kerberos --with-readline --with-libedit --with-gmp --with-pspell --with-tidy --with-enchant --with-fpm-user=nginx --with-fpm-group=nginx${FILEINFOOPT}${SQLLITEOPT}${LDAPOPT}${PDOPGSQL_OPT}${OPCACHEHUGEPAGES_OPT}${PHP_PICOPT} --with-config-file-scan-dir=${CONFIGSCANDIR}${PHPDEBUGOPT}${FPMSYSTEMD_INTEGRATEOPT}${FFI_OPT}${SWOOLE_OPT}${LIBZIP_OPT}${ARGONTWO_OPT}${LIBSODIUM_OPT}${PHP_EXTRAOPTS}
   elif [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]]; then
     echo "2"
-    echo "LD_LIBRARY_PATH=${LIBZIP_LD_PATH}${PHP_CUSTOMSSL_LD_LIBRARY_PATH}/usr/local/${LIBDIR} PKG_CONFIG_PATH=\"${LIBZIP_PKG_CONFIG_PATH}/usr/local/${LIBDIR}/pkgconfig:${PHP_CUSTOMSSL_PKG_CONFIG_PATH}\" ../configure --enable-fpm${OPCACHEOPT}${PHPINTLOPT}${PCNTLOPT}${MCRYPT}${RECODEOPT}${SNMPOPT}${PHPEMBEDOPT}${PHPLTOOPT} --with-mhash ${ZLIBPHP_OPT} --with-gettext --enable-exif ${ZIPOPT}${LIBZIP_OPT} --with-bz2 --enable-soap --enable-sockets --enable-sysvmsg --enable-sysvsem --enable-sysvshm --enable-shmop --with-pear --enable-mbstring $PHP_OPENSSLOPT --with-mysql=mysqlnd --with-libdir=${LIBDIR} --with-mysqli=mysqlnd --with-mysql-sock=${PHP_MYSQLSOCKPATH}/mysql.sock --with-curl${PHP_OPENSSL_CURL_OPT} ${PHPGDOPT}${LIBGD_EXT_OPT} --with-xmlrpc --enable-bcmath --enable-calendar${FTPEXTOPT} --enable-gd-native-ttf ${PHPFREETYPEOPT} ${PHPJPEGOPT} --with-png-dir=${PLIBDIR} ${PHPXPMOPT}${LIBVPXOPT}${TLIBOPT} --enable-shmop --with-pear --enable-mbstring $PHP_OPENSSLOPT --with-mysql=mysqlnd --with-libdir=${LIBDIR} --with-mysqli=mysqlnd --enable-pdo${PDOSQLLITE_OPT} --with-pdo-mysql=mysqlnd${MSSQLOPT} --enable-inline-optimization${IMAPOPT} --with-kerberos --with-readline --with-libedit --with-gmp --with-pspell --with-tidy --with-enchant --with-fpm-user=nginx --with-fpm-group=nginx${FILEINFOOPT}${SQLLITEOPT}${LDAPOPT}${PDOPGSQL_OPT}${OPCACHEHUGEPAGES_OPT}${ARGONTWO_OPT}${LIBSODIUM_OPT}${PHP_PICOPT} --with-config-file-scan-dir=${CONFIGSCANDIR}${PHPDEBUGOPT}${FPMSYSTEMD_INTEGRATEOPT}${FFI_OPT}${SWOOLE_OPT}${PHP_EXTRAOPTS}"
-    LD_LIBRARY_PATH=${LIBZIP_LD_PATH}${PHP_CUSTOMSSL_LD_LIBRARY_PATH}/usr/local/${LIBDIR} PKG_CONFIG_PATH="${LIBZIP_PKG_CONFIG_PATH}/usr/local/${LIBDIR}/pkgconfig:${PHP_CUSTOMSSL_PKG_CONFIG_PATH}" ../configure --enable-fpm${OPCACHEOPT}${PHPINTLOPT}${PCNTLOPT}${MCRYPT}${RECODEOPT}${SNMPOPT}${PHPEMBEDOPT}${PHPLTOOPT} --with-mhash ${ZLIBPHP_OPT} --with-gettext --enable-exif ${ZIPOPT}${LIBZIP_OPT} --with-bz2 --enable-soap --enable-sockets --enable-sysvmsg --enable-sysvsem --enable-sysvshm --enable-shmop --with-pear --enable-mbstring $PHP_OPENSSLOPT --with-mysql=mysqlnd --with-libdir=${LIBDIR} --with-mysqli=mysqlnd --with-mysql-sock=${PHP_MYSQLSOCKPATH}/mysql.sock --with-curl${PHP_OPENSSL_CURL_OPT} ${PHPGDOPT}${LIBGD_EXT_OPT} --with-xmlrpc --enable-bcmath --enable-calendar${FTPEXTOPT} --enable-gd-native-ttf ${PHPFREETYPEOPT} ${PHPJPEGOPT} --with-png-dir=${PLIBDIR} ${PHPXPMOPT}${LIBVPXOPT}${TLIBOPT} --enable-shmop --with-pear --enable-mbstring $PHP_OPENSSLOPT --with-mysql=mysqlnd --with-libdir=${LIBDIR} --with-mysqli=mysqlnd --enable-pdo${PDOSQLLITE_OPT} --with-pdo-mysql=mysqlnd${MSSQLOPT} --enable-inline-optimization${IMAPOPT} --with-kerberos --with-readline --with-libedit --with-gmp --with-pspell --with-tidy --with-enchant --with-fpm-user=nginx --with-fpm-group=nginx${FILEINFOOPT}${SQLLITEOPT}${LDAPOPT}${PDOPGSQL_OPT}${OPCACHEHUGEPAGES_OPT}${ARGONTWO_OPT}${LIBSODIUM_OPT}${PHP_PICOPT} --with-config-file-scan-dir=${CONFIGSCANDIR}${PHPDEBUGOPT}${FPMSYSTEMD_INTEGRATEOPT}${FFI_OPT}${SWOOLE_OPT}${PHP_EXTRAOPTS}
+    echo "LD_LIBRARY_PATH=${LIBZIP_LD_PATH}${PHP_CUSTOMSSL_LD_LIBRARY_PATH}${CURL_PHP_LD_LIBRARY_PATH}/usr/local/${LIBDIR} PKG_CONFIG_PATH=\"${LIBGD_PKG_CONFIG_PATH}${LIBZIP_PKG_CONFIG_PATH}${CURL_PHP_PKG_CONFIG_PATH}/usr/local/${LIBDIR}/pkgconfig:${PHP_CUSTOMSSL_PKG_CONFIG_PATH}\" ../configure --enable-fpm${OPCACHEOPT}${PHPINTLOPT}${PCNTLOPT}${MCRYPT}${RECODEOPT}${SNMPOPT}${PHPEMBEDOPT}${PHPLTOOPT} --with-mhash ${ZLIBPHP_OPT} --with-gettext --enable-exif ${ZIPOPT} --with-bz2 --enable-soap --enable-sockets --enable-sysvmsg --enable-sysvsem --enable-sysvshm --enable-shmop --with-pear --enable-mbstring $PHP_OPENSSLOPT --with-mysql=mysqlnd --with-libdir=${LIBDIR} --with-mysqli=mysqlnd --with-mysql-sock=${PHP_MYSQLSOCKPATH}/mysql.sock --with-curl${CURL_SYSTEM_PREFIX}${PHP_OPENSSL_CURL_OPT}${CURL_CUSTOM_FLAGS} ${PHPGDOPT}${LIBGD_EXT_OPT}${PHP_LIBAVIF_OPT} --with-xmlrpc --enable-bcmath --enable-calendar${FTPEXTOPT} --enable-gd-native-ttf ${PHPFREETYPEOPT} ${PHPJPEGOPT} --with-png-dir=${PLIBDIR} ${PHPXPMOPT}${LIBVPXOPT}${TLIBOPT} --enable-shmop --with-pear --enable-mbstring $PHP_OPENSSLOPT --with-mysql=mysqlnd --with-libdir=${LIBDIR} --with-mysqli=mysqlnd --enable-pdo${PDOSQLLITE_OPT} --with-pdo-mysql=mysqlnd${MSSQLOPT} --enable-inline-optimization${IMAPOPT} --with-kerberos --with-readline --with-libedit --with-gmp --with-pspell --with-tidy --with-enchant --with-fpm-user=nginx --with-fpm-group=nginx${FILEINFOOPT}${SQLLITEOPT}${LDAPOPT}${PDOPGSQL_OPT}${OPCACHEHUGEPAGES_OPT}${PHP_PICOPT} --with-config-file-scan-dir=${CONFIGSCANDIR}${PHPDEBUGOPT}${FPMSYSTEMD_INTEGRATEOPT}${FFI_OPT}${SWOOLE_OPT}${LIBZIP_OPT}${ARGONTWO_OPT}${LIBSODIUM_OPT}${PHP_EXTRAOPTS}"
+    LD_LIBRARY_PATH=${LIBZIP_LD_PATH}${PHP_CUSTOMSSL_LD_LIBRARY_PATH}${CURL_PHP_LD_LIBRARY_PATH}/usr/local/${LIBDIR} PKG_CONFIG_PATH="${LIBGD_PKG_CONFIG_PATH}${LIBZIP_PKG_CONFIG_PATH}${CURL_PHP_PKG_CONFIG_PATH}/usr/local/${LIBDIR}/pkgconfig:${PHP_CUSTOMSSL_PKG_CONFIG_PATH}" ../configure --enable-fpm${OPCACHEOPT}${PHPINTLOPT}${PCNTLOPT}${MCRYPT}${RECODEOPT}${SNMPOPT}${PHPEMBEDOPT}${PHPLTOOPT} --with-mhash ${ZLIBPHP_OPT} --with-gettext --enable-exif ${ZIPOPT} --with-bz2 --enable-soap --enable-sockets --enable-sysvmsg --enable-sysvsem --enable-sysvshm --enable-shmop --with-pear --enable-mbstring $PHP_OPENSSLOPT --with-mysql=mysqlnd --with-libdir=${LIBDIR} --with-mysqli=mysqlnd --with-mysql-sock=${PHP_MYSQLSOCKPATH}/mysql.sock --with-curl${CURL_SYSTEM_PREFIX}${PHP_OPENSSL_CURL_OPT}${CURL_CUSTOM_FLAGS} ${PHPGDOPT}${LIBGD_EXT_OPT}${PHP_LIBAVIF_OPT} --with-xmlrpc --enable-bcmath --enable-calendar${FTPEXTOPT} --enable-gd-native-ttf ${PHPFREETYPEOPT} ${PHPJPEGOPT} --with-png-dir=${PLIBDIR} ${PHPXPMOPT}${LIBVPXOPT}${TLIBOPT} --enable-shmop --with-pear --enable-mbstring $PHP_OPENSSLOPT --with-mysql=mysqlnd --with-libdir=${LIBDIR} --with-mysqli=mysqlnd --enable-pdo${PDOSQLLITE_OPT} --with-pdo-mysql=mysqlnd${MSSQLOPT} --enable-inline-optimization${IMAPOPT} --with-kerberos --with-readline --with-libedit --with-gmp --with-pspell --with-tidy --with-enchant --with-fpm-user=nginx --with-fpm-group=nginx${FILEINFOOPT}${SQLLITEOPT}${LDAPOPT}${PDOPGSQL_OPT}${OPCACHEHUGEPAGES_OPT}${PHP_PICOPT} --with-config-file-scan-dir=${CONFIGSCANDIR}${PHPDEBUGOPT}${FPMSYSTEMD_INTEGRATEOPT}${FFI_OPT}${SWOOLE_OPT}${LIBZIP_OPT}${ARGONTWO_OPT}${LIBSODIUM_OPT}${PHP_EXTRAOPTS}
   # elif [[ "$CENTOS_SEVEN" -eq '7' ]] && [[ "$PHP_SECURED_PIE" = [yY] ]]; then
   #   echo "3 PIE"
-  #   echo "PHP_LDFLAGS=\"$PHP_LDFLAGS -Wl,-z,relro,-z,now -pie\" ../configure --enable-fpm${OPCACHEOPT}${PHPINTLOPT}${PCNTLOPT}${MCRYPT}${RECODEOPT}${SNMPOPT}${PHPEMBEDOPT}${PHPLTOOPT} --with-mhash ${ZLIBPHP_OPT} --with-gettext --enable-exif ${ZIPOPT}${LIBZIP_OPT} --with-bz2 --enable-soap --enable-sockets --enable-sysvmsg --enable-sysvsem --enable-sysvshm --enable-shmop --with-pear --enable-mbstring $PHP_OPENSSLOPT --with-mysql=mysqlnd --with-libdir=${LIBDIR} --with-mysqli=mysqlnd --with-mysql-sock=${PHP_MYSQLSOCKPATH}/mysql.sock --with-curl${PHP_OPENSSL_CURL_OPT} ${PHPGDOPT}${LIBGD_EXT_OPT} --with-xmlrpc --enable-bcmath --enable-calendar${FTPEXTOPT} --enable-gd-native-ttf ${PHPFREETYPEOPT} ${PHPJPEGOPT} --with-png-dir=${PLIBDIR} ${PHPXPMOPT}${LIBVPXOPT}${TLIBOPT} --enable-shmop --with-pear --enable-mbstring $PHP_OPENSSLOPT --with-mysql=mysqlnd --with-libdir=${LIBDIR} --with-mysqli=mysqlnd --enable-pdo${PDOSQLLITE_OPT} --with-pdo-mysql=mysqlnd${MSSQLOPT} --enable-inline-optimization${IMAPOPT} --with-kerberos --with-readline --with-libedit --with-gmp --with-pspell --with-tidy --with-enchant --with-fpm-user=nginx --with-fpm-group=nginx${FILEINFOOPT}${SQLLITEOPT}${LDAPOPT}${PDOPGSQL_OPT}${OPCACHEHUGEPAGES_OPT}${ARGONTWO_OPT}${LIBSODIUM_OPT}${PHP_PICOPT} --with-config-file-scan-dir=${CONFIGSCANDIR}${PHPDEBUGOPT}${FPMSYSTEMD_INTEGRATEOPT}${FFI_OPT}${SWOOLE_OPT}${PHP_EXTRAOPTS}"
-  #   PHP_LDFLAGS="$PHP_LDFLAGS -Wl,-z,relro,-z,now -pie" ../configure --enable-fpm${OPCACHEOPT}${PHPINTLOPT}${PCNTLOPT}${MCRYPT}${RECODEOPT}${SNMPOPT}${PHPEMBEDOPT}${PHPLTOOPT} --with-mhash ${ZLIBPHP_OPT} --with-gettext --enable-exif ${ZIPOPT}${LIBZIP_OPT} --with-bz2 --enable-soap --enable-sockets --enable-sysvmsg --enable-sysvsem --enable-sysvshm --enable-shmop --with-pear --enable-mbstring $PHP_OPENSSLOPT --with-mysql=mysqlnd --with-libdir=${LIBDIR} --with-mysqli=mysqlnd --with-mysql-sock=${PHP_MYSQLSOCKPATH}/mysql.sock --with-curl${PHP_OPENSSL_CURL_OPT} ${PHPGDOPT}${LIBGD_EXT_OPT} --with-xmlrpc --enable-bcmath --enable-calendar${FTPEXTOPT} --enable-gd-native-ttf ${PHPFREETYPEOPT} ${PHPJPEGOPT} --with-png-dir=${PLIBDIR} ${PHPXPMOPT}${LIBVPXOPT}${TLIBOPT} --enable-shmop --with-pear --enable-mbstring $PHP_OPENSSLOPT --with-mysql=mysqlnd --with-libdir=${LIBDIR} --with-mysqli=mysqlnd --enable-pdo${PDOSQLLITE_OPT} --with-pdo-mysql=mysqlnd${MSSQLOPT} --enable-inline-optimization${IMAPOPT} --with-kerberos --with-readline --with-libedit --with-gmp --with-pspell --with-tidy --with-enchant --with-fpm-user=nginx --with-fpm-group=nginx${FILEINFOOPT}${SQLLITEOPT}${LDAPOPT}${PDOPGSQL_OPT}${OPCACHEHUGEPAGES_OPT}${ARGONTWO_OPT}${LIBSODIUM_OPT}${PHP_PICOPT} --with-config-file-scan-dir=${CONFIGSCANDIR}${PHPDEBUGOPT}${FPMSYSTEMD_INTEGRATEOPT}${FFI_OPT}${SWOOLE_OPT}${PHP_EXTRAOPTS}
+  #   echo "PHP_LDFLAGS=\"$PHP_LDFLAGS -Wl,-z,relro,-z,now -pie\" ../configure --enable-fpm${OPCACHEOPT}${PHPINTLOPT}${PCNTLOPT}${MCRYPT}${RECODEOPT}${SNMPOPT}${PHPEMBEDOPT}${PHPLTOOPT} --with-mhash ${ZLIBPHP_OPT} --with-gettext --enable-exif ${ZIPOPT} --with-bz2 --enable-soap --enable-sockets --enable-sysvmsg --enable-sysvsem --enable-sysvshm --enable-shmop --with-pear --enable-mbstring $PHP_OPENSSLOPT --with-mysql=mysqlnd --with-libdir=${LIBDIR} --with-mysqli=mysqlnd --with-mysql-sock=${PHP_MYSQLSOCKPATH}/mysql.sock --with-curl${CURL_SYSTEM_PREFIX}${PHP_OPENSSL_CURL_OPT}${CURL_CUSTOM_FLAGS} ${PHPGDOPT}${LIBGD_EXT_OPT}${PHP_LIBAVIF_OPT} --with-xmlrpc --enable-bcmath --enable-calendar${FTPEXTOPT} --enable-gd-native-ttf ${PHPFREETYPEOPT} ${PHPJPEGOPT} --with-png-dir=${PLIBDIR} ${PHPXPMOPT}${LIBVPXOPT}${TLIBOPT} --enable-shmop --with-pear --enable-mbstring $PHP_OPENSSLOPT --with-mysql=mysqlnd --with-libdir=${LIBDIR} --with-mysqli=mysqlnd --enable-pdo${PDOSQLLITE_OPT} --with-pdo-mysql=mysqlnd${MSSQLOPT} --enable-inline-optimization${IMAPOPT} --with-kerberos --with-readline --with-libedit --with-gmp --with-pspell --with-tidy --with-enchant --with-fpm-user=nginx --with-fpm-group=nginx${FILEINFOOPT}${SQLLITEOPT}${LDAPOPT}${PDOPGSQL_OPT}${OPCACHEHUGEPAGES_OPT}${PHP_PICOPT} --with-config-file-scan-dir=${CONFIGSCANDIR}${PHPDEBUGOPT}${FPMSYSTEMD_INTEGRATEOPT}${FFI_OPT}${SWOOLE_OPT}${LIBZIP_OPT}${ARGONTWO_OPT}${LIBSODIUM_OPT}${PHP_EXTRAOPTS}"
+  #   PHP_LDFLAGS="$PHP_LDFLAGS -Wl,-z,relro,-z,now -pie" ../configure --enable-fpm${OPCACHEOPT}${PHPINTLOPT}${PCNTLOPT}${MCRYPT}${RECODEOPT}${SNMPOPT}${PHPEMBEDOPT}${PHPLTOOPT} --with-mhash ${ZLIBPHP_OPT} --with-gettext --enable-exif ${ZIPOPT} --with-bz2 --enable-soap --enable-sockets --enable-sysvmsg --enable-sysvsem --enable-sysvshm --enable-shmop --with-pear --enable-mbstring $PHP_OPENSSLOPT --with-mysql=mysqlnd --with-libdir=${LIBDIR} --with-mysqli=mysqlnd --with-mysql-sock=${PHP_MYSQLSOCKPATH}/mysql.sock --with-curl${CURL_SYSTEM_PREFIX}${PHP_OPENSSL_CURL_OPT}${CURL_CUSTOM_FLAGS} ${PHPGDOPT}${LIBGD_EXT_OPT}${PHP_LIBAVIF_OPT} --with-xmlrpc --enable-bcmath --enable-calendar${FTPEXTOPT} --enable-gd-native-ttf ${PHPFREETYPEOPT} ${PHPJPEGOPT} --with-png-dir=${PLIBDIR} ${PHPXPMOPT}${LIBVPXOPT}${TLIBOPT} --enable-shmop --with-pear --enable-mbstring $PHP_OPENSSLOPT --with-mysql=mysqlnd --with-libdir=${LIBDIR} --with-mysqli=mysqlnd --enable-pdo${PDOSQLLITE_OPT} --with-pdo-mysql=mysqlnd${MSSQLOPT} --enable-inline-optimization${IMAPOPT} --with-kerberos --with-readline --with-libedit --with-gmp --with-pspell --with-tidy --with-enchant --with-fpm-user=nginx --with-fpm-group=nginx${FILEINFOOPT}${SQLLITEOPT}${LDAPOPT}${PDOPGSQL_OPT}${OPCACHEHUGEPAGES_OPT}${PHP_PICOPT} --with-config-file-scan-dir=${CONFIGSCANDIR}${PHPDEBUGOPT}${FPMSYSTEMD_INTEGRATEOPT}${FFI_OPT}${SWOOLE_OPT}${LIBZIP_OPT}${ARGONTWO_OPT}${LIBSODIUM_OPT}${PHP_EXTRAOPTS}
   else
     echo "3"
-    echo "../configure --enable-fpm${OPCACHEOPT}${PHPINTLOPT}${PCNTLOPT}${MCRYPT}${RECODEOPT}${SNMPOPT}${PHPEMBEDOPT}${PHPLTOOPT} --with-mhash ${ZLIBPHP_OPT} --with-gettext --enable-exif ${ZIPOPT}${LIBZIP_OPT} --with-bz2 --enable-soap --enable-sockets --enable-sysvmsg --enable-sysvsem --enable-sysvshm --enable-shmop --with-pear --enable-mbstring $PHP_OPENSSLOPT --with-mysql=mysqlnd --with-libdir=${LIBDIR} --with-mysqli=mysqlnd --with-mysql-sock=${PHP_MYSQLSOCKPATH}/mysql.sock --with-curl${PHP_OPENSSL_CURL_OPT} ${PHPGDOPT}${LIBGD_EXT_OPT} --with-xmlrpc --enable-bcmath --enable-calendar${FTPEXTOPT} --enable-gd-native-ttf ${PHPFREETYPEOPT} ${PHPJPEGOPT} --with-png-dir=${PLIBDIR} ${PHPXPMOPT}${LIBVPXOPT}${TLIBOPT} --enable-shmop --with-pear --enable-mbstring $PHP_OPENSSLOPT --with-mysql=mysqlnd --with-libdir=${LIBDIR} --with-mysqli=mysqlnd --enable-pdo${PDOSQLLITE_OPT} --with-pdo-mysql=mysqlnd${MSSQLOPT} --enable-inline-optimization${IMAPOPT} --with-kerberos --with-readline --with-libedit --with-gmp --with-pspell --with-tidy --with-enchant --with-fpm-user=nginx --with-fpm-group=nginx${FILEINFOOPT}${SQLLITEOPT}${LDAPOPT}${PDOPGSQL_OPT}${OPCACHEHUGEPAGES_OPT}${ARGONTWO_OPT}${LIBSODIUM_OPT}${PHP_PICOPT} --with-config-file-scan-dir=${CONFIGSCANDIR}${PHPDEBUGOPT}${FPMSYSTEMD_INTEGRATEOPT}${FFI_OPT}${SWOOLE_OPT}${PHP_EXTRAOPTS}"
-    ../configure --enable-fpm${OPCACHEOPT}${PHPINTLOPT}${PCNTLOPT}${MCRYPT}${RECODEOPT}${SNMPOPT}${PHPEMBEDOPT}${PHPLTOOPT} --with-mhash ${ZLIBPHP_OPT} --with-gettext --enable-exif ${ZIPOPT}${LIBZIP_OPT} --with-bz2 --enable-soap --enable-sockets --enable-sysvmsg --enable-sysvsem --enable-sysvshm --enable-shmop --with-pear --enable-mbstring $PHP_OPENSSLOPT --with-mysql=mysqlnd --with-libdir=${LIBDIR} --with-mysqli=mysqlnd --with-mysql-sock=${PHP_MYSQLSOCKPATH}/mysql.sock --with-curl${PHP_OPENSSL_CURL_OPT} ${PHPGDOPT}${LIBGD_EXT_OPT} --with-xmlrpc --enable-bcmath --enable-calendar${FTPEXTOPT} --enable-gd-native-ttf ${PHPFREETYPEOPT} ${PHPJPEGOPT} --with-png-dir=${PLIBDIR} ${PHPXPMOPT}${LIBVPXOPT}${TLIBOPT} --enable-shmop --with-pear --enable-mbstring $PHP_OPENSSLOPT --with-mysql=mysqlnd --with-libdir=${LIBDIR} --with-mysqli=mysqlnd --enable-pdo${PDOSQLLITE_OPT} --with-pdo-mysql=mysqlnd${MSSQLOPT} --enable-inline-optimization${IMAPOPT} --with-kerberos --with-readline --with-libedit --with-gmp --with-pspell --with-tidy --with-enchant --with-fpm-user=nginx --with-fpm-group=nginx${FILEINFOOPT}${SQLLITEOPT}${LDAPOPT}${PDOPGSQL_OPT}${OPCACHEHUGEPAGES_OPT}${ARGONTWO_OPT}${LIBSODIUM_OPT}${PHP_PICOPT} --with-config-file-scan-dir=${CONFIGSCANDIR}${PHPDEBUGOPT}${FPMSYSTEMD_INTEGRATEOPT}${FFI_OPT}${SWOOLE_OPT}${PHP_EXTRAOPTS}
+    echo "../configure --enable-fpm${OPCACHEOPT}${PHPINTLOPT}${PCNTLOPT}${MCRYPT}${RECODEOPT}${SNMPOPT}${PHPEMBEDOPT}${PHPLTOOPT} --with-mhash ${ZLIBPHP_OPT} --with-gettext --enable-exif ${ZIPOPT} --with-bz2 --enable-soap --enable-sockets --enable-sysvmsg --enable-sysvsem --enable-sysvshm --enable-shmop --with-pear --enable-mbstring $PHP_OPENSSLOPT --with-mysql=mysqlnd --with-libdir=${LIBDIR} --with-mysqli=mysqlnd --with-mysql-sock=${PHP_MYSQLSOCKPATH}/mysql.sock --with-curl${CURL_SYSTEM_PREFIX}${PHP_OPENSSL_CURL_OPT}${CURL_CUSTOM_FLAGS} ${PHPGDOPT}${LIBGD_EXT_OPT}${PHP_LIBAVIF_OPT} --with-xmlrpc --enable-bcmath --enable-calendar${FTPEXTOPT} --enable-gd-native-ttf ${PHPFREETYPEOPT} ${PHPJPEGOPT} --with-png-dir=${PLIBDIR} ${PHPXPMOPT}${LIBVPXOPT}${TLIBOPT} --enable-shmop --with-pear --enable-mbstring $PHP_OPENSSLOPT --with-mysql=mysqlnd --with-libdir=${LIBDIR} --with-mysqli=mysqlnd --enable-pdo${PDOSQLLITE_OPT} --with-pdo-mysql=mysqlnd${MSSQLOPT} --enable-inline-optimization${IMAPOPT} --with-kerberos --with-readline --with-libedit --with-gmp --with-pspell --with-tidy --with-enchant --with-fpm-user=nginx --with-fpm-group=nginx${FILEINFOOPT}${SQLLITEOPT}${LDAPOPT}${PDOPGSQL_OPT}${OPCACHEHUGEPAGES_OPT}${PHP_PICOPT} --with-config-file-scan-dir=${CONFIGSCANDIR}${PHPDEBUGOPT}${FPMSYSTEMD_INTEGRATEOPT}${FFI_OPT}${SWOOLE_OPT}${LIBZIP_OPT}${ARGONTWO_OPT}${LIBSODIUM_OPT}${PHP_EXTRAOPTS}"
+    ../configure --enable-fpm${OPCACHEOPT}${PHPINTLOPT}${PCNTLOPT}${MCRYPT}${RECODEOPT}${SNMPOPT}${PHPEMBEDOPT}${PHPLTOOPT} --with-mhash ${ZLIBPHP_OPT} --with-gettext --enable-exif ${ZIPOPT} --with-bz2 --enable-soap --enable-sockets --enable-sysvmsg --enable-sysvsem --enable-sysvshm --enable-shmop --with-pear --enable-mbstring $PHP_OPENSSLOPT --with-mysql=mysqlnd --with-libdir=${LIBDIR} --with-mysqli=mysqlnd --with-mysql-sock=${PHP_MYSQLSOCKPATH}/mysql.sock --with-curl${CURL_SYSTEM_PREFIX}${PHP_OPENSSL_CURL_OPT}${CURL_CUSTOM_FLAGS} ${PHPGDOPT}${LIBGD_EXT_OPT}${PHP_LIBAVIF_OPT} --with-xmlrpc --enable-bcmath --enable-calendar${FTPEXTOPT} --enable-gd-native-ttf ${PHPFREETYPEOPT} ${PHPJPEGOPT} --with-png-dir=${PLIBDIR} ${PHPXPMOPT}${LIBVPXOPT}${TLIBOPT} --enable-shmop --with-pear --enable-mbstring $PHP_OPENSSLOPT --with-mysql=mysqlnd --with-libdir=${LIBDIR} --with-mysqli=mysqlnd --enable-pdo${PDOSQLLITE_OPT} --with-pdo-mysql=mysqlnd${MSSQLOPT} --enable-inline-optimization${IMAPOPT} --with-kerberos --with-readline --with-libedit --with-gmp --with-pspell --with-tidy --with-enchant --with-fpm-user=nginx --with-fpm-group=nginx${FILEINFOOPT}${SQLLITEOPT}${LDAPOPT}${PDOPGSQL_OPT}${OPCACHEHUGEPAGES_OPT}${PHP_PICOPT} --with-config-file-scan-dir=${CONFIGSCANDIR}${PHPDEBUGOPT}${FPMSYSTEMD_INTEGRATEOPT}${FFI_OPT}${SWOOLE_OPT}${LIBZIP_OPT}${ARGONTWO_OPT}${LIBSODIUM_OPT}${PHP_EXTRAOPTS}
   fi
   PHPCONFIGURE_ERR=$?
 fi
@@ -3519,6 +3722,17 @@ if [[ "$PHP_PGO" = [yY] ]]; then
   fi
   sed -i 's|PROF_FLAGS=-fprofile-generate|PROF_FLAGS="-fprofile-generate=/opt/php-pgo-data -fprofile-dir=/opt/php-pgo-data"|' Makefile
   sed -i 's|PROF_FLAGS=-fprofile-use|PROF_FLAGS="-fprofile-use=/opt/php-pgo-data -fprofile-dir=/opt/php-pgo-data -fprofile-correction"|' Makefile
+fi
+if [[ "$IMAGEMAGICK_SEVEN" = [yY] ]]; then
+  # rogue buggy rpath is set when PHP 8.3+ used with ImageMagick7 builds
+  # causing PHP 8.3+ to not properly find the correct libzip headers and library
+  # it incorrectly adds the following as first priority path:
+  # -Wl,-rpath,/usr/lib64/../lib64 -L/usr/lib64/../lib64 
+  sed -i -e 's/-Wl,-rpath,\/usr\/lib64\/\.\.\/lib64 //g' -e 's/-L\/usr\/lib64\/\.\.\/lib64 //g' Makefile
+  sed -i '/^PHP_RPATHS/s#-R /usr/lib64/\.\./lib64 ##g' Makefile
+else
+  sed -i -e 's/-Wl,-rpath,\/usr\/lib64\/\.\.\/lib64 //g' -e 's/-L\/usr\/lib64\/\.\.\/lib64 //g' Makefile
+  sed -i '/^PHP_RPATHS/s#-R /usr/lib64/\.\./lib64 ##g' Makefile
 fi
   # only initial install needs to run make, make install
   # via funct_phpconfigure function otherwise upgrade php

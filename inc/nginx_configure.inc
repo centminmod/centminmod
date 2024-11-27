@@ -41,7 +41,7 @@ checksec_nginx() {
     find $checksec_ngxlibs_dir -name "*.so" | while read ngxlib; do
       if [ -f "${ngxlib}" ]; then
         if [ -f /usr/local/bin/checksec ]; then
-          checksec --file="${ngxlib}" --format=json --extended | jq -r
+          checksec --file="${ngxlib}" --format=json --extended 2>/dev/null | jq -r
         fi
       fi
     done
@@ -51,7 +51,7 @@ checksec_nginx() {
     find $checksec_openssllibs_dir -name "*.so" | while read openssllib; do
       if [ -f "${openssllib}" ]; then
         if [ -f /usr/local/bin/checksec ]; then
-          checksec --file="${openssllib}" --format=json --extended | jq -r
+          checksec --file="${openssllib}" --format=json --extended 2>/dev/null | jq -r
         fi
       fi
     done
@@ -61,7 +61,7 @@ checksec_nginx() {
     find $checksec_opensslquiclibs_dir -name "*.so" | while read opensslquiclib; do
       if [ -f "${opensslquiclib}" ]; then
         if [ -f /usr/local/bin/checksec ]; then
-          checksec --file="${opensslquiclib}" --format=json --extended | jq -r
+          checksec --file="${opensslquiclib}" --format=json --extended 2>/dev/null | jq -r
         fi
       fi
     done
@@ -71,7 +71,7 @@ checksec_nginx() {
     find $checksec_ngxmodules_dir -name "*.so" | while read ngxmodules; do
       if [ -f "${ngxmodules}" ]; then
         if [ -f /usr/local/bin/checksec ]; then
-          checksec --file="${ngxmodules}" --format=json --extended | jq -r
+          checksec --file="${ngxmodules}" --format=json --extended 2>/dev/null | jq -r
         fi
       fi
     done  
@@ -558,7 +558,7 @@ if [[ "$ORESTY_LUANGINX" = [yY] ]]; then
   # https://github.com/openresty/lua-nginx-module/issues/1984
   NGINX_PCRE_TWO='n'
 fi
-if [[ "$NGINX_KTLS" = [yY] && "$KERNEL_NUMERICVER" -ge '5002000000' ]] && [[ "$DETECTOPENSSL_THREEZERO" = '3.0' || "$DETECTOPENSSL_THREEONE" = '3.1' || "$DETECTOPENSSL_THREETWO" = '3.2' ]]; then
+if [[ "$NGINX_KTLS" = [yY] && "$KERNEL_NUMERICVER" -ge '5002000000' ]] && [[ "$DETECTOPENSSL_THREEZERO" = '3.0' || "$DETECTOPENSSL_THREEONE" = '3.1' || "$DETECTOPENSSL_THREETWO" = '3.2' || "$DETECTOPENSSL_THREETHREE" = '3.3' || "$DETECTOPENSSL_THREEFOUR" = '3.4' ]]; then
   KTLS_BUILD_TAG='-ktls'
   NGINX_KTLS_OPT=' enable-ktls'
   NGINX_KTLS_OPT_ALT='enable-ktls'
@@ -1302,7 +1302,7 @@ if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9'
           OPENSSLOPT=" --with-openssl=../$OPENSSLDIR"
           OPENSSLOPT_B=" --with-openssl-opt=enable-tls1_3"
         fi
-      elif [[ "$NGINX_KTLS" = [yY] && "$KERNEL_NUMERICVER" -ge '5002000000' ]] && [[ "$DETECTOPENSSL_THREEZERO" = '3.0' || "$DETECTOPENSSL_THREEONE" = '3.1' || "$DETECTOPENSSL_THREETWO" = '3.2' ]]; then
+      elif [[ "$NGINX_KTLS" = [yY] && "$KERNEL_NUMERICVER" -ge '5002000000' ]] && [[ "$DETECTOPENSSL_THREEZERO" = '3.0' || "$DETECTOPENSSL_THREEONE" = '3.1' || "$DETECTOPENSSL_THREETWO" = '3.2' || "$DETECTOPENSSL_THREETHREE" = '3.3' || "$DETECTOPENSSL_THREEFOUR" = '3.4' ]]; then
         OPENSSLOPT=" --with-openssl=../$OPENSSLDIR --with-openssl-opt='${NGINX_KTLS_OPT_ALT}'"
       else
         echo 1c
@@ -1396,11 +1396,37 @@ if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9'
           OPENSSLOPT=" --with-openssl=../$OPENSSLDIR"
           OPENSSLOPT_B=" --with-openssl-opt=enable-tls1_3"
         fi
-      elif [[ "$NGINX_KTLS" = [yY] && "$KERNEL_NUMERICVER" -ge '5002000000' ]] && [[ "$DETECTOPENSSL_THREEZERO" = '3.0' || "$DETECTOPENSSL_THREEONE" = '3.1' || "$DETECTOPENSSL_THREETWO" = '3.2' ]]; then
+      elif [[ "$DETECTOPENSSL_THREETHREE" = '3.3' && "$ORESTY_LUANGINX" != [yY] ]] || [[ "$DETECTOPENSSL_THREETHREE" = '3.3' && "$ORESTY_LUANGINX" = [yY] ]]; then
         echo 2f
+        if [[ "$(uname -m)" = 'x86_64' ]]; then
+          if [[ "$ECNISTP_CHECK" && ! -d "${DIR_TMP}/${OPENSSL_QUIC_DIR}" ]]; then
+            OPENSSLOPT=" --with-openssl=../$OPENSSLDIR --with-openssl-opt='enable-ec_nistp_64_gcc_128'"
+          else
+            OPENSSLOPT=" --with-openssl=../$OPENSSLDIR"
+          fi
+          TLSTHREEOPT='y'
+        else
+          OPENSSLOPT=" --with-openssl=../$OPENSSLDIR"
+          OPENSSLOPT_B=" --with-openssl-opt=enable-tls1_3"
+        fi
+      elif [[ "$DETECTOPENSSL_THREEFOUR" = '3.4' && "$ORESTY_LUANGINX" != [yY] ]] || [[ "$DETECTOPENSSL_THREEFOUR" = '3.4' && "$ORESTY_LUANGINX" = [yY] ]]; then
+        echo 2g
+        if [[ "$(uname -m)" = 'x86_64' ]]; then
+          if [[ "$ECNISTP_CHECK" && ! -d "${DIR_TMP}/${OPENSSL_QUIC_DIR}" ]]; then
+            OPENSSLOPT=" --with-openssl=../$OPENSSLDIR --with-openssl-opt='enable-ec_nistp_64_gcc_128'"
+          else
+            OPENSSLOPT=" --with-openssl=../$OPENSSLDIR"
+          fi
+          TLSTHREEOPT='y'
+        else
+          OPENSSLOPT=" --with-openssl=../$OPENSSLDIR"
+          OPENSSLOPT_B=" --with-openssl-opt=enable-tls1_3"
+        fi
+      elif [[ "$NGINX_KTLS" = [yY] && "$KERNEL_NUMERICVER" -ge '5002000000' ]] && [[ "$DETECTOPENSSL_THREEZERO" = '3.0' || "$DETECTOPENSSL_THREEONE" = '3.1' || "$DETECTOPENSSL_THREETWO" = '3.2' || "$DETECTOPENSSL_THREETHREE" = '3.3' || "$DETECTOPENSSL_THREEFOUR" = '3.4' ]]; then
+        echo 2h
         OPENSSLOPT=" --with-openssl=../$OPENSSLDIR --with-openssl-opt='${NGINX_KTLS_OPT_ALT}'"
       else
-        echo 2g
+        echo 2i
         export STATICLIBSSL="${OPENSSL_CUSTOMPATH}"
         if [[ "$(uname -m)" = 'x86_64' ]]; then
           if [[ "$ECNISTP_CHECK" && ! -d "${DIR_TMP}/${OPENSSL_QUIC_DIR}" ]]; then
@@ -3934,7 +3960,7 @@ if [[ "$CENTOS_EIGHT" = '8' && "$CLANG" = [nN] && "$NGINX_DEVTOOLSETGCC" = [yY] 
         yum -y install ${DIR_TMP}/gcc-custom-15.0.0-1.el8.x86_64.rpm
     fi
     if [[ "$CENTOSVER_NUMERIC" -ge '89' && "$DEVTOOLSETFOURTEEN" = [yY] && ! -f /opt/rh/gcc-toolset-14/root/usr/bin/gcc ]] || [[ "$CENTOSVER_NUMERIC" -ge '89' && "$DEVTOOLSETFOURTEEN" = [yY] && ! -f /opt/rh/gcc-toolset-14/root/usr/bin/g++ ]]; then
-        yum -y install gcc-toolset-14-annobin-annocheck gcc-toolset-14-annobin-docs.noarch gcc-toolset-14-annobin-plugin-gcc gcc-toolset-14-binutils gcc-toolset-14-binutils-devel gcc-toolset-14-dwz gcc-toolset-14-gcc gcc-toolset-14-gcc-c++ gcc-toolset-14-gcc-gfortran gcc-toolset-14-gdb gcc-toolset-14-libasan-devel gcc-toolset-14-libatomic-devel gcc-toolset-14-libgccjit gcc-toolset-14-libgccjit-devel gcc-toolset-14-libitm-devel gcc-toolset-14-liblsan-devel gcc-toolset-14-libquadmath-devel gcc-toolset-14-libstdc++-devel gcc-toolset-14-libtsan-devel gcc-toolset-14-libubsan-devel gcc-toolset-14-runtime --skip-broken
+        yum -y install gcc-toolset-14-annobin-annocheck gcc-toolset-14-annobin-docs.noarch gcc-toolset-14-annobin-plugin-gcc gcc-toolset-14-binutils gcc-toolset-14-binutils-devel gcc-toolset-14-dwz gcc-toolset-14-gcc gcc-toolset-14-gcc-c++ gcc-toolset-14-gcc-gfortran gcc-toolset-14-libasan-devel gcc-toolset-14-libatomic-devel gcc-toolset-14-libgccjit gcc-toolset-14-libgccjit-devel gcc-toolset-14-libitm-devel gcc-toolset-14-liblsan-devel gcc-toolset-14-libquadmath-devel gcc-toolset-14-libstdc++-devel gcc-toolset-14-libtsan-devel gcc-toolset-14-libubsan-devel gcc-toolset-14-runtime --skip-broken
     fi
     if [[ "$CENTOSVER_NUMERIC" -ge '89' && "$DEVTOOLSETTHIRTEEN" = [yY] && ! -f /opt/rh/gcc-toolset-13/root/usr/bin/gcc ]] || [[ "$CENTOSVER_NUMERIC" -ge '89' && "$DEVTOOLSETTHIRTEEN" = [yY] && ! -f /opt/rh/gcc-toolset-13/root/usr/bin/g++ ]]; then
         yum -y install gcc-toolset-13-annobin-annocheck gcc-toolset-13-annobin-docs.noarch gcc-toolset-13-annobin-plugin-gcc gcc-toolset-13-binutils gcc-toolset-13-binutils-devel gcc-toolset-13-dwz gcc-toolset-13-gcc gcc-toolset-13-gcc-c++ gcc-toolset-13-gcc-gfortran gcc-toolset-13-gdb gcc-toolset-13-libasan-devel gcc-toolset-13-libatomic-devel gcc-toolset-13-libgccjit gcc-toolset-13-libgccjit-devel gcc-toolset-13-libgccjit-docs gcc-toolset-13-libitm-devel gcc-toolset-13-liblsan-devel gcc-toolset-13-libquadmath-devel gcc-toolset-13-libstdc++-devel gcc-toolset-13-libtsan-devel gcc-toolset-13-libubsan-devel gcc-toolset-13-runtime
@@ -5077,7 +5103,7 @@ if [[ "$CENTOS_NINE" -eq '9' && "$CLANG" = [nN] && "$NGINX_DEVTOOLSETGCC" = [yY]
     /opt/gcc-custom/gcc15/bin/g++ --version
   elif [[ "$CENTOSVER_NUMERIC" -ge '93' && "$DEVTOOLSETFOURTEEN" = [yY] && ! -f /opt/rh/gcc-toolset-14/root/usr/bin/gcc ]]; then
     if [[ "$(rpm -ql gcc-toolset-14-gcc >/dev/null 2>&1; echo $?)" -ne '0' ]] || [[ "$(rpm -ql gcc-toolset-14-gcc-c++ >/dev/null 2>&1; echo $?)" -ne '0' ]] || [[ "$(rpm -ql gcc-toolset-14-binutils >/dev/null 2>&1; echo $?)" -ne '0' ]]; then
-      time yum -y install gcc-toolset-14-annobin-annocheck gcc-toolset-14-annobin-docs.noarch gcc-toolset-14-annobin-plugin-gcc gcc-toolset-14-binutils gcc-toolset-14-binutils-devel gcc-toolset-14-dwz gcc-toolset-14-gcc gcc-toolset-14-gcc-c++ gcc-toolset-14-gcc-gfortran gcc-toolset-14-gdb gcc-toolset-14-libasan-devel gcc-toolset-14-libatomic-devel gcc-toolset-14-libgccjit gcc-toolset-14-libgccjit-devel gcc-toolset-14-libitm-devel gcc-toolset-14-liblsan-devel gcc-toolset-14-libquadmath-devel gcc-toolset-14-libstdc++-devel gcc-toolset-14-libtsan-devel gcc-toolset-14-libubsan-devel gcc-toolset-14-runtime --skip-broken
+      time yum -y install gcc-toolset-14-annobin-annocheck gcc-toolset-14-annobin-docs.noarch gcc-toolset-14-annobin-plugin-gcc gcc-toolset-14-binutils gcc-toolset-14-binutils-devel gcc-toolset-14-dwz gcc-toolset-14-gcc gcc-toolset-14-gcc-c++ gcc-toolset-14-gcc-gfortran gcc-toolset-14-libasan-devel gcc-toolset-14-libatomic-devel gcc-toolset-14-libgccjit gcc-toolset-14-libgccjit-devel gcc-toolset-14-libitm-devel gcc-toolset-14-liblsan-devel gcc-toolset-14-libquadmath-devel gcc-toolset-14-libstdc++-devel gcc-toolset-14-libtsan-devel gcc-toolset-14-libubsan-devel gcc-toolset-14-runtime --skip-broken
     fi
     sar_call
     /opt/rh/gcc-toolset-14/root/usr/bin/gcc --version
