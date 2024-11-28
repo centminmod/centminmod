@@ -25,6 +25,11 @@ mimefix() {
       echo $AVIFCHECK
       echo $XMLCHECK
     fi
+
+    # remove duplicate xml mime type warning on nginx -t runs
+    if [ "$(grep 'text\/xml' /usr/local/nginx/conf/mime.types)" ]; then
+      sed -i '/text\/xml/d' /usr/local/nginx/conf/mime.types
+    fi
     
     if [ -z "$XMLCHECK" ]; then
       sed -i 's/}//' /usr/local/nginx/conf/mime.types
