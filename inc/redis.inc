@@ -24,7 +24,7 @@ redis_server_install() {
 
 checkredis_server_install() {
   # if redis-cli not installed, install it
-  if [[ "$CENTOS_SEVEN" -eq '7' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]] && [[ ! -f /usr/bin/redis-cli ]]; then
+  if [[ "$CENTOS_SEVEN" -eq '7' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]] && [[ "$REDIS_SERVER_INSTALL" = [yY] ]] && [[ ! -f /usr/bin/redis-cli ]]; then
     echo "*************************************************"
     cecho "* Installing redis server" $boldgreen
     echo "*************************************************"
