@@ -14,7 +14,7 @@ ARCH_CHECK="$(uname -m)"
 ###############################################################
 # variables
 ###############################################################
-ACMEVER='1.0.96'
+ACMEVER='1.0.97'
 DT=$(date +"%d%m%y-%H%M%S")
 ACMEDEBUG='n'
 ACMEDEBUG_LOG='y'
@@ -284,6 +284,13 @@ fi
 if [ -f "/etc/centminmod/acmetool-config.ini" ]; then
   dos2unix -q "/etc/centminmod/acmetool-config.ini"
   . "/etc/centminmod/acmetool-config.ini"
+fi
+
+if [[ "$DUALCERTS" = [yY] ]] && [[ "$KEYLENGTH" = 'ec-256' || "$KEYLENGTH" = 'ec-384' ]]; then
+  # DUALCERTS='y' will already auto set KEYLENGTH so does not need user to set it
+  # As user set KEYLENGTH will conflict with DUALCERTS='y' so if if user manually
+  # sets KEYLENGTH to ECC 256 or 384 values, auto disable DUALCERTS
+  DUALCERTS='n'
 fi
 
 if [[ "$FORCE_IPVFOUR" != [yY] ]]; then
