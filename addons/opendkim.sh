@@ -259,6 +259,7 @@ opendkimsetup() {
             echo "---------------------------------------------------------------------------" | tee "$CENTMINLOGDIR/dkim_spf_dns_${h_vhostname}_${DT}.txt"
             echo "$h_vhostname DKIM DNS Entry" | tee -a "$CENTMINLOGDIR/dkim_spf_dns_${h_vhostname}_${DT}.txt"
             cat "/etc/opendkim/keys/$h_vhostname/${SELECTOR}.txt" | tr '\n' ' ' | sed -e "s| \"        \"|\" \"|" -e "s|( \"|\"|" -e "s| )  ; ----- DKIM key $SELECTOR for $h_vhostname||" -e "s|${SELECTOR}._domainkey|${SELECTOR}._domainkey.$h_vhostname|" -e "s|     IN      TXT   | IN TXT|" | sed 's|[[:space:]]| |g' | sed -e "s|\; \"   |\;|" | sed -e "s|\"p=|p=|" | tee -a "$CENTMINLOGDIR/dkim_spf_dns_${h_vhostname}_${DT}.txt"
+            sed -i 's|"    "||g' "/root/centminlogs/dkim_spf_dns_${h_vhostname}_${DT}.txt"
             echo -e "\n------------------------------------------------------------" | tee -a "$CENTMINLOGDIR/dkim_spf_dns_${h_vhostname}_${DT}.txt"
             echo "$h_vhostname SPF DNS Entry" | tee -a "$CENTMINLOGDIR/dkim_spf_dns_${h_vhostname}_${DT}.txt"
             echo "$h_vhostname. 14400 IN TXT \"v=spf1 a mx ~all\"" | tee -a "$CENTMINLOGDIR/dkim_spf_dns_${h_vhostname}_${DT}.txt"
@@ -314,6 +315,7 @@ opendkimsetup() {
                 echo "---------------------------------------------------------------------------" | tee "$CENTMINLOGDIR/dkim_spf_dns_${vhostname}_${DT}.txt"
                 echo "$vhostname DKIM DNS Entry" | tee -a "$CENTMINLOGDIR/dkim_spf_dns_${vhostname}_${DT}.txt"
                 cat "/etc/opendkim/keys/$vhostname/${SELECTOR}.txt" | tr '\n' ' ' | sed -e "s| \"        \"|\" \"|" -e "s|( \"|\"|" -e "s| )  ; ----- DKIM key $SELECTOR for $vhostname||" -e "s|${SELECTOR}._domainkey|${SELECTOR}._domainkey.$vhostname|" -e "s|     IN      TXT   | IN TXT|" | sed 's|[[:space:]]| |g' | sed -e "s|\; \"   |\;|" | sed -e "s|\"p=|p=|" | tee -a "$CENTMINLOGDIR/dkim_spf_dns_${vhostname}_${DT}.txt"
+                sed -i 's|"    "||g' "/root/centminlogs/dkim_spf_dns_${vhostname}_${DT}.txt"
                 echo -e "\n------------------------------------------------------------" | tee -a "$CENTMINLOGDIR/dkim_spf_dns_${vhostname}_${DT}.txt"
                 echo "$vhostname SPF DNS Entry" | tee -a "$CENTMINLOGDIR/dkim_spf_dns_${vhostname}_${DT}.txt"
                 echo "$vhostname. 14400 IN TXT \"v=spf1 a mx ~all\"" | tee -a "$CENTMINLOGDIR/dkim_spf_dns_${vhostname}_${DT}.txt"
@@ -343,12 +345,27 @@ starttime=$(TZ=UTC date +%s.%N)
     # Handle the 'clean' operation
     if [[ "$CLEANONLY" -eq 1 ]]; then
         h_vhostname=$(hostname -f 2>/dev/null || hostname)
+        # Clean main hostname
         rm -rf "/etc/opendkim/keys/$h_vhostname"
         if [ -f /etc/opendkim/KeyTable ]; then
             sed -in "/$h_vhostname/d" /etc/opendkim/KeyTable
         fi
         if [ -f /etc/opendkim/SigningTable ]; then
             sed -in "/$h_vhostname/d" /etc/opendkim/SigningTable
+        fi
+
+        # Clean vhostname if provided
+        if [[ -n "$vhostname" ]]; then
+            rm -rf "/etc/opendkim/keys/$vhostname"
+            if [ -f /etc/opendkim/KeyTable ]; then
+                sed -in "/$vhostname/d" /etc/opendkim/KeyTable
+            fi
+            if [ -f /etc/opendkim/SigningTable ]; then
+                sed -in "/$vhostname/d" /etc/opendkim/SigningTable
+            fi
+            if [ -f /etc/opendkim/TrustedHosts ]; then
+                sed -in "/^$vhostname$/d" /etc/opendkim/TrustedHosts
+            fi
         fi
     fi
 
