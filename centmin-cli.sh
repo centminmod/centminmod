@@ -30,7 +30,7 @@ DT=$(date +"%d%m%y-%H%M%S")
 branchname='140.00beta01'
 SCRIPT_MAJORVER='140'
 SCRIPT_MINORVER='00'
-SCRIPT_INCREMENTVER='179'
+SCRIPT_INCREMENTVER='180'
 SCRIPT_VERSIONSHORT="${branchname}"
 SCRIPT_VERSION="${SCRIPT_VERSIONSHORT}.b${SCRIPT_INCREMENTVER}"
 SCRIPT_DATE='01/07/24'
@@ -1522,6 +1522,7 @@ source "${SCRIPT_DIR}/inc/downloads_centoseight.inc"
 source "${SCRIPT_DIR}/inc/downloads_centosnine.inc"
 source "${SCRIPT_DIR}/inc/downloadlinks.inc"
 source "${SCRIPT_DIR}/inc/libzip.inc"
+source "${SCRIPT_DIR}/inc/libxml.inc"
 source "${SCRIPT_DIR}/inc/downloads.inc"
 source "${SCRIPT_DIR}/inc/yumpriorities.inc"
 source "${SCRIPT_DIR}/inc/yuminstall.inc"
