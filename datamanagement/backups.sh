@@ -274,28 +274,100 @@ else
         CPUS_ZSTD=$CPUS
     fi
 fi
+
+# Function to get MariaDB version
+get_mariadb_version() {
+    local version=$(mysql -V 2>&1 | awk '{print $5}' | awk -F. '{print $1"."$2}')
+    echo $version
+}
+
+# Function to set client command variables based on MariaDB version
+set_mariadb_client_commands() {
+    local version=$(get_mariadb_version)
+    
+    # Convert version to a comparable integer (e.g., 10.3 becomes 1003)
+    version_number=$(echo "$version" | awk -F. '{printf "%d%02d\n", $1, $2}')
+
+    if (( version_number <= 1011 )); then
+        # For versions less than or equal to 10.11, use old MySQL names
+        ALIAS_MYSQLACCESS="mysqlaccess"
+        ALIAS_MYSQLADMIN="mysqladmin"
+        ALIAS_MYSQLBINLOG="mysqlbinlog"
+        ALIAS_MYSQLCHECK="mysqlcheck"
+        ALIAS_MYSQLDUMP="mysqldump"
+        ALIAS_MYSQLDUMPSLOW="mysqldumpslow"
+        ALIAS_MYSQLHOTCOPY="mysqlhotcopy"
+        ALIAS_MYSQLIMPORT="mysqlimport"
+        ALIAS_MYSQLREPORT="mysqlreport"
+        ALIAS_MYSQLSHOW="mysqlshow"
+        ALIAS_MYSQLSLAP="mysqlslap"
+        ALIAS_MYSQL_CONVERT_TABLE_FORMAT="mysql_convert_table_format"
+        ALIAS_MYSQL_EMBEDDED="mysql_embedded"
+        ALIAS_MYSQL_FIND_ROWS="mysql_find_rows"
+        ALIAS_MYSQL_FIX_EXTENSIONS="mysql_fix_extensions"
+        ALIAS_MYSQL_INSTALL_DB="mysql_install_db"
+        ALIAS_MYSQL_PLUGIN="mysql_plugin"
+        ALIAS_MYSQL_SECURE_INSTALLATION="mysql_secure_installation"
+        ALIAS_MYSQL_SETPERMISSION="mysql_setpermission"
+        ALIAS_MYSQL_TZINFO_TO_SQL="mysql_tzinfo_to_sql"
+        ALIAS_MYSQL_UPGRADE="mysql_upgrade"
+        ALIAS_MYSQL_WAITPID="mysql_waitpid"
+        ALIAS_MYSQL="mysql"
+        ALIAS_MYSQLD="mysqld"
+        ALIAS_MYSQLDSAFE="mysqld_safe"
+    else
+        # For versions greater than 10.11, use new MariaDB names
+        ALIAS_MYSQLACCESS="mariadb-access"
+        ALIAS_MYSQLADMIN="mariadb-admin"
+        ALIAS_MYSQLBINLOG="mariadb-binlog"
+        ALIAS_MYSQLCHECK="mariadb-check"
+        ALIAS_MYSQLDUMP="mariadb-dump"
+        ALIAS_MYSQLDUMPSLOW="mariadb-dumpslow"
+        ALIAS_MYSQLHOTCOPY="mariadb-hotcopy"
+        ALIAS_MYSQLIMPORT="mariadb-import"
+        ALIAS_MYSQLREPORT="mariadb-report"
+        ALIAS_MYSQLSHOW="mariadb-show"
+        ALIAS_MYSQLSLAP="mariadb-slap"
+        ALIAS_MYSQL_CONVERT_TABLE_FORMAT="mariadb-convert-table-format"
+        ALIAS_MYSQL_EMBEDDED="mariadb-embedded"
+        ALIAS_MYSQL_FIND_ROWS="mariadb-find-rows"
+        ALIAS_MYSQL_FIX_EXTENSIONS="mariadb-fix-extensions"
+        ALIAS_MYSQL_INSTALL_DB="mariadb-install-db"
+        ALIAS_MYSQL_PLUGIN="mariadb-plugin"
+        ALIAS_MYSQL_SECURE_INSTALLATION="mariadb-secure-installation"
+        ALIAS_MYSQL_SETPERMISSION="mariadb-setpermission"
+        ALIAS_MYSQL_TZINFO_TO_SQL="mariadb-tzinfo-to-sql"
+        ALIAS_MYSQL_UPGRADE="mariadb-upgrade"
+        ALIAS_MYSQL_WAITPID="mariadb-waitpid"
+        ALIAS_MYSQL="mariadb"
+        ALIAS_MYSQLD="mariadbd"
+        ALIAS_MYSQLDSAFE="mariadbd-safe"
+    fi
+}
+set_mariadb_client_commands
+
 if [[ "$COMPRESS_RSYNCABLE" = [Yy] ]]; then
   COMPRESS_RSYNCABLE_OPT=' --rsyncable'
 fi
 if [ -f "$MY_CNF" ]; then
-  MYSQL_CMD_PREFIX="mysql --defaults-extra-file=$MY_CNF -h $DBHOST"
+  MYSQL_CMD_PREFIX="${ALIAS_MYSQL} --defaults-extra-file=$MY_CNF -h $DBHOST"
   MYSQLBACKUP_CMD_PREFIX="$NICE $NICEOPT $IONICE $IONICEOPT mariabackup --defaults-extra-file=$MY_CNF -h $DBHOST"
-  MYSQLDUMP_CMD_PREFIX="$NICE $NICEOPT $IONICE $IONICEOPT mysqldump --defaults-extra-file=$MY_CNF -h $DBHOST${MYSQLDUMP_OPTS}"
-  MYSQLBINLOG_CMD_PREFIX="$NICE $NICEOPT $IONICE $IONICEOPT mysqlbinlog --defaults-extra-file=$MY_CNF -h $DBHOST"
-  MYSQLADMIN_CMD_PREFIX="mysqladmin --defaults-extra-file=$MY_CNF -h $DBHOST"
+  MYSQLDUMP_CMD_PREFIX="$NICE $NICEOPT $IONICE $IONICEOPT ${ALIAS_MYSQLDUMP} --defaults-extra-file=$MY_CNF -h $DBHOST${MYSQLDUMP_OPTS}"
+  MYSQLBINLOG_CMD_PREFIX="$NICE $NICEOPT $IONICE $IONICEOPT ${ALIAS_MYSQLBINLOG} --defaults-extra-file=$MY_CNF -h $DBHOST"
+  MYSQLADMIN_CMD_PREFIX="${ALIAS_MYSQLADMIN} --defaults-extra-file=$MY_CNF -h $DBHOST"
 else
-  MYSQL_CMD_PREFIX="mysql -u $DBUSER -h $DBHOST -p$MYSQL_PWD"
+  MYSQL_CMD_PREFIX="${ALIAS_MYSQL} -u $DBUSER -h $DBHOST -p$MYSQL_PWD"
   MYSQLBACKUP_CMD_PREFIX="$NICE $NICEOPT $IONICE $IONICEOPT mariabackup -u $DBUSER -h $DBHOST -p$MYSQL_PWD"
   MYSQLDUMP_CMD_PREFIX="$NICE $NICEOPT $IONICE $IONICEOPT mysqldump -u $DBUSER -h $DBHOST -p$MYSQL_PWD${MYSQLDUMP_OPTS}"
   MYSQLBINLOG_CMD_PREFIX="$NICE $NICEOPT $IONICE $IONICEOPT mysqlbinlog -u $DBUSER -h $DBHOST -p$MYSQL_PWD"
-  MYSQLADMIN_CMD_PREFIX="mysqladmin -u $DBUSER -h $DBHOST -p$MYSQL_PWD"
+  MYSQLADMIN_CMD_PREFIX="${ALIAS_MYSQLADMIN} -u $DBUSER -h $DBHOST -p$MYSQL_PWD"
 fi
 # dbdeployer
-SANDBOX_MYSQL_CMD_PREFIX="mysql --defaults-extra-file=$${MY_CNF_SANDBOX} -h $DBHOST"
+SANDBOX_MYSQL_CMD_PREFIX="${ALIAS_MYSQL} --defaults-extra-file=$${MY_CNF_SANDBOX} -h $DBHOST"
 SANDBOX_MYSQLBACKUP_CMD_PREFIX="mariabackup --defaults-extra-file=$${MY_CNF_SANDBOX} -h $DBHOST"
-SANDBOX_MYSQLDUMP_CMD_PREFIX="mysqldump --defaults-extra-file=$${MY_CNF_SANDBOX} -h $DBHOST${MYSQLDUMP_OPTS}"
-SANDBOX_MYSQLBINLOG_CMD_PREFIX="mysqlbinlog --defaults-extra-file=$${MY_CNF_SANDBOX} -h $DBHOST"
-SANDBOX_MYSQLADMIN_CMD_PREFIX="mysqladmin --defaults-extra-file=$${MY_CNF_SANDBOX} -h $DBHOST"
+SANDBOX_MYSQLDUMP_CMD_PREFIX="${ALIAS_MYSQLDUMP} --defaults-extra-file=$${MY_CNF_SANDBOX} -h $DBHOST${MYSQLDUMP_OPTS}"
+SANDBOX_MYSQLBINLOG_CMD_PREFIX="${ALIAS_MYSQLBINLOG} --defaults-extra-file=$${MY_CNF_SANDBOX} -h $DBHOST"
+SANDBOX_MYSQLADMIN_CMD_PREFIX="${ALIAS_MYSQLADMIN} --defaults-extra-file=$${MY_CNF_SANDBOX} -h $DBHOST"
 
 DATADIR=$($MYSQLADMIN_CMD_PREFIX var | grep datadir | awk '{ print $4}')
 
@@ -591,6 +663,11 @@ Change path to /home/databackup/${DT}/centminmod_backup.tar.zst where you saved 
 or
 
    mkdir -p /home/restoredata
+   tar -I zstd -xf /home/remotebackup/vhosts/centminmod_backup.tar.zst -C /home/restoredata
+
+or
+
+   mkdir -p /home/restoredata
    tar -I zstd -xf /home/remotebackup/centminmod_backup.tar.zst -C /home/restoredata
 
 If you have tar version lower than 1.31, you will have to extract the tar zstd compressed backup first.
@@ -598,6 +675,12 @@ If you have tar version lower than 1.31, you will have to extract the tar zstd c
    mkdir -p /home/restoredata
    zstd -d /home/databackup/${DT}/centminmod_backup.tar.zst
    tar -xf /home/databackup/${DT}/centminmod_backup.tar -C /home/restoredata
+
+or
+
+   mkdir -p /home/restoredata
+   zstd -d /home/remotebackup/vhosts/centminmod_backup.tar.zst
+   tar -xf /home/remotebackup/vhosts/centminmod_backup.tar -C /home/restoredata
 
 or
 
@@ -940,13 +1023,13 @@ mysql_backup() {
   echo "  all)" >> "$restore_script"
   for db in $databases; do
     db_fs_name=$(echo "$db" | sed -e "s|-|@002d|g")
-    echo -e "    echo \"Checking if database exists: $db\"\n    db_exists=\$($MYSQL_CMD_PREFIX -BNe \"SHOW DATABASES LIKE '$db';\" | grep -w \"$db\")\n    if [ ! -z \"\$db_exists\" ]; then\n      DT=\$(date +\"%Y%m%d%H%M%S\")\n      origin_db_name=\"${db}\"\n      new_db_name=\"${db}_restorecopy_\$DT\"\n      echo \"Database already exists. Restoring to a new database: \$new_db_name\"\n    else\n      origin_db_name=\"${db}\"\n      new_db_name=\"$db\"\n    fi\n    $MYSQL_CMD_PREFIX -e \"CREATE DATABASE IF NOT EXISTS \$new_db_name;\"\n    (echo \"SET FOREIGN_KEY_CHECKS=0;\"; cat \"\$script_dir\"/${db_fs_name}/\${origin_db_name}-schema-only.sql; echo \"SET FOREIGN_KEY_CHECKS=1;\") | $MYSQL_CMD_PREFIX \$new_db_name;\n    find \"\$script_dir\"/${db_fs_name} -iname \"*.txt.zst\" -o -iname \"*.txt.gz\" | while read -r file; do ext=\"\${file##*.}\"; orig_file=\"\${file%.*}\"; if [ \"\$ext\" = \"zst\" ]; then zstd -cd \"\$file\" > \"\$orig_file\"; else gzip -cd \"\$file\" > \"\$orig_file\"; fi; done\n    mysqlimport --default-character-set=utf8mb4 --ignore-foreign-keys --use-threads=\$cpu${MYSQLIMPORT_OPTS} \$new_db_name \"\$script_dir\"/${db_fs_name}/*.txt\n    mysqlimport_err=\$?\n    if [ \$mysqlimport_err -eq 0 ]; then\n      rm -f \"\$script_dir\"/${db_fs_name}/*.zst \"\$script_dir\"/${db_fs_name}/*.gz\n    else\n      echo \"Error: mysqlimport exited with status \$mysqlimport_err\"\n      exit \$mysqlimport_err\n    fi\n" >> "$restore_script"
+    echo -e "    echo \"Checking if database exists: $db\"\n    set +e\n    db_exists=\$($MYSQL_CMD_PREFIX -BNe \"SHOW DATABASES LIKE '$db';\" | grep -w \"$db\")\n    if [ ! -z \"\$db_exists\" ]; then\n      DT=\$(date +\"%Y%m%d%H%M%S\")\n      origin_db_name=\"${db}\"\n      new_db_name=\"${db}_restorecopy_\$DT\"\n      echo \"Database already exists. Restoring to a new database: \$new_db_name\"\n    else\n      origin_db_name=\"${db}\"\n      new_db_name=\"$db\"\n    fi\n    $MYSQL_CMD_PREFIX -e \"CREATE DATABASE IF NOT EXISTS \$new_db_name;\"\n    (echo \"SET FOREIGN_KEY_CHECKS=0;\"; cat \"\$script_dir\"/${db_fs_name}/\${origin_db_name}-schema-only.sql; echo \"SET FOREIGN_KEY_CHECKS=1;\") | $MYSQL_CMD_PREFIX \$new_db_name;\n    find \"\$script_dir\"/${db_fs_name} -iname \"*.txt.zst\" -o -iname \"*.txt.gz\" | while read -r file; do ext=\"\${file##*.}\"; orig_file=\"\${file%.*}\"; if [ \"\$ext\" = \"zst\" ]; then zstd -cd \"\$file\" > \"\$orig_file\"; else gzip -cd \"\$file\" > \"\$orig_file\"; fi; done\n    mysqlimport --default-character-set=utf8mb4 --ignore-foreign-keys --use-threads=\$cpu${MYSQLIMPORT_OPTS} \$new_db_name \"\$script_dir\"/${db_fs_name}/*.txt\n    mysqlimport_err=\$?\n    if [ \$mysqlimport_err -eq 0 ]; then\n      rm -f \"\$script_dir\"/${db_fs_name}/*.zst \"\$script_dir\"/${db_fs_name}/*.gz\n    else\n      echo \"Error: mysqlimport exited with status \$mysqlimport_err\"\n      exit \$mysqlimport_err\n    fi\n" >> "$restore_script"
   done
   echo "    ;;" >> "$restore_script"
   for db in $databases; do
     db_fs_name=$(echo "$db" | sed -e "s|-|@002d|g")
     echo "  $db)" >> "$restore_script"
-    echo -e "    echo \"Checking if database exists: $db\"\n    db_exists=\$($MYSQL_CMD_PREFIX -BNe \"SHOW DATABASES LIKE '$db';\" | grep -w \"$db\")\n    if [ ! -z \"\$db_exists\" ]; then\n      DT=\$(date +\"%Y%m%d%H%M%S\")\n      origin_db_name=\"${db}\"\n      new_db_name=\"${db}_restorecopy_\$DT\"\n      echo \"Database already exists. Restoring to a new database: \$new_db_name\"\n    else\n      origin_db_name=\"${db}\"\n      new_db_name=\"$db\"\n    fi\n    $MYSQL_CMD_PREFIX -e \"CREATE DATABASE IF NOT EXISTS \$new_db_name;\"\n    (echo \"SET FOREIGN_KEY_CHECKS=0;\" ; cat \"\$script_dir\"/${db_fs_name}/\${origin_db_name}-schema-only.sql ; echo \"SET FOREIGN_KEY_CHECKS=1;\") | $MYSQL_CMD_PREFIX \$new_db_name;\n    find \"\$script_dir\"/${db_fs_name} -iname \"*.txt.zst\" -o -iname \"*.txt.gz\" | while read -r file; do ext=\"\${file##*.}\"; orig_file=\"\${file%.*}\"; if [ \"\$ext\" = \"zst\" ]; then zstd -cd \"\$file\" > \"\$orig_file\"; else gzip -cd \"\$file\" > \"\$orig_file\"; fi; done\n    mysqlimport --default-character-set=utf8mb4 --ignore-foreign-keys --use-threads=\$cpu${MYSQLIMPORT_OPTS} \$new_db_name \"\$script_dir\"/${db_fs_name}/*.txt\n    mysqlimport_err=\$?\n    if [ \$mysqlimport_err -eq 0 ]; then\n      rm -f \"\$script_dir\"/${db_fs_name}/*.zst \"\$script_dir\"/${db_fs_name}/*.gz\n    else\n      echo \"Error: mysqlimport exited with status \$mysqlimport_err\"\n      exit \$mysqlimport_err\n    fi\n    ;;" >> "$restore_script"
+    echo -e "    echo \"Checking if database exists: $db\"\n    set +e\n    db_exists=\$($MYSQL_CMD_PREFIX -BNe \"SHOW DATABASES LIKE '$db';\" | grep -w \"$db\")\n    if [ ! -z \"\$db_exists\" ]; then\n      DT=\$(date +\"%Y%m%d%H%M%S\")\n      origin_db_name=\"${db}\"\n      new_db_name=\"${db}_restorecopy_\$DT\"\n      echo \"Database already exists. Restoring to a new database: \$new_db_name\"\n    else\n      origin_db_name=\"${db}\"\n      new_db_name=\"$db\"\n    fi\n    $MYSQL_CMD_PREFIX -e \"CREATE DATABASE IF NOT EXISTS \$new_db_name;\"\n    (echo \"SET FOREIGN_KEY_CHECKS=0;\" ; cat \"\$script_dir\"/${db_fs_name}/\${origin_db_name}-schema-only.sql ; echo \"SET FOREIGN_KEY_CHECKS=1;\") | $MYSQL_CMD_PREFIX \$new_db_name;\n    find \"\$script_dir\"/${db_fs_name} -iname \"*.txt.zst\" -o -iname \"*.txt.gz\" | while read -r file; do ext=\"\${file##*.}\"; orig_file=\"\${file%.*}\"; if [ \"\$ext\" = \"zst\" ]; then zstd -cd \"\$file\" > \"\$orig_file\"; else gzip -cd \"\$file\" > \"\$orig_file\"; fi; done\n    mysqlimport --default-character-set=utf8mb4 --ignore-foreign-keys --use-threads=\$cpu${MYSQLIMPORT_OPTS} \$new_db_name \"\$script_dir\"/${db_fs_name}/*.txt\n    mysqlimport_err=\$?\n    if [ \$mysqlimport_err -eq 0 ]; then\n      rm -f \"\$script_dir\"/${db_fs_name}/*.zst \"\$script_dir\"/${db_fs_name}/*.gz\n    else\n      echo \"Error: mysqlimport exited with status \$mysqlimport_err\"\n      exit \$mysqlimport_err\n    fi\n    ;;" >> "$restore_script"
   done
   db_list=$(echo "$databases" | sed -e "s|^|\$0 |" | tr '\n' '\\n')
   echo "  *)" >> "$restore_script"

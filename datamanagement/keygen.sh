@@ -222,13 +222,27 @@ keygen() {
       fi
       SSHCOPYERR=$?
       if [[ "$SSHCOPYERR" -ne '0' ]]; then
+        echo
+        echo "ssh-copy-id transfer failed: removing generated SSH key files"
+        echo
+        echo "remove $HOME/.ssh/${KEYNAME}.key"
+        cat "$HOME/.ssh/${KEYNAME}.key"
         rm -rf "$HOME/.ssh/${KEYNAME}.key"
+        echo "remove $HOME/.ssh/${KEYNAME}.key.pub"
+        cat "$HOME/.ssh/${KEYNAME}.key.pub"
         rm -rf "$HOME/.ssh/${KEYNAME}.key.pub"
       fi
       popd >/dev/null 2>&1
     fi
     if [[ "$keyrotate" = 'rotate' ]]; then
+      echo
+      echo "SSH key rotation ssh-copy-id transfer failed: removing generated SSH key files"
+      echo
+      echo "remove $HOME/.ssh/${KEYNAME}-old.key"
+      cat "$HOME/.ssh/${KEYNAME}-old.key"
       rm -rf "$HOME/.ssh/${KEYNAME}-old.key"
+      echo "remove $HOME/.ssh/${KEYNAME}-old.key.pub"
+      cat "$HOME/.ssh/${KEYNAME}-old.key.pub"
       rm -rf "$HOME/.ssh/${KEYNAME}-old.key.pub"
     fi
 
