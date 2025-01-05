@@ -663,6 +663,11 @@ Change path to /home/databackup/${DT}/centminmod_backup.tar.zst where you saved 
 or
 
    mkdir -p /home/restoredata
+   tar -I zstd -xf /home/remotebackup/vhosts/centminmod_backup.tar.zst -C /home/restoredata
+
+or
+
+   mkdir -p /home/restoredata
    tar -I zstd -xf /home/remotebackup/centminmod_backup.tar.zst -C /home/restoredata
 
 If you have tar version lower than 1.31, you will have to extract the tar zstd compressed backup first.
@@ -670,6 +675,12 @@ If you have tar version lower than 1.31, you will have to extract the tar zstd c
    mkdir -p /home/restoredata
    zstd -d /home/databackup/${DT}/centminmod_backup.tar.zst
    tar -xf /home/databackup/${DT}/centminmod_backup.tar -C /home/restoredata
+
+or
+
+   mkdir -p /home/restoredata
+   zstd -d /home/remotebackup/vhosts/centminmod_backup.tar.zst
+   tar -xf /home/remotebackup/vhosts/centminmod_backup.tar -C /home/restoredata
 
 or
 
@@ -1012,13 +1023,13 @@ mysql_backup() {
   echo "  all)" >> "$restore_script"
   for db in $databases; do
     db_fs_name=$(echo "$db" | sed -e "s|-|@002d|g")
-    echo -e "    echo \"Checking if database exists: $db\"\n    db_exists=\$($MYSQL_CMD_PREFIX -BNe \"SHOW DATABASES LIKE '$db';\" | grep -w \"$db\")\n    if [ ! -z \"\$db_exists\" ]; then\n      DT=\$(date +\"%Y%m%d%H%M%S\")\n      origin_db_name=\"${db}\"\n      new_db_name=\"${db}_restorecopy_\$DT\"\n      echo \"Database already exists. Restoring to a new database: \$new_db_name\"\n    else\n      origin_db_name=\"${db}\"\n      new_db_name=\"$db\"\n    fi\n    $MYSQL_CMD_PREFIX -e \"CREATE DATABASE IF NOT EXISTS \$new_db_name;\"\n    (echo \"SET FOREIGN_KEY_CHECKS=0;\"; cat \"\$script_dir\"/${db_fs_name}/\${origin_db_name}-schema-only.sql; echo \"SET FOREIGN_KEY_CHECKS=1;\") | $MYSQL_CMD_PREFIX \$new_db_name;\n    find \"\$script_dir\"/${db_fs_name} -iname \"*.txt.zst\" -o -iname \"*.txt.gz\" | while read -r file; do ext=\"\${file##*.}\"; orig_file=\"\${file%.*}\"; if [ \"\$ext\" = \"zst\" ]; then zstd -cd \"\$file\" > \"\$orig_file\"; else gzip -cd \"\$file\" > \"\$orig_file\"; fi; done\n    mysqlimport --default-character-set=utf8mb4 --ignore-foreign-keys --use-threads=\$cpu${MYSQLIMPORT_OPTS} \$new_db_name \"\$script_dir\"/${db_fs_name}/*.txt\n    mysqlimport_err=\$?\n    if [ \$mysqlimport_err -eq 0 ]; then\n      rm -f \"\$script_dir\"/${db_fs_name}/*.zst \"\$script_dir\"/${db_fs_name}/*.gz\n    else\n      echo \"Error: mysqlimport exited with status \$mysqlimport_err\"\n      exit \$mysqlimport_err\n    fi\n" >> "$restore_script"
+    echo -e "    echo \"Checking if database exists: $db\"\n    set +e\n    db_exists=\$($MYSQL_CMD_PREFIX -BNe \"SHOW DATABASES LIKE '$db';\" | grep -w \"$db\")\n    if [ ! -z \"\$db_exists\" ]; then\n      DT=\$(date +\"%Y%m%d%H%M%S\")\n      origin_db_name=\"${db}\"\n      new_db_name=\"${db}_restorecopy_\$DT\"\n      echo \"Database already exists. Restoring to a new database: \$new_db_name\"\n    else\n      origin_db_name=\"${db}\"\n      new_db_name=\"$db\"\n    fi\n    $MYSQL_CMD_PREFIX -e \"CREATE DATABASE IF NOT EXISTS \$new_db_name;\"\n    (echo \"SET FOREIGN_KEY_CHECKS=0;\"; cat \"\$script_dir\"/${db_fs_name}/\${origin_db_name}-schema-only.sql; echo \"SET FOREIGN_KEY_CHECKS=1;\") | $MYSQL_CMD_PREFIX \$new_db_name;\n    find \"\$script_dir\"/${db_fs_name} -iname \"*.txt.zst\" -o -iname \"*.txt.gz\" | while read -r file; do ext=\"\${file##*.}\"; orig_file=\"\${file%.*}\"; if [ \"\$ext\" = \"zst\" ]; then zstd -cd \"\$file\" > \"\$orig_file\"; else gzip -cd \"\$file\" > \"\$orig_file\"; fi; done\n    mysqlimport --default-character-set=utf8mb4 --ignore-foreign-keys --use-threads=\$cpu${MYSQLIMPORT_OPTS} \$new_db_name \"\$script_dir\"/${db_fs_name}/*.txt\n    mysqlimport_err=\$?\n    if [ \$mysqlimport_err -eq 0 ]; then\n      rm -f \"\$script_dir\"/${db_fs_name}/*.zst \"\$script_dir\"/${db_fs_name}/*.gz\n    else\n      echo \"Error: mysqlimport exited with status \$mysqlimport_err\"\n      exit \$mysqlimport_err\n    fi\n" >> "$restore_script"
   done
   echo "    ;;" >> "$restore_script"
   for db in $databases; do
     db_fs_name=$(echo "$db" | sed -e "s|-|@002d|g")
     echo "  $db)" >> "$restore_script"
-    echo -e "    echo \"Checking if database exists: $db\"\n    db_exists=\$($MYSQL_CMD_PREFIX -BNe \"SHOW DATABASES LIKE '$db';\" | grep -w \"$db\")\n    if [ ! -z \"\$db_exists\" ]; then\n      DT=\$(date +\"%Y%m%d%H%M%S\")\n      origin_db_name=\"${db}\"\n      new_db_name=\"${db}_restorecopy_\$DT\"\n      echo \"Database already exists. Restoring to a new database: \$new_db_name\"\n    else\n      origin_db_name=\"${db}\"\n      new_db_name=\"$db\"\n    fi\n    $MYSQL_CMD_PREFIX -e \"CREATE DATABASE IF NOT EXISTS \$new_db_name;\"\n    (echo \"SET FOREIGN_KEY_CHECKS=0;\" ; cat \"\$script_dir\"/${db_fs_name}/\${origin_db_name}-schema-only.sql ; echo \"SET FOREIGN_KEY_CHECKS=1;\") | $MYSQL_CMD_PREFIX \$new_db_name;\n    find \"\$script_dir\"/${db_fs_name} -iname \"*.txt.zst\" -o -iname \"*.txt.gz\" | while read -r file; do ext=\"\${file##*.}\"; orig_file=\"\${file%.*}\"; if [ \"\$ext\" = \"zst\" ]; then zstd -cd \"\$file\" > \"\$orig_file\"; else gzip -cd \"\$file\" > \"\$orig_file\"; fi; done\n    mysqlimport --default-character-set=utf8mb4 --ignore-foreign-keys --use-threads=\$cpu${MYSQLIMPORT_OPTS} \$new_db_name \"\$script_dir\"/${db_fs_name}/*.txt\n    mysqlimport_err=\$?\n    if [ \$mysqlimport_err -eq 0 ]; then\n      rm -f \"\$script_dir\"/${db_fs_name}/*.zst \"\$script_dir\"/${db_fs_name}/*.gz\n    else\n      echo \"Error: mysqlimport exited with status \$mysqlimport_err\"\n      exit \$mysqlimport_err\n    fi\n    ;;" >> "$restore_script"
+    echo -e "    echo \"Checking if database exists: $db\"\n    set +e\n    db_exists=\$($MYSQL_CMD_PREFIX -BNe \"SHOW DATABASES LIKE '$db';\" | grep -w \"$db\")\n    if [ ! -z \"\$db_exists\" ]; then\n      DT=\$(date +\"%Y%m%d%H%M%S\")\n      origin_db_name=\"${db}\"\n      new_db_name=\"${db}_restorecopy_\$DT\"\n      echo \"Database already exists. Restoring to a new database: \$new_db_name\"\n    else\n      origin_db_name=\"${db}\"\n      new_db_name=\"$db\"\n    fi\n    $MYSQL_CMD_PREFIX -e \"CREATE DATABASE IF NOT EXISTS \$new_db_name;\"\n    (echo \"SET FOREIGN_KEY_CHECKS=0;\" ; cat \"\$script_dir\"/${db_fs_name}/\${origin_db_name}-schema-only.sql ; echo \"SET FOREIGN_KEY_CHECKS=1;\") | $MYSQL_CMD_PREFIX \$new_db_name;\n    find \"\$script_dir\"/${db_fs_name} -iname \"*.txt.zst\" -o -iname \"*.txt.gz\" | while read -r file; do ext=\"\${file##*.}\"; orig_file=\"\${file%.*}\"; if [ \"\$ext\" = \"zst\" ]; then zstd -cd \"\$file\" > \"\$orig_file\"; else gzip -cd \"\$file\" > \"\$orig_file\"; fi; done\n    mysqlimport --default-character-set=utf8mb4 --ignore-foreign-keys --use-threads=\$cpu${MYSQLIMPORT_OPTS} \$new_db_name \"\$script_dir\"/${db_fs_name}/*.txt\n    mysqlimport_err=\$?\n    if [ \$mysqlimport_err -eq 0 ]; then\n      rm -f \"\$script_dir\"/${db_fs_name}/*.zst \"\$script_dir\"/${db_fs_name}/*.gz\n    else\n      echo \"Error: mysqlimport exited with status \$mysqlimport_err\"\n      exit \$mysqlimport_err\n    fi\n    ;;" >> "$restore_script"
   done
   db_list=$(echo "$databases" | sed -e "s|^|\$0 |" | tr '\n' '\\n')
   echo "  *)" >> "$restore_script"
