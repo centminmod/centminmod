@@ -30,7 +30,7 @@ DT=$(date +"%d%m%y-%H%M%S")
 branchname='140.00beta01'
 SCRIPT_MAJORVER='140'
 SCRIPT_MINORVER='00'
-SCRIPT_INCREMENTVER='184'
+SCRIPT_INCREMENTVER='185'
 SCRIPT_VERSIONSHORT="${branchname}"
 SCRIPT_VERSION="${SCRIPT_VERSIONSHORT}.b${SCRIPT_INCREMENTVER}"
 SCRIPT_DATE='01/01/25'
@@ -1112,7 +1112,12 @@ PHPMSSQL_ALWAYS='n'          # mssql php extension always install on php recompi
 PHPEMBED='y'                 # built php with php embed SAPI library support --enable-embed=shared
 
 PHPSWOOLE='n'                # https://pecl.php.net/package/swoole
-PHPSWOOLE_VER='5.1.4'
+PHPSWOOLE_VER='5.1.6'
+PHPSWOOLE_EIGHT_ZERO_VER='5.1.6'
+PHPSWOOLE_EIGHT_ONE_VER='6.0.0'
+PHPSWOOLE_EIGHT_TWO_VER='6.0.0'
+PHPSWOOLE_EIGHT_THREE_VER='6.0.0'
+PHPSWOOLE_EIGHT_FOUR_VER='6.0.0'
 PHPSWOOLE_FIVE_VER='2.0.5' # max PHP 5.0 supported version
 PHPSWOOLE_SEVEN_ZERO_VER='4.3.5' # max PHP 7.0 supported version
 PHPSWOOLE_SEVEN_ONE_VER='4.5.11' # max PHP 7.1 supported version
