@@ -228,6 +228,9 @@ if [[ "$PHPSWOOLE" = [yY] ]]; then
         make clean
         /usr/local/bin/phpize clean
     fi
+    if [[ "$CENTOS_NINE" -eq '9' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_SEVEN" -eq '7' ]] && [ ! -f  /usr/lib64/libbrotlienc.so ]; then
+        $YUMDNFBIN -y -q install brotli-devel
+    fi
     /usr/local/bin/phpize
     CFLAGS="-fPIC -O2 -fstack-protector-strong -D_FORTIFY_SOURCE=2" CPPFLAGS="-D_FORTIFY_SOURCE=2" CXXFLAGS="-fPIC -O2" LDFLAGS="-Wl,-z,relro,-z,now -pie" ./configure --with-php-config=/usr/local/bin/php-config --enable-mysqlnd --enable-swoole-json --enable-swoole-curl --enable-sockets --enable-openssl
 
