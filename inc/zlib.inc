@@ -171,6 +171,110 @@ install_cfzlib() {
             CLANG='n'
             DEVTOOLSETSEVEN='n'
             DEVTOOLSETEIGHT='y'
+        elif [[ "$DEVTOOLSETFIFTTEEN" = [yY] && "$CLANG" = [nN] ]] && [[ "$CENTOS_NINE" -eq '9' ]]; then
+            CLANG='n'
+            DEVTOOLSETFIFTTEEN='y'
+            DEVTOOLSETFOURTEEN='n'
+            DEVTOOLSETTHIRTEEN='n'
+            DEVTOOLSETTWELVE='n'
+            DEVTOOLSETELEVEN='n'
+            DEVTOOLSETTEN='n'
+            DEVTOOLSETNINE='n'
+            DEVTOOLSETEIGHT='n'
+            DEVTOOLSETSEVEN='n'
+        elif [[ "$DEVTOOLSETFIFTTEEN" = [yY] && "$CLANG" = [nN] ]] && [[ "$CENTOS_EIGHT" -eq '8' ]]; then
+            CLANG='n'
+            DEVTOOLSETFIFTTEEN='y'
+            DEVTOOLSETFOURTEEN='n'
+            DEVTOOLSETTHIRTEEN='n'
+            DEVTOOLSETTWELVE='n'
+            DEVTOOLSETELEVEN='n'
+            DEVTOOLSETTEN='n'
+            DEVTOOLSETNINE='n'
+            DEVTOOLSETEIGHT='n'
+            DEVTOOLSETSEVEN='n'
+        elif [[ "$DEVTOOLSETFIFTTEEN" != [yY] && "$DEVTOOLSETFOURTEEN" = [yY] && "$CLANG" = [nN] ]] && [[ "$CENTOS_NINE" -eq '9' ]]; then
+            CLANG='n'
+            DEVTOOLSETFIFTTEEN='n'
+            DEVTOOLSETFOURTEEN='y'
+            DEVTOOLSETTHIRTEEN='n'
+            DEVTOOLSETTWELVE='n'
+            DEVTOOLSETELEVEN='n'
+            DEVTOOLSETTEN='n'
+            DEVTOOLSETNINE='n'
+            DEVTOOLSETEIGHT='n'
+            DEVTOOLSETSEVEN='n'
+        elif [[ "$DEVTOOLSETFIFTTEEN" != [yY] && "$DEVTOOLSETFOURTEEN" = [yY] && "$CLANG" = [nN] ]] && [[ "$CENTOS_EIGHT" -eq '8' ]]; then
+            CLANG='n'
+            DEVTOOLSETFIFTTEEN='n'
+            DEVTOOLSETFOURTEEN='y'
+            DEVTOOLSETTHIRTEEN='n'
+            DEVTOOLSETTWELVE='n'
+            DEVTOOLSETELEVEN='n'
+            DEVTOOLSETTEN='n'
+            DEVTOOLSETNINE='n'
+            DEVTOOLSETEIGHT='n'
+            DEVTOOLSETSEVEN='n'
+        elif [[ "$DEVTOOLSETFOURTEEN" = [yY] && "$CLANG" = [nN] ]] && [[ "$CENTOS_NINE" -eq '9' ]]; then
+            CLANG='n'
+            DEVTOOLSETFOURTEEN='y'
+            DEVTOOLSETTHIRTEEN='n'
+            DEVTOOLSETTWELVE='n'
+            DEVTOOLSETELEVEN='n'
+            DEVTOOLSETTEN='n'
+            DEVTOOLSETNINE='n'
+            DEVTOOLSETEIGHT='n'
+            DEVTOOLSETSEVEN='n'
+        elif [[ "$DEVTOOLSETFOURTEEN" = [yY] && "$CLANG" = [nN] ]] && [[ "$CENTOS_EIGHT" -eq '8' ]]; then
+            CLANG='n'
+            DEVTOOLSETFOURTEEN='y'
+            DEVTOOLSETTHIRTEEN='n'
+            DEVTOOLSETTWELVE='n'
+            DEVTOOLSETELEVEN='n'
+            DEVTOOLSETTEN='n'
+            DEVTOOLSETNINE='n'
+            DEVTOOLSETEIGHT='n'
+            DEVTOOLSETSEVEN='n'
+        elif [[ "$DEVTOOLSETTHIRTEEN" = [yY] && "$CLANG" = [nN] ]] && [[ "$CENTOS_NINE" -eq '9' ]]; then
+            CLANG='n'
+            DEVTOOLSETFOURTEEN='n'
+            DEVTOOLSETTHIRTEEN='y'
+            DEVTOOLSETTWELVE='n'
+            DEVTOOLSETELEVEN='n'
+            DEVTOOLSETTEN='n'
+            DEVTOOLSETNINE='n'
+            DEVTOOLSETEIGHT='n'
+            DEVTOOLSETSEVEN='n'
+        elif [[ "$DEVTOOLSETTHIRTEEN" = [yY] && "$CLANG" = [nN] ]] && [[ "$CENTOS_EIGHT" -eq '8' ]]; then
+            CLANG='n'
+            DEVTOOLSETFOURTEEN='n'
+            DEVTOOLSETTHIRTEEN='y'
+            DEVTOOLSETTWELVE='n'
+            DEVTOOLSETELEVEN='n'
+            DEVTOOLSETTEN='n'
+            DEVTOOLSETNINE='n'
+            DEVTOOLSETEIGHT='n'
+            DEVTOOLSETSEVEN='n'
+        elif [[ "$DEVTOOLSETTWELVE" = [yY] && "$CLANG" = [nN] ]] && [[ "$CENTOS_NINE" -eq '9' ]]; then
+            CLANG='n'
+            DEVTOOLSETFOURTEEN='n'
+            DEVTOOLSETTHIRTEEN='n'
+            DEVTOOLSETTWELVE='y'
+            DEVTOOLSETELEVEN='n'
+            DEVTOOLSETTEN='n'
+            DEVTOOLSETNINE='n'
+            DEVTOOLSETEIGHT='n'
+            DEVTOOLSETSEVEN='n'
+        elif [[ "$DEVTOOLSETTWELVE" = [yY] && "$CLANG" = [nN] ]] && [[ "$CENTOS_EIGHT" -eq '8' ]]; then
+            CLANG='n'
+            DEVTOOLSETFOURTEEN='n'
+            DEVTOOLSETTHIRTEEN='n'
+            DEVTOOLSETTWELVE='y'
+            DEVTOOLSETELEVEN='n'
+            DEVTOOLSETTEN='n'
+            DEVTOOLSETNINE='n'
+            DEVTOOLSETEIGHT='n'
+            DEVTOOLSETSEVEN='n'
         elif [[ "$DEVTOOLSETELEVEN" = [yY] && "$CLANG" = [nN] && "$CENTOS_NINE" -eq '9' ]]; then
             CLANG='n'
             # DEVTOOLSETELEVEN='y'
@@ -191,6 +295,9 @@ install_cfzlib() {
             g++ --version
         elif [[ "$DEVTOOLSETELEVEN" = [yY] && "$CLANG" = [nN] && "$CENTOS_EIGHT" -eq '8' ]]; then
             CLANG='n'
+            DEVTOOLSETFOURTEEN='n'
+            DEVTOOLSETTHIRTEEN='n'
+            DEVTOOLSETTWELVE='n'
             DEVTOOLSETELEVEN='y'
             DEVTOOLSETTEN='n'
             DEVTOOLSETNINE='n'
@@ -198,6 +305,9 @@ install_cfzlib() {
             DEVTOOLSETSEVEN='n'
         elif [[ "$DEVTOOLSETELEVEN" = [yY] && "$CLANG" = [nN] && "$CENTOS_SEVEN" -eq '7' ]]; then
             CLANG='n'
+            DEVTOOLSETFOURTEEN='n'
+            DEVTOOLSETTHIRTEEN='n'
+            DEVTOOLSETTWELVE='n'
             DEVTOOLSETELEVEN='y'
             DEVTOOLSETTEN='n'
             DEVTOOLSETNINE='n'
@@ -205,6 +315,9 @@ install_cfzlib() {
             DEVTOOLSETSEVEN='n'
         elif [[ "$DEVTOOLSETTEN" = [yY] && "$CLANG" = [nN] && "$CENTOS_NINE" -eq '9' ]]; then
             CLANG='n'
+            DEVTOOLSETFOURTEEN='n'
+            DEVTOOLSETTHIRTEEN='n'
+            DEVTOOLSETTWELVE='n'
             DEVTOOLSETELEVEN='n'
             DEVTOOLSETTEN='y'
             DEVTOOLSETNINE='n'
@@ -212,6 +325,9 @@ install_cfzlib() {
             DEVTOOLSETSEVEN='n'
         elif [[ "$DEVTOOLSETTEN" = [yY] && "$CLANG" = [nN] && "$CENTOS_EIGHT" -eq '8' ]]; then
             CLANG='n'
+            DEVTOOLSETFOURTEEN='n'
+            DEVTOOLSETTHIRTEEN='n'
+            DEVTOOLSETTWELVE='n'
             DEVTOOLSETELEVEN='n'
             DEVTOOLSETTEN='y'
             DEVTOOLSETNINE='n'
@@ -219,6 +335,9 @@ install_cfzlib() {
             DEVTOOLSETSEVEN='n'
         elif [[ "$DEVTOOLSETTEN" = [yY] && "$CLANG" = [nN] && "$CENTOS_SEVEN" -eq '7' ]]; then
             CLANG='n'
+            DEVTOOLSETFOURTEEN='n'
+            DEVTOOLSETTHIRTEEN='n'
+            DEVTOOLSETTWELVE='n'
             DEVTOOLSETELEVEN='n'
             DEVTOOLSETTEN='y'
             DEVTOOLSETNINE='n'
@@ -391,6 +510,7 @@ install_cfzlib() {
             export CC="gcc"
             export CXX="g++"
         fi
+        LD_GOLD_GCCPATH=' -B/opt/rh/gcc-toolset-12/root/usr/libexec/gcc/x86_64-redhat-linux/12/ld.gold'
         ZLIB_DEVTOOLSET_FALLTHROUGH=' -Wimplicit-fallthrough=0'
         ZLIB_DEVTOOLSET_EXTRAFLAGS=' -fcode-hoisting -Wno-cast-function-type -Wno-cast-align -Wno-implicit-function-declaration -Wno-builtin-declaration-mismatch -Wno-deprecated-declarations -Wno-int-conversion -Wno-unused-result -Wno-vla-parameter -Wno-maybe-uninitialized -Wno-unused-result -Wno-return-local-addr -Wno-maybe-uninitialized -Wno-array-parameter -Wno-alloc-size-larger-than -Wno-address -Wno-array-bounds -Wno-deprecated-declarations -Wno-discarded-qualifiers -Wno-stringop-overread -Wno-stringop-truncation -Wno-missing-field-initializers -Wno-unused-variable -Wno-format -Wno-stringop-overflow -Wno-free-nonheap-object -Wno-bad-function-cast -Wno-dangling-pointer -Wno-array-parameter'
         gcc --version
@@ -408,6 +528,7 @@ install_cfzlib() {
             export CC="gcc"
             export CXX="g++"
         fi
+        LD_GOLD_GCCPATH=' -B/opt/rh/gcc-toolset-13/root/usr/libexec/gcc/x86_64-redhat-linux/13/ld.gold'
         ZLIB_DEVTOOLSET_FALLTHROUGH=' -Wimplicit-fallthrough=0'
         ZLIB_DEVTOOLSET_EXTRAFLAGS=' -fcode-hoisting -Wno-cast-function-type -Wno-cast-align -Wno-implicit-function-declaration -Wno-builtin-declaration-mismatch -Wno-deprecated-declarations -Wno-int-conversion -Wno-unused-result -Wno-vla-parameter -Wno-maybe-uninitialized -Wno-unused-result -Wno-return-local-addr -Wno-maybe-uninitialized -Wno-array-parameter -Wno-alloc-size-larger-than -Wno-address -Wno-array-bounds -Wno-deprecated-declarations -Wno-discarded-qualifiers -Wno-stringop-overread -Wno-stringop-truncation -Wno-missing-field-initializers -Wno-unused-variable -Wno-format -Wno-stringop-overflow -Wno-free-nonheap-object -Wno-bad-function-cast -Wno-dangling-pointer -Wno-array-parameter'
         gcc --version
@@ -425,6 +546,7 @@ install_cfzlib() {
             export CC="gcc"
             export CXX="g++"
         fi
+        LD_GOLD_GCCPATH=' -B/opt/rh/gcc-toolset-14/root/usr/libexec/gcc/x86_64-redhat-linux/14/ld.gold'
         ZLIB_DEVTOOLSET_FALLTHROUGH=' -Wimplicit-fallthrough=0'
         ZLIB_DEVTOOLSET_EXTRAFLAGS=' -fcode-hoisting -Wno-cast-function-type -Wno-cast-align -Wno-implicit-function-declaration -Wno-builtin-declaration-mismatch -Wno-deprecated-declarations -Wno-int-conversion -Wno-unused-result -Wno-vla-parameter -Wno-maybe-uninitialized -Wno-unused-result -Wno-return-local-addr -Wno-maybe-uninitialized -Wno-array-parameter -Wno-alloc-size-larger-than -Wno-address -Wno-array-bounds -Wno-deprecated-declarations -Wno-discarded-qualifiers -Wno-stringop-overread -Wno-stringop-truncation -Wno-missing-field-initializers -Wno-unused-variable -Wno-format -Wno-stringop-overflow -Wno-free-nonheap-object -Wno-bad-function-cast -Wno-dangling-pointer -Wno-array-parameter'
         gcc --version
@@ -442,17 +564,24 @@ install_cfzlib() {
             export CC="gcc"
             export CXX="g++"
         fi
+        # LD_GOLD_GCCPATH=' -B/opt/rh/gcc-toolset-14/root/usr/libexec/gcc/x86_64-redhat-linux/14/ld.gold'
         ZLIB_DEVTOOLSET_FALLTHROUGH=' -Wimplicit-fallthrough=0'
         ZLIB_DEVTOOLSET_EXTRAFLAGS=' -fcode-hoisting -Wno-cast-function-type -Wno-cast-align -Wno-implicit-function-declaration -Wno-builtin-declaration-mismatch -Wno-deprecated-declarations -Wno-int-conversion -Wno-unused-result -Wno-vla-parameter -Wno-maybe-uninitialized -Wno-unused-result -Wno-return-local-addr -Wno-maybe-uninitialized -Wno-array-parameter -Wno-alloc-size-larger-than -Wno-address -Wno-array-bounds -Wno-deprecated-declarations -Wno-discarded-qualifiers -Wno-stringop-overread -Wno-stringop-truncation -Wno-missing-field-initializers -Wno-unused-variable -Wno-format -Wno-stringop-overflow -Wno-free-nonheap-object -Wno-bad-function-cast -Wno-dangling-pointer -Wno-array-parameter'
         gcc --version
         g++ --version
     fi
 
-         # if only 1 cpu thread use -O2 to keep compile times sane
+        # ld.gold corrections for GCC 14 changes
+        if [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]] && [[ "$NGX_LDGOLD" = [yY] ]] && [[ "$DEVTOOLSETTWELVE" = [yY] || "$DEVTOOLSETTHIRTEEN" = [yY] || "$DEVTOOLSETFOURTEEN" = [yY] ]]; then
+          NGX_LDGOLD_GCCPATH="$LD_GOLD_GCCPATH"
+        elif [[ "$NGX_LDGOLD" = [yY] ]]; then
+          NGX_LDGOLD_GCCPATH=" -fuse-ld=gold"
+        fi
+        # if only 1 cpu thread use -O2 to keep compile times sane
         if [[ "$CPUS" = '1' ]]; then
-           export CFLAGS="-O2${ZLIB_DEVTOOLSET_FALLTHROUGH}${ZLIB_DEVTOOLSET_EXTRAFLAGS} -pipe"
+           export CFLAGS="-O2${ZLIB_DEVTOOLSET_FALLTHROUGH}${ZLIB_DEVTOOLSET_EXTRAFLAGS} -pipe${NGX_LDGOLD_GCCPATH}"
         else
-           export CFLAGS="-O3${ZLIB_DEVTOOLSET_FALLTHROUGH}${ZLIB_DEVTOOLSET_EXTRAFLAGS} -pipe"
+           export CFLAGS="-O3${ZLIB_DEVTOOLSET_FALLTHROUGH}${ZLIB_DEVTOOLSET_EXTRAFLAGS} -pipe${NGX_LDGOLD_GCCPATH}"
         fi
         export CXXFLAGS="$CFLAGS"
 

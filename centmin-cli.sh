@@ -30,14 +30,14 @@ DT=$(date +"%d%m%y-%H%M%S")
 branchname='140.00beta01'
 SCRIPT_MAJORVER='140'
 SCRIPT_MINORVER='00'
-SCRIPT_INCREMENTVER='171'
+SCRIPT_INCREMENTVER='189'
 SCRIPT_VERSIONSHORT="${branchname}"
 SCRIPT_VERSION="${SCRIPT_VERSIONSHORT}.b${SCRIPT_INCREMENTVER}"
-SCRIPT_DATE='01/07/24'
+SCRIPT_DATE='01/01/25'
 SCRIPT_AUTHOR='eva2000 (centminmod.com)'
 SCRIPT_MODIFICATION_AUTHOR='eva2000 (centminmod.com)'
 SCRIPT_URL='https://centminmod.com'
-COPYRIGHT="Copyright 2011-2024 CentminMod.com"
+COPYRIGHT="Copyright 2011-2025 CentminMod.com"
 DISCLAIMER='This software is provided "as is" in the hope that it will be useful, but WITHOUT ANY WARRANTY, to the extent permitted by law; without even the implied warranty of MERCHANTABILITY OR FITNESS FOR A PARTICULAR PURPOSE. IN NO EVENT SHALL THE AUTHOR OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.'
 
 #####################################################
@@ -1111,7 +1111,12 @@ PHPMSSQL_ALWAYS='n'          # mssql php extension always install on php recompi
 PHPEMBED='y'                 # built php with php embed SAPI library support --enable-embed=shared
 
 PHPSWOOLE='n'                # https://pecl.php.net/package/swoole
-PHPSWOOLE_VER='5.1.0'
+PHPSWOOLE_VER='5.1.6'
+PHPSWOOLE_EIGHT_ZERO_VER='5.1.6'
+PHPSWOOLE_EIGHT_ONE_VER='6.0.0'
+PHPSWOOLE_EIGHT_TWO_VER='6.0.0'
+PHPSWOOLE_EIGHT_THREE_VER='6.0.0'
+PHPSWOOLE_EIGHT_FOUR_VER='6.0.0'
 PHPSWOOLE_FIVE_VER='2.0.5' # max PHP 5.0 supported version
 PHPSWOOLE_SEVEN_ZERO_VER='4.3.5' # max PHP 7.0 supported version
 PHPSWOOLE_SEVEN_ONE_VER='4.5.11' # max PHP 7.1 supported version
@@ -1208,7 +1213,7 @@ MYSQL_INSTALL='n'            # Install official Oracle MySQL Server (MariaDB alt
 SENDMAIL_INSTALL='n'         # Install Sendmail (and mailx) set to y and POSTFIX_INSTALL=n for sendmail
 POSTFIX_INSTALL=y            # Install Postfix (and mailx) set to n and SENDMAIL_INSTALL=y for sendmail
 # Nginx
-NGINX_VERSION='1.27.2'             # Use this version of Nginx
+NGINX_VERSION='1.27.3'             # Use this version of Nginx
 NGINX_ANGIE_VERSION='Angie-1.7.0'
 FREENGINX_VERSION='1.27.4'     # Maxim's Freenginx fork https://freenginx.org/en/download.html
 FREENGINX_INSTALL='n'          # Use Freenginx fork instead of official Nginx
@@ -1271,7 +1276,7 @@ BORINGSSL_DIR="/opt"
 
 # AWS-LC
 AWS_LC_SWITCH='n'             # if set to 'y' overrides OpenSSL as default for Nginx https://github.com/aws/aws-lc
-AWS_LC_VERSION='v1.40.0'      # version as per ttps://github.com/aws/aws-lc/tags
+AWS_LC_VERSION='v1.41.1'      # version as per ttps://github.com/aws/aws-lc/tags
 AWS_LC_DIR="/opt"
 AWS_LC_SWITCH_BUILD_TESTS='n' # run AWS-LC build tests
 ##################################
@@ -1522,6 +1527,7 @@ source "${SCRIPT_DIR}/inc/downloads_centoseight.inc"
 source "${SCRIPT_DIR}/inc/downloads_centosnine.inc"
 source "${SCRIPT_DIR}/inc/downloadlinks.inc"
 source "${SCRIPT_DIR}/inc/libzip.inc"
+source "${SCRIPT_DIR}/inc/libxml.inc"
 source "${SCRIPT_DIR}/inc/downloads.inc"
 source "${SCRIPT_DIR}/inc/yumpriorities.inc"
 source "${SCRIPT_DIR}/inc/yuminstall.inc"
