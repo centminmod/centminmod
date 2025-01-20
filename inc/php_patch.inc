@@ -1249,6 +1249,79 @@ php_patches() {
     done
   fi
 
+  # Check if the system is CentOS 7 and PHP version is 8.3.16 or higher
+  if [[ "$CENTOS_SEVEN" -eq '7' && "$PHPVER_ID" -ge '80316' ]]; then
+    # List of bug IDs to patch (add more if needed)
+    phpseven_ffi_bugids='ffi-c7'
+
+    for bugid in $phpseven_ffi_bugids; do
+      # Define paths for the patch file
+      patch_source="$CUR_DIR/patches/php/php8316-${bugid}.patch"
+      patch_target="php8316-${bugid}.patch"
+
+      # Verify that the patch file exists
+      if [[ ! -f "$patch_source" ]]; then
+        echo "Patch file $patch_source does not exist. Skipping patch for bug #${bugid}."
+        continue
+      fi
+
+      # Define the target file to check for the patch's unique identifier
+      target_file="${DIR_TMP}/php-8.3.16/ext/ffi/ffi.c"
+
+      # Check if the patch has already been applied by searching for the unique macro
+      if grep -q "ZEND_STRNCMP" "$target_file"; then
+        echo "Patch php8316-${bugid}.patch has already been applied. Skipping."
+        continue
+      fi
+
+      echo
+      echo "Applying patch php8316-${bugid}.patch for CentOS 7 with glibc 2.17"
+      echo "Related Issue: https://github.com/php/php-src/issues/17498"
+      echo
+
+      # Copy the patch file to the PHP source directory
+      cp -a "$patch_source" "$patch_target"
+      
+      # Convert Windows line endings to Unix if necessary
+      dos2unix "$patch_target" > /dev/null 2>&1
+
+      # Attempt to apply the patch with the -N flag to ignore already applied patches
+      patch -N -p1 < "$patch_target"
+
+      # Check if the patch was applied successfully
+      if [[ $? -eq 0 ]]; then
+        echo "Patch php8316-${bugid}.patch applied successfully."
+      else
+        echo "Failed to apply patch php8316-${bugid}.patch for bug #${bugid}."
+        
+        # Check for any rejected hunks and attempt to revert changes
+        if [[ -f "*.rej" ]]; then
+          echo "Reverting changes due to patch failure..."
+          
+          # Revert using the original file backup if available
+          # Note: This assumes that patch created a .orig file; adjust if different
+          for file in *.orig; do
+            if [[ -f "$file" ]]; then
+              original_file="${file%.orig}"
+              echo "Restoring original file: $original_file"
+              mv -f "$file" "$original_file"
+            fi
+          done
+          
+          # Remove any .rej files
+          rm -f *.rej
+        fi
+
+        # Optionally, exit the script or continue based on your preference
+        # exit 1
+      fi
+
+      # Clean up the copied patch file
+      rm -f "$patch_target"
+    done
+  else
+    echo "System is not CentOS 7 or PHP version is below 8.3.16. No patches applied."
+  fi
 
   # backport PHP 8.0 OpenSSL 3 compatibility for PHP 7.4
   # only compilation fixes but not 100% working as extensive changes
