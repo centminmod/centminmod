@@ -1712,7 +1712,7 @@ if [[ "$GCCINTEL_PHP" = [yY] ]]; then
     # if devtoolset-4 gcc and g++ exist use then instead of system versions regardless of CentOS version
     if [[ "$DEVTOOLSETELEVEN" = [yY] && -f /opt/rh/devtoolset-11/root/usr/bin/gcc && -f /opt/rh/devtoolset-11/root/usr/bin/g++ ]]; then
         GENERAL_DEVTOOLSETGCC='y'
-        DEVTOOLSETPHP_FALLTHROUGH=' -Wimplicit-fallthrough=0 -Wno-implicit-function-declaration -Wno-int-conversion -Wno-unused-result -Wno-vla-parameter -Wno-maybe-uninitialized -Wno-array-bounds -Wno-stringop-overread -Wno-missing-profile -Wno-pointer-to-int-cast -Wno-error=strict-prototypes -Wno-attribute-warning -Wno-enum-int-mismatch -Wno-stringop-overflow'
+        DEVTOOLSETPHP_FALLTHROUGH=' -Wimplicit-fallthrough=0 -Wno-implicit-function-declaration -Wno-int-conversion -Wno-unused-result -Wno-vla-parameter -Wno-maybe-uninitialized -Wno-array-bounds -Wno-stringop-overread -Wno-missing-profile -Wno-pointer-to-int-cast -Wno-error=strict-prototypes -Wno-attribute-warning -Wno-stringop-overflow'
         DEVTOOLSETPHP_EXTRAFLAGS=" -fcode-hoisting -Wno-cast-function-type -Wno-cast-align -Wno-implicit-function-declaration -Wno-builtin-declaration-mismatch"
         source /opt/rh/devtoolset-11/enable
         which gcc
@@ -1731,7 +1731,7 @@ if [[ "$GCCINTEL_PHP" = [yY] ]]; then
         echo $CXX
     elif [[ "$DEVTOOLSETTEN" = [yY] && -f /opt/rh/devtoolset-10/root/usr/bin/gcc && -f /opt/rh/devtoolset-10/root/usr/bin/g++ ]]; then
         GENERAL_DEVTOOLSETGCC='y'
-        DEVTOOLSETPHP_FALLTHROUGH=' -Wimplicit-fallthrough=0 -Wno-implicit-function-declaration -Wno-int-conversion -Wno-unused-result -Wno-array-bounds -Wno-missing-profile -Wno-pointer-to-int-cast -Wno-error=strict-prototypes -Wno-attribute-warning -Wno-enum-int-mismatch -Wno-stringop-overflow'
+        DEVTOOLSETPHP_FALLTHROUGH=' -Wimplicit-fallthrough=0 -Wno-implicit-function-declaration -Wno-int-conversion -Wno-unused-result -Wno-array-bounds -Wno-missing-profile -Wno-pointer-to-int-cast -Wno-error=strict-prototypes -Wno-attribute-warning -Wno-stringop-overflow'
         DEVTOOLSETPHP_EXTRAFLAGS=" -fcode-hoisting -Wno-cast-function-type -Wno-cast-align -Wno-implicit-function-declaration -Wno-builtin-declaration-mismatch"
         source /opt/rh/devtoolset-10/enable
         which gcc
@@ -1750,7 +1750,7 @@ if [[ "$GCCINTEL_PHP" = [yY] ]]; then
         echo $CXX
     elif [[ "$DEVTOOLSETNINE" = [yY] ]] && [[ -f /opt/gcc9/bin/gcc && -f /opt/gcc9/bin/g++ ]]; then
       GENERAL_DEVTOOLSETGCC='y'
-      DEVTOOLSETPHP_FALLTHROUGH=' -Wimplicit-fallthrough=0 -Wno-implicit-function-declaration -Wno-int-conversion -Wno-unused-result -Wno-missing-profile -Wno-pointer-to-int-cast -Wno-error=strict-prototypes -Wno-attribute-warning -Wno-enum-int-mismatch -Wno-stringop-overflow'
+      DEVTOOLSETPHP_FALLTHROUGH=' -Wimplicit-fallthrough=0 -Wno-implicit-function-declaration -Wno-int-conversion -Wno-unused-result -Wno-missing-profile -Wno-pointer-to-int-cast -Wno-error=strict-prototypes -Wno-attribute-warning -Wno-stringop-overflow'
       DEVTOOLSETPHP_EXTRAFLAGS=" -fcode-hoisting -Wno-cast-function-type -Wno-cast-align -Wno-implicit-function-declaration -Wno-builtin-declaration-mismatch"
       source /opt/gcc9/enable
       which gcc
@@ -1782,7 +1782,7 @@ if [[ "$GCCINTEL_PHP" = [yY] ]]; then
       fi
     elif [[ "$DEVTOOLSETNINE" = [yY] && -f /opt/rh/devtoolset-9/root/usr/bin/gcc && -f /opt/rh/devtoolset-9/root/usr/bin/g++ ]]; then
         GENERAL_DEVTOOLSETGCC='y'
-        DEVTOOLSETPHP_FALLTHROUGH=' -Wimplicit-fallthrough=0 -Wno-implicit-function-declaration -Wno-int-conversion -Wno-unused-result -Wno-missing-profile -Wno-pointer-to-int-cast -Wno-error=strict-prototypes -Wno-attribute-warning -Wno-enum-int-mismatch -Wno-stringop-overflow'
+        DEVTOOLSETPHP_FALLTHROUGH=' -Wimplicit-fallthrough=0 -Wno-implicit-function-declaration -Wno-int-conversion -Wno-unused-result -Wno-missing-profile -Wno-pointer-to-int-cast -Wno-error=strict-prototypes -Wno-attribute-warning -Wno-stringop-overflow'
         DEVTOOLSETPHP_EXTRAFLAGS=" -fcode-hoisting -Wno-cast-function-type -Wno-cast-align -Wno-implicit-function-declaration -Wno-builtin-declaration-mismatch"
         source /opt/rh/devtoolset-9/enable
         which gcc
@@ -2044,7 +2044,7 @@ if [[ "$GCCINTEL_PHP" = [yY] ]]; then
     # if devtoolset-4 gcc and g++ exist use then instead of system versions regardless of CentOS version
     if [[ "$DEVTOOLSETELEVEN" = [yY] && -f /opt/rh/devtoolset-11/root/usr/bin/gcc && -f /opt/rh/devtoolset-11/root/usr/bin/g++ ]]; then
         GENERAL_DEVTOOLSETGCC='y'
-        DEVTOOLSETPHP_FALLTHROUGH=' -Wimplicit-fallthrough=0 -Wno-implicit-function-declaration -Wno-int-conversion -Wno-unused-result -Wno-vla-parameter -Wno-maybe-uninitialized -Wno-array-bounds -Wno-stringop-overread -Wno-missing-profile -Wno-pointer-to-int-cast -Wno-error=strict-prototypes -Wno-attribute-warning -Wno-enum-int-mismatch -Wno-stringop-overflow'
+        DEVTOOLSETPHP_FALLTHROUGH=' -Wimplicit-fallthrough=0 -Wno-implicit-function-declaration -Wno-int-conversion -Wno-unused-result -Wno-vla-parameter -Wno-maybe-uninitialized -Wno-array-bounds -Wno-stringop-overread -Wno-missing-profile -Wno-pointer-to-int-cast -Wno-error=strict-prototypes -Wno-attribute-warning -Wno-stringop-overflow'
         DEVTOOLSETPHP_EXTRAFLAGS=" -fcode-hoisting -Wno-cast-function-type -Wno-cast-align -Wno-implicit-function-declaration -Wno-builtin-declaration-mismatch"
         source /opt/rh/devtoolset-11/enable
         which gcc
@@ -2063,7 +2063,7 @@ if [[ "$GCCINTEL_PHP" = [yY] ]]; then
         echo $CXX
     elif [[ "$DEVTOOLSETTEN" = [yY] && -f /opt/rh/devtoolset-10/root/usr/bin/gcc && -f /opt/rh/devtoolset-10/root/usr/bin/g++ ]]; then
         GENERAL_DEVTOOLSETGCC='y'
-        DEVTOOLSETPHP_FALLTHROUGH=' -Wimplicit-fallthrough=0 -Wno-implicit-function-declaration -Wno-int-conversion -Wno-unused-result -Wno-array-bounds -Wno-missing-profile -Wno-pointer-to-int-cast -Wno-error=strict-prototypes -Wno-attribute-warning -Wno-enum-int-mismatch -Wno-stringop-overflow'
+        DEVTOOLSETPHP_FALLTHROUGH=' -Wimplicit-fallthrough=0 -Wno-implicit-function-declaration -Wno-int-conversion -Wno-unused-result -Wno-array-bounds -Wno-missing-profile -Wno-pointer-to-int-cast -Wno-error=strict-prototypes -Wno-attribute-warning -Wno-stringop-overflow'
         DEVTOOLSETPHP_EXTRAFLAGS=" -fcode-hoisting -Wno-cast-function-type -Wno-cast-align -Wno-implicit-function-declaration -Wno-builtin-declaration-mismatch"
         source /opt/rh/devtoolset-10/enable
         which gcc
@@ -2082,7 +2082,7 @@ if [[ "$GCCINTEL_PHP" = [yY] ]]; then
         echo $CXX
     elif [[ "$DEVTOOLSETNINE" = [yY] ]] && [[ -f /opt/gcc9/bin/gcc && -f /opt/gcc9/bin/g++ ]]; then
       GENERAL_DEVTOOLSETGCC='y'
-      DEVTOOLSETPHP_FALLTHROUGH=' -Wimplicit-fallthrough=0 -Wno-implicit-function-declaration -Wno-int-conversion -Wno-unused-result -Wno-missing-profile -Wno-pointer-to-int-cast -Wno-error=strict-prototypes -Wno-attribute-warning -Wno-enum-int-mismatch -Wno-stringop-overflow'
+      DEVTOOLSETPHP_FALLTHROUGH=' -Wimplicit-fallthrough=0 -Wno-implicit-function-declaration -Wno-int-conversion -Wno-unused-result -Wno-missing-profile -Wno-pointer-to-int-cast -Wno-error=strict-prototypes -Wno-attribute-warning -Wno-stringop-overflow'
       DEVTOOLSETPHP_EXTRAFLAGS=" -fcode-hoisting -Wno-cast-function-type -Wno-cast-align -Wno-implicit-function-declaration -Wno-builtin-declaration-mismatch"
       source /opt/gcc9/enable
       which gcc
@@ -2114,7 +2114,7 @@ if [[ "$GCCINTEL_PHP" = [yY] ]]; then
       fi
     elif [[ "$DEVTOOLSETNINE" = [yY] && -f /opt/rh/devtoolset-9/root/usr/bin/gcc && -f /opt/rh/devtoolset-9/root/usr/bin/g++ ]]; then
         GENERAL_DEVTOOLSETGCC='y'
-        DEVTOOLSETPHP_FALLTHROUGH=' -Wimplicit-fallthrough=0 -Wno-implicit-function-declaration -Wno-int-conversion -Wno-unused-result -Wno-missing-profile -Wno-pointer-to-int-cast -Wno-error=strict-prototypes -Wno-attribute-warning -Wno-enum-int-mismatch -Wno-stringop-overflow'
+        DEVTOOLSETPHP_FALLTHROUGH=' -Wimplicit-fallthrough=0 -Wno-implicit-function-declaration -Wno-int-conversion -Wno-unused-result -Wno-missing-profile -Wno-pointer-to-int-cast -Wno-error=strict-prototypes -Wno-attribute-warning -Wno-stringop-overflow'
         DEVTOOLSETPHP_EXTRAFLAGS=" -fcode-hoisting -Wno-cast-function-type -Wno-cast-align -Wno-implicit-function-declaration -Wno-builtin-declaration-mismatch"
         source /opt/rh/devtoolset-9/enable
         which gcc
