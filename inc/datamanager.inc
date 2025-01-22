@@ -1001,6 +1001,16 @@ case "$datamenu_opt" in
                     read -ep "Remote server SSH port (default: 22): " remote_port
                     remote_port=${remote_port:-22}
                     read -ep "Remote server SSH username (default: root): " remote_user
+                    if [ "$remote_user" != "root" ]; then
+                      echo "non-root user detected, will assume remote SSH username has sudo privileges"
+                      echo
+                      read -ep "continue with $remote_user with assumed sudo privileges [y/n] ?" assume_sudo_user
+                      if [[ "$assume_sudo_user" != [yY] ]]; then
+                        echo
+                        echo "Enter a different username with sudo privileges or root user"
+                        read -ep "Re-enter remote server SSH username: " remote_user
+                      fi
+                    fi
                     remote_user=${remote_user:-root}
                     read -ep "Remote server SSH hostname/IP address: " remote_server
                     read -ep "Tunnel method (nc or socat, default: nc): " tunnel_method
@@ -1136,6 +1146,16 @@ case "$datamenu_opt" in
                 read -ep "Remote server SSH port (default: 22): " remote_port
                 remote_port=${remote_port:-22}
                 read -ep "Remote server SSH username (default: root): " remote_user
+                if [ "$remote_user" != "root" ]; then
+                  echo "non-root user detected, will assume remote SSH username has sudo privileges"
+                  echo
+                  read -ep "continue with $remote_user with assumed sudo privileges [y/n] ?" assume_sudo_user
+                  if [[ "$assume_sudo_user" != [yY] ]]; then
+                    echo
+                    echo "Enter a different username with sudo privileges or root user"
+                    read -ep "Re-enter remote server SSH username: " remote_user
+                  fi
+                fi
                 remote_user=${remote_user:-root}
                 read -ep "Remote server SSH hostname/IP address: " remote_server
                 read -ep "Tunnel method (nc or socat, default: nc): " tunnel_method
@@ -1339,6 +1359,16 @@ case "$datamenu_opt" in
         read -ep "Remote server SSH port (default: 22): " remote_port
         remote_port=${remote_port:-22}
         read -ep "Remote server SSH username (default: root): " remote_user
+        if [ "$remote_user" != "root" ]; then
+          echo "non-root user detected, will assume remote SSH username has sudo privileges"
+          echo
+          read -ep "continue with $remote_user with assumed sudo privileges [y/n] ?" assume_sudo_user
+          if [[ "$assume_sudo_user" != [yY] ]]; then
+            echo
+            echo "Enter a different username with sudo privileges or root user"
+            read -ep "Re-enter remote server SSH username: " remote_user
+          fi
+        fi
         remote_user=${remote_user:-root}
         read -ep "Remote server SSH hostname/IP address: " remote_server
         read -ep "Tunnel method (nc or socat, default: nc): " tunnel_method
