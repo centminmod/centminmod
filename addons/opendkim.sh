@@ -258,7 +258,7 @@ opendkimsetup() {
             fi
             echo "---------------------------------------------------------------------------" | tee "$CENTMINLOGDIR/dkim_spf_dns_${h_vhostname}_${DT}.txt"
             echo "$h_vhostname DKIM DNS Entry" | tee -a "$CENTMINLOGDIR/dkim_spf_dns_${h_vhostname}_${DT}.txt"
-            cat "/etc/opendkim/keys/$h_vhostname/${SELECTOR}.txt" | tr '\n' ' ' | sed -e "s| \"        \"|\" \"|" -e "s|( \"|\"|" -e "s| )  ; ----- DKIM key $SELECTOR for $h_vhostname||" -e "s|${SELECTOR}._domainkey|${SELECTOR}._domainkey.$h_vhostname|" -e "s|     IN      TXT   | IN TXT|" | sed 's|[[:space:]]| |g' | sed -e "s|\; \"   |\;|" | sed -e "s|\"p=|p=|" | tee -a "$CENTMINLOGDIR/dkim_spf_dns_${h_vhostname}_${DT}.txt"
+            cat "/etc/opendkim/keys/$h_vhostname/${SELECTOR}.txt" | tr -d '\n' | sed -e 's/[[:space:]]\+/ /g' -e "s/( \"//g" -e "s/\" )//g" -e "s/ ; ----- DKIM key $SELECTOR for $h_vhostname//" -e "s/${SELECTOR}._domainkey/${SELECTOR}._domainkey.$h_vhostname/" -e 's/[[:space:]]*IN[[:space:]]*TXT[[:space:]]*/ IN TXT /' -e 's/"[[:space:]]*"//g' -e 's/[[:space:]]*;/;/g' | tee -a "$CENTMINLOGDIR/dkim_spf_dns_${h_vhostname}_${DT}.txt"
             sed -i 's|"    "||g' "/root/centminlogs/dkim_spf_dns_${h_vhostname}_${DT}.txt"
             echo -e "\n------------------------------------------------------------" | tee -a "$CENTMINLOGDIR/dkim_spf_dns_${h_vhostname}_${DT}.txt"
             echo "$h_vhostname SPF DNS Entry" | tee -a "$CENTMINLOGDIR/dkim_spf_dns_${h_vhostname}_${DT}.txt"
@@ -314,7 +314,7 @@ opendkimsetup() {
                 fi
                 echo "---------------------------------------------------------------------------" | tee "$CENTMINLOGDIR/dkim_spf_dns_${vhostname}_${DT}.txt"
                 echo "$vhostname DKIM DNS Entry" | tee -a "$CENTMINLOGDIR/dkim_spf_dns_${vhostname}_${DT}.txt"
-                cat "/etc/opendkim/keys/$vhostname/${SELECTOR}.txt" | tr '\n' ' ' | sed -e "s| \"        \"|\" \"|" -e "s|( \"|\"|" -e "s| )  ; ----- DKIM key $SELECTOR for $vhostname||" -e "s|${SELECTOR}._domainkey|${SELECTOR}._domainkey.$vhostname|" -e "s|     IN      TXT   | IN TXT|" | sed 's|[[:space:]]| |g' | sed -e "s|\; \"   |\;|" | sed -e "s|\"p=|p=|" | tee -a "$CENTMINLOGDIR/dkim_spf_dns_${vhostname}_${DT}.txt"
+                cat "/etc/opendkim/keys/$vhostname/${SELECTOR}.txt" | tr -d '\n' | sed -e 's/[[:space:]]\+/ /g' -e "s/( \"//g" -e "s/\" )//g" -e "s/ ; ----- DKIM key $SELECTOR for $vhostname//" -e "s/${SELECTOR}._domainkey/${SELECTOR}._domainkey.$vhostname/" -e 's/[[:space:]]*IN[[:space:]]*TXT[[:space:]]*/ IN TXT /' -e 's/"[[:space:]]*"//g' -e 's/[[:space:]]*;/;/g' | tee -a "$CENTMINLOGDIR/dkim_spf_dns_${vhostname}_${DT}.txt"
                 sed -i 's|"    "||g' "/root/centminlogs/dkim_spf_dns_${vhostname}_${DT}.txt"
                 echo -e "\n------------------------------------------------------------" | tee -a "$CENTMINLOGDIR/dkim_spf_dns_${vhostname}_${DT}.txt"
                 echo "$vhostname SPF DNS Entry" | tee -a "$CENTMINLOGDIR/dkim_spf_dns_${vhostname}_${DT}.txt"
