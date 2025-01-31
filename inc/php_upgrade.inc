@@ -366,17 +366,20 @@ else
     fi
     if [ -f /usr/local/bin/getphpver ]; then
         getlatest_phpbranch=$(php-config --version | awk  -F '.' '{print $1$2}')
-        if [[ "$getlatest_phpbranch" = '83' ]]; then
-            getlatest_phpbranchver=$(getphpver 8 | xargs | sed -e 's| |, |g')
+        if [[ "$getlatest_phpbranch" = '84' ]]; then
+            echo "Centmin Mod $branchname does not support PHP 8.4"
+            echo "Upgrade switch to Centmin Mod 140.00beta01 for official PHP 8.4 support"
+        elif [[ "$getlatest_phpbranch" = '83' ]]; then
+            getlatest_phpbranchver=$(getphpver 8 | xargs | sed -e 's| |, |g' | cut -d, -f2- | sed 's/^ //')
             echo "Latest PHP Version Installable: $getlatest_phpbranchver"
         elif [[ "$getlatest_phpbranch" = '82' ]]; then
-            getlatest_phpbranchver=$(getphpver 8 | xargs | sed -e 's| |, |g')
+            getlatest_phpbranchver=$(getphpver 8 | xargs | sed -e 's| |, |g' | cut -d, -f2- | sed 's/^ //')
             echo "Latest PHP Version Installable: $getlatest_phpbranchver"
         elif [[ "$getlatest_phpbranch" = '81' ]]; then
-            getlatest_phpbranchver=$(getphpver 8 | xargs | sed -e 's| |, |g')
+            getlatest_phpbranchver=$(getphpver 8 | xargs | sed -e 's| |, |g' | cut -d, -f2- | sed 's/^ //')
             echo "Latest PHP Version Installable: $getlatest_phpbranchver"
         elif [[ "$getlatest_phpbranch" = '80' ]]; then
-            getlatest_phpbranchver=$(getphpver 8 | xargs | sed -e 's| |, |g')
+            getlatest_phpbranchver=$(getphpver 8 | xargs | sed -e 's| |, |g' | cut -d, -f2- | sed 's/^ //')
             echo "Latest PHP Version Installable: $getlatest_phpbranchver"
         elif [[ "$getlatest_phpbranch" = '74' ]]; then
             getlatest_phpbranchver=$(getphpver 7 | xargs | sed -e 's| |, |g')
@@ -401,7 +404,7 @@ else
             echo "Latest PHP Version Installable: $getlatest_phpbranchver"
         else
             echo "Can Not Determine Latest PHP Version Installable:"
-            getphpver
+            getphpver | xargs | sed -e 's| |, |g' | cut -d, -f2- | sed 's/^ //'
         fi
     fi
     PHP_AUTOOPENSSLCHECK=$(nginx -V 2>&1 | grep -Eo "$OPENSSL_VERSION")
@@ -420,6 +423,20 @@ else
     fi
     echo
     read -ep "Enter PHP Version number you want to upgrade/downgrade to: " phpver
+
+    PHP_MAX_VER=$(echo "$phpver" | cut -d . -f1,2)
+    if [[ "$PHP_MAX_VER" = 8.4 || "$PHP_MAX_VER" = 8.5 ]]; then
+        echo
+        echo
+        echo "$branchname Max supported PHP version is 8.3. For PHP => 8.4 support"
+        echo "Upgrade switch to Centmin Mod 140.00beta01 or higher as per:"
+        echo "https://community.centminmod.com/threads/25572/"
+        echo
+        echo "Update instructions https://community.centminmod.com/posts/100211/"
+        echo
+        exit
+    fi
+
     # if user incorrectly enters PHP version without minor version i.e. 8.0 instead
     # of 8.0.30 try to use getphpver to get the latest PHP version within that branch
     declare -A php_versions
