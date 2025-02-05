@@ -1,3 +1,37 @@
+nginx_ssl_cert_cache() {
+  # https://nginx.org/en/docs/http/ngx_http_ssl_module.html#ssl_certificate_cache
+  # https://blog.nginx.org/blog/optimizing-resource-usage-for-complex-ssl-configurations
+
+if [[ "$NGINX_SSL_CACHE_COUNT" && "$NGINX_SSL_CACHE_TTLS" && "$NGINX_SSL_CACHE" = [yY] && "$DETECT_NGXVER" -ge '1027004' ]]; then
+cat > "/usr/local/nginx/conf/nginx_ssl_cert_cache.conf" <<EIF
+ssl_certificate_cache max=$NGINX_SSL_CACHE_COUNT inactive=20s valid=${NGINX_SSL_CACHE_TTLS}m;
+EIF
+elif [[ "$NGINX_SSL_CACHE_COUNT" && ! "$NGINX_SSL_CACHE_TTLS" && "$NGINX_SSL_CACHE" = [yY] && "$DETECT_NGXVER" -ge '1027004' ]]; then
+cat > "/usr/local/nginx/conf/nginx_ssl_cert_cache.conf" <<EIF
+ssl_certificate_cache max=$NGINX_SSL_CACHE_COUNT inactive=20s valid=1m;
+EIF
+elif [[ ! "$NGINX_SSL_CACHE_COUNT" && "$NGINX_SSL_CACHE_TTLS" = [yY] && "$DETECT_NGXVER" -ge '1027004' ]]; then
+cat > "/usr/local/nginx/conf/nginx_ssl_cert_cache.conf" <<EIF
+ssl_certificate_cache max=1000 inactive=20s valid=${NGINX_SSL_CACHE_TTLS}m;
+EIF
+elif [[ "$NGINX_SSL_CACHE" = [yY] && "$DETECT_NGXVER" -ge '1027004' ]]; then
+cat > "/usr/local/nginx/conf/nginx_ssl_cert_cache.conf" <<EIF
+ssl_certificate_cache max=1000 inactive=20s valid=1m;
+EIF
+fi
+
+  NGINX_SSL_CERT_CACHE_INCLUDECHECK=$(grep '\/usr\/local\/nginx\/conf\/nginx_ssl_cert_cache.conf' /usr/local/nginx/conf/nginx.conf)
+
+  if [[ "$NGINX_SSL_CACHE" = [yY] && "$DETECT_NGXVER" -ge '1027004' ]]; then
+    if [[ -z "$NGINX_SSL_CERT_CACHE_INCLUDECHECK" && -f /usr/local/nginx/conf/nginx_ssl_cert_cache.conf ]]; then
+          sed -i 's/http {/http { \n include \/usr\/local\/nginx\/conf\/nginx_ssl_cert_cache.conf;/g' /usr/local/nginx/conf/nginx.conf
+    fi
+      sed -i 's|^ #include \/usr\/local\/nginx\/conf\/nginx_ssl_cert_cache.conf;| include \/usr\/local\/nginx\/conf\/nginx_ssl_cert_cache.conf;|g' /usr/local/nginx/conf/nginx.conf
+  else
+    sed -i 's|^ include \/usr\/local\/nginx\/conf\/nginx_ssl_cert_cache.conf;| #include \/usr\/local\/nginx\/conf\/nginx_ssl_cert_cache.conf;|g' /usr/local/nginx/conf/nginx.conf
+  fi
+}
+
 angie_console_setup() {
   if [[ ! -d /usr/share/angie-console-light/html ]]; then
     echo
@@ -5862,6 +5896,7 @@ if [[ "$ngver" = 'quic' ]] || [[ "$NGINX_QUIC_SUPPORT" = [yY] && "$DETECT_NGXVER
   # OPENSSLOPT=" --with-openssl=../openssl-quic-nginx"
   OPENSSLOPT=""
 fi
+nginx_ssl_cert_cache
 
 #    ASK "Would you like to compile nginx with IPv6 support? [y/n] "
 #    if [[ "$asknginxipv" = [yY] ]]; then
