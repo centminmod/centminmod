@@ -4,7 +4,7 @@ nginx_ssl_cert_cache() {
 
 if [[ "$NGINX_SSL_CACHE_COUNT" && "$NGINX_SSL_CACHE_TTLS" && "$NGINX_SSL_CACHE" = [yY] && "$DETECT_NGXVER" -ge '1027004' ]]; then
 cat > "/usr/local/nginx/conf/nginx_ssl_cert_cache.conf" <<EIF
-ssl_certificate_cache max=$NGINX_SSL_CACHE_COUNT inactive=20s valid=${NGINX_SSL_CACHE_TTLS}m;
+ssl_certificate_cache max=$NGINX_SSL_CACHE_COUNT inactive=20s valid=${NGINX_SSL_CACHE_TTLS};
 EIF
 elif [[ "$NGINX_SSL_CACHE_COUNT" && ! "$NGINX_SSL_CACHE_TTLS" && "$NGINX_SSL_CACHE" = [yY] && "$DETECT_NGXVER" -ge '1027004' ]]; then
 cat > "/usr/local/nginx/conf/nginx_ssl_cert_cache.conf" <<EIF
@@ -12,7 +12,7 @@ ssl_certificate_cache max=$NGINX_SSL_CACHE_COUNT inactive=20s valid=1m;
 EIF
 elif [[ ! "$NGINX_SSL_CACHE_COUNT" && "$NGINX_SSL_CACHE_TTLS" = [yY] && "$DETECT_NGXVER" -ge '1027004' ]]; then
 cat > "/usr/local/nginx/conf/nginx_ssl_cert_cache.conf" <<EIF
-ssl_certificate_cache max=1000 inactive=20s valid=${NGINX_SSL_CACHE_TTLS}m;
+ssl_certificate_cache max=1000 inactive=20s valid=${NGINX_SSL_CACHE_TTLS};
 EIF
 elif [[ "$NGINX_SSL_CACHE" = [yY] && "$DETECT_NGXVER" -ge '1027004' ]]; then
 cat > "/usr/local/nginx/conf/nginx_ssl_cert_cache.conf" <<EIF
