@@ -1,5 +1,5 @@
 #!/bin/bash
-VER=0.6
+VER=0.7
 DT=$(date +"%d%m%y-%H%M%S")
 SSH_LOGGING='n'
 remote_port=22; remote_user="root"; remote_server=""
@@ -145,10 +145,18 @@ fi
 
 if [[ "$remote_user" && "$remote_server" ]]; then
   # Start netcat or socat listener on remote server
-  if [ "${netcat}" == "y" ]; then
-    listener_cmd="mkdir -p ${remote_backupdir} && nc -l ${listen_port} | zstd -d | tar -xf - -C ${remote_backupdir}"
+  if [ "$remote_user" != "root" ]; then
+    if [ "${netcat}" == "y" ]; then
+      listener_cmd="sudo bash -c 'mkdir -p \"${remote_backupdir}\" && nc -l \"${listen_port}\" | zstd -d | tar -xf - -C \"${remote_backupdir}\"'"
+    else
+      listener_cmd="sudo bash -c 'mkdir -p \"${remote_backupdir}\" && socat -u TCP-LISTEN:\"${listen_port}\",rcvbuf=\"${buffer_size}\" - | zstd -d | tar -xf - -C \"${remote_backupdir}\"'"
+    fi
   else
-    listener_cmd="mkdir -p ${remote_backupdir} && socat -u TCP-LISTEN:${listen_port},rcvbuf=${buffer_size} - | zstd -d | tar -xf - -C ${remote_backupdir}"
+    if [ "${netcat}" == "y" ]; then
+      listener_cmd="bash -c 'mkdir -p \"${remote_backupdir}\" && nc -l \"${listen_port}\" | zstd -d | tar -xf - -C \"${remote_backupdir}\"'"
+    else
+      listener_cmd="bash -c 'mkdir -p \"${remote_backupdir}\" && socat -u TCP-LISTEN:\"${listen_port}\",rcvbuf=\"${buffer_size}\" - | zstd -d | tar -xf - -C \"${remote_backupdir}\"'"
+    fi
   fi
   $ssh_cmd "${remote_user}@${remote_server}" "$listener_cmd" $ssh_debug_log &
   # Give the remote server a few seconds to start the listener

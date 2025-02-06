@@ -22,9 +22,12 @@ DKIM_BACKUPDIR='/etc/centminmod/dkim_backups'
 # Initialize variables
 FORCE_UPDATE=0
 CLEANONLY=0
+WIPE=0
+CHECK=0
+wipe_host=""
 vhostname=""
 
-# Process command-line arguments
+# Add to argument processing section
 while [[ $# -gt 0 ]]; do
     case "$1" in
         --force)
@@ -35,9 +38,23 @@ while [[ $# -gt 0 ]]; do
             CLEANONLY=1
             shift
             ;;
-        *)
-            vhostname="$1"
+        check)
+            CHECK=1
             shift
+            ;;
+        wipe)
+            WIPE=1
+            shift
+            ;;
+        *)
+            if [[ "$WIPE" -eq 1 && -z "$wipe_host" ]]; then
+                wipe_host="$1"
+                WIPE=2
+                shift
+            else
+                vhostname="$1"
+                shift
+            fi
             ;;
     esac
 done
@@ -165,6 +182,72 @@ if [ ! -d "$CENTMINLOGDIR" ]; then
     mkdir -p "$CENTMINLOGDIR"
 fi
 
+check_dkim() {
+    echo "================================================================"
+    echo "                    OpenDKIM Configuration Check                   "
+    echo "================================================================"
+    echo
+    echo "DKIM Keys Directory Structure:"
+    echo "----------------------------------------------------------------"
+    if [ -d "/etc/opendkim/keys" ]; then
+        find /etc/opendkim/keys -type d -exec sh -c '
+            for dir do
+                printf "\033[0;34m%s\033[0m:\n" "$dir"
+                ls -la "$dir" 2>/dev/null | tail -n +4 | \
+                awk '\''{ 
+                    printf "  %-10s %-10s %8s %s %s %s %s\n", 
+                    $1, $3, $5, $6, $7, $8, $9
+                }'\''
+            done
+        ' sh {} +
+    else
+        echo "No DKIM keys directory found."
+    fi
+    echo
+
+    echo "Trusted Hosts Configuration:"
+    echo "----------------------------------------------------------------"
+    if [ -f "/etc/opendkim/TrustedHosts" ]; then
+        grep -v "^#" /etc/opendkim/TrustedHosts | grep -v "^$" | \
+        while read -r line; do
+            echo "  $line"
+        done
+    else
+        echo "No TrustedHosts file found."
+    fi
+    echo
+
+    echo "Key Table Configuration:"
+    echo "----------------------------------------------------------------"
+    if [ -f "/etc/opendkim/KeyTable" ]; then
+        grep -v "^#" /etc/opendkim/KeyTable | grep -v "^$" | \
+        while read -r line; do
+            if [[ $line =~ ^([^[:space:]]+)[[:space:]]+(.+)$ ]]; then
+                printf "  \033[0;32mSelector:\033[0m %s\n" "${BASH_REMATCH[1]}"
+                printf "  \033[0;32mConfig:\033[0m   %s\n\n" "${BASH_REMATCH[2]}"
+            fi
+        done
+    else
+        echo "No KeyTable file found."
+    fi
+    echo
+
+    echo "Signing Table Configuration:"
+    echo "----------------------------------------------------------------"
+    if [ -f "/etc/opendkim/SigningTable" ]; then
+        grep -v "^#" /etc/opendkim/SigningTable | grep -v "^$" | \
+        while read -r line; do
+            if [[ $line =~ ^([^[:space:]]+)[[:space:]]+(.+)$ ]]; then
+                printf "  \033[0;32mDomain:\033[0m    %s\n" "${BASH_REMATCH[1]}"
+                printf "  \033[0;32mSelector:\033[0m  %s\n\n" "${BASH_REMATCH[2]}"
+            fi
+        done
+    else
+        echo "No SigningTable file found."
+    fi
+    echo "================================================================"
+}
+
 opendkimsetup() {
     if ! rpm -qa | grep -qw opendkim; then
         yum -y install opendkim
@@ -188,6 +271,30 @@ opendkimsetup() {
             sed -i 's|^# KeyTable|KeyTable|' /etc/opendkim.conf
             sed -i "s|^# SigningTable|SigningTable|" /etc/opendkim.conf
             sed -i "s|Umask.*|Umask 022|" /etc/opendkim.conf
+        fi
+
+        # Additional configuration updates that should always run
+        # Only update Selector if it doesn't match our SELECTOR variable
+        if ! grep -q "^Selector[[:space:]]*${SELECTOR}$" /etc/opendkim.conf; then
+            sed -i "s|^Selector.*|Selector        ${SELECTOR}|" /etc/opendkim.conf
+        fi
+        
+        # Remove KeyFile if it exists
+        sed -i '/^KeyFile/d' /etc/opendkim.conf
+        
+        # Update SigningTable to use file: if it's using refile:
+        if grep -q "^SigningTable.*refile:" /etc/opendkim.conf; then
+            sed -i 's|^SigningTable.*|SigningTable    file:/etc/opendkim/SigningTable|' /etc/opendkim.conf
+        fi
+
+        # Update ExternalIgnoreList to use file: if it's using refile:
+        if grep -q "^ExternalIgnoreList.*refile:" /etc/opendkim.conf; then
+            sed -i 's|^ExternalIgnoreList.*|ExternalIgnoreList    file:/etc/opendkim/TrustedHosts|' /etc/opendkim.conf
+        fi
+
+        # Update InternalHosts to use file: if it's using refile:
+        if grep -q "^InternalHosts.*refile:" /etc/opendkim.conf; then
+            sed -i 's|^InternalHosts.*|InternalHosts    file:/etc/opendkim/TrustedHosts|' /etc/opendkim.conf
         fi
 
         if grep -q "^#Socket\s*inet:8891@localhost" /etc/opendkim.conf; then
@@ -251,14 +358,14 @@ opendkimsetup() {
                 echo "${SELECTOR}._domainkey.$h_vhostname $h_vhostname:${SELECTOR}:/etc/opendkim/keys/$h_vhostname/${SELECTOR}" >> /etc/opendkim/KeyTable
             fi
             if ! grep -q "$h_vhostname" /etc/opendkim/SigningTable; then
-                echo "*@$h_vhostname ${SELECTOR}._domainkey.$h_vhostname" >> /etc/opendkim/SigningTable
+                echo "$h_vhostname ${SELECTOR}._domainkey.$h_vhostname" >> /etc/opendkim/SigningTable
             fi
             if ! grep -q "^$h_vhostname$" /etc/opendkim/TrustedHosts; then
                 echo "$h_vhostname" >> /etc/opendkim/TrustedHosts
             fi
             echo "---------------------------------------------------------------------------" | tee "$CENTMINLOGDIR/dkim_spf_dns_${h_vhostname}_${DT}.txt"
             echo "$h_vhostname DKIM DNS Entry" | tee -a "$CENTMINLOGDIR/dkim_spf_dns_${h_vhostname}_${DT}.txt"
-            cat "/etc/opendkim/keys/$h_vhostname/${SELECTOR}.txt" | tr '\n' ' ' | sed -e "s| \"        \"|\" \"|" -e "s|( \"|\"|" -e "s| )  ; ----- DKIM key $SELECTOR for $h_vhostname||" -e "s|${SELECTOR}._domainkey|${SELECTOR}._domainkey.$h_vhostname|" -e "s|     IN      TXT   | IN TXT|" | sed 's|[[:space:]]| |g' | sed -e "s|\; \"   |\;|" | sed -e "s|\"p=|p=|" | tee -a "$CENTMINLOGDIR/dkim_spf_dns_${h_vhostname}_${DT}.txt"
+            cat "/etc/opendkim/keys/$h_vhostname/${SELECTOR}.txt" | tr -d '\n' | sed -e 's/[[:space:]]\+/ /g' -e "s/( \"//g" -e "s/\" )//g" -e "s/ ; ----- DKIM key $SELECTOR for $h_vhostname//" -e "s/${SELECTOR}._domainkey/${SELECTOR}._domainkey.$h_vhostname/" -e 's/[[:space:]]*IN[[:space:]]*TXT[[:space:]]*/ IN TXT /' -e 's/"[[:space:]]*"//g' -e 's/[[:space:]]*;/;/g' | tee -a "$CENTMINLOGDIR/dkim_spf_dns_${h_vhostname}_${DT}.txt"
             sed -i 's|"    "||g' "/root/centminlogs/dkim_spf_dns_${h_vhostname}_${DT}.txt"
             echo -e "\n------------------------------------------------------------" | tee -a "$CENTMINLOGDIR/dkim_spf_dns_${h_vhostname}_${DT}.txt"
             echo "$h_vhostname SPF DNS Entry" | tee -a "$CENTMINLOGDIR/dkim_spf_dns_${h_vhostname}_${DT}.txt"
@@ -307,14 +414,14 @@ opendkimsetup() {
                     echo "${SELECTOR}._domainkey.$vhostname $vhostname:${SELECTOR}:/etc/opendkim/keys/$vhostname/${SELECTOR}" >> /etc/opendkim/KeyTable
                 fi
                 if ! grep -q "${SELECTOR}._domainkey.$vhostname" /etc/opendkim/SigningTable; then
-                    echo "*@$vhostname ${SELECTOR}._domainkey.$vhostname" >> /etc/opendkim/SigningTable
+                    echo "$vhostname ${SELECTOR}._domainkey.$vhostname" >> /etc/opendkim/SigningTable
                 fi
                 if ! grep -q "^$vhostname$" /etc/opendkim/TrustedHosts; then
                     echo "$vhostname" >> /etc/opendkim/TrustedHosts
                 fi
                 echo "---------------------------------------------------------------------------" | tee "$CENTMINLOGDIR/dkim_spf_dns_${vhostname}_${DT}.txt"
                 echo "$vhostname DKIM DNS Entry" | tee -a "$CENTMINLOGDIR/dkim_spf_dns_${vhostname}_${DT}.txt"
-                cat "/etc/opendkim/keys/$vhostname/${SELECTOR}.txt" | tr '\n' ' ' | sed -e "s| \"        \"|\" \"|" -e "s|( \"|\"|" -e "s| )  ; ----- DKIM key $SELECTOR for $vhostname||" -e "s|${SELECTOR}._domainkey|${SELECTOR}._domainkey.$vhostname|" -e "s|     IN      TXT   | IN TXT|" | sed 's|[[:space:]]| |g' | sed -e "s|\; \"   |\;|" | sed -e "s|\"p=|p=|" | tee -a "$CENTMINLOGDIR/dkim_spf_dns_${vhostname}_${DT}.txt"
+                cat "/etc/opendkim/keys/$vhostname/${SELECTOR}.txt" | tr -d '\n' | sed -e 's/[[:space:]]\+/ /g' -e "s/( \"//g" -e "s/\" )//g" -e "s/ ; ----- DKIM key $SELECTOR for $vhostname//" -e "s/${SELECTOR}._domainkey/${SELECTOR}._domainkey.$vhostname/" -e 's/[[:space:]]*IN[[:space:]]*TXT[[:space:]]*/ IN TXT /' -e 's/"[[:space:]]*"//g' -e 's/[[:space:]]*;/;/g' | tee -a "$CENTMINLOGDIR/dkim_spf_dns_${vhostname}_${DT}.txt"
                 sed -i 's|"    "||g' "/root/centminlogs/dkim_spf_dns_${vhostname}_${DT}.txt"
                 echo -e "\n------------------------------------------------------------" | tee -a "$CENTMINLOGDIR/dkim_spf_dns_${vhostname}_${DT}.txt"
                 echo "$vhostname SPF DNS Entry" | tee -a "$CENTMINLOGDIR/dkim_spf_dns_${vhostname}_${DT}.txt"
@@ -338,39 +445,109 @@ opendkimsetup() {
 
     fi
 }
+
+###########################################################################
+
+wipe_dkim() {
+    local hostname_to_wipe="$1"
+
+    if [[ -z "$hostname_to_wipe" ]]; then
+        echo "Error: No hostname specified for wipe."
+        echo "Usage: addons/opendkim.sh wipe <hostname>"
+        exit 1
+    fi
+
+    echo "Starting DKIM wipe for hostname: $hostname_to_wipe"
+
+    # Backup directory
+    [ ! -d "$DKIM_BACKUPDIR" ] && mkdir -p "$DKIM_BACKUPDIR"
+
+    # Create a backup of existing configurations before wiping
+    TIMESTAMP=$(date +"%Y%m%d%H%M%S")
+    BACKUP_DIR="$DKIM_BACKUPDIR/$hostname_to_wipe-$TIMESTAMP"
+    mkdir -p "$BACKUP_DIR"
+    echo "Backing up existing DKIM configurations to $BACKUP_DIR"
+    cp -a "/etc/opendkim/keys/$hostname_to_wipe" "$BACKUP_DIR/" 2>/dev/null || echo "No DKIM keys found for $hostname_to_wipe to backup."
+    grep "$hostname_to_wipe" /etc/opendkim/KeyTable > "$BACKUP_DIR/KeyTable" 2>/dev/null || echo "No KeyTable entries found for $hostname_to_wipe."
+    grep "$hostname_to_wipe" /etc/opendkim/SigningTable > "$BACKUP_DIR/SigningTable" 2>/dev/null || echo "No SigningTable entries found for $hostname_to_wipe."
+    grep "^$hostname_to_wipe$" /etc/opendkim/TrustedHosts > "$BACKUP_DIR/TrustedHosts" 2>/dev/null || echo "No TrustedHosts entry found for $hostname_to_wipe."
+
+    # Remove DKIM keys directory
+    if [ -d "/etc/opendkim/keys/$hostname_to_wipe" ]; then
+        echo "Removing DKIM keys directory: /etc/opendkim/keys/$hostname_to_wipe"
+        rm -rf "/etc/opendkim/keys/$hostname_to_wipe"
+    else
+        echo "No DKIM keys directory found for $hostname_to_wipe."
+    fi
+
+    # Remove entries from KeyTable
+    if [ -f /etc/opendkim/KeyTable ]; then
+        echo "Removing KeyTable entries for $hostname_to_wipe"
+        sed -i "/$hostname_to_wipe/d" /etc/opendkim/KeyTable
+    else
+        echo "KeyTable file not found."
+    fi
+
+    # Remove entries from SigningTable
+    if [ -f /etc/opendkim/SigningTable ]; then
+        echo "Removing SigningTable entries for $hostname_to_wipe"
+        sed -i "/$hostname_to_wipe/d" /etc/opendkim/SigningTable
+    else
+        echo "SigningTable file not found."
+    fi
+
+    # Remove entries from TrustedHosts
+    if [ -f /etc/opendkim/TrustedHosts ]; then
+        echo "Removing TrustedHosts entries for $hostname_to_wipe"
+        sed -i "/^$hostname_to_wipe$/d" /etc/opendkim/TrustedHosts
+    else
+        echo "TrustedHosts file not found."
+    fi
+
+    echo "DKIM wipe completed for $hostname_to_wipe."
+}
+
 ###########################################################################
 
 starttime=$(TZ=UTC date +%s.%N)
 {
-    # Handle the 'clean' operation
-    if [[ "$CLEANONLY" -eq 1 ]]; then
-        h_vhostname=$(hostname -f 2>/dev/null || hostname)
-        # Clean main hostname
-        rm -rf "/etc/opendkim/keys/$h_vhostname"
-        if [ -f /etc/opendkim/KeyTable ]; then
-            sed -in "/$h_vhostname/d" /etc/opendkim/KeyTable
-        fi
-        if [ -f /etc/opendkim/SigningTable ]; then
-            sed -in "/$h_vhostname/d" /etc/opendkim/SigningTable
-        fi
-
-        # Clean vhostname if provided
-        if [[ -n "$vhostname" ]]; then
-            rm -rf "/etc/opendkim/keys/$vhostname"
+    # Handle the 'check' operation
+    if [[ "$CHECK" -eq 1 ]]; then
+        check_dkim
+    # Handle the 'wipe' operation
+    elif [[ "$WIPE" -eq 2 ]]; then
+        wipe_dkim "$wipe_host"
+    else
+        # Handle the 'clean' operation
+        if [[ "$CLEANONLY" -eq 1 ]]; then
+            h_vhostname=$(hostname -f 2>/dev/null || hostname)
+            # Clean main hostname
+            rm -rf "/etc/opendkim/keys/$h_vhostname"
             if [ -f /etc/opendkim/KeyTable ]; then
-                sed -in "/$vhostname/d" /etc/opendkim/KeyTable
+                sed -i "/$h_vhostname/d" /etc/opendkim/KeyTable
             fi
             if [ -f /etc/opendkim/SigningTable ]; then
-                sed -in "/$vhostname/d" /etc/opendkim/SigningTable
+                sed -i "/$h_vhostname/d" /etc/opendkim/SigningTable
             fi
-            if [ -f /etc/opendkim/TrustedHosts ]; then
-                sed -in "/^$vhostname$/d" /etc/opendkim/TrustedHosts
+
+            # Clean vhostname if provided
+            if [[ -n "$vhostname" ]]; then
+                rm -rf "/etc/opendkim/keys/$vhostname"
+                if [ -f /etc/opendkim/KeyTable ]; then
+                    sed -i "/$vhostname/d" /etc/opendkim/KeyTable
+                fi
+                if [ -f /etc/opendkim/SigningTable ]; then
+                    sed -i "/$vhostname/d" /etc/opendkim/SigningTable
+                fi
+                if [ -f /etc/opendkim/TrustedHosts ]; then
+                    sed -i "/^$vhostname$/d" /etc/opendkim/TrustedHosts
+                fi
             fi
         fi
-    fi
 
-    # Start the setup process
-    opendkimsetup
+        # Only run opendkimsetup if not wiping
+        opendkimsetup
+    fi
 } 2>&1 | tee "${CENTMINLOGDIR}/opendkim_${DT}.log"
 
 endtime=$(TZ=UTC date +%s.%N)
