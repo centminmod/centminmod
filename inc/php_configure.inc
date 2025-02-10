@@ -399,6 +399,8 @@ install_libgd_external() {
     echo "Internal libgd ${LIBGD_EXTERNAL_VER} external PHP version"
     echo
     pushd "$DIR_TMP"
+    rm -rf "${DIR_TMP}/libgd-${LIBGD_EXTERNAL_VER}"
+    rm -rf "${DIR_TMP}/libgd-${LIBGD_EXTERNAL_VER}.tar.gz"
     if [ ! -f "libgd-${LIBGD_EXTERNAL_VER}.tar.gz" ]; then
     wget${ipv_forceopt_wget} "https://github.com/libgd/libgd/releases/download/gd-${LIBGD_EXTERNAL_VER}/libgd-${LIBGD_EXTERNAL_VER}.tar.gz"
     tar xvzf "libgd-${LIBGD_EXTERNAL_VER}.tar.gz"
