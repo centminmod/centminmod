@@ -435,14 +435,17 @@ if [[ "$PHPMUVER" = '8.0' || "$PHPVER_ID" -ge '80000' || "$PHPMUVER" = 'NGDEBUG'
     if [[ -d "imagick-php8" && -d "imagick-php8/.git" ]]; then       
         rm -rf imagick-php8
         git clone "$IMAGICKGITLINK" imagick-php8
+        sed -i 's/"@PACKAGE_VERSION@"/"3.7.0"/' imagick-php8/php_imagick.h
         sar_call
     elif [[ -d "imagick-php8" && ! -d "imagick-php8/.git" ]]; then
         rm -rf imagick-php8
         git clone "$IMAGICKGITLINK" imagick-php8
+        sed -i 's/"@PACKAGE_VERSION@"/"3.7.0"/' imagick-php8/php_imagick.h
         sar_call
     else
         rm -rf imagick-php8
         git clone "$IMAGICKGITLINK" imagick-php8
+        sed -i 's/"@PACKAGE_VERSION@"/"3.7.0"/' imagick-php8/php_imagick.h
         sar_call
     fi
     echo
@@ -476,14 +479,17 @@ elif [[ "$PHPMUVER" = '7.0' || "$PHPMUVER" = '7.1' || "$PHPMUVER" = '7.2' || "$P
     if [[ -d "imagick-php7" && -d "imagick-php7/.git" ]]; then       
         rm -rf imagick-php7
         git clone "$IMAGICKGITLINK" imagick-php7
+        sed -i 's/"@PACKAGE_VERSION@"/"3.7.0"/' imagick-php8/php_imagick.h
         sar_call
     elif [[ -d "imagick-php7" && ! -d "imagick-php7/.git" ]]; then
         rm -rf imagick-php7
         git clone "$IMAGICKGITLINK" imagick-php7
+        sed -i 's/"@PACKAGE_VERSION@"/"3.7.0"/' imagick-php8/php_imagick.h
         sar_call
     else
         rm -rf imagick-php7
         git clone "$IMAGICKGITLINK" imagick-php7
+        sed -i 's/"@PACKAGE_VERSION@"/"3.7.0"/' imagick-php8/php_imagick.h
         sar_call
     fi
     echo
