@@ -74,7 +74,7 @@ on:
       - '.github/workflows/cmm-almalinux8-mariadb10.4.yml'
       - '.github/workflows/cmm-rockylinux8-mariadb10.4.yml'
   workflow_run:
-    workflows: ["131.00stable branch Trigger Rocky Linux 8 Workflow"]
+    workflows: ["132.00stable branch Trigger Rocky Linux 8 Workflow"]
     types:
       - completed
     branches:
@@ -92,4 +92,4 @@ jobs:
         with:
           token: ${{ secrets.REPO_ACCESS_TOKEN }}
           repository: centminmod/centminmod-workflows
-          event-type: run-rockylinux-8-workflow-edge-13100stable
+          event-type: run-rockylinux-8-workflow-edge-13200stable

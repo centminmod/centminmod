@@ -86,4 +86,4 @@ jobs:
         with:
           token: ${{ secrets.REPO_ACCESS_TOKEN }}
           repository: centminmod/centminmod-workflows
-          event-type: run-oraclelinux-8-workflow-13100stable
+          event-type: run-oraclelinux-8-workflow-13200stable

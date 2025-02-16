@@ -74,7 +74,7 @@ on:
       - '.github/workflows/cmm-almalinux8-mariadb10.4.yml'
       - '.github/workflows/cmm-rockylinux8-mariadb10.4.yml'
   workflow_run:
-    workflows: ["131.00stable branch Trigger Oracle Linux 8 Workflow + Nginx Lua Enabled"]
+    workflows: ["132.00stable branch Trigger Oracle Linux 8 Workflow + Nginx Lua Enabled"]
     types:
       - completed
     branches:
@@ -92,4 +92,4 @@ jobs:
         with:
           token: ${{ secrets.REPO_ACCESS_TOKEN }}
           repository: centminmod/centminmod-workflows
-          event-type: run-oraclelinux-8-workflow-modsecurity-13100stable
+          event-type: run-oraclelinux-8-workflow-modsecurity-13200stable
