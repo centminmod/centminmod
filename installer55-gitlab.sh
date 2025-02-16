@@ -34,7 +34,7 @@ fi
 DT=$(date +"%d%m%y-%H%M%S")
 DNF_ENABLE='n'
 DNF_COPR='y'
-branchname='131.00stable'
+branchname='132.00stable'
 DOWNLOAD="${branchname}.zip"
 LOCALCENTMINMOD_MIRROR='https://centminmod.com'
 

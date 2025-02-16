@@ -27,13 +27,13 @@ CMSDEBUG='n'
 #####################################################
 DT=$(date +"%d%m%y-%H%M%S")
 # for github support
-branchname='131.00stable'
-SCRIPT_MAJORVER='131'
+branchname='132.00stable'
+SCRIPT_MAJORVER='132'
 SCRIPT_MINORVER='00'
-SCRIPT_INCREMENTVER='072'
+SCRIPT_INCREMENTVER='073'
 SCRIPT_VERSIONSHORT="${branchname}"
 SCRIPT_VERSION="${SCRIPT_VERSIONSHORT}.b${SCRIPT_INCREMENTVER}"
-SCRIPT_DATE='01/01/25'
+SCRIPT_DATE='15/02/25'
 SCRIPT_AUTHOR='eva2000 (centminmod.com)'
 SCRIPT_MODIFICATION_AUTHOR='eva2000 (centminmod.com)'
 SCRIPT_URL='https://centminmod.com'
@@ -1687,6 +1687,12 @@ CUR_DIR=$SCRIPT_DIR # Get current directory.
 CM_INSTALLDIR=$CUR_DIR
 
 if [[ "$CENTOS_EIGHT" -eq '8' ]]; then
+  # el8 OSes will default to MariaDB 10.6 LTS releases
+  MARIADB_INSTALLTENTWO='n'
+  MARIADB_INSTALLTENTHREE='n'
+  MARIADB_INSTALLTENFOUR='n'
+  MARIADB_INSTALLTENFIVE='n'
+  MARIADB_INSTALLTENSIX='y'
   # use system OpenSSL 1.1.1 by default
   OPENSSL_SYSTEM_USE='y'
 fi

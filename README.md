@@ -13,12 +13,12 @@ After install bookmark and read the [Getting Started Guide](https://centminmod.c
 
 Fastest method of install and allows fully unattended installation. Just type this command as root user in SSH on a fresh CentOS 7 server. Installation should take between 15-30 minutes on a fast server or up to 50-70 minutes on a slower server depending on server specs and your server's network connectivity and download speed.
 
-As at July 1, 2024, Centmin Mod versions are undergoing a transition version branch wise:
+As at July 1, 2024, Centmin Mod versions are undergoing a transition version branch wise. February 15, 2025 update with 132.00stable which changes from MariaDB 10.4 default to MariaDB 10.6 LTS default:
 
-1. Previous 124.00stable is now moving to 131.00stable. 131.00stable is essentially based on the well tested 130.00beta01 branch. All development and changes made in 130.00beta01 are now in 131.00stable.
+1. Previous 124.00stable is now moving to 132.00stable. 132.00stable is essentially based on the well tested 130.00beta01 branch. All development and changes made in 130.00beta01 are now in 132.00stable.
 2. A new 140.00beta01 branch has started and this is also based off of 130.00ebat01 branch but with additional development and code to eventually support EL8+ operating systems like CentOS 8, Alma Linux 8 and Rocky Linux 8. This branch will take over from 130.00beta01 as the development beta branch. EL8+ operating system support is now officially supported.
 
-### For latest 131.00stable install
+### For latest 132.00stable install
 
 Centmin Mod installers for fresh AlmaLinux or Rocky Linux operating system based servers with minimum 4GB installed memory requirements.
 
@@ -111,7 +111,7 @@ Below are guidelines for contributing code wise.
 
 # Pull Requests
 
-* Pull requests can be done against the current [Github active branches](https://github.com/centminmod/centminmod/branches/active) - currently being [131.00stable](https://github.com/centminmod/centminmod/tree/131.00stable) and [140.00beta01](https://github.com/centminmod/centminmod/tree/140.00beta01). Usually once weekly, active branch changes are then merged into [master branch](https://github.com/centminmod/centminmod).
+* Pull requests can be done against the current [Github active branches](https://github.com/centminmod/centminmod/branches/active) - currently being [132.00stable](https://github.com/centminmod/centminmod/tree/132.00stable) and [140.00beta01](https://github.com/centminmod/centminmod/tree/140.00beta01). Usually once weekly, active branch changes are then merged into [master branch](https://github.com/centminmod/centminmod).
 
 # Suggestions
 

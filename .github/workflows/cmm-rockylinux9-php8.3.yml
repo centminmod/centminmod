@@ -2,16 +2,18 @@ name: 131.00stable branch Trigger Rocky Linux 9 With PHP 8.3 Workflow
 
 on:
   workflow_dispatch:
-    branches: [131.00stable]
+    branches: [132.00stable]
   push:
     branches:
-      - 131.00stable
+      - 132.00stable
     paths-ignore:
       - '.gitignore'
       - 'readme.txt'
       - 'README.md'
       - 'changelog-131.00stable.md'
       - 'changelog-131.00stable.html'
+      - 'changelog-132.00stable.md'
+      - 'changelog-133.00stable.html'
       - 'CONTRIBUTING.md'
       - '.github/workflows/main.yml'
       - 'datamanagement/centmin.sh-menu-21.readme.md'
@@ -76,7 +78,7 @@ on:
     types:
       - completed
     branches:
-      - 131.00stable
+      - 132.00stable
 
 jobs:
   dispatch:
