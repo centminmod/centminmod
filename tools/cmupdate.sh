@@ -47,7 +47,7 @@ fupdate() {
     cmupdate_branchname=140.00beta01
     cmupdate_branchname_new=$cmupdate_branchname
   elif [[ "$branch_opt" = 'stable' ]]; then
-    cmupdate_branchname=131.00stable
+    cmupdate_branchname=132.00stable
     cmupdate_branchname_new=$cmupdate_branchname
   fi
 
