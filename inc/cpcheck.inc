@@ -243,6 +243,13 @@ switch_mariadbtenfour_archives() {
         rpm --import https://supplychain.mariadb.com/MariaDB-Server-GPG-KEY
         yum -q clean all
     fi
+
+    if grep -q "https://yum.mariadb.org/10.4/centos8-amd64" /etc/yum.repos.d/mariadb.repo; then
+        sed -i 's|http://yum.mariadb.org/10.4/centos8-amd64|https://archive.mariadb.org/mariadb-10.4/yum/centos8-amd64|' /etc/yum.repos.d/mariadb.repo
+        sed -i 's|https://yum.mariadb.org/RPM-GPG-KEY-MariaDB|https://supplychain.mariadb.com/MariaDB-Server-GPG-KEY|' /etc/yum.repos.d/mariadb.repo
+        rpm --import https://supplychain.mariadb.com/MariaDB-Server-GPG-KEY
+        yum -q clean all
+    fi
   
     if grep -q "https://archive.mariadb.org/PublicKey" /etc/yum.repos.d/mariadb.repo; then
         sed -i 's|https://archive.mariadb.org/PublicKey|https://supplychain.mariadb.com/MariaDB-Server-GPG-KEY|' /etc/yum.repos.d/mariadb.repo
