@@ -269,7 +269,12 @@ else
 echo ""
 	fi
 
-	cd maldetect-*
+  for d in maldetect-*; do
+      if [ -d "$d" ]; then
+           cd "$d"
+           break
+      fi
+  done
 	./install.sh
 
 	# set email alerts
@@ -313,13 +318,17 @@ clamavinstall() {
 	 echo
 	 cecho "Installing clamav..."  $boldyellow
 	 yum clean all -q
-	 yum makecache fast -q
-	 yum -y install clamav clamav-update clamav-server --disablerepo=rpmforge --disableexclude=epel --disableplugin=priorities
+	 yum makecache -q
+   if [[ "$CENTOS_SEVEN" -eq '7' ]]; then
+	   yum -y install clamav clamav-update clamav-server --disablerepo=rpmforge --disableexcludes=epel --disableplugin=priorities
+   elif [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' || "$CENTOS_TEN" -eq '10' ]]; then
+     yum -y install clamav clamav-freshclam clamav-data --disableexcludes=epel --disableplugin=priorities
+   fi
     # if [[ "$CENTOS_SEVEN" -eq '7' ]]; then
-    #   yum -y install clamav-server-systemd --disablerepo=rpmforge --disableexclude=epel --disableplugin=priorities
+    #   yum -y install clamav-server-systemd --disablerepo=rpmforge --disableexcludes=epel --disableplugin=priorities
     #   systemctl daemon-reload
     # else
-    #   yum -y install clamav-server-sysvinit --disablerepo=rpmforge --disableexclude=epel --disableplugin=priorities
+    #   yum -y install clamav-server-sysvinit --disablerepo=rpmforge --disableexcludes=epel --disableplugin=priorities
     # fi
 	 if [[ -z "$(grep clam /etc/yum.repos.d/rpmforge.repo)" ]]; then
 		  sed -i 's/exclude=.*/exclude=pure-ftpd optipng clamav* clamd/' /etc/yum.repos.d/rpmforge.repo
@@ -328,15 +337,32 @@ clamavinstall() {
       sed -i 's/exclude=.*/exclude=varnish varnish-libs galera nodejs nginx mongodb*/' /etc/yum.repos.d/epel.repo
     fi
 	 # fix for CentOS 7 on system reboot missing /var/run/clamav directory
-	 if [[ -f /etc/rc.d/init.d/clamd && -z "$(grep '/var/run/clamav' /etc/rc.d/init.d/clamd)" ]]; then
+	 if [[ "$CENTOS_SEVEN" -eq '7' && -f /etc/rc.d/init.d/clamd && -z "$(grep '/var/run/clamav' /etc/rc.d/init.d/clamd)" ]]; then
 		  sed -i 's|# config: \/etc\/clamav.conf|# config: \/etc\/clamav.conf\n\nif [ ! -d /var/run/clamav ]; then\n\tmkdir -p \/var\/run\/clamav\n\tchown -R clamav:clamav \/var\/run\/clamav\n\tchmod -R 700 \/var\/run\/clamav\nfi|' /etc/rc.d/init.d/clamd
 	 fi
   
-    if [ -f /etc/clamd.conf ]; then
-	 # tweak threads to reduce cpu load - default is 50 threads !
-	 # it it to half the number of cpu threads detected
+    if [[ "$CENTOS_SEVEN" -eq '7' && -f /etc/clamd.conf ]]; then
+	    # tweak threads to reduce cpu load - default is 50 threads !
+	    # it it to half the number of cpu threads detected
       sed -i "s|^MaxThreads 50|MaxThreads $MAXTHREADS|" /etc/clamd.conf
       cat /etc/clamd.conf | grep MaxThreads
+    fi
+
+    if [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' || "$CENTOS_TEN" -eq '10' ]]; then
+      if [ ! -f /etc/clamd.d/scan.conf ]; then
+          cecho "/etc/clamd.d/scan.conf not found; generating default configuration." $boldyellow
+          # Generate a default configuration for clamd from the sample
+          clamconf -g clamd.d/scan.conf > /etc/clamd.d/scan.conf
+      fi
+
+      if [ -f /etc/clamd.d/scan.conf ]; then
+          # Update MaxThreads to half the number of CPU threads detected
+          sed -i "s|^#MaxThreads .*|MaxThreads $MAXTHREADS|" /etc/clamd.d/scan.conf
+          cecho "Updated MaxThreads in /etc/clamd.d/scan.conf:" $boldgreen
+          grep ^MaxThreads /etc/clamd.d/scan.conf
+      else
+          cecho "Skipping clamd configuration adjustment; /etc/clamd.d/scan.conf not available." $boldyellow
+      fi
     fi
   
     if [ ! -d /var/run/clamav/ ]; then
@@ -344,7 +370,7 @@ clamavinstall() {
       chown clamav:clamav /var/run/clamav/
     fi
   
-  if [[ -f /etc/rc.d/init.d/clamd && -f /proc/user_beancounters ]]; then
+  if [[ "$CENTOS_SEVEN" -eq '7' && -f /etc/rc.d/init.d/clamd && -f /proc/user_beancounters ]]; then
     echo ""
     echo "*************************************************"
     cecho "* Correct service's stack size for OpenVZ systems. Please wait...." $boldgreen
