@@ -1251,12 +1251,12 @@ php_patches() {
 
   # Check if the system is CentOS 7 and PHP version is 8.3.16 or higher
   if [[ "$CENTOS_SEVEN" -eq '7' && "$PHPVER_ID" -ge '80316' ]]; then
-    # Extract PHP version from PHPVER_ID
-    C7_FFI_PHP_MAJOR=${PHPVER_ID:0:1}
-    C7_FFI_PHP_MINOR=${PHPVER_ID:1:1}
-    C7_FFI_PHP_PATCH=${PHPVER_ID:2:2}
-    C7_FFI_PHP_VERSION="${C7_FFI_PHP_MAJOR}.${C7_FFI_PHP_MINOR}.${C7_FFI_PHP_PATCH}"
-    C7_FFI_PHP_VERSION_SHORT="${C7_FFI_PHP_MAJOR}${C7_FFI_PHP_MINOR}${C7_FFI_PHP_PATCH}"
+    if [[ "$phpver" ]]; then
+      C7_FFI_PHP_VERSION="$phpver"
+    else
+      C7_FFI_PHP_VERSION="$PHP_VERSION"
+    fi
+    C7_FFI_PHP_VERSION_SHORT="8316"
     
     # List of bug IDs to patch
     phpseven_ffi_bugids='ffi-c7'
