@@ -1251,7 +1251,7 @@ php_patches() {
 
   # Check if the system is CentOS 7 and PHP version is 8.3.16 or higher
   if [[ "$CENTOS_SEVEN" -eq '7' && "$PHPVER_ID" -ge '80316' ]]; then
-    if [[ "$phpver" ]]; then
+    if [ "$phpver" ]; then
       C7_FFI_PHP_VERSION="$phpver"
     else
       C7_FFI_PHP_VERSION="$PHP_VERSION"
