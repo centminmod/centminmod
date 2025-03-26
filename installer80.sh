@@ -1694,7 +1694,7 @@ source_wgetinstall() {
   . /root/.bashrc
   if [[ "$(id -u)" -ne '0' ]]; then
     if [[ ! "$(grep '^alias wget' $HOME/.bashrc)" ]]; then
-      echo "alias wget='/usr/local/bin/wget'" >> $HOME/.bashrc
+      echo -e "\nalias wget='/usr/local/bin/wget'" >> $HOME/.bashrc
     fi
     . $HOME/.bashrc
   fi

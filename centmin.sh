@@ -30,10 +30,10 @@ DT=$(date +"%d%m%y-%H%M%S")
 branchname='140.00beta01'
 SCRIPT_MAJORVER='140'
 SCRIPT_MINORVER='00'
-SCRIPT_INCREMENTVER='198'
+SCRIPT_INCREMENTVER='211'
 SCRIPT_VERSIONSHORT="${branchname}"
 SCRIPT_VERSION="${SCRIPT_VERSIONSHORT}.b${SCRIPT_INCREMENTVER}"
-SCRIPT_DATE='01/01/25'
+SCRIPT_DATE='16/01/25'
 SCRIPT_AUTHOR='eva2000 (centminmod.com)'
 SCRIPT_MODIFICATION_AUTHOR='eva2000 (centminmod.com)'
 SCRIPT_URL='https://centminmod.com'
@@ -1277,7 +1277,7 @@ BORINGSSL_DIR="/opt"
 
 # AWS-LC
 AWS_LC_SWITCH='n'             # if set to 'y' overrides OpenSSL as default for Nginx https://github.com/aws/aws-lc
-AWS_LC_VERSION='v1.43.0'      # version as per ttps://github.com/aws/aws-lc/tags
+AWS_LC_VERSION='v1.45.0'      # version as per ttps://github.com/aws/aws-lc/tags
 AWS_LC_DIR="/opt"
 AWS_LC_SWITCH_BUILD_TESTS='n' # run AWS-LC build tests
 ##################################
@@ -1301,7 +1301,7 @@ MAILPARSEPHP_COMPATVER='3.1.3' # For PHP 7.0-7.3
 MAILPARSEPHPSEVENFOUR_COMPATVER='3.1.8' # For PHP 7.4+
 MEMCACHED_INSTALL='y'          # Install Memcached
 LIBEVENT_VERSION='2.1.12'      # Use this version of Libevent
-MEMCACHED_VERSION='1.6.32'    # Use this version of Memcached server
+MEMCACHED_VERSION='1.6.36'    # Use this version of Memcached server
 MEMCACHED_TLS='n'             # TLS support https://github.com/memcached/memcached/wiki/ReleaseNotes1513
 MEMCACHE_VERSION='3.0.8'      # Use this version of Memcache
 MEMCACHE_COMPATVER='4.0.5.1'  # For PHP 7
@@ -1750,6 +1750,14 @@ CUR_DIR=$SCRIPT_DIR # Get current directory.
 CM_INSTALLDIR=$CUR_DIR
 
 if [[ "$CENTOS_EIGHT" -eq '8' ]]; then
+  # el8 OSes will default to MariaDB 10.6 LTS releases
+  MARIADB_INSTALLTENTWO='n'
+  MARIADB_INSTALLTENTHREE='n'
+  MARIADB_INSTALLTENFOUR='n'
+  MARIADB_INSTALLTENFIVE='n'
+  MARIADB_INSTALLTENSIX='y'
+  MARIADB_INSTALLTENELEVEN='n'
+  MARIADB_INSTALLELEVENFOUR='n'
   # use system OpenSSL 1.1.1 by default
   OPENSSL_SYSTEM_USE='y'
 fi

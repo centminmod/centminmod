@@ -1080,7 +1080,7 @@ php_patches() {
   fi
   if [[ "$PHPVER_ID" -ge '80000' && "$PHPVER_ID" -le '80099' ]]; then
       # for 8.1.x only
-      phpeight_bugids='cve-2024-2756 cve-2024-3096 cve-2024-5458 cve-2024-8925 cve-2024-8926 cve-2024-8927 cve-2024-9026 cve-2024-11236 cve-2024-11234 cve-2024-8932 cve-2024-11233 ghsa-4w77-75f9-2c8w'
+      phpeight_bugids='cve-2024-2756 cve-2024-3096 cve-2024-5458 cve-2024-8925 cve-2024-8926 cve-2024-8927 cve-2024-9026 cve-2024-11236 cve-2024-11234 cve-2024-8932 cve-2024-11233 ghsa-4w77-75f9-2c8w cve-2025-1217 cve-2025-1734 cve-2025-1861 cve-2025-1736 cve-2025-1219 pcretests'
 
       for bugid in $phpeight_bugids; do
           if [[ ! -f "php80-${bugid}.patch" && -f "$CUR_DIR/patches/php/php80-${bugid}.patch" ]]; then
@@ -1251,13 +1251,27 @@ php_patches() {
 
   # Check if the system is CentOS 7 and PHP version is 8.3.16 or higher
   if [[ "$CENTOS_SEVEN" -eq '7' && "$PHPVER_ID" -ge '80316' ]]; then
-    # List of bug IDs to patch (add more if needed)
+    if [ "$phpver" ]; then
+      C7_FFI_PHP_VERSION="$phpver"
+    else
+      C7_FFI_PHP_VERSION="$PHP_VERSION"
+    fi
+    C7_FFI_PHP_VERSION_SHORT="8316"
+    
+    # List of bug IDs to patch
     phpseven_ffi_bugids='ffi-c7'
 
     for bugid in $phpseven_ffi_bugids; do
-      # Define paths for the patch file
-      patch_source="$CUR_DIR/patches/php/php8316-${bugid}.patch"
-      patch_target="php8316-${bugid}.patch"
+      # Define paths for the patch file - try version-specific first, then fallback to 8.3.16
+      patch_source="$CUR_DIR/patches/php/php${C7_FFI_PHP_VERSION_SHORT}-${bugid}.patch"
+      
+      # If version-specific patch doesn't exist, use the 8.3.16 patch as fallback
+      if [[ ! -f "$patch_source" ]]; then
+        patch_source="$CUR_DIR/patches/php/php8316-${bugid}.patch"
+        echo "Version-specific patch not found, using php8316-${bugid}.patch as fallback."
+      fi
+      
+      patch_target="php${C7_FFI_PHP_VERSION_SHORT}-${bugid}.patch"
 
       # Verify that the patch file exists
       if [[ ! -f "$patch_source" ]]; then
@@ -1265,17 +1279,23 @@ php_patches() {
         continue
       fi
 
-      # Define the target file to check for the patch's unique identifier
-      target_file="${DIR_TMP}/php-8.3.16/ext/ffi/ffi.c"
+      # Define the target file to check for the patch's unique identifier - using dynamic version
+      target_file="${DIR_TMP}/php-${C7_FFI_PHP_VERSION}/ext/ffi/ffi.c"
+      
+      # Check if target file exists
+      if [[ ! -f "$target_file" ]]; then
+        echo "Target file $target_file does not exist. Skipping patch for bug #${bugid}."
+        continue
+      fi
 
       # Check if the patch has already been applied by searching for the unique macro
       if grep -q "ZEND_STRNCMP" "$target_file"; then
-        echo "Patch php8316-${bugid}.patch has already been applied. Skipping."
+        echo "Patch php${C7_FFI_PHP_VERSION_SHORT}-${bugid}.patch has already been applied. Skipping."
         continue
       fi
 
       echo
-      echo "Applying patch php8316-${bugid}.patch for CentOS 7 with glibc 2.17"
+      echo "Applying patch php${C7_FFI_PHP_VERSION_SHORT}-${bugid}.patch for CentOS 7 with glibc 2.17"
       echo "Related Issue: https://github.com/php/php-src/issues/17498"
       echo
 
@@ -1290,16 +1310,15 @@ php_patches() {
 
       # Check if the patch was applied successfully
       if [[ $? -eq 0 ]]; then
-        echo "Patch php8316-${bugid}.patch applied successfully."
+        echo "Patch php${C7_FFI_PHP_VERSION_SHORT}-${bugid}.patch applied successfully."
       else
-        echo "Failed to apply patch php8316-${bugid}.patch for bug #${bugid}."
+        echo "Failed to apply patch php${C7_FFI_PHP_VERSION_SHORT}-${bugid}.patch for bug #${bugid}."
         
         # Check for any rejected hunks and attempt to revert changes
         if [[ -f "*.rej" ]]; then
           echo "Reverting changes due to patch failure..."
           
           # Revert using the original file backup if available
-          # Note: This assumes that patch created a .orig file; adjust if different
           for file in *.orig; do
             if [[ -f "$file" ]]; then
               original_file="${file%.orig}"
@@ -1311,9 +1330,6 @@ php_patches() {
           # Remove any .rej files
           rm -f *.rej
         fi
-
-        # Optionally, exit the script or continue based on your preference
-        # exit 1
       fi
 
       # Clean up the copied patch file

@@ -62,29 +62,29 @@ setiplimits(){
     # not-openvz systems without a linux kernel to support ipset hashed ip sets
   CSFTOTALMEM=$(awk '/MemTotal/ {print $2}' /proc/meminfo)
   if [[ "$CSFTOTALMEM" -ge '65000001' ]]; then
+    sed -i 's/^DENY_IP_LIMIT = .*/DENY_IP_LIMIT = \"1000000\"/' /etc/csf/csf.conf
+    sed -i 's/^DENY_TEMP_IP_LIMIT = .*/DENY_TEMP_IP_LIMIT = \"1000000\"/' /etc/csf/csf.conf
+  elif [[ "$CSFTOTALMEM" -gt '32500001' && "$CSFTOTALMEM" -le '65000000' ]]; then
+    sed -i 's/^DENY_IP_LIMIT = .*/DENY_IP_LIMIT = \"750000\"/' /etc/csf/csf.conf
+    sed -i 's/^DENY_TEMP_IP_LIMIT = .*/DENY_TEMP_IP_LIMIT = \"750000\"/' /etc/csf/csf.conf
+  elif [[ "$CSFTOTALMEM" -gt '16250001' && "$CSFTOTALMEM" -le '32500000' ]]; then
     sed -i 's/^DENY_IP_LIMIT = .*/DENY_IP_LIMIT = \"500000\"/' /etc/csf/csf.conf
     sed -i 's/^DENY_TEMP_IP_LIMIT = .*/DENY_TEMP_IP_LIMIT = \"500000\"/' /etc/csf/csf.conf
-  elif [[ "$CSFTOTALMEM" -gt '32500001' && "$CSFTOTALMEM" -le '65000000' ]]; then
-    sed -i 's/^DENY_IP_LIMIT = .*/DENY_IP_LIMIT = \"350000\"/' /etc/csf/csf.conf
-    sed -i 's/^DENY_TEMP_IP_LIMIT = .*/DENY_TEMP_IP_LIMIT = \"350000\"/' /etc/csf/csf.conf
-  elif [[ "$CSFTOTALMEM" -gt '16250001' && "$CSFTOTALMEM" -le '32500000' ]]; then
-    sed -i 's/^DENY_IP_LIMIT = .*/DENY_IP_LIMIT = \"250000\"/' /etc/csf/csf.conf
-    sed -i 's/^DENY_TEMP_IP_LIMIT = .*/DENY_TEMP_IP_LIMIT = \"250000\"/' /etc/csf/csf.conf
   elif [[ "$CSFTOTALMEM" -gt '8125001' && "$CSFTOTALMEM" -le '16250000' ]]; then
+    sed -i 's/^DENY_IP_LIMIT = .*/DENY_IP_LIMIT = \"300000\"/' /etc/csf/csf.conf
+    sed -i 's/^DENY_TEMP_IP_LIMIT = .*/DENY_TEMP_IP_LIMIT = \"300000\"/' /etc/csf/csf.conf
+  elif [[ "$CSFTOTALMEM" -gt '4062501' && "$CSFTOTALMEM" -le '8125000' ]]; then
     sed -i 's/^DENY_IP_LIMIT = .*/DENY_IP_LIMIT = \"150000\"/' /etc/csf/csf.conf
     sed -i 's/^DENY_TEMP_IP_LIMIT = .*/DENY_TEMP_IP_LIMIT = \"150000\"/' /etc/csf/csf.conf
-  elif [[ "$CSFTOTALMEM" -gt '4062501' && "$CSFTOTALMEM" -le '8125000' ]]; then
-    sed -i 's/^DENY_IP_LIMIT = .*/DENY_IP_LIMIT = \"75000\"/' /etc/csf/csf.conf
-    sed -i 's/^DENY_TEMP_IP_LIMIT = .*/DENY_TEMP_IP_LIMIT = \"75000\"/' /etc/csf/csf.conf
   elif [[ "$CSFTOTALMEM" -gt '2045001' && "$CSFTOTALMEM" -le '4062500' ]]; then
-    sed -i 's/^DENY_IP_LIMIT = .*/DENY_IP_LIMIT = \"25000\"/' /etc/csf/csf.conf
-    sed -i 's/^DENY_TEMP_IP_LIMIT = .*/DENY_TEMP_IP_LIMIT = \"25000\"/' /etc/csf/csf.conf
+    sed -i 's/^DENY_IP_LIMIT = .*/DENY_IP_LIMIT = \"50000\"/' /etc/csf/csf.conf
+    sed -i 's/^DENY_TEMP_IP_LIMIT = .*/DENY_TEMP_IP_LIMIT = \"50000\"/' /etc/csf/csf.conf
   elif [[ "$CSFTOTALMEM" -gt '1022501' && "$CSFTOTALMEM" -le '2045000' ]]; then
-    sed -i 's/^DENY_IP_LIMIT = .*/DENY_IP_LIMIT = \"15000\"/' /etc/csf/csf.conf
-    sed -i 's/^DENY_TEMP_IP_LIMIT = .*/DENY_TEMP_IP_LIMIT = \"10000\"/' /etc/csf/csf.conf
+    sed -i 's/^DENY_IP_LIMIT = .*/DENY_IP_LIMIT = \"30000\"/' /etc/csf/csf.conf
+    sed -i 's/^DENY_TEMP_IP_LIMIT = .*/DENY_TEMP_IP_LIMIT = \"30000\"/' /etc/csf/csf.conf
   elif [[ "$CSFTOTALMEM" -le '1022500' ]]; then
-    sed -i 's/^DENY_IP_LIMIT = .*/DENY_IP_LIMIT = \"5000\"/' /etc/csf/csf.conf
-    sed -i 's/^DENY_TEMP_IP_LIMIT = .*/DENY_TEMP_IP_LIMIT = \"5000\"/' /etc/csf/csf.conf
+    sed -i 's/^DENY_IP_LIMIT = .*/DENY_IP_LIMIT = \"15000\"/' /etc/csf/csf.conf
+    sed -i 's/^DENY_TEMP_IP_LIMIT = .*/DENY_TEMP_IP_LIMIT = \"15000\"/' /etc/csf/csf.conf
   fi
 }
 

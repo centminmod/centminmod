@@ -181,30 +181,29 @@ if [ -f "/usr/${LIBDIR}/sa/sa2" ]; then
   fi
 fi
 
-if [[ -f /root/.bash_profile ]]; then
-    NANOCHECK=$(grep nano /root/.bash_profile)
-    if [ -z "$NANOCHECK" ]; then
-    sed -i 's/export PATH/export PATH\nexport EDITOR=nano/g' /root/.bash_profile
+if [[ -f ~/.bash_profile ]]; then
+    # Check if EDITOR is already set to the value of USEEDITOR
+    if ! grep -q "export EDITOR=$USEEDITOR" ~/.bash_profile; then
+        # Append the default editor settings using USEEDITOR
+        echo -e "\nexport EDITOR=$USEEDITOR\nexport VISUAL=$USEEDITOR" >> ~/.bash_profile
     fi
 else
-    cat > /root/.bash_profile <<EOF
+    cat > ~/.bash_profile <<EOF
 # .bash_profile
 
 # Get the aliases and functions
-if [ -f /root/.bashrc ]; then
-        . /root/.bashrc
+if [ -f ~/.bashrc ]; then
+    . ~/.bashrc
 fi
 
 # User specific environment and startup programs
-
 PATH=\$PATH:\$HOME/bin
 
 export PATH
-export EDITOR=nano
+export EDITOR=$USEEDITOR
+export VISUAL=$USEEDITOR
 export HISTTIMEFORMAT="%a %h %d – %r "
 EOF
-
-# cat /root/.bash_profile
 fi
 
 if [[ "$(id -u)" -ne '0' ]]; then
