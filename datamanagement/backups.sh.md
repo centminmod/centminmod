@@ -2,7 +2,7 @@
 
 **Current Version:** 1.5
 
-The `backup.sh` script is the underlying backup tool used in `centmin.sh menu option 21` ([documentation](https://centminmod.com/menu21-140.00beta01)) for **Centmin Mod LEMP stack** environments. This script provides advanced capabilities for physical and logical database backups, point-in-time recovery, system file archiving, efficient compression, and seamless cloud storage integration.
+The `backups.sh` script is the underlying backup tool used in `centmin.sh menu option 21` ([documentation](https://centminmod.com/menu21-140.00beta01)) for **Centmin Mod LEMP stack** environments. This script provides advanced capabilities for physical and logical database backups, point-in-time recovery, system file archiving, efficient compression, and seamless cloud storage integration.
 
 ---
 
@@ -96,13 +96,13 @@ The script attempts to install some missing dependencies using `yum`/`dnf` via t
 
 ## 4. Installation & Initial Setup
 
-1.  **Installation:** Centmin Mod LEMP stack installs the script at `/usr/local/src/centminmod/datamanagement/backup.sh` and is used as underlying tool for `centmin.sh menu option 21` ([documentation](https://centminmod.com/menu21-140.00beta01)) shell based menu and also for standalone command line usage.
+1.  **Installation:** Centmin Mod LEMP stack installs the script at `/usr/local/src/centminmod/datamanagement/backups.sh` and is used as underlying tool for `centmin.sh menu option 21` ([documentation](https://centminmod.com/menu21-140.00beta01)) shell based menu and also for standalone command line usage.
 
 2.  **Configure Script:** Edit the variables within the script (Section 5) or the recommended method is to use `.ini` override files (`/etc/centminmod/backups.ini`, `/etc/centminmod/binlog-backups.ini`).
 
 3.  **Database Credentials:** **Critically important:** Configure passwordless access for the backup user via `/root/.my.cnf` (see Section 5.4). Avoid storing passwords directly in the script. Ensure the DB user has necessary privileges (e.g., `RELOAD`, `PROCESS`, `LOCK TABLES`, `SELECT`, `SHOW DATABASES`, `REPLICATION CLIENT`). Centmin Mod LEMP stack initial install should have already properly setup  `/root/.my.cnf` for MySQL root user password. If you manually change MySQL root user password, be sure to update  `/root/.my.cnf` as well.
 
-4.  **Run Initial Check/Install:** Execute a simple command like `bash /usr/local/src/centminmod/datamanagement/backup.sh help`. The script may prompt to install dependencies or the custom `tar` if `NEWER_TAR='y'`. Review output for any errors.
+4.  **Run Initial Check/Install:** Execute a simple command like `bash /usr/local/src/centminmod/datamanagement/backups.sh help`. The script may prompt to install dependencies or the custom `tar` if `NEWER_TAR='y'`. Review output for any errors.
 
 ## 5. Configuration
 
