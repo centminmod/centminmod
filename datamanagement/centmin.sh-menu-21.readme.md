@@ -1,6 +1,6 @@
 # Centmin Mod User Guide: centmin.sh Menu Option 21
 
-This guide provides an overview of centmin.sh menu option 21 in Centmin Mod, which focuses on data management tasks. You'll learn about the available menu and submenu options, as well as their functionalities. The underlying backup.sh script used has it's own documentation [here](https://github.com/centminmod/centminmod/blob/140.00beta01/datamanagement/backups.sh.md). If you appreciate the work and effort, please consider [supporting Centmin Mod](https://community.centminmod.com/threads/ways-to-support-centmin-mod.11435/). Shorten url to [PayPal donation link](https://centminmod.com/donate/).
+This guide provides an overview of centmin.sh menu option 21 in Centmin Mod, which focuses on data management tasks. You'll learn about the available menu and submenu options, as well as their functionalities. The underlying `backups.sh` script used has it's own documentation [here](https://github.com/centminmod/centminmod/blob/140.00beta01/datamanagement/backups.sh.md). If you appreciate the work and effort, please consider [supporting Centmin Mod](https://community.centminmod.com/threads/ways-to-support-centmin-mod.11435/). Shorten url to [PayPal donation link](https://centminmod.com/donate/).
 
 **Getting Started**
 
