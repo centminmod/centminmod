@@ -269,14 +269,14 @@ switch_mariadbtenfour_archives() {
   
     if grep -q "http://mirror.rackspace.com/mariadb/yum/10.4/centos8-amd64" /etc/yum.repos.d/mariadb.repo; then
         sed -i 's|http://mirror.rackspace.com/mariadb/yum/10.4/centos8-amd64|https://archive.mariadb.org/mariadb-10.4/yum/centos8-amd64|' /etc/yum.repos.d/mariadb.repo
-        sed -i 's|https://yum.mariadb.org/RPM-GPG-KEY-MariaDB|https://supplychain.mariadb.com/MariaDB-Server-GPG-KEY|' /etc/yum.repos.d/mariadb.repo
+        sed -i 's|https://mirror.rackspace.com/mariadb/yum/RPM-GPG-KEY-MariaDB|https://supplychain.mariadb.com/MariaDB-Server-GPG-KEY|' /etc/yum.repos.d/mariadb.repo
         rpm --import https://supplychain.mariadb.com/MariaDB-Server-GPG-KEY
         yum -q clean all
     fi
 
     if grep -q "https://mirror.rackspace.com/mariadb/yum/10.4/centos8-amd64" /etc/yum.repos.d/mariadb.repo; then
-        sed -i 's|http://mirror.rackspace.com/mariadb/yum/10.4/centos8-amd64|https://archive.mariadb.org/mariadb-10.4/yum/centos8-amd64|' /etc/yum.repos.d/mariadb.repo
-        sed -i 's|https://yum.mariadb.org/RPM-GPG-KEY-MariaDB|https://supplychain.mariadb.com/MariaDB-Server-GPG-KEY|' /etc/yum.repos.d/mariadb.repo
+        sed -i 's|https://mirror.rackspace.com/mariadb/yum/10.4/centos8-amd64|https://archive.mariadb.org/mariadb-10.4/yum/centos8-amd64|' /etc/yum.repos.d/mariadb.repo
+        sed -i 's|https://mirror.rackspace.com/mariadb/yum/RPM-GPG-KEY-MariaDB|https://supplychain.mariadb.com/MariaDB-Server-GPG-KEY|' /etc/yum.repos.d/mariadb.repo
         rpm --import https://supplychain.mariadb.com/MariaDB-Server-GPG-KEY
         yum -q clean all
     fi
