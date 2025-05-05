@@ -992,7 +992,7 @@ fi
       echo "time make install INSTALL_ROOT=$FPM_PHPFPM_INSTALLDIR"
       time make install INSTALL_ROOT="$FPM_PHPFPM_INSTALLDIR"
       FPM_PHPFPM_INSTALLDIR_ERR=$?
-      if [[ "$STRIPPHP" = [yY] ]]; then
+      if [[ "$STRIPPHP" = [yY] && "$PHPDEBUGMODE" != [yY] ]]; then
           echo
           echo "strip PHP binary..."
           ls -lah ${FPM_PHPFPM_INSTALLDIR}/usr/local/bin/php
@@ -1013,7 +1013,7 @@ fi
     time make install
     ERR=$?
 
-if [[ "$STRIPPHP" = [yY] ]]; then
+if [[ "$STRIPPHP" = [yY] && "$PHPDEBUGMODE" != [yY] ]]; then
     echo
     echo "strip PHP binary..."
     ls -lah /usr/local/bin/php
