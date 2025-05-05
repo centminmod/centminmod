@@ -1,3 +1,93 @@
+enable_php_debug_steps() {
+  CORE_BACKUP_DIR=/etc/centminmod/debug-backup
+  CORE_PATTERN_BAK=${CORE_BACKUP_DIR}/core_pattern
+  SUID_BAK=${CORE_BACKUP_DIR}/suid_dumpable
+
+  if [[ "$PHPDEBUGMODE" = [yY] ]]; then
+    # ------------------------------------------------------------------ #
+    # 0.  ensure GDB + relax its “safe‑path” guard                        #
+    # ------------------------------------------------------------------ #
+    if ! command -v gdb &>/dev/null; then
+      $YUMDNFBIN -q -y install gdb
+    fi
+
+    # let GDB auto‑load helper libs such as libthread_db.so.1
+    GDBRC_DIR="${HOME:-/root}/.config/gdb"
+    GDBRC_FILE="${GDBRC_DIR}/gdbinit"
+    mkdir -p "$GDBRC_DIR"
+    grep -qx 'set auto-load safe-path /' "$GDBRC_FILE" 2>/dev/null \
+      || echo 'set auto-load safe-path /' >> "$GDBRC_FILE"
+
+    ######################## 1. compiler flags ############################
+    PHP_EXTRA_CFLAGS='-g3 -O0 -fno-omit-frame-pointer'
+    export CFLAGS="${CFLAGS:+$CFLAGS }$PHP_EXTRA_CFLAGS"
+    export CXXFLAGS="${CXXFLAGS:+$CXXFLAGS }$PHP_EXTRA_CFLAGS"
+    echo "PHPDEBUGMODE: Extra debug flags enabled:  $PHP_EXTRA_CFLAGS"
+    echo
+
+    ######################## 2. systemd drop‑in ###########################
+    echo "PHPDEBUGMODE: installing systemd coredump drop‑in"
+    install -d /etc/systemd/system/php-fpm.service.d
+    cat >/etc/systemd/system/php-fpm.service.d/10-coredump.conf <<'EOF'
+[Service]
+LimitCORE=infinity
+WorkingDirectory=/usr/local/sbin
+PrivateTmp=false
+EOF
+    systemctl daemon-reload >/dev/null 2>&1
+    systemctl restart php-fpm >/dev/null 2>&1
+
+    ######################## 3. kernel tunables ###########################
+    install -d "${CORE_BACKUP_DIR}"
+    SYSCTL_DBG=/etc/sysctl.d/99-phpdebug.conf
+    [[ -f $CORE_PATTERN_BAK ]] || cat /proc/sys/kernel/core_pattern >"$CORE_PATTERN_BAK"
+    [[ -f $SUID_BAK         ]] || cat /proc/sys/fs/suid_dumpable  >"$SUID_BAK"
+
+    echo "PHPDEBUGMODE: persisting core‑dump sysctls"
+    cat >"$SYSCTL_DBG" <<EOF
+# written by enable_php_debug_steps()
+kernel.core_pattern=/tmp/core-%e-%p-%t
+fs.suid_dumpable=1
+EOF
+    sysctl --load "$SYSCTL_DBG"
+    echo
+  else
+    echo "PHPDEBUGMODE: disabled – reverting tweaks"
+
+    ###################### restore kernel settings ########################
+    if [[ -f $CORE_PATTERN_BAK ]]; then
+      cat "$CORE_PATTERN_BAK" | tee /proc/sys/kernel/core_pattern >/dev/null
+      rm -f "$CORE_PATTERN_BAK"
+    fi
+
+    if [[ -f $SUID_BAK ]]; then
+      ORIGINAL_SUID=$(<"$SUID_BAK")
+      sysctl -q -w fs.suid_dumpable="$ORIGINAL_SUID"
+      rm -f "$SUID_BAK"
+    fi
+    rmdir --ignore-fail-on-non-empty "${CORE_BACKUP_DIR}" 2>/dev/null
+
+    # -------- remove the sysctl override ----------
+    SYSCTL_DBG=/etc/sysctl.d/99-phpdebug.conf
+    if [[ -f $SYSCTL_DBG ]]; then
+      rm -f "$SYSCTL_DBG"
+      # reload to make the *old* values effective again
+      systemctl restart systemd-sysctl.service >/dev/null 2>&1 || sysctl --system
+    fi
+
+    ###################### remove systemd drop‑in ########################
+    rm -f /etc/systemd/system/php-fpm.service.d/10-coredump.conf
+    systemctl daemon-reload >/dev/null 2>&1
+    systemctl restart php-fpm >/dev/null 2>&1
+
+    ###################### optional core cleanup #########################
+    if [[ "${PHP_CLEAN_COREDUMPS:-n}" = [yY] ]]; then
+      echo "PHPDEBUGMODE: deleting stale core files in /tmp"
+      find /tmp -maxdepth 1 -type f -name 'core-*' -delete
+    fi
+  fi
+}
+
 php_imagemagick_seven_detected_libzip() {
   # if PHP_IMAGEMAGICK_SEVEN_USE_REMI_LIBZIP='y' use remi-libzip otherwise
   # source compile libzip for PHP 8.1+
@@ -1507,6 +1597,8 @@ else
       # CFLAGS=
     fi
 fi
+
+enable_php_debug_steps
 
 if [[ "$GCCINTEL_PHP" = [yY] ]]; then
   CENTOSVER_NUMERIC=$(echo $CENTOSVER | sed -e 's|\.||g')
