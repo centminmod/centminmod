@@ -30,7 +30,7 @@ DT=$(date +"%d%m%y-%H%M%S")
 branchname='132.00stable'
 SCRIPT_MAJORVER='132'
 SCRIPT_MINORVER='00'
-SCRIPT_INCREMENTVER='082'
+SCRIPT_INCREMENTVER='083'
 SCRIPT_VERSIONSHORT="${branchname}"
 SCRIPT_VERSION="${SCRIPT_VERSIONSHORT}.b${SCRIPT_INCREMENTVER}"
 SCRIPT_DATE='15/02/25'
@@ -1060,6 +1060,7 @@ PHP_PCREJIT_STACKSIZE='512'  # value to raise PHP PCRE JIT stack size when PHP_P
 PHPGEOIP_ALWAYS='y'          # GeoIP php extension is always reinstalled on php recompiles
 PHPIMAGICK_ALWAYS='y'        # imagick php extension is always reinstalled on php recompiles
 PHPDEBUGMODE='n'             # --enable-debug PHP compile flag
+PHP_CLEAN_COREDUMPS='y'      # remove PHP-FPM core dumps when PHPDEBUGMODE='n' set
 PHPIMAP='y'                  # Disable or Enable PHP Imap extension
 PHPFINFO='n'                 # Disable or Enable PHP File Info extension
 PHPFINFO_STANDALONE='n'      # Disable or Enable PHP File Info extension as standalone module
