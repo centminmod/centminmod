@@ -2841,6 +2841,8 @@ if [[ "$GCCINTEL_PHP" = [yY] ]]; then
   gcc -c -Q -march=${march_flag}${PHPEXTRA_CFLAGS} --help=target | egrep '\-mtune|\-mprefer-vector-width|\-march|\-msse|\-msse2|\-msse2avx|\-msse3|\-mavx|\-msse4|\-mssse3|\-mpclmul' | tee ${CENTMINLOGDIR}/gcc_php_x86-64.log
   echo
   diff -y --suppress-common-lines ${CENTMINLOGDIR}/gcc_php_native.log ${CENTMINLOGDIR}/gcc_php_x86-64.log | tee ${CENTMINLOGDIR}/gcc_php_diff_native-vs-x86-64.log
+  \cp -a "${CENTMINLOGDIR}/gcc_php_native.log" "${CENTMINLOGDIR}/gcc_php_native_${DT}.log"
+  \CP -a "${CENTMINLOGDIR}/gcc_php_diff_native-vs-x86-64.log" "${CENTMINLOGDIR}/gcc_php_diff_native-vs-x86-64_${DT}.log"
   echo
   egrep '\-march=|\-mtune|\-mavx|\-msse4|\-mpclmul' ${CENTMINLOGDIR}/gcc_php_diff_native-vs-x86-64.log
   # if non native target x86-64 is used 
@@ -2853,6 +2855,7 @@ if [[ "$GCCINTEL_PHP" = [yY] ]]; then
     echo
     echo "gcc -c -Q -march=${march_flag}${GCC_NONNATIVEFLAGS}${PHPEXTRA_CFLAGS} --help=target | egrep '\-mtune|\-mprefer-vector-width|\-march|\-msse|\-msse2|\-msse2avx|\-msse3|\-mavx|\-msse4|\-mssse3|\-mpclmul' | tee ${CENTMINLOGDIR}/gcc_php_x86-64-non-native.log"
     gcc -c -Q -march=${march_flag}${GCC_NONNATIVEFLAGS}${PHPEXTRA_CFLAGS} --help=target | egrep '\-mtune|\-mprefer-vector-width|\-march|\-msse|\-msse2|\-msse2avx|\-msse3|\-mavx|\-msse4|\-mssse3|\-mpclmul' | tee ${CENTMINLOGDIR}/gcc_php_x86-64-non-native.log
+    \cp -a "${CENTMINLOGDIR}/gcc_php_x86-64-non-native.log" "${CENTMINLOGDIR}/gcc_php_x86-64-non-native_${DT}.log"
   fi
   echo
   echo "GCC_NONNATIVEFLAGS=$GCC_NONNATIVEFLAGS"
