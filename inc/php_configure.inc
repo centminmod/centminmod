@@ -4,6 +4,7 @@
 #            PHP_CUSTOM_CURL='y' is set.  Leaves system curl untouched.
 # ------------------------------------------------------------------
 compile_custom_curl() {
+    local ORIG_DIR=$(pwd)
     local CURL_VER="8.13.0"
     local CURL_PREFIX="/opt/curl_php"
     local CURL_SRC_FILE="curl-${CURL_VER}.tar.xz"
@@ -70,6 +71,7 @@ compile_custom_curl() {
     export CURL_PHP_PKG_CONFIG_PATH
     export CURL_PHP_LD_LIBRARY_PATH
     # ----------------------------------------------------------------
+    cd "$ORIG_DIR" || true
 }
 
 enable_php_debug_steps() {
