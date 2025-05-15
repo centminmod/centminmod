@@ -1,3 +1,77 @@
+# ------------------------------------------------------------------
+# Function : compile_custom_curl
+# Purpose  : Build & install cURL 8.13.0 in /opt/curl_php when
+#            PHP_CUSTOM_CURL='y' is set.  Leaves system curl untouched.
+# ------------------------------------------------------------------
+compile_custom_curl() {
+    local CURL_VER="8.13.0"
+    local CURL_PREFIX="/opt/curl_php"
+    local CURL_SRC_FILE="curl-${CURL_VER}.tar.xz"
+    local CURL_SRC_URL="https://curl.se/download/${CURL_SRC_FILE}"
+    local SRC_DIR="/svr-setup"      # Centmin Mod source directory
+
+    # Only run if flag enabled
+    [ "${PHP_CUSTOM_CURL}" = 'y' ] || return 0
+    echo ">>> PHP_CUSTOM_CURL=y – ensuring cURL ${CURL_VER} in ${CURL_PREFIX}"
+
+    # Skip if correct version already installed
+    if [ -x "${CURL_PREFIX}/bin/curl" ]; then
+        local inst_ver="$(${CURL_PREFIX}/bin/curl --version | awk 'NR==1{print $2}')"
+        if [ "$inst_ver" = "$CURL_VER" ]; then
+            echo "cURL ${CURL_VER} already present – skipping build."
+            export CURL_CFLAGS="-I${CURL_PREFIX}/include"
+            export CURL_LIBS="-L${CURL_PREFIX}/lib -Wl,-rpath,${CURL_PREFIX}/lib -lcurl"
+            export CURL_SYSTEM_PREFIX="=${CURL_PREFIX}"
+            return 0
+        fi
+        echo "Found cURL ${inst_ver}; rebuilding ${CURL_VER} …"
+        rm -rf "${CURL_PREFIX}"
+    fi
+
+    mkdir -p "${SRC_DIR}" "${CURL_PREFIX}"
+
+    # Download tarball if missing
+    if [ ! -f "${SRC_DIR}/${CURL_SRC_FILE}" ]; then
+        echo "Downloading ${CURL_SRC_FILE} …"
+        wget -q -O "${SRC_DIR}/${CURL_SRC_FILE}" "${CURL_SRC_URL}" ||
+            { echo "Download failed"; return 1; }
+    fi
+
+    # Extract & build
+    rm -rf "${SRC_DIR}/curl-${CURL_VER}"
+    tar -xf "${SRC_DIR}/${CURL_SRC_FILE}" -C "${SRC_DIR}" || { echo "Extraction failed"; return 1; }
+    cd "${SRC_DIR}/curl-${CURL_VER}" || return 1
+
+    CFLAGS="-O2 -fPIC" \
+    ./configure --prefix="${CURL_PREFIX}" \
+                --disable-static \
+                --with-openssl \
+                --with-ca-bundle=/etc/pki/tls/certs/ca-bundle.crt ||
+                { echo "Configure failed"; return 1; }
+
+    make${MAKETHREADS_PHP} && make install || { echo "Build/install failed"; return 1; }
+
+    # Export flags for PHP build
+    export CURL_CFLAGS="-I${CURL_PREFIX}/include"
+    export CURL_LIBS="-L${CURL_PREFIX}/lib -Wl,-rpath,${CURL_PREFIX}/lib -lcurl"
+    export CURL_SYSTEM_PREFIX="=${CURL_PREFIX}"
+    echo "Custom cURL ${CURL_VER} installed – PHP will use --with-curl=${CURL_PREFIX}"
+
+    # --- NEW: override any earlier "system curl" exports ------------
+    export CURL_CONFIG="${CURL_PREFIX}/bin/curl-config"
+
+    if [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]]; then
+        CURL_PHP_PKG_CONFIG_PATH="${CURL_PREFIX}/lib64/pkgconfig:"
+        CURL_PHP_LD_LIBRARY_PATH=":${CURL_PREFIX}/lib64:"
+    else
+        CURL_PHP_PKG_CONFIG_PATH=":${CURL_PREFIX}/lib/pkgconfig:"
+        CURL_PHP_LD_LIBRARY_PATH=":${CURL_PREFIX}/lib:"
+    fi
+    export CURL_PHP_PKG_CONFIG_PATH
+    export CURL_PHP_LD_LIBRARY_PATH
+    # ----------------------------------------------------------------
+}
+
 enable_php_debug_steps() {
   CORE_BACKUP_DIR=/etc/centminmod/debug-backup
   CORE_PATTERN_BAK=${CORE_BACKUP_DIR}/core_pattern
@@ -3773,7 +3847,7 @@ else
   # ensure any attempts of building custom curl version that is 
   # located at /usr/local/ or /usr prefix won't 
   # conflict and impact php-fpm builds
-  if [[ "$ENSURE_SYSTEM_PHP_CURL_USED" = [yY] ]]; then
+  if [[ "$ENSURE_SYSTEM_PHP_CURL_USED" = [yY] && "$PHP_CUSTOM_CURL" != [yY] ]]; then
     export CURL_CONFIG="/usr/bin/curl-config"
     export CURL_CFLAGS="-I/usr/include"
     export CURL_LIBS="-L/usr/lib64 -lcurl"
@@ -3790,6 +3864,8 @@ else
     # OLD_PATH="$PATH"
     # PATH="/usr/bin:/usr/sbin:/bin:/sbin:$(echo $PATH | sed -e 's|/usr/bin||g' -e 's|/usr/sbin||g' -e 's|/bin||g' -e 's|/sbin||g' -e 's|::*|:|g' -e 's|^:||' -e 's|:$||')"
   fi
+
+  compile_custom_curl
 
   if [[ "$MDB_INSTALL" = [yY] || "$MYSQL_INSTALL" = [yY] ]]; then
     echo "1"
