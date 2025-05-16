@@ -31,7 +31,7 @@ compile_custom_curl() {
         echo ">>> Using compat-openssl11 runtime"
 
         if ! rpm -q compat-openssl11 compat-openssl11-devel &>/dev/null; then
-            local BASE=https://centminmod.comcentminmodparts/rpms/compat-openssl11
+            local BASE=https://centminmod.com/centminmodparts/rpms/compat-openssl11
             dnf install -y  \
               "${BASE}/compat-openssl11-1.1.1k-5.el9.x86_64.rpm" \
               "${BASE}/compat-openssl11-devel-1.1.1k-5.el9.x86_64.rpm" || return 1
