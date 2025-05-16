@@ -9,69 +9,90 @@ compile_custom_curl() {
     local CURL_PREFIX="/opt/curl_php"
     local CURL_SRC_FILE="curl-${CURL_VER}.tar.xz"
     local CURL_SRC_URL="https://curl.se/download/${CURL_SRC_FILE}"
-    local SRC_DIR="/svr-setup"      # Centmin Mod source directory
+    local SRC_DIR="$DIR_TMP"
 
-    # Only run if flag enabled
+    if [[ "$CENTOS_NINE" -eq 9 ]] &&                               \
+       ( [[ "$PHPVER_ID" -ge 70400 && "$PHPVER_ID" -lt 70500 ]] || \
+         [[ "$PHPVER_ID" -ge 80000 && "$PHPVER_ID" -lt 80100 ]] ); then
+        local PHP_CUSTOM_CURL='y'
+    fi
+
     [ "${PHP_CUSTOM_CURL}" = 'y' ] || return 0
-    echo ">>> PHP_CUSTOM_CURL=y – ensuring cURL ${CURL_VER} in ${CURL_PREFIX}"
+    echo ">>> PHP_CUSTOM_CURL=y – ensuring cURL ${CURL_VER}"
 
-    # Skip if correct version already installed
-    if [ -x "${CURL_PREFIX}/bin/curl" ]; then
-        local inst_ver="$(${CURL_PREFIX}/bin/curl --version | awk 'NR==1{print $2}')"
-        if [ "$inst_ver" = "$CURL_VER" ]; then
-            echo "cURL ${CURL_VER} already present – skipping build."
-            export CURL_CFLAGS="-I${CURL_PREFIX}/include"
-            export CURL_LIBS="-L${CURL_PREFIX}/lib -Wl,-rpath,${CURL_PREFIX}/lib -lcurl"
-            export CURL_SYSTEM_PREFIX="=${CURL_PREFIX}"
-            return 0
+    #
+    # --------  EL 9  +  PHP 7.4 / 8.0  →  use compat-openssl11  ----------
+    #
+    local OPENSSL_CFG CFLAGS LDFLAGS
+    if [[ "$CENTOS_NINE" -eq 9 ]] &&                               \
+       ( [[ "$PHPVER_ID" -ge 70400 && "$PHPVER_ID" -lt 70500 ]] || \
+         [[ "$PHPVER_ID" -ge 80000 && "$PHPVER_ID" -lt 80100 ]] ); then
+
+        echo ">>> Using compat-openssl11 runtime"
+
+        if ! rpm -q compat-openssl11 compat-openssl11-devel &>/dev/null; then
+            local BASE=https://centminmod.comcentminmodparts/rpms/compat-openssl11
+            dnf install -y  \
+              "${BASE}/compat-openssl11-1.1.1k-5.el9.x86_64.rpm" \
+              "${BASE}/compat-openssl11-devel-1.1.1k-5.el9.x86_64.rpm" || return 1
         fi
-        echo "Found cURL ${inst_ver}; rebuilding ${CURL_VER} …"
-        rm -rf "${CURL_PREFIX}"
+
+        # headers are in /usr/include/openssl11, libs in /lib64/openssl11
+        export CPPFLAGS="-I/usr/include/openssl11 -D_FORTIFY_SOURCE=2"
+        export LDFLAGS="-L/lib64/openssl11 -Wl,-rpath,/lib64/openssl11 ${LDFLAGS}"
+        OPENSSL_CFG="--with-openssl=/usr"
+
+    else
+        echo ">>> Building curl with its own OpenSSL under ${CURL_PREFIX}"
+        OPENSSL_CFG="--with-openssl"
+    fi
+    # -------------------------------------------------------------------
+
+    # fast-path if the same curl already exists (only when self-built path)
+    if [[ "$OPENSSL_CFG" == "--with-openssl" ]] && \
+       [[ -x "${CURL_PREFIX}/bin/curl" ]] && \
+       [[ "$("${CURL_PREFIX}/bin/curl" -V | awk 'NR==1{print $2}')" == "$CURL_VER" ]]
+    then
+        echo "cURL ${CURL_VER} already present – skipping build."
+        export CURL_CFLAGS="-I${CURL_PREFIX}/include"
+        export CURL_LIBS="-L${CURL_PREFIX}/lib -Wl,-rpath,${CURL_PREFIX}/lib -lcurl"
+        export CURL_SYSTEM_PREFIX="=${CURL_PREFIX}"
+        return 0
     fi
 
     mkdir -p "${SRC_DIR}" "${CURL_PREFIX}"
+    [ -f "${SRC_DIR}/${CURL_SRC_FILE}" ] || \
+        wget -qO "${SRC_DIR}/${CURL_SRC_FILE}" "${CURL_SRC_URL}"
 
-    # Download tarball if missing
-    if [ ! -f "${SRC_DIR}/${CURL_SRC_FILE}" ]; then
-        echo "Downloading ${CURL_SRC_FILE} …"
-        wget -q -O "${SRC_DIR}/${CURL_SRC_FILE}" "${CURL_SRC_URL}" ||
-            { echo "Download failed"; return 1; }
-    fi
-
-    # Extract & build
     rm -rf "${SRC_DIR}/curl-${CURL_VER}"
-    tar -xf "${SRC_DIR}/${CURL_SRC_FILE}" -C "${SRC_DIR}" || { echo "Extraction failed"; return 1; }
+    tar -xf "${SRC_DIR}/${CURL_SRC_FILE}" -C "${SRC_DIR}"
     cd "${SRC_DIR}/curl-${CURL_VER}" || return 1
 
-    CFLAGS="-O2 -fPIC" \
-    ./configure --prefix="${CURL_PREFIX}" \
-                --disable-static \
-                --with-openssl \
-                --with-ca-bundle=/etc/pki/tls/certs/ca-bundle.crt ||
-                { echo "Configure failed"; return 1; }
+    ./configure \
+        --prefix="${CURL_PREFIX}" \
+        --disable-static \
+        ${OPENSSL_CFG} \
+        --with-ca-bundle=/etc/pki/tls/certs/ca-bundle.crt \
+        || { echo "Configure failed"; return 1; }
 
     make${MAKETHREADS_PHP} && make install || { echo "Build/install failed"; return 1; }
 
-    # Export flags for PHP build
+    # env-vars for subsequent PHP build
     export CURL_CFLAGS="-I${CURL_PREFIX}/include"
     export CURL_LIBS="-L${CURL_PREFIX}/lib -Wl,-rpath,${CURL_PREFIX}/lib -lcurl"
     export CURL_SYSTEM_PREFIX="=${CURL_PREFIX}"
-    echo "Custom cURL ${CURL_VER} installed – PHP will use --with-curl=${CURL_PREFIX}"
-
-    # --- NEW: override any earlier "system curl" exports ------------
     export CURL_CONFIG="${CURL_PREFIX}/bin/curl-config"
 
-    if [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]]; then
-        CURL_PHP_PKG_CONFIG_PATH="${CURL_PREFIX}/lib64/pkgconfig:"
-        CURL_PHP_LD_LIBRARY_PATH=":${CURL_PREFIX}/lib64:"
+    if [[ "$CENTOS_EIGHT" -eq 8 || "$CENTOS_NINE" -eq 9 ]]; then
+        export CURL_PHP_PKG_CONFIG_PATH="${CURL_PREFIX}/lib64/pkgconfig:"
+        export CURL_PHP_LD_LIBRARY_PATH=":${CURL_PREFIX}/lib64:"
     else
-        CURL_PHP_PKG_CONFIG_PATH=":${CURL_PREFIX}/lib/pkgconfig:"
-        CURL_PHP_LD_LIBRARY_PATH=":${CURL_PREFIX}/lib:"
+        export CURL_PHP_PKG_CONFIG_PATH="${CURL_PREFIX}/lib/pkgconfig:"
+        export CURL_PHP_LD_LIBRARY_PATH=":${CURL_PREFIX}/lib:"
     fi
-    export CURL_PHP_PKG_CONFIG_PATH
-    export CURL_PHP_LD_LIBRARY_PATH
-    # ----------------------------------------------------------------
-    cd "$ORIG_DIR" || true
+
+    echo "Custom cURL ${CURL_VER} installed – PHP will use --with-curl=${CURL_PREFIX}"
+    cd "${ORIG_DIR}"
 }
 
 enable_php_debug_steps() {
@@ -3381,6 +3402,17 @@ fi
     PHP_OPENSSLOPT='--with-openssl'
   fi
 
+  # # ------------------------------------------------------------------
+  # #  EL9  +  PHP 7.4/8.0  →  link against compat-openssl11 shipped libs
+  # # ------------------------------------------------------------------
+  # if [[ "$CENTOS_NINE" -eq 9 ]] && [[ "$PHPMVER" =~ ^(7\.4|8\.0)$ ]]; then
+  #     if rpm -q compat-openssl11-devel &>/dev/null; then
+  #         # headers /usr/include/openssl ; libs /lib64/openssl11
+  #         PHP_OPENSSLOPT='--with-openssl=/usr'
+  #         export PKG_CONFIG_PATH="/usr/lib64/openssl11/pkgconfig:${PKG_CONFIG_PATH}"
+  #     fi
+  # fi
+
   echo "PHP_OPENSSLOPT upgrade check"
   echo "$PHPMUVER"
   echo "$PHPVER_ID"
@@ -3453,6 +3485,18 @@ fi
   else
     PHP_OPENSSLOPT='--with-openssl'
   fi
+
+  # # ------------------------------------------------------------------
+  # #  EL9  +  PHP 7.4/8.0  →  link against compat-openssl11 shipped libs
+  # # ------------------------------------------------------------------
+  # if [[ "$CENTOS_NINE" -eq 9 ]] && [[ "$PHPMUVER" =~ ^(7\.4|8\.0)$ ]]; then
+  #     if rpm -q compat-openssl11-devel &>/dev/null; then
+  #         # headers /usr/include/openssl ; libs /lib64/openssl11
+  #         PHP_OPENSSLOPT='--with-openssl=/usr'
+  #         export PKG_CONFIG_PATH="/usr/lib64/openssl11/pkgconfig:${PKG_CONFIG_PATH}"
+  #     fi
+  # fi
+
 
 if [[ "$PHPIMAP" = [yY] ]]; then
   IMAPOPT=" --with-imap --with-imap-ssl${PHP_OPENSSL_IMAP_OPT}"
@@ -3867,8 +3911,9 @@ else
     # PATH="/usr/bin:/usr/sbin:/bin:/sbin:$(echo $PATH | sed -e 's|/usr/bin||g' -e 's|/usr/sbin||g' -e 's|/bin||g' -e 's|/sbin||g' -e 's|::*|:|g' -e 's|^:||' -e 's|:$||')"
   fi
 
-  # only allow custom curl compiles for EL9 + PHP 8.1+ or EL7/EL8 + PHP 7.4+
-  if [[ "$CENTOS_NINE" -eq '9' ]] && [[ "$PHPMVER" = '8.1' || "$PHPMUVER" = '8.1' || "$PHPMVER" = '8.2' || "$PHPMUVER" = '8.2' || "$PHPMVER" = '8.3' || "$PHPMUVER" = '8.3' || "$PHPMVER" = '8.4' || "$PHPMUVER" = '8.4' || "$PHPVER_ID" -ge '80100' ]]; then
+  # only allow custom curl compiles for EL9 + PHP 7.4+ or EL7/EL8 + PHP 7.4+
+  # EL9 + PHP 7.4 or 8.0 is built against custom compat-openssl11 opensl 1.1.1 version
+  if [[ "$CENTOS_NINE" -eq '9' ]] && [[ "$PHPMVER" = '7.4' || "$PHPMUVER" = '7.4' ||"$PHPMVER" = '8.0' || "$PHPMUVER" = '8.0' || "$PHPMVER" = '8.1' || "$PHPMUVER" = '8.1' || "$PHPMVER" = '8.2' || "$PHPMUVER" = '8.2' || "$PHPMVER" = '8.3' || "$PHPMUVER" = '8.3' || "$PHPMVER" = '8.4' || "$PHPMUVER" = '8.4' || "$PHPVER_ID" -ge '80100' ]]; then
     compile_custom_curl
   elif [[ "$CENTOS_EIGHT" -eq '8' ]] && [[ "$PHPMVER" = '7.4' || "$PHPMUVER" = '7.4' ||"$PHPMVER" = '8.0' || "$PHPMUVER" = '8.0' || "$PHPMVER" = '8.1' || "$PHPMUVER" = '8.1' || "$PHPMVER" = '8.2' || "$PHPMUVER" = '8.2' || "$PHPMVER" = '8.3' || "$PHPMUVER" = '8.3' || "$PHPMVER" = '8.4' || "$PHPMUVER" = '8.4' || "$PHPVER_ID" -ge '80000' ]]; then
     compile_custom_curl
