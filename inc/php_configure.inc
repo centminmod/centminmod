@@ -3867,7 +3867,12 @@ else
     # PATH="/usr/bin:/usr/sbin:/bin:/sbin:$(echo $PATH | sed -e 's|/usr/bin||g' -e 's|/usr/sbin||g' -e 's|/bin||g' -e 's|/sbin||g' -e 's|::*|:|g' -e 's|^:||' -e 's|:$||')"
   fi
 
-  compile_custom_curl
+  # only allow custom curl compiles for EL8/9 + PHP 8.1+ or EL7 + PHP 7.4+
+  if [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]] && [[ "$PHPMVER" = '8.1' || "$PHPMUVER" = '8.1' || "$PHPMVER" = '8.2' || "$PHPMUVER" = '8.2' || "$PHPMVER" = '8.3' || "$PHPMUVER" = '8.3' || "$PHPMVER" = '8.4' || "$PHPMUVER" = '8.4' || "$PHPVER_ID" -ge '80100' ]]; then
+    compile_custom_curl
+  elif [[ "$CENTOS_SEVEN" -eq '7' ]] && [[ "$PHPMVER" = '7.4' || "$PHPMUVER" = '7.4' ||"$PHPMVER" = '8.0' || "$PHPMUVER" = '8.0' || "$PHPMVER" = '8.1' || "$PHPMUVER" = '8.1' || "$PHPMVER" = '8.2' || "$PHPMUVER" = '8.2' || "$PHPMVER" = '8.3' || "$PHPMUVER" = '8.3' || "$PHPMVER" = '8.4' || "$PHPMUVER" = '8.4' || "$PHPVER_ID" -ge '80000' ]]; then
+    compile_custom_curl
+  fi
 
   if [[ "$MDB_INSTALL" = [yY] || "$MYSQL_INSTALL" = [yY] ]]; then
     echo "1"
