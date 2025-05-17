@@ -1,3 +1,190 @@
+# ------------------------------------------------------------------
+# Function : compile_custom_curl
+# Purpose  : Build & install cURL 8.13.0 in /opt/curl_php when
+#            PHP_CUSTOM_CURL='y' is set.  Leaves system curl untouched.
+# ------------------------------------------------------------------
+compile_custom_curl() {
+    local ORIG_DIR=$(pwd)
+    local CURL_VER="8.13.0"
+    local CURL_PREFIX="/opt/curl_php"
+    local CURL_SRC_FILE="curl-${CURL_VER}.tar.xz"
+    local CURL_SRC_URL="https://curl.se/download/${CURL_SRC_FILE}"
+    local SRC_DIR="$DIR_TMP"
+
+    if [[ "$CENTOS_NINE" -eq 9 ]] &&                               \
+       ( [[ "$PHPVER_ID" -ge 70400 && "$PHPVER_ID" -lt 70500 ]] || \
+         [[ "$PHPVER_ID" -ge 80000 && "$PHPVER_ID" -lt 80100 ]] ); then
+        local PHP_CUSTOM_CURL='y'
+    fi
+
+    [ "${PHP_CUSTOM_CURL}" = 'y' ] || return 0
+    echo ">>> PHP_CUSTOM_CURL=y – ensuring cURL ${CURL_VER}"
+
+    #
+    # --------  EL 9  +  PHP 7.4 / 8.0  →  use compat-openssl11  ----------
+    #
+    local OPENSSL_CFG CFLAGS LDFLAGS
+    if [[ "$CENTOS_NINE" -eq 9 ]] &&                               \
+       ( [[ "$PHPVER_ID" -ge 70400 && "$PHPVER_ID" -lt 70500 ]] || \
+         [[ "$PHPVER_ID" -ge 80000 && "$PHPVER_ID" -lt 80100 ]] ); then
+
+        echo ">>> Using compat-openssl11 runtime"
+
+        if ! rpm -q compat-openssl11 compat-openssl11-devel &>/dev/null; then
+            local BASE=https://centminmod.com/centminmodparts/rpms/compat-openssl11
+            dnf install -y  \
+              "${BASE}/compat-openssl11-1.1.1k-5.el9.x86_64.rpm" \
+              "${BASE}/compat-openssl11-devel-1.1.1k-5.el9.x86_64.rpm" || return 1
+        fi
+
+        # headers are in /usr/include/openssl11, libs in /lib64/openssl11
+        export CPPFLAGS="-I/usr/include/openssl11 -D_FORTIFY_SOURCE=2"
+        export LDFLAGS="-L/lib64/openssl11 -Wl,-rpath,/lib64/openssl11 ${LDFLAGS}"
+        OPENSSL_CFG="--with-openssl=/usr"
+
+    else
+        echo ">>> Building curl with its own OpenSSL under ${CURL_PREFIX}"
+        OPENSSL_CFG="--with-openssl"
+    fi
+    # -------------------------------------------------------------------
+
+    # fast-path if the same curl already exists (only when self-built path)
+    if [[ "$OPENSSL_CFG" == "--with-openssl" ]] && \
+       [[ -x "${CURL_PREFIX}/bin/curl" ]] && \
+       [[ "$("${CURL_PREFIX}/bin/curl" -V | awk 'NR==1{print $2}')" == "$CURL_VER" ]]
+    then
+        echo "cURL ${CURL_VER} already present – skipping build."
+        export CURL_CFLAGS="-I${CURL_PREFIX}/include"
+        export CURL_LIBS="-L${CURL_PREFIX}/lib -Wl,-rpath,${CURL_PREFIX}/lib -lcurl"
+        export CURL_SYSTEM_PREFIX="=${CURL_PREFIX}"
+        return 0
+    fi
+
+    mkdir -p "${SRC_DIR}" "${CURL_PREFIX}"
+    [ -f "${SRC_DIR}/${CURL_SRC_FILE}" ] || \
+        wget -qO "${SRC_DIR}/${CURL_SRC_FILE}" "${CURL_SRC_URL}"
+
+    rm -rf "${SRC_DIR}/curl-${CURL_VER}"
+    tar -xf "${SRC_DIR}/${CURL_SRC_FILE}" -C "${SRC_DIR}"
+    cd "${SRC_DIR}/curl-${CURL_VER}" || return 1
+
+    ./configure \
+        --prefix="${CURL_PREFIX}" \
+        --disable-static \
+        ${OPENSSL_CFG} \
+        --with-ca-bundle=/etc/pki/tls/certs/ca-bundle.crt \
+        || { echo "Configure failed"; return 1; }
+
+    make${MAKETHREADS_PHP} && make install || { echo "Build/install failed"; return 1; }
+
+    # env-vars for subsequent PHP build
+    export CURL_CFLAGS="-I${CURL_PREFIX}/include"
+    export CURL_LIBS="-L${CURL_PREFIX}/lib -Wl,-rpath,${CURL_PREFIX}/lib -lcurl"
+    export CURL_SYSTEM_PREFIX="=${CURL_PREFIX}"
+    export CURL_CONFIG="${CURL_PREFIX}/bin/curl-config"
+
+    if [[ "$CENTOS_EIGHT" -eq 8 || "$CENTOS_NINE" -eq 9 ]]; then
+        export CURL_PHP_PKG_CONFIG_PATH="${CURL_PREFIX}/lib64/pkgconfig:"
+        export CURL_PHP_LD_LIBRARY_PATH=":${CURL_PREFIX}/lib64:"
+    else
+        export CURL_PHP_PKG_CONFIG_PATH="${CURL_PREFIX}/lib/pkgconfig:"
+        export CURL_PHP_LD_LIBRARY_PATH=":${CURL_PREFIX}/lib:"
+    fi
+
+    echo "Custom cURL ${CURL_VER} installed – PHP will use --with-curl=${CURL_PREFIX}"
+    cd "${ORIG_DIR}"
+}
+
+enable_php_debug_steps() {
+  CORE_BACKUP_DIR=/etc/centminmod/debug-backup
+  CORE_PATTERN_BAK=${CORE_BACKUP_DIR}/core_pattern
+  SUID_BAK=${CORE_BACKUP_DIR}/suid_dumpable
+
+  if [[ "$PHPDEBUGMODE" = [yY] ]]; then
+    # ------------------------------------------------------------------ #
+    # 0.  ensure GDB + relax its “safe‑path” guard                        #
+    # ------------------------------------------------------------------ #
+    if ! command -v gdb &>/dev/null; then
+      $YUMDNFBIN -q -y install gdb
+    fi
+
+    # let GDB auto‑load helper libs such as libthread_db.so.1
+    GDBRC_DIR="${HOME:-/root}/.config/gdb"
+    GDBRC_FILE="${GDBRC_DIR}/gdbinit"
+    mkdir -p "$GDBRC_DIR"
+    grep -qx 'set auto-load safe-path /' "$GDBRC_FILE" 2>/dev/null \
+      || echo 'set auto-load safe-path /' >> "$GDBRC_FILE"
+
+    ######################## 1. compiler flags ############################
+    PHP_EXTRA_CFLAGS='-g3 -O0 -fno-omit-frame-pointer'
+    export CFLAGS="${CFLAGS:+$CFLAGS }$PHP_EXTRA_CFLAGS"
+    export CXXFLAGS="${CXXFLAGS:+$CXXFLAGS }$PHP_EXTRA_CFLAGS"
+    echo "PHPDEBUGMODE: Extra debug flags enabled:  $PHP_EXTRA_CFLAGS"
+    echo
+
+    ######################## 2. systemd drop‑in ###########################
+    echo "PHPDEBUGMODE: installing systemd coredump drop‑in"
+    install -d /etc/systemd/system/php-fpm.service.d
+    cat >/etc/systemd/system/php-fpm.service.d/10-coredump.conf <<'EOF'
+[Service]
+LimitCORE=infinity
+WorkingDirectory=/usr/local/sbin
+PrivateTmp=false
+EOF
+    systemctl daemon-reload >/dev/null 2>&1
+    systemctl restart php-fpm >/dev/null 2>&1
+
+    ######################## 3. kernel tunables ###########################
+    install -d "${CORE_BACKUP_DIR}"
+    SYSCTL_DBG=/etc/sysctl.d/99-phpdebug.conf
+    [[ -f $CORE_PATTERN_BAK ]] || cat /proc/sys/kernel/core_pattern >"$CORE_PATTERN_BAK"
+    [[ -f $SUID_BAK         ]] || cat /proc/sys/fs/suid_dumpable  >"$SUID_BAK"
+
+    echo "PHPDEBUGMODE: persisting core‑dump sysctls"
+    cat >"$SYSCTL_DBG" <<EOF
+# written by enable_php_debug_steps()
+kernel.core_pattern=/tmp/core-%e-%p-%t
+fs.suid_dumpable=1
+EOF
+    sysctl --load "$SYSCTL_DBG"
+    echo
+  else
+    echo "PHPDEBUGMODE: disabled – reverting tweaks"
+
+    ###################### restore kernel settings ########################
+    if [[ -f $CORE_PATTERN_BAK ]]; then
+      cat "$CORE_PATTERN_BAK" | tee /proc/sys/kernel/core_pattern >/dev/null
+      rm -f "$CORE_PATTERN_BAK"
+    fi
+
+    if [[ -f $SUID_BAK ]]; then
+      ORIGINAL_SUID=$(<"$SUID_BAK")
+      sysctl -q -w fs.suid_dumpable="$ORIGINAL_SUID"
+      rm -f "$SUID_BAK"
+    fi
+    rmdir --ignore-fail-on-non-empty "${CORE_BACKUP_DIR}" 2>/dev/null
+
+    # -------- remove the sysctl override ----------
+    SYSCTL_DBG=/etc/sysctl.d/99-phpdebug.conf
+    if [[ -f $SYSCTL_DBG ]]; then
+      rm -f "$SYSCTL_DBG"
+      # reload to make the *old* values effective again
+      systemctl restart systemd-sysctl.service >/dev/null 2>&1 || sysctl --system
+    fi
+
+    ###################### remove systemd drop‑in ########################
+    rm -f /etc/systemd/system/php-fpm.service.d/10-coredump.conf
+    systemctl daemon-reload >/dev/null 2>&1
+    systemctl restart php-fpm >/dev/null 2>&1
+
+    ###################### optional core cleanup #########################
+    if [[ "${PHP_CLEAN_COREDUMPS:-n}" = [yY] ]]; then
+      echo "PHPDEBUGMODE: deleting stale core files in /tmp"
+      find /tmp -maxdepth 1 -type f -name 'core-*' -delete
+    fi
+  fi
+}
+
 php_imagemagick_seven_detected_libzip() {
   # if PHP_IMAGEMAGICK_SEVEN_USE_REMI_LIBZIP='y' use remi-libzip otherwise
   # source compile libzip for PHP 8.1+
@@ -1508,6 +1695,8 @@ else
     fi
 fi
 
+enable_php_debug_steps
+
 if [[ "$GCCINTEL_PHP" = [yY] ]]; then
   CENTOSVER_NUMERIC=$(echo $CENTOSVER | sed -e 's|\.||g')
   # ensure devtoolset-7 and devtoolset-8 and devtoolset-9 are installed
@@ -1516,19 +1705,19 @@ if [[ "$GCCINTEL_PHP" = [yY] ]]; then
       yum -y install ${DIR_TMP}/gcc-custom-15.0.0-1.el8.x86_64.rpm
   fi
   if [[ "$CENTOSVER_NUMERIC" -ge '89' && "$CENTOS_EIGHT" -eq '8' ]] && [[ "$DEVTOOLSETFOURTEEN" = [yY] && ! -f /opt/rh/gcc-toolset-14/root/usr/bin/gcc || ! -f /opt/rh/gcc-toolset-14/root/usr/bin/g++ ]]; then
-      yum -y install gcc-toolset-14-annobin-annocheck gcc-toolset-14-annobin-docs.noarch gcc-toolset-14-annobin-plugin-gcc gcc-toolset-14-binutils gcc-toolset-14-binutils-devel gcc-toolset-14-dwz gcc-toolset-14-gcc gcc-toolset-14-gcc-c++ gcc-toolset-14-gcc-gfortran gcc-toolset-14-libasan-devel gcc-toolset-14-libatomic-devel gcc-toolset-14-libgccjit gcc-toolset-14-libgccjit-devel gcc-toolset-14-libitm-devel gcc-toolset-14-liblsan-devel gcc-toolset-14-libquadmath-devel gcc-toolset-14-libstdc++-devel gcc-toolset-14-libtsan-devel gcc-toolset-14-libubsan-devel gcc-toolset-14-runtime
+      yum -y install gcc-toolset-14-annobin-annocheck gcc-toolset-14-annobin-docs.noarch gcc-toolset-14-annobin-plugin-gcc gcc-toolset-14-binutils gcc-toolset-14-binutils-devel gcc-toolset-14-dwz gcc-toolset-14-gcc gcc-toolset-14-gcc-c++ gcc-toolset-14-gcc-gfortran gcc-toolset-14-libasan-devel gcc-toolset-14-libatomic-devel gcc-toolset-14-libgccjit gcc-toolset-14-libgccjit-devel gcc-toolset-14-libitm-devel gcc-toolset-14-liblsan-devel gcc-toolset-14-libquadmath-devel gcc-toolset-14-libstdc++-devel gcc-toolset-14-libtsan-devel gcc-toolset-14-libubsan-devel gcc-toolset-14-runtime --skip-broken
   fi
   if [[ "$CENTOSVER_NUMERIC" -ge '89' && "$CENTOS_EIGHT" -eq '8' ]] && [[ "$DEVTOOLSETTHIRTEEN" = [yY] && ! -f /opt/rh/gcc-toolset-13/root/usr/bin/gcc || ! -f /opt/rh/gcc-toolset-13/root/usr/bin/g++ ]]; then
-      yum -y install gcc-toolset-13-annobin-annocheck gcc-toolset-13-annobin-docs.noarch gcc-toolset-13-annobin-plugin-gcc gcc-toolset-13-binutils gcc-toolset-13-binutils-devel gcc-toolset-13-dwz gcc-toolset-13-gcc gcc-toolset-13-gcc-c++ gcc-toolset-13-gcc-gfortran gcc-toolset-13-gdb gcc-toolset-13-libasan-devel gcc-toolset-13-libatomic-devel gcc-toolset-13-libgccjit gcc-toolset-13-libgccjit-devel gcc-toolset-13-libgccjit-docs gcc-toolset-13-libitm-devel gcc-toolset-13-liblsan-devel gcc-toolset-13-libquadmath-devel gcc-toolset-13-libstdc++-devel gcc-toolset-13-libtsan-devel gcc-toolset-13-libubsan-devel gcc-toolset-13-runtime
+      yum -y install gcc-toolset-13-annobin-annocheck gcc-toolset-13-annobin-docs.noarch gcc-toolset-13-annobin-plugin-gcc gcc-toolset-13-binutils gcc-toolset-13-binutils-devel gcc-toolset-13-dwz gcc-toolset-13-gcc gcc-toolset-13-gcc-c++ gcc-toolset-13-gcc-gfortran gcc-toolset-13-gdb gcc-toolset-13-libasan-devel gcc-toolset-13-libatomic-devel gcc-toolset-13-libgccjit gcc-toolset-13-libgccjit-devel gcc-toolset-13-libgccjit-docs gcc-toolset-13-libitm-devel gcc-toolset-13-liblsan-devel gcc-toolset-13-libquadmath-devel gcc-toolset-13-libstdc++-devel gcc-toolset-13-libtsan-devel gcc-toolset-13-libubsan-devel gcc-toolset-13-runtime --skip-broken
   fi
   if [[ "$CENTOSVER_NUMERIC" -ge '89' && "$CENTOS_EIGHT" -eq '8' ]] && [[ "$DEVTOOLSETTWELVE" = [yY] && ! -f /opt/rh/gcc-toolset-12/root/usr/bin/gcc || ! -f /opt/rh/gcc-toolset-12/root/usr/bin/g++ ]]; then
-      yum -y install gcc-toolset-12-annobin-annocheck gcc-toolset-12-annobin-docs.noarch gcc-toolset-12-annobin-plugin-gcc gcc-toolset-12-binutils gcc-toolset-12-binutils-devel gcc-toolset-12-dwz gcc-toolset-12-gcc gcc-toolset-12-gcc-c++ gcc-toolset-12-gcc-gfortran gcc-toolset-12-gdb gcc-toolset-12-libasan-devel gcc-toolset-12-libatomic-devel gcc-toolset-12-libgccjit gcc-toolset-12-libgccjit-devel gcc-toolset-12-libgccjit-docs gcc-toolset-12-libitm-devel gcc-toolset-12-liblsan-devel gcc-toolset-12-libquadmath-devel gcc-toolset-12-libstdc++-devel gcc-toolset-12-libtsan-devel gcc-toolset-12-libubsan-devel gcc-toolset-12-runtime
+      yum -y install gcc-toolset-12-annobin-annocheck gcc-toolset-12-annobin-docs.noarch gcc-toolset-12-annobin-plugin-gcc gcc-toolset-12-binutils gcc-toolset-12-binutils-devel gcc-toolset-12-dwz gcc-toolset-12-gcc gcc-toolset-12-gcc-c++ gcc-toolset-12-gcc-gfortran gcc-toolset-12-gdb gcc-toolset-12-libasan-devel gcc-toolset-12-libatomic-devel gcc-toolset-12-libgccjit gcc-toolset-12-libgccjit-devel gcc-toolset-12-libgccjit-docs gcc-toolset-12-libitm-devel gcc-toolset-12-liblsan-devel gcc-toolset-12-libquadmath-devel gcc-toolset-12-libstdc++-devel gcc-toolset-12-libtsan-devel gcc-toolset-12-libubsan-devel gcc-toolset-12-runtime --skip-broken
   fi
   if [[ "$CENTOSVER_NUMERIC" -ge '87' && "$CENTOS_EIGHT" -eq '8' ]] && [[ "$DEVTOOLSETTWELVE" = [yY] && ! -f /opt/rh/gcc-toolset-12/root/usr/bin/gcc || ! -f /opt/rh/gcc-toolset-12/root/usr/bin/g++ ]]; then
-      yum -y install gcc-toolset-12-annobin-annocheck gcc-toolset-12-annobin-docs.noarch gcc-toolset-12-annobin-plugin-gcc gcc-toolset-12-binutils gcc-toolset-12-binutils-devel gcc-toolset-12-dwz gcc-toolset-12-gcc gcc-toolset-12-gcc-c++ gcc-toolset-12-gcc-gfortran gcc-toolset-12-gdb gcc-toolset-12-libasan-devel gcc-toolset-12-libatomic-devel gcc-toolset-12-libgccjit gcc-toolset-12-libgccjit-devel gcc-toolset-12-libgccjit-docs gcc-toolset-12-libitm-devel gcc-toolset-12-liblsan-devel gcc-toolset-12-libquadmath-devel gcc-toolset-12-libstdc++-devel gcc-toolset-12-libtsan-devel gcc-toolset-12-libubsan-devel gcc-toolset-12-runtime
+      yum -y install gcc-toolset-12-annobin-annocheck gcc-toolset-12-annobin-docs.noarch gcc-toolset-12-annobin-plugin-gcc gcc-toolset-12-binutils gcc-toolset-12-binutils-devel gcc-toolset-12-dwz gcc-toolset-12-gcc gcc-toolset-12-gcc-c++ gcc-toolset-12-gcc-gfortran gcc-toolset-12-gdb gcc-toolset-12-libasan-devel gcc-toolset-12-libatomic-devel gcc-toolset-12-libgccjit gcc-toolset-12-libgccjit-devel gcc-toolset-12-libgccjit-docs gcc-toolset-12-libitm-devel gcc-toolset-12-liblsan-devel gcc-toolset-12-libquadmath-devel gcc-toolset-12-libstdc++-devel gcc-toolset-12-libtsan-devel gcc-toolset-12-libubsan-devel gcc-toolset-12-runtime --skip-broken
   fi
   if [[ "$CENTOS_EIGHT" -eq '8' ]] && [[ "$DEVTOOLSETELEVEN" = [yY] && ! -f /opt/rh/gcc-toolset-11/root/usr/bin/gcc || ! -f /opt/rh/gcc-toolset-11/root/usr/bin/g++ ]]; then
-      yum -y install gcc-toolset-11-runtime gcc-toolset-11-toolchain gcc-toolset-11-binutils gcc-toolset-11-binutils-devel gcc-toolset-11-gcc gcc-toolset-11-gcc-c++ gcc-toolset-11-libatomic-devel gcc-toolset-11-libstdc++-devel gcc-toolset-11-ltrace gcc-toolset-11-make gcc-toolset-11-make-devel gcc-toolset-11-annobin-plugin-gcc gcc-toolset-11-annobin-annocheck gcc-toolset-11-gdb gcc-toolset-11-dwz gcc-toolset-11-elfutils gcc-toolset-11-elfutils-devel gcc-toolset-11-elfutils-libs gcc-toolset-11-strace gcc-toolset-11-gcc-gfortran gcc-toolset-11-elfutils-libelf gcc-toolset-11-elfutils-libelf-devel gcc-toolset-11-libasan-devel gcc-toolset-11-libgccjit-devel gcc-toolset-11-libitm-devel gcc-toolset-11-liblsan-devel gcc-toolset-11-libquadmath-devel gcc-toolset-11-libtsan-devel gcc-toolset-11-libubsan-devel gcc-toolset-11-elfutils-debuginfod-client gcc-toolset-11-elfutils-debuginfod-client-devel gcc-toolset-11-elfutils-libs gcc-toolset-11-annobin-docs gcc-toolset-11-libgccjit gcc-toolset-11-libgccjit-devel gcc-toolset-11-libgccjit-docs
+      yum -y install gcc-toolset-11-runtime gcc-toolset-11-toolchain gcc-toolset-11-binutils gcc-toolset-11-binutils-devel gcc-toolset-11-gcc gcc-toolset-11-gcc-c++ gcc-toolset-11-libatomic-devel gcc-toolset-11-libstdc++-devel gcc-toolset-11-ltrace gcc-toolset-11-make gcc-toolset-11-make-devel gcc-toolset-11-annobin-plugin-gcc gcc-toolset-11-annobin-annocheck gcc-toolset-11-gdb gcc-toolset-11-dwz gcc-toolset-11-elfutils gcc-toolset-11-elfutils-devel gcc-toolset-11-elfutils-libs gcc-toolset-11-strace gcc-toolset-11-gcc-gfortran gcc-toolset-11-elfutils-libelf gcc-toolset-11-elfutils-libelf-devel gcc-toolset-11-libasan-devel gcc-toolset-11-libgccjit-devel gcc-toolset-11-libitm-devel gcc-toolset-11-liblsan-devel gcc-toolset-11-libquadmath-devel gcc-toolset-11-libtsan-devel gcc-toolset-11-libubsan-devel gcc-toolset-11-elfutils-debuginfod-client gcc-toolset-11-elfutils-debuginfod-client-devel gcc-toolset-11-elfutils-libs gcc-toolset-11-annobin-docs gcc-toolset-11-libgccjit gcc-toolset-11-libgccjit-devel gcc-toolset-11-libgccjit-docs --skip-broken
   fi
   if [[ "$CENTOS_EIGHT" -eq '8' ]] && [[ "$DEVTOOLSETTEN" = [yY] && ! -f /opt/rh/gcc-toolset-10/root/usr/bin/gcc || ! -f /opt/rh/gcc-toolset-10/root/usr/bin/g++ ]]; then
       yum -y install gcc-toolset-10-binutils gcc-toolset-10-gcc gcc-toolset-10-gcc-c++
@@ -2749,6 +2938,8 @@ if [[ "$GCCINTEL_PHP" = [yY] ]]; then
   gcc -c -Q -march=${march_flag}${PHPEXTRA_CFLAGS} --help=target | egrep '\-mtune|\-mprefer-vector-width|\-march|\-msse|\-msse2|\-msse2avx|\-msse3|\-mavx|\-msse4|\-mssse3|\-mpclmul' | tee ${CENTMINLOGDIR}/gcc_php_x86-64.log
   echo
   diff -y --suppress-common-lines ${CENTMINLOGDIR}/gcc_php_native.log ${CENTMINLOGDIR}/gcc_php_x86-64.log | tee ${CENTMINLOGDIR}/gcc_php_diff_native-vs-x86-64.log
+  \cp -a "${CENTMINLOGDIR}/gcc_php_native.log" "${CENTMINLOGDIR}/gcc_php_native_${DT}.log"
+  \CP -a "${CENTMINLOGDIR}/gcc_php_diff_native-vs-x86-64.log" "${CENTMINLOGDIR}/gcc_php_diff_native-vs-x86-64_${DT}.log"
   echo
   egrep '\-march=|\-mtune|\-mavx|\-msse4|\-mpclmul' ${CENTMINLOGDIR}/gcc_php_diff_native-vs-x86-64.log
   # if non native target x86-64 is used 
@@ -2761,6 +2952,7 @@ if [[ "$GCCINTEL_PHP" = [yY] ]]; then
     echo
     echo "gcc -c -Q -march=${march_flag}${GCC_NONNATIVEFLAGS}${PHPEXTRA_CFLAGS} --help=target | egrep '\-mtune|\-mprefer-vector-width|\-march|\-msse|\-msse2|\-msse2avx|\-msse3|\-mavx|\-msse4|\-mssse3|\-mpclmul' | tee ${CENTMINLOGDIR}/gcc_php_x86-64-non-native.log"
     gcc -c -Q -march=${march_flag}${GCC_NONNATIVEFLAGS}${PHPEXTRA_CFLAGS} --help=target | egrep '\-mtune|\-mprefer-vector-width|\-march|\-msse|\-msse2|\-msse2avx|\-msse3|\-mavx|\-msse4|\-mssse3|\-mpclmul' | tee ${CENTMINLOGDIR}/gcc_php_x86-64-non-native.log
+    \cp -a "${CENTMINLOGDIR}/gcc_php_x86-64-non-native.log" "${CENTMINLOGDIR}/gcc_php_x86-64-non-native_${DT}.log"
   fi
   echo
   echo "GCC_NONNATIVEFLAGS=$GCC_NONNATIVEFLAGS"
@@ -3210,6 +3402,17 @@ fi
     PHP_OPENSSLOPT='--with-openssl'
   fi
 
+  # # ------------------------------------------------------------------
+  # #  EL9  +  PHP 7.4/8.0  →  link against compat-openssl11 shipped libs
+  # # ------------------------------------------------------------------
+  # if [[ "$CENTOS_NINE" -eq 9 ]] && [[ "$PHPMVER" =~ ^(7\.4|8\.0)$ ]]; then
+  #     if rpm -q compat-openssl11-devel &>/dev/null; then
+  #         # headers /usr/include/openssl ; libs /lib64/openssl11
+  #         PHP_OPENSSLOPT='--with-openssl=/usr'
+  #         export PKG_CONFIG_PATH="/usr/lib64/openssl11/pkgconfig:${PKG_CONFIG_PATH}"
+  #     fi
+  # fi
+
   echo "PHP_OPENSSLOPT upgrade check"
   echo "$PHPMUVER"
   echo "$PHPVER_ID"
@@ -3282,6 +3485,18 @@ fi
   else
     PHP_OPENSSLOPT='--with-openssl'
   fi
+
+  # # ------------------------------------------------------------------
+  # #  EL9  +  PHP 7.4/8.0  →  link against compat-openssl11 shipped libs
+  # # ------------------------------------------------------------------
+  # if [[ "$CENTOS_NINE" -eq 9 ]] && [[ "$PHPMUVER" =~ ^(7\.4|8\.0)$ ]]; then
+  #     if rpm -q compat-openssl11-devel &>/dev/null; then
+  #         # headers /usr/include/openssl ; libs /lib64/openssl11
+  #         PHP_OPENSSLOPT='--with-openssl=/usr'
+  #         export PKG_CONFIG_PATH="/usr/lib64/openssl11/pkgconfig:${PKG_CONFIG_PATH}"
+  #     fi
+  # fi
+
 
 if [[ "$PHPIMAP" = [yY] ]]; then
   IMAPOPT=" --with-imap --with-imap-ssl${PHP_OPENSSL_IMAP_OPT}"
@@ -3678,7 +3893,7 @@ else
   # ensure any attempts of building custom curl version that is 
   # located at /usr/local/ or /usr prefix won't 
   # conflict and impact php-fpm builds
-  if [[ "$ENSURE_SYSTEM_PHP_CURL_USED" = [yY] ]]; then
+  if [[ "$ENSURE_SYSTEM_PHP_CURL_USED" = [yY] && "$PHP_CUSTOM_CURL" != [yY] ]]; then
     export CURL_CONFIG="/usr/bin/curl-config"
     export CURL_CFLAGS="-I/usr/include"
     export CURL_LIBS="-L/usr/lib64 -lcurl"
@@ -3694,6 +3909,16 @@ else
     # Reorder PATH to prioritize system binaries while keeping gcc-toolset
     # OLD_PATH="$PATH"
     # PATH="/usr/bin:/usr/sbin:/bin:/sbin:$(echo $PATH | sed -e 's|/usr/bin||g' -e 's|/usr/sbin||g' -e 's|/bin||g' -e 's|/sbin||g' -e 's|::*|:|g' -e 's|^:||' -e 's|:$||')"
+  fi
+
+  # only allow custom curl compiles for EL9 + PHP 7.4+ or EL7/EL8 + PHP 7.4+
+  # EL9 + PHP 7.4 or 8.0 is built against custom compat-openssl11 opensl 1.1.1 version
+  if [[ "$CENTOS_NINE" -eq '9' ]] && [[ "$PHPMVER" = '7.4' || "$PHPMUVER" = '7.4' ||"$PHPMVER" = '8.0' || "$PHPMUVER" = '8.0' || "$PHPMVER" = '8.1' || "$PHPMUVER" = '8.1' || "$PHPMVER" = '8.2' || "$PHPMUVER" = '8.2' || "$PHPMVER" = '8.3' || "$PHPMUVER" = '8.3' || "$PHPMVER" = '8.4' || "$PHPMUVER" = '8.4' || "$PHPVER_ID" -ge '80100' ]]; then
+    compile_custom_curl
+  elif [[ "$CENTOS_EIGHT" -eq '8' ]] && [[ "$PHPMVER" = '7.4' || "$PHPMUVER" = '7.4' ||"$PHPMVER" = '8.0' || "$PHPMUVER" = '8.0' || "$PHPMVER" = '8.1' || "$PHPMUVER" = '8.1' || "$PHPMVER" = '8.2' || "$PHPMUVER" = '8.2' || "$PHPMVER" = '8.3' || "$PHPMUVER" = '8.3' || "$PHPMVER" = '8.4' || "$PHPMUVER" = '8.4' || "$PHPVER_ID" -ge '80000' ]]; then
+    compile_custom_curl
+  elif [[ "$CENTOS_SEVEN" -eq '7' ]] && [[ "$PHPMVER" = '7.4' || "$PHPMUVER" = '7.4' ||"$PHPMVER" = '8.0' || "$PHPMUVER" = '8.0' || "$PHPMVER" = '8.1' || "$PHPMUVER" = '8.1' || "$PHPMVER" = '8.2' || "$PHPMUVER" = '8.2' || "$PHPMVER" = '8.3' || "$PHPMUVER" = '8.3' || "$PHPMVER" = '8.4' || "$PHPMUVER" = '8.4' || "$PHPVER_ID" -ge '80000' ]]; then
+    compile_custom_curl
   fi
 
   if [[ "$MDB_INSTALL" = [yY] || "$MYSQL_INSTALL" = [yY] ]]; then
@@ -3939,7 +4164,7 @@ fi
       echo "time make install INSTALL_ROOT=$FPM_PHPFPM_INSTALLDIR"
       time make install INSTALL_ROOT="$FPM_PHPFPM_INSTALLDIR"
       FPM_PHPFPM_INSTALLDIR_ERR=$?
-      if [[ "$STRIPPHP" = [yY] ]]; then
+      if [[ "$STRIPPHP" = [yY] && "$PHPDEBUGMODE" != [yY] ]]; then
           echo
           echo "strip PHP binary..."
           ls -lah ${FPM_PHPFPM_INSTALLDIR}/usr/local/bin/php
@@ -3960,7 +4185,7 @@ fi
     time make install
     sar_call
    
-    if [[ "$STRIPPHP" = [yY] ]]; then
+    if [[ "$STRIPPHP" = [yY] && "$PHPDEBUGMODE" != [yY] ]]; then
         echo
         echo "strip PHP binary..."
         ls -lah /usr/local/bin/php

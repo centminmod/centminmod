@@ -1323,6 +1323,7 @@ crypto_gcc() {
         MARCHCHECK=$(gcc -c -Q -march=native --help=target | awk '/  -march=/ {print $2}' | head -n1)
         gcc --version | tee ${CENTMINLOGDIR}/gcc_crypto_native.log
         gcc -c -Q -march=native --help=target | egrep '\[enabled\]|mtune|march|mfpmath' | tee -a ${CENTMINLOGDIR}/gcc_crypto_native.log
+        \cp -a "${CENTMINLOGDIR}/gcc_crypto_native.log" "${CENTMINLOGDIR}/gcc_crypto_native_${DT}.log"
         
         if [[ "$(uname -m)" = 'x86_64' && "$CPUVENDOR" = 'GenuineIntel' && "$SSECHECK" = '[enabled]' ]]; then
             CCM=64
