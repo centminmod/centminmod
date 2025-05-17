@@ -328,10 +328,10 @@ EOF
     chmod 700 /usr/bin/fpmstats
   fi
 
-  echo "systemctl daemon-reload; service nginx stop; systemctl stop php-fpm; echo \"Stopping php-fpm (via systemctl) [  OK  ]\"" >/usr/bin/npstop ; chmod 700 /usr/bin/npstop
-  echo "systemctl daemon-reload; service nginx start; systemctl start php-fpm; echo \"Starting php-fpm (via systemctl) [  OK  ]\"" >/usr/bin/npstart ; chmod 700 /usr/bin/npstart
-  echo "systemctl daemon-reload; service nginx restart; systemctl restart php-fpm; echo \"Restarting php-fpm (via systemctl) [  OK  ]\"" >/usr/bin/nprestart ; chmod 700 /usr/bin/nprestart
-  echo "systemctl daemon-reload; service nginx reload; systemctl reload php-fpm; echo \"Reloading php-fpm (via systemctl) [  OK  ]\"" >/usr/bin/npreload ; chmod 700 /usr/bin/npreload
+  echo "systemctl daemon-reload; systemctl stop nginx; systemctl stop php-fpm; echo \"Stopping php-fpm (via systemctl) [  OK  ]\"" >/usr/bin/npstop ; chmod 700 /usr/bin/npstop
+  echo "systemctl daemon-reload; systemctl start nginx; systemctl start php-fpm; echo \"Starting php-fpm (via systemctl) [  OK  ]\"" >/usr/bin/npstart ; chmod 700 /usr/bin/npstart
+  echo "systemctl daemon-reload; systemctl restart nginx; systemctl restart php-fpm; echo \"Restarting php-fpm (via systemctl) [  OK  ]\"" >/usr/bin/nprestart ; chmod 700 /usr/bin/nprestart
+  echo "systemctl daemon-reload; systemctl reload nginx; systemctl reload php-fpm; echo \"Reloading php-fpm (via systemctl) [  OK  ]\"" >/usr/bin/npreload ; chmod 700 /usr/bin/npreload
 
   echo "systemctl daemon-reload"
   systemctl daemon-reload
