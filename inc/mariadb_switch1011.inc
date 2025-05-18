@@ -380,20 +380,20 @@ TDG
   fi
 
   # modify /usr/libexec/mysql-prepare-db-dir
-  if [[ "$CENTOS_TEN" -eq '10' ]] && [[ ! -f /etc/systemd/system/mariadb.service.d/mysql-prepare-db-dir-modify.conf && -d /etc/systemd/system/mariadb.service.d/ ]]; then
-    # used modified /usr/libexec/mysql-prepare-db-dir-modify instead
-    \cp -af /usr/libexec/mysql-prepare-db-dir /usr/libexec/mysql-prepare-db-dir-modify
-    # modify /usr/libexec/mysql-prepare-db-dir-modify messaging for when /var/lib/mysql data directory
-    # exists so as to not confuse new users into mistakenly deleting their /var/lib/mysql directory
-    sed -i 's|echo "If this is not the case, make sure the $datadir is empty before running `basename $0`."||' /usr/libexec/mysql-prepare-db-dir-modify
-    echo "Initial Install: Update MariaDB 10 setting for /usr/libexec/mysql-prepare-db-dir-modify"
-cat > "/etc/systemd/system/mariadb.service.d/mysql-prepare-db-dir-modify.conf" <<TDG
-[Service]
-ExecStartPre=
-ExecStartPre=/usr/libexec/mysql-prepare-db-dir-modify %n
-TDG
-  systemctl daemon-reload
-  fi
+#   if [[ "$CENTOS_TEN" -eq '10' ]] && [[ ! -f /etc/systemd/system/mariadb.service.d/mysql-prepare-db-dir-modify.conf && -d /etc/systemd/system/mariadb.service.d/ ]]; then
+#     # used modified /usr/libexec/mysql-prepare-db-dir-modify instead
+#     \cp -af /usr/libexec/mysql-prepare-db-dir /usr/libexec/mysql-prepare-db-dir-modify
+#     # modify /usr/libexec/mysql-prepare-db-dir-modify messaging for when /var/lib/mysql data directory
+#     # exists so as to not confuse new users into mistakenly deleting their /var/lib/mysql directory
+#     sed -i 's|echo "If this is not the case, make sure the $datadir is empty before running `basename $0`."||' /usr/libexec/mysql-prepare-db-dir-modify
+#     echo "Initial Install: Update MariaDB 10 setting for /usr/libexec/mysql-prepare-db-dir-modify"
+# cat > "/etc/systemd/system/mariadb.service.d/mysql-prepare-db-dir-modify.conf" <<TDG
+# [Service]
+# ExecStartPre=
+# ExecStartPre=/usr/libexec/mysql-prepare-db-dir-modify %n
+# TDG
+#   systemctl daemon-reload
+#   fi
 
   systemctl restart mariadb
 fi # install-fresh
