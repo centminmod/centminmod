@@ -27,7 +27,7 @@ CMSDEBUG='n'
 #####################################################
 DT=$(date +"%d%m%y-%H%M%S")
 # for github support
-branchname='140.00beta01'
+branchname='141.00beta01'
 SCRIPT_MAJORVER='140'
 SCRIPT_MINORVER='00'
 SCRIPT_INCREMENTVER='228'
@@ -174,6 +174,8 @@ if [ "$CENTOSVER" == 'release' ]; then
         CENTOS_EIGHT='8'
     elif [[ "$(cat /etc/redhat-release | awk '{ print $4 }' | cut -d . -f1)" = '9' ]]; then
         CENTOS_NINE='9'
+    elif [[ "$(cat /etc/redhat-release | awk '{ print $4 }' | cut -d . -f1)" = '10' ]]; then
+        CENTOS_TEN='10'
     fi
 fi
 
@@ -196,12 +198,8 @@ fi
 
 # ensure only el8+ OS versions are being looked at for alma linux, rocky linux
 # oracle linux, vzlinux, circle linux, navy linux, euro linux
-if [ -f /etc/os-release ]; then
-  EL_VERID=$(awk -F '=' '/VERSION_ID/ {print $2}' /etc/os-release | sed -e 's|"||g' | cut -d . -f1)
-else
-  EL_VERID="6"
-fi
-if [ -f /etc/almalinux-release ] && [[ "$EL_VERID" -eq 8 || "$EL_VERID" -eq 9 ]]; then
+EL_VERID=$(awk -F '=' '/VERSION_ID/ {print $2}' /etc/os-release | sed -e 's|"||g' | cut -d . -f1)
+if [ -f /etc/almalinux-release ] && [[ "$EL_VERID" -eq 8 || "$EL_VERID" -eq 9 || "$EL_VERID" -eq 10 ]]; then
   CENTOSVER=$(awk '{ print $3 }' /etc/almalinux-release | cut -d . -f1,2)
   ALMALINUXVER=$(awk '{ print $3 }' /etc/almalinux-release | cut -d . -f1,2 | sed -e 's|\.|000|g')
   if [[ "$(echo $CENTOSVER | cut -d . -f1)" -eq '8' ]]; then
@@ -210,8 +208,11 @@ if [ -f /etc/almalinux-release ] && [[ "$EL_VERID" -eq 8 || "$EL_VERID" -eq 9 ]]
   elif [[ "$(echo $CENTOSVER | cut -d . -f1)" -eq '9' ]]; then
     CENTOS_NINE='9'
     ALMALINUX_NINE='9'
+  elif [[ "$(echo $CENTOSVER | cut -d . -f1)" -eq '10' ]]; then
+    CENTOS_TEN='10'
+    ALMALINUX_TEN='10'
   fi
-elif [ -f /etc/rocky-release ] && [[ "$EL_VERID" -eq 8 || "$EL_VERID" -eq 9 ]]; then
+elif [ -f /etc/rocky-release ] && [[ "$EL_VERID" -eq 8 || "$EL_VERID" -eq 9 || "$EL_VERID" -eq 10 ]]; then
   CENTOSVER=$(awk '{ print $4 }' /etc/rocky-release | cut -d . -f1,2)
   ROCKYLINUXVER=$(awk '{ print $3 }' /etc/rocky-release | cut -d . -f1,2 | sed -e 's|\.|000|g')
   if [[ "$(echo $CENTOSVER | cut -d . -f1)" -eq '8' ]]; then
@@ -220,8 +221,11 @@ elif [ -f /etc/rocky-release ] && [[ "$EL_VERID" -eq 8 || "$EL_VERID" -eq 9 ]]; 
   elif [[ "$(echo $CENTOSVER | cut -d . -f1)" -eq '9' ]]; then
     CENTOS_NINE='9'
     ROCKYLINUX_NINE='9'
+  elif [[ "$(echo $CENTOSVER | cut -d . -f1)" -eq '10' ]]; then
+    CENTOS_TEN='10'
+    ROCKYLINUX_TEN='10'
   fi
-elif [ -f /etc/oracle-release ] && [[ "$EL_VERID" -eq 8 || "$EL_VERID" -eq 9 ]]; then
+elif [ -f /etc/oracle-release ] && [[ "$EL_VERID" -eq 8 || "$EL_VERID" -eq 9 || "$EL_VERID" -eq 10 ]]; then
   CENTOSVER=$(awk '{ print $5 }' /etc/oracle-release | cut -d . -f1,2)
   if [[ "$(echo $CENTOSVER | cut -d . -f1)" -eq '8' ]]; then
     CENTOS_EIGHT='8'
@@ -229,8 +233,11 @@ elif [ -f /etc/oracle-release ] && [[ "$EL_VERID" -eq 8 || "$EL_VERID" -eq 9 ]];
   elif [[ "$(echo $CENTOSVER | cut -d . -f1)" -eq '9' ]]; then
     CENTOS_NINE='9'
     ORACLELINUX_NINE='9'
+  elif [[ "$(echo $CENTOSVER | cut -d . -f1)" -eq '10' ]]; then
+    CENTOS_TEN='10'
+    ORACLELINUX_TEN='10'
   fi
-elif [ -f /etc/vzlinux-release ] && [[ "$EL_VERID" -eq 8 || "$EL_VERID" -eq 9 ]]; then
+elif [ -f /etc/vzlinux-release ] && [[ "$EL_VERID" -eq 8 || "$EL_VERID" -eq 9 || "$EL_VERID" -eq 10 ]]; then
   CENTOSVER=$(awk '{ print $4 }' /etc/vzlinux-release | cut -d . -f1,2)
   if [[ "$(echo $CENTOSVER | cut -d . -f1)" -eq '8' ]]; then
     CENTOS_EIGHT='8'
@@ -238,8 +245,11 @@ elif [ -f /etc/vzlinux-release ] && [[ "$EL_VERID" -eq 8 || "$EL_VERID" -eq 9 ]]
   elif [[ "$(echo $CENTOSVER | cut -d . -f1)" -eq '9' ]]; then
     CENTOS_NINE='9'
     VZLINUX_NINE='9'
+  elif [[ "$(echo $CENTOSVER | cut -d . -f1)" -eq '10' ]]; then
+    CENTOS_TEN='10'
+    VZLINUX_TEN='10'
   fi
-elif [ -f /etc/circle-release ] && [[ "$EL_VERID" -eq 8 || "$EL_VERID" -eq 9 ]]; then
+elif [ -f /etc/circle-release ] && [[ "$EL_VERID" -eq 8 || "$EL_VERID" -eq 9 || "$EL_VERID" -eq 10 ]]; then
   CENTOSVER=$(awk '{ print $4 }' /etc/circle-release | cut -d . -f1,2)
   if [[ "$(echo $CENTOSVER | cut -d . -f1)" -eq '8' ]]; then
     CENTOS_EIGHT='8'
@@ -247,8 +257,11 @@ elif [ -f /etc/circle-release ] && [[ "$EL_VERID" -eq 8 || "$EL_VERID" -eq 9 ]];
   elif [[ "$(echo $CENTOSVER | cut -d . -f1)" -eq '9' ]]; then
     CENTOS_NINE='9'
     CIRCLELINUX_NINE='9'
+  elif [[ "$(echo $CENTOSVER | cut -d . -f1)" -eq '10' ]]; then
+    CENTOS_TEN='10'
+    CIRCLELINUX_TEN='10'
   fi
-elif [ -f /etc/navylinux-release ] && [[ "$EL_VERID" -eq 8 || "$EL_VERID" -eq 9 ]]; then
+elif [ -f /etc/navylinux-release ] && [[ "$EL_VERID" -eq 8 || "$EL_VERID" -eq 9 || "$EL_VERID" -eq 10 ]]; then
   CENTOSVER=$(awk '{ print $5 }' /etc/navylinux-release | cut -d . -f1,2)
   if [[ "$(echo $CENTOSVER | cut -d . -f1)" -eq '8' ]]; then
     CENTOS_EIGHT='8'
@@ -256,8 +269,11 @@ elif [ -f /etc/navylinux-release ] && [[ "$EL_VERID" -eq 8 || "$EL_VERID" -eq 9 
   elif [[ "$(echo $CENTOSVER | cut -d . -f1)" -eq '9' ]]; then
     CENTOS_NINE='9'
     NAVYLINUX_NINE='9'
+  elif [[ "$(echo $CENTOSVER | cut -d . -f1)" -eq '10' ]]; then
+    CENTOS_TEN='10'
+    NAVYLINUX_TEN='10'
   fi
-elif [ -f /etc/el-release ] && [[ "$EL_VERID" -eq 8 || "$EL_VERID" -eq 9 ]]; then
+elif [ -f /etc/el-release ] && [[ "$EL_VERID" -eq 8 || "$EL_VERID" -eq 9 || "$EL_VERID" -eq 10 ]]; then
   CENTOSVER=$(awk '{ print $3 }' /etc/el-release | cut -d . -f1,2)
   if [[ "$(echo $CENTOSVER | cut -d . -f1)" -eq '8' ]]; then
     CENTOS_EIGHT='8'
@@ -265,6 +281,9 @@ elif [ -f /etc/el-release ] && [[ "$EL_VERID" -eq 8 || "$EL_VERID" -eq 9 ]]; the
   elif [[ "$(echo $CENTOSVER | cut -d . -f1)" -eq '9' ]]; then
     CENTOS_NINE='9'
     EUROLINUX_NINE='9'
+  elif [[ "$(echo $CENTOSVER | cut -d . -f1)" -eq '10' ]]; then
+    CENTOS_TEN='10'
+    EUROLINUX_TEN='10'
   fi
 fi
 
@@ -331,6 +350,23 @@ elif [[ "$CENTOS_NINE" -eq '9' ]]; then
   DEVTOOLSETTHIRTEEN='n'
   DEVTOOLSETFOURTEEN='n'
   DEVTOOLSETFIFTTEEN='n'
+fi
+
+# el10 GCC
+if [[ "$CENTOS_TEN" -eq '10' && "$CENTOSVER_NUMERIC" -ge '10' ]]; then
+  DEVTOOLSETTEN='n'
+  DEVTOOLSETELEVEN='n'
+  if [[ "$PHP_PGO_FALLBACK_GCC" = [yY] && "$PHP_PGO" = [yY] ]] && [[ "$PHPMVER" = '7.4' || "$PHPMUVER" = '7.4' || "$PHPMVER" = '8.0' || "$PHPMUVER" = '8.0' || "$PHPMVER" = '8.1' || "$PHPMUVER" = '8.1' || "$PHPMVER" = '8.2' || "$PHPMUVER" = '8.2' || "$PHPMVER" = '8.3' || "$PHPMUVER" = '8.3' || "$PHPMVER" = '8.4' || "$PHPMUVER" = '8.4' ]]; then
+    DEVTOOLSETTWELVE='n'
+    DEVTOOLSETTHIRTEEN='n'
+    DEVTOOLSETFOURTEEN='y'
+    DEVTOOLSETFIFTTEEN='n'
+  else
+    DEVTOOLSETTWELVE='n'
+    DEVTOOLSETTHIRTEEN='n'
+    DEVTOOLSETFOURTEEN='y'
+    DEVTOOLSETFIFTTEEN='n'
+  fi
 fi
 
 if [[ "$FORCE_IPVFOUR" != [yY] ]]; then
@@ -1469,9 +1505,14 @@ elif [[ "$CENTOS_EIGHT" -eq '8' ]]; then
   AXEL_VER='2.16.1'
 elif [[ "$CENTOS_NINE" -eq '9' ]]; then
   AXEL_VER='2.16.1'
+elif [[ "$CENTOS_TEN" -eq '10' ]]; then
+  AXEL_VER='2.16.1'
 fi
 
-if [[ "$CENTOS_NINE" -eq '9' ]]; then
+if [[ "$CENTOS_TEN" -eq '10' ]]; then
+  PHP_PID_PATH='/run/php-fpm/php-fpm.pid'
+  PHP_PID_PATHDIR='/run/php-fpm/'
+elif [[ "$CENTOS_NINE" -eq '9' ]]; then
   PHP_PID_PATH='/run/php-fpm/php-fpm.pid'
   PHP_PID_PATHDIR='/run/php-fpm/'
 elif [[ "$CENTOS_EIGHT" -eq '8' ]]; then
@@ -1776,6 +1817,19 @@ if [[ "$CENTOS_NINE" -eq '9' ]]; then
   OPENSSL_SYSTEM_USE='y'
 fi
 
+if [[ "$CENTOS_TEN" -eq '10' ]]; then
+  # el9 OSes will default to MariaDB 10.11 LTS releases
+  MARIADB_INSTALLTENTWO='n'
+  MARIADB_INSTALLTENTHREE='n'
+  MARIADB_INSTALLTENFOUR='n'
+  MARIADB_INSTALLTENFIVE='n'
+  MARIADB_INSTALLTENSIX='n'
+  MARIADB_INSTALLTENELEVEN='y'
+  MARIADB_INSTALLELEVENFOUR='n'
+  # use system OpenSSL 3.0.7 by default
+  OPENSSL_SYSTEM_USE='y'
+fi
+
 if [ -f "${CM_INSTALLDIR}/inc/custom_config.inc" ]; then
   if [ -f /usr/bin/dos2unix ]; then
     dos2unix -q "inc/custom_config.inc"
@@ -1829,7 +1883,7 @@ arch_detect=$(uname -m)
 if [[ "$arch_detect" == "x86_64" ]]; then
   # Existing x86_64 code
   cpu_flags=$(grep -m1 -o -e 'avx512f' -e 'avx2' -e 'avx' /proc/cpuinfo | tr '\n' ' ')
-  if [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]]; then
+  if [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' || "$CENTOS_TEN" -eq '10' ]]; then
     check_cflags=$(/lib64/ld-linux-x86-64.so.2 --help | grep supported | awk '/x86-64/ {print $1}' | head -n1 | egrep 'x86-64')
   else
     check_cflags=''
@@ -1852,7 +1906,7 @@ if [[ "$arch_detect" == "x86_64" ]]; then
   fi
 elif [[ "$arch_detect" == "aarch64" ]]; then
   # ARM64 specific code
-  if [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]]; then
+  if [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' || "$CENTOS_TEN" -eq '10' ]]; then
     # For AlmaLinux 8/9, we'll use /lib/ld-linux-aarch64.so.1
     check_cflags=$(/lib/ld-linux-aarch64.so.1 --help | grep supported | awk '/aarch64/ {print $1}' | head -n1)
   else
@@ -1947,7 +2001,7 @@ fi
 if [[ "$CENTOS_SEVEN" -eq '7' ]]; then
   AWS_LC_SWITCH='n'
 fi
-if [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]]; then
+if [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' || "$CENTOS_TEN" -eq '10' ]]; then
   # give AWS-LC priority over quicTLS for HTTP/3 QUIC
   if [[ "$AWS_LC_SWITCH" = [yY] ]]; then
     OPENSSL_SYSTEM_USE='n'
@@ -2016,7 +2070,15 @@ if [[ "$CENTOS_EIGHT" -eq '8' ]]; then
   fi
 fi
 
-if [[ "$CENTOS_NINE" -eq '9' && "$DEVTOOLSETELEVEN" = [yY] && "$DEVTOOLSETTEN" = [yY] && "$DEVTOOLSETNINE" = [yY] && "$DEVTOOLSETEIGHT" = [yY] && "$DEVTOOLSETSEVEN" = [yY] ]]; then
+if [[ "$CENTOS_TEN" -eq '10' && "$DEVTOOLSETTHIRTEEN" = [yY] && "$DEVTOOLSETTWELVE" = [yY] && "$DEVTOOLSETELEVEN" = [yY] && "$DEVTOOLSETTEN" = [yY] && "$DEVTOOLSETNINE" = [yY] && "$DEVTOOLSETEIGHT" = [yY] && "$DEVTOOLSETSEVEN" = [yY] ]]; then
+  DEVTOOLSETTHIRTEEN='n'
+  DEVTOOLSETTWELVE='n'
+  DEVTOOLSETELEVEN='n'
+  DEVTOOLSETTEN='n'
+  DEVTOOLSETNINE='n'
+  DEVTOOLSETEIGHT='n'
+  DEVTOOLSETSEVEN='n'
+elif [[ "$CENTOS_NINE" -eq '9' && "$DEVTOOLSETELEVEN" = [yY] && "$DEVTOOLSETTEN" = [yY] && "$DEVTOOLSETNINE" = [yY] && "$DEVTOOLSETEIGHT" = [yY] && "$DEVTOOLSETSEVEN" = [yY] ]]; then
   DEVTOOLSETELEVEN='y'
   DEVTOOLSETTEN='n'
   DEVTOOLSETNINE='n'
@@ -2030,6 +2092,14 @@ elif [[ "$CENTOS_NINE" -eq '9' && "$DEVTOOLSETELEVEN" = [yY] && "$DEVTOOLSETTEN"
   DEVTOOLSETSEVEN='n'
 elif [[ "$CENTOS_NINE" -eq '9' && "$DEVTOOLSETELEVEN" = [yY] && "$DEVTOOLSETTEN" = [yY] && "$DEVTOOLSETNINE" = [yY] && "$DEVTOOLSETEIGHT" = [nN] && "$DEVTOOLSETSEVEN" = [yY] ]]; then
   DEVTOOLSETELEVEN='y'
+  DEVTOOLSETTEN='n'
+  DEVTOOLSETNINE='n'
+  DEVTOOLSETEIGHT='n'
+  DEVTOOLSETSEVEN='n'
+elif [[ "$CENTOS_TEN" -eq '10' && "$DEVTOOLSETTHIRTEEN" = [yY] && "$DEVTOOLSETTWELVE" = [yY] && "$DEVTOOLSETELEVEN" = [yY] && "$DEVTOOLSETTEN" = [yY] && "$DEVTOOLSETNINE" = [yY] && "$DEVTOOLSETEIGHT" = [yY] && "$DEVTOOLSETSEVEN" = [yY] ]]; then
+  DEVTOOLSETTHIRTEEN='n'
+  DEVTOOLSETTWELVE='n'
+  DEVTOOLSETELEVEN='n'
   DEVTOOLSETTEN='n'
   DEVTOOLSETNINE='n'
   DEVTOOLSETEIGHT='n'
@@ -2249,7 +2319,7 @@ EOF
   fi
 fi
 
-if [[ "$CENTOS_SEVEN" -eq '7' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]] && [[ "$DNF_ENABLE" = [yY] ]]; then
+if [[ "$CENTOS_SEVEN" -eq '7' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' || "$CENTOS_TEN" -eq '10' ]] && [[ "$DNF_ENABLE" = [yY] ]]; then
   if [[ $(rpm -q epel-release >/dev/null 2>&1; echo $?) != '0' ]]; then
     yum -y -q install epel-release
     yum clean all
@@ -2330,6 +2400,14 @@ if [ ! -f /usr/bin/sar ]; then
     systemctl daemon-reload
     systemctl restart sysstat.service
     systemctl enable sysstat.service
+  elif [[ "$CENTOS_TEN" = '10' ]]; then
+    sed -i 's|10|5|g' /usr/lib/systemd/system/sysstat-collect.timer
+    #if [ -d /etc/cron.d ]; then
+    #  echo '* * * * * root /usr/lib64/sa/sa1 1 1' > /etc/cron.d/cmsar
+    #fi
+    systemctl daemon-reload
+    systemctl restart sysstat.service
+    systemctl enable sysstat.service
   fi
 elif [ -f /usr/bin/sar ]; then
   if [[ "$(uname -m)" = 'x86_64' || "$(uname -m)" = 'aarch64' ]]; then
@@ -2367,6 +2445,14 @@ elif [ -f /usr/bin/sar ]; then
     systemctl daemon-reload
     systemctl restart sysstat.service
     systemctl enable sysstat.service
+  elif [[ "$CENTOS_TEN" = '10' ]]; then
+    sed -i 's|10|5|g' /usr/lib/systemd/system/sysstat-collect.timer
+    #if [ -d /etc/cron.d ]; then
+    #  echo '* * * * * root /usr/lib64/sa/sa1 1 1' > /etc/cron.d/cmsar
+    #fi
+    systemctl daemon-reload
+    systemctl restart sysstat.service
+    systemctl enable sysstat.service
   fi
 fi
 
@@ -2376,7 +2462,10 @@ fi
 ###############################################################
 # FUNCTIONS
 
-if [[ "$CENTOS_NINE" -eq 9 && "$USEAXEL" = [yY] ]]; then
+if [[ "$CENTOS_TEN" -eq 10 && "$USEAXEL" = [yY] ]]; then
+    DOWNLOADAPP="axel${ipv_forceopt_wget}"
+    WGETRETRY=''
+elif [[ "$CENTOS_NINE" -eq 9 && "$USEAXEL" = [yY] ]]; then
     DOWNLOADAPP="axel${ipv_forceopt_wget}"
     WGETRETRY=''
 elif [[ "$CENTOS_EIGHT" -eq 8 && "$USEAXEL" = [yY] ]]; then
@@ -2928,7 +3017,7 @@ if [ -f /proc/user_beancounters ]; then
 elif [[ "$CHECK_LXD" = [yY] ]]; then
     cecho "LXC/LXD container system detected, NTP not installed" $boldgreen
 else
-    if [[ "$CENTOS_EIGHT" = '8' || "$CENTOS_NINE" = '9' ]] && [ ! -f /sbin/chronyd ]; then
+    if [[ "$CENTOS_EIGHT" = '8' || "$CENTOS_NINE" = '9' || "$CENTOS_TEN" = '10' ]] && [ ! -f /sbin/chronyd ]; then
         echo
         time $YUMDNFBIN -y install chrony
         systemctl start chronyd
@@ -3126,7 +3215,9 @@ else
     phptuning
 fi
 
-if [[ "$CENTOS_NINE" -eq '9' ]]; then
+if [[ "$CENTOS_TEN" -eq '10' ]]; then
+  sed -i 's|\/var\/run\/php-fpm\/php-fpm.pid|\/run\/php-fpm\/php-fpm.pid|' /usr/local/etc/php-fpm.conf
+elif [[ "$CENTOS_NINE" -eq '9' ]]; then
   sed -i 's|\/var\/run\/php-fpm\/php-fpm.pid|\/run\/php-fpm\/php-fpm.pid|' /usr/local/etc/php-fpm.conf
 fi
 
@@ -3168,7 +3259,7 @@ fi
     service php-fpm start
     fileinfo_standalone
 
-    if [[ "$CENTOS_SEVEN" -eq '7' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]] && [[ "$SWITCH_PHPFPM_SYSTEMD" = [yY] && -f "$CUR_DIR/tools/php-systemd.sh" ]]; then
+    if [[ "$CENTOS_SEVEN" -eq '7' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' || "$CENTOS_TEN" -eq '10' ]] && [[ "$SWITCH_PHPFPM_SYSTEMD" = [yY] && -f "$CUR_DIR/tools/php-systemd.sh" ]]; then
       $CUR_DIR/tools/php-systemd.sh fpm-systemd
     fi
 
@@ -3384,7 +3475,7 @@ if [[ -f /usr/bin/python3 && -f /usr/bin/pip ]]; then
   pip --version
 fi
 
-if [[ "$CENTOS_SEVEN" -eq '7' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]] && [[ -f "$CUR_DIR/tools/journald-set.sh config" ]]; then
+if [[ "$CENTOS_SEVEN" -eq '7' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' || "$CENTOS_TEN" -eq '10' ]] && [[ -f "$CUR_DIR/tools/journald-set.sh config" ]]; then
   echo
   "$CUR_DIR/tools/journald-set.sh" config
 fi
@@ -3401,7 +3492,7 @@ if [ -f /etc/init.d/ntpd ]; then
   /etc/init.d/ntpd start
 fi
 
-if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_EIGHT" = '8' || "$CENTOS_NINE" = '9' ]] && [[ "$MDB_INSTALL" = [yY] || "$MDB_YUMREPOINSTALL" = [yY] ]]; then
+if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_EIGHT" = '8' || "$CENTOS_NINE" = '9' || "$CENTOS_TEN" = '10' ]] && [[ "$MDB_INSTALL" = [yY] || "$MDB_YUMREPOINSTALL" = [yY] ]]; then
   sleep 2
   systemctl daemon-reload -q
   service php-fpm stop >/dev/null 2>&1

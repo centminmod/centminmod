@@ -1,6 +1,6 @@
 pureftpinstall() {
 
-if [[ "$CENTOS_SEVEN" -eq '7' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]] && [[ "$DNF_ENABLE" = [yY] ]]; then
+if [[ "$CENTOS_SEVEN" -eq '7' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' || "$CENTOS_TEN" -eq '10' ]] && [[ "$DNF_ENABLE" = [yY] ]]; then
   if [ -f /etc/yum.repos.d/rpmforge.repo ]; then
       DISABLEREPO_DNF=' --disablerepo=rpmforge'
       YUMDNFBIN="dnf${DISABLEREPO_DNF}"

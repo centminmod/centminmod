@@ -6,7 +6,7 @@ export PATH="/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin:/root/
 # written by George Liu (eva2000) centminmod.com
 ######################################################
 # variables
-branchname='140.00beta01'
+branchname='141.00beta01'
 DEBUG='n'
 YUMDNFBIN='yum'
 
@@ -40,6 +40,8 @@ if [ "$CENTOSVER" == 'release' ]; then
         CENTOS_EIGHT='8'
     elif [[ "$(cat /etc/redhat-release | awk '{ print $4 }' | cut -d . -f1)" = '9' ]]; then
         CENTOS_NINE='9'
+    elif [[ "$(cat /etc/redhat-release | awk '{ print $4 }' | cut -d . -f1)" = '10' ]]; then
+        CENTOS_TEN='10'
     fi
 fi
 

@@ -13,7 +13,7 @@ ARCH_CHECK="$(uname -m)"
 # standalone nginx vhost creation script for centminmod.com
 # .08 beta03 and higher written by George Liu
 ################################################################
-branchname='140.00beta01'
+branchname='141.00beta01'
 #CUR_DIR="/usr/local/src/centminmod-${branchname}"
 CUR_DIR="/usr/local/src/centminmod"
 
@@ -330,6 +330,8 @@ if [ "$CENTOSVER" == 'release' ]; then
         CENTOS_EIGHT='8'
     elif [[ "$(cat /etc/redhat-release | awk '{ print $4 }' | cut -d . -f1)" = '9' ]]; then
         CENTOS_NINE='9'
+    elif [[ "$(cat /etc/redhat-release | awk '{ print $4 }' | cut -d . -f1)" = '10' ]]; then
+        CENTOS_TEN='10'
     fi
 fi
 

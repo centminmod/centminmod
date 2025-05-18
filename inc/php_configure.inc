@@ -545,6 +545,23 @@ elif [[ "$CENTOS_NINE" -eq '9' ]]; then
   DEVTOOLSETFIFTTEEN='n'
 fi
 
+# el10 GCC
+if [[ "$CENTOS_TEN" -eq '10' && "$CENTOSVER_NUMERIC" -ge '10' ]]; then
+  DEVTOOLSETTEN='n'
+  DEVTOOLSETELEVEN='n'
+  if [[ "$PHP_PGO_FALLBACK_GCC" = [yY] && "$PHP_PGO" = [yY] ]] && [[ "$PHPMVER" = '7.4' || "$PHPMUVER" = '7.4' || "$PHPMVER" = '8.0' || "$PHPMUVER" = '8.0' || "$PHPMVER" = '8.1' || "$PHPMUVER" = '8.1' || "$PHPMVER" = '8.2' || "$PHPMUVER" = '8.2' || "$PHPMVER" = '8.3' || "$PHPMUVER" = '8.3' || "$PHPMVER" = '8.4' || "$PHPMUVER" = '8.4' ]]; then
+    DEVTOOLSETTWELVE='n'
+    DEVTOOLSETTHIRTEEN='n'
+    DEVTOOLSETFOURTEEN='y'
+    DEVTOOLSETFIFTTEEN='n'
+  else
+    DEVTOOLSETTWELVE='n'
+    DEVTOOLSETTHIRTEEN='n'
+    DEVTOOLSETFOURTEEN='y'
+    DEVTOOLSETFIFTTEEN='n'
+  fi
+fi
+
 if [[ "$FORCE_IPVFOUR" != [yY] ]]; then
   ipv_forceopt=""
   ipv_forceopt_wget=""

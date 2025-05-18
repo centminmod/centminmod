@@ -479,7 +479,7 @@ elif [[ "$ngver" = 'quic' || "$NGINX_QUIC_SUPPORT" = [yY] ]]; then
   OPENSSL_SYSTEM_USE='n'
 fi
 
-if [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]]; then
+if [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' || "$CENTOS_TEN" -eq '10' ]]; then
   # give AWS-LC priority over quicTLS for HTTP/3 QUIC
   if [[ "$AWS_LC_SWITCH" = [yY] ]]; then
     OPENSSL_SYSTEM_USE='n'

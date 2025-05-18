@@ -13,6 +13,8 @@ if [ "$CENTOSVER" == 'release' ]; then
         CENTOS_EIGHT='8'
     elif [[ "$(cat /etc/redhat-release | awk '{ print $4 }' | cut -d . -f1)" = '9' ]]; then
         CENTOS_NINE='9'
+    elif [[ "$(cat /etc/redhat-release | awk '{ print $4 }' | cut -d . -f1)" = '10' ]]; then
+        CENTOS_TEN='10'
     fi
 fi
 
@@ -105,7 +107,10 @@ fi
 
 CENTOSVER_NUMERIC=$(echo $CENTOSVER | sed -e 's|\.||g')
 
-if [[ "$CENTOS_NINE" -eq '9' ]]; then
+if [[ "$CENTOS_TEN" -eq '10' ]]; then
+  PHP_PID_PATH='/run/php-fpm/php-fpm.pid'
+  PHP_PID_PATHDIR='/run/php-fpm/'
+elif [[ "$CENTOS_NINE" -eq '9' ]]; then
   PHP_PID_PATH='/run/php-fpm/php-fpm.pid'
   PHP_PID_PATHDIR='/run/php-fpm/'
 elif [[ "$CENTOS_EIGHT" -eq '8' ]]; then
