@@ -1256,9 +1256,21 @@ exclude=*.i686
 :q
 EOF
   fi
+  elif [[ "$CENTOS_TEN" = '10' ]] && [ ! "$(grep -w 'exclude' /etc/yum.conf)" ]; then
+ex -s /etc/yum.conf << EOF
+:/best=True/
+:a
+exclude=*.i686
+.
+:w
+:q
+EOF
+  fi
 fi
 
 # some centos images don't even install tar by default !
+if [[ "$CENTOS_TEN" -eq '10' && ! -f /usr/bin/tar ]]; then
+  yum -y -q install tar
 if [[ "$CENTOS_NINE" -eq '9' && ! -f /usr/bin/tar ]]; then
   yum -y -q install tar
 elif [[ "$CENTOS_EIGHT" -eq '8' && ! -f /usr/bin/tar ]]; then
@@ -1862,13 +1874,20 @@ fileperm_fixes() {
 
 libc_fix() {
   # https://community.centminmod.com/posts/52555/
-  if [[ "$CENTOS_NINE" -eq '9' ]]; then
+  if [[ "$CENTOS_TEN" -eq '10' ]]; then
+    # yum -y -q install python3-dnf-plugin-versionlock
+    yum -y install libc-client uw-imap-devel
+    yum versionlock libc-client uw-imap-devel -q >/dev/null 2>&1
+  elif [[ "$CENTOS_NINE" -eq '9' ]]; then
     # yum -y -q install python3-dnf-plugin-versionlock
     yum -y install libc-client uw-imap-devel
     yum versionlock libc-client uw-imap-devel -q >/dev/null 2>&1
   elif [[ "$CENTOS_EIGHT" -eq '8' ]]; then
     # yum -y -q install python3-dnf-plugin-versionlock
     yum -y install libc-client uw-imap-devel
+    yum versionlock libc-client uw-imap-devel -q >/dev/null 2>&1
+  elif [[ "$CENTOS_TEN" -eq '10' && ! -f /etc/yum/pluginconf.d/versionlock.conf && "$(rpm -qa libc-client)" = 'libc-client-2007f-30.el10.remi.x86_64' ]]; then
+    yum -y -q install python3-dnf-plugin-versionlock
     yum versionlock libc-client uw-imap-devel -q >/dev/null 2>&1
   elif [[ "$CENTOS_NINE" -eq '9' && ! -f /etc/yum/pluginconf.d/versionlock.conf && "$(rpm -qa libc-client)" = 'libc-client-2007f-30.el9.remi.x86_64' ]]; then
     yum -y -q install python3-dnf-plugin-versionlock
@@ -1969,7 +1988,7 @@ fi
         fi
     fi # check if custom open file descriptor limits already exist
 
-    if [[ "$CENTOS_EIGHT" = '8' || "$CENTOS_NINE" = '9' ]]; then
+    if [[ "$CENTOS_EIGHT" = '8' || "$CENTOS_NINE" = '9' || "$CENTOS_TEN" = '10' ]]; then
         # centos 8
         if [[ -f /etc/security/limits.d/20-nproc.conf ]]; then
 cat > "/etc/security/limits.d/20-nproc.conf" <<EOF
@@ -2017,14 +2036,17 @@ EOF
     fi
 
 if [[ ! -f /proc/user_beancounters ]]; then
-    if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_EIGHT" = '8' || "$CENTOS_NINE" = '9' ]]; then
+    if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_EIGHT" = '8' || "$CENTOS_NINE" = '9' || "$CENTOS_TEN" = '10' ]]; then
         TCPMEMTOTAL=$(awk '/MemTotal/ {print $2}' /proc/meminfo)
         if [ "$TCPMEMTOTAL" -le '3000000' ]; then
           TCP_OPTMEM_MAX='8192'
         else
           TCP_OPTMEM_MAX='81920'
         fi
-        if [[ "$CENTOS_EIGHT" = '8' || "$CENTOS_NINE" = '9' ]]; then
+        if [[ "$CENTOS_TEN" = '10' ]]; then
+          TCP_PID_MAX='4194300'
+          TCP_BACKLOG='524280'
+        elif [[ "$CENTOS_EIGHT" = '8' || "$CENTOS_NINE" = '9' ]]; then
           TCP_PID_MAX='4194300'
           TCP_BACKLOG='524280'
         elif [[ "$CENTOS_SEVEN" = '7' ]]; then
@@ -2222,7 +2244,7 @@ if [[ ! -f /usr/bin/git || ! -f /usr/bin/bc || ! -f /usr/bin/wget || ! -f /bin/n
     fi
   fi
 
-  if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_EIGHT" = '8' || "$CENTOS_NINE" = '9' ]]; then
+  if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_EIGHT" = '8' || "$CENTOS_NINE" = '9' || "$CENTOS_TEN" = '10' ]]; then
     if [[ $(rpm -q nmap-ncat >/dev/null 2>&1; echo $?) != '0' ]]; then
       time $YUMDNFBIN -y install nmap-ncat${DISABLEREPO_DNF}
       sar_call
@@ -2245,7 +2267,9 @@ if [[ ! -f /usr/bin/git || ! -f /usr/bin/bc || ! -f /usr/bin/wget || ! -f /bin/n
     USER_PKGS=" ipset ipset-devel"
   fi
 
-if [[ "$CENTOS_NINE" -eq '9' ]]; then
+if [[ "$CENTOS_TEN" -eq '10' ]]; then
+  time $YUMDNFBIN -y install perl-FindBin perl-diagnostics libc-client libc-client-devel systemd-devel systemd-libs open-sans-fonts libidn2-devel libpsl-devel gpgme-devel gnutls-devel virt-what acl libacl-devel attr libattr-devel lz4-devel gawk unzip libuuid-devel sqlite-devel bc wget lynx screen ca-certificates yum-utils bash mlocate subversion rsyslog dos2unix boost-program-options net-tools imake bind-utils libatomic_ops-devel time coreutils autoconf cronie crontabs cronie-anacron gcc gcc-c++ automake libtool make libXext-devel unzip patch sysstat openssh flex bison file libtool-ltdl-devel krb5-devel libXpm-devel nano gmp-devel aspell-devel numactl lsof pkgconfig gdbm-devel tk-devel bluez-libs-devel iptables-nft iptables-nft-services iptables-libs iptables-utils rrdtool diffutils which perl-Math-BigInt perl-Test-Simple perl-ExtUtils-Embed perl-ExtUtils-MakeMaker perl-Time-HiRes perl-libwww-perl perl-Net-SSLeay cyrus-imapd cyrus-sasl-md5 cyrus-sasl-plain strace cmake git net-snmp-libs net-snmp-utils iotop libvpx libvpx-devel t1lib t1lib-devel expect readline readline-devel libedit libedit-devel libxslt libxslt-devel openssl openssl-devel curl curl-devel openldap openldap-devel zlib zlib-devel gd gd-devel pcre pcre-devel gettext gettext-devel libidn libidn-devel libjpeg libjpeg-devel libpng libpng-devel freetype freetype-devel libxml2 libxml2-devel glib2 glib2-devel bzip2 bzip2-devel ncurses ncurses-devel e2fsprogs e2fsprogs-devel libc-client libc-client-devel cyrus-sasl cyrus-sasl-devel pam pam-devel libaio libaio-devel libevent libevent-devel recode recode-devel libtidy libtidy-devel net-snmp net-snmp-devel enchant enchant-devel lua lua-devel s-nail perl-LWP-Protocol-https OpenEXR-devel OpenEXR-libs atk cups-libs fftw-libs-double fribidi gdk-pixbuf2 ghostscript-devel gl-manpages graphviz gtk2 hicolor-icon-theme ilmbase ilmbase-devel jasper-devel jasper-libs jbigkit-devel jbigkit-libs lcms2 lcms2-devel libICE-devel libSM-devel libXaw libXcomposite libXcursor libXdamage-devel libXfixes-devel libXi libXinerama libXmu libXrandr libXt-devel libXxf86vm-devel libdrm-devel libfontenc librsvg2 libtiff libtiff-devel libwebp libwebp-devel libwmf-lite mesa-libGL-devel mesa-libGLU mesa-libGLU-devel poppler-data urw-fonts xorg-x11-font-utils${USER_PKGS}${DISABLEREPO_DNF} --skip-broken
+elif [[ "$CENTOS_NINE" -eq '9' ]]; then
   time $YUMDNFBIN -y install perl-FindBin perl-diagnostics libc-client libc-client-devel systemd-devel systemd-libs open-sans-fonts libidn2-devel libpsl-devel gpgme-devel gnutls-devel virt-what acl libacl-devel attr libattr-devel lz4-devel gawk unzip libuuid-devel sqlite-devel bc wget lynx screen ca-certificates yum-utils bash mlocate subversion rsyslog dos2unix boost-program-options net-tools imake bind-utils libatomic_ops-devel time coreutils autoconf cronie crontabs cronie-anacron gcc gcc-c++ automake libtool make libXext-devel unzip patch sysstat openssh flex bison file libtool-ltdl-devel krb5-devel libXpm-devel nano gmp-devel aspell-devel numactl lsof pkgconfig gdbm-devel tk-devel bluez-libs-devel iptables-nft iptables-nft-services iptables-libs iptables-utils rrdtool diffutils which perl-Math-BigInt perl-Test-Simple perl-ExtUtils-Embed perl-ExtUtils-MakeMaker perl-Time-HiRes perl-libwww-perl perl-Net-SSLeay cyrus-imapd cyrus-sasl-md5 cyrus-sasl-plain strace cmake git net-snmp-libs net-snmp-utils iotop libvpx libvpx-devel t1lib t1lib-devel expect readline readline-devel libedit libedit-devel libxslt libxslt-devel openssl openssl-devel curl curl-devel openldap openldap-devel zlib zlib-devel gd gd-devel pcre pcre-devel gettext gettext-devel libidn libidn-devel libjpeg libjpeg-devel libpng libpng-devel freetype freetype-devel libxml2 libxml2-devel glib2 glib2-devel bzip2 bzip2-devel ncurses ncurses-devel e2fsprogs e2fsprogs-devel libc-client libc-client-devel cyrus-sasl cyrus-sasl-devel pam pam-devel libaio libaio-devel libevent libevent-devel recode recode-devel libtidy libtidy-devel net-snmp net-snmp-devel enchant enchant-devel lua lua-devel s-nail perl-LWP-Protocol-https OpenEXR-devel OpenEXR-libs atk cups-libs fftw-libs-double fribidi gdk-pixbuf2 ghostscript-devel gl-manpages graphviz gtk2 hicolor-icon-theme ilmbase ilmbase-devel jasper-devel jasper-libs jbigkit-devel jbigkit-libs lcms2 lcms2-devel libICE-devel libSM-devel libXaw libXcomposite libXcursor libXdamage-devel libXfixes-devel libXi libXinerama libXmu libXrandr libXt-devel libXxf86vm-devel libdrm-devel libfontenc librsvg2 libtiff libtiff-devel libwebp libwebp-devel libwmf-lite mesa-libGL-devel mesa-libGLU mesa-libGLU-devel poppler-data urw-fonts xorg-x11-font-utils${USER_PKGS}${DISABLEREPO_DNF} --skip-broken
 elif [[ "$CENTOS_EIGHT" -eq '8' ]]; then
   time $YUMDNFBIN -y install perl-FindBin libc-client libc-client-devel systemd-devel systemd-libs open-sans-fonts libidn2-devel libpsl-devel gpgme-devel gnutls-devel virt-what acl libacl-devel attr libattr-devel lz4-devel gawk unzip libuuid-devel sqlite-devel bc wget lynx screen ca-certificates yum-utils bash mlocate subversion rsyslog dos2unix boost-program-options net-tools imake bind-utils libatomic_ops-devel time coreutils autoconf cronie crontabs cronie-anacron gcc gcc-c++ automake libtool make libXext-devel unzip patch sysstat openssh flex bison file libtool-ltdl-devel krb5-devel libXpm-devel nano gmp-devel aspell-devel numactl lsof pkgconfig gdbm-devel tk-devel bluez-libs-devel iptables* rrdtool diffutils which perl-Math-BigInt perl-Test-Simple perl-ExtUtils-Embed perl-ExtUtils-MakeMaker perl-Time-HiRes perl-libwww-perl perl-Net-SSLeay cyrus-imapd cyrus-sasl-md5 cyrus-sasl-plain strace cmake git net-snmp-libs net-snmp-utils iotop libvpx libvpx-devel t1lib t1lib-devel expect readline readline-devel libedit libedit-devel libxslt libxslt-devel openssl openssl-devel curl curl-devel openldap openldap-devel zlib zlib-devel gd gd-devel pcre pcre-devel gettext gettext-devel libidn libidn-devel libjpeg libjpeg-devel libpng libpng-devel freetype freetype-devel libxml2 libxml2-devel glib2 glib2-devel bzip2 bzip2-devel ncurses ncurses-devel e2fsprogs e2fsprogs-devel libc-client libc-client-devel cyrus-sasl cyrus-sasl-devel pam pam-devel libaio libaio-devel libevent libevent-devel recode recode-devel libtidy libtidy-devel net-snmp net-snmp-devel enchant enchant-devel lua lua-devel mailx perl-LWP-Protocol-https OpenEXR-devel OpenEXR-libs atk cups-libs fftw-libs-double fribidi gdk-pixbuf2 ghostscript-devel gl-manpages graphviz gtk2 hicolor-icon-theme ilmbase ilmbase-devel jasper-devel jasper-libs jbigkit-devel jbigkit-libs lcms2 lcms2-devel libICE-devel libSM-devel libXaw libXcomposite libXcursor libXdamage-devel libXfixes-devel libXi libXinerama libXmu libXrandr libXt-devel libXxf86vm-devel libdrm-devel libfontenc librsvg2 libtiff libtiff-devel libwebp libwebp-devel libwmf-lite mesa-libGL-devel mesa-libGLU mesa-libGLU-devel poppler-data urw-fonts xorg-x11-font-utils${USER_PKGS}${DISABLEREPO_DNF} --skip-broken
@@ -2259,7 +2283,14 @@ fi
   time $YUMDNFBIN -y install epel-release${DISABLEREPO_DNF}
   # $YUMDNFBIN makecache fast
   sar_call
-  if [[ "$CENTOS_NINE" = '9' ]]; then
+  if [[ "$CENTOS_TEN" = '10' ]]; then
+    time $YUMDNFBIN -y install checksec systemd-libs xxhash-devel libzstd xxhash libzstd-devel datamash qrencode jq clang clang-devel jemalloc jemalloc-devel zstd python2-pip libmcrypt libmcrypt-devel libraqm oniguruma5php oniguruma5php-devel figlet moreutils nghttp2 libnghttp2 libnghttp2-devel pngquant optipng jpegoptim pwgen pigz pbzip2 xz pxz lz4 bash-completion mlocate re2c kernel-headers kernel-devel${DISABLEREPO_DNF} --enablerepo=epel,epel-testing,remi --skip-broken
+    libc_fix
+    if [ -f /usr/bin/pip ]; then
+      PYTHONWARNINGS=ignore:::pip._internal.cli.base_command pip install --upgrade pip
+    fi
+    sar_call
+  elif [[ "$CENTOS_NINE" = '9' ]]; then
     time $YUMDNFBIN -y install checksec systemd-libs xxhash-devel libzstd xxhash libzstd-devel datamash qrencode jq clang clang-devel jemalloc jemalloc-devel zstd python2-pip libmcrypt libmcrypt-devel libraqm oniguruma5php oniguruma5php-devel figlet moreutils nghttp2 libnghttp2 libnghttp2-devel pngquant optipng jpegoptim pwgen pigz pbzip2 xz pxz lz4 bash-completion mlocate re2c kernel-headers kernel-devel${DISABLEREPO_DNF} --enablerepo=epel,epel-testing,remi --skip-broken
     libc_fix
     if [ -f /usr/bin/pip ]; then
@@ -2431,19 +2462,23 @@ cd $INSTALLDIR
 #sed -i "s|PHPREDIS='y'|PHPREDIS='n'|" centmin.sh
 
 # switch from PHP 5.4.41 to 5.6.9 default with Zend Opcache
-if [[ "$CENTOS_NINE" -eq '9' ]]; then
+if [[ "$CENTOS_TEN" -eq '10' ]]; then
+  PHPVERLATEST=$(curl -${ipv_forceopt}sL https://www.php.net/downloads.php| egrep -o "php\-[0-9.]+\.tar[.a-z]*" | grep -v '.asc' | awk -F "php-" '/.tar.gz$/ {print $2}' | sed -e 's|.tar.gz||g' | uniq | grep '8.3' | head -n1)
+elif [[ "$CENTOS_NINE" -eq '9' ]]; then
   PHPVERLATEST=$(curl -${ipv_forceopt}sL https://www.php.net/downloads.php| egrep -o "php\-[0-9.]+\.tar[.a-z]*" | grep -v '.asc' | awk -F "php-" '/.tar.gz$/ {print $2}' | sed -e 's|.tar.gz||g' | uniq | grep '8.3' | head -n1)
 elif [[ "$CENTOS_EIGHT" -eq '8' ]]; then
   PHPVERLATEST=$(curl -${ipv_forceopt}sL https://www.php.net/downloads.php| egrep -o "php\-[0-9.]+\.tar[.a-z]*" | grep -v '.asc' | awk -F "php-" '/.tar.gz$/ {print $2}' | sed -e 's|.tar.gz||g' | uniq | grep '8.3' | head -n1)
 else
   PHPVERLATEST=$(curl -${ipv_forceopt}sL https://www.php.net/downloads.php| egrep -o "php\-[0-9.]+\.tar[.a-z]*" | grep -v '.asc' | awk -F "php-" '/.tar.gz$/ {print $2}' | sed -e 's|.tar.gz||g' | uniq | grep '8.3' | head -n1)
 fi
-if [[ "$CENTOS_NINE" -eq '9' ]]; then
-  PHPVERLATEST=${PHPVERLATEST:-"8.3.14"}
+if [[ "$CENTOS_TEN" -eq '10' ]]; then
+  PHPVERLATEST=${PHPVERLATEST:-"8.3.21"}
+elif [[ "$CENTOS_NINE" -eq '9' ]]; then
+  PHPVERLATEST=${PHPVERLATEST:-"8.3.21"}
 elif [[ "$CENTOS_EIGHT" -eq '8' ]]; then
-  PHPVERLATEST=${PHPVERLATEST:-"8.3.14"}
+  PHPVERLATEST=${PHPVERLATEST:-"8.3.21"}
 else
-  PHPVERLATEST=${PHPVERLATEST:-"8.3.14"}
+  PHPVERLATEST=${PHPVERLATEST:-"8.3.21"}
 fi
 sed -i "s|^PHP_VERSION='.*'|PHP_VERSION='$PHPVERLATEST'|" centmin.sh
 sed -i "s|ZOPCACHEDFT='n'|ZOPCACHEDFT='y'|" centmin.sh
