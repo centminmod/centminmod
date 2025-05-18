@@ -1617,6 +1617,7 @@ source "${SCRIPT_DIR}/inc/mysql_proclimit.inc"
 source "${SCRIPT_DIR}/inc/mysqltmp.inc"
 source "${SCRIPT_DIR}/inc/setmycnf.inc"
 source "${SCRIPT_DIR}/inc/mariadb_switch103.inc"
+source "${SCRIPT_DIR}/inc/mariadb_switch1011.inc"
 source "${SCRIPT_DIR}/inc/mariadb_install102.inc"
 source "${SCRIPT_DIR}/inc/mariadb_install103.inc"
 source "${SCRIPT_DIR}/inc/mariadb_install104.inc"
@@ -3091,7 +3092,11 @@ ls -lah "${CENTMINLOGDIR}/centminmod_ngxinstalltime_${DT}.log"
 if [[ "$MARIADB_INSTALLELEVENFOUR" = [yY] && "$MARIADB_INSTALLTENTWO" = [nN] ]]; then
   mariadbelevenfour_installfunct
 elif [[ "$MARIADB_INSTALLTENELEVEN" = [yY] && "$MARIADB_INSTALLTENTWO" = [nN] ]]; then
-  mariadbteneleven_installfunct
+  if [[ "$CENTOS_TEN" -eq '10' ]]; then
+    install_native_mariadb_ten_eleven install-fresh
+  else
+    mariadbteneleven_installfunct
+  fi
 elif [[ "$MARIADB_INSTALLTENSIX" = [yY] && "$MARIADB_INSTALLTENTWO" = [nN] ]]; then
   mariadbtensix_installfunct
 elif [[ "$MARIADB_INSTALLTENFIVE" = [yY] && "$MARIADB_INSTALLTENTWO" = [nN] ]]; then

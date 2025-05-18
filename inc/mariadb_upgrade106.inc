@@ -1084,6 +1084,8 @@ mv ib_logfile0 ib_logfile0.bak
 mv ib_logfile1 ib_logfile1.bak
 echo
 
+#if [[ "$CENTOS_TEN" -eq '10' && "$(rpm -qa | grep mariadb | awk '/mariadb-server-utils/')" ]]; then
+#    remove_mariadb_ten_eleven_native_module
 if [[ "$CENTOS_EIGHT" -eq '8' && "$(rpm -qa | grep mariadb | awk '/mariadb-server-utils/')" ]]; then
     remove_mariadb_ten_three_native_module
 else
