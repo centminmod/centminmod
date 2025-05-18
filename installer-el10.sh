@@ -1255,7 +1255,6 @@ exclude=*.i686
 :w
 :q
 EOF
-  fi
   elif [[ "$CENTOS_TEN" = '10' ]] && [ ! "$(grep -w 'exclude' /etc/yum.conf)" ]; then
 ex -s /etc/yum.conf << EOF
 :/best=True/
