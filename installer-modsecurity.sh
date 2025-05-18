@@ -243,7 +243,7 @@ fi
 # ensure only el8+ OS versions are being looked at for alma linux, rocky linux
 # oracle linux, vzlinux, circle linux, navy linux, euro linux
 EL_VERID=$(awk -F '=' '/VERSION_ID/ {print $2}' /etc/os-release | sed -e 's|"||g' | cut -d . -f1)
-if [ -f /etc/almalinux-release ] && [[ "$EL_VERID" -eq 8 || "$EL_VERID" -eq 9 ]]; then
+if [ -f /etc/almalinux-release ] && [[ "$EL_VERID" -eq 8 || "$EL_VERID" -eq 9 || "$EL_VERID" -eq 10 ]]; then
   CENTOSVER=$(awk '{ print $3 }' /etc/almalinux-release | cut -d . -f1,2)
   ALMALINUXVER=$(awk '{ print $3 }' /etc/almalinux-release | cut -d . -f1,2 | sed -e 's|\.|000|g')
   if [[ "$(echo $CENTOSVER | cut -d . -f1)" -eq '8' ]]; then
@@ -252,8 +252,11 @@ if [ -f /etc/almalinux-release ] && [[ "$EL_VERID" -eq 8 || "$EL_VERID" -eq 9 ]]
   elif [[ "$(echo $CENTOSVER | cut -d . -f1)" -eq '9' ]]; then
     CENTOS_NINE='9'
     ALMALINUX_NINE='9'
+  elif [[ "$(echo $CENTOSVER | cut -d . -f1)" -eq '10' ]]; then
+    CENTOS_TEN='10'
+    ALMALINUX_TEN='10'
   fi
-elif [ -f /etc/rocky-release ] && [[ "$EL_VERID" -eq 8 || "$EL_VERID" -eq 9 ]]; then
+elif [ -f /etc/rocky-release ] && [[ "$EL_VERID" -eq 8 || "$EL_VERID" -eq 9 || "$EL_VERID" -eq 10 ]]; then
   CENTOSVER=$(awk '{ print $4 }' /etc/rocky-release | cut -d . -f1,2)
   ROCKYLINUXVER=$(awk '{ print $3 }' /etc/rocky-release | cut -d . -f1,2 | sed -e 's|\.|000|g')
   if [[ "$(echo $CENTOSVER | cut -d . -f1)" -eq '8' ]]; then
@@ -262,8 +265,11 @@ elif [ -f /etc/rocky-release ] && [[ "$EL_VERID" -eq 8 || "$EL_VERID" -eq 9 ]]; 
   elif [[ "$(echo $CENTOSVER | cut -d . -f1)" -eq '9' ]]; then
     CENTOS_NINE='9'
     ROCKYLINUX_NINE='9'
+  elif [[ "$(echo $CENTOSVER | cut -d . -f1)" -eq '10' ]]; then
+    CENTOS_TEN='10'
+    ROCKYLINUX_TEN='10'
   fi
-elif [ -f /etc/oracle-release ] && [[ "$EL_VERID" -eq 8 || "$EL_VERID" -eq 9 ]]; then
+elif [ -f /etc/oracle-release ] && [[ "$EL_VERID" -eq 8 || "$EL_VERID" -eq 9 || "$EL_VERID" -eq 10 ]]; then
   CENTOSVER=$(awk '{ print $5 }' /etc/oracle-release | cut -d . -f1,2)
   if [[ "$(echo $CENTOSVER | cut -d . -f1)" -eq '8' ]]; then
     CENTOS_EIGHT='8'
@@ -271,8 +277,11 @@ elif [ -f /etc/oracle-release ] && [[ "$EL_VERID" -eq 8 || "$EL_VERID" -eq 9 ]];
   elif [[ "$(echo $CENTOSVER | cut -d . -f1)" -eq '9' ]]; then
     CENTOS_NINE='9'
     ORACLELINUX_NINE='9'
+  elif [[ "$(echo $CENTOSVER | cut -d . -f1)" -eq '10' ]]; then
+    CENTOS_TEN='10'
+    ORACLELINUX_TEN='10'
   fi
-elif [ -f /etc/vzlinux-release ] && [[ "$EL_VERID" -eq 8 || "$EL_VERID" -eq 9 ]]; then
+elif [ -f /etc/vzlinux-release ] && [[ "$EL_VERID" -eq 8 || "$EL_VERID" -eq 9 || "$EL_VERID" -eq 10 ]]; then
   CENTOSVER=$(awk '{ print $4 }' /etc/vzlinux-release | cut -d . -f1,2)
   if [[ "$(echo $CENTOSVER | cut -d . -f1)" -eq '8' ]]; then
     CENTOS_EIGHT='8'
@@ -280,8 +289,11 @@ elif [ -f /etc/vzlinux-release ] && [[ "$EL_VERID" -eq 8 || "$EL_VERID" -eq 9 ]]
   elif [[ "$(echo $CENTOSVER | cut -d . -f1)" -eq '9' ]]; then
     CENTOS_NINE='9'
     VZLINUX_NINE='9'
+  elif [[ "$(echo $CENTOSVER | cut -d . -f1)" -eq '10' ]]; then
+    CENTOS_TEN='10'
+    VZLINUX_TEN='10'
   fi
-elif [ -f /etc/circle-release ] && [[ "$EL_VERID" -eq 8 || "$EL_VERID" -eq 9 ]]; then
+elif [ -f /etc/circle-release ] && [[ "$EL_VERID" -eq 8 || "$EL_VERID" -eq 9 || "$EL_VERID" -eq 10 ]]; then
   CENTOSVER=$(awk '{ print $4 }' /etc/circle-release | cut -d . -f1,2)
   if [[ "$(echo $CENTOSVER | cut -d . -f1)" -eq '8' ]]; then
     CENTOS_EIGHT='8'
@@ -289,8 +301,11 @@ elif [ -f /etc/circle-release ] && [[ "$EL_VERID" -eq 8 || "$EL_VERID" -eq 9 ]];
   elif [[ "$(echo $CENTOSVER | cut -d . -f1)" -eq '9' ]]; then
     CENTOS_NINE='9'
     CIRCLELINUX_NINE='9'
+  elif [[ "$(echo $CENTOSVER | cut -d . -f1)" -eq '10' ]]; then
+    CENTOS_TEN='10'
+    CIRCLELINUX_TEN='10'
   fi
-elif [ -f /etc/navylinux-release ] && [[ "$EL_VERID" -eq 8 || "$EL_VERID" -eq 9 ]]; then
+elif [ -f /etc/navylinux-release ] && [[ "$EL_VERID" -eq 8 || "$EL_VERID" -eq 9 || "$EL_VERID" -eq 10 ]]; then
   CENTOSVER=$(awk '{ print $5 }' /etc/navylinux-release | cut -d . -f1,2)
   if [[ "$(echo $CENTOSVER | cut -d . -f1)" -eq '8' ]]; then
     CENTOS_EIGHT='8'
@@ -298,8 +313,11 @@ elif [ -f /etc/navylinux-release ] && [[ "$EL_VERID" -eq 8 || "$EL_VERID" -eq 9 
   elif [[ "$(echo $CENTOSVER | cut -d . -f1)" -eq '9' ]]; then
     CENTOS_NINE='9'
     NAVYLINUX_NINE='9'
+  elif [[ "$(echo $CENTOSVER | cut -d . -f1)" -eq '10' ]]; then
+    CENTOS_TEN='10'
+    NAVYLINUX_TEN='10'
   fi
-elif [ -f /etc/el-release ] && [[ "$EL_VERID" -eq 8 || "$EL_VERID" -eq 9 ]]; then
+elif [ -f /etc/el-release ] && [[ "$EL_VERID" -eq 8 || "$EL_VERID" -eq 9 || "$EL_VERID" -eq 10 ]]; then
   CENTOSVER=$(awk '{ print $3 }' /etc/el-release | cut -d . -f1,2)
   if [[ "$(echo $CENTOSVER | cut -d . -f1)" -eq '8' ]]; then
     CENTOS_EIGHT='8'
@@ -307,6 +325,9 @@ elif [ -f /etc/el-release ] && [[ "$EL_VERID" -eq 8 || "$EL_VERID" -eq 9 ]]; the
   elif [[ "$(echo $CENTOSVER | cut -d . -f1)" -eq '9' ]]; then
     CENTOS_NINE='9'
     EUROLINUX_NINE='9'
+  elif [[ "$(echo $CENTOSVER | cut -d . -f1)" -eq '10' ]]; then
+    CENTOS_TEN='10'
+    EUROLINUX_TEN='10'
   fi
 fi
 
@@ -328,7 +349,18 @@ TOTALMEM_T=$(awk '/MemTotal/ {print $2}' /proc/meminfo)
 TOTALMEM_SWAP=$(awk '/SwapFree/ {print $2}' /proc/meminfo)
 TOTALMEM_PHP=$(($TOTALMEM_T+$TOTALMEM_SWAP))
 
-if [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]]; then
+if [[ "$CENTOS_TEN" -eq '10' ]]; then
+  if [[ "$ISMINMEM_OVERRIDE" = [yY] ]]; then
+    ISMINMEM='1500000'  # 1.43GB in bytes
+  else
+    ISMINMEM='1730000'  # 1.7GB in bytes
+  fi
+  if [[ "$ISMINSWAP_OVERRIDE" = [yY] ]]; then
+    ISMINSWAP='2097152'  # 2.0GB in bytes
+  else
+    ISMINSWAP='3774873'  # 3.6GB in bytes
+  fi
+elif [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]]; then
   if [[ "$ISMINMEM_OVERRIDE" = [yY] ]]; then
     ISMINMEM='1500000'  # 1.43GB in bytes
   else
