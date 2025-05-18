@@ -134,7 +134,7 @@ fi
 FFMPEGGITLINK='https://github.com/tony2001/ffmpeg-php'
 
 # fallback mirror if github down, use gitlab mirror
-curl -${ipv_forceopt}Is --connect-timeout 30 --max-time 30 $FFMPEGGITLINK | grep 'HTTP\/' | grep '200' >/dev/null 2>&1
+curl -${ipv_forceopt}Is --connect-timeout 30 --max-time 30 $FFMPEGGITLINK | grep -qE '^HTTP/.* 200'
 FFMPEGGIT_CURLCHECK=$?
 if [[ "$FFMPEGGIT_CURLCHECK" != '0' ]]; then
   FFMPEGGITLINK='https://gitlab.com/centminmod-github-mirror/ffmpeg-php'

@@ -1887,7 +1887,7 @@ if [[ "$arch_detect" == "x86_64" ]]; then
   # Existing x86_64 code
   cpu_flags=$(grep -m1 -o -e 'avx512f' -e 'avx2' -e 'avx' /proc/cpuinfo | tr '\n' ' ')
   if [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' || "$CENTOS_TEN" -eq '10' ]]; then
-    check_cflags=$(/lib64/ld-linux-x86-64.so.2 --help | grep supported | awk '/x86-64/ {print $1}' | head -n1 | egrep 'x86-64')
+    check_cflags=$(/lib64/ld-linux-x86-64.so.2 --help | grep supported | awk '/x86-64/ {print $1}' | head -n1 | grep -E 'x86-64')
   else
     check_cflags=''
   fi
@@ -2491,7 +2491,7 @@ sar_call() {
 
 download_cmd() {
   HTTPS_AXELCHECK=$(echo "$1" |awk -F '://' '{print $1}')
-  if [[ "$(curl -${ipv_forceopt}Isv $1 2>&1 | egrep 'ECDSA')" ]]; then
+  if [[ "$(curl -${ipv_forceopt}Isv $1 2>&1 | grep -E 'ECDSA')" ]]; then
     # axel doesn't natively support ECC 256bit ssl certs
     # with ECDSA ciphers due to CentOS system OpenSSL 1.0.2e
     echo "ECDSA SSL Cipher BASED HTTPS detected, switching from axel to wget"
@@ -3443,7 +3443,7 @@ if [[ "$NSD_INSTALL" = [yY] ]]; then
     nsdinstall
 fi
 
-php-config --version | cut -d . -f1,2 | egrep -w '7.0|7.1|7.2|7.3|7.4|8.0|8.1|8.2|8.3|8.4'
+php-config --version | cut -d . -f1,2 | grep -Ew '7.0|7.1|7.2|7.3|7.4|8.0|8.1|8.2|8.3|8.4'
 PHPSEVEN_CHECKVER=$?
 echo "$PHPSEVEN_CHECKVER"
 if [[ "$PHPSEVEN_CHECKVER" = '0' ]]; then
@@ -4112,7 +4112,7 @@ EOF
         INSTALLTIME=$(echo "scale=2;$endtime - $starttime"|bc )
         echo "" >> "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_php_upgrade.log"
         echo "Total PHP Upgrade Time: $INSTALLTIME seconds" >> "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_php_upgrade.log"
-        cat "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_php_upgrade.log" | egrep -v 'checking for|checking if|checking how|checking the|checking sys|checking whether|^checking |/fpm-build/main -I|/fpm-build/libtool |/fpm-build/include -I' > "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_php_upgrade_minimal.log"
+        cat "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_php_upgrade.log" | grep -E -v 'checking for|checking if|checking how|checking the|checking sys|checking whether|^checking |/fpm-build/main -I|/fpm-build/libtool |/fpm-build/include -I' > "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_php_upgrade_minimal.log"
         tail -1 "${CENTMINLOGDIR}/$(ls -Art ${CENTMINLOGDIR}/ | grep 'php_upgrade.log' | tail -1)"
         
         ;;
@@ -4587,7 +4587,7 @@ EOF
         INSTALLTIME=$(echo "scale=2;$endtime - $starttime"|bc )
         echo "" >> "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_php_upgrade.log"
         echo "Total PHP Upgrade Time: $INSTALLTIME seconds" >> "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_php_upgrade.log"
-        cat "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_php_upgrade.log" | egrep -v 'checking for|checking if|checking how|checking the|checking sys|checking whether|^checking |/fpm-build/main -I|/fpm-build/libtool |/fpm-build/include -I' > "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_php_upgrade_minimal.log"
+        cat "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_php_upgrade.log" | grep -E -v 'checking for|checking if|checking how|checking the|checking sys|checking whether|^checking |/fpm-build/main -I|/fpm-build/libtool |/fpm-build/include -I' > "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_php_upgrade_minimal.log"
         tail -1 "${CENTMINLOGDIR}/$(ls -Art ${CENTMINLOGDIR}/ | grep 'php_upgrade.log' | tail -1)"
         
         ;;
@@ -4630,7 +4630,7 @@ EOF
         INSTALLTIME=$(echo "scale=2;$endtime - $starttime"|bc )
         echo "" >> "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_php_upgrade_all.log"
         echo "Total PHP Upgrade Time: $INSTALLTIME seconds" >> "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_php_upgrade_all.log"
-        cat "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_php_upgrade_all.log" | egrep -v 'checking for|checking if|checking how|checking the|checking sys|checking whether|^checking |/fpm-build/main -I|/fpm-build/libtool |/fpm-build/include -I' > "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_php_upgrade_all_minimal.log"
+        cat "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_php_upgrade_all.log" | grep -E -v 'checking for|checking if|checking how|checking the|checking sys|checking whether|^checking |/fpm-build/main -I|/fpm-build/libtool |/fpm-build/include -I' > "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_php_upgrade_all_minimal.log"
         tail -1 "${CENTMINLOGDIR}/$(ls -Art ${CENTMINLOGDIR}/ | grep 'php_upgrade_all.log' | tail -1)"
         
         ;;

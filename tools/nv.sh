@@ -563,7 +563,7 @@ pureftpinstall() {
 
 		# check tweaks were made
 		echo
-		cat /etc/pure-ftpd/pure-ftpd.conf | egrep 'UnixAuthentication|VerboseLog|PureDB |CreateHomeDir|TLS|PassivePortRange|TLSCipherSuite'
+		cat /etc/pure-ftpd/pure-ftpd.conf | grep -E 'UnixAuthentication|VerboseLog|PureDB |CreateHomeDir|TLS|PassivePortRange|TLSCipherSuite'
 
 		echo
 		echo "generating self-signed ssl certificate..."

@@ -603,7 +603,7 @@ read -ep "Enter email address for Admin User for Wordpress Installation: " WPADM
 # check if nginx server is compiled with default redis nginx modules, 
 # otherwise hide redis cache option if nginx server is missing 
 # required redis related nginx modules
-CHECKFOR_REDISMODULES=$(nginx -V 2>&1 | egrep -o 'ngx_http_redis|redis2-nginx-module|ngx_cache_purge|set-misc-nginx-module' | xargs)
+CHECKFOR_REDISMODULES=$(nginx -V 2>&1 | grep -Eo 'ngx_http_redis|redis2-nginx-module|ngx_cache_purge|set-misc-nginx-module' | xargs)
 if [[ "$(echo $CHECKFOR_REDISMODULES | grep -o 'ngx_cache_purge')" = 'ngx_cache_purge' ]] && [[ "$(echo $CHECKFOR_REDISMODULES | grep -o 'set-misc-nginx-module')" = 'set-misc-nginx-module' ]] && [[ "$(echo $CHECKFOR_REDISMODULES | grep -o 'redis2-nginx-module')" = 'redis2-nginx-module' ]] && [[ "$(echo $CHECKFOR_REDISMODULES | grep -o 'ngx_http_redis')" = 'ngx_http_redis' ]]; then
   redis_ngx_exists='y'
 else

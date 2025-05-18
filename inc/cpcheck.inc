@@ -107,7 +107,7 @@ fix_mount_loop_sh() {
             # echo "Incorrect mount command found (first pattern). Correcting it now..."
             sed -i "s|${INCORRECT_MOUNT1}|${CORRECT_MOUNT1}|g" "$FILE"
             # Unmount /tmp if it's currently mounted to avoid the error
-            if [ "$(lsof /tmp | tail -n +2 | egrep -v 'deleted' | wc -l)" -eq 0 ]; then
+            if [ "$(lsof /tmp | tail -n +2 | grep -E -v 'deleted' | wc -l)" -eq 0 ]; then
                 if mountpoint -q /tmp; then
                   umount -l /tmp
                   $FILE
@@ -120,7 +120,7 @@ fix_mount_loop_sh() {
             # echo "Incorrect mount command found (second pattern). Correcting it now..."
             sed -i "s|${INCORRECT_MOUNT2}|${CORRECT_MOUNT2}|g" "$FILE"
             # Unmount /tmp if it's currently mounted to avoid the error
-            if [ "$(lsof /tmp | tail -n +2 | egrep -v 'deleted' | wc -l)" -eq 0 ]; then
+            if [ "$(lsof /tmp | tail -n +2 | grep -E -v 'deleted' | wc -l)" -eq 0 ]; then
                 if mountpoint -q /tmp; then
                   umount -l /tmp
                   $FILE
@@ -1173,7 +1173,7 @@ disable_varnishrepo() {
 }
 
 csf_smtpports() {
-  if [[ "$(egrep '^TCP_OUT|^TCP6_OUT' /etc/csf/csf.conf | grep -wq '2525'; echo $?)" -ne '0' ]]; then
+  if [[ "$(grep -E '^TCP_OUT|^TCP6_OUT' /etc/csf/csf.conf | grep -wq '2525'; echo $?)" -ne '0' ]]; then
     sed -i "s/TCP_OUT = \"/TCP_OUT = \"2525,/g" /etc/csf/csf.conf
     sed -i "s/TCP6_OUT = \"/TCP6_OUT = \"2525,/g" /etc/csf/csf.conf
     csf -ra >/dev/null 2>&1
@@ -1422,7 +1422,7 @@ march_hostcheck() {
     VPS_GEOIPCHECK=$(curl -${ipv_forceopt}s${CURL_TIMEOUTS} -A "$CURL_AGENT VPSCHECK $SCRIPT_VERSION $CURL_CPUMODEL $CURL_CPUSPEED $VPS_VIRTWHAT" https://geoip.centminmod.com/v4 | jq -r)
     VPS_ASNCHECK=$(echo "$VPS_GEOIPCHECK" | jq -r '"\(.asn) \(.asOrganization)"')
   fi
-  if [[ ! -z "${VPS_VIRTWHAT_GET}" && "$(echo "${VPS_ASNCHECK}" | egrep -i -o 'upcloud|linode|digitalocean|digital ocean|vultr|choopa|hetzner|frantech|hostus|ramnode|amazon|google|microsoft|mammoth|contabo|netcup|ibm|softlayer|oracle|alibaba|ovh|leaseweb|scaleway|bluehost|siteground|a2hosting|rackspace|liquidweb|akamai|bigscoots|hivelocity|dedipath|ponynet|multa|telkomnet|heymman|webnx|quadranet|clouvider|ipxo|singlehop|strasmore|racknerd|inmotion|aruba|colocrossing|inception|terrahost|hosthatch|huawei|secured|quickpacket|interserver|aliyun|alicloud|fpt|steadfast|godaddy|go daddy|hostmania|host1|internap|mivocloud|psychz|reliablesite|hostwinds|nodisto|ransom|viet|worldstream|xtom')" && "$MARCH_TARGETNATIVE_ALWAYS" != [yY] ]]; then
+  if [[ ! -z "${VPS_VIRTWHAT_GET}" && "$(echo "${VPS_ASNCHECK}" | grep -E -i -o 'upcloud|linode|digitalocean|digital ocean|vultr|choopa|hetzner|frantech|hostus|ramnode|amazon|google|microsoft|mammoth|contabo|netcup|ibm|softlayer|oracle|alibaba|ovh|leaseweb|scaleway|bluehost|siteground|a2hosting|rackspace|liquidweb|akamai|bigscoots|hivelocity|dedipath|ponynet|multa|telkomnet|heymman|webnx|quadranet|clouvider|ipxo|singlehop|strasmore|racknerd|inmotion|aruba|colocrossing|inception|terrahost|hosthatch|huawei|secured|quickpacket|interserver|aliyun|alicloud|fpt|steadfast|godaddy|go daddy|hostmania|host1|internap|mivocloud|psychz|reliablesite|hostwinds|nodisto|ransom|viet|worldstream|xtom')" && "$MARCH_TARGETNATIVE_ALWAYS" != [yY] ]]; then
     MARCH_TARGETNATIVE='n'
     NGX_GSPLITDWARF='n'
     PHP_GSPLITDWARF='n'
@@ -1581,7 +1581,7 @@ varnishfour_setup() {
       yum_repo_path=$VARNISH_REPOFILE
       yum_repo_config_url="https://packagecloud.io/install/repositories/varnishcache/varnish41/config_file.repo?os=${os}&dist=${dist}&source=script"
       if [[ "$CENTOS_SEVEN" -eq '7' || "$CENTOS_SIX" -eq '6' ]]; then
-          curl -${ipv_forceopt}Is --connect-timeout 30 --max-time 30 "${yum_repo_config_url}" | grep 'HTTP\/' | grep '200' >/dev/null 2>&1
+          curl -${ipv_forceopt}Is --connect-timeout 30 --max-time 30 "${yum_repo_config_url}" | grep -qE '^HTTP/.* 200'
           VARNISHFOUR_CURLCHECK=$?
           if [[ "$VARNISHFOUR_CURLCHECK" = '0' ]]; then
             echo "update varnish cache 4.1 yum repo config"
@@ -2147,7 +2147,7 @@ fixphpfpm_includes() {
       sed -i 's|    *fastcgi_param  SCRIPT_FILENAME    $request_filename;|    #fastcgi_param  SCRIPT_FILENAME    $request_filename;|' $pifinc
       sed -i 's|    *#fastcgi_param  SCRIPT_FILENAME  $document_root$fastcgi_script_name;|    fastcgi_param  SCRIPT_FILENAME  $document_root$fastcgi_script_name;|' $pifinc
       sed -i 's|try_files $uri =404;|if (!-f $document_root$fastcgi_script_name) { return 404; }|' $pifinc
-      egrep 'location|fastcgi_split_path_info|fastcgi_param  SCRIPT_FILENAME|404' $pifinc
+      grep -E 'location|fastcgi_split_path_info|fastcgi_param  SCRIPT_FILENAME|404' $pifinc
       echo "y" > /tmp/phpinc-restart-check
     fi
   done
@@ -2170,7 +2170,7 @@ fixphpfpm_httpproxy() {
   if [ -d /usr/local/nginx/conf ]; then
   {
   DT=$(date +"%d%m%y-%H%M%S")
-  for pif in $(find /usr/local/nginx/conf -type f -name "*.conf" -o -name "fastcgi_params" | egrep 'php|fastcgi_params'); do
+  for pif in $(find /usr/local/nginx/conf -type f -name "*.conf" -o -name "fastcgi_params" | grep -E 'php|fastcgi_params'); do
     if [[ "$(grep 'fastcgi_param  HTTPS' $pif)" && ! "$(grep 'HTTP_PROXY' $pif)" ]]; then
       echo "updating php-fpm config files to block Proxy header / HTTP_PROXY"
       echo $pif
@@ -2333,7 +2333,7 @@ set_logdate() {
 
 ngxver_checker() {
   if [[ "$(which nginx >/dev/null 2>&1; echo $?)" = '0' ]]; then
-    LASTEST_NGINXVERS=$(curl -${ipv_forceopt}sL https://nginx.org/en/download.html 2>&1 | egrep -o "nginx\-[0-9.]+\.tar[.a-z]*" | awk -F "nginx-" '/.tar.gz$/ {print $2}' | sed -e 's|.tar.gz||g' | head -n 1 2>&1)
+    LASTEST_NGINXVERS=$(curl -${ipv_forceopt}sL https://nginx.org/en/download.html 2>&1 | grep -Eo "nginx\-[0-9.]+\.tar[.a-z]*" | awk -F "nginx-" '/.tar.gz$/ {print $2}' | sed -e 's|.tar.gz||g' | head -n 1 2>&1)
     CURRENT_NGINXVERS=$(nginx -v 2>&1 | awk -F '/' '{print $2}')
     if [[ "$CURRENT_NGINXVERS" != "$LASTEST_NGINXVERS" ]]; then
       echo
@@ -2903,7 +2903,7 @@ dmotdcheck() {
     # echo "if [[ \"\$(id -u)\" = '0' && -f /usr/local/bin/dmotd ]]; then  /usr/local/bin/dmotd; fi" >> /etc/profile.d/dmotd.sh
     echo "if tty -s; then type='interactive'; if [[ \"\$(id -u)\" = '0' && -f /usr/local/bin/dmotd ]]; then /usr/local/bin/dmotd; fi; else type='non-interactive'; fi;" >> /etc/profile.d/dmotd.sh
     echo "if tty -s; then type='interactive'; if [[ \"\$(id -u)\" != '0' && \"\$(id -Gn | grep -wo 'wheel')\" = 'wheel' && -f /usr/local/bin/dmotd ]]; then sudo /usr/local/bin/dmotd; fi; else type='non-interactive'; fi;" >> /etc/profile.d/dmotd.sh
-    echo "if echo \$0 | grep -e ^\\- 2>&1 > /dev/null; then login='login'; else login='non-login'; fi;" >> /etc/profile.d/dmotd.sh
+    echo "if echo \$0 | grep -E '^-‘ 2>&1 > /dev/null; then login='login'; else login='non-login'; fi;" >> /etc/profile.d/dmotd.sh
     # echo "$type/$login"
   fi
 }
@@ -3193,7 +3193,7 @@ pureftpdupdates() {
       sed -i 's/Umask .*/Umask                       137:027/' /etc/pure-ftpd/pure-ftpd.conf
       sed -i 's|# TLSCipherSuite .*|TLSCipherSuite               HIGH|' /etc/pure-ftpd/pure-ftpd.conf
       sdiff -s -w200 /etc/pure-ftpd/pure-ftpd.conf "/etc/pure-ftpd/pure-ftpd.conf.backup.$DT"
-      cat /etc/pure-ftpd/pure-ftpd.conf | egrep 'UnixAuthentication|VerboseLog|PureDB |CreateHomeDir|TLS|PassivePortRange|TLSCipherSuite|MaxClientsNumber|MaxClientsPerIP|NoAnonymous|Umask'
+      cat /etc/pure-ftpd/pure-ftpd.conf | grep -E 'UnixAuthentication|VerboseLog|PureDB |CreateHomeDir|TLS|PassivePortRange|TLSCipherSuite|MaxClientsNumber|MaxClientsPerIP|NoAnonymous|Umask'
       if [[ "$(ps aufx | grep pure-ftpd | grep -v grep | grep pure-ftpd  >/dev/null 2>&1; echo $?)" -eq '0' ]]; then
         service pure-ftpd restart >/dev/null 2>&1
       fi
@@ -3354,15 +3354,16 @@ pathfixes() {
   if [ -d /etc/sudoers.d ]; then
     if [ ! -f /etc/sudoers.d/addpaths ]; then
       touch /etc/sudoers.d/addpaths
-      if [[ "$(uname -m)" = 'x86_64' ]]; then
-        if [[ "$(grep '\/usr\/local\/sbin:\/usr\/local\/bin:\/sbin:\/bin:\/usr\/sbin:\/usr\/bin:\/root\/bin' /etc/sudoers.d/addpaths >/dev/null; echo $?)" != '0' ]]; then
-          echo "Defaults secure_path = /usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin:/root/bin" > /etc/sudoers.d/addpaths
-        fi
-      else
-        if [[ "$(grep '\/usr\/local\/sbin:\/usr\/local\/bin:\/sbin:\/bin:\/usr\/sbin:\/usr\/bin:\/root\/bin' /etc/sudoers.d/addpaths >/dev/null; echo $?)" != '0' ]]; then
-          echo "Defaults secure_path = /usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin:/root/bin" > /etc/sudoers.d/addpaths
-        fi
+     if [[ "$(uname -m)" = 'x86_64' ]]; then
+      if ! grep -q '/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin:/root/bin' /etc/sudoers.d/addpaths 2>/dev/null; then
+        echo "Defaults secure_path = /usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin:/root/bin" > /etc/sudoers.d/addpaths
       fi
+    else
+      if ! grep -q '/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin:/root/bin' /etc/sudoers.d/addpaths 2>/dev/null; then
+        echo "Defaults secure_path = /usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin:/root/bin" > /etc/sudoers.d/addpaths
+      fi
+    fi
+
     fi
     if [ -f /etc/sudoers.d/addpaths ]; then
       chmod 0440 /etc/sudoers.d/addpaths
@@ -3380,7 +3381,7 @@ sshdfixes() {
   if [[ "$(grep 'UseDNS noKexAlgorithms' /etc/ssh/sshd_config)" ]]; then
     sed -i 's|UseDNS noKexAlgorithms|UseDNS no\nKexAlgorithms|' /etc/ssh/sshd_config
   fi
-  if [[ "$CENTOS_SEVEN" -eq '7' && "$(egrep '^PrintMotd noKexAlgorithms' /etc/ssh/sshd_config)" ]]; then
+  if [[ "$CENTOS_SEVEN" -eq '7' && "$(grep -E '^PrintMotd noKexAlgorithms' /etc/ssh/sshd_config)" ]]; then
     # fix https://community.centminmod.com/posts/75607/
     sed -i 's|^PrintMotd noKexAlgorithms|PrintMotd no\nKexAlgorithms|' /etc/ssh/sshd_config
   fi

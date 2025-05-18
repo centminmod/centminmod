@@ -30,7 +30,7 @@ sshdtweaks_nine() {
 
 sshdtweaks() {
   # uncomment sshd default port if there's only one entry #Port in sshd_config
-  if [[ "$(grep '^#Port' /etc/ssh/sshd_config)" && "$(egrep '^#Port|^Port' /etc/ssh/sshd_config | wc -l)" -eq '1' ]]; then
+  if [[ "$(grep '^#Port' /etc/ssh/sshd_config)" && "$(grep -E '^#Port|^Port' /etc/ssh/sshd_config | wc -l)" -eq '1' ]]; then
     sed -i 's/^#Port /Port /g' /etc/ssh/sshd_config
   fi
   if [[ ! "$(grep '^X11Forwarding no' /etc/ssh/sshd_config)" ]]; then
@@ -92,7 +92,7 @@ sshdtweaks() {
       echo -e "\nKexAlgorithms ecdh-sha2-nistp521,ecdh-sha2-nistp384,ecdh-sha2-nistp256,diffie-hellman-group-exchange-sha256,diffie-hellman-group-exchange-sha1,diffie-hellman-group14-sha1,diffie-hellman-group1-sha1" >> /etc/ssh/sshd_config
     fi
   fi
-  if [[ "$CENTOS_SEVEN" -eq '7' && ! "$(egrep '^KexAlgorithms|^Ciphers|^MACs' /etc/ssh/sshd_config)" ]]; then
+  if [[ "$CENTOS_SEVEN" -eq '7' && ! "$(grep -E '^KexAlgorithms|^Ciphers|^MACs' /etc/ssh/sshd_config)" ]]; then
     # improve openssh security https://infosec.mozilla.org/guidelines/openssh
 cat >> /etc/ssh/sshd_config <<EOF
 
@@ -103,7 +103,7 @@ EOF
     # echo "awk '$5 >= 3071' /etc/ssh/moduli > /etc/ssh/moduli.tmp && mv -f /etc/ssh/moduli.tmp /etc/ssh/moduli"
     awk '$5 >= 3071' /etc/ssh/moduli > /etc/ssh/moduli.tmp && mv -f /etc/ssh/moduli.tmp /etc/ssh/moduli
   fi
-  if [[ "$CENTOS_SEVEN" -eq '7' && "$(egrep '^PrintMotd noKexAlgorithms' /etc/ssh/sshd_config)" ]]; then
+  if [[ "$CENTOS_SEVEN" -eq '7' && "$(grep -E '^PrintMotd noKexAlgorithms' /etc/ssh/sshd_config)" ]]; then
     # fix https://community.centminmod.com/posts/75607/
     sed -i 's|^PrintMotd noKexAlgorithms|PrintMotd no\nKexAlgorithms|' /etc/ssh/sshd_config
   fi
@@ -182,7 +182,7 @@ echo ""
 read -ep "Enter the SSH port number you want to change to: " PORTNUM
 
 if [ -f /etc/csf/csf.conf ]; then
-  CHECKNEWPORTNUM=$(cat /etc/csf/csf.conf | egrep '^TCP_IN|^UDP_IN|^TCP6_IN|^UDP6_IN' | grep -w $PORTNUM)
+  CHECKNEWPORTNUM=$(cat /etc/csf/csf.conf | grep -E '^TCP_IN|^UDP_IN|^TCP6_IN|^UDP6_IN' | grep -w $PORTNUM)
   if [[ "$CHECKNEWPORTNUM" ]]; then
     echo "the new port $PORTNUM is already in use by other software defined by CSF Firewall"
     echo "please re-run menu option 16 and try a different port"
@@ -227,9 +227,9 @@ fi
 if [[ "$CURRENTSSHDPORT" = "$EXISTPORTNUM" ]]; then
   if [ -f /etc/csf/csf.conf ]; then
   #check if portnum already exists
-  EXISTPORTCHECK=$(cat /etc/csf/csf.conf | egrep '^TCP_IN' | grep ",${PORTNUM},")
+  EXISTPORTCHECK=$(cat /etc/csf/csf.conf | grep -E '^TCP_IN' | grep ",${PORTNUM},")
   EXISTPORTCHECKED=${EXISTPORTCHECK:-novalue}
-  EXISTPORTCHECK_SIX=$(cat /etc/csf/csf.conf | egrep '^TCP6_IN' | grep ",${PORTNUM},")
+  EXISTPORTCHECK_SIX=$(cat /etc/csf/csf.conf | grep -E '^TCP6_IN' | grep ",${PORTNUM},")
   EXISTPORTCHECKED_SIX=${EXISTPORTCHECK_SIX:-novalue}
     
     if [[ "$EXISTPORTCHECKED" = 'novalue' && "$EXISTPORTCHECKED_SIX" = 'novalue' ]]; then

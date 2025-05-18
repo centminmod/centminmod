@@ -575,9 +575,9 @@ fi
 # checks for ngx_pagespeed 1.9.32.1 beta change
 # https://community.centminmod.com/threads/how-can-i-disable-it-after-installation.1603/#post-7665
 if [[ "$(echo "$NGXPGSPEED_VER" | cut -d . -f1)" -ge '1' ]] && [[ "$(echo "$NGXPGSPEED_VER" | cut -d . -f2)" -ge '13' ]] && [[ "$(echo "$NGXPGSPEED_VER" | cut -d . -f3)" -ge '35' ]]; then
-  ADMINPSSWITCHCHECK=$(egrep '^pagespeed on;|pagespeed unplugged;' /usr/local/nginx/conf/pagespeedadmin.conf)
+  ADMINPSSWITCHCHECK=$(grep -E '^pagespeed on;|pagespeed unplugged;' /usr/local/nginx/conf/pagespeedadmin.conf)
 elif [[ "$(echo "$NGXPGSPEED_VER" | cut -d . -f1)" -ge '1' ]] && [[ "$(echo "$NGXPGSPEED_VER" | cut -d . -f2)" -lt '13' ]] && [[ "$(echo "$NGXPGSPEED_VER" | cut -d . -f3)" -lt '35' ]]; then
-  ADMINPSSWITCHCHECK=$(egrep '^pagespeed on;|pagespeed off;' /usr/local/nginx/conf/pagespeedadmin.conf)
+  ADMINPSSWITCHCHECK=$(grep -E '^pagespeed on;|pagespeed off;' /usr/local/nginx/conf/pagespeedadmin.conf)
 fi
 
 if [[ -z "$ADMINPSSWITCHCHECK" || ! -f /usr/local/nginx/conf/pagespeedadmin.conf ]]; then

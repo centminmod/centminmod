@@ -2,7 +2,7 @@ check_devtoolset_php() {
   # php 7.3+ require devtoolset provided GCC 7+ to build
   # but standalone php extensions routines aren't aware
   # and don't enable GENERAL_DEVTOOLSETGCC='y'
-    php-config --version | cut -d . -f1,2 | egrep -w '7.3|7.4|8.0|8.1|8.2|8.3|8.4'
+    php-config --version | cut -d . -f1,2 | grep -E -w '7.3|7.4|8.0|8.1|8.2|8.3|8.4'
     PHPSEVENTHREE_CHECKVER=$?
     echo "$PHPSEVENTHREE_CHECKVER"
     if [[ "$PHPSEVENTHREE_CHECKVER" -eq '0' ]]; then
@@ -232,28 +232,28 @@ enable_devtoolset() {
       CPUVENDOR=$(cat /proc/cpuinfo | awk '/vendor_id/ {print $3}' | sort -u | head -n1)
       SSECHECK=$(gcc -c -Q -march=native --help=target | awk '/  -msse/ {print $2}' | head -n1)
       # gcc --version | tee ${CENTMINLOGDIR}/gcc_general_native.log
-      # gcc -c -Q -march=native --help=target | egrep '\[enabled\]|mtune|march|mfpmath' | tee -a ${CENTMINLOGDIR}/gcc_general_native.log
+      # gcc -c -Q -march=native --help=target | grep -E '\[enabled\]|mtune|march|mfpmath' | tee -a ${CENTMINLOGDIR}/gcc_general_native.log
 
       echo
-      gcc -c -Q -march=native --help=target | egrep '\-mtune|\-mprefer-vector-width|\-march|\-msse|\-msse2|\-msse2avx|\-msse3|\-mavx|\-msse4|\-mssse3|\-mpclmul' | tee ${CENTMINLOGDIR}/gcc_general_native.log
+      gcc -c -Q -march=native --help=target | grep -E '\-mtune|\-mprefer-vector-width|\-march|\-msse|\-msse2|\-msse2avx|\-msse3|\-mavx|\-msse4|\-mssse3|\-mpclmul' | tee ${CENTMINLOGDIR}/gcc_general_native.log
       \cp -a "${CENTMINLOGDIR}/gcc_general_native.log" "${CENTMINLOGDIR}/gcc_general_native_${DT}.log"
       echo
-      gcc -c -Q -march=${march_flag} --help=target | egrep '\-mtune|\-mprefer-vector-width|\-march|\-msse|\-msse2|\-msse2avx|\-msse3|\-mavx|\-msse4|\-mssse3|\-mpclmul' | tee ${CENTMINLOGDIR}/gcc_general_x86-64.log
+      gcc -c -Q -march=${march_flag} --help=target | grep -E '\-mtune|\-mprefer-vector-width|\-march|\-msse|\-msse2|\-msse2avx|\-msse3|\-mavx|\-msse4|\-mssse3|\-mpclmul' | tee ${CENTMINLOGDIR}/gcc_general_x86-64.log
       \cp -a "${CENTMINLOGDIR}/gcc_general_x86-64.log" "${CENTMINLOGDIR}/gcc_general_x86-64_${DT}.log"
       echo
       diff -y --suppress-common-lines ${CENTMINLOGDIR}/gcc_general_native.log ${CENTMINLOGDIR}/gcc_general_x86-64.log | tee ${CENTMINLOGDIR}/gcc_general_diff_native-vs-x86-64.log
       \cp -a "${CENTMINLOGDIR}/gcc_general_diff_native-vs-x86-64.log" "${CENTMINLOGDIR}/gcc_general_diff_native-vs-x86-64_${DT}.log"
       echo
-      egrep '\-march=|\-mtune|\-mavx|\-msse4|\-mpclmul' ${CENTMINLOGDIR}/gcc_general_diff_native-vs-x86-64.log
+      grep -E '\-march=|\-mtune|\-mavx|\-msse4|\-mpclmul' ${CENTMINLOGDIR}/gcc_general_diff_native-vs-x86-64.log
       # if non native target x86-64 is used 
       # pick up important native cpu instructions
       # and manually pass them to x86-64 target
       if [[ "$MARCH_TARGETNATIVE" = [yY] ]]; then
         GCC_NONNATIVEFLAGS=""
       else
-        GCC_NONNATIVEFLAGS=" $(egrep '\-march=|\-mtune|\-mavx|\-msse4|\-mpclmul' ${CENTMINLOGDIR}/gcc_general_native.log | egrep -v 'march|mtune|avx512' | grep enabled | sed -e 's|\[||g' -e 's|\]||g' -e 's|enabled||g'| xargs)"
+        GCC_NONNATIVEFLAGS=" $(grep -E '\-march=|\-mtune|\-mavx|\-msse4|\-mpclmul' ${CENTMINLOGDIR}/gcc_general_native.log | grep -E -v 'march|mtune|avx512' | grep enabled | sed -e 's|\[||g' -e 's|\]||g' -e 's|enabled||g'| xargs)"
         echo
-        gcc -c -Q -march=${march_flag}${GCC_NONNATIVEFLAGS} --help=target | egrep '\-mtune|\-mprefer-vector-width|\-march|\-msse|\-msse2|\-msse2avx|\-msse3|\-mavx|\-msse4|\-mssse3|\-mpclmul' | tee ${CENTMINLOGDIR}/gcc_general_x86-64-non-native.log
+        gcc -c -Q -march=${march_flag}${GCC_NONNATIVEFLAGS} --help=target | grep -E '\-mtune|\-mprefer-vector-width|\-march|\-msse|\-msse2|\-msse2avx|\-msse3|\-mavx|\-msse4|\-mssse3|\-mpclmul' | tee ${CENTMINLOGDIR}/gcc_general_x86-64-non-native.log
         \cp -a "${CENTMINLOGDIR}/gcc_general_x86-64-non-native.log" "${CENTMINLOGDIR}/gcc_general_x86-64-non-native_${DT}.log"
       fi
       echo

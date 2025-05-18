@@ -268,7 +268,7 @@ iouring_patch() {
         popd
         # raise nginx max memlock limits
         if [[ "$CENTOS_SIX" = '6' ]]; then
-          FREEMEM=$(egrep '^MemFree|^Buffers|^Cached' /proc/meminfo | awk '{summ+=$2} END {print summ}' | head -n1)
+          FREEMEM=$(grep -E '^MemFree|^Buffers|^Cached' /proc/meminfo | awk '{summ+=$2} END {print summ}' | head -n1)
         else
           FREEMEM=$(cat /proc/meminfo | grep MemAvailable | awk '{print $2}')
         fi
@@ -1186,7 +1186,7 @@ patchnginx() {
      rm -rf "${NGINXSPDYPATCHED_NAME}"
      NGINXTLSPATCHLINK="https://raw.githubusercontent.com/felixbuenemann/sslconfig/updated-nginx-1.9.15-spdy-patch/patches/${NGINXSPDYPATCHED_NAME}"
      # fallback mirror if github down, use gitlab mirror
-     curl -${ipv_forceopt}Is --connect-timeout 30 --max-time 30 "${NGINXTLSPATCHLINK}" | grep 'HTTP\/' | egrep '200' >/dev/null 2>&1
+     curl -${ipv_forceopt}Is --connect-timeout 30 --max-time 30 "${NGINXTLSPATCHLINK}" | grep 'HTTP\/' | grep -E '200' >/dev/null 2>&1
      NGINXTLSPATCH_CURLCHECK=$?
      if [[ "$NGINXTLSPATCH_CURLCHECK" != '0' ]]; then
        NGINXTLSPATCHLINK="https://gitlab.com/centminmod-github-mirror/sslconfig-felix-group/raw/updated-nginx-1.9.15-spdy-patch/patches/${NGINXSPDYPATCHED_NAME}"
@@ -1248,7 +1248,7 @@ patchnginx() {
      if [[ "$DETECT_NGXVER" -le '1011004' && "$DETECT_NGXVER" -ge '1011000' ]]; then
       NGINXTLSPATCHLINK="https://raw.githubusercontent.com/cloudflare/sslconfig/master/patches/${NGINXTLSPATCH_NAME}"
       # fallback mirror if github down, use gitlab mirror
-      curl -${ipv_forceopt}Is --connect-timeout 30 --max-time 30 "${NGINXTLSPATCHLINK}" | grep 'HTTP\/' | egrep '200' >/dev/null 2>&1
+      curl -${ipv_forceopt}Is --connect-timeout 30 --max-time 30 "${NGINXTLSPATCHLINK}" | grep 'HTTP\/' | grep -E '200' >/dev/null 2>&1
       NGINXTLSPATCH_CURLCHECK=$?
       if [[ "$NGINXTLSPATCH_CURLCHECK" != '0' ]]; then
         NGINXTLSPATCHLINK="https://gitlab.com/centminmod-github-mirror/sslconfig/raw/master/patches/${NGINXTLSPATCH_NAME}"
@@ -1354,7 +1354,7 @@ luaopensslpatch() {
   OPENRESTYLUAPATCHLINK='https://github.com/openresty/openresty/raw/master/patches/nginx-1.9.7-ssl_cert_cb_yield.patch'
   
   # fallback mirror if github down, use gitlab mirror
-  curl -${ipv_forceopt}Is --connect-timeout 30 --max-time 30 $OPENRESTYLUAPATCHLINK | grep 'HTTP\/' | egrep '200|302' >/dev/null 2>&1
+  curl -${ipv_forceopt}Is --connect-timeout 30 --max-time 30 $OPENRESTYLUAPATCHLINK | grep 'HTTP\/' | grep -E '200|302' >/dev/null 2>&1
   OPENRESTYLUAPATCH_CURLCHECK=$?
   if [[ "$OPENRESTYLUAPATCH_CURLCHECK" != '0' ]]; then
     OPENRESTYLUAPATCHLINK='https://gitlab.com/centminmod-github-mirror/openresty/raw/master/patches/nginx-1.9.7-ssl_cert_cb_yield.patch'

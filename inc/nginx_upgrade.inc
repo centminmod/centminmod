@@ -84,7 +84,7 @@ pcre_check_nginx(){
             echo "PCRETWO_DISABLEOPT=$PCRETWO_DISABLEOPT"
             if [ -f /etc/centminmod/custom_config.inc ]; then
                 echo "Check /etc/centminmod/custom_config.inc relevant variables:"
-                egrep 'NGINX_PCRE|NGINX_MODSECURITY|ORESTY_LUANGINX' /etc/centminmod/custom_config.inc
+                grep -E 'NGINX_PCRE|NGINX_MODSECURITY|ORESTY_LUANGINX' /etc/centminmod/custom_config.inc
             fi
             echo "TLSTHREEOPT=$TLSTHREEOPT"
             echo "OPENSSL_TLSONETHREE=$OPENSSL_TLSONETHREE"
@@ -105,8 +105,8 @@ pcre_check_nginx(){
             #     ls -lah "${DIR_TMP}/${OPENSSL_QUIC_DIR}"
             # fi
             echo
-            echo "ls -lAhrt /usr/local/nginx-dep/lib | egrep 'libpcre.so|libpcre2-8.so'"
-            ls -lAhrt /usr/local/nginx-dep/lib | egrep 'libpcre.so|libpcre2-8.so'
+            echo "ls -lAhrt /usr/local/nginx-dep/lib | grep -E 'libpcre.so|libpcre2-8.so'"
+            ls -lAhrt /usr/local/nginx-dep/lib | grep -E 'libpcre.so|libpcre2-8.so'
         fi
         echo
     elif [[ "$NGINX_PCRE_TWO" != [yY] ]]; then
@@ -161,7 +161,7 @@ pcre_check_nginx(){
             echo "PCRETWO_DISABLEOPT=$PCRETWO_DISABLEOPT"
             if [ -f /etc/centminmod/custom_config.inc ]; then
                 echo "Check /etc/centminmod/custom_config.inc relevant variables:"
-                egrep 'NGINX_PCRE|NGINX_MODSECURITY|ORESTY_LUANGINX' /etc/centminmod/custom_config.inc
+                grep -E 'NGINX_PCRE|NGINX_MODSECURITY|ORESTY_LUANGINX' /etc/centminmod/custom_config.inc
             fi
             echo "TLSTHREEOPT=$TLSTHREEOPT"
             echo "OPENSSL_TLSONETHREE=$OPENSSL_TLSONETHREE"
@@ -182,8 +182,8 @@ pcre_check_nginx(){
             #     ls -lah "${DIR_TMP}/${OPENSSL_QUIC_DIR}"
             # fi
             echo
-            echo "ls -lAhrt /usr/local/nginx-dep/lib | egrep 'libpcre.so|libpcre2-8.so'"
-            ls -lAhrt /usr/local/nginx-dep/lib | egrep 'libpcre.so|libpcre2-8.so'
+            echo "ls -lAhrt /usr/local/nginx-dep/lib | grep -E 'libpcre.so|libpcre2-8.so'"
+            ls -lAhrt /usr/local/nginx-dep/lib | grep -E 'libpcre.so|libpcre2-8.so'
         fi
         echo
     fi
@@ -607,10 +607,10 @@ elif [[ "$CLI_NGINX_VER" ]]; then
     # the nginx version defined by NGINX_VERSION variable
     if [ -z "$ngver" ]; then
         if [[ "$FREENGINX_INSTALL" = [yY] ]]; then
-            LASTEST_NGINXVERS=$(curl -${ipv_forceopt}sL https://freenginx.org/en/download.html 2>&1 | egrep -o "freenginx\-[0-9.]+\.tar[.a-z]*" | awk -F "freenginx-" '/.tar.gz$/ {print $2}' | sed -e 's|.tar.gz||g' | head -n 1 2>&1)
+            LASTEST_NGINXVERS=$(curl -${ipv_forceopt}sL https://freenginx.org/en/download.html 2>&1 | grep -Eo "freenginx\-[0-9.]+\.tar[.a-z]*" | awk -F "freenginx-" '/.tar.gz$/ {print $2}' | sed -e 's|.tar.gz||g' | head -n 1 2>&1)
             ngver="$LASTEST_NGINXVERS"
         elif [[ "$NGINX_INSTALL" = [yY] ]]; then
-            LASTEST_NGINXVERS=$(curl -${ipv_forceopt}sL https://nginx.org/en/download.html 2>&1 | egrep -o "nginx\-[0-9.]+\.tar[.a-z]*" | awk -F "nginx-" '/.tar.gz$/ {print $2}' | sed -e 's|.tar.gz||g' | head -n 1 2>&1)
+            LASTEST_NGINXVERS=$(curl -${ipv_forceopt}sL https://nginx.org/en/download.html 2>&1 | grep -Eo "nginx\-[0-9.]+\.tar[.a-z]*" | awk -F "nginx-" '/.tar.gz$/ {print $2}' | sed -e 's|.tar.gz||g' | head -n 1 2>&1)
             ngver="$LASTEST_NGINXVERS"
         fi
     fi
@@ -669,10 +669,10 @@ else
     # the nginx version defined by NGINX_VERSION variable
     if [ -z "$ngver" ]; then
         if [[ "$FREENGINX_INSTALL" = [yY] ]]; then
-            LASTEST_NGINXVERS=$(curl -${ipv_forceopt}sL https://freenginx.org/en/download.html 2>&1 | egrep -o "freenginx\-[0-9.]+\.tar[.a-z]*" | awk -F "freenginx-" '/.tar.gz$/ {print $2}' | sed -e 's|.tar.gz||g' | head -n 1 2>&1)
+            LASTEST_NGINXVERS=$(curl -${ipv_forceopt}sL https://freenginx.org/en/download.html 2>&1 | grep -Eo "freenginx\-[0-9.]+\.tar[.a-z]*" | awk -F "freenginx-" '/.tar.gz$/ {print $2}' | sed -e 's|.tar.gz||g' | head -n 1 2>&1)
             ngver="$LASTEST_NGINXVERS"
         elif [[ "$NGINX_INSTALL" = [yY] ]]; then
-            LASTEST_NGINXVERS=$(curl -${ipv_forceopt}sL https://nginx.org/en/download.html 2>&1 | egrep -o "nginx\-[0-9.]+\.tar[.a-z]*" | awk -F "nginx-" '/.tar.gz$/ {print $2}' | sed -e 's|.tar.gz||g' | head -n 1 2>&1)
+            LASTEST_NGINXVERS=$(curl -${ipv_forceopt}sL https://nginx.org/en/download.html 2>&1 | grep -Eo "nginx\-[0-9.]+\.tar[.a-z]*" | awk -F "nginx-" '/.tar.gz$/ {print $2}' | sed -e 's|.tar.gz||g' | head -n 1 2>&1)
             ngver="$LASTEST_NGINXVERS"
         fi
     fi
@@ -892,7 +892,7 @@ fi
         fi
     fi
 
-    if [[ ! "$(echo $ngver | egrep 'master|angie|quic')" ]]; then
+    if [[ ! "$(echo $ngver | grep -E 'master|angie|quic')" ]]; then
         if [[ "$FREENGINX_INSTALL" = [yY] ]]; then
             tar xvfz "freenginx-${ngver}.tar.gz"
         else
@@ -998,11 +998,11 @@ fi
         echo "NGINX_KTLS=$NGINX_KTLS"
         echo "OPENSSL_VERSION=$OPENSSL_VERSION"
         echo
-        echo "ls -lAhrt /usr/local/lib | egrep 'libpcre.so|libpcre2-8.so'"
-        ls -lAhrt /usr/local/lib | egrep 'libpcre.so|libpcre2-8.so'
+        echo "ls -lAhrt /usr/local/lib | grep -E 'libpcre.so|libpcre2-8.so'"
+        ls -lAhrt /usr/local/lib | grep -E 'libpcre.so|libpcre2-8.so'
         echo
-        echo "ls -lAhrt /usr/local/nginx-dep/lib | egrep 'libpcre.so|libpcre2-8.so'"
-        ls -lAhrt /usr/local/nginx-dep/lib | egrep 'libpcre.so|libpcre2-8.so'
+        echo "ls -lAhrt /usr/local/nginx-dep/lib | grep -E 'libpcre.so|libpcre2-8.so'"
+        ls -lAhrt /usr/local/nginx-dep/lib | grep -E 'libpcre.so|libpcre2-8.so'
         if [[ "$NGINX_PCRE" = [yY] && -f "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_pcre-nginx_install.log" ]]; then
             echo
             echo "pcre install log: ${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_pcre-nginx_install.log"
@@ -1128,11 +1128,11 @@ fi
         echo "OPENSSL_VERSION=$OPENSSL_VERSION"
         echo "HTTPTWOOPT=$HTTPTWOOPT"
         echo
-        echo "ls -lAhrt /usr/local/lib | egrep 'libpcre.so|libpcre2-8.so'"
-        ls -lAhrt /usr/local/lib | egrep 'libpcre.so|libpcre2-8.so'
+        echo "ls -lAhrt /usr/local/lib | grep -E 'libpcre.so|libpcre2-8.so'"
+        ls -lAhrt /usr/local/lib | grep -E 'libpcre.so|libpcre2-8.so'
         echo
-        echo "ls -lAhrt /usr/local/nginx-dep/lib | egrep 'libpcre.so|libpcre2-8.so'"
-        ls -lAhrt /usr/local/nginx-dep/lib | egrep 'libpcre.so|libpcre2-8.so'
+        echo "ls -lAhrt /usr/local/nginx-dep/lib | grep -E 'libpcre.so|libpcre2-8.so'"
+        ls -lAhrt /usr/local/nginx-dep/lib | grep -E 'libpcre.so|libpcre2-8.so'
         if [[ "$NGINX_PCRE" = [yY] && -f "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_pcre-nginx_install.log" ]]; then
             echo
             echo "pcre install log: ${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_pcre-nginx_install.log"
@@ -1184,7 +1184,7 @@ fi
         fi
 
   GETNGXPID=$(cat /usr/local/nginx/logs/nginx.pid)
-  GETNGXPPID=$(ps awx -o pid,ppid,command | grep 'nginx: master' | egrep -v '(nginx_upgrade|amplify|php-fpm|hhvm)' | egrep -v grep | awk '{print $1}')
+  GETNGXPPID=$(ps awx -o pid,ppid,command | grep 'nginx: master' | grep -E -v '(nginx_upgrade|amplify|php-fpm|hhvm)' | grep -E -v grep | awk '{print $1}')
 
 if [[ "$NGINX_ZERODT" = [nN] ]]; then
   # cmservice nginx stop
@@ -1215,7 +1215,7 @@ elif [[ "$NGINX_ZERODT" = [yY] ]]; then
   echo "---------------------------------------------------------------------------"
   curl -s -4 localhost/nginx_status
   echo "---------------------------------------------------------------------------"
-  ps axw -o pid,ppid,user,%cpu,vsz,wchan,command | egrep '(nginx: |PID)' | egrep -v '(nginx_upgrade|amplify|php-fpm|hhvm)' | egrep -v grep
+  ps axw -o pid,ppid,user,%cpu,vsz,wchan,command | grep -E '(nginx: |PID)' | grep -E -v '(nginx_upgrade|amplify|php-fpm|hhvm)' | grep -E -v grep
   echo "---------------------------------------------------------------------------"
 fi
     if [ -f "$(which figlet)" ]; then
@@ -1291,7 +1291,7 @@ fi
         # only apply auto vhost changes forNginx HTTP/2 
         # if Nginx version is >= 1.9.3 and <1.9.5 OR >= 1.9.5
         if [[ "$NGX_VEREVAL" -ge '10907' ]]; then
-            for v in "$(ls /usr/local/nginx/conf/conf.d/*.conf)"; do echo "$v"; egrep -n 'ssl spdy|spdy_headers_comp|Alternate-Protocol' $v; echo "---"; sed -i 's|ssl http2|ssl spdy http2|g' $v; sed -i 's|#  spdy_headers_comp|  spdy_headers_comp|g' $v; sed -i 's|#  add_header Alternate-Protocol|  add_header Alternate-Protocol|g' $v; egrep -n 'ssl http2|spdy_headers_comp|Alternate-Protocol' $v;done
+            for v in "$(ls /usr/local/nginx/conf/conf.d/*.conf)"; do echo "$v"; grep -E -n 'ssl spdy|spdy_headers_comp|Alternate-Protocol' $v; echo "---"; sed -i 's|ssl http2|ssl spdy http2|g' $v; sed -i 's|#  spdy_headers_comp|  spdy_headers_comp|g' $v; sed -i 's|#  add_header Alternate-Protocol|  add_header Alternate-Protocol|g' $v; grep -E -n 'ssl http2|spdy_headers_comp|Alternate-Protocol' $v;done
         fi
         if [ -f /usr/local/nginx/conf/conf.d/phpmyadmin_ssl.conf ]; then
             sed -i 's|ssl http2|ssl spdy http2|g' /usr/local/nginx/conf/conf.d/phpmyadmin_ssl.conf
@@ -1304,7 +1304,7 @@ fi
         if [[ "$NGX_VEREVAL" -ge '10903' && "$NGX_VEREVAL" -lt '10905' ]] || [[ "$NGX_VEREVAL" -ge '10905' ]]; then
             for v in "$(ls /usr/local/nginx/conf/conf.d/*.conf)"; do 
                 echo "$v"; 
-                egrep -n 'ssl spdy|spdy_headers_comp|Alternate-Protocol' $v; 
+                grep -E -n 'ssl spdy|spdy_headers_comp|Alternate-Protocol' $v; 
                 echo "---";
                 if [[ "$(grep 'ssl spdy http2' $v)" ]]; then
                     sed -i 's|ssl spdy http2|ssl http2|g' $v; 
@@ -1315,7 +1315,7 @@ fi
                     sed -i 's|  spdy_headers_comp|  #spdy_headers_comp|g' $v; 
                     sed -i 's|  add_header Alternate-Protocol|  #add_header Alternate-Protocol|g' $v; 
                 fi
-                egrep -n 'ssl http2|spdy_headers_comp|Alternate-Protocol' $v;
+                grep -E -n 'ssl http2|spdy_headers_comp|Alternate-Protocol' $v;
             done
         fi
         if [ -f /usr/local/nginx/conf/conf.d/phpmyadmin_ssl.conf ]; then
@@ -1324,7 +1324,7 @@ fi
             sed -i 's|add_header Alternate-Protocol|#add_header Alternate-Protocol|g' /usr/local/nginx/conf/conf.d/phpmyadmin_ssl.conf
         fi
     elif [[ "$NGINX_HTTP2" = [nN] || "$NGINX_SPDY" = [yY] ]]; then
-        for v in "$(ls /usr/local/nginx/conf/conf.d/*.conf)"; do echo "$v"; egrep -n 'ssl http2|#spdy_headers_comp|#Alternate-Protocol' $v; egrep -n 'ssl spdy|spdy_headers_comp' $v; echo "---"; sed -i 's|ssl http2|ssl spdy|g' $v; sed -i 's|  #spdy_headers_comp|  spdy_headers_comp|g' $v; sed -i 's|  #add_header Alternate-Protocol|  add_header Alternate-Protocol|g' $v; egrep -n 'ssl spdy|spdy_headers_comp|Alternate-Protocol' $v;done
+        for v in "$(ls /usr/local/nginx/conf/conf.d/*.conf)"; do echo "$v"; grep -E -n 'ssl http2|#spdy_headers_comp|#Alternate-Protocol' $v; grep -E -n 'ssl spdy|spdy_headers_comp' $v; echo "---"; sed -i 's|ssl http2|ssl spdy|g' $v; sed -i 's|  #spdy_headers_comp|  spdy_headers_comp|g' $v; sed -i 's|  #add_header Alternate-Protocol|  add_header Alternate-Protocol|g' $v; grep -E -n 'ssl spdy|spdy_headers_comp|Alternate-Protocol' $v;done
         if [ -f /usr/local/nginx/conf/conf.d/phpmyadmin_ssl.conf ]; then
             sed -i 's|ssl http2|ssl spdy|g' /usr/local/nginx/conf/conf.d/phpmyadmin_ssl.conf
             sed -i 's|#spdy_headers_comp|spdy_headers_comp|g' /usr/local/nginx/conf/conf.d/phpmyadmin_ssl.conf
@@ -1340,12 +1340,12 @@ fi
         echo
         for v in "$(ls /usr/local/nginx/conf/conf.d/*.conf)"; do
             echo "$v";
-            egrep -n 'http2_max_field_size|http2_max_header_size|http2_max_requests' $v;
+            grep -E -n 'http2_max_field_size|http2_max_header_size|http2_max_requests' $v;
             echo "---";
             sed -i 's|^  http2_max_field_size|  #http2_max_field_size|g' $v;
             sed -i 's|^  http2_max_header_size|  #http2_max_header_size|g' $v;
             sed -i 's|^  http2_max_requests|  #http2_max_requests|g' $v;
-            egrep -n 'http2_max_field_size|http2_max_header_size|http2_max_requests' $v;
+            grep -E -n 'http2_max_field_size|http2_max_header_size|http2_max_requests' $v;
         done
         if [ -f /usr/local/nginx/conf/conf.d/phpmyadmin_ssl.conf ]; then
             sed -i 's|^  http2_max_field_size|  #http2_max_field_size|g' /usr/local/nginx/conf/conf.d/phpmyadmin_ssl.conf
@@ -1374,7 +1374,7 @@ fi
          echo "kill -USR2 $GETNGXPID"
          kill -USR2 $GETNGXPID
          sleep 3
-         ps axw -o pid,ppid,user,%cpu,vsz,wchan,command | egrep '(nginx: |PID)' | egrep -v '(nginx_upgrade|amplify|php-fpm|hhvm)' | egrep -v grep
+         ps axw -o pid,ppid,user,%cpu,vsz,wchan,command | grep -E '(nginx: |PID)' | grep -E -v '(nginx_upgrade|amplify|php-fpm|hhvm)' | grep -E -v grep
          echo
          ls -lah /usr/local/sbin/nginx*
          echo "---------------------------------------------------------------------------"
@@ -1383,12 +1383,12 @@ fi
          echo "kill -WINCH $GETNGXPID"
          kill -WINCH $GETNGXPID
          sleep 3
-         ps axw -o pid,ppid,user,%cpu,vsz,wchan,command | egrep '(nginx: |PID)' | egrep -v '(nginx_upgrade|amplify|php-fpm|hhvm)' | egrep -v grep
+         ps axw -o pid,ppid,user,%cpu,vsz,wchan,command | grep -E '(nginx: |PID)' | grep -E -v '(nginx_upgrade|amplify|php-fpm|hhvm)' | grep -E -v grep
          echo "---------------------------------------------------------------------------"
          curl -s -4 localhost/nginx_status
          echo "---------------------------------------------------------------------------"
          echo " waiting for old nginx worker processes to exit..."
-         while [[ "$(ps awx -o ppid,command | grep 'nginx: worker' | egrep -v '(nginx_upgrade|amplify|php-fpm|hhvm)' | egrep -v grep | awk '{print $1}' | uniq)" = "$GETNGXPPID" ]]; do
+         while [[ "$(ps awx -o ppid,command | grep 'nginx: worker' | grep -E -v '(nginx_upgrade|amplify|php-fpm|hhvm)' | grep -E -v grep | awk '{print $1}' | uniq)" = "$GETNGXPPID" ]]; do
            echo " checking... worker child PPID=$GETNGXPPID exists"
            sleep 3
          done
@@ -1396,7 +1396,7 @@ fi
          echo "kill -QUIT $GETNGXPID"
          kill -QUIT $GETNGXPID
          sleep 3
-         ps axw -o pid,ppid,user,%cpu,vsz,wchan,command | egrep '(nginx: |PID)' | egrep -v '(nginx_upgrade|amplify|php-fpm|hhvm)' | egrep -v grep
+         ps axw -o pid,ppid,user,%cpu,vsz,wchan,command | grep -E '(nginx: |PID)' | grep -E -v '(nginx_upgrade|amplify|php-fpm|hhvm)' | grep -E -v grep
          echo "---------------------------------------------------------------------------"
          curl -s -4 localhost/nginx_status
          echo "---------------------------------------------------------------------------"
@@ -1494,7 +1494,7 @@ fi
         echo
 
         echo "*************************************************"
-        CHECK_PCLMUL=$(gcc -c -Q -march=native --help=target | egrep '\[enabled\]|mtune|march' | grep 'mpclmul' | grep -o enabled)
+        CHECK_PCLMUL=$(gcc -c -Q -march=native --help=target | grep -E '\[enabled\]|mtune|march' | grep 'mpclmul' | grep -o enabled)
         if [[ "$CLOUDFLARE_ZLIB" = [yY] && "$(cat /proc/cpuinfo | grep -o 'sse4_2' | uniq)" != 'sse4_2' || "$CHECK_PCLMUL" != 'enabled' ]]; then
             echo
             cecho "* CLOUDFLARE_ZLIB='y' detected but cpu SSE4.2 or AES-NI support not available" $boldgreen

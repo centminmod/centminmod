@@ -294,7 +294,7 @@ if [[ "$CUSTOM_CURLRPM" = [yY] ]]; then
   elif [[ "$CENTOS_SEVEN" = '7' && "$(uname -m)" = 'x86_64' ]]; then
   ###############################################################
   # el8 64bit
-  cityfan_rpm_name=$(curl -${ipv_forceopt}sL --connect-timeout 30 --max-time 30 https://mirror.city-fan.org/ftp/contrib/yum-repo/| egrep -ow "city-fan.org-release-[0-9.]+\-[0-9.]+\.rhel7\.noarch\.rpm" | grep release | uniq)
+  cityfan_rpm_name=$(curl -${ipv_forceopt}sL --connect-timeout 30 --max-time 30 https://mirror.city-fan.org/ftp/contrib/yum-repo/| grep -E -ow "city-fan.org-release-[0-9.]+\-[0-9.]+\.rhel7\.noarch\.rpm" | grep release | uniq)
   rpm --import https://mirror.city-fan.org/ftp/contrib/GPG-KEYS/RPM-GPG-KEY-city-fan.org-rhel-7
   curl -${ipv_forceopt}Is --connect-timeout 30 --max-time 30 https://mirror.city-fan.org/ftp/contrib/yum-repo/${cityfan_rpm_name}
   CURL_NOARCHRPMCHECK=$?
@@ -329,7 +329,7 @@ if [[ "$CUSTOM_CURLRPM" = [yY] ]]; then
   elif [[ "$CENTOS_EIGHT" = '8' && "$(uname -m)" = 'x86_64' ]]; then
   ###############################################################
   # el8 64bit
-  cityfan_rpm_name=$(curl -${ipv_forceopt}sL --connect-timeout 30 --max-time 30 https://mirror.city-fan.org/ftp/contrib/yum-repo/| egrep -ow "city-fan.org-release-[0-9.]+\-[0-9.]+\.rhel${CENTOS_EIGHT}\.noarch\.rpm" | grep release | uniq)
+  cityfan_rpm_name=$(curl -${ipv_forceopt}sL --connect-timeout 30 --max-time 30 https://mirror.city-fan.org/ftp/contrib/yum-repo/| grep -E -ow "city-fan.org-release-[0-9.]+\-[0-9.]+\.rhel${CENTOS_EIGHT}\.noarch\.rpm" | grep release | uniq)
   rpm --import https://mirror.city-fan.org/ftp/contrib/GPG-KEYS/RPM-GPG-KEY-city-fan.org-rhel-${CENTOS_EIGHT}
   curl -${ipv_forceopt}Is --connect-timeout 30 --max-time 30 https://mirror.city-fan.org/ftp/contrib/yum-repo/${cityfan_rpm_name}
   CURL_NOARCHRPMCHECK=$?
@@ -364,7 +364,7 @@ if [[ "$CUSTOM_CURLRPM" = [yY] ]]; then
   elif [[ "$CENTOS_NINE" = '9' && "$(uname -m)" = 'x86_64' ]]; then
   ###############################################################
   # el9 64bit
-  cityfan_rpm_name=$(curl -${ipv_forceopt}sL --connect-timeout 30 --max-time 30 https://mirror.city-fan.org/ftp/contrib/yum-repo/| egrep -ow "city-fan.org-release-[0-9.]+\-[0-9.]+\.rhel${CENTOS_EIGHT}\.noarch\.rpm" | grep release | uniq)
+  cityfan_rpm_name=$(curl -${ipv_forceopt}sL --connect-timeout 30 --max-time 30 https://mirror.city-fan.org/ftp/contrib/yum-repo/| grep -E -ow "city-fan.org-release-[0-9.]+\-[0-9.]+\.rhel${CENTOS_EIGHT}\.noarch\.rpm" | grep release | uniq)
   rpm --import https://mirror.city-fan.org/ftp/contrib/GPG-KEYS/RPM-GPG-KEY-city-fan.org-rhel-${CENTOS_EIGHT}
   curl -${ipv_forceopt}Is --connect-timeout 30 --max-time 30 https://mirror.city-fan.org/ftp/contrib/yum-repo/${cityfan_rpm_name}
   CURL_NOARCHRPMCHECK=$?

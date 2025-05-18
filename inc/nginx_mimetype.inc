@@ -5,7 +5,7 @@ mimefix() {
     
     if [ -z "$silence" ]; then
       # Current Nginx mime types for eot, ttf, otf, woff
-      egrep '(eot|ttf|otf|woff|woff2)' /usr/local/nginx/conf/mime.types
+      grep -E '(eot|ttf|otf|woff|woff2)' /usr/local/nginx/conf/mime.types
     fi
     
     EOTCHECK=$(grep eot /usr/local/nginx/conf/mime.types)

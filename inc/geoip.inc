@@ -86,7 +86,7 @@ if [[ -d /usr/share/GeoIP ]]; then
   # fallback mirror if official php svn repo is down, use local centmin mod mirror
   # each php recompile will check again so if php svn repo is backup, the source
   # code will switch back to official php svn repo again
-  curl -${ipv_forceopt}Is --connect-timeout 30 --max-time 30 https://github.com/php/pecl-networking-geoip | grep 'HTTP\/' | egrep '200' >/dev/null 2>&1
+  curl -${ipv_forceopt}Is --connect-timeout 30 --max-time 30 https://github.com/php/pecl-networking-geoip | grep 'HTTP\/' | grep -E '200' >/dev/null 2>&1
   SVNGEOIP_CURLCHECK=$?
   if [[ "$SVNGEOIP_CURLCHECK" != '0' ]]; then
     if [ -d geoip ]; then

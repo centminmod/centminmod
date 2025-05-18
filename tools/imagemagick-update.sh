@@ -629,14 +629,14 @@ imagickinstall() {
     echo "cd $DIR_TMP"
     cd $DIR_TMP
 
-php-config --version | cut -d . -f1,2 | egrep -w '7.0||7.1|7.2|7.3|7.4'
+php-config --version | cut -d . -f1,2 | grep -E -w '7.0||7.1|7.2|7.3|7.4'
 PHPSEVEN_CHECKVER=$?
 echo $PHPSEVEN_CHECKVER
 
 if [[ "$PHPMUVER" > 7 || "$PHPSEVEN_CHECKVER" = '0' ]] && [[ "$(echo $IMAGICKPHP_VER | cut -d . -f1,2 | sed -e 's|\.||')" -le '33' ]]; then
     IMAGICKGITLINK='https://github.com/Imagick/imagick'
     # fallback mirror if official github is down, use gitlab mirror
-    curl -${ipv_forceopt}Is --connect-timeout 30 --max-time 30 $IMAGICKGITLINK | grep 'HTTP\/' | grep '200' >/dev/null 2>&1
+    curl -${ipv_forceopt}Is --connect-timeout 30 --max-time 30 $IMAGICKGITLINK | grep -qE '^HTTP/.* 200'
     IMAGICKGITCURLCHECK=$?
     if [[ "$IMAGICKGITCURLCHECK" != '0' ]]; then
         IMAGICKGITLINK='https://gitlab.com/centminmod-github-mirror/imagick.git'

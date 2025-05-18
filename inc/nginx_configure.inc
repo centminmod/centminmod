@@ -117,24 +117,24 @@ nginx_deprecate_httptwo_param() {
       echo "Update deprecated listen directive's http2 option in Nginx 1.25.1+"
       for v in "$(ls /usr/local/nginx/conf/conf.d/*.conf)"; do
           echo "$v";
-          egrep -n 'listen .*http2' $v;
+          grep -E -n 'listen .*http2' $v;
           echo "---";
           sed -i '/^[[:space:]]*#/!s|listen 443 ssl http2;|listen 443 ssl;\n  http2 on;|g' $v
           sed -i '/^[[:space:]]*#/!s|listen\s*\[::\]:443\s*ssl\s*http2;|listen [::]:443 ssl;|g' $v
           sed -i '/^[[:space:]]*#/!s|listen 443 ssl http2 reuseport;|listen 443 ssl reuseport;\n  http2 on;|g' $v
-          egrep -n 'listen 443 ssl|http2 on' $v;
+          grep -E -n 'listen 443 ssl|http2 on' $v;
       done
       echo
   elif [[ "$DETECT_NGXVER" -le '1025000' ]]; then
       echo "Revert listen directive's http2 option for Nginx 1.25.0 and below"
       for v in "$(ls /usr/local/nginx/conf/conf.d/*.conf)"; do
           echo "$v";
-          egrep -n 'listen 443 ssl|http2 on' $v;
+          grep -E -n 'listen 443 ssl|http2 on' $v;
           echo "---";
           sed -i '/listen 443 ssl;/N; /^[[:space:]]*#/!s|listen 443 ssl;\n  http2 on;|listen 443 ssl http2;|' $v
           sed -i '/listen 443 ssl reuseport;/N; /^[[:space:]]*#/!s|listen 443 ssl reuseport;\n  http2 on;|listen 443 ssl http2 reuseport;|' $v
           sed -i '/^[[:space:]]*#/!s|listen\s*\[::\]:443\s*ssl;|listen [::]:443 ssl http2;|g' $v
-          egrep -n 'listen .*http2' $v;
+          grep -E -n 'listen .*http2' $v;
       done
       echo
   fi
@@ -145,24 +145,24 @@ nginx_deprecate_httptwo_param_fix() {
       echo "Update deprecated listen directive's http2 option in Nginx 1.25.1+"
       for v in "$(ls /usr/local/nginx/conf/conf.d/*.conf)"; do
           echo "$v";
-          egrep -n 'listen .*http2' $v;
+          grep -E -n 'listen .*http2' $v;
           echo "---";
           sed -i '/^[[:space:]]*#/!s|listen 443 ssl http2;|listen 443 ssl;\n  http2 on;|g' $v
           sed -i '/^[[:space:]]*#/!s|listen\s*\[::\]:443\s*ssl\s*http2;|listen [::]:443 ssl;|g' $v
           sed -i '/^[[:space:]]*#/!s|listen 443 ssl http2 reuseport;|listen 443 ssl reuseport;\n  http2 on;|g' $v
-          egrep -n 'listen 443 ssl|http2 on' $v;
+          grep -E -n 'listen 443 ssl|http2 on' $v;
       done
       echo
   elif [[ "$DETECT_NGXVER_INITIAL_INSTALL" -le '1025000' ]]; then
       echo "Revert listen directive's http2 option for Nginx 1.25.0 and below"
       for v in "$(ls /usr/local/nginx/conf/conf.d/*.conf)"; do
           echo "$v";
-          egrep -n 'listen 443 ssl|http2 on' $v;
+          grep -E -n 'listen 443 ssl|http2 on' $v;
           echo "---";
           sed -i '/listen 443 ssl;/N; /^[[:space:]]*#/!s|listen 443 ssl;\n  http2 on;|listen 443 ssl http2;|' $v
           sed -i '/listen 443 ssl reuseport;/N; /^[[:space:]]*#/!s|listen 443 ssl reuseport;\n  http2 on;|listen 443 ssl http2 reuseport;|' $v
           sed -i '/^[[:space:]]*#/!s|listen\s*\[::\]:443\s*ssl;|listen [::]:443 ssl http2;|g' $v
-          egrep -n 'listen .*http2' $v;
+          grep -E -n 'listen .*http2' $v;
       done
       echo
   fi
@@ -783,11 +783,11 @@ if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9'
     echo "NGINX_MIMALLOC_VERSION=$NGINX_MIMALLOC_VERSION"
     if [ -f /etc/centminmod/custom_config.inc ]; then
       echo "Check /etc/centminmod/custom_config.inc relevant variables:"
-      egrep 'NGINX_PCRE|NGINX_MODSECURITY|ORESTY_LUANGINX' /etc/centminmod/custom_config.inc
+      grep -E 'NGINX_PCRE|NGINX_MODSECURITY|ORESTY_LUANGINX' /etc/centminmod/custom_config.inc
     fi
     echo
-    echo "ls -lAhrt /usr/local/nginx-dep/lib | egrep 'libpcre.so|libpcre2-8.so'"
-    ls -lAhrt /usr/local/nginx-dep/lib | egrep 'libpcre.so|libpcre2-8.so'
+    echo "ls -lAhrt /usr/local/nginx-dep/lib | grep -E 'libpcre.so|libpcre2-8.so'"
+    ls -lAhrt /usr/local/nginx-dep/lib | grep -E 'libpcre.so|libpcre2-8.so'
     echo
   elif [[ "$DETECT_NGXVER" -ge '1021005' && "$NGINX_PCRE_TWO" != [yY] ]]; then
     PCRETWO_DISABLEOPT=' --without-pcre2'
@@ -803,11 +803,11 @@ if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9'
     echo "NGINX_MIMALLOC_VERSION=$NGINX_MIMALLOC_VERSION"
     if [ -f /etc/centminmod/custom_config.inc ]; then
       echo "Check /etc/centminmod/custom_config.inc relevant variables:"
-      egrep 'NGINX_PCRE|NGINX_MODSECURITY|ORESTY_LUANGINX' /etc/centminmod/custom_config.inc
+      grep -E 'NGINX_PCRE|NGINX_MODSECURITY|ORESTY_LUANGINX' /etc/centminmod/custom_config.inc
     fi
     echo
-    echo "ls -lAhrt /usr/local/nginx-dep/lib | egrep 'libpcre.so|libpcre2-8.so'"
-    ls -lAhrt /usr/local/nginx-dep/lib | egrep 'libpcre.so|libpcre2-8.so'
+    echo "ls -lAhrt /usr/local/nginx-dep/lib | grep -E 'libpcre.so|libpcre2-8.so'"
+    ls -lAhrt /usr/local/nginx-dep/lib | grep -E 'libpcre.so|libpcre2-8.so'
     echo
   fi
 
@@ -1487,7 +1487,7 @@ if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9'
     ZLIBCUSTOM_OPT=" --with-zlib=../zlib-${NGINX_ZLIBVER}"
   fi
 
-  CHECK_PCLMUL=$(gcc -c -Q -march=native --help=target | egrep '\[enabled\]|mtune|march' | grep 'mpclmul' | grep -o enabled)
+  CHECK_PCLMUL=$(gcc -c -Q -march=native --help=target | grep -E '\[enabled\]|mtune|march' | grep 'mpclmul' | grep -o enabled)
 
   if [[ "$NGINX_ZLIBNG" = [yY] && "$CLOUDFLARE_ZLIB" = [nN] && "$(cat /proc/cpuinfo | grep -o 'sse4_2' | uniq)" = 'sse4_2' && "$CHECK_PCLMUL" = 'enabled' ]]; then
     ZLIBCF_RPATH='/usr/local/zlib-ng/lib:'
@@ -5417,25 +5417,25 @@ fi
 # intel specific
 CPUVENDOR=$(cat /proc/cpuinfo | awk '/vendor_id/ {print $3}' | sort -u | head -n1)
 echo
-echo "gcc -c -Q -march=native${NGXEXTRA_CCOPT} --help=target | egrep '\-mtune|\-mprefer-vector-width|\-march|\-msse|\-msse2|\-msse2avx|\-msse3|\-mavx|\-msse4|\-mssse3|\-mpclmul' | tee ${CENTMINLOGDIR}/gcc_native.log"
-gcc -c -Q -march=native${NGXEXTRA_CCOPT} --help=target | egrep '\-mtune|\-mprefer-vector-width|\-march|\-msse|\-msse2|\-msse2avx|\-msse3|\-mavx|\-msse4|\-mssse3|\-mpclmul' | tee ${CENTMINLOGDIR}/gcc_native.log
+echo "gcc -c -Q -march=native${NGXEXTRA_CCOPT} --help=target | grep -E '\-mtune|\-mprefer-vector-width|\-march|\-msse|\-msse2|\-msse2avx|\-msse3|\-mavx|\-msse4|\-mssse3|\-mpclmul' | tee ${CENTMINLOGDIR}/gcc_native.log"
+gcc -c -Q -march=native${NGXEXTRA_CCOPT} --help=target | grep -E '\-mtune|\-mprefer-vector-width|\-march|\-msse|\-msse2|\-msse2avx|\-msse3|\-mavx|\-msse4|\-mssse3|\-mpclmul' | tee ${CENTMINLOGDIR}/gcc_native.log
 echo
-echo "gcc -c -Q -march=${march_flag}${NGXEXTRA_CCOPT} --help=target | egrep '\-mtune|\-mprefer-vector-width|\-march|\-msse|\-msse2|\-msse2avx|\-msse3|\-mavx|\-msse4|\-mssse3|\-mpclmul' | tee ${CENTMINLOGDIR}/gcc_x86-64.log"
-gcc -c -Q -march=${march_flag}${NGXEXTRA_CCOPT} --help=target | egrep '\-mtune|\-mprefer-vector-width|\-march|\-msse|\-msse2|\-msse2avx|\-msse3|\-mavx|\-msse4|\-mssse3|\-mpclmul' | tee ${CENTMINLOGDIR}/gcc_x86-64.log
+echo "gcc -c -Q -march=${march_flag}${NGXEXTRA_CCOPT} --help=target | grep -E '\-mtune|\-mprefer-vector-width|\-march|\-msse|\-msse2|\-msse2avx|\-msse3|\-mavx|\-msse4|\-mssse3|\-mpclmul' | tee ${CENTMINLOGDIR}/gcc_x86-64.log"
+gcc -c -Q -march=${march_flag}${NGXEXTRA_CCOPT} --help=target | grep -E '\-mtune|\-mprefer-vector-width|\-march|\-msse|\-msse2|\-msse2avx|\-msse3|\-mavx|\-msse4|\-mssse3|\-mpclmul' | tee ${CENTMINLOGDIR}/gcc_x86-64.log
 echo
 diff -y --suppress-common-lines ${CENTMINLOGDIR}/gcc_native.log ${CENTMINLOGDIR}/gcc_x86-64.log | tee ${CENTMINLOGDIR}/gcc_diff_native-vs-x86-64.log
 echo
-egrep '\-march=|\-mtune|\-mavx|\-msse4|\-mpclmul' ${CENTMINLOGDIR}/gcc_diff_native-vs-x86-64.log
+grep -E '\-march=|\-mtune|\-mavx|\-msse4|\-mpclmul' ${CENTMINLOGDIR}/gcc_diff_native-vs-x86-64.log
   # if non native target x86-64 is used 
   # pick up important native cpu instructions
   # and manually pass them to x86-64 target
   if [[ "$MARCH_TARGETNATIVE" = [yY] ]]; then
     GCC_NONNATIVEFLAGS=""
   else
-    GCC_NONNATIVEFLAGS=" $(egrep '\-march=|\-mtune|\-mavx|\-msse4|\-mpclmul' ${CENTMINLOGDIR}/gcc_native.log | egrep -v 'march|mtune|avx512' | grep enabled | sed -e 's|\[||g' -e 's|\]||g' -e 's|enabled||g'| xargs)"
+    GCC_NONNATIVEFLAGS=" $(grep -E '\-march=|\-mtune|\-mavx|\-msse4|\-mpclmul' ${CENTMINLOGDIR}/gcc_native.log | grep -E -v 'march|mtune|avx512' | grep enabled | sed -e 's|\[||g' -e 's|\]||g' -e 's|enabled||g'| xargs)"
     echo
-    echo "gcc -c -Q -march=${march_flag}${GCC_NONNATIVEFLAGS}${NGXEXTRA_CCOPT} --help=target | egrep '\-mtune|\-mprefer-vector-width|\-march|\-msse|\-msse2|\-msse2avx|\-msse3|\-mavx|\-msse4|\-mssse3|\-mpclmul' | tee ${CENTMINLOGDIR}/gcc_x86-64-non-native.log"
-    gcc -c -Q -march=${march_flag}${GCC_NONNATIVEFLAGS}${NGXEXTRA_CCOPT} --help=target | egrep '\-mtune|\-mprefer-vector-width|\-march|\-msse|\-msse2|\-msse2avx|\-msse3|\-mavx|\-msse4|\-mssse3|\-mpclmul' | tee ${CENTMINLOGDIR}/gcc_x86-64-non-native.log
+    echo "gcc -c -Q -march=${march_flag}${GCC_NONNATIVEFLAGS}${NGXEXTRA_CCOPT} --help=target | grep -E '\-mtune|\-mprefer-vector-width|\-march|\-msse|\-msse2|\-msse2avx|\-msse3|\-mavx|\-msse4|\-mssse3|\-mpclmul' | tee ${CENTMINLOGDIR}/gcc_x86-64-non-native.log"
+    gcc -c -Q -march=${march_flag}${GCC_NONNATIVEFLAGS}${NGXEXTRA_CCOPT} --help=target | grep -E '\-mtune|\-mprefer-vector-width|\-march|\-msse|\-msse2|\-msse2avx|\-msse3|\-mavx|\-msse4|\-mssse3|\-mpclmul' | tee ${CENTMINLOGDIR}/gcc_x86-64-non-native.log
   fi
   echo
   echo "GCC_NONNATIVEFLAGS=$GCC_NONNATIVEFLAGS"

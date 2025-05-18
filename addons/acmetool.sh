@@ -533,13 +533,13 @@ check_domains() {
                   echo "AAAA record: ${domain_aaaarecord:-not found}"
                   if [[ "$domain_arecord" ]]; then
                       echo
-                      echo "curl -${ipv_forceopt}Ivs https://${d} 2>&1 | egrep 'Connected to|SSL connection using|subject:|start date:|expire date:'"
-                      curl -${ipv_forceopt}Ivs https://${d} 2>&1 | egrep 'Connected to|SSL connection using|subject:|start date:|expire date:' | sed -e 's|\*\s\s||g' -e 's|\*\s||g'
+                      echo "curl -${ipv_forceopt}Ivs https://${d} 2>&1 | grep -E 'Connected to|SSL connection using|subject:|start date:|expire date:'"
+                      curl -${ipv_forceopt}Ivs https://${d} 2>&1 | grep -E 'Connected to|SSL connection using|subject:|start date:|expire date:' | sed -e 's|\*\s\s||g' -e 's|\*\s||g'
                   fi
                   if [[ "$domain_aaaarecord" ]]; then
                       echo
-                      echo "curl -6Ivs https://${d} 2>&1 | egrep 'Connected to|SSL connection using|subject:|start date:|expire date:'"
-                      curl -6Ivs https://${d} 2>&1 | egrep 'Connected to|SSL connection using|subject:|start date:|expire date:' | sed -e 's|\*\s\s||g' -e 's|\*\s||g'
+                      echo "curl -6Ivs https://${d} 2>&1 | grep -E 'Connected to|SSL connection using|subject:|start date:|expire date:'"
+                      curl -6Ivs https://${d} 2>&1 | grep -E 'Connected to|SSL connection using|subject:|start date:|expire date:' | sed -e 's|\*\s\s||g' -e 's|\*\s||g'
                   fi
                   echo "--------------------------------------------------------------------"
                   echo
@@ -577,7 +577,7 @@ checkdate() {
    echo "----------------------------------------------"
    echo "acme.sh obtained"
    echo "----------------------------------------------"
-   for ca in $(find ${ACMECERTHOME} -name '*.cer'| egrep -v 'fullchain.cer|ca.cer'); do
+   for ca in $(find ${ACMECERTHOME} -name '*.cer'| grep -E -v 'fullchain.cer|ca.cer'); do
     if [ -f $ca ]; then
       # cert info
       expiry=$(openssl x509 -enddate -noout -in $ca | cut -d'=' -f2 | awk '{print $2 " " $1 " " $4}')
@@ -662,7 +662,7 @@ pushover_alert() {
       $push_vhostname SSL Cert Next Renewal Date: $acmenextrenew_date
       "| mail -s "$push_vhostname SSL Cert Setup `date`" -r "$pushover_email" "$pushover_email"
     elif [[ -f "$dnslog" ]] && [[ "$dnspush" = 'dns' ]]; then
-      cat "$dnslog" | grep -A30 'Add the following TXT record' | perl -pe 's/\x1b.*?[mGKH]//g' | sed 's/\[[^]]*\]//g' | egrep -v 'Please be aware that you prepend|resulting subdomain|and retry again' | mail -s "$push_vhostname DNS Mode Validation Instructions `date`" -r "$pushover_email" "$pushover_email"
+      cat "$dnslog" | grep -A30 'Add the following TXT record' | perl -pe 's/\x1b.*?[mGKH]//g' | sed 's/\[[^]]*\]//g' | grep -E -v 'Please be aware that you prepend|resulting subdomain|and retry again' | mail -s "$push_vhostname DNS Mode Validation Instructions `date`" -r "$pushover_email" "$pushover_email"
     elif [[ "$dnspush" = 'dnscf' ]]; then
       cat "$dnslog" | perl -pe 's/\x1b.*?[mGKH]//g' | sed 's/\[[^]]*\]//g' | grep -A60 'Verify each domain' | sed '/-----BEGIN CERTIFICATE-----/,/-----END CERTIFICATE-----/d' | mail -s "$push_vhostname DNS Mode Validation via Cloudflare API `date`" -r "$pushover_email" "$pushover_email"
     fi
@@ -1518,8 +1518,8 @@ convert_crtkeyinc() {
   # if existing or previous /usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf has the ssl cert key and trust files
   # inline in vhost, need to move them to their own include file for acmetool.sh at
   # /usr/local/nginx/conf/ssl/${vhostname}/${vhostname}.crt.key.conf
-if [[ ! -z "$(egrep 'ssl_dhparam|ssl_certificate|ssl_trusted_certificate' /usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf)" ]]; then
-  egrep 'ssl_dhparam|ssl_certificate|ssl_trusted_certificate' /usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf > /usr/local/nginx/conf/ssl/${vhostname}/${vhostname}.crt.key.conf
+if [[ ! -z "$(grep -E 'ssl_dhparam|ssl_certificate|ssl_trusted_certificate' /usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf)" ]]; then
+  grep -E 'ssl_dhparam|ssl_certificate|ssl_trusted_certificate' /usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf > /usr/local/nginx/conf/ssl/${vhostname}/${vhostname}.crt.key.conf
 fi
 echo "cat /usr/local/nginx/conf/ssl/${vhostname}/${vhostname}.crt.key.conf"
 cat /usr/local/nginx/conf/ssl/${vhostname}/${vhostname}.crt.key.conf
@@ -2275,7 +2275,7 @@ issue_acme() {
       sed -i "s|\/usr\/local\/nginx\/conf\/ssl\/${vhostname}\/${vhostname}.key|\/usr\/local\/nginx\/conf\/ssl\/${vhostname}\/${vhostname}-acme.key|" "/usr/local/nginx/conf/ssl/${vhostname}/${vhostname}.crt.key.conf"
       sed -i "s|\/usr\/local\/nginx\/conf\/ssl\/${vhostname}\/${vhostname}-trusted.crt|\/usr\/local\/nginx\/conf\/ssl\/${vhostname}\/${vhostname}-acme.cer|" "/usr/local/nginx/conf/ssl/${vhostname}/${vhostname}.crt.key.conf"
       fi
-      egrep 'ssl_dhparam|ssl_certificate|ssl_certificate_key|ssl_trusted_certificate' "/usr/local/nginx/conf/ssl/${vhostname}/${vhostname}.crt.key.conf" | tee /usr/local/nginx/conf/ssl/${vhostname}/acme-vhost-config.txt
+      grep -E 'ssl_dhparam|ssl_certificate|ssl_certificate_key|ssl_trusted_certificate' "/usr/local/nginx/conf/ssl/${vhostname}/${vhostname}.crt.key.conf" | tee /usr/local/nginx/conf/ssl/${vhostname}/acme-vhost-config.txt
 
     echo
     echo "-----------------------------------------------------------"
@@ -2601,7 +2601,7 @@ reissue_acme() {
       sed -i "s|\/usr\/local\/nginx\/conf\/ssl\/${vhostname}\/${vhostname}.key|\/usr\/local\/nginx\/conf\/ssl\/${vhostname}\/${vhostname}-acme.key|" "/usr/local/nginx/conf/ssl/${vhostname}/${vhostname}.crt.key.conf"
       sed -i "s|\/usr\/local\/nginx\/conf\/ssl\/${vhostname}\/${vhostname}-trusted.crt|\/usr\/local\/nginx\/conf\/ssl\/${vhostname}\/${vhostname}-acme.cer|" "/usr/local/nginx/conf/ssl/${vhostname}/${vhostname}.crt.key.conf"
       fi
-      egrep 'ssl_dhparam|ssl_certificate|ssl_certificate_key|ssl_trusted_certificate' "/usr/local/nginx/conf/ssl/${vhostname}/${vhostname}.crt.key.conf" | tee /usr/local/nginx/conf/ssl/${vhostname}/acme-vhost-config.txt
+      grep -E 'ssl_dhparam|ssl_certificate|ssl_certificate_key|ssl_trusted_certificate' "/usr/local/nginx/conf/ssl/${vhostname}/${vhostname}.crt.key.conf" | tee /usr/local/nginx/conf/ssl/${vhostname}/acme-vhost-config.txt
 
     echo
     echo "-----------------------------------------------------------"
@@ -2839,7 +2839,7 @@ reissue_acme_only() {
       sed -i "s|\/usr\/local\/nginx\/conf\/ssl\/${vhostname}\/${vhostname}.key|\/usr\/local\/nginx\/conf\/ssl\/${vhostname}\/${vhostname}-acme.key|" "/usr/local/nginx/conf/ssl/${vhostname}/${vhostname}.crt.key.conf"
       sed -i "s|\/usr\/local\/nginx\/conf\/ssl\/${vhostname}\/${vhostname}-trusted.crt|\/usr\/local\/nginx\/conf\/ssl\/${vhostname}\/${vhostname}-acme.cer|" "/usr/local/nginx/conf/ssl/${vhostname}/${vhostname}.crt.key.conf"
       fi
-      egrep 'ssl_dhparam|ssl_certificate|ssl_certificate_key|ssl_trusted_certificate' "/usr/local/nginx/conf/ssl/${vhostname}/${vhostname}.crt.key.conf" | tee /usr/local/nginx/conf/ssl/${vhostname}/acme-vhost-config.txt
+      grep -E 'ssl_dhparam|ssl_certificate|ssl_certificate_key|ssl_trusted_certificate' "/usr/local/nginx/conf/ssl/${vhostname}/${vhostname}.crt.key.conf" | tee /usr/local/nginx/conf/ssl/${vhostname}/acme-vhost-config.txt
 
     echo
     echo "-----------------------------------------------------------"
@@ -3159,7 +3159,7 @@ renew_acme() {
       sed -i "s|\/usr\/local\/nginx\/conf\/ssl\/${vhostname}\/${vhostname}.key|\/usr\/local\/nginx\/conf\/ssl\/${vhostname}\/${vhostname}-acme.key|" "/usr/local/nginx/conf/ssl/${vhostname}/${vhostname}.crt.key.conf"
       sed -i "s|\/usr\/local\/nginx\/conf\/ssl\/${vhostname}\/${vhostname}-trusted.crt|\/usr\/local\/nginx\/conf\/ssl\/${vhostname}\/${vhostname}-acme.cer|" "/usr/local/nginx/conf/ssl/${vhostname}/${vhostname}.crt.key.conf"
       fi
-      egrep 'ssl_dhparam|ssl_certificate|ssl_certificate_key|ssl_trusted_certificate' "/usr/local/nginx/conf/ssl/${vhostname}/${vhostname}.crt.key.conf" | tee /usr/local/nginx/conf/ssl/${vhostname}/acme-vhost-config.txt
+      grep -E 'ssl_dhparam|ssl_certificate|ssl_certificate_key|ssl_trusted_certificate' "/usr/local/nginx/conf/ssl/${vhostname}/${vhostname}.crt.key.conf" | tee /usr/local/nginx/conf/ssl/${vhostname}/acme-vhost-config.txt
 
     echo
     echo "-----------------------------------------------------------"
@@ -3530,7 +3530,7 @@ webroot_issueacme() {
       sed -i "s|\/usr\/local\/nginx\/conf\/ssl\/${vhostname}\/${vhostname}.key|\/usr\/local\/nginx\/conf\/ssl\/${vhostname}\/${vhostname}-acme.key|" "/usr/local/nginx/conf/ssl/${vhostname}/${vhostname}.crt.key.conf"
       sed -i "s|\/usr\/local\/nginx\/conf\/ssl\/${vhostname}\/${vhostname}-trusted.crt|\/usr\/local\/nginx\/conf\/ssl\/${vhostname}\/${vhostname}-acme.cer|" "/usr/local/nginx/conf/ssl/${vhostname}/${vhostname}.crt.key.conf"
       fi
-      egrep 'ssl_dhparam|ssl_certificate|ssl_certificate_key|ssl_trusted_certificate' "/usr/local/nginx/conf/ssl/${vhostname}/${vhostname}.crt.key.conf" | tee /usr/local/nginx/conf/ssl/${vhostname}/acme-vhost-config.txt
+      grep -E 'ssl_dhparam|ssl_certificate|ssl_certificate_key|ssl_trusted_certificate' "/usr/local/nginx/conf/ssl/${vhostname}/${vhostname}.crt.key.conf" | tee /usr/local/nginx/conf/ssl/${vhostname}/acme-vhost-config.txt
 
     echo
     echo "-----------------------------------------------------------"
@@ -3862,7 +3862,7 @@ webroot_reissueacme() {
       sed -i "s|\/usr\/local\/nginx\/conf\/ssl\/${vhostname}\/${vhostname}.key|\/usr\/local\/nginx\/conf\/ssl\/${vhostname}\/${vhostname}-acme.key|" "/usr/local/nginx/conf/ssl/${vhostname}/${vhostname}.crt.key.conf"
       sed -i "s|\/usr\/local\/nginx\/conf\/ssl\/${vhostname}\/${vhostname}-trusted.crt|\/usr\/local\/nginx\/conf\/ssl\/${vhostname}\/${vhostname}-acme.cer|" "/usr/local/nginx/conf/ssl/${vhostname}/${vhostname}.crt.key.conf"
       fi
-      egrep 'ssl_dhparam|ssl_certificate|ssl_certificate_key|ssl_trusted_certificate' "/usr/local/nginx/conf/ssl/${vhostname}/${vhostname}.crt.key.conf" | tee /usr/local/nginx/conf/ssl/${vhostname}/acme-vhost-config.txt
+      grep -E 'ssl_dhparam|ssl_certificate|ssl_certificate_key|ssl_trusted_certificate' "/usr/local/nginx/conf/ssl/${vhostname}/${vhostname}.crt.key.conf" | tee /usr/local/nginx/conf/ssl/${vhostname}/acme-vhost-config.txt
 
     echo
     echo "-----------------------------------------------------------"
@@ -4229,7 +4229,7 @@ webroot_renewacme() {
       sed -i "s|\/usr\/local\/nginx\/conf\/ssl\/${vhostname}\/${vhostname}.key|\/usr\/local\/nginx\/conf\/ssl\/${vhostname}\/${vhostname}-acme.key|" "/usr/local/nginx/conf/ssl/${vhostname}/${vhostname}.crt.key.conf"
       sed -i "s|\/usr\/local\/nginx\/conf\/ssl\/${vhostname}\/${vhostname}-trusted.crt|\/usr\/local\/nginx\/conf\/ssl\/${vhostname}\/${vhostname}-acme.cer|" "/usr/local/nginx/conf/ssl/${vhostname}/${vhostname}.crt.key.conf"
       fi
-      egrep 'ssl_dhparam|ssl_certificate|ssl_certificate_key|ssl_trusted_certificate' "/usr/local/nginx/conf/ssl/${vhostname}/${vhostname}.crt.key.conf" | tee /usr/local/nginx/conf/ssl/${vhostname}/acme-vhost-config.txt
+      grep -E 'ssl_dhparam|ssl_certificate|ssl_certificate_key|ssl_trusted_certificate' "/usr/local/nginx/conf/ssl/${vhostname}/${vhostname}.crt.key.conf" | tee /usr/local/nginx/conf/ssl/${vhostname}/acme-vhost-config.txt
 
     echo
     echo "-----------------------------------------------------------"
@@ -4610,7 +4610,7 @@ issue_acmedns() {
       sed -i "s|\/usr\/local\/nginx\/conf\/ssl\/${vhostname}\/${vhostname}.key|\/usr\/local\/nginx\/conf\/ssl\/${vhostname}\/${vhostname}-acme.key|" "/usr/local/nginx/conf/ssl/${vhostname}/${vhostname}.crt.key.conf"
       sed -i "s|\/usr\/local\/nginx\/conf\/ssl\/${vhostname}\/${vhostname}-trusted.crt|\/usr\/local\/nginx\/conf\/ssl\/${vhostname}\/${vhostname}-acme.cer|" "/usr/local/nginx/conf/ssl/${vhostname}/${vhostname}.crt.key.conf"
       fi
-      egrep 'ssl_dhparam|ssl_certificate|ssl_certificate_key|ssl_trusted_certificate' "/usr/local/nginx/conf/ssl/${vhostname}/${vhostname}.crt.key.conf" | tee /usr/local/nginx/conf/ssl/${vhostname}/acme-vhost-config.txt
+      grep -E 'ssl_dhparam|ssl_certificate|ssl_certificate_key|ssl_trusted_certificate' "/usr/local/nginx/conf/ssl/${vhostname}/${vhostname}.crt.key.conf" | tee /usr/local/nginx/conf/ssl/${vhostname}/acme-vhost-config.txt
 
     echo
     echo "-----------------------------------------------------------"
@@ -4656,7 +4656,7 @@ issue_acmedns() {
         echo "---------------------------------"
         echo " DNS mode requires manual steps below"
         echo "---------------------------------"
-        cat "${CENTMINLOGDIR}/acme.sh-dnslog-${vhostname}${ECC_SUFFIX}-${DT}.log" | grep -A30 'Add the following TXT record' | perl -pe 's/\x1b.*?[mGKH]//g' | sed 's/\[[^]]*\]//g' | egrep -v 'Please be aware that you  prepend|resulting subdomain|and retry again'
+        cat "${CENTMINLOGDIR}/acme.sh-dnslog-${vhostname}${ECC_SUFFIX}-${DT}.log" | grep -A30 'Add the following TXT record' | perl -pe 's/\x1b.*?[mGKH]//g' | sed 's/\[[^]]*\]//g' | grep -E -v 'Please be aware that you  prepend|resulting subdomain|and retry again'
         pushover_alert $vhostname dns "${CENTMINLOGDIR}/acme.sh-dnslog-${vhostname}${ECC_SUFFIX}-${DT}.log"
         # backup_acme $vhostname
         echo

@@ -575,7 +575,7 @@ if [[ "$CLOUDFLARE_PATCHSSL" = [yY] && "$DETECTOPENSSL_ONEZERO" = '1.0' ]]; then
         fi
         
         # fallback mirror if github down, use gitlab mirror
-        curl -${ipv_forceopt}Is --connect-timeout 30 --max-time 30 "${OPENSSLCFPATCHLINK}" | grep 'HTTP\/' | egrep '200' >/dev/null 2>&1
+        curl -${ipv_forceopt}Is --connect-timeout 30 --max-time 30 "${OPENSSLCFPATCHLINK}" | grep 'HTTP\/' | grep -E '200' >/dev/null 2>&1
         OPENSSLCFPATCH_CURLCHECK=$?
         if [[ "$OPENSSLCFPATCH_CURLCHECK" != '0' ]]; then
             if [[ "$AVXTWO_CHECK" = '0' ]]; then
@@ -1211,7 +1211,7 @@ crypto_gcc() {
         SSEFOURTWOCHECK=$(grep -o sse4_2 /proc/cpuinfo | sort -u | wc -l)
         MARCHCHECK=$(gcc -c -Q -march=native --help=target | awk '/  -march=/ {print $2}' | head -n1)
         gcc --version | tee ${CENTMINLOGDIR}/gcc_crypto_native.log
-        gcc -c -Q -march=native --help=target | egrep '\[enabled\]|mtune|march|mfpmath' | tee -a ${CENTMINLOGDIR}/gcc_crypto_native.log
+        gcc -c -Q -march=native --help=target | grep -E '\[enabled\]|mtune|march|mfpmath' | tee -a ${CENTMINLOGDIR}/gcc_crypto_native.log
         
         if [[ "$(uname -m)" = 'x86_64' && "$CPUVENDOR" = 'GenuineIntel' && "$SSECHECK" = '[enabled]' ]]; then
             CCM=64

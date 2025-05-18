@@ -145,7 +145,7 @@ fi
 echo "Python version switched successfully."
 echo
 echo "Python alternatives set"
-alternatives --list | egrep 'pip|python'
+alternatives --list | grep -E 'pip|python'
 echo
 echo "python3 --version"
 python3 --version

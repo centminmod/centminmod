@@ -8,8 +8,8 @@ echo "--------------------------------------------------------------------------
 echo "Current mysql log directories:"
 echo "---------------------------------------------------------------------------"
 if [ -d /var/log/ ]; then
-echo "ls -lh /var/log/ | egrep 'mysql|mysql-slowlog'"
-ls -lh /var/log/ | egrep 'mysql|mysql-slowlog'
+echo "ls -lh /var/log/ | grep -E 'mysql|mysql-slowlog'"
+ls -lh /var/log/ | grep -E 'mysql|mysql-slowlog'
 echo "---------------------------------------------------------------------------"
 fi
 echo "---------------------------------------------------------------------------"

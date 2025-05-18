@@ -178,15 +178,16 @@ lets_dst_root_ca_fix
   if [ -d /etc/sudoers.d ]; then
     if [ ! -f /etc/sudoers.d/addpaths ]; then
       touch /etc/sudoers.d/addpaths
-      if [[ "$(uname -m)" = 'x86_64' ]]; then
-        if [[ "$(grep '\/usr\/local\/sbin:\/usr\/local\/bin:\/sbin:\/bin:\/usr\/sbin:\/usr\/bin:\/root\/bin' /etc/sudoers.d/addpaths >/dev/null; echo $?)" != '0' ]]; then
-          echo "Defaults secure_path = /usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin:/root/bin" > /etc/sudoers.d/addpaths
-        fi
-      else
-        if [[ "$(grep '\/usr\/local\/sbin:\/usr\/local\/bin:\/sbin:\/bin:\/usr\/sbin:\/usr\/bin:\/root\/bin' /etc/sudoers.d/addpaths >/dev/null; echo $?)" != '0' ]]; then
-          echo "Defaults secure_path = /usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin:/root/bin" > /etc/sudoers.d/addpaths
-        fi
+     if [[ "$(uname -m)" = 'x86_64' ]]; then
+      if ! grep -q '/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin:/root/bin' /etc/sudoers.d/addpaths 2>/dev/null; then
+        echo "Defaults secure_path = /usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin:/root/bin" > /etc/sudoers.d/addpaths
       fi
+    else
+      if ! grep -q '/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin:/root/bin' /etc/sudoers.d/addpaths 2>/dev/null; then
+        echo "Defaults secure_path = /usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin:/root/bin" > /etc/sudoers.d/addpaths
+      fi
+    fi
+
     fi
     if [ -f /etc/sudoers.d/addpaths ]; then
       chmod 0440 /etc/sudoers.d/addpaths
@@ -1907,7 +1908,7 @@ cd $INSTALLDIR
 #sed -i "s|PHPREDIS='y'|PHPREDIS='n'|" centmin.sh
 
 # switch from PHP 5.4.41 to 5.6.9 default with Zend Opcache
-PHPVERLATEST=$(curl -${ipv_forceopt}sL https://www.php.net/downloads.php| egrep -o "php\-[0-9.]+\.tar[.a-z]*" | grep -v '.asc' | awk -F "php-" '/.tar.gz$/ {print $2}' | sed -e 's|.tar.gz||g' | uniq | grep '8.0' | head -n1)
+PHPVERLATEST=$(curl -${ipv_forceopt}sL https://www.php.net/downloads.php| grep -E -o "php-[0-9.]+\.tar[.a-z]*" | grep -v '.asc' | awk -F "php-" '/.tar.gz$/ {print $2}' | sed -e 's|.tar.gz||g' | uniq | grep '8.0' | head -n1)
 sed -i "s|^PHP_VERSION='.*'|PHP_VERSION='$PHPVERLATEST'|" centmin.sh
 PHPVERLATEST=${PHPVERLATEST:-"8.0.30"}
 sed -i "s|ZOPCACHEDFT='n'|ZOPCACHEDFT='y'|" centmin.sh
@@ -2034,7 +2035,7 @@ echo "--------------------------------------------------------------------------
 echo "---------------------------------------------------------------------------"
 } 2>&1 | tee "/root/centminlogs/install_time_stats_${DT}.log"
   cat "/root/centminlogs/install_time_stats_${DT}.log" >> "/root/centminlogs/installer_${DT}.log"
-  cat "/root/centminlogs/installer_${DT}.log" | egrep -v '\*\*\*\*\*\*|shell-init:|csf: |Flushing chain  CC |and iptables DROP|The set with the given name does not exist|csf: IPSET adding|\.\.\.\.\.\.\.\.\.\.|DOPENSSL_PIC|\/opt\/openssl\/share\/|fpm-build\/libtool|checking for |checking whether |make -f |make\[1\]|make\[2\]|make\[3\]|make\[4\]|make\[5\]|--noexecstack -O3 -m64 -march=native -Wimplicit-fallthrough=0 |install .\/include\/openssl' > "/root/centminlogs/installer_${DT}_minimal.log"
+  grep -Ev '\*{6}|shell-init:|csf: |Flushing chain  CC |and iptables DROP|The set with the given name does not exist|csf: IPSET adding|\.{9}|DOPENSSL_PIC|/opt/openssl/share/|fpm-build/libtool|checking for |checking whether |make -f |make\[1\]|make\[2\]|make\[3\]|make\[4\]|make\[5\]|--noexecstack -O3 -m64 -march=native -Wimplicit-fallthrough=0 |install ./include/openssl' "installer_${DT}.log" > "/root/centminlogs/installer_${DT}_minimal.log"
   echo "Full initial install log: /root/centminlogs/installer_${DT}.log" > /root/centminlogs/installer_summary_links.log
   echo "Minimal initial install log: /root/centminlogs/installer_${DT}_minimal.log" >> /root/centminlogs/installer_summary_links.log
   echo "Initial install time stats: /root/centminlogs/install_time_stats_${DT}.log" >> /root/centminlogs/installer_summary_links.log

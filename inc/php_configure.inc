@@ -985,7 +985,7 @@ fi
 
 # whether to switch from system used zlib to cloudflare zlib performance
 # fork for php conmpilations for cpus supporting SSE4.2 at least
-CHECK_PCLMUL=$(gcc -c -Q -march=native --help=target | egrep '\[enabled\]|mtune|march' | grep 'mpclmul' | grep -o enabled)
+CHECK_PCLMUL=$(gcc -c -Q -march=native --help=target | grep -E '\[enabled\]|mtune|march' | grep 'mpclmul' | grep -o enabled)
 CLOUDFLARE_ZLIBPHP='n'
 if [[ "$CLOUDFLARE_ZLIBPHP" = [yY] && "$(cat /proc/cpuinfo | grep -o 'sse4_2' | uniq)" = 'sse4_2' && "$CHECK_PCLMUL" = 'enabled' ]]; then
   # check if static libz.a installed usually as result of compiling nginx with
@@ -2983,30 +2983,31 @@ if [[ "$GCCINTEL_PHP" = [yY] ]]; then
   SSEFOURTWOCHECK=$(grep -o sse4_2 /proc/cpuinfo | sort -u | wc -l)
   MARCHCHECK=$(gcc -c -Q -march=native --help=target | awk '/  -march=/ {print $2}' | head -n1)
   # gcc --version | tee ${CENTMINLOGDIR}/gcc_php_native.log
-  # gcc -c -Q -march=native --help=target | egrep '\[enabled\]|mtune|march|mfpmath' | tee -a ${CENTMINLOGDIR}/gcc_php_native.log
+  # gcc -c -Q -march=native --help=target | grep -E '\[enabled\]|mtune|march|mfpmath' | tee -a ${CENTMINLOGDIR}/gcc_php_native.log
 
   echo
-  echo "gcc -c -Q -march=native${PHPEXTRA_CFLAGS} --help=target | egrep '\-mtune|\-mprefer-vector-width|\-march|\-msse|\-msse2|\-msse2avx|\-msse3|\-mavx|\-msse4|\-mssse3|\-mpclmul' | tee ${CENTMINLOGDIR}/gcc_php_native.log"
-  gcc -c -Q -march=native${PHPEXTRA_CFLAGS} --help=target | egrep '\-mtune|\-mprefer-vector-width|\-march|\-msse|\-msse2|\-msse2avx|\-msse3|\-mavx|\-msse4|\-mssse3|\-mpclmul' | tee ${CENTMINLOGDIR}/gcc_php_native.log
-  echo
-  echo "gcc -c -Q -march=${march_flag}${PHPEXTRA_CFLAGS} --help=target | egrep '\-mtune|\-mprefer-vector-width|\-march|\-msse|\-msse2|\-msse2avx|\-msse3|\-mavx|\-msse4|\-mssse3|\-mpclmul' | tee ${CENTMINLOGDIR}/gcc_php_x86-64.log"
-  gcc -c -Q -march=${march_flag}${PHPEXTRA_CFLAGS} --help=target | egrep '\-mtune|\-mprefer-vector-width|\-march|\-msse|\-msse2|\-msse2avx|\-msse3|\-mavx|\-msse4|\-mssse3|\-mpclmul' | tee ${CENTMINLOGDIR}/gcc_php_x86-64.log
+echo "gcc -c -Q -march=native${PHPEXTRA_CFLAGS} --help=target | grep -E 'mtune|mprefer-vector-width|march|msse|msse2|msse2avx|msse3|mavx|msse4|mssse3|mpclmul' | tee ${CENTMINLOGDIR}/gcc_php_native.log"
+gcc -c -Q -march=native${PHPEXTRA_CFLAGS} --help=target | grep -E 'mtune|mprefer-vector-width|march|msse|msse2|msse2avx|msse3|mavx|msse4|mssse3|mpclmul' | tee "${CENTMINLOGDIR}/gcc_php_native.log"
+echo
+echo "gcc -c -Q -march=${march_flag}${PHPEXTRA_CFLAGS} --help=target | grep -E 'mtune|mprefer-vector-width|march|msse|msse2|msse2avx|msse3|mavx|msse4|mssse3|mpclmul' | tee ${CENTMINLOGDIR}/gcc_php_x86-64.log"
+gcc -c -Q -march=${march_flag}${PHPEXTRA_CFLAGS} --help=target | grep -E 'mtune|mprefer-vector-width|march|msse|msse2|msse2avx|msse3|mavx|msse4|mssse3|mpclmul' | tee "${CENTMINLOGDIR}/gcc_php_x86-64.log"
+
   echo
   diff -y --suppress-common-lines ${CENTMINLOGDIR}/gcc_php_native.log ${CENTMINLOGDIR}/gcc_php_x86-64.log | tee ${CENTMINLOGDIR}/gcc_php_diff_native-vs-x86-64.log
   \cp -a "${CENTMINLOGDIR}/gcc_php_native.log" "${CENTMINLOGDIR}/gcc_php_native_${DT}.log"
   \CP -a "${CENTMINLOGDIR}/gcc_php_diff_native-vs-x86-64.log" "${CENTMINLOGDIR}/gcc_php_diff_native-vs-x86-64_${DT}.log"
   echo
-  egrep '\-march=|\-mtune|\-mavx|\-msse4|\-mpclmul' ${CENTMINLOGDIR}/gcc_php_diff_native-vs-x86-64.log
+  grep -E '\-march=|\-mtune|\-mavx|\-msse4|\-mpclmul' ${CENTMINLOGDIR}/gcc_php_diff_native-vs-x86-64.log
   # if non native target x86-64 is used 
   # pick up important native cpu instructions
   # and manually pass them to x86-64 target
   if [[ "$MARCH_TARGETNATIVE" = [yY] ]]; then
     GCC_NONNATIVEFLAGS=""
   else
-    GCC_NONNATIVEFLAGS=" $(egrep '\-march=|\-mtune|\-mavx|\-msse4|\-mpclmul' ${CENTMINLOGDIR}/gcc_php_native.log | egrep -v 'march|mtune|avx512' | grep enabled | sed -e 's|\[||g' -e 's|\]||g' -e 's|enabled||g'| xargs)"
+    GCC_NONNATIVEFLAGS="$(grep -E 'march=|mtune|mavx|msse4|mpclmul' "${CENTMINLOGDIR}/gcc_php_native.log" | grep -Ev 'march|mtune|avx512' | grep enabled | sed -e 's|\[||g' -e 's|\]||g' -e 's|enabled||g' | xargs)"
     echo
-    echo "gcc -c -Q -march=${march_flag}${GCC_NONNATIVEFLAGS}${PHPEXTRA_CFLAGS} --help=target | egrep '\-mtune|\-mprefer-vector-width|\-march|\-msse|\-msse2|\-msse2avx|\-msse3|\-mavx|\-msse4|\-mssse3|\-mpclmul' | tee ${CENTMINLOGDIR}/gcc_php_x86-64-non-native.log"
-    gcc -c -Q -march=${march_flag}${GCC_NONNATIVEFLAGS}${PHPEXTRA_CFLAGS} --help=target | egrep '\-mtune|\-mprefer-vector-width|\-march|\-msse|\-msse2|\-msse2avx|\-msse3|\-mavx|\-msse4|\-mssse3|\-mpclmul' | tee ${CENTMINLOGDIR}/gcc_php_x86-64-non-native.log
+    echo "gcc -c -Q -march=${march_flag}${GCC_NONNATIVEFLAGS}${PHPEXTRA_CFLAGS} --help=target | grep -E 'mtune|mprefer-vector-width|march|msse|msse2|msse2avx|msse3|mavx|msse4|mssse3|mpclmul' | tee ${CENTMINLOGDIR}/gcc_php_x86-64-non-native.log"
+    gcc -c -Q -march=${march_flag}${GCC_NONNATIVEFLAGS}${PHPEXTRA_CFLAGS} --help=target | grep -E 'mtune|mprefer-vector-width|march|msse|msse2|msse2avx|msse3|mavx|msse4|mssse3|mpclmul' | tee "${CENTMINLOGDIR}/gcc_php_x86-64-non-native.log"
     \cp -a "${CENTMINLOGDIR}/gcc_php_x86-64-non-native.log" "${CENTMINLOGDIR}/gcc_php_x86-64-non-native_${DT}.log"
   fi
   echo

@@ -22,9 +22,9 @@ DT=$(date +"%d%m%y-%H%M%S")
 DIR_TMP=/svr-setup
 CENTMINLOGDIR='/root/centminlogs'
 CSF_PERMABAN_LISTDIR='/etc/centminmod/csf'
-GET_DENY_IP_LIMIT=$(egrep '^DENY_IP_LIMIT' /etc/csf/csf.conf | awk -F' = ' '{print $2}' | tr -d '"')
+GET_DENY_IP_LIMIT=$(grep -E '^DENY_IP_LIMIT' /etc/csf/csf.conf | awk -F' = ' '{print $2}' | tr -d '"')
 THRESHOLD_DENY_IP_LIMIT=$(echo "$GET_DENY_IP_LIMIT - 100" | bc)
-GET_DENY_TEMP_IP_LIMIT=$(egrep '^DENY_TEMP_IP_LIMIT' /etc/csf/csf.conf | awk -F' = ' '{print $2}' | tr -d '"')
+GET_DENY_TEMP_IP_LIMIT=$(grep -E '^DENY_TEMP_IP_LIMIT' /etc/csf/csf.conf | awk -F' = ' '{print $2}' | tr -d '"')
 THRESHOLD_DENY_TEMP_IP_LIMIT=$(echo "$GET_DENY_TEMP_IP_LIMIT - 100" | bc)
 
 if [ ! -d "$CSF_PERMABAN_LISTDIR" ]; then
@@ -47,7 +47,7 @@ fi
 echo "Number of CSF Firewall Blocked IPs: $CSF_COUNT_IPS"
 
 initial_csf_blocks() {
-  if [[ "$(egrep 'censys|shodan' -c /etc/csf/csf.deny)" -ne '85' ]] || [[ ! "$(grep 'perma' /etc/csf/csf.deny)" && "$(wc -l < ${CSF_PERMABAN_LISTDIR}/csf-permaban.conf)" -gt '1' ]] || [[ ! "$(grep 'shodan' /etc/csf/csf.deny)" ]] || [[ ! "$(grep 'censys' /etc/csf/csf.deny)" ]] || [[ "$CSF_COUNT_IPS" -ge "$GET_DENY_IP_LIMIT" && "$(systemctl is-enabled csf)" = 'enabled' && -f /etc/csf/csf.deny ]]; then
+  if [[ "$(grep -E 'censys|shodan' -c /etc/csf/csf.deny)" -ne '85' ]] || [[ ! "$(grep 'perma' /etc/csf/csf.deny)" && "$(wc -l < ${CSF_PERMABAN_LISTDIR}/csf-permaban.conf)" -gt '1' ]] || [[ ! "$(grep 'shodan' /etc/csf/csf.deny)" ]] || [[ ! "$(grep 'censys' /etc/csf/csf.deny)" ]] || [[ "$CSF_COUNT_IPS" -ge "$GET_DENY_IP_LIMIT" && "$(systemctl is-enabled csf)" = 'enabled' && -f /etc/csf/csf.deny ]]; then
         echo
         echo "Re-apply initial CSF Firewall set of IP blocks once CSF Firewall"
         echo "DENY_IP_LIMIT & DENY_TEMP_IP_LIMIT IP limits are reached"
@@ -75,7 +75,7 @@ initial_csf_blocks() {
             fi
           done
         fi
-    if [[ "$(egrep 'censys|shodan' -c /etc/csf/csf.deny)" -ne '85' ]] || [[ ! "$(grep 'shodan' /etc/csf/csf.deny)" ]] || [[ ! "$(grep 'censys' /etc/csf/csf.deny)" ]] || [[ "$CSF_COUNT_IPS" -ge "$GET_DENY_IP_LIMIT" && "$(systemctl is-enabled csf)" = 'enabled' && -f /etc/csf/csf.deny ]]; then
+    if [[ "$(grep -E 'censys|shodan' -c /etc/csf/csf.deny)" -ne '85' ]] || [[ ! "$(grep 'shodan' /etc/csf/csf.deny)" ]] || [[ ! "$(grep 'censys' /etc/csf/csf.deny)" ]] || [[ "$CSF_COUNT_IPS" -ge "$GET_DENY_IP_LIMIT" && "$(systemctl is-enabled csf)" = 'enabled' && -f /etc/csf/csf.deny ]]; then
         csf --profile backup cmm-b4-censys-block-tool
         # block censys.io scans
         # https://support.censys.io/getting-started/frequently-asked-questions-faq

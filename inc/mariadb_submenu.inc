@@ -39,7 +39,7 @@ mariadb_upgrade_check_versionlock() {
 
   # only run if yum versionlock plugin is installed
   if [[ "$(yum --help | grep -co versionlock)" -ge '1' ]]; then
-    check_mdb_versionlock_pkgs=$(yum versionlock list | egrep -i 'mariadb|galera' | awk -F '0:' '{print $2}' | sed -e 's|\.\*||g')
+    check_mdb_versionlock_pkgs=$(yum versionlock list | grep -E -i 'mariadb|galera' | awk -F '0:' '{print $2}' | sed -e 's|\.\*||g')
     if [[ ! -z "$check_mdb_versionlock_pkgs" ]]; then
       echo "*************************************************"
       echo -e "\ndetected the following MariaDB server yum package yum versionlocks:\n"

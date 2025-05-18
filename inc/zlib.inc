@@ -22,8 +22,8 @@ zlibsymlink_fix() {
         ln -s "libz.so.${CLOUDFLARE_ZLIBVER}" libz.so.1
         popd
         echo
-        echo "lsof | grep nginx | egrep -v 'php-fpm|scheduler' | grep libz"
-        lsof | grep nginx | egrep -v 'php-fpm|scheduler' | grep libz
+        echo "lsof | grep nginx | grep -E -v 'php-fpm|scheduler' | grep libz"
+        lsof | grep nginx | grep -E -v 'php-fpm|scheduler' | grep libz
         echo
         echo "ls -lahrt /usr/local/lib | grep libz"
         ls -lahrt /usr/local/lib | grep libz
@@ -953,7 +953,7 @@ install_stdzlib() {
 
 nginxzlib_install() {
   if [[ "$NGINX_ZLIBCUSTOM" = [yY] ]]; then
-    CHECK_PCLMUL=$(gcc -c -Q -march=native --help=target | egrep '\[enabled\]|mtune|march' | grep 'mpclmul' | grep -o enabled)
+    CHECK_PCLMUL=$(gcc -c -Q -march=native --help=target | grep -E '\[enabled\]|mtune|march' | grep 'mpclmul' | grep -o enabled)
     if [[ "$CLOUDFLARE_ZLIB" = [yY] && "$(cat /proc/cpuinfo | grep -o 'sse4_2' | uniq)" = 'sse4_2' && "$CHECK_PCLMUL" = 'enabled' ]]; then
         install_cfzlib
         if [[ "$cfzlib_check" -ne '0' ]]; then

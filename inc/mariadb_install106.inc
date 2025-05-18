@@ -1167,7 +1167,7 @@ fi
 cmservice mysql restart
 
 echo
-systemctl show mariadb --no-pager | egrep 'LimitNOFILE|NotifyAccess|OOM'
+systemctl show mariadb --no-pager | grep -E 'LimitNOFILE|NotifyAccess|OOM'
 echo
 
     if [ -f "$(which figlet)" ]; then

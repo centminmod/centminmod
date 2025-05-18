@@ -254,7 +254,7 @@ checks() {
   serverhostname=$(hostname)
   serverhostname_ipv4=$(dig +short A $serverhostname)
   serverhostname_ipv6=$(dig +short AAAA $serverhostname)
-  relaycheck=$(postconf -n relayhost | egrep -o 'amazonaws|sendgrid|mailgun')
+  relaycheck=$(postconf -n relayhost | grep -Eo 'amazonaws|sendgrid|mailgun')
   if [[ "$relaycheck" = 'amazonaws' ]]; then
     ses_detected='y'
     relayhost_detected='y'

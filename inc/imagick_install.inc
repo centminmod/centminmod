@@ -511,10 +511,10 @@ imagickinstall() {
     echo "cd $DIR_TMP"
     cd $DIR_TMP
 
-php-config --version | cut -d . -f1,2 | egrep -w '7.0||7.1|7.2|7.3|7.4'
+php-config --version | cut -d . -f1,2 | grep -E -w '7.0||7.1|7.2|7.3|7.4'
 PHPSEVEN_CHECKVER=$?
 echo $PHPSEVEN_CHECKVER
-php-config --version | cut -d . -f1,2 | egrep -w '8.0|8.1|8.2|8.3|8.4'
+php-config --version | cut -d . -f1,2 | grep -E -w '8.0|8.1|8.2|8.3|8.4'
 PHPEIGHT_CHECKVER=$?
 echo $PHPEIGHT_CHECKVER
 
@@ -533,7 +533,7 @@ fi
 if [[ "$PHPMUVER" = '8.4' || "$PHPVER_ID" -ge '80400' || "$PHPMUVER" = 'NGDEBUG' || "$PHPEIGHT_CHECKVER" = '0' ]]; then
     IMAGICKGITLINK='https://github.com/Imagick/imagick'
     # fallback mirror if official github is down, use gitlab mirror
-    curl -${ipv_forceopt}Is --connect-timeout 30 --max-time 30 $IMAGICKGITLINK | grep 'HTTP\/' | grep '200' >/dev/null 2>&1
+    curl -${ipv_forceopt}Is --connect-timeout 30 --max-time 30 $IMAGICKGITLINK | grep -qE '^HTTP/.* 200'
     IMAGICKGITCURLCHECK=$?
     if [[ "$IMAGICKGITCURLCHECK" != '0' ]]; then
         IMAGICKGITLINK='https://gitlab.com/centminmod-github-mirror/imagick.git'
@@ -578,7 +578,7 @@ if [[ "$PHPMUVER" = '8.4' || "$PHPVER_ID" -ge '80400' || "$PHPMUVER" = 'NGDEBUG'
 elif [[ "$PHPMUVER" = '8.0' || "$PHPVER_ID" -ge '80000' || "$PHPMUVER" = 'NGDEBUG' || "$PHPEIGHT_CHECKVER" = '0' ]] && [[ "$(echo $IMAGICKPHP_VER | cut -d . -f1,2 | sed -e 's|\.||')" -le '34' ]]; then
     IMAGICKGITLINK='https://github.com/Imagick/imagick'
     # fallback mirror if official github is down, use gitlab mirror
-    curl -${ipv_forceopt}Is --connect-timeout 30 --max-time 30 $IMAGICKGITLINK | grep 'HTTP\/' | grep '200' >/dev/null 2>&1
+    curl -${ipv_forceopt}Is --connect-timeout 30 --max-time 30 $IMAGICKGITLINK | grep -qE '^HTTP/.* 200'
     IMAGICKGITCURLCHECK=$?
     if [[ "$IMAGICKGITCURLCHECK" != '0' ]]; then
         IMAGICKGITLINK='https://gitlab.com/centminmod-github-mirror/imagick.git'
@@ -623,7 +623,7 @@ elif [[ "$PHPMUVER" = '8.0' || "$PHPVER_ID" -ge '80000' || "$PHPMUVER" = 'NGDEBU
 elif [[ "$PHPMUVER" = '7.0' || "$PHPMUVER" = '7.1' || "$PHPMUVER" = '7.2' || "$PHPMUVER" = '7.3' || "$PHPMUVER" = '7.4' || "$PHPMUVER" = 'NGDEBUG' || "$PHPSEVEN_CHECKVER" = '0' ]] && [[ "$(echo $IMAGICKPHP_VER | cut -d . -f1,2 | sed -e 's|\.||')" -le '33' ]]; then
     IMAGICKGITLINK='https://github.com/Imagick/imagick'
     # fallback mirror if official github is down, use gitlab mirror
-    curl -${ipv_forceopt}Is --connect-timeout 30 --max-time 30 $IMAGICKGITLINK | grep 'HTTP\/' | grep '200' >/dev/null 2>&1
+    curl -${ipv_forceopt}Is --connect-timeout 30 --max-time 30 $IMAGICKGITLINK | grep -qE '^HTTP/.* 200'
     IMAGICKGITCURLCHECK=$?
     if [[ "$IMAGICKGITCURLCHECK" != '0' ]]; then
         IMAGICKGITLINK='https://gitlab.com/centminmod-github-mirror/imagick.git'

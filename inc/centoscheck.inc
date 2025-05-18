@@ -22,8 +22,8 @@ grub_efi_fix() {
         # check EFI bios support
         check_efibios=$(efibootmgr 2>&1 | grep -o 'not supported')
         check_bootefi=$(df -P --local | grep nvme | grep -o '/boot/efi')
-        check_grubefi=$(egrep 'linuxefi|initrdefi' /boot/grub2/grub.cfg)
-        check_grub_noefi=$(egrep 'linux16|initrd16' /boot/grub2/grub.cfg)
+        check_grubefi=$(grep -E 'linuxefi|initrdefi' /boot/grub2/grub.cfg)
+        check_grub_noefi=$(grep -E 'linux16|initrd16' /boot/grub2/grub.cfg)
       fi
       if [[ "$check_grubefi" && "$check_bootefi" = '/boot/efi' && "$check_efibios" != 'not supported' && "$(lsblk | grep nvme)" && -d /boot/efi/EFI/centos && -d /sys/firmware/efi ]]; then
         echo

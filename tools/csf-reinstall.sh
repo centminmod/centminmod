@@ -601,7 +601,7 @@ backupdata() {
     echo
     echo "---------------------------------------------------------------------"
     echo "Existing Port Whitelist Profile"
-    egrep '^TCP_|^TCP6_|^UDP_|^UDP6' /etc/csf/csf.conf
+    grep -E '^TCP_|^TCP6_|^UDP_|^UDP6' /etc/csf/csf.conf
     TCP_INBACKUP=$(awk '/^TCP_IN/ {print $3}' /etc/csf/csf.conf)
     TCP_OUTBACKUP=$(awk '/^TCP_OUT/ {print $3}' /etc/csf/csf.conf)
     TCP6_INBACKUP=$(awk '/^TCP6_IN/ {print $3}' /etc/csf/csf.conf)
@@ -681,7 +681,7 @@ restoredata() {
     echo "Check Whitelist Profile"
     echo "---------------------------------------------------------------------"
 
-    egrep '^TCP_|^TCP6_|^UDP_|^UDP6' /etc/csf/csf.conf
+    grep -E '^TCP_|^TCP6_|^UDP_|^UDP6' /etc/csf/csf.conf
 
     echo
     echo "---------------------------------------------------------------------"

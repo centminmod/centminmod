@@ -439,7 +439,7 @@ case "$sshkeys_menu_opt" in
     if [ ! -n "$SSH_AGENT_PID" ]; then
       eval $(ssh-agent -s)
     fi
-    ssh_keys_info=$(ssh-add -l 2>&1 | egrep -iv 'error|Not found')
+    ssh_keys_info=$(ssh-add -l 2>&1 | grep -E -iv 'error|Not found')
 
     if [[ -z "$ssh_keys_info" ]]; then
       echo "No SSH keys registered with the system's ssh-agent."
@@ -1115,7 +1115,7 @@ case "$datamenu_opt" in
           } 2>&1 | tee "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_backupmethod-${backup_method}_datamanger_menu.log"
             if [ -f "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_backupmethod-${backup_method}_datamanger_menu.log" ]; then
               # Save the output of the script to a variable
-              script_output=$(cat "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_backupmethod-${backup_method}_datamanger_menu.log" | egrep 'log file generated: |Backup Log saved: |Backup saved to' | sed -e 's|Backup Log saved:|Vhost Backup Log saved:|' -e 's|Backup log file generated|MySQL Backup log file generated|g')
+              script_output=$(cat "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_backupmethod-${backup_method}_datamanger_menu.log" | grep -E 'log file generated: |Backup Log saved: |Backup saved to' | sed -e 's|Backup Log saved:|Vhost Backup Log saved:|' -e 's|Backup log file generated|MySQL Backup log file generated|g')
               
               # Extract the required information using grep and awk
               # transfer_vhost_backup_dir=$(echo "$script_output" | grep "Vhost Backup Log saved:" | awk '{print $11}' | xargs dirname)

@@ -57,7 +57,7 @@ if [[ ! "$(grep -w '43' /etc/csf/csf.conf)" ]]; then
   if [[ "$CHECKDOMAINS_DEBUG" = [yY] ]]; then
     sed -i "s/TCP_OUT = \"/TCP_OUT = \"43,/g" /etc/csf/csf.conf
     sed -i "s/TCP6_OUT = \"/TCP6_OUT = \"43,/g" /etc/csf/csf.conf
-    egrep '^TCP_|^TCP6_|^UDP_|^UDP6_' /etc/csf/csf.conf
+    grep -E '^TCP_|^TCP6_|^UDP_|^UDP6_' /etc/csf/csf.conf
   else
     sed -i "s/TCP_OUT = \"/TCP_OUT = \"43,/g" /etc/csf/csf.conf
     sed -i "s/TCP6_OUT = \"/TCP6_OUT = \"43,/g" /etc/csf/csf.conf
@@ -66,7 +66,7 @@ if [[ ! "$(grep -w '43' /etc/csf/csf.conf)" ]]; then
 fi
 
 if [[ "$CHECKDOMAINS_DEBUG" != [yY] ]]; then
-LISTDOMAINS=$(egrep -rn 'http:|https:|baseurl=|mirrorlist=' /usr/local/src/centminmod/ /etc/yum.repos.d/ | egrep -v 'http://ftp.osuosl.org|\${HTUSER}|\$request_uri|\$vhostname|\${vhostname}|rpm.axivo.com|foo.bar|master.ourdelta.org|newdomain1.com|apt.sw.be|medium.com|href=|my.incapsula.com|#|echo|cecho|<li>|<li class|centos.alt.ru|<|>|\(|\[|\)|\]|<html|<!DOCTYPE|nginx.org|centminmod.com|centmin.com|centmin.sh|github.com|php.net|yum.mariadb.org|apache.mirror.uber.com.au' | sed -e "s|<||g" -e "s|'||g" -e "s|\| bash -s stable||g" | grep -Eo '(http|https|ftp)://[^/"]+' | sed -e "s|http:\/\/||g" -e "s|https:\/\/||g" | sort | uniq -c | sort -rn | awk '{print $2}'| grep -v '\\')
+LISTDOMAINS=$(grep -E -rn 'http:|https:|baseurl=|mirrorlist=' /usr/local/src/centminmod/ /etc/yum.repos.d/ | grep -E -v 'http://ftp.osuosl.org|\${HTUSER}|\$request_uri|\$vhostname|\${vhostname}|rpm.axivo.com|foo.bar|master.ourdelta.org|newdomain1.com|apt.sw.be|medium.com|href=|my.incapsula.com|#|echo|cecho|<li>|<li class|centos.alt.ru|<|>|\(|\[|\)|\]|<html|<!DOCTYPE|nginx.org|centminmod.com|centmin.com|centmin.sh|github.com|php.net|yum.mariadb.org|apache.mirror.uber.com.au' | sed -e "s|<||g" -e "s|'||g" -e "s|\| bash -s stable||g" | grep -Eo '(http|https|ftp)://[^/"]+' | sed -e "s|http:\/\/||g" -e "s|https:\/\/||g" | sort | uniq -c | sort -rn | awk '{print $2}'| grep -v '\\')
 fi
 
 OTHERDOMAINS='nginx.org centminmod.com centmin.com centmin.sh github.com www.php.net yum.mariadb.org pecl.php.net mirror.rackspace.com download.nus.edu.sg'
@@ -136,7 +136,7 @@ for d in ${OTHERDOMAINS[@]}; do
     echo "expiry: $whoisdate updated: $whoisupdate" | tr '\n\r' ' ' | tr -s ' '
     if [[ "$WHOIS_SHOWREGISTRANT" = [yY] ]]; then
       echo
-      whois_registrant=$(egrep -i 'registrant name:|registrant email:|admin name:|admin email:' "${CTMPDIR}/${d}.txt")
+      whois_registrant=$(grep -E -i 'registrant name:|registrant email:|admin name:|admin email:' "${CTMPDIR}/${d}.txt")
       echo "$whois_registrant"
     else
       echo
@@ -232,7 +232,7 @@ for d in ${OTHERDOMAINS[@]}; do
     echo "expiry: $whoisdate updated: $whoisupdate" | tr '\n\r' ' ' | tr -s ' '
     if [[ "$WHOIS_SHOWREGISTRANT" = [yY] ]]; then
       echo
-      whois_registrant=$(egrep -i 'registrant name:|registrant email:|admin name:|admin email:' "${CTMPDIR}/${d}.txt")
+      whois_registrant=$(grep -E -i 'registrant name:|registrant email:|admin name:|admin email:' "${CTMPDIR}/${d}.txt")
       echo "$whois_registrant"
     else
       echo
@@ -328,7 +328,7 @@ for d in ${OTHERDOMAINS[@]}; do
     echo "expiry: $whoisdate updated: $whoisupdate" | tr '\n\r' ' ' | tr -s ' '
     if [[ "$WHOIS_SHOWREGISTRANT" = [yY] ]]; then
       echo
-      whois_registrant=$(egrep -i 'registrant name:|registrant email:|admin name:|admin email:' "${CTMPDIR}/${d}.txt")
+      whois_registrant=$(grep -E -i 'registrant name:|registrant email:|admin name:|admin email:' "${CTMPDIR}/${d}.txt")
       echo "$whois_registrant"
     else
       echo
@@ -431,7 +431,7 @@ if [[ "$CHECKDOMAINS_DEBUG" != [yY] ]]; then
       echo "expiry: $whoisdate updated: $whoisupdate" | tr '\n\r' ' ' | tr -s ' '
       if [[ "$WHOIS_SHOWREGISTRANT" = [yY] ]]; then
         echo
-        whois_registrant=$(egrep -i 'registrant name:|registrant email:|admin name:|admin email:' "${CTMPDIR}/${d}.txt")
+        whois_registrant=$(grep -E -i 'registrant name:|registrant email:|admin name:|admin email:' "${CTMPDIR}/${d}.txt")
         echo "$whois_registrant"
       else
         echo
@@ -527,7 +527,7 @@ if [[ "$CHECKDOMAINS_DEBUG" != [yY] ]]; then
       echo "expiry: $whoisdate updated: $whoisupdate" | tr '\n\r' ' ' | tr -s ' '
       if [[ "$WHOIS_SHOWREGISTRANT" = [yY] ]]; then
         echo
-        whois_registrant=$(egrep -i 'registrant name:|registrant email:|admin name:|admin email:' "${CTMPDIR}/${d}.txt")
+        whois_registrant=$(grep -E -i 'registrant name:|registrant email:|admin name:|admin email:' "${CTMPDIR}/${d}.txt")
         echo "$whois_registrant"
       else
         echo
@@ -623,7 +623,7 @@ if [[ "$CHECKDOMAINS_DEBUG" != [yY] ]]; then
       echo "expiry: $whoisdate updated: $whoisupdate" | tr '\n\r' ' ' | tr -s ' '
       if [[ "$WHOIS_SHOWREGISTRANT" = [yY] ]]; then
         echo
-        whois_registrant=$(egrep -i 'registrant name:|registrant email:|admin name:|admin email:' "${CTMPDIR}/${d}.txt")
+        whois_registrant=$(grep -E -i 'registrant name:|registrant email:|admin name:|admin email:' "${CTMPDIR}/${d}.txt")
         echo "$whois_registrant"
       else
         echo

@@ -242,9 +242,9 @@ fi
 # Function to retrieve the latest NGINX version
 get_latest_nginx_version() {
   if [[ "$FREENGINX_INSTALL" = [yY] ]]; then
-    curl -${ipv_forceopt}sL --connect-timeout 10 https://freenginx.org/en/download.html 2>&1 | egrep -o "freenginx\-[0-9.]+\.tar[.a-z]*" | grep -v '.asc' | awk -F "freenginx-" '/.tar.gz$/ {print $2}' | sed -e 's|.tar.gz||g' | head -n1 2>&1 | tee "${CENTMINLOGDIR}/cmm-login-nginxver-check-debug_${DT}.log"
+    curl -${ipv_forceopt}sL --connect-timeout 10 https://freenginx.org/en/download.html 2>&1 | grep -Eo "freenginx\-[0-9.]+\.tar[.a-z]*" | grep -v '.asc' | awk -F "freenginx-" '/.tar.gz$/ {print $2}' | sed -e 's|.tar.gz||g' | head -n1 2>&1 | tee "${CENTMINLOGDIR}/cmm-login-nginxver-check-debug_${DT}.log"
   else
-    curl -${ipv_forceopt}sL --connect-timeout 10 https://nginx.org/en/download.html 2>&1 | egrep -o "nginx\-[0-9.]+\.tar[.a-z]*" | grep -v '.asc' | awk -F "nginx-" '/.tar.gz$/ {print $2}' | sed -e 's|.tar.gz||g' | head -n1 2>&1 | tee "${CENTMINLOGDIR}/cmm-login-nginxver-check-debug_${DT}.log"
+    curl -${ipv_forceopt}sL --connect-timeout 10 https://nginx.org/en/download.html 2>&1 | grep -Eo "nginx\-[0-9.]+\.tar[.a-z]*" | grep -v '.asc' | awk -F "nginx-" '/.tar.gz$/ {print $2}' | sed -e 's|.tar.gz||g' | head -n1 2>&1 | tee "${CENTMINLOGDIR}/cmm-login-nginxver-check-debug_${DT}.log"
   fi
 }
 
@@ -290,7 +290,7 @@ ngxver_checker() {
             LATEST_NGINXVERS=$(get_latest_nginx_version)
             echo "$LATEST_NGINXVERS" > "$CACHE_FILE"
         fi
-        # LATEST_NGINXSTABLEVER=$(curl -${ipv_forceopt}sL --connect-timeout 10 https://nginx.org/en/download.html 2>&1 | egrep -o "nginx\-[0-9.]+\.tar[.a-z]*" | grep -v '.asc' | awk -F "nginx-" '/.tar.gz$/ {print $2}' | sed -e 's|.tar.gz||g' | head -n2 | tail -1)
+        # LATEST_NGINXSTABLEVER=$(curl -${ipv_forceopt}sL --connect-timeout 10 https://nginx.org/en/download.html 2>&1 | grep -Eo "nginx\-[0-9.]+\.tar[.a-z]*" | grep -v '.asc' | awk -F "nginx-" '/.tar.gz$/ {print $2}' | sed -e 's|.tar.gz||g' | head -n2 | tail -1)
     fi
     CURRENT_NGINXVERS=$(nginx -v 2>&1 | awk '{print $3}' | awk -F '/' '{print $2}')
     if [[ "$CURRENT_NGINXVERS" != "$LATEST_NGINXVERS" ]]; then

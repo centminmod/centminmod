@@ -252,7 +252,7 @@ if [[ "$NGINX_QUIC_SUPPORT" = [yY] ]]; then
   fi
 fi
 
-    egrep '^UDP_|^TCP_|^DROP_NOLOG' /etc/csf/csf.conf
+    grep -E '^UDP_|^TCP_|^DROP_NOLOG' /etc/csf/csf.conf
     
     echo "Disabling CSF Testing mode (activates firewall)..."
     sed -i 's/TESTING = "1"/TESTING = "0"/g' /etc/csf/csf.conf

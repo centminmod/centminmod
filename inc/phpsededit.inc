@@ -149,17 +149,17 @@ phpsededit() {
         GETCPUNODE_COUNT=$(numactl --hardware | awk '/available: / {print $2}')
         if [[ "$GETCPUNODE_COUNT" -ge '2' ]]; then
           FREEMEM_NUMANODE=$(($(numactl --hardware | awk '/free:/ {print $4}' | sort -r | head -n1)*1024))
-          FREEMEMCACHED=$(egrep '^Buffers|^Cached' /proc/meminfo | awk '{summ+=$2} END {print summ}' | head -n1)
+          FREEMEMCACHED=$(grep -E '^Buffers|^Cached' /proc/meminfo | awk '{summ+=$2} END {print summ}' | head -n1)
           FREEMEM=$(($FREEMEM_NUMANODE+$FREEMEMCACHED))
         else
-          FREEMEM=$(egrep '^MemFree|^Buffers|^Cached' /proc/meminfo | awk '{summ+=$2} END {print summ}' | head -n1)
+          FREEMEM=$(grep -E '^MemFree|^Buffers|^Cached' /proc/meminfo | awk '{summ+=$2} END {print summ}' | head -n1)
         fi
       elif [[ -f /proc/user_beancounters ]]; then
         FREEMEMOPENVZ=$(grep '^MemFree' /proc/meminfo | awk '{summ+=$2} END {print summ}' | head -n1)
-        FREEMEMCACHED=$(egrep '^Buffers|^Cached' /proc/meminfo | awk '{summ+=$2} END {print summ}' | head -n1)
+        FREEMEMCACHED=$(grep -E '^Buffers|^Cached' /proc/meminfo | awk '{summ+=$2} END {print summ}' | head -n1)
         FREEMEM=$(($FREEMEMOPENVZ+$FREEMEMCACHED))
       else
-        FREEMEM=$(egrep '^MemFree|^Buffers|^Cached' /proc/meminfo | awk '{summ+=$2} END {print summ}' | head -n1)
+        FREEMEM=$(grep -E '^MemFree|^Buffers|^Cached' /proc/meminfo | awk '{summ+=$2} END {print summ}' | head -n1)
       fi
     elif [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' || "$CENTOS_TEN" -eq '10' ]]; then
       if [[ ! -f /proc/user_beancounters && -f /usr/bin/numactl ]]; then
@@ -168,14 +168,14 @@ phpsededit() {
         GETCPUNODE_COUNT=$(numactl --hardware | awk '/available: / {print $2}')
         if [[ "$GETCPUNODE_COUNT" -ge '2' ]]; then
           FREEMEM_NUMANODE=$(($(numactl --hardware | awk '/free:/ {print $4}' | sort -r | head -n1)*1024))
-          FREEMEMCACHED=$(egrep '^Buffers|^Cached' /proc/meminfo | awk '{summ+=$2} END {print summ}' | head -n1)
+          FREEMEMCACHED=$(grep -E '^Buffers|^Cached' /proc/meminfo | awk '{summ+=$2} END {print summ}' | head -n1)
           FREEMEM=$(($FREEMEM_NUMANODE+$FREEMEMCACHED))
         else
           FREEMEM=$(cat /proc/meminfo | grep MemAvailable | awk '{print $2}')
         fi
       elif [[ -f /proc/user_beancounters ]]; then
         FREEMEMOPENVZ=$(grep '^MemFree' /proc/meminfo | awk '{summ+=$2} END {print summ}' | head -n1)
-        FREEMEMCACHED=$(egrep '^Buffers|^Cached' /proc/meminfo | awk '{summ+=$2} END {print summ}' | head -n1)
+        FREEMEMCACHED=$(grep -E '^Buffers|^Cached' /proc/meminfo | awk '{summ+=$2} END {print summ}' | head -n1)
         FREEMEM=$(($FREEMEMOPENVZ+$FREEMEMCACHED))
       else
         FREEMEM=$(cat /proc/meminfo | grep MemAvailable | awk '{print $2}')

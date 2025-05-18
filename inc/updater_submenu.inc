@@ -243,7 +243,7 @@ if [[ -d "${SCRIPT_DIR}/.git" ]]; then
         echo
         # set windowMemory and packSizeLimit to workaround
         # failed repack runs
-        TOTALMEMSWAP=$(egrep '^MemTotal|^SwapTotal' /proc/meminfo | awk '{ t+=$2 } END { print t }')
+        TOTALMEMSWAP=$(grep -E '^MemTotal|^SwapTotal' /proc/meminfo | awk '{ t+=$2 } END { print t }')
         if [[ "$TOTALMEMSWAP" -le '131072' ]]; then
           git config pack.windowMemory "30m"
           git config pack.packSizeLimit "250m"
@@ -370,13 +370,13 @@ if [[ -d "${SCRIPT_DIR}/.git" ]]; then
   if [[ "$(echo $CMGIT | grep github)" ]]; then
     GITCURLSTATUS=$(curl -sI https://github.com/centminmod/centminmod/branches/active | grep 'HTTP\/' | awk '/200/ {print $2}')
     if [[ "$GITCURLSTATUS" = '200' ]]; then
-      CMBRANCHLIST=$(curl -s${ipv_forceopt} https://github.com/centminmod/centminmod/branches/active | grep -P '\/centminmod\/centminmod\/tree\/.*">' | grep -Po '(?<=href=")[^"]*(?=")' | sed 's|/centminmod/centminmod/tree/||g' | egrep -v '123.06stable|123.07stable|123.08beta03|123.08beta03-rtmp|123.08zerodown|123.09beta01-gcc|123.09beta01-dnf|123.09beta01-nchan|123.09beta01-el8.5' | uniq)
+      CMBRANCHLIST=$(curl -s${ipv_forceopt} https://github.com/centminmod/centminmod/branches/active | grep -P '\/centminmod\/centminmod\/tree\/.*">' | grep -Po '(?<=href=")[^"]*(?=")' | sed 's|/centminmod/centminmod/tree/||g' | grep -E -v '123.06stable|123.07stable|123.08beta03|123.08beta03-rtmp|123.08zerodown|123.09beta01-gcc|123.09beta01-dnf|123.09beta01-nchan|123.09beta01-el8.5' | uniq)
       echo "$CMBRANCHLIST"
     fi
   else
     GITCURLSTATUS=$(curl -sI https://gitlab.com/centminmod/centminmod/branches?sort=recently_updated | grep 'HTTP\/' | awk '/200/ {print $2}')
     if [[ "$GITCURLSTATUS" = '200' ]]; then
-    CMBRANCHLIST=$(curl -s${ipv_forceopt} https://gitlab.com/centminmod/centminmod/branches?sort=recently_updated | grep -P '\/centminmod\/centminmod\/tree\/.*">' | grep -Po '(?<=href=")[^"]*(?=")' | sed 's|/centminmod/centminmod/tree/||g' | egrep -v '123.06stable|123.07stable|123.08beta03|123.08beta03-rtmp|123.08zerodown|123.09beta01-gcc|123.09beta01-dnf|123.09beta01-nchan')
+    CMBRANCHLIST=$(curl -s${ipv_forceopt} https://gitlab.com/centminmod/centminmod/branches?sort=recently_updated | grep -P '\/centminmod\/centminmod\/tree\/.*">' | grep -Po '(?<=href=")[^"]*(?=")' | sed 's|/centminmod/centminmod/tree/||g' | grep -E -v '123.06stable|123.07stable|123.08beta03|123.08beta03-rtmp|123.08zerodown|123.09beta01-gcc|123.09beta01-dnf|123.09beta01-nchan')
     echo "$CMBRANCHLIST"
     fi
   fi
@@ -423,7 +423,7 @@ if [[ -d "${SCRIPT_DIR}/.git" ]]; then
         echo
         # set windowMemory and packSizeLimit to workaround
         # failed repack runs
-        TOTALMEMSWAP=$(egrep '^MemTotal|^SwapTotal' /proc/meminfo | awk '{ t+=$2 } END { print t }')
+        TOTALMEMSWAP=$(grep -E '^MemTotal|^SwapTotal' /proc/meminfo | awk '{ t+=$2 } END { print t }')
         if [[ "$TOTALMEMSWAP" -le '131072' ]]; then
           git config pack.windowMemory "30m"
           git config pack.packSizeLimit "250m"

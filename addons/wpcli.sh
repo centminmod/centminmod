@@ -51,7 +51,7 @@ fi
 
 # fallback mirror if official wp-cli download http status is not 200, use local
 # centminmod.com mirror download instead
-curl -${ipv_forceopt}Is --connect-timeout 30 --max-time 30 $WPCLILINK | grep 'HTTP\/' | grep '200' >/dev/null 2>&1
+curl -${ipv_forceopt}Is --connect-timeout 30 --max-time 30 $WPCLILINK | grep -qE '^HTTP/.* 200'
 WPCLI_CURLCHECK=$?
 if [[ "$WPCLI_CURLCHECK" != '0' ]]; then
 	WPCLILINK='${LOCALCENTMINMOD_MIRROR}/centminmodparts/wp-cli/wp-cli.phar'

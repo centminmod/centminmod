@@ -117,7 +117,7 @@ status() {
                 echo -e "/dev/${i/*\/}: $algorithm $ratio% (${orig}->${compr})" | column -t
         done
         echo -e "-------\nSWAP Stats:\n-------"
-        swapon -s | egrep 'zram|Filename' | column -t
+        swapon -s | grep -E 'zram|Filename' | column -t
         echo -e "-------\nMemory Stats:\n-------"
         free -m -l -t
 }

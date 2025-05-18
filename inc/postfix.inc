@@ -310,20 +310,20 @@ postconf -e smtpd_recipient_limit=2000
 postconf -e smtpd_recipient_overshoot_limit=2000
 postconf -e 'smtpd_banner = $myhostname ESMTP'
 
-postconf -d | egrep 'smtpd_tls_mandatory_protocols|smtpd_tls_protocols'
+postconf -d | grep -E 'smtpd_tls_mandatory_protocols|smtpd_tls_protocols'
 postconf -e 'smtpd_tls_mandatory_protocols = !SSLv2, !SSLv3'
 postconf -e 'smtpd_tls_protocols = !SSLv2 !SSLv3'
-postconf -n | egrep 'smtpd_tls_mandatory_protocols|smtpd_tls_protocols|smtpd_banner'
+postconf -n | grep -E 'smtpd_tls_mandatory_protocols|smtpd_tls_protocols|smtpd_banner'
 
-postconf -d | egrep 'smtp_tls_mandatory_protocols|smtp_tls_protocols'
+postconf -d | grep -E 'smtp_tls_mandatory_protocols|smtp_tls_protocols'
 postconf -e 'smtp_tls_mandatory_protocols = !SSLv2 !SSLv3'
 postconf -e 'smtp_tls_protocols = !SSLv2 !SSLv3'
-postconf -n | egrep 'smtp_tls_mandatory_protocols|smtp_tls_protocols'
+postconf -n | grep -E 'smtp_tls_mandatory_protocols|smtp_tls_protocols'
 
-postconf -d | egrep 'lmtp_tls_protocols|lmtp_tls_mandatory_protocols'
+postconf -d | grep -E 'lmtp_tls_protocols|lmtp_tls_mandatory_protocols'
 postconf -e 'lmtp_tls_mandatory_protocols = !SSLv2 !SSLv3'
 postconf -e 'lmtp_tls_protocols = !SSLv2 !SSLv3'
-postconf -n | egrep 'lmtp_tls_protocols|lmtp_tls_mandatory_protocols'
+postconf -n | grep -E 'lmtp_tls_protocols|lmtp_tls_mandatory_protocols'
 
 postconf -d | grep '^smtpd_tls_mandatory_exclude_ciphers'
 postconf -e 'smtpd_tls_mandatory_exclude_ciphers = aNULL, eNULL, EXPORT, DES, RC4, MD5, PSK, aECDH, EDH-DSS-DES-CBC3-SHA, EDH-RSA-DES-CDC3-SHA, KRB5-DE5, CBC3-SHA'

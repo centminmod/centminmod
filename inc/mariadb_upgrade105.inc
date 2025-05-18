@@ -1274,11 +1274,11 @@ if [[ "$(echo $?)" != '0' ]]; then
     tail -50 /var/log/mysqld.log
     echo
     echo "possible errors / warnings"
-    tail -50 /var/log/mysqld.log | egrep -v 'Dumping|dump' | egrep --color '\[ERROR\]|\[Warning\]'
+    tail -50 /var/log/mysqld.log | grep -E -v 'Dumping|dump' | grep -E --color '\[ERROR\]|\[Warning\]'
     echo
     echo "possible unknown or incompatible /etc/my.cnf set options below"
     echo "maybe need to comment out or remove these in /etc/my.cnf"
-    UNKNOWNOPT=$(tail -50 /var/log/mysqld.log | egrep -v 'Dumping|dump' | egrep --color '\[ERROR\]|\[Warning\]' | grep 'unknown option' | awk '{print $8}' | uniq | sed -e "s|'--||g" -e "s|'||g")
+    UNKNOWNOPT=$(tail -50 /var/log/mysqld.log | grep -E -v 'Dumping|dump' | grep -E --color '\[ERROR\]|\[Warning\]' | grep 'unknown option' | awk '{print $8}' | uniq | sed -e "s|'--||g" -e "s|'||g")
     for u in $UNKNOWNOPT; do
         echo "$u"
     done
@@ -1430,7 +1430,7 @@ cmservice mysql restart
 remove_anonymous_mysqlusers
 
 echo
-systemctl show mariadb --no-pager | egrep 'LimitNOFILE|NotifyAccess|OOM'
+systemctl show mariadb --no-pager | grep -E 'LimitNOFILE|NotifyAccess|OOM'
 echo
 if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_EIGHT" = '8' || "$CENTOS_NINE" = '9' ]] ; then
     cmchkconfig mariadb on

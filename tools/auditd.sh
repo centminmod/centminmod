@@ -276,7 +276,7 @@ fi
 auditd_customrules() {
     if [[ "$(grep -c 'custom auditd rules' "$AUDITRULE_PERMFILE")" -ne '2' ]]; then
         if [ -d /usr/local/nginx/conf/conf.d ]; then
-            VHOSTS=$(ls /usr/local/nginx/conf/conf.d | egrep 'ssl.conf|.conf' | egrep -v 'virtual.conf|^ssl.conf|demodomain.com.conf' |  sed -e 's/.ssl.conf//' -e 's/.conf//' | uniq)
+            VHOSTS=$(ls /usr/local/nginx/conf/conf.d | grep -E 'ssl.conf|.conf' | grep -E -v 'virtual.conf|^ssl.conf|demodomain.com.conf' |  sed -e 's/.ssl.conf//' -e 's/.conf//' | uniq)
         fi
 
 # echo '-b 320' >> "$AUDITRULE_PERMFILE"
@@ -455,7 +455,7 @@ if [ -f /etc/nsd/nsd.conf ]; then
 echo "-w /etc/nsd/nsd.conf -p wa -k nsdconf_changes" >> "$AUDITRULE_PERMFILE"
 fi
 if [ -d /usr/local/nginx/conf/conf.d ]; then
-    VHOSTS=$(ls /usr/local/nginx/conf/conf.d | egrep 'ssl.conf|.conf' | egrep -v 'virtual.conf|^ssl.conf|demodomain.com.conf' |  sed -e 's/.ssl.conf//' -e 's/.conf//' | uniq)
+    VHOSTS=$(ls /usr/local/nginx/conf/conf.d | grep -E 'ssl.conf|.conf' | grep -E -v 'virtual.conf|^ssl.conf|demodomain.com.conf' |  sed -e 's/.ssl.conf//' -e 's/.conf//' | uniq)
     for vhostname in $VHOSTS; do
         if [ -d "/home/nginx/domains/${vhostname}/log" ]; then
             echo "-a exit,always -F arch=b32 -S unlink -S unlinkat -S rmdir -F dir=/home/nginx/domains/${vhostname}/log -F success=0 -k ${vhostname}_logdeletion" >> "$AUDITRULE_PERMFILE"
@@ -827,7 +827,7 @@ add_rules() {
             AUDITRULE_PERMFILE='/etc/audit/rules.d/audit.rules'
         fi
         if [ -d /usr/local/nginx/conf/conf.d ]; then
-            VHOSTS=$(ls /usr/local/nginx/conf/conf.d | egrep 'ssl.conf|.conf' | egrep -v 'virtual.conf|^ssl.conf|demodomain.com.conf' |  sed -e 's/.ssl.conf//' -e 's/.conf//' | uniq)
+            VHOSTS=$(ls /usr/local/nginx/conf/conf.d | grep -E 'ssl.conf|.conf' | grep -E -v 'virtual.conf|^ssl.conf|demodomain.com.conf' |  sed -e 's/.ssl.conf//' -e 's/.conf//' | uniq)
             for vhostname in $VHOSTS; do
                 if [[ -d "/home/nginx/domains/${vhostname}/log" && -z "$(fgrep "/home/nginx/domains/${vhostname}/log" "$AUDITRULE_PERMFILE")" ]]; then
                     echo "-a exit,always -F arch=b32 -S unlink -S unlinkat -S rmdir -F dir=/home/nginx/domains/${vhostname}/log -F success=0 -k ${vhostname}_logdeletion" >> "$AUDITRULE_PERMFILE"

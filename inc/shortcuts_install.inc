@@ -55,21 +55,21 @@ fi # USEEDITOR
 if [[ "$CENTOS_SIX" = '6' ]]; then
     # replicate the default aliases for centos 7 on
     # centos 6 systems
-    if [[ ! "$(egrep -w 'egrep|fgrep|grep' /root/.bashrc)" ]]; then
-        echo "alias egrep='egrep --color=auto'" >> /root/.bashrc
-        echo "alias fgrep='fgrep --color=auto'" >> /root/.bashrc
+    if [[ ! "$(grep -E -w 'egrep|fgrep|grep' /root/.bashrc)" ]]; then
+        echo "alias egrep='grep -E --color=auto'" >> /root/.bashrc
+        echo "alias fgrep='grep -F --color=auto'" >> /root/.bashrc
         echo "alias grep='grep --color=auto'" >> /root/.bashrc
-        alias egrep='egrep --color=auto'
-        alias fgrep='fgrep --color=auto'
+        alias egrep='grep -E --color=auto'
+        alias fgrep='grep -F --color=auto'
         alias grep='grep --color=auto'
     fi
     if [[ "$(id -u)" -ne '0' ]]; then
-        if [[ ! "$(egrep -w 'egrep|fgrep|grep' $HOME/.bashrc)" ]]; then
-            echo "alias egrep='egrep --color=auto'" >> $HOME/.bashrc
-            echo "alias fgrep='fgrep --color=auto'" >> $HOME/.bashrc
+        if [[ ! "$(grep -E -w 'egrep|fgrep|grep' $HOME/.bashrc)" ]]; then
+            echo "alias egrep='grep -E --color=auto'" >> $HOME/.bashrc
+            echo "alias fgrep='grep -F --color=auto'" >> $HOME/.bashrc
             echo "alias grep='grep --color=auto'" >> $HOME/.bashrc
-            alias egrep='egrep --color=auto'
-            alias fgrep='fgrep --color=auto'
+            alias egrep='grep -E --color=auto'
+            alias fgrep='grep -F --color=auto'
             alias grep='grep --color=auto'
         fi
     fi

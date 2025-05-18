@@ -6,7 +6,7 @@ version_to_number() {
 
 get_latest_aws_lc_version() {
     local latest_version
-    latest_version=$(curl -s "https://api.github.com/repos/aws/aws-lc/tags?page=1&per_page=500" | jq -r '.[].name' | egrep -iv 'alpha|beta|rc|fips' | head -n1)
+    latest_version=$(curl -s "https://api.github.com/repos/aws/aws-lc/tags?page=1&per_page=500" | jq -r '.[].name' | grep -E -iv 'alpha|beta|rc|fips' | head -n1)
     if [[ -n "$latest_version" ]]; then
         echo "${latest_version#v}"
     else
@@ -17,7 +17,7 @@ get_latest_aws_lc_version() {
 get_latest_openssl_version() {
     local branch=$1
     local latest_version
-    latest_version=$(curl -s "https://api.github.com/repos/openssl/openssl/tags?page=1&per_page=500" | jq -r '.[].name' | egrep -iv 'alpha|beta|rc|fips' | grep "^openssl-${branch}" | head -n1)
+    latest_version=$(curl -s "https://api.github.com/repos/openssl/openssl/tags?page=1&per_page=500" | jq -r '.[].name' | grep -E -iv 'alpha|beta|rc|fips' | grep "^openssl-${branch}" | head -n1)
     if [[ -n "$latest_version" ]]; then
         echo "${latest_version#openssl-}"
     else
@@ -35,7 +35,7 @@ get_latest_openssl_version() {
 get_latest_libressl_version() {
     local branch=$1
     local latest_version
-    latest_version=$(curl -s "https://api.github.com/repos/libressl/portable/tags?page=1&per_page=500" | jq -r '.[].name' | egrep -iv 'alpha|beta|rc|fips' | grep "^v${branch}" | head -n1)
+    latest_version=$(curl -s "https://api.github.com/repos/libressl/portable/tags?page=1&per_page=500" | jq -r '.[].name' | grep -E -iv 'alpha|beta|rc|fips' | grep "^v${branch}" | head -n1)
     if [[ -n "$latest_version" ]]; then
         echo "${latest_version#v}"
     else

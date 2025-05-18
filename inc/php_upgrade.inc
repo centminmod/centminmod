@@ -564,7 +564,7 @@ funct_centos6check
 
     cd "$DIR_TMP"
 
-if [ "$(rpm -qa | grep '^php*' | egrep -v 'phonon-backend-gstreamer|php56|php70|php71|php72|php73|php74|php80|php81|php82|php83|php84')" ]; then
+if [ "$(rpm -qa | grep '^php*' | grep -E -v 'phonon-backend-gstreamer|php56|php70|php71|php72|php73|php74|php80|php81|php82|php83|php84')" ]; then
     # IMPORTANT Erase any PHP installations first, otherwise conflicts may arise
     echo "yum -y erase php*"
     yum -y erase php*
@@ -576,9 +576,9 @@ fi
             figlet -ckf standard "PHP: Download"
         fi
     
-        curl -${ipv_forceopt}Is --connect-timeout 30 --max-time 30 "${PHP_MIRRORURL}/distributions/php-${phpver}.tar.${PHPEXTSION}" | grep 'HTTP\/' | egrep '404|503'
+        curl -${ipv_forceopt}Is --connect-timeout 30 --max-time 30 "${PHP_MIRRORURL}/distributions/php-${phpver}.tar.${PHPEXTSION}" | grep 'HTTP\/' | grep -E '404|503'
         PHPGEO_CURLCHECK=$?
-        curl -${ipv_forceopt}Is --connect-timeout 30 --max-time 30 "${PHP_MIRRORURL}/distributions/php-${phpver}.tar.${PHPEXTSION}" | grep 'HTTP\/' | egrep '200|301|302'
+        curl -${ipv_forceopt}Is --connect-timeout 30 --max-time 30 "${PHP_MIRRORURL}/distributions/php-${phpver}.tar.${PHPEXTSION}" | grep 'HTTP\/' | grep -E '200|301|302'
         PHPGEO_CURLCHECKOK=$?
         # check if download url is 404 not found but also 
         # check for valid status header 200, 301 or 302
@@ -1439,7 +1439,7 @@ if [[ "$zendopcacheon" = [yY] && "$OLD_OPCACHEPHP" != [yY] ]]; then
 fi
 
 # notes for users if PHP 7.0 detected
-php-config --version | cut -d . -f1,2 | egrep -w '7.0|7.1|7.2|7.3|7.4|8.0|8.1|8.2|8.3|8.4'
+php-config --version | cut -d . -f1,2 | grep -Ew '7.0|7.1|7.2|7.3|7.4|8.0|8.1|8.2|8.3|8.4'
 PHPSEVEN_CHECKVER=$?
 echo "$PHPSEVEN_CHECKVER"
 

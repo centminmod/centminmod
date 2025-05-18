@@ -90,7 +90,7 @@ for domain in $(ls $TOPLEVEL_DIR); do
           # only generate nginx deny all rules for .htaccess directory paths which are not already returning
           # 403 permission denied http status codes (also include check for 404)
           # 
-          # if [[ "$(curl -sI ${URL_WEB}/ | grep 'HTTP\/' | egrep -o '403|404' >/dev/null 2>&1; echo $?)" != '0' ]]; then
+          # if [[ "$(curl -sI ${URL_WEB}/ | grep 'HTTP\/' | grep -Eo '403|404' >/dev/null 2>&1; echo $?)" != '0' ]]; then
             if check_location_block "$domain" "$PROTECTDIR_PATH" && [[ "$(echo $PROTECTDIR_PATH | grep 'akismet' )" ]]; then
               # proper akismet secure lock down
 echo -e "# $PROTECTDIR\n
@@ -126,14 +126,14 @@ location $PROTECTDIR_PATH/ {
   deny all;
 }
 "
-            elif check_location_block "$domain" "$PROTECTDIR_PATH" && [[ "$(cat "${PROTECTDIR}/.htaccess" | egrep 'ipb-protection|Content-Disposition attachment' | grep 'Header set')" ]]; then
+            elif check_location_block "$domain" "$PROTECTDIR_PATH" && [[ "$(cat "${PROTECTDIR}/.htaccess" | grep -E 'ipb-protection|Content-Disposition attachment' | grep 'Header set')" ]]; then
 echo -e "# https://community.centminmod.com/posts/33989/\n# $PROTECTDIR\n
 location $PROTECTDIR_PATH/ {
   location ~ ^$PROTECTDIR_PATH/(.*)\.(php|cgi|pl|php3|php4|php5|php6|phtml|shtml)\$ { allow 127.0.0.1; deny all; }
   location ~ ^$PROTECTDIR_PATH/(.*)\.(ipb)\$ { add_header 'Content-Disposition' "attachment"; }
 }
 "
-            elif check_location_block "$domain" "$PROTECTDIR_PATH" && [[ "$(cat "${PROTECTDIR}/.htaccess" | egrep 'ipb-protection')" ]]; then
+            elif check_location_block "$domain" "$PROTECTDIR_PATH" && [[ "$(cat "${PROTECTDIR}/.htaccess" | grep -E 'ipb-protection')" ]]; then
 echo -e "# https://community.centminmod.com/posts/35382/\n# $PROTECTDIR\n
 location $PROTECTDIR_PATH/ {
   location ~ ^$PROTECTDIR_PATH/(.*)\.(php|cgi|pl|php3|php4|php5|php6|phtml|shtml)\$ { allow 127.0.0.1; deny all; }
@@ -148,7 +148,7 @@ location $PROTECTDIR_PATH/ {
   location ~ ^$PROTECTDIR_PATH/(.+/)?(.+)\.(php|cgi|pl|php3|php4|php5|php6|phtml|shtml)\$ { allow 127.0.0.1; deny all; }
 }
 "
-            elif check_location_block "$domain" "$PROTECTDIR_PATH" && [[ "$(cat "${PROTECTDIR}/.htaccess" | egrep -i 'cloudflare')" ]]; then
+            elif check_location_block "$domain" "$PROTECTDIR_PATH" && [[ "$(cat "${PROTECTDIR}/.htaccess" | grep -E -i 'cloudflare')" ]]; then
               echo -e "# Cloudflare bypass $PROTECTDIR\n"
             else
               echo -e "# $PROTECTDIR\nlocation ~* ^$PROTECTDIR_PATH/ { allow 127.0.0.1; deny all; }"

@@ -672,9 +672,9 @@ if [[ "$PHP_INSTALL" = [yY] ]];
 then
 
     phpgeolocation
-    curl -${ipv_forceopt}Is --connect-timeout 30 --max-time 30 "${PHP_MIRRORURL}/distributions/php-${phpver}.tar.${PHPEXTSION}" | grep 'HTTP\/' | egrep '404|503'
+    curl -${ipv_forceopt}Is --connect-timeout 30 --max-time 30 "${PHP_MIRRORURL}/distributions/php-${phpver}.tar.${PHPEXTSION}" | grep 'HTTP\/' | grep -E '404|503'
     PHPGEO_CURLCHECK=$?
-    curl -${ipv_forceopt}Is --connect-timeout 30 --max-time 30 "${PHP_MIRRORURL}/distributions/php-${PHP_VERSION}.tar.${PHPEXTSION}" | grep 'HTTP\/' | egrep '200|301|302'
+    curl -${ipv_forceopt}Is --connect-timeout 30 --max-time 30 "${PHP_MIRRORURL}/distributions/php-${PHP_VERSION}.tar.${PHPEXTSION}" | grep 'HTTP\/' | grep -E '200|301|302'
     PHPGEO_CURLCHECKOK=$?
     # check if download url is 404 not found but also 
     # check for valid status header 200, 301 or 302
@@ -2328,9 +2328,9 @@ echo ""
 mailparsephpexttarball() {
 
   if [[ "$INITIALINSTALL" != [yY] ]]; then
-      php-config --version | cut -d . -f1,2 | egrep -w '7.0|7.1|7.2|7.3|7.4|8.0|8.1|8.2|8.3|8.4'
+      php-config --version | cut -d . -f1,2 | grep -Ew '7.0|7.1|7.2|7.3|7.4|8.0|8.1|8.2|8.3|8.4'
   else
-      echo $PHP_VERSION | cut -d . -f1,2 | egrep -w '7.0|7.1|7.2|7.3|7.4|8.0|8.1|8.2|8.3|8.4'
+      echo $PHP_VERSION | cut -d . -f1,2 | grep -Ew '7.0|7.1|7.2|7.3|7.4|8.0|8.1|8.2|8.3|8.4'
   fi
   PHPSEVEN_CHECKVER=$?
   echo $PHPSEVEN_CHECKVER
@@ -4224,9 +4224,9 @@ yuminstall
 questions
 
 if [[ "$INITIALINSTALL" != [yY] ]]; then
-    php-config --version | cut -d . -f1,2 | egrep -w '7.0|7.1|7.2|7.3|7.4|8.0|8.1|8.2|8.3|8.4'
+    php-config --version | cut -d . -f1,2 | grep -Ew '7.0|7.1|7.2|7.3|7.4|8.0|8.1|8.2|8.3|8.4'
 else
-    echo "$PHP_VERSION" | cut -d . -f1,2 | egrep -w '7.0|7.1|7.2|7.3|7.4|8.0|8.1|8.2|8.3|8.4'
+    echo "$PHP_VERSION" | cut -d . -f1,2 | grep -Ew '7.0|7.1|7.2|7.3|7.4|8.0|8.1|8.2|8.3|8.4'
 fi
 PHPSEVEN_CHECKVER=$?
 echo "$PHPSEVEN_CHECKVER"

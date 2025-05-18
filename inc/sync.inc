@@ -91,7 +91,7 @@ dropbox_generate() {
     fi
     dropbox_send "${CENTMINLOGDIR}/$ngxupgrade_newfile"
     # generate sanitized nginx_upgrade log renamed as pcre2log.log for PCRE2 tests
-    egrep -v '/usr/local/nginx/conf/conf.d|Copyright (C)|This is free software|MERCHANTABILITY' ${CENTMINLOGDIR}/$(ls -rt ${CENTMINLOGDIR}/ | grep nginx_upgrade | grep $DT | tail -1) | sed -e "s|$HOSTNAME|hostname|g" > "${CENTMINLOGDIR}/public-nginx-pcre2log-$DT.log"
+    grep -E -v '/usr/local/nginx/conf/conf.d|Copyright (C)|This is free software|MERCHANTABILITY' ${CENTMINLOGDIR}/$(ls -rt ${CENTMINLOGDIR}/ | grep nginx_upgrade | grep $DT | tail -1) | sed -e "s|$HOSTNAME|hostname|g" > "${CENTMINLOGDIR}/public-nginx-pcre2log-$DT.log"
     create_pcretwo_log_err=$?
     # compress santized nginx_upgrade log renamed as public-nginx-pcre2log-$DT.log
     pigz -9kfq "${CENTMINLOGDIR}/public-nginx-pcre2log-$DT.log"
