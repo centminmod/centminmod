@@ -14,6 +14,9 @@ check_install_locale() {
       el8|el9)
           yum install -y glibc-langpack-en
           ;;
+      el10)
+          yum install -y glibc-langpack-en
+          ;;
     esac
   fi
 }

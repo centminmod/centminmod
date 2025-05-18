@@ -162,7 +162,7 @@ if [ ! -d /var/run/php-fpm/ ]; then
 fi
 
 CENTOS_ALPHATEST='y'
-TESTEDCENTOSVER='9.9'
+TESTEDCENTOSVER='10.0'
 CENTOSVER=$(awk '{ print $3 }' /etc/redhat-release)
 KERNEL_NUMERICVER=$(uname -r | awk -F. '{ printf("%d%03d%03d%03d\n", $1,$2,$3,$4); }')
 
