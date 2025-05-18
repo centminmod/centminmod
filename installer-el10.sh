@@ -1816,11 +1816,16 @@ source_wgetinstall() {
     export CFLAGS="-O2 -g -pipe -Wall -Wp,-D_FORTIFY_SOURCE=2 -fexceptions -fstack-protector-strong --param=ssp-buffer-size=4 -grecord-gcc-switches -mtune=generic"
     export PCRE_CFLAGS="-I /usr/local/include"
     export PCRE_LIBS="-L /usr/local/lib -lpcre"
+    if [[ "$CENTOS_TEN" -eq '10' ]]; then
+      CACERT_BUNDLE_PATH='ca_certificate=/etc/pki/ca-trust/extracted/pem/tls-ca-bundle.pem'
+    else
+      CACERT_BUNDLE_PATH='ca_certificate=/etc/pki/tls/certs/ca-bundle.crt'
+    fi
     if [ -f /root/.wgetrc ]; then
       \cp -fp /root/.wgetrc /root/.wgetrc-bak
-      echo "ca_certificate=/etc/pki/tls/certs/ca-bundle.crt" > /root/.wgetrc
+      echo "$CACERT_BUNDLE_PATH" > /root/.wgetrc
     else
-      echo "ca_certificate=/etc/pki/tls/certs/ca-bundle.crt" > /root/.wgetrc
+      echo "$CACERT_BUNDLE_PATH" > /root/.wgetrc
     fi
   fi
   # ./configure --with-ssl=openssl PCRE_CFLAGS="-I /usr/local/include" PCRE_LIBS="-L /usr/local/lib -lpcre"

@@ -68,11 +68,17 @@ compile_custom_curl() {
     tar -xf "${SRC_DIR}/${CURL_SRC_FILE}" -C "${SRC_DIR}"
     cd "${SRC_DIR}/curl-${CURL_VER}" || return 1
 
+    if [[ "$CENTOS_TEN" -eq '10' ]]; then
+      PHP_CACERT_BUNDLE_PATH='/etc/pki/ca-trust/extracted/pem/tls-ca-bundle.pem'
+    else
+      PHP_CACERT_BUNDLE_PATH='/etc/pki/tls/certs/ca-bundle.crt'
+    fi
+
     ./configure \
         --prefix="${CURL_PREFIX}" \
         --disable-static \
         ${OPENSSL_CFG} \
-        --with-ca-bundle=/etc/pki/tls/certs/ca-bundle.crt \
+        --with-ca-bundle=${PHP_CACERT_BUNDLE_PATH} \
         || { echo "Configure failed"; return 1; }
 
     make${MAKETHREADS_PHP} && make install || { echo "Build/install failed"; return 1; }
