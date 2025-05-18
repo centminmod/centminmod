@@ -1,5 +1,5 @@
 yumlog_check() {
-  if [[ "$CENTOS_EIGHT" = '8' || "$CENTOS_NINE" = '9' ]]; then
+  if [[ "$CENTOS_EIGHT" = '8' || "$CENTOS_NINE" = '9' || "$CENTOS_TEN" = '10' ]]; then
     YUMLOG_FILE='/var/log/dnf.log'
   else
     YUMLOG_FILE='/var/log/yum.log'
@@ -50,21 +50,28 @@ if [[ "$INITIALINSTALL" = [yY] ]]; then
     if [[ "$VERCOMPARE" = "1"  ]]; then
     
      echo "-----------------------------------------------------"
-            if [[ "$ALMALINUX_EIGHT" -eq '8' || "$ALMALINUX_NINE" -eq '9' ]]; then
+            if [[ "$ALMALINUX_TEN" -eq '10' ]]; then
               echo "Detected AlmaLinux OS"
               echo
-              echo "AlmaLinux 8/9 is currently not supported by Centmin Mod, please use CentOS 7.9+"
+              echo "AlmaLinux 10 is currently not supported by Centmin Mod, please use AlmaLinux/Rocky Linux 8/9"
               echo
-            elif [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]]; then
+            elif [[ "$ALMALINUX_EIGHT" -eq '8' || "$ALMALINUX_NINE" -eq '9' ]]; then
+              echo "Detected AlmaLinux OS"
+              echo
+              echo "AlmaLinux 8/9 is currently not supported by Centmin Mod, please use AlmaLinux/Rocky Linux 8/9"
+              echo
+            elif [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' || "$CENTOS_TEN" -eq '10' ]]; then
               echo "Detected CentOS version greater than > CentOS $TESTEDCENTOSVER"
               echo "CentOS $TESTEDCENTOSVER is the latest tested version for Centmin Mod"
               echo "No guarantee 100% working install with your CentOS $CENTOSVER"
               echo
-              echo "CentOS 8 is currently not supported by Centmin Mod, please use CentOS 7.9+"
+              echo "CentOS 8 is currently not supported by Centmin Mod, please use AlmaLinux/Rocky Linux 8/9"
               echo
             fi
      echo "-----------------------------------------------------"
-            if [[ "$CENTOS_ALPHATEST" = [yY] && "$CENTOS_NINE" -eq '9' ]]; then
+            if [[ "$CENTOS_ALPHATEST" = [yY] && "$CENTOS_TEN" -eq '10' ]]; then
+              centoscheckcont='y'
+            elif [[ "$CENTOS_ALPHATEST" = [yY] && "$CENTOS_NINE" -eq '9' ]]; then
               centoscheckcont='y'
             elif [[ "$CENTOS_ALPHATEST" = [yY] && "$CENTOS_EIGHT" -eq '8' ]]; then
               centoscheckcont='y'
