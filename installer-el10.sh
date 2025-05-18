@@ -390,7 +390,7 @@ if [[ "$(rpm -qa bc | grep -o 'bc')" != 'bc' ]]; then
 fi
 if [[ ! -f /.dockerenv ]]; then
   if [[ ! -f /usr/bin/expr ]]; then
-    yum -y -q install coreutils
+    yum -y -q install coreutils --allowerasing
   fi
 else
   if rpm -q coreutils-single >/dev/null 2>&1; then
@@ -403,7 +403,7 @@ else
         echo "coreutils-single package installed successfully."
       else
         echo "Failed to install coreutils-single package. Attempting to install coreutils package..."
-        if yum -y -q install coreutils >/dev/null 2>&1; then
+        if yum -y -q install coreutils --allowerasing >/dev/null 2>&1; then
           echo "coreutils package installed successfully."
         else
           echo "Failed to install coreutils package."
