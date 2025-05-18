@@ -586,6 +586,9 @@ starttime=$(TZ=UTC date +%s.%N)
     elif [[ "$CENTOS_NINE" -eq '9' ]]; then
         echo "EL9 install"
         yum -y install ruby rubygem rubygem-bundler ruby-libs --skip-broken
+    elif [[ "$CENTOS_TEN" -eq '10' ]]; then
+        echo "EL10 install"
+        yum -y install ruby rubygem rubygem-bundler ruby-libs --skip-broken
     fi
 } 2>&1 | tee ${CENTMINLOGDIR}/centminmod_ruby_install_${DT}.log
 

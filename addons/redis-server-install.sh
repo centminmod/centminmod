@@ -211,7 +211,7 @@ fi
 CENTOSVER_NUMERIC=$(echo $CENTOSVER | sed -e 's|\.||g')
 
 redisupgrade_el() {
-  if [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]]; then
+  if [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' || "$CENTOS_TEN" -eq '10' ]]; then
     # Check the current version of Redis
     current_version=$(dnf module list redis --enabled | grep remi-6.2 | awk '{print $2}')
 
@@ -247,7 +247,7 @@ redisinstall() {
   if [[ -f /etc/yum/pluginconf.d/priorities.conf && "$(grep 'enabled = 1' /etc/yum/pluginconf.d/priorities.conf)" ]]; then
     yum -y install redis --enablerepo=remi --disableplugin=priorities
   else
-    if [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]]; then
+    if [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' || "$CENTOS_TEN" -eq '10' ]]; then
       # Check the current version of Redis
       current_version=$(dnf module list redis --enabled | grep remi-6.2 | awk '{print $2}')
       if [[ "$current_version" == "remi-6.2" ]]; then
@@ -300,7 +300,7 @@ ExecStart=/bin/sh -c "/usr/bin/echo 'never' > /sys/kernel/mm/transparent_hugepag
 WantedBy=multi-user.target
 EOF
 
-if [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]]; then
+if [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' || "$CENTOS_TEN" -eq '10' ]]; then
 cat > "/etc/systemd/system/redis.service.d/failure-restart.conf" <<TDG
 [Unit]
 StartLimitIntervalSec=30

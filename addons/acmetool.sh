@@ -697,6 +697,8 @@ getuseragent() {
     LE_OSVER=el8
   elif [[ "$CENTOS_NINE" -eq '9' ]]; then
     LE_OSVER=el9
+  elif [[ "$CENTOS_TEN" -eq '10' ]]; then
+    LE_OSVER=el10
   fi
   if [[ "$_dnsagent" != 'dns' ]]; then
     LE_USERAGENT="centminmod-$LE_OSVER-acmesh-webroot"

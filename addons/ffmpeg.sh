@@ -625,6 +625,12 @@ if [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]]; then
     export CXXFLAGS="${CFLAGS}"
   fi
 fi
+if [[ "$CENTOS_TEN" -eq '10' ]]; then
+  if [[ "$GCC_FOURTEEN" = [yY] && "$(uname -m)" = 'x86_64' && -f /usr/bin/gcc && -f /usr/bin/g++ ]]; then
+    export CFLAGS="${OPT_LEVEL} -march=${MARCH_TARGET} -Wimplicit-fallthrough=0 -Wno-pedantic"
+    export CXXFLAGS="${CFLAGS}"
+  fi
+fi
 
 do_continue() {
   # echo
@@ -659,7 +665,17 @@ install_nasm() {
       yum -y remove nasm --disableplugin=priorities
       hash -r
     fi
-    if [[ "$CENTOS_NINE" -eq '9' ]]; then
+    if [[ "$CENTOS_TEN" -eq '10' ]]; then
+        yum -y install autoconf271
+        export PATH=/opt/rh/autoconf271/bin:$PATH
+        export AUTOCONF=/opt/rh/autoconf271/bin/autoconf
+        export AUTOHEADER=/opt/rh/autoconf271/bin/autoheader
+        export AUTOM4TE=/opt/rh/autoconf271/bin/autom4te
+        export AUTORECONF=/opt/rh/autoconf271/bin/autoreconf
+        export AUTOSCAN=/opt/rh/autoconf271/bin/autoscan
+        export AUTOUPDATE=/opt/rh/autoconf271/bin/autoupdate
+        export IFNAMES=/opt/rh/autoconf271/bin/ifnames
+    elif [[ "$CENTOS_NINE" -eq '9' ]]; then
         yum -y install autoconf271
         export PATH=/opt/rh/autoconf271/bin:$PATH
         export AUTOCONF=/opt/rh/autoconf271/bin/autoconf
@@ -771,7 +787,9 @@ install_yasm
 if [[ "$ENABLE_FONTCONFIG" = [yY] ]]; then
   install_freetype
 fi
-if [[ "$CENTOS_NINE" -eq '9' && "$ENABLE_ZIMG" = [yY] ]]; then
+if [[ "$CENTOS_TEN" -eq '10' && "$ENABLE_ZIMG" = [yY] ]]; then
+  yum -y install zimg zimg-devel
+elif [[ "$CENTOS_NINE" -eq '9' && "$ENABLE_ZIMG" = [yY] ]]; then
   yum -y install zimg zimg-devel
 elif [[ "$CENTOS_EIGHT" -eq '8' && "$ENABLE_ZIMG" = [yY] ]]; then
   yum -y install zimg zimg-devel

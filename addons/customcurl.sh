@@ -215,7 +215,7 @@ return
 ###########################################
 # functions
 #############
-if [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]] && [[ "$CUSTOM_CURL_EL89" != [yY] ]]; then
+if [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' || "$CENTOS_TEN" -eq '10' ]] && [[ "$CUSTOM_CURL_EL89" != [yY] ]]; then
   echo "$0 only for CentOS 7"
   echo "aborted..."
   exit 1

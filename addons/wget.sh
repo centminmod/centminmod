@@ -32,6 +32,7 @@ WGET_VERSION='1.20.3'
 WGET_VERSION_SEVEN='1.20.3'
 WGET_VERSION_EIGHT='1.21.4'
 WGET_VERSION_NINE='1.21.4'
+WGET_VERSION_TEN='1.21.4'
 WGET_FILENAME="wget-${WGET_VERSION}.tar.gz"
 WGET_LINK="${LOCALCENTMINMOD_MIRROR}/centminmodparts/wget/${WGET_FILENAME}"
 WGET_LINKLOCAL="${LOCALCENTMINMOD_MIRROR}/centminmodparts/wget/${WGET_FILENAME}"
@@ -183,8 +184,20 @@ fi
 
 CENTOSVER_NUMERIC=$(echo $CENTOSVER | sed -e 's|\.||g')
 
-if [[ "$CENTOS_ALPHATEST" != [yY] && "$CENTOS_EIGHT" -eq '8' ]] || [[ "$CENTOS_ALPHATEST" != [yY] && "$CENTOS_NINE" -eq '9' ]]; then
-  if [[ "$ORACLELINUX_NINE" -eq '9' ]]; then
+if [[ "$CENTOS_ALPHATEST" != [yY] && "$CENTOS_EIGHT" -eq '8' ]] || [[ "$CENTOS_ALPHATEST" != [yY] && "$CENTOS_NINE" -eq '9' ]] || [[ "$CENTOS_ALPHATEST" != [yY] && "$CENTOS_TEN" -eq '10' ]]; then
+  if [[ "$ORACLELINUX_TEN" -eq '10' ]]; then
+    label_os=OracleLinux
+    label_os_ver=10
+    label_prefix='https://community.centminmod.com/forums/31/'
+  elif [[ "$ROCKYLINUX_TEN" -eq '10' ]]; then
+    label_os=RockyLinux
+    label_os_ver=10
+    label_prefix='https://community.centminmod.com/forums/31/?prefix_id=84'
+  elif [[ "$ALMALINUX_TEN" -eq '10' ]]; then
+    label_os=AlmaLinux
+    label_os_ver=10
+    label_prefix='https://community.centminmod.com/forums/31/?prefix_id=83'
+  elif [[ "$ORACLELINUX_NINE" -eq '9' ]]; then
     label_os=OracleLinux
     label_os_ver=9
     label_prefix='https://community.centminmod.com/forums/31/'
@@ -208,6 +221,10 @@ if [[ "$CENTOS_ALPHATEST" != [yY] && "$CENTOS_EIGHT" -eq '8' ]] || [[ "$CENTOS_A
     label_os=AlmaLinux
     label_os_ver=8
     label_prefix='https://community.centminmod.com/forums/31/?prefix_id=83'
+  elif [[ "$CENTOS_TEN" = '10' ]]; then
+    label_os_ver=10
+    label_os=CentOS
+    label_prefix='https://community.centminmod.com/forums/31/?prefix_id=81'
   elif [[ "$CENTOS_NINE" = '9' ]]; then
     label_os_ver=9
     label_os=CentOS
@@ -241,6 +258,12 @@ fi
 if [[ "$CENTOS_NINE" -eq '9' ]]; then
   echo "EL${label_os_ver} Install Dependencies Start..."
   WGET_VERSION=$WGET_VERSION_NINE
+  WGET_FILENAME="wget-${WGET_VERSION}.tar.gz"
+  WGET_LINK="${LOCALCENTMINMOD_MIRROR}/centminmodparts/wget/${WGET_FILENAME}"
+fi
+if [[ "$CENTOS_TEN" -eq '10' ]]; then
+  echo "EL${label_os_ver} Install Dependencies Start..."
+  WGET_VERSION=$WGET_VERSION_TEN
   WGET_FILENAME="wget-${WGET_VERSION}.tar.gz"
   WGET_LINK="${LOCALCENTMINMOD_MIRROR}/centminmodparts/wget/${WGET_FILENAME}"
 fi
@@ -905,24 +928,24 @@ source_wgetinstall() {
   if [[ "$WGET_REBUILD_ALWAYS" = [yY] || "$(/usr/local/bin/wget -V | head -n1 | awk '{print $3}' | grep -q ${WGET_VERSION} >/dev/null 2>&1; echo $?)" != '0' ]]; then
   WGET_FILENAME="wget-${WGET_VERSION}.tar.gz"
   WGET_LINK="${LOCALCENTMINMOD_MIRROR}/centminmodparts/wget/${WGET_FILENAME}"
-  if [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]]; then
+  if [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' || "$CENTOS_TEN" -eq '10' ]]; then
     libmetalink_install
     export METALINK_CFLAGS='-I/usr/local/include'
     export METALINK_LIBS='-L/usr/local/lib -lmetalink'
   fi
-  if [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]] && [ ! -f /usr/include/idn2.h ]; then
+  if [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' || "$CENTOS_TEN" -eq '10' ]] && [ ! -f /usr/include/idn2.h ]; then
     yum -q -y install libidn2-devel libidn2
   fi
-  if [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]] && [ ! -f /usr/include/libpsl.h ]; then
+  if [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' || "$CENTOS_TEN" -eq '10' ]] && [ ! -f /usr/include/libpsl.h ]; then
     yum -q -y install libpsl libpsl-devel
   fi
-  if [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]] && [ ! -f /usr/include/gpgme.h ]; then
+  if [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' || "$CENTOS_TEN" -eq '10' ]] && [ ! -f /usr/include/gpgme.h ]; then
     yum -q -y install gpgme gpgme-devel
   fi
-  if [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]] && [ ! -f /usr/include/gnutls/gnutls.h ]; then
+  if [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' || "$CENTOS_TEN" -eq '10' ]] && [ ! -f /usr/include/gnutls/gnutls.h ]; then
     yum -q -y install gnutls gnutls-devel
   fi
-  if [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]] && [ ! -f /usr/include/libassuan2/assuan.h ]; then
+  if [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' || "$CENTOS_TEN" -eq '10' ]] && [ ! -f /usr/include/libassuan2/assuan.h ]; then
     yum -q -y install libassuan-devel
   fi
   cd "$DIR_TMP"
@@ -966,7 +989,14 @@ source_wgetinstall() {
     make clean
   fi
   patch_wget
-  if [[ "$CENTOS_NINE" = '9' && "$(uname -m)" = 'x86_64' ]]; then
+  if [[ "$CENTOS_TEN" = '10' && "$(uname -m)" = 'x86_64' ]]; then
+    export CFLAGS="-O2 -g -pipe -Wall -Wp,-D_FORTIFY_SOURCE=2 -Wp,-D_GLIBCXX_ASSERTIONS -fexceptions -fstack-protector-strong -fasynchronous-unwind-tables -fstack-clash-protection -fcf-protection -grecord-gcc-switches -m64 -mtune=generic"
+    export PCRE_CFLAGS="-I /usr/local/include"
+    export PCRE_LIBS="-L /usr/local/lib -lpcre"
+    # ensure wget.sh installer utilises system openssl
+    export OPENSSL_CFLAGS="-I /usr/include"
+    export OPENSSL_LIBS="-L /usr/lib64 -lssl -lcrypto"
+  elif [[ "$CENTOS_NINE" = '9' && "$(uname -m)" = 'x86_64' ]]; then
     export CFLAGS="-O2 -g -pipe -Wall -Wp,-D_FORTIFY_SOURCE=2 -Wp,-D_GLIBCXX_ASSERTIONS -fexceptions -fstack-protector-strong -fasynchronous-unwind-tables -fstack-clash-protection -fcf-protection -grecord-gcc-switches -m64 -mtune=generic"
     export PCRE_CFLAGS="-I /usr/local/include"
     export PCRE_LIBS="-L /usr/local/lib -lpcre"
@@ -999,7 +1029,9 @@ source_wgetinstall() {
     fi
   fi
   # ./configure --with-ssl=openssl PCRE_CFLAGS="-I /usr/local/include" PCRE_LIBS="-L /usr/local/lib -lpcre"
-  if [[ "$CENTOS_NINE" = '9' && "$WGET_OPENSSL" = [yY] ]]; then
+  if [[ "$CENTOS_TEN" = '10' && "$WGET_OPENSSL" = [yY] ]]; then
+    ./configure --with-ssl=openssl --with-metalink
+  elif [[ "$CENTOS_NINE" = '9' && "$WGET_OPENSSL" = [yY] ]]; then
     ./configure --with-ssl=openssl --with-metalink
   elif [[ "$CENTOS_EIGHT" = '8' && "$WGET_OPENSSL" = [yY] ]]; then
     ./configure --with-ssl=openssl --with-metalink

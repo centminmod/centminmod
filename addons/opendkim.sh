@@ -255,7 +255,7 @@ opendkimsetup() {
         yum -y install opendkim
         cp /etc/opendkim.conf{,.orig}
     fi
-    if [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]] && ! rpm -qa | grep -qw opendkim-tools; then
+    if [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' || "$CENTOS_TEN" -eq '10' ]] && ! rpm -qa | grep -qw opendkim-tools; then
         yum -y install opendkim-tools
     fi
 
@@ -305,7 +305,7 @@ opendkimsetup() {
             echo "Socket configuration updated."
         fi
 
-        if [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]]; then
+        if [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' || "$CENTOS_TEN" -eq '10' ]]; then
             # Ensure only one Socket option is set
             sed -i.bak '/Socket local:\/run\/opendkim\/opendkim.sock/d' /etc/opendkim.conf
         fi

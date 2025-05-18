@@ -202,6 +202,13 @@ if [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]]; then
   fi
 fi
 
+if [[ "$CENTOS_TEN" -eq '10' ]]; then
+  if [[ "$GCC_FOURTEEN" = [yY] && "$(uname -m)" = 'x86_64' && -f /usr/bin/gcc && -f /usr/bin/g++ ]]; then
+    export CFLAGS="-Wimplicit-fallthrough=0 -Wno-pedantic -Wno-sign-compare -Wno-unused-variable -Wno-unused-but-set-variable -Wno-unused-function -Wno-format-overflow -Wno-maybe-uninitialized -Wno-address"
+    export CXXFLAGS="${CFLAGS}"
+  fi
+fi
+
 # Install required build tools and dependencies
 yum install -y epel-release
 yum install -y \
