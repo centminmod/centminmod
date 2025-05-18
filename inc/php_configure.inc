@@ -266,7 +266,7 @@ checksec_phpext() {
 }
 
 max_spawn_rate_check() {
-  if [[ "$CENTOS_SEVEN" -eq '7' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]] && [[ ! "$(grep 'pm.max_spawn_rate' /usr/local/etc/php-fpm.conf)" ]] && [[ "$PHPMVER" = '8.1' && "$INITIALINSTALL" = [yY] ]]; then  
+  if [[ "$CENTOS_SEVEN" -eq '7' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' || "$CENTOS_TEN" -eq '10' ]] && [[ ! "$(grep 'pm.max_spawn_rate' /usr/local/etc/php-fpm.conf)" ]] && [[ "$PHPMVER" = '8.1' && "$INITIALINSTALL" = [yY] ]]; then  
     if [[ "$FPM_MAX_SPAWN_RATE" -ge '32' && -f /usr/local/etc/php-fpm.conf ]]; then
       echo
       echo "adjust PHP 8.1.x pm.max_spawn_rate for /usr/local/etc/php-fpm.conf"
@@ -274,7 +274,7 @@ max_spawn_rate_check() {
       grep 'pm.max_spawn_rate' /usr/local/etc/php-fpm.conf
       echo
     fi
-  elif [[ "$CENTOS_SEVEN" -eq '7' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]] && [[ ! "$(grep 'pm.max_spawn_rate' /usr/local/etc/php-fpm.conf)" ]] && [[ "$PHPMUVER" = '8.1' && "$INITIALINSTALL" != [yY] ]]; then  
+  elif [[ "$CENTOS_SEVEN" -eq '7' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' || "$CENTOS_TEN" -eq '10' ]] && [[ ! "$(grep 'pm.max_spawn_rate' /usr/local/etc/php-fpm.conf)" ]] && [[ "$PHPMUVER" = '8.1' && "$INITIALINSTALL" != [yY] ]]; then  
     if [[ "$FPM_MAX_SPAWN_RATE" -ge '32' && -f /usr/local/etc/php-fpm.conf ]]; then
       echo
       echo "adjust PHP 8.1.x pm.max_spawn_rate for /usr/local/etc/php-fpm.conf"
@@ -598,7 +598,7 @@ fi
 
 install_libgd_external() {
   # using --with-external-gd flag only supported in PHP 7.4+ and PHP 8.0+
-  if [[ "$CENTOS_SEVEN" -eq '7' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]] && [[ "$PHP_LIBGD_EXTERNAL" = [yY] ]] && [[ "$PHPMVER" = '7.3' || "$PHPMUVER" = '7.3' || "$PHPMVER" = '7.4' || "$PHPMUVER" = '7.4' || "$PHPMVER" = '8.0' || "$PHPMUVER" = '8.0' || "$PHPMVER" = '8.1' || "$PHPMUVER" = '8.1' || "$PHPMVER" = '8.2' || "$PHPMUVER" = '8.2' || "$PHPMVER" = '8.3' || "$PHPMUVER" = '8.3' || "$PHPMVER" = '8.4' || "$PHPMUVER" = '8.4' || "$PHPVER_ID" -ge '80000' ]]; then
+  if [[ "$CENTOS_SEVEN" -eq '7' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' || "$CENTOS_TEN" -eq '10' ]] && [[ "$PHP_LIBGD_EXTERNAL" = [yY] ]] && [[ "$PHPMVER" = '7.3' || "$PHPMUVER" = '7.3' || "$PHPMVER" = '7.4' || "$PHPMUVER" = '7.4' || "$PHPMVER" = '8.0' || "$PHPMUVER" = '8.0' || "$PHPMVER" = '8.1' || "$PHPMUVER" = '8.1' || "$PHPMVER" = '8.2' || "$PHPMUVER" = '8.2' || "$PHPMVER" = '8.3' || "$PHPMUVER" = '8.3' || "$PHPMVER" = '8.4' || "$PHPMUVER" = '8.4' || "$PHPVER_ID" -ge '80000' ]]; then
     echo
     echo "Internal libgd ${LIBGD_EXTERNAL_VER} external PHP version"
     echo
@@ -650,7 +650,7 @@ install_libgd_external() {
     fi
 
     make clean
-    if [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]] && [[ "$PHP_GD_AVIF" = [yY] ]]; then
+    if [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' || "$CENTOS_TEN" -eq '10' ]] && [[ "$PHP_GD_AVIF" = [yY] ]]; then
       GD_AVIF_OPT=' --with-avif'
     fi
     ./configure --prefix="/usr/local/libgd/${LIBGD_EXTERNAL_VER}"${GD_AVIF_OPT}
@@ -679,13 +679,13 @@ install_libgd_external() {
   fi
 }
 
-if [[ "$CENTOS_SEVEN" -eq '7' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]] && [[ "$PHPSWOOLE" = [yY] ]] && [[ "$PHPMVER" = '7.0' || "$PHPMUVER" = '7.0' || "$PHPMVER" = '7.1' || "$PHPMUVER" = '7.1' || "$PHPMVER" = '7.2' || "$PHPMUVER" = '7.2' || "$PHPMVER" = '7.3' || "$PHPMUVER" = '7.3' || "$PHPMVER" = '7.4' || "$PHPMUVER" = '7.4' || "$PHPMVER" = '8.0' || "$PHPMUVER" = '8.0' || "$PHPMVER" = '8.1' || "$PHPMUVER" = '8.1' || "$PHPMVER" = '8.2' || "$PHPMUVER" = '8.2' || "$PHPMVER" = '8.3' || "$PHPMUVER" = '8.3' || "$PHPMVER" = '8.4' || "$PHPMUVER" = '8.4' || "$PHPVER_ID" -ge '80000' ]]; then
+if [[ "$CENTOS_SEVEN" -eq '7' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' || "$CENTOS_TEN" -eq '10' ]] && [[ "$PHPSWOOLE" = [yY] ]] && [[ "$PHPMVER" = '7.0' || "$PHPMUVER" = '7.0' || "$PHPMVER" = '7.1' || "$PHPMUVER" = '7.1' || "$PHPMVER" = '7.2' || "$PHPMUVER" = '7.2' || "$PHPMVER" = '7.3' || "$PHPMUVER" = '7.3' || "$PHPMVER" = '7.4' || "$PHPMUVER" = '7.4' || "$PHPMVER" = '8.0' || "$PHPMUVER" = '8.0' || "$PHPMVER" = '8.1' || "$PHPMUVER" = '8.1' || "$PHPMVER" = '8.2' || "$PHPMUVER" = '8.2' || "$PHPMVER" = '8.3' || "$PHPMUVER" = '8.3' || "$PHPMVER" = '8.4' || "$PHPMUVER" = '8.4' || "$PHPVER_ID" -ge '80000' ]]; then
   SWOOLE_OPT=' --with-swoole'
 else
   SWOOLE_OPT=""
 fi
 
-if [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]] && [[ "$PHP_GD_AVIF" = [yY] ]] && [[ "$PHPMVER" = '8.1' || "$PHPMUVER" = '8.1' || "$PHPMVER" = '8.2' || "$PHPMUVER" = '8.2' || "$PHPMVER" = '8.3' || "$PHPMUVER" = '8.3' || "$PHPMVER" = '8.4' || "$PHPMUVER" = '8.4' || "$PHPVER_ID" -ge '80000' ]]; then
+if [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' || "$CENTOS_TEN" -eq '10' ]] && [[ "$PHP_GD_AVIF" = [yY] ]] && [[ "$PHPMVER" = '8.1' || "$PHPMUVER" = '8.1' || "$PHPMVER" = '8.2' || "$PHPMUVER" = '8.2' || "$PHPMVER" = '8.3' || "$PHPMUVER" = '8.3' || "$PHPMVER" = '8.4' || "$PHPMUVER" = '8.4' || "$PHPVER_ID" -ge '80000' ]]; then
   if [[ -z "$(rpm -qa libavif-devel)" ]]; then 
     "$YUMDNFBIN" -y install libavif-devel
   fi
@@ -696,7 +696,7 @@ fi
 
 # Enable Foreign Function Interface FFI extension
 # for PHP 7.4+ https://wiki.php.net/rfc/ffi
-if [[ "$CENTOS_SEVEN" -eq '7' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]] && [[ "$PHPMVER" = '7.4' || "$PHPMUVER" = '7.4' || "$PHPMVER" = '8.0' || "$PHPMUVER" = '8.0' || "$PHPMVER" = '8.1' || "$PHPMUVER" = '8.1' || "$PHPMVER" = '8.2' || "$PHPMUVER" = '8.2' || "$PHPMVER" = '8.3' || "$PHPMUVER" = '8.3' || "$PHPMVER" = '8.4' || "$PHPMUVER" = '8.4' || "$PHPVER_ID" -ge '80000' ]]; then
+if [[ "$CENTOS_SEVEN" -eq '7' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' || "$CENTOS_TEN" -eq '10' ]] && [[ "$PHPMVER" = '7.4' || "$PHPMUVER" = '7.4' || "$PHPMVER" = '8.0' || "$PHPMUVER" = '8.0' || "$PHPMVER" = '8.1' || "$PHPMUVER" = '8.1' || "$PHPMVER" = '8.2' || "$PHPMUVER" = '8.2' || "$PHPMVER" = '8.3' || "$PHPMUVER" = '8.3' || "$PHPMVER" = '8.4' || "$PHPMUVER" = '8.4' || "$PHPVER_ID" -ge '80000' ]]; then
   if [[ -z "$(rpm -qa libffi-devel)" ]]; then
     yum -q -y install libffi-devel
   fi
@@ -707,7 +707,7 @@ fi
 
 # enable CentOS 7 systemd integration for PHP-FPM versions 5.5 and higher
 # http://www.php.net/ChangeLog-5.php#5.5.0
-if [[ "$CENTOS_SEVEN" -eq '7' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]]; then
+if [[ "$CENTOS_SEVEN" -eq '7' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' || "$CENTOS_TEN" -eq '10' ]]; then
   if [[ "$PHPMVER" = 5.5 || "$PHPMUVER" = 5.5 || "$PHPMVER" = 5.6 || "$PHPMUVER" = 5.6 || "$PHPMVER" = 7.0 || "$PHPMUVER" = 7.0 || "$PHPMVER" = 7.1 || "$PHPMUVER" = 7.1 || "$PHPMVER" = 7.2 || "$PHPMUVER" = 7.2 || "$PHPMVER" = 7.3 || "$PHPMUVER" = 7.3 || "$PHPMVER" = 7.4 || "$PHPMUVER" = 7.4 || "$PHPMVER" = 7.5 || "$PHPMUVER" = 7.5 || "$PHPMVER" = 8.0 || "$PHPMUVER" = 8.0 || "$PHPMVER" = 8.1 || "$PHPMUVER" = 8.1 || "$PHPMVER" = 8.2 || "$PHPMUVER" = 8.2 || "$PHPMVER" = 8.3 || "$PHPMUVER" = 8.3 || "$PHPVER_ID" -ge '80000' ]]; then
     if [[ $(rpm -q systemd-devel >/dev/null 2>&1; echo $?) != '0' ]]; then
       "$YUMDNFBIN" -y install systemd-devel --disableplugin=priorities >/dev/null 2>&1
@@ -965,7 +965,7 @@ fi
 
 if [[ "$PHP_CUSTOMSSL" != [yY] && "$PHP_LDMOLD" = [yY] && -f /usr/bin/mold ]]; then
   # PHP mold linker not compatible with custom OpenSSL 1.1.1 PHP builds
-  if [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]]; then 
+  if [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' || "$CENTOS_TEN" -eq '10' ]]; then 
     PHP_MOLDOPT=' -fuse-ld=mold'
   else
     PHP_MOLDOPT=' -B/usr/bin/mold'
@@ -1413,12 +1413,20 @@ if [[ ! -f /usr/include/tidy.h ]]; then
   sar_call
 fi
 
-if [[ ! -d /usr/include/enchant ]]; then
+if [[ ! -d /usr/include/enchant ]] && [[ "$CENTOS_SEVEN" -eq '7' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' || "$CENTOS_TEN" -eq '10' ]]; then
   if [ -f /etc/yum.repos.d/rpmforge.repo ]; then
     yum -q -y install enchant enchant-devel --disablerepo=rpmforge,epel
     sar_call
   else
     yum -q -y install enchant enchant-devel --disablerepo=epel
+    sar_call
+  fi
+elif [[ ! -d /usr/include/enchant-2 && "$CENTOS_TEN" -eq '10' ]]; then
+  if [ -f /etc/yum.repos.d/rpmforge.repo ]; then
+    yum -q -y install enchant2 enchant2-devel --disablerepo=rpmforge,epel
+    sar_call
+  else
+    yum -q -y install enchant2 enchant2-devel --disablerepo=epel
     sar_call
   fi
 fi
@@ -1433,7 +1441,7 @@ if [[ ! -d /usr/include/net-snmp ]]; then
   fi
 fi
 
-if [[ ! -f /usr/include/expect.h && "$CENTOS_NINE" -ne '9' ]]; then
+if [[ ! -f /usr/include/expect.h ]] && [[ "$CENTOS_NINE" -ne '9' || "$CENTOS_TEN" -ne '10' ]]; then
   if [ -f /etc/yum.repos.d/rpmforge.repo ]; then
     yum -q -y install expect-devel --disablerepo=rpmforge,epel
     sar_call
@@ -1561,7 +1569,7 @@ elif [[ "$PHPFINFO" = [nN] ]]; then
   FILEINFOOPT=" --disable-fileinfo"
 fi
 
-if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' || "$CENTOS_SIX" = '6' ]]; then
+if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' || "$CENTOS_TEN" -eq '10' || "$CENTOS_SIX" = '6' ]]; then
 
   if [[ "$POSTGRESQL" = [yY] ]]; then
     # to allow to persist on centmin mod code updates
@@ -2546,6 +2554,30 @@ if [[ "$GCCINTEL_PHP" = [yY] ]]; then
     fi
   fi
 
+  # php install & upgrades for el10's GCC 14 defaults
+  if [[ "$CENTOS_TEN" -eq '10' ]]; then
+    CENTOSVER_NUMERIC=$(echo $CENTOSVER | sed -e 's|\.||g')
+    if [[ "$CENTOSVER_NUMERIC" -ge '100' && "$DEVTOOLSETFOURTEEN" = [yY] && -f /usr/bin/gcc && -f /usr/bin/g++ ]]; then
+        GENERAL_DEVTOOLSETGCC='y'
+        DEVTOOLSETPHP_FALLTHROUGH=' -Wimplicit-fallthrough=0 -Wno-implicit-function-declaration -Wno-int-conversion -Wno-error=unused-result -Wno-unused-result -Wno-return-local-addr -Wno-maybe-uninitialized -Wno-array-parameter -Wno-alloc-size-larger-than -Wno-address -Wno-array-bounds -Wno-deprecated-declarations -Wno-discarded-qualifiers -Wno-stringop-overread -Wno-stringop-truncation -Wno-missing-profile -Wno-pointer-to-int-cast -Wno-error=strict-prototypes -Wno-attribute-warning -Wno-enum-int-mismatch -Wno-stringop-overflow'
+        DEVTOOLSETPHP_EXTRAFLAGS=' -fcode-hoisting -Wno-cast-function-type -Wno-error=cast-align -Wno-implicit-function-declaration -Wno-builtin-declaration-mismatch -Wno-return-local-addr -Wno-maybe-uninitialized -Wno-array-parameter -Wno-alloc-size-larger-than -Wno-address -Wno-array-bounds -Wno-deprecated-declarations -Wno-discarded-qualifiers -Wno-stringop-overread -Wno-stringop-truncation'
+        which gcc
+        which g++
+        unset CC
+        unset CXX
+        if [[ "$INITIALINSTALL" != [yY] ]]; then
+          export CC="ccache /usr/bin/gcc"
+          export CXX="ccache /usr/bin/g++"
+        else
+          export CC="/usr/bin/gcc"
+          export CXX="/usr/bin/g++"
+        fi
+        echo "EL 10.0 set GCC 14"
+        echo $CC
+        echo $CXX
+    fi
+  fi
+
   if [[ "$CENTOS_SEVEN" = '7' && "$PHP_PGO" = [yY] && "$PHPMUVER" > 7 ]] || [[ "$CENTOS_SEVEN" = '7' && "$PHPMUVER" = '8.3' ]] || [[ "$CENTOS_SEVEN" = '7' && "$PHPMUVER" = '8.2' ]] || [[ "$CENTOS_SEVEN" = '7' && "$PHPMUVER" = '8.1' ]] || [[ "$CENTOS_SEVEN" = '7' && "$PHPMUVER" = '8.0' ]] || [[ "$CENTOS_SEVEN" = '7' && "$PHPVER_ID" -ge '80000' ]] || [[ "$CENTOS_SEVEN" = '7' && "$PHPMUVER" = '7.4' ]] || [[ "$CENTOS_SEVEN" = '7' && "$PHPMUVER" = '7.3' ]] || [[ "$CENTOS_SEVEN" = '7' && "$DEVTOOLSET_PHP" = [yY] ]]; then
     # if devtoolset-4 gcc and g++ exist use then instead of system versions regardless of CentOS version
     if [[ "$DEVTOOLSETELEVEN" = [yY] && -f /opt/rh/devtoolset-11/root/usr/bin/gcc && -f /opt/rh/devtoolset-11/root/usr/bin/g++ ]]; then
@@ -2982,7 +3014,7 @@ if [[ "$GCCINTEL_PHP" = [yY] ]]; then
     PHP_FLTO_LDFLAGS=""
   fi
 
-  if [[ "$(gcc --version | head -n1 | awk '{print $3}' | cut -d . -f1-3 | sed "s|\.|0|g")" -ge '40805' && "$PHP_GSPLITDWARF" = [nN] && "$PHP_LTO" = [yY] && "$PHP_LDMOLD" = [yY] ]] && [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]]; then
+  if [[ "$(gcc --version | head -n1 | awk '{print $3}' | cut -d . -f1-3 | sed "s|\.|0|g")" -ge '40805' && "$PHP_GSPLITDWARF" = [nN] && "$PHP_LTO" = [yY] && "$PHP_LDMOLD" = [yY] ]] && [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' || "$CENTOS_TEN" -eq '10' ]]; then
     # remove  -gsplit-dwarf when PHP_LTO='y' seems *.dwo files aren't cleaned from /tmp with it enabled
     # PHP_GSPLITDWARF=n set when march_hostcheck function matches certain VPS host ASNs
     echo "1 SET_PHPEXTRA_CFLAGS=\" -flto${PHP_FLTO_CPUS}${PHP_FLTO_COMP_LEVEL} -fno-fat-lto-objects${PHP_MOLDOPT} -fuse-linker-plugin -flto-partition=balanced -Wno-deprecated-declarations${DEVTOOLSETPHP_FALLTHROUGH}${DEVTOOLSETPHP_EXTRAFLAGS}${PHPEXTRA_CFLAGS}\""
@@ -2994,7 +3026,7 @@ if [[ "$GCCINTEL_PHP" = [yY] ]]; then
     echo "1 SET_PHPEXTRA_CFLAGS=\" -flto${PHP_FLTO_CPUS}${PHP_FLTO_COMP_LEVEL} -fno-fat-lto-objects -fuse-ld=gold -fuse-linker-plugin -flto-partition=balanced -Wno-deprecated-declarations${DEVTOOLSETPHP_FALLTHROUGH}${DEVTOOLSETPHP_EXTRAFLAGS}${PHPEXTRA_CFLAGS}\""
     SET_PHPEXTRA_CFLAGS=" -flto${PHP_FLTO_CPUS}${PHP_FLTO_COMP_LEVEL} -fno-fat-lto-objects -fuse-ld=gold -fuse-linker-plugin -flto-partition=balanced -Wno-deprecated-declarations${DEVTOOLSETPHP_FALLTHROUGH}${DEVTOOLSETPHP_EXTRAFLAGS}${PHPEXTRA_CFLAGS}"
     PHPLTOOPT=' --disable-gcc-global-regs'
-  elif [[ "$(gcc --version | head -n1 | awk '{print $3}' | cut -d . -f1-3 | sed "s|\.|0|g")" -ge '40805' && "$PHP_GSPLITDWARF" = [yY] && "$PHP_LTO" = [yY] && "$PHP_LDMOLD" = [yY] ]] && [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]]; then
+  elif [[ "$(gcc --version | head -n1 | awk '{print $3}' | cut -d . -f1-3 | sed "s|\.|0|g")" -ge '40805' && "$PHP_GSPLITDWARF" = [yY] && "$PHP_LTO" = [yY] && "$PHP_LDMOLD" = [yY] ]] && [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' || "$CENTOS_TEN" -eq '10' ]]; then
     # remove  -gsplit-dwarf when PHP_LTO='y' seems *.dwo files aren't cleaned from /tmp with it enabled
     echo "1 SET_PHPEXTRA_CFLAGS=\" -flto${PHP_FLTO_CPUS}${PHP_FLTO_COMP_LEVEL} -fno-fat-lto-objects${PHP_MOLDOPT} -fuse-linker-plugin -flto-partition=balanced -Wno-deprecated-declarations${DEVTOOLSETPHP_FALLTHROUGH}${DEVTOOLSETPHP_EXTRAFLAGS}${PHPEXTRA_CFLAGS}\""
     SET_PHPEXTRA_CFLAGS=" -flto${PHP_FLTO_CPUS}${PHP_FLTO_COMP_LEVEL} -fno-fat-lto-objects${PHP_MOLDOPT} -fuse-linker-plugin -flto-partition=balanced -Wno-deprecated-declarations${DEVTOOLSETPHP_FALLTHROUGH}${DEVTOOLSETPHP_EXTRAFLAGS}${PHPEXTRA_CFLAGS}"
@@ -3354,7 +3386,7 @@ fi
     if [[ "$LIBRESSL_SWITCH" = [yY] ]]; then
       PHP_OPENSSLOPT='--with-openssl=/opt/libressl'
       ln -s /opt/libressl/lib /opt/libressl/lib64
-    elif [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]] && [[ "$PHPMVER" = '8.1' || "$PHPMVER" = '8.2' || "$PHPMVER" = '8.3' || "$PHPMVER" = '8.4' ]] && [[ "$DETECTOPENSSL_THREEZERO" = '3.0' && "$LIBRESSL_SWITCH" = [nN] && "$BORINGSSL_SWITCH" = [nN] ]]; then
+    elif [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' || "$CENTOS_TEN" -eq '10' ]] && [[ "$PHPMVER" = '8.1' || "$PHPMVER" = '8.2' || "$PHPMVER" = '8.3' || "$PHPMVER" = '8.4' ]] && [[ "$DETECTOPENSSL_THREEZERO" = '3.0' && "$LIBRESSL_SWITCH" = [nN] && "$BORINGSSL_SWITCH" = [nN] ]]; then
       PHP_OPENSSLOPT="--with-openssl=${OPENSSL_CUSTOMPATH}"
       ln -s "${OPENSSL_CUSTOMPATH}/lib64" "${OPENSSL_CUSTOMPATH}/lib"
       echo "PHP_CUSTOMSSL=Y: install PHP + OpenSSL 3.1 OPENSSL_CFLAGS + OPENSSL_LIBS"
@@ -3364,7 +3396,7 @@ fi
       if [[ -f "${DIR_TMP}/openssl-${OPENSSL_VERSION}/apps/openssl.cnf" && ! -f /opt/openssl/openssl.cnf ]]; then
           \cp -af "${DIR_TMP}/openssl-${OPENSSL_VERSION}/apps/openssl.cnf" /opt/openssl/openssl.cnf
       fi
-    elif [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]] && [[ "$PHPMVER" = '8.1' || "$PHPMVER" = '8.2' || "$PHPMVER" = '8.3' || "$PHPMVER" = '8.4' ]] && [[ "$DETECTOPENSSL_THREEONE" = '3.1' && "$LIBRESSL_SWITCH" = [nN] && "$BORINGSSL_SWITCH" = [nN] ]]; then
+    elif [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' || "$CENTOS_TEN" -eq '10' ]] && [[ "$PHPMVER" = '8.1' || "$PHPMVER" = '8.2' || "$PHPMVER" = '8.3' || "$PHPMVER" = '8.4' ]] && [[ "$DETECTOPENSSL_THREEONE" = '3.1' && "$LIBRESSL_SWITCH" = [nN] && "$BORINGSSL_SWITCH" = [nN] ]]; then
       PHP_OPENSSLOPT="--with-openssl=${OPENSSL_CUSTOMPATH}"
       ln -s "${OPENSSL_CUSTOMPATH}/lib64" "${OPENSSL_CUSTOMPATH}/lib"
       echo "PHP_CUSTOMSSL=Y: install PHP + OpenSSL 3.1 OPENSSL_CFLAGS + OPENSSL_LIBS"
@@ -3374,7 +3406,7 @@ fi
       if [[ -f "${DIR_TMP}/openssl-${OPENSSL_VERSION}/apps/openssl.cnf" && ! -f /opt/openssl/openssl.cnf ]]; then
           \cp -af "${DIR_TMP}/openssl-${OPENSSL_VERSION}/apps/openssl.cnf" /opt/openssl/openssl.cnf
       fi
-    elif [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]] && [[ "$PHPMVER" = '8.1' || "$PHPMVER" = '8.2' || "$PHPMVER" = '8.3' || "$PHPMVER" = '8.4' ]] && [[ "$DETECTOPENSSL_THREETWO" = '3.2' && "$LIBRESSL_SWITCH" = [nN] && "$BORINGSSL_SWITCH" = [nN] ]]; then
+    elif [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' || "$CENTOS_TEN" -eq '10' ]] && [[ "$PHPMVER" = '8.1' || "$PHPMVER" = '8.2' || "$PHPMVER" = '8.3' || "$PHPMVER" = '8.4' ]] && [[ "$DETECTOPENSSL_THREETWO" = '3.2' && "$LIBRESSL_SWITCH" = [nN] && "$BORINGSSL_SWITCH" = [nN] ]]; then
       PHP_OPENSSLOPT="--with-openssl=${OPENSSL_CUSTOMPATH}"
       ln -s "${OPENSSL_CUSTOMPATH}/lib64" "${OPENSSL_CUSTOMPATH}/lib"
       echo "PHP_CUSTOMSSL=Y: install PHP + OpenSSL 3.1 OPENSSL_CFLAGS + OPENSSL_LIBS"
@@ -3438,7 +3470,7 @@ fi
     if [[ "$LIBRESSL_SWITCH" = [yY] ]]; then
       PHP_OPENSSLOPT='--with-openssl=/opt/libressl'
       ln -s /opt/libressl/lib /opt/libressl/lib64
-    elif [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]] && [[ "$PHPMUVER" = '8.1' || "$PHPMUVER" = '8.2' || "$PHPMUVER" = '8.3' || "$PHPMUVER" = '8.4' ]] && [[ "$DETECTOPENSSL_THREEZERO" = '3.0' && "$LIBRESSL_SWITCH" = [nN] && "$BORINGSSL_SWITCH" = [nN] ]]; then
+    elif [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' || "$CENTOS_TEN" -eq '10' ]] && [[ "$PHPMUVER" = '8.1' || "$PHPMUVER" = '8.2' || "$PHPMUVER" = '8.3' || "$PHPMUVER" = '8.4' ]] && [[ "$DETECTOPENSSL_THREEZERO" = '3.0' && "$LIBRESSL_SWITCH" = [nN] && "$BORINGSSL_SWITCH" = [nN] ]]; then
       PHP_OPENSSLOPT="--with-openssl=${OPENSSL_CUSTOMPATH}"
       ln -s "${OPENSSL_CUSTOMPATH}/lib64" "${OPENSSL_CUSTOMPATH}/lib"
       echo "PHP_CUSTOMSSL=Y: upgrade PHP + OpenSSL 3.1 OPENSSL_CFLAGS + OPENSSL_LIBS"
@@ -3448,7 +3480,7 @@ fi
       if [[ -f "${DIR_TMP}/openssl-${OPENSSL_VERSION}/apps/openssl.cnf" && ! -f /opt/openssl/openssl.cnf ]]; then
           \cp -af "${DIR_TMP}/openssl-${OPENSSL_VERSION}/apps/openssl.cnf" /opt/openssl/openssl.cnf
       fi
-    elif [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]] && [[ "$PHPMUVER" = '8.1' || "$PHPMUVER" = '8.2' || "$PHPMUVER" = '8.3' || "$PHPMUVER" = '8.4' ]] && [[ "$DETECTOPENSSL_THREEONE" = '3.1' && "$LIBRESSL_SWITCH" = [nN] && "$BORINGSSL_SWITCH" = [nN] ]]; then
+    elif [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' || "$CENTOS_TEN" -eq '10' ]] && [[ "$PHPMUVER" = '8.1' || "$PHPMUVER" = '8.2' || "$PHPMUVER" = '8.3' || "$PHPMUVER" = '8.4' ]] && [[ "$DETECTOPENSSL_THREEONE" = '3.1' && "$LIBRESSL_SWITCH" = [nN] && "$BORINGSSL_SWITCH" = [nN] ]]; then
       PHP_OPENSSLOPT="--with-openssl=${OPENSSL_CUSTOMPATH}"
       ln -s "${OPENSSL_CUSTOMPATH}/lib64" "${OPENSSL_CUSTOMPATH}/lib"
       echo "PHP_CUSTOMSSL=Y: upgrade PHP + OpenSSL 3.1 OPENSSL_CFLAGS + OPENSSL_LIBS"
@@ -3458,7 +3490,7 @@ fi
       if [[ -f "${DIR_TMP}/openssl-${OPENSSL_VERSION}/apps/openssl.cnf" && ! -f /opt/openssl/openssl.cnf ]]; then
           \cp -af "${DIR_TMP}/openssl-${OPENSSL_VERSION}/apps/openssl.cnf" /opt/openssl/openssl.cnf
       fi
-    elif [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]] && [[ "$PHPMUVER" = '8.1' || "$PHPMUVER" = '8.2' || "$PHPMUVER" = '8.3' || "$PHPMUVER" = '8.4' ]] && [[ "$DETECTOPENSSL_THREETWO" = '3.2' && "$LIBRESSL_SWITCH" = [nN] && "$BORINGSSL_SWITCH" = [nN] ]]; then
+    elif [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' || "$CENTOS_TEN" -eq '10' ]] && [[ "$PHPMUVER" = '8.1' || "$PHPMUVER" = '8.2' || "$PHPMUVER" = '8.3' || "$PHPMUVER" = '8.4' ]] && [[ "$DETECTOPENSSL_THREETWO" = '3.2' && "$LIBRESSL_SWITCH" = [nN] && "$BORINGSSL_SWITCH" = [nN] ]]; then
       PHP_OPENSSLOPT="--with-openssl=${OPENSSL_CUSTOMPATH}"
       ln -s "${OPENSSL_CUSTOMPATH}/lib64" "${OPENSSL_CUSTOMPATH}/lib"
       echo "PHP_CUSTOMSSL=Y: upgrade PHP + OpenSSL 3.1 OPENSSL_CFLAGS + OPENSSL_LIBS"
@@ -3532,7 +3564,7 @@ fi
 
 if [[ "$PHPMVER" = '7.3' || "$PHPMUVER" = '7.3' || "$PHPMVER" = '7.4' || "$PHPMUVER" = '7.4' || "$PHPMVER" = '8.0' || "$PHPMUVER" = '8.0' || "$PHPMVER" = '8.1' || "$PHPMUVER" = '8.1' || "$PHPMVER" = '8.2' || "$PHPMUVER" = '8.2' || "$PHPMVER" = '8.3' || "$PHPMUVER" = '8.3' || "$PHPMVER" = '8.4' || "$PHPMUVER" = '8.4' || "$PHPVER_ID" -ge '80000' ]]; then
   # seems PHP 7.3 must use libzip unlike PHP 7.2 which can compile without it
-  if [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]] && [[ "$IMAGEMAGICK_SEVEN" != [yY] ]]; then
+  if [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' || "$CENTOS_TEN" -eq '10' ]] && [[ "$IMAGEMAGICK_SEVEN" != [yY] ]]; then
     PHP_LIBZIP='n'
     if ! rpm -qa | grep -qw remi-libzip-devel; then
       yum -y install remi-libzip remi-libzip-devel --enablerepo=remi
@@ -3548,7 +3580,7 @@ if [[ "$PHPMVER" = '7.3' || "$PHPMUVER" = '7.3' || "$PHPMVER" = '7.4' || "$PHPMU
       rm -f /etc/ld.so.conf.d/libzip.conf
       ldconfig
     fi
-  elif [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]] && [[ "$IMAGEMAGICK_SEVEN" = [yY] ]]; then
+  elif [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' || "$CENTOS_TEN" -eq '10' ]] && [[ "$IMAGEMAGICK_SEVEN" = [yY] ]]; then
     php_imagemagick_seven_detected_libzip
   elif [[ "$CENTOS_SEVEN" -eq '7' ]]; then
     LIBZIP_RPATH=' -Wl,-rpath,/usr/lib64'
@@ -3557,10 +3589,10 @@ if [[ "$PHPMVER" = '7.3' || "$PHPMUVER" = '7.3' || "$PHPMVER" = '7.4' || "$PHPMU
 fi
 if [[ "$PHP_ARGON" = [yY] ]]; then
   # alias for PHP 7.2 argon support
-  if [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]] && [[ "$IMAGEMAGICK_SEVEN" != [yY] ]]; then
+  if [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' || "$CENTOS_TEN" -eq '10' ]] && [[ "$IMAGEMAGICK_SEVEN" != [yY] ]]; then
     PHP_LIBZIP='n'
     PHP_ARGON='y'
-  elif [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]] && [[ "$IMAGEMAGICK_SEVEN" = [yY] ]]; then
+  elif [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' || "$CENTOS_TEN" -eq '10' ]] && [[ "$IMAGEMAGICK_SEVEN" = [yY] ]]; then
     php_imagemagick_seven_detected_libzip
   else
     PHP_LIBZIP='y'
@@ -3582,7 +3614,7 @@ if [[ "$PHP_LIBZIP" = [yY] || "$PHP_ARGON" = [yY] ]] && [[ "$PHPMVER" = '7.2' ||
   if [[ "$PHPMVER" = '8.0' || "$PHPMUVER" = '8.0' || "$PHPMVER" = '8.1' || "$PHPMUVER" = '8.1' || "$PHPMVER" = '8.2' || "$PHPMUVER" = '8.2' || "$PHPMVER" = '8.3' || "$PHPMUVER" = '8.3' || "$PHPMVER" = '8.4' || "$PHPMUVER" = '8.4' || "$PHPVER_ID" -ge '80000' ]]; then
     # https://bugs.php.net/bug.php?id=76483
     # PHP 7.4 not finding libzip paths
-    if [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]] && [[ "$IMAGEMAGICK_SEVEN" != [yY] ]]; then
+    if [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' || "$CENTOS_TEN" -eq '10' ]] && [[ "$IMAGEMAGICK_SEVEN" != [yY] ]]; then
       export LIBZIP_CFLAGS='-I/opt/remi/libzip/include'
       export LIBZIP_LIBS="-L/opt/remi/libzip/lib64 -lzip"
       echo "remi libzip"
@@ -3595,7 +3627,7 @@ if [[ "$PHP_LIBZIP" = [yY] || "$PHP_ARGON" = [yY] ]] && [[ "$PHPMVER" = '7.2' ||
         ldconfig
       fi
       libzip_remove
-    elif [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]] && [[ "$IMAGEMAGICK_SEVEN" = [yY] ]]; then
+    elif [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' || "$CENTOS_TEN" -eq '10' ]] && [[ "$IMAGEMAGICK_SEVEN" = [yY] ]]; then
       php_imagemagick_seven_detected_libzip
       echo "php 8.x libzip"
     else
@@ -3607,7 +3639,7 @@ if [[ "$PHP_LIBZIP" = [yY] || "$PHP_ARGON" = [yY] ]] && [[ "$PHPMVER" = '7.2' ||
   elif [[ "$PHPMVER" = '7.4' || "$PHPMUVER" = '7.4' ]]; then
     # https://bugs.php.net/bug.php?id=76483
     # PHP 7.4 not finding libzip paths
-    if [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]] && [[ "$IMAGEMAGICK_SEVEN" != [yY] ]]; then
+    if [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' || "$CENTOS_TEN" -eq '10' ]] && [[ "$IMAGEMAGICK_SEVEN" != [yY] ]]; then
       export LIBZIP_CFLAGS='-I/opt/remi/libzip/include'
       export LIBZIP_LIBS="-L/opt/remi/libzip/lib64 -lzip"
       echo "remi libzip"
@@ -3620,7 +3652,7 @@ if [[ "$PHP_LIBZIP" = [yY] || "$PHP_ARGON" = [yY] ]] && [[ "$PHPMVER" = '7.2' ||
         ldconfig
       fi
       libzip_remove
-    elif [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]] && [[ "$IMAGEMAGICK_SEVEN" = [yY] ]]; then
+    elif [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' || "$CENTOS_TEN" -eq '10' ]] && [[ "$IMAGEMAGICK_SEVEN" = [yY] ]]; then
       php_imagemagick_seven_detected_libzip
       echo "php 7.4 libzip"
     else
@@ -3631,7 +3663,7 @@ if [[ "$PHP_LIBZIP" = [yY] || "$PHP_ARGON" = [yY] ]] && [[ "$PHPMVER" = '7.2' ||
     fi
   else
     # PHP 7.4 not finding libzip paths
-    if [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]] && [[ "$IMAGEMAGICK_SEVEN" != [yY] ]]; then
+    if [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' || "$CENTOS_TEN" -eq '10' ]] && [[ "$IMAGEMAGICK_SEVEN" != [yY] ]]; then
       export LIBZIP_CFLAGS='-I/opt/remi/libzip/include'
       export LIBZIP_LIBS="-L/opt/remi/libzip/lib64 -lzip"
       echo "remi libzip"
@@ -3644,7 +3676,7 @@ if [[ "$PHP_LIBZIP" = [yY] || "$PHP_ARGON" = [yY] ]] && [[ "$PHPMVER" = '7.2' ||
         ldconfig
       fi
       libzip_remove
-    elif [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]] && [[ "$IMAGEMAGICK_SEVEN" = [yY] ]]; then
+    elif [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' || "$CENTOS_TEN" -eq '10' ]] && [[ "$IMAGEMAGICK_SEVEN" = [yY] ]]; then
       php_imagemagick_seven_detected_libzip
       echo "non php 7.4 libzip"
     else
@@ -3654,11 +3686,11 @@ if [[ "$PHP_LIBZIP" = [yY] || "$PHP_ARGON" = [yY] ]] && [[ "$PHPMVER" = '7.2' ||
       LIBZIP_OPT=' --with-libzip'
     fi
   fi
-  if [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]] && [[ "$IMAGEMAGICK_SEVEN" = [yY] ]]; then
+  if [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' || "$CENTOS_TEN" -eq '10' ]] && [[ "$IMAGEMAGICK_SEVEN" = [yY] ]]; then
     php_imagemagick_seven_detected_libzip
   elif [[ "$CENTOS_SEVEN" -eq '7' ]] && [[ ! -f /usr/local/include/zip.h || ! -d "${DIR_TMP}/libzip-${LIBZIP_VER}" ]]; then
     libzip_install
-  elif [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]] && [[ -f /usr/local/include/zip.h || -f "$(rpm -ql libzip | grep -m1 '.so')" ]] && [[ "$IMAGEMAGICK_SEVEN" != [yY] ]]; then
+  elif [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' || "$CENTOS_TEN" -eq '10' ]] && [[ -f /usr/local/include/zip.h || -f "$(rpm -ql libzip | grep -m1 '.so')" ]] && [[ "$IMAGEMAGICK_SEVEN" != [yY] ]]; then
     libzip_remove
   fi
   if [[ "$(uname -m)" = 'x86_64' ]]; then
@@ -3764,7 +3796,7 @@ if [[ "$PHP_LIBZIP" = [yY] || "$PHP_ARGON" = [yY] ]] && [[ "$PHPMVER" = '7.2' ||
     export ARGON2_LIBS="-L/usr/local/${LIBDIR_ARGONSODIUM} -largon2"
   fi
   # if libzip, libsodium or libargon2 libraries still don't exit, disable from php configuration
-  if [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]] && [[ "$IMAGEMAGICK_SEVEN" != [yY] ]]; then
+  if [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' || "$CENTOS_TEN" -eq '10' ]] && [[ "$IMAGEMAGICK_SEVEN" != [yY] ]]; then
     if [[ ! -f "/usr/local/${LIBDIR_ARGONSODIUM}/libargon2.so" || ! -f "/usr/local/${LIBDIR_ARGONSODIUM}/libsodium.so" ]]; then
       echo
       echo "disable libzip, libsodium or libargon2 libraries"
@@ -3784,7 +3816,7 @@ if [[ "$PHP_LIBZIP" = [yY] || "$PHP_ARGON" = [yY] ]] && [[ "$PHPMVER" = '7.2' ||
     fi
   fi
 else
-  if [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]] && [[ "$IMAGEMAGICK_SEVEN" != [yY] ]]; then
+  if [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' || "$CENTOS_TEN" -eq '10' ]] && [[ "$IMAGEMAGICK_SEVEN" != [yY] ]]; then
     LIBZIP_OPT=' --with-libzip=/opt/remi/libzip/lib64'
   else
     ARGONTWO_OPT=""
@@ -3916,7 +3948,7 @@ else
     export CURL_LIBS="-L/usr/lib64 -lcurl"
     CURL_SYSTEM_PREFIX='=/usr'
     PHP_OPENSSL_CURL_OPT=""
-    if [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]]; then
+    if [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' || "$CENTOS_TEN" -eq '10' ]]; then
       CURL_PHP_PKG_CONFIG_PATH="/usr/lib64/pkgconfig:"
     else
       CURL_PHP_PKG_CONFIG_PATH=":/usr/lib64/pkgconfig:"
@@ -3930,7 +3962,9 @@ else
 
   # only allow custom curl compiles for EL9 + PHP 7.4+ or EL7/EL8 + PHP 7.4+
   # EL9 + PHP 7.4 or 8.0 is built against custom compat-openssl11 opensl 1.1.1 version
-  if [[ "$CENTOS_NINE" -eq '9' ]] && [[ "$PHPMVER" = '7.4' || "$PHPMUVER" = '7.4' ||"$PHPMVER" = '8.0' || "$PHPMUVER" = '8.0' || "$PHPMVER" = '8.1' || "$PHPMUVER" = '8.1' || "$PHPMVER" = '8.2' || "$PHPMUVER" = '8.2' || "$PHPMVER" = '8.3' || "$PHPMUVER" = '8.3' || "$PHPMVER" = '8.4' || "$PHPMUVER" = '8.4' || "$PHPVER_ID" -ge '80100' ]]; then
+  if [[ "$CENTOS_TEN" -eq '10' ]] && [[ "$PHPMVER" = '7.4' || "$PHPMUVER" = '7.4' ||"$PHPMVER" = '8.0' || "$PHPMUVER" = '8.0' || "$PHPMVER" = '8.1' || "$PHPMUVER" = '8.1' || "$PHPMVER" = '8.2' || "$PHPMUVER" = '8.2' || "$PHPMVER" = '8.3' || "$PHPMUVER" = '8.3' || "$PHPMVER" = '8.4' || "$PHPMUVER" = '8.4' || "$PHPVER_ID" -ge '80100' ]]; then
+    compile_custom_curl
+  elif [[ "$CENTOS_NINE" -eq '9' ]] && [[ "$PHPMVER" = '7.4' || "$PHPMUVER" = '7.4' ||"$PHPMVER" = '8.0' || "$PHPMUVER" = '8.0' || "$PHPMVER" = '8.1' || "$PHPMUVER" = '8.1' || "$PHPMVER" = '8.2' || "$PHPMUVER" = '8.2' || "$PHPMVER" = '8.3' || "$PHPMUVER" = '8.3' || "$PHPMVER" = '8.4' || "$PHPMUVER" = '8.4' || "$PHPVER_ID" -ge '80100' ]]; then
     compile_custom_curl
   elif [[ "$CENTOS_EIGHT" -eq '8' ]] && [[ "$PHPMVER" = '7.4' || "$PHPMUVER" = '7.4' ||"$PHPMVER" = '8.0' || "$PHPMUVER" = '8.0' || "$PHPMVER" = '8.1' || "$PHPMUVER" = '8.1' || "$PHPMVER" = '8.2' || "$PHPMUVER" = '8.2' || "$PHPMVER" = '8.3' || "$PHPMUVER" = '8.3' || "$PHPMVER" = '8.4' || "$PHPMUVER" = '8.4' || "$PHPVER_ID" -ge '80000' ]]; then
     compile_custom_curl
@@ -3942,11 +3976,11 @@ else
     echo "1"
     echo "LD_LIBRARY_PATH=${PHP_LIBXML_LD_LIBRARY_PATH}${LIBZIP_LD_PATH}${PHP_CUSTOMSSL_LD_LIBRARY_PATH}${CURL_PHP_LD_LIBRARY_PATH}/usr/local/${LIBDIR} PKG_CONFIG_PATH=\"${LIBGD_PKG_CONFIG_PATH}${PHP_LIBXML_PKG_CONFIG_PATH}${LIBZIP_PKG_CONFIG_PATH}${CURL_PHP_PKG_CONFIG_PATH}/usr/local/${LIBDIR}/pkgconfig:${PHP_CUSTOMSSL_PKG_CONFIG_PATH}\" ../configure --enable-fpm${OPCACHEOPT}${PHPINTLOPT}${PCNTLOPT}${MCRYPT}${RECODEOPT}${SNMPOPT}${PHPEMBEDOPT}${PHPLTOOPT} --with-mhash ${ZLIBPHP_OPT} --with-gettext --enable-exif ${ZIPOPT} --with-bz2 --enable-soap --enable-sockets --enable-sysvmsg --enable-sysvsem --enable-sysvshm --enable-shmop --with-pear --enable-mbstring $PHP_OPENSSLOPT --with-mysql=mysqlnd --with-libdir=${LIBDIR} --with-mysqli=mysqlnd --with-mysql-sock=${PHP_MYSQLSOCKPATH}/mysql.sock --with-curl${CURL_SYSTEM_PREFIX}${PHP_OPENSSL_CURL_OPT}${CURL_CUSTOM_FLAGS} ${PHPGDOPT}${LIBGD_EXT_OPT}${PHP_LIBAVIF_OPT} --with-xmlrpc --enable-bcmath --enable-calendar${FTPEXTOPT} --enable-gd-native-ttf ${PHPFREETYPEOPT} ${PHPJPEGOPT} --with-png-dir=${PLIBDIR} ${PHPXPMOPT}${LIBVPXOPT}${TLIBOPT} --enable-pdo${PDOSQLLITE_OPT} --with-pdo-mysql=mysqlnd${MSSQLOPT} --enable-inline-optimization${IMAPOPT} --with-kerberos --with-readline --with-libedit --with-gmp --with-pspell --with-tidy --with-enchant --with-fpm-user=nginx --with-fpm-group=nginx${FILEINFOOPT}${SQLLITEOPT}${LDAPOPT}${PDOPGSQL_OPT}${OPCACHEHUGEPAGES_OPT}${PHP_PICOPT} --with-config-file-scan-dir=${CONFIGSCANDIR}${PHPDEBUGOPT}${FPMSYSTEMD_INTEGRATEOPT}${FFI_OPT}${SWOOLE_OPT}${LIBZIP_OPT}${ARGONTWO_OPT}${LIBSODIUM_OPT}${PHP_EXTRAOPTS}"
     LD_LIBRARY_PATH=${PHP_LIBXML_LD_LIBRARY_PATH}${LIBZIP_LD_PATH}${PHP_CUSTOMSSL_LD_LIBRARY_PATH}${CURL_PHP_LD_LIBRARY_PATH}/usr/local/${LIBDIR} PKG_CONFIG_PATH="${LIBGD_PKG_CONFIG_PATH}${PHP_LIBXML_PKG_CONFIG_PATH}${LIBZIP_PKG_CONFIG_PATH}${CURL_PHP_PKG_CONFIG_PATH}/usr/local/${LIBDIR}/pkgconfig:${PHP_CUSTOMSSL_PKG_CONFIG_PATH}" ../configure --enable-fpm${OPCACHEOPT}${PHPINTLOPT}${PCNTLOPT}${MCRYPT}${RECODEOPT}${SNMPOPT}${PHPEMBEDOPT}${PHPLTOOPT} --with-mhash ${ZLIBPHP_OPT} --with-gettext --enable-exif ${ZIPOPT} --with-bz2 --enable-soap --enable-sockets --enable-sysvmsg --enable-sysvsem --enable-sysvshm --enable-shmop --with-pear --enable-mbstring $PHP_OPENSSLOPT --with-mysql=mysqlnd --with-libdir=${LIBDIR} --with-mysqli=mysqlnd --with-mysql-sock=${PHP_MYSQLSOCKPATH}/mysql.sock --with-curl${CURL_SYSTEM_PREFIX}${PHP_OPENSSL_CURL_OPT}${CURL_CUSTOM_FLAGS} ${PHPGDOPT}${LIBGD_EXT_OPT}${PHP_LIBAVIF_OPT} --with-xmlrpc --enable-bcmath --enable-calendar${FTPEXTOPT} --enable-gd-native-ttf ${PHPFREETYPEOPT} ${PHPJPEGOPT} --with-png-dir=${PLIBDIR} ${PHPXPMOPT}${LIBVPXOPT}${TLIBOPT} --enable-pdo${PDOSQLLITE_OPT} --with-pdo-mysql=mysqlnd${MSSQLOPT} --enable-inline-optimization${IMAPOPT} --with-kerberos --with-readline --with-libedit --with-gmp --with-pspell --with-tidy --with-enchant --with-fpm-user=nginx --with-fpm-group=nginx${FILEINFOOPT}${SQLLITEOPT}${LDAPOPT}${PDOPGSQL_OPT}${OPCACHEHUGEPAGES_OPT}${PHP_PICOPT} --with-config-file-scan-dir=${CONFIGSCANDIR}${PHPDEBUGOPT}${FPMSYSTEMD_INTEGRATEOPT}${FFI_OPT}${SWOOLE_OPT}${LIBZIP_OPT}${ARGONTWO_OPT}${LIBSODIUM_OPT}${PHP_EXTRAOPTS}
-  # elif [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]] && [[ "$PHP_SECURED_PIE" = [yY] ]]; then
+  # elif [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' || "$CENTOS_TEN" -eq '10' ]] && [[ "$PHP_SECURED_PIE" = [yY] ]]; then
   #   echo "2 PIE"
   #   echo "LD_LIBRARY_PATH=${PHP_LIBXML_LD_LIBRARY_PATH}${LIBZIP_LD_PATH}${PHP_CUSTOMSSL_LD_LIBRARY_PATH}${CURL_PHP_LD_LIBRARY_PATH}/usr/local/${LIBDIR} PKG_CONFIG_PATH=\"${LIBGD_PKG_CONFIG_PATH}${PHP_LIBXML_PKG_CONFIG_PATH}${LIBZIP_PKG_CONFIG_PATH}${CURL_PHP_PKG_CONFIG_PATH}/usr/local/${LIBDIR}/pkgconfig:${PHP_CUSTOMSSL_PKG_CONFIG_PATH}\" PHP_LDFLAGS=\"$PHP_LDFLAGS -Wl,-z,relro,-z,now -pie\" ../configure --enable-fpm${OPCACHEOPT}${PHPINTLOPT}${PCNTLOPT}${MCRYPT}${RECODEOPT}${SNMPOPT}${PHPEMBEDOPT}${PHPLTOOPT} --with-mhash ${ZLIBPHP_OPT} --with-gettext --enable-exif ${ZIPOPT} --with-bz2 --enable-soap --enable-sockets --enable-sysvmsg --enable-sysvsem --enable-sysvshm --enable-shmop --with-pear --enable-mbstring $PHP_OPENSSLOPT --with-mysql=mysqlnd --with-libdir=${LIBDIR} --with-mysqli=mysqlnd --with-mysql-sock=${PHP_MYSQLSOCKPATH}/mysql.sock --with-curl${CURL_SYSTEM_PREFIX}${PHP_OPENSSL_CURL_OPT}${CURL_CUSTOM_FLAGS} ${PHPGDOPT}${LIBGD_EXT_OPT}${PHP_LIBAVIF_OPT} --with-xmlrpc --enable-bcmath --enable-calendar${FTPEXTOPT} --enable-gd-native-ttf ${PHPFREETYPEOPT} ${PHPJPEGOPT} --with-png-dir=${PLIBDIR} ${PHPXPMOPT}${LIBVPXOPT}${TLIBOPT} --enable-shmop --with-pear --enable-mbstring $PHP_OPENSSLOPT --with-mysql=mysqlnd --with-libdir=${LIBDIR} --with-mysqli=mysqlnd --enable-pdo${PDOSQLLITE_OPT} --with-pdo-mysql=mysqlnd${MSSQLOPT} --enable-inline-optimization${IMAPOPT} --with-kerberos --with-readline --with-libedit --with-gmp --with-pspell --with-tidy --with-enchant --with-fpm-user=nginx --with-fpm-group=nginx${FILEINFOOPT}${SQLLITEOPT}${LDAPOPT}${PDOPGSQL_OPT}${OPCACHEHUGEPAGES_OPT}${PHP_PICOPT} --with-config-file-scan-dir=${CONFIGSCANDIR}${PHPDEBUGOPT}${FPMSYSTEMD_INTEGRATEOPT}${FFI_OPT}${SWOOLE_OPT}${LIBZIP_OPT}${ARGONTWO_OPT}${LIBSODIUM_OPT}${PHP_EXTRAOPTS}"
   #   LD_LIBRARY_PATH=${PHP_LIBXML_LD_LIBRARY_PATH}${LIBZIP_LD_PATH}${PHP_CUSTOMSSL_LD_LIBRARY_PATH}${CURL_PHP_LD_LIBRARY_PATH}/usr/local/${LIBDIR} PKG_CONFIG_PATH="${LIBGD_PKG_CONFIG_PATH}${PHP_LIBXML_PKG_CONFIG_PATH}${LIBZIP_PKG_CONFIG_PATH}${CURL_PHP_PKG_CONFIG_PATH}/usr/local/${LIBDIR}/pkgconfig:${PHP_CUSTOMSSL_PKG_CONFIG_PATH}" PHP_LDFLAGS="$PHP_LDFLAGS -Wl,-z,relro,-z,now -pie" ../configure --enable-fpm${OPCACHEOPT}${PHPINTLOPT}${PCNTLOPT}${MCRYPT}${RECODEOPT}${SNMPOPT}${PHPEMBEDOPT}${PHPLTOOPT} --with-mhash ${ZLIBPHP_OPT} --with-gettext --enable-exif ${ZIPOPT} --with-bz2 --enable-soap --enable-sockets --enable-sysvmsg --enable-sysvsem --enable-sysvshm --enable-shmop --with-pear --enable-mbstring $PHP_OPENSSLOPT --with-mysql=mysqlnd --with-libdir=${LIBDIR} --with-mysqli=mysqlnd --with-mysql-sock=${PHP_MYSQLSOCKPATH}/mysql.sock --with-curl${CURL_SYSTEM_PREFIX}${PHP_OPENSSL_CURL_OPT}${CURL_CUSTOM_FLAGS} ${PHPGDOPT}${LIBGD_EXT_OPT}${PHP_LIBAVIF_OPT} --with-xmlrpc --enable-bcmath --enable-calendar${FTPEXTOPT} --enable-gd-native-ttf ${PHPFREETYPEOPT} ${PHPJPEGOPT} --with-png-dir=${PLIBDIR} ${PHPXPMOPT}${LIBVPXOPT}${TLIBOPT} --enable-shmop --with-pear --enable-mbstring $PHP_OPENSSLOPT --with-mysql=mysqlnd --with-libdir=${LIBDIR} --with-mysqli=mysqlnd --enable-pdo${PDOSQLLITE_OPT} --with-pdo-mysql=mysqlnd${MSSQLOPT} --enable-inline-optimization${IMAPOPT} --with-kerberos --with-readline --with-libedit --with-gmp --with-pspell --with-tidy --with-enchant --with-fpm-user=nginx --with-fpm-group=nginx${FILEINFOOPT}${SQLLITEOPT}${LDAPOPT}${PDOPGSQL_OPT}${OPCACHEHUGEPAGES_OPT}${PHP_PICOPT} --with-config-file-scan-dir=${CONFIGSCANDIR}${PHPDEBUGOPT}${FPMSYSTEMD_INTEGRATEOPT}${FFI_OPT}${SWOOLE_OPT}${LIBZIP_OPT}${ARGONTWO_OPT}${LIBSODIUM_OPT}${PHP_EXTRAOPTS}
-  elif [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]]; then
+  elif [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' || "$CENTOS_TEN" -eq '10' ]]; then
     echo "2"
     echo "LD_LIBRARY_PATH=${PHP_LIBXML_LD_LIBRARY_PATH}${LIBZIP_LD_PATH}${PHP_CUSTOMSSL_LD_LIBRARY_PATH}${CURL_PHP_LD_LIBRARY_PATH}/usr/local/${LIBDIR} PKG_CONFIG_PATH=\"${LIBGD_PKG_CONFIG_PATH}${PHP_LIBXML_PKG_CONFIG_PATH}${LIBZIP_PKG_CONFIG_PATH}${CURL_PHP_PKG_CONFIG_PATH}/usr/local/${LIBDIR}/pkgconfig:${PHP_CUSTOMSSL_PKG_CONFIG_PATH}\" ../configure --enable-fpm${OPCACHEOPT}${PHPINTLOPT}${PCNTLOPT}${MCRYPT}${RECODEOPT}${SNMPOPT}${PHPEMBEDOPT}${PHPLTOOPT} --with-mhash ${ZLIBPHP_OPT} --with-gettext --enable-exif ${ZIPOPT} --with-bz2 --enable-soap --enable-sockets --enable-sysvmsg --enable-sysvsem --enable-sysvshm --enable-shmop --with-pear --enable-mbstring $PHP_OPENSSLOPT --with-mysql=mysqlnd --with-libdir=${LIBDIR} --with-mysqli=mysqlnd --with-mysql-sock=${PHP_MYSQLSOCKPATH}/mysql.sock --with-curl${CURL_SYSTEM_PREFIX}${PHP_OPENSSL_CURL_OPT}${CURL_CUSTOM_FLAGS} ${PHPGDOPT}${LIBGD_EXT_OPT}${PHP_LIBAVIF_OPT} --with-xmlrpc --enable-bcmath --enable-calendar${FTPEXTOPT} --enable-gd-native-ttf ${PHPFREETYPEOPT} ${PHPJPEGOPT} --with-png-dir=${PLIBDIR} ${PHPXPMOPT}${LIBVPXOPT}${TLIBOPT} --enable-shmop --with-pear --enable-mbstring $PHP_OPENSSLOPT --with-mysql=mysqlnd --with-libdir=${LIBDIR} --with-mysqli=mysqlnd --enable-pdo${PDOSQLLITE_OPT} --with-pdo-mysql=mysqlnd${MSSQLOPT} --enable-inline-optimization${IMAPOPT} --with-kerberos --with-readline --with-libedit --with-gmp --with-pspell --with-tidy --with-enchant --with-fpm-user=nginx --with-fpm-group=nginx${FILEINFOOPT}${SQLLITEOPT}${LDAPOPT}${PDOPGSQL_OPT}${OPCACHEHUGEPAGES_OPT}${PHP_PICOPT} --with-config-file-scan-dir=${CONFIGSCANDIR}${PHPDEBUGOPT}${FPMSYSTEMD_INTEGRATEOPT}${FFI_OPT}${SWOOLE_OPT}${LIBZIP_OPT}${ARGONTWO_OPT}${LIBSODIUM_OPT}${PHP_EXTRAOPTS}"
     LD_LIBRARY_PATH=${PHP_LIBXML_LD_LIBRARY_PATH}${LIBZIP_LD_PATH}${PHP_CUSTOMSSL_LD_LIBRARY_PATH}${CURL_PHP_LD_LIBRARY_PATH}/usr/local/${LIBDIR} PKG_CONFIG_PATH="${LIBGD_PKG_CONFIG_PATH}${PHP_LIBXML_PKG_CONFIG_PATH}${LIBZIP_PKG_CONFIG_PATH}${CURL_PHP_PKG_CONFIG_PATH}/usr/local/${LIBDIR}/pkgconfig:${PHP_CUSTOMSSL_PKG_CONFIG_PATH}" ../configure --enable-fpm${OPCACHEOPT}${PHPINTLOPT}${PCNTLOPT}${MCRYPT}${RECODEOPT}${SNMPOPT}${PHPEMBEDOPT}${PHPLTOOPT} --with-mhash ${ZLIBPHP_OPT} --with-gettext --enable-exif ${ZIPOPT} --with-bz2 --enable-soap --enable-sockets --enable-sysvmsg --enable-sysvsem --enable-sysvshm --enable-shmop --with-pear --enable-mbstring $PHP_OPENSSLOPT --with-mysql=mysqlnd --with-libdir=${LIBDIR} --with-mysqli=mysqlnd --with-mysql-sock=${PHP_MYSQLSOCKPATH}/mysql.sock --with-curl${CURL_SYSTEM_PREFIX}${PHP_OPENSSL_CURL_OPT}${CURL_CUSTOM_FLAGS} ${PHPGDOPT}${LIBGD_EXT_OPT}${PHP_LIBAVIF_OPT} --with-xmlrpc --enable-bcmath --enable-calendar${FTPEXTOPT} --enable-gd-native-ttf ${PHPFREETYPEOPT} ${PHPJPEGOPT} --with-png-dir=${PLIBDIR} ${PHPXPMOPT}${LIBVPXOPT}${TLIBOPT} --enable-shmop --with-pear --enable-mbstring $PHP_OPENSSLOPT --with-mysql=mysqlnd --with-libdir=${LIBDIR} --with-mysqli=mysqlnd --enable-pdo${PDOSQLLITE_OPT} --with-pdo-mysql=mysqlnd${MSSQLOPT} --enable-inline-optimization${IMAPOPT} --with-kerberos --with-readline --with-libedit --with-gmp --with-pspell --with-tidy --with-enchant --with-fpm-user=nginx --with-fpm-group=nginx${FILEINFOOPT}${SQLLITEOPT}${LDAPOPT}${PDOPGSQL_OPT}${OPCACHEHUGEPAGES_OPT}${PHP_PICOPT} --with-config-file-scan-dir=${CONFIGSCANDIR}${PHPDEBUGOPT}${FPMSYSTEMD_INTEGRATEOPT}${FFI_OPT}${SWOOLE_OPT}${LIBZIP_OPT}${ARGONTWO_OPT}${LIBSODIUM_OPT}${PHP_EXTRAOPTS}
