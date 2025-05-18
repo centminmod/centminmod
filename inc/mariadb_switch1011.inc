@@ -218,7 +218,9 @@ install_native_mariadb_ten_eleven() {
   if [[ "$install_native_mariadb_ten_eleven_mode" = 'install-fresh' ]]; then
     systemctl stop mariadb
     
-    ${YUMDNFBIN}${CACHESKIP} -y remove mysql mysql-libs
+    ${YUMDNFBIN}${CACHESKIP} -y mysql8.4-server mysql8.4-libs mysql8.4-common perl-DBD-MySQL perl-DBI
+    echo
+    ${YUMDNFBIN} -q list installed | grep -i mysql
     
     if [ ! -d /home/mysqltmp ]; then
       mkdir /home/mysqltmp

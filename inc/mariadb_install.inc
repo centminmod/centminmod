@@ -3,6 +3,9 @@ perdbiinstall() {
     if [[ $(rpm -q perl-DBD-MySQL >/dev/null 2>&1; echo $?) != '0' ]]; then
         yum${CACHESKIP} -q -y install perl-DBD-MySQL --disableplugin=priorities
     fi
+    if [[ $(rpm -q perl-DBI >/dev/null 2>&1; echo $?) != '0' ]]; then
+        yum${CACHESKIP} -q -y install perl-DBI --disableplugin=priorities
+    fi
     if [[ $(rpm -q net-snmp-devel >/dev/null 2>&1; echo $?) != '0' ]]; then
         yum${CACHESKIP} -q -y install cyrus-imapd mytop net-snmp net-snmp-agent-libs net-snmp-devel --disableplugin=priorities
     fi
