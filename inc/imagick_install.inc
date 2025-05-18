@@ -149,7 +149,7 @@ imagemagick_source_install() {
         tar xzf ImageMagick.tar.gz
         cd ImageMagick-7*
         make clean
-        if [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]] && [[ -d /opt/libheif/lib64 && -d /opt/libheif/include ]]; then
+        if [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' || "$CENTOS_TEN" -eq '10' ]] && [[ -d /opt/libheif/lib64 && -d /opt/libheif/include ]]; then
             echo
             echo "libheif detected for EL8/EL9"
             IMAGEMAGICK_PKG_CONFIG_PATH="/opt/libheif/lib64/pkgconfig:${PKG_CONFIG_PATH}:"
@@ -171,7 +171,7 @@ imagemagick_source_install() {
 
 checkphpext() {
 
-  if [[ "$CENTOS_SEVEN" -eq '7' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]] && [[ "$PHPMVER" = '7.0' || "$PHPMUVER" = '7.0' || "$PHPMVER" = '7.1' || "$PHPMUVER" = '7.1' || "$PHPMVER" = '7.2' || "$PHPMUVER" = '7.2' || "$PHPMVER" = '7.3' || "$PHPMUVER" = '7.3' || "$PHPMVER" = '7.4' || "$PHPMUVER" = '7.4' || "$PHPMVER" = '8.0' || "$PHPMUVER" = '8.0' || "$PHPMVER" = '8.1' || "$PHPMUVER" = '8.1' || "$PHPMVER" = '8.2' || "$PHPMUVER" = '8.2' || "$PHPMVER" = '8.3' || "$PHPMUVER" = '8.3' || "$PHPMVER" = '8.4' || "$PHPMUVER" = '8.4' || "$PHPVER_ID" -ge '80000' ]]; then
+  if [[ "$CENTOS_SEVEN" -eq '7' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' || "$CENTOS_TEN" -eq '10' ]] && [[ "$PHPMVER" = '7.0' || "$PHPMUVER" = '7.0' || "$PHPMVER" = '7.1' || "$PHPMUVER" = '7.1' || "$PHPMVER" = '7.2' || "$PHPMUVER" = '7.2' || "$PHPMVER" = '7.3' || "$PHPMUVER" = '7.3' || "$PHPMVER" = '7.4' || "$PHPMUVER" = '7.4' || "$PHPMVER" = '8.0' || "$PHPMUVER" = '8.0' || "$PHPMVER" = '8.1' || "$PHPMUVER" = '8.1' || "$PHPMVER" = '8.2' || "$PHPMUVER" = '8.2' || "$PHPMVER" = '8.3' || "$PHPMUVER" = '8.3' || "$PHPMVER" = '8.4' || "$PHPMUVER" = '8.4' || "$PHPVER_ID" -ge '80000' ]]; then
     # PHP 7+ requires imagick >3.4.4 i.e. 3.6.0+
     # PHP 5.x requires imagick <=3.4.4
     IMAGICKPHP_VER="$IMAGICKPHP_SEVEN_VER"
@@ -198,7 +198,7 @@ checkimagicksys() {
     else
         VERSIONLOCK_REPO=""
     fi
-    if [[ "$CENTOS_EIGHT" = '8' || "$CENTOS_NINE" = '9' ]] && [[ "$IMAGEMAGICK_SEVEN" = [yY] ]]; then
+    if [[ "$CENTOS_EIGHT" = '8' || "$CENTOS_NINE" = '9' || "$CENTOS_TEN" = '10' ]] && [[ "$IMAGEMAGICK_SEVEN" = [yY] ]]; then
         REMI_IMAGEMAGICK_PKGNAME='7'
     else
         if [[ "$CENTOS_NINE" = '9' ]]; then
@@ -259,11 +259,11 @@ checkimagicksys() {
         $YUMDNFBIN -y install open-sans-fonts
     fi
 
-    if [[ "$CENTOS_EIGHT" = '8' || "$CENTOS_NINE" = '9' ]] && [ -z "$(rpm -qa openjpeg2-devel)" ]; then
+    if [[ "$CENTOS_EIGHT" = '8' || "$CENTOS_NINE" = '9' || "$CENTOS_TEN" = '10' ]] && [ -z "$(rpm -qa openjpeg2-devel)" ]; then
         $YUMDNFBIN -y install openjpeg2-devel
     fi
 
-    if [[ "$CENTOS_EIGHT" = '8' || "$CENTOS_NINE" = '9' ]] && [[ -z "$(rpm -qa libjxl)" || -z "$(rpm -qa liblqr)" ]]; then
+    if [[ "$CENTOS_EIGHT" = '8' || "$CENTOS_NINE" = '9' || "$CENTOS_TEN" = '10' ]] && [[ -z "$(rpm -qa libjxl)" || -z "$(rpm -qa liblqr)" ]]; then
         $YUMDNFBIN -y install openjpeg2-devel djvulibre-libs highway jxl-pixbuf-loader libaom libdav1d libheif libjxl liblqr-1 libvmaf
     fi
 
@@ -276,7 +276,7 @@ checkimagicksys() {
                     # skip for initial installs to speed up install
                     if [[ "$INITIALINSTALL" != [yY] ]]; then
                         # yum clean all >/dev/null 2>&1
-                        if [[ "$CENTOS_EIGHT" = '8' || "$CENTOS_NINE" = '9' ]] && [[ "$IMAGEMAGICK_SEVEN" = [yY] ]]; then
+                        if [[ "$CENTOS_EIGHT" = '8' || "$CENTOS_NINE" = '9' || "$CENTOS_TEN" = '10' ]] && [[ "$IMAGEMAGICK_SEVEN" = [yY] ]]; then
                             if [[ ! "$(rpm -qi ImageMagick7 | grep 'Release' | grep -o remi >/dev/null 2>&1; echo $?)" = '0' ]]; then
                                 echo "############## ImageMagick7 Routine Start ##############"
                                 echo "$YUMDNFBIN versionlock delete ImageMagick${REMI_IMAGEMAGICK_PKGNAME} ImageMagick${REMI_IMAGEMAGICK_PKGNAME}-devel ImageMagick${REMI_IMAGEMAGICK_PKGNAME}-c++ ImageMagick${REMI_IMAGEMAGICK_PKGNAME}-c++-devel ImageMagick${REMI_IMAGEMAGICK_PKGNAME}-libs${IMG_HEIFOPT} ImageMagick${REMI_IMAGEMAGICK_PKGNAME}-heic ImageMagick${REMI_IMAGEMAGICK_PKGNAME}-djvu LibRaw"
@@ -285,12 +285,12 @@ checkimagicksys() {
                                 $YUMDNFBIN versionlock delete ImageMagick ImageMagick-devel ImageMagick-c++ ImageMagick-c++-devel ImageMagick-libs${IMG_HEIFOPT} ImageMagick-heic ImageMagick${REMI_IMAGEMAGICK_PKGNAME}-djvu LibRaw
                                 echo "$YUMDNFBIN -y remove ImageMagick ImageMagick-c++ ImageMagick-c++-devel ImageMagick-devel ImageMagick-djvu ImageMagick-libs"
                                 $YUMDNFBIN -y remove ImageMagick ImageMagick-c++ ImageMagick-c++-devel ImageMagick-devel ImageMagick-djvu ImageMagick-libs
-                                if [[ "$CENTOS_EIGHT" = '8' || "$CENTOS_NINE" = '9' ]] && [[ -z "$(rpm -qa libjxl)" || -z "$(rpm -qa liblqr)" ]]; then
+                                if [[ "$CENTOS_EIGHT" = '8' || "$CENTOS_NINE" = '9' || "$CENTOS_TEN" = '10' ]] && [[ -z "$(rpm -qa libjxl)" || -z "$(rpm -qa liblqr)" ]]; then
                                     $YUMDNFBIN -y install openjpeg2-devel djvulibre-libs highway jxl-pixbuf-loader libaom libdav1d libheif libjxl liblqr-1 libvmaf
                                 fi
                                 echo "############## ImageMagick7 Routine End ##############"
                             fi
-                        elif [[ "$CENTOS_EIGHT" = '8' || "$CENTOS_NINE" = '9' ]] && [[ "$IMAGEMAGICK_SEVEN" != [yY] ]]; then
+                        elif [[ "$CENTOS_EIGHT" = '8' || "$CENTOS_NINE" = '9' || "$CENTOS_TEN" = '10' ]] && [[ "$IMAGEMAGICK_SEVEN" != [yY] ]]; then
                             if [[ ! "$(rpm -qi ImageMagick6 | grep 'Release' | grep -o remi >/dev/null 2>&1; echo $?)" = '0' ]]; then
                                 echo "############## ImageMagick6 Routine Start ##############"
                                 echo "$YUMDNFBIN versionlock delete ImageMagick${REMI_IMAGEMAGICK_PKGNAME} ImageMagick${REMI_IMAGEMAGICK_PKGNAME}-devel ImageMagick${REMI_IMAGEMAGICK_PKGNAME}-c++ ImageMagick${REMI_IMAGEMAGICK_PKGNAME}-c++-devel ImageMagick${REMI_IMAGEMAGICK_PKGNAME}-libs${IMG_HEIFOPT} ImageMagick${REMI_IMAGEMAGICK_PKGNAME}-heic ImageMagick${REMI_IMAGEMAGICK_PKGNAME}-djvu LibRaw"
@@ -299,7 +299,7 @@ checkimagicksys() {
                                 $YUMDNFBIN versionlock delete ImageMagick ImageMagick-devel ImageMagick-c++ ImageMagick-c++-devel ImageMagick-libs${IMG_HEIFOPT} ImageMagick-heic ImageMagick${REMI_IMAGEMAGICK_PKGNAME}-djvu LibRaw
                                 echo "$YUMDNFBIN -y remove ImageMagick ImageMagick-c++ ImageMagick-c++-devel ImageMagick-devel ImageMagick-djvu ImageMagick-libs"
                                 $YUMDNFBIN -y remove ImageMagick ImageMagick-c++ ImageMagick-c++-devel ImageMagick-devel ImageMagick-djvu ImageMagick-libs
-                                if [[ "$CENTOS_EIGHT" = '8' || "$CENTOS_NINE" = '9' ]] && [[ -z "$(rpm -qa libjxl)" || -z "$(rpm -qa liblqr)" ]]; then
+                                if [[ "$CENTOS_EIGHT" = '8' || "$CENTOS_NINE" = '9' || "$CENTOS_TEN" = '10' ]] && [[ -z "$(rpm -qa libjxl)" || -z "$(rpm -qa liblqr)" ]]; then
                                     $YUMDNFBIN -y install openjpeg2-devel djvulibre-libs highway jxl-pixbuf-loader libaom libdav1d libheif libjxl liblqr-1 libvmaf
                                 fi
                                 echo "############## ImageMagick6 Routine End ##############"
@@ -455,10 +455,10 @@ checkimagicksys() {
             # imagemagick version by doing an unlock of the version
             yum versionlock delete ImageMagick6 ImageMagick6-devel ImageMagick6-c++ ImageMagick6-c++-devel ImageMagick6-libs${IMG_HEIFOPT} ImageMagick-djvu LibRaw
             yum versionlock delete ImageMagick${REMI_IMAGEMAGICK_PKGNAME} ImageMagick${REMI_IMAGEMAGICK_PKGNAME}-devel ImageMagick${REMI_IMAGEMAGICK_PKGNAME}-c++ ImageMagick${REMI_IMAGEMAGICK_PKGNAME}-c++-devel ImageMagick${REMI_IMAGEMAGICK_PKGNAME}-libs${IMG_HEIFOPT} ImageMagick${REMI_IMAGEMAGICK_PKGNAME}-djvu LibRaw
-            if [[ "$CENTOS_EIGHT" = '8' || "$CENTOS_NINE" = '9' ]]; then
+            if [[ "$CENTOS_EIGHT" = '8' || "$CENTOS_NINE" = '9' || "$CENTOS_TEN" = '10' ]]; then
                 yum versionlock delete ImageMagick${REMI_IMAGEMAGICK_PKGNAME}-djvu ImageMagick${REMI_IMAGEMAGICK_PKGNAME}-heic
             fi
-            if [[ "$CENTOS_EIGHT" = '8' || "$CENTOS_NINE" = '9' ]]; then
+            if [[ "$CENTOS_EIGHT" = '8' || "$CENTOS_NINE" = '9' || "$CENTOS_TEN" = '10' ]]; then
                 yum versionlock ImageMagick${REMI_IMAGEMAGICK_PKGNAME} ImageMagick${REMI_IMAGEMAGICK_PKGNAME}-devel ImageMagick${REMI_IMAGEMAGICK_PKGNAME}-c++ ImageMagick${REMI_IMAGEMAGICK_PKGNAME}-c++-devel ImageMagick${REMI_IMAGEMAGICK_PKGNAME}-libs${IMG_HEIFOPT} LibRaw ImageMagick${REMI_IMAGEMAGICK_PKGNAME}-djvu ImageMagick${REMI_IMAGEMAGICK_PKGNAME}-heic
             elif [[ "$CENTOS_SIX" = '6' ]]; then
                 yum versionlock ImageMagick${REMI_IMAGEMAGICK_PKGNAME} ImageMagick${REMI_IMAGEMAGICK_PKGNAME}-devel ImageMagick${REMI_IMAGEMAGICK_PKGNAME}-c++ ImageMagick${REMI_IMAGEMAGICK_PKGNAME}-c++-devel ImageMagick${REMI_IMAGEMAGICK_PKGNAME}-libs${IMG_HEIFOPT} LibRaw
@@ -486,7 +486,7 @@ imagickinstall() {
         echo "*************************************************"
         cecho "* Installing libheif dependencies & ImageMagick 7" $boldgreen
         echo "*************************************************"
-        if [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]] && [[ ! -d /opt/libheif/lib64 && ! -d /opt/libheif/include ]]; then
+        if [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' || "$CENTOS_TEN" -eq '10' ]] && [[ ! -d /opt/libheif/lib64 && ! -d /opt/libheif/include ]]; then
             libheif_install
         fi
         imagemagick_source_install
@@ -494,7 +494,7 @@ imagickinstall() {
         imagemagick_source_uninstall
     fi
 
-    if [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]] && [[ -d /opt/libheif/lib64 && -d /opt/libheif/include ]]; then
+    if [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' || "$CENTOS_TEN" -eq '10' ]] && [[ -d /opt/libheif/lib64 && -d /opt/libheif/include ]]; then
         echo
         echo "libheif detected for EL8/EL9"
         export PKG_CONFIG_PATH="/opt/libheif/lib64/pkgconfig:$PKG_CONFIG_PATH"

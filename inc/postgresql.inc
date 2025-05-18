@@ -282,7 +282,13 @@ postgresqlinstall() {
             ipv_forceopt_pgsl=' -4'
         fi
         # cd $DIR_TMP
-        if [[ "$CENTOS_NINE" = '9' ]]; then
+        if [[ "$CENTOS_TEN" = '10' ]]; then
+            # install postgresql 16 instead of default el10 module postgresql 13
+            time dnf -y module disable postgresql
+            wget${ipv_forceopt_pgsl} https://download.postgresql.org/pub/repos/yum/reporpms/EL-10-x86_64/pgdg-redhat-repo-latest.noarch.rpm -O ${DIR_TMP}/pgdg-redhat-repo-latest.noarch.rpm
+            rpm -Uvh ${DIR_TMP}/pgdg-redhat-repo-latest.noarch.rpm
+            yum -y makecache
+        elif [[ "$CENTOS_NINE" = '9' ]]; then
             # install postgresql 16 instead of default el9 module postgresql 13
             time dnf -y module disable postgresql
             wget${ipv_forceopt_pgsl} https://download.postgresql.org/pub/repos/yum/reporpms/EL-9-x86_64/pgdg-redhat-repo-latest.noarch.rpm -O ${DIR_TMP}/pgdg-redhat-repo-latest.noarch.rpm
@@ -315,7 +321,7 @@ postgresqlinstall() {
         cat /etc/yum.repos.d/pgdg-redhat-all.repo
     
         echo
-        if [[ "$CENTOS_EIGHT" = '8' || "$CENTOS_NINE" = '9' ]]; then
+        if [[ "$CENTOS_EIGHT" = '8' || "$CENTOS_NINE" = '9' || "$CENTOS_TEN" = '10' ]]; then
           # rpm --import https://download.postgresql.org/pub/repos/yum/RPM-GPG-KEY-PGDG-16
           # rpm --import https://download.postgresql.org/pub/repos/yum/RPM-GPG-KEY-PGDG
           rpm --import https://download.postgresql.org/pub/repos/yum/keys/PGDG-RPM-GPG-KEY-RHEL
@@ -334,7 +340,15 @@ postgresqlinstall() {
           time $YUMDNFBIN -y install postgresql15 postgresql15-devel libpq5-devel postgresql15-contrib postgresql15-libs postgresql15-server --disableplugin=priorities${DISABLEREPO_DNF}
         fi
 
-        if [[ "$CENTOS_NINE" = '9' ]]; then
+        if [[ "$CENTOS_TEN" = '10' ]]; then
+          echo
+          if [[ ! -d "$PGSQL16_DATA_DIR" && ! -f "$PGSQL16_DATA_DIR/PG_VERSION" && ! -d "$PGSQL16_DATA_DIR/base" ]]; then
+            /usr/pgsql-16/bin/postgresql-16-setup initdb
+          fi
+          systemctl enable postgresql-16
+          systemctl start postgresql-16
+          systemctl status postgresql-16 --no-pager
+        elif [[ "$CENTOS_NINE" = '9' ]]; then
           echo
           if [[ ! -d "$PGSQL16_DATA_DIR" && ! -f "$PGSQL16_DATA_DIR/PG_VERSION" && ! -d "$PGSQL16_DATA_DIR/base" ]]; then
             /usr/pgsql-16/bin/postgresql-16-setup initdb
@@ -365,7 +379,7 @@ postgresqlinstall() {
         fi
     fi
   fi
-  if [[ "$CENTOS_EIGHT" = '8' || "$CENTOS_NINE" = '9' ]] && [[ "$POSTGRESQL_BRANCHVER" = '16' && ! -d "$PGSQL16_DATA_DIR" ]]; then
+  if [[ "$CENTOS_EIGHT" = '8' || "$CENTOS_NINE" = '9' || "$CENTOS_TEN" = '10' ]] && [[ "$POSTGRESQL_BRANCHVER" = '16' && ! -d "$PGSQL16_DATA_DIR" ]]; then
     # https://www.postgresql.org/download/linux/redhat/
     if [[ ! -f /usr/pgsql-16/bin/pg_config || ! -f /usr/pgsql-16/lib/libpq.a || ! -f /etc/yum.repos.d/pgdg-16-redhat.repo ]]; then
         echo
@@ -376,7 +390,17 @@ postgresqlinstall() {
             ipv_forceopt_pgsl=' -4'
         fi
         # cd $DIR_TMP
-        if [[ "$CENTOS_NINE" = '9' ]]; then
+        if [[ "$CENTOS_TEN" = '10' ]]; then
+            # install postgresql 16 instead of default el10 module postgresql 13
+            time dnf -y module disable postgresql
+            wget${ipv_forceopt_pgsl} https://download.postgresql.org/pub/repos/yum/reporpms/EL-10-x86_64/pgdg-redhat-repo-latest.noarch.rpm -O ${DIR_TMP}/pgdg-redhat-repo-latest.noarch.rpm
+            # rpm --import https://download.postgresql.org/pub/repos/yum/RPM-GPG-KEY-PGDG-16
+            # rpm --import https://download.postgresql.org/pub/repos/yum/RPM-GPG-KEY-PGDG
+            rpm --import https://download.postgresql.org/pub/repos/yum/keys/PGDG-RPM-GPG-KEY-RHEL
+            rpm -Uvh ${DIR_TMP}/pgdg-redhat-repo-latest.noarch.rpm
+            sed -i 's/gpgcheck=9/gpgcheck=1/g' /etc/yum.repos.d/pgdg-redhat-all.repo
+            yum -y makecache
+        elif [[ "$CENTOS_NINE" = '9' ]]; then
             # install postgresql 16 instead of default el9 module postgresql 13
             time dnf -y module disable postgresql
             wget${ipv_forceopt_pgsl} https://download.postgresql.org/pub/repos/yum/reporpms/EL-9-x86_64/pgdg-redhat-repo-latest.noarch.rpm -O ${DIR_TMP}/pgdg-redhat-repo-latest.noarch.rpm
@@ -423,7 +447,7 @@ postgresqlinstall() {
         cat /etc/yum.repos.d/pgdg-redhat-all.repo
     
         echo
-        if [[ "$CENTOS_EIGHT" = '8' || "$CENTOS_NINE" = '9' ]]; then
+        if [[ "$CENTOS_EIGHT" = '8' || "$CENTOS_NINE" = '9' || "$CENTOS_TEN" = '10' ]]; then
           time $YUMDNFBIN -y list postgresql16 postgresql16-devel libpq5-devel postgresql16-contrib postgresql16-libs postgresql16-server --disableplugin=priorities${DISABLEREPO_DNF}
           echo
           time $YUMDNFBIN -y install postgresql16 postgresql16-devel libpq5-devel postgresql16-contrib postgresql16-libs postgresql16-server --disableplugin=priorities${DISABLEREPO_DNF} --skip-broken
@@ -434,7 +458,15 @@ postgresqlinstall() {
           time $YUMDNFBIN -y install postgresql15 postgresql15-devel libpq5-devel postgresql15-contrib postgresql15-libs postgresql15-server --disableplugin=priorities${DISABLEREPO_DNF}
         fi
 
-        if [[ "$CENTOS_NINE" = '9' ]]; then
+        if [[ "$CENTOS_TEN" = '10' ]]; then
+          echo
+          if [[ ! -d "$PGSQL16_DATA_DIR" && ! -f "$PGSQL16_DATA_DIR/PG_VERSION" && ! -d "$PGSQL16_DATA_DIR/base" ]]; then
+            /usr/pgsql-16/bin/postgresql-16-setup initdb
+          fi
+          systemctl enable postgresql-16
+          systemctl start postgresql-16
+          systemctl status postgresql-16 --no-pager
+        elif [[ "$CENTOS_NINE" = '9' ]]; then
           echo
           if [[ ! -d "$PGSQL16_DATA_DIR" && ! -f "$PGSQL16_DATA_DIR/PG_VERSION" && ! -d "$PGSQL16_DATA_DIR/base" ]]; then
             /usr/pgsql-16/bin/postgresql-16-setup initdb
@@ -465,7 +497,7 @@ postgresqlinstall() {
         fi
     fi
   fi
-  if [[ "$CENTOS_EIGHT" = '8' || "$CENTOS_NINE" = '9' ]] && [[ "$POSTGRESQL_BRANCHVER" = '17' && ! -d "$PGSQL17_DATA_DIR" ]]; then
+  if [[ "$CENTOS_EIGHT" = '8' || "$CENTOS_NINE" = '9' || "$CENTOS_TEN" = '10' ]] && [[ "$POSTGRESQL_BRANCHVER" = '17' && ! -d "$PGSQL17_DATA_DIR" ]]; then
     # https://www.postgresql.org/download/linux/redhat/
     if [[ ! -f /usr/pgsql-17/bin/pg_config || ! -f /usr/pgsql-17/lib/libpq.a || ! -f /etc/yum.repos.d/pgdg-17-redhat.repo ]]; then
         echo
@@ -476,7 +508,17 @@ postgresqlinstall() {
             ipv_forceopt_pgsl=' -4'
         fi
         # cd $DIR_TMP
-        if [[ "$CENTOS_NINE" = '9' ]]; then
+        if [[ "$CENTOS_TEN" = '10' ]]; then
+            # install postgresql 17 instead of default el10 module postgresql 13
+            time dnf -y module disable postgresql
+            wget${ipv_forceopt_pgsl} https://download.postgresql.org/pub/repos/yum/reporpms/EL-10-x86_64/pgdg-redhat-repo-latest.noarch.rpm -O ${DIR_TMP}/pgdg-redhat-repo-latest.noarch.rpm
+            # rpm --import https://download.postgresql.org/pub/repos/yum/RPM-GPG-KEY-PGDG-17
+            # rpm --import https://download.postgresql.org/pub/repos/yum/RPM-GPG-KEY-PGDG
+            rpm --import https://download.postgresql.org/pub/repos/yum/keys/PGDG-RPM-GPG-KEY-RHEL
+            rpm -Uvh ${DIR_TMP}/pgdg-redhat-repo-latest.noarch.rpm
+            sed -i 's/gpgcheck=9/gpgcheck=1/g' /etc/yum.repos.d/pgdg-redhat-all.repo
+            yum -y makecache
+        elif [[ "$CENTOS_NINE" = '9' ]]; then
             # install postgresql 17 instead of default el9 module postgresql 13
             time dnf -y module disable postgresql
             wget${ipv_forceopt_pgsl} https://download.postgresql.org/pub/repos/yum/reporpms/EL-9-x86_64/pgdg-redhat-repo-latest.noarch.rpm -O ${DIR_TMP}/pgdg-redhat-repo-latest.noarch.rpm
@@ -523,7 +565,7 @@ postgresqlinstall() {
         cat /etc/yum.repos.d/pgdg-redhat-all.repo
     
         echo
-        if [[ "$CENTOS_EIGHT" = '8' || "$CENTOS_NINE" = '9' ]]; then
+        if [[ "$CENTOS_EIGHT" = '8' || "$CENTOS_NINE" = '9' || "$CENTOS_TEN" = '10' ]]; then
           time $YUMDNFBIN -y list postgresql17 postgresql17-devel libpq5-devel postgresql17-contrib postgresql17-libs postgresql17-server --disableplugin=priorities${DISABLEREPO_DNF}
           echo
           time $YUMDNFBIN -y install postgresql17 postgresql17-devel libpq5-devel postgresql17-contrib postgresql17-libs postgresql17-server --disableplugin=priorities${DISABLEREPO_DNF} --skip-broken
@@ -534,7 +576,15 @@ postgresqlinstall() {
           time $YUMDNFBIN -y install postgresql15 postgresql15-devel libpq5-devel postgresql15-contrib postgresql15-libs postgresql15-server --disableplugin=priorities${DISABLEREPO_DNF}
         fi
 
-        if [[ "$CENTOS_NINE" = '9' ]]; then
+        if [[ "$CENTOS_TEN" = '10' ]]; then
+          echo
+          if [[ ! -d "$PGSQL17_DATA_DIR" && ! -f "$PGSQL17_DATA_DIR/PG_VERSION" && ! -d "$PGSQL17_DATA_DIR/base" ]]; then
+            /usr/pgsql-17/bin/postgresql-17-setup initdb
+          fi
+          systemctl enable postgresql-17
+          systemctl start postgresql-17
+          systemctl status postgresql-17 --no-pager
+        elif [[ "$CENTOS_NINE" = '9' ]]; then
           echo
           if [[ ! -d "$PGSQL17_DATA_DIR" && ! -f "$PGSQL17_DATA_DIR/PG_VERSION" && ! -d "$PGSQL17_DATA_DIR/base" ]]; then
             /usr/pgsql-17/bin/postgresql-17-setup initdb

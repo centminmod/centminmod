@@ -1,10 +1,10 @@
 tmpsetup_native_switchback() {
-  if [[ "$CENTOS_SEVEN" -eq '7' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]]; then
+  if [[ "$CENTOS_SEVEN" -eq '7' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' || "$CENTOS_TEN" -eq '10' ]]; then
     if [ ! -d /etc/systemd/system/mariadb.service.d/ ]; then
       mkdir -p /etc/systemd/system/mariadb.service.d/
     fi
   fi
-  if [[ "$CENTOS_SEVEN" -eq '7' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]] && [[ ! -f /etc/systemd/system/mariadb.service.d/protecthome.conf && -d /etc/systemd/system/mariadb.service.d/ ]]; then
+  if [[ "$CENTOS_SEVEN" -eq '7' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' || "$CENTOS_TEN" -eq '10' ]] && [[ ! -f /etc/systemd/system/mariadb.service.d/protecthome.conf && -d /etc/systemd/system/mariadb.service.d/ ]]; then
     echo "Update MariaDB 10 setting for ProtectHome=false"
 cat > "/etc/systemd/system/mariadb.service.d/protecthome.conf" <<TDF
 [Service]
@@ -185,7 +185,7 @@ install_native_mariadb_ten_three() {
   MDB_CITY=$(echo "$MDB_GEOIP" | jq -r '.city')
   MDB_COLO=$(echo "$MDB_GEOIP" | jq -r '.colo')
 
-  if [[ "$CENTOS_EIGHT" = '8' || "$CENTOS_NINE" = '9' ]]; then
+  if [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' || "$CENTOS_TEN" -eq '10' ]]; then
     yumpriorities_opt=""
     # yumdisable_appstream=' --disablerepo=AppStream'
     yumdisable_appstream=""
@@ -677,6 +677,20 @@ install_official_mariadb_ten_three() {
   
       cp -a /etc/my.cnf /etc/my.cnf-newold
   elif [[ "$CENTOS_NINE" = '9' ]]; then
+      # run for CentOS 9.x
+      echo "time ${YUMDNFBIN}${CACHESKIP} -q -y install perl-DBI"
+      time ${YUMDNFBIN}${CACHESKIP} -q -y install perl-DBI
+  
+      echo ""
+      echo "*************************************************"
+      cecho "MariaDB 10.3.x YUM install..." $boldgreen
+      cecho "yum -q -y install MariaDB-client MariaDB-common MariaDB-devel MariaDB-server MariaDB-shared${DISABLEOTHERREPO}${yumdisable_appstream}" $boldgreen
+      echo "*************************************************"
+      echo ""
+      time time $YUMDNFBIN -y install MariaDB-client MariaDB-common MariaDB-devel MariaDB-server MariaDB-shared${DISABLEOTHERREPO}${yumdisable_appstream}
+  
+      cp -a /etc/my.cnf /etc/my.cnf-newold
+  elif [[ "$CENTOS_TEN" = '10' ]]; then
       # run for CentOS 9.x
       echo "time ${YUMDNFBIN}${CACHESKIP} -q -y install perl-DBI"
       time ${YUMDNFBIN}${CACHESKIP} -q -y install perl-DBI

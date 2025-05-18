@@ -1,3 +1,18 @@
+sshdtweaks_ten() {
+  if [[ "$CENTOS_TEN" -eq '10' && "$SSHD_REENABLE_ROOT_LOGINS" = [yY] ]]; then
+    echo ""
+    cecho "--------------------------------------------------------" $boldyellow
+    cecho "sshd config tweak to re-enable el9 support for: PermitRootLogin yes" $boldyellow
+    cecho "to remove this change, delete: /etc/ssh/sshd_config.d/01-permitrootlogin.conf" $boldyellow
+    # re-enable and allow root user SSH logins
+    # el9 disabled them by default
+    if [[ "$(sshd -T | awk '/permitrootlogin/ {print $2}')" != 'yes' ]]; then
+      echo "PermitRootLogin yes" > /etc/ssh/sshd_config.d/01-permitrootlogin.conf
+    fi
+    cecho "--------------------------------------------------------" $boldyellow
+  fi
+}
+
 sshdtweaks_nine() {
   if [[ "$CENTOS_NINE" -eq '9' && "$SSHD_REENABLE_ROOT_LOGINS" = [yY] ]]; then
     echo ""

@@ -247,7 +247,11 @@ echo
 
 MDB_REPO_VER=10.11
 
-if [[ "$CENTOS_NINE" = '9' && "$(uname -m)" == 'aarch64' ]]; then
+if [[ "$CENTOS_TEN" = '10' && "$(uname -m)" == 'aarch64' ]]; then
+    MDB_REPO_DIR="${MDB_REPO_VER}/rhel10-aarch64"
+elif [[ "$CENTOS_TEN" = '10' && "$(uname -m)" == 'x86_64' ]]; then
+    MDB_REPO_DIR="${MDB_REPO_VER}/rhel10-amd64"
+elif [[ "$CENTOS_NINE" = '9' && "$(uname -m)" == 'aarch64' ]]; then
     MDB_REPO_DIR="${MDB_REPO_VER}/rhel9-aarch64"
 elif [[ "$CENTOS_NINE" = '9' && "$(uname -m)" == 'x86_64' ]]; then
     MDB_REPO_DIR="${MDB_REPO_VER}/rhel9-amd64"

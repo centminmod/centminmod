@@ -571,6 +571,7 @@ if [[ "$PUREFTPD_DISABLED" = [yY] ]]; then
 fi
 
   sshdtweaks_nine
+  sshdtweaks_ten
 
   echo ""
   cecho "--------------------------------------------------------" $boldyellow

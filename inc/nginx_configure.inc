@@ -180,6 +180,8 @@ mercurial_check() {
       yum -y install mercurial
     elif [[ "$CENTOS_NINE" -eq '9' ]]; then
       yum -y install mercurial
+    elif [[ "$CENTOS_TEN" -eq '10' ]]; then
+      yum -y install mercurial
     fi
   fi
 }
@@ -208,6 +210,8 @@ mold_check() {
       wget${ipv_forceopt_wget} -q "${LOCALCENTMINMOD_MIRROR}/centminmodparts/mold/centmin-mold-${MOLD_VERSION}-1.el7.x86_64.rpm" -O "${DIR_TMP}/centmin-mold-${MOLD_VERSION}-1.el7.x86_64.rpm"
       echo "yum -y localinstall ${DIR_TMP}/centmin-mold-${MOLD_VERSION}-1.el7.x86_64.rpm"
       yum -y localinstall "${DIR_TMP}/centmin-mold-${MOLD_VERSION}-1.el7.x86_64.rpm"
+    elif [[ "$CENTOS_TEN" = '10' && "$(uname -m)" = 'x86_64' ]] && [[ ! -f /usr/bin/mold ]]; then
+      yum -y install mold
     elif [[ "$CENTOS_NINE" = '9' && "$(uname -m)" = 'x86_64' ]] && [[ ! -f /usr/bin/mold ]]; then
       yum -y install mold
     elif [[ "$CENTOS_EIGHT" = '8' && "$(uname -m)" = 'x86_64' ]] && [[ ! -f /usr/bin/mold ]]; then
@@ -614,6 +618,8 @@ if [[ "$ngver" = 'quic' || "$NGINX_QUIC_SUPPORT" = [yY] ]] && [[ "$LIBRESSL_SWIT
     yum -y localinstall "$DIR_TMP/centmin-openssl11-quic-compat-1.1.1q-1.el8.x86_64.rpm"
   elif [[ "$NGINX_QUIC_RPMS" = [yY] && ! -f /opt/el-compat-quic/bin/openssl && "$CENTOS_NINE" -eq '9' ]]; then
     yum -y localinstall "$DIR_TMP/centmin-openssl11-quic-compat-1.1.1q-1.el9.x86_64.rpm"
+  elif [[ "$NGINX_QUIC_RPMS" = [yY] && ! -f /opt/el-compat-quic/bin/openssl && "$CENTOS_TEN" -eq '10' ]]; then
+    yum -y localinstall "$DIR_TMP/centmin-openssl11-quic-compat-1.1.1q-1.el10.x86_64.rpm"
   fi
   QUICTLS_LD=' -lssl -lcrypto '
   # QUICTLS_LD_OPT="-L../openssl-quic-nginx/lib ${QUICTLS_LD}"
@@ -710,7 +716,7 @@ else
   ZLIBNG_OPT=""
 fi
 
-if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' || "$CENTOS_SIX" = '6' ]]; then
+if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' || "$CENTOS_NINE" -eq '10' || "$CENTOS_SIX" = '6' ]]; then
 
   if [[ "$ngver" && "$ngver" = 'master-google' ]]; then
     DETECT_NGXVER=$(awk '/define nginx_version  / {print $3}' "/svr-setup/nginx-$ngver/src/core/nginx.h")
@@ -2126,11 +2132,11 @@ if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9'
 
     NGXVER_BRANCH=$(echo $NGINX_VERSION | cut -d . -f1,2 | sed -e 's|\.|00|g')
     ngver_branch=$(echo $ngver | cut -d . -f1,2 | sed -e 's|\.|00|g')
-    if [[ "$NGXVER_BRANCH" -ge '10023' ]] || [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]]; then
+    if [[ "$NGXVER_BRANCH" -ge '10023' ]] || [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' || "$CENTOS_TEN" -eq '10' ]]; then
         NGINX_PAGESPEED='n'
         NGXDYNAMIC_NGXPAGESPEED='n'
     fi
-    if [[ "$ngver_branch" -ge '10023' ]] || [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]]; then
+    if [[ "$ngver_branch" -ge '10023' ]] || [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' || "$CENTOS_TEN" -eq '10' ]]; then
         NGINX_PAGESPEED='n'
         NGXDYNAMIC_NGXPAGESPEED='n'
     fi
@@ -2848,7 +2854,7 @@ fi
 # https://community.centminmod.com/posts/22882/
 if [[ "$(echo "$NGXPGSPEED_VER" | cut -d . -f1)" -ge '1' ]] && [[ "$(echo $NGXPGSPEED_VER | cut -d . -f2)" -ge '10' ]] && [[ "$NGINX_PAGESPEED" = [yY] ]] && [[ "$CENTOS_SIX" = '6' ]]; then
   CLANG='n'
-elif [[ "$(echo "$NGXPGSPEED_VER" | cut -d . -f1)" -ge '1' ]] && [[ "$(echo $NGXPGSPEED_VER | cut -d . -f2)" -ge '10' ]] && [[ "$NGINX_PAGESPEED" = [yY] ]] && [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]]; then
+elif [[ "$(echo "$NGXPGSPEED_VER" | cut -d . -f1)" -ge '1' ]] && [[ "$(echo $NGXPGSPEED_VER | cut -d . -f2)" -ge '10' ]] && [[ "$NGINX_PAGESPEED" = [yY] ]] && [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' || "$CENTOS_TEN" -eq '10' ]]; then
   CLANG='n'
 elif [[ "$NGINX_PAGESPEED" = [yY] ]]; then
   CLANG='n'
@@ -3386,7 +3392,7 @@ fi
     fi
   else
     NGINX_NJSOPT=""
-    if [[ "$CENTOS_SEVEN" -eq '7' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]]; then
+    if [[ "$CENTOS_SEVEN" -eq '7' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' || "$CENTOS_TEN" -eq '10' ]]; then
       FLTO_TOTALMEM=$(awk '/MemTotal/ {print $2}' /proc/meminfo)
       FLTO_TOTALMEMMB=`echo "scale=0;$FLTO_TOTALMEM/1024" | bc`
       if [ -z "$FLTO_COMP_LEVEL" ]; then
@@ -3396,7 +3402,7 @@ fi
           FLTO_COMP_LEVEL=3
         fi
       fi
-      if [[ "$FLTO_COMP" = [yY] && "$CLANG" = [yY] ]] && [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]]; then
+      if [[ "$FLTO_COMP" = [yY] && "$CLANG" = [yY] ]] && [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' || "$CENTOS_TEN" -eq '10' ]]; then
         FLTO_COMP_OPT=""
         if [ ! -f /usr/bin/ld.lld ]; then
           yum -y install lld
@@ -3412,7 +3418,7 @@ fi
         else
           CLANG_FLTO_LDOPT="-fuse-ld=lld"
         fi
-      elif [[ "$FLTO_COMP" = [yY] ]] && [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]]; then
+      elif [[ "$FLTO_COMP" = [yY] ]] && [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' || "$CENTOS_TEN" -eq '10' ]]; then
         FLTO_COMP_OPT=" -flto-compression-level=${FLTO_COMP_LEVEL}"
       else
         FLTO_COMP_OPT=""
@@ -5139,6 +5145,54 @@ if [[ "$CENTOS_SEVEN" = '7' && "$CLANG" = [nN] && "$NGINX_DEVTOOLSETGCC" = [yY] 
   fi
 fi
 
+# el10 default GCC settings
+if [[ "$CENTOS_TEN" -eq '10' && "$CLANG" = [nN] && "$NGINX_DEVTOOLSETGCC" = [yY] ]]; then
+  CENTOSVER_NUMERIC=$(echo $CENTOSVER | sed -e 's|\.||g')
+  if [[ "$CENTOSVER_NUMERIC" -ge '100' && "$DEVTOOLSETFIFTTEEN" = [yY] && -f /opt/rh/gcc-toolset-15/root/usr/bin/gcc ]]; then
+    sar_call
+    /opt/rh/gcc-toolset-15/root/usr/bin/gcc --version
+    /opt/rh/gcc-toolset-15/root/usr/bin/g++ --version
+  elif [[ "$CENTOSVER_NUMERIC" -ge '100' && "$DEVTOOLSETFOURTEEN" = [yY] && -f /usr/bin/gcc ]]; then
+    DEVTOOLSETFOURTEEN_FALLTHROUGH=' -Wimplicit-fallthrough=0 -Wno-implicit-function-declaration -Wno-cast-align -Wno-builtin-declaration-mismatch -Wno-deprecated-declarations -Wno-int-conversion -Wno-unused-result -Wno-vla-parameter -Wno-maybe-uninitialized -Wno-return-local-addr -Wno-array-parameter -Wno-alloc-size-larger-than -Wno-address -Wno-array-bounds -Wno-discarded-qualifiers -Wno-stringop-overread -Wno-stringop-truncation -Wno-missing-field-initializers -Wno-unused-variable -Wno-format -Wno-error=unused-result -Wno-missing-profile -Wno-stringop-overflow -Wno-free-nonheap-object -Wno-discarded-qualifiers -Wno-bad-function-cast -Wno-dangling-pointer -Wno-array-parameter'
+    DEVTOOLSETFOURTEEN_EXTRAFLAGS=' -fcode-hoisting -Wno-cast-function-type -Wno-format-extra-args'
+    DEVTOOLSETTHIRTEEN_FALLTHROUGH=""
+    DEVTOOLSETTHIRTEEN_EXTRAFLAGS=""
+    DEVTOOLSETTWELVE_FALLTHROUGH=""
+    DEVTOOLSETTWELVE_EXTRAFLAGS=""
+    DEVTOOLSETELEVEN_FALLTHROUGH=""
+    DEVTOOLSETELEVEN_EXTRAFLAGS=""
+    DEVTOOLSETTEN_FALLTHROUGH=""
+    DEVTOOLSETTEN_EXTRAFLAGS=""
+    DEVTOOLSETNINE_FALLTHROUGH=""
+    DEVTOOLSETNINE_EXTRAFLAGS=""
+    DEVTOOLSETEIGHT_FALLTHROUGH=""
+    DEVTOOLSETEIGHT_EXTRAFLAGS=""
+    DEVTOOLSETSEVEN_FALLTHROUGH=""
+    DEVTOOLSETSEVEN_EXTRAFLAGS=""
+    if [[ "$INITIALINSTALL" != [yY] ]]; then
+      # source /opt/rh/gcc-toolset-14/enable
+      # LD_GOLD_GCCPATH=' -B/usr/libexec/gcc/x86_64-redhat-linux/14/ld.gold'
+      which gcc
+      which g++
+      unset CC
+      unset CXX
+      export CC="ccache gcc"
+      export CXX="ccache g++"
+      NGX_GSPLITDWARF='n'
+    else
+      # source /opt/rh/gcc-toolset-14/enable
+      # LD_GOLD_GCCPATH=' -B/usr/libexec/gcc/x86_64-redhat-linux/14/ld.gold'
+      which gcc
+      which g++
+      unset CC
+      unset CXX
+      export CC="gcc"
+      export CXX="g++"
+      NGX_GSPLITDWARF='n'
+    fi
+  fi
+fi
+
 # el9 default GCC 11, 12, 13 settings
 if [[ "$CENTOS_NINE" -eq '9' && "$CLANG" = [nN] && "$NGINX_DEVTOOLSETGCC" = [yY] ]]; then
   CENTOSVER_NUMERIC=$(echo $CENTOSVER | sed -e 's|\.||g')
@@ -5517,56 +5571,56 @@ if [[ "$(gcc --version | head -n1 | awk '{print $3}' | cut -d . -f1-3 | sed "s|\
       echo "CLANG NGXEXTRA_LDGOLDCCOPT=$NGXEXTRA_LDGOLDCCOPT"
       echo "CLANG FLTO_OPT=$FLTO_OPT"
     else
-      if [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]]; then 
+      if [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' || "$CENTOS_TEN" -eq '10' ]]; then 
         NGINX_MOLDOPT=' -fuse-ld=mold'
       else
         NGINX_MOLDOPT=' -B/usr/bin/mold'
       fi
-      if [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]] && [[ "$NGX_LDGOLD" = [yY] ]] && [[ "$DEVTOOLSETTWELVE" = [yY] || "$DEVTOOLSETTHIRTEEN" = [yY] || "$DEVTOOLSETFOURTEEN" = [yY] ]]; then
+      if [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' || "$CENTOS_TEN" -eq '10' ]] && [[ "$NGX_LDGOLD" = [yY] ]] && [[ "$DEVTOOLSETTWELVE" = [yY] || "$DEVTOOLSETTHIRTEEN" = [yY] || "$DEVTOOLSETFOURTEEN" = [yY] ]]; then
         SET_LD_GOLD_GCC_PATH="${LD_GOLD_GCCPATH}"
       elif [[ "$NGX_LDGOLD" = [yY] ]]; then
         SET_LD_GOLD_GCC_PATH=" -fuse-ld=gold"
       fi
       if [[ "$NGINX_GEOIPTWOLITE" = [yY] ]]; then
         # GeoIP2 Lite fails to compile with -fuse-ld=gold
-        if [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]] && [[ "$NGINX_FATLTO_OBJECTS" = [yY] && "$NGX_LDMOLD" = [yY] && -f /usr/bin/mold ]]; then
+        if [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' || "$CENTOS_TEN" -eq '10' ]] && [[ "$NGINX_FATLTO_OBJECTS" = [yY] && "$NGX_LDMOLD" = [yY] && -f /usr/bin/mold ]]; then
           NGXEXTRA_LDGOLDCCOPT="$NGXEXTRA_LDGOLDCCOPT${FLTO_OPT}${NGINX_MOLDOPT} -ffat-lto-objects"
           echo "1 NGINX_GEOIPTWOLITE=y $NGXEXTRA_LDGOLDCCOPT"
-        elif [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]] && [[ "$NGINX_FATLTO_OBJECTS" = [yY] && "$NGX_LDMOLD" = [yY] && -s /usr/local/libexec/mold ]]; then
+        elif [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' || "$CENTOS_TEN" -eq '10' ]] && [[ "$NGINX_FATLTO_OBJECTS" = [yY] && "$NGX_LDMOLD" = [yY] && -s /usr/local/libexec/mold ]]; then
           NGXEXTRA_LDGOLDCCOPT="$NGXEXTRA_LDGOLDCCOPT${FLTO_OPT} -B/usr/local/libexec/mold -ffat-lto-objects"
           echo "2 NGINX_GEOIPTWOLITE=y $NGXEXTRA_LDGOLDCCOPT"
-        elif [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]] && [[ "$NGINX_FATLTO_OBJECTS" = [yY] && "$NGX_LDGOLD" = [yY] ]]; then
+        elif [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' || "$CENTOS_TEN" -eq '10' ]] && [[ "$NGINX_FATLTO_OBJECTS" = [yY] && "$NGX_LDGOLD" = [yY] ]]; then
           NGXEXTRA_LDGOLDCCOPT="$NGXEXTRA_LDGOLDCCOPT${FLTO_OPT}${SET_LD_GOLD_GCC_PATH} -ffat-lto-objects"
           echo "3 NGINX_GEOIPTWOLITE=y $NGXEXTRA_LDGOLDCCOPT"
-        elif [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]] && [[ "$NGINX_NOFATLTO_OBJECTS" = [yY] && "$NGX_LDMOLD" = [yY] && -f /usr/bin/mold ]]; then
+        elif [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' || "$CENTOS_TEN" -eq '10' ]] && [[ "$NGINX_NOFATLTO_OBJECTS" = [yY] && "$NGX_LDMOLD" = [yY] && -f /usr/bin/mold ]]; then
           NGXEXTRA_LDGOLDCCOPT="$NGXEXTRA_LDGOLDCCOPT${FLTO_OPT}${NGINX_MOLDOPT} -fno-fat-lto-objects -fuse-linker-plugin"
           echo "4 NGINX_GEOIPTWOLITE=y $NGXEXTRA_LDGOLDCCOPT"
-        elif [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]] && [[ "$NGINX_NOFATLTO_OBJECTS" = [yY] && "$NGX_LDMOLD" = [yY] && -s /usr/local/libexec/mold ]]; then
+        elif [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' || "$CENTOS_TEN" -eq '10' ]] && [[ "$NGINX_NOFATLTO_OBJECTS" = [yY] && "$NGX_LDMOLD" = [yY] && -s /usr/local/libexec/mold ]]; then
           NGXEXTRA_LDGOLDCCOPT="$NGXEXTRA_LDGOLDCCOPT${FLTO_OPT} -B/usr/local/libexec/mold -fno-fat-lto-objects -fuse-linker-plugin"
           echo "5 NGINX_GEOIPTWOLITE=y $NGXEXTRA_LDGOLDCCOPT"
-        elif [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]] && [[ "$NGINX_NOFATLTO_OBJECTS" = [yY] && "$NGX_LDGOLD" = [yY] ]]; then
+        elif [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' || "$CENTOS_TEN" -eq '10' ]] && [[ "$NGINX_NOFATLTO_OBJECTS" = [yY] && "$NGX_LDGOLD" = [yY] ]]; then
           NGXEXTRA_LDGOLDCCOPT="$NGXEXTRA_LDGOLDCCOPT${FLTO_OPT}${SET_LD_GOLD_GCC_PATH} -fno-fat-lto-objects -fuse-linker-plugin"
           echo "6 NGINX_GEOIPTWOLITE=y $NGXEXTRA_LDGOLDCCOPT"
 
-        elif [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]] && [[ "$NGINX_FATLTO_OBJECTS" != [yY] && "$NGX_LDMOLD" = [yY] && -f /usr/bin/mold ]]; then
+        elif [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' || "$CENTOS_TEN" -eq '10' ]] && [[ "$NGINX_FATLTO_OBJECTS" != [yY] && "$NGX_LDMOLD" = [yY] && -f /usr/bin/mold ]]; then
           NGXEXTRA_LDGOLDCCOPT="$NGXEXTRA_LDGOLDCCOPT${FLTO_OPT}${NGINX_MOLDOPT}"
           echo "7 NGINX_GEOIPTWOLITE=y $NGXEXTRA_LDGOLDCCOPT"
-        elif [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]] && [[ "$NGINX_FATLTO_OBJECTS" != [yY] && "$NGX_LDMOLD" = [yY] && -s /usr/local/libexec/mold ]]; then
+        elif [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' || "$CENTOS_TEN" -eq '10' ]] && [[ "$NGINX_FATLTO_OBJECTS" != [yY] && "$NGX_LDMOLD" = [yY] && -s /usr/local/libexec/mold ]]; then
           NGXEXTRA_LDGOLDCCOPT="$NGXEXTRA_LDGOLDCCOPT${FLTO_OPT} -B/usr/local/libexec/mold"
           echo "8 NGINX_GEOIPTWOLITE=y $NGXEXTRA_LDGOLDCCOPT"
-        elif [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]] && [[ "$NGINX_FATLTO_OBJECTS" != [yY] && "$NGX_LDGOLD" = [yY] ]]; then
+        elif [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' || "$CENTOS_TEN" -eq '10' ]] && [[ "$NGINX_FATLTO_OBJECTS" != [yY] && "$NGX_LDGOLD" = [yY] ]]; then
           NGXEXTRA_LDGOLDCCOPT="$NGXEXTRA_LDGOLDCCOPT${FLTO_OPT}${SET_LD_GOLD_GCC_PATH}"
           echo "9 NGINX_GEOIPTWOLITE=y $NGXEXTRA_LDGOLDCCOPT"
-        elif [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]] && [[ "$NGINX_FATLTO_OBJECTS" = [yY] && "$NGX_LDGOLD" = [yY] ]]; then
+        elif [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' || "$CENTOS_TEN" -eq '10' ]] && [[ "$NGINX_FATLTO_OBJECTS" = [yY] && "$NGX_LDGOLD" = [yY] ]]; then
           NGXEXTRA_LDGOLDCCOPT="$NGXEXTRA_LDGOLDCCOPT${FLTO_OPT}${SET_LD_GOLD_GCC_PATH} -ffat-lto-objects"
           echo "10 NGINX_GEOIPTWOLITE=y $NGXEXTRA_LDGOLDCCOPT"
-        elif [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]] && [[ "$NGINX_NOFATLTO_OBJECTS" = [yY] && "$NGX_LDGOLD" = [yY] ]]; then
+        elif [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' || "$CENTOS_TEN" -eq '10' ]] && [[ "$NGINX_NOFATLTO_OBJECTS" = [yY] && "$NGX_LDGOLD" = [yY] ]]; then
           NGXEXTRA_LDGOLDCCOPT="$NGXEXTRA_LDGOLDCCOPT${FLTO_OPT}${SET_LD_GOLD_GCC_PATH} -fno-fat-lto-objects -fuse-linker-plugin"
           echo "11 NGINX_GEOIPTWOLITE=y $NGXEXTRA_LDGOLDCCOPT"
-        elif [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]] && [[ "$NGINX_NOFATLTO_OBJECTS" = [yY] ]]; then
+        elif [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' || "$CENTOS_TEN" -eq '10' ]] && [[ "$NGINX_NOFATLTO_OBJECTS" = [yY] ]]; then
           NGXEXTRA_LDGOLDCCOPT="$NGXEXTRA_LDGOLDCCOPT${FLTO_OPT} -fno-fat-lto-objects -fuse-linker-plugin"
           echo "12 NGINX_GEOIPTWOLITE=y $NGXEXTRA_LDGOLDCCOPT"
-        elif [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]] && [[ "$NGINX_FATLTO_OBJECTS" = [yY] ]]; then
+        elif [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' || "$CENTOS_TEN" -eq '10' ]] && [[ "$NGINX_FATLTO_OBJECTS" = [yY] ]]; then
           NGXEXTRA_LDGOLDCCOPT="$NGXEXTRA_LDGOLDCCOPT${FLTO_OPT} -ffat-lto-objects"
           echo "13 NGINX_GEOIPTWOLITE=y $NGXEXTRA_LDGOLDCCOPT"
         elif [[ "$CENTOS_SEVEN" -eq '7' && "$NGINX_NOFATLTO_OBJECTS" = [yY] && "$NGX_LDGOLD" = [yY] ]]; then
@@ -5594,22 +5648,22 @@ if [[ "$(gcc --version | head -n1 | awk '{print $3}' | cut -d . -f1-3 | sed "s|\
         echo "GCC GEOIP2 Lite NGXEXTRA_LDGOLDCCOPT=$NGXEXTRA_LDGOLDCCOPT"
       else
 
-        if [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]] && [[ "$NGINX_FATLTO_OBJECTS" = [yY] && "$NGX_LDMOLD" = [yY] && -f /usr/bin/mold ]]; then
+        if [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' || "$CENTOS_TEN" -eq '10' ]] && [[ "$NGINX_FATLTO_OBJECTS" = [yY] && "$NGX_LDMOLD" = [yY] && -f /usr/bin/mold ]]; then
           NGXEXTRA_LDGOLDCCOPT="$NGXEXTRA_LDGOLDCCOPT${FLTO_OPT}${NGINX_MOLDOPT} -ffat-lto-objects"
           echo "1 NGINX_GEOIPTWOLITE=n $NGXEXTRA_LDGOLDCCOPT"
-        elif [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]] && [[ "$NGINX_FATLTO_OBJECTS" = [yY] && "$NGX_LDMOLD" = [yY] && -s /usr/local/libexec/mold ]]; then
+        elif [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' || "$CENTOS_TEN" -eq '10' ]] && [[ "$NGINX_FATLTO_OBJECTS" = [yY] && "$NGX_LDMOLD" = [yY] && -s /usr/local/libexec/mold ]]; then
           NGXEXTRA_LDGOLDCCOPT="$NGXEXTRA_LDGOLDCCOPT${FLTO_OPT} -B/usr/local/libexec/mold -ffat-lto-objects"
           echo "2 NGINX_GEOIPTWOLITE=n $NGXEXTRA_LDGOLDCCOPT"
-        elif [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]] && [[ "$NGINX_FATLTO_OBJECTS" = [yY] && "$NGX_LDGOLD" = [yY] ]]; then
+        elif [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' || "$CENTOS_TEN" -eq '10' ]] && [[ "$NGINX_FATLTO_OBJECTS" = [yY] && "$NGX_LDGOLD" = [yY] ]]; then
           NGXEXTRA_LDGOLDCCOPT="$NGXEXTRA_LDGOLDCCOPT${FLTO_OPT}${SET_LD_GOLD_GCC_PATH} -ffat-lto-objects"
           echo "3 NGINX_GEOIPTWOLITE=n $NGXEXTRA_LDGOLDCCOPT"
-        elif [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]] && [[ "$NGINX_NOFATLTO_OBJECTS" = [yY] && "$NGX_LDMOLD" = [yY] && -f /usr/bin/mold ]]; then
+        elif [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' || "$CENTOS_TEN" -eq '10' ]] && [[ "$NGINX_NOFATLTO_OBJECTS" = [yY] && "$NGX_LDMOLD" = [yY] && -f /usr/bin/mold ]]; then
           NGXEXTRA_LDGOLDCCOPT="$NGXEXTRA_LDGOLDCCOPT${FLTO_OPT}${NGINX_MOLDOPT} -fno-fat-lto-objects -fuse-linker-plugin"
           echo "4 NGINX_GEOIPTWOLITE=n $NGXEXTRA_LDGOLDCCOPT"
-        elif [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]] && [[ "$NGINX_NOFATLTO_OBJECTS" = [yY] && "$NGX_LDMOLD" = [yY] && -s /usr/local/libexec/mold ]]; then
+        elif [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' || "$CENTOS_TEN" -eq '10' ]] && [[ "$NGINX_NOFATLTO_OBJECTS" = [yY] && "$NGX_LDMOLD" = [yY] && -s /usr/local/libexec/mold ]]; then
           NGXEXTRA_LDGOLDCCOPT="$NGXEXTRA_LDGOLDCCOPT${FLTO_OPT} -B/usr/local/libexec/mold -fno-fat-lto-objects -fuse-linker-plugin"
           echo "5 NGINX_GEOIPTWOLITE=n $NGXEXTRA_LDGOLDCCOPT"
-        elif [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]] && [[ "$NGINX_NOFATLTO_OBJECTS" = [yY] && "$NGX_LDGOLD" = [yY] ]]; then
+        elif [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' || "$CENTOS_TEN" -eq '10' ]] && [[ "$NGINX_NOFATLTO_OBJECTS" = [yY] && "$NGX_LDGOLD" = [yY] ]]; then
           NGXEXTRA_LDGOLDCCOPT="$NGXEXTRA_LDGOLDCCOPT${FLTO_OPT}${SET_LD_GOLD_GCC_PATH} -fno-fat-lto-objects -fuse-linker-plugin"
           echo "6 NGINX_GEOIPTWOLITE=n $NGXEXTRA_LDGOLDCCOPT"
 
@@ -5619,10 +5673,10 @@ if [[ "$(gcc --version | head -n1 | awk '{print $3}' | cut -d . -f1-3 | sed "s|\
         elif [[ "$NGX_LDMOLD" = [yY] && -s /usr/local/libexec/mold ]]; then
           NGXEXTRA_LDGOLDCCOPT="$NGXEXTRA_LDGOLDCCOPT${FLTO_OPT} -B/usr/local/libexec/mold"
           echo "8 NGINX_GEOIPTWOLITE=n $NGXEXTRA_LDGOLDCCOPT"
-        elif [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]] && [[ "$NGINX_FATLTO_OBJECTS" = [yY] && "$NGX_LDGOLD" = [yY] ]]; then
+        elif [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' || "$CENTOS_TEN" -eq '10' ]] && [[ "$NGINX_FATLTO_OBJECTS" = [yY] && "$NGX_LDGOLD" = [yY] ]]; then
           NGXEXTRA_LDGOLDCCOPT="$NGXEXTRA_LDGOLDCCOPT${FLTO_OPT}${SET_LD_GOLD_GCC_PATH} -ffat-lto-objects"
           echo "9 NGINX_GEOIPTWOLITE=n $NGXEXTRA_LDGOLDCCOPT"
-        elif [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]] && [[ "$NGINX_NOFATLTO_OBJECTS" = [yY] && "$NGX_LDGOLD" = [yY] ]]; then
+        elif [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' || "$CENTOS_TEN" -eq '10' ]] && [[ "$NGINX_NOFATLTO_OBJECTS" = [yY] && "$NGX_LDGOLD" = [yY] ]]; then
           NGXEXTRA_LDGOLDCCOPT="$NGXEXTRA_LDGOLDCCOPT${FLTO_OPT}${SET_LD_GOLD_GCC_PATH} -fno-fat-lto-objects -fuse-linker-plugin"
           echo "10 NGINX_GEOIPTWOLITE=n $NGXEXTRA_LDGOLDCCOPT"
         elif [[ "$CENTOS_SEVEN" -eq '7' && "$NGINX_FATLTO_OBJECTS" = [yY] && "$NGX_LDGOLD" = [yY] ]]; then
@@ -5640,7 +5694,7 @@ if [[ "$(gcc --version | head -n1 | awk '{print $3}' | cut -d . -f1-3 | sed "s|\
         fi
         echo "GCC NGXEXTRA_LDGOLDCCOPT=$NGXEXTRA_LDGOLDCCOPT"
       fi
-      if [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]] && [[ "$NGINXOPENSSL_NOFATLTO_OBJECTS" = [yY] && "$NGX_LDGOLD" = [yY] && "$DETECT_NGXVER" -ge '1015005' && "$(echo $OPENSSL_VERSION | grep -o '1.1.1')" = '1.1.1' ]]; then
+      if [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' || "$CENTOS_TEN" -eq '10' ]] && [[ "$NGINXOPENSSL_NOFATLTO_OBJECTS" = [yY] && "$NGX_LDGOLD" = [yY] && "$DETECT_NGXVER" -ge '1015005' && "$(echo $OPENSSL_VERSION | grep -o '1.1.1')" = '1.1.1' ]]; then
         NGINX_OPENSSLOPT_EXTRAS=" ${FLTO_OPT}${SET_LD_GOLD_GCC_PATH} -fno-fat-lto-objects -fuse-linker-plugin"
         echo "NGX_LDGOLD=$NGX_LDGOLD"
         echo "NGX_LDMOLD=$NGX_LDMOLD"
@@ -5652,7 +5706,7 @@ if [[ "$(gcc --version | head -n1 | awk '{print $3}' | cut -d . -f1-3 | sed "s|\
         echo "NGINX_ZSTD=$NGINX_ZSTD"
         echo "ZSTD_NGINX_OPT=$ZSTD_NGINX_OPT"
         echo "CLANG_FLTO_OPT=$CLANG_FLTO_OPT"
-      elif [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]] && [[ "$NGINXOPENSSL_FATLTO_OBJECTS" = [yY] && "$NGX_LDGOLD" = [yY] && "$DETECT_NGXVER" -ge '1015005' && "$(echo $OPENSSL_VERSION | grep -o '1.1.1')" = '1.1.1' ]]; then
+      elif [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' || "$CENTOS_TEN" -eq '10' ]] && [[ "$NGINXOPENSSL_FATLTO_OBJECTS" = [yY] && "$NGX_LDGOLD" = [yY] && "$DETECT_NGXVER" -ge '1015005' && "$(echo $OPENSSL_VERSION | grep -o '1.1.1')" = '1.1.1' ]]; then
         NGINX_OPENSSLOPT_EXTRAS=" ${FLTO_OPT}${SET_LD_GOLD_GCC_PATH} -ffat-lto-objects"
         echo "NGX_LDGOLD=$NGX_LDGOLD"
         echo "NGX_LDMOLD=$NGX_LDMOLD"
@@ -5664,7 +5718,7 @@ if [[ "$(gcc --version | head -n1 | awk '{print $3}' | cut -d . -f1-3 | sed "s|\
         echo "NGINX_ZSTD=$NGINX_ZSTD"
         echo "ZSTD_NGINX_OPT=$ZSTD_NGINX_OPT"
         echo "CLANG_FLTO_OPT=$CLANG_FLTO_OPT"
-      elif [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]] && [[ "$NGINXOPENSSL_NOFATLTO_OBJECTS" = [yY] && "$NGX_LDGOLD" = [nN] && "$DETECT_NGXVER" -ge '1015005' && "$(echo $OPENSSL_VERSION | grep -o '1.1.1')" = '1.1.1' ]]; then
+      elif [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' || "$CENTOS_TEN" -eq '10' ]] && [[ "$NGINXOPENSSL_NOFATLTO_OBJECTS" = [yY] && "$NGX_LDGOLD" = [nN] && "$DETECT_NGXVER" -ge '1015005' && "$(echo $OPENSSL_VERSION | grep -o '1.1.1')" = '1.1.1' ]]; then
         NGINX_OPENSSLOPT_EXTRAS=" ${FLTO_OPT} -fno-fat-lto-objects -fuse-linker-plugin"
         echo "NGX_LDGOLD=$NGX_LDGOLD"
         echo "NGX_LDMOLD=$NGX_LDMOLD"
@@ -5676,7 +5730,7 @@ if [[ "$(gcc --version | head -n1 | awk '{print $3}' | cut -d . -f1-3 | sed "s|\
         echo "NGINX_ZSTD=$NGINX_ZSTD"
         echo "ZSTD_NGINX_OPT=$ZSTD_NGINX_OPT"
         echo "CLANG_FLTO_OPT=$CLANG_FLTO_OPT"
-      elif [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]] && [[ "$NGINXOPENSSL_FATLTO_OBJECTS" = [yY] && "$NGX_LDGOLD" = [nN] && "$DETECT_NGXVER" -ge '1015005' && "$(echo $OPENSSL_VERSION | grep -o '1.1.1')" = '1.1.1' ]]; then
+      elif [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' || "$CENTOS_TEN" -eq '10' ]] && [[ "$NGINXOPENSSL_FATLTO_OBJECTS" = [yY] && "$NGX_LDGOLD" = [nN] && "$DETECT_NGXVER" -ge '1015005' && "$(echo $OPENSSL_VERSION | grep -o '1.1.1')" = '1.1.1' ]]; then
         NGINX_OPENSSLOPT_EXTRAS=" ${FLTO_OPT} -ffat-lto-objects"
         echo "NGX_LDGOLD=$NGX_LDGOLD"
         echo "NGX_LDMOLD=$NGX_LDMOLD"
@@ -5688,7 +5742,7 @@ if [[ "$(gcc --version | head -n1 | awk '{print $3}' | cut -d . -f1-3 | sed "s|\
         echo "NGINX_ZSTD=$NGINX_ZSTD"
         echo "ZSTD_NGINX_OPT=$ZSTD_NGINX_OPT"
         echo "CLANG_FLTO_OPT=$CLANG_FLTO_OPT"
-      elif [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]] && [[ "$NGINXOPENSSL_FATLTO_OBJECTS" != [yY] && "$NGX_LDMOLD" = [yY] && -f /usr/bin/mold && "$DETECT_NGXVER" -ge '1015005' && "$(echo $OPENSSL_VERSION | grep -o '1.1.1')" = '1.1.1' ]]; then
+      elif [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' || "$CENTOS_TEN" -eq '10' ]] && [[ "$NGINXOPENSSL_FATLTO_OBJECTS" != [yY] && "$NGX_LDMOLD" = [yY] && -f /usr/bin/mold && "$DETECT_NGXVER" -ge '1015005' && "$(echo $OPENSSL_VERSION | grep -o '1.1.1')" = '1.1.1' ]]; then
         NGINX_OPENSSLOPT_EXTRAS=" -B/usr/bin/mold"
         echo "NGX_LDGOLD=$NGX_LDGOLD"
         echo "NGX_LDMOLD=$NGX_LDMOLD"
@@ -5700,7 +5754,7 @@ if [[ "$(gcc --version | head -n1 | awk '{print $3}' | cut -d . -f1-3 | sed "s|\
         echo "NGINX_ZSTD=$NGINX_ZSTD"
         echo "ZSTD_NGINX_OPT=$ZSTD_NGINX_OPT"
         echo "CLANG_FLTO_OPT=$CLANG_FLTO_OPT"
-      elif [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]] && [[ "$NGINXOPENSSL_FATLTO_OBJECTS" != [yY] && "$NGX_LDMOLD" = [yY] && -s /usr/local/libexec/mold && "$DETECT_NGXVER" -ge '1015005' && "$(echo $OPENSSL_VERSION | grep -o '1.1.1')" = '1.1.1' ]]; then
+      elif [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' || "$CENTOS_TEN" -eq '10' ]] && [[ "$NGINXOPENSSL_FATLTO_OBJECTS" != [yY] && "$NGX_LDMOLD" = [yY] && -s /usr/local/libexec/mold && "$DETECT_NGXVER" -ge '1015005' && "$(echo $OPENSSL_VERSION | grep -o '1.1.1')" = '1.1.1' ]]; then
         NGINX_OPENSSLOPT_EXTRAS=" -B/usr/local/libexec/mold"
         echo "NGX_LDGOLD=$NGX_LDGOLD"
         echo "NGX_LDMOLD=$NGX_LDMOLD"
@@ -5712,7 +5766,7 @@ if [[ "$(gcc --version | head -n1 | awk '{print $3}' | cut -d . -f1-3 | sed "s|\
         echo "NGINX_ZSTD=$NGINX_ZSTD"
         echo "ZSTD_NGINX_OPT=$ZSTD_NGINX_OPT"
         echo "CLANG_FLTO_OPT=$CLANG_FLTO_OPT"
-      elif [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]] && [[ "$NGINXOPENSSL_FATLTO_OBJECTS" != [yY] && "$NGX_LDGOLD" = [yY] && "$DETECT_NGXVER" -ge '1015005' && "$(echo $OPENSSL_VERSION | grep -o '1.1.1')" = '1.1.1' ]]; then
+      elif [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' || "$CENTOS_TEN" -eq '10' ]] && [[ "$NGINXOPENSSL_FATLTO_OBJECTS" != [yY] && "$NGX_LDGOLD" = [yY] && "$DETECT_NGXVER" -ge '1015005' && "$(echo $OPENSSL_VERSION | grep -o '1.1.1')" = '1.1.1' ]]; then
         NGINX_OPENSSLOPT_EXTRAS="${SET_LD_GOLD_GCC_PATH}"
         echo "NGX_LDGOLD=$NGX_LDGOLD"
         echo "NGX_LDMOLD=$NGX_LDMOLD"
@@ -5724,7 +5778,7 @@ if [[ "$(gcc --version | head -n1 | awk '{print $3}' | cut -d . -f1-3 | sed "s|\
         echo "NGINX_ZSTD=$NGINX_ZSTD"
         echo "ZSTD_NGINX_OPT=$ZSTD_NGINX_OPT"
         echo "CLANG_FLTO_OPT=$CLANG_FLTO_OPT"
-      elif [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]] && [[ "$NGINXOPENSSL_FATLTO_OBJECTS" != [yY] && "$NGX_LDGOLD" = [yY] && "$DETECT_NGXVER" -ge '1015005' && "$(echo $OPENSSL_VERSION | grep -o '3.0')" = '3.0' ]]; then
+      elif [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' || "$CENTOS_TEN" -eq '10' ]] && [[ "$NGINXOPENSSL_FATLTO_OBJECTS" != [yY] && "$NGX_LDGOLD" = [yY] && "$DETECT_NGXVER" -ge '1015005' && "$(echo $OPENSSL_VERSION | grep -o '3.0')" = '3.0' ]]; then
         NGINX_OPENSSLOPT_EXTRAS="${SET_LD_GOLD_GCC_PATH}"
         echo "NGX_LDGOLD=$NGX_LDGOLD"
         echo "NGX_LDMOLD=$NGX_LDMOLD"
@@ -5736,7 +5790,7 @@ if [[ "$(gcc --version | head -n1 | awk '{print $3}' | cut -d . -f1-3 | sed "s|\
         echo "NGINX_ZSTD=$NGINX_ZSTD"
         echo "ZSTD_NGINX_OPT=$ZSTD_NGINX_OPT"
         echo "CLANG_FLTO_OPT=$CLANG_FLTO_OPT"
-      elif [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]] && [[ "$NGINXOPENSSL_FATLTO_OBJECTS" != [yY] && "$NGX_LDGOLD" = [yY] && "$DETECT_NGXVER" -ge '1015005' && "$(echo $OPENSSL_VERSION | grep -o '3.1')" = '3.1' ]]; then
+      elif [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' || "$CENTOS_TEN" -eq '10' ]] && [[ "$NGINXOPENSSL_FATLTO_OBJECTS" != [yY] && "$NGX_LDGOLD" = [yY] && "$DETECT_NGXVER" -ge '1015005' && "$(echo $OPENSSL_VERSION | grep -o '3.1')" = '3.1' ]]; then
         NGINX_OPENSSLOPT_EXTRAS="${SET_LD_GOLD_GCC_PATH}"
         echo "NGX_LDGOLD=$NGX_LDGOLD"
         echo "NGX_LDMOLD=$NGX_LDMOLD"
@@ -5748,7 +5802,7 @@ if [[ "$(gcc --version | head -n1 | awk '{print $3}' | cut -d . -f1-3 | sed "s|\
         echo "NGINX_ZSTD=$NGINX_ZSTD"
         echo "ZSTD_NGINX_OPT=$ZSTD_NGINX_OPT"
         echo "CLANG_FLTO_OPT=$CLANG_FLTO_OPT"
-      elif [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]] && [[ "$NGINXOPENSSL_FATLTO_OBJECTS" != [yY] && "$NGX_LDGOLD" = [yY] && "$DETECT_NGXVER" -ge '1015005' && "$(echo $OPENSSL_VERSION | grep -o '3.2')" = '3.2' ]]; then
+      elif [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' || "$CENTOS_TEN" -eq '10' ]] && [[ "$NGINXOPENSSL_FATLTO_OBJECTS" != [yY] && "$NGX_LDGOLD" = [yY] && "$DETECT_NGXVER" -ge '1015005' && "$(echo $OPENSSL_VERSION | grep -o '3.2')" = '3.2' ]]; then
         NGINX_OPENSSLOPT_EXTRAS="${SET_LD_GOLD_GCC_PATH}"
         echo "NGX_LDGOLD=$NGX_LDGOLD"
         echo "NGX_LDMOLD=$NGX_LDMOLD"

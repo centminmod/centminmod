@@ -647,7 +647,7 @@ else
         exit 0
     fi
     ngver_branch=$(echo $ngver | cut -d . -f1,2 | sed -e 's|\.|00|g')
-    if [[ "$ngver_branch" -ge '10023' ]] || [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]]; then
+    if [[ "$ngver_branch" -ge '10023' ]] || [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' || "$CENTOS_TEN" -eq '10' ]]; then
         NGINX_PAGESPEED='n'
         NGXDYNAMIC_NGXPAGESPEED='n'
     fi
@@ -1179,7 +1179,7 @@ fi
 # error check
 ################
 
-        if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]]; then
+        if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' || "$CENTOS_TEN" -eq '10' ]]; then
             systemctl daemon-reload
         fi
 
@@ -1355,7 +1355,7 @@ fi
         echo
     fi
     nginx_deprecate_httptwo_param
-        if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]]; then
+        if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' || "$CENTOS_TEN" -eq '10' ]]; then
             systemctl daemon-reload
         fi
         # empty pagespeed cache

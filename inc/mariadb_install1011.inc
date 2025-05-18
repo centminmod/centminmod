@@ -83,7 +83,11 @@ elif [[ "$MARIADB_INSTALLTENTWO" = [yY] ]]; then
 else
     MDB_REPO_VER=10.1
 fi
-if [[ "$CENTOS_NINE" = '9' && "$(uname -m)" == 'aarch64' ]]; then
+if [[ "$CENTOS_TEN" = '10' && "$(uname -m)" == 'aarch64' ]]; then
+    MDB_REPO_DIR="${MDB_REPO_VER}/rhel10-aarch64"
+elif [[ "$CENTOS_TEN" = '10' && "$(uname -m)" == 'x86_64' ]]; then
+    MDB_REPO_DIR="${MDB_REPO_VER}/rhel10-amd64"
+elif [[ "$CENTOS_NINE" = '9' && "$(uname -m)" == 'aarch64' ]]; then
     MDB_REPO_DIR="${MDB_REPO_VER}/rhel9-aarch64"
 elif [[ "$CENTOS_NINE" = '9' && "$(uname -m)" == 'x86_64' ]]; then
     MDB_REPO_DIR="${MDB_REPO_VER}/rhel9-amd64"
@@ -1521,7 +1525,7 @@ if [[ "$CENTOS_SIX" = '6' ]]; then
     cmservice mysql stop
     gzip /var/lib/mysql/{ib_logfile0,ib_logfile1}
     cmservice mysql start
-elif [[ "$CENTOS_SEVEN" -eq '7' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]]; then
+elif [[ "$CENTOS_SEVEN" -eq '7' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' || "$CENTOS_TEN" -eq '10' ]]; then
     # ensure MariaDB starts up initially
     echo
 fi

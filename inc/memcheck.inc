@@ -10,7 +10,7 @@ TOTALMEM_T=$(awk '/MemTotal/ {print $2}' /proc/meminfo)
 TOTALMEM_SWAP=$(awk '/SwapFree/ {print $2}' /proc/meminfo)
 TOTALMEM_PHP=$(($TOTALMEM_T+$TOTALMEM_SWAP))
 
-if [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]]; then
+if [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' || "$CENTOS_TEN" -eq '10' ]]; then
   if [[ "$ISMINMEM_OVERRIDE" = [yY] ]]; then
     ISMINMEM='1500000'  # 1.43GB in bytes
   else
@@ -64,8 +64,8 @@ lowmemcheck() {
       CPUS='1'
       MAKETHREADS=" -j$CPUS"
       echo ""
-      if [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]]; then
-        echo "For EL8 and EL9 operating system the minimum and recommended memory requirements have increased"
+      if [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' || "$CENTOS_TEN" -eq '10' ]]; then
+        echo "For EL8, EL9, EL10 operating system the minimum and recommended memory requirements have increased"
         echo "Minium: 2GB memory with 4GB swap disk"
         echo "Recommended: 4GB memory with 4GB swap disk"
       fi

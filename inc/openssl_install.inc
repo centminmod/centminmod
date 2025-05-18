@@ -677,7 +677,7 @@ crypto_gcc() {
       if [[ "$NGX_LDMOLD" = [yY] ]]; then
         mold_check
         if [ -f /usr/bin/mold ]; then
-          if [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]]; then 
+          if [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' || "$CENTOS_TEN" -eq '10' ]]; then 
             MOLD_LINKER_OPT=' -fuse-ld=mold'
           else
             MOLD_LINKER_OPT=' -B/usr/bin/mold'
@@ -691,7 +691,21 @@ crypto_gcc() {
       else
         MOLD_LINKER_OPT=""
       fi
-      if [[ "$CENTOS_NINE" -eq '9' && "$CENTOSVER_NUMERIC" -ge '93' && "$DEVTOOLSETTHIRTEEN" = [yY] ]] && [[ ! -f /opt/rh/gcc-toolset-13/root/usr/bin/gcc || ! -f /opt/rh/gcc-toolset-13/root/usr/bin/g++ ]]; then
+      if [[ "$CENTOS_TEN" -eq '10' && "$CENTOSVER_NUMERIC" -ge '100' && "$DEVTOOLSETFOURTEEN" = [yY] ]] && [[ -f /usr/bin/gcc || -f /usr/bin/g++ ]]; then
+        CRYPTODEVTOOLSETFOURTEEN_FALLTHROUGH=' -Wimplicit-fallthrough=0 -Wno-implicit-function-declaration -Wno-int-conversion -Wno-unused-result'
+        CRYPTODEVTOOLSETFOURTEEN_EXTRAFLAGS=' -fcode-hoisting -Wno-cast-function-type -Wno-format-extra-args -Wformat=0  -Wno-error=implicit-function-declaration -Wno-builtin-declaration-mismatch -Wno-unused-result -Wno-return-local-addr -Wno-maybe-uninitialized -Wno-array-parameter -Wno-alloc-size-larger-than -Wno-address -Wno-array-bounds -Wno-deprecated-declarations -Wno-discarded-qualifiers -Wno-stringop-overread -Wno-stringop-truncation -Wno-missing-field-initializers'
+        which gcc
+        which g++
+        unset CC
+        unset CXX
+        if [[ "$INITIALINSTALL" != [yY] ]]; then
+            export CC="ccache /usr/bin/gcc${MOLD_LINKER_OPT}"
+            export CXX="ccache /usr/bin/g++${MOLD_LINKER_OPT}"
+        else
+            export CC="/usr/bin/gcc${MOLD_LINKER_OPT}"
+            export CXX="/usr/bin/g++${MOLD_LINKER_OPT}"
+        fi
+      elif [[ "$CENTOS_NINE" -eq '9' && "$CENTOSVER_NUMERIC" -ge '93' && "$DEVTOOLSETTHIRTEEN" = [yY] ]] && [[ ! -f /opt/rh/gcc-toolset-13/root/usr/bin/gcc || ! -f /opt/rh/gcc-toolset-13/root/usr/bin/g++ ]]; then
         scl_install
         source /opt/rh/gcc-toolset-13/enable
         CRYPTODEVTOOLSETTHIRTEEN_FALLTHROUGH=' -Wimplicit-fallthrough=0 -Wno-implicit-function-declaration -Wno-int-conversion -Wno-unused-result'
@@ -1225,7 +1239,7 @@ fi
 }
 
 perl_ipc_cmd_install() {
-  if [[ "$CENTOS_SEVEN" -eq '7' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]] && [[ ! -f /usr/share/perl5/vendor_perl/IPC/Cmd.pm ]]; then
+  if [[ "$CENTOS_SEVEN" -eq '7' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' || "$CENTOS_TEN" -eq '10' ]] && [[ ! -f /usr/share/perl5/vendor_perl/IPC/Cmd.pm ]]; then
     # required for OpenSSL 3.x
     yum -y install perl-IPC-Cmd
   fi
@@ -1395,6 +1409,9 @@ fi
         
         if [[ "$CENTOS_EIGHT" = '8' && ! -f /usr/bin/pod2html ]]; then
             $YUMDNFBIN -q -y install perl-Pod-Html
+        fi
+        if [[ "$CENTOS_TEN" = '10' ]] && [[ ! -f /usr/share/perl5/FindBin.pm ]]; then
+            $YUMDNFBIN -q -y install perl-FindBin
         fi
         if [[ "$CENTOS_NINE" = '9' ]] && [[ ! -f /usr/share/perl5/FindBin.pm ]]; then
             $YUMDNFBIN -q -y install perl-FindBin
@@ -1568,6 +1585,9 @@ fi
         
         if [[ "$CENTOS_EIGHT" = '8' && ! -f /usr/bin/pod2html ]]; then
             $YUMDNFBIN -q -y install perl-Pod-Html
+        fi
+        if [[ "$CENTOS_TEN" = '10' ]] && [[ ! -f /usr/share/perl5/FindBin.pm ]]; then
+            $YUMDNFBIN -q -y install perl-FindBin
         fi
         if [[ "$CENTOS_NINE" = '9' ]] && [[ ! -f /usr/share/perl5/FindBin.pm ]]; then
             $YUMDNFBIN -q -y install perl-FindBin

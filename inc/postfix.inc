@@ -18,7 +18,10 @@ if [[ "$CENTOS_SIX" = '6' ]]; then
       cecho "* sendmail installed" $boldgreen
       echo "*************************************************"
     elif [[ -f /etc/init.d/postfix ]]; then
-          if [[ "$CENTOS_NINE" -eq '9' && ! -f /bin/s-nail ]]; then
+          if [[ "$CENTOS_TEN" -eq '10' && ! -f /bin/s-nail ]]; then
+              $YUMDNFBIN${CACHESKIP} -y -q install s-nail
+              sar_call
+          elif [[ "$CENTOS_NINE" -eq '9' && ! -f /bin/s-nail ]]; then
               $YUMDNFBIN${CACHESKIP} -y -q install s-nail
               sar_call
           elif [ ! -f /bin/mailx ]; then
@@ -30,7 +33,10 @@ if [[ "$CENTOS_SIX" = '6' ]]; then
           cecho "Postfix already detected, sendmail install aborted" $boldgreen
           echo "*************************************************"
       elif [[ -f /etc/init.d/sendmail ]]; then
-          if [[ "$CENTOS_NINE" -eq '9' && ! -f /bin/s-nail ]]; then
+          if [[ "$CENTOS_TEN" -eq '10' && ! -f /bin/s-nail ]]; then
+              $YUMDNFBIN${CACHESKIP} -y -q install s-nail
+              sar_call
+          elif [[ "$CENTOS_NINE" -eq '9' && ! -f /bin/s-nail ]]; then
               $YUMDNFBIN${CACHESKIP} -y -q install s-nail
               sar_call
           elif [ ! -f /bin/mailx ]; then
@@ -57,7 +63,10 @@ if [[ "$CENTOS_SIX" = '6' ]]; then
           cecho "* postfix installed" $boldgreen
           echo "*************************************************"
       elif [[ -f /etc/init.d/postfix ]]; then
-          if [[ "$CENTOS_NINE" -eq '9' && ! -f /bin/s-nail ]]; then
+          if [[ "$CENTOS_TEN" -eq '10' && ! -f /bin/s-nail ]]; then
+              $YUMDNFBIN${CACHESKIP} -y -q install s-nail
+              sar_call
+          elif [[ "$CENTOS_NINE" -eq '9' && ! -f /bin/s-nail ]]; then
               $YUMDNFBIN${CACHESKIP} -y -q install s-nail
               sar_call
           elif [ ! -f /bin/mailx ]; then
@@ -91,7 +100,10 @@ if [[ "$CENTOS_SIX" = '6' ]]; then
           cecho "* postfix installed" $boldgreen
           echo "*************************************************"
       elif [[ -f /etc/init.d/postfix ]]; then
-          if [[ "$CENTOS_NINE" -eq '9' && ! -f /bin/s-nail ]]; then
+          if [[ "$CENTOS_TEN" -eq '10' && ! -f /bin/s-nail ]]; then
+              $YUMDNFBIN${CACHESKIP} -y -q install s-nail
+              sar_call
+          elif [[ "$CENTOS_NINE" -eq '9' && ! -f /bin/s-nail ]]; then
               $YUMDNFBIN${CACHESKIP} -y -q install s-nail
               sar_call
           elif [ ! -f /bin/mailx ]; then
@@ -120,7 +132,7 @@ if [[ "$CENTOS_SIX" = '6' ]]; then
   fi
 fi # centos6
 
-if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]]; then
+if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' || "$CENTOS_TEN" -eq '10' ]]; then
   if [[ "$SENDMAIL_INSTALL" = [yY] && "$POSTFIX_INSTALL" = [nN] ]]; then
     if [[ ! -f /usr/lib/systemd/system/postfix.service && ! -f /usr/lib/systemd/system/sendmail.service ]]; then
       echo "*************************************************"
@@ -134,7 +146,10 @@ if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9'
       cecho "* sendmail installed" $boldgreen
       echo "*************************************************"
     elif [[ -f /usr/lib/systemd/system/postfix.service ]]; then
-          if [[ "$CENTOS_NINE" -eq '9' && ! -f /bin/s-nail ]]; then
+          if [[ "$CENTOS_TEN" -eq '10' && ! -f /bin/s-nail ]]; then
+              $YUMDNFBIN${CACHESKIP} -y -q install s-nail
+              sar_call
+          elif [[ "$CENTOS_NINE" -eq '9' && ! -f /bin/s-nail ]]; then
               $YUMDNFBIN${CACHESKIP} -y -q install s-nail
               sar_call
           elif [ ! -f /bin/mailx ]; then
@@ -146,7 +161,10 @@ if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9'
           cecho "Postfix already detected, sendmail install aborted" $boldgreen
           echo "*************************************************"
       elif [[ -f /usr/lib/systemd/system/sendmail.service ]]; then
-          if [[ "$CENTOS_NINE" -eq '9' && ! -f /bin/s-nail ]]; then
+          if [[ "$CENTOS_TEN" -eq '10' && ! -f /bin/s-nail ]]; then
+              $YUMDNFBIN${CACHESKIP} -y -q install s-nail
+              sar_call
+          elif [[ "$CENTOS_NINE" -eq '9' && ! -f /bin/s-nail ]]; then
               $YUMDNFBIN${CACHESKIP} -y -q install s-nail
               sar_call
           elif [ ! -f /bin/mailx ]; then
@@ -173,7 +191,10 @@ if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9'
           cecho "* postfix installed" $boldgreen
           echo "*************************************************"
       elif [[ -f /usr/lib/systemd/system/postfix.service ]]; then
-          if [[ "$CENTOS_NINE" -eq '9' && ! -f /bin/s-nail ]]; then
+          if [[ "$CENTOS_TEN" -eq '10' && ! -f /bin/s-nail ]]; then
+              $YUMDNFBIN${CACHESKIP} -y -q install s-nail
+              sar_call
+          elif [[ "$CENTOS_NINE" -eq '9' && ! -f /bin/s-nail ]]; then
               $YUMDNFBIN${CACHESKIP} -y -q install s-nail
               sar_call
           elif [ ! -f /bin/mailx ]; then
@@ -207,7 +228,10 @@ if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9'
           cecho "* postfix installed" $boldgreen
           echo "*************************************************"
       elif [[ -f /usr/lib/systemd/system/postfix.service ]]; then
-          if [[ "$CENTOS_NINE" -eq '9' && ! -f /bin/s-nail ]]; then
+          if [[ "$CENTOS_TEN" -eq '10' && ! -f /bin/s-nail ]]; then
+              $YUMDNFBIN${CACHESKIP} -y -q install s-nail
+              sar_call
+          elif [[ "$CENTOS_NINE" -eq '9' && ! -f /bin/s-nail ]]; then
               $YUMDNFBIN${CACHESKIP} -y -q install s-nail
               sar_call
           elif [ ! -f /bin/mailx ]; then

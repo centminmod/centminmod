@@ -1,5 +1,5 @@
 tcp_bbr_setup() {
-  if [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]] && [[ "$TCP_BBR_ENABLE" = [yY] ]]; then
+  if [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' || "$CENTOS_TEN" -eq '10' ]] && [[ "$TCP_BBR_ENABLE" = [yY] ]]; then
     if [[ ! "$(sysctl net.core.default_qdisc | grep -ow 'net.core.default_qdisc = fq')" ]]; then
       if [[ ! "$(grep -ow 'net.core.default_qdisc' /etc/sysctl.conf)" ]]; then
         echo "net.core.default_qdisc = fq" >> /etc/sysctl.conf
@@ -22,7 +22,7 @@ tcp_bbr_setup() {
       fi
     fi
     sysctl -p >/dev/null 2>&1
-  elif [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]] && [[ "$TCP_BBR_ENABLE" != [yY] ]]; then
+  elif [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' || "$CENTOS_TEN" -eq '10' ]] && [[ "$TCP_BBR_ENABLE" != [yY] ]]; then
     if [[ ! "$(sysctl net.core.default_qdisc | grep -ow 'net.core.default_qdisc = fq_codel')" ]]; then
       if [[ ! "$(grep -ow 'net.core.default_qdisc' /etc/sysctl.conf)" ]]; then
         echo "net.core.default_qdisc = fq_codel" >> /etc/sysctl.conf
@@ -58,7 +58,7 @@ opt_tcp() {
         echo "* soft nofile 524288" >>/etc/security/limits.conf
         echo "* hard nofile 524288" >>/etc/security/limits.conf
 # https://community.centminmod.com/posts/52406/
-if [[ "$CENTOS_SEVEN" -eq '7' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]] && [ ! -f /etc/rc.d/rc.local ]; then
+if [[ "$CENTOS_SEVEN" -eq '7' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' || "$CENTOS_TEN" -eq '10' ]] && [ ! -f /etc/rc.d/rc.local ]; then
 
 
 cat > /usr/lib/systemd/system/rc-local.service <<EOF
@@ -116,7 +116,7 @@ fi
         fi
     fi # check if custom open file descriptor limits already exist
 
-    if [[ "$CENTOS_SEVEN" -eq '7' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]]; then
+    if [[ "$CENTOS_SEVEN" -eq '7' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' || "$CENTOS_TEN" -eq '10' ]]; then
         # centos 7
         if [[ -f /etc/security/limits.d/20-nproc.conf ]]; then
 cat > "/etc/security/limits.d/20-nproc.conf" <<EOF
@@ -194,14 +194,14 @@ EOF
   fi
 
 if [[ ! -f /proc/user_beancounters ]]; then
-    if [[ "$CENTOS_SEVEN" -eq '7' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]]; then
+    if [[ "$CENTOS_SEVEN" -eq '7' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' || "$CENTOS_TEN" -eq '10' ]]; then
         # TCPMEMTOTAL=$(awk '/MemTotal/ {print $2}' /proc/meminfo)
         if [ "$TCPMEMTOTAL" -le '3000000' ]; then
           TCP_OPTMEM_MAX='8192'
         else
           TCP_OPTMEM_MAX='81920'
         fi
-        if [[ "$CENTOS_EIGHT" = '8' || "$CENTOS_NINE" = '9' ]]; then
+        if [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' || "$CENTOS_TEN" -eq '10' ]]; then
           TCP_PID_MAX='4194300'
           TCP_BACKLOG='524280'
         elif [[ "$CENTOS_SEVEN" = '7' ]]; then

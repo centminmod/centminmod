@@ -793,7 +793,7 @@ if [[ "$CENTOS_SIX" = '6' ]]; then
     cmservice mysql stop
     gzip /var/lib/mysql/{ib_logfile0,ib_logfile1}
     cmservice mysql start
-elif [[ "$CENTOS_SEVEN" -eq '7' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]]; then
+elif [[ "$CENTOS_SEVEN" -eq '7' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' || "$CENTOS_TEN" -eq '10' ]]; then
     # ensure MariaDB starts up initially
     systemctl stop mariadb
     sleep 2

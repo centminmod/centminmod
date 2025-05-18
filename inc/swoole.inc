@@ -228,7 +228,7 @@ if [[ "$PHPSWOOLE" = [yY] ]]; then
         make clean
         /usr/local/bin/phpize clean
     fi
-    if [[ "$CENTOS_NINE" -eq '9' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_SEVEN" -eq '7' ]] && [ ! -f  /usr/lib64/libbrotlienc.so ]; then
+    if [[ "$CENTOS_TEN" -eq '10' || "$CENTOS_NINE" -eq '9' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_SEVEN" -eq '7' ]] && [ ! -f  /usr/lib64/libbrotlienc.so ]; then
         $YUMDNFBIN -y -q install brotli-devel
     fi
     /usr/local/bin/phpize

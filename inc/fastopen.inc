@@ -8,7 +8,7 @@ if [[ "$CENTOS_SEVEN" -eq '7' ]]; then
   CHECKREUSEPORT=$(grep --color -Ro SO_REUSEPORT /usr/src/kernels | head -n1 | awk -F ":" '{print $2}')
 fi
 
-if [[ "$CHECKREUSEPORT" = 'SO_REUSEPORT' ]] || [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]]; then
+if [[ "$CHECKREUSEPORT" = 'SO_REUSEPORT' ]] || [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' || "$CENTOS_TEN" -eq '10' ]]; then
   SUPPORT_REUSEPORT=y
 else
   SUPPORT_REUSEPORT=n
@@ -27,10 +27,10 @@ if [[ -f /proc/sys/net/ipv4/tcp_fastopen && "$FASTOPEN_STATSVAL" = '0' ]]; then
       echo "net.ipv4.tcp_fastopen=3" >> /etc/sysctl.conf
       sysctl -p
     fi
-  elif [[ "$TCP_FASTOPEN_ENABLE" = [yY] ]] && [[ "$CENTOS_SEVEN" -eq '7' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]]; then
+  elif [[ "$TCP_FASTOPEN_ENABLE" = [yY] ]] && [[ "$CENTOS_SEVEN" -eq '7' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' || "$CENTOS_TEN" -eq '10' ]]; then
     echo 'net.ipv4.tcp_fastopen=3' > /etc/sysctl.d/50-tcp_fastopen.conf
     sysctl -p /etc/sysctl.d/50-tcp_fastopen.conf
-  elif [[ "$TCP_FASTOPEN_ENABLE" != [yY] ]] && [[ "$CENTOS_SEVEN" -eq '7' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]]; then
+  elif [[ "$TCP_FASTOPEN_ENABLE" != [yY] ]] && [[ "$CENTOS_SEVEN" -eq '7' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' || "$CENTOS_TEN" -eq '10' ]]; then
     if [ -f /etc/sysctl.d/50-tcp_fastopen.conf ]; then
       rm -f /etc/sysctl.d/50-tcp_fastopen.conf
       sysctl -p

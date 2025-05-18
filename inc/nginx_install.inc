@@ -139,7 +139,7 @@ if [[ "$FREENGINX_INSTALL" = [yY] ]]; then
 elif [[ "$NGINX_INSTALL" = [yY] ]]; then
     NGXVER_BRANCH=$(echo $NGINX_VERSION | cut -d . -f1,2 | sed -e 's|\.|00|g')
 fi
-if [[ "$NGXVER_BRANCH" -ge '10023' ]] || [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]]; then
+if [[ "$NGXVER_BRANCH" -ge '10023' ]] || [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' || "$CENTOS_TEN" -eq '10' ]]; then
     NGINX_PAGESPEED='n'
     NGXDYNAMIC_NGXPAGESPEED='n'
 fi
@@ -495,7 +495,7 @@ if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_SIX" = '6' ]] && [[ "$SWITCH_NGINX_SYSTE
     chkconfig --levels 235 nginx on
 fi # CENTOS_SEVEN = 7
 
-if [[ "$CENTOS_EIGHT" = '8' || "$CENTOS_NINE" = '9' ]] || [[ "$SWITCH_NGINX_SYSTEMD" = [yY] ]]; then
+if [[ "$CENTOS_EIGHT" = '8' || "$CENTOS_NINE" = '9' || "$CENTOS_TEN" = '10' ]] || [[ "$SWITCH_NGINX_SYSTEMD" = [yY] ]]; then
     if [ ! -f /usr/bin/file ]; then
         yum -q -y install file
     fi
@@ -504,7 +504,7 @@ if [[ "$CENTOS_EIGHT" = '8' || "$CENTOS_NINE" = '9' ]] || [[ "$SWITCH_NGINX_SYST
     fi
     # CENTOS_EIGHT = 8 nginx systemd service file
     mkdir -p /etc/systemd/system/nginx.service.d/
-    if [[ "$CENTOS_NINE" = '9' || "$CENTOS_EIGHT" = '8' || "$CENTOS_SEVEN" = '7' ]] && [[ ! -f /etc/systemd/system/nginx.service.d/openfileslimit.conf ]]; then
+    if [[ "$CENTOS_TEN" = '10' || "$CENTOS_NINE" = '9' || "$CENTOS_EIGHT" = '8' || "$CENTOS_SEVEN" = '7' ]] && [[ ! -f /etc/systemd/system/nginx.service.d/openfileslimit.conf ]]; then
         echo "Initial Install: Update nginx for LimitNOFILE=1048576"
 cat > "/etc/systemd/system/nginx.service.d/openfileslimit.conf" <<TDG
 [Service]
@@ -512,7 +512,7 @@ LimitNOFILE=1048576
 TDG
         systemctl daemon-reload
     fi
-    if [[ "$CENTOS_NINE" = '9' || "$CENTOS_EIGHT" = '8' ]] && [[ ! -f /etc/systemd/system/nginx.service.d/failure-restart.conf ]]; then
+    if [[ "$CENTOS_TEN" = '10' || "$CENTOS_NINE" = '9' || "$CENTOS_EIGHT" = '8' ]] && [[ ! -f /etc/systemd/system/nginx.service.d/failure-restart.conf ]]; then
         echo "setup /etc/systemd/system/nginx.service.d/failure-restart.conf"
 cat > "/etc/systemd/system/nginx.service.d/failure-restart.conf" <<TDG
 [Unit]

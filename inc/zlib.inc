@@ -171,6 +171,28 @@ install_cfzlib() {
             CLANG='n'
             DEVTOOLSETSEVEN='n'
             DEVTOOLSETEIGHT='y'
+        elif [[ "$DEVTOOLSETFIFTTEEN" = [yY] && "$CLANG" = [nN] ]] && [[ "$CENTOS_TEN" -eq '10' ]]; then
+            CLANG='n'
+            DEVTOOLSETFIFTTEEN='y'
+            DEVTOOLSETFOURTEEN='n'
+            DEVTOOLSETTHIRTEEN='n'
+            DEVTOOLSETTWELVE='n'
+            DEVTOOLSETELEVEN='n'
+            DEVTOOLSETTEN='n'
+            DEVTOOLSETNINE='n'
+            DEVTOOLSETEIGHT='n'
+            DEVTOOLSETSEVEN='n'
+        elif [[ "$DEVTOOLSETFOURTEEN" = [yY] && "$CLANG" = [nN] ]] && [[ "$CENTOS_TEN" -eq '10' ]]; then
+            CLANG='n'
+            DEVTOOLSETFIFTTEEN='n'
+            DEVTOOLSETFOURTEEN='y'
+            DEVTOOLSETTHIRTEEN='n'
+            DEVTOOLSETTWELVE='n'
+            DEVTOOLSETELEVEN='n'
+            DEVTOOLSETTEN='n'
+            DEVTOOLSETNINE='n'
+            DEVTOOLSETEIGHT='n'
+            DEVTOOLSETSEVEN='n'
         elif [[ "$DEVTOOLSETFIFTTEEN" = [yY] && "$CLANG" = [nN] ]] && [[ "$CENTOS_NINE" -eq '9' ]]; then
             CLANG='n'
             DEVTOOLSETFIFTTEEN='y'
@@ -572,7 +594,7 @@ install_cfzlib() {
     fi
 
         # ld.gold corrections for GCC 14 changes
-        if [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]] && [[ "$NGX_LDGOLD" = [yY] ]] && [[ "$DEVTOOLSETTWELVE" = [yY] || "$DEVTOOLSETTHIRTEEN" = [yY] || "$DEVTOOLSETFOURTEEN" = [yY] ]]; then
+        if [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' || "$CENTOS_TEN" -eq '10' ]] && [[ "$NGX_LDGOLD" = [yY] ]] && [[ "$DEVTOOLSETTWELVE" = [yY] || "$DEVTOOLSETTHIRTEEN" = [yY] || "$DEVTOOLSETFOURTEEN" = [yY] ]]; then
           NGX_LDGOLD_GCCPATH="$LD_GOLD_GCCPATH"
         elif [[ "$NGX_LDGOLD" = [yY] ]]; then
           NGX_LDGOLD_GCCPATH=" -fuse-ld=gold"
