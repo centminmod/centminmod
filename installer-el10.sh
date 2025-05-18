@@ -1270,7 +1270,7 @@ fi
 # some centos images don't even install tar by default !
 if [[ "$CENTOS_TEN" -eq '10' && ! -f /usr/bin/tar ]]; then
   yum -y -q install tar
-if [[ "$CENTOS_NINE" -eq '9' && ! -f /usr/bin/tar ]]; then
+elif [[ "$CENTOS_NINE" -eq '9' && ! -f /usr/bin/tar ]]; then
   yum -y -q install tar
 elif [[ "$CENTOS_EIGHT" -eq '8' && ! -f /usr/bin/tar ]]; then
   yum -y -q install tar
