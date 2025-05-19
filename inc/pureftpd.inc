@@ -42,7 +42,18 @@ fi
     fi
     fi
 
-    time $YUMDNFBIN -q -y install pure-ftpd${DISABLEREPO_DNF}
+    if [[ "$CENTOS_TEN" -eq '10' ]]; then
+      # EPEL 10 does not have pure-ftpd RPM package yet use my own
+      mkdir -p "${DIR_TMP}/pureftpd-el10"
+      wget -4 -O "${DIR_TMP}/pureftpd-el10/pure-ftpd-1.0.52-1.el10.src.rpm" https://centminmod.com/centminmodparts/rpms/pure-ftpd/el10/pure-ftpd-1.0.52-1.el10.src.rpm
+      wget -4 -O "${DIR_TMP}/pureftpd-el10/pure-ftpd-1.0.52-1.el10.x86_64.rpm" https://centminmod.com/centminmodparts/rpms/pure-ftpd/el10/pure-ftpd-1.0.52-1.el10.x86_64.rpm
+      wget -4 -O "${DIR_TMP}/pureftpd-el10/pure-ftpd-debuginfo-1.0.52-1.el10.x86_64.rpm" https://centminmod.com/centminmodparts/rpms/pure-ftpd/el10/pure-ftpd-debuginfo-1.0.52-1.el10.x86_64.rpm
+      wget -4 -O "${DIR_TMP}/pureftpd-el10/pure-ftpd-debugsource-1.0.52-1.el10.x86_64.rpm" https://centminmod.com/centminmodparts/rpms/pure-ftpd/el10/pure-ftpd-debugsource-1.0.52-1.el10.x86_64.rpm
+      wget -4 -O "${DIR_TMP}/pureftpd-el10/pure-ftpd-selinux-1.0.52-1.el10.x86_64.rpm" https://centminmod.com/centminmodparts/rpms/pure-ftpd/el10/pure-ftpd-selinux-1.0.52-1.el10.x86_64.rpm
+      time $YUMDNFBIN -y localinstall "${DIR_TMP}/pureftpd-el10/pure-ftpd-1.0.52-1.el10.x86_64.rpm"
+    else
+      time $YUMDNFBIN -q -y install pure-ftpd${DISABLEREPO_DNF}
+    fi
     cmchkconfig pure-ftpd on
     sed -i 's/LF_FTPD = "10"/LF_FTPD = "3"/g' /etc/csf/csf.conf
     sed -i 's/PORTFLOOD = \"\"/PORTFLOOD = \"21;tcp;20;300\"/g' /etc/csf/csf.conf
