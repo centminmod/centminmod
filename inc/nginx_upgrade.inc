@@ -243,8 +243,8 @@ checkgeoip() {
 }
 
 checkmap() {
-VTSHTTP_INCLUDECHECK=$(grep '\/usr\/local\/nginx\/conf\/vts_http.conf' /usr/local/nginx/conf/nginx.conf)
-VTSMAIN_INCLUDECHECK=$(grep '\/usr\/local\/nginx\/conf\/vts_mainserver.conf' /usr/local/nginx/conf/conf.d/virtual.conf)
+VTSHTTP_INCLUDECHECK=$(grep '/usr/local/nginx/conf/vts_http.conf' /usr/local/nginx/conf/nginx.conf)
+VTSMAIN_INCLUDECHECK=$(grep '/usr/local/nginx/conf/vts_mainserver.conf' /usr/local/nginx/conf/conf.d/virtual.conf)
 
 if [[ -z "$VTSHTTP_INCLUDECHECK" ]]; then
     if [[ "$NGINX_VHOSTSTATS" = [yY] ]]; then
@@ -254,17 +254,17 @@ if [[ -z "$VTSHTTP_INCLUDECHECK" ]]; then
     fi
 else
     if [[ "$NGINX_VHOSTSTATS" = [yY] ]]; then
-        if [[ "$(grep '#include \/usr\/local\/nginx\/conf\/vts_http.conf' /usr/local/nginx/conf/nginx.conf)" ]]; then
+        if [[ "$(grep '#include /usr/local/nginx/conf/vts_http.conf' /usr/local/nginx/conf/nginx.conf)" ]]; then
         sed -i 's/#include \/usr\/local\/nginx\/conf\/vts_http.conf/include \/usr\/local\/nginx\/conf\/vts_http.conf/g' /usr/local/nginx/conf/nginx.conf
         fi
-        if [[ "$(grep '#include \/usr\/local\/nginx\/conf\/vts_mainserver.conf' /usr/local/nginx/conf/conf.d/virtual.conf)" ]]; then
+        if [[ "$(grep '#include /usr/local/nginx/conf/vts_mainserver.conf' /usr/local/nginx/conf/conf.d/virtual.conf)" ]]; then
         sed -i 's|#include \/usr\/local\/nginx\/conf\/vts_mainserver.conf|include \/usr\/local\/nginx\/conf\/vts_mainserver.conf|g' /usr/local/nginx/conf/conf.d/virtual.conf
         fi
     else
-        if [[ "$(grep '^include \/usr\/local\/nginx\/conf\/vts_http.conf' /usr/local/nginx/conf/nginx.conf)" ]]; then
+        if [[ "$(grep '^include /usr/local/nginx/conf/vts_http.conf' /usr/local/nginx/conf/nginx.conf)" ]]; then
         sed -i 's/include \/usr\/local\/nginx\/conf\/vts_http.conf/#include \/usr\/local\/nginx\/conf\/vts_http.conf/g' /usr/local/nginx/conf/nginx.conf
         fi
-        if [[ "$(grep '^include \/usr\/local\/nginx\/conf\/vts_mainserver.conf' /usr/local/nginx/conf/conf.d/virtual.conf)" ]]; then
+        if [[ "$(grep '^include /usr/local/nginx/conf/vts_mainserver.conf' /usr/local/nginx/conf/conf.d/virtual.conf)" ]]; then
         sed -i 's|^include \/usr\/local\/nginx\/conf\/vts_mainserver.conf|#include \/usr\/local\/nginx\/conf\/vts_mainserver.conf|g' /usr/local/nginx/conf/conf.d/virtual.conf
         fi        
     fi    
@@ -607,10 +607,10 @@ elif [[ "$CLI_NGINX_VER" ]]; then
     # the nginx version defined by NGINX_VERSION variable
     if [ -z "$ngver" ]; then
         if [[ "$FREENGINX_INSTALL" = [yY] ]]; then
-            LASTEST_NGINXVERS=$(curl -${ipv_forceopt}sL https://freenginx.org/en/download.html 2>&1 | grep -Eo "freenginx\-[0-9.]+\.tar[.a-z]*" | awk -F "freenginx-" '/.tar.gz$/ {print $2}' | sed -e 's|.tar.gz||g' | head -n 1 2>&1)
+            LASTEST_NGINXVERS=$(curl -${ipv_forceopt}sL https://freenginx.org/en/download.html 2>&1 | grep -Eo "freenginx-[0-9.]+\.tar[.a-z]*" | awk -F "freenginx-" '/.tar.gz$/ {print $2}' | sed -e 's|.tar.gz||g' | head -n 1 2>&1)
             ngver="$LASTEST_NGINXVERS"
         elif [[ "$NGINX_INSTALL" = [yY] ]]; then
-            LASTEST_NGINXVERS=$(curl -${ipv_forceopt}sL https://nginx.org/en/download.html 2>&1 | grep -Eo "nginx\-[0-9.]+\.tar[.a-z]*" | awk -F "nginx-" '/.tar.gz$/ {print $2}' | sed -e 's|.tar.gz||g' | head -n 1 2>&1)
+            LASTEST_NGINXVERS=$(curl -${ipv_forceopt}sL https://nginx.org/en/download.html 2>&1 | grep -Eo "nginx-[0-9.]+\.tar[.a-z]*" | awk -F "nginx-" '/.tar.gz$/ {print $2}' | sed -e 's|.tar.gz||g' | head -n 1 2>&1)
             ngver="$LASTEST_NGINXVERS"
         fi
     fi
@@ -669,10 +669,10 @@ else
     # the nginx version defined by NGINX_VERSION variable
     if [ -z "$ngver" ]; then
         if [[ "$FREENGINX_INSTALL" = [yY] ]]; then
-            LASTEST_NGINXVERS=$(curl -${ipv_forceopt}sL https://freenginx.org/en/download.html 2>&1 | grep -Eo "freenginx\-[0-9.]+\.tar[.a-z]*" | awk -F "freenginx-" '/.tar.gz$/ {print $2}' | sed -e 's|.tar.gz||g' | head -n 1 2>&1)
+            LASTEST_NGINXVERS=$(curl -${ipv_forceopt}sL https://freenginx.org/en/download.html 2>&1 | grep -Eo "freenginx-[0-9.]+\.tar[.a-z]*" | awk -F "freenginx-" '/.tar.gz$/ {print $2}' | sed -e 's|.tar.gz||g' | head -n 1 2>&1)
             ngver="$LASTEST_NGINXVERS"
         elif [[ "$NGINX_INSTALL" = [yY] ]]; then
-            LASTEST_NGINXVERS=$(curl -${ipv_forceopt}sL https://nginx.org/en/download.html 2>&1 | grep -Eo "nginx\-[0-9.]+\.tar[.a-z]*" | awk -F "nginx-" '/.tar.gz$/ {print $2}' | sed -e 's|.tar.gz||g' | head -n 1 2>&1)
+            LASTEST_NGINXVERS=$(curl -${ipv_forceopt}sL https://nginx.org/en/download.html 2>&1 | grep -Eo "nginx-[0-9.]+\.tar[.a-z]*" | awk -F "nginx-" '/.tar.gz$/ {print $2}' | sed -e 's|.tar.gz||g' | head -n 1 2>&1)
             ngver="$LASTEST_NGINXVERS"
         fi
     fi

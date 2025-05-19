@@ -18,8 +18,8 @@ find_next_available_id() {
 }
 
 checkmapinital() {
-VTSHTTP_INCLUDECHECK=$(grep '\/usr\/local\/nginx\/conf\/vts_http.conf' /usr/local/nginx/conf/nginx.conf)
-VTSMAIN_INCLUDECHECK=$(grep '\/usr\/local\/nginx\/conf\/vts_mainserver.conf' /usr/local/nginx/conf/conf.d/virtual.conf)
+VTSHTTP_INCLUDECHECK=$(grep '/usr/local/nginx/conf/vts_http.conf' /usr/local/nginx/conf/nginx.conf)
+VTSMAIN_INCLUDECHECK=$(grep '/usr/local/nginx/conf/vts_mainserver.conf' /usr/local/nginx/conf/conf.d/virtual.conf)
 
     echo "\${CUR_DIR} & \${CM_INSTALLDIR}"
     echo ${CUR_DIR}
