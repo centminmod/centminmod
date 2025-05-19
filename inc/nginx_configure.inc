@@ -1320,7 +1320,6 @@ if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9'
           OPENSSLOPT_B=" --with-openssl-opt=enable-tls1_3"
         fi
       elif [[ "$OPENSSL_SYSTEM_USE" = [yY] ]]; then
-        echo 1a2
         OPENSSLOPT=""
         if [[ "$CENTOS_SEVEN" -eq '7' ]]; then
           if [[ ! -d /usr/lib64/openssl11 || ! -d /usr/include/openssl11 ]]; then
@@ -1329,6 +1328,7 @@ if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9'
           CC_OPENSSL11_OPT=' -I/usr/include/openssl11 '
           LD_OPENSSL11_OPT='-L/usr/lib64/openssl11 -lssl '
         fi
+        echo "1a2 + OPENSSLOPT=${OPENSSLOPT}"
       elif [[ "$DETECTOPENSSL_ONEONE" = '1.1.1' && "$ORESTY_LUANGINX" != [yY] ]] || [[ "$DETECTOPENSSL_ONEONE" = '1.1.1' && "$ORESTY_LUANGINX" = [yY] ]]; then
         echo 1b
         if [[ "$(uname -m)" = 'x86_64' ]]; then
@@ -1375,7 +1375,7 @@ if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9'
           OPENSSLOPT_B=" --with-openssl-opt=enable-tls1_3"
         fi
       elif [[ "$OPENSSL_SYSTEM_USE" = [yY] ]]; then
-        echo 2a2
+        echo "1 2a2 NOSOURCEOPENSSL=y + OPENSSL_SYSTEM_USE=y"
         OPENSSLOPT=""
         if [[ "$CENTOS_SEVEN" -eq '7' ]]; then
           if [[ ! -d /usr/lib64/openssl11 || ! -d /usr/include/openssl11 ]]; then
@@ -1466,7 +1466,6 @@ if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9'
         echo 2h
         OPENSSLOPT=" --with-openssl=../$OPENSSLDIR --with-openssl-opt='${NGINX_KTLS_OPT_ALT}'"
       else
-        echo 2i
         export STATICLIBSSL="${OPENSSL_CUSTOMPATH}"
         if [[ "$(uname -m)" = 'x86_64' ]]; then
           if [[ "$ECNISTP_CHECK" && ! -d "${DIR_TMP}/${OPENSSL_QUIC_DIR}" ]]; then
@@ -1477,6 +1476,7 @@ if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9'
         else
           OPENSSLOPT=" --with-openssl=../$OPENSSLDIR"
         fi
+        echo "2i + OPENSSLOPT=${OPENSSLOPT}"
       fi
       LRT=""
     fi
@@ -2604,6 +2604,16 @@ else
           OPENSSLOPT=" --with-openssl=../openssl-tls1.3"
           OPENSSLOPT_B=" --with-openssl-opt=enable-tls1_3"
         fi
+      elif [[ "$OPENSSL_SYSTEM_USE" = [yY] ]]; then
+        echo "2 NOSOURCEOPENSSL=y + OPENSSL_SYSTEM_USE=y"
+        OPENSSLOPT=""
+        if [[ "$CENTOS_SEVEN" -eq '7' ]]; then
+          if [[ ! -d /usr/lib64/openssl11 || ! -d /usr/include/openssl11 ]]; then
+            yum -y install openssl11 openssl11-devel openssl11-static openssl11-libs
+          fi
+          CC_OPENSSL11_OPT=' -I/usr/include/openssl11 '
+          LD_OPENSSL11_OPT='-L/usr/lib64/openssl11 -lssl '
+        fi
       elif [[ "$DETECTOPENSSL_ONEONE" = '1.1.1' && "$ORESTY_LUANGINX" != [yY] ]] || [[ "$DETECTOPENSSL_ONEONE" = '1.1.1' && "$ORESTY_LUANGINX" = [yY] ]]; then
         if [[ "$(uname -m)" = 'x86_64' ]]; then
           OPENSSLOPT=" --with-openssl=../$OPENSSLDIR"
@@ -2622,6 +2632,7 @@ else
             OPENSSLOPT=" --with-openssl=../$OPENSSLDIR"
             OPENSSLOPT_B=" --with-openssl-opt=enable-tls1_3"
           fi
+          echo "line 2625 OPENSSLOPT=$OPENSSLOPT"
         else
           if [[ "$(uname -m)" = 'x86_64' ]]; then
             if [[ "$ECNISTP_CHECK" && ! -d "${DIR_TMP}/${OPENSSL_QUIC_DIR}" ]]; then
@@ -2632,6 +2643,7 @@ else
           else
             OPENSSLOPT=" --with-openssl=../$OPENSSLDIR"
           fi
+          echo "line 2636 OPENSSLOPT=$OPENSSLOPT"
         fi
       fi
       LRT=""
