@@ -1829,8 +1829,9 @@ if [[ "$CENTOS_TEN" -eq '10' ]]; then
   MARIADB_INSTALLTENSIX='n'
   MARIADB_INSTALLTENELEVEN='y'
   MARIADB_INSTALLELEVENFOUR='n'
-  # use system OpenSSL 3.0.7 by default
+  # use system OpenSSL 3.5 by default
   OPENSSL_SYSTEM_USE='y'
+  IMAGEMAGICK_SEVEN='y'
 fi
 
 if [ -f "${CM_INSTALLDIR}/inc/custom_config.inc" ]; then
