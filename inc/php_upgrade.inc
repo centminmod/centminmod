@@ -1535,8 +1535,8 @@ fi
         echo "***************************************************"
         checksec_phpext
         echo "***************************************************"
-        echo "checksec --format=json --file=/usr/local/sbin/php-fpm --extended 2>/dev/null | jq -r"
-        checksec --format=json --file=/usr/local/sbin/php-fpm --extended 2>/dev/null | jq -r
+        echo "checksec --output json file /usr/local/sbin/php-fpm --extended 2>/dev/null | jq -r"
+        checksec --output json file /usr/local/sbin/php-fpm --extended 2>/dev/null | jq -r
     fi
     if [[ "$PHP_LDMOLD" = [yY] ]]; then
         echo

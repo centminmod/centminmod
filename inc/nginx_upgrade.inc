@@ -1463,8 +1463,8 @@ fi
             checksec_nginx
             if [ -f /usr/local/bin/checksec ]; then
                 echo
-                echo "checksec --format=json --file=/usr/local/sbin/nginx --extended | jq -r"
-                checksec --format=json --file=/usr/local/sbin/nginx --extended | jq -r
+                echo "checksec --output json file /usr/local/sbin/nginx --extended | jq -r"
+                checksec --output json file /usr/local/sbin/nginx --extended | jq -r
                 echo
             fi
         fi

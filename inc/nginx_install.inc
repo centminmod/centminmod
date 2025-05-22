@@ -613,8 +613,8 @@ geoipphp
         echo
         checksec_nginx
         echo
-        echo "checksec --format=json --file=/usr/local/sbin/nginx | jq -r"
-        checksec --format=json --file=/usr/local/sbin/nginx | jq -r
+        echo "checksec --output json file /usr/local/sbin/nginx | jq -r"
+        checksec --output json file /usr/local/sbin/nginx | jq -r
         echo
         ngx_endtime=$(TZ=UTC date +%s.%N)
         check_sec_timed=$(echo "scale=2;$ngx_endtime - $ngx_starttime"|bc )
