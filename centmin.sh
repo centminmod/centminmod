@@ -855,7 +855,7 @@ MM_LICENSE_KEY="$GET_CMM_MM_LICENSE_KEY"
 MM_CSF_SRC='n'
 
 #####################################################
-CHECKSEC_VERSION='2.6.0'
+CHECKSEC_VERSION='3.0.2'
 
 #####################################################
 # MOTD prompt alert user if server reboot is required

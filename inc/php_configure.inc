@@ -263,7 +263,7 @@ checksec_phpext() {
   checksec_phpext_dir=$(php-config --extension-dir)
   find $checksec_phpext_dir -name "*.so" | while read slib; do
     if [ -f "${slib}" ]; then
-      checksec --file="${slib}" --format=json --extended 2>/dev/null | jq -r
+      checksec file "${slib}" --output json 2>/dev/null | jq -r
     fi
   done
   if [ -f /usr/local/lib/libpcre.so ]; then

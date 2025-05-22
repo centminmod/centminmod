@@ -7,9 +7,10 @@ checksec_check(){
   if [[ ! -f /usr/local/bin/checksec || ! -f "${DIR_TMP}/checksec-${CHECKSEC_VERSION}.tar.gz" ]]; then
     echo
     pushd "$DIR_TMP"
-    wget -q "https://github.com/slimm609/checksec.sh/archive/refs/tags/${CHECKSEC_VERSION}.tar.gz" -O "checksec-${CHECKSEC_VERSION}.tar.gz"
+    wget -q -L "https://github.com/slimm609/checksec/releases/download/${CHECKSEC_VERSION}/checksec_${CHECKSEC_VERSION}_linux_amd64.tar.gz" -O "checksec-${CHECKSEC_VERSION}.tar.gz"
     tar xzf "checksec-${CHECKSEC_VERSION}.tar.gz"
-    \cp -af "${DIR_TMP}/checksec.sh-${CHECKSEC_VERSION}/checksec" /usr/local/bin/checksec
+    \cp -af "${DIR_TMP}/checksec" /usr/local/bin/checksec
+    rm -rf LICENSE README.md
     echo
     popd
   fi
