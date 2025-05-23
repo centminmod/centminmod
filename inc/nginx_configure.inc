@@ -6075,6 +6075,10 @@ else
            echo "1"
            # --- Debugging Nginx Configure Variables ---
            echo
+           echo "DETECT_NGXVER=$DETECT_NGXVER"
+           echo "TLSTHREEOPT=$TLSTHREEOPT"
+           echo "TLSONETHREE_DETECT=$TLSONETHREE_DETECT"
+           echo "OPENSSL_TLSONETHREE=$OPENSSL_TLSONETHREE"
            echo "NGINX_EXPORTLD_OPT=${NGINX_EXPORTLD_OPT}"
            echo "LD_OPENSSL11_OPT=${LD_OPENSSL11_OPT}"
            echo "QUICTLS_LD_OPT=${QUICTLS_LD_OPT}"
@@ -6216,6 +6220,10 @@ else
            echo "2"
            # --- Debugging Nginx Configure Variables ---
            echo
+           echo "DETECT_NGXVER=$DETECT_NGXVER"
+           echo "TLSTHREEOPT=$TLSTHREEOPT"
+           echo "TLSONETHREE_DETECT=$TLSONETHREE_DETECT"
+           echo "OPENSSL_TLSONETHREE=$OPENSSL_TLSONETHREE"
            echo "NGINX_EXPORTLD_OPT=${NGINX_EXPORTLD_OPT}"
            echo "LD_OPENSSL11_OPT=${LD_OPENSSL11_OPT}"
            echo "QUICTLS_LD_OPT=${QUICTLS_LD_OPT}"
@@ -6357,6 +6365,10 @@ else
            echo "3"
            # --- Debugging Nginx Configure Variables ---
            echo
+           echo "DETECT_NGXVER=$DETECT_NGXVER"
+           echo "TLSTHREEOPT=$TLSTHREEOPT"
+           echo "TLSONETHREE_DETECT=$TLSONETHREE_DETECT"
+           echo "OPENSSL_TLSONETHREE=$OPENSSL_TLSONETHREE"
            echo "NGINX_EXPORTLD_OPT=${NGINX_EXPORTLD_OPT}"
            echo "LD_OPENSSL11_OPT=${LD_OPENSSL11_OPT}"
            echo "QUICTLS_LD_OPT=${QUICTLS_LD_OPT}"
@@ -6498,6 +6510,10 @@ else
            echo "4"
            # --- Debugging Nginx Configure Variables ---
            echo
+           echo "DETECT_NGXVER=$DETECT_NGXVER"
+           echo "TLSTHREEOPT=$TLSTHREEOPT"
+           echo "TLSONETHREE_DETECT=$TLSONETHREE_DETECT"
+           echo "OPENSSL_TLSONETHREE=$OPENSSL_TLSONETHREE"
            echo "NGINX_EXPORTLD_OPT=${NGINX_EXPORTLD_OPT}"
            echo "LD_OPENSSL11_OPT=${LD_OPENSSL11_OPT}"
            echo "QUICTLS_LD_OPT=${QUICTLS_LD_OPT}"
