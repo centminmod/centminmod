@@ -208,15 +208,19 @@ if [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' || "$CENTOS_TEN" -eq '10
         echo "/etc/init.d/php-fpm configtest" >/usr/bin/fpmconfigtest ; chmod 700 /usr/bin/fpmconfigtest
     fi
 
-    if [[ -f /etc/init.d/mysql || -f /usr/lib/systemd/system/mariadb.service ]]; then
+    if [ -f /etc/init.d/mysql ]; then
     
         echo "systemctl daemon-reload; service mariadb stop" >/usr/bin/mysqlstop ; chmod 700 /usr/bin/mysqlstop
         echo "systemctl daemon-reload; service mariadb start" >/usr/bin/mysqlstart ; chmod 700 /usr/bin/mysqlstart
         echo "systemctl daemon-reload; service mariadb restart" >/usr/bin/mysqlrestart ; chmod 700 /usr/bin/mysqlrestart
         echo "systemctl daemon-reload; systemctl status mariadb --no-pager" >/usr/bin/mysqlstatus ; chmod 700 /usr/bin/mysqlstatus
-        # if [[ "$MARIADB_INSTALLTENTHREE" != [yY] || "$(/usr/bin/mysql_config --version | cut -d . -f1,2)" != '10.3' ]]; then
-        #     echo "systemctl daemon-reload; service mariadb reload" >/usr/bin/mysqlreload ; chmod 700 /usr/bin/mysqlreload
-        # fi
+
+    elif [ -f /usr/lib/systemd/system/mariadb.service ]; then
+    
+        echo "systemctl daemon-reload; systemctl stop mariadb" >/usr/bin/mysqlstop ; chmod 700 /usr/bin/mysqlstop
+        echo "systemctl daemon-reload; systemctl start mariadb" >/usr/bin/mysqlstart ; chmod 700 /usr/bin/mysqlstart
+        echo "systemctl daemon-reload; systemctl restart mariadb" >/usr/bin/mysqlrestart ; chmod 700 /usr/bin/mysqlrestart
+        echo "systemctl daemon-reload; systemctl status mariadb --no-pager" >/usr/bin/mysqlstatus ; chmod 700 /usr/bin/mysqlstatus
     
     elif [ -f /etc/init.d/mysqld ]; then
     
