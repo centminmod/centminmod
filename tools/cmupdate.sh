@@ -51,7 +51,7 @@ fupdate() {
     cmupdate_branchname_new=$cmupdate_branchname
   fi
 
-  CMUPDATE_GITCURLSTATUS=$(curl -${ipv_forceopt}sL --connect-timeout 20 -sI https://raw.githubusercontent.com/centminmod/centminmod/${cmupdate_branchname}/gitclean.txt | grep 'HTTP\/' | awk '/200/ {print $2}')
+  CMUPDATE_GITCURLSTATUS=$(curl -${ipv_forceopt}sL --connect-timeout 20 -sI https://raw.githubusercontent.com/centminmod/centminmod/${cmupdate_branchname}/gitclean.txt | grep 'HTTP/' | awk '/200/ {print $2}')
     if [[ "$CMUPDATE_GITCURLSTATUS" = '200' ]]; then
       CHECK_GITCLEAN=$(curl -${ipv_forceopt}sLk --connect-timeout 20 https://raw.githubusercontent.com/centminmod/centminmod/${cmupdate_branchname}/gitclean.txt)
     else

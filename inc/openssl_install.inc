@@ -575,7 +575,7 @@ if [[ "$CLOUDFLARE_PATCHSSL" = [yY] && "$DETECTOPENSSL_ONEZERO" = '1.0' ]]; then
         fi
         
         # fallback mirror if github down, use gitlab mirror
-        curl -${ipv_forceopt}Is --connect-timeout 30 --max-time 30 "${OPENSSLCFPATCHLINK}" | grep 'HTTP\/' | grep -E '200' >/dev/null 2>&1
+        curl -${ipv_forceopt}Is --connect-timeout 30 --max-time 30 "${OPENSSLCFPATCHLINK}" | grep 'HTTP/' | grep -E '200' >/dev/null 2>&1
         OPENSSLCFPATCH_CURLCHECK=$?
         if [[ "$OPENSSLCFPATCH_CURLCHECK" != '0' ]]; then
             if [[ "$AVXTWO_CHECK" = '0' ]]; then

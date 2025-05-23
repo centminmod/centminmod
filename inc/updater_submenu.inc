@@ -368,13 +368,13 @@ if [[ -d "${SCRIPT_DIR}/.git" ]]; then
   # for k in `git branch -r|sed s/^..//`;do echo -e `git log -1 --pretty=format:"%Cgreen%ci %Cblue%cr%Creset" "$k" 2>/dev/null`\\t"$k";done| sed -e 's|origin\/||g' -e '/HEAD/d' | sort -r
   # grab branch listings using curl
   if [[ "$(echo $CMGIT | grep github)" ]]; then
-    GITCURLSTATUS=$(curl -sI https://github.com/centminmod/centminmod/branches/active | grep 'HTTP\/' | awk '/200/ {print $2}')
+    GITCURLSTATUS=$(curl -sI https://github.com/centminmod/centminmod/branches/active | grep 'HTTP/' | awk '/200/ {print $2}')
     if [[ "$GITCURLSTATUS" = '200' ]]; then
       CMBRANCHLIST=$(curl -s${ipv_forceopt} https://github.com/centminmod/centminmod/branches/active | grep -P '\/centminmod\/centminmod\/tree\/.*">' | grep -Po '(?<=href=")[^"]*(?=")' | sed 's|/centminmod/centminmod/tree/||g' | grep -E -v '123.06stable|123.07stable|123.08beta03|123.08beta03-rtmp|123.08zerodown|123.09beta01-gcc|123.09beta01-dnf|123.09beta01-nchan|123.09beta01-el8.5' | uniq)
       echo "$CMBRANCHLIST"
     fi
   else
-    GITCURLSTATUS=$(curl -sI https://gitlab.com/centminmod/centminmod/branches?sort=recently_updated | grep 'HTTP\/' | awk '/200/ {print $2}')
+    GITCURLSTATUS=$(curl -sI https://gitlab.com/centminmod/centminmod/branches?sort=recently_updated | grep 'HTTP/' | awk '/200/ {print $2}')
     if [[ "$GITCURLSTATUS" = '200' ]]; then
     CMBRANCHLIST=$(curl -s${ipv_forceopt} https://gitlab.com/centminmod/centminmod/branches?sort=recently_updated | grep -P '\/centminmod\/centminmod\/tree\/.*">' | grep -Po '(?<=href=")[^"]*(?=")' | sed 's|/centminmod/centminmod/tree/||g' | grep -E -v '123.06stable|123.07stable|123.08beta03|123.08beta03-rtmp|123.08zerodown|123.09beta01-gcc|123.09beta01-dnf|123.09beta01-nchan')
     echo "$CMBRANCHLIST"

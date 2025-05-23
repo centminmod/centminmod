@@ -90,7 +90,7 @@ for domain in $(ls $TOPLEVEL_DIR); do
           # only generate nginx deny all rules for .htaccess directory paths which are not already returning
           # 403 permission denied http status codes (also include check for 404)
           # 
-          # if [[ "$(curl -sI ${URL_WEB}/ | grep 'HTTP\/' | grep -Eo '403|404' >/dev/null 2>&1; echo $?)" != '0' ]]; then
+          # if [[ "$(curl -sI ${URL_WEB}/ | grep 'HTTP/' | grep -Eo '403|404' >/dev/null 2>&1; echo $?)" != '0' ]]; then
             if check_location_block "$domain" "$PROTECTDIR_PATH" && [[ "$(echo $PROTECTDIR_PATH | grep 'akismet' )" ]]; then
               # proper akismet secure lock down
 echo -e "# $PROTECTDIR\n
