@@ -205,7 +205,7 @@ map \$http_accept_encoding \$normalized_encoding {
 EOF
   fi
 
-  NORMALIZE_ACCEPT_ENCODING_INCLUDECHECK=$(grep '\/usr\/local\/nginx\/conf\/normalize_encoding.conf' /usr/local/nginx/conf/nginx.conf)
+  NORMALIZE_ACCEPT_ENCODING_INCLUDECHECK=$(grep '/usr/local/nginx/conf/normalize_encoding.conf' /usr/local/nginx/conf/nginx.conf)
   if [[ -z "$NORMALIZE_ACCEPT_ENCODING_INCLUDECHECK" ]]; then
     # echo
     # echo "include file /usr/local/nginx/conf/normalize_encoding.conf add to nginx.conf"
@@ -421,7 +421,7 @@ check_and_fix_cache_keys() {
 }
 
 fix_pure_ftpd_el8() {
-  if [[ -f /etc/pure-ftpd/pure-ftpd.conf && "$(grep '@sysconfigdir\@\/pureftpd.pdb' /etc/pure-ftpd/pure-ftpd.conf)" ]] && [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]]; then
+  if [[ -f /etc/pure-ftpd/pure-ftpd.conf && "$(grep '@sysconfigdir\@/pureftpd.pdb' /etc/pure-ftpd/pure-ftpd.conf)" ]] && [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]]; then
     sed -i 's/# PureDB                       \@sysconfigdir\@\/pureftpd.pdb/PureDB                        \/etc\/pure-ftpd\/pureftpd.pdb/' /etc/pure-ftpd/pure-ftpd.conf
     service pure-ftpd restart >/dev/null 2>&1
   fi
@@ -988,7 +988,7 @@ upstream dft_php {
 EOF
   fi
 
-  DFT_SETUPPHPUPSTREAM_INCLUDECHECK=$(grep '\/usr\/local\/nginx\/conf\/default_phpupstream.conf' /usr/local/nginx/conf/nginx.conf)
+  DFT_SETUPPHPUPSTREAM_INCLUDECHECK=$(grep '/usr/local/nginx/conf/default_phpupstream.conf' /usr/local/nginx/conf/nginx.conf)
   if [[ -z "$DFT_SETUPPHPUPSTREAM_INCLUDECHECK" ]]; then
     # echo
     # echo "include file /usr/local/nginx/conf/default_phpupstream.conf add to nginx.conf"
@@ -3202,7 +3202,7 @@ pureftpdupdates() {
 leupdates() {
   # update .well-known content-type
   if [ -f /usr/local/nginx/conf/staticfiles.conf ]; then
-   CHECKCONTENTTYPE=$(grep 'application\/jose+json' /usr/local/nginx/conf/staticfiles.conf)
+   CHECKCONTENTTYPE=$(grep 'application/jose+json' /usr/local/nginx/conf/staticfiles.conf)
    if [ "$CHECKCONTENTTYPE" ]; then
       sed -i "s|application\/jose+json|text\/plain|" /usr/local/nginx/conf/staticfiles.conf
    fi
@@ -3297,7 +3297,7 @@ cronpathadjust() {
   # if [[ "$INITIALINSTALL" = [yY] ]]; then
     # append /usr/local/bin to /etc/crontab PATH variable for /usr/local/bin/php to work
     if [ -f /etc/crontab ]; then
-      if [[ -z "$(grep '\/usr\/local\/bin' /etc/crontab)" ]]; then
+      if [[ -z "$(grep '/usr/local/bin/dmotd' /etc/profile)" ]]; then
         # echo "adjust /etc/crontab \$PATH for /usr/local/bin support"
         sed -i 's|PATH=\/sbin:\/bin:\/usr\/sbin:\/usr\/bin|PATH=\/sbin:\/bin:\/usr\/sbin:\/usr\/bin:\/usr\/local\/bin|' /etc/crontab
         cmservice crond restart >/dev/null 2>&1
@@ -3401,7 +3401,7 @@ auto_gitupdate() {
 }
 
 figletcheck() {
-    if [[ ! -f "$(rpm -ql figlet | grep 'bin\/figlet')" && -f /etc/yum.repos.d/epel.repo ]]; then
+    if [[ ! -f "$(rpm -ql figlet | grep 'bin/figlet')" && -f /etc/yum.repos.d/epel.repo ]]; then
         time $YUMDNFBIN -y -q install figlet${DISABLEREPO_DNF}
     fi
 }
@@ -3788,13 +3788,13 @@ imagick_fixes() {
 }
 
 apache_protect() {
-  if [[ -z "$(crontab -l 2>&1 | grep '\/usr\/local\/src\/centminmod\/tools\/autoprotect.sh')" && -f "/usr/local/src/centminmod/tools/autoprotect.sh" ]]; then
+  if [[ -z "$(crontab -l 2>&1 | grep '/usr/local/src/centminmod/tools/autoprotect.sh')" && -f "/usr/local/src/centminmod/tools/autoprotect.sh" ]]; then
       crontab -l > cronjoblist
       sed -i '/autoprotect.sh/d' cronjoblist
       echo "13 23 * * * /usr/local/src/centminmod/tools/autoprotect.sh >/dev/null 2>&1" >> cronjoblist
       crontab cronjoblist
       rm -rf cronjoblist
-  elif [[ "$(crontab -l | grep -q '11 \*\/23'; echo $?)" -eq '0' && -f "/usr/local/src/centminmod/tools/autoprotect.sh" ]]; then
+  elif [[ "$(crontab -l | grep -q '11 \*/23'; echo $?)" -eq '0' && -f "/usr/local/src/centminmod/tools/autoprotect.sh" ]]; then
       crontab -l > cronjoblist
       sed -i '/autoprotect.sh/d' cronjoblist
       echo "13 23 * * * /usr/local/src/centminmod/tools/autoprotect.sh >/dev/null 2>&1" >> cronjoblist
@@ -3840,7 +3840,7 @@ mariadb_errorlogfix() {
   # disable custom mariadb log-error path due to changes in 10.0.29 & 10.1.21
   # https://jira.mariadb.org/browse/MDEV-11841
   if [ -f /etc/my.cnf ]; then
-    MDB_LOGERRORCHECK=$(grep '^log-error=\/var\/log\/mysqld.log' /etc/my.cnf)
+    MDB_LOGERRORCHECK=$(grep '^log-error=/var/log/mysqld.log' /etc/my.cnf)
     if [ "$MDB_LOGERRORCHECK" ]; then
       sed -i 's|^log-error=\/var\/log\/mysqld.log|#log-error=\/var\/log\/mysqld.log|g' /etc/my.cnf
     fi

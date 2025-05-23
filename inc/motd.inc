@@ -7,7 +7,7 @@ checkmotd() {
         service sshd reload
       fi
       # remove dmotd from /etc/profile to /etc/profile.d/dmotd.sh
-      if [[ "$(grep '\/usr\/local\/bin\/dmotd' /etc/profile)" ]]; then
+      if [[ "$(grep '/usr/local/bin/dmotd' /etc/profile)" ]]; then
         sed -i '/\/usr\/local\/bin\/dmotd/d' /etc/profile
       fi
       if [ ! -f /etc/profile.d/dmotd.sh ]; then
