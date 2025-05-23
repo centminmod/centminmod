@@ -674,7 +674,7 @@ jetpack_ip_whitelist_cronsetup() {
 update_wpce_map() {
   if [ -f /usr/local/nginx/conf/wpcacheenabler_map.conf ]; then
     # fix improper escapped entries
-    if [[ "$(grep '\"' /usr/local/nginx/conf/wpcacheenabler_map.conf)" ]]; then
+    if [[ "$(grep '"' /usr/local/nginx/conf/wpcacheenabler_map.conf)" ]]; then
       sed -i 's|\\"|"|g' /usr/local/nginx/conf/wpcacheenabler_map.conf
       if [[ "$(ps aufx | grep nginx | grep -v grep | grep nginx  >/dev/null 2>&1; echo $?)" -eq '0' ]]; then
         service nginx reload >/dev/null 2>&1
@@ -3079,10 +3079,10 @@ fi
 csf_distftp() {
   if [ -f /etc/csf/csf.conf ]; then
     # raise LF_DISTFTP = 40 & LF_DISTFTP_UNIQ = 40
-    if [[ ! "$(grep 'LF_DISTFTP = \"40\"' /etc/csf/csf.conf)" ]]; then
+    if [[ ! "$(grep 'LF_DISTFTP = "40"' /etc/csf/csf.conf)" ]]; then
       sed -i 's/LF_DISTFTP = .*/LF_DISTFTP = \"40\"/g' /etc/csf/csf.conf
     fi
-    if [[ ! "$(grep 'LF_DISTFTP_UNIQ = \"40\"' /etc/csf/csf.conf)" ]]; then
+    if [[ ! "$(grep 'LF_DISTFTP_UNIQ = "40"' /etc/csf/csf.conf)" ]]; then
       sed -i 's/LF_DISTFTP_UNIQ = .*/LF_DISTFTP_UNIQ = \"40\"/g' /etc/csf/csf.conf
       csf -ra >/dev/null 2>&1
     fi
@@ -3324,9 +3324,9 @@ crontabdisable_r() {
 xpowerby() {
   # add x-powered-by header check
   if [ -f /usr/local/nginx/conf/nginx.conf ]; then
-  XPB_CHECKA=$(grep 'more_set_headers \"Server: nginx\";' /usr/local/nginx/conf/nginx.conf)
-  XPB_CHECKB=$(grep 'more_set_headers \"X-Powered-By: centminmod\";' /usr/local/nginx/conf/nginx.conf)
-  XPB_CHECKC=$(grep 'more_set_headers \"Server: nginx centminmod\";' /usr/local/nginx/conf/nginx.conf)
+  XPB_CHECKA=$(grep 'more_set_headers "Server: nginx";' /usr/local/nginx/conf/nginx.conf)
+  XPB_CHECKB=$(grep 'more_set_headers "X-Powered-By: centminmod";' /usr/local/nginx/conf/nginx.conf)
+  XPB_CHECKC=$(grep 'more_set_headers "Server: nginx centminmod";' /usr/local/nginx/conf/nginx.conf)
   if [[ "$XPB_CHECKA" ]]; then
     sed -i "s|^more_set_headers \"Server: nginx\";|more_set_headers \"Server: nginx\";\nmore_set_headers \"X-Powered-By: centminmod\";|" /usr/local/nginx/conf/nginx.conf
   elif [[ -z "$XPB_CHECKB" ]]; then
