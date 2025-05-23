@@ -716,7 +716,7 @@ else
   ZLIBNG_OPT=""
 fi
 
-if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' || "$CENTOS_NINE" -eq '10' || "$CENTOS_SIX" = '6' ]]; then
+if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' || "$CENTOS_TEN" -eq '10' || "$CENTOS_SIX" = '6' ]]; then
 
   if [[ "$ngver" && "$ngver" = 'master-google' ]]; then
     DETECT_NGXVER=$(awk '/define nginx_version  / {print $3}' "/svr-setup/nginx-$ngver/src/core/nginx.h")
@@ -867,12 +867,18 @@ if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9'
     HTTP_FINGERPRINTOPT=""
   fi
 
+  echo
+  echo "before routine NGINX_SLICE=$NGINX_SLICE"
+  echo
   if [[ "$NGINX_SLICE" = [yY] ]]; then
     NGXSLICEOPT=' --with-http_slice_module'
   else
     NGXSLICEOPT=""
   fi
 
+  echo
+  echo "before routine NGINX_RTMP=$NGINX_RTMP"
+  echo
   if [[ "$NGINX_RTMP" = [yY] ]]; then
     if [[ ! -d "${DIR_TMP}/nginx-rtmp-module" ]]; then
       echo
@@ -906,6 +912,9 @@ if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9'
     STREAM_SSLPREREADOPT=""
   fi
 
+  echo
+  echo "before routine NGINX_HTTP2=$NGINX_HTTP2"
+  echo
   if [[ "$NGINX_HTTP2" = [yY] ]]; then  
     # only apply Nginx HTTP/2 if Nginx version is >= 1.9.3 and <1.9.5 OR >= 1.9.5
     if [[ "$DETECT_NGXVER" -ge '1009003' && "$DETECT_NGXVER" -lt '1009005' ]] || [[ "$DETECT_NGXVER" -ge '1009005' ]] || [[ "$NGX_VEREVAL" = 'master' ]] || [[ "$NGX_VEREVAL" = 'quic' ]] || [[ "$NGX_VEREVAL" = 'master-google' ]]; then
@@ -936,12 +945,18 @@ if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9'
     fi
   fi
 
+  echo
+  echo "before routine NGINX_REALIP=$NGINX_REALIP"
+  echo
   if [[ "$NGINX_REALIP" = [yY] ]]; then
     REALIPOPT=' --with-http_realip_module'
   else
     REALIPOPT=""
-  fi  
+  fi
 
+  echo
+  echo "before routine NGINX_RDNS=$NGINX_RDNS"
+  echo
   if [[ "$NGINX_RDNS" = [yY] ]]; then
     cd "$DIR_TMP"
     rm -rf nginx-http-rdns
@@ -951,24 +966,36 @@ if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9'
     RDNSOPT=""
   fi  
 
+  echo
+  echo "before routine NGINX_STUBSTATUS=$NGINX_STUBSTATUS"
+  echo
   if [[ "$NGINX_STUBSTATUS" = [yY] ]]; then
     STUBSTATUSOPT=" --with-http_stub_status_module"
   else
     STUBSTATUSOPT=""
   fi  
 
+  echo
+  echo "before routine NGINX_SUB=$NGINX_SUB"
+  echo
   if [[ "$NGINX_SUB" = [yY] ]]; then
     SUBOPT=" --with-http_sub_module"
   else
     SUBOPT=""
   fi  
 
+  echo
+  echo "before routine NGINX_ADDITION=$NGINX_ADDITION"
+  echo
   if [[ "$NGINX_ADDITION" = [yY] ]]; then
     ADDITIONOPT=" --with-http_addition_module"
   else
     ADDITIONOPT=""
-  fi  
+  fi
 
+  echo
+  echo "before routine NGINX_TESTCOOKIE=$NGINX_TESTCOOKIE"
+  echo
   if [[ "$NGINX_TESTCOOKIE" = [yY] ]]; then
     NGINX_TESTCOOKIEGIT='y'
     NGX_TESTCOOKIEDIR='testcookie-nginx-module'
@@ -1021,6 +1048,9 @@ if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9'
       fi
   fi
 
+  echo
+  echo "before routine NGINX_LENGTHHIDE=$NGINX_LENGTHHIDE"
+  echo
   if [[ "$NGINX_LENGTHHIDE" = [yY] ]]; then
     NGINX_LENGTHHIDEGIT='y'
     NGX_HIDELENGTHDIR='nginx-length-hiding-filter-module'
@@ -1073,6 +1103,9 @@ if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9'
       fi
   fi
 
+  echo
+  echo "before routine NGINX_IMAGEFILTER=$NGINX_IMAGEFILTER"
+  echo
   if [[ "$NGINX_IMAGEFILTER" = [yY] ]]; then
     if [[ "$DYNAMIC_SUPPORT" = [yY] && "$NGXDYNAMIC_IMAGEFILTER" = [yY] ]]; then
       IMAGEFILTEROPT=" --with-http_image_filter_module=dynamic"
@@ -1107,6 +1140,9 @@ if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9'
       fi
   fi
 
+  echo
+  echo "before routine NGINX_XSLT=$NGINX_XSLT"
+  echo
   if [[ "$NGINX_XSLT" = [yY] ]]; then
     if [[ "$DYNAMIC_SUPPORT" = [yY] && "$NGXDYNAMIC_XSLT" = [yY] ]]; then
       NGXXSLTOPT=" --with-http_xslt_module=dynamic"
@@ -1141,6 +1177,9 @@ if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9'
       fi
   fi
 
+  echo
+  echo "before routine NGINX_PERL=$NGINX_PERL"
+  echo
   if [[ "$NGINX_PERL" = [yY] ]]; then
     if [ ! -f /usr/share/perl5/ExtUtils/Embed.pm ]; then
       time $YUMDNFBIN -q -y install perl-ExtUtils-Embed
@@ -1186,12 +1225,18 @@ if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9'
     CACHEPURGEOPT=""
   fi
 
+  echo
+  echo "before routine NGINX_ACCESSKEY=$NGINX_ACCESSKEY"
+  echo
   if [[ "$NGINX_ACCESSKEY" = [yY] ]]; then
     ACCESSKEYOPT=" --add-module=../nginx-accesskey-2.0.3"
   else
     ACCESSKEYOPT=""
   fi    
 
+  echo
+  echo "before routine NGINX_HTTPCONCAT=$NGINX_HTTPCONCAT"
+  echo
   if [[ "$NGINX_HTTPCONCAT" = [yY] ]]; then
     NGX_CONCATDIR=$(tar -tzf "$DIR_TMP/${NGX_CONCATLINKFILE}" | head -1 | cut -f1 -d"/")
     HTTPCONCATOPT=" --add-module=../$NGX_CONCATDIR"
@@ -1199,6 +1244,9 @@ if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9'
     HTTPCONCATOPT=""
   fi
 
+  echo
+  echo "before routine ORESTY_HEADERSMORE=$ORESTY_HEADERSMORE"
+  echo
   if [[ "$ORESTY_HEADERSMORE" = [yY] ]]; then
     NGX_HEADERSMOREDIR=$(tar -tzf "$DIR_TMP/${NGX_HEADERSMORELINKFILE}" | head -1 | cut -f1 -d"/")
     # gitmaster option
@@ -1482,6 +1530,9 @@ if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9'
     fi
   fi
 
+  echo
+  echo "before routine NGINX_ZLIBCUSTOM=$NGINX_ZLIBCUSTOM"
+  echo
   if [[ "$NGINX_ZLIBCUSTOM" = [yY] ]]; then
     ZLIBCUSTOM_DIR=$(tar -tzf "$DIR_TMP/${NGX_ZLIBLINKFILE}" 2>&1 | head -1 | cut -f1 -d"/" | grep zlib)
     ZLIBCUSTOM_OPT=" --with-zlib=../zlib-${NGINX_ZLIBVER}"
@@ -1595,6 +1646,9 @@ if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9'
     fi
   fi
 
+  echo
+  echo "before routine NGINX_OPENRESTY=$NGINX_OPENRESTY"
+  echo
   if [[ "$NGINX_OPENRESTY" = [yY] ]]; then
     MEMCDIR=$(tar -tzf "$DIR_TMP/${NGX_MEMCLINKFILE}" | head -1 | cut -f1 -d"/")
     SRCACHEDIR=$(tar -tzf "$DIR_TMP/${NGX_SRCACHELINKFILE}" | head -1 | cut -f1 -d"/")
@@ -1813,6 +1867,9 @@ if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9'
       fi
   fi
 
+  echo
+  echo "before routine ORESTY_LUANGINX=$ORESTY_LUANGINX"
+  echo
   if [[ "$ORESTY_LUANGINX" = [yY] ]]; then
     # auto enable openresty stream lua nginx module when ORESTY_LUANGIN='y' set
     NGX_LUASTREAM='y'
@@ -1998,12 +2055,18 @@ if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9'
     MPOPT=""
   fi  
 
+  echo
+  echo "before routine NGINX_SECURELINK=$NGINX_SECURELINK"
+  echo
   if [[ "$NGINX_SECURELINK" = [yY] ]]; then
     SECURELINKOPT=" --with-http_secure_link_module"
   else
     SECURELINKOPT=""
-  fi    
+  fi
 
+  echo
+  echo "before routine NGINX_FANCYINDEX=$NGINX_FANCYINDEX"
+  echo
   if [[ "$NGINX_FANCYINDEX" = [yY] ]]; then
     NGX_FANCYINDEXDIR=$(tar -tzf "$DIR_TMP/${NGX_FANCYINDEXLINKFILE}" | head -1 | cut -f1 -d"/")
     if [[ "$DYNAMIC_SUPPORT" = [yY] && "$NGXDYNAMIC_FANCYINDEX" = [yY] ]]; then
@@ -2112,6 +2175,9 @@ if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9'
     VTSOPT=""
   fi
 
+  echo
+  echo "before routine NGINX_STICKY=$NGINX_STICKY"
+  echo
   if [[ "$NGINX_STICKY" = [yY] ]]; then
     if [[ "$NGINX_STICKYVER" = 'master' ]]; then
       NGX_STICKYDIR='nginx-sticky-module-master'
@@ -2123,6 +2189,9 @@ if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9'
     STICKYOPT=""
   fi
 
+  echo
+  echo "before routine NGINX_UPSTREAMCHECK=$NGINX_UPSTREAMCHECK"
+  echo
   if [[ "$NGINX_UPSTREAMCHECK" = [yY] ]]; then
     NGX_UPSTREAMCHECKDIR=$(tar -tzf "$DIR_TMP/${NGX_UPSTREAMCHECKLINKFILE}" | head -1 | cut -f1 -d"/")
     UPSTREAMOPT=" --add-module=../$NGX_UPSTREAMCHECKDIR"
@@ -2207,8 +2276,10 @@ if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9'
       fi
   fi
 
+  echo
+  echo "before routine NGINX_LIBATOMIC=$NGINX_LIBATOMIC"
+  echo
   if [[ "$NGINX_LIBATOMIC" = [yY] ]]; then
-
     if [ ! -f "/usr/${LIBDIR}/libatomic_ops.a" ]; then
      echo "/usr/${LIBDIR}/libatomic_ops.a not found"
      echo "installing libatomic_ops-devel"
@@ -2238,6 +2309,9 @@ if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9'
     LIBATOMIC_NGX_OPTS=""
   fi
 
+  echo
+  echo "before routine NGINX_PCREJIT=$NGINX_PCREJIT"
+  echo
   if [[ "$NGINX_PCREJIT" = [yY] ]]; then
     if [[ "$DETECT_NGXVER" -ge '1021005' && "$NGINX_PCRE_TWO" = [yY] ]]; then
       PCRELINKDIR=$(tar -tzf "$DIR_TMP/${PCRETWOLINKFILE}" | head -1 | cut -f1 -d"/")
