@@ -1568,7 +1568,7 @@ fi
       else
         echo "Skip OpenSSL quictls fork Compile OPENSSLVER_CHECK=$OPENSSLVER_CHECK matches OPENSSL_VERSION=$OPENSSL_VERSION" | tee "${CENTMINLOGDIR}/centminmod_opensslinstall_skipped_${DT}.log"
       fi
-    elif [[ "$AWS_LC_SWITCH" = [nN] ]] && [[ "$LIBRESSL_SWITCH" = [nN] ]] && [[ "$BORINGSSL_SWITCH" = [nN] ]]; then
+    elif [[ "$AWS_LC_SWITCH" = [nN] ]] && [[ "$LIBRESSL_SWITCH" = [nN] ]] && [[ "$BORINGSSL_SWITCH" = [nN] ]] && [[ "$OPENSSL_SYSTEM_USE" != [Yy] ]]; then
       OPENSSLVER_CHECK=$(/opt/openssl/bin/openssl version | awk '{print $2}')
       if [[ "$OPENSSLVER_CHECK" != "$OPENSSL_VERSION" ]] || [[ "$OPENSSL_FORCECOMPILE" = [yY] ]] || [[ "$NGINX_TLS_FINGERPRINT" = [yY] ]]; then
         opensslinstallstarttime=$(TZ=UTC date +%s.%N)

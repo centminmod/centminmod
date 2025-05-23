@@ -953,7 +953,7 @@ install_stdzlib() {
 
 nginxzlib_install() {
   if [[ "$NGINX_ZLIBCUSTOM" = [yY] ]]; then
-    CHECK_PCLMUL=$(gcc -c -Q -march=native --help=target | grep -E '\[enabled\]|mtune|march' | grep 'mpclmul' | grep -o enabled)
+    CHECK_PCLMUL=$(gcc -c -Q -march=native --help=target | grep -E '[enabled]|mtune|march' | grep 'mpclmul' | grep -o enabled)
     if [[ "$CLOUDFLARE_ZLIB" = [yY] && "$(cat /proc/cpuinfo | grep -o 'sse4_2' | uniq)" = 'sse4_2' && "$CHECK_PCLMUL" = 'enabled' ]]; then
         install_cfzlib
         if [[ "$cfzlib_check" -ne '0' ]]; then

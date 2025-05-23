@@ -1494,7 +1494,7 @@ fi
         echo
 
         echo "*************************************************"
-        CHECK_PCLMUL=$(gcc -c -Q -march=native --help=target | grep -E '\[enabled\]|mtune|march' | grep 'mpclmul' | grep -o enabled)
+        CHECK_PCLMUL=$(gcc -c -Q -march=native --help=target | grep -E '[enabled]|mtune|march' | grep 'mpclmul' | grep -o enabled)
         if [[ "$CLOUDFLARE_ZLIB" = [yY] && "$(cat /proc/cpuinfo | grep -o 'sse4_2' | uniq)" != 'sse4_2' || "$CHECK_PCLMUL" != 'enabled' ]]; then
             echo
             cecho "* CLOUDFLARE_ZLIB='y' detected but cpu SSE4.2 or AES-NI support not available" $boldgreen

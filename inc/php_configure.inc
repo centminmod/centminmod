@@ -985,7 +985,7 @@ fi
 
 # whether to switch from system used zlib to cloudflare zlib performance
 # fork for php conmpilations for cpus supporting SSE4.2 at least
-CHECK_PCLMUL=$(gcc -c -Q -march=native --help=target | grep -E '\[enabled\]|mtune|march' | grep 'mpclmul' | grep -o enabled)
+CHECK_PCLMUL=$(gcc -c -Q -march=native --help=target | grep -E '[enabled]|mtune|march' | grep 'mpclmul' | grep -o enabled)
 CLOUDFLARE_ZLIBPHP='n'
 if [[ "$CLOUDFLARE_ZLIBPHP" = [yY] && "$(cat /proc/cpuinfo | grep -o 'sse4_2' | uniq)" = 'sse4_2' && "$CHECK_PCLMUL" = 'enabled' ]]; then
   # check if static libz.a installed usually as result of compiling nginx with
@@ -2997,7 +2997,7 @@ gcc -c -Q -march=${march_flag}${PHPEXTRA_CFLAGS} --help=target | grep -E 'mtune|
   \cp -a "${CENTMINLOGDIR}/gcc_php_native.log" "${CENTMINLOGDIR}/gcc_php_native_${DT}.log"
   \CP -a "${CENTMINLOGDIR}/gcc_php_diff_native-vs-x86-64.log" "${CENTMINLOGDIR}/gcc_php_diff_native-vs-x86-64_${DT}.log"
   echo
-  grep -E '\-march=|\-mtune|\-mavx|\-msse4|\-mpclmul' ${CENTMINLOGDIR}/gcc_php_diff_native-vs-x86-64.log
+  grep -E '-march=|-mtune|-mavx|-msse4|-mpclmul' ${CENTMINLOGDIR}/gcc_php_diff_native-vs-x86-64.log
   # if non native target x86-64 is used 
   # pick up important native cpu instructions
   # and manually pass them to x86-64 target
