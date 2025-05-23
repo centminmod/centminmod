@@ -556,12 +556,12 @@ if [ -f /usr/local/nginx/conf/conf.d/virtual.conf ]; then
   fi
 fi
 
-TESTVHOST=$(echo $vhostname | grep '\/')
+TESTVHOST=$(echo $vhostname | grep '/')
 while [[ "$TESTVHOST" ]]; do
   echo "!! only domain.com or subdomain.domain.com supported !!"
   echo "   subdirectory is not supported right now"
   read -ep "re-enter vhost domain name you want to add (without www. prefix): " vhostname
-  TESTVHOST=$(echo $vhostname | grep '\/')
+  TESTVHOST=$(echo $vhostname | grep '/')
   echo
 done
 
@@ -1310,7 +1310,7 @@ map \$args \$q_ignorearg {
 }
 HFB
 
-WPCACHEENABLERMAP_INCLUDECHECK=$(grep '\/usr\/local\/nginx\/conf\/wpcacheenabler_map.conf' /usr/local/nginx/conf/nginx.conf)
+WPCACHEENABLERMAP_INCLUDECHECK=$(grep '/usr/local/nginx/conf/wpcacheenabler_map.conf' /usr/local/nginx/conf/nginx.conf)
   if [[ -z "$WPCACHEENABLERMAP_INCLUDECHECK" ]]; then
     echo
     echo "include file /usr/local/nginx/conf/wpcacheenabler_map.conf add to nginx.conf"
@@ -3126,7 +3126,7 @@ upstream redisbackend {
 }
 GGG
 
-REDISUPSTREAM_INCLUDECHECK=$(grep '\/usr\/local\/nginx\/conf\/redisupstream.conf' /usr/local/nginx/conf/nginx.conf)
+REDISUPSTREAM_INCLUDECHECK=$(grep '/usr/local/nginx/conf/redisupstream.conf' /usr/local/nginx/conf/nginx.conf)
   if [[ -z "$REDISUPSTREAM_INCLUDECHECK" ]]; then
     echo
     echo "include file /usr/local/nginx/conf/redisupstream.conf add to nginx.conf"
@@ -3190,7 +3190,7 @@ sed -i "/define( 'DB_COLLATE', '' );/ a\
 " wp-config.php
 fi
 
-if [[ -z "$(crontab -l 2>&1 | grep '\/${vhostname}/wp-cron.php')" ]]; then
+if [[ -z "$(crontab -l 2>&1 | grep '/${vhostname}/wp-cron.php')" ]]; then
     # generate random number of seconds to delay cron start
     # making sure they do not run at very same time during cron scheduling
     DELAY=$(echo ${RANDOM:0:3})
@@ -3198,7 +3198,7 @@ if [[ -z "$(crontab -l 2>&1 | grep '\/${vhostname}/wp-cron.php')" ]]; then
     mkdir -p /home/nginx/domains/${vhostname}/cronjobs
     cp cronjoblist /home/nginx/domains/${vhostname}/cronjobs/cronjoblist-before-wp-cron.txt
     # only insert cronjob if one doesn't already exist
-    if [[ -z $(grep "${vhostname}\/wp-cron.php" cronjoblist) ]]; then
+    if [[ -z $(grep "${vhostname}/wp-cron.php" cronjoblist) ]]; then
       if [[ "$wpcli_ssldefault" = '1' ]] || [[ "$vhostssl" = [yY] ]] || [[ "$vhostssl" = 'le' ]] || [[ "$vhostssl" = 'led' ]] || [[ "$vhostssl" = 'lelive' ]] || [[ "$vhostssl" = 'lelived' ]]; then
         echo "#*/15 * * * * sleep ${DELAY}s > /dev/null 2>&1; curl -skD - -H \"Cookie: wordpress_logged_in\" \"https://${vhostname}/wp-cron.php?doing_wp_cron\" -o /dev/null 2>&1" >> cronjoblist
       else

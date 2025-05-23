@@ -216,7 +216,7 @@ EOF
 }
 
 push_check_updates_cronsetup() {
-  if [[ -z "$(crontab -l 2>&1 | grep '\/usr\/local\/src\/centminmod\/tools\/check-for-updates.sh')" && -f "/usr/local/src/centminmod/tools/check-for-updates.sh" ]]; then
+  if [[ -z "$(crontab -l 2>&1 | grep '/usr/local/src/centminmod/tools/check-for-updates.sh')" && -f "/usr/local/src/centminmod/tools/check-for-updates.sh" ]]; then
     mkdir -p /etc/centminmod/cronjobs/
     crontab -l > /etc/centminmod/cronjobs/cronjoblist-before-check-forum-updates.txt
     sed -i '/check-for-updates.sh/d' /etc/centminmod/cronjobs/cronjoblist-before-check-forum-updates.txt
@@ -819,7 +819,7 @@ update_webp_inc() {
 }
 
 cfauthorigin_cronsetup() {
-  if [[ -z "$(crontab -l 2>&1 | grep '\/usr\/local\/src\/centminmod\/tools\/cf-authenticated-origin-cert-update.sh')" && -f "/usr/local/src/centminmod/tools/cf-authenticated-origin-cert-update.sh" ]]; then
+  if [[ -z "$(crontab -l 2>&1 | grep '/usr/local/src/centminmod/tools/cf-authenticated-origin-cert-update.sh')" && -f "/usr/local/src/centminmod/tools/cf-authenticated-origin-cert-update.sh" ]]; then
     mkdir -p /etc/centminmod/cronjobs/
     crontab -l > /etc/centminmod/cronjobs/cronjoblist-before-cf-auth-origin-pull-update.txt
     sed -i '/cf-authenticated-origin-cert-update.sh/d' /etc/centminmod/cronjobs/cronjoblist-before-cf-auth-origin-pull-update.txt
