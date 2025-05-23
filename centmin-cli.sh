@@ -1255,7 +1255,7 @@ MYSQL_INSTALL='n'            # Install official Oracle MySQL Server (MariaDB alt
 SENDMAIL_INSTALL='n'         # Install Sendmail (and mailx) set to y and POSTFIX_INSTALL=n for sendmail
 POSTFIX_INSTALL=y            # Install Postfix (and mailx) set to n and SENDMAIL_INSTALL=y for sendmail
 # Nginx
-NGINX_VERSION='1.27.5'             # Use this version of Nginx
+NGINX_VERSION='1.28.0'             # Use this version of Nginx
 NGINX_ANGIE_VERSION='Angie-1.9.0'
 FREENGINX_VERSION='1.27.6'     # Maxim's Freenginx fork https://freenginx.org/en/download.html
 FREENGINX_INSTALL='n'          # Use Freenginx fork instead of official Nginx
@@ -1318,7 +1318,7 @@ BORINGSSL_DIR="/opt"
 
 # AWS-LC
 AWS_LC_SWITCH='n'             # if set to 'y' overrides OpenSSL as default for Nginx https://github.com/aws/aws-lc
-AWS_LC_VERSION='v1.45.0'      # version as per ttps://github.com/aws/aws-lc/tags
+AWS_LC_VERSION='v1.52.0'      # version as per ttps://github.com/aws/aws-lc/tags
 AWS_LC_DIR="/opt"
 AWS_LC_SWITCH_BUILD_TESTS='n' # run AWS-LC build tests
 ##################################
