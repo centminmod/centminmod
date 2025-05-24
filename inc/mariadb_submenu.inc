@@ -236,7 +236,12 @@ if [[ "$mysqlroot_reset" = [yY] ]]; then
     killall -9 ${ALIAS_MYSQLD} >/dev/null 2>&1
     sleep 10
   fi
-  if [[ "$STOPMYSQL" = [yY] ]] && [[ "$CENTOS_EIGHT" = '8' || "$CENTOS_NINE" = '9' ]]; then
+  if [[ "$STOPMYSQL" = [yY] ]] && [[ "$CENTOS_TEN" = '10' ]]; then
+    echo "start mariadb"
+    start_mariadb
+    echo "service nginx start"
+    service nginx start
+  elif [[ "$STOPMYSQL" = [yY] ]] && [[ "$CENTOS_EIGHT" = '8' || "$CENTOS_NINE" = '9' ]]; then
     echo "systemctl start mariadb"
     systemctl start mariadb
     echo "service nginx start"

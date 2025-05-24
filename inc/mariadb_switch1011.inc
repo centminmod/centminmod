@@ -216,7 +216,7 @@ install_native_mariadb_ten_eleven() {
     echo
   fi
   if [[ "$install_native_mariadb_ten_eleven_mode" = 'install-fresh' ]]; then
-    systemctl stop mariadb
+    stop_mariadb
     
     ${YUMDNFBIN}${CACHESKIP} -y remove mysql8.4-server mysql8.4-libs mysql8.4-common perl-DBD-MySQL perl-DBI
     echo
@@ -383,41 +383,30 @@ FFF
 if [[ "$install_native_mariadb_ten_eleven_mode" = 'install-fresh' ]]; then
   tmpsetup_native_switchback
 
-  if [[ "$CENTOS_TEN" -eq '10' ]] && [[ ! -f /etc/systemd/system/mariadb.service.d/openfileslimit.conf && -d /etc/systemd/system/mariadb.service.d/ ]]; then
-    echo "Initial Install: Update MariaDB 10 setting for LimitNOFILE=524288"
+  # Only configure systemd settings if not in container
+  if ! is_container; then
+    if [[ "$CENTOS_TEN" -eq '10' ]] && [[ ! -f /etc/systemd/system/mariadb.service.d/openfileslimit.conf && -d /etc/systemd/system/mariadb.service.d/ ]]; then
+      echo "Initial Install: Update MariaDB 10 setting for LimitNOFILE=524288"
 cat > "/etc/systemd/system/mariadb.service.d/openfileslimit.conf" <<TDG
 [Service]
 LimitNOFILE=524288
 TDG
-  systemctl daemon-reload
-  fi
+    systemctl daemon-reload
+    fi
 
-  if [[ "$CENTOS_TEN" -eq '10' ]] && [[ ! -f /etc/systemd/system/mariadb.service.d/notifyaccess.conf && -d /etc/systemd/system/mariadb.service.d/ ]]; then
-    echo "Initial Install: Update MariaDB 10 setting for NotifyAccess=all"
+    if [[ "$CENTOS_TEN" -eq '10' ]] && [[ ! -f /etc/systemd/system/mariadb.service.d/notifyaccess.conf && -d /etc/systemd/system/mariadb.service.d/ ]]; then
+      echo "Initial Install: Update MariaDB 10 setting for NotifyAccess=all"
 cat > "/etc/systemd/system/mariadb.service.d/notifyaccess.conf" <<TDG
 [Service]
 NotifyAccess=all
 TDG
-  systemctl daemon-reload
+    systemctl daemon-reload
+    fi
+  else
+    echo "Container environment: Skipping systemd service configuration"
   fi
 
-  # modify /usr/libexec/mysql-prepare-db-dir
-#   if [[ "$CENTOS_TEN" -eq '10' ]] && [[ ! -f /etc/systemd/system/mariadb.service.d/mysql-prepare-db-dir-modify.conf && -d /etc/systemd/system/mariadb.service.d/ ]]; then
-#     # used modified /usr/libexec/mysql-prepare-db-dir-modify instead
-#     \cp -af /usr/libexec/mysql-prepare-db-dir /usr/libexec/mysql-prepare-db-dir-modify
-#     # modify /usr/libexec/mysql-prepare-db-dir-modify messaging for when /var/lib/mysql data directory
-#     # exists so as to not confuse new users into mistakenly deleting their /var/lib/mysql directory
-#     sed -i 's|echo "If this is not the case, make sure the $datadir is empty before running `basename $0`."||' /usr/libexec/mysql-prepare-db-dir-modify
-#     echo "Initial Install: Update MariaDB 10 setting for /usr/libexec/mysql-prepare-db-dir-modify"
-# cat > "/etc/systemd/system/mariadb.service.d/mysql-prepare-db-dir-modify.conf" <<TDG
-# [Service]
-# ExecStartPre=
-# ExecStartPre=/usr/libexec/mysql-prepare-db-dir-modify %n
-# TDG
-#   systemctl daemon-reload
-#   fi
-
-  systemctl start mariadb
+  start_mariadb
 fi # install-fresh
 
   if [[ "$install_native_mariadb_ten_eleven_mode" = 'install-fresh' ]]; then
@@ -557,11 +546,11 @@ funct_logmysqlrotate
     cecho "* Starting MariaDB Secure Installation" $boldgreen
     if [[ "$CENTOS_TEN" -eq '10' ]]; then
         # ensure MariaDB starts up initially
-        systemctl stop mariadb
+        stop_mariadb
         sleep 2
         rm -f /var/lib/mysql/ib_logfile*
         rm -f /var/lib/mysql/aria_log*
-        systemctl start mariadb
+        start_mariadb
     fi
     # https://community.centminmod.com/posts/25691/
     if [ -f /usr/local/src/centminmod/tools/setio.sh ]; then
@@ -575,12 +564,12 @@ funct_logmysqlrotate
   fi # install-fresh
 
   if [[ "$install_native_mariadb_ten_eleven_mode" = 'install-fresh' ]]; then
-    systemctl start mariadb
+    start_mariadb
   else
-    systemctl restart mariadb
+    restart_mariadb
   fi
-  systemctl enable mariadb
-  systemctl status mariadb --no-pager
+  enable_mariadb
+  status_mariadb
 }
 
 mariabackup_backup() {

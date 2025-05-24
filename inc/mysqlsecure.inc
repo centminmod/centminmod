@@ -20,15 +20,18 @@ remove_anonymous_mysqlusers() {
 }
 
 securemysql() {
-  if [[ "$(systemctl is-active mariadb)" != 'active' ]]; then
-    systemctl start mariadb
+  # if [[ "$(systemctl is-active mariadb)" != 'active' ]]; then
+  #   systemctl start mariadb
+  # fi
+  if ! is_mariadb_active; then
+      start_mariadb
   fi
 THEMYSQLPASS=$(/usr/bin/openssl rand -base64 26 | tr -dc 'a-zA-Z0-9')
 
 # ${ALIAS_MYSQL} -e "DELETE FROM mysql.user WHERE User=""; FLUSH PRIVILEGES;"
 # ${ALIAS_MYSQLADMIN} -u root password $THEMYSQLPASS
 
-CHECK_FOR_MARIADB_TENFOUR_ABOVE=$(rpm -qa | grep -i MariaDB-server | head -n1 | cut -d '-' -f3 | cut -d . -f1,2)
+CHECK_FOR_MARIADB_TENFOUR_ABOVE=$(rpm -qa | grep -i MariaDB-server | grep -v 'utils' | head -n1 | cut -d '-' -f3 | cut -d . -f1,2)
 
 if [[ "$CHECK_FOR_MARIADB_TENFOUR_ABOVE" = '10.4' || "$CHECK_FOR_MARIADB_TENFOUR_ABOVE" = '10.5' || "$CHECK_FOR_MARIADB_TENFOUR_ABOVE" = '10.6' || "$CHECK_FOR_MARIADB_TENFOUR_ABOVE" = '10.11' || "$CHECK_FOR_MARIADB_TENFOUR_ABOVE" = '11.4' ]]; then
   echo

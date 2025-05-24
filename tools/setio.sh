@@ -274,8 +274,297 @@ elif [[ "$CENTOS_SEVEN" = '7' ]]; then
   FREEMEM=$(cat /proc/meminfo | grep MemAvailable | awk '{print $2}')
 fi
 
-if [[ "$(systemctl is-active mariadb)" != 'active' ]]; then
-  systemctl start mariadb
+# Function to detect if we're in a container
+is_container() {
+    # Check for Docker
+    [ -f /.dockerenv ] && return 0
+    
+    # Check for other container indicators
+    [ -f /run/.containerenv ] && return 0  # Podman
+    
+    # Check if systemd is PID 1
+    [ "$(readlink /proc/1/exe)" != "/usr/lib/systemd/systemd" ] && return 0
+    
+    # Check cgroup for container indicators
+    grep -q 'docker\|lxc\|kubepods' /proc/1/cgroup 2>/dev/null && return 0
+    
+    return 1
+}
+
+# Function to start MariaDB based on environment
+start_mariadb() {
+    local quiet=false
+    
+    # Parse arguments
+    while [[ $# -gt 0 ]]; do
+        case $1 in
+            -q|--quiet)
+                quiet=true
+                shift
+                ;;
+            *)
+                shift
+                ;;
+        esac
+    done
+    
+    if is_container; then
+        [[ "$quiet" != "true" ]] && echo "Container environment detected, starting MariaDB directly..."
+        
+        # Check if MariaDB is already running
+        if pgrep -x "mariadbd" > /dev/null; then
+            [[ "$quiet" != "true" ]] && echo "MariaDB is already running (PID: $(pgrep -x mariadbd))"
+            return 0
+        fi
+        
+        # Ensure mysql user owns the data directory
+        chown -R mysql:mysql /var/lib/mysql 2>/dev/null || true
+        
+        # Start MariaDB using mysqld_safe
+        [[ "$quiet" != "true" ]] && echo "Starting MariaDB with mysqld_safe..."
+        if [[ "$quiet" == "true" ]]; then
+            sudo -u mysql /usr/bin/mysqld_safe --datadir=/var/lib/mysql --user=mysql >/dev/null 2>&1 &
+        else
+            sudo -u mysql /usr/bin/mysqld_safe --datadir=/var/lib/mysql --user=mysql &
+        fi
+        
+        # Wait for startup with timeout
+        local timeout=30
+        local count=0
+        
+        while [ $count -lt $timeout ]; do
+            if pgrep -x "mariadbd" > /dev/null; then
+                [[ "$quiet" != "true" ]] && echo "MariaDB started successfully (PID: $(pgrep -x mariadbd))"
+                return 0
+            fi
+            sleep 1
+            ((count++))
+        done
+        
+        [[ "$quiet" != "true" ]] && echo "Failed to start MariaDB within ${timeout} seconds"
+        return 1
+    else
+        [[ "$quiet" != "true" ]] && echo "Systemd environment detected, using systemctl..."
+        if [[ "$quiet" == "true" ]]; then
+            systemctl start mariadb -q
+        else
+            systemctl start mariadb
+        fi
+        return $?
+    fi
+}
+
+# Function to stop MariaDB based on environment
+stop_mariadb() {
+    local quiet=false
+    
+    # Parse arguments
+    while [[ $# -gt 0 ]]; do
+        case $1 in
+            -q|--quiet)
+                quiet=true
+                shift
+                ;;
+            *)
+                shift
+                ;;
+        esac
+    done
+    
+    if is_container; then
+        [[ "$quiet" != "true" ]] && echo "Container environment detected, stopping MariaDB directly..."
+        
+        # Try graceful shutdown first
+        if command -v mysqladmin >/dev/null 2>&1; then
+            if [[ "$quiet" == "true" ]]; then
+                mysqladmin shutdown >/dev/null 2>&1 || true
+            else
+                mysqladmin shutdown 2>/dev/null || true
+            fi
+        fi
+        
+        # Force kill if still running
+        pkill mysqld_safe 2>/dev/null || true
+        pkill mariadbd 2>/dev/null || true
+        
+        # Wait for processes to stop
+        local timeout=10
+        local count=0
+        while [ $count -lt $timeout ] && pgrep -x "mariadbd" > /dev/null; do
+            sleep 1
+            ((count++))
+        done
+        
+        if pgrep -x "mariadbd" > /dev/null; then
+            [[ "$quiet" != "true" ]] && echo "Warning: MariaDB may still be running"
+            return 1
+        else
+            [[ "$quiet" != "true" ]] && echo "MariaDB stopped successfully"
+            return 0
+        fi
+    else
+        if [[ "$quiet" == "true" ]]; then
+            systemctl stop mariadb -q
+        else
+            systemctl stop mariadb
+        fi
+        return $?
+    fi
+}
+
+# Function to restart MariaDB based on environment
+restart_mariadb() {
+    local quiet=false
+    
+    # Parse arguments
+    while [[ $# -gt 0 ]]; do
+        case $1 in
+            -q|--quiet)
+                quiet=true
+                shift
+                ;;
+            *)
+                shift
+                ;;
+        esac
+    done
+    
+    if is_container; then
+        [[ "$quiet" != "true" ]] && echo "Container environment detected, restarting MariaDB directly..."
+        if [[ "$quiet" == "true" ]]; then
+            stop_mariadb -q
+            sleep 2
+            start_mariadb -q
+        else
+            stop_mariadb
+            sleep 2
+            start_mariadb
+        fi
+        return $?
+    else
+        if [[ "$quiet" == "true" ]]; then
+            systemctl restart mariadb -q
+        else
+            systemctl restart mariadb
+        fi
+        return $?
+    fi
+}
+
+# Function to enable MariaDB service (only for systemd)
+enable_mariadb() {
+    local quiet=false
+    
+    # Parse arguments
+    while [[ $# -gt 0 ]]; do
+        case $1 in
+            -q|--quiet)
+                quiet=true
+                shift
+                ;;
+            *)
+                shift
+                ;;
+        esac
+    done
+    
+    if ! is_container; then
+        if [[ "$quiet" == "true" ]]; then
+            systemctl enable mariadb -q
+        else
+            systemctl enable mariadb
+        fi
+        return $?
+    else
+        [[ "$quiet" != "true" ]] && echo "Container environment: MariaDB service enable not applicable"
+        return 0
+    fi
+}
+
+# Function to get MariaDB status
+status_mariadb() {
+    local quiet=false
+    
+    # Parse arguments
+    while [[ $# -gt 0 ]]; do
+        case $1 in
+            -q|--quiet)
+                quiet=true
+                shift
+                ;;
+            *)
+                shift
+                ;;
+        esac
+    done
+    
+    if is_container; then
+        if pgrep -x "mariadbd" > /dev/null; then
+            if [[ "$quiet" == "true" ]]; then
+                # In quiet mode, just return success/failure
+                mysql -u root -e "SELECT 1;" &>/dev/null
+                return $?
+            else
+                echo "MariaDB is running (PID: $(pgrep -x mariadbd))"
+                # Try to connect to verify it's responding
+                if mysql -u root -e "SELECT 1;" &>/dev/null; then
+                    echo "MariaDB is accepting connections"
+                else
+                    echo "MariaDB is running but not accepting connections"
+                fi
+                return 0
+            fi
+        else
+            [[ "$quiet" != "true" ]] && echo "MariaDB is not running"
+            return 1
+        fi
+    else
+        if [[ "$quiet" == "true" ]]; then
+            systemctl status mariadb -q --no-pager
+        else
+            systemctl status mariadb --no-pager
+        fi
+        return $?
+    fi
+}
+
+# Function to check if MariaDB is active
+is_mariadb_active() {
+    local quiet=false
+    
+    # Parse arguments
+    while [[ $# -gt 0 ]]; do
+        case $1 in
+            -q|--quiet)
+                quiet=true
+                shift
+                ;;
+            *)
+                shift
+                ;;
+        esac
+    done
+    
+    if is_container; then
+        if [[ "$quiet" == "true" ]]; then
+            pgrep -x "mariadbd" > /dev/null 2>&1 && return 0 || return 1
+        else
+            pgrep -x "mariadbd" > /dev/null && return 0 || return 1
+        fi
+    else
+        if [[ "$quiet" == "true" ]]; then
+            systemctl is-active mariadb -q >/dev/null 2>&1 && return 0 || return 1
+        else
+            [[ "$(systemctl is-active mariadb)" = 'active' ]] && return 0 || return 1
+        fi
+    fi
+}
+
+# if [[ "$(systemctl is-active mariadb)" != 'active' ]]; then
+#   systemctl start mariadb
+# fi
+if ! is_mariadb_active; then
+    start_mariadb
 fi
 
 baseinfo() {

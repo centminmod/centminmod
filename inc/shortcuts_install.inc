@@ -217,10 +217,158 @@ if [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' || "$CENTOS_TEN" -eq '10
 
     elif [ -f /usr/lib/systemd/system/mariadb.service ]; then
     
-        echo "systemctl daemon-reload; systemctl stop mariadb" >/usr/bin/mysqlstop ; chmod 700 /usr/bin/mysqlstop
-        echo "systemctl daemon-reload; systemctl start mariadb" >/usr/bin/mysqlstart ; chmod 700 /usr/bin/mysqlstart
-        echo "systemctl daemon-reload; systemctl restart mariadb" >/usr/bin/mysqlrestart ; chmod 700 /usr/bin/mysqlrestart
-        echo "systemctl daemon-reload; systemctl status mariadb --no-pager" >/usr/bin/mysqlstatus ; chmod 700 /usr/bin/mysqlstatus
+if [[ "$CENTOS_TEN" = '10' ]]; then
+    # Container-aware scripts for CENTOS 10
+    
+    # mysqlstop
+    cat > /usr/bin/mysqlstop << 'EOF'
+#!/bin/bash
+is_container() {
+    [ -f /.dockerenv ] && return 0
+    [ -f /run/.containerenv ] && return 0
+    [ "$(readlink /proc/1/exe)" != "/usr/lib/systemd/systemd" ] && return 0
+    grep -q "docker\|lxc\|kubepods" /proc/1/cgroup 2>/dev/null && return 0
+    return 1
+}
+
+quiet=false
+[[ "$1" == "-q" || "$1" == "--quiet" ]] && quiet=true
+
+if is_container; then
+    [[ "$quiet" != "true" ]] && echo "Container environment detected, stopping MariaDB directly..."
+    command -v mysqladmin >/dev/null 2>&1 && mysqladmin shutdown 2>/dev/null || true
+    pkill mysqld_safe 2>/dev/null || true
+    pkill mariadbd 2>/dev/null || true
+else
+    systemctl daemon-reload
+    if [[ "$quiet" == "true" ]]; then
+        systemctl stop mariadb -q
+    else
+        systemctl stop mariadb
+    fi
+fi
+EOF
+
+    # mysqlstart
+    cat > /usr/bin/mysqlstart << 'EOF'
+#!/bin/bash
+is_container() {
+    [ -f /.dockerenv ] && return 0
+    [ -f /run/.containerenv ] && return 0
+    [ "$(readlink /proc/1/exe)" != "/usr/lib/systemd/systemd" ] && return 0
+    grep -q "docker\|lxc\|kubepods" /proc/1/cgroup 2>/dev/null && return 0
+    return 1
+}
+
+quiet=false
+[[ "$1" == "-q" || "$1" == "--quiet" ]] && quiet=true
+
+if is_container; then
+    [[ "$quiet" != "true" ]] && echo "Container environment detected, starting MariaDB directly..."
+    if ! pgrep -x "mariadbd" > /dev/null; then
+        chown -R mysql:mysql /var/lib/mysql 2>/dev/null || true
+        if [[ "$quiet" == "true" ]]; then
+            sudo -u mysql /usr/bin/mysqld_safe --datadir=/var/lib/mysql --user=mysql >/dev/null 2>&1 &
+        else
+            sudo -u mysql /usr/bin/mysqld_safe --datadir=/var/lib/mysql --user=mysql &
+        fi
+        
+        # Wait for startup
+        for i in {1..30}; do
+            pgrep -x "mariadbd" > /dev/null && break
+            sleep 1
+        done
+    fi
+else
+    systemctl daemon-reload
+    if [[ "$quiet" == "true" ]]; then
+        systemctl start mariadb -q
+    else
+        systemctl start mariadb
+    fi
+fi
+EOF
+
+    # mysqlrestart
+    cat > /usr/bin/mysqlrestart << 'EOF'
+#!/bin/bash
+is_container() {
+    [ -f /.dockerenv ] && return 0
+    [ -f /run/.containerenv ] && return 0
+    [ "$(readlink /proc/1/exe)" != "/usr/lib/systemd/systemd" ] && return 0
+    grep -q "docker\|lxc\|kubepods" /proc/1/cgroup 2>/dev/null && return 0
+    return 1
+}
+
+quiet=false
+[[ "$1" == "-q" || "$1" == "--quiet" ]] && quiet=true
+
+if is_container; then
+    if [[ "$quiet" == "true" ]]; then
+        /usr/bin/mysqlstop -q
+        sleep 2
+        /usr/bin/mysqlstart -q
+    else
+        /usr/bin/mysqlstop
+        sleep 2
+        /usr/bin/mysqlstart
+    fi
+else
+    systemctl daemon-reload
+    if [[ "$quiet" == "true" ]]; then
+        systemctl restart mariadb -q
+    else
+        systemctl restart mariadb
+    fi
+fi
+EOF
+
+    # mysqlstatus
+    cat > /usr/bin/mysqlstatus << 'EOF'
+#!/bin/bash
+is_container() {
+    [ -f /.dockerenv ] && return 0
+    [ -f /run/.containerenv ] && return 0
+    [ "$(readlink /proc/1/exe)" != "/usr/lib/systemd/systemd" ] && return 0
+    grep -q "docker\|lxc\|kubepods" /proc/1/cgroup 2>/dev/null && return 0
+    return 1
+}
+
+quiet=false
+[[ "$1" == "-q" || "$1" == "--quiet" ]] && quiet=true
+
+if is_container; then
+    if pgrep -x "mariadbd" > /dev/null; then
+        if [[ "$quiet" == "true" ]]; then
+            mysql -u root -e "SELECT 1;" &>/dev/null
+            exit $?
+        else
+            echo "MariaDB is running (PID: $(pgrep -x mariadbd))"
+            mysql -u root -e "SELECT 1;" &>/dev/null && echo "MariaDB is accepting connections" || echo "MariaDB is running but not accepting connections"
+        fi
+    else
+        [[ "$quiet" != "true" ]] && echo "MariaDB is not running"
+        exit 1
+    fi
+else
+    systemctl daemon-reload
+    if [[ "$quiet" == "true" ]]; then
+        systemctl status mariadb -q --no-pager
+    else
+        systemctl status mariadb --no-pager
+    fi
+fi
+EOF
+
+    chmod 700 /usr/bin/mysqlstop /usr/bin/mysqlstart /usr/bin/mysqlrestart /usr/bin/mysqlstatus
+
+else
+    # Original systemctl-based scripts for other versions
+    echo "systemctl daemon-reload; systemctl stop mariadb" >/usr/bin/mysqlstop ; chmod 700 /usr/bin/mysqlstop
+    echo "systemctl daemon-reload; systemctl start mariadb" >/usr/bin/mysqlstart ; chmod 700 /usr/bin/mysqlstart
+    echo "systemctl daemon-reload; systemctl restart mariadb" >/usr/bin/mysqlrestart ; chmod 700 /usr/bin/mysqlrestart
+    echo "systemctl daemon-reload; systemctl status mariadb --no-pager" >/usr/bin/mysqlstatus ; chmod 700 /usr/bin/mysqlstatus
+fi
     
     elif [ -f /etc/init.d/mysqld ]; then
     
