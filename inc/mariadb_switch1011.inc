@@ -359,17 +359,17 @@ FFF
     sed -i '/^slow_query_log_file/d' /etc/my.cnf
     sed -i '/^long_query_time/d' /etc/my.cnf
 
-    # if [[ "$CENTOS_TEN" -eq '10' && -d /var/lib/mysql ]]; then
-    #   rm -rf /var/lib/mysql/*
-    #   # Initialize MariaDB if not already done
-    #   if [ ! -d "/var/lib/mysql/mysql" ]; then
-    #       mysql_install_db --user=mysql --datadir=/var/lib/mysql
-    #       echo
-    #       ls -lAh /var/lib/mysql/
-    #       echo
-    #       cat /var/lib/mysql/*.err
-    #   fi
-    # fi
+    if [[ "$CENTOS_TEN" -eq '10' && -d /var/lib/mysql ]]; then
+      rm -rf /var/lib/mysql
+      # # Initialize MariaDB if not already done
+      # if [ ! -d "/var/lib/mysql/mysql" ]; then
+      #     mysql_install_db --user=mysql --datadir=/var/lib/mysql
+      #     echo
+      #     ls -lAh /var/lib/mysql/
+      #     echo
+      #     cat /var/lib/mysql/*.err
+      # fi
+    fi
 
   fi # install-fresh
   echo
@@ -416,7 +416,7 @@ TDG
 #   systemctl daemon-reload
 #   fi
 
-  systemctl restart mariadb
+  systemctl start mariadb
 fi # install-fresh
 
   if [[ "$install_native_mariadb_ten_eleven_mode" = 'install-fresh' ]]; then
