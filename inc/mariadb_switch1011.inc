@@ -222,10 +222,6 @@ install_native_mariadb_ten_eleven() {
     echo
     ${YUMDNFBIN} -q list installed | grep -i mysql
 
-    if [[ "$CENTOS_TEN" -eq '10' && -d /var/lib/mysql ]]; then
-      rm -rf /var/lib/mysql/*
-    fi
-    
     if [ ! -d /home/mysqltmp ]; then
       mkdir /home/mysqltmp
       chmod 1777 /home/mysqltmp
@@ -251,6 +247,13 @@ install_native_mariadb_ten_eleven() {
     sed -i 's|^skip-archive|#skip-archive|g' /etc/my.cnf
     sed -i 's|^innodb_buffer_pool_dump_at_shutdown|#innodb_buffer_pool_dump_at_shutdown|g' /etc/my.cnf
     sed -i 's|^innodb_buffer_pool_load_at_startup|#innodb_buffer_pool_load_at_startup|g' /etc/my.cnf
+    # deprecated in 10.5
+    sed -i '/^innodb_thread_concurrency/d' /etc/my.cnf
+    sed -i '/^innodb_log_files_in_group/d' /etc/my.cnf
+    sed -i '/^innodb_buffer_pool_instances/d' /etc/my.cnf
+    sed -i '/^innodb_support_xa/d' /etc/my.cnf
+    sed -i '/^innodb_file_format/d' /etc/my.cnf
+    sed -i '/^innodb_large_prefix/d' /etc/my.cnf
     # deprecated in 10.11
     # https://mariadb.com/kb/en/library/mariadb-1031-release-notes/
     sed -i '/^innodb_large_prefix/d' /etc/my.cnf
@@ -355,6 +358,18 @@ FFF
     sed -i '/^slow_query_log/d' /etc/my.cnf
     sed -i '/^slow_query_log_file/d' /etc/my.cnf
     sed -i '/^long_query_time/d' /etc/my.cnf
+
+    # if [[ "$CENTOS_TEN" -eq '10' && -d /var/lib/mysql ]]; then
+    #   rm -rf /var/lib/mysql/*
+    #   # Initialize MariaDB if not already done
+    #   if [ ! -d "/var/lib/mysql/mysql" ]; then
+    #       mysql_install_db --user=mysql --datadir=/var/lib/mysql
+    #       echo
+    #       ls -lAh /var/lib/mysql/
+    #       echo
+    #       cat /var/lib/mysql/*.err
+    #   fi
+    # fi
 
   fi # install-fresh
   echo
