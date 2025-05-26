@@ -1010,7 +1010,7 @@ MODSECURITY_OWASPVER='4.4.0' # owasp modsecurity ruleset https://github.com/core
 NGINX_REALIP='y'             # http://nginx.org/en/docs/http/ngx_http_realip_module.html
 NGINX_RDNS='n'               # https://github.com/flant/nginx-http-rdns
 NGINX_NJS='n'                # nginScript https://www.nginx.com/blog/
-NGINX_NJS_VER='0.8.9'        # nginxScript tag version https://github.com/nginx/njslaunching-nginscript-and-looking-ahead/
+NGINX_NJS_VER='0.9.0'        # nginxScript tag version https://github.com/nginx/njslaunching-nginscript-and-looking-ahead/
 NGINX_GEOIP='y'              # Nginx GEOIP module install
 NGINX_GEOIPMEM='y'           # Nginx caches GEOIP databases in memory (default), setting 'n' caches to disk instead
 NGINX_GEOIPTWOLITE='n'       # https://github.com/leev/ngx_http_geoip2_module
@@ -1258,7 +1258,7 @@ POSTFIX_INSTALL=y            # Install Postfix (and mailx) set to n and SENDMAIL
 # Nginx
 NGINX_VERSION='1.28.0'             # Use this version of Nginx
 NGINX_ANGIE_VERSION='Angie-1.9.0'
-FREENGINX_VERSION='1.27.6'     # Maxim's Freenginx fork https://freenginx.org/en/download.html
+FREENGINX_VERSION='1.28.0'     # Maxim's Freenginx fork https://freenginx.org/en/download.html
 FREENGINX_INSTALL='n'          # Use Freenginx fork instead of official Nginx
 FREENGINX_BACKPORT_PATCHES='n' # Backport Freenginx fixes to official Nginx
 NGINX_VHOSTSSL='y'             # enable centmin.sh menu 2 prompt to create self signed SSL vhost 2nd vhost conf
@@ -1354,7 +1354,7 @@ LIBMEMCACHED_VER='1.0.18'     # libmemcached version for source compile
 TWEMPERF_VER='0.1.1'
 
 PHP_OVERWRITECONF='y'       # whether to show the php upgrade prompt to overwrite php-fpm.conf
-PHP_VERSION='7.4.33'        # Use this version of PHP
+PHP_VERSION='8.3.21'        # Use this version of PHP
 PHP_MIRRORURL='https://www.php.net'
 PHPUPGRADE_MIRRORURL="$PHP_MIRRORURL"
 XCACHE_VERSION='3.2.0'      # Use this version of Xcache
