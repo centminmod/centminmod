@@ -201,7 +201,9 @@ if [[ ! -f /usr/bin/datamash && -f /usr/bin/systemctl ]]; then
   fi
 fi
 
-if [ -z $PASS ]; then
+if [ -f /root/.my.cnf ]; then
+    MYSQLADMINOPT="--defaults-file=/root/.my.cnf -h $MYSQLHOST"
+elif [ -z $PASS ]; then
     MYSQLADMINOPT="-h $MYSQLHOST"
 else
     MYSQLADMINOPT="-u$USER -p$PASS -h $MYSQLHOST"
@@ -621,7 +623,7 @@ top_info() {
 
     if [[ "$($ALIAS_MYSQLADMIN ping -s >/dev/null 2>&1; echo $?)" -eq '0' ]]; then
         echo "------------------------------------------------------------------"
-        mysql --connect-timeout=5 -e "SET GLOBAL innodb_status_output=ON; SET GLOBAL innodb_status_output_locks=ON;" 2>/dev/null
+        $ALIAS_MYSQL $MYSQLADMINOPT --connect-timeout=5 -e "SET GLOBAL innodb_status_output=ON; SET GLOBAL innodb_status_output_locks=ON;" 2>/dev/null
         echo
     fi
 
@@ -804,9 +806,9 @@ top_info() {
             echo "---"
             echo "MySQL InnoDB Monitor Statistics Gathering for 10 seconds"
             echo
-            mysql --connect-timeout=5 -e "SHOW ENGINE INNODB STATUS\G" >/dev/null
+            $ALIAS_MYSQL $MYSQLADMINOPT --connect-timeout=5 -e "SHOW ENGINE INNODB STATUS\G" >/dev/null
             sleep 10
-            mysql --connect-timeout=5 -e "SHOW ENGINE INNODB STATUS\G" 2>/dev/null
+            $ALIAS_MYSQL $MYSQLADMINOPT --connect-timeout=5 -e "SHOW ENGINE INNODB STATUS\G" 2>/dev/null
             echo
         elif [[ "$cron" = 'cron' ]]; then
             echo
@@ -814,11 +816,11 @@ top_info() {
             echo "MySQL InnoDB Monitor Statistics Gathering for 60 seconds"
             echo
             # sleep 60
-            mysql --connect-timeout=5 -e "SHOW ENGINE INNODB STATUS\G select sleep(60); SHOW ENGINE INNODB STATUS\G" 2>/dev/null
+            $ALIAS_MYSQL $MYSQLADMINOPT --connect-timeout=5 -e "SHOW ENGINE INNODB STATUS\G select sleep(60); SHOW ENGINE INNODB STATUS\G" 2>/dev/null
             echo
         fi
         if [[ "$cron" != 'cron' ]]; then
-            mysql --connect-timeout=5 -e "SET GLOBAL innodb_status_output=OFF; SET GLOBAL innodb_status_output_locks=OFF;" 2>/dev/null
+            $ALIAS_MYSQL $MYSQLADMINOPT --connect-timeout=5 -e "SET GLOBAL innodb_status_output=OFF; SET GLOBAL innodb_status_output_locks=OFF;" 2>/dev/null
         fi
         echo
     fi
