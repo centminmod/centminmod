@@ -13,7 +13,7 @@ ARCH_CHECK="$(uname -m)"
 #####################################################
 # quick info overview for centminmod.com installs
 #####################################################
-branchname='140.00beta01'
+branchname='141.00beta01'
 DT=$(date +"%d%m%y-%H%M%S")
 CENTMINLOGDIR='/root/centminlogs'
 #####################################################
@@ -49,6 +49,8 @@ if [ "$CENTOSVER" == 'release' ]; then
         CENTOS_EIGHT='8'
     elif [[ "$(cat /etc/redhat-release | awk '{ print $4 }' | cut -d . -f1)" = '9' ]]; then
         CENTOS_NINE='9'
+    elif [[ "$(cat /etc/redhat-release | awk '{ print $4 }' | cut -d . -f1)" = '10' ]]; then
+        CENTOS_TEN='10'
     fi
 fi
 
@@ -68,17 +70,25 @@ fi
 # ensure only el8+ OS versions are being looked at for alma linux, rocky linux
 # oracle linux, vzlinux, circle linux, navy linux, euro linux
 EL_VERID=$(awk -F '=' '/VERSION_ID/ {print $2}' /etc/os-release | sed -e 's|"||g' | cut -d . -f1)
-if [ -f /etc/almalinux-release ] && [[ "$EL_VERID" -eq 8 || "$EL_VERID" -eq 9 ]]; then
-  CENTOSVER=$(awk '{ print $3 }' /etc/almalinux-release | cut -d . -f1,2)
-  ALMALINUXVER=$(awk '{ print $3 }' /etc/almalinux-release | cut -d . -f1,2 | sed -e 's|\.|000|g')
+if [ -f /etc/almalinux-release ] && [[ "$EL_VERID" -eq 8 || "$EL_VERID" -eq 9 || "$EL_VERID" -eq 10 ]]; then
+  if [[ "$EL_VERID" -eq 10 ]]; then
+    CENTOSVER=$(awk '{ print $4 }' /etc/almalinux-release | cut -d . -f1,2)
+    ALMALINUXVER=$(awk '{ print $4 }' /etc/almalinux-release | cut -d . -f1,2 | sed -e 's|\.|000|g')
+  else
+    CENTOSVER=$(awk '{ print $3 }' /etc/almalinux-release | cut -d . -f1,2)
+    ALMALINUXVER=$(awk '{ print $3 }' /etc/almalinux-release | cut -d . -f1,2 | sed -e 's|\.|000|g')
+  fi
   if [[ "$(echo $CENTOSVER | cut -d . -f1)" -eq '8' ]]; then
     CENTOS_EIGHT='8'
     ALMALINUX_EIGHT='8'
   elif [[ "$(echo $CENTOSVER | cut -d . -f1)" -eq '9' ]]; then
     CENTOS_NINE='9'
     ALMALINUX_NINE='9'
+  elif [[ "$(echo $CENTOSVER | cut -d . -f1)" -eq '10' ]]; then
+    CENTOS_TEN='10'
+    ALMALINUX_TEN='10'
   fi
-elif [ -f /etc/rocky-release ] && [[ "$EL_VERID" -eq 8 || "$EL_VERID" -eq 9 ]]; then
+elif [ -f /etc/rocky-release ] && [[ "$EL_VERID" -eq 8 || "$EL_VERID" -eq 9 || "$EL_VERID" -eq 10 ]]; then
   CENTOSVER=$(awk '{ print $4 }' /etc/rocky-release | cut -d . -f1,2)
   ROCKYLINUXVER=$(awk '{ print $3 }' /etc/rocky-release | cut -d . -f1,2 | sed -e 's|\.|000|g')
   if [[ "$(echo $CENTOSVER | cut -d . -f1)" -eq '8' ]]; then
@@ -87,8 +97,11 @@ elif [ -f /etc/rocky-release ] && [[ "$EL_VERID" -eq 8 || "$EL_VERID" -eq 9 ]]; 
   elif [[ "$(echo $CENTOSVER | cut -d . -f1)" -eq '9' ]]; then
     CENTOS_NINE='9'
     ROCKYLINUX_NINE='9'
+  elif [[ "$(echo $CENTOSVER | cut -d . -f1)" -eq '10' ]]; then
+    CENTOS_TEN='10'
+    ROCKYLINUX_TEN='10'
   fi
-elif [ -f /etc/oracle-release ] && [[ "$EL_VERID" -eq 8 || "$EL_VERID" -eq 9 ]]; then
+elif [ -f /etc/oracle-release ] && [[ "$EL_VERID" -eq 8 || "$EL_VERID" -eq 9 || "$EL_VERID" -eq 10 ]]; then
   CENTOSVER=$(awk '{ print $5 }' /etc/oracle-release | cut -d . -f1,2)
   if [[ "$(echo $CENTOSVER | cut -d . -f1)" -eq '8' ]]; then
     CENTOS_EIGHT='8'
@@ -96,8 +109,11 @@ elif [ -f /etc/oracle-release ] && [[ "$EL_VERID" -eq 8 || "$EL_VERID" -eq 9 ]];
   elif [[ "$(echo $CENTOSVER | cut -d . -f1)" -eq '9' ]]; then
     CENTOS_NINE='9'
     ORACLELINUX_NINE='9'
+  elif [[ "$(echo $CENTOSVER | cut -d . -f1)" -eq '10' ]]; then
+    CENTOS_TEN='10'
+    ORACLELINUX_TEN='10'
   fi
-elif [ -f /etc/vzlinux-release ] && [[ "$EL_VERID" -eq 8 || "$EL_VERID" -eq 9 ]]; then
+elif [ -f /etc/vzlinux-release ] && [[ "$EL_VERID" -eq 8 || "$EL_VERID" -eq 9 || "$EL_VERID" -eq 10 ]]; then
   CENTOSVER=$(awk '{ print $4 }' /etc/vzlinux-release | cut -d . -f1,2)
   if [[ "$(echo $CENTOSVER | cut -d . -f1)" -eq '8' ]]; then
     CENTOS_EIGHT='8'
@@ -105,8 +121,11 @@ elif [ -f /etc/vzlinux-release ] && [[ "$EL_VERID" -eq 8 || "$EL_VERID" -eq 9 ]]
   elif [[ "$(echo $CENTOSVER | cut -d . -f1)" -eq '9' ]]; then
     CENTOS_NINE='9'
     VZLINUX_NINE='9'
+  elif [[ "$(echo $CENTOSVER | cut -d . -f1)" -eq '10' ]]; then
+    CENTOS_TEN='10'
+    VZLINUX_TEN='10'
   fi
-elif [ -f /etc/circle-release ] && [[ "$EL_VERID" -eq 8 || "$EL_VERID" -eq 9 ]]; then
+elif [ -f /etc/circle-release ] && [[ "$EL_VERID" -eq 8 || "$EL_VERID" -eq 9 || "$EL_VERID" -eq 10 ]]; then
   CENTOSVER=$(awk '{ print $4 }' /etc/circle-release | cut -d . -f1,2)
   if [[ "$(echo $CENTOSVER | cut -d . -f1)" -eq '8' ]]; then
     CENTOS_EIGHT='8'
@@ -114,8 +133,11 @@ elif [ -f /etc/circle-release ] && [[ "$EL_VERID" -eq 8 || "$EL_VERID" -eq 9 ]];
   elif [[ "$(echo $CENTOSVER | cut -d . -f1)" -eq '9' ]]; then
     CENTOS_NINE='9'
     CIRCLELINUX_NINE='9'
+  elif [[ "$(echo $CENTOSVER | cut -d . -f1)" -eq '10' ]]; then
+    CENTOS_TEN='10'
+    CIRCLELINUX_TEN='10'
   fi
-elif [ -f /etc/navylinux-release ] && [[ "$EL_VERID" -eq 8 || "$EL_VERID" -eq 9 ]]; then
+elif [ -f /etc/navylinux-release ] && [[ "$EL_VERID" -eq 8 || "$EL_VERID" -eq 9 || "$EL_VERID" -eq 10 ]]; then
   CENTOSVER=$(awk '{ print $5 }' /etc/navylinux-release | cut -d . -f1,2)
   if [[ "$(echo $CENTOSVER | cut -d . -f1)" -eq '8' ]]; then
     CENTOS_EIGHT='8'
@@ -123,8 +145,11 @@ elif [ -f /etc/navylinux-release ] && [[ "$EL_VERID" -eq 8 || "$EL_VERID" -eq 9 
   elif [[ "$(echo $CENTOSVER | cut -d . -f1)" -eq '9' ]]; then
     CENTOS_NINE='9'
     NAVYLINUX_NINE='9'
+  elif [[ "$(echo $CENTOSVER | cut -d . -f1)" -eq '10' ]]; then
+    CENTOS_TEN='10'
+    NAVYLINUX_TEN='10'
   fi
-elif [ -f /etc/el-release ] && [[ "$EL_VERID" -eq 8 || "$EL_VERID" -eq 9 ]]; then
+elif [ -f /etc/el-release ] && [[ "$EL_VERID" -eq 8 || "$EL_VERID" -eq 9 || "$EL_VERID" -eq 10 ]]; then
   CENTOSVER=$(awk '{ print $3 }' /etc/el-release | cut -d . -f1,2)
   if [[ "$(echo $CENTOSVER | cut -d . -f1)" -eq '8' ]]; then
     CENTOS_EIGHT='8'
@@ -132,6 +157,9 @@ elif [ -f /etc/el-release ] && [[ "$EL_VERID" -eq 8 || "$EL_VERID" -eq 9 ]]; the
   elif [[ "$(echo $CENTOSVER | cut -d . -f1)" -eq '9' ]]; then
     CENTOS_NINE='9'
     EUROLINUX_NINE='9'
+  elif [[ "$(echo $CENTOSVER | cut -d . -f1)" -eq '10' ]]; then
+    CENTOS_TEN='10'
+    EUROLINUX_TEN='10'
   fi
 fi
 
@@ -162,10 +190,20 @@ if [ ! -f /usr/bin/smem ]; then
 fi
 
 if [[ ! -f /usr/bin/datamash && -f /usr/bin/systemctl ]]; then
+  if [[ "$CENTOS_TEN" -eq 10 ]]; then
+    echo
+    wget -q -4 https://centminmod.com/centminmodparts/rpms/datamash/el10/datamash-1.9-1.el10.x86_64.rpm
+    echo
+    yum -y localinstall datamash-1.9-1.el10.x86_64.rpm --allowerasing
+    echo
+  else
     yum -y -q install datamash
+  fi
 fi
 
-if [ -z $PASS ]; then
+if [ -f /root/.my.cnf ]; then
+    MYSQLADMINOPT="--defaults-file=/root/.my.cnf -h $MYSQLHOST"
+elif [ -z $PASS ]; then
     MYSQLADMINOPT="-h $MYSQLHOST"
 else
     MYSQLADMINOPT="-u$USER -p$PASS -h $MYSQLHOST"
@@ -337,7 +375,7 @@ pidstat_php() {
 
 phpfpm_mem_stats() {
     cron=$1
-    if [[ -f /usr/bin/systemctl && -f /usr/bin/smem && "$(smem -P 'php-fpm: pool' | egrep -v 'python|Command')" ]]; then
+    if [[ -f /usr/bin/systemctl && -f /usr/bin/smem && "$(smem -P 'php-fpm: pool' | grep -E -v 'python|Command')" ]]; then
         echo
         f=$(free -wk | awk '/Mem:/ {print $8}')
         cpu_c=$(nproc)
@@ -358,11 +396,11 @@ phpfpm_mem_stats() {
         echo "------------------------------------------------------------------"
         echo "$list_php_masters"
         echo "------------------------------------------------------------------"
-        smem -P 'php-fpm: pool' | egrep -v 'python|Command' | awk -v f=$f -v c=$cpu_c -v m=$count_php_masters '{swap+=$6; uss+=$7; pss+=$8; rss+=$9} END {print "Current Free Memory (KB): "f"\n""PHP-FPM Available Memory (KB): "f+rss"\n""Estimated Max PHP Children: "(f+rss)/(rss/NR)"\n""Estimated Max PHP Children To CPU Thread Ratio: "((f+rss)/(rss/NR)/c)"\nPHP-FPM Total Children: " NR " from "m" PHP-FPM master(s)" "\nPHP-FPM Total Used Memory (KB): ""swap:"swap, "uss:"uss, "pss:"pss, "rss:"rss"\n""PHP-FPM Average Per Child (KB): ""swap:"swap/NR, "uss:"uss/NR, "pss:"pss/NR, "rss:"rss/NR}'
+        smem -P 'php-fpm: pool' | grep -E -v 'python|Command' | awk -v f=$f -v c=$cpu_c -v m=$count_php_masters '{swap+=$6; uss+=$7; pss+=$8; rss+=$9} END {print "Current Free Memory (KB): "f"\n""PHP-FPM Available Memory (KB): "f+rss"\n""Estimated Max PHP Children: "(f+rss)/(rss/NR)"\n""Estimated Max PHP Children To CPU Thread Ratio: "((f+rss)/(rss/NR)/c)"\nPHP-FPM Total Children: " NR " from "m" PHP-FPM master(s)" "\nPHP-FPM Total Used Memory (KB): ""swap:"swap, "uss:"uss, "pss:"pss, "rss:"rss"\n""PHP-FPM Average Per Child (KB): ""swap:"swap/NR, "uss:"uss/NR, "pss:"pss/NR, "rss:"rss/NR}'
         echo "uss = user set size"
         echo "pss = process set size"
         echo "rss = resident set size"
-    elif [ ! "$(smem -P 'php-fpm: pool' | egrep -v 'python|Command')" ]; then
+    elif [ ! "$(smem -P 'php-fpm: pool' | grep -E -v 'python|Command')" ]; then
         getpm_value=$(awk -F '= ' '/^pm =/ {print $2}' /usr/local/etc/php-fpm.conf)
         echo "PHP-FPM pm = $getpm_value in /usr/local/etc/php-fpm.conf"
         echo "PHP-FPM memory usage only viewable when pm = static"
@@ -382,7 +420,7 @@ sar_cpu_pc() {
             fi
         done
         if [ -f "${CENTMINLOGDIR}/cminfo-top-sar-cpu-period-${CMINFO_SAR_DAYS}-${DT}.log" ]; then
-            sar_cpu_metrics_period=$(cat "${CENTMINLOGDIR}/cminfo-top-sar-cpu-period-${CMINFO_SAR_DAYS}-${DT}.log" | egrep -iv 'Linux|runq|user|mem|DEV|Average' | sed -e '1d' -e '/^ *$/d' | awk '{print $4,$5,$6,$7,$8,$9}' | datamash -W -R 2 --no-strict --filler 0 min 1-6 mean 1-6 max 1-6 perc:50 1-6 perc:75 1-6 perc:90 1-6 perc:95 1-6 perc:99 1-6 | column -t | xargs -n6 | awk '{print "%user:",$1, "%nice:",$2, "%system:",$3, "%iowait:",$4, "%steal:",$5, "%idle:",$6}')
+            sar_cpu_metrics_period=$(cat "${CENTMINLOGDIR}/cminfo-top-sar-cpu-period-${CMINFO_SAR_DAYS}-${DT}.log" | grep -E -iv 'Linux|runq|user|mem|DEV|Average' | sed -e '1d' -e '/^ *$/d' | awk '{print $4,$5,$6,$7,$8,$9}' | datamash -W -R 2 --no-strict --filler 0 min 1-6 mean 1-6 max 1-6 perc:50 1-6 perc:75 1-6 perc:90 1-6 perc:95 1-6 perc:99 1-6 | column -t | xargs -n6 | awk '{print "%user:",$1, "%nice:",$2, "%system:",$3, "%iowait:",$4, "%steal:",$5, "%idle:",$6}')
             sar_cpu_umin_period=$(echo "$sar_cpu_metrics_period" | sed -n 1p)
             sar_cpu_uavg_period=$(echo "$sar_cpu_metrics_period" | sed -n 2p)
             sar_cpu_umax_period=$(echo "$sar_cpu_metrics_period" | sed -n 3p)
@@ -410,7 +448,7 @@ sar_cpu_pc() {
                 # display each day's cpu utilisation min, avg, max, 95% percentile numbers
                 # instead report datamash calculated ones
                 echo "$(date '+%b %d %Y' -d "$t day ago") %CPU";
-                sar_cpu_metrics=$(echo "$sar_cpu_stats" | egrep -iv 'Linux|runq|user|mem|DEV|Average' | sed -e '1d' -e '/^ *$/d' | awk '{print $4,$5,$6,$7,$8,$9}' | datamash -W -R 2 --no-strict --filler 0 min 1-6 mean 1-6 max 1-6 perc:95 1-6 | column -t | xargs -n6 | awk '{print "%user:",$1, "%nice:",$2, "%system:",$3, "%iowait:",$4, "%steal:",$5, "%idle:",$6}')
+                sar_cpu_metrics=$(echo "$sar_cpu_stats" | grep -E -iv 'Linux|runq|user|mem|DEV|Average' | sed -e '1d' -e '/^ *$/d' | awk '{print $4,$5,$6,$7,$8,$9}' | datamash -W -R 2 --no-strict --filler 0 min 1-6 mean 1-6 max 1-6 perc:95 1-6 | column -t | xargs -n6 | awk '{print "%user:",$1, "%nice:",$2, "%system:",$3, "%iowait:",$4, "%steal:",$5, "%idle:",$6}')
                 sar_cpu_umin=$(echo "$sar_cpu_metrics" | sed -n 1p)
                 sar_cpu_uavg=$(echo "$sar_cpu_metrics" | sed -n 2p)
                 sar_cpu_umax=$(echo "$sar_cpu_metrics" | sed -n 3p)
@@ -445,7 +483,7 @@ sar_cpu_pc_interval() {
         echo " CPU Utilisation % Interval Breakdown Summary $CMINFO_SAR_DAYS days ($(nproc) CPU Threads):"
         echo "------------------------------------------------------------------"
         if [ -f "${CENTMINLOGDIR}/cminfo-top-sar-cpu-period-${CMINFO_SAR_DAYS}-${DT}.log" ]; then
-            sar_cpu_metrics_period_raw_data=$(cat "${CENTMINLOGDIR}/cminfo-top-sar-cpu-period-${CMINFO_SAR_DAYS}-${DT}.log" | egrep -iv 'Linux|runq|user|mem|DEV|Average' | sed -e '1d' -e '/^ *$/d')
+            sar_cpu_metrics_period_raw_data=$(cat "${CENTMINLOGDIR}/cminfo-top-sar-cpu-period-${CMINFO_SAR_DAYS}-${DT}.log" | grep -E -iv 'Linux|runq|user|mem|DEV|Average' | sed -e '1d' -e '/^ *$/d')
             sar_cpu_metrics_period_raw_data_grep_fields=$(echo "$sar_cpu_metrics_period_raw_data" | awk '{print $1,$2}' | sort -u)
             echo "$sar_cpu_metrics_period_raw_data_grep_fields" | while read t tt; do
                 newt="$t $tt";
@@ -490,9 +528,9 @@ sar_mem_pc() {
                         echo "$(date '+%b %d %Y' -d "$t day ago") Memory";
                     fi
                     if [ -f /usr/bin/systemctl ]; then
-                        sar_mem_metrics=$(echo "$sar_mem_stats" | egrep -iv 'Linux|runq|user|mem|DEV|Average' | sed -e '1d' -e '/^ *$/d' | awk '{print $3,$4,$5,$6,$7,$8,$9,$10,$11,$12}' | datamash -W -R 1 --no-strict --filler 0 min 1-10 mean 1-10 max 1-10 perc:95 1-10 | column -t | xargs -n10 | awk '{print "kbmemfree:",$1, "kbmemused:",$2, "%memused:",$3, "kbbuffers:",$4, "kbcached:",$5, "kbcommit:",$6, "%commit:",$7, "kbactive:",$8, "kbinact:",$9, "kbdirty:",$10}')
+                        sar_mem_metrics=$(echo "$sar_mem_stats" | grep -E -iv 'Linux|runq|user|mem|DEV|Average' | sed -e '1d' -e '/^ *$/d' | awk '{print $3,$4,$5,$6,$7,$8,$9,$10,$11,$12}' | datamash -W -R 1 --no-strict --filler 0 min 1-10 mean 1-10 max 1-10 perc:95 1-10 | column -t | xargs -n10 | awk '{print "kbmemfree:",$1, "kbmemused:",$2, "%memused:",$3, "kbbuffers:",$4, "kbcached:",$5, "kbcommit:",$6, "%commit:",$7, "kbactive:",$8, "kbinact:",$9, "kbdirty:",$10}')
                     else
-                        sar_mem_metrics=$(echo "$sar_mem_stats" | egrep -iv 'Linux|runq|user|mem|DEV|Average' | sed -e '1d' -e '/^ *$/d' | awk '{print $3,$4,$5,$6,$7,$8,$9}' | datamash -W -R 1 --no-strict --filler 0 min 1-7 mean 1-7 max 1-7 perc:95 1-7 | column -t | xargs -n7 | awk '{print "kbmemfree:",$1, "kbmemused:",$2, "%memused:",$3, "kbbuffers:",$4, "kbcached:",$5, "kbcommit:",$6, "%commit:",$7')
+                        sar_mem_metrics=$(echo "$sar_mem_stats" | grep -E -iv 'Linux|runq|user|mem|DEV|Average' | sed -e '1d' -e '/^ *$/d' | awk '{print $3,$4,$5,$6,$7,$8,$9}' | datamash -W -R 1 --no-strict --filler 0 min 1-7 mean 1-7 max 1-7 perc:95 1-7 | column -t | xargs -n7 | awk '{print "kbmemfree:",$1, "kbmemused:",$2, "%memused:",$3, "kbbuffers:",$4, "kbcached:",$5, "kbcommit:",$6, "%commit:",$7')
                     fi
                     if [ -f /usr/bin/systemctl ]; then
                         sar_mem_umin=$(echo "$sar_mem_metrics" | sed -n 1p | xargs -n10)
@@ -553,14 +591,18 @@ top_info() {
     # only assign variables if mysql is running
     if [[ "$(ps -o comm -C mysqld >/dev/null 2>&1; echo $?)" = '0' ]] || [[ "$(ps -o comm -C mariadbd >/dev/null 2>&1; echo $?)" = '0' ]]; then
     DATABSELIST=$($ALIAS_MYSQL $MYSQLADMINOPT -e 'show databases;' | grep -Ev '(Database|information_schema|performance_schema)')
-      if [[ "$CENTOS_NINE" -eq '9' ]]; then
+      if [[ "$CENTOS_TEN" -eq '10' ]]; then
         MYSQLUPTIME=$($ALIAS_MYSQLADMIN $MYSQLADMINOPT ext | awk '/Uptime|Uptime_since_flush_status/ { print $4 }' | head -n1)
         MYSQLUPTIMEFORMAT=$($ALIAS_MYSQLADMIN $MYSQLADMINOPT ver | awk '/Uptime/ { print $2, $3, $4, $5, $6, $7, $8, $9 }')
-        MYSQLSTART=$($ALIAS_MYSQL $MYSQLADMINOPT -e "SELECT FROM_UNIXTIME(UNIX_TIMESTAMP() - variable_value) AS server_start FROM INFORMATION_SCHEMA.GLOBAL_STATUS WHERE variable_name='Uptime';" | egrep -Ev '+--|server_start')
+        MYSQLSTART=$($ALIAS_MYSQL $MYSQLADMINOPT -e "SELECT FROM_UNIXTIME(UNIX_TIMESTAMP() - variable_value) AS server_start FROM INFORMATION_SCHEMA.GLOBAL_STATUS WHERE variable_name='Uptime';" | grep -Ev '+--|server_start')
+      elif [[ "$CENTOS_NINE" -eq '9' ]]; then
+        MYSQLUPTIME=$($ALIAS_MYSQLADMIN $MYSQLADMINOPT ext | awk '/Uptime|Uptime_since_flush_status/ { print $4 }' | head -n1)
+        MYSQLUPTIMEFORMAT=$($ALIAS_MYSQLADMIN $MYSQLADMINOPT ver | awk '/Uptime/ { print $2, $3, $4, $5, $6, $7, $8, $9 }')
+        MYSQLSTART=$($ALIAS_MYSQL $MYSQLADMINOPT -e "SELECT FROM_UNIXTIME(UNIX_TIMESTAMP() - variable_value) AS server_start FROM INFORMATION_SCHEMA.GLOBAL_STATUS WHERE variable_name='Uptime';" | grep -Ev '+--|server_start')
       else
         MYSQLUPTIME=$($ALIAS_MYSQLADMIN $MYSQLADMINOPT ext | awk '/Uptime|Uptime_since_flush_status/ { print $4 }' | head -n1)
         MYSQLUPTIMEFORMAT=$($ALIAS_MYSQLADMIN $MYSQLADMINOPT ver | awk '/Uptime/ { print $2, $3, $4, $5, $6, $7, $8, $9 }')
-        MYSQLSTART=$($ALIAS_MYSQL $MYSQLADMINOPT -e "SELECT FROM_UNIXTIME(UNIX_TIMESTAMP() - variable_value) AS server_start FROM INFORMATION_SCHEMA.GLOBAL_STATUS WHERE variable_name='Uptime';" | egrep -Ev '+--|server_start')
+        MYSQLSTART=$($ALIAS_MYSQL $MYSQLADMINOPT -e "SELECT FROM_UNIXTIME(UNIX_TIMESTAMP() - variable_value) AS server_start FROM INFORMATION_SCHEMA.GLOBAL_STATUS WHERE variable_name='Uptime';" | grep -Ev '+--|server_start')
       fi
     fi
     PAGESPEEDSTATUS=$(grep 'pagespeed unplugged' /usr/local/nginx/conf/pagespeed.conf)
@@ -581,7 +623,7 @@ top_info() {
 
     if [[ "$($ALIAS_MYSQLADMIN ping -s >/dev/null 2>&1; echo $?)" -eq '0' ]]; then
         echo "------------------------------------------------------------------"
-        mysql --connect-timeout=5 -e "SET GLOBAL innodb_status_output=ON; SET GLOBAL innodb_status_output_locks=ON;" 2>/dev/null
+        $ALIAS_MYSQL $MYSQLADMINOPT --connect-timeout=5 -e "SET GLOBAL innodb_status_output=ON; SET GLOBAL innodb_status_output_locks=ON;" 2>/dev/null
         echo
     fi
 
@@ -591,7 +633,7 @@ top_info() {
 
     echo " Server Location Info"
     # echo
-    # CMINFO_IPINFO=$(curl -${ipv_forceopt}s${CURL_TIMEOUTS} https://ipinfo.io/geo 2>&1 | sed -e 's|[{}]||' -e 's/\(^"\|"\)//g' -e 's|,||' | egrep -vi 'ip:|phone|postal|loc|readme')
+    # CMINFO_IPINFO=$(curl -${ipv_forceopt}s${CURL_TIMEOUTS} https://ipinfo.io/geo 2>&1 | sed -e 's|[{}]||' -e 's/\(^"\|"\)//g' -e 's|,||' | grep -E -vi 'ip:|phone|postal|loc|readme')
     # echo "$CMINFO_IPINFO" | grep -iv 'readme'
     if [[ "$VPS_GEOIPCHECK_V3" = [yY] ]]; then
       CMINFO_IPINFO=$(curl -${ipv_forceopt}s${CURL_TIMEOUTS} -A "$CURL_AGENT cmminfo IP CHECK${top_load} ${CPUCORES} $CURL_CPUMODEL $CURL_CPUSPEED $NGINX_INFOVER $PHP_INFOVER $MARIADB_INFOVER" https://geoip.centminmod.com/v3 | jq -r '"  city: \(.city)\n  region: \(.region)\n  country: \(.country)\n  org: \(.data.asn) \(.data.description_short)\n  timezone \(.timezone)"')
@@ -609,7 +651,7 @@ top_info() {
     echo "$CPUCACHE"
     echo ""
     
-    if [[ "$CENTOS_SEVEN" -eq '7' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]]; then
+    if [[ "$CENTOS_SEVEN" -eq '7' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' || "$CENTOS_TEN" -eq '10' ]]; then
         echo -ne " System Up Since: \t"; uptime -s
         echo -ne " System Uptime: \t"; uptime -p
     else
@@ -717,14 +759,14 @@ top_info() {
     echo "------------------------------------------------------------------"
     echo "Filter sar -q for times cpu load avg (1min) hit/exceeded cpu threads max"
     loadavg=$(printf "%0.2f" $(nproc))
-    sarfilteredone=$(sar -q | sed -e "s|$(hostname)|hostname|g" | grep -v runq-sz | awk -v lvg=$loadavg '{if ($5>=lvg) print $0}' | egrep -v 'Linux|Average')
+    sarfilteredone=$(sar -q | sed -e "s|$(hostname)|hostname|g" | grep -v runq-sz | awk -v lvg=$loadavg '{if ($5>=lvg) print $0}' | grep -E -v 'Linux|Average')
     echo
     echo "${sarfilteredone:-no times found that >= $loadavg}"
     echo
     echo "------------------------------------------------------------------"
     echo "Filter sar -q for times cpu load avg (5min) hit/exceeded cpu threads max"
     loadavg=$(printf "%0.2f" $(nproc))
-    sarfilteredfive=$(sar -q | sed -e "s|$(hostname)|hostname|g" | grep -v runq-sz | awk -v lvg=$loadavg '{if ($6>=lvg) print $0}' | egrep -v 'Linux|Average')
+    sarfilteredfive=$(sar -q | sed -e "s|$(hostname)|hostname|g" | grep -v runq-sz | awk -v lvg=$loadavg '{if ($6>=lvg) print $0}' | grep -E -v 'Linux|Average')
     echo
     echo "${sarfilteredfive:-no times found that >= $loadavg}"
     echo
@@ -764,9 +806,9 @@ top_info() {
             echo "---"
             echo "MySQL InnoDB Monitor Statistics Gathering for 10 seconds"
             echo
-            mysql --connect-timeout=5 -e "SHOW ENGINE INNODB STATUS\G" >/dev/null
+            $ALIAS_MYSQL $MYSQLADMINOPT --connect-timeout=5 -e "SHOW ENGINE INNODB STATUS\G" >/dev/null
             sleep 10
-            mysql --connect-timeout=5 -e "SHOW ENGINE INNODB STATUS\G" 2>/dev/null
+            $ALIAS_MYSQL $MYSQLADMINOPT --connect-timeout=5 -e "SHOW ENGINE INNODB STATUS\G" 2>/dev/null
             echo
         elif [[ "$cron" = 'cron' ]]; then
             echo
@@ -774,21 +816,21 @@ top_info() {
             echo "MySQL InnoDB Monitor Statistics Gathering for 60 seconds"
             echo
             # sleep 60
-            mysql --connect-timeout=5 -e "SHOW ENGINE INNODB STATUS\G select sleep(60); SHOW ENGINE INNODB STATUS\G" 2>/dev/null
+            $ALIAS_MYSQL $MYSQLADMINOPT --connect-timeout=5 -e "SHOW ENGINE INNODB STATUS\G select sleep(60); SHOW ENGINE INNODB STATUS\G" 2>/dev/null
             echo
         fi
         if [[ "$cron" != 'cron' ]]; then
-            mysql --connect-timeout=5 -e "SET GLOBAL innodb_status_output=OFF; SET GLOBAL innodb_status_output_locks=OFF;" 2>/dev/null
+            $ALIAS_MYSQL $MYSQLADMINOPT --connect-timeout=5 -e "SET GLOBAL innodb_status_output=OFF; SET GLOBAL innodb_status_output_locks=OFF;" 2>/dev/null
         fi
         echo
     fi
     if [[ "$($ALIAS_MYSQLADMIN ping -s >/dev/null 2>&1; echo $?)" -eq '0' ]]; then
         echo "------------------------------------------------------------------"
         echo "$ALIAS_MYSQLADMIN var"
-        $ALIAS_MYSQLADMIN var | tr -s ' ' | egrep -v '+-' 2>/dev/null
+        $ALIAS_MYSQLADMIN var | tr -s ' ' | grep -E -v '+-' 2>/dev/null
         echo
         echo "$ALIAS_MYSQLADMIN ext"
-        $ALIAS_MYSQLADMIN ext  | tr -s ' ' | egrep -v '+-' 2>/dev/null
+        $ALIAS_MYSQLADMIN ext  | tr -s ' ' | grep -E -v '+-' 2>/dev/null
         echo
     fi
     if [[ "$CMINFO_MYSQL_PROCLIST" = [Yy] && "$($ALIAS_MYSQLADMIN ping -s >/dev/null 2>&1; echo $?)" -eq '0' ]]; then
@@ -881,15 +923,15 @@ syn_info() {
 netstat_info() {
     netstat_load=$1
     sshclient=$(echo $SSH_CLIENT | awk '{print $1}')
-    nic=$(ifconfig -s 2>&1 | egrep -v '^Iface|^lo|^gre' | awk '{print $1}')
+    nic=$(ifconfig -s 2>&1 | grep -E -v '^Iface|^lo|^gre' | awk '{print $1}')
     bandwidth_avg=$(sar -n DEV 1 1)
     bandwidth_inout=$(echo "$nic" | while read i; do echo "$bandwidth_avg" | grep 'Average:' | awk -v tnic="$i" '$0~tnic{print tnic, "In: ",$5,"Out:",$6}'; done | column -t)
     packets_inout=$(echo "$nic" | while read i; do echo "$bandwidth_avg" | grep 'Average:' | awk -v tnic="$i" '$0~tnic{print tnic, "In: ",$3,"Out:",$3}'; done | column -t)
     netstat_http=$(netstat -an | fgrep ':80 ')
     netstat_https=$(netstat -an | fgrep ':443 ')
-    netstat_outbound=$(netstat -plant | egrep -v 'and|servers|Address' | awk '{print $5,$6,$7}' | grep -v ':\*' | grep -v '127.0.0.1' | sed -e "s|$sshclient|ssh-client-ip|g" | sort | uniq -c | sort -rn | head -n10 | column -t)
+    netstat_outbound=$(netstat -plant | grep -E -v 'and|servers|Address' | awk '{print $5,$6,$7}' | grep -v ':\*' | grep -v '127.0.0.1' | sed -e "s|$sshclient|ssh-client-ip|g" | sort | uniq -c | sort -rn | head -n10 | column -t)
     netstat_ips=$(netstat -tn)
-    netstat_ipstop=$(echo "$netstat_ips" | egrep -v 'servers|Address' | awk '{print $5}' | rev | cut -d: -f2- | rev | sort | uniq -c | sort -rn | head -n10)
+    netstat_ipstop=$(echo "$netstat_ips" | grep -E -v 'servers|Address' | awk '{print $5}' | rev | cut -d: -f2- | rev | sort | uniq -c | sort -rn | head -n10)
     netstat_ipstopf=$(echo "$netstat_ipstop" | awk '{"getent hosts " $2 | getline getent_hosts_str; split(getent_hosts_str, getent_hosts_arr, " "); print $1, $2, getent_hosts_arr[2], $3}' | sed -e "s|$sshclient|ssh-client-ip|g" | column -t)
     tt_states_http=$(echo "$netstat_http" | awk '{print $6}' | sort | uniq -c | sort -n)
     tt_states_https=$(echo "$netstat_https" | awk '{print $6}' | sort | uniq -c | sort -n)
@@ -974,7 +1016,7 @@ netstat_info() {
         echo "$csfdeny_sshlogins"
 
         echo -e "\nLast 3hrs Top CSF Firewall Failed SSH Logins IPs:"
-        csfdeny_sshlogins=$(grep 'Failed SSH login from' /etc/csf/csf.deny | egrep "$(date -d "1 hour ago"  +"%a %b  %-d %H")|$(date -d "2 hour ago"  +"%a %b  %-d %H")|$(date -d "3 hour ago"  +"%a %b  %-d %H")" | awk '{print $1}' | sort | uniq -c | sort -rn | head -n10 | column -t)
+        csfdeny_sshlogins=$(grep 'Failed SSH login from' /etc/csf/csf.deny | grep -E "$(date -d "1 hour ago"  +"%a %b  %-d %H")|$(date -d "2 hour ago"  +"%a %b  %-d %H")|$(date -d "3 hour ago"  +"%a %b  %-d %H")" | awk '{print $1}' | sort | uniq -c | sort -rn | head -n10 | column -t)
         echo "$csfdeny_sshlogins"
 
         echo -e "\nLast 1hr Top CSF Firewall Failed SSH Logins IPs:"
@@ -999,7 +1041,7 @@ rm -rf /usr/bin/cminfo
 CMINFOLINK='https://raw.githubusercontent.com/centminmod/centminmod/${branchname}/tools/cminfo.sh'
 
 # fallback mirror
-curl -${ipv_forceopt}Is --connect-timeout 30 --max-time 30 \$CMINFOLINK | grep 'HTTP\/' | grep '200' >/dev/null 2>&1
+curl -${ipv_forceopt}Is --connect-timeout 30 --max-time 30 \$CMINFOLINK | grep -qE '^HTTP/.* 200'
 CMINFO_CURLCHECK=\$?
 if [[ "\$CMINFO_CURLCHECK" != '0' ]]; then
     CMINFOLINK='https://gitlab.com/centminmod-github-mirror/centminmod/raw/master/tools/cminfo.sh'
@@ -1038,8 +1080,8 @@ if [[ -z "$(crontab -l 2>&1 | grep cminfo_updater)" ]]; then
 fi
 
 infooutput() {
-VHOSTS=$(ls /home/nginx/domains | egrep -v 'demodomain.com.conf')
-VHOSTSCONF=$(ls /usr/local/nginx/conf/conf.d | egrep -vw '^ssl.conf' | uniq)
+VHOSTS=$(ls /home/nginx/domains | grep -E -v 'demodomain.com.conf')
+VHOSTSCONF=$(ls /usr/local/nginx/conf/conf.d | grep -E -vw '^ssl.conf' | uniq)
 
 #####################################################
 SYSTYPE=$(virt-what | head -n1)
@@ -1069,11 +1111,11 @@ DATABSELIST=$($ALIAS_MYSQL $MYSQLADMINOPT -e 'show databases;' | grep -Ev '(Data
 if [[ "$CENTOS_NINE" -eq '9' ]]; then
   MYSQLUPTIME=$($ALIAS_MYSQLADMIN $MYSQLADMINOPT ext | awk '/Uptime|Uptime_since_flush_status/ { print $4 }' | head -n1)
   MYSQLUPTIMEFORMAT=$($ALIAS_MYSQLADMIN $MYSQLADMINOPT ver | awk '/Uptime/ { print $2, $3, $4, $5, $6, $7, $8, $9 }')
-  MYSQLSTART=$($ALIAS_MYSQL $MYSQLADMINOPT -e "SELECT FROM_UNIXTIME(UNIX_TIMESTAMP() - variable_value) AS server_start FROM INFORMATION_SCHEMA.GLOBAL_STATUS WHERE variable_name='Uptime';" | egrep -Ev '+--|server_start')
+  MYSQLSTART=$($ALIAS_MYSQL $MYSQLADMINOPT -e "SELECT FROM_UNIXTIME(UNIX_TIMESTAMP() - variable_value) AS server_start FROM INFORMATION_SCHEMA.GLOBAL_STATUS WHERE variable_name='Uptime';" | grep -Ev '+--|server_start')
 else
   MYSQLUPTIME=$($ALIAS_MYSQLADMIN $MYSQLADMINOPT ext | awk '/Uptime|Uptime_since_flush_status/ { print $4 }' | head -n1)
   MYSQLUPTIMEFORMAT=$($ALIAS_MYSQLADMIN $MYSQLADMINOPT ver | awk '/Uptime/ { print $2, $3, $4, $5, $6, $7, $8, $9 }')
-  MYSQLSTART=$($ALIAS_MYSQL $MYSQLADMINOPT -e "SELECT FROM_UNIXTIME(UNIX_TIMESTAMP() - variable_value) AS server_start FROM INFORMATION_SCHEMA.GLOBAL_STATUS WHERE variable_name='Uptime';" | egrep -Ev '+--|server_start')
+  MYSQLSTART=$($ALIAS_MYSQL $MYSQLADMINOPT -e "SELECT FROM_UNIXTIME(UNIX_TIMESTAMP() - variable_value) AS server_start FROM INFORMATION_SCHEMA.GLOBAL_STATUS WHERE variable_name='Uptime';" | grep -Ev '+--|server_start')
 fi
 fi
 PAGESPEEDSTATUS=$(grep 'pagespeed unplugged' /usr/local/nginx/conf/pagespeed.conf)
@@ -1113,7 +1155,7 @@ echo "$CPUMODEL"
 echo "$CPUCACHE"
 echo ""
 
-if [[ "$CENTOS_SEVEN" -eq '7' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]]; then
+if [[ "$CENTOS_SEVEN" -eq '7' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' || "$CENTOS_TEN" -eq '10' ]]; then
     echo -ne " System Up Since: \t"; uptime -s
     echo -ne " System Uptime: \t"; uptime -p
 else
@@ -1195,9 +1237,9 @@ echo " MySQL Databases:"
 echo "------------------------------------------------------------------"
 echo
 for db in $DATABSELIST; do 
-DBIDXSIZE=$($ALIAS_MYSQL $MYSQLADMINOPT -e "SELECT CONCAT(ROUND(SUM(index_length)/(1024*1024), 2), ' MB') AS 'Total Index Size' FROM information_schema.TABLES WHERE table_schema LIKE '$db';" | egrep -Ev '(+-|Total Index Size)')
+DBIDXSIZE=$($ALIAS_MYSQL $MYSQLADMINOPT -e "SELECT CONCAT(ROUND(SUM(index_length)/(1024*1024), 2), ' MB') AS 'Total Index Size' FROM information_schema.TABLES WHERE table_schema LIKE '$db';" | grep -Ev '(+-|Total Index Size)')
 DBDATASIZE=$($ALIAS_MYSQL $MYSQLADMINOPT -e "SELECT CONCAT(ROUND(SUM(data_length)/(1024*1024), 2), ' MB') AS 'Total Data Size'
-FROM information_schema.TABLES WHERE table_schema LIKE '$db';" | egrep -Ev '(+-|Total Data Size)')
+FROM information_schema.TABLES WHERE table_schema LIKE '$db';" | grep -Ev '(+-|Total Data Size)')
 
 if [ "$DBIDXSIZE" == 'NULL' ]; then
     DBIDXSIZE='0.00 MB'
@@ -1248,7 +1290,7 @@ echo " Nginx Settings:"
 echo "------------------------------------------------------------------"
 echo
 
-egrep '(^user|^worker_processes|^worker_priority|^worker_rlimit_nofile|^timer_resolution|^pcre_jit|^worker_connections|^accept_mutex|^multi_accept|^accept_mutex_delay|map_hash|server_names_hash|variables_hash|tcp_|^limit_|sendfile|server_tokens|keepalive_|lingering_|gzip|client_|connection_pool_size|directio|large_client|types_hash|server_names_hash|open_file|open_log|^include|^#include)' /usr/local/nginx/conf/nginx.conf | egrep -v 'gzip_ratio'
+grep -E '(^user|^worker_processes|^worker_priority|^worker_rlimit_nofile|^timer_resolution|^pcre_jit|^worker_connections|^accept_mutex|^multi_accept|^accept_mutex_delay|map_hash|server_names_hash|variables_hash|tcp_|^limit_|sendfile|server_tokens|keepalive_|lingering_|gzip|client_|connection_pool_size|directio|large_client|types_hash|server_names_hash|open_file|open_log|^include|^#include)' /usr/local/nginx/conf/nginx.conf | grep -E -v 'gzip_ratio'
 
 echo
 echo "------------------------------------------------------------------"
@@ -1262,7 +1304,7 @@ echo "------------------------------------------------------------------"
 echo " PHP-FPM Settings /usr/local/etc/php-fpm.conf:"
 echo "------------------------------------------------------------------"
 echo
-egrep '(^log_level|^pid|^error_log|^user|^group|^listen|^pm|^rlimit|^slowlog|^ping.|^php_admin)' /usr/local/etc/php-fpm.conf
+grep -E '(^log_level|^pid|^error_log|^user|^group|^listen|^pm|^rlimit|^slowlog|^ping.|^php_admin)' /usr/local/etc/php-fpm.conf
 
 echo
 echo "------------------------------------------------------------------"
