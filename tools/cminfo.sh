@@ -13,7 +13,7 @@ ARCH_CHECK="$(uname -m)"
 #####################################################
 # quick info overview for centminmod.com installs
 #####################################################
-branchname='141.00beta01'
+branchname='140.00beta01'
 DT=$(date +"%d%m%y-%H%M%S")
 CENTMINLOGDIR='/root/centminlogs'
 #####################################################
