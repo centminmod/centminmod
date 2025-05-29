@@ -20,6 +20,20 @@ for g in "" e f; do
     alias ${g}grep="LC_ALL=C ${g}grep"  # speed-up grep, egrep, fgrep
 done
 
+# Add LXC detection
+if [[ ! -f /proc/user_beancounters ]]; then
+    if [[ -f /usr/bin/systemd-detect-virt && "$(/usr/bin/systemd-detect-virt)" = 'lxc' ]]; then
+        CHECK_LXD='y'
+    elif [[ -f $(which virt-what) ]]; then
+        VIRT_WHAT_OUTPUT=$(virt-what | xargs)
+        if [[ $VIRT_WHAT_OUTPUT == *'openvz'* ]]; then
+            CHECK_LXD='n'
+        elif [[ $VIRT_WHAT_OUTPUT == *'lxc'* ]]; then
+            CHECK_LXD='y'
+        fi
+    fi
+fi
+
 CENTOSVER=$(awk '{ print $3 }' /etc/redhat-release)
 
 if [ "$CENTOSVER" == 'release' ]; then
@@ -181,29 +195,31 @@ if [[ -f /sys/kernel/mm/transparent_hugepage/enabled ]]; then
         sed -i "s|vm.nr_hugepages=.*|vm.nr_hugepages=$NRHUGEPAGES_COUNT|" /etc/sysctl.conf
         sysctl -p
       fi
-      echo
-      echo "set system max locked memory limit"
-      echo
-      echo "/etc/security/limits.conf"
-      echo "* soft memlock $MAXLOCKEDMEM_SIZE"
-      echo "* hard memlock $MAXLOCKEDMEM_SIZE"
-      sed -i '/hard memlock/d' /etc/security/limits.conf
-      sed -i '/soft memlock/d' /etc/security/limits.conf
-      if [[ -z "$(grep 'nginx soft memlock' /etc/security/limits.conf)" ]]; then
-        echo "nginx soft memlock $MAXLOCKEDMEM_SIZE_NGINX" >> /etc/security/limits.conf
-        echo "nginx hard memlock $MAXLOCKEDMEM_SIZE_NGINX" >> /etc/security/limits.conf
+      if [[ "$CHECK_LXD" != 'y' ]]; then
         echo
-      fi
-      if [[ -z "$(grep '* soft memlock' /etc/security/limits.conf)" ]]; then
-        echo "* soft memlock $MAXLOCKEDMEM_SIZE" >> /etc/security/limits.conf
-        echo "* hard memlock $MAXLOCKEDMEM_SIZE" >> /etc/security/limits.conf
+        echo "set system max locked memory limit"
         echo
-      else
-        sed -i "s|memlock .*|memlock $MAXLOCKEDMEM_SIZE|g" /etc/security/limits.conf
+        echo "/etc/security/limits.conf"
+        echo "* soft memlock $MAXLOCKEDMEM_SIZE"
+        echo "* hard memlock $MAXLOCKEDMEM_SIZE"
+        sed -i '/hard memlock/d' /etc/security/limits.conf
+        sed -i '/soft memlock/d' /etc/security/limits.conf
+        if [[ -z "$(grep 'nginx soft memlock' /etc/security/limits.conf)" ]]; then
+          echo "nginx soft memlock $MAXLOCKEDMEM_SIZE_NGINX" >> /etc/security/limits.conf
+          echo "nginx hard memlock $MAXLOCKEDMEM_SIZE_NGINX" >> /etc/security/limits.conf
+          echo
+        fi
+        if [[ -z "$(grep '* soft memlock' /etc/security/limits.conf)" ]]; then
+          echo "* soft memlock $MAXLOCKEDMEM_SIZE" >> /etc/security/limits.conf
+          echo "* hard memlock $MAXLOCKEDMEM_SIZE" >> /etc/security/limits.conf
+          echo
+        else
+          sed -i "s|memlock .*|memlock $MAXLOCKEDMEM_SIZE|g" /etc/security/limits.conf
+        fi
+        cat /etc/security/limits.conf
+        echo
+        ulimit -H -l
       fi
-      cat /etc/security/limits.conf
-      echo
-      ulimit -H -l
     elif [[ "$HP_CHECK" = '[never]' ]]; then
       echo
       echo "set vm.nr.hugepages in /etc/sysctl.conf"
