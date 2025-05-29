@@ -7,17 +7,17 @@ opcachehugepages() {
         GETCPUNODE_COUNT=$(numactl --hardware | awk '/available: / {print $2}')
         if [[ "$GETCPUNODE_COUNT" -ge '2' ]]; then
           FREEMEM_NUMANODE=$(($(numactl --hardware | awk '/free:/ {print $4}' | sort -r | head -n1)*1024))
-          FREEMEMCACHED=$(egrep '^Buffers|^Cached' /proc/meminfo | awk '{summ+=$2} END {print summ}' | head -n1)
+          FREEMEMCACHED=$(grep -E '^Buffers|^Cached' /proc/meminfo | awk '{summ+=$2} END {print summ}' | head -n1)
           FREEMEM=$(($FREEMEM_NUMANODE+$FREEMEMCACHED))
         else
-          FREEMEM=$(egrep '^MemFree|^Buffers|^Cached' /proc/meminfo | awk '{summ+=$2} END {print summ}' | head -n1)
+          FREEMEM=$(grep -E '^MemFree|^Buffers|^Cached' /proc/meminfo | awk '{summ+=$2} END {print summ}' | head -n1)
         fi
       elif [[ -f /proc/user_beancounters ]]; then
         FREEMEMOPENVZ=$(grep '^MemFree' /proc/meminfo | awk '{summ+=$2} END {print summ}' | head -n1)
-        FREEMEMCACHED=$(egrep '^Buffers|^Cached' /proc/meminfo | awk '{summ+=$2} END {print summ}' | head -n1)
+        FREEMEMCACHED=$(grep -E '^Buffers|^Cached' /proc/meminfo | awk '{summ+=$2} END {print summ}' | head -n1)
         FREEMEM=$(($FREEMEMOPENVZ+$FREEMEMCACHED))
       else
-        FREEMEM=$(egrep '^MemFree|^Buffers|^Cached' /proc/meminfo | awk '{summ+=$2} END {print summ}' | head -n1)
+        FREEMEM=$(grep -E '^MemFree|^Buffers|^Cached' /proc/meminfo | awk '{summ+=$2} END {print summ}' | head -n1)
       fi
     elif [[ "$CENTOS_EIGHT" = '8' || "$CENTOS_SEVEN" = '7' ]]; then
       if [[ ! -f /proc/user_beancounters && -f /usr/bin/numactl ]]; then
@@ -26,14 +26,14 @@ opcachehugepages() {
         GETCPUNODE_COUNT=$(numactl --hardware | awk '/available: / {print $2}')
         if [[ "$GETCPUNODE_COUNT" -ge '2' ]]; then
           FREEMEM_NUMANODE=$(($(numactl --hardware | awk '/free:/ {print $4}' | sort -r | head -n1)*1024))
-          FREEMEMCACHED=$(egrep '^Buffers|^Cached' /proc/meminfo | awk '{summ+=$2} END {print summ}' | head -n1)
+          FREEMEMCACHED=$(grep -E '^Buffers|^Cached' /proc/meminfo | awk '{summ+=$2} END {print summ}' | head -n1)
           FREEMEM=$(($FREEMEM_NUMANODE+$FREEMEMCACHED))
         else
           FREEMEM=$(cat /proc/meminfo | grep MemAvailable | awk '{print $2}')
         fi
       elif [[ -f /proc/user_beancounters ]]; then
         FREEMEMOPENVZ=$(grep '^MemFree' /proc/meminfo | awk '{summ+=$2} END {print summ}' | head -n1)
-        FREEMEMCACHED=$(egrep '^Buffers|^Cached' /proc/meminfo | awk '{summ+=$2} END {print summ}' | head -n1)
+        FREEMEMCACHED=$(grep -E '^Buffers|^Cached' /proc/meminfo | awk '{summ+=$2} END {print summ}' | head -n1)
         FREEMEM=$(($FREEMEMOPENVZ+$FREEMEMCACHED))
       else
         FREEMEM=$(cat /proc/meminfo | grep MemAvailable | awk '{print $2}')
@@ -58,26 +58,29 @@ opcachehugepages() {
         echo
       fi
     fi
-    echo
-    echo "set system max locked memory limit"
-    echo
-    echo "/etc/security/limits.conf"
-    echo "* soft memlock $MAXLOCKEDMEM_SIZE"
-    echo "* hard memlock $MAXLOCKEDMEM_SIZE"
-    sed -i '/hard memlock/d' /etc/security/limits.conf
-    sed -i '/soft memlock/d' /etc/security/limits.conf
-    if [[ -z "$(grep 'nginx soft memlock' /etc/security/limits.conf)" ]]; then
-      echo "nginx soft memlock $MAXLOCKEDMEM_SIZE_NGINX" >> /etc/security/limits.conf
-      echo "nginx hard memlock $MAXLOCKEDMEM_SIZE_NGINX" >> /etc/security/limits.conf
-      echo
+    if [[ "$CHECK_LXD" != 'y' ]]; then
+        echo
+        echo "set system max locked memory limit"
+        echo
+        echo "/etc/security/limits.conf"
+        echo "* soft memlock $MAXLOCKEDMEM_SIZE"
+        echo "* hard memlock $MAXLOCKEDMEM_SIZE"
+        sed -i '/hard memlock/d' /etc/security/limits.conf
+        sed -i '/soft memlock/d' /etc/security/limits.conf
+        if [[ -z "$(grep 'nginx soft memlock' /etc/security/limits.conf)" ]]; then
+          echo "nginx soft memlock $MAXLOCKEDMEM_SIZE_NGINX" >> /etc/security/limits.conf
+          echo "nginx hard memlock $MAXLOCKEDMEM_SIZE_NGINX" >> /etc/security/limits.conf
+          echo
+        fi
+        if [[ -z "$(grep '* soft memlock' /etc/security/limits.conf)" ]]; then
+          echo "* soft memlock $MAXLOCKEDMEM_SIZE" >> /etc/security/limits.conf
+          echo "* hard memlock $MAXLOCKEDMEM_SIZE" >> /etc/security/limits.conf
+          echo
+        else
+          sed -i "s|memlock .*|memlock $MAXLOCKEDMEM_SIZE|g" /etc/security/limits.conf
+        fi
     fi
-    if [[ -z "$(grep '* soft memlock' /etc/security/limits.conf)" ]]; then
-      echo "* soft memlock $MAXLOCKEDMEM_SIZE" >> /etc/security/limits.conf
-      echo "* hard memlock $MAXLOCKEDMEM_SIZE" >> /etc/security/limits.conf
-      echo
-    else
-      sed -i "s|memlock .*|memlock $MAXLOCKEDMEM_SIZE|g" /etc/security/limits.conf
-    fi
+
     cat /etc/security/limits.conf
     echo
     ulimit -H -l
