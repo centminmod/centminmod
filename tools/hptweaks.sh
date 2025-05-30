@@ -78,7 +78,7 @@ After=network.target
 
 [Service]
 Type=simple
-ExecStart=/bin/sh -c "/usr/bin/echo 'never' > /sys/kernel/mm/transparent_hugepage/enabled"
+ExecStart=/bin/sh -c "/usr/bin/echo 'madvise' > /sys/kernel/mm/transparent_hugepage/enabled"
 
 [Install]
 WantedBy=multi-user.target
