@@ -1,5 +1,25 @@
+fix_nginx_logrotate_el9() {
+  if [[ "$CENTOS_TEN" -eq '10' || "$CENTOS_NINE" -eq '9' ]] && [[ ! -f /etc/systemd/system/logrotate.service.d/centminmod.conf ]]; then
+    # Create drop-in directory
+    mkdir -p /etc/systemd/system/logrotate.service.d/
+
+    # Create override file
+cat > /etc/systemd/system/logrotate.service.d/centminmod.conf << 'EOF'
+[Service]
+ReadWritePaths=/usr/local/nginx/logs
+EOF
+
+    # Reload and restart
+    systemctl daemon-reload >/dev/null 2>&1
+    systemctl restart logrotate >/dev/null 2>&1
+
+    echo "----------------------------------------------------------------------------"
+    cat /etc/systemd/system/logrotate.service.d/centminmod.conf
+  fi
+}
+
 opendkim_check_enabled() {
-  if [[ "$CENTOS_NINE" -eq '9' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_SEVEN" -eq '7' ]]; then
+  if [[ "$CENTOS_TEN" -eq '10' || "$CENTOS_NINE" -eq '9' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_SEVEN" -eq '7' ]]; then
     if [ -d /etc/opendkim/keys ]; then
       if [[ -f "$(find /etc/opendkim/keys -name "default")" && "$(systemctl is-enabled opendkim)" = 'disabled' ]] && [[ "$(rpm -qa opendkim | grep opendkim >/dev/null 2>&1; echo $?)" = '0' ]]; then
         if [[ "$(systemctl is-active opendkim)" = 'active' ]]; then
@@ -4053,6 +4073,7 @@ if [[ "$INITIALINSTALL" != [yY] ]]; then
     # skip fixphpfpm_httpproxy
     fixphpfpm_httpproxy
   fi
+  fix_nginx_logrotate_el9
   fixlibmysqlclient_symlink
   fixnodejs_epel
   fixnginx_epel
