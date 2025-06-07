@@ -123,6 +123,24 @@ END
   fi
 fi
 
+  if [[ "$CENTOS_TEN" -eq '10' || "$CENTOS_NINE" -eq '9' ]]; then
+    # Create drop-in directory
+    mkdir -p /etc/systemd/system/logrotate.service.d/
+
+    # Create override file
+cat > /etc/systemd/system/logrotate.service.d/centminmod.conf << 'EOF'
+[Service]
+ReadWritePaths=/usr/local/nginx/logs
+EOF
+
+    # Reload and restart
+    systemctl daemon-reload
+    systemctl restart logrotate
+
+    echo "----------------------------------------------------------------------------"
+    cat /etc/systemd/system/logrotate.service.d/centminmod.conf
+  fi
+
 echo "----------------------------------------------------------------------------"
 cat /etc/logrotate.d/nginx
 
