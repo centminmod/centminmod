@@ -163,6 +163,21 @@ elif [[ "$MDB_COUNTRY" = 'HK' ]]; then
     # https://mariadb.com/kb/en/gpg/#rpm-source-key-pre-2023
     echo "rpm --import https://supplychain.mariadb.com/MariaDB-Server-GPG-KEY"
     rpm --import https://supplychain.mariadb.com/MariaDB-Server-GPG-KEY
+elif [[ "$MDB_COUNTRY" = 'RU' || "$MDB_CONTINENT" = 'EU' ]]; then
+    MDB_MIRROR_BASEURL='https://mirror.docker.ru/mariadb/yum'
+    MDB_REPOMD_URL="${MDB_MIRROR_BASEURL}/${MDB_REPO_DIR}/repodata/repomd.xml"
+    # fallback check of repomd.xml
+    curl -s "$MDB_REPOMD_URL" -o repomd.xml
+    MDB_REPOMD_URL_CHECK=$(xmllint --format repomd.xml >/dev/null 2>&1 ; echo $?)
+    rm -f repomd.xml
+    if [[ "$MDB_REPOMD_URL_CHECK" -ne '0' ]]; then
+        MDB_MIRROR_BASEURL='https://yum.mariadb.org'
+    fi
+    echo "rpm --import ${MDB_MIRROR_BASEURL}/RPM-GPG-KEY-MariaDB"
+    rpm --import "${MDB_MIRROR_BASEURL}/RPM-GPG-KEY-MariaDB"
+    # https://mariadb.com/kb/en/gpg/#rpm-source-key-pre-2023
+    echo "rpm --import https://supplychain.mariadb.com/MariaDB-Server-GPG-KEY"
+    rpm --import https://supplychain.mariadb.com/MariaDB-Server-GPG-KEY
 elif [[ "$MDB_COUNTRY" = 'DE' || "$MDB_CONTINENT" = 'EU' ]]; then
     MDB_MIRROR_BASEURL='https://mirror.rackspace.com/mariadb/yum'
     MDB_REPOMD_URL="${MDB_MIRROR_BASEURL}/${MDB_REPO_DIR}/repodata/repomd.xml"
