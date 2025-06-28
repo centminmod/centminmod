@@ -416,12 +416,14 @@ EOF
   echo
   cecho "Next steps:" $boldwhite
   if [ -f /etc/docker/daemon.json ] && grep -q '"iptables": false' /etc/docker/daemon.json && grep -q '"dns"' /etc/docker/daemon.json; then
-    cecho "1. Restart CSF: csf -ra" $white
+    cecho "1. Restart CSF: csf -ra" $
+    csf -ra >/dev/null 2>&1
     cecho "2. Test with: $0 csf-test" $white
     cecho "   (Docker restart not needed - daemon.json already configured)" $green
   else
     cecho "1. Restart Docker: systemctl restart docker" $white
     cecho "2. Restart CSF: csf -ra" $white
+    csf -ra >/dev/null 2>&1
     cecho "3. Test with: $0 csf-test" $white
   fi
   echo
@@ -1432,9 +1434,10 @@ docker_help() {
   cecho "  $0 uninstall" $white
   echo
   cecho "Workflow:" $boldwhite
-  cecho "  1. $0 install     # Install Docker with CSF compatibility" $green
-  cecho "  2. $0 csf-setup   # Configure firewall integration" $green
-  cecho "  3. $0 csf-test    # Verify integration works" $green
+  cecho "  1. $0 install         # Install Docker with CSF compatibility" $green
+  cecho "  2. $0 csf-setup       # Configure firewall integration" $green
+  cecho "  3. $0 csf-test        # Verify integration works" $green
+  cecho "  3. $0 network-info    # Verify network information" $green
   echo
   cecho "Troubleshooting:" $boldwhite
   cecho "  $0 inspect-logs   # Interactive log viewer for debugging issues" $cyan
