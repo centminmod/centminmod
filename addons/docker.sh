@@ -363,21 +363,28 @@ EOF
 # Create Docker chain if it doesn't exist
 iptables -N DOCKER 2>/dev/null || true
 
-# Get Docker bridge interface (usually docker0)
-DOCKER_BRIDGE=$(ip link show | grep -oP 'docker\d+' | head -1)
+# Get Docker bridge interface (usually docker0) and subnet
+if command -v docker >/dev/null 2>&1 && systemctl is-active docker >/dev/null 2>&1; then
+    DOCKER_BRIDGE=$(docker network inspect bridge --format '{{(index .Options "com.docker.network.bridge.name")}}')
+    DOCKER_SUBNET=$(docker network inspect bridge --format '{{(index .IPAM.Config 0).Subnet}}')
+fi
+
 if [ -z "$DOCKER_BRIDGE" ]; then
     DOCKER_BRIDGE="docker0"
 fi
+if [ -z "$DOCKER_SUBNET" ]; then
+    DOCKER_SUBNET="172.17.0.0/16"
+fi
 
 # Masquerade outbound connections from containers
-iptables -t nat -A POSTROUTING -s 172.17.0.0/16 ! -o $DOCKER_BRIDGE -j MASQUERADE 2>/dev/null
+iptables -t nat -A POSTROUTING -s "$DOCKER_SUBNET" ! -o "$DOCKER_BRIDGE" -j MASQUERADE 2>/dev/null
 
 # Accept established connections to the docker containers
-iptables -t filter -A FORWARD -o $DOCKER_BRIDGE -m conntrack --ctstate RELATED,ESTABLISHED -j ACCEPT 2>/dev/null
+iptables -t filter -A FORWARD -o "$DOCKER_BRIDGE" -m conntrack --ctstate RELATED,ESTABLISHED -j ACCEPT 2>/dev/null
 
 # Allow docker containers to communicate with themselves & outside world
-iptables -t filter -A FORWARD -i $DOCKER_BRIDGE ! -o $DOCKER_BRIDGE -j ACCEPT 2>/dev/null
-iptables -t filter -A FORWARD -i $DOCKER_BRIDGE -o $DOCKER_BRIDGE -j ACCEPT 2>/dev/null
+iptables -t filter -A FORWARD -i "$DOCKER_BRIDGE" ! -o "$DOCKER_BRIDGE" -j ACCEPT 2>/dev/null
+iptables -t filter -A FORWARD -i "$DOCKER_BRIDGE" -o "$DOCKER_BRIDGE" -j ACCEPT 2>/dev/null
 
 # Handle custom Docker networks
 if command -v docker >/dev/null 2>&1 && systemctl is-active docker >/dev/null 2>&1; then
@@ -427,14 +434,28 @@ docker_install() {
   echo
 
   cecho "Removing existing Docker packages..." $boldyellow
-  sudo dnf remove -y docker docker-client docker-client-latest docker-common docker-latest docker-latest-logrotate docker-logrotate docker-engine podman runc 2>/dev/null || true
+  if [[ "$CENTOS_SEVEN" == '7' ]]; then
+    sudo yum remove -y docker docker-client docker-client-latest docker-common docker-latest docker-latest-logrotate docker-logrotate docker-engine podman runc 2>/dev/null || true
+  else
+    sudo dnf remove -y docker docker-client docker-client-latest docker-common docker-latest docker-latest-logrotate docker-logrotate docker-engine podman runc 2>/dev/null || true
+  fi
   
-  cecho "Installing Docker repository..." $boldyellow
-  sudo dnf -y install dnf-plugins-core
-  sudo dnf config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo
+  cecho "Installing repository management tools..." $boldyellow
+  if [[ "$CENTOS_SEVEN" == '7' ]]; then
+    sudo yum -y install yum-utils
+  else
+    sudo dnf -y install dnf-plugins-core
+  fi
+  
+  cecho "Adding Docker repository..." $boldyellow
+  sudo yum-config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo
   
   cecho "Installing Docker CE packages..." $boldyellow
-  sudo dnf install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+  if [[ "$CENTOS_SEVEN" == '7' ]]; then
+    sudo yum install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+  else
+    sudo dnf install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+  fi
   
   cecho "Creating CSF-compatible Docker daemon configuration..." $boldyellow
   cat > /etc/docker/daemon.json << 'EOF'
@@ -700,7 +721,11 @@ docker_uninstall() {
   # Remove Docker packages
   debug_log "Removing Docker packages"
   cecho "Removing Docker packages..." $boldyellow
-  dnf remove -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin docker-ce-rootless-extras 2>/dev/null || true
+  if [[ "$CENTOS_SEVEN" == '7' ]]; then
+    yum remove -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin docker-ce-rootless-extras 2>/dev/null || true
+  else
+    dnf remove -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin docker-ce-rootless-extras 2>/dev/null || true
+  fi
   debug_log "Docker packages removed"
   
   # Remove Docker data and configuration directories
