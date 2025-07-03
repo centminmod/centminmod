@@ -1497,6 +1497,9 @@ fi
         if [[ "$NGINX_STAPLE_CACHE_OVERRIDE" = [yY] ]]; then
             cecho "* NGINX_STAPLE_CACHE_OVERRIDE='y' detected NGINX_STAPLE_CACHE_TTL='${NGINX_STAPLE_CACHE_TTL}' set" $boldgreen
         fi
+        if [ -f "${SCRIPT_DIR}/tools/disable-ocsp.sh" ] && grep -rE "ssl_stapling on|ssl_stapling_verify on" /usr/local/nginx/conf/conf.d/ >/dev/null 2>&1; then
+            "${SCRIPT_DIR}/tools/disable-ocsp.sh"
+        fi
         cecho "* nginx updated" $boldgreen
         if [[ "$ngver" = 'angie' ]]; then
             cecho "* angie nginx fork build https://github.com/webserver-llc/angie" $boldgreen
