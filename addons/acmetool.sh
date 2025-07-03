@@ -14,7 +14,7 @@ ARCH_CHECK="$(uname -m)"
 ###############################################################
 # variables
 ###############################################################
-ACMEVER='1.0.95'
+ACMEVER='1.0.96'
 DT=$(date +"%d%m%y-%H%M%S")
 ACMEDEBUG='n'
 ACMEDEBUG_LOG='y'
@@ -1416,8 +1416,8 @@ server {
   # enable ocsp stapling
   #resolver 8.8.8.8 8.8.4.4 1.1.1.1 1.0.0.1 valid=10m;
   #resolver_timeout 10s;
-  #ssl_stapling on;
-  #ssl_stapling_verify on;
+  #ssl_stapling off;
+  #ssl_stapling_verify off;
 
 # ngx_pagespeed & ngx_pagespeed handler
 #include /usr/local/nginx/conf/pagespeed.conf;
@@ -1814,8 +1814,8 @@ server {
   # enable ocsp stapling
   #resolver 8.8.8.8 8.8.4.4 1.1.1.1 1.0.0.1 valid=10m;
   #resolver_timeout 10s;
-  #ssl_stapling on;
-  #ssl_stapling_verify on;
+  #ssl_stapling off;
+  #ssl_stapling_verify off;
 
 # ngx_pagespeed & ngx_pagespeed handler
 #include /usr/local/nginx/conf/pagespeed.conf;
@@ -1927,8 +1927,8 @@ server {
   # enable ocsp stapling
   #resolver 8.8.8.8 8.8.4.4 1.1.1.1 1.0.0.1 valid=10m;
   #resolver_timeout 10s;
-  #ssl_stapling on;
-  #ssl_stapling_verify on;
+  #ssl_stapling off;
+  #ssl_stapling_verify off;
 
 # ngx_pagespeed & ngx_pagespeed handler
 #include /usr/local/nginx/conf/pagespeed.conf;
