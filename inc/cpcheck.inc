@@ -1,3 +1,9 @@
+disable_nginx_ocsp() {
+  if [ -f "${SCRIPT_DIR}/tools/disable-ocsp.sh" ] && grep -rE "ssl_stapling on|ssl_stapling_verify on" /usr/local/nginx/conf/conf.d/ >/dev/null 2>&1; then
+      "${SCRIPT_DIR}/tools/disable-ocsp.sh" >/dev/null 2>&1
+  fi
+}
+
 fix_nginx_logrotate_el9() {
   if [[ "$CENTOS_TEN" -eq '10' || "$CENTOS_NINE" -eq '9' ]] && [[ ! -f /etc/systemd/system/logrotate.service.d/centminmod.conf ]]; then
     # Create drop-in directory
@@ -4172,6 +4178,7 @@ if [[ "$INITIALINSTALL" != [yY] ]]; then
   fi
   switch_nginx_uid
   opendkim_check_enabled
+  disable_nginx_ocsp
 fi
 
 }
