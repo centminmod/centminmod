@@ -95,6 +95,86 @@ compile_custom_curl() {
     cd "${ORIG_DIR}"
 }
 
+# ------------------------------------------------------------------
+# Function : libtidy_centos7_install
+# Purpose  : Install libtidy 5.8.0 from source for CentOS 7 + PHP 8.3+
+#            compatibility. CentOS 7 system libtidy is too old and lacks
+#            TidyInternalCategory symbol required by PHP 8.3+.
+# ------------------------------------------------------------------
+libtidy_centos7_install() {
+  echo "Installing libtidy 5.8.0 from source for CentOS 7 + PHP 8.3+"
+  
+  # Remove old libtidy if present
+  yum remove -y libtidy libtidy-devel
+   
+  # Save current directory
+  CURRENT_DIR=$(pwd)
+  
+  # Download and build libtidy 5.8.0
+  cd "$DIR_TMP"
+  if [ ! -f tidy-html5-5.8.0.tar.gz ]; then
+    echo "Downloading libtidy 5.8.0 source..."
+    wget -4 https://github.com/htacg/tidy-html5/archive/5.8.0.tar.gz -O tidy-html5-5.8.0.tar.gz
+    ERROR=$?
+    if [[ "$ERROR" != '0' ]]; then
+      echo "Error: Failed to download libtidy 5.8.0 source"
+      cd "$CURRENT_DIR"
+      return 1
+    fi
+  fi
+  
+  # Extract and build
+  tar -xzf tidy-html5-5.8.0.tar.gz
+  cd tidy-html5-5.8.0/build/cmake
+  
+  # Configure build
+  cmake3 ../.. -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr/local
+  ERROR=$?
+  if [[ "$ERROR" != '0' ]]; then
+    echo "Error: libtidy cmake configuration failed"
+    cd "$CURRENT_DIR"
+    return 1
+  fi
+  
+  # Build with parallel jobs
+  make -j$(nproc)
+  ERROR=$?
+  if [[ "$ERROR" != '0' ]]; then
+    echo "Error: libtidy compilation failed"
+    cd "$CURRENT_DIR"
+    return 1
+  fi
+  
+  # Install
+  make install
+  ERROR=$?
+  if [[ "$ERROR" != '0' ]]; then
+    echo "Error: libtidy installation failed"
+    cd "$CURRENT_DIR"
+    return 1
+  fi
+  
+  # Update library cache
+  echo "/usr/local/lib" > /etc/ld.so.conf.d/libtidy.conf
+  ldconfig
+  
+  # Verify installation
+  if [ -f /usr/local/bin/tidy ]; then
+    echo "libtidy 5.8.0 installation verification:"
+    /usr/local/bin/tidy -version
+    echo "libtidy 5.8.0 installed successfully for CentOS 7"
+    rm -rf "${DIR_TMP}/tidy-html5-5.8.0.tar.gz"
+  else
+    echo "Error: libtidy binary not found after installation"
+    cd "$CURRENT_DIR"
+    return 1
+  fi
+  
+  # Return to original directory
+  cd "$CURRENT_DIR"
+  return 0
+}
+
 enable_php_debug_steps() {
   CORE_BACKUP_DIR=/etc/centminmod/debug-backup
   CORE_PATTERN_BAK=${CORE_BACKUP_DIR}/core_pattern
@@ -1391,7 +1471,16 @@ if [[ ! -f /usr/include/recode.h ]]; then
   fi
 fi
 
-if [[ ! -f /usr/include/tidy.h ]]; then
+# Check if we need to upgrade libtidy for CentOS 7 + PHP 8.3+
+if [[ "$CENTOS_SEVEN" -eq '7' ]] && [[ "$PHPMUVER" = '8.3' || "$PHPMUVER" = '8.4' || "$PHPMUVER" = '8.5' || "$PHPVER_ID" -ge '80300' ]]; then
+  echo "CentOS 7 detected with PHP 8.3+ - requires libtidy 5.8.0 for compatibility"
+  libtidy_centos7_install
+  if [[ $? -ne 0 ]]; then
+    echo "Error: Failed to install libtidy 5.8.0 from source"
+    exit 1
+  fi
+elif [[ ! -f /usr/include/tidy.h ]]; then
+  # Standard installation for other cases
   yum -q -y install libtidy libtidy-devel --disablerepo=rpmforge
   sar_call
 fi

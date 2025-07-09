@@ -1276,8 +1276,8 @@ server {
   # enable ocsp stapling
   #resolver 8.8.8.8 8.8.4.4 1.1.1.1 1.0.0.1 valid=10m;
   #resolver_timeout 10s;
-  #ssl_stapling on;
-  #ssl_stapling_verify on;
+  #ssl_stapling off;
+  #ssl_stapling_verify off;
 
 # ngx_pagespeed & ngx_pagespeed handler
 #include /usr/local/nginx/conf/pagespeed.conf;
@@ -1378,8 +1378,8 @@ server {
   # enable ocsp stapling
   #resolver 8.8.8.8 8.8.4.4 1.1.1.1 1.0.0.1 valid=10m;
   #resolver_timeout 10s;
-  #ssl_stapling on;
-  #ssl_stapling_verify on;
+  #ssl_stapling off;
+  #ssl_stapling_verify off;
   #ssl_trusted_certificate /usr/local/nginx/conf/ssl/${vhostname}/${vhostname}-trusted.crt;  
 
 # ngx_pagespeed & ngx_pagespeed handler
@@ -1478,8 +1478,8 @@ server {
   # enable ocsp stapling
   #resolver 8.8.8.8 8.8.4.4 1.1.1.1 1.0.0.1 valid=10m;
   #resolver_timeout 10s;
-  #ssl_stapling on;
-  #ssl_stapling_verify on;
+  #ssl_stapling off;
+  #ssl_stapling_verify off;
   #ssl_trusted_certificate /usr/local/nginx/conf/ssl/${vhostname}/${vhostname}-trusted.crt;  
 
 # ngx_pagespeed & ngx_pagespeed handler
