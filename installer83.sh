@@ -574,6 +574,8 @@ elif [[ "$FINDSWAPSIZE" -eq '0' && ! -f /proc/user_beancounters && "$CHECK_LXD" 
     echo
     } 2>&1 | tee "${CENTMINLOGDIR}/centminmod_swapsetup_installer_${DT}.log"
 fi
+# Recalculate swap after potential swap file creation
+TOTALMEM_SWAP=$(awk '/SwapFree/ {print $2}' /proc/meminfo)
 }
 
 swap_setup
