@@ -99,24 +99,87 @@ fi
 
 # http://ccache.samba.org/manual.html#_environment_variables
 if [ "$CCACHEINSTALL" == 'y' ]; then
-  if [ -f /usr/bin/ccache ]; then
-    OLDERCM_INSTALL=y
-  fi
-  if [[ -f /usr/local/bin/ccache && ! -f "${DIR_TMP}/${CCACHEFILE}" ]] || [[ "$OLDERCM_INSTALL" = [Yy] && ! -f "${DIR_TMP}/${CCACHEFILE}" ]]; then
-    if [[ "$CCACHE_VER" != "$(ccache -V | head -n 1 | awk '{print $3}')"  ]]; then
-      echo "update ccache version... one time task"
-      sleep 2
-      echo "download ccache $CCACHE_VER"
-      sleep 2
-      cd ${DIR_TMP}
-      wget -cq ${CCCACHELINK}
-      if [ ! -d "${DIR_TMP}/ccache-${CCACHE_VER}" ]; then
-        tar xzf ${CCACHEFILE}
+  # Check if we should use EPEL package installation for EL8/9/10
+  if [[ "$CCACHE_YUM_INSTALL" = 'y' ]] && [[ "$CENTOS_EIGHT" = '8' || "$CENTOS_NINE" = '9' || "$CENTOS_TEN" = '10' ]]; then
+    echo "Installing ccache from EPEL repository..."
+    if [ ! -f /usr/bin/ccache ]; then
+      $YUMDNFBIN -y install ccache${DISABLEREPO_DNF}
+      if [ -f /usr/bin/ccache ]; then
+        echo "ccache installed successfully from EPEL"
+        CCACHE_INSTALLED_PATH="/usr/bin/ccache"
+      else
+        echo "ccache installation from EPEL failed"
+        return 1
+      fi
+    else
+      echo "ccache already installed from EPEL"
+      CCACHE_INSTALLED_PATH="/usr/bin/ccache"
+    fi
+    
+    # Setup bashrc and ccache configuration
+    if [ -f "$CCACHE_INSTALLED_PATH" ]; then
+      mkdir -p /home/.ccache
+      chmod 700 /home/.ccache
+      sed -i '/CCACHE_DIR/d' /root/.bashrc
+      sed -i '/ccache gcc/d' /root/.bashrc
+      sed -i '/ccache g++/d' /root/.bashrc
+      echo "run_second_cpp = true" > /home/.ccache/ccache.conf
+      echo "compression = true" >> /home/.ccache/ccache.conf
+      echo "compression_level = 2" >> /home/.ccache/ccache.conf
+      echo "export CCACHE_DIR=\"/home/.ccache\"" >> /root/.bashrc
+      echo "export CC=\"ccache gcc\"" >> /root/.bashrc
+      echo "export CXX=\"ccache g++\"" >> /root/.bashrc
+      # echo "export CC=\"ccache clang\"" >> /root/.bashrc
+      # echo "export CXX=\"ccache clang++\"" >> /root/.bashrc
+      sed -i '/CCACHE_CPP2/d' /root/.bashrc 
+      echo "export CCACHE_CPP2=yes" >> /root/.bashrc
+      #echo "export PATH=\"/usr/lib64/ccache:$PATH\"" >> /root/.bashrc
+      if [ -z "$(cat /root/.bashrc | grep 'PATH' | grep ccache)" ]; then
+        echo "export PATH=\"/usr/$LIBDIR/ccache:$PATH\"" >> /root/.bashrc
+      fi
+      source /root/.bashrc
+      if [[ "$(id -u)" -ne '0' ]]; then
+        sed -i '/CCACHE_DIR/d' $HOME/.bashrc
+        sed -i '/ccache gcc/d' $HOME/.bashrc
+        sed -i '/ccache g++/d' $HOME/.bashrc
+        echo "run_second_cpp = true" > /home/.ccache/ccache.conf
+        echo "compression = true" >> /home/.ccache/ccache.conf
+        echo "compression_level = 2" >> /home/.ccache/ccache.conf
+        echo "export CCACHE_DIR=\"/home/.ccache\"" >> $HOME/.bashrc
+        echo "export CC=\"ccache gcc\"" >> $HOME/.bashrc
+        echo "export CXX=\"ccache g++\"" >> $HOME/.bashrc
+        # echo "export CC=\"ccache clang\"" >> $HOME/.bashrc
+        # echo "export CXX=\"ccache clang++\"" >> $HOME/.bashrc
+        sed -i '/CCACHE_CPP2/d' $HOME/.bashrc 
+        echo "export CCACHE_CPP2=yes" >> $HOME/.bashrc
+        #echo "export PATH=\"/usr/lib64/ccache:$PATH\"" >> $HOME/.bashrc
+        if [ -z "$(cat $HOME/.bashrc | grep 'PATH' | grep ccache)" ]; then
+          echo "export PATH=\"/usr/$LIBDIR/ccache:$PATH\"" >> $HOME/.bashrc
+        fi
+        source $HOME/.bashrc
+      fi
+      ccache -M $CCACHESIZE
+    fi
+  else
+    # Original source compilation method for CentOS 7 or when CCACHE_YUM_INSTALL='n'
+    if [ -f /usr/bin/ccache ]; then
+      OLDERCM_INSTALL=y
+    fi
+    if [[ -f /usr/local/bin/ccache && ! -f "${DIR_TMP}/${CCACHEFILE}" ]] || [[ "$OLDERCM_INSTALL" = [Yy] && ! -f "${DIR_TMP}/${CCACHEFILE}" ]]; then
+      if [[ "$CCACHE_VER" != "$(ccache -V | head -n 1 | awk '{print $3}')"  ]]; then
+        echo "update ccache version... one time task"
+        sleep 2
+        echo "download ccache $CCACHE_VER"
+        sleep 2
+        cd ${DIR_TMP}
+        wget -cq ${CCCACHELINK}
+        if [ ! -d "${DIR_TMP}/ccache-${CCACHE_VER}" ]; then
+          tar xzf ${CCACHEFILE}
+        fi
       fi
     fi
-  fi
 
-  if [[ ! -f /usr/local/bin/ccache ]] || [[ -f /usr/local/bin/ccache && -d "${DIR_TMP}/ccache-${CCACHE_VER}" && "$CCACHE_VER" != "$(ccache -V | head -n 1 | awk '{print $3}')" ]]; then
+    if [[ ! -f /usr/local/bin/ccache ]] || [[ -f /usr/local/bin/ccache && -d "${DIR_TMP}/ccache-${CCACHE_VER}" && "$CCACHE_VER" != "$(ccache -V | head -n 1 | awk '{print $3}')" ]]; then
     if [[ "$CCACHE_VER_FOUR" = [yY] && "$CENTOS_SEVEN" -eq '7' ]]; then
       echo "install ccache $CCACHE_VER"
       sleep 2
@@ -300,8 +363,9 @@ if [ "$CCACHEINSTALL" == 'y' ]; then
         fi
       fi
     fi
-  cd ${CM_INSTALLDIR}
-  fi
+    cd ${CM_INSTALLDIR}
+    fi
+  fi  # End of source compilation else block
 fi
 
 }
