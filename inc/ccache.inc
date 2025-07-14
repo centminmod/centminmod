@@ -3,6 +3,49 @@ sar_call() {
 }
 
 ccacheinstall() {
+if [[ "$CENTOS_SEVEN" -eq '7' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' || "$CENTOS_TEN" -eq '10' ]] && [[ "$DNF_ENABLE" = [yY] ]]; then
+  if [[ $(rpm -q epel-release >/dev/null 2>&1; echo $?) != '0' ]]; then
+    yum -y -q install epel-release
+    yum clean all
+  fi
+  if [[ "$DNF_COPR" = [yY] ]]; then
+cat > "/etc/yum.repos.d/dnf-centos.repo" <<EOF
+[dnf-centos]
+name=Copr repo for dnf-centos owned by @rpm-software-management
+baseurl=https://copr-be.cloud.fedoraproject.org/results/@rpm-software-management/dnf-centos/epel-7-\$basearch/
+skip_if_unavailable=True
+gpgcheck=1
+gpgkey=https://copr-be.cloud.fedoraproject.org/results/@rpm-software-management/dnf-centos/pubkey.gpg
+enabled=1
+enabled_metadata=1
+EOF
+  fi
+  if [[ ! -f /usr/bin/dnf ]]; then
+    yum -y -q install dnf
+    dnf clean all
+  fi
+  if [ ! "$(grep -w 'exclude' /etc/dnf/dnf.conf)" ]; then
+    echo "excludepkgs=*.i386 *.i586 *.i686" >> /etc/dnf/dnf.conf
+  fi
+  if [ ! "$(grep -w 'fastestmirror=true' /etc/dnf/dnf.conf)" ]; then
+    echo "fastestmirror=true" >> /etc/dnf/dnf.conf
+  fi
+  if [ -f /etc/yum.repos.d/rpmforge.repo ]; then
+      sed -i 's|enabled .*|enabled = 0|g' /etc/yum.repos.d/rpmforge.repo
+      DISABLEREPO_DNF=' --disablerepo=rpmforge'
+      YUMDNFBIN="dnf${DISABLEREPO_DNF}"
+  else
+      DISABLEREPO_DNF=""
+      YUMDNFBIN='dnf'
+  fi
+else
+  YUMDNFBIN='yum'
+  if [ -f /etc/yum.repos.d/rpmforge.repo ]; then
+    DISABLEREPO_DNF=' --disablerepo=rpmforge'
+  else
+    DISABLEREPO_DNF=""
+  fi
+fi
 
 if [ ! -f /usr/bin/sar ]; then
   time $YUMDNFBIN -y -q install sysstat${DISABLEREPO_DNF}
@@ -100,13 +143,19 @@ fi
 # http://ccache.samba.org/manual.html#_environment_variables
 if [ "$CCACHEINSTALL" == 'y' ]; then
   # Check if we should use EPEL package installation for EL8/9/10
-  if [[ "$CCACHE_YUM_INSTALL" = 'y' ]] && [[ "$CENTOS_EIGHT" = '8' || "$CENTOS_NINE" = '9' || "$CENTOS_TEN" = '10' ]]; then
+  if [[ "$CCACHE_YUM_INSTALL" = 'y' ]] && [ ! -f /usr/bin/ccache ] && [[ "$CENTOS_EIGHT" = '8' || "$CENTOS_NINE" = '9' || "$CENTOS_TEN" = '10' ]]; then
     echo "Installing ccache from EPEL repository..."
     if [ ! -f /usr/bin/ccache ]; then
+      echo "$YUMDNFBIN -y install ccache${DISABLEREPO_DNF}"
       $YUMDNFBIN -y install ccache${DISABLEREPO_DNF}
       if [ -f /usr/bin/ccache ]; then
         echo "ccache installed successfully from EPEL"
         CCACHE_INSTALLED_PATH="/usr/bin/ccache"
+        # deal with old ccache version that is source compiled
+        if [ -f /usr/local/bin/ccache ]; then
+          mv /usr/local/bin/ccache /usr/local/bin/ccache.old
+          . ~/.bashrc
+        fi
       else
         echo "ccache installation from EPEL failed"
         return 1
@@ -160,7 +209,7 @@ if [ "$CCACHEINSTALL" == 'y' ]; then
       fi
       ccache -M $CCACHESIZE
     fi
-  else
+  elif [[ "$CCACHE_YUM_INSTALL" != 'y' ]]; then
     # Original source compilation method for CentOS 7 or when CCACHE_YUM_INSTALL='n'
     if [ -f /usr/bin/ccache ]; then
       OLDERCM_INSTALL=y
