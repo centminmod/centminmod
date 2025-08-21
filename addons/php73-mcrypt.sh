@@ -291,7 +291,7 @@ mcrypt_peclinstall() {
   if [ -f /usr/local/src/centminmod/centmin.sh ]; then
     PHP_MCRYPTPECLVER=$(awk -F "'" '/PHP_MCRYPTPECLVER=/ {print $2}' /usr/local/src/centminmod/centmin.sh)
   else
-    PHP_MCRYPTPECLVER='1.0.4'
+    PHP_MCRYPTPECLVER='1.0.7'
   fi
 
   echo
