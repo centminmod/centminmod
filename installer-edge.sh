@@ -2355,11 +2355,11 @@ cd $INSTALLDIR
 
 # switch from PHP 5.4.41 to 5.6.9 default with Zend Opcache
 if [[ "$CENTOS_NINE" -eq '9' ]]; then
-  PHPVERLATEST=$(curl -${ipv_forceopt}sL https://www.php.net/downloads.php| egrep -o "php\-[0-9.]+\.tar[.a-z]*" | grep -v '.asc' | awk -F "php-" '/.tar.gz$/ {print $2}' | sed -e 's|.tar.gz||g' | uniq | grep '8.3' | head -n1)
+  PHPVERLATEST=$(curl -${ipv_forceopt}sL https://www.php.net/downloads.php?source=Y| egrep -o "php\-[0-9.]+\.tar[.a-z]*" | grep -v '.asc' | awk -F "php-" '/.tar.gz$/ {print $2}' | sed -e 's|.tar.gz||g' | uniq | grep '8.3' | head -n1)
 elif [[ "$CENTOS_EIGHT" -eq '8' ]]; then
-  PHPVERLATEST=$(curl -${ipv_forceopt}sL https://www.php.net/downloads.php| egrep -o "php\-[0-9.]+\.tar[.a-z]*" | grep -v '.asc' | awk -F "php-" '/.tar.gz$/ {print $2}' | sed -e 's|.tar.gz||g' | uniq | grep '8.3' | head -n1)
+  PHPVERLATEST=$(curl -${ipv_forceopt}sL https://www.php.net/downloads.php?source=Y| egrep -o "php\-[0-9.]+\.tar[.a-z]*" | grep -v '.asc' | awk -F "php-" '/.tar.gz$/ {print $2}' | sed -e 's|.tar.gz||g' | uniq | grep '8.3' | head -n1)
 else
-  PHPVERLATEST=$(curl -${ipv_forceopt}sL https://www.php.net/downloads.php| egrep -o "php\-[0-9.]+\.tar[.a-z]*" | grep -v '.asc' | awk -F "php-" '/.tar.gz$/ {print $2}' | sed -e 's|.tar.gz||g' | uniq | grep '8.3' | head -n1)
+  PHPVERLATEST=$(curl -${ipv_forceopt}sL https://www.php.net/downloads.php?source=Y| egrep -o "php\-[0-9.]+\.tar[.a-z]*" | grep -v '.asc' | awk -F "php-" '/.tar.gz$/ {print $2}' | sed -e 's|.tar.gz||g' | uniq | grep '8.3' | head -n1)
 fi
 if [[ "$CENTOS_NINE" -eq '9' ]]; then
   PHPVERLATEST=${PHPVERLATEST:-"8.3.14"}
