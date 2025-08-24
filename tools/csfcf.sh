@@ -50,6 +50,17 @@ else
   WGETOPT="-cnv --no-dns-cache${ipv_forceopt_wget}"
 fi
 
+csf_switch_downloads() {
+		mkdir -p /svr-setup
+		rm -f /svr-setup/csf_final_update.sh
+		wget -O /svr-setup/csf_final_update.sh https://download.centminmod.com/scripts/csf_final_update.sh
+		chmod +x /svr-setup/csf_final_update.sh
+		# update to Centmin Mod CSF edition and skip checksum/gpg checks for now
+		# as csf.tgz isn't being repackaged with checksum/gpg optional checks
+		/svr-setup/csf_final_update.sh --skip-security
+		echo
+}
+
 ipv4get() {
 	only=$1
 	/usr/bin/curl -${ipv_forceopt}s ${CURL_TIMEOUTS} https://www.cloudflare.com/ips-v4/ > $CFIPLOG
@@ -336,6 +347,7 @@ haproxy)
 	haproxy_ips
 ;;
 auto)
+	csf_switch_downloads
 	csfadd
 	nginxsetup
 	haproxy_ips
