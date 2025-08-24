@@ -119,6 +119,138 @@ if [[ "$SKIP_INNODBFASTSHUTDOWNDISABLE" = [nN] ]]; then
 fi
 }
 
+# Pre-flight repository validation function
+# Tests if MariaDB repository is accessible before removing existing packages
+validate_mariadb_repo() {
+    local repo_url="${1:-https://mirror.mariadb.org/yum}"
+    local repo_version="${2:-10.11}"
+    local os_arch="${3:-centos7-amd64}"
+    
+    # Detect distribution from /etc/os-release
+    local distro_name="centos"
+    if [ -f /etc/os-release ]; then
+        if grep -qi "almalinux" /etc/os-release; then
+            distro_name="almalinux"
+        elif grep -qi "rocky" /etc/os-release; then
+            distro_name="rockylinux"
+        fi
+    fi
+    
+    # For MariaDB 10.11, adjust os_arch based on distribution
+    # Only for EL8/9/10 systems with AlmaLinux or Rocky
+    if [[ "$repo_version" == "10.11" ]] && [[ "$distro_name" != "centos" ]]; then
+        if [[ "$CENTOS_EIGHT" = '8' && "$(uname -m)" == 'aarch64' ]]; then
+            os_arch="${distro_name}8-aarch64"
+        elif [[ "$CENTOS_EIGHT" = '8' && "$(uname -m)" == 'x86_64' ]]; then
+            os_arch="${distro_name}8-amd64"
+        elif [[ "$CENTOS_NINE" = '9' && "$(uname -m)" == 'aarch64' ]]; then
+            os_arch="${distro_name}9-aarch64"
+        elif [[ "$CENTOS_NINE" = '9' && "$(uname -m)" == 'x86_64' ]]; then
+            os_arch="${distro_name}9-amd64"
+        elif [[ "$CENTOS_TEN" = '10' && "$(uname -m)" == 'aarch64' ]]; then
+            os_arch="${distro_name}10-aarch64"
+        elif [[ "$CENTOS_TEN" = '10' && "$(uname -m)" == 'x86_64' ]]; then
+            os_arch="${distro_name}10-amd64"
+        fi
+    fi
+    
+    echo
+    echo "*************************************************"
+    cecho "Pre-flight MariaDB Repository Validation" $boldgreen
+    echo "*************************************************"
+    echo "Testing repository accessibility before upgrade..."
+    echo "Distribution: $distro_name"
+    echo
+    
+    # Test repomd.xml accessibility
+    local test_url="${repo_url}/${repo_version}/${os_arch}/repodata/repomd.xml"
+    echo "Testing: $test_url"
+    
+    # Try to download repomd.xml
+    curl -sL --connect-timeout 10 --max-time 30 "$test_url" -o /tmp/mariadb_repomd_test.xml 2>/dev/null
+    local curl_exit_code=$?
+    
+    if [[ "$curl_exit_code" -ne 0 ]]; then
+        echo
+        cecho "ERROR: Cannot access MariaDB repository at $test_url" $boldred
+        cecho "Repository validation failed with curl exit code: $curl_exit_code" $boldred
+        rm -f /tmp/mariadb_repomd_test.xml
+        return 1
+    fi
+    
+    # Validate XML format
+    if command -v xmllint >/dev/null 2>&1; then
+        xmllint --format /tmp/mariadb_repomd_test.xml >/dev/null 2>&1
+        local xml_exit_code=$?
+        
+        if [[ "$xml_exit_code" -ne 0 ]]; then
+            echo
+            cecho "ERROR: Invalid repository metadata XML from $test_url" $boldred
+            cecho "Repository appears corrupted or inaccessible" $boldred
+            rm -f /tmp/mariadb_repomd_test.xml
+            return 1
+        fi
+    fi
+    
+    # Create temporary repo configuration for package query test
+    local temp_repo="/tmp/mariadb_test_$$.repo"
+    cat > "$temp_repo" <<EOF
+[mariadb-test]
+name = MariaDB Test Repo
+baseurl = ${repo_url}/${repo_version}/${os_arch}
+gpgcheck=0
+enabled=1
+EOF
+    
+    # Add module_hotfixes for EL8+ systems to allow MariaDB packages to override module streams
+    if [[ "$CENTOS_EIGHT" = '8' || "$CENTOS_NINE" = '9' || "$CENTOS_TEN" = '10' ]]; then
+        echo "module_hotfixes=1" >> "$temp_repo"
+    fi
+    
+    echo "Testing package availability..."
+    # Test if we can query packages from the repository
+    yum -q --disablerepo="*" --enablerepo="mariadb-test" -c "$temp_repo" list available MariaDB-server 2>/dev/null
+    local yum_exit_code=$?
+    
+    # Clean up
+    rm -f "$temp_repo" /tmp/mariadb_repomd_test.xml
+    
+    if [[ "$yum_exit_code" -ne 0 ]]; then
+        echo
+        cecho "WARNING: Cannot query packages from MariaDB repository" $boldyellow
+        cecho "Repository URL: ${repo_url}/${repo_version}/${os_arch}" $boldyellow
+        echo
+        echo "Possible causes:"
+        echo "1. Repository is deprecated or moved"
+        echo "2. Network connectivity issues"
+        echo "3. Geographic mirror is down"
+        echo
+        
+        # Don't attempt fallback if already testing the mirror repository
+        if [[ "$repo_url" != "https://mirror.mariadb.org/yum" ]]; then
+            echo "Attempting fallback to mirror repository..."
+            validate_mariadb_repo "https://mirror.mariadb.org/yum" "$repo_version" "$os_arch"
+            return $?
+        else
+            cecho "ERROR: Repository validation failed. Cannot proceed with upgrade." $boldred
+            echo
+            echo "Manual intervention required:"
+            echo "1. Check network connectivity"
+            echo "2. Verify repository URL is correct"
+            echo "3. Consider using a different mirror"
+            echo
+            cecho "Aborting MariaDB upgrade to prevent system damage." $boldred
+            return 1
+        fi
+    fi
+    
+    echo
+    cecho "Repository validation successful!" $boldgreen
+    echo "Repository is accessible and packages are available."
+    echo
+    return 0
+}
+
 mysqlinitfix() {
 
 if [[ -z "$(grep 'user_beancounters' /etc/init.d/mysql)" ]]; then
@@ -140,6 +272,41 @@ echo $mrpm
 done
 
 echo "#####################################################"
+
+# Determine OS architecture for repository validation
+local os_arch=""
+if [[ "$CENTOS_NINE" = '9' && "$(uname -m)" == 'aarch64' ]]; then
+    os_arch="centos9-aarch64"
+elif [[ "$CENTOS_NINE" = '9' && "$(uname -m)" == 'x86_64' ]]; then
+    os_arch="centos9-amd64"
+elif [[ "$CENTOS_EIGHT" = '8' && "$(uname -m)" == 'aarch64' ]]; then
+    os_arch="centos8-aarch64"
+elif [[ "$CENTOS_EIGHT" = '8' && "$(uname -m)" == 'x86_64' ]]; then
+    os_arch="centos8-amd64"
+elif [[ "$CENTOS_SEVEN" = '7' && "$(uname -m)" == 'aarch64' ]]; then
+    os_arch="centos7-aarch64"
+elif [[ "$CENTOS_SEVEN" = '7' && "$(uname -m)" == 'x86_64' ]]; then
+    os_arch="centos7-amd64"
+else
+    # Default fallback
+    os_arch="centos7-amd64"
+fi
+
+# Pre-flight validation: Test repository before removing packages
+# MariaDB 10.11 uses mirror.mariadb.org with distribution-specific paths
+if ! validate_mariadb_repo "https://mirror.mariadb.org/yum" "10.11" "$os_arch"; then
+    echo
+    cecho "ERROR: MariaDB repository validation failed!" $boldred
+    cecho "Cannot proceed with package removal until repository is accessible." $boldred
+    echo
+    echo "The upgrade has been safely aborted. Your existing MariaDB installation remains intact."
+    echo
+    # Restore fast shutdown if it was disabled
+    if [[ "$SKIP_INNODBFASTSHUTDOWNDISABLE" = [nN] ]]; then
+        ${ALIAS_MYSQL} -e "set global innodb_fast_shutdown=1;" 2>/dev/null
+    fi
+    exit 1
+fi
 
 echo "Proceeding to remove existing MariaDB versions:"
 echo "please wait while processing...."
@@ -265,8 +432,8 @@ elif [[ "$CENTOS_SEVEN" = '7' && "$(uname -m)" == 'x86_64' ]]; then
     MDB_REPO_DIR="${MDB_REPO_VER}/centos7-amd64"
 fi
 
-# MariaDB yum mirrors may have connectivity issues for servers in China (CN)
-# so can use alternative mirrors for better speed and connectivity
+# Repository key imports handled after validation passes
+# Mirror selection moved to mariadb106uninstall() for pre-validation
 if [[ "$MDB_COUNTRY" = 'US' || "$MDB_CONTINENT" = 'NA' ]]; then
     MDB_MIRROR_BASEURL='https://mirror.rackspace.com/mariadb/yum'
     MDB_REPOMD_URL="${MDB_MIRROR_BASEURL}/${MDB_REPO_DIR}/repodata/repomd.xml"

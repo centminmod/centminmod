@@ -118,6 +118,121 @@ if [[ "$SKIP_INNODBFASTSHUTDOWNDISABLE" = [nN] ]]; then
 fi
 }
 
+# Pre-flight repository validation function
+# Tests if MariaDB repository is accessible before removing existing packages
+validate_mariadb_repo() {
+    local repo_url="${1:-https://archive.mariadb.org/mariadb-10.4}"
+    local repo_version="${2:-10.4}"
+    local os_arch="${3:-centos7-amd64}"
+    
+    # Detect distribution from /etc/os-release for future compatibility
+    local distro_name="centos"
+    if [ -f /etc/os-release ]; then
+        if grep -qi "almalinux" /etc/os-release; then
+            distro_name="almalinux"
+        elif grep -qi "rocky" /etc/os-release; then
+            distro_name="rockylinux"
+        fi
+    fi
+    
+    echo
+    echo "*************************************************"
+    cecho "Pre-flight MariaDB Repository Validation" $boldgreen
+    echo "*************************************************"
+    echo "Testing repository accessibility before upgrade..."
+    echo
+    
+    # MariaDB 10.4 is deprecated and always uses archive with centos paths
+    # Test repomd.xml accessibility
+    local test_url="${repo_url}/yum/${os_arch}/repodata/repomd.xml"
+    echo "Testing: $test_url"
+    
+    # Try to download repomd.xml
+    curl -sL --connect-timeout 10 --max-time 30 "$test_url" -o /tmp/mariadb_repomd_test.xml 2>/dev/null
+    local curl_exit_code=$?
+    
+    if [[ "$curl_exit_code" -ne 0 ]]; then
+        echo
+        cecho "ERROR: Cannot access MariaDB repository at $test_url" $boldred
+        cecho "Repository validation failed with curl exit code: $curl_exit_code" $boldred
+        rm -f /tmp/mariadb_repomd_test.xml
+        return 1
+    fi
+    
+    # Validate XML format
+    if command -v xmllint >/dev/null 2>&1; then
+        xmllint --format /tmp/mariadb_repomd_test.xml >/dev/null 2>&1
+        local xml_exit_code=$?
+        
+        if [[ "$xml_exit_code" -ne 0 ]]; then
+            echo
+            cecho "ERROR: Invalid repository metadata XML from $test_url" $boldred
+            cecho "Repository appears corrupted or inaccessible" $boldred
+            rm -f /tmp/mariadb_repomd_test.xml
+            return 1
+        fi
+    fi
+    
+    # Create temporary repo configuration for package query test
+    local temp_repo="/tmp/mariadb_test_$$.repo"
+    cat > "$temp_repo" <<EOF
+[mariadb-test]
+name = MariaDB Test Repo
+baseurl = ${repo_url}/yum/${os_arch}
+gpgcheck=0
+enabled=1
+EOF
+    
+    # Add module_hotfixes for EL8+ systems to allow MariaDB packages to override module streams
+    if [[ "$CENTOS_EIGHT" = '8' || "$CENTOS_NINE" = '9' || "$CENTOS_TEN" = '10' ]]; then
+        echo "module_hotfixes=1" >> "$temp_repo"
+    fi
+    
+    echo "Testing package availability..."
+    # Test if we can query packages from the repository
+    yum -q --disablerepo="*" --enablerepo="mariadb-test" -c "$temp_repo" list available MariaDB-server 2>/dev/null
+    local yum_exit_code=$?
+    
+    # Clean up
+    rm -f "$temp_repo" /tmp/mariadb_repomd_test.xml
+    
+    if [[ "$yum_exit_code" -ne 0 ]]; then
+        echo
+        cecho "WARNING: Cannot query packages from MariaDB repository" $boldyellow
+        cecho "Repository URL: ${repo_url}/yum/${os_arch}" $boldyellow
+        echo
+        echo "Possible causes:"
+        echo "1. Repository is deprecated or moved"
+        echo "2. Network connectivity issues"
+        echo "3. Geographic mirror is down"
+        echo
+        echo "Attempting fallback validation..."
+        
+        # Try fallback to archive.mariadb.org explicitly
+        if [[ "$repo_url" != "https://archive.mariadb.org/mariadb-${repo_version}" ]]; then
+            echo "Testing archive repository..."
+            validate_mariadb_repo "https://archive.mariadb.org/mariadb-${repo_version}" "$repo_version" "$os_arch"
+            return $?
+        else
+            cecho "ERROR: Repository validation failed. Cannot proceed with upgrade." $boldred
+            echo
+            echo "Manual intervention required:"
+            echo "1. Check network connectivity"
+            echo "2. Verify repository URL is correct"
+            echo "3. Consider using a different mirror"
+            echo
+            cecho "Aborting MariaDB upgrade to prevent system damage." $boldred
+            return 1
+        fi
+    fi
+    
+    echo
+    cecho "Repository validation successful!" $boldgreen
+    echo "Repository is accessible and packages are available."
+    echo
+    return 0
+}
+
 mysqlinitfix() {
 
 if [[ -z "$(grep 'user_beancounters' /etc/init.d/mysql)" ]]; then
@@ -139,6 +254,74 @@ echo $mrpm
 done
 
 echo "#####################################################"
+
+# Geographic detection for mirror selection (moved from mariadb104install)
+MDB_TOTALMEM=$(($(awk '/MemTotal/ {print $2}' /proc/meminfo)/1024))
+MDB_VIRTWHAT_GET=$(virt-what)
+MDB_VIRTWHAT="${MDB_VIRTWHAT_GET:-d}"
+MDB_DTIME=$(tail -1 /root/centminlogs/centminmod_downloadtimes_*.log)
+MDB_DTIME_SEC=$(echo "$MDB_DTIME" |awk '{printf("%.2f\n",$7)}')
+MDB_NTIME=$(tail -1 /root/centminlogs/centminmod_ngxinstalltime_*.log)
+MDB_NTIME_SEC=$(echo "$MDB_NTIME" |awk '{printf("%.2f\n",$7)}')
+if [[ "$VPS_GEOIPCHECK_V3" = [yY] ]]; then
+    MDB_GEOIP=$(curl -${ipv_forceopt}s -A "$CURL_AGENT $SCRIPT_VERSION $CURL_CPUMODEL $CURL_CPUSPEED 10.4 upgrade D:$MDB_DTIME_SEC N:$MDB_NTIME_SEC $MDB_VIRTWHAT $MDB_CITY $MDB_COLO" https://geoip.centminmod.com/v3 | jq -r)
+elif [[ "$VPS_GEOIPCHECK_V4" = [yY] ]]; then
+    MDB_GEOIP=$(curl -${ipv_forceopt}s -A "$CURL_AGENT $SCRIPT_VERSION $CURL_CPUMODEL $CURL_CPUSPEED 10.4 upgrade D:$MDB_DTIME_SEC N:$MDB_NTIME_SEC $MDB_VIRTWHAT $MDB_CITY $MDB_COLO" https://geoip.centminmod.com/v4 | jq -r)
+fi
+MDB_COUNTRY=$(echo "$MDB_GEOIP" | jq -r '.country')
+MDB_CONTINENT=$(echo "$MDB_GEOIP" | jq -r '.continent')
+MDB_CITY=$(echo "$MDB_GEOIP" | jq -r '.city')
+MDB_COLO=$(echo "$MDB_GEOIP" | jq -r '.colo')
+
+# Set MariaDB version
+MDB_REPO_VER=10.4
+
+# Determine OS architecture and repository paths
+local os_arch=""
+if [[ "$CENTOS_NINE" = '9' && "$(uname -m)" == 'aarch64' ]]; then
+    os_arch="centos9-aarch64"
+    MDB_REPO_DIR="${MDB_REPO_VER}/centos9-aarch64"
+elif [[ "$CENTOS_NINE" = '9' && "$(uname -m)" == 'x86_64' ]]; then
+    os_arch="centos9-amd64"
+    MDB_REPO_DIR="${MDB_REPO_VER}/centos9-amd64"
+elif [[ "$CENTOS_EIGHT" = '8' && "$(uname -m)" == 'aarch64' ]]; then
+    os_arch="centos8-aarch64"
+    MDB_REPO_DIR="${MDB_REPO_VER}/centos8-aarch64"
+elif [[ "$CENTOS_EIGHT" = '8' && "$(uname -m)" == 'x86_64' ]]; then
+    os_arch="centos8-amd64"
+    MDB_REPO_DIR="${MDB_REPO_VER}/centos8-amd64"
+elif [[ "$CENTOS_SEVEN" = '7' && "$(uname -m)" == 'aarch64' ]]; then
+    os_arch="centos7-aarch64"
+    MDB_REPO_DIR="${MDB_REPO_VER}/centos7-aarch64"
+elif [[ "$CENTOS_SEVEN" = '7' && "$(uname -m)" == 'x86_64' ]]; then
+    os_arch="centos7-amd64"
+    MDB_REPO_DIR="${MDB_REPO_VER}/centos7-amd64"
+else
+    # Default fallback
+    os_arch="centos7-amd64"
+    MDB_REPO_DIR="${MDB_REPO_VER}/centos7-amd64"
+fi
+
+# MariaDB 10.4 is deprecated and uses archive.mariadb.org
+# Set the mirror URL before validation
+MDB_MIRROR_BASEURL='https://archive.mariadb.org/mariadb-10.4'
+MDB_ARCHIVES_PUBKEY='https://supplychain.mariadb.com/MariaDB-Server-GPG-KEY'
+
+# Pre-flight validation: Test repository before removing packages
+# Now using the selected mirror URL
+if ! validate_mariadb_repo "$MDB_MIRROR_BASEURL" "$MDB_REPO_VER" "$os_arch"; then
+    echo
+    cecho "ERROR: MariaDB repository validation failed!" $boldred
+    cecho "Cannot proceed with package removal until repository is accessible." $boldred
+    echo
+    echo "The upgrade has been safely aborted. Your existing MariaDB installation remains intact."
+    echo
+    # Restore fast shutdown if it was disabled
+    if [[ "$SKIP_INNODBFASTSHUTDOWNDISABLE" = [nN] ]]; then
+        ${ALIAS_MYSQL} -e "set global innodb_fast_shutdown=1;" 2>/dev/null
+    fi
+    exit 1
+fi
 
 echo "Proceeding to remove existing MariaDB versions:"
 echo "please wait while processing...."
@@ -216,39 +399,8 @@ fi
 
 MARIADB55ARCH=`uname -m`
 
-#MDB_COUNTRY=$(curl -${ipv_forceopt}s https://ipinfo.io/geo 2>&1 | sed -e 's|[{}]||' -e 's/\(^"\|"\)//g' -e 's|,||' | awk '/country: / {print $2}')
-MDB_TOTALMEM=$(($(awk '/MemTotal/ {print $2}' /proc/meminfo)/1024))
-MDB_VIRTWHAT_GET=$(virt-what)
-MDB_VIRTWHAT="${MDB_VIRTWHAT_GET:-d}"
-MDB_DTIME=$(tail -1 /root/centminlogs/centminmod_downloadtimes_*.log)
-MDB_DTIME_SEC=$(echo "$MDB_DTIME" |awk '{printf("%.2f\n",$7)}')
-MDB_NTIME=$(tail -1 /root/centminlogs/centminmod_ngxinstalltime_*.log)
-MDB_NTIME_SEC=$(echo "$MDB_NTIME" |awk '{printf("%.2f\n",$7)}')
-if [[ "$VPS_GEOIPCHECK_V3" = [yY] ]]; then
-    MDB_GEOIP=$(curl -${ipv_forceopt}s -A "$CURL_AGENT $SCRIPT_VERSION $CURL_CPUMODEL $CURL_CPUSPEED 10.4 upgrade D:$MDB_DTIME_SEC N:$MDB_NTIME_SEC $MDB_VIRTWHAT $MDB_CITY $MDB_COLO" https://geoip.centminmod.com/v3 | jq -r)
-elif [[ "$VPS_GEOIPCHECK_V4" = [yY] ]]; then
-    MDB_GEOIP=$(curl -${ipv_forceopt}s -A "$CURL_AGENT $SCRIPT_VERSION $CURL_CPUMODEL $CURL_CPUSPEED 10.4 upgrade D:$MDB_DTIME_SEC N:$MDB_NTIME_SEC $MDB_VIRTWHAT $MDB_CITY $MDB_COLO" https://geoip.centminmod.com/v4 | jq -r)
-fi
-MDB_COUNTRY=$(echo "$MDB_GEOIP" | jq -r '.country')
-MDB_CONTINENT=$(echo "$MDB_GEOIP" | jq -r '.continent')
-MDB_CITY=$(echo "$MDB_GEOIP" | jq -r '.city')
-MDB_COLO=$(echo "$MDB_GEOIP" | jq -r '.colo')
-
-MDB_REPO_VER=10.4
-
-if [[ "$CENTOS_NINE" = '9' && "$(uname -m)" == 'aarch64' ]]; then
-    MDB_REPO_DIR="${MDB_REPO_VER}/centos9-aarch64"
-elif [[ "$CENTOS_NINE" = '9' && "$(uname -m)" == 'x86_64' ]]; then
-    MDB_REPO_DIR="${MDB_REPO_VER}/centos9-amd64"
-elif [[ "$CENTOS_EIGHT" = '8' && "$(uname -m)" == 'aarch64' ]]; then
-    MDB_REPO_DIR="${MDB_REPO_VER}/centos8-aarch64"
-elif [[ "$CENTOS_EIGHT" = '8' && "$(uname -m)" == 'x86_64' ]]; then
-    MDB_REPO_DIR="${MDB_REPO_VER}/centos8-amd64"
-elif [[ "$CENTOS_SEVEN" = '7' && "$(uname -m)" == 'aarch64' ]]; then
-    MDB_REPO_DIR="${MDB_REPO_VER}/centos7-aarch64"
-elif [[ "$CENTOS_SEVEN" = '7' && "$(uname -m)" == 'x86_64' ]]; then
-    MDB_REPO_DIR="${MDB_REPO_VER}/centos7-amd64"
-fi
+# Geographic detection and mirror selection moved to mariadb105uninstall()
+# to validate the actual repository before package removal
 
 # MariaDB yum mirrors may have connectivity issues for servers in China (CN)
 # so can use alternative mirrors for better speed and connectivity
@@ -365,9 +517,8 @@ fi
 #     echo "rpm --import https://supplychain.mariadb.com/MariaDB-Server-GPG-KEY"
 #     rpm --import https://supplychain.mariadb.com/MariaDB-Server-GPG-KEY
 # fi
-# mariadb 10.4 deprecated to override old mirror baseurls with archives version
-MDB_MIRROR_BASEURL='https://archive.mariadb.org/mariadb-10.4'
-MDB_ARCHIVES_PUBKEY='https://supplychain.mariadb.com/MariaDB-Server-GPG-KEY'
+# mariadb 10.4 deprecated - mirror selection moved to mariadb105uninstall()
+# Repository URL and key imports handled after validation passes
 echo "rpm --import ${MDB_ARCHIVES_PUBKEY}"
 rpm --import "${MDB_ARCHIVES_PUBKEY}"
 
