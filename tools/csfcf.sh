@@ -1,4 +1,5 @@
 #!/bin/bash
+export PATH="/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin:/root/bin"
 ###############################
 # written by George Liu (eva2000)
 # centminmod.com
@@ -16,6 +17,10 @@ if [ ! -f /usr/bin/curl ]; then
 	echo "Installing curl please wait..."
 	yum -y -q install curl
 fi
+if [ ! -f /usr/bin/ipcalc ]; then
+	echo "Installing ipcalc please wait..."
+	yum -y -q install ipcalc
+fi
 ###############################
 # set locale temporarily to english
 # due to some non-english locale issues
@@ -23,6 +28,9 @@ export LC_ALL=en_US.UTF-8
 export LANG=en_US.UTF-8
 export LANGUAGE=en_US.UTF-8
 export LC_CTYPE=en_US.UTF-8
+# disable systemd pager so it doesn't pipe systemctl output to less
+export SYSTEMD_PAGER=''
+ARCH_CHECK="$(uname -m)"
 
 shopt -s expand_aliases
 for g in "" e f; do
@@ -41,6 +49,17 @@ else
   ipv_forceopt_wget=' -4'
   WGETOPT="-cnv --no-dns-cache${ipv_forceopt_wget}"
 fi
+
+csf_switch_downloads() {
+		mkdir -p /svr-setup
+		rm -f /svr-setup/csf_final_update.sh
+		wget -O /svr-setup/csf_final_update.sh https://download.centminmod.com/scripts/csf_final_update.sh
+		chmod +x /svr-setup/csf_final_update.sh
+		# update to Centmin Mod CSF edition and skip checksum/gpg checks for now
+		# as csf.tgz isn't being repackaged with checksum/gpg optional checks
+		/svr-setup/csf_final_update.sh --skip-security
+		echo
+}
 
 ipv4get() {
 	only=$1
@@ -328,6 +347,7 @@ haproxy)
 	haproxy_ips
 ;;
 auto)
+	csf_switch_downloads
 	csfadd
 	nginxsetup
 	haproxy_ips
