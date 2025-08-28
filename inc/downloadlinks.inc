@@ -470,7 +470,7 @@ NSD_LINKFILE="nsd-${NSD_VERSION}.tar.gz"
 NSD_LINK="${LOCALCENTMINMOD_MIRROR}/centminmodparts/nsd/${NSD_LINKFILE}"
 
 CSF_LINKFILE="csf.tgz"
-CSF_LINK="https://download.configserver.com/${CSF_LINKFILE}"
+CSF_LINK="https://download.centminmod.com/${CSF_LINKFILE}"
 
 EZSETUPLINKFILE='ez_setup.py'
 EZSETUPLINK="https://bitbucket.org/pypa/setuptools/raw/bootstrap/${EZSETUPLINKFILE}"
