@@ -1018,7 +1018,14 @@ ngx_dynamic_tls_message() {
 aws_lc_patch() {
   if [[ "$AWS_LC_SWITCH" = [yY] ]]; then
     echo
-    if [[ "$DETECT_NGXVER" -ge '1027004' && -f "$CUR_DIR/patches/nginx/aws-lc-nginx-1.27.4.patch" && ! $(grep 'OPENSSL_IS_AWSLC' src/event/ngx_event_openssl.c) ]]; then
+    if [[ "$DETECT_NGXVER" -ge '1028000' && -f "$CUR_DIR/patches/nginx/aws-lc-nginx-1.28.0.patch" && ! $(grep 'OPENSSL_IS_AWSLC' src/event/ngx_event_openssl.c) ]]; then
+      echo "nginx 1.28.0+ aws-lc-nginx-1.28.0.patch"
+      if [ ! $(grep 'OPENSSL_IS_AWSLC' src/event/ngx_event_openssl.h) ]; then
+        echo
+        echo "AWS-LC patch: patch -p1 < $CUR_DIR/patches/nginx/aws-lc-nginx-1.28.0.patch"
+        patch -p1 < $CUR_DIR/patches/nginx/aws-lc-nginx-1.28.0.patch
+      fi
+    elif [[ "$DETECT_NGXVER" -ge '1027004' && -f "$CUR_DIR/patches/nginx/aws-lc-nginx-1.27.4.patch" && ! $(grep 'OPENSSL_IS_AWSLC' src/event/ngx_event_openssl.c) ]]; then
       echo "nginx 1.27.4+ aws-lc-nginx-1.27.4.patch"
       if [ ! $(grep 'OPENSSL_IS_AWSLC' src/event/ngx_event_openssl.h) ]; then
         echo
