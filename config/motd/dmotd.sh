@@ -89,8 +89,21 @@ if [ -f "/etc/centminmod/pushover.ini" ]; then
   fi
   source "/etc/centminmod/pushover.ini"
 fi
-if [[ "$(id -u)" -eq '0' && ! -d "$CENTMINLOGDIR" ]]; then
-  mkdir -p $CENTMINLOGDIR
+if [[ "$(id -u)" -eq 0 ]]; then
+  if [[ -n "$SUDO_USER" ]]; then
+    # Script is run with sudo
+    CENTMINLOGDIR="/home/$SUDO_USER/centminlogs"
+  else
+    # Script is run directly as root
+    CENTMINLOGDIR='/root/centminlogs'
+  fi
+else
+  # Script is run as a non-root user without sudo
+  CENTMINLOGDIR="$HOME/centminlogs"
+fi
+# Ensure the log directory exists
+if [ ! -d "$CENTMINLOGDIR" ]; then
+  mkdir -p "$CENTMINLOGDIR"
 fi
 if [ -f /etc/almalinux-release ]; then
   DMOTD_RELEASE=$(cat /etc/almalinux-release | tr -d '()' | cut -d' ' -f1,3)
@@ -144,14 +157,14 @@ log_message() {
 check_git_major_branch() {
     local repo_path="$CMSCRIPT_GITDIR"
     local current_branch=$(git --git-dir="$repo_path/.git" --work-tree="$repo_path" rev-parse --abbrev-ref HEAD)
-    local branches_to_check=("123.08stable" "123.09beta01" "124.00stable" "130.00beta01")
+    local branches_to_check=("123.08stable" "123.09beta01" "124.00stable" "130.00beta01" "131.00stable")
     echo -n " Current local server Centmin Mod branch installed: "
     cecho "$current_branch " $boldyellow
     cecho "===============================================================================" $boldgreen
     for branch in "${branches_to_check[@]}"; do
         if [[ "$current_branch" == "$branch" ]]; then
             echo -n " Newer Centmin Mod branch version is available: "
-            cecho "131.00stable or 140.00beta01" $boldyellow
+            cecho "132.00stable or 141.00beta01" $boldyellow
             echo -n " Details at "
             cecho "https://community.centminmod.com/threads/25572/" $boldyellow
             cecho "===============================================================================" $boldgreen
@@ -163,29 +176,31 @@ check_git_major_branch() {
 push_dmotd_alerts() {
   pushapp=$1
   pushapp_ver=$2
-  if [[ "$pushapp" = 'nginx' ]]; then
-    PUSH_MESSAGE="nginx ${pushapp_ver} update available, run centmin.sh menu option 4"
-    PUSH_TITLE="nginx ${pushapp_ver} update available ${PUSH_HOSTNAME} ${PUSH_DATE_TIME}"
-  elif [[ "$pushapp" = 'php' ]]; then
-    PUSH_MESSAGE="php-fpm ${pushapp_ver} update available, run centmin.sh menu option 5"
-    PUSH_TITLE="php-fpm ${pushapp_ver} update available ${PUSH_HOSTNAME} ${PUSH_DATE_TIME}"
-  elif [[ "$pushapp" = 'cmm' ]]; then
-    PUSH_MESSAGE="centminmod ${pushapp_ver} update available, run cmupdate to update"
-    PUSH_TITLE="centminmod ${pushapp_ver} update available ${PUSH_HOSTNAME} ${PUSH_DATE_TIME}"
-  fi
-  if [[ "$PUSH_MOTD_ALERTS" = [yY] && "$PUSH_API_TOKEN" && "$PUSH_USER_KEY" ]]; then
-    log_message "$PUSH_MESSAGE"
-    
-    # Send Notification
-    RESPONSE=$(curl -s \
-      --form-string "token=${PUSH_API_TOKEN}" \
-      --form-string "user=${PUSH_USER_KEY}" \
-      --form-string "message=${PUSH_MESSAGE}" \
-      --form-string "title=${PUSH_TITLE}" \
-      https://api.pushover.net/1/messages.json)
-    
-    # Log the response from Pushover
-    log_message "Notification sent. Response: ${RESPONSE}"
+  if [[ "$(id -u)" -eq 0 ]] || sudo -n true 2>/dev/null; then
+    if [[ "$pushapp" = 'nginx' ]]; then
+      PUSH_MESSAGE="nginx ${pushapp_ver} update available, run centmin.sh menu option 4"
+      PUSH_TITLE="nginx ${pushapp_ver} update available ${PUSH_HOSTNAME} ${PUSH_DATE_TIME}"
+    elif [[ "$pushapp" = 'php' ]]; then
+      PUSH_MESSAGE="php-fpm ${pushapp_ver} update available, run centmin.sh menu option 5"
+      PUSH_TITLE="php-fpm ${pushapp_ver} update available ${PUSH_HOSTNAME} ${PUSH_DATE_TIME}"
+    elif [[ "$pushapp" = 'cmm' ]]; then
+      PUSH_MESSAGE="centminmod ${pushapp_ver} update available, run cmupdate to update"
+      PUSH_TITLE="centminmod ${pushapp_ver} update available ${PUSH_HOSTNAME} ${PUSH_DATE_TIME}"
+    fi
+    if [[ "$PUSH_MOTD_ALERTS" = [yY] && "$PUSH_API_TOKEN" && "$PUSH_USER_KEY" ]]; then
+      log_message "$PUSH_MESSAGE"
+      
+      # Send Notification
+      RESPONSE=$(curl -s \
+        --form-string "token=${PUSH_API_TOKEN}" \
+        --form-string "user=${PUSH_USER_KEY}" \
+        --form-string "message=${PUSH_MESSAGE}" \
+        --form-string "title=${PUSH_TITLE}" \
+        https://api.pushover.net/1/messages.json)
+      
+      # Log the response from Pushover
+      log_message "Notification sent. Response: ${RESPONSE}"
+    fi
   fi
 }
 
@@ -227,7 +242,7 @@ fi
 # Function to retrieve the latest NGINX version
 get_latest_nginx_version() {
   if [[ "$FREENGINX_INSTALL" = [yY] ]]; then
-    curl -${ipv_forceopt}sL --connect-timeout 10 https://freenginx.org/en/download.html 2>&1 | egrep -o "freenginx\-[0-9.]+\.tar[.a-z]*" | grep -v '.asc' | awk -F "nginx-" '/.tar.gz$/ {print $2}' | sed -e 's|.tar.gz||g' | head -n1 2>&1 | tee "${CENTMINLOGDIR}/cmm-login-nginxver-check-debug_${DT}.log"
+    curl -${ipv_forceopt}sL --connect-timeout 10 https://freenginx.org/en/download.html 2>&1 | grep -Eo "freenginx-[0-9.]+\.tar[.a-z]*" | grep -v '.asc' | awk -F "freenginx-" '/.tar.gz$/ {print $2}' | sed -e 's|.tar.gz||g' | head -n1 2>&1 | tee "${CENTMINLOGDIR}/cmm-login-nginxver-check-debug_${DT}.log"
   else
     curl -${ipv_forceopt}sL --connect-timeout 10 https://nginx.org/download/ 2>&1 \
     | grep -Eo 'nginx-[0-9]+\.[0-9]+\.[0-9]+\.tar\.gz' \
@@ -280,7 +295,7 @@ ngxver_checker() {
             LATEST_NGINXVERS=$(get_latest_nginx_version)
             echo "$LATEST_NGINXVERS" > "$CACHE_FILE"
         fi
-        # LATEST_NGINXSTABLEVER=$(curl -${ipv_forceopt}sL --connect-timeout 10 https://nginx.org/en/download.html 2>&1 | egrep -o "nginx\-[0-9.]+\.tar[.a-z]*" | grep -v '.asc' | awk -F "nginx-" '/.tar.gz$/ {print $2}' | sed -e 's|.tar.gz||g' | head -n2 | tail -1)
+        # LATEST_NGINXSTABLEVER=$(curl -${ipv_forceopt}sL --connect-timeout 10 https://nginx.org/en/download.html 2>&1 | grep -Eo "nginx-[0-9.]+\.tar[.a-z]*" | grep -v '.asc' | awk -F "nginx-" '/.tar.gz$/ {print $2}' | sed -e 's|.tar.gz||g' | head -n2 | tail -1)
     fi
     CURRENT_NGINXVERS=$(nginx -v 2>&1 | awk '{print $3}' | awk -F '/' '{print $2}')
     if [[ "$CURRENT_NGINXVERS" != "$LATEST_NGINXVERS" ]]; then
@@ -483,29 +498,86 @@ kernel_checks() {
   fi
 }
 
-if [[ "$(id -u)" = '0' ]]; then
+csf_version_checker() {
+  if [[ "$(which csf >/dev/null 2>&1; echo $?)" = '0' ]]; then
+    # Get remote version from Centmin Mod's self-hosted mirror
+    REMOTE_CSF_VER=$(curl -${ipv_forceopt}sL --connect-timeout 10 https://download.centminmod.com/csf/version.txt 2>/dev/null | tr -d '\n' | tr -d '\r' | grep -E '^[0-9]+\.[0-9]+$')
+    
+    # Get local version from csf -v output (format: "csf: v15.01 (generic)")
+    LOCAL_CSF_VER=$(csf -v 2>/dev/null | awk '{print $2}' | sed 's/^v//' | grep -E '^[0-9]+\.[0-9]+$')
+    
+    if [[ ! -z "$REMOTE_CSF_VER" && ! -z "$LOCAL_CSF_VER" ]]; then
+      # Convert versions for numeric comparison (15.01 → 1501)
+      REMOTE_CSF_NUM=$(echo "$REMOTE_CSF_VER" | sed 's/\.//')
+      LOCAL_CSF_NUM=$(echo "$LOCAL_CSF_VER" | sed 's/\.//')
+      
+      # Display notice if remote version is same or newer than local
+      if [[ "$REMOTE_CSF_NUM" -ge "$LOCAL_CSF_NUM" ]] 2>/dev/null; then
+        echo
+        cecho "===============================================================================" $boldgreen
+        cecho "* Centmin Mod now hosts its own CSF Firewall mirror for continued support" $boldyellow
+        cecho "* Details at https://community.centminmod.com/threads/28985/" $boldyellow
+        cecho "===============================================================================" $boldgreen
+        cecho "* Current CSF Version: $LOCAL_CSF_VER" $boldyellow
+        cecho "* Mirror CSF Version:  $REMOTE_CSF_VER" $boldyellow
+        if [[ "$REMOTE_CSF_NUM" -gt "$LOCAL_CSF_NUM" ]] 2>/dev/null; then
+          if [[ "$LOCAL_CSF_VER" = "14.24" ]]; then
+            # Check if csfcf.sh cronjob exists
+            CSFCF_CRON_EXISTS=$(crontab -l 2>/dev/null | grep -q 'csfcf.sh auto' && echo "yes" || echo "no")
+            if [[ "$CSFCF_CRON_EXISTS" = "yes" ]]; then
+              cecho "* Update available: Run cmupdate && let cronjob tools/csfcf.sh auto update CSF" $boldyellow
+            else
+              cecho "* Update available: Run cmupdate && tools/csfcf.sh auto to update CSF" $boldyellow
+            fi
+          else
+            cecho "* Update available: Run csf -u to update CSF Firewall" $boldyellow
+          fi
+        else
+          cecho "* Your CSF version matches the mirror version" $boldyellow
+        fi
+        cecho "===============================================================================" $boldgreen
+        echo
+      fi
+    fi
+  fi
+}
 
-starttime=$(TZ=UTC date +%s.%N)
-{
-motd_output
-kernel_checks
-if [[ "$DMOTD_PHPCHECK" = [yY] && "$(which php-fpm >/dev/null 2>&1; echo $?)" = '0' ]]; then
-  ngxver_checker &
-  phpver_checker &
-  wait
-else
-  ngxver_checker
-fi
-gitenv_askupdate
-needrestart_check
-check_git_major_branch
-} 2>&1 | tee "${CENTMINLOGDIR}/cmm-login-git-checks_${DT}.log"
+if [[ "$(id -u)" -eq 0 ]] || sudo -n true 2>/dev/null; then
 
-endtime=$(TZ=UTC date +%s.%N)
+  starttime=$(TZ=UTC date +%s.%N)
+  {
+  motd_output
+  if [[ "$(id -u)" -eq 0 || "$SUDO_USER" ]]; then
+    kernel_checks
+    if [[ "$DMOTD_PHPCHECK" = [yY] && "$(which php-fpm >/dev/null 2>&1; echo $?)" = '0' ]]; then
+      ngxver_checker &
+      phpver_checker &
+      wait
+    else
+      ngxver_checker
+    fi
+  fi
+  if [[ "$(id -u)" -eq 0 || "$SUDO_USER" ]]; then
+    gitenv_askupdate
+  else
+    cecho "===============================================================================" $boldgreen
+    echo "Detected non root/sudo elevated user: Centmin Mod update notifications disabled"
+    echo "Centmin Mod update notifications are enabled for root/sudo elevated users only"
+    echo "Only SSH logins via root/sudo elevated user, will update notifications show"
+    cecho "===============================================================================" $boldgreen
+  fi
+  needrestart_check
+  if [[ "$(id -u)" -eq 0 || "$SUDO_USER" ]]; then
+    check_git_major_branch
+    csf_version_checker
+  fi
+  } 2>&1 | tee "${CENTMINLOGDIR}/cmm-login-git-checks_${DT}.log"
 
-INSTALLTIME=$(echo "scale=2;$endtime - $starttime"|bc )
-echo "" >> "${CENTMINLOGDIR}/cmm-login-git-checks_${DT}.log"
-echo "Total Git & Nginx Check Time: $INSTALLTIME seconds" >> "${CENTMINLOGDIR}/cmm-login-git-checks_${DT}.log"
+  endtime=$(TZ=UTC date +%s.%N)
+
+  INSTALLTIME=$(echo "scale=2;$endtime - $starttime"|bc )
+  echo "" >> "${CENTMINLOGDIR}/cmm-login-git-checks_${DT}.log"
+  echo "Total Git & Nginx Check Time: $INSTALLTIME seconds" >> "${CENTMINLOGDIR}/cmm-login-git-checks_${DT}.log"
 
   # logs older than 5 days will be removed
   if [ -d "${CENTMINLOGDIR}" ]; then
