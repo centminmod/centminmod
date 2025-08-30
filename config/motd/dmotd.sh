@@ -157,7 +157,7 @@ log_message() {
 check_git_major_branch() {
     local repo_path="$CMSCRIPT_GITDIR"
     local current_branch=$(git --git-dir="$repo_path/.git" --work-tree="$repo_path" rev-parse --abbrev-ref HEAD)
-    local branches_to_check=("123.08stable" "123.09beta01" "124.00stable" "130.00beta01" "131.00stable" "132.00stable" "140.00beta01" "141.00beta01")
+    local branches_to_check=("123.08stable" "123.09beta01" "124.00stable" "130.00beta01" "131.00stable")
     echo -n " Current local server Centmin Mod branch installed: "
     cecho "$current_branch " $boldyellow
     cecho "===============================================================================" $boldgreen
@@ -498,6 +498,50 @@ kernel_checks() {
   fi
 }
 
+csf_version_checker() {
+  if [[ "$(which csf >/dev/null 2>&1; echo $?)" = '0' ]]; then
+    # Get remote version from Centmin Mod's self-hosted mirror
+    REMOTE_CSF_VER=$(curl -${ipv_forceopt}sL --connect-timeout 10 https://download.centminmod.com/csf/version.txt 2>/dev/null | tr -d '\n' | tr -d '\r' | grep -E '^[0-9]+\.[0-9]+$')
+    
+    # Get local version from csf -v output (format: "csf: v15.01 (generic)")
+    LOCAL_CSF_VER=$(csf -v 2>/dev/null | awk '{print $2}' | sed 's/^v//' | grep -E '^[0-9]+\.[0-9]+$')
+    
+    if [[ ! -z "$REMOTE_CSF_VER" && ! -z "$LOCAL_CSF_VER" ]]; then
+      # Convert versions for numeric comparison (15.01 → 1501)
+      REMOTE_CSF_NUM=$(echo "$REMOTE_CSF_VER" | sed 's/\.//')
+      LOCAL_CSF_NUM=$(echo "$LOCAL_CSF_VER" | sed 's/\.//')
+      
+      # Display notice if remote version is same or newer than local
+      if [[ "$REMOTE_CSF_NUM" -ge "$LOCAL_CSF_NUM" ]] 2>/dev/null; then
+        echo
+        cecho "===============================================================================" $boldgreen
+        cecho "* Centmin Mod now hosts its own CSF Firewall mirror for continued support" $boldyellow
+        cecho "* Details at https://community.centminmod.com/threads/28985/" $boldyellow
+        cecho "===============================================================================" $boldgreen
+        cecho "* Current CSF Version: $LOCAL_CSF_VER" $boldyellow
+        cecho "* Mirror CSF Version:  $REMOTE_CSF_VER" $boldyellow
+        if [[ "$REMOTE_CSF_NUM" -gt "$LOCAL_CSF_NUM" ]] 2>/dev/null; then
+          if [[ "$LOCAL_CSF_VER" = "14.24" ]]; then
+            # Check if csfcf.sh cronjob exists
+            CSFCF_CRON_EXISTS=$(crontab -l 2>/dev/null | grep -q 'csfcf.sh auto' && echo "yes" || echo "no")
+            if [[ "$CSFCF_CRON_EXISTS" = "yes" ]]; then
+              cecho "* Update available: Run cmupdate && let cronjob tools/csfcf.sh auto update CSF" $boldyellow
+            else
+              cecho "* Update available: Run cmupdate && tools/csfcf.sh auto to update CSF" $boldyellow
+            fi
+          else
+            cecho "* Update available: Run csf -u to update CSF Firewall" $boldyellow
+          fi
+        else
+          cecho "* Your CSF version matches the mirror version" $boldyellow
+        fi
+        cecho "===============================================================================" $boldgreen
+        echo
+      fi
+    fi
+  fi
+}
+
 if [[ "$(id -u)" -eq 0 ]] || sudo -n true 2>/dev/null; then
 
   starttime=$(TZ=UTC date +%s.%N)
@@ -525,6 +569,7 @@ if [[ "$(id -u)" -eq 0 ]] || sudo -n true 2>/dev/null; then
   needrestart_check
   if [[ "$(id -u)" -eq 0 || "$SUDO_USER" ]]; then
     check_git_major_branch
+    csf_version_checker
   fi
   } 2>&1 | tee "${CENTMINLOGDIR}/cmm-login-git-checks_${DT}.log"
 
