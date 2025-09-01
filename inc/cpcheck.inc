@@ -4062,7 +4062,7 @@ normalize_accept_encoding
 rsync_backport_install
 apply_terrapin_fix
 apply_iconv_fix
-update_ius_repo
+update_ius_repo silent
 
 if [[ "$INITIALINSTALL" != [yY] ]]; then
   update_centos7_eol_repos
@@ -4229,7 +4229,7 @@ if [[ "$INITIALINSTALL" != [yY] ]]; then
   switch_nginx_uid
   opendkim_check_enabled
   disable_nginx_ocsp
-  update_ius_repo
+  update_ius_repo silent
 fi
 
 }
