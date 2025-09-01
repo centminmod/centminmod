@@ -1,3 +1,51 @@
+update_ius_repo() {
+    local repo_file="/etc/yum.repos.d/ius.repo"
+    local old_domain="repo.ius.io"
+    local new_domain="vault.ius.io"
+    local silent=0
+    
+    # Check for silent argument
+    [[ "$1" == "silent" ]] && silent=1
+    
+    # Internal print function
+    _print() {
+        [[ $silent -eq 0 ]] && echo "$@"
+    }
+    
+    # Check if file exists
+    if [[ ! -f "$repo_file" ]]; then
+        _print "Error: $repo_file not found"
+        return 1
+    fi
+    
+    # Create backup
+    cp "$repo_file" "${repo_file}.bak.$(date +%Y%m%d_%H%M%S)"
+    
+    # Fix repo.ius.io to vault.ius.io AND change /7/ to /el7/
+    if grep -q "$old_domain" "$repo_file"; then
+        sed -i "s|${old_domain}/7|${new_domain}/el7|g" "$repo_file"
+        _print "Updated repo.ius.io to vault.ius.io with el7 path"
+    # Fix vault.ius.io/7 to vault.ius.io/el7 if already partially migrated
+    elif grep -q "vault.ius.io/7" "$repo_file"; then
+        sed -i "s|vault.ius.io/7|vault.ius.io/el7|g" "$repo_file"
+        _print "Fixed vault path from /7/ to /el7/"
+    else
+        _print "Repository already updated or not IUS format"
+        return 0
+    fi
+    
+    # Verify replacement
+    if grep -q "vault.ius.io/el7" "$repo_file"; then
+        yum-config-manager --disable ius >/dev/null 2>&1
+        yum -q clean all
+        _print "Successfully updated $repo_file (backup created)"
+        return 0
+    else
+        _print "Error: Update failed"
+        return 1
+    fi
+}
+
 disable_nginx_ocsp() {
   if [ -f "${SCRIPT_DIR}/tools/disable-ocsp.sh" ] && grep -rE "ssl_stapling on|ssl_stapling_verify on" /usr/local/nginx/conf/conf.d/ >/dev/null 2>&1; then
       "${SCRIPT_DIR}/tools/disable-ocsp.sh" >/dev/null 2>&1
@@ -4014,6 +4062,7 @@ normalize_accept_encoding
 rsync_backport_install
 apply_terrapin_fix
 apply_iconv_fix
+update_ius_repo
 
 if [[ "$INITIALINSTALL" != [yY] ]]; then
   update_centos7_eol_repos
@@ -4180,6 +4229,7 @@ if [[ "$INITIALINSTALL" != [yY] ]]; then
   switch_nginx_uid
   opendkim_check_enabled
   disable_nginx_ocsp
+  update_ius_repo
 fi
 
 }
