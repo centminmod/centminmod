@@ -77,6 +77,12 @@ echo -e "$color$message" ; $Reset
 return
 }
 
+# Convert nginx version to integer for comparison (1.29.1 -> 1029001)
+nginx_version_to_int() {
+    local version=$1
+    echo "$version" | awk -F. '{print $1 * 1000000 + $2 * 1000 + $3}'
+}
+
 ###########################################################
 if [ -f "${CONFIGSCANBASE}/custom_config.inc" ]; then
     # default is at /etc/centminmod/custom_config.inc
@@ -164,7 +170,7 @@ check_git_major_branch() {
     for branch in "${branches_to_check[@]}"; do
         if [[ "$current_branch" == "$branch" ]]; then
             echo -n " Newer Centmin Mod branch version is available: "
-            cecho "132.00stable or 140.00beta01" $boldyellow
+            cecho "132.00stable or 141.00beta01" $boldyellow
             echo -n " Details at "
             cecho "https://community.centminmod.com/threads/25572/" $boldyellow
             cecho "===============================================================================" $boldgreen
@@ -298,7 +304,20 @@ ngxver_checker() {
         # LATEST_NGINXSTABLEVER=$(curl -${ipv_forceopt}sL --connect-timeout 10 https://nginx.org/en/download.html 2>&1 | grep -Eo "nginx-[0-9.]+\.tar[.a-z]*" | grep -v '.asc' | awk -F "nginx-" '/.tar.gz$/ {print $2}' | sed -e 's|.tar.gz||g' | head -n2 | tail -1)
     fi
     CURRENT_NGINXVERS=$(nginx -v 2>&1 | awk '{print $3}' | awk -F '/' '{print $2}')
-    if [[ "$CURRENT_NGINXVERS" != "$LATEST_NGINXVERS" ]]; then
+    
+    # Convert versions to integers for proper comparison
+    CURRENT_NGINXVERS_INT=$(nginx_version_to_int "$CURRENT_NGINXVERS")
+    LATEST_NGINXVERS_INT=$(nginx_version_to_int "$LATEST_NGINXVERS")
+    
+    # Update cache if current version is newer than cached "latest"
+    if [[ $CURRENT_NGINXVERS_INT -gt $LATEST_NGINXVERS_INT ]]; then
+      echo "$CURRENT_NGINXVERS" > "$CACHE_FILE"
+      LATEST_NGINXVERS="$CURRENT_NGINXVERS"
+      LATEST_NGINXVERS_INT=$CURRENT_NGINXVERS_INT
+    fi
+    
+    # Only show update notification if latest is genuinely newer
+    if [[ $LATEST_NGINXVERS_INT -gt $CURRENT_NGINXVERS_INT ]]; then
       echo
       cecho "===============================================================================" $boldgreen
       if [[ "$FREENGINX_INSTALL" = [yY] ]]; then
