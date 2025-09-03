@@ -308,7 +308,7 @@ NGX_LUASTREAMLINK="https://github.com/openresty/stream-lua-nginx-module/archive/
 #NGX_LUASTREAMLINKGITLAB="https://gitlab.com/centminmod-github-mirror/lua-nginx-module/repository/archive.tar.gz?ref=v${ORESTY_LUASTREAMVER}"
 
 NGX_LUAGITLINKFILE="luagit-${ORESTY_LUAGITVER}.tar.gz"
-NGX_LUAGITLINK="https://luajit.org/download/LuaJIT-${ORESTY_LUAGITVER}.tar.gz"
+NGX_LUAGITLINK="https://github.com/LuaJIT/LuaJIT/archive/refs/tags/v${ORESTY_LUAGITVER}.tar.gz"
 
 NGX_LUAMEMCACHEDLINKFILE="lua-resty-memcached_v${ORESTY_LUAMEMCACHEDVER}.tar.gz"
 NGX_LUAMEMCACHEDLINK="https://github.com/openresty/lua-resty-memcached/archive/v${ORESTY_LUAMEMCACHEDVER}.tar.gz"
