@@ -896,6 +896,7 @@ cat > "/etc/yum.repos.d/mariadb.repo" <<EOF
 [mariadb]
 name = MariaDB
 baseurl = ${MDB_MIRROR_BASEURL}/yum/centos7-aarch64
+module_hotfixes=1
 gpgkey=${MDB_ARCHIVES_PUBKEY}
 gpgcheck=1
 EOF
@@ -904,6 +905,7 @@ cat > "/etc/yum.repos.d/mariadb.repo" <<EOF
 [mariadb]
 name = MariaDB
 baseurl = ${MDB_MIRROR_BASEURL}/yum/centos7-aarch64
+module_hotfixes=1
 gpgkey=${MDB_ARCHIVES_PUBKEY}
 gpgcheck=1
 EOF
@@ -912,6 +914,7 @@ cat > "/etc/yum.repos.d/mariadb.repo" <<EOF
 [mariadb]
 name = MariaDB
 baseurl = ${MDB_MIRROR_BASEURL}/yum/centos7-aarch64
+module_hotfixes=1
 gpgkey=${MDB_ARCHIVES_PUBKEY}
 gpgcheck=1
 EOF
@@ -920,6 +923,7 @@ cat > "/etc/yum.repos.d/mariadb.repo" <<EOF
 [mariadb]
 name = MariaDB
 baseurl = ${MDB_MIRROR_BASEURL}/yum/centos7-aarch64
+module_hotfixes=1
 gpgkey=${MDB_ARCHIVES_PUBKEY}
 gpgcheck=1
 EOF
@@ -949,6 +953,7 @@ cat > "/etc/yum.repos.d/mariadb.repo" <<EOF
 [mariadb]
 name = MariaDB
 baseurl = ${MDB_MIRROR_BASEURL}/yum/centos7-amd64
+module_hotfixes=1
 gpgkey=${MDB_ARCHIVES_PUBKEY}
 gpgcheck=1
 EOF
@@ -957,6 +962,7 @@ cat > "/etc/yum.repos.d/mariadb.repo" <<EOF
 [mariadb]
 name = MariaDB
 baseurl = ${MDB_MIRROR_BASEURL}/yum/centos7-amd64
+module_hotfixes=1
 gpgkey=${MDB_ARCHIVES_PUBKEY}
 gpgcheck=1
 EOF
@@ -965,6 +971,7 @@ cat > "/etc/yum.repos.d/mariadb.repo" <<EOF
 [mariadb]
 name = MariaDB
 baseurl = ${MDB_MIRROR_BASEURL}/yum/centos7-amd64
+module_hotfixes=1
 gpgkey=${MDB_ARCHIVES_PUBKEY}
 gpgcheck=1
 EOF
@@ -973,6 +980,7 @@ cat > "/etc/yum.repos.d/mariadb.repo" <<EOF
 [mariadb]
 name = MariaDB
 baseurl = ${MDB_MIRROR_BASEURL}/yum/centos7-amd64
+module_hotfixes=1
 gpgkey=${MDB_ARCHIVES_PUBKEY}
 gpgcheck=1
 EOF
@@ -1001,6 +1009,7 @@ cat > "/etc/yum.repos.d/mariadb.repo" <<EOF
 [mariadb]
 name = MariaDB
 baseurl = ${MDB_MIRROR_BASEURL}/yum/centos7-amd64
+module_hotfixes=1
 gpgkey=${MDB_ARCHIVES_PUBKEY}
 gpgcheck=1
 EOF
@@ -1009,6 +1018,7 @@ cat > "/etc/yum.repos.d/mariadb.repo" <<EOF
 [mariadb]
 name = MariaDB
 baseurl = ${MDB_MIRROR_BASEURL}/yum/centos7-amd64
+module_hotfixes=1
 gpgkey=${MDB_ARCHIVES_PUBKEY}
 gpgcheck=1
 EOF
@@ -1017,6 +1027,7 @@ cat > "/etc/yum.repos.d/mariadb.repo" <<EOF
 [mariadb]
 name = MariaDB
 baseurl = ${MDB_MIRROR_BASEURL}/yum/centos7-amd64
+module_hotfixes=1
 gpgkey=${MDB_ARCHIVES_PUBKEY}
 gpgcheck=1
 EOF
@@ -1025,6 +1036,7 @@ cat > "/etc/yum.repos.d/mariadb.repo" <<EOF
 [mariadb]
 name = MariaDB
 baseurl = ${MDB_MIRROR_BASEURL}/yum/centos7-amd64
+module_hotfixes=1
 gpgkey=${MDB_ARCHIVES_PUBKEY}
 gpgcheck=1
 EOF
