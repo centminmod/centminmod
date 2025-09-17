@@ -2405,15 +2405,27 @@ set_logdate() {
   DT=$(date +"%d%m%y-%H%M%S")
 }
 
+# Convert nginx version to integer for comparison (1.29.1 -> 1029001)
+nginx_version_to_int() {
+    local version=$1
+    echo "$version" | awk -F. '{print $1 * 1000000 + $2 * 1000 + $3}'
+}
+
 ngxver_checker() {
   if [[ "$(which nginx >/dev/null 2>&1; echo $?)" = '0' ]]; then
-    LASTEST_NGINXVERS=$(curl -${ipv_forceopt}sL https://nginx.org/en/download.html 2>&1 | egrep -o "nginx\-[0-9.]+\.tar[.a-z]*" | awk -F "nginx-" '/.tar.gz$/ {print $2}' | sed -e 's|.tar.gz||g' | head -n 1 2>&1)
+    LATEST_NGINXVERS=$(curl -${ipv_forceopt}sL --connect-timeout 10 https://nginx.org/download/ 2>&1 | grep -Eo 'nginx-[0-9]+\.[0-9]+\.[0-9]+\.tar\.gz' | sed -E 's/^nginx-([0-9]+\.[0-9]+\.[0-9]+)\.tar\.gz$/\1/' | sort -V | tail -n1 2>&1)
     CURRENT_NGINXVERS=$(nginx -v 2>&1 | awk -F '/' '{print $2}')
-    if [[ "$CURRENT_NGINXVERS" != "$LASTEST_NGINXVERS" ]]; then
+    
+    # Convert versions to integers for proper comparison
+    CURRENT_NGINXVERS_INT=$(nginx_version_to_int "$CURRENT_NGINXVERS")
+    LATEST_NGINXVERS_INT=$(nginx_version_to_int "$LATEST_NGINXVERS")
+    
+    # Only show update notification if latest is genuinely newer
+    if [[ $LATEST_NGINXVERS_INT -gt $CURRENT_NGINXVERS_INT ]]; then
       echo
       cecho "-------------------------------------------------------------" $boldgreen
       echo "* Current Nginx Version: $CURRENT_NGINXVERS"
-      echo "* Latest Nginx Available: $LASTEST_NGINXVERS (centminmod.com/nginxnews)"
+      echo "* Latest Nginx Available: $LATEST_NGINXVERS (centminmod.com/nginxnews)"
       cecho "-------------------------------------------------------------" $boldgreen
       echo
     fi

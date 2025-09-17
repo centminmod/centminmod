@@ -775,7 +775,7 @@ additional_blocks() {
   # whitelisting IPs for downloads/services Centmin Mod relies on
   csf --profile backup cmm-b4-whitelist
   # whitelist CSF Firewall's download url otherwise unable to download CSF Firewall updates
-  dig +short A download.configserver.com | while read i; do csf -a $i csf-download.configserver.com; done
+  #dig +short A download.configserver.com | while read i; do csf -a $i csf-download.configserver.com; done
   # whitelist centminmod.com IPs which Centmin Mod LEMP stack relies on for some downloaded 
   # dependencies and file download updates
   dig +short A centminmod.com | while read i; do csf -a $i centminmod.com; done
