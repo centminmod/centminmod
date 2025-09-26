@@ -256,7 +256,7 @@ ngx_hpack_patch() {
     cecho "patching nginx http/2 full HPACK encoding support" $boldyellow
     cecho "nginx-1.13.6_http2-hpack.patch" $boldyellow
     # rm -rf nginx-1.13.6_http2-hpack.patch
-    # wget -${ipv_forceopt}cnv https://github.com/cloudflare/sslconfig/raw/hpack_1.13.1/patches/nginx-1.13.6_http2-hpack.patch
+    # wget -${ipv_forceopt}v https://github.com/cloudflare/sslconfig/raw/hpack_1.13.1/patches/nginx-1.13.6_http2-hpack.patch
     cecho "patch -p1 < $CUR_DIR/patches/cloudflare/nginx-1.13.6_http2-hpack.patch" $boldyellow
     patch -p1 < $CUR_DIR/patches/cloudflare/nginx-1.13.6_http2-hpack.patch
     echo 
@@ -268,7 +268,7 @@ ngx_hpack_patch() {
     cecho "patching nginx http/2 full HPACK encoding support" $boldyellow
     cecho "nginx-1.13.9_http2-hpack.patch" $boldyellow
     # rm -rf nginx-1.13.9_http2-hpack.patch
-    # wget -${ipv_forceopt}cnv https://github.com/cloudflare/sslconfig/raw/hpack_1.13.1/patches/nginx-1.13.9_http2-hpack.patch
+    # wget -${ipv_forceopt}v https://github.com/cloudflare/sslconfig/raw/hpack_1.13.1/patches/nginx-1.13.9_http2-hpack.patch
     cecho "patch -p1 < $CUR_DIR/patches/cloudflare/nginx-1.13.9_http2-hpack.patch" $boldyellow
     patch -p1 < $CUR_DIR/patches/cloudflare/nginx-1.13.9_http2-hpack.patch
     echo 
@@ -280,7 +280,7 @@ ngx_hpack_patch() {
     cecho "patching nginx http/2 full HPACK encoding support" $boldyellow
     cecho "nginx-1.14.0_http2-hpack.patch" $boldyellow
     # rm -rf nginx-1.14.0_http2-hpack.patch
-    # wget -${ipv_forceopt}cnv https://github.com/cloudflare/sslconfig/raw/hpack_1.13.1/patches/nginx-1.14.0_http2-hpack.patch
+    # wget -${ipv_forceopt}v https://github.com/cloudflare/sslconfig/raw/hpack_1.13.1/patches/nginx-1.14.0_http2-hpack.patch
     cecho "patch -p1 < $CUR_DIR/patches/cloudflare/nginx-1.14.0_http2-hpack.patch" $boldyellow
     patch -p1 < $CUR_DIR/patches/cloudflare/nginx-1.14.0_http2-hpack.patch
     echo 
@@ -294,7 +294,7 @@ ngx_hpack_patch() {
     cecho "patching nginx http/2 full HPACK encoding support" $boldyellow
     cecho "nginx-1.15.0_http2-hpack.patch" $boldyellow
     # rm -rf nginx-1.15.0_http2-hpack.patch
-    # wget -${ipv_forceopt}cnv https://github.com/cloudflare/sslconfig/raw/hpack_1.13.1/patches/nginx-1.15.0_http2-hpack.patch
+    # wget -${ipv_forceopt}v https://github.com/cloudflare/sslconfig/raw/hpack_1.13.1/patches/nginx-1.15.0_http2-hpack.patch
     cecho "patch -p1 < $CUR_DIR/patches/cloudflare/nginx-1.15.0_http2-hpack.patch" $boldyellow
     patch -p1 < $CUR_DIR/patches/cloudflare/nginx-1.15.0_http2-hpack.patch
     echo 
@@ -308,7 +308,7 @@ ngx_hpack_patch() {
     cecho "patching nginx http/2 full HPACK encoding support" $boldyellow
     cecho "nginx-1.15.3_http2-hpack.patch" $boldyellow
     # rm -rf nginx-1.15.3_http2-hpack.patch
-    # wget -${ipv_forceopt}cnv https://github.com/cloudflare/sslconfig/raw/hpack_1.13.1/patches/nginx-1.15.3_http2-hpack.patch
+    # wget -${ipv_forceopt}v https://github.com/cloudflare/sslconfig/raw/hpack_1.13.1/patches/nginx-1.15.3_http2-hpack.patch
     cecho "patch -p1 < $CUR_DIR/patches/cloudflare/nginx-1.15.3_http2-hpack.patch" $boldyellow
     patch -p1 < $CUR_DIR/patches/cloudflare/nginx-1.15.3_http2-hpack.patch
     echo 
@@ -320,7 +320,7 @@ ngx_hpack_patch() {
     cecho "patching nginx http/2 full HPACK encoding support" $boldyellow
     cecho "nginx-1.15.3_http2-hpack.patch" $boldyellow
     # rm -rf nginx-1.15.3_http2-hpack.patch
-    # wget -${ipv_forceopt}cnv https://github.com/cloudflare/sslconfig/raw/hpack_1.13.1/patches/nginx-1.15.3_http2-hpack.patch
+    # wget -${ipv_forceopt}v https://github.com/cloudflare/sslconfig/raw/hpack_1.13.1/patches/nginx-1.15.3_http2-hpack.patch
     cecho "patch -p1 < $CUR_DIR/patches/cloudflare/nginx-1.15.3_http2-hpack.patch" $boldyellow
     patch -p1 < $CUR_DIR/patches/cloudflare/nginx-1.15.3_http2-hpack.patch
     echo 
@@ -646,7 +646,7 @@ luanginx_patch() {
     if [ -d "${DIR_TMP}/${NGX_LUANGINXDIR}/src" ]; then
       pushd "${DIR_TMP}/${NGX_LUANGINXDIR}/src"
       rm -rf ngx_http_lua_headers.c
-      wget -${ipv_forceopt}cnv https://gist.githubusercontent.com/centminmod/48a61dcbcb6240fa1b52843be8290573/raw/ngx_http_lua_headers.c
+      wget -${ipv_forceopt}v https://gist.githubusercontent.com/centminmod/48a61dcbcb6240fa1b52843be8290573/raw/ngx_http_lua_headers.c
       ls -lah
       echo 
       echo "patching lua nginx module for nginx 1.11.11+"
@@ -697,7 +697,7 @@ echonginx_patch() {
     if [ -d "${DIR_TMP}/${ECHODIR}/src" ]; then
       pushd "${DIR_TMP}/${ECHODIR}/src"
       rm -rf ngx_http_echo_request_info.c
-      wget -${ipv_forceopt}cnv https://gist.githubusercontent.com/centminmod/c2519f3cfdeff90196a13a3188ef0cfa/raw/ngx_http_echo_request_info.c
+      wget -${ipv_forceopt}v https://gist.githubusercontent.com/centminmod/c2519f3cfdeff90196a13a3188ef0cfa/raw/ngx_http_echo_request_info.c
       ls -lah
       echo 
       echo "patching echo nginx module for nginx 1.11.11+"
@@ -910,7 +910,7 @@ patchnginx() {
      if [[ "$NGINXTLSPATCH_CURLCHECK" != '0' ]]; then
        NGINXTLSPATCHLINK="https://gitlab.com/centminmod-github-mirror/sslconfig-felix-group/raw/updated-nginx-1.9.15-spdy-patch/patches/${NGINXSPDYPATCHED_NAME}"
      fi
-     wget -${ipv_forceopt}cnv --no-check-certificate "$NGINXTLSPATCHLINK"
+     wget -${ipv_forceopt}v --no-check-certificate "$NGINXTLSPATCHLINK"
      if [[ -f "${NGINXSPDYPATCHED_NAME}" && ! "$(grep 'ngx_http_spdy_filter' auto/modules)" ]]; then
        patch -p1 < "${NGINXSPDYPATCHED_NAME}"
      fi
@@ -972,7 +972,7 @@ patchnginx() {
       if [[ "$NGINXTLSPATCH_CURLCHECK" != '0' ]]; then
         NGINXTLSPATCHLINK="https://gitlab.com/centminmod-github-mirror/sslconfig/raw/master/patches/${NGINXTLSPATCH_NAME}"
       fi
-      wget -${ipv_forceopt}cnv --no-check-certificate "$NGINXTLSPATCHLINK"
+      wget -${ipv_forceopt}v --no-check-certificate "$NGINXTLSPATCHLINK"
       if [[ -f "${NGINXTLSPATCH_NAME}" && ! "$(grep 'dyn_rec.threshold' src/event/ngx_event_openssl.c)" ]]; then
          echo "patch -p1 < "${NGINXTLSPATCH_NAME}""
          patch -p1 < "${NGINXTLSPATCH_NAME}"
