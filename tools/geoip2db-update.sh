@@ -11,7 +11,7 @@ export PATH="/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin:/root/
 # in persistent config file /etc/centminmod/custom_config.inc
 GET_CMM_MM_LICENSE_KEY=$(curl -s https://mmkey.centminmod.com/)
 MM_LICENSE_KEY="$GET_CMM_MM_LICENSE_KEY"
-LOCALCENTMINMOD_MIRROR='https://centminmod.com'
+LOCALCENTMINMOD_MIRROR='https://parts.centminmod.com'
 LOCAL_GEOLITE_TWO_DOMAIN='https://mxmind.centminmod.com'
 ############################################################
 if [ -f /etc/centminmod/custom_config.inc ]; then
