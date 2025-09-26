@@ -23,8 +23,8 @@ phpng_download() {
       if [ -s php-${PHPNGVER}.tar.xz ]; then
          cecho "php-${PHPNGVER}.tar.xz found, skipping download..." $boldgreen
       else
-          echo "wget -${ipv_forceopt}cnv ${REMIURL}/php-${PHPNGVER}.tar.xz --tries=3"
-          wget -${ipv_forceopt}cnv ${REMIURL}/php-${PHPNGVER}.tar.xz --tries=3
+          echo "wget -${ipv_forceopt}v ${REMIURL}/php-${PHPNGVER}.tar.xz --tries=3"
+          wget -${ipv_forceopt}v ${REMIURL}/php-${PHPNGVER}.tar.xz --tries=3
     ERROR=$?
       if [[ "$ERROR" != '0' ]]; then
         cecho "Error: php-${PHPNGVER}.tar.xz download failed." $boldgreen
@@ -69,8 +69,8 @@ phpng_download() {
       if [ -s php-${PHPNGVER}.tar.xz ]; then
          cecho "php-${PHPNGVER}.tar.xz found, skipping download..." $boldgreen
       else
-          echo "wget -${ipv_forceopt}cnv ${REMIURL}/php-${PHPNGVER}.tar.xz --tries=3"
-          wget -${ipv_forceopt}cnv ${REMIURL}/php-${PHPNGVER}.tar.xz --tries=3
+          echo "wget -${ipv_forceopt}v ${REMIURL}/php-${PHPNGVER}.tar.xz --tries=3"
+          wget -${ipv_forceopt}v ${REMIURL}/php-${PHPNGVER}.tar.xz --tries=3
     ERROR=$?
       if [[ "$ERROR" != '0' ]]; then
         cecho "Error: php-${PHPNGVER}.tar.xz download failed." $boldgreen
@@ -116,8 +116,8 @@ phpng_download() {
       if [ -s php-${PHPNGVER}.tar.xz ]; then
          cecho "php-${PHPNGVER}.tar.xz found, skipping download..." $boldgreen
       else
-          echo "wget -${ipv_forceopt}cnv ${REMIURL}/php-${PHPNGVER}.tar.xz --tries=3"
-          wget -${ipv_forceopt}cnv ${REMIURL}/php-${PHPNGVER}.tar.xz --tries=3
+          echo "wget -${ipv_forceopt}v ${REMIURL}/php-${PHPNGVER}.tar.xz --tries=3"
+          wget -${ipv_forceopt}v ${REMIURL}/php-${PHPNGVER}.tar.xz --tries=3
     ERROR=$?
       if [[ "$ERROR" != '0' ]]; then
         cecho "Error: php-${PHPNGVER}.tar.xz download failed." $boldgreen
@@ -155,8 +155,8 @@ phpng_download() {
       if [ -s php-${PHPNGVER}.tar.gz ]; then
          cecho "php-${PHPNGVER}.tar.gz found, skipping download..." $boldgreen
       else
-          echo "wget -${ipv_forceopt}cnv https://downloads.php.net/~ab/php-${PHPNGVER}.tar.gz --tries=3"
-          wget -${ipv_forceopt}cnv https://downloads.php.net/~ab/php-${PHPNGVER}.tar.gz --tries=3
+          echo "wget -${ipv_forceopt}v https://downloads.php.net/~ab/php-${PHPNGVER}.tar.gz --tries=3"
+          wget -${ipv_forceopt}v https://downloads.php.net/~ab/php-${PHPNGVER}.tar.gz --tries=3
     ERROR=$?
       if [[ "$ERROR" != '0' ]]; then
         cecho "Error: php-${PHPNGVER}.tar.gz download failed." $boldgreen

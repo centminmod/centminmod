@@ -440,7 +440,7 @@ if [[ "${OPENSSL_VERSION}" = '1.0.1g' ]]; then
     echo  "######################################################################"
     pushd ssl
     rm -rf releasebuffer.patch
-    wget -${ipv_forceopt}cnv https://centminmod.com/centminmodparts/openssl/patches/releasebuffer.patch
+    wget -${ipv_forceopt}v https://centminmod.com/centminmodparts/openssl/patches/releasebuffer.patch
     patch < releasebuffer.patch
     popd
     echo  "######################################################################"
@@ -579,13 +579,13 @@ if [[ "$CLOUDFLARE_PATCHSSL" = [yY] && "$DETECTOPENSSL_ONEZERO" = '1.0' ]]; then
                 OPENSSLCFPATCHLINK="https://gitlab.com/centminmod-github-mirror/sslconfig/raw/master/patches/${OPESSLCFPATCH_NAME}"
             fi
         fi
-        wget -${ipv_forceopt}cnv --no-check-certificate "$OPENSSLCFPATCHLINK"
+        wget -${ipv_forceopt}v --no-check-certificate "$OPENSSLCFPATCHLINK"
 
         if [ ! -f crypto/chacha20_poly1305/chacha20.c ]; then
             patch -p1 < "${OPESSLCFPATCH_NAME}"
         fi
         # rm -rf openssl__chacha20_poly1305_cf.patch
-        # wget -${ipv_forceopt}cnv --no-check-certificate https://raw.githubusercontent.com/cloudflare/sslconfig/master/patches/openssl__chacha20_poly1305_cf.patch
+        # wget -${ipv_forceopt}v --no-check-certificate https://raw.githubusercontent.com/cloudflare/sslconfig/master/patches/openssl__chacha20_poly1305_cf.patch
         # patch -p1 < openssl__chacha20_poly1305_cf.patch
         if [ -f crypto/chacha20_poly1305/chacha20.c ]; then
             # check /svr-setup/openssl-1.0.2g/crypto/chacha20_poly1305/chacha20.c exists
