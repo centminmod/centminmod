@@ -60,12 +60,12 @@ cd ioncube
 if [[ "$(uname -m)" = 'x86_64' ]]; then
   if [[ "$(php-config --version | cut -d . -f1)" = '5' ]]; then
     if [[ "$(php-config --version | cut -d . -f1,2)" != '5.6' ]]; then
-      wget -${ipv_forceopt}cnv https://downloads.ioncube.com/loader_downloads/ioncube_loaders_lin_x86-64_5.1.2.tar.gz
+      wget -${ipv_forceopt}v https://downloads.ioncube.com/loader_downloads/ioncube_loaders_lin_x86-64_5.1.2.tar.gz
       tar xvzf ioncube_loaders_lin_x86-64_5.1.2.tar.gz
     elif [[ "$(php-config --version | cut -d . -f1,2)" = '5.6' ]]; then
       rm -rf ioncube_loaders_lin_x86-64.tar.gz
       rm -rf ioncube
-      wget -${ipv_forceopt}cnv https://downloads.ioncube.com/loader_downloads/ioncube_loaders_lin_x86-64.tar.gz
+      wget -${ipv_forceopt}v https://downloads.ioncube.com/loader_downloads/ioncube_loaders_lin_x86-64.tar.gz
       tar xvzf ioncube_loaders_lin_x86-64.tar.gz
     fi
   elif [[ "$(php-config --version | cut -d . -f1-2)" = '8.4' ]]; then
@@ -75,17 +75,17 @@ if [[ "$(uname -m)" = 'x86_64' ]]; then
   elif [[ "$(php-config --version | cut -d . -f1-2)" = '8.3' ]]; then
     rm -rf ioncube_loaders_lin_x86-64.tar.gz
     rm -rf ioncube
-    wget -${ipv_forceopt}cnv https://downloads.ioncube.com/loader_downloads/ioncube_loaders_lin_x86-64.tar.gz
+    wget -${ipv_forceopt}v https://downloads.ioncube.com/loader_downloads/ioncube_loaders_lin_x86-64.tar.gz
     tar xvzf ioncube_loaders_lin_x86-64.tar.gz
   elif [[ "$(php-config --version | cut -d . -f1-2)" = '8.2' ]]; then
     rm -rf ioncube_loaders_lin_x86-64.tar.gz
     rm -rf ioncube
-    wget -${ipv_forceopt}cnv https://downloads.ioncube.com/loader_downloads/ioncube_loaders_lin_x86-64.tar.gz
+    wget -${ipv_forceopt}v https://downloads.ioncube.com/loader_downloads/ioncube_loaders_lin_x86-64.tar.gz
     tar xvzf ioncube_loaders_lin_x86-64.tar.gz
   elif [[ "$(php-config --version | cut -d . -f1-2)" = '8.1' ]]; then
     rm -rf ioncube_loaders_lin_x86-64.tar.gz
     rm -rf ioncube
-    wget -${ipv_forceopt}cnv https://downloads.ioncube.com/loader_downloads/ioncube_loaders_lin_x86-64.tar.gz
+    wget -${ipv_forceopt}v https://downloads.ioncube.com/loader_downloads/ioncube_loaders_lin_x86-64.tar.gz
     tar xvzf ioncube_loaders_lin_x86-64.tar.gz
   elif [[ "$(php-config --version | cut -d . -f1-2)" = '8.0' ]]; then
     echo "ioncube loader has skipped PHP 8.0 support"
@@ -95,24 +95,24 @@ if [[ "$(uname -m)" = 'x86_64' ]]; then
   elif [[ "$(php-config --version | cut -d . -f1)" = '7' ]]; then
     rm -rf ioncube_loaders_lin_x86-64.tar.gz
     rm -rf ioncube
-    wget -${ipv_forceopt}cnv https://downloads.ioncube.com/loader_downloads/ioncube_loaders_lin_x86-64.tar.gz
+    wget -${ipv_forceopt}v https://downloads.ioncube.com/loader_downloads/ioncube_loaders_lin_x86-64.tar.gz
     tar xvzf ioncube_loaders_lin_x86-64.tar.gz
   fi
 else
   if [[ "$(php-config --version | cut -d . -f1)" != '7' ]]; then
     if [[ "$(php-config --version | cut -d . -f1,2)" != '5.6' ]]; then
-      wget -${ipv_forceopt}cnv https://downloads.ioncube.com/loader_downloads/ioncube_loaders_lin_x86_5.1.2.tar.gz
+      wget -${ipv_forceopt}v https://downloads.ioncube.com/loader_downloads/ioncube_loaders_lin_x86_5.1.2.tar.gz
       tar xvzf ioncube_loaders_lin_x86_5.1.2.tar.gz
     elif [[ "$(php-config --version | cut -d . -f1,2)" = '5.6' ]]; then
       rm -rf ioncube_loaders_lin_x86.tar.gz
       rm -rf ioncube
-      wget -${ipv_forceopt}cnv https://downloads.ioncube.com/loader_downloads/ioncube_loaders_lin_x86.tar.gz
+      wget -${ipv_forceopt}v https://downloads.ioncube.com/loader_downloads/ioncube_loaders_lin_x86.tar.gz
       tar xvzf ioncube_loaders_lin_x86.tar.gz
     fi
   else
     rm -rf ioncube_loaders_lin_x86.tar.gz
     rm -rf ioncube
-    wget -${ipv_forceopt}cnv https://downloads.ioncube.com/loader_downloads/ioncube_loaders_lin_x86.tar.gz
+    wget -${ipv_forceopt}v https://downloads.ioncube.com/loader_downloads/ioncube_loaders_lin_x86.tar.gz
     tar xvzf ioncube_loaders_lin_x86.tar.gz
   fi
 fi
