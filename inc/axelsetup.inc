@@ -58,7 +58,7 @@ ERROR=$?
     if [[ "$ERROR" != '0' ]]; then
     cecho "Error: $AXEL_LINKFILE download failed." $boldgreen
 checklogdetails
-    exit #$ERROR
+    #exit #$ERROR
 else 
          cecho "Download $AXEL_LINKFILE done." $boldyellow
 #echo ""
@@ -76,7 +76,7 @@ ERROR=$?
     if [[ "$ERROR" != '0' ]]; then
     cecho "Error: $AXEL_LINKFILE extraction failed." $boldgreen
 checklogdetails
-    exit #$ERROR
+    #exit #$ERROR
 else 
          cecho "$AXEL_LINKFILE valid file." $boldyellow
 echo ""
@@ -153,7 +153,7 @@ axelsetup() {
         cecho "Error: rpmforge-release-0.5.3-1.el5.rf.${ARCH}.rpm download failed." $boldgreen
       FAILRPMFORGE='y'
       checklogdetails
-        # exit $ERROR
+        # #exit $ERROR
       else 
               cecho "Download done." $boldyellow
       rpm --import http://apt.sw.be/RPM-GPG-KEY.dag.txt
@@ -166,7 +166,7 @@ axelsetup() {
             echo ""
           else
             cecho "Error: problem with rpmforge-release-0.5.3-1.el5.rf.${ARCH}.rpm install." $boldgreen
-            exit $ERR
+            #exit $ERR
           fi
         fi
       
@@ -183,7 +183,7 @@ axelsetup() {
       cecho "Error: axel-2.4-1.el5.rf.${ARCH}.rpm download failed." $boldgreen
     FAILEDAXELRPM='y'
     checklogdetails
-      exit $ERROR
+      #exit $ERROR
     else 
             cecho "Download done." $boldyellow
     rpm -Uvh axel-2.4-1.el5.rf.${ARCH}.rpm
@@ -194,7 +194,7 @@ axelsetup() {
           echo ""
         else
           cecho "Error: problem with axel-2.4-1.el5.rf.${ARCH}.rpm install." $boldgreen
-          exit $ERR
+          #exit $ERR
         fi
       fi
     fi
