@@ -171,7 +171,7 @@ if [ ! -f /usr/local/sbin/maldet ]; then
     if [ -s maldetect-current.tar.gz ]; then
         cecho "maldetect-current.tar.gz Archive found, skipping download..." $boldgreen
     else
-        wget -${ipv_forceopt}cnv https://www.rfxn.com/downloads/maldetect-current.tar.gz --tries=3 
+        wget -${ipv_forceopt}v https://www.rfxn.com/downloads/maldetect-current.tar.gz --tries=3 
 ERROR=$?
 	if [[ "$ERROR" != '0' ]]; then
 	cecho "Error: maldetect-current.tar.gz download failed." $boldgreen

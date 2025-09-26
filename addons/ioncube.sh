@@ -54,35 +54,35 @@ cd ioncube
 if [[ "$(uname -m)" = 'x86_64' ]]; then
   if [[ "$(php -v | awk -F " " '{print $2}' | head -n1 | cut -d . -f1)" != '7' ]]; then
     if [[ "$(php-config --version | cut -d . -f1,2)" != '5.6' ]]; then
-      wget -${ipv_forceopt}cnv https://downloads.ioncube.com/loader_downloads/ioncube_loaders_lin_x86-64_5.1.2.tar.gz
+      wget -${ipv_forceopt}v https://downloads.ioncube.com/loader_downloads/ioncube_loaders_lin_x86-64_5.1.2.tar.gz
       tar xvzf ioncube_loaders_lin_x86-64_5.1.2.tar.gz
     elif [[ "$(php-config --version | cut -d . -f1,2)" = '5.6' ]]; then
       rm -rf ioncube_loaders_lin_x86-64.tar.gz
       rm -rf ioncube
-      wget -${ipv_forceopt}cnv https://downloads.ioncube.com/loader_downloads/ioncube_loaders_lin_x86-64.tar.gz
+      wget -${ipv_forceopt}v https://downloads.ioncube.com/loader_downloads/ioncube_loaders_lin_x86-64.tar.gz
       tar xvzf ioncube_loaders_lin_x86-64.tar.gz
     fi
   else
     rm -rf ioncube_loaders_lin_x86-64.tar.gz
     rm -rf ioncube
-    wget -${ipv_forceopt}cnv https://downloads.ioncube.com/loader_downloads/ioncube_loaders_lin_x86-64.tar.gz
+    wget -${ipv_forceopt}v https://downloads.ioncube.com/loader_downloads/ioncube_loaders_lin_x86-64.tar.gz
     tar xvzf ioncube_loaders_lin_x86-64.tar.gz
   fi
 else
   if [[ "$(php -v | awk -F " " '{print $2}' | head -n1 | cut -d . -f1)" != '7' ]]; then
     if [[ "$(php-config --version | cut -d . -f1,2)" != '5.6' ]]; then
-      wget -${ipv_forceopt}cnv https://downloads.ioncube.com/loader_downloads/ioncube_loaders_lin_x86_5.1.2.tar.gz
+      wget -${ipv_forceopt}v https://downloads.ioncube.com/loader_downloads/ioncube_loaders_lin_x86_5.1.2.tar.gz
       tar xvzf ioncube_loaders_lin_x86_5.1.2.tar.gz
     elif [[ "$(php-config --version | cut -d . -f1,2)" = '5.6' ]]; then
       rm -rf ioncube_loaders_lin_x86.tar.gz
       rm -rf ioncube
-      wget -${ipv_forceopt}cnv https://downloads.ioncube.com/loader_downloads/ioncube_loaders_lin_x86.tar.gz
+      wget -${ipv_forceopt}v https://downloads.ioncube.com/loader_downloads/ioncube_loaders_lin_x86.tar.gz
       tar xvzf ioncube_loaders_lin_x86.tar.gz
     fi
   else
     rm -rf ioncube_loaders_lin_x86.tar.gz
     rm -rf ioncube
-    wget -${ipv_forceopt}cnv https://downloads.ioncube.com/loader_downloads/ioncube_loaders_lin_x86.tar.gz
+    wget -${ipv_forceopt}v https://downloads.ioncube.com/loader_downloads/ioncube_loaders_lin_x86.tar.gz
     tar xvzf ioncube_loaders_lin_x86.tar.gz
   fi
 fi

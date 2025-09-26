@@ -80,7 +80,7 @@ kernelchecker_get() {
   WGET_CURLCHECK=$?
   if [[ "$WGET_CURLCHECK" = '0' ]]; then
     rm -rf /root/tools/kernelchecker.py
-    wget -${ipv_forceopt}cnv -O /root/tools/kernelchecker.py "$KERNELWGET_LINK" >/dev/null 2>&1
+    wget -${ipv_forceopt}v -O /root/tools/kernelchecker.py "$KERNELWGET_LINK" >/dev/null 2>&1
   fi
 }
 
