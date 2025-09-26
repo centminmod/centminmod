@@ -10,7 +10,7 @@
 DT=$(date +"%d%m%y-%H%M%S")
 CENTMINLOGDIR='/root/centminlogs'
 DIR='/svr-setup'
-LOCALCENTMINMOD_MIRROR='https://centminmod.com'
+LOCALCENTMINMOD_MIRROR='https://parts.centminmod.com'
 
 # To enable GeoIP Update client requires an active 
 # GeoIP subscription http://dev.maxmind.com/geoip/geoipupdate/

@@ -5,7 +5,7 @@ export PATH="/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin:/root/
 ######################################################
 branchname='130.00beta01'
 FORCE_IPVFOUR='y' # curl/wget commands through script force IPv4
-LOCALCENTMINMOD_MIRROR='https://centminmod.com'
+LOCALCENTMINMOD_MIRROR='https://parts.centminmod.com'
 
 # Maxmind GeoLite2 database API Key
 # https://community.centminmod.com/posts/80656/
