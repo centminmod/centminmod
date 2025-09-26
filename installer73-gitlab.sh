@@ -36,7 +36,7 @@ DNF_ENABLE='n'
 DNF_COPR='y'
 branchname='131.00stable'
 DOWNLOAD="${branchname}.zip"
-LOCALCENTMINMOD_MIRROR='https://centminmod.com'
+LOCALCENTMINMOD_MIRROR='https://parts.centminmod.com'
 
 FORCE_IPVFOUR='y' # curl/wget commands through script force IPv4
 INSTALLDIR='/usr/local/src'

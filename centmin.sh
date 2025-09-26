@@ -30,7 +30,7 @@ DT=$(date +"%d%m%y-%H%M%S")
 branchname='131.00stable'
 SCRIPT_MAJORVER='131'
 SCRIPT_MINORVER='00'
-SCRIPT_INCREMENTVER='095'
+SCRIPT_INCREMENTVER='096'
 SCRIPT_VERSIONSHORT="${branchname}"
 SCRIPT_VERSION="${SCRIPT_VERSIONSHORT}.b${SCRIPT_INCREMENTVER}"
 SCRIPT_DATE='01/01/25'
@@ -708,7 +708,7 @@ CMGIT='https://github.com/centminmod/centminmod.git'
 # https://centminmod.com/upgrade.html#persistent
 AUTO_GITUPDATE='n'
 #####################################################
-LOCALCENTMINMOD_MIRROR='https://centminmod.com'
+LOCALCENTMINMOD_MIRROR='https://parts.centminmod.com'
 LOCAL_GEOLITE_TWO_DOMAIN='https://mxmind.centminmod.com'
 #####################################################
 # Timestamp Install
