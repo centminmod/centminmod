@@ -22,7 +22,7 @@ DNF_ENABLE='n'
 DNF_COPR='y'
 CENTMINLOGDIR='/root/centminlogs'
 DIR_TMP='/svr-setup'
-LOCALCENTMINMOD_MIRROR='https://centminmod.com'
+LOCALCENTMINMOD_MIRROR='https://parts.centminmod.com'
 
 ALTPCRE_VERSION='8.45'
 ALTPCRELINKFILE="pcre-${ALTPCRE_VERSION}.tar.gz"

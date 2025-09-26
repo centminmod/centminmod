@@ -22,7 +22,7 @@ CENTMINLOGDIR='/root/centminlogs'
 WPCLIDIR='/root/wpcli'
 WPCLILINK='https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar'
 FORCE_IPVFOUR='y' # curl/wget commands through script force IPv4
-LOCALCENTMINMOD_MIRROR='https://centminmod.com'
+LOCALCENTMINMOD_MIRROR='https://parts.centminmod.com'
 
 # set locale temporarily to english
 # due to some non-english locale issues
