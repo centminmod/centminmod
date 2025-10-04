@@ -212,7 +212,11 @@ checkimagicksys() {
     else
         VERSIONLOCK_REPO=""
     fi
-    if [[ "$CENTOS_EIGHT" = '8' || "$CENTOS_NINE" = '9' || "$CENTOS_TEN" = '10' ]] && [[ "$IMAGEMAGICK_SEVEN" = [yY] ]]; then
+    if [[ "$CENTOS_TEN" = '10' ]] && [[ "$IMAGEMAGICK_SEVEN" = [yY] ]]; then
+        # EL10 uses 'ImageMagick' without the '7' suffix for ImageMagick 7.x packages
+        REMI_IMAGEMAGICK_PKGNAME=''
+    elif [[ "$CENTOS_EIGHT" = '8' || "$CENTOS_NINE" = '9' ]] && [[ "$IMAGEMAGICK_SEVEN" = [yY] ]]; then
+        # EL8/EL9 use 'ImageMagick7' with the '7' suffix for ImageMagick 7.x packages
         REMI_IMAGEMAGICK_PKGNAME='7'
     else
         if [[ "$CENTOS_NINE" = '9' ]]; then
