@@ -1143,6 +1143,17 @@ if [[ "$CENTOS_SEVEN" = '7' ]]; then
     fi
 fi # CENTOS_SEVEN != 7
 
+# only run for CentOS 10.x
+if [[ "$CENTOS_TEN" = '10' ]]; then
+    echo ""
+    echo "Check for existing mysql8.4 packages"
+    OLDMYSQL84_COMMON=`rpm -qa | grep 'mysql8.4-common' | head -n1`
+    if [[ ! -z "$OLDMYSQL84_COMMON" ]]; then
+        echo "${YUMDNFBIN} -y remove mysql8.4-common mysql8.4-libs perl-DBD-MySQL"
+        ${YUMDNFBIN} -y remove mysql8.4-common mysql8.4-libs perl-DBD-MySQL
+    fi
+fi # CENTOS_TEN = 10
+
 if [[ "$CENTALTREPO_DISABLE" = [nN] ]]; then
     DISABLECENTALTREPO=" --disablerepo=CentALT"
 else
@@ -1263,6 +1274,20 @@ elif [[ "$CENTOS_EIGHT" = '8' ]]; then
     cp -a /etc/my.cnf /etc/my.cnf-newold
 elif [[ "$CENTOS_NINE" = '9' ]]; then
     # run for CentOS 9.x
+    echo "time ${YUMDNFBIN}${CACHESKIP} -q -y install perl-DBI"
+    time ${YUMDNFBIN}${CACHESKIP} -q -y install perl-DBI
+
+    echo ""
+    echo "*************************************************"
+    cecho "MariaDB 11.4.x YUM install..." $boldgreen
+    cecho "yum -q -y install MariaDB-client MariaDB-common MariaDB-devel MariaDB-server MariaDB-shared${DISABLEOTHERREPO}${yumdisable_appstream}" $boldgreen
+    echo "*************************************************"
+    echo ""
+    time time $YUMDNFBIN -y install MariaDB-client MariaDB-common MariaDB-devel MariaDB-server MariaDB-shared${DISABLEOTHERREPO}${yumdisable_appstream}
+
+    cp -a /etc/my.cnf /etc/my.cnf-newold
+elif [[ "$CENTOS_TEN" = '10' ]]; then
+    # run for CentOS 10.x
     echo "time ${YUMDNFBIN}${CACHESKIP} -q -y install perl-DBI"
     time ${YUMDNFBIN}${CACHESKIP} -q -y install perl-DBI
 

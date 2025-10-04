@@ -2116,7 +2116,7 @@ if [[ "$CENTOS_NINE" -eq '9' ]]; then
 fi
 
 if [[ "$CENTOS_TEN" -eq '10' ]]; then
-  # el9 OSes will default to MariaDB 10.11 LTS releases
+  # el10 OSes will default to MariaDB 10.11 LTS releases
   MARIADB_INSTALLTENTWO='n'
   MARIADB_INSTALLTENTHREE='n'
   MARIADB_INSTALLTENFOUR='n'
