@@ -30,7 +30,7 @@ DT=$(date +"%d%m%y-%H%M%S")
 branchname='141.00beta01'
 SCRIPT_MAJORVER='141'
 SCRIPT_MINORVER='00'
-SCRIPT_INCREMENTVER='024'
+SCRIPT_INCREMENTVER='025'
 SCRIPT_VERSIONSHORT="${branchname}"
 SCRIPT_VERSION="${SCRIPT_VERSIONSHORT}.b${SCRIPT_INCREMENTVER}"
 SCRIPT_DATE='16/08/25'
@@ -3386,7 +3386,9 @@ echo "" >> "${CENTMINLOGDIR}/centminmod_ngxinstalltime_${DT}.log"
 echo "Total Nginx First Time Install Time: $NGXINSTALLTIME seconds" >> "${CENTMINLOGDIR}/centminmod_ngxinstalltime_${DT}.log"
 ls -lah "${CENTMINLOGDIR}/centminmod_ngxinstalltime_${DT}.log"
 
-if [[ "$MARIADB_INSTALLELEVENFOUR" = [yY] && "$MARIADB_INSTALLTENTWO" = [nN] ]]; then
+if [[ "$MARIADB_INSTALLELEVENEIGHT" = [yY] && "$MARIADB_INSTALLTENTWO" = [nN] ]]; then
+  mariadbeleveneight_installfunct
+elif [[ "$MARIADB_INSTALLELEVENFOUR" = [yY] && "$MARIADB_INSTALLTENTWO" = [nN] ]]; then
   mariadbelevenfour_installfunct
 elif [[ "$MARIADB_INSTALLTENELEVEN" = [yY] && "$MARIADB_INSTALLTENTWO" = [nN] ]]; then
   if [[ "$CENTOS_TEN" -eq '10' ]]; then
