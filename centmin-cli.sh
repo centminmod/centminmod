@@ -1235,6 +1235,7 @@ MARIADB_INSTALLTENFIVE='n'    # MariaDB 10.5 YUM default install if set to yes
 MARIADB_INSTALLTENSIX='n'     # MariaDB 10.6 YUM default install if set to yes
 MARIADB_INSTALLTENELEVEN='n'  # MariaDB 10.11 YUM default install if set to yes
 MARIADB_INSTALLELEVENFOUR='n' # MariaDB 11.4 YUM default install if set to yes
+MARIADB_INSTALLELEVENEIGHT='n' # MariaDB 11.8 YUM default install if set to yes
 
 MYSQLADMIN_SHELL='y'          # enable centmin.sh menu option 6
 
@@ -1916,6 +1917,7 @@ source "${SCRIPT_DIR}/inc/mariadb_install105.inc"
 source "${SCRIPT_DIR}/inc/mariadb_install106.inc"
 source "${SCRIPT_DIR}/inc/mariadb_install1011.inc"
 source "${SCRIPT_DIR}/inc/mariadb_install114.inc"
+source "${SCRIPT_DIR}/inc/mariadb_install118.inc"
 source "${SCRIPT_DIR}/inc/mariadb_install.inc"
 source "${SCRIPT_DIR}/inc/mysql_install.inc"
 source "${SCRIPT_DIR}/inc/mysqladmin.inc"
@@ -1953,6 +1955,7 @@ source "${SCRIPT_DIR}/inc/mariadb_upgrade105.inc"
 source "${SCRIPT_DIR}/inc/mariadb_upgrade106.inc"
 source "${SCRIPT_DIR}/inc/mariadb_upgrade1011.inc"
 source "${SCRIPT_DIR}/inc/mariadb_upgrade114.inc"
+source "${SCRIPT_DIR}/inc/mariadb_upgrade118.inc"
 source "${SCRIPT_DIR}/inc/nginx_errorpage.inc"
 source "${SCRIPT_DIR}/inc/sendmail.inc"
 source "${SCRIPT_DIR}/inc/postfix.inc"

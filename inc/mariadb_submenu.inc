@@ -83,11 +83,13 @@ do
   cecho "10). MariaDB 10.5.x to MariaDB 10.6.x LTS YUM upgrade" $boldgreen
   cecho "11). MariaDB 10.6.x to MariaDB 10.11.x YUM upgrade" $boldgreen
   cecho "12). MariaDB 10.6.x to MariaDB 11.4.x LTS YUM upgrade" $boldgreen
-  cecho "13). MariaDB 10.11.x to MariaDB 11.4.x LTS YUM upgrade" $boldgreen
-  cecho "14). Back to Main menu" $boldgreen
+  cecho "13). MariaDB 10.6.x to MariaDB 11.8.x LTS YUM upgrade" $boldgreen
+  cecho "14). MariaDB 10.11.x to MariaDB 11.4.x LTS YUM upgrade" $boldgreen
+  cecho "15). MariaDB 11.4.x to MariaDB 11.8.x LTS YUM upgrade" $boldgreen
+  cecho "16). Back to Main menu" $boldgreen
   cecho "--------------------------------------------------------" $boldyellow
 
-  read -ep "Enter option [ 0 - 14 ] " mmoption
+  read -ep "Enter option [ 0 - 16 ] " mmoption
   cecho "--------------------------------------------------------" $boldyellow
 
 #########################################################
@@ -711,6 +713,51 @@ centminlog
   if [[ "$CENTOS_EIGHT" -eq '8' && "$(rpm -qa | grep mariadb | awk '/mariadb-server-utils/')" ]]; then
     MARIADBVERCHECK=`rpm -qa | grep mariadb-server | grep -v utils | awk -F "-" '{print $3}' | cut -c1-4`
   else
+    MARIADBVERCHECK=`rpm -qa | grep MariaDB-server | awk -F "-" '{print $3}' | cut -c1-4`
+  fi
+  if [[ "$MARIADBVERCHECK" = '11.8' ]]; then
+
+    echo ""
+    cecho "MariaDB 11.8.x server already detected" $boldyellow
+
+  elif [ "$MARIADBVERCHECK" == '10.6' ]; then
+
+    if [[ "$ENABLE_MARIADBELEVENEIGHTUPGRADE" = [nN] ]]; then
+      echo "Place holder for now until MariaDB 11.8.x is ready to be added"
+      echo "11.8 LTS release officially supported until May 2030"
+      echo "https://mariadb.com/kb/en/changes-improvements-in-mariadb-11-8/"
+      echo
+      echo "Discussions https://community.centminmod.com/tags/mariadb-118/"
+    else
+      c7tmpsetup
+      if [[ "$CENTOS_TEN" -eq '10' ]]; then
+        mariadbtentoeleveneightupgrade
+      elif [[ "$CENTOS_NINE" -eq '9' ]]; then
+        mariadbtentoeleveneightupgrade
+      elif [[ "$CENTOS_EIGHT" -eq '8' ]]; then
+        mariadbtentoeleveneightupgrade
+      elif [[ "$CENTOS_SEVEN" -eq '7' ]]; then
+        mariadbtentoeleveneightupgrade
+      else
+        echo "currently only tested on EL7, EL8, EL9 or EL10 systems"
+      fi
+    fi
+  elif [ "$MARIADBVERCHECK" != '10.6' ]; then
+    echo "Need to be on MariaDB 10.6 before updating to MariaDB 11.8"
+    exit
+  fi
+} 2>&1 | tee ${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_mariadb_106-to-118_upgrade.log
+;;
+14)
+  if [ -f /etc/my.cnf ]; then
+    DT=$(date +"%d%m%y-%H%M%S")
+    cp -a /etc/my.cnf "/etc/my.cnf-menu11-submenu14-autobackup-$DT"
+  fi
+centminlog
+{
+  if [[ "$CENTOS_EIGHT" -eq '8' && "$(rpm -qa | grep mariadb | awk '/mariadb-server-utils/')" ]]; then
+    MARIADBVERCHECK=`rpm -qa | grep mariadb-server | grep -v utils | awk -F "-" '{print $3}' | cut -c1-4`
+  else
     if [[ "$ENABLE_MARIADBELEVENFOURUPGRADE" = [yY] ]]; then
       MARIADBVERCHECK=`rpm -qa | grep MariaDB-server | awk -F "-" '{print $3}' | cut -c1-5`
     else
@@ -749,7 +796,56 @@ centminlog
   fi
 } 2>&1 | tee ${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_mariadb_1011-to-114_upgrade.log
 ;;
-14)
+15)
+  if [ -f /etc/my.cnf ]; then
+    DT=$(date +"%d%m%y-%H%M%S")
+    cp -a /etc/my.cnf "/etc/my.cnf-menu11-submenu15-autobackup-$DT"
+  fi
+centminlog
+{
+  if [[ "$CENTOS_EIGHT" -eq '8' && "$(rpm -qa | grep mariadb | awk '/mariadb-server-utils/')" ]]; then
+    MARIADBVERCHECK=`rpm -qa | grep mariadb-server | grep -v utils | awk -F "-" '{print $3}' | cut -c1-4`
+  else
+    if [[ "$ENABLE_MARIADBELEVENEIGHTUPGRADE" = [yY] ]]; then
+      MARIADBVERCHECK=`rpm -qa | grep MariaDB-server | awk -F "-" '{print $3}' | cut -c1-4`
+    else
+      MARIADBVERCHECK=`rpm -qa | grep MariaDB-server | awk -F "-" '{print $3}' | cut -c1-4`
+    fi
+  fi
+  if [[ "$MARIADBVERCHECK" = '11.8' ]]; then
+
+    echo ""
+    cecho "MariaDB 11.8.x server already detected" $boldyellow
+
+  elif [ "$MARIADBVERCHECK" == '11.4' ]; then
+
+    if [[ "$ENABLE_MARIADBELEVENEIGHTUPGRADE" = [nN] ]]; then
+      echo "Place holder for now until MariaDB 11.8.x is ready to be added"
+      echo "11.8 LTS release officially supported until May 2030"
+      echo "https://mariadb.com/kb/en/changes-improvements-in-mariadb-11-8/"
+      echo
+      echo "Discussions https://community.centminmod.com/tags/mariadb-118/"
+    else
+      c7tmpsetup
+      if [[ "$CENTOS_TEN" -eq '10' ]]; then
+        mariadbtentoeleveneightupgrade
+      elif [[ "$CENTOS_NINE" -eq '9' ]]; then
+        mariadbtentoeleveneightupgrade
+      elif [[ "$CENTOS_EIGHT" -eq '8' ]]; then
+        mariadbtentoeleveneightupgrade
+      elif [[ "$CENTOS_SEVEN" -eq '7' ]]; then
+        mariadbtentoeleveneightupgrade
+      else
+        echo "currently only tested on EL7, EL8, EL9 or EL10 systems"
+      fi
+    fi
+  elif [ "$MARIADBVERCHECK" != '11.4' ]; then
+    echo "Need to be on MariaDB 11.4 before updating to MariaDB 11.8"
+    exit
+  fi
+} 2>&1 | tee ${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_mariadb_114-to-118_upgrade.log
+;;
+16)
   break
 ;;
 esac
