@@ -395,7 +395,10 @@ fi # PHP_MEMCACHE = y
 #############################################
 if [ "$PHP_MEMCACHED" == 'y' ]; then
 if [[ "$LIBMEMCACHED_YUM" = [yY] ]]; then
-    if [[ "$CENTOS_NINE" -eq '9' ]]; then
+    if [[ "$CENTOS_TEN" -eq '10' ]]; then
+        cecho "Installing libmemcached via EPEL YUM repo ..." $boldgreen
+        ${YUMDNFBIN}${CACHESKIP} -q -y install libmemcached-awesome libmemcached-awesome-devel --enablerepo=epel --disablerepo=remi --disableplugin=priorities
+    elif [[ "$CENTOS_NINE" -eq '9' ]]; then
         cecho "Installing libmemcached via crb YUM repo ..." $boldgreen
         ${YUMDNFBIN}${CACHESKIP} -q -y install libmemcached-awesome libmemcached-awesome-devel --disablerepo=remi --disablerepo=epel --disableplugin=priorities
     elif [[ "$CENTOS_EIGHT" -eq '8' ]]; then
