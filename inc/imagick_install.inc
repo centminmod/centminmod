@@ -1,5 +1,19 @@
 libheif_install() {
-    if [[ "$CENTOS_EIGHT" = 8 && "$DEVTOOLSETTWELVE" = [yY] ]]; then
+    if [[ "$CENTOS_TEN" = 10 ]]; then
+        # AlmaLinux 10 has GCC 14 as system default
+        GENERALDEVTOOLSET_FALLTHROUGH=' -Wimplicit-fallthrough=0'
+        GENERALDEVTOOLSET_EXTRAFLAGS=' -fcode-hoisting -Wno-cast-function-type -Wno-cast-align -Wno-implicit-function-declaration -Wno-builtin-declaration-mismatch -Wno-deprecated-declarations -Wno-int-conversion -Wno-unused-result -Wno-unused-result'
+        export CFLAGS="-fPIC${GENERALDEVTOOLSET_FALLTHROUGH}${GENERALDEVTOOLSET_EXTRAFLAGS}"
+        export CXXFLAGS="-fPIC"
+    elif [[ "$CENTOS_NINE" = 9 && "$DEVTOOLSETTWELVE" = [yY] ]]; then
+        if [[ -f /opt/rh/gcc-toolset-12/root/usr/bin/gcc || -f /opt/rh/gcc-toolset-12/root/usr/bin/g++ ]]; then
+            source /opt/rh/gcc-toolset-12/enable
+            GENERALDEVTOOLSET_FALLTHROUGH=' -Wimplicit-fallthrough=0'
+            GENERALDEVTOOLSET_EXTRAFLAGS=' -fcode-hoisting -Wno-cast-function-type -Wno-cast-align -Wno-implicit-function-declaration -Wno-builtin-declaration-mismatch -Wno-deprecated-declarations -Wno-int-conversion -Wno-unused-result -Wno-unused-result'
+            export CFLAGS="-fPIC${GENERALDEVTOOLSET_FALLTHROUGH}${GENERALDEVTOOLSET_EXTRAFLAGS}"
+            export CXXFLAGS="-fPIC"
+        fi
+    elif [[ "$CENTOS_EIGHT" = 8 && "$DEVTOOLSETTWELVE" = [yY] ]]; then
         if [[ -f /opt/rh/gcc-toolset-12/root/usr/bin/gcc || -f /opt/rh/gcc-toolset-12/root/usr/bin/g++ ]]; then
             source /opt/rh/gcc-toolset-12/enable
             GENERALDEVTOOLSET_FALLTHROUGH=' -Wimplicit-fallthrough=0'

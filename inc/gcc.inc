@@ -82,10 +82,15 @@ enable_devtoolset() {
       # devtoolset-4 usage for ngx_pagespeed 1.10 branch which doesn't support
       # centos 6 based gcc 4.4.7
       if [[ "$CENTOS_SIX" -eq 6 || "$CENTOS_SEVEN" -eq 7 || "$CENTOS_EIGHT" -eq 8 || "$CENTOS_NINE" -eq 9 || "$CENTOS_TEN" -eq 10 ]]; then
-        if [[ "$CENTOS_NINE" = 9 ]]; then
+        if [[ "$CENTOS_TEN" = 10 && "$CENTOSVER_NUMERIC" -ge '100' ]]; then
+            # AlmaLinux 10 has GCC 14 as system default - no gcc-toolset needed
+            GENERALDEVTOOLSET_FALLTHROUGH=' -Wimplicit-fallthrough=0'
+            GENERALDEVTOOLSET_EXTRAFLAGS=' -fcode-hoisting -Wno-cast-function-type -Wno-cast-align -Wno-implicit-function-declaration -Wno-builtin-declaration-mismatch -Wno-deprecated-declarations -Wno-int-conversion -Wno-unused-result -Wno-vla-parameter -Wno-maybe-uninitialized -Wno-return-local-addr -Wno-array-parameter -Wno-alloc-size-larger-than -Wno-address -Wno-array-bounds -Wno-discarded-qualifiers -Wno-stringop-overread -Wno-stringop-truncation -Wno-missing-field-initializers -Wno-unused-variable -Wno-format -Wno-error=unused-result -Wno-missing-profile -Wno-stringop-overflow -Wno-error=maybe-uninitialized -Wno-free-nonheap-object -Wno-bad-function-cast -Wno-dangling-pointer -Wno-array-parameter'
+            # System GCC 14 already active, no sourcing needed
+        elif [[ "$CENTOS_NINE" = 9 ]]; then
             GENERALDEVTOOLSET_FALLTHROUGH=' -Wimplicit-fallthrough=0'
             GENERALDEVTOOLSET_EXTRAFLAGS=' -fcode-hoisting -Wno-cast-function-type -Wno-cast-align -Wno-implicit-function-declaration -Wno-builtin-declaration-mismatch -Wno-deprecated-declarations -Wno-int-conversion -Wno-unused-result -Wno-vla-parameter -Wno-maybe-uninitialized -Wno-return-local-addr -Wno-array-parameter -Wno-alloc-size-larger-than -Wno-address -Wno-array-bounds -Wno-discarded-qualifiers -Wno-stringop-overread -Wno-stringop-truncation -Wno-missing-field-initializers -Wno-unused-variable -Wno-format -Wno-error=unused-result -Wno-missing-profile -Wno-stringop-overflow -Wno-error=maybe-uninitialized -Wno-free-nonheap-object -Wno-discarded-qualifiers -Wno-bad-function-cast -Wno-dangling-pointer -Wno-array-parameter'
-        elif [[ "$CENTOS_TEN" = 10 && "$CENTOSVER_NUMERIC" -ge '100' && "$DEVTOOLSETFOURTEEN" = [yY] ]]; then
+        elif [[ "$CENTOS_NINE" = 9 && "$CENTOSVER_NUMERIC" -ge '100' && "$DEVTOOLSETFOURTEEN" = [yY] ]]; then
             GENERALDEVTOOLSET_FALLTHROUGH=' -Wimplicit-fallthrough=0'
             GENERALDEVTOOLSET_EXTRAFLAGS=' -fcode-hoisting -Wno-cast-function-type -Wno-cast-align -Wno-implicit-function-declaration -Wno-builtin-declaration-mismatch -Wno-deprecated-declarations -Wno-int-conversion -Wno-unused-result -Wno-vla-parameter -Wno-maybe-uninitialized -Wno-return-local-addr -Wno-array-parameter -Wno-alloc-size-larger-than -Wno-address -Wno-array-bounds -Wno-discarded-qualifiers -Wno-stringop-overread -Wno-stringop-truncation -Wno-missing-field-initializers -Wno-unused-variable -Wno-format -Wno-error=unused-result -Wno-missing-profile -Wno-stringop-overflow -Wno-error=maybe-uninitialized -Wno-free-nonheap-object -Wno-discarded-qualifiers -Wno-bad-function-cast -Wno-dangling-pointer -Wno-array-parameter'
         elif [[ "$CENTOS_NINE" = 9 && "$CENTOSVER_NUMERIC" -ge '93' && "$DEVTOOLSETFIFTTEEN" = [yY] ]] || [[ "$CENTOS_EIGHT" = 8 && "$CENTOSVER_NUMERIC" -ge '89' && "$DEVTOOLSETFIFTTEEN" = [yY] ]]; then
