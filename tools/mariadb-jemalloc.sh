@@ -62,7 +62,12 @@ done
 
 # Function to get MariaDB version
 get_mariadb_version() {
-    local version=$(mysql -V 2>&1 | awk '{print $5}' | awk -F. '{print $1"."$2}')
+    # Try mariadb command first (MariaDB 11.4+), fall back to mysql
+    if command -v mariadb >/dev/null 2>&1; then
+        local version=$(mariadb -V 2>&1 | awk '{print $5}' | awk -F. '{print $1"."$2}')
+    else
+        local version=$(mysql -V 2>&1 | awk '{print $5}' | awk -F. '{print $1"."$2}')
+    fi
     echo $version
 }
 
