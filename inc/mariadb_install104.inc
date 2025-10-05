@@ -1124,7 +1124,7 @@ if [[ "$CENTOS_SIX" = '6' ]]; then
     mysqlinitfix
 fi # CENTOS_SEVEN != 7
 
-if [[ "$CENTOS_NINE" = '9' || "$CENTOS_EIGHT" = '8' || "$CENTOS_SEVEN" = '7' ]] && [[ ! -f /etc/systemd/system/mariadb.service.d/openfileslimit.conf && -d /etc/systemd/system/mariadb.service.d/ ]]; then
+if [[ "$CENTOS_TEN" = '10' || "$CENTOS_NINE" = '9' || "$CENTOS_EIGHT" = '8' || "$CENTOS_SEVEN" = '7' ]] && [[ ! -f /etc/systemd/system/mariadb.service.d/openfileslimit.conf && -d /etc/systemd/system/mariadb.service.d/ ]]; then
     echo "Initial Install: Update MariaDB 10 setting for LimitNOFILE=524288"
 cat > "/etc/systemd/system/mariadb.service.d/openfileslimit.conf" <<TDG
 [Service]
@@ -1133,7 +1133,7 @@ TDG
   systemctl daemon-reload
 fi
 
-if [[ "$CENTOS_NINE" = '9' || "$CENTOS_EIGHT" = '8' || "$CENTOS_SEVEN" = '7' ]] && [[ ! -f /etc/systemd/system/mariadb.service.d/notifyaccess.conf && -d /etc/systemd/system/mariadb.service.d/ ]]; then
+if [[ "$CENTOS_TEN" = '10' || "$CENTOS_NINE" = '9' || "$CENTOS_EIGHT" = '8' || "$CENTOS_SEVEN" = '7' ]] && [[ ! -f /etc/systemd/system/mariadb.service.d/notifyaccess.conf && -d /etc/systemd/system/mariadb.service.d/ ]]; then
     echo "Initial Install: Update MariaDB 10 setting for NotifyAccess=all"
 cat > "/etc/systemd/system/mariadb.service.d/notifyaccess.conf" <<TDG
 [Service]
@@ -1142,7 +1142,7 @@ TDG
   systemctl daemon-reload
 fi
 
-if [[ "$CENTOS_NINE" = '9' || "$CENTOS_EIGHT" = '8' || "$CENTOS_SEVEN" = '7' ]] && [[ ! -f /etc/systemd/system/mariadb.service.d/oomscoreadjust.conf && -d /etc/systemd/system/mariadb.service.d/ ]]; then
+if [[ "$CENTOS_TEN" = '10' || "$CENTOS_NINE" = '9' || "$CENTOS_EIGHT" = '8' || "$CENTOS_SEVEN" = '7' ]] && [[ ! -f /etc/systemd/system/mariadb.service.d/oomscoreadjust.conf && -d /etc/systemd/system/mariadb.service.d/ ]]; then
     echo "Initial Install: Update MariaDB 10 setting for OOMScoreAdjust=-1000"
 cat > "/etc/systemd/system/mariadb.service.d/oomscoreadjust.conf" <<TDG
 [Service]
