@@ -30,7 +30,7 @@ DT=$(date +"%d%m%y-%H%M%S")
 branchname='141.00beta01'
 SCRIPT_MAJORVER='141'
 SCRIPT_MINORVER='00'
-SCRIPT_INCREMENTVER='032'
+SCRIPT_INCREMENTVER='033'
 SCRIPT_VERSIONSHORT="${branchname}"
 SCRIPT_VERSION="${SCRIPT_VERSIONSHORT}.b${SCRIPT_INCREMENTVER}"
 SCRIPT_DATE='16/08/25'
@@ -3806,14 +3806,14 @@ if [[ "$CENTOS_TEN" = '10' ]] && [[ "$MDB_INSTALL" = [yY] || "$MDB_YUMREPOINSTAL
   fi
   service php-fpm stop >/dev/null 2>&1
   sleep 2
-  restart_mariadb -q
+  systemctl restart mariadb -q
   service php-fpm start >/dev/null 2>&1
   if ! is_mariadb_active -q; then
     sleep 8
     if ! is_container; then
       systemctl daemon-reload -q
     fi
-    restart_mariadb -q
+    systemctl restart mariadb -q
     if is_mariadb_active -q; then
       echo "Starting mariadb (via systemctl): [ OK ]"
     else
