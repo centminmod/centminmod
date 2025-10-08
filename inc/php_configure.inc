@@ -1636,7 +1636,14 @@ fi
 # Configure LDAP extension
 # On CentOS 7 with custom OpenSSL, disable LDAP to avoid symbol conflicts
 # System libldap.so is compiled against OpenSSL 1.0.2 which conflicts with custom OpenSSL 1.1.1w
-if [[ "$CENTOS_SEVEN" = '7' && "$PHP_CUSTOMSSL_FORCE" = [yY] ]]; then
+# Ensure custom_config.inc is loaded to check PHP_CUSTOMSSL_FORCE
+if [ -f "/etc/centminmod/custom_config.inc" ]; then
+    source "/etc/centminmod/custom_config.inc"
+elif [ -f "${SCRIPT_DIR}/inc/custom_config.inc" ]; then
+    source "${SCRIPT_DIR}/inc/custom_config.inc"
+fi
+
+if [[ "$CENTOS_SEVEN" -eq '7' && "$PHP_CUSTOMSSL_FORCE" = [yY] ]]; then
   echo "----------------------------------------------------------------------"
   echo "Disabling LDAP extension on CentOS 7 with custom OpenSSL"
   echo "System libldap.so compiled against OpenSSL 1.0.2 creates symbol conflicts"
