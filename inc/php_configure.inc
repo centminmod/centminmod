@@ -1633,7 +1633,17 @@ else
   MSSQLOPT=""
 fi
 
-if [[ -f /usr/include/ldap.h ]]; then
+# Configure LDAP extension
+# On CentOS 7 with custom OpenSSL, disable LDAP to avoid symbol conflicts
+# System libldap.so is compiled against OpenSSL 1.0.2 which conflicts with custom OpenSSL 1.1.1w
+if [[ "$CENTOS_SEVEN" = '7' && "$PHP_CUSTOMSSL_FORCE" = [yY] ]]; then
+  echo "----------------------------------------------------------------------"
+  echo "Disabling LDAP extension on CentOS 7 with custom OpenSSL"
+  echo "System libldap.so compiled against OpenSSL 1.0.2 creates symbol conflicts"
+  echo "To enable LDAP, set PHP_CUSTOMSSL_FORCE='n' or use system OpenSSL"
+  echo "----------------------------------------------------------------------"
+  LDAPOPT=""
+elif [[ -f /usr/include/ldap.h ]]; then
   LDAPOPT=' --with-ldap --with-ldap-sasl'
 else
   LDAPOPT=""
