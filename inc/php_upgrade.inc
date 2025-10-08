@@ -1556,6 +1556,59 @@ fi
         cecho "* PHP compiled with CPU_MARCH=$CPU_MARCH" $boldgreen
     fi
     cecho "* PHP upgraded and auto reinstalled PHP extensions" $boldgreen
+
+    # CentOS 7 + Custom OpenSSL Configuration Verification
+    if [[ "$CENTOS_SEVEN" -eq '7' && "$PHP_CUSTOMSSL_FORCE" = [yY] ]]; then
+        echo "***************************************************"
+        cecho "* CentOS 7 + Custom OpenSSL Configuration Detected" $boldyellow
+        echo "***************************************************"
+
+        # Verify LDAP extension is disabled
+        if php -m 2>&1 | grep -q "^ldap$"; then
+            cecho "  ✗ WARNING: LDAP extension is enabled (should be disabled)" $boldred
+        else
+            cecho "  ✓ LDAP extension disabled (prevents OpenSSL 1.0.2 conflicts)" $boldgreen
+        fi
+
+        # Verify SNMP extension is disabled
+        if php -m 2>&1 | grep -q "^snmp$"; then
+            cecho "  ✗ WARNING: SNMP extension is enabled (should be disabled)" $boldred
+        else
+            cecho "  ✓ SNMP extension disabled (prevents OpenSSL 1.0.2 conflicts)" $boldgreen
+        fi
+
+        # Verify custom OpenSSL linkage
+        if ldd /usr/local/bin/php 2>/dev/null | grep -q "/opt/openssl/lib.*libssl.so.1.1"; then
+            cecho "  ✓ Custom OpenSSL 1.1.1w linked successfully" $boldgreen
+        else
+            cecho "  ✗ WARNING: Custom OpenSSL not detected in PHP binary" $boldred
+        fi
+
+        # Verify NO system OpenSSL 1.0.2 linkage
+        if ldd /usr/local/bin/php 2>/dev/null | grep -q "libssl.so.10"; then
+            cecho "  ✗ ERROR: System OpenSSL 1.0.2 detected (symbol conflicts possible!)" $boldred
+        else
+            cecho "  ✓ No OpenSSL 1.0.2 conflicts detected" $boldgreen
+        fi
+
+        # Verify custom uw-imap if IMAP enabled
+        if php -m 2>&1 | grep -q "^imap$"; then
+            if php -i 2>/dev/null | grep -q "IMAP c-Client.*2007f"; then
+                cecho "  ✓ Custom uw-imap 2007f compiled with OpenSSL 1.1.1w" $boldgreen
+            fi
+        fi
+
+        # Summary
+        echo "***************************************************"
+        cecho "  Configuration: PHP_CUSTOMSSL_FORCE='y'" $boldyellow
+        cecho "  OpenSSL Path: /opt/openssl" $boldyellow
+        cecho "  cURL Path: /opt/curl_php" $boldyellow
+        if [ -d /opt/uw-imap ]; then
+            cecho "  uw-imap Path: /opt/uw-imap" $boldyellow
+        fi
+        echo "***************************************************"
+    fi
+
     if [[ "$PHP_PGO" = [yY] ]] && [[ "$PHPMUVER" = '7.0' || "$PHPMUVER" = '7.1' || "$PHPMUVER" = '7.2' || "$PHPMUVER" = '7.3' || "$PHPMUVER" = '7.4' || "$PHPMUVER" = '8.0' || "$PHPMUVER" = '8.1' || "$PHPVER_ID" -ge '80000' ]]; then
         cecho "* PHP_PGO='y' detected. PHP compiled with Profile Guided Optimizations" $boldgreen
         cecho "* https://software.intel.com/en-us/blogs/2015/10/09/pgo-let-it-go-php" $boldgreen
