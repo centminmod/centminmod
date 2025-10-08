@@ -333,6 +333,18 @@ fi
 
 funct_mktempfile
 
+# Auto-rebuild OpenSSL with shared libraries when PHP_CUSTOMSSL_FORCE='y'
+# and shared libraries are missing (required for PHP 8.3.26+ on CentOS 7)
+if [[ "$PHP_CUSTOMSSL_FORCE" = [yY] ]]; then
+    if [[ ! -f "${OPENSSL_CUSTOMPATH}/lib/libssl.so.1.1" && ! -f "${OPENSSL_CUSTOMPATH}/lib64/libssl.so.1.1" ]]; then
+        echo "----------------------------------------------------------------------"
+        echo "PHP_CUSTOMSSL_FORCE='y' detected but OpenSSL shared libraries missing"
+        echo "Rebuilding OpenSSL with shared library support for PHP compatibility"
+        echo "----------------------------------------------------------------------"
+        installopenssl
+    fi
+fi
+
 if [[ "$UALL" = 'y' ]]; then
     phpver=$(php-config --version)
     overwritephpfpmconf='n'
