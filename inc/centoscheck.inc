@@ -75,6 +75,8 @@ if [[ "$INITIALINSTALL" = [yY] ]]; then
               centoscheckcont='y'
             elif [[ "$CENTOS_ALPHATEST" = [yY] && "$CENTOS_EIGHT" -eq '8' ]]; then
               centoscheckcont='y'
+            elif [[ "$CENTOS_ALPHATEST" = [yY] && "$CENTOS_SEVEN" -eq '7' ]]; then
+              centoscheckcont='y'
             else
               echo ""
               read -ep "Do you still want to continue with install ? [y/n]: " centoscheckcont
