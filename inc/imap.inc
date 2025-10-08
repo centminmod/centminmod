@@ -20,12 +20,16 @@ phpimap_source_install() {
     wget -O imap-2007f-patched.tar.gz https://github.com/uw-imap/imap/archive/refs/tags/patches-FD29-RPM.tar.gz
   fi
 
+  # Clean up any existing extracted directory to ensure fresh compilation
+  rm -rf imap-patches-FD29-RPM
+
   tar xzf imap-2007f-patched.tar.gz
   cd imap-patches-FD29-RPM
 
-  # Apply PR #5 TLS method fix for OpenSSL 1.1.0+
-  echo "Applying TLS method compatibility patch for OpenSSL 1.1.0+..."
-  cat > /tmp/tls-method-fix.patch <<'TLSPATCH'
+  # Apply PR #5 TLS method fix for OpenSSL 1.1.0+ if not already present
+  if ! grep -q "TLS_client_method" src/osdep/unix/ssl_unix.c; then
+    echo "Applying TLS method compatibility patch for OpenSSL 1.1.0+..."
+    cat > /tmp/tls-method-fix.patch <<'TLSPATCH'
 --- a/src/osdep/unix/ssl_unix.c
 +++ b/src/osdep/unix/ssl_unix.c
 @@ -420,7 +420,11 @@ static char *ssl_start_work (SSLSTREAM *stream,char *host,unsigned long flags)
@@ -54,11 +58,15 @@ phpimap_source_install() {
      bio = BIO_new_socket (stream->tcpstream->tcpsi,BIO_NOCLOSE);
 TLSPATCH
 
-  patch -p1 < /tmp/tls-method-fix.patch
-  if [ $? -eq 0 ]; then
-    echo "✓ TLS method patch applied successfully"
+    patch -p1 < /tmp/tls-method-fix.patch
+    if [ $? -eq 0 ]; then
+      echo "✓ TLS method patch applied successfully"
+    else
+      echo "✗ ERROR: TLS method patch failed"
+      exit 1
+    fi
   else
-    echo "⚠ Warning: TLS method patch may have already been applied or failed"
+    echo "✓ TLS method patch already present in source (Fedora patches include it)"
   fi
 
   # Build for modern Linux (slx) with custom OpenSSL

@@ -112,7 +112,15 @@ compile_custom_curl() {
     # -------------------------------------------------------------------
 
     # fast-path if the same curl already exists (only when self-built path)
-    if [[ "$OPENSSL_CFG" == "--with-openssl" ]] && \
+    # Force cURL rebuild on CentOS 7 with custom OpenSSL to avoid symbol conflicts
+    # CentOS 7 system OpenSSL 1.0.2 vs custom OpenSSL 1.1.1w creates runtime conflicts
+    if [[ "$CENTOS_SEVEN" = '7' && "$PHP_CUSTOMSSL_FORCE" = [yY] ]]; then
+        echo "----------------------------------------------------------------------"
+        echo "Forcing cURL rebuild with custom OpenSSL on CentOS 7"
+        echo "Required to avoid OpenSSL symbol conflicts (libssl.so.10 vs libssl.so.1.1)"
+        echo "----------------------------------------------------------------------"
+        # Continue to rebuild (skip the return 0 below)
+    elif [[ "$OPENSSL_CFG" == "--with-openssl" ]] && \
        [[ -x "${CURL_PREFIX}/bin/curl" ]] && \
        [[ "$("${CURL_PREFIX}/bin/curl" -V | awk 'NR==1{print $2}')" == "$CURL_VER" ]]
     then
@@ -3548,10 +3556,10 @@ fi
   if [[ "$PHP_CUSTOMSSL" = [yY] ]] && [[ "$PHPMVER" = '7.4' || "$PHPMVER" = '8.0' || "$PHPMVER" = '8.1' || "$PHPMVER" = '8.2' || "$PHPMVER" = '8.3' || "$PHPMVER" = '8.4' ]]; then
     if [[ "$LIBRESSL_SWITCH" = [yY] ]]; then
       PHP_OPENSSLOPT='--with-openssl=/opt/libressl'
-      ln -s /opt/libressl/lib /opt/libressl/lib64
+      ln -sfn /opt/libressl/lib /opt/libressl/lib64
     elif [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' || "$CENTOS_TEN" -eq '10' ]] && [[ "$PHPMVER" = '8.1' || "$PHPMVER" = '8.2' || "$PHPMVER" = '8.3' || "$PHPMVER" = '8.4' ]] && [[ "$DETECTOPENSSL_THREEZERO" = '3.0' && "$LIBRESSL_SWITCH" = [nN] && "$BORINGSSL_SWITCH" = [nN] ]]; then
       PHP_OPENSSLOPT="--with-openssl=${OPENSSL_CUSTOMPATH}"
-      ln -s "${OPENSSL_CUSTOMPATH}/lib64" "${OPENSSL_CUSTOMPATH}/lib"
+      ln -sfn "${OPENSSL_CUSTOMPATH}/lib64" "${OPENSSL_CUSTOMPATH}/lib"
       echo "PHP_CUSTOMSSL=Y: install PHP + OpenSSL 3.1 OPENSSL_CFLAGS + OPENSSL_LIBS"
       export OPENSSL_CFLAGS="-I${OPENSSL_CUSTOMPATH}/include"
       export OPENSSL_LIBS="-L${OPENSSL_CUSTOMPATH}/lib -lssl -lcrypto -ldl -lpthread"
@@ -3561,7 +3569,7 @@ fi
       fi
     elif [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' || "$CENTOS_TEN" -eq '10' ]] && [[ "$PHPMVER" = '8.1' || "$PHPMVER" = '8.2' || "$PHPMVER" = '8.3' || "$PHPMVER" = '8.4' ]] && [[ "$DETECTOPENSSL_THREEONE" = '3.1' && "$LIBRESSL_SWITCH" = [nN] && "$BORINGSSL_SWITCH" = [nN] ]]; then
       PHP_OPENSSLOPT="--with-openssl=${OPENSSL_CUSTOMPATH}"
-      ln -s "${OPENSSL_CUSTOMPATH}/lib64" "${OPENSSL_CUSTOMPATH}/lib"
+      ln -sfn "${OPENSSL_CUSTOMPATH}/lib64" "${OPENSSL_CUSTOMPATH}/lib"
       echo "PHP_CUSTOMSSL=Y: install PHP + OpenSSL 3.1 OPENSSL_CFLAGS + OPENSSL_LIBS"
       export OPENSSL_CFLAGS="-I${OPENSSL_CUSTOMPATH}/include"
       export OPENSSL_LIBS="-L${OPENSSL_CUSTOMPATH}/lib -lssl -lcrypto -ldl -lpthread"
@@ -3571,7 +3579,7 @@ fi
       fi
     elif [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' || "$CENTOS_TEN" -eq '10' ]] && [[ "$PHPMVER" = '8.1' || "$PHPMVER" = '8.2' || "$PHPMVER" = '8.3' || "$PHPMVER" = '8.4' ]] && [[ "$DETECTOPENSSL_THREETWO" = '3.2' && "$LIBRESSL_SWITCH" = [nN] && "$BORINGSSL_SWITCH" = [nN] ]]; then
       PHP_OPENSSLOPT="--with-openssl=${OPENSSL_CUSTOMPATH}"
-      ln -s "${OPENSSL_CUSTOMPATH}/lib64" "${OPENSSL_CUSTOMPATH}/lib"
+      ln -sfn "${OPENSSL_CUSTOMPATH}/lib64" "${OPENSSL_CUSTOMPATH}/lib"
       echo "PHP_CUSTOMSSL=Y: install PHP + OpenSSL 3.1 OPENSSL_CFLAGS + OPENSSL_LIBS"
       export OPENSSL_CFLAGS="-I${OPENSSL_CUSTOMPATH}/include"
       export OPENSSL_LIBS="-L${OPENSSL_CUSTOMPATH}/lib -lssl -lcrypto -ldl -lpthread"
@@ -3584,7 +3592,7 @@ fi
       PHP_OPENSSLOPT="--with-openssl=${EL_COMPAT_QUIC_OPENSSL_CUSTOMPATH}"
       PHP_OPENSSL_CURL_OPT="=${EL_COMPAT_QUIC_OPENSSL_CUSTOMPATH}"
       PHP_OPENSSL_IMAP_OPT="=${EL_COMPAT_QUIC_OPENSSL_CUSTOMPATH}"
-      ln -s "${EL_COMPAT_QUIC_OPENSSL_CUSTOMPATH}/lib" "${EL_COMPAT_QUIC_OPENSSL_CUSTOMPATH}/lib64"
+      ln -sfn "${EL_COMPAT_QUIC_OPENSSL_CUSTOMPATH}/lib" "${EL_COMPAT_QUIC_OPENSSL_CUSTOMPATH}/lib64"
       echo "install PHP OPENSSL_CFLAGS + OPENSSL_LIBS"
       export OPENSSL_CFLAGS="-I${EL_COMPAT_QUIC_OPENSSL_CUSTOMPATH}/include"
       export OPENSSL_LIBS="-L${EL_COMPAT_QUIC_OPENSSL_CUSTOMPATH}/lib -lssl -lcrypto -ldl -lpthread"
@@ -3593,13 +3601,13 @@ fi
       PHP_OPENSSLOPT="--with-openssl=${EL_COMPAT_OPENSSL_CUSTOMPATH}"
       PHP_OPENSSL_CURL_OPT="=${EL_COMPAT_OPENSSL_CUSTOMPATH}"
       PHP_OPENSSL_IMAP_OPT="=${EL_COMPAT_OPENSSL_CUSTOMPATH}"
-      ln -s "${EL_COMPAT_OPENSSL_CUSTOMPATH}/lib" "${EL_COMPAT_OPENSSL_CUSTOMPATH}/lib64"
+      ln -sfn "${EL_COMPAT_OPENSSL_CUSTOMPATH}/lib" "${EL_COMPAT_OPENSSL_CUSTOMPATH}/lib64"
       echo "install PHP OPENSSL_CFLAGS + OPENSSL_LIBS"
       export OPENSSL_CFLAGS="-I${EL_COMPAT_OPENSSL_CUSTOMPATH}/include"
       export OPENSSL_LIBS="-L${EL_COMPAT_OPENSSL_CUSTOMPATH}/lib -lssl -lcrypto -ldl -lpthread"
     elif [[ "$DETECTOPENSSL_THREEZERO" != '3.0' && "$LIBRESSL_SWITCH" = [nN] && "$BORINGSSL_SWITCH" = [nN] ]]; then
       PHP_OPENSSLOPT="--with-openssl=${OPENSSL_CUSTOMPATH}"
-      ln -s "${OPENSSL_CUSTOMPATH}/lib64" "${OPENSSL_CUSTOMPATH}/lib"
+      ln -sfn "${OPENSSL_CUSTOMPATH}/lib64" "${OPENSSL_CUSTOMPATH}/lib"
       echo "install PHP OPENSSL_CFLAGS + OPENSSL_LIBS"
       export OPENSSL_CFLAGS="-I${OPENSSL_CUSTOMPATH}/include"
       export OPENSSL_LIBS="-L${OPENSSL_CUSTOMPATH}/lib -lssl -lcrypto -ldl -lpthread"
@@ -3632,10 +3640,10 @@ fi
   if [[ "$PHP_CUSTOMSSL" = [yY] ]] && [[ "$PHPMUVER" = '7.4' || "$PHPMUVER" = '8.0' || "$PHPMUVER" = '8.1' || "$PHPMUVER" = '8.2' || "$PHPMUVER" = '8.3' || "$PHPMUVER" = '8.4' || "$PHPVER_ID" -ge '80000' ]]; then
     if [[ "$LIBRESSL_SWITCH" = [yY] ]]; then
       PHP_OPENSSLOPT='--with-openssl=/opt/libressl'
-      ln -s /opt/libressl/lib /opt/libressl/lib64
+      ln -sfn /opt/libressl/lib /opt/libressl/lib64
     elif [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' || "$CENTOS_TEN" -eq '10' ]] && [[ "$PHPMUVER" = '8.1' || "$PHPMUVER" = '8.2' || "$PHPMUVER" = '8.3' || "$PHPMUVER" = '8.4' ]] && [[ "$DETECTOPENSSL_THREEZERO" = '3.0' && "$LIBRESSL_SWITCH" = [nN] && "$BORINGSSL_SWITCH" = [nN] ]]; then
       PHP_OPENSSLOPT="--with-openssl=${OPENSSL_CUSTOMPATH}"
-      ln -s "${OPENSSL_CUSTOMPATH}/lib64" "${OPENSSL_CUSTOMPATH}/lib"
+      ln -sfn "${OPENSSL_CUSTOMPATH}/lib64" "${OPENSSL_CUSTOMPATH}/lib"
       echo "PHP_CUSTOMSSL=Y: upgrade PHP + OpenSSL 3.1 OPENSSL_CFLAGS + OPENSSL_LIBS"
       export OPENSSL_CFLAGS="-I${OPENSSL_CUSTOMPATH}/include"
       export OPENSSL_LIBS="-L${OPENSSL_CUSTOMPATH}/lib -lssl -lcrypto -ldl -lpthread"
@@ -3645,7 +3653,7 @@ fi
       fi
     elif [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' || "$CENTOS_TEN" -eq '10' ]] && [[ "$PHPMUVER" = '8.1' || "$PHPMUVER" = '8.2' || "$PHPMUVER" = '8.3' || "$PHPMUVER" = '8.4' ]] && [[ "$DETECTOPENSSL_THREEONE" = '3.1' && "$LIBRESSL_SWITCH" = [nN] && "$BORINGSSL_SWITCH" = [nN] ]]; then
       PHP_OPENSSLOPT="--with-openssl=${OPENSSL_CUSTOMPATH}"
-      ln -s "${OPENSSL_CUSTOMPATH}/lib64" "${OPENSSL_CUSTOMPATH}/lib"
+      ln -sfn "${OPENSSL_CUSTOMPATH}/lib64" "${OPENSSL_CUSTOMPATH}/lib"
       echo "PHP_CUSTOMSSL=Y: upgrade PHP + OpenSSL 3.1 OPENSSL_CFLAGS + OPENSSL_LIBS"
       export OPENSSL_CFLAGS="-I${OPENSSL_CUSTOMPATH}/include"
       export OPENSSL_LIBS="-L${OPENSSL_CUSTOMPATH}/lib -lssl -lcrypto -ldl -lpthread"
@@ -3655,7 +3663,7 @@ fi
       fi
     elif [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' || "$CENTOS_TEN" -eq '10' ]] && [[ "$PHPMUVER" = '8.1' || "$PHPMUVER" = '8.2' || "$PHPMUVER" = '8.3' || "$PHPMUVER" = '8.4' ]] && [[ "$DETECTOPENSSL_THREETWO" = '3.2' && "$LIBRESSL_SWITCH" = [nN] && "$BORINGSSL_SWITCH" = [nN] ]]; then
       PHP_OPENSSLOPT="--with-openssl=${OPENSSL_CUSTOMPATH}"
-      ln -s "${OPENSSL_CUSTOMPATH}/lib64" "${OPENSSL_CUSTOMPATH}/lib"
+      ln -sfn "${OPENSSL_CUSTOMPATH}/lib64" "${OPENSSL_CUSTOMPATH}/lib"
       echo "PHP_CUSTOMSSL=Y: upgrade PHP + OpenSSL 3.1 OPENSSL_CFLAGS + OPENSSL_LIBS"
       export OPENSSL_CFLAGS="-I${OPENSSL_CUSTOMPATH}/include"
       export OPENSSL_LIBS="-L${OPENSSL_CUSTOMPATH}/lib -lssl -lcrypto -ldl -lpthread"
@@ -3668,7 +3676,7 @@ fi
       PHP_OPENSSLOPT="--with-openssl=${EL_COMPAT_QUIC_OPENSSL_CUSTOMPATH}"
       PHP_OPENSSL_CURL_OPT="=${EL_COMPAT_QUIC_OPENSSL_CUSTOMPATH}"
       PHP_OPENSSL_IMAP_OPT="=${EL_COMPAT_QUIC_OPENSSL_CUSTOMPATH}"
-      ln -s "${EL_COMPAT_QUIC_OPENSSL_CUSTOMPATH}/lib" "${EL_COMPAT_QUIC_OPENSSL_CUSTOMPATH}/lib64"
+      ln -sfn "${EL_COMPAT_QUIC_OPENSSL_CUSTOMPATH}/lib" "${EL_COMPAT_QUIC_OPENSSL_CUSTOMPATH}/lib64"
       echo "upgrade PHP OPENSSL_CFLAGS + OPENSSL_LIBS"
       export OPENSSL_CFLAGS="-I${EL_COMPAT_QUIC_OPENSSL_CUSTOMPATH}/include"
       export OPENSSL_LIBS="-L${EL_COMPAT_QUIC_OPENSSL_CUSTOMPATH}/lib -lssl -lcrypto -ldl -lpthread"
@@ -3677,13 +3685,13 @@ fi
       PHP_OPENSSLOPT="--with-openssl=${EL_COMPAT_OPENSSL_CUSTOMPATH}"
       PHP_OPENSSL_CURL_OPT="=${EL_COMPAT_OPENSSL_CUSTOMPATH}"
       PHP_OPENSSL_IMAP_OPT="=${EL_COMPAT_OPENSSL_CUSTOMPATH}"
-      ln -s "${EL_COMPAT_OPENSSL_CUSTOMPATH}/lib" "${EL_COMPAT_OPENSSL_CUSTOMPATH}/lib64"
+      ln -sfn "${EL_COMPAT_OPENSSL_CUSTOMPATH}/lib" "${EL_COMPAT_OPENSSL_CUSTOMPATH}/lib64"
       echo "upgrade PHP OPENSSL_CFLAGS + OPENSSL_LIBS"
       export OPENSSL_CFLAGS="-I${EL_COMPAT_OPENSSL_CUSTOMPATH}/include"
       export OPENSSL_LIBS="-L${EL_COMPAT_OPENSSL_CUSTOMPATH}/lib -lssl -lcrypto -ldl -lpthread"
     elif [[ "$DETECTOPENSSL_THREEZERO" != '3.0' && "$LIBRESSL_SWITCH" = [nN] && "$BORINGSSL_SWITCH" = [nN] ]]; then
       PHP_OPENSSLOPT="--with-openssl=${OPENSSL_CUSTOMPATH}"
-      ln -s "${OPENSSL_CUSTOMPATH}/lib64" "${OPENSSL_CUSTOMPATH}/lib"
+      ln -sfn "${OPENSSL_CUSTOMPATH}/lib64" "${OPENSSL_CUSTOMPATH}/lib"
       echo "upgrade PHP OPENSSL_CFLAGS + OPENSSL_LIBS"
       export OPENSSL_CFLAGS="-I${OPENSSL_CUSTOMPATH}/include"
       export OPENSSL_LIBS="-L${OPENSSL_CUSTOMPATH}/lib -lssl -lcrypto -ldl -lpthread"
