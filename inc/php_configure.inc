@@ -3084,7 +3084,7 @@ gcc -c -Q -march=${march_flag}${PHPEXTRA_CFLAGS} --help=target | grep -E 'mtune|
   echo
   diff -y --suppress-common-lines ${CENTMINLOGDIR}/gcc_php_native.log ${CENTMINLOGDIR}/gcc_php_x86-64.log | tee ${CENTMINLOGDIR}/gcc_php_diff_native-vs-x86-64.log
   \cp -a "${CENTMINLOGDIR}/gcc_php_native.log" "${CENTMINLOGDIR}/gcc_php_native_${DT}.log"
-  \CP -a "${CENTMINLOGDIR}/gcc_php_diff_native-vs-x86-64.log" "${CENTMINLOGDIR}/gcc_php_diff_native-vs-x86-64_${DT}.log"
+  \cp -a "${CENTMINLOGDIR}/gcc_php_diff_native-vs-x86-64.log" "${CENTMINLOGDIR}/gcc_php_diff_native-vs-x86-64_${DT}.log"
   echo
   grep -E '-march=|-mtune|-mavx|-msse4|-mpclmul' ${CENTMINLOGDIR}/gcc_php_diff_native-vs-x86-64.log
   # if non native target x86-64 is used 
@@ -3681,6 +3681,12 @@ if [[ "$PHPMVER" = '7.3' || "$PHPMUVER" = '7.3' || "$PHPMVER" = '7.4' || "$PHPMU
   elif [[ "$CENTOS_SEVEN" -eq '7' ]]; then
     LIBZIP_RPATH=' -Wl,-rpath,/usr/lib64'
     LIBZIP_PKG_CONFIG_PATH="/usr/lib64/pkgconfig:"
+    # Fix: When PHP_CUSTOMSSL_FORCE='y', prepend custom OpenSSL rpath
+    # to ensure runtime linker searches /opt/openssl/lib BEFORE /usr/lib64
+    if [[ "$PHP_CUSTOMSSL_FORCE" = [yY] && "$PHP_CUSTOMSSL" = [yY] ]]; then
+      LIBZIP_RPATH=" -Wl,-rpath,${OPENSSL_CUSTOMPATH}/lib -Wl,-rpath,/usr/lib64"
+      echo "Custom OpenSSL rpath added for CentOS 7: ${OPENSSL_CUSTOMPATH}/lib"
+    fi
   fi
 fi
 if [[ "$PHP_ARGON" = [yY] ]]; then
