@@ -3710,13 +3710,18 @@ fi
   # fi
 
 
-if [[ "$PHPIMAP" = [yY] ]]; then
+phpimap_install
+
+# Configure IMAP extension options
+# Use custom compiled path if available (CentOS 7 + custom OpenSSL)
+if [[ -n "$PHP_IMAP_CUSTOM_PATH" && "$PHPIMAP" = [yY] ]]; then
+  IMAPOPT=" --with-imap=$PHP_IMAP_CUSTOM_PATH --with-imap-ssl${PHP_OPENSSL_IMAP_OPT}"
+  echo "Using custom compiled uw-imap from: $PHP_IMAP_CUSTOM_PATH"
+elif [[ "$PHPIMAP" = [yY] ]]; then
   IMAPOPT=" --with-imap --with-imap-ssl${PHP_OPENSSL_IMAP_OPT}"
 else
   IMAPOPT=""
 fi
-
-phpimap_install
 
 if [[ "$PHPMVER" = '5.5' || "$PHPMVER" = '5.6' || "$PHPMVER" = '7.0' || "$PHPMVER" = '7.1' || "$PHPMVER" = '7.2' || "$PHPMVER" = '7.3' ]]; then
   PHP_OPENSSLOPT='--with-openssl'
