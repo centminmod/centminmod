@@ -148,6 +148,8 @@ compile_custom_curl() {
     ./configure \
         --prefix="${CURL_PREFIX}" \
         --disable-static \
+        --disable-ldap \
+        --disable-ldaps \
         ${OPENSSL_CFG} \
         --with-ca-bundle=${PHP_CACERT_BUNDLE_PATH} \
         || { echo "Configure failed"; return 1; }
