@@ -35,7 +35,11 @@ check_openssl_shared_libraries() {
             # Required when switching from static to shared libraries
             export OPENSSL_FORCECOMPILE='y'
 
+            # Save current directory before OpenSSL rebuild
+            SAVED_PWD="$(pwd)"
             installopenssl
+            # Restore directory after OpenSSL rebuild (installopenssl changes cwd)
+            cd "${SAVED_PWD}"
 
             echo "----------------------------------------------------------------------"
             echo "OpenSSL rebuild complete - verifying shared libraries..."
