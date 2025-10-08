@@ -26,48 +26,9 @@ phpimap_source_install() {
   tar xzf imap-2007f-patched.tar.gz
   cd imap-patches-FD29-RPM
 
-  # Apply PR #5 TLS method fix for OpenSSL 1.1.0+ if not already present
-  if ! grep -q "TLS_client_method" src/osdep/unix/ssl_unix.c; then
-    echo "Applying TLS method compatibility patch for OpenSSL 1.1.0+..."
-    cat > /tmp/tls-method-fix.patch <<'TLSPATCH'
---- a/src/osdep/unix/ssl_unix.c
-+++ b/src/osdep/unix/ssl_unix.c
-@@ -420,7 +420,11 @@ static char *ssl_start_work (SSLSTREAM *stream,char *host,unsigned long flags)
-   SSL_CTX_set_options (stream->context,0);
-   SSL_CTX_set_cipher_list (stream->context,SSLCIPHERLIST);
-   SSL_CTX_set_default_verify_paths (stream->context);
-+#if OPENSSL_VERSION_NUMBER >= 0x10100000
-+  if (!(stream->con = (SSL *) SSL_new (stream->context = SSL_CTX_new (TLS_client_method())))) {
-+#else
-   if (!(stream->con = (SSL *) SSL_new (stream->context = SSL_CTX_new (TLSv1_client_method())))) {
-+#endif
-     return "Unable to create SSL context";
-   }
-   bio = BIO_new_socket (stream->tcpstream->tcpsi,BIO_NOCLOSE);
-@@ -903,7 +907,11 @@ static char *ssl_server_init (char *server)
-     SSL_CTX_set_options (stream->context,0);
-     SSL_CTX_set_cipher_list (stream->context,SSLCIPHERLIST);
-     SSL_CTX_load_verify_locations (stream->context,NIL,NIL);
-+#if OPENSSL_VERSION_NUMBER >= 0x10100000
-+    if (!(stream->con = SSL_new (stream->context = SSL_CTX_new (TLS_server_method())))) {
-+#else
-     if (!(stream->con = SSL_new (stream->context = SSL_CTX_new (TLSv1_server_method())))) {
-+#endif
-       return "Unable to create SSL context";
-     }
-     bio = BIO_new_socket (stream->tcpstream->tcpsi,BIO_NOCLOSE);
-TLSPATCH
-
-    patch -p1 < /tmp/tls-method-fix.patch
-    if [ $? -eq 0 ]; then
-      echo "✓ TLS method patch applied successfully"
-    else
-      echo "✗ ERROR: TLS method patch failed"
-      exit 1
-    fi
-  else
-    echo "✓ TLS method patch already present in source (Fedora patches include it)"
-  fi
+  # Fedora patches (patches-FD29-RPM tag) already include OpenSSL 1.1.x compatibility
+  # via patch 1006_openssl1.1_autoverify.patch which handles X509 struct opacity
+  echo "Using Fedora patches from patches-FD29-RPM tag (includes OpenSSL 1.1.x compatibility)"
 
   # Build for modern Linux (slx) with custom OpenSSL
   echo "Building uw-imap with custom OpenSSL at /opt/openssl..."
