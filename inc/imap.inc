@@ -15,13 +15,51 @@ phpimap_source_install() {
 
   cd "$DIR_TMP"
 
-  # Download uw-imap source from GitHub mirror
-  if [ ! -f imap-2007f.tar.gz ]; then
-    wget -O imap-2007f.tar.gz https://github.com/uw-imap/imap/archive/refs/tags/imap-2007f_upstream.tar.gz
+  # Download uw-imap source with Fedora patches (includes OpenSSL 1.1 compatibility)
+  if [ ! -f imap-2007f-patched.tar.gz ]; then
+    wget -O imap-2007f-patched.tar.gz https://github.com/uw-imap/imap/archive/refs/tags/patches-FD29-RPM.tar.gz
   fi
 
-  tar xzf imap-2007f.tar.gz
-  cd imap-imap-2007f_upstream
+  tar xzf imap-2007f-patched.tar.gz
+  cd imap-patches-FD29-RPM
+
+  # Apply PR #5 TLS method fix for OpenSSL 1.1.0+
+  echo "Applying TLS method compatibility patch for OpenSSL 1.1.0+..."
+  cat > /tmp/tls-method-fix.patch <<'TLSPATCH'
+--- a/src/osdep/unix/ssl_unix.c
++++ b/src/osdep/unix/ssl_unix.c
+@@ -420,7 +420,11 @@ static char *ssl_start_work (SSLSTREAM *stream,char *host,unsigned long flags)
+   SSL_CTX_set_options (stream->context,0);
+   SSL_CTX_set_cipher_list (stream->context,SSLCIPHERLIST);
+   SSL_CTX_set_default_verify_paths (stream->context);
++#if OPENSSL_VERSION_NUMBER >= 0x10100000
++  if (!(stream->con = (SSL *) SSL_new (stream->context = SSL_CTX_new (TLS_client_method())))) {
++#else
+   if (!(stream->con = (SSL *) SSL_new (stream->context = SSL_CTX_new (TLSv1_client_method())))) {
++#endif
+     return "Unable to create SSL context";
+   }
+   bio = BIO_new_socket (stream->tcpstream->tcpsi,BIO_NOCLOSE);
+@@ -903,7 +907,11 @@ static char *ssl_server_init (char *server)
+     SSL_CTX_set_options (stream->context,0);
+     SSL_CTX_set_cipher_list (stream->context,SSLCIPHERLIST);
+     SSL_CTX_load_verify_locations (stream->context,NIL,NIL);
++#if OPENSSL_VERSION_NUMBER >= 0x10100000
++    if (!(stream->con = SSL_new (stream->context = SSL_CTX_new (TLS_server_method())))) {
++#else
+     if (!(stream->con = SSL_new (stream->context = SSL_CTX_new (TLSv1_server_method())))) {
++#endif
+       return "Unable to create SSL context";
+     }
+     bio = BIO_new_socket (stream->tcpstream->tcpsi,BIO_NOCLOSE);
+TLSPATCH
+
+  patch -p1 < /tmp/tls-method-fix.patch
+  if [ $? -eq 0 ]; then
+    echo "✓ TLS method patch applied successfully"
+  else
+    echo "⚠ Warning: TLS method patch may have already been applied or failed"
+  fi
 
   # Build for modern Linux (slx) with custom OpenSSL
   echo "Building uw-imap with custom OpenSSL at /opt/openssl..."
