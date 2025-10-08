@@ -333,56 +333,6 @@ fi
 
 funct_mktempfile
 
-# Auto-rebuild OpenSSL with shared libraries when PHP_CUSTOMSSL_FORCE='y'
-# and shared libraries are missing (required for PHP 8.3.26+ on CentOS 7)
-
-# Ensure custom_config.inc is loaded
-if [ -f "/etc/centminmod/custom_config.inc" ]; then
-    source "/etc/centminmod/custom_config.inc"
-fi
-
-# Set default if not already set
-OPENSSL_CUSTOMPATH=${OPENSSL_CUSTOMPATH:-/opt/openssl}
-
-echo "========== OpenSSL Shared Library Check =========="
-echo "PHP_CUSTOMSSL_FORCE: '${PHP_CUSTOMSSL_FORCE}'"
-echo "OPENSSL_CUSTOMPATH: '${OPENSSL_CUSTOMPATH}'"
-
-if [[ "$PHP_CUSTOMSSL_FORCE" = [yY] ]]; then
-    echo "PHP_CUSTOMSSL_FORCE='y' detected - checking for OpenSSL shared libraries..."
-
-    # Check for any .so files (not just exact version)
-    if ! ls "${OPENSSL_CUSTOMPATH}"/lib*/libssl.so* >/dev/null 2>&1; then
-        echo "----------------------------------------------------------------------"
-        echo "OpenSSL shared libraries NOT found in ${OPENSSL_CUSTOMPATH}"
-        echo "This is required for PHP 8.3.26+ on CentOS 7"
-        echo "Triggering automatic OpenSSL rebuild with shared library support..."
-        echo "----------------------------------------------------------------------"
-
-        # Remove circular symlink before rebuild
-        rm -f "${OPENSSL_CUSTOMPATH}/lib/lib64"
-
-        installopenssl
-
-        echo "----------------------------------------------------------------------"
-        echo "OpenSSL rebuild complete - verifying shared libraries..."
-        if ls "${OPENSSL_CUSTOMPATH}"/lib*/libssl.so* >/dev/null 2>&1; then
-            ls -la "${OPENSSL_CUSTOMPATH}"/lib*/libssl.so* | head -5
-            echo "✓ Shared libraries successfully created"
-        else
-            echo "✗ WARNING: Shared libraries still not found!"
-            echo "Manual rebuild may be required: ./centmin.sh 4"
-        fi
-        echo "----------------------------------------------------------------------"
-    else
-        echo "✓ OpenSSL shared libraries found - skipping rebuild"
-        ls -la "${OPENSSL_CUSTOMPATH}"/lib*/libssl.so* | head -3
-    fi
-else
-    echo "PHP_CUSTOMSSL_FORCE not set to 'y' - using default OpenSSL configuration"
-fi
-echo "=================================================="
-
 if [[ "$UALL" = 'y' ]]; then
     phpver=$(php-config --version)
     overwritephpfpmconf='n'
