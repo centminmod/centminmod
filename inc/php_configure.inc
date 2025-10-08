@@ -1721,7 +1721,26 @@ else
   RECODEOPT=""
 fi
 
-if [ "$PHPSNMP" == 'y' ]; then
+# Configure SNMP extension
+# On CentOS 7 with custom OpenSSL, disable SNMP to avoid symbol conflicts
+# System libnetsnmp.so is compiled against OpenSSL 1.0.2 which conflicts with custom OpenSSL 1.1.1w
+# Proactive scan confirmed: ldd /lib64/libnetsnmp.so shows libssl.so.10 dependency
+# Ensure custom_config.inc is loaded to check PHP_CUSTOMSSL_FORCE
+if [ -f "/etc/centminmod/custom_config.inc" ]; then
+    source "/etc/centminmod/custom_config.inc"
+elif [ -f "${SCRIPT_DIR}/inc/custom_config.inc" ]; then
+    source "${SCRIPT_DIR}/inc/custom_config.inc"
+fi
+
+if [[ "$CENTOS_SEVEN" -eq '7' && "$PHP_CUSTOMSSL_FORCE" = [yY] ]]; then
+  echo "----------------------------------------------------------------------"
+  echo "Disabling SNMP extension on CentOS 7 with custom OpenSSL"
+  echo "System libnetsnmp.so compiled against OpenSSL 1.0.2 creates symbol conflicts"
+  echo "Scan confirmed: ldd /lib64/libnetsnmp.so shows libssl.so.10 dependency"
+  echo "To enable SNMP, set PHP_CUSTOMSSL_FORCE='n' or use system OpenSSL"
+  echo "----------------------------------------------------------------------"
+  SNMPOPT=""
+elif [ "$PHPSNMP" == 'y' ]; then
   SNMPOPT=" --with-snmp"
 else
   SNMPOPT=""
