@@ -67,11 +67,21 @@ TLSPATCH
     EXTRALDFLAGS="-L/opt/openssl/lib64 -lssl -lcrypto" \
     SSLTYPE=unix.nopwd SSLDIR=/opt/openssl
 
-  # Install to /opt/uw-imap
+  # Install to /opt/uw-imap with c-client subdirectory structure
+  # PHP configure expects files in both include/ and c-client/ directories
   echo "Installing to /opt/uw-imap..."
-  mkdir -p /opt/uw-imap/{include,lib}
+  mkdir -p /opt/uw-imap/{include,lib,c-client}
+
+  # Copy headers to both locations for compatibility
   cp c-client/*.h /opt/uw-imap/include/
+  cp c-client/*.h /opt/uw-imap/c-client/
+
+  # Copy library to both locations
   cp c-client/c-client.a /opt/uw-imap/lib/libc-client.a
+  cp c-client/c-client.a /opt/uw-imap/c-client/libc-client.a
+
+  # Also copy linkage.c which PHP configure may check for
+  cp c-client/linkage.c /opt/uw-imap/c-client/ 2>/dev/null || true
 
   # Restore original directory before exit
   cd "${IMAP_SAVED_PWD}"
