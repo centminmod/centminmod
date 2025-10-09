@@ -1570,6 +1570,16 @@ fi
         fi
         # opensslpatches
         crypto_gcc
+        # Conditional shared library support for PHP 8.3.26+ compatibility
+        # When PHP_CUSTOMSSL_FORCE='y', build shared libraries to support PHP dynamic linking
+        # Default: no-shared (static only) - maintains nginx static linking compatibility
+        if [[ "$PHP_CUSTOMSSL_FORCE" = [yY] ]]; then
+            OPENSSL_SHARED_OPT="shared"
+            echo "Building OpenSSL with shared libraries (PHP_CUSTOMSSL_FORCE='y')"
+        else
+            OPENSSL_SHARED_OPT="no-shared"
+            echo "Building OpenSSL with static libraries only (default)"
+        fi
         if [[ "$(uname -m)" = 'x86_64' ]]; then
             ECNISTP_CHECK=$(gcc -dM -E - </dev/null | grep __SIZEOF_INT128__)
             if [[ "$ECNISTP_CHECK" && ! -d "${DIR_TMP}/${OPENSSL_QUIC_DIR}" ]]; then
@@ -1777,26 +1787,26 @@ fi
                 elif [[ ! "${OPENSSL_THREADS}" ]]; then
                     OPENSSL_THREADSOPT=""
                 fi
-                echo "./config -Wl,--enable-new-dtags,-rpath=${OPENSSL_CFZLIB_RPATH}${STATICLIBSSL}/lib --prefix=$STATICLIBSSL --openssldir=$STATICLIBSSL no-shared${ECNISTP_OPT}${TLSONETHREEOPT}${OPENSSL_THREADSOPT}${OPENSSL_CFZLIB_OPT}"
-                ./config -Wl,--enable-new-dtags,-rpath=${OPENSSL_CFZLIB_RPATH}${STATICLIBSSL}/lib --prefix=$STATICLIBSSL --openssldir=$STATICLIBSSL no-shared${ECNISTP_OPT}${TLSONETHREEOPT}${OPENSSL_THREADSOPT}${OPENSSL_CFZLIB_OPT}
+                echo "./config -Wl,--enable-new-dtags,-rpath=${OPENSSL_CFZLIB_RPATH}${STATICLIBSSL}/lib --prefix=$STATICLIBSSL --openssldir=$STATICLIBSSL ${OPENSSL_SHARED_OPT}${ECNISTP_OPT}${TLSONETHREEOPT}${OPENSSL_THREADSOPT}${OPENSSL_CFZLIB_OPT}"
+                ./config -Wl,--enable-new-dtags,-rpath=${OPENSSL_CFZLIB_RPATH}${STATICLIBSSL}/lib --prefix=$STATICLIBSSL --openssldir=$STATICLIBSSL ${OPENSSL_SHARED_OPT}${ECNISTP_OPT}${TLSONETHREEOPT}${OPENSSL_THREADSOPT}${OPENSSL_CFZLIB_OPT}
             elif [[ "$DETECTOPENSSL_THREEZERO" = '3.0' ]]; then
-                echo "./Configure --prefix=$STATICLIBSSL --openssldir=$STATICLIBSSL no-shared ${ECNISTP_OPT}${OPENSSL_CFZLIB_OPT} -Wl,-rpath=${OPENSSL_CFZLIB_RPATH}${STATICLIBSSL}/lib"
-                ./Configure --prefix=$STATICLIBSSL --openssldir=$STATICLIBSSL no-shared ${ECNISTP_OPT}${OPENSSL_CFZLIB_OPT} -Wl,-rpath=${OPENSSL_CFZLIB_RPATH}${STATICLIBSSL}/lib
+                echo "./Configure --prefix=$STATICLIBSSL --openssldir=$STATICLIBSSL ${OPENSSL_SHARED_OPT} ${ECNISTP_OPT}${OPENSSL_CFZLIB_OPT} -Wl,-rpath=${OPENSSL_CFZLIB_RPATH}${STATICLIBSSL}/lib"
+                ./Configure --prefix=$STATICLIBSSL --openssldir=$STATICLIBSSL ${OPENSSL_SHARED_OPT} ${ECNISTP_OPT}${OPENSSL_CFZLIB_OPT} -Wl,-rpath=${OPENSSL_CFZLIB_RPATH}${STATICLIBSSL}/lib
             elif [[ "$DETECTOPENSSL_THREEONE" = '3.1' ]]; then
-                echo "./Configure --prefix=$STATICLIBSSL --openssldir=$STATICLIBSSL no-shared ${ECNISTP_OPT}${OPENSSL_CFZLIB_OPT} -Wl,-rpath=${OPENSSL_CFZLIB_RPATH}${STATICLIBSSL}/lib"
-                ./Configure --prefix=$STATICLIBSSL --openssldir=$STATICLIBSSL no-shared ${ECNISTP_OPT}${OPENSSL_CFZLIB_OPT} -Wl,-rpath=${OPENSSL_CFZLIB_RPATH}${STATICLIBSSL}/lib
+                echo "./Configure --prefix=$STATICLIBSSL --openssldir=$STATICLIBSSL ${OPENSSL_SHARED_OPT} ${ECNISTP_OPT}${OPENSSL_CFZLIB_OPT} -Wl,-rpath=${OPENSSL_CFZLIB_RPATH}${STATICLIBSSL}/lib"
+                ./Configure --prefix=$STATICLIBSSL --openssldir=$STATICLIBSSL ${OPENSSL_SHARED_OPT} ${ECNISTP_OPT}${OPENSSL_CFZLIB_OPT} -Wl,-rpath=${OPENSSL_CFZLIB_RPATH}${STATICLIBSSL}/lib
             elif [[ "$DETECTOPENSSL_THREETWO" = '3.2' ]]; then
-                echo "./Configure --prefix=$STATICLIBSSL --openssldir=$STATICLIBSSL no-shared ${ECNISTP_OPT}${OPENSSL_CFZLIB_OPT} -Wl,-rpath=${OPENSSL_CFZLIB_RPATH}${STATICLIBSSL}/lib"
-                ./Configure --prefix=$STATICLIBSSL --openssldir=$STATICLIBSSL no-shared ${ECNISTP_OPT}${OPENSSL_CFZLIB_OPT} -Wl,-rpath=${OPENSSL_CFZLIB_RPATH}${STATICLIBSSL}/lib
+                echo "./Configure --prefix=$STATICLIBSSL --openssldir=$STATICLIBSSL ${OPENSSL_SHARED_OPT} ${ECNISTP_OPT}${OPENSSL_CFZLIB_OPT} -Wl,-rpath=${OPENSSL_CFZLIB_RPATH}${STATICLIBSSL}/lib"
+                ./Configure --prefix=$STATICLIBSSL --openssldir=$STATICLIBSSL ${OPENSSL_SHARED_OPT} ${ECNISTP_OPT}${OPENSSL_CFZLIB_OPT} -Wl,-rpath=${OPENSSL_CFZLIB_RPATH}${STATICLIBSSL}/lib
             elif [[ "$DETECTOPENSSL_THREETHREE" = '3.3' ]]; then
-                echo "./Configure --prefix=$STATICLIBSSL --openssldir=$STATICLIBSSL no-shared ${ECNISTP_OPT}${OPENSSL_CFZLIB_OPT} -Wl,-rpath=${OPENSSL_CFZLIB_RPATH}${STATICLIBSSL}/lib"
-                ./Configure --prefix=$STATICLIBSSL --openssldir=$STATICLIBSSL no-shared ${ECNISTP_OPT}${OPENSSL_CFZLIB_OPT} -Wl,-rpath=${OPENSSL_CFZLIB_RPATH}${STATICLIBSSL}/lib
+                echo "./Configure --prefix=$STATICLIBSSL --openssldir=$STATICLIBSSL ${OPENSSL_SHARED_OPT} ${ECNISTP_OPT}${OPENSSL_CFZLIB_OPT} -Wl,-rpath=${OPENSSL_CFZLIB_RPATH}${STATICLIBSSL}/lib"
+                ./Configure --prefix=$STATICLIBSSL --openssldir=$STATICLIBSSL ${OPENSSL_SHARED_OPT} ${ECNISTP_OPT}${OPENSSL_CFZLIB_OPT} -Wl,-rpath=${OPENSSL_CFZLIB_RPATH}${STATICLIBSSL}/lib
             elif [[ "$DETECTOPENSSL_THREEFOUR" = '3.4' ]]; then
-                echo "./Configure --prefix=$STATICLIBSSL --openssldir=$STATICLIBSSL no-shared ${ECNISTP_OPT}${OPENSSL_CFZLIB_OPT} -Wl,-rpath=${OPENSSL_CFZLIB_RPATH}${STATICLIBSSL}/lib"
-                ./Configure --prefix=$STATICLIBSSL --openssldir=$STATICLIBSSL no-shared ${ECNISTP_OPT}${OPENSSL_CFZLIB_OPT} -Wl,-rpath=${OPENSSL_CFZLIB_RPATH}${STATICLIBSSL}/lib
+                echo "./Configure --prefix=$STATICLIBSSL --openssldir=$STATICLIBSSL ${OPENSSL_SHARED_OPT} ${ECNISTP_OPT}${OPENSSL_CFZLIB_OPT} -Wl,-rpath=${OPENSSL_CFZLIB_RPATH}${STATICLIBSSL}/lib"
+                ./Configure --prefix=$STATICLIBSSL --openssldir=$STATICLIBSSL ${OPENSSL_SHARED_OPT} ${ECNISTP_OPT}${OPENSSL_CFZLIB_OPT} -Wl,-rpath=${OPENSSL_CFZLIB_RPATH}${STATICLIBSSL}/lib
             else
-                echo "./config --prefix=$STATICLIBSSL --openssldir=$STATICLIBSSL no-shared enable-tlsext${ECNISTP_OPT}${OPENSSL_CFZLIB_OPT} -Wl, -rpath=${OPENSSL_CFZLIB_RPATH}${STATICLIBSSL}/lib"
-                ./config --prefix=$STATICLIBSSL --openssldir=$STATICLIBSSL no-shared enable-tlsext${ECNISTP_OPT}${OPENSSL_CFZLIB_OPT} -Wl, -rpath=${OPENSSL_CFZLIB_RPATH}${STATICLIBSSL}/lib
+                echo "./config --prefix=$STATICLIBSSL --openssldir=$STATICLIBSSL ${OPENSSL_SHARED_OPT} enable-tlsext${ECNISTP_OPT}${OPENSSL_CFZLIB_OPT} -Wl, -rpath=${OPENSSL_CFZLIB_RPATH}${STATICLIBSSL}/lib"
+                ./config --prefix=$STATICLIBSSL --openssldir=$STATICLIBSSL ${OPENSSL_SHARED_OPT} enable-tlsext${ECNISTP_OPT}${OPENSSL_CFZLIB_OPT} -Wl, -rpath=${OPENSSL_CFZLIB_RPATH}${STATICLIBSSL}/lib
             fi
         else
             if [[ "$DETECTOPENSSL_ONEZERO" = '1.1' ]] || [[ "$DETECTOPENSSL_ONEONE" = '1.1.1' ]]; then
@@ -1813,11 +1823,11 @@ fi
                     fi
                     TLSONETHREE_DETECT='n'
                 fi
-                echo "./config -Wl,--enable-new-dtags,-rpath=${STATICLIBSSL}/lib --prefix=$STATICLIBSSL --openssldir=$STATICLIBSSL no-shared${TLSONETHREEOPT}"
-                ./config -Wl,--enable-new-dtags,-rpath=${STATICLIBSSL}/lib --prefix=$STATICLIBSSL --openssldir=$STATICLIBSSL no-shared${TLSONETHREEOPT}
+                echo "./config -Wl,--enable-new-dtags,-rpath=${STATICLIBSSL}/lib --prefix=$STATICLIBSSL --openssldir=$STATICLIBSSL ${OPENSSL_SHARED_OPT}${TLSONETHREEOPT}"
+                ./config -Wl,--enable-new-dtags,-rpath=${STATICLIBSSL}/lib --prefix=$STATICLIBSSL --openssldir=$STATICLIBSSL ${OPENSSL_SHARED_OPT}${TLSONETHREEOPT}
             else
-                echo "./config --prefix=$STATICLIBSSL --openssldir=$STATICLIBSSL no-shared enable-tlsext"
-                ./config --prefix=$STATICLIBSSL --openssldir=$STATICLIBSSL no-shared enable-tlsext
+                echo "./config --prefix=$STATICLIBSSL --openssldir=$STATICLIBSSL ${OPENSSL_SHARED_OPT} enable-tlsext"
+                ./config --prefix=$STATICLIBSSL --openssldir=$STATICLIBSSL ${OPENSSL_SHARED_OPT} enable-tlsext
             fi
         fi
         if [[ "$DETECTOPENSSL_ONEZERO" = '1.1' ]] || [[ "$DETECTOPENSSL_ONEONE" = '1.1.1' ]]; then

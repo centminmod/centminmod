@@ -1,3 +1,66 @@
+#############################################################
+# Function: check_openssl_shared_libraries
+# Purpose: Auto-rebuild OpenSSL with shared libraries when
+#          PHP_CUSTOMSSL_FORCE='y' and .so files are missing
+# Required: PHP 8.3.26+ on CentOS 7 needs OpenSSL 1.1.0+
+#############################################################
+check_openssl_shared_libraries() {
+    # Ensure custom_config.inc is loaded
+    if [ -f "/etc/centminmod/custom_config.inc" ]; then
+        source "/etc/centminmod/custom_config.inc"
+    fi
+
+    # Set default if not already set
+    OPENSSL_CUSTOMPATH=${OPENSSL_CUSTOMPATH:-/opt/openssl}
+
+    echo "========== OpenSSL Shared Library Check =========="
+    echo "PHP_CUSTOMSSL_FORCE: '${PHP_CUSTOMSSL_FORCE}'"
+    echo "OPENSSL_CUSTOMPATH: '${OPENSSL_CUSTOMPATH}'"
+
+    if [[ "$PHP_CUSTOMSSL_FORCE" = [yY] ]]; then
+        echo "PHP_CUSTOMSSL_FORCE='y' detected - checking for OpenSSL shared libraries..."
+
+        # Check for any .so files (not just exact version)
+        if ! ls "${OPENSSL_CUSTOMPATH}"/lib*/libssl.so* >/dev/null 2>&1; then
+            echo "----------------------------------------------------------------------"
+            echo "OpenSSL shared libraries NOT found in ${OPENSSL_CUSTOMPATH}"
+            echo "This is required for PHP 8.3.26+ on CentOS 7"
+            echo "Triggering automatic OpenSSL rebuild with shared library support..."
+            echo "----------------------------------------------------------------------"
+
+            # Remove circular symlink before rebuild
+            rm -f "${OPENSSL_CUSTOMPATH}/lib/lib64"
+
+            # Force OpenSSL rebuild even if version matches
+            # Required when switching from static to shared libraries
+            export OPENSSL_FORCECOMPILE='y'
+
+            # Save current directory before OpenSSL rebuild
+            SAVED_PWD="$(pwd)"
+            installopenssl
+            # Restore directory after OpenSSL rebuild (installopenssl changes cwd)
+            cd "${SAVED_PWD}"
+
+            echo "----------------------------------------------------------------------"
+            echo "OpenSSL rebuild complete - verifying shared libraries..."
+            if ls "${OPENSSL_CUSTOMPATH}"/lib*/libssl.so* >/dev/null 2>&1; then
+                ls -la "${OPENSSL_CUSTOMPATH}"/lib*/libssl.so* | head -5
+                echo "✓ Shared libraries successfully created"
+            else
+                echo "✗ WARNING: Shared libraries still not found!"
+                echo "Manual rebuild may be required: ./centmin.sh 4"
+            fi
+            echo "----------------------------------------------------------------------"
+        else
+            echo "✓ OpenSSL shared libraries found - skipping rebuild"
+            ls -la "${OPENSSL_CUSTOMPATH}"/lib*/libssl.so* | head -3
+        fi
+    else
+        echo "PHP_CUSTOMSSL_FORCE not set to 'y' - using default OpenSSL configuration"
+    fi
+    echo "=================================================="
+}
+
 # ------------------------------------------------------------------
 # Function : compile_custom_curl
 # Purpose  : Build & install cURL 8.13.0 in /opt/curl_php when
@@ -49,7 +112,15 @@ compile_custom_curl() {
     # -------------------------------------------------------------------
 
     # fast-path if the same curl already exists (only when self-built path)
-    if [[ "$OPENSSL_CFG" == "--with-openssl" ]] && \
+    # Force cURL rebuild on CentOS 7 with custom OpenSSL to avoid symbol conflicts
+    # CentOS 7 system OpenSSL 1.0.2 vs custom OpenSSL 1.1.1w creates runtime conflicts
+    if [[ "$CENTOS_SEVEN" = '7' && "$PHP_CUSTOMSSL_FORCE" = [yY] ]]; then
+        echo "----------------------------------------------------------------------"
+        echo "Forcing cURL rebuild with custom OpenSSL on CentOS 7"
+        echo "Required to avoid OpenSSL symbol conflicts (libssl.so.10 vs libssl.so.1.1)"
+        echo "----------------------------------------------------------------------"
+        # Continue to rebuild (skip the return 0 below)
+    elif [[ "$OPENSSL_CFG" == "--with-openssl" ]] && \
        [[ -x "${CURL_PREFIX}/bin/curl" ]] && \
        [[ "$("${CURL_PREFIX}/bin/curl" -V | awk 'NR==1{print $2}')" == "$CURL_VER" ]]
     then
@@ -68,11 +139,19 @@ compile_custom_curl() {
     tar -xf "${SRC_DIR}/${CURL_SRC_FILE}" -C "${SRC_DIR}"
     cd "${SRC_DIR}/curl-${CURL_VER}" || return 1
 
+    if [[ "$CENTOS_TEN" -eq '10' ]]; then
+      PHP_CACERT_BUNDLE_PATH='/etc/pki/ca-trust/extracted/pem/tls-ca-bundle.pem'
+    else
+      PHP_CACERT_BUNDLE_PATH='/etc/pki/tls/certs/ca-bundle.crt'
+    fi
+
     ./configure \
         --prefix="${CURL_PREFIX}" \
         --disable-static \
+        --disable-ldap \
+        --disable-ldaps \
         ${OPENSSL_CFG} \
-        --with-ca-bundle=/etc/pki/tls/certs/ca-bundle.crt \
+        --with-ca-bundle=${PHP_CACERT_BUNDLE_PATH} \
         || { echo "Configure failed"; return 1; }
 
     make${MAKETHREADS_PHP} && make install || { echo "Build/install failed"; return 1; }
@@ -647,6 +726,10 @@ CHECKLOWMEMPHP=`expr $TOTALMEM \< $ISLOWMEMPHP`
 #############################################################
 PLIBDIR='/usr'
 PHPMVER=$(echo "$PHP_VERSION" | cut -d . -f1,2)
+
+# Check and rebuild OpenSSL if needed before PHP configuration
+check_openssl_shared_libraries
+
 echo "PHP configure stage"
 echo
 
@@ -1527,7 +1610,24 @@ else
   MSSQLOPT=""
 fi
 
-if [[ -f /usr/include/ldap.h ]]; then
+# Configure LDAP extension
+# On CentOS 7 with custom OpenSSL, disable LDAP to avoid symbol conflicts
+# System libldap.so is compiled against OpenSSL 1.0.2 which conflicts with custom OpenSSL 1.1.1w
+# Ensure custom_config.inc is loaded to check PHP_CUSTOMSSL_FORCE
+if [ -f "/etc/centminmod/custom_config.inc" ]; then
+    source "/etc/centminmod/custom_config.inc"
+elif [ -f "${SCRIPT_DIR}/inc/custom_config.inc" ]; then
+    source "${SCRIPT_DIR}/inc/custom_config.inc"
+fi
+
+if [[ "$CENTOS_SEVEN" -eq '7' && "$PHP_CUSTOMSSL_FORCE" = [yY] ]]; then
+  echo "----------------------------------------------------------------------"
+  echo "Disabling LDAP extension on CentOS 7 with custom OpenSSL"
+  echo "System libldap.so compiled against OpenSSL 1.0.2 creates symbol conflicts"
+  echo "To enable LDAP, set PHP_CUSTOMSSL_FORCE='n' or use system OpenSSL"
+  echo "----------------------------------------------------------------------"
+  LDAPOPT=""
+elif [[ -f /usr/include/ldap.h ]]; then
   LDAPOPT=' --with-ldap --with-ldap-sasl'
 else
   LDAPOPT=""
@@ -1596,7 +1696,26 @@ else
   RECODEOPT=""
 fi
 
-if [ "$PHPSNMP" == 'y' ]; then
+# Configure SNMP extension
+# On CentOS 7 with custom OpenSSL, disable SNMP to avoid symbol conflicts
+# System libnetsnmp.so is compiled against OpenSSL 1.0.2 which conflicts with custom OpenSSL 1.1.1w
+# Proactive scan confirmed: ldd /lib64/libnetsnmp.so shows libssl.so.10 dependency
+# Ensure custom_config.inc is loaded to check PHP_CUSTOMSSL_FORCE
+if [ -f "/etc/centminmod/custom_config.inc" ]; then
+    source "/etc/centminmod/custom_config.inc"
+elif [ -f "${SCRIPT_DIR}/inc/custom_config.inc" ]; then
+    source "${SCRIPT_DIR}/inc/custom_config.inc"
+fi
+
+if [[ "$CENTOS_SEVEN" -eq '7' && "$PHP_CUSTOMSSL_FORCE" = [yY] ]]; then
+  echo "----------------------------------------------------------------------"
+  echo "Disabling SNMP extension on CentOS 7 with custom OpenSSL"
+  echo "System libnetsnmp.so compiled against OpenSSL 1.0.2 creates symbol conflicts"
+  echo "Scan confirmed: ldd /lib64/libnetsnmp.so shows libssl.so.10 dependency"
+  echo "To enable SNMP, set PHP_CUSTOMSSL_FORCE='n' or use system OpenSSL"
+  echo "----------------------------------------------------------------------"
+  SNMPOPT=""
+elif [ "$PHPSNMP" == 'y' ]; then
   SNMPOPT=" --with-snmp"
 else
   SNMPOPT=""
@@ -3028,7 +3147,7 @@ if [[ "$GCCINTEL_PHP" = [yY] ]]; then
   echo
   diff -y --suppress-common-lines ${CENTMINLOGDIR}/gcc_php_native.log ${CENTMINLOGDIR}/gcc_php_x86-64.log | tee ${CENTMINLOGDIR}/gcc_php_diff_native-vs-x86-64.log
   \cp -a "${CENTMINLOGDIR}/gcc_php_native.log" "${CENTMINLOGDIR}/gcc_php_native_${DT}.log"
-  \CP -a "${CENTMINLOGDIR}/gcc_php_diff_native-vs-x86-64.log" "${CENTMINLOGDIR}/gcc_php_diff_native-vs-x86-64_${DT}.log"
+  \cp -a "${CENTMINLOGDIR}/gcc_php_diff_native-vs-x86-64.log" "${CENTMINLOGDIR}/gcc_php_diff_native-vs-x86-64_${DT}.log"
   echo
   egrep '\-march=|\-mtune|\-mavx|\-msse4|\-mpclmul' ${CENTMINLOGDIR}/gcc_php_diff_native-vs-x86-64.log
   # if non native target x86-64 is used 
@@ -3587,13 +3706,18 @@ fi
   # fi
 
 
-if [[ "$PHPIMAP" = [yY] ]]; then
+phpimap_install
+
+# Configure IMAP extension options
+# Use custom compiled path if available (CentOS 7 + custom OpenSSL)
+if [[ -n "$PHP_IMAP_CUSTOM_PATH" && "$PHPIMAP" = [yY] ]]; then
+  IMAPOPT=" --with-imap=$PHP_IMAP_CUSTOM_PATH --with-imap-ssl${PHP_OPENSSL_IMAP_OPT}"
+  echo "Using custom compiled uw-imap from: $PHP_IMAP_CUSTOM_PATH"
+elif [[ "$PHPIMAP" = [yY] ]]; then
   IMAPOPT=" --with-imap --with-imap-ssl${PHP_OPENSSL_IMAP_OPT}"
 else
   IMAPOPT=""
 fi
-
-phpimap_install
 
 if [[ "$PHPMVER" = '5.5' || "$PHPMVER" = '5.6' || "$PHPMVER" = '7.0' || "$PHPMVER" = '7.1' || "$PHPMVER" = '7.2' || "$PHPMVER" = '7.3' ]]; then
   PHP_OPENSSLOPT='--with-openssl'
@@ -3625,6 +3749,12 @@ if [[ "$PHPMVER" = '7.3' || "$PHPMUVER" = '7.3' || "$PHPMVER" = '7.4' || "$PHPMU
   elif [[ "$CENTOS_SEVEN" -eq '7' ]]; then
     LIBZIP_RPATH=' -Wl,-rpath,/usr/lib64'
     LIBZIP_PKG_CONFIG_PATH="/usr/lib64/pkgconfig:"
+    # Fix: When PHP_CUSTOMSSL_FORCE='y', prepend custom OpenSSL rpath
+    # to ensure runtime linker searches /opt/openssl/lib BEFORE /usr/lib64
+    if [[ "$PHP_CUSTOMSSL_FORCE" = [yY] && "$PHP_CUSTOMSSL" = [yY] ]]; then
+      LIBZIP_RPATH=" -Wl,-rpath,${OPENSSL_CUSTOMPATH}/lib -Wl,-rpath,/usr/lib64"
+      echo "Custom OpenSSL rpath added for CentOS 7: ${OPENSSL_CUSTOMPATH}/lib"
+    fi
   fi
 fi
 if [[ "$PHP_ARGON" = [yY] ]]; then
