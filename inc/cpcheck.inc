@@ -2411,6 +2411,12 @@ nginx_version_to_int() {
     echo "$version" | awk -F. '{print $1 * 1000000 + $2 * 1000 + $3}'
 }
 
+# Convert redis version to integer for comparison (7.2.11 -> 7002011)
+redis_version_to_int() {
+    local version=$1
+    echo "$version" | awk -F. '{print $1 * 1000000 + $2 * 1000 + $3}'
+}
+
 ngxver_checker() {
   if [[ "$(which nginx >/dev/null 2>&1; echo $?)" = '0' ]]; then
     LATEST_NGINXVERS=$(curl -${ipv_forceopt}sL --connect-timeout 10 https://nginx.org/download/ 2>&1 | grep -Eo 'nginx-[0-9]+\.[0-9]+\.[0-9]+\.tar\.gz' | sed -E 's/^nginx-([0-9]+\.[0-9]+\.[0-9]+)\.tar\.gz$/\1/' | sort -V | tail -n1 2>&1)
@@ -3285,6 +3291,41 @@ pureftpdupdates() {
   fi
 }
 
+redisupdates() {
+  # Only run on CentOS 7 systems
+  if [[ "$CENTOS_SEVEN" -eq '7' ]]; then
+    # Check if Redis is installed
+    if rpm -q redis >/dev/null 2>&1; then
+      # Get current Redis version
+      CURRENT_REDIS_VER=$(redis-server --version 2>/dev/null | awk '{print $3}' | cut -d'=' -f2)
+
+      if [[ -n "$CURRENT_REDIS_VER" ]]; then
+        # Convert versions to integers for proper comparison (7.2.11 -> 7002011)
+        CURRENT_REDIS_INT=$(redis_version_to_int "$CURRENT_REDIS_VER")
+        TARGET_REDIS_INT=$(redis_version_to_int "7.2.11")
+
+        # Only update if current version is less than 7.2.11
+        if [[ $CURRENT_REDIS_INT -lt $TARGET_REDIS_INT ]]; then
+          echo "Updating Redis from $CURRENT_REDIS_VER to 7.2.11..."
+          echo "Details https://community.centminmod.com/threads/29537/"
+
+          # Download RPMs directly to DIR_TMP
+          wget -q -O "$DIR_TMP/redis-7.2.11-1.el7.x86_64.rpm" https://parts.centminmod.com/centminmodparts/rpms/redis/el7/redis-7.2.11-1.el7.x86_64.rpm
+          wget -q -O "$DIR_TMP/redis-devel-7.2.11-1.el7.x86_64.rpm" https://parts.centminmod.com/centminmodparts/rpms/redis/el7/redis-devel-7.2.11-1.el7.x86_64.rpm
+
+          # Install Redis 7.2.11 with full paths
+          yum -y -q localinstall "$DIR_TMP/redis-7.2.11-1.el7.x86_64.rpm" "$DIR_TMP/redis-devel-7.2.11-1.el7.x86_64.rpm"
+
+          # Cleanup with full paths
+          rm -f "$DIR_TMP/redis-7.2.11-1.el7.x86_64.rpm" "$DIR_TMP/redis-devel-7.2.11-1.el7.x86_64.rpm"
+
+          echo "Redis updated to 7.2.11 successfully"
+        fi
+      fi
+    fi
+  fi
+}
+
 leupdates() {
   # update .well-known content-type
   if [ -f /usr/local/nginx/conf/staticfiles.conf ]; then
@@ -4110,6 +4151,7 @@ if [[ "$INITIALINSTALL" != [yY] ]]; then
   fixlogrotate
   csf_distftp
   pureftpdupdates
+  redisupdates
   leupdates
   memcachedupdatechecks
   xpowerby
