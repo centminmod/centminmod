@@ -80,10 +80,27 @@ libzip_install() {
   rm -rf build
   mkdir -p build
   cd build/
+
+  # Conditional OpenSSL configuration for CentOS 7 + PHP_CUSTOMSSL_FORCE
+  # Prevents libzip from linking against system OpenSSL 1.0.2 which causes symbol conflicts
+  if [[ "$CENTOS_SEVEN" = '7' && "$PHP_CUSTOMSSL_FORCE" = [yY] ]]; then
+    LIBZIP_OPENSSL_OPT="-DOPENSSL_ROOT_DIR=/opt/openssl"
+    LIBZIP_RPATH_OPT="-Wl,-rpath,/opt/openssl/lib64"
+    echo "----------------------------------------------------------------------"
+    echo "Building libzip with custom OpenSSL 1.1.1w"
+    echo "OpenSSL Path: /opt/openssl"
+    echo "RPATH: /opt/openssl/lib64"
+    echo "----------------------------------------------------------------------"
+  else
+    LIBZIP_OPENSSL_OPT=""
+    LIBZIP_RPATH_OPT=""
+  fi
+
   cmake3 .. \
   -DCMAKE_C_FLAGS="-fPIC -O2 -fstack-protector-strong -D_FORTIFY_SOURCE=2" \
   -DCMAKE_CXX_FLAGS="-fPIC -O2" \
-  -DCMAKE_SHARED_LINKER_FLAGS="-Wl,-z,relro,-z,now -pie"
+  -DCMAKE_SHARED_LINKER_FLAGS="-Wl,-z,relro,-z,now -pie ${LIBZIP_RPATH_OPT}" \
+  ${LIBZIP_OPENSSL_OPT}
   make${MAKETHREADS}
   make install
     if [[ "$PHPMVER" = '7.4' || "$PHPMUVER" = '7.4' || "$PHPMVER" = '8.0' || "$PHPMUVER" = '8.0' || "$PHPMVER" = '8.1' || "$PHPMUVER" = '8.1' || "$PHPMVER" = '8.2' || "$PHPMUVER" = '8.2' || "$PHPMVER" = '8.3' || "$PHPMUVER" = '8.3' || "$PHPMVER" = '8.4' || "$PHPMUVER" = '8.4' || "$PHPVER_ID" -ge '80000' ]]; then
