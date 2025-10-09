@@ -62,6 +62,45 @@ check_openssl_shared_libraries() {
 }
 
 # ------------------------------------------------------------------
+# Function : check_libzip_openssl_dependency
+# Purpose  : Detect libzip compiled against OpenSSL 1.0.2 on CentOS 7
+#            and force rebuild with custom OpenSSL 1.1.1w
+# ------------------------------------------------------------------
+check_libzip_openssl_dependency() {
+    if [[ "$CENTOS_SEVEN" = '7' && "$PHP_CUSTOMSSL_FORCE" = [yY] ]]; then
+        echo ""
+        echo "========== libzip OpenSSL Dependency Check =========="
+
+        if [ -f /usr/local/lib64/libzip.so ]; then
+            echo "Checking libzip OpenSSL linkage..."
+            if ldd /usr/local/lib64/libzip.so 2>/dev/null | grep -q "libcrypto.so.10"; then
+                echo "----------------------------------------------------------------------"
+                echo "⚠️  Detected libzip compiled against OpenSSL 1.0.2"
+                echo "    libzip path: /usr/local/lib64/libzip.so"
+                echo "    Dependency: libcrypto.so.10 (system OpenSSL 1.0.2)"
+                echo ""
+                echo "Forcing libzip rebuild with custom OpenSSL 1.1.1w"
+                echo "Required to prevent symbol conflicts during PHP compilation"
+                echo "----------------------------------------------------------------------"
+                export LIBZIP_CUSTOMSSL_REBUILD='y'
+
+                # Show current libzip version
+                if command -v zipinfo >/dev/null 2>&1; then
+                    echo "Current libzip version: $(zipinfo --version 2>&1 | head -1)"
+                fi
+            else
+                echo "✓ libzip already using custom OpenSSL (no rebuild needed)"
+                ldd /usr/local/lib64/libzip.so 2>/dev/null | grep -E "libssl|libcrypto"
+            fi
+        else
+            echo "✓ No existing libzip installation found (will install fresh)"
+        fi
+
+        echo "=================================================="
+    fi
+}
+
+# ------------------------------------------------------------------
 # Function : compile_custom_curl
 # Purpose  : Build & install cURL 8.13.0 in /opt/curl_php when
 #            PHP_CUSTOM_CURL='y' is set.  Leaves system curl untouched.
@@ -145,11 +184,25 @@ compile_custom_curl() {
       PHP_CACERT_BUNDLE_PATH='/etc/pki/tls/certs/ca-bundle.crt'
     fi
 
+    # Disable libpsl on CentOS 7 to prevent ICU version conflicts
+    # System libpsl links against ICU 50.2, conflicts with PHP intl ICU 62.2
+    if [[ "$CENTOS_SEVEN" = '7' && "$PHP_CUSTOMSSL_FORCE" = [yY] && "$NEWLIBICU" = [yY] ]]; then
+        CURL_LIBPSL_DISABLE='--without-libpsl'
+        echo "----------------------------------------------------------------------"
+        echo "Disabling libpsl in cURL to prevent ICU symbol conflicts"
+        echo "System libpsl → ICU 50.2, PHP intl → ICU 62.2"
+        echo "Public Suffix List cookie validation will be unavailable"
+        echo "----------------------------------------------------------------------"
+    else
+        CURL_LIBPSL_DISABLE=''
+    fi
+
     ./configure \
         --prefix="${CURL_PREFIX}" \
         --disable-static \
         --disable-ldap \
         --disable-ldaps \
+        ${CURL_LIBPSL_DISABLE} \
         ${OPENSSL_CFG} \
         --with-ca-bundle=${PHP_CACERT_BUNDLE_PATH} \
         || { echo "Configure failed"; return 1; }
@@ -729,6 +782,9 @@ PHPMVER=$(echo "$PHP_VERSION" | cut -d . -f1,2)
 
 # Check and rebuild OpenSSL if needed before PHP configuration
 check_openssl_shared_libraries
+
+# Check and rebuild libzip if it's using wrong OpenSSL version
+check_libzip_openssl_dependency
 
 echo "PHP configure stage"
 echo
@@ -3858,7 +3914,17 @@ if [[ "$PHP_LIBZIP" = [yY] || "$PHP_ARGON" = [yY] ]] && [[ "$PHPMVER" = '7.2' ||
   fi
   if [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]] && [[ "$IMAGEMAGICK_SEVEN" = [yY] ]]; then
     php_imagemagick_seven_detected_libzip
-  elif [[ "$CENTOS_SEVEN" -eq '7' ]] && [[ ! -f /usr/local/include/zip.h || ! -d "${DIR_TMP}/libzip-${LIBZIP_VER}" ]]; then
+  elif [[ "$CENTOS_SEVEN" -eq '7' ]] && [[ ! -f /usr/local/include/zip.h || ! -d "${DIR_TMP}/libzip-${LIBZIP_VER}" || "$LIBZIP_CUSTOMSSL_REBUILD" = 'y' ]]; then
+    # Force rebuild if LIBZIP_CUSTOMSSL_REBUILD flag is set (OpenSSL version mismatch detected)
+    if [[ "$LIBZIP_CUSTOMSSL_REBUILD" = 'y' ]]; then
+      echo "----------------------------------------------------------------------"
+      echo "Forcing libzip rebuild due to OpenSSL version mismatch"
+      echo "Removing old libzip files..."
+      echo "----------------------------------------------------------------------"
+      rm -f /usr/local/lib64/libzip.so* /usr/local/lib/libzip.so* /usr/local/include/zip*.h 2>/dev/null || true
+      # Clean up source directory to force fresh compilation
+      rm -rf "${DIR_TMP}/libzip-${LIBZIP_VER}" 2>/dev/null || true
+    fi
     libzip_install
   elif [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]] && [[ -f /usr/local/include/zip.h || -f "$(rpm -ql libzip | grep -m1 '.so')" ]] && [[ "$IMAGEMAGICK_SEVEN" != [yY] ]]; then
     libzip_remove

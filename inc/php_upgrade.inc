@@ -1591,6 +1591,29 @@ fi
             cecho "  ✓ No OpenSSL 1.0.2 conflicts detected" $boldgreen
         fi
 
+        # Verify libzip compiled with custom OpenSSL
+        if [ -f /usr/local/lib64/libzip.so ]; then
+            if ldd /usr/local/lib64/libzip.so 2>/dev/null | grep -q "/opt/openssl/lib64/libcrypto.so.1.1"; then
+                cecho "  ✓ libzip compiled with custom OpenSSL 1.1.1w" $boldgreen
+            elif ldd /usr/local/lib64/libzip.so 2>/dev/null | grep -q "libcrypto.so.10"; then
+                cecho "  ✗ WARNING: libzip using system OpenSSL 1.0.2 (rebuild required)" $boldred
+            else
+                cecho "  ⚠ libzip OpenSSL linkage unclear" $boldyellow
+            fi
+        fi
+
+        # Verify no ICU version conflicts
+        if ldd /usr/local/bin/php 2>/dev/null | grep -q "libicuuc.so.50"; then
+            cecho "  ✗ WARNING: PHP using old ICU 50 (system version)" $boldred
+        elif ldd /usr/local/bin/php 2>/dev/null | grep -q "libicuuc.so.62"; then
+            # Check if custom cURL has libpsl pulling in ICU 50
+            if [ -f /opt/curl_php/lib/libcurl.so ] && ldd /opt/curl_php/lib/libcurl.so 2>/dev/null | grep -q "libpsl"; then
+                cecho "  ✗ WARNING: cURL libpsl detected (may cause ICU conflicts)" $boldred
+            else
+                cecho "  ✓ ICU 62 in use, no version conflicts detected" $boldgreen
+            fi
+        fi
+
         # Verify custom uw-imap if IMAP enabled
         if php -m 2>&1 | grep -q "^imap$"; then
             if php -i 2>/dev/null | grep -q "IMAP c-Client.*2007f"; then
