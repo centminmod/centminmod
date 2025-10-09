@@ -184,11 +184,25 @@ compile_custom_curl() {
       PHP_CACERT_BUNDLE_PATH='/etc/pki/tls/certs/ca-bundle.crt'
     fi
 
+    # Disable libpsl on CentOS 7 to prevent ICU version conflicts
+    # System libpsl links against ICU 50.2, conflicts with PHP intl ICU 62.2
+    if [[ "$CENTOS_SEVEN" = '7' && "$PHP_CUSTOMSSL_FORCE" = [yY] && "$NEWLIBICU" = [yY] ]]; then
+        CURL_LIBPSL_DISABLE='--without-libpsl'
+        echo "----------------------------------------------------------------------"
+        echo "Disabling libpsl in cURL to prevent ICU symbol conflicts"
+        echo "System libpsl → ICU 50.2, PHP intl → ICU 62.2"
+        echo "Public Suffix List cookie validation will be unavailable"
+        echo "----------------------------------------------------------------------"
+    else
+        CURL_LIBPSL_DISABLE=''
+    fi
+
     ./configure \
         --prefix="${CURL_PREFIX}" \
         --disable-static \
         --disable-ldap \
         --disable-ldaps \
+        ${CURL_LIBPSL_DISABLE} \
         ${OPENSSL_CFG} \
         --with-ca-bundle=${PHP_CACERT_BUNDLE_PATH} \
         || { echo "Configure failed"; return 1; }

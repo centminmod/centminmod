@@ -1602,6 +1602,18 @@ fi
             fi
         fi
 
+        # Verify no ICU version conflicts
+        if ldd /usr/local/bin/php 2>/dev/null | grep -q "libicuuc.so.50"; then
+            cecho "  ✗ WARNING: PHP using old ICU 50 (system version)" $boldred
+        elif ldd /usr/local/bin/php 2>/dev/null | grep -q "libicuuc.so.62"; then
+            # Check if custom cURL has libpsl pulling in ICU 50
+            if [ -f /opt/curl_php/lib/libcurl.so ] && ldd /opt/curl_php/lib/libcurl.so 2>/dev/null | grep -q "libpsl"; then
+                cecho "  ✗ WARNING: cURL libpsl detected (may cause ICU conflicts)" $boldred
+            else
+                cecho "  ✓ ICU 62 in use, no version conflicts detected" $boldgreen
+            fi
+        fi
+
         # Verify custom uw-imap if IMAP enabled
         if php -m 2>&1 | grep -q "^imap$"; then
             if php -i 2>/dev/null | grep -q "IMAP c-Client.*2007f"; then
