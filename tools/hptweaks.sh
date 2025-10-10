@@ -56,13 +56,13 @@ fi
   # check if redis installed as redis server requires huge pages disabled
   if [[ -f /usr/bin/redis-cli ]]; then
     if [[ -f /sys/kernel/mm/transparent_hugepage/enabled ]]; then
-      echo never > /sys/kernel/mm/transparent_hugepage/enabled
+      echo madvise > /sys/kernel/mm/transparent_hugepage/enabled
       sed -i '/transparent_hugepage/d' /etc/rc.local
       if [[ -z "$(grep transparent_hugepage /etc/rc.local)" ]]; then
-        echo "echo never > /sys/kernel/mm/transparent_hugepage/enabled" >> /etc/rc.local
+        echo "echo madvise > /sys/kernel/mm/transparent_hugepage/enabled" >> /etc/rc.local
       fi
       # extra workaround to ensure centos 7 systems boot redis server after rc.local
-      # and that /sys/kernel/mm/transparent_hugepage/enabled is set to never as it seems
+      # and that /sys/kernel/mm/transparent_hugepage/enabled is set to madvise as it seems
       # centos 7.4 at least restores value of always when rebooted 
       # https://community.centminmod.com/posts/57637/
       if [ -d /etc/systemd/system ]; then
@@ -235,9 +235,9 @@ if [[ -f /sys/kernel/mm/transparent_hugepage/enabled ]]; then
     echo "NRHUGEPAGES_COUNT = $NRHUGEPAGES_COUNT"
     echo "transparent huge pages not enabled"
     if [[ -f /sys/kernel/mm/transparent_hugepage/enabled ]]; then
-      echo never > /sys/kernel/mm/transparent_hugepage/enabled
+      echo madvise > /sys/kernel/mm/transparent_hugepage/enabled
       if [[ -z "$(grep transparent_hugepage /etc/rc.local)" ]]; then
-        echo "echo never > /sys/kernel/mm/transparent_hugepage/enabled" >> /etc/rc.local
+        echo "echo madvise > /sys/kernel/mm/transparent_hugepage/enabled" >> /etc/rc.local
       fi
     fi
   fi # end NRHUGEPAGES_COUNT > 0 check
