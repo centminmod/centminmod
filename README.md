@@ -116,3 +116,11 @@ Below are guidelines for contributing code wise.
 # Suggestions
 
 * Suggestions and feedback can be made via [Github issue tracker](https://github.com/centminmod/centminmod/issues) or Centmin Mod official forum's [Feature Requests & Suggestions forums](https://community.centminmod.com/forums/feature-requests-suggestions.11/).
+
+## Star History
+
+[![Star History Chart](https://api.star-history.com/svg?repos=centminmod/centminmod&type=Date)](https://www.star-history.com/#centminmod/centminmod&Date)
+
+## Stats
+
+![Alt](https://repobeats.axiom.co/api/embed/32a8b11c12bd051afabb7e3183398e3ee4d351e6.svg "Repobeats analytics image")
