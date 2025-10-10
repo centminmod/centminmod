@@ -95,6 +95,8 @@ if [ "$CENTOSVER" == 'release' ]; then
         CENTOS_EIGHT='8'
     elif [[ "$(cat /etc/redhat-release | awk '{ print $4 }' | cut -d . -f1)" = '9' ]]; then
         CENTOS_NINE='9'
+    elif [[ "$(cat /etc/redhat-release | awk '{ print $4 }' | cut -d . -f1)" = '10' ]]; then
+        CENTOS_TEN='10'
     fi
 fi
 
@@ -118,17 +120,25 @@ fi
 # ensure only el8+ OS versions are being looked at for alma linux, rocky linux
 # oracle linux, vzlinux, circle linux, navy linux, euro linux
 EL_VERID=$(awk -F '=' '/VERSION_ID/ {print $2}' /etc/os-release | sed -e 's|"||g' | cut -d . -f1)
-if [ -f /etc/almalinux-release ] && [[ "$EL_VERID" -eq 8 || "$EL_VERID" -eq 9 ]]; then
-  CENTOSVER=$(awk '{ print $3 }' /etc/almalinux-release | cut -d . -f1,2)
-  ALMALINUXVER=$(awk '{ print $3 }' /etc/almalinux-release | cut -d . -f1,2 | sed -e 's|\.|000|g')
+if [ -f /etc/almalinux-release ] && [[ "$EL_VERID" -eq 8 || "$EL_VERID" -eq 9 || "$EL_VERID" -eq 10 ]]; then
+  if [[ "$EL_VERID" -eq 10 ]]; then
+    CENTOSVER=$(awk '{ print $4 }' /etc/almalinux-release | cut -d . -f1,2)
+    ALMALINUXVER=$(awk '{ print $4 }' /etc/almalinux-release | cut -d . -f1,2 | sed -e 's|\.|000|g')
+  else
+    CENTOSVER=$(awk '{ print $3 }' /etc/almalinux-release | cut -d . -f1,2)
+    ALMALINUXVER=$(awk '{ print $3 }' /etc/almalinux-release | cut -d . -f1,2 | sed -e 's|\.|000|g')
+  fi
   if [[ "$(echo $CENTOSVER | cut -d . -f1)" -eq '8' ]]; then
     CENTOS_EIGHT='8'
     ALMALINUX_EIGHT='8'
   elif [[ "$(echo $CENTOSVER | cut -d . -f1)" -eq '9' ]]; then
     CENTOS_NINE='9'
     ALMALINUX_NINE='9'
+  elif [[ "$(echo $CENTOSVER | cut -d . -f1)" -eq '10' ]]; then
+    CENTOS_TEN='10'
+    ALMALINUX_TEN='10'
   fi
-elif [ -f /etc/rocky-release ] && [[ "$EL_VERID" -eq 8 || "$EL_VERID" -eq 9 ]]; then
+elif [ -f /etc/rocky-release ] && [[ "$EL_VERID" -eq 8 || "$EL_VERID" -eq 9 || "$EL_VERID" -eq 10 ]]; then
   CENTOSVER=$(awk '{ print $4 }' /etc/rocky-release | cut -d . -f1,2)
   ROCKYLINUXVER=$(awk '{ print $3 }' /etc/rocky-release | cut -d . -f1,2 | sed -e 's|\.|000|g')
   if [[ "$(echo $CENTOSVER | cut -d . -f1)" -eq '8' ]]; then
@@ -137,8 +147,11 @@ elif [ -f /etc/rocky-release ] && [[ "$EL_VERID" -eq 8 || "$EL_VERID" -eq 9 ]]; 
   elif [[ "$(echo $CENTOSVER | cut -d . -f1)" -eq '9' ]]; then
     CENTOS_NINE='9'
     ROCKYLINUX_NINE='9'
+  elif [[ "$(echo $CENTOSVER | cut -d . -f1)" -eq '10' ]]; then
+    CENTOS_TEN='10'
+    ROCKYLINUX_TEN='10'
   fi
-elif [ -f /etc/oracle-release ] && [[ "$EL_VERID" -eq 8 || "$EL_VERID" -eq 9 ]]; then
+elif [ -f /etc/oracle-release ] && [[ "$EL_VERID" -eq 8 || "$EL_VERID" -eq 9 || "$EL_VERID" -eq 10 ]]; then
   CENTOSVER=$(awk '{ print $5 }' /etc/oracle-release | cut -d . -f1,2)
   if [[ "$(echo $CENTOSVER | cut -d . -f1)" -eq '8' ]]; then
     CENTOS_EIGHT='8'
@@ -146,8 +159,11 @@ elif [ -f /etc/oracle-release ] && [[ "$EL_VERID" -eq 8 || "$EL_VERID" -eq 9 ]];
   elif [[ "$(echo $CENTOSVER | cut -d . -f1)" -eq '9' ]]; then
     CENTOS_NINE='9'
     ORACLELINUX_NINE='9'
+  elif [[ "$(echo $CENTOSVER | cut -d . -f1)" -eq '10' ]]; then
+    CENTOS_TEN='10'
+    ORACLELINUX_TEN='10'
   fi
-elif [ -f /etc/vzlinux-release ] && [[ "$EL_VERID" -eq 8 || "$EL_VERID" -eq 9 ]]; then
+elif [ -f /etc/vzlinux-release ] && [[ "$EL_VERID" -eq 8 || "$EL_VERID" -eq 9 || "$EL_VERID" -eq 10 ]]; then
   CENTOSVER=$(awk '{ print $4 }' /etc/vzlinux-release | cut -d . -f1,2)
   if [[ "$(echo $CENTOSVER | cut -d . -f1)" -eq '8' ]]; then
     CENTOS_EIGHT='8'
@@ -155,8 +171,11 @@ elif [ -f /etc/vzlinux-release ] && [[ "$EL_VERID" -eq 8 || "$EL_VERID" -eq 9 ]]
   elif [[ "$(echo $CENTOSVER | cut -d . -f1)" -eq '9' ]]; then
     CENTOS_NINE='9'
     VZLINUX_NINE='9'
+  elif [[ "$(echo $CENTOSVER | cut -d . -f1)" -eq '10' ]]; then
+    CENTOS_TEN='10'
+    VZLINUX_TEN='10'
   fi
-elif [ -f /etc/circle-release ] && [[ "$EL_VERID" -eq 8 || "$EL_VERID" -eq 9 ]]; then
+elif [ -f /etc/circle-release ] && [[ "$EL_VERID" -eq 8 || "$EL_VERID" -eq 9 || "$EL_VERID" -eq 10 ]]; then
   CENTOSVER=$(awk '{ print $4 }' /etc/circle-release | cut -d . -f1,2)
   if [[ "$(echo $CENTOSVER | cut -d . -f1)" -eq '8' ]]; then
     CENTOS_EIGHT='8'
@@ -164,8 +183,11 @@ elif [ -f /etc/circle-release ] && [[ "$EL_VERID" -eq 8 || "$EL_VERID" -eq 9 ]];
   elif [[ "$(echo $CENTOSVER | cut -d . -f1)" -eq '9' ]]; then
     CENTOS_NINE='9'
     CIRCLELINUX_NINE='9'
+  elif [[ "$(echo $CENTOSVER | cut -d . -f1)" -eq '10' ]]; then
+    CENTOS_TEN='10'
+    CIRCLELINUX_TEN='10'
   fi
-elif [ -f /etc/navylinux-release ] && [[ "$EL_VERID" -eq 8 || "$EL_VERID" -eq 9 ]]; then
+elif [ -f /etc/navylinux-release ] && [[ "$EL_VERID" -eq 8 || "$EL_VERID" -eq 9 || "$EL_VERID" -eq 10 ]]; then
   CENTOSVER=$(awk '{ print $5 }' /etc/navylinux-release | cut -d . -f1,2)
   if [[ "$(echo $CENTOSVER | cut -d . -f1)" -eq '8' ]]; then
     CENTOS_EIGHT='8'
@@ -173,8 +195,11 @@ elif [ -f /etc/navylinux-release ] && [[ "$EL_VERID" -eq 8 || "$EL_VERID" -eq 9 
   elif [[ "$(echo $CENTOSVER | cut -d . -f1)" -eq '9' ]]; then
     CENTOS_NINE='9'
     NAVYLINUX_NINE='9'
+  elif [[ "$(echo $CENTOSVER | cut -d . -f1)" -eq '10' ]]; then
+    CENTOS_TEN='10'
+    NAVYLINUX_TEN='10'
   fi
-elif [ -f /etc/el-release ] && [[ "$EL_VERID" -eq 8 || "$EL_VERID" -eq 9 ]]; then
+elif [ -f /etc/el-release ] && [[ "$EL_VERID" -eq 8 || "$EL_VERID" -eq 9 || "$EL_VERID" -eq 10 ]]; then
   CENTOSVER=$(awk '{ print $3 }' /etc/el-release | cut -d . -f1,2)
   if [[ "$(echo $CENTOSVER | cut -d . -f1)" -eq '8' ]]; then
     CENTOS_EIGHT='8'
@@ -182,20 +207,23 @@ elif [ -f /etc/el-release ] && [[ "$EL_VERID" -eq 8 || "$EL_VERID" -eq 9 ]]; the
   elif [[ "$(echo $CENTOSVER | cut -d . -f1)" -eq '9' ]]; then
     CENTOS_NINE='9'
     EUROLINUX_NINE='9'
+  elif [[ "$(echo $CENTOSVER | cut -d . -f1)" -eq '10' ]]; then
+    CENTOS_TEN='10'
+    EUROLINUX_TEN='10'
   fi
 fi
 
 CENTOSVER_NUMERIC=$(echo $CENTOSVER | sed -e 's|\.||g')
 
 redisupgrade_el() {
-  if [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]]; then
+  if [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' || "$CENTOS_TEN" -eq '10' ]]; then
     # Check the current version of Redis
-    current_version=$(dnf module list redis --enabled | grep remi-6.2 | awk '{print $2}')
+    current_version=$(dnf module list redis --enabled | grep -E 'remi-6\.2|remi-7\.2' | awk '{print $2}')
 
-    # Check if the current version is 6.2
+    # Check if the current version is 6.2 or 7.2 and upgrade to 8.2
     if [[ "$current_version" == "remi-6.2" ]]; then
       echo "Detected Redis REMI 6.2 Enabled Module"
-      echo "Switching to Redis REMI 7.2 Enabled Module version..."
+      echo "Upgrading to Redis REMI 8.2 Enabled Module version..."
       echo
       echo "dnf module list redis"
       dnf module list redis
@@ -203,8 +231,8 @@ redisupgrade_el() {
       echo "dnf -y module reset redis:remi-6.2"
       dnf -y module reset redis:remi-6.2
       echo
-      echo "dnf -y module enable -y redis:remi-7.2"
-      dnf -y module enable -y redis:remi-7.2
+      echo "dnf -y module enable -y redis:remi-8.2"
+      dnf -y module enable -y redis:remi-8.2
       echo
       echo "dnf module list redis"
       dnf module list redis
@@ -212,9 +240,29 @@ redisupgrade_el() {
       echo "yum -y install redis --enablerepo=remi"
       yum -y install redis --enablerepo=remi
       echo
-      echo "Redis REMI MODULE Switched to 7.2 version"
+      echo "Redis REMI MODULE Upgraded from 6.2 to 8.2 version"
+    elif [[ "$current_version" == "remi-7.2" ]]; then
+      echo "Detected Redis REMI 7.2 Enabled Module"
+      echo "Upgrading to Redis REMI 8.2 Enabled Module version..."
+      echo
+      echo "dnf module list redis"
+      dnf module list redis
+      echo
+      echo "dnf -y module reset redis:remi-7.2"
+      dnf -y module reset redis:remi-7.2
+      echo
+      echo "dnf -y module enable -y redis:remi-8.2"
+      dnf -y module enable -y redis:remi-8.2
+      echo
+      echo "dnf module list redis"
+      dnf module list redis
+      echo
+      echo "yum -y install redis --enablerepo=remi"
+      yum -y install redis --enablerepo=remi
+      echo
+      echo "Redis REMI MODULE Upgraded from 7.2 to 8.2 version"
     else
-      echo "Current Redis version is not 6.2. No upgrade needed."
+      echo "Current Redis version is neither 6.2 nor 7.2. No upgrade needed."
     fi
   fi
 }
@@ -224,9 +272,9 @@ redisinstall() {
   if [[ -f /etc/yum/pluginconf.d/priorities.conf && "$(grep 'enabled = 1' /etc/yum/pluginconf.d/priorities.conf)" ]]; then
     yum -y install redis --enablerepo=remi --disableplugin=priorities
   else
-    if [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]]; then
+    if [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' || "$CENTOS_TEN" -eq '10' ]]; then
       # Check the current version of Redis
-      current_version=$(dnf module list redis --enabled | grep remi-6.2 | awk '{print $2}')
+      current_version=$(dnf module list redis --enabled | grep -E 'remi-6\.2|remi-7\.2' | awk '{print $2}')
       if [[ "$current_version" == "remi-6.2" ]]; then
         echo
         echo "dnf module list redis"
@@ -235,8 +283,21 @@ redisinstall() {
         echo "dnf -y module reset redis:remi-6.2"
         dnf -y module reset redis:remi-6.2
         echo
-        echo "dnf -y module enable -y redis:remi-7.2"
-        dnf -y module enable -y redis:remi-7.2
+        echo "dnf -y module enable -y redis:remi-8.2"
+        dnf -y module enable -y redis:remi-8.2
+        echo
+        echo "dnf module list redis"
+        dnf module list redis
+      elif [[ "$current_version" == "remi-7.2" ]]; then
+        echo
+        echo "dnf module list redis"
+        dnf module list redis
+        echo
+        echo "dnf -y module reset redis:remi-7.2"
+        dnf -y module reset redis:remi-7.2
+        echo
+        echo "dnf -y module enable -y redis:remi-8.2"
+        dnf -y module enable -y redis:remi-8.2
         echo
         echo "dnf module list redis"
         dnf module list redis
@@ -277,7 +338,7 @@ ExecStart=/bin/sh -c "/usr/bin/echo 'madvise' > /sys/kernel/mm/transparent_hugep
 WantedBy=multi-user.target
 EOF
 
-if [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]]; then
+if [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' || "$CENTOS_TEN" -eq '10' ]]; then
 cat > "/etc/systemd/system/redis.service.d/failure-restart.conf" <<TDG
 [Unit]
 StartLimitIntervalSec=30
