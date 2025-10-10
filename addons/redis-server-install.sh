@@ -218,12 +218,12 @@ CENTOSVER_NUMERIC=$(echo $CENTOSVER | sed -e 's|\.||g')
 redisupgrade_el() {
   if [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' || "$CENTOS_TEN" -eq '10' ]]; then
     # Check the current version of Redis
-    current_version=$(dnf module list redis --enabled | grep remi-6.2 | awk '{print $2}')
+    current_version=$(dnf module list redis --enabled | grep -E 'remi-6\.2|remi-7\.2' | awk '{print $2}')
 
-    # Check if the current version is 6.2
+    # Check if the current version is 6.2 or 7.2 and upgrade to 8.2
     if [[ "$current_version" == "remi-6.2" ]]; then
       echo "Detected Redis REMI 6.2 Enabled Module"
-      echo "Switching to Redis REMI 7.2 Enabled Module version..."
+      echo "Upgrading to Redis REMI 8.2 Enabled Module version..."
       echo
       echo "dnf module list redis"
       dnf module list redis
@@ -231,8 +231,8 @@ redisupgrade_el() {
       echo "dnf -y module reset redis:remi-6.2"
       dnf -y module reset redis:remi-6.2
       echo
-      echo "dnf -y module enable -y redis:remi-7.2"
-      dnf -y module enable -y redis:remi-7.2
+      echo "dnf -y module enable -y redis:remi-8.2"
+      dnf -y module enable -y redis:remi-8.2
       echo
       echo "dnf module list redis"
       dnf module list redis
@@ -240,9 +240,29 @@ redisupgrade_el() {
       echo "yum -y install redis --enablerepo=remi"
       yum -y install redis --enablerepo=remi
       echo
-      echo "Redis REMI MODULE Switched to 7.2 version"
+      echo "Redis REMI MODULE Upgraded from 6.2 to 8.2 version"
+    elif [[ "$current_version" == "remi-7.2" ]]; then
+      echo "Detected Redis REMI 7.2 Enabled Module"
+      echo "Upgrading to Redis REMI 8.2 Enabled Module version..."
+      echo
+      echo "dnf module list redis"
+      dnf module list redis
+      echo
+      echo "dnf -y module reset redis:remi-7.2"
+      dnf -y module reset redis:remi-7.2
+      echo
+      echo "dnf -y module enable -y redis:remi-8.2"
+      dnf -y module enable -y redis:remi-8.2
+      echo
+      echo "dnf module list redis"
+      dnf module list redis
+      echo
+      echo "yum -y install redis --enablerepo=remi"
+      yum -y install redis --enablerepo=remi
+      echo
+      echo "Redis REMI MODULE Upgraded from 7.2 to 8.2 version"
     else
-      echo "Current Redis version is not 6.2. No upgrade needed."
+      echo "Current Redis version is neither 6.2 nor 7.2. No upgrade needed."
     fi
   fi
 }
@@ -254,7 +274,7 @@ redisinstall() {
   else
     if [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' || "$CENTOS_TEN" -eq '10' ]]; then
       # Check the current version of Redis
-      current_version=$(dnf module list redis --enabled | grep remi-6.2 | awk '{print $2}')
+      current_version=$(dnf module list redis --enabled | grep -E 'remi-6\.2|remi-7\.2' | awk '{print $2}')
       if [[ "$current_version" == "remi-6.2" ]]; then
         echo
         echo "dnf module list redis"
@@ -263,8 +283,21 @@ redisinstall() {
         echo "dnf -y module reset redis:remi-6.2"
         dnf -y module reset redis:remi-6.2
         echo
-        echo "dnf -y module enable -y redis:remi-7.2"
-        dnf -y module enable -y redis:remi-7.2
+        echo "dnf -y module enable -y redis:remi-8.2"
+        dnf -y module enable -y redis:remi-8.2
+        echo
+        echo "dnf module list redis"
+        dnf module list redis
+      elif [[ "$current_version" == "remi-7.2" ]]; then
+        echo
+        echo "dnf module list redis"
+        dnf module list redis
+        echo
+        echo "dnf -y module reset redis:remi-7.2"
+        dnf -y module reset redis:remi-7.2
+        echo
+        echo "dnf -y module enable -y redis:remi-8.2"
+        dnf -y module enable -y redis:remi-8.2
         echo
         echo "dnf module list redis"
         dnf module list redis
