@@ -218,7 +218,11 @@ CENTOSVER_NUMERIC=$(echo $CENTOSVER | sed -e 's|\.||g')
 redis_apply_tweaks() {
   local context="${1:-standalone}"
   echo "Applying Redis configuration tweaks..."
-  sed -i 's|LimitNOFILE=.*|LimitNOFILE=524288|' /etc/systemd/system/redis.service.d/limit.conf
+  mkdir -p /etc/systemd/system/redis.service.d
+cat > "/etc/systemd/system/redis.service.d/limit.conf" <<EOF
+[Service]
+LimitNOFILE=524288
+EOF
   # echo -e "[Service]\nExecStartPre=/usr/sbin/sysctl vm.overcommit_memory=1" > /etc/systemd/system/redis.service.d/vm.conf
   # mkdir -p /redis/tools
   # echo '#!/bin/bash' > /redis/tools/disable_thp.sh
