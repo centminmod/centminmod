@@ -92,3 +92,7 @@ Below are guidelines for contributing code wise.
 ## Star History
 
 [![Star History Chart](https://api.star-history.com/svg?repos=centminmod/centminmod&type=Date)](https://www.star-history.com/#centminmod/centminmod&Date)
+
+## Stats
+
+![Alt](https://repobeats.axiom.co/api/embed/040d35c26dd85c7aec2c4a1fa5d85a3a2f46b365.svg "Repobeats analytics image")
