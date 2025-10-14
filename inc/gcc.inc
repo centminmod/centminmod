@@ -240,25 +240,25 @@ enable_devtoolset() {
       # gcc -c -Q -march=native --help=target | grep -E '\[enabled\]|mtune|march|mfpmath' | tee -a ${CENTMINLOGDIR}/gcc_general_native.log
 
       echo
-      gcc -c -Q -march=native --help=target | grep -E '-mtune|-mprefer-vector-width|-march|-msse|-msse2|-msse2avx|-msse3|-mavx|-msse4|-mssse3|-mpclmul' | tee ${CENTMINLOGDIR}/gcc_general_native.log
+      gcc -c -Q -march=native --help=target | grep -E -- '-mtune|-mprefer-vector-width|-march|-msse|-msse2|-msse2avx|-msse3|-mavx|-msse4|-mssse3|-mpclmul' | tee ${CENTMINLOGDIR}/gcc_general_native.log
       \cp -a "${CENTMINLOGDIR}/gcc_general_native.log" "${CENTMINLOGDIR}/gcc_general_native_${DT}.log"
       echo
-      gcc -c -Q -march=${march_flag} --help=target | grep -E '-mtune|-mprefer-vector-width|-march|-msse|-msse2|-msse2avx|-msse3|-mavx|-msse4|-mssse3|-mpclmul' | tee ${CENTMINLOGDIR}/gcc_general_x86-64.log
+      gcc -c -Q -march=${march_flag} --help=target | grep -E -- '-mtune|-mprefer-vector-width|-march|-msse|-msse2|-msse2avx|-msse3|-mavx|-msse4|-mssse3|-mpclmul' | tee ${CENTMINLOGDIR}/gcc_general_x86-64.log
       \cp -a "${CENTMINLOGDIR}/gcc_general_x86-64.log" "${CENTMINLOGDIR}/gcc_general_x86-64_${DT}.log"
       echo
       diff -y --suppress-common-lines ${CENTMINLOGDIR}/gcc_general_native.log ${CENTMINLOGDIR}/gcc_general_x86-64.log | tee ${CENTMINLOGDIR}/gcc_general_diff_native-vs-x86-64.log
       \cp -a "${CENTMINLOGDIR}/gcc_general_diff_native-vs-x86-64.log" "${CENTMINLOGDIR}/gcc_general_diff_native-vs-x86-64_${DT}.log"
       echo
-      grep -E '-march=|-mtune|-mavx|-msse4|-mpclmul' ${CENTMINLOGDIR}/gcc_general_diff_native-vs-x86-64.log
+      grep -E -- '-march=|-mtune|-mavx|-msse4|-mpclmul' ${CENTMINLOGDIR}/gcc_general_diff_native-vs-x86-64.log
       # if non native target x86-64 is used 
       # pick up important native cpu instructions
       # and manually pass them to x86-64 target
       if [[ "$MARCH_TARGETNATIVE" = [yY] ]]; then
         GCC_NONNATIVEFLAGS=""
       else
-        GCC_NONNATIVEFLAGS=" $(grep -E '-march=|-mtune|-mavx|-msse4|-mpclmul' ${CENTMINLOGDIR}/gcc_general_native.log | grep -E -v 'march|mtune|avx512' | grep enabled | sed -e 's|\[||g' -e 's|\]||g' -e 's|enabled||g'| xargs)"
+        GCC_NONNATIVEFLAGS=" $(grep -E -- '-march=|-mtune|-mavx|-msse4|-mpclmul' ${CENTMINLOGDIR}/gcc_general_native.log | grep -E -v 'march|mtune|avx512' | grep enabled | sed -e 's|\[||g' -e 's|\]||g' -e 's|enabled||g'| xargs)"
         echo
-        gcc -c -Q -march=${march_flag}${GCC_NONNATIVEFLAGS} --help=target | grep -E '-mtune|-mprefer-vector-width|-march|-msse|-msse2|-msse2avx|-msse3|-mavx|-msse4|-mssse3|-mpclmul' | tee ${CENTMINLOGDIR}/gcc_general_x86-64-non-native.log
+        gcc -c -Q -march=${march_flag}${GCC_NONNATIVEFLAGS} --help=target | grep -E -- '-mtune|-mprefer-vector-width|-march|-msse|-msse2|-msse2avx|-msse3|-mavx|-msse4|-mssse3|-mpclmul' | tee ${CENTMINLOGDIR}/gcc_general_x86-64-non-native.log
         \cp -a "${CENTMINLOGDIR}/gcc_general_x86-64-non-native.log" "${CENTMINLOGDIR}/gcc_general_x86-64-non-native_${DT}.log"
       fi
       echo

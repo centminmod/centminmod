@@ -5503,25 +5503,25 @@ fi
 # intel specific
 CPUVENDOR=$(cat /proc/cpuinfo | awk '/vendor_id/ {print $3}' | sort -u | head -n1)
 echo
-echo "gcc -c -Q -march=native${NGXEXTRA_CCOPT} --help=target | grep -E '-mtune|-mprefer-vector-width|-march|-msse|-msse2|-msse2avx|-msse3|-mavx|-msse4|-mssse3|-mpclmul' | tee ${CENTMINLOGDIR}/gcc_native.log"
-gcc -c -Q -march=native${NGXEXTRA_CCOPT} --help=target | grep -E '-mtune|-mprefer-vector-width|-march|-msse|-msse2|-msse2avx|-msse3|-mavx|-msse4|-mssse3|-mpclmul' | tee ${CENTMINLOGDIR}/gcc_native.log
+echo "gcc -c -Q -march=native${NGXEXTRA_CCOPT} --help=target | grep -E -- '-mtune|-mprefer-vector-width|-march|-msse|-msse2|-msse2avx|-msse3|-mavx|-msse4|-mssse3|-mpclmul' | tee ${CENTMINLOGDIR}/gcc_native.log"
+gcc -c -Q -march=native${NGXEXTRA_CCOPT} --help=target | grep -E -- '-mtune|-mprefer-vector-width|-march|-msse|-msse2|-msse2avx|-msse3|-mavx|-msse4|-mssse3|-mpclmul' | tee ${CENTMINLOGDIR}/gcc_native.log
 echo
-echo "gcc -c -Q -march=${march_flag}${NGXEXTRA_CCOPT} --help=target | grep -E '-mtune|-mprefer-vector-width|-march|-msse|-msse2|-msse2avx|-msse3|-mavx|-msse4|-mssse3|-mpclmul' | tee ${CENTMINLOGDIR}/gcc_x86-64.log"
-gcc -c -Q -march=${march_flag}${NGXEXTRA_CCOPT} --help=target | grep -E '-mtune|-mprefer-vector-width|-march|-msse|-msse2|-msse2avx|-msse3|-mavx|-msse4|-mssse3|-mpclmul' | tee ${CENTMINLOGDIR}/gcc_x86-64.log
+echo "gcc -c -Q -march=${march_flag}${NGXEXTRA_CCOPT} --help=target | grep -E -- '-mtune|-mprefer-vector-width|-march|-msse|-msse2|-msse2avx|-msse3|-mavx|-msse4|-mssse3|-mpclmul' | tee ${CENTMINLOGDIR}/gcc_x86-64.log"
+gcc -c -Q -march=${march_flag}${NGXEXTRA_CCOPT} --help=target | grep -E -- '-mtune|-mprefer-vector-width|-march|-msse|-msse2|-msse2avx|-msse3|-mavx|-msse4|-mssse3|-mpclmul' | tee ${CENTMINLOGDIR}/gcc_x86-64.log
 echo
 diff -y --suppress-common-lines ${CENTMINLOGDIR}/gcc_native.log ${CENTMINLOGDIR}/gcc_x86-64.log | tee ${CENTMINLOGDIR}/gcc_diff_native-vs-x86-64.log
 echo
-grep -E '-march=|-mtune|-mavx|-msse4|-mpclmul' ${CENTMINLOGDIR}/gcc_diff_native-vs-x86-64.log
+grep -E -- '-march=|-mtune|-mavx|-msse4|-mpclmul' ${CENTMINLOGDIR}/gcc_diff_native-vs-x86-64.log
   # if non native target x86-64 is used 
   # pick up important native cpu instructions
   # and manually pass them to x86-64 target
   if [[ "$MARCH_TARGETNATIVE" = [yY] ]]; then
     GCC_NONNATIVEFLAGS=""
   else
-    GCC_NONNATIVEFLAGS=" $(grep -E '-march=|-mtune|-mavx|-msse4|-mpclmul' ${CENTMINLOGDIR}/gcc_native.log | grep -E -v 'march|mtune|avx512' | grep enabled | sed -e 's|\[||g' -e 's|\]||g' -e 's|enabled||g'| xargs)"
+    GCC_NONNATIVEFLAGS=" $(grep -E -- '-march=|-mtune|-mavx|-msse4|-mpclmul' ${CENTMINLOGDIR}/gcc_native.log | grep -E -v 'march|mtune|avx512' | grep enabled | sed -e 's|\[||g' -e 's|\]||g' -e 's|enabled||g'| xargs)"
     echo
-    echo "gcc -c -Q -march=${march_flag}${GCC_NONNATIVEFLAGS}${NGXEXTRA_CCOPT} --help=target | grep -E '-mtune|-mprefer-vector-width|-march|-msse|-msse2|-msse2avx|-msse3|-mavx|-msse4|-mssse3|-mpclmul' | tee ${CENTMINLOGDIR}/gcc_x86-64-non-native.log"
-    gcc -c -Q -march=${march_flag}${GCC_NONNATIVEFLAGS}${NGXEXTRA_CCOPT} --help=target | grep -E '-mtune|-mprefer-vector-width|-march|-msse|-msse2|-msse2avx|-msse3|-mavx|-msse4|-mssse3|-mpclmul' | tee ${CENTMINLOGDIR}/gcc_x86-64-non-native.log
+    echo "gcc -c -Q -march=${march_flag}${GCC_NONNATIVEFLAGS}${NGXEXTRA_CCOPT} --help=target | grep -E -- '-mtune|-mprefer-vector-width|-march|-msse|-msse2|-msse2avx|-msse3|-mavx|-msse4|-mssse3|-mpclmul' | tee ${CENTMINLOGDIR}/gcc_x86-64-non-native.log"
+    gcc -c -Q -march=${march_flag}${GCC_NONNATIVEFLAGS}${NGXEXTRA_CCOPT} --help=target | grep -E -- '-mtune|-mprefer-vector-width|-march|-msse|-msse2|-msse2avx|-msse3|-mavx|-msse4|-mssse3|-mpclmul' | tee ${CENTMINLOGDIR}/gcc_x86-64-non-native.log
   fi
   echo
   echo "GCC_NONNATIVEFLAGS=$GCC_NONNATIVEFLAGS"

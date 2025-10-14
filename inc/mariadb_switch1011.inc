@@ -548,8 +548,8 @@ funct_logmysqlrotate
         # ensure MariaDB starts up initially
         stop_mariadb
         sleep 2
-        rm -f /var/lib/mysql/ib_logfile*
-        rm -f /var/lib/mysql/aria_log*
+        #rm -f /var/lib/mysql/ib_logfile*
+        #rm -f /var/lib/mysql/aria_log*
         start_mariadb
     fi
     # https://community.centminmod.com/posts/25691/
