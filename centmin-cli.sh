@@ -30,7 +30,7 @@ DT=$(date +"%d%m%y-%H%M%S")
 branchname='141.00beta01'
 SCRIPT_MAJORVER='141'
 SCRIPT_MINORVER='00'
-SCRIPT_INCREMENTVER='067'
+SCRIPT_INCREMENTVER='068'
 SCRIPT_VERSIONSHORT="${branchname}"
 SCRIPT_VERSION="${SCRIPT_VERSIONSHORT}.b${SCRIPT_INCREMENTVER}"
 SCRIPT_DATE='16/08/25'
@@ -2137,6 +2137,8 @@ if [[ "$CENTOS_TEN" -eq '10' ]]; then
   OPENSSL_SYSTEM_USE='y'
   IMAGEMAGICK_SEVEN='y'
   NGINX_PCRE_TWO='y'
+  # do not need to compile libgd 2.3 system gd 2.3 exists
+  PHP_LIBGD_EXTERNAL='n'
 fi
 
 if [ -f "${CM_INSTALLDIR}/inc/custom_config.inc" ]; then
