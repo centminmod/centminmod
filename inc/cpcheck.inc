@@ -1739,7 +1739,7 @@ update_initphpfpm() {
   if [[ "$CENTOS_SEVEN" = '7' ]] && [[ -f /etc/init.d/php-fpm && "$(grep -qw 'configtest' /etc/init.d/php-fpm >/dev/null 2>&1; echo $?)" != '0' ]]; then
     \cp -f "${SCRIPT_DIR}/init/php-fpm" /etc/init.d/php-fpm
     chmod +x /etc/init.d/php-fpm
-    if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]]; then
+    if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' || "$CENTOS_TEN" -eq '10' ]]; then
       systemctl daemon-reload
     fi
   fi
@@ -3073,7 +3073,7 @@ fixlogrotate() {
   if [ -f /etc/logrotate.d/nginx ]; then
   if [[ -z "$(grep 'maxsize' /etc/logrotate.d/nginx)" || "$(grep -w 'su nginx' /etc/logrotate.d/nginx)" ]]; then
     # sed -i "s|kill.*|kill -SIGUSR1 \$(cat \/usr\/local\/nginx\/logs\/nginx.pid 2>\/dev\/null) 2>\/dev\/null \|\| true|g" /etc/logrotate.d/nginx
-  if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]]; then
+  if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' || "$CENTOS_TEN" -eq '10' ]]; then
     VARDFSIZE=$(df --output=avail /var | tail -1)
   else
     VARDFSIZE=$(df -P /var | tail -1 | awk '{print $4}')
@@ -3116,7 +3116,7 @@ fi
   if [ -f /etc/logrotate.d/php-fpm ]; then
   if [[ -z "$(grep '\$' /etc/logrotate.d/php-fpm)" || -z "$(grep 'maxsize' /etc/logrotate.d/php-fpm)" ]]; then
 
-  if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]]; then
+  if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' || "$CENTOS_TEN" -eq '10' ]]; then
     VARDFSIZE=$(df --output=avail /var | tail -1)
   else
     VARDFSIZE=$(df -P /var | tail -1 | awk '{print $4}')
@@ -3387,7 +3387,7 @@ memcachedupdatechecks() {
               pushd /etc/init.d/
               patch -s < memcached-socketfix.patch >/dev/null 2>&1
               rm -rf memcached-socketfix.patch
-              if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]]; then
+              if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' || "$CENTOS_TEN" -eq '10' ]]; then
                 systemctl daemon-reload
               fi
               if [ "$(ps -C memcached | grep -w memcached)" ]; then
@@ -3403,7 +3403,7 @@ memcachedupdatechecks() {
               pushd /etc/init.d/
               patch -s < memcached-socketfix.patch >/dev/null 2>&1
               rm -rf memcached-socketfix.patch
-              if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]]; then
+              if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' || "$CENTOS_TEN" -eq '10' ]]; then
                 systemctl daemon-reload
               fi
               if [ "$(ps -C memcached | grep -w memcached)" ]; then
@@ -3593,7 +3593,7 @@ wpcompfix() {
 }
 
 entropy_centosseven() {
-if [ -f /usr/lib/systemd/system/haveged.service ] && [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]]; then
+if [ -f /usr/lib/systemd/system/haveged.service ] && [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' || "$CENTOS_TEN" -eq '10' ]]; then
   if [[ ! -d /etc/systemd/system/haveged.service.d || ! -f /etc/systemd/system/haveged.service.d/haveged.conf ]]; then
     mkdir -p /etc/systemd/system/haveged.service.d
 cat > "/etc/systemd/system/haveged.service.d/haveged.conf" <<EFF
@@ -3699,7 +3699,7 @@ tcpcheck_centos() {
 
 if [[ ! -f /proc/user_beancounters ]]; then
     # create /etc/sysctl.d/101-sysctl.conf if doesn't exist on centos 7
-    if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]] && [ ! -f /etc/sysctl.d/101-sysctl.conf ]; then
+    if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' || "$CENTOS_TEN" -eq '10' ]] && [ ! -f /etc/sysctl.d/101-sysctl.conf ]; then
         if [ -d /etc/sysctl.d ]; then
             if [[ ! -z "$NF_CTHASHSIZE" && -f /sys/module/nf_conntrack/parameters/hashsize ]]; then
               echo "$NF_CTHASHSIZE" > /sys/module/nf_conntrack/parameters/hashsize
@@ -3814,7 +3814,7 @@ fi
 if [[ ! -f /proc/user_beancounters ]]; then
   # fix for https://community.centminmod.com/posts/34527/
   # CVE-2016-5696
-  if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]] && [ -f /etc/sysctl.d/101-sysctl.conf ]; then
+  if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' || "$CENTOS_TEN" -eq '10' ]] && [ -f /etc/sysctl.d/101-sysctl.conf ]; then
     if [[ -z "$(grep 'tcp_challenge_ack_limit' /etc/sysctl.d/101-sysctl.conf)" ]]; then
       echo "net.ipv4.tcp_challenge_ack_limit = 999999999" >> /etc/sysctl.d/101-sysctl.conf
       /sbin/sysctl --system >/dev/null 2>&1
@@ -3834,7 +3834,7 @@ if [[ ! -f /proc/user_beancounters ]]; then
 fi
 if [[ ! -f /proc/user_beancounters ]]; then
   # https://blog.cloudflare.com/path-mtu-discovery-in-practice/
-  if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]] && [ -f /etc/sysctl.d/101-sysctl.conf ]; then
+  if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' || "$CENTOS_TEN" -eq '10' ]] && [ -f /etc/sysctl.d/101-sysctl.conf ]; then
     if [[ -z "$(grep 'net.ipv4.tcp_mtu_probing' /etc/sysctl.d/101-sysctl.conf)" ]]; then
       echo "net.ipv4.tcp_mtu_probing = 1" >> /etc/sysctl.d/101-sysctl.conf
       /sbin/sysctl --system >/dev/null 2>&1
@@ -3849,7 +3849,7 @@ if [[ ! -f /proc/user_beancounters ]]; then
 fi
 if [[ ! -f /proc/user_beancounters ]]; then
   # https://blog.cloudflare.com/path-mtu-discovery-in-practice/
-  if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]] && [ -f /etc/sysctl.d/101-sysctl.conf ]; then
+  if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' || "$CENTOS_TEN" -eq '10' ]] && [ -f /etc/sysctl.d/101-sysctl.conf ]; then
     if [[ -z "$(grep 'net.ipv4.tcp_base_mss' /etc/sysctl.d/101-sysctl.conf)" ]]; then
       echo "net.ipv4.tcp_base_mss = 1024" >> /etc/sysctl.d/101-sysctl.conf
       /sbin/sysctl --system >/dev/null 2>&1
@@ -3864,7 +3864,7 @@ if [[ ! -f /proc/user_beancounters ]]; then
 fi
 if [[ ! -f /proc/user_beancounters ]]; then
   # fix for https://community.centminmod.com/posts/35910/
-  if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]] && [ -f /etc/sysctl.d/101-sysctl.conf ]; then
+  if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' || "$CENTOS_TEN" -eq '10' ]] && [ -f /etc/sysctl.d/101-sysctl.conf ]; then
     if [[ "$(sysctl -a 2>&1 | awk '/net.ipv4.tcp_tw_recycle/ {print $3}')" = '1' ]]; then
       sed -i 's|net.ipv4.tcp_tw_recycle.*|net.ipv4.tcp_tw_recycle = 0|' /etc/sysctl.d/101-sysctl.conf
       if [ -f /etc/sysctl.conf ]; then
@@ -3882,7 +3882,7 @@ if [[ ! -f /proc/user_beancounters ]]; then
 fi
 if [[ ! -f /proc/user_beancounters ]]; then
   # fix for https://community.centminmod.com/posts/35922/
-  if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]] && [ -f /etc/sysctl.d/101-sysctl.conf ]; then
+  if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' || "$CENTOS_TEN" -eq '10' ]] && [ -f /etc/sysctl.d/101-sysctl.conf ]; then
     if [[ "$(sysctl -a 2>&1 | awk '/net.ipv4.tcp_tw_reuse/ {print $3}')" = '1' ]]; then
       sed -i 's|net.ipv4.tcp_tw_reuse.*|net.ipv4.tcp_tw_reuse = 0|' /etc/sysctl.d/101-sysctl.conf
       if [ -f /etc/sysctl.conf ]; then
@@ -3955,7 +3955,7 @@ yumfastmirror_check() {
   # disable yum fastmirror plugin if not enough detected system memory available
   # for yum fastmirror operation
   if [ -f /etc/yum/pluginconf.d/fastestmirror.conf ]; then
-    if [ "$(awk '/MemTotal/ {print $2}' /proc/meminfo)" -lt '1018000' ] && [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]]; then
+    if [ "$(awk '/MemTotal/ {print $2}' /proc/meminfo)" -lt '1018000' ] && [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' || "$CENTOS_TEN" -eq '10' ]]; then
       sed -i 's|enabled = 1|enabled = 0|' /etc/yum/pluginconf.d/fastestmirror.conf
     elif [[ "$(awk '/MemTotal/ {print $2}' /proc/meminfo)" -lt '263000' ]]; then
       sed -i 's|enabled = 1|enabled = 0|' /etc/yum/pluginconf.d/fastestmirror.conf
