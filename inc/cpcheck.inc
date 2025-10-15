@@ -2361,6 +2361,12 @@ wgetver_check() {
     WGET_FILENAME="wget-${WGET_VERSION}.tar.gz"
     WGET_LINK="${LOCALCENTMINMOD_MIRROR}/centminmodparts/wget/${WGET_FILENAME}"
   fi
+  if [[ "$CENTOS_TEN" -eq '10' ]]; then
+    echo "EL${label_os_ver} Install Dependencies Start..."
+    WGET_VERSION=$WGET_VERSION_TEN
+    WGET_FILENAME="wget-${WGET_VERSION}.tar.gz"
+    WGET_LINK="${LOCALCENTMINMOD_MIRROR}/centminmodparts/wget/${WGET_FILENAME}"
+  fi
   # only check if on 64bit OS
   if [[ "$(uname -m)" = 'x86_64' ]]; then
     if [[ "$(wget -V | head -n1 | awk '{print $3}' | grep -q ${WGET_VERSION} >/dev/null 2>&1; echo $?)" != '0' ]] || [[ "$(pcre-config --version | grep -q ${PCRE_VERSION} >/dev/null 2>&1; echo $?)" != '0' ]]; then
