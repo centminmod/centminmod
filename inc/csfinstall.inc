@@ -256,7 +256,7 @@ fi
     
     echo "Disabling CSF Testing mode (activates firewall)..."
     if [[ "$CENTOS_TEN" -eq '10' ]]; then
-        sed -i 's/TESTING = "1"/TESTING = "1"/g' /etc/csf/csf.conf
+        sed -i 's/TESTING = "1"/TESTING = "0"/g' /etc/csf/csf.conf
     else
         sed -i 's/TESTING = "1"/TESTING = "0"/g' /etc/csf/csf.conf
     fi
