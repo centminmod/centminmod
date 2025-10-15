@@ -1299,6 +1299,40 @@ fi
 
 #addmysql_legacyinstall
 
+# Check if libmcrypt is available for mcrypt PECL extension compilation
+# Especially important for EL10 systems where libmcrypt must be installed from REMI
+if [[ "$PHP_MCRYPTPECL" = [yY] ]]; then
+  if [ ! -f /usr/bin/libmcrypt-config ]; then
+    echo ""
+    cecho "Warning: libmcrypt-config not found. Installing libmcrypt dependencies..." $boldyellow
+    echo ""
+    if [[ "$CENTOS_TEN" -eq '10' ]]; then
+      # EL10 requires REMI repository for libmcrypt packages
+      ${YUMDNFBIN} -y install libmcrypt libmcrypt-devel --enablerepo=remi,remi-safe --skip-broken
+    elif [[ "$CENTOS_NINE" -eq '9' ]]; then
+      # EL9 requires REMI repository for libmcrypt packages
+      ${YUMDNFBIN} -y install libmcrypt libmcrypt-devel --enablerepo=epel,epel-testing,remi --skip-broken
+    elif [[ "$CENTOS_EIGHT" -eq '8' ]]; then
+      # EL8 requires REMI repository for libmcrypt packages
+      ${YUMDNFBIN} -y install libmcrypt libmcrypt-devel --enablerepo=epel,epel-testing,remi --skip-broken
+    else
+      # EL7 and earlier
+      yum -y install libmcrypt libmcrypt-devel --enablerepo=epel --skip-broken
+    fi
+
+    # Verify installation was successful
+    if [ ! -f /usr/bin/libmcrypt-config ]; then
+      cecho "Error: libmcrypt-config still not found after installation attempt." $boldyellow
+      cecho "Disabling mcrypt PECL extension compilation for this upgrade." $boldyellow
+      PHP_MCRYPTPECL='n'
+    else
+      echo ""
+      cecho "libmcrypt dependencies installed successfully." $boldgreen
+      echo ""
+    fi
+  fi
+fi
+
 if [[ "$PHP_MCRYPTPECL" = [yY] ]] && [[ "$PHPMUVER" = '8.0' || "$PHPVER_ID" -ge '80000' ]]; then
     echo "PHP_MCRYPTPECL=$PHP_MCRYPTPECL"
     echo "PHPMVER=$PHPMVER"
@@ -1331,7 +1365,27 @@ else
     echo "PHP_MCRYPTPECL=$PHP_MCRYPTPECL"
     echo "PHPMVER=$PHPMVER"
     echo "PHPMUVER=$PHPMUVER"
+
+    # Enhanced cleanup logic: check if mcrypt.so actually exists
     if [[ -f "${CONFIGSCANDIR}/mcrypt.ini" ]]; then
+        PHPEXTDIR=$(php-config --extension-dir 2>/dev/null)
+        if [[ -n "$PHPEXTDIR" && -f "${PHPEXTDIR}/mcrypt.so" ]]; then
+            # mcrypt.so exists but PHP_MCRYPTPECL is not enabled
+            echo ""
+            cecho "Note: mcrypt.so found but PHP_MCRYPTPECL is not enabled." $boldyellow
+            cecho "Removing mcrypt.ini configuration file." $boldyellow
+            echo ""
+        elif [[ -n "$PHPEXTDIR" && ! -f "${PHPEXTDIR}/mcrypt.so" ]]; then
+            # Orphaned mcrypt.ini without mcrypt.so extension file
+            echo ""
+            cecho "Removing orphaned mcrypt.ini (mcrypt.so not found at ${PHPEXTDIR}/mcrypt.so)" $boldyellow
+            echo ""
+        else
+            # php-config not available or extension dir not found
+            echo ""
+            cecho "Removing mcrypt.ini configuration file." $boldyellow
+            echo ""
+        fi
         rm -rf "${CONFIGSCANDIR}/mcrypt.ini"
     fi
 fi

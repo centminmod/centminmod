@@ -140,6 +140,8 @@ echo "--------------------------------------------------------------------------
         ${YUMDNFBIN}${CACHESKIP} -q -y install $pkgs --enablerepo=remi,remi-safe --skip-broken
       elif [[ "$pkgs" = 'uw-imap-devel' ]]; then
         ${YUMDNFBIN}${CACHESKIP} -q -y install $pkgs --enablerepo=remi,remi-safe --skip-broken
+      elif [[ "$pkgs" = 'libmcrypt' || "$pkgs" = 'libmcrypt-devel' ]]; then
+        ${YUMDNFBIN}${CACHESKIP} -q -y install $pkgs --enablerepo=remi,remi-safe --skip-broken
       else
         ${YUMDNFBIN}${CACHESKIP} -q -y install $pkgs --skip-broken
       fi
