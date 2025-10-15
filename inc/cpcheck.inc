@@ -495,7 +495,7 @@ check_and_fix_cache_keys() {
 }
 
 fix_pure_ftpd_el8() {
-  if [[ -f /etc/pure-ftpd/pure-ftpd.conf && "$(grep '@sysconfigdir\@/pureftpd.pdb' /etc/pure-ftpd/pure-ftpd.conf)" ]] && [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]]; then
+  if [[ -f /etc/pure-ftpd/pure-ftpd.conf && "$(grep '@sysconfigdir@/pureftpd.pdb' /etc/pure-ftpd/pure-ftpd.conf)" ]] && [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]]; then
     sed -i 's/# PureDB                       \@sysconfigdir\@\/pureftpd.pdb/PureDB                        \/etc\/pure-ftpd\/pureftpd.pdb/' /etc/pure-ftpd/pure-ftpd.conf
     service pure-ftpd restart >/dev/null 2>&1
   fi
@@ -2362,7 +2362,6 @@ wgetver_check() {
     WGET_LINK="${LOCALCENTMINMOD_MIRROR}/centminmodparts/wget/${WGET_FILENAME}"
   fi
   if [[ "$CENTOS_TEN" -eq '10' ]]; then
-    echo "EL${label_os_ver} Install Dependencies Start..."
     WGET_VERSION=$WGET_VERSION_TEN
     WGET_FILENAME="wget-${WGET_VERSION}.tar.gz"
     WGET_LINK="${LOCALCENTMINMOD_MIRROR}/centminmodparts/wget/${WGET_FILENAME}"
@@ -3534,8 +3533,10 @@ auto_gitupdate() {
 }
 
 figletcheck() {
-    if [[ ! -f "$(rpm -ql figlet | grep 'bin/figlet')" && -f /etc/yum.repos.d/epel.repo ]]; then
-        time $YUMDNFBIN -y -q install figlet${DISABLEREPO_DNF}
+    if [[ "$CENTOS_TEN" -ne '10' ]]; then
+        if [[ ! -f "$(rpm -ql figlet | grep 'bin/figlet')" && -f /etc/yum.repos.d/epel.repo ]]; then
+            time $YUMDNFBIN -y -q install figlet${DISABLEREPO_DNF}
+        fi
     fi
 }
 
