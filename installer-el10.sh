@@ -928,7 +928,7 @@ if [[ "$CENTOS_EIGHT" -eq '8' ]]; then
 fi
 if [[ "$CENTOS_TEN" -eq '10' ]]; then
   echo "EL${label_os_ver} Install Dependencies Start..."
-  WGET_VERSION=$WGET_VERSION_NINE
+  WGET_VERSION=$WGET_VERSION_TEN
   WGET_FILENAME="wget-${WGET_VERSION}.tar.gz"
   WGET_LINK="${LOCALCENTMINMOD_MIRROR}/centminmodparts/wget/${WGET_FILENAME}"
 
