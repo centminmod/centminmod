@@ -196,7 +196,13 @@ if [ ! -f /usr/bin/jq ]; then
 fi
 
 if [ ! -f /usr/bin/smem ]; then
+  if [[ "$CENTOS_TEN" -eq 10 ]]; then
+    # smem may not be available in EL10 repositories
+    # Try EPEL or skip if unavailable
+    yum -y -q install smem 2>/dev/null || echo "Warning: smem not available for EL10, skipping..."
+  else
     yum -y -q install smem
+  fi
 fi
 
 if [[ ! -f /usr/bin/datamash && -f /usr/bin/systemctl ]]; then
@@ -938,20 +944,22 @@ syn_info() {
 netstat_info() {
     netstat_load=$1
     sshclient=$(echo $SSH_CLIENT | awk '{print $1}')
+    # Set fallback value if empty (local execution without SSH)
+    [[ -z "$sshclient" ]] && sshclient="NOSSH"
     nic=$(ifconfig -s 2>&1 | grep -E -v '^Iface|^lo|^gre' | awk '{print $1}')
     bandwidth_avg=$(sar -n DEV 1 1)
     bandwidth_inout=$(echo "$nic" | while read i; do echo "$bandwidth_avg" | grep 'Average:' | awk -v tnic="$i" '$0~tnic{print tnic, "In: ",$5,"Out:",$6}'; done | column -t)
     packets_inout=$(echo "$nic" | while read i; do echo "$bandwidth_avg" | grep 'Average:' | awk -v tnic="$i" '$0~tnic{print tnic, "In: ",$3,"Out:",$3}'; done | column -t)
-    netstat_http=$(netstat -an | fgrep ':80 ')
-    netstat_https=$(netstat -an | fgrep ':443 ')
+    netstat_http=$(netstat -an | grep -F ':80 ')
+    netstat_https=$(netstat -an | grep -F ':443 ')
     netstat_outbound=$(netstat -plant | grep -E -v 'and|servers|Address' | awk '{print $5,$6,$7}' | grep -v ':\*' | grep -v '127.0.0.1' | sed -e "s|$sshclient|ssh-client-ip|g" | sort | uniq -c | sort -rn | head -n10 | column -t)
     netstat_ips=$(netstat -tn)
     netstat_ipstop=$(echo "$netstat_ips" | grep -E -v 'servers|Address' | awk '{print $5}' | rev | cut -d: -f2- | rev | sort | uniq -c | sort -rn | head -n10)
     netstat_ipstopf=$(echo "$netstat_ipstop" | awk '{"getent hosts " $2 | getline getent_hosts_str; split(getent_hosts_str, getent_hosts_arr, " "); print $1, $2, getent_hosts_arr[2], $3}' | sed -e "s|$sshclient|ssh-client-ip|g" | column -t)
     tt_states_http=$(echo "$netstat_http" | awk '{print $6}' | sort | uniq -c | sort -n)
     tt_states_https=$(echo "$netstat_https" | awk '{print $6}' | sort | uniq -c | sort -n)
-    uniq_states_http=$(echo "$netstat_http" | fgrep -v "0.0.0.0" | awk '{print $6}' | sort | uniq -c | sort -n)
-    uniq_states_https=$(echo "$netstat_https" | fgrep -v "0.0.0.0" | awk '{print $6}' | sort | uniq -c | sort -n)
+    uniq_states_http=$(echo "$netstat_http" | grep -F -v "0.0.0.0" | awk '{print $6}' | sort | uniq -c | sort -n)
+    uniq_states_https=$(echo "$netstat_https" | grep -F -v "0.0.0.0" | awk '{print $6}' | sort | uniq -c | sort -n)
     ttconn_http=$(echo "$tt_states_http" | awk '{sum += $1} END {print sum;}')
     ttconn_https=$(echo "$tt_states_https" | awk '{sum += $1} END {print sum;}')
     uniqconn_http=$(echo "$uniq_states_http" | awk '{sum += $1} END {print sum;}')
