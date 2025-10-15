@@ -193,6 +193,54 @@ if [[ "$CSFINSTALLOK" = [yY] ]]; then
         fi
     fi
 
+    # Pre-load netfilter kernel modules for AlmaLinux 10 to prevent race condition
+    if [[ "$CENTOS_TEN" -eq '10' ]]; then
+        echo "Pre-loading required netfilter kernel modules for AlmaLinux 10..."
+        # Load all required iptables extension modules
+        modprobe xt_limit 2>/dev/null || true
+        modprobe xt_LOG 2>/dev/null || true
+        modprobe xt_state 2>/dev/null || true
+        modprobe xt_conntrack 2>/dev/null || true
+        modprobe xt_set 2>/dev/null || true
+        modprobe xt_recent 2>/dev/null || true
+        modprobe xt_multiport 2>/dev/null || true
+        modprobe xt_owner 2>/dev/null || true
+        modprobe nf_reject_ipv4 2>/dev/null || true
+        modprobe nf_reject_ipv6 2>/dev/null || true
+        modprobe nf_conntrack 2>/dev/null || true
+        modprobe nf_nat 2>/dev/null || true
+        modprobe ip_set 2>/dev/null || true
+        modprobe ip_tables 2>/dev/null || true
+        modprobe ip6_tables 2>/dev/null || true
+
+        # Verify modules loaded
+        echo "Verifying netfilter modules loaded..."
+        lsmod | grep -E "xt_|nf_|ip_tables"
+        echo
+    fi
+
+    # Configure netfilter modules to load on boot for AlmaLinux 10
+    if [[ "$CENTOS_TEN" -eq '10' ]]; then
+        echo "Configuring netfilter modules to load on boot..."
+        cat > /etc/modules-load.d/csf-netfilter.conf << 'EOF'
+# CSF Firewall required netfilter modules for AlmaLinux 10
+xt_limit
+xt_LOG
+xt_state
+xt_conntrack
+xt_set
+xt_recent
+xt_multiport
+xt_owner
+nf_reject_ipv4
+nf_reject_ipv6
+nf_conntrack
+nf_nat
+ip_set
+EOF
+        echo "Netfilter modules configured for automatic loading"
+    fi
+
     #tar xzf csf.tgz
     cd "$DIR_TMP/csf"
     sh install.sh
