@@ -76,7 +76,7 @@ if [[ "$CHECK_MYSQLPASS" != '0' ]]; then
     exit
 fi
 
-    if [ -f "$(which figlet)" ]; then
+    if command -v figlet >/dev/null 2>&1; then
         figlet -ckf standard "Preparing Shutdown For Upgrade"
     fi
 
@@ -182,7 +182,7 @@ echo "#####################################################"
 
 mariadb102install() {
 
-    if [ -f "$(which figlet)" ]; then
+    if command -v figlet >/dev/null 2>&1; then
         figlet -ckf standard "MariaDB 10.2.x Repo Setup"
     fi
 
@@ -547,7 +547,7 @@ cecho "yum -q list MariaDB-client MariaDB-common MariaDB-compat MariaDB-devel Ma
 echo ""
 time yum -q list MariaDB-client MariaDB-common MariaDB-compat MariaDB-devel MariaDB-server MariaDB-shared --disablerepo=epel --disableplugin=priorities
 
-    if [ -f "$(which figlet)" ]; then
+    if command -v figlet >/dev/null 2>&1; then
         figlet -ckf standard "MariaDB 10.2.x Install"
     fi
 
@@ -571,7 +571,7 @@ if [ -f /etc/my.cnf.rpmorig ]; then
 \cp -f /etc/my.cnf.rpmsave /etc/my.cnf
 fi
 
-    if [ -f "$(which figlet)" ]; then
+    if command -v figlet >/dev/null 2>&1; then
         figlet -ckf standard "MariaDB 10.2.x /etc/my.cnf Adjustments"
     fi
 
@@ -812,7 +812,7 @@ echo "------------------------------------------------"
 echo "MariaDB 10.2.x Upgrade completed"
 echo "------------------------------------------------"
 
-    if [ -f "$(which figlet)" ]; then
+    if command -v figlet >/dev/null 2>&1; then
         figlet -ckf standard "MariaDB 10.2.x Upgraded"
     fi
 

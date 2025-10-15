@@ -206,7 +206,7 @@ install_native_mariadb_ten_eleven() {
     echo "#####################################################"
     echo
   elif [[ "$install_native_mariadb_ten_eleven_mode" = 'install-fresh' ]]; then
-    if [ -f "$(which figlet)" ]; then
+    if command -v figlet >/dev/null 2>&1; then
         figlet -ckf standard "Native EL10 Appstream Module MariaDB 10.11 Yum Install"
     fi
     echo
@@ -284,11 +284,11 @@ install_native_mariadb_ten_eleven() {
       echo
     fi
 
-    if [ -f "$(which figlet)" ]; then
+    if command -v figlet >/dev/null 2>&1; then
         figlet -ckf standard "/etc/my.cnf compat checks"
     fi
 
-    if [ -f "$(which figlet)" ]; then
+    if command -v figlet >/dev/null 2>&1; then
         figlet -ckf standard "MariaDB 10.11 Specific /etc/my.cnf"
     fi
 
@@ -410,7 +410,7 @@ TDG
 fi # install-fresh
 
   if [[ "$install_native_mariadb_ten_eleven_mode" = 'install-fresh' ]]; then
-    if [ -f "$(which figlet)" ]; then
+    if command -v figlet >/dev/null 2>&1; then
         figlet -ckf standard "MariaDB 10 Plugins"
     fi
 
@@ -527,7 +527,7 @@ funct_logmysqlrotate
   fi # install-fresh
 
   if [[ "$install_native_mariadb_ten_eleven_mode" = 'install-fresh' ]]; then
-    if [ -f "$(which figlet)" ]; then
+    if command -v figlet >/dev/null 2>&1; then
         figlet -ckf standard "New Initial /etc/my.cnf"
     fi
     echo "new initial /etc/my.cnf"

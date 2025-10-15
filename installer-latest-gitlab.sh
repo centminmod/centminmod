@@ -1858,7 +1858,7 @@ install_axel() {
 
 cminstall() {
 
-    if [ -f "$(which figlet)" ]; then
+    if command -v figlet >/dev/null 2>&1; then
         figlet -ckf standard "Centmin Mod Install"
     fi
 

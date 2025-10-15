@@ -1180,7 +1180,7 @@ fi # CENTOS_SEVEN = 7
 ###############################################################################
 echo ""
 
-    if [ -f "$(which figlet)" ]; then
+    if command -v figlet >/dev/null 2>&1; then
         figlet -ckf standard "MariaDB 11.8 Yum Install"
     fi
 
@@ -1309,14 +1309,14 @@ elif [[ "$CENTOS_TEN" = '10' ]]; then
     cp -a /etc/my.cnf /etc/my.cnf-newold
 fi # CENTOS_SEVEN != 7
 
-    if [ -f "$(which figlet)" ]; then
+    if command -v figlet >/dev/null 2>&1; then
         figlet -ckf standard "/etc/my.cnf compat checks"
     fi
 
 ###############################################################################
 echo ""
 
-    if [ -f "$(which figlet)" ]; then
+    if command -v figlet >/dev/null 2>&1; then
         figlet -ckf standard "MariaDB 11.8 Specific /etc/my.cnf"
     fi
 
@@ -1428,7 +1428,7 @@ echo
 systemctl show mariadb --no-pager | grep -E 'LimitNOFILE|NotifyAccess|OOM'
 echo
 
-    if [ -f "$(which figlet)" ]; then
+    if command -v figlet >/dev/null 2>&1; then
         figlet -ckf standard "MariaDB 10 Plugins"
     fi
 
@@ -1694,7 +1694,7 @@ fi
 
 mariadb118_yuminstall
 
-    if [ -f "$(which figlet)" ]; then
+    if command -v figlet >/dev/null 2>&1; then
         figlet -ckf standard "New Initial /etc/my.cnf"
     fi
 

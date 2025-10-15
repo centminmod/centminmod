@@ -388,7 +388,7 @@ fi # CENTOS_SEVEN = 7
 ###############################################################################
 echo ""
 
-    if [ -f "$(which figlet)" ]; then
+    if command -v figlet >/dev/null 2>&1; then
         figlet -ckf standard "MariaDB 10.2 Yum Install"
     fi
 
@@ -466,14 +466,14 @@ elif [[ "$CENTOS_EIGHT" = '8' ]]; then
     cp -a /etc/my.cnf /etc/my.cnf-newold
 fi # CENTOS_SEVEN != 7
 
-    if [ -f "$(which figlet)" ]; then
+    if command -v figlet >/dev/null 2>&1; then
         figlet -ckf standard "/etc/my.cnf compat checks"
     fi
 
 ###############################################################################
 echo ""
 
-    if [ -f "$(which figlet)" ]; then
+    if command -v figlet >/dev/null 2>&1; then
         figlet -ckf standard "MariaDB 10.2 Specific /etc/my.cnf"
     fi
 
@@ -554,7 +554,7 @@ fi
 
 cmservice mysql restart
 
-    if [ -f "$(which figlet)" ]; then
+    if command -v figlet >/dev/null 2>&1; then
         figlet -ckf standard "MariaDB 10 Plugins"
     fi
 
@@ -818,7 +818,7 @@ fi
 
 mariadb102_yuminstall
 
-    if [ -f "$(which figlet)" ]; then
+    if command -v figlet >/dev/null 2>&1; then
         figlet -ckf standard "New Initial /etc/my.cnf"
     fi
 

@@ -122,7 +122,7 @@ if [[ "$NGINX_INSTALL" = [yY] || "$FREENGINX_INSTALL" = [yY] ]]; then
     WGETOPT="-cnv --no-dns-cache${ipv_forceopt_wget}"
     fi
 
-    if [ -f "$(which figlet)" ]; then
+    if command -v figlet >/dev/null 2>&1; then
         figlet -ckf standard "Install Nginx"
     fi
 
@@ -212,7 +212,7 @@ fi
     echo "nginx install: install openssl completed in $install_openssl_time seconds"
     echo
 
-    if [ -f "$(which figlet)" ]; then
+    if command -v figlet >/dev/null 2>&1; then
         figlet -ckf standard "luajit install"
     fi
 
@@ -238,7 +238,7 @@ nginx_libuuid
     # Install nginx
     cd $DIR_TMP
 if [[ "$FPM_NGINX_RPM" != [yY] ]]; then
-    if [ -f "$(which figlet)" ]; then
+    if command -v figlet >/dev/null 2>&1; then
         figlet -ckf standard "Compiling Nginx"
     fi
 
@@ -274,7 +274,7 @@ fi
 
 if [[ "$NGINXPATCH" = [yY] && "$FPM_NGINX_RPM" != [yY] ]]; then
 
-    if [ -f "$(which figlet)" ]; then
+    if command -v figlet >/dev/null 2>&1; then
         figlet -ckf standard "Patch Nginx"
     fi
 
@@ -314,7 +314,7 @@ if [[ "$FPM_NGINX_RPM" = [yY] && "$INITIALINSTALL" = [yY] && "$CENTOS_SEVEN" -eq
   echo
 else
     ngx_starttime=$(TZ=UTC date +%s.%N)
-    if [ -f "$(which figlet)" ]; then
+    if command -v figlet >/dev/null 2>&1; then
         figlet -ckf standard "Nginx Make"
     fi
 
@@ -352,7 +352,7 @@ else
         fi
     fi
 
-    if [ -f "$(which figlet)" ]; then
+    if command -v figlet >/dev/null 2>&1; then
         figlet -ckf standard "Nginx Make Install"
     fi
     ngx_make_starttime=$(TZ=UTC date +%s.%N)
@@ -638,7 +638,7 @@ geoipphp
     cecho "* nginx installed, Apache disabled" $boldgreen
     echo "*************************************************"
    
-    if [ -f "$(which figlet)" ]; then
+    if command -v figlet >/dev/null 2>&1; then
         figlet -ckf standard "Nginx Installed"
     fi
 

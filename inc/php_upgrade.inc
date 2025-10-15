@@ -175,7 +175,7 @@ autodetectinstallextensions() {
 
 PHPEXTDIR_AUTODETECT=$(cat /usr/local/bin/php-config | awk '/^extension_dir/ {extdir=$1} END {gsub(/\047|extension_dir|=|)/,"",extdir); print extdir}')
 
-    if [ -f "$(which figlet)" ]; then
+    if command -v figlet >/dev/null 2>&1; then
         figlet -ckf standard "PHP: Auto Detect Previous Extensions"
     fi
 
@@ -296,7 +296,7 @@ funct_phpupgrade() {
     if [[ "$ENABLE_EXT_OVERRIDE" = 'all' ]]; then
         AUTODETECPHP_OVERRIDE='y'
     fi
-    if [ -f "$(which figlet)" ]; then
+    if command -v figlet >/dev/null 2>&1; then
         figlet -ckf standard "PHP: Upgrade"
     fi
 
@@ -572,7 +572,7 @@ fi
     if [[ "$PHPNG_YES" != [yY] ]]; then
         phpgeolocation
     
-        if [ -f "$(which figlet)" ]; then
+        if command -v figlet >/dev/null 2>&1; then
             figlet -ckf standard "PHP: Download"
         fi
     
@@ -710,7 +710,7 @@ fi # PHPDIFF
     #mkdir -p /usr/${LIBDIR}/mysql
     #ln -s /usr/${LIBDIR}/libmysqlclient.so /usr/${LIBDIR}/mysql/libmysqlclient.so
 
-    if [ -f "$(which figlet)" ]; then
+    if command -v figlet >/dev/null 2>&1; then
         figlet -ckf standard "PHP: Configure"
     fi
 
@@ -808,7 +808,7 @@ if [[ "$PHP_PGO_ALWAYS" = [yY] ]]; then
   PHP_PGO='y'
 fi
 
-    if [ -f "$(which figlet)" ]; then
+    if command -v figlet >/dev/null 2>&1; then
         figlet -ckf standard "PHP: Make"
     fi
     echo "PHPMUVER = $PHPMUVER"
@@ -969,7 +969,7 @@ fi
       sar_call
     fi
 
-    if [ -f "$(which figlet)" ]; then
+    if command -v figlet >/dev/null 2>&1; then
         figlet -ckf standard "PHP: Make Install"
     fi
 
@@ -1276,7 +1276,7 @@ if [[ "$PHPMSSQL" = [nN] ]]; then
 fi
 
 if [[ "$PHPIONCUBE" = [yY] ]]; then
-  if [ -f "$(which figlet)" ]; then
+  if command -v figlet >/dev/null 2>&1; then
       figlet -ckf standard "Install IonCube Loader"
   fi
     if [ -f "${CM_INSTALLDIR}/addons/ioncube.sh" ]; then
@@ -1649,7 +1649,7 @@ fi
         fi
     fi
 
-    if [ -f "$(which figlet)" ]; then
+    if command -v figlet >/dev/null 2>&1; then
         figlet -ckf standard "PHP Upgraded"
     fi
 

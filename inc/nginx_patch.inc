@@ -1004,7 +1004,7 @@ ngxopenresty_patch() {
 }
 
 ngx_dynamic_tls_message() {
-     if [ -f "$(which figlet)" ]; then
+     if command -v figlet >/dev/null 2>&1; then
          figlet -ckf standard "Cloudflare Nginx Dynamic TLS Patch"
      fi
      echo "######################################################################"
@@ -1125,7 +1125,7 @@ patchnginx() {
   fi
   if [[ "$DETECTOPENSSL_ONEZERO" = '1.1' ]] && [[ "$DETECT_NGXVER" -le '1011003' && "$DETECT_NGXVER" -ge '1011000' ]]; then
     if [[ -f "$CUR_DIR/patches/nginx/openssl-110pre6.patch" && -f "$CUR_DIR/patches/nginx/openssl-110ticket.patch" ]]; then
-      if [ -f "$(which figlet)" ]; then
+      if command -v figlet >/dev/null 2>&1; then
           figlet -ckf standard "Nginx OpenSSL 1.1.0 Patch"
       fi
       echo
@@ -1180,7 +1180,7 @@ patchnginx() {
     fi
   fi
   if [[ "$NGINX_SPDYPATCHED" = [yY] ]]; then
-     if [ -f "$(which figlet)" ]; then
+     if command -v figlet >/dev/null 2>&1; then
          figlet -ckf standard "Cloudflare Nginx HTTP/2 + SPDY Patch"
      fi
      echo  "######################################################################"

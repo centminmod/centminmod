@@ -16,7 +16,7 @@ TDF
 mysqltmpdir() {
 
     if [[ "$INITIALINSTALL" = [yY] ]]; then
-    if [ -f "$(which figlet)" ]; then
+    if command -v figlet >/dev/null 2>&1; then
         figlet -ckf standard "mysql tmpdir setup"
     fi
     fi

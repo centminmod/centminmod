@@ -372,7 +372,7 @@ if [[ "$ORESTY_LUANGINX" = [yY] ]]; then
     OPENSSL_LINK="https://github.com/openssl/openssl/releases/download/openssl-${OPENSSL_VERSION}/${OPENSSL_LINKFILE}"
 fi
 
-    if [ -f "$(which figlet)" ]; then
+    if command -v figlet >/dev/null 2>&1; then
         figlet -ckf standard "Check Nginx Modules"
     fi
 
@@ -696,7 +696,7 @@ fi # UALL
 ## grab newer custom written htpasswd.sh as well
 gethtpasswdsh
 
-    if [ -f "$(which figlet)" ]; then
+    if command -v figlet >/dev/null 2>&1; then
         figlet -ckf standard "Nginx Auto Backup Conf Directories"
     fi
 
@@ -810,7 +810,7 @@ fi
 #     rm -rf nginx-${ngver}*
 # fi
 
-    if [ -f "$(which figlet)" ]; then
+    if command -v figlet >/dev/null 2>&1; then
         figlet -ckf standard "Compile Nginx"
     fi
 
@@ -858,7 +858,7 @@ fi
             wget "https://nginx.org/download/nginx-${ngver}.tar.gz" --tries=3
             NGINXDOWNLOAD_CHECK=$?
             if [[ "$NGINXDOWNLOAD_CHECK" != '0' ]]; then
-                if [ -f "$(which figlet)" ]; then
+                if command -v figlet >/dev/null 2>&1; then
                     figlet -ckf standard "Nginx Failed Download"
                 fi
                 echo
@@ -900,7 +900,7 @@ fi
         fi
         NGINXTAREXTRACT_CHECK=$?
         if [[ "$NGINXTAREXTRACT_CHECK" != '0' ]]; then
-            if [ -f "$(which figlet)" ]; then
+            if command -v figlet >/dev/null 2>&1; then
                 if [[ "$FREENGINX_INSTALL" = [yY] ]]; then
                     figlet -ckf standard "FreeNginx Tarball Extraction Failed"
                 else
@@ -958,7 +958,7 @@ if [[ "$NGINXPATCH" = [yY] ]]; then
     patchnginx
 fi
 
-    if [ -f "$(which figlet)" ]; then
+    if command -v figlet >/dev/null 2>&1; then
         figlet -ckf standard "Nginx Configure"
     fi
 
@@ -1047,7 +1047,7 @@ fi
 # error check
 ################
 
-    if [ -f "$(which figlet)" ]; then
+    if command -v figlet >/dev/null 2>&1; then
         figlet -ckf standard "Nginx Make"
     fi
 
@@ -1218,7 +1218,7 @@ elif [[ "$NGINX_ZERODT" = [yY] ]]; then
   ps axw -o pid,ppid,user,%cpu,vsz,wchan,command | grep -E '(nginx: |PID)' | grep -E -v '(nginx_upgrade|amplify|php-fpm|hhvm)' | grep -E -v grep
   echo "---------------------------------------------------------------------------"
 fi
-    if [ -f "$(which figlet)" ]; then
+    if command -v figlet >/dev/null 2>&1; then
         figlet -ckf standard "Nginx Make Install"
     fi
 
@@ -1416,7 +1416,7 @@ fi
         geoipphp
         mimefix
 
-    if [ -f "$(which figlet)" ]; then
+    if command -v figlet >/dev/null 2>&1; then
         figlet -ckf standard "Nginx Cleanup"
     fi
 
@@ -1527,7 +1527,7 @@ fi
     rm -f /tmp/nginx_version_cache
     echo "nginx upgrade: make time completed in $ngx_make_time seconds"
     echo
-    if [ -f "$(which figlet)" ]; then
+    if command -v figlet >/dev/null 2>&1; then
         figlet -ckf standard "Nginx Updated"
     fi
 

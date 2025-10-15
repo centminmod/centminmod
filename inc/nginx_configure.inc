@@ -391,7 +391,7 @@ ngx_dynamicfunction() {
   fi
   if [ -d /usr/local/nginx/conf ]; then
     # detection routine to see if Nginx supports Dynamic modules from nginx 1.9.11+
-    if [ -f "$(which figlet)" ]; then
+    if command -v figlet >/dev/null 2>&1; then
         figlet -ckf standard "Check Nginx Dynamic Module Support"
     fi
     echo

@@ -1,5 +1,5 @@
 setmycnf() {
-  if [ -f "$(which figlet)" ]; then
+  if command -v figlet >/dev/null 2>&1; then
     figlet -ckf standard "Set /etc/my.cnf"
   fi
   MYTOTALMEM=$(cat /proc/meminfo | grep MemTotal | awk '{print $2}')

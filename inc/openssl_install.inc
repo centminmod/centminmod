@@ -551,7 +551,7 @@ fi
 
 if [[ "$CLOUDFLARE_PATCHSSL" = [yY] && "$DETECTOPENSSL_ONEZERO" = '1.0' ]]; then
     # if [[ "${OPENSSL_VERSION}" = '1.0.1h' ]]; then
-        if [ -f "$(which figlet)" ]; then
+        if command -v figlet >/dev/null 2>&1; then
             figlet -ckf standard "Cloudflare Chacha20 Patch"
         fi
         echo  "######################################################################"
@@ -598,14 +598,14 @@ if [[ "$CLOUDFLARE_PATCHSSL" = [yY] && "$DETECTOPENSSL_ONEZERO" = '1.0' ]]; then
             echo  "######################################################################"
             echo  "OpenSSL 1.0.2o patched"
             echo  "######################################################################"
-            if [ -f "$(which figlet)" ]; then
+            if command -v figlet >/dev/null 2>&1; then
                 figlet -ckf standard "Cloudflare Chacha20 Patched"
             fi
         else
             echo  "######################################################################"
             echo  "OpenSSL 1.0.2j not patched"
             echo  "######################################################################"
-            if [ -f "$(which figlet)" ]; then
+            if command -v figlet >/dev/null 2>&1; then
                 figlet -ckf standard "Cloudflare Chacha20 Not Patched"
             fi
         fi
@@ -615,7 +615,7 @@ fi # CLOUDFLARE_PATCHSSL
 
 if [[ "$CLOUDFLARE_PATCHSSL" = [yY] && "$DETECTOPENSSL_ONEZERO" = '1.1' ]] && [[ "$DETECTOPENSSL_ONEONE" != '1.1.1' ]] ; then
     if [[ "$TLSONETHREE" != [yY] ]]; then
-        if [ -f "$(which figlet)" ]; then
+        if command -v figlet >/dev/null 2>&1; then
             figlet -ckf standard "Cloudflare OpenSSL 1.1 Smarter Chacha20 Patch"
         fi
         echo "######################################################################"
@@ -631,7 +631,7 @@ if [[ "$CLOUDFLARE_PATCHSSL" = [yY] && "$DETECTOPENSSL_ONEZERO" = '1.1' ]] && [[
             echo  "######################################################################"
             echo  "OpenSSL 1.1.0 branch Smart Chacha20 patched"
             echo  "######################################################################"
-            if [ -f "$(which figlet)" ]; then
+            if command -v figlet >/dev/null 2>&1; then
                 figlet -ckf standard "Cloudflare OpenSSL 1.1 Smarter Chacha20 Patched"
             fi
         fi
@@ -643,7 +643,7 @@ if [[ "$CLOUDFLARE_PATCHSSL" = [yY] && "$DETECTOPENSSL_ONEZERO" = '1.1' ]] && [[
 fi # CLOUDFLARE_PATCHSSL
 
 if [[ "$NGINX_TLS_FINGERPRINT" = [yY] && "$DETECTOPENSSL_ONEONE" && "$DETECTOPENSSL_ONEONE" = '1.1.1' ]] && [[ "$AWS_LC_SWITCH" = [nN] ]] && [[ "$LIBRESSL_SWITCH" = [nN] ]] && [[ "$BORINGSSL_SWITCH" = [nN] ]]; then
-    if [ -f "$(which figlet)" ]; then
+    if command -v figlet >/dev/null 2>&1; then
          figlet -ckf standard "OpenSSL 1.1.1 branch nginx-ssl-fingerprint module Patch"
      fi
      echo "######################################################################"
@@ -663,7 +663,7 @@ if [[ "$NGINX_TLS_FINGERPRINT" = [yY] && "$DETECTOPENSSL_ONEONE" && "$DETECTOPEN
          echo  "######################################################################"
          echo  "OpenSSL 1.1.1 branch nginx-ssl-fingerprint module patched"
          echo  "######################################################################"
-         if [ -f "$(which figlet)" ]; then
+         if command -v figlet >/dev/null 2>&1; then
              figlet -ckf standard "OpenSSL 1.1.1 branch nginx-ssl-fingerprint module patched"
          fi
      fi
@@ -1316,7 +1316,7 @@ fi
     if [[ "$LIBRESSL_SWITCH" = [yY] ]] && [[ "$BORINGSSL_SWITCH" = [nN] ]]; then
         libresslinstallstarttime=$(TZ=UTC date +%s.%N)
 
-        if [ -f "$(which figlet)" ]; then
+        if command -v figlet >/dev/null 2>&1; then
             figlet -ckf standard "Compiling LibreSSL"
         fi
 
@@ -1394,7 +1394,7 @@ fi
       if [[ "$ngver" = 'quic' || "$NGINX_QUIC_SUPPORT" = [yY] ]]; then
         opensslinstallstarttime=$(TZ=UTC date +%s.%N)
 
-        if [ -f "$(which figlet)" ]; then
+        if command -v figlet >/dev/null 2>&1; then
             figlet -ckf standard "Compiling OpenSSL quictls fork"
         fi
         DETECTOPENSSL_ONEONE=$(echo $OPENSSL_QUIC_VERSION  | cut -d . -f1-3 | grep -o 1.1.1)
@@ -1573,7 +1573,7 @@ fi
       if [[ "$OPENSSLVER_CHECK" != "$OPENSSL_VERSION" ]] || [[ "$OPENSSL_FORCECOMPILE" = [yY] ]] || [[ "$NGINX_TLS_FINGERPRINT" = [yY] ]]; then
         opensslinstallstarttime=$(TZ=UTC date +%s.%N)
 
-        if [ -f "$(which figlet)" ]; then
+        if command -v figlet >/dev/null 2>&1; then
             figlet -ckf standard "Compiling OpenSSL"
         fi
         echo
@@ -1757,7 +1757,7 @@ fi
         OPENSSL_SYSTEM_USE='n'
         crypto_gcc
         dnf install -y cmake3 ninja-build clang perl golang
-        if [ -f "$(which figlet)" ]; then
+        if command -v figlet >/dev/null 2>&1; then
             figlet -ckf standard "Compiling AWS-LC"
         fi
 
@@ -1807,7 +1807,7 @@ fi
         boringsslinstallstarttime=$(TZ=UTC date +%s.%N)
         OPENSSL_SYSTEM_USE='n'
         crypto_gcc
-        if [ -f "$(which figlet)" ]; then
+        if command -v figlet >/dev/null 2>&1; then
             figlet -ckf standard "Compiling BoringSSL"
         fi
 
