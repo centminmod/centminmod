@@ -330,7 +330,11 @@ checkimagicksys() {
                         if [[ "$CENTOS_NINE" -eq '9' ]]; then
                             echo "time $YUMDNFBIN -y install ImageMagick${REMI_IMAGEMAGICK_PKGNAME}-libs ImageMagick${REMI_IMAGEMAGICK_PKGNAME} ImageMagick${REMI_IMAGEMAGICK_PKGNAME}-devel ImageMagick${REMI_IMAGEMAGICK_PKGNAME}-c++-devel --disablerepo=epel --enablerepo=remi${DISABLEREPO_DNF} --disableplugin=priorities${VERSIONLOCK_REPO} --skip-broken"
                             time $YUMDNFBIN -y install ImageMagick${REMI_IMAGEMAGICK_PKGNAME}-libs ImageMagick${REMI_IMAGEMAGICK_PKGNAME} ImageMagick${REMI_IMAGEMAGICK_PKGNAME}-devel ImageMagick${REMI_IMAGEMAGICK_PKGNAME}-c++-devel --disablerepo=epel --enablerepo=remi${DISABLEREPO_DNF} --disableplugin=priorities${VERSIONLOCK_REPO} --skip-broken
-                        fi      
+                        fi
+                        if [[ "$CENTOS_TEN" -eq '10' ]]; then
+                            echo "time $YUMDNFBIN -y install ImageMagick${REMI_IMAGEMAGICK_PKGNAME}-libs ImageMagick${REMI_IMAGEMAGICK_PKGNAME} ImageMagick${REMI_IMAGEMAGICK_PKGNAME}-devel ImageMagick${REMI_IMAGEMAGICK_PKGNAME}-c++-devel --disablerepo=epel --enablerepo=remi${DISABLEREPO_DNF} --disableplugin=priorities${VERSIONLOCK_REPO} --skip-broken"
+                            time $YUMDNFBIN -y install ImageMagick${REMI_IMAGEMAGICK_PKGNAME}-libs ImageMagick${REMI_IMAGEMAGICK_PKGNAME} ImageMagick${REMI_IMAGEMAGICK_PKGNAME}-devel ImageMagick${REMI_IMAGEMAGICK_PKGNAME}-c++-devel --disablerepo=epel --enablerepo=remi${DISABLEREPO_DNF} --disableplugin=priorities${VERSIONLOCK_REPO} --skip-broken
+                        fi
                         if [[ "$CENTOS_EIGHT" -eq '8' ]]; then
                             # for el8 libzip is an appstream module tied to php and nginx modules which disabled by default
                             # so temp re-enable nginx and php modules in order to get libzip installed and then re-disable them
@@ -386,7 +390,7 @@ checkimagicksys() {
                         if [[ "$CENTOS_SEVEN" = '7' && "$(rpm -qa libwebp-devel)" ]]; then
                             yum -y swap libwebp-devel libwebp7-devel --enablerepo=remi
                         fi
-                        time yum -y install ImageMagick${REMI_IMAGEMAGICK_PKGNAME} ImageMagick${REMI_IMAGEMAGICK_PKGNAME}-devel ImageMagick${REMI_IMAGEMAGICK_PKGNAME}-c++ ImageMagick${REMI_IMAGEMAGICK_PKGNAME}-c++-devel ImageMagick${REMI_IMAGEMAGICK_PKGNAME}-libs${IMG_HEIFOPT} LibRaw --enablerepo=remi${DISABLEREPO_DNF} --disableplugin=priorities${VERSIONLOCK_REPO}
+                        time $YUMDNFBIN -y install ImageMagick${REMI_IMAGEMAGICK_PKGNAME} ImageMagick${REMI_IMAGEMAGICK_PKGNAME}-devel ImageMagick${REMI_IMAGEMAGICK_PKGNAME}-c++ ImageMagick${REMI_IMAGEMAGICK_PKGNAME}-c++-devel ImageMagick${REMI_IMAGEMAGICK_PKGNAME}-libs${IMG_HEIFOPT} LibRaw --enablerepo=remi${DISABLEREPO_DNF} --disableplugin=priorities${VERSIONLOCK_REPO}
                     fi
                 fi
             elif [ ! -f /etc/yum.repos.d/remi.repo ]; then
@@ -397,6 +401,10 @@ checkimagicksys() {
                     remisevenyum
                 elif [[ "$CENTOS_EIGHT" = '8' ]]; then
                     remieightyum
+                elif [[ "$CENTOS_NINE" = '9' ]]; then
+                    reminineyum
+                elif [[ "$CENTOS_TEN" = '10' ]]; then
+                    remitenyum
                 fi
                 if [[ $(rpm -q ImageMagick >/dev/null 2>&1; echo $?) = '0' ]]; then
                     echo
