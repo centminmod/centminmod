@@ -494,7 +494,7 @@ max_spawn_rate_check() {
       grep 'pm.max_spawn_rate' /usr/local/etc/php-fpm.conf
       echo
     fi
-  elif [[ "$CENTOS_SEVEN" -eq '7' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' && "$INITIALINSTALL" != [yY] ]] && [[ "$(grep 'pm.max_spawn_rate' /usr/local/etc/php-fpm.conf)" ]] && [[ "$PHPMUVER" = '5.6' || "$PHPMUVER" = '7.0' || "$PHPMUVER" = '7.1' || "$PHPMUVER" = '7.2' || "$PHPMUVER" = '7.3' || "$PHPMUVER" = '7.4' || "$PHPMUVER" = '8.0' ]]; then 
+  elif [[ ("$CENTOS_SEVEN" -eq '7' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' || "$CENTOS_TEN" -eq '10') && "$INITIALINSTALL" != [yY] ]] && [[ "$(grep 'pm.max_spawn_rate' /usr/local/etc/php-fpm.conf)" ]] && [[ "$PHPMUVER" = '5.6' || "$PHPMUVER" = '7.0' || "$PHPMUVER" = '7.1' || "$PHPMUVER" = '7.2' || "$PHPMUVER" = '7.3' || "$PHPMUVER" = '7.4' || "$PHPMUVER" = '8.0' ]]; then 
     echo
     echo "remove unsupported pm.max_spawn_rate from /usr/local/etc/php-fpm.conf"
     sed -i "/pm.max_spawn_rate/d" /usr/local/etc/php-fpm.conf
@@ -1148,16 +1148,27 @@ DETECTOPENSSL_THREETWO=$(echo $OPENSSL_VERSION  | cut -d . -f1-2 | grep -o 3.2)
 DETECTOPENSSL_THREETHREE=$(echo $OPENSSL_VERSION  | cut -d . -f1-2 | grep -o 3.3)
 DETECTOPENSSL_THREEFOUR=$(echo $OPENSSL_VERSION  | cut -d . -f1-2 | grep -o 3.4)
 # el9 uses OpenSSL 3.0 and is not supported for PHP builds <=8.0
+# el10 uses OpenSSL 3.2 and is not supported for PHP builds <=8.0
 # for PHP 7.4 to 8.0, use OpenSSL 1.1.1 instead
 # https://bugs.php.net/bug.php?id=81540
 if [[ "$CENTOS_NINE" -eq '9' && "$PHP_PATCH_OPENSSL_THREE" = [yY] ]] && [[ "$PHPMVER" = '8.1' || "$PHPMUVER" = '8.1' || "$PHPMVER" = '8.2' || "$PHPMUVER" = '8.2' || "$PHPMVER" = '8.3' || "$PHPMUVER" = '8.3' || "$PHPMVER" = '8.4' || "$PHPMUVER" = '8.4' ]]; then
   PHP_CUSTOMSSL='n'
   PHP_PATCH_OPENSSL_THREE='n'
 fi
+if [[ "$CENTOS_TEN" -eq '10' && "$PHP_PATCH_OPENSSL_THREE" = [yY] ]] && [[ "$PHPMVER" = '8.1' || "$PHPMUVER" = '8.1' || "$PHPMVER" = '8.2' || "$PHPMUVER" = '8.2' || "$PHPMVER" = '8.3' || "$PHPMUVER" = '8.3' || "$PHPMVER" = '8.4' || "$PHPMUVER" = '8.4' ]]; then
+  PHP_CUSTOMSSL='n'
+  PHP_PATCH_OPENSSL_THREE='n'
+fi
 if [[ "$CENTOS_NINE" -eq '9' && "$PHP_PATCH_OPENSSL_THREE" = [yY] ]] && [[ "$PHPVER_ID" -ge '70400' && "$PHPVER_ID" -lt '80100' ]]; then
   PHP_CUSTOMSSL='y'
 fi
+if [[ "$CENTOS_TEN" -eq '10' && "$PHP_PATCH_OPENSSL_THREE" = [yY] ]] && [[ "$PHPVER_ID" -ge '70400' && "$PHPVER_ID" -lt '80100' ]]; then
+  PHP_CUSTOMSSL='y'
+fi
 if [[ "$CENTOS_NINE" -eq '9' && "$PHP_PATCH_OPENSSL_THREE" = [yY] ]] && [[ "$PHPMVER" = '7.4' || "$PHPMUVER" = '7.4' || "$PHPMVER" = '8.0' || "$PHPMUVER" = '8.0' ]]; then
+  PHP_CUSTOMSSL='y'
+fi
+if [[ "$CENTOS_TEN" -eq '10' && "$PHP_PATCH_OPENSSL_THREE" = [yY] ]] && [[ "$PHPMVER" = '7.4' || "$PHPMUVER" = '7.4' || "$PHPMVER" = '8.0' || "$PHPMUVER" = '8.0' ]]; then
   PHP_CUSTOMSSL='y'
 fi
 
@@ -1669,7 +1680,7 @@ if [[ ! -d /usr/include/net-snmp ]]; then
   fi
 fi
 
-if [[ ! -f /usr/include/expect.h ]] && [[ "$CENTOS_NINE" -ne '9' || "$CENTOS_TEN" -ne '10' ]]; then
+if [[ ! -f /usr/include/expect.h ]] && [[ "$CENTOS_NINE" -ne '9' && "$CENTOS_TEN" -ne '10' ]]; then
   if [ -f /etc/yum.repos.d/rpmforge.repo ]; then
     yum -q -y install expect-devel --disablerepo=rpmforge,epel
     sar_call

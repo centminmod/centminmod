@@ -458,17 +458,17 @@ else
         read -ep "Enter PHP Version number you want to upgrade/downgrade to: " phpver
         echo
     fi
-    if [[ "$CENTOS_NINE" -eq '9' && "$PHP_PATCH_OPENSSL_THREE" = [yY] ]] && [[ "$PHPMUVER" = '7.4' || "$PHPMUVER" = '8.0' ]]; then
-        # note for EL9 PHP 7.4/8.0 for OpenSSL 3.0 system compatibility
+    if [[ ("$CENTOS_NINE" -eq '9' || "$CENTOS_TEN" -eq '10') && "$PHP_PATCH_OPENSSL_THREE" = [yY] ]] && [[ "$PHPMUVER" = '7.4' || "$PHPMUVER" = '8.0' ]]; then
+        # note for EL9/EL10 PHP 7.4/8.0 for OpenSSL 3.x system compatibility
         echo
         echo "#####################################################################"
-        echo "         EL9 OpenSSL 3.0 Compatibility Note"
+        echo "         EL9/EL10 OpenSSL 3.x Compatibility Note"
         echo "#####################################################################"
-        echo "Detected EL9 system running OpenSSL 3.0 system library ..."
-        echo "PHP 7.4 and PHP 8.0 officially do not support OpenSSL 3.0"
-        echo "For EL9 systems using OpenSSL 3.0, minimum PHP 8.1 version"
+        echo "Detected EL9 (OpenSSL 3.0) or EL10 (OpenSSL 3.2.2) system ..."
+        echo "PHP 7.4 and PHP 8.0 officially do not support OpenSSL 3.x"
+        echo "For EL9/EL10 systems using OpenSSL 3.x, minimum PHP 8.1 version"
         echo "is required. However, Centmin Mod has patched PHP 7.4.33 and"
-        echo "PHP 8.0 workarounds to be able to compile on EL9 OpenSSL 3.0."
+        echo "PHP 8.0 workarounds to be able to compile on EL9/EL10 OpenSSL 3.x."
         echo "This may not be 100% and is provided as is."
         echo
         echo "If you need PHP <=8.0, you should use EL8 systems with OpenSSL 1.1.1"
@@ -483,12 +483,12 @@ else
     if [[ "$phpfpm_stillcont" = [nN] ]];then
         exit 0
     fi
-    # PHP 7.4 & PHP 8.0 EL9 OpenSSL compatibility routines remove the directory
+    # PHP 7.4 & PHP 8.0 EL9/EL10 OpenSSL compatibility routines remove the directory
     # if it exists so a fresh PHP directory can always be patched
-    if [[ "$CENTOS_NINE" -eq '9' && "$PHP_PATCH_OPENSSL_THREE" = [yY] ]] && [[ "$PHPMUVER" = '7.4' || "$PHPMUVER" = '8.0' ]]; then
+    if [[ ("$CENTOS_NINE" -eq '9' || "$CENTOS_TEN" -eq '10') && "$PHP_PATCH_OPENSSL_THREE" = [yY] ]] && [[ "$PHPMUVER" = '7.4' || "$PHPMUVER" = '8.0' ]]; then
         echo
         echo "----------------------------------------------------------------"
-        echo "EL9 PHP 7.4/8.0 compatibility..."
+        echo "EL9/EL10 PHP 7.4/8.0 compatibility..."
         rm -rf "${DIR_TMP}/php-${phpver}"
     fi
     echo
@@ -1120,7 +1120,7 @@ if [[ "$overwritephpfpmconf" = [yY] ]]; then
         cp -f "$CUR_DIR/config/php-fpm/php-fpm.conf" /usr/local/etc/php-fpm.conf
     fi # lessphpmem
 
-    if [[ "$CENTOS_NINE" -eq '9' ]]; then
+    if [[ "$CENTOS_NINE" -eq '9' || "$CENTOS_TEN" -eq '10' ]]; then
       sed -i 's|\/var\/run\/php-fpm\/php-fpm.pid|\/run\/php-fpm\/php-fpm.pid|' /usr/local/etc/php-fpm.conf
     fi
 
