@@ -685,6 +685,24 @@ if [ -f "${CM_INSTALLDIR}/inc/z_custom.inc" ]; then
     fi
 fi
 
+#########################################################
+# Ensure mold linker is installed for PHP compilation if PHP_LDMOLD='y'
+# For CENTOS_TEN=10, install mold via yum if not already present
+# Provides 30-50 seconds faster linking during PHP compilation
+#########################################################
+if [[ "$PHP_LDMOLD" = [yY] ]]; then
+  if [[ "$CENTOS_TEN" = '10' && "$(uname -m)" = 'x86_64' ]] && [[ ! -f /usr/bin/mold ]]; then
+    echo "Installing mold linker for PHP-FPM compilation..."
+    yum -y install mold
+  elif [[ "$CENTOS_NINE" = '9' && "$(uname -m)" = 'x86_64' ]] && [[ ! -f /usr/bin/mold ]]; then
+    echo "Installing mold linker for PHP-FPM compilation..."
+    yum -y install mold
+  elif [[ "$CENTOS_EIGHT" = '8' && "$(uname -m)" = 'x86_64' ]] && [[ ! -f /usr/bin/mold ]]; then
+    echo "Installing mold linker for PHP-FPM compilation..."
+    yum -y install mold
+  fi
+fi
+
 fpmconfdir
 
 # if [[ "$PHP_GD_AVIF" = [yY] ]]; then

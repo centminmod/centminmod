@@ -30,7 +30,7 @@ DT=$(date +"%d%m%y-%H%M%S")
 branchname='141.00beta01'
 SCRIPT_MAJORVER='141'
 SCRIPT_MINORVER='00'
-SCRIPT_INCREMENTVER='078'
+SCRIPT_INCREMENTVER='079'
 SCRIPT_VERSIONSHORT="${branchname}"
 SCRIPT_VERSION="${SCRIPT_VERSIONSHORT}.b${SCRIPT_INCREMENTVER}"
 SCRIPT_DATE='16/08/25'
@@ -2165,6 +2165,22 @@ if [ -f "${CONFIGSCANBASE}/custom_config.inc" ]; then
     if [ -d "${CENTMINLOGDIR}" ]; then
         cat "${CONFIGSCANBASE}/custom_config.inc" > "${CENTMINLOGDIR}/etc-centminmod-custom-config-settings_${DT}.log"
     fi
+fi
+
+#########################################################
+# PHP-FPM Mold Linker Auto-Detection for EL10
+# Auto-enable mold linker for PHP-FPM on CENTOS_TEN=10 if mold is available
+# Provides 30-50 seconds faster linking during PHP compilation
+# Respects user override if PHP_LDMOLD already set in custom_config.inc
+#########################################################
+if [[ "$CENTOS_TEN" -eq '10' ]] && [[ -z "$PHP_LDMOLD" ]]; then
+  if [[ -f /usr/bin/mold ]]; then
+    PHP_LDMOLD='y'
+  else
+    PHP_LDMOLD='n'
+  fi
+elif [[ -z "$PHP_LDMOLD" ]]; then
+  PHP_LDMOLD='n'  # Default disabled for EL7/8/9
 fi
 
 if [ -f "${CM_INSTALLDIR}/inc/z_custom.inc" ]; then

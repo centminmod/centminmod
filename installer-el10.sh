@@ -2503,10 +2503,10 @@ fi
     echo "*************************************************"
     CURL_BATCH4_START=$(date +%s)
 
-    # Group 4A: Standard utility packages (31 packages)
+    # Group 4A: Standard utility packages (32 packages)
     time $YUMDNFBIN -y install \
       checksec systemd-libs xxhash-devel libzstd xxhash libzstd-devel datamash qrencode \
-      jq clang clang-devel jemalloc jemalloc-devel zstd python2-pip \
+      jq clang clang-devel jemalloc jemalloc-devel mold zstd python2-pip \
       figlet moreutils nghttp2 libnghttp2 libnghttp2-devel \
       pngquant optipng jpegoptim pwgen pigz pbzip2 xz pxz lz4 \
       bash-completion mlocate re2c kernel-headers kernel-devel${DISABLEREPO_DNF} \
