@@ -1,6 +1,6 @@
 entropyup() {
 
-  if [[ "$CENTOS_SEVEN" -eq '7' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]]  && [[ "$DNF_ENABLE" = [yY] ]]; then
+  if [[ "$CENTOS_SEVEN" -eq '7' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' || "$CENTOS_TEN" -eq '10' ]]  && [[ "$DNF_ENABLE" = [yY] ]]; then
       if [[ ! -f /usr/bin/dnf ]]; then
         yum -y -q install dnf
       fi
@@ -31,8 +31,11 @@ if [[ ! -f /proc/user_beancounters && "$CHECK_LXD" != [yY] ]]; then
       cmchkconfig haveged on
       cmservice haveged restart
     fi
-    
-  elif [[ ! -f /usr/lib/systemd/system/haveged.service ]] && [[ "$CENTOS_SEVEN" -eq '7' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]]; then
+
+  # haveged is only needed on EL7/8 (kernels 3.10/4.18)
+  # EL9+ (kernel 5.14+) has modern RNG - haveged is obsolete per kernel 5.4+ changes
+  # Reference: https://github.com/jirka-h/haveged/blob/master/README.md
+  elif [[ ! -f /usr/lib/systemd/system/haveged.service ]] && [[ "$CENTOS_SEVEN" -eq '7' || "$CENTOS_EIGHT" -eq '8' ]]; then
     echo "*************************************************"
     cecho "* Increase system Entropy pool availability" $boldgreen
     echo "*************************************************"
