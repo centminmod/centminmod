@@ -3892,6 +3892,85 @@ if [[ "$PHPMVER" = '7.3' || "$PHPMUVER" = '7.3' || "$PHPMVER" = '7.4' || "$PHPMU
     fi
   fi
 fi
+########################################################################
+# RPM Installation Helper Functions for PHP Dependencies (EL10)
+# Provides fast RPM-based installation with automatic fallback to source
+########################################################################
+
+install_libsodium_rpm() {
+  local el_version="$1"
+  local rpm_url="${LOCALCENTMINMOD_MIRROR}/centminmodparts/rpms/libsodium/libsodium-custom-${LIBSODIUM_VER}-1.el${el_version}.x86_64.rpm"
+  local rpm_file="${DIR_TMP}/libsodium-custom-${LIBSODIUM_VER}-1.el${el_version}.x86_64.rpm"
+
+  echo "----------------------------------------------------------------------"
+  echo "Attempting to install libsodium ${LIBSODIUM_VER} from RPM..."
+  echo "URL: $rpm_url"
+  echo "----------------------------------------------------------------------"
+
+  # Download RPM
+  wget${ipv_forceopt_wget} "$rpm_url" -O "$rpm_file" --tries=3
+
+  if [[ -f "$rpm_file" && -s "$rpm_file" ]]; then
+    echo "RPM downloaded successfully, installing..."
+    time $YUMDNFBIN -y install "$rpm_file"
+
+    # Verify installation
+    if rpm -q libsodium-custom >/dev/null 2>&1; then
+      echo "----------------------------------------------------------------------"
+      echo "libsodium-custom RPM installed successfully"
+      echo "Installation method: RPM (saved ~15-30 seconds vs source compilation)"
+      echo "----------------------------------------------------------------------"
+      rpm -qi libsodium-custom
+      echo "----------------------------------------------------------------------"
+      return 0
+    else
+      echo "RPM installation failed verification"
+      return 1
+    fi
+  else
+    echo "RPM download failed or file is empty"
+    return 1
+  fi
+}
+
+install_libargon2_rpm() {
+  local el_version="$1"
+  local rpm_url="${LOCALCENTMINMOD_MIRROR}/centminmodparts/rpms/libargon2/libargon2-custom-${LIBARGON_VER}-1.el${el_version}.x86_64.rpm"
+  local rpm_file="${DIR_TMP}/libargon2-custom-${LIBARGON_VER}-1.el${el_version}.x86_64.rpm"
+
+  echo "----------------------------------------------------------------------"
+  echo "Attempting to install libargon2 ${LIBARGON_VER} from RPM..."
+  echo "URL: $rpm_url"
+  echo "----------------------------------------------------------------------"
+
+  # Download RPM
+  wget${ipv_forceopt_wget} "$rpm_url" -O "$rpm_file" --tries=3
+
+  if [[ -f "$rpm_file" && -s "$rpm_file" ]]; then
+    echo "RPM downloaded successfully, installing..."
+    time $YUMDNFBIN -y install "$rpm_file"
+
+    # Verify installation
+    if rpm -q libargon2-custom >/dev/null 2>&1; then
+      echo "----------------------------------------------------------------------"
+      echo "libargon2-custom RPM installed successfully"
+      echo "Installation method: RPM (saved ~10-20 seconds vs source compilation)"
+      echo "----------------------------------------------------------------------"
+      rpm -qi libargon2-custom
+      echo "----------------------------------------------------------------------"
+      return 0
+    else
+      echo "RPM installation failed verification"
+      return 1
+    fi
+  else
+    echo "RPM download failed or file is empty"
+    return 1
+  fi
+}
+
+########################################################################
+
 if [[ "$PHP_ARGON" = [yY] ]]; then
   # alias for PHP 7.2 argon support
   if [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' || "$CENTOS_TEN" -eq '10' ]] && [[ "$IMAGEMAGICK_SEVEN" != [yY] ]]; then
@@ -4013,6 +4092,34 @@ if [[ "$PHP_LIBZIP" = [yY] || "$PHP_ARGON" = [yY] ]] && [[ "$PHPMVER" = '7.2' ||
   else
     LIBDIR_ARGONSODIUM='lib'
   fi
+
+  # Try RPM installation first for EL10 (if enabled)
+  if [[ "$PHP_USE_CUSTOM_RPMS" = [yY] && "$CENTOS_TEN" -eq '10' ]] && [[ ! -f "/usr/local/${LIBDIR_ARGONSODIUM}/libsodium.so" ]]; then
+    if ! rpm -q libsodium-custom >/dev/null 2>&1; then
+      echo "----------------------------------------------------------------------"
+      echo "PHP_USE_CUSTOM_RPMS enabled for EL10 - attempting RPM installation"
+      echo "----------------------------------------------------------------------"
+      if install_libsodium_rpm "10"; then
+        echo "libsodium installed via RPM successfully"
+        LIBSODIUM_OPT=' --with-sodium=/usr/local'
+        if [[ "$PHPMVER" = '7.4' || "$PHPMUVER" = '7.4' || "$PHPMVER" = '8.0' || "$PHPMUVER" = '8.0' || "$PHPMVER" = '8.1' || "$PHPMUVER" = '8.1' || "$PHPMVER" = '8.2' || "$PHPMUVER" = '8.2' || "$PHPMVER" = '8.3' || "$PHPMUVER" = '8.3' || "$PHPMVER" = '8.4' || "$PHPMUVER" = '8.4' || "$PHPVER_ID" -ge '80000' ]]; then
+          export LIBSODIUM_CFLAGS='-I/usr/local/include'
+          export LIBSODIUM_LIBS="-L/usr/local/${LIBDIR_ARGONSODIUM} -lsodium"
+        fi
+      else
+        echo "----------------------------------------------------------------------"
+        echo "RPM installation failed - falling back to source compilation"
+        echo "----------------------------------------------------------------------"
+      fi
+    else
+      echo "----------------------------------------------------------------------"
+      echo "libsodium-custom RPM already installed, skipping"
+      echo "----------------------------------------------------------------------"
+      rpm -qi libsodium-custom
+    fi
+  fi
+
+  # Source compilation (original logic preserved as fallback)
   if [[ "$PHP_LIBZIP" = [yY] || "$PHP_ARGON" = [yY] ]] && [[ ! -f "/usr/local/${LIBDIR_ARGONSODIUM}/libsodium.so" || ! -f "libsodium-${LIBSODIUM_VER}.tar.gz" ]]; then
     pushd "$DIR_TMP"
     if [ -s "libsodium-${LIBSODIUM_VER}.tar.gz" ]; then
@@ -4062,6 +4169,34 @@ if [[ "$PHP_LIBZIP" = [yY] || "$PHP_ARGON" = [yY] ]] && [[ "$PHPMVER" = '7.2' ||
     export LIBSODIUM_CFLAGS='-I/usr/local/include'
     export LIBSODIUM_LIBS="-L/usr/local/${LIBDIR_ARGONSODIUM} -lsodium"
   fi
+
+  # Try RPM installation first for EL10 (if enabled)
+  if [[ "$PHP_USE_CUSTOM_RPMS" = [yY] && "$CENTOS_TEN" -eq '10' ]] && [[ ! -f "/usr/local/${LIBDIR_ARGONSODIUM}/libargon2.so" ]]; then
+    if ! rpm -q libargon2-custom >/dev/null 2>&1; then
+      echo "----------------------------------------------------------------------"
+      echo "PHP_USE_CUSTOM_RPMS enabled for EL10 - attempting RPM installation"
+      echo "----------------------------------------------------------------------"
+      if install_libargon2_rpm "10"; then
+        echo "libargon2 installed via RPM successfully"
+        ARGONTWO_OPT=' --with-password-argon2'
+        if [[ "$PHPMVER" = '7.4' || "$PHPMUVER" = '7.4' || "$PHPMVER" = '8.0' || "$PHPMUVER" = '8.0' || "$PHPMVER" = '8.1' || "$PHPMUVER" = '8.1' || "$PHPMVER" = '8.2' || "$PHPMUVER" = '8.2' || "$PHPMVER" = '8.3' || "$PHPMUVER" = '8.3' || "$PHPMVER" = '8.4' || "$PHPMUVER" = '8.4' || "$PHPVER_ID" -ge '80000' ]]; then
+          export ARGON2_CFLAGS='-I/usr/local/include'
+          export ARGON2_LIBS="-L/usr/local/${LIBDIR_ARGONSODIUM} -largon2"
+        fi
+      else
+        echo "----------------------------------------------------------------------"
+        echo "RPM installation failed - falling back to source compilation"
+        echo "----------------------------------------------------------------------"
+      fi
+    else
+      echo "----------------------------------------------------------------------"
+      echo "libargon2-custom RPM already installed, skipping"
+      echo "----------------------------------------------------------------------"
+      rpm -qi libargon2-custom
+    fi
+  fi
+
+  # Source compilation (original logic preserved as fallback)
   if [[ "$PHP_LIBZIP" = [yY] || "$PHP_ARGON" = [yY] ]] && [[ ! -f "/usr/local/${LIBDIR_ARGONSODIUM}/libargon2.so" || ! -f "${LIBARGON_VER}.tar.gz" ]]; then
     pushd "$DIR_TMP"
     if [ -s "${LIBARGON_VER}.tar.gz" ]; then

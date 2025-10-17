@@ -30,7 +30,7 @@ DT=$(date +"%d%m%y-%H%M%S")
 branchname='141.00beta01'
 SCRIPT_MAJORVER='141'
 SCRIPT_MINORVER='00'
-SCRIPT_INCREMENTVER='079'
+SCRIPT_INCREMENTVER='080'
 SCRIPT_VERSIONSHORT="${branchname}"
 SCRIPT_VERSION="${SCRIPT_VERSIONSHORT}.b${SCRIPT_INCREMENTVER}"
 SCRIPT_DATE='16/08/25'
@@ -2182,6 +2182,21 @@ if [[ "$CENTOS_TEN" -eq '10' ]] && [[ -z "$PHP_LDMOLD" ]]; then
   fi
 elif [[ -z "$PHP_LDMOLD" ]]; then
   PHP_LDMOLD='n'  # Default disabled for EL7/8/9
+fi
+
+#########################################################
+# PHP Custom RPM Usage Control for EL10
+# Auto-enable RPM-based installation for libsodium/libargon2 on EL10
+# Provides ~20-45 seconds faster installation vs source compilation
+# Fallback to source compilation if RPM unavailable
+# Respects user override if PHP_USE_CUSTOM_RPMS already set in custom_config.inc
+# RPM packages: libsodium-custom, libargon2-custom
+# Mirror location: https://parts.centminmod.com/centminmodparts/rpms/
+#########################################################
+if [[ "$CENTOS_TEN" -eq '10' ]] && [[ -z "$PHP_USE_CUSTOM_RPMS" ]]; then
+  PHP_USE_CUSTOM_RPMS='y'  # Default enabled for EL10
+elif [[ -z "$PHP_USE_CUSTOM_RPMS" ]]; then
+  PHP_USE_CUSTOM_RPMS='n'  # Default disabled for EL7/8/9
 fi
 
 if [ -f "${CM_INSTALLDIR}/inc/z_custom.inc" ]; then
