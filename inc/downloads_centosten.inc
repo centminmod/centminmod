@@ -118,6 +118,109 @@ if [[ "$CENTOS_TEN" = '10' ]]; then
 # since it's already done by curl installer script
 if [ ! -f /usr/local/src/curlinstall_yum.txt ]; then
 
+#########################################################
+# EL10 BATCH OPTIMIZATION: Group 3 - Utility and Compression Tools
+# Reduces ~38 individual DNF calls to 3 batch operations
+# Estimated time savings: 2-3 minutes
+# Packages split by repository requirements
+#########################################################
+if [[ "$CENTOS_TEN" -eq '10' ]] && [[ "$CENTOS_TEN_BATCH_INSTALL" = [yY] ]]; then
+  echo "*************************************************"
+  echo "* Installing EL10 utility and compression tools"
+  echo "* Batch optimization: 38 packages in 3 transactions"
+  echo "*************************************************"
+
+  # Batch Group 3A: Standard packages (31 packages)
+  BATCH_GROUP3A_START=$(date +%s)
+  echo "----------------------------------------------------------------------------------"
+  cecho "Batch Group 3A: Standard utility packages (31 packages)" $boldyellow
+  echo "----------------------------------------------------------------------------------"
+  ${YUMDNFBIN}${CACHESKIP} -q -y install \
+    perl-FindBin figlet moreutils nghttp2 libnghttp2 libnghttp2-devel \
+    jq clang clang-devel jemalloc jemalloc-devel pngquant optipng \
+    jpegoptim pwgen pigz pbzip2 xz pxz lz4 libtidy libtidy-devel \
+    libJudy axel bash-completion mlocate re2c kernel-headers \
+    kernel-devel cmake --skip-broken
+
+  BATCH_GROUP3A_EXIT=$?
+  BATCH_GROUP3A_END=$(date +%s)
+  BATCH_GROUP3A_DURATION=$((BATCH_GROUP3A_END - BATCH_GROUP3A_START))
+
+  if [[ "$BATCH_GROUP3A_EXIT" -eq 0 ]]; then
+    echo "----------------------------------------------------------------------------------"
+    echo "* Batch Group 3A completed successfully (${BATCH_GROUP3A_DURATION}s)"
+    echo "----------------------------------------------------------------------------------"
+    GROUP3A_INSTALLED='y'
+  else
+    echo "----------------------------------------------------------------------------------"
+    echo "* Warning: Batch Group 3A encountered issues - will retry individually"
+    echo "----------------------------------------------------------------------------------"
+    GROUP3A_INSTALLED='n'
+  fi
+
+  # Batch Group 3B: REMI oniguruma packages (2 packages)
+  BATCH_GROUP3B_START=$(date +%s)
+  echo "----------------------------------------------------------------------------------"
+  cecho "Batch Group 3B: REMI oniguruma packages (2 packages)" $boldyellow
+  echo "----------------------------------------------------------------------------------"
+  ${YUMDNFBIN}${CACHESKIP} -q -y install \
+    oniguruma5php oniguruma5php-devel \
+    --enablerepo=remi --skip-broken
+
+  BATCH_GROUP3B_EXIT=$?
+  BATCH_GROUP3B_END=$(date +%s)
+  BATCH_GROUP3B_DURATION=$((BATCH_GROUP3B_END - BATCH_GROUP3B_START))
+
+  if [[ "$BATCH_GROUP3B_EXIT" -eq 0 ]]; then
+    echo "----------------------------------------------------------------------------------"
+    echo "* Batch Group 3B completed successfully (${BATCH_GROUP3B_DURATION}s)"
+    echo "----------------------------------------------------------------------------------"
+    GROUP3B_INSTALLED='y'
+  else
+    echo "----------------------------------------------------------------------------------"
+    echo "* Warning: Batch Group 3B encountered issues - will retry individually"
+    echo "----------------------------------------------------------------------------------"
+    GROUP3B_INSTALLED='n'
+  fi
+
+  # Batch Group 3C: REMI IMAP and libmcrypt packages (5 packages)
+  BATCH_GROUP3C_START=$(date +%s)
+  echo "----------------------------------------------------------------------------------"
+  cecho "Batch Group 3C: REMI IMAP and libmcrypt packages (5 packages)" $boldyellow
+  echo "----------------------------------------------------------------------------------"
+  ${YUMDNFBIN}${CACHESKIP} -q -y install \
+    libc-client libc-client-devel uw-imap-devel \
+    libmcrypt libmcrypt-devel \
+    --enablerepo=remi,remi-safe --skip-broken
+
+  BATCH_GROUP3C_EXIT=$?
+  BATCH_GROUP3C_END=$(date +%s)
+  BATCH_GROUP3C_DURATION=$((BATCH_GROUP3C_END - BATCH_GROUP3C_START))
+
+  if [[ "$BATCH_GROUP3C_EXIT" -eq 0 ]]; then
+    echo "----------------------------------------------------------------------------------"
+    echo "* Batch Group 3C completed successfully (${BATCH_GROUP3C_DURATION}s)"
+    echo "----------------------------------------------------------------------------------"
+    GROUP3C_INSTALLED='y'
+  else
+    echo "----------------------------------------------------------------------------------"
+    echo "* Warning: Batch Group 3C encountered issues - will retry individually"
+    echo "----------------------------------------------------------------------------------"
+    GROUP3C_INSTALLED='n'
+  fi
+
+  # Summary
+  TOTAL_GROUP3_DURATION=$((BATCH_GROUP3A_DURATION + BATCH_GROUP3B_DURATION + BATCH_GROUP3C_DURATION))
+  echo "*************************************************"
+  echo "* Group 3 batch installation completed"
+  echo "* Total time: ${TOTAL_GROUP3_DURATION} seconds"
+  echo "*************************************************"
+  PACKAGEEXTRA_BATCH_INSTALLED='y'
+fi
+
+# Original loop - now conditional (preserves EL7/8/9 + EL10 fallback)
+if [[ "$PACKAGEEXTRA_BATCH_INSTALLED" != 'y' ]]; then
+
 for pkgs in ${arrays[@]}
 do
 echo Processing package: $pkgs
@@ -149,6 +252,8 @@ echo "--------------------------------------------------------------------------
 echo "----------------------------------------------------------------------------------"
         fi
 done
+
+fi # PACKAGEEXTRA_BATCH_INSTALLED conditional - closes batch optimization fallback
 
 fi # /usr/local/src/curlinstall_yum.txt
 

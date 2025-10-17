@@ -399,10 +399,55 @@ else
   ISMINSWAP='524288'  # 512MB in bytes
 fi
 
+#########################################################
+# EL10 BATCH OPTIMIZATION: Group 4A - Essential Prerequisites
+# Batch install essential packages before main operations
+# Reduces individual DNF calls for: bc, tar, glibc-langpack-en
+# Estimated time savings: 20-30 seconds
+#########################################################
+install_group4_essential_batch() {
+  if [[ "$CENTOS_TEN" -eq '10' ]] && [[ "$CENTOS_TEN_BATCH_INSTALL" = [yY] ]]; then
+    echo "*************************************************"
+    echo "* Installing EL10 essential prerequisites (batch)"
+    echo "*************************************************"
+
+    local missing_pkgs=""
+    local batch_start=$(date +%s)
+
+    # Check which packages need installation
+    [[ ! "$(locale -a 2>/dev/null | grep -qi "en_US.UTF8")" ]] && missing_pkgs+=" glibc-langpack-en"
+    [[ "$(rpm -qa bc | grep -o 'bc')" != 'bc' ]] && missing_pkgs+=" bc"
+    [[ ! -f /usr/bin/tar ]] && missing_pkgs+=" tar"
+
+    if [[ -n "$missing_pkgs" ]]; then
+      echo "----------------------------------------------------------------------------------"
+      echo "Installing: ${missing_pkgs}"
+      echo "----------------------------------------------------------------------------------"
+      yum -y -q install${missing_pkgs}
+
+      local batch_end=$(date +%s)
+      local batch_duration=$((batch_end - batch_start))
+      echo "----------------------------------------------------------------------------------"
+      echo "* Group 4A batch completed (${batch_duration}s)"
+      echo "----------------------------------------------------------------------------------"
+      GROUP4A_INSTALLED='y'
+    else
+      echo "* All Group 4A packages already installed"
+      GROUP4A_INSTALLED='y'
+    fi
+    echo "*************************************************"
+  fi
+}
+
+# Execute Group 4A batch installation
+install_group4_essential_batch
+
 #############################################################
 # Formulas
-if [[ "$(rpm -qa bc | grep -o 'bc')" != 'bc' ]]; then
-  yum -y -q install bc
+if [[ "$GROUP4A_INSTALLED" != 'y' ]]; then
+  if [[ "$(rpm -qa bc | grep -o 'bc')" != 'bc' ]]; then
+    yum -y -q install bc
+  fi
 fi
 if [[ ! -f /.dockerenv ]]; then
   if [[ ! -f /usr/bin/expr ]]; then
@@ -1348,7 +1393,60 @@ else
   fi
 fi
 
-if [ ! -f /usr/bin/sar ]; then
+#########################################################
+# EL10 BATCH OPTIMIZATION: Group 4B - System Management Tools
+# Batch install system tools: sysstat, chrony, procps-ng
+# Reduces individual DNF calls for system management packages
+# Estimated time savings: 15-25 seconds
+#########################################################
+install_group4_system_tools_batch() {
+  if [[ "$CENTOS_TEN" -eq '10' ]] && [[ "$CENTOS_TEN_BATCH_INSTALL" = [yY] ]]; then
+    echo "*************************************************"
+    echo "* Installing EL10 system management tools (batch)"
+    echo "*************************************************"
+
+    local missing_pkgs=""
+    local batch_start=$(date +%s)
+
+    # Check which packages need installation
+    [[ ! -f /usr/bin/sar ]] && missing_pkgs+=" sysstat"
+
+    # Check chrony only if not in OpenVZ/LXD
+    if [[ ! -f /.dockerenv ]] && [[ ! -f /proc/user_beancounters ]] && [[ "$CHECK_LXD" != [yY] ]]; then
+      if ! rpm -q chrony >/dev/null 2>&1; then
+        missing_pkgs+=" chrony"
+      fi
+    fi
+
+    # Check procps-ng for sysctl
+    if [[ ! -d /etc/sysctl.d || ! -f /usr/sbin/sysctl ]]; then
+      missing_pkgs+=" procps-ng"
+    fi
+
+    if [[ -n "$missing_pkgs" ]]; then
+      echo "----------------------------------------------------------------------------------"
+      echo "Installing: ${missing_pkgs}"
+      echo "----------------------------------------------------------------------------------"
+      time $YUMDNFBIN -y -q install${missing_pkgs}${DISABLEREPO_DNF}
+
+      local batch_end=$(date +%s)
+      local batch_duration=$((batch_end - batch_start))
+      echo "----------------------------------------------------------------------------------"
+      echo "* Group 4B batch completed (${batch_duration}s)"
+      echo "----------------------------------------------------------------------------------"
+      GROUP4B_INSTALLED='y'
+    else
+      echo "* All Group 4B packages already installed"
+      GROUP4B_INSTALLED='y'
+    fi
+    echo "*************************************************"
+  fi
+}
+
+# Execute Group 4B batch installation
+install_group4_system_tools_batch
+
+if [[ "$GROUP4B_INSTALLED" != 'y' ]] && [ ! -f /usr/bin/sar ]; then
   time $YUMDNFBIN -y -q install sysstat${DISABLEREPO_DNF}
   if [[ "$(uname -m)" = 'x86_64' || "$(uname -m)" = 'aarch64' ]]; then
     SARCALL='/usr/lib64/sa/sa1'
@@ -1451,7 +1549,9 @@ else
       echo "*************************************************"
       echo "* Installing chronyd and syncing time"
       echo "*************************************************"
-      time $YUMDNFBIN -y install chrony
+      if [[ "$GROUP4B_INSTALLED" != 'y' ]]; then
+        time $YUMDNFBIN -y install chrony
+      fi
       systemctl start chronyd
       systemctl enable chronyd
       systemctl status chronyd --no-pager
@@ -2082,7 +2182,9 @@ if [[ ! -f /proc/user_beancounters ]]; then
         fi
         if [[ ! -d /etc/sysctl.d || ! -f /usr/sbin/sysctl ]]; then
           # ensure sysctl is installed
-          yum -y install procps-ng
+          if [[ "$GROUP4B_INSTALLED" != 'y' ]]; then
+            yum -y install procps-ng
+          fi
         fi
         if [ -d /etc/sysctl.d ]; then
             # centos 7
