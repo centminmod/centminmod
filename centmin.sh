@@ -30,7 +30,7 @@ DT=$(date +"%d%m%y-%H%M%S")
 branchname='141.00beta01'
 SCRIPT_MAJORVER='141'
 SCRIPT_MINORVER='00'
-SCRIPT_INCREMENTVER='073'
+SCRIPT_INCREMENTVER='074'
 SCRIPT_VERSIONSHORT="${branchname}"
 SCRIPT_VERSION="${SCRIPT_VERSIONSHORT}.b${SCRIPT_INCREMENTVER}"
 SCRIPT_DATE='16/08/25'
@@ -841,6 +841,11 @@ PORTFLOOD_INTERVAL=300
 # for MariaDB 10.4+ and higher to switch from sytem
 # glibc to jemalloc memory allocator
 MARIADB_JEMALLOC='n'
+
+#####################################################
+# Nginx optional alternative memory allocator
+NGINX_MIMALLOC_VERSION_EL7='2.0.6'
+NGINX_MIMALLOC_VERSION='2.2.4'
 
 #####################################################
 # CCACHE Configuration

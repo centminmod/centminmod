@@ -3155,17 +3155,19 @@ elif [[ -f /usr/bin/jemalloc.sh && -d /usr/include/jemalloc ]]; then
 fi
 
 # for jemalloc alternative mimalloc
-if [[ "$NGINX_MIMALLOC" = [yY] ]] && [[ ! -f /usr/local/nginx-dep/lib/libmimalloc.so && ! -f /usr/lib64/libmimalloc.so ]]; then
+if [[ "$NGINX_MIMALLOC" = [yY] ]] && [[ ! -f /usr/local/nginx-dep/lib/libmimalloc.so ]]; then
   if [[ "$NGINX_MIMALLOC" = [yY] && "$CENTOS_EIGHT" -eq '8' ]]; then
-    wget${ipv_forceopt_wget} https://github.com/centminmod/centminmod-mimalloc/raw/master/rpms/mimalloc-custom-${NGINX_MIMALLOC_VERSION}-1.el8.x86_64.rpm -O ${DIR_TMP}/mimalloc-custom-${NGINX_MIMALLOC_VERSION}-1.el8.x86_64.rpm
+    wget${ipv_forceopt_wget} ${LOCALCENTMINMOD_MIRROR}/centminmodparts/rpms/mimalloc/mimalloc-custom-${NGINX_MIMALLOC_VERSION}-1.el8.x86_64.rpm -O ${DIR_TMP}/mimalloc-custom-${NGINX_MIMALLOC_VERSION}-1.el8.x86_64.rpm
     time $YUMDNFBIN -y install "${DIR_TMP}/mimalloc-custom-${NGINX_MIMALLOC_VERSION}-1.el8.x86_64.rpm"
   elif [[ "$NGINX_MIMALLOC" = [yY] && "$CENTOS_SEVEN" -eq '7' ]]; then
-    wget${ipv_forceopt_wget} https://github.com/centminmod/centminmod-mimalloc/raw/master/rpms/mimalloc-custom-${NGINX_MIMALLOC_VERSION}-1.el7.x86_64.rpm -O ${DIR_TMP}/mimalloc-custom-${NGINX_MIMALLOC_VERSION}-1.el7.x86_64.rpm
-    time $YUMDNFBIN -y install "${DIR_TMP}/mimalloc-custom-${NGINX_MIMALLOC_VERSION}-1.el7.x86_64.rpm"
+    wget${ipv_forceopt_wget} ${LOCALCENTMINMOD_MIRROR}/centminmodparts/rpms/mimalloc/mimalloc-custom-${NGINX_MIMALLOC_VERSION_EL7}-1.el7.x86_64.rpm -O ${DIR_TMP}/mimalloc-custom-${NGINX_MIMALLOC_VERSION_EL7}-1.el7.x86_64.rpm
+    time $YUMDNFBIN -y install "${DIR_TMP}/mimalloc-custom-${NGINX_MIMALLOC_VERSION_EL7}-1.el7.x86_64.rpm"
   elif [[ "$NGINX_MIMALLOC" = [yY] && "$CENTOS_NINE" -eq '9' ]]; then
-    time $YUMDNFBIN -y install mimalloc mimalloc-devel
+    wget${ipv_forceopt_wget} ${LOCALCENTMINMOD_MIRROR}/centminmodparts/rpms/mimalloc/mimalloc-custom-${NGINX_MIMALLOC_VERSION}-1.el9.x86_64.rpm -O ${DIR_TMP}/mimalloc-custom-${NGINX_MIMALLOC_VERSION}-1.el9.x86_64.rpm
+    time $YUMDNFBIN -y install "${DIR_TMP}/mimalloc-custom-${NGINX_MIMALLOC_VERSION}-1.el9.x86_64.rpm"
   elif [[ "$NGINX_MIMALLOC" = [yY] && "$CENTOS_TEN" -eq '10' ]]; then
-    time $YUMDNFBIN -y install mimalloc mimalloc-devel
+    wget${ipv_forceopt_wget} ${LOCALCENTMINMOD_MIRROR}/centminmodparts/rpms/mimalloc/mimalloc-custom-${NGINX_MIMALLOC_VERSION}-1.el10.x86_64.rpm -O ${DIR_TMP}/mimalloc-custom-${NGINX_MIMALLOC_VERSION}-1.el10.x86_64.rpm
+    time $YUMDNFBIN -y install "${DIR_TMP}/mimalloc-custom-${NGINX_MIMALLOC_VERSION}-1.el10.x86_64.rpm"
   fi
   if [[ -f /usr/local/nginx-dep/lib/libmimalloc.so && -f /usr/local/nginx-dep/include/mimalloc.h ]]; then
     if [[ "$GPERFTOOLS_SOURCEINSTALL" = [yY] ]]; then
@@ -3176,26 +3178,7 @@ if [[ "$NGINX_MIMALLOC" = [yY] ]] && [[ ! -f /usr/local/nginx-dep/lib/libmimallo
       JEMALLOC_LD=""
     fi
   fi
-  # Check for EL9/EL10 EPEL mimalloc (system paths)
-  if [[ "$CENTOS_NINE" -eq '9' || "$CENTOS_TEN" -eq '10' ]] && [[ -f /usr/lib64/libmimalloc.so && -f /usr/include/mimalloc.h ]]; then
-    if [[ "$GPERFTOOLS_SOURCEINSTALL" = [yY] ]]; then
-      MIMALLOC_LD=""
-      JEMALLOC_LD=""
-    else
-      MIMALLOC_LD='-lmimalloc'
-      JEMALLOC_LD=""
-    fi
-  fi
 elif [[ "$NGINX_MIMALLOC" = [yY] ]] && [[ -f /usr/local/nginx-dep/lib/libmimalloc.so && -f /usr/local/nginx-dep/include/mimalloc.h ]]; then
-  if [[ "$GPERFTOOLS_SOURCEINSTALL" = [yY] ]]; then
-    MIMALLOC_LD=""
-    JEMALLOC_LD=""
-  else
-    MIMALLOC_LD='-lmimalloc'
-    JEMALLOC_LD=""
-  fi
-# Check for EL9/EL10 EPEL mimalloc if already installed (system paths)
-elif [[ "$NGINX_MIMALLOC" = [yY] ]] && [[ "$CENTOS_NINE" -eq '9' || "$CENTOS_TEN" -eq '10' ]] && [[ -f /usr/lib64/libmimalloc.so && -f /usr/include/mimalloc.h ]]; then
   if [[ "$GPERFTOOLS_SOURCEINSTALL" = [yY] ]]; then
     MIMALLOC_LD=""
     JEMALLOC_LD=""
