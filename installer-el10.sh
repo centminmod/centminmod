@@ -2312,6 +2312,11 @@ fi
   sar_call
   if [[ "$CENTOS_TEN" = '10' ]]; then
     time $YUMDNFBIN -y install checksec systemd-libs xxhash-devel libzstd xxhash libzstd-devel datamash qrencode jq clang clang-devel jemalloc jemalloc-devel zstd python2-pip libmcrypt libmcrypt-devel libraqm oniguruma5php oniguruma5php-devel figlet moreutils nghttp2 libnghttp2 libnghttp2-devel pngquant optipng jpegoptim pwgen pigz pbzip2 xz pxz lz4 bash-completion mlocate re2c kernel-headers kernel-devel${DISABLEREPO_DNF} --enablerepo=epel,epel-testing,remi --skip-broken
+    if [ ! -f /usr/lib64/libjemalloc.so ]; then
+      wget -q https://dl.fedoraproject.org/pub/epel/10/Everything/x86_64/Packages/j/jemalloc-5.3.0-10.el10_1.x86_64.rpm -O /svr-setup/jemalloc-5.3.0-10.el10_1.x86_64.rpm
+      wget -q https://dl.fedoraproject.org/pub/epel/10/Everything/x86_64/Packages/j/jemalloc-devel-5.3.0-10.el10_1.x86_64.rpm -O /svr-setup/jemalloc-devel-5.3.0-10.el10_1.x86_64.rpm
+      yum -y localinstall /svr-setup/jemalloc-5.3.0-10.el10_1.x86_64.rpm /svr-setup/jemalloc-devel-5.3.0-10.el10_1.x86_64.rpm
+    fi
     libc_fix
     if [ -f /usr/bin/pip ]; then
       PYTHONWARNINGS=ignore:::pip._internal.cli.base_command pip install --upgrade pip
