@@ -443,7 +443,19 @@ php_imagemagick_seven_detected_libzip() {
       LIBZIP_OPT=" --with-libzip=/usr/local/${LIBDIR_LIBZIP}"
       LIBZIP_RPATH=" -Wl,-rpath,/usr/local/${LIBDIR_LIBZIP}"
       LIBZIP_PKG_CONFIG_PATH="/usr/local/${LIBDIR_LIBZIP}/pkgconfig:"
-      libzip_install
+
+      # Try RPM installation first for EL10 (if PHP_USE_CUSTOM_RPMS enabled)
+      if [[ "$CENTOS_TEN" -eq '10' ]] && [[ "${PHP_USE_CUSTOM_RPMS:-auto}" != 'n' ]]; then
+        if install_libzip_rpm "10"; then
+          echo "libzip RPM installation successful, skipping source compilation"
+        else
+          echo "libzip RPM installation failed, falling back to source compilation"
+          libzip_install
+        fi
+      else
+        # Non-EL10 or RPM disabled: use source compilation
+        libzip_install
+      fi
     fi
   fi
 }
@@ -3957,6 +3969,42 @@ install_libargon2_rpm() {
       echo "Installation method: RPM (saved ~10-20 seconds vs source compilation)"
       echo "----------------------------------------------------------------------"
       rpm -qi libargon2-custom
+      echo "----------------------------------------------------------------------"
+      return 0
+    else
+      echo "RPM installation failed verification"
+      return 1
+    fi
+  else
+    echo "RPM download failed or file is empty"
+    return 1
+  fi
+}
+
+install_libzip_rpm() {
+  local el_version="$1"
+  local rpm_url="${LOCALCENTMINMOD_MIRROR}/centminmodparts/rpms/libzip/libzip-custom-${LIBZIP_VER}-1.el${el_version}.x86_64.rpm"
+  local rpm_file="${DIR_TMP}/libzip-custom-${LIBZIP_VER}-1.el${el_version}.x86_64.rpm"
+
+  echo "----------------------------------------------------------------------"
+  echo "Attempting to install libzip ${LIBZIP_VER} from RPM..."
+  echo "URL: $rpm_url"
+  echo "----------------------------------------------------------------------"
+
+  # Download RPM
+  wget${ipv_forceopt_wget} "$rpm_url" -O "$rpm_file" --tries=3
+
+  if [[ -f "$rpm_file" && -s "$rpm_file" ]]; then
+    echo "RPM downloaded successfully, installing..."
+    time $YUMDNFBIN -y install "$rpm_file"
+
+    # Verify installation
+    if rpm -q libzip-custom >/dev/null 2>&1; then
+      echo "----------------------------------------------------------------------"
+      echo "libzip-custom RPM installed successfully"
+      echo "Installation method: RPM (saved ~18-28 seconds vs source compilation)"
+      echo "----------------------------------------------------------------------"
+      rpm -qi libzip-custom
       echo "----------------------------------------------------------------------"
       return 0
     else
