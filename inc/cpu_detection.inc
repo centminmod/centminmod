@@ -4,7 +4,8 @@
 # Replaces 70+ grep calls with single awk read per detection
 #
 # Performance: 20-50x faster than sequential grep approach
-# Coverage: 4 AMD EPYC generations (Naples, Rome, Milan, Genoa)
+# Coverage: 6 AMD EPYC families (Naples, Rome, Milan, Milan-X, Genoa, Bergamo, Siena)
+# ~70 processor models across 4 generations
 #################################################################
 
 # Function: is_epyc_model
@@ -84,6 +85,35 @@ detect_amd_epyc_cpus() {
         [[ "$total_cpus" -ge '96' ]] && echo "96" || echo "0" ;;
 
       ####################################################################
+      # Bergamo Generation (4th Gen - 97x4 series - Cloud Optimized)
+      # Zen 4c architecture, 4nm process, 128 cores max
+      ####################################################################
+      9754|9734|9684|9664)
+        # EPYC Bergamo 97x4: Cloud-optimized 128-core variants, 96-core optimal
+        # Conservative allocation for high core-count cloud workloads
+        [[ "$total_cpus" -ge '96' ]] && echo "96" || echo "0" ;;
+
+      ####################################################################
+      # Siena Generation (4th Gen - 8xx4 series - Edge Optimized)
+      # Zen 4c architecture, 4nm process, optimized for edge/telco
+      ####################################################################
+      8004)
+        # EPYC Siena 8004: 8-core edge processor
+        [[ "$total_cpus" -ge '8' ]] && echo "8" || echo "0" ;;
+      8024)
+        # EPYC Siena 8024: 16-core edge processor
+        [[ "$total_cpus" -ge '16' ]] && echo "16" || echo "0" ;;
+      8124|8224)
+        # EPYC Siena 8124/8224: 24-core edge processors
+        [[ "$total_cpus" -ge '24' ]] && echo "24" || echo "0" ;;
+      8324|8434)
+        # EPYC Siena 8324/8434: 32-core edge processors
+        [[ "$total_cpus" -ge '32' ]] && echo "32" || echo "0" ;;
+      8534)
+        # EPYC Siena 8534: 48-core edge processor
+        [[ "$total_cpus" -ge '48' ]] && echo "48" || echo "0" ;;
+
+      ####################################################################
       # Naples Generation (1st Gen - 7xxx series)
       # Zen architecture, 14nm process
       ####################################################################
@@ -91,20 +121,20 @@ detect_amd_epyc_cpus() {
         # EPYC 7601: 3.20GHz @ 12 cores, downclocks to 2.70GHz beyond
         # https://en.wikichip.org/wiki/amd/epyc/7601
         [[ "$total_cpus" -ge '12' ]] && echo "12" || echo "0" ;;
-      7551)
-        # EPYC 7551P: 3.0GHz @ 12 cores, downclocks to 2.55GHz beyond
+      7551|7551P)
+        # EPYC 7551/7551P: 3.0GHz @ 12 cores, downclocks to 2.55GHz beyond
         # https://en.wikichip.org/wiki/amd/epyc/7551p
         [[ "$total_cpus" -ge '12' ]] && echo "12" || echo "0" ;;
-      7501)
-        # EPYC 7501P: 3.0GHz @ 12 cores, downclocks to 2.6GHz beyond
+      7501|7501P)
+        # EPYC 7501/7501P: 3.0GHz @ 12 cores, downclocks to 2.6GHz beyond
         # https://en.wikichip.org/wiki/amd/epyc/7501p
         [[ "$total_cpus" -ge '12' ]] && echo "12" || echo "0" ;;
       7451)
         # EPYC 7451: 3.2GHz @ 12 cores, downclocks to 2.9GHz beyond
         # https://en.wikichip.org/wiki/amd/epyc/7451
         [[ "$total_cpus" -ge '12' ]] && echo "12" || echo "0" ;;
-      7401)
-        # EPYC 7401P: 3.0GHz @ 12 cores, downclocks to 2.8GHz beyond
+      7401|7401P)
+        # EPYC 7401/7401P: 3.0GHz @ 12 cores, downclocks to 2.8GHz beyond
         # https://en.wikichip.org/wiki/amd/epyc/7401p
         [[ "$total_cpus" -ge '12' ]] && echo "12" || echo "0" ;;
       7371)
@@ -160,6 +190,27 @@ detect_amd_epyc_cpus() {
         # EPYC 74F3: 24-core optimal (preferring higher clock frequency)
         # https://en.wikichip.org/wiki/amd/epyc/74F3
         [[ "$total_cpus" -ge '24' ]] && echo "24" || echo "0" ;;
+
+      ####################################################################
+      # Milan-X Generation (3rd Gen - 7xx3X series with 3D V-Cache)
+      # Zen 3 architecture with stacked L3 cache, 7nm process
+      ####################################################################
+      7373X)
+        # EPYC 7373X: 3D V-Cache variant, 16-core optimal
+        # https://en.wikichip.org/wiki/amd/epyc/7373x
+        [[ "$total_cpus" -ge '16' ]] && echo "16" || echo "0" ;;
+      7473X)
+        # EPYC 7473X: 3D V-Cache variant, 24-core optimal
+        # https://en.wikichip.org/wiki/amd/epyc/7473x
+        [[ "$total_cpus" -ge '24' ]] && echo "24" || echo "0" ;;
+      7573X)
+        # EPYC 7573X: 3D V-Cache variant, 32-core optimal
+        # https://en.wikichip.org/wiki/amd/epyc/7573x
+        [[ "$total_cpus" -ge '32' ]] && echo "32" || echo "0" ;;
+      7773X)
+        # EPYC 7773X: 3D V-Cache variant, 64-core optimal
+        # https://en.wikichip.org/wiki/amd/epyc/7773x
+        [[ "$total_cpus" -ge '64' ]] && echo "64" || echo "0" ;;
 
       ####################################################################
       # Unknown EPYC model - return 0 to trigger fallback logic

@@ -1027,7 +1027,8 @@ fi
 #################################################################
 # Optimized AMD EPYC CPU Detection Function
 # Replaces 35+ grep calls with single awk read for 20-50x performance
-# Covers 4 AMD EPYC generations: Naples, Rome, Milan, Genoa
+# Covers 6 AMD EPYC families: Naples, Rome, Milan, Milan-X, Genoa, Bergamo, Siena
+# ~70 processor models across 4 generations
 #################################################################
 detect_amd_epyc_cpus() {
   # Validate /proc/cpuinfo accessibility
@@ -1053,7 +1054,7 @@ detect_amd_epyc_cpus() {
 
     case "$model_num" in
       # Naples (1st Gen)
-      7601|7551|7501|7451|7401) [[ "$total_cpus" -ge '12' ]] && echo "12" || echo "0" ;;
+      7601|7551|7551P|7501|7501P|7451|7401|7401P) [[ "$total_cpus" -ge '12' ]] && echo "12" || echo "0" ;;
       7371) [[ "$total_cpus" -ge '8' ]] && echo "8" || echo "0" ;;
       # Rome (2nd Gen)
       7272|7282|7302|7352|7402|7452|7502|7532|7542) [[ "$total_cpus" -ge '16' ]] && echo "16" || echo "0" ;;
@@ -1067,6 +1068,11 @@ detect_amd_epyc_cpus() {
       7513|7543|7643|7663|73F3) [[ "$total_cpus" -ge '16' ]] && echo "16" || echo "0" ;;
       7713|7763|75F3) [[ "$total_cpus" -ge '32' ]] && echo "32" || echo "0" ;;
       74F3) [[ "$total_cpus" -ge '24' ]] && echo "24" || echo "0" ;;
+      # Milan-X (3rd Gen - 3D V-Cache)
+      7373X) [[ "$total_cpus" -ge '16' ]] && echo "16" || echo "0" ;;
+      7473X) [[ "$total_cpus" -ge '24' ]] && echo "24" || echo "0" ;;
+      7573X) [[ "$total_cpus" -ge '32' ]] && echo "32" || echo "0" ;;
+      7773X) [[ "$total_cpus" -ge '64' ]] && echo "64" || echo "0" ;;
       # Genoa (4th Gen)
       9124|9174F) [[ "$total_cpus" -ge '16' ]] && echo "16" || echo "0" ;;
       9224|9254|9274F) [[ "$total_cpus" -ge '24' ]] && echo "24" || echo "0" ;;
@@ -1075,6 +1081,14 @@ detect_amd_epyc_cpus() {
       9534|9554|9554P) [[ "$total_cpus" -ge '64' ]] && echo "64" || echo "0" ;;
       9634) [[ "$total_cpus" -ge '84' ]] && echo "84" || echo "0" ;;
       9654|9654P) [[ "$total_cpus" -ge '96' ]] && echo "96" || echo "0" ;;
+      # Bergamo (4th Gen - Cloud Optimized)
+      9754|9734|9684|9664) [[ "$total_cpus" -ge '96' ]] && echo "96" || echo "0" ;;
+      # Siena (4th Gen - Edge Optimized)
+      8004) [[ "$total_cpus" -ge '8' ]] && echo "8" || echo "0" ;;
+      8024) [[ "$total_cpus" -ge '16' ]] && echo "16" || echo "0" ;;
+      8124|8224) [[ "$total_cpus" -ge '24' ]] && echo "24" || echo "0" ;;
+      8324|8434) [[ "$total_cpus" -ge '32' ]] && echo "32" || echo "0" ;;
+      8534) [[ "$total_cpus" -ge '48' ]] && echo "48" || echo "0" ;;
       *) echo "0" ;;
     esac
   else
