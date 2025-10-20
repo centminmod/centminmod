@@ -728,7 +728,14 @@ fpmconfdir
 if [[ "$CENTOS_EIGHT" -eq '8' && "$CENTOSVER_NUMERIC" -ge '89' ]]; then
   DEVTOOLSETTEN='n'
   DEVTOOLSETELEVEN='n'
-  if [[ "$PHP_PGO_FALLBACK_GCC" = [yY] && "$PHP_PGO" = [yY] ]] && [[ "$PHPMVER" = '7.0' || "$PHPMUVER" = '7.0' || "$PHPMVER" = '7.1' || "$PHPMUVER" = '7.1' || "$PHPMVER" = '7.2' || "$PHPMUVER" = '7.2' || "$PHPMVER" = '7.3' || "$PHPMUVER" = '7.3' || "$PHPMVER" = '7.4' || "$PHPMUVER" = '7.4' || "$PHPMVER" = '8.0' || "$PHPMUVER" = '8.0' || "$PHPMVER" = '8.1' || "$PHPMUVER" = '8.1' || "$PHPMVER" = '8.2' || "$PHPMUVER" = '8.2' || "$PHPMVER" = '8.3' || "$PHPMUVER" = '8.3' || "$PHPMVER" = '8.4' || "$PHPMUVER" = '8.4' ]]; then
+  # Issue #4 Fix: GCC 11 ultra-conservative fallback for PHP <=8.1 (highest priority)
+  if [[ "$PHP_PGO_FALLBACK_GCC11" = [yY] && "$PHP_PGO" = [yY] ]] && [[ "$PHPMVER" = '7.0' || "$PHPMUVER" = '7.0' || "$PHPMVER" = '7.1' || "$PHPMUVER" = '7.1' || "$PHPMVER" = '7.2' || "$PHPMUVER" = '7.2' || "$PHPMVER" = '7.3' || "$PHPMUVER" = '7.3' || "$PHPMVER" = '7.4' || "$PHPMUVER" = '7.4' || "$PHPMVER" = '8.0' || "$PHPMUVER" = '8.0' || "$PHPMVER" = '8.1' || "$PHPMUVER" = '8.1' ]]; then
+    DEVTOOLSETELEVEN='y'
+    DEVTOOLSETTWELVE='n'
+    DEVTOOLSETTHIRTEEN='n'
+    DEVTOOLSETFOURTEEN='n'
+    DEVTOOLSETFIFTTEEN='n'
+  elif [[ "$PHP_PGO_FALLBACK_GCC" = [yY] && "$PHP_PGO" = [yY] ]] && [[ "$PHPMVER" = '7.0' || "$PHPMUVER" = '7.0' || "$PHPMVER" = '7.1' || "$PHPMUVER" = '7.1' || "$PHPMVER" = '7.2' || "$PHPMUVER" = '7.2' || "$PHPMVER" = '7.3' || "$PHPMUVER" = '7.3' || "$PHPMVER" = '7.4' || "$PHPMUVER" = '7.4' || "$PHPMVER" = '8.0' || "$PHPMUVER" = '8.0' || "$PHPMVER" = '8.1' || "$PHPMUVER" = '8.1' || "$PHPMVER" = '8.2' || "$PHPMUVER" = '8.2' || "$PHPMVER" = '8.3' || "$PHPMUVER" = '8.3' || "$PHPMVER" = '8.4' || "$PHPMUVER" = '8.4' ]]; then
     DEVTOOLSETTWELVE='y'
     DEVTOOLSETTHIRTEEN='n'
     DEVTOOLSETFOURTEEN='n'
@@ -759,7 +766,14 @@ fi
 if [[ "$CENTOS_NINE" -eq '9' && "$CENTOSVER_NUMERIC" -ge '93' ]]; then
   DEVTOOLSETTEN='n'
   DEVTOOLSETELEVEN='n'
-  if [[ "$PHP_PGO_FALLBACK_GCC" = [yY] && "$PHP_PGO" = [yY] ]] && [[ "$PHPMVER" = '7.4' || "$PHPMUVER" = '7.4' || "$PHPMVER" = '8.0' || "$PHPMUVER" = '8.0' || "$PHPMVER" = '8.1' || "$PHPMUVER" = '8.1' || "$PHPMVER" = '8.2' || "$PHPMUVER" = '8.2' || "$PHPMVER" = '8.3' || "$PHPMUVER" = '8.3' || "$PHPMVER" = '8.4' || "$PHPMUVER" = '8.4' ]]; then
+  # Issue #4 Fix: GCC 11 ultra-conservative fallback for PHP <=8.1 (highest priority)
+  if [[ "$PHP_PGO_FALLBACK_GCC11" = [yY] && "$PHP_PGO" = [yY] ]] && [[ "$PHPMVER" = '7.4' || "$PHPMUVER" = '7.4' || "$PHPMVER" = '8.0' || "$PHPMUVER" = '8.0' || "$PHPMVER" = '8.1' || "$PHPMUVER" = '8.1' ]]; then
+    DEVTOOLSETELEVEN='y'
+    DEVTOOLSETTWELVE='n'
+    DEVTOOLSETTHIRTEEN='n'
+    DEVTOOLSETFOURTEEN='n'
+    DEVTOOLSETFIFTTEEN='n'
+  elif [[ "$PHP_PGO_FALLBACK_GCC" = [yY] && "$PHP_PGO" = [yY] ]] && [[ "$PHPMVER" = '7.4' || "$PHPMUVER" = '7.4' || "$PHPMVER" = '8.0' || "$PHPMUVER" = '8.0' || "$PHPMVER" = '8.1' || "$PHPMUVER" = '8.1' || "$PHPMVER" = '8.2' || "$PHPMUVER" = '8.2' || "$PHPMVER" = '8.3' || "$PHPMUVER" = '8.3' || "$PHPMVER" = '8.4' || "$PHPMUVER" = '8.4' ]]; then
     DEVTOOLSETTWELVE='y'
     DEVTOOLSETTHIRTEEN='n'
     DEVTOOLSETFOURTEEN='n'
@@ -791,10 +805,18 @@ fi
 if [[ "$CENTOS_TEN" -eq '10' && "$CENTOSVER_NUMERIC" -ge '100' ]]; then
   DEVTOOLSETTEN='n'
   DEVTOOLSETELEVEN='n'
-  if [[ "$PHP_PGO_FALLBACK_GCC" = [yY] && "$PHP_PGO" = [yY] ]] && [[ "$PHPMVER" = '7.4' || "$PHPMUVER" = '7.4' || "$PHPMVER" = '8.0' || "$PHPMUVER" = '8.0' || "$PHPMVER" = '8.1' || "$PHPMUVER" = '8.1' || "$PHPMVER" = '8.2' || "$PHPMUVER" = '8.2' || "$PHPMVER" = '8.3' || "$PHPMUVER" = '8.3' || "$PHPMVER" = '8.4' || "$PHPMUVER" = '8.4' ]]; then
+  # Issue #4 Fix: GCC 11 ultra-conservative fallback for PHP <=8.1 (highest priority)
+  if [[ "$PHP_PGO_FALLBACK_GCC11" = [yY] && "$PHP_PGO" = [yY] ]] && [[ "$PHPMVER" = '7.4' || "$PHPMUVER" = '7.4' || "$PHPMVER" = '8.0' || "$PHPMUVER" = '8.0' || "$PHPMVER" = '8.1' || "$PHPMUVER" = '8.1' ]]; then
+    DEVTOOLSETELEVEN='y'
     DEVTOOLSETTWELVE='n'
     DEVTOOLSETTHIRTEEN='n'
-    DEVTOOLSETFOURTEEN='y'
+    DEVTOOLSETFOURTEEN='n'
+    DEVTOOLSETFIFTTEEN='n'
+  elif [[ "$PHP_PGO_FALLBACK_GCC" = [yY] && "$PHP_PGO" = [yY] ]] && [[ "$PHPMVER" = '7.4' || "$PHPMUVER" = '7.4' || "$PHPMVER" = '8.0' || "$PHPMUVER" = '8.0' || "$PHPMVER" = '8.1' || "$PHPMUVER" = '8.1' || "$PHPMVER" = '8.2' || "$PHPMUVER" = '8.2' || "$PHPMVER" = '8.3' || "$PHPMUVER" = '8.3' || "$PHPMVER" = '8.4' || "$PHPMUVER" = '8.4' ]]; then
+    # CRITICAL FIX: Use GCC 12 fallback to avoid GCC 14.2.1 SSA corruption bug
+    DEVTOOLSETTWELVE='y'
+    DEVTOOLSETTHIRTEEN='n'
+    DEVTOOLSETFOURTEEN='n'
     DEVTOOLSETFIFTTEEN='n'
   else
     DEVTOOLSETTWELVE='n'
@@ -803,6 +825,196 @@ if [[ "$CENTOS_TEN" -eq '10' && "$CENTOSVER_NUMERIC" -ge '100' ]]; then
     DEVTOOLSETFIFTTEEN='n'
   fi
 fi
+
+#############################################################################
+# PHP PGO: GCC Runtime Verification Functions (Issue #3 Fix)
+#############################################################################
+
+check_gcc_toolset_packages() {
+    local expected_gcc_major="$1"
+    local toolset_package="gcc-toolset-${expected_gcc_major}"
+
+    if ! rpm -qa | grep -q "^${toolset_package}-"; then
+        echo ""
+        echo "⚠️  WARNING: ${toolset_package} packages are NOT installed!"
+        echo "    GCC fallback mechanism cannot work without gcc-toolset packages."
+        echo ""
+        echo "    Install with:"
+        echo "    yum install -y ${toolset_package} ${toolset_package}-gcc ${toolset_package}-gcc-c++"
+        echo ""
+        return 1
+    fi
+    return 0
+}
+
+verify_gcc_pgo_version() {
+    local expected_gcc_major="$1"
+    local gcc_actual_version=""
+    local gcc_actual_major=""
+
+    if command -v gcc >/dev/null 2>&1; then
+        gcc_actual_version=$(gcc --version 2>&1 | head -n1 | awk '{print $3}')
+        gcc_actual_major=$(echo "$gcc_actual_version" | cut -d. -f1)
+    else
+        echo ""
+        echo "⚠️  ERROR: GCC compiler not found in PATH!"
+        echo "    GCC toolset activation may have failed."
+        echo ""
+        return 1
+    fi
+
+    if [[ "$gcc_actual_major" != "$expected_gcc_major" ]]; then
+        echo ""
+        echo "⚠️  WARNING: GCC Version Mismatch Detected!"
+        echo "    Expected GCC ${expected_gcc_major}.x"
+        echo "    Actual:  GCC ${gcc_actual_version}"
+        echo ""
+        echo "    This usually means gcc-toolset-${expected_gcc_major} failed to activate."
+        echo "    Compilation will proceed with system GCC ${gcc_actual_version}."
+        echo ""
+
+        # Check if user wants strict mode (abort on mismatch)
+        if [[ "$PGO_ABORT_ON_GCC_MISMATCH" = [yY] ]]; then
+            echo "❌ PGO_ABORT_ON_GCC_MISMATCH='y' - Aborting compilation."
+            exit 1
+        fi
+
+        return 1
+    else
+        echo ""
+        echo "✅ GCC Version Verification: PASSED"
+        echo "   GCC ${gcc_actual_version} (expected GCC ${expected_gcc_major}.x)"
+        echo ""
+        return 0
+    fi
+}
+
+check_pgo_risks() {
+    local php_version="${PHPMUVER:-unknown}"
+    local gcc_version=""
+    local gcc_major=""
+    local warnings_found=0
+
+    # Get GCC version
+    if command -v gcc >/dev/null 2>&1; then
+        gcc_version=$(gcc --version 2>&1 | head -n1 | awk '{print $3}')
+        gcc_major=$(echo "$gcc_version" | cut -d. -f1)
+    fi
+
+    echo ""
+    echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+    echo "PHP PGO Configuration Risk Assessment"
+    echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+    echo "PHP Version: ${php_version}"
+    echo "GCC Version: ${gcc_version}"
+    echo ""
+
+    # Check PHP version risks
+    if [[ "$php_version" = "8.2" || "$php_version" = "8.1" || "$php_version" = "8.0" || "$php_version" = "7.4" ]]; then
+        # Check if this is a patched version (8.3.23+ backport)
+        if [[ ! "$PHPVER" =~ 8\.3\.2[3-9]|8\.3\.[3-9][0-9]|8\.4\. ]]; then
+            echo "⚠️  WARNING: PHP ${php_version} with PGO"
+            echo "    Known issue: xxhash PGO bug (PHP GH-14551)"
+            echo "    Affects: PHP ≤8.2 compiled with GCC 13"
+            echo "    Risk: Random PHP-FPM crashes, HTTP 500 errors"
+            echo "    Recommendation: Upgrade to PHP 8.3.23+ or ensure GCC 12 fallback is active"
+            echo ""
+            warnings_found=$((warnings_found + 1))
+        fi
+    fi
+
+    # Check GCC version risks
+    case "$gcc_major" in
+        14)
+            echo "⚠️  WARNING: GCC 14 with PGO"
+            echo "    Known issue: SSA corruption bug in GCC 14.2.1 (EL10)"
+            echo "    Symptom: 'verify_ssa failed' during prof-use compilation"
+            echo "    Recommendation: Use GCC 12 fallback (PHP_PGO_FALLBACK_GCC='y')"
+            echo ""
+            warnings_found=$((warnings_found + 1))
+            ;;
+        13)
+            if [[ "$php_version" = "8.2" || "$php_version" = "8.1" || "$php_version" = "8.0" || "$php_version" = "7.4" ]]; then
+                echo "⚠️  WARNING: GCC 13 + PHP ${php_version} with PGO"
+                echo "    Known issue: xxhash PGO bug for PHP ≤8.2"
+                echo "    Risk: HIGH - Random crashes and segmentation faults"
+                echo "    Recommendation: Enable GCC 12 fallback immediately"
+                echo ""
+                warnings_found=$((warnings_found + 1))
+            fi
+            ;;
+        12)
+            echo "✅ GCC 12 detected: Recommended for PHP PGO (stable)"
+            echo ""
+            ;;
+        11)
+            echo "✅ GCC 11 detected: Ultra-conservative option (very stable)"
+            echo ""
+            ;;
+        *)
+            echo "ℹ️  GCC ${gcc_version} detected"
+            echo ""
+            ;;
+    esac
+
+    # Check if fallback is enabled
+    if [[ "$PHP_PGO_FALLBACK_GCC11" = [yY] ]]; then
+        echo "✅ PHP_PGO_FALLBACK_GCC11='y' is ENABLED"
+        echo "   System will attempt to use GCC 11 for ultra-conservative PGO compilation (PHP ≤8.1)"
+        echo ""
+    elif [[ "$PHP_PGO_FALLBACK_GCC" = [yY] ]]; then
+        echo "✅ PHP_PGO_FALLBACK_GCC='y' is ENABLED"
+        echo "   System will attempt to use GCC 12 for safer PGO compilation"
+        echo ""
+    else
+        if [[ $warnings_found -gt 0 ]]; then
+            echo "⚠️  PHP_PGO_FALLBACK_GCC='n' and PHP_PGO_FALLBACK_GCC11='n' are DISABLED"
+            echo "   Consider enabling fallback to reduce PGO crash risk:"
+            echo "   - PHP_PGO_FALLBACK_GCC='y' for GCC 12 (recommended for all PHP versions)"
+            echo "   - PHP_PGO_FALLBACK_GCC11='y' for GCC 11 (ultra-conservative, PHP ≤8.1 only)"
+            echo "   Set in /etc/centminmod/custom_config.inc"
+            echo ""
+        fi
+    fi
+
+    echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+
+    if [[ $warnings_found -eq 0 ]]; then
+        echo "✅ No high-risk PGO configuration issues detected"
+    else
+        echo "⚠️  ${warnings_found} potential risk(s) detected - review warnings above"
+    fi
+
+    echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+    echo ""
+
+    # Give user time to review warnings
+    if [[ $warnings_found -gt 0 ]]; then
+        echo "Pausing for 5 seconds to review warnings..."
+        sleep 5
+    fi
+}
+
+# Runtime GCC verification for PHP PGO
+if [[ "$PHP_PGO" = [yY] ]]; then
+    if [[ "$DEVTOOLSETELEVEN" = [yY] ]]; then
+        echo "PHP PGO: GCC 11 fallback active"
+        check_gcc_toolset_packages "11"
+        # Verification will happen after scl enable in compile function
+    elif [[ "$DEVTOOLSETTWELVE" = [yY] ]]; then
+        echo "PHP PGO: GCC 12 fallback active"
+        check_gcc_toolset_packages "12"
+        # Verification will happen after scl enable in compile function
+    elif [[ "$DEVTOOLSETTHIRTEEN" = [yY] ]]; then
+        echo "PHP PGO: GCC 13 active (WARNING: xxhash bug risk for PHP ≤8.2)"
+        check_gcc_toolset_packages "13"
+    elif [[ "$DEVTOOLSETFOURTEEN" = [yY] ]]; then
+        echo "PHP PGO: GCC 14 active (WARNING: SSA corruption bug risk in 14.2.1)"
+        check_gcc_toolset_packages "14"
+    fi
+fi
+
+#############################################################################
 
 if [[ "$FORCE_IPVFOUR" != [yY] ]]; then
   ipv_forceopt=""

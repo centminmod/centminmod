@@ -813,7 +813,12 @@ fi
     fi
     echo "PHPMUVER = $PHPMUVER"
     echo "PHP_PGO = $PHP_PGO"
-    if [[ "$PHP_PGO" = [yY] ]] && [[ "$PHPMUVER" = '7.0' || "$PHPMUVER" = '7.1' || "$PHPMUVER" = '7.2' || "$PHPMUVER" = '7.3' || "$PHPMUVER" = '7.4' || "$PHPMUVER" = '8.0' || "$PHPMUVER" = '8.1' || "$PHPVER_ID" -ge '80000' ]]; then
+    # Issue #2 Fix: Add explicit PHP 8.2, 8.3, 8.4 checks
+    if [[ "$PHP_PGO" = [yY] ]] && [[ "$PHPMUVER" = '7.0' || "$PHPMUVER" = '7.1' || "$PHPMUVER" = '7.2' || "$PHPMUVER" = '7.3' || "$PHPMUVER" = '7.4' || "$PHPMUVER" = '8.0' || "$PHPMUVER" = '8.1' || "$PHPMUVER" = '8.2' || "$PHPMUVER" = '8.3' || "$PHPMUVER" = '8.4' || "$PHPVER_ID" -ge '80000' ]]; then
+        # Issue #5 Fix: Display PGO risk assessment before compilation
+        if type -t check_pgo_risks >/dev/null 2>&1; then
+            check_pgo_risks
+        fi
         echo "make${MAKETHREADS_PHP} prof-gen"
         time make${MAKETHREADS_PHP} prof-gen
         if [ ! -d "$DIR_TMP/php_pgo_training_scripts" ]; then
@@ -824,27 +829,28 @@ fi
             GET_ROOT_PASS=$(awk -F "=" '/password/ {print $2}' /root/.my.cnf | sed -e "s|'||g")
             sed -i "s|define('DB_PASSWORD', 'root');|define('DB_PASSWORD', '$GET_ROOT_PASS');|" "$DIR_TMP/php_pgo_training_scripts/constants.php"
             ./sapi/cli/php "$DIR_TMP/php_pgo_training_scripts/init.php"
-            echo "time ./sapi/cgi/php-cgi -T80 ../Zend/bench.php"
-            time ./sapi/cgi/php-cgi -T80 ../Zend/bench.php
-            echo "time ./sapi/cgi/php-cgi -T40 ../Zend/micro_bench.php"
-            time ./sapi/cgi/php-cgi -T40 ../Zend/micro_bench.php
-            echo "./sapi/cgi/php-cgi -T100 "$DIR_TMP/php_pgo_training_scripts/index.php""
-            time ./sapi/cgi/php-cgi -T100 "$DIR_TMP/php_pgo_training_scripts/index.php"
+            # Issue #1 Fix: Use PHP_PGO_TRAINRUNS variable consistently (first run)
+            echo "time ./sapi/cgi/php-cgi -T2,${PHP_PGO_TRAINRUNS} ../Zend/bench.php"
+            time ./sapi/cgi/php-cgi -T2,${PHP_PGO_TRAINRUNS} ../Zend/bench.php
+            echo "time ./sapi/cgi/php-cgi -T2,${PHP_PGO_TRAINRUNS} ../Zend/micro_bench.php"
+            time ./sapi/cgi/php-cgi -T2,${PHP_PGO_TRAINRUNS} ../Zend/micro_bench.php
+            echo "./sapi/cgi/php-cgi -T${PHP_PGO_TRAINRUNS} "$DIR_TMP/php_pgo_training_scripts/index.php""
+            time ./sapi/cgi/php-cgi -T${PHP_PGO_TRAINRUNS} "$DIR_TMP/php_pgo_training_scripts/index.php"
             if [ -f "$PHPPGO_INDEXPATH" ]; then
-                echo "./sapi/cgi/php-cgi -T100 "$PHPPGO_INDEXPATH""
-                time ./sapi/cgi/php-cgi -T100 "$PHPPGO_INDEXPATH"
+                echo "./sapi/cgi/php-cgi -T${PHP_PGO_TRAINRUNS} "$PHPPGO_INDEXPATH""
+                time ./sapi/cgi/php-cgi -T${PHP_PGO_TRAINRUNS} "$PHPPGO_INDEXPATH"
             fi
             if [ -f "$PHPPGO_INDEXPATH_TWO" ]; then
-                echo "./sapi/cgi/php-cgi -T100 "$PHPPGO_INDEXPATH_TWO""
-                time ./sapi/cgi/php-cgi -T100 "$PHPPGO_INDEXPATH_TWO"
+                echo "./sapi/cgi/php-cgi -T${PHP_PGO_TRAINRUNS} "$PHPPGO_INDEXPATH_TWO""
+                time ./sapi/cgi/php-cgi -T${PHP_PGO_TRAINRUNS} "$PHPPGO_INDEXPATH_TWO"
             fi
             if [ -f "$PHPPGO_INDEXPATH_THREE" ]; then
-                echo "./sapi/cgi/php-cgi -T100 "$PHPPGO_INDEXPATH_THREE""
-                time ./sapi/cgi/php-cgi -T100 "$PHPPGO_INDEXPATH_THREE"
+                echo "./sapi/cgi/php-cgi -T${PHP_PGO_TRAINRUNS} "$PHPPGO_INDEXPATH_THREE""
+                time ./sapi/cgi/php-cgi -T${PHP_PGO_TRAINRUNS} "$PHPPGO_INDEXPATH_THREE"
             fi
             if [ -f "$PHPPGO_INDEXPATH_FOUR" ]; then
-                echo "./sapi/cgi/php-cgi -T100 "$PHPPGO_INDEXPATH_FOUR""
-                time ./sapi/cgi/php-cgi -T100 "$PHPPGO_INDEXPATH_FOUR"
+                echo "./sapi/cgi/php-cgi -T${PHP_PGO_TRAINRUNS} "$PHPPGO_INDEXPATH_FOUR""
+                time ./sapi/cgi/php-cgi -T${PHP_PGO_TRAINRUNS} "$PHPPGO_INDEXPATH_FOUR"
             fi
             echo "pgophpbench"
             pgophpbench
@@ -870,6 +876,7 @@ fi
             GET_ROOT_PASS=$(awk -F "=" '/password/ {print $2}' /root/.my.cnf | sed -e "s|'||g")
             sed -i "s|define('DB_PASSWORD', 'root');|define('DB_PASSWORD', '$GET_ROOT_PASS');|" "$DIR_TMP/php_pgo_training_scripts/constants.php"
             ./sapi/cli/php "$DIR_TMP/php_pgo_training_scripts/init.php"
+            # Issue #1 Fix: Use PHP_PGO_TRAINRUNS variable consistently (subsequent run)
             echo "time ./sapi/cgi/php-cgi -T2,${PHP_PGO_TRAINRUNS} ../Zend/bench.php"
             time ./sapi/cgi/php-cgi -T2,${PHP_PGO_TRAINRUNS} ../Zend/bench.php
             echo "time ./sapi/cgi/php-cgi -T2,${PHP_PGO_TRAINRUNS} ../Zend/micro_bench.php"
@@ -877,20 +884,20 @@ fi
             echo "./sapi/cgi/php-cgi -T${PHP_PGO_TRAINRUNS} "$DIR_TMP/php_pgo_training_scripts/index.php""
             time ./sapi/cgi/php-cgi -T${PHP_PGO_TRAINRUNS} "$DIR_TMP/php_pgo_training_scripts/index.php"
             if [ -f "$PHPPGO_INDEXPATH" ]; then
-                echo "./sapi/cgi/php-cgi -T80 "$PHPPGO_INDEXPATH""
-                time ./sapi/cgi/php-cgi -T80 "$PHPPGO_INDEXPATH"
+                echo "./sapi/cgi/php-cgi -T${PHP_PGO_TRAINRUNS} "$PHPPGO_INDEXPATH""
+                time ./sapi/cgi/php-cgi -T${PHP_PGO_TRAINRUNS} "$PHPPGO_INDEXPATH"
             fi
             if [ -f "$PHPPGO_INDEXPATH_TWO" ]; then
-                echo "./sapi/cgi/php-cgi -T80 "$PHPPGO_INDEXPATH_TWO""
-                time ./sapi/cgi/php-cgi -T80 "$PHPPGO_INDEXPATH_TWO"
+                echo "./sapi/cgi/php-cgi -T${PHP_PGO_TRAINRUNS} "$PHPPGO_INDEXPATH_TWO""
+                time ./sapi/cgi/php-cgi -T${PHP_PGO_TRAINRUNS} "$PHPPGO_INDEXPATH_TWO"
             fi
             if [ -f "$PHPPGO_INDEXPATH_THREE" ]; then
-                echo "./sapi/cgi/php-cgi -T80 "$PHPPGO_INDEXPATH_THREE""
-                time ./sapi/cgi/php-cgi -T80 "$PHPPGO_INDEXPATH_THREE"
+                echo "./sapi/cgi/php-cgi -T${PHP_PGO_TRAINRUNS} "$PHPPGO_INDEXPATH_THREE""
+                time ./sapi/cgi/php-cgi -T${PHP_PGO_TRAINRUNS} "$PHPPGO_INDEXPATH_THREE"
             fi
             if [ -f "$PHPPGO_INDEXPATH_FOUR" ]; then
-                echo "./sapi/cgi/php-cgi -T80 "$PHPPGO_INDEXPATH_FOUR""
-                time ./sapi/cgi/php-cgi -T80 "$PHPPGO_INDEXPATH_FOUR"
+                echo "./sapi/cgi/php-cgi -T${PHP_PGO_TRAINRUNS} "$PHPPGO_INDEXPATH_FOUR""
+                time ./sapi/cgi/php-cgi -T${PHP_PGO_TRAINRUNS} "$PHPPGO_INDEXPATH_FOUR"
             fi
             echo "pgophpbench"
             pgophpbench
