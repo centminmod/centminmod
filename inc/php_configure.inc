@@ -215,7 +215,7 @@ compile_custom_curl() {
     export CURL_SYSTEM_PREFIX="=${CURL_PREFIX}"
     export CURL_CONFIG="${CURL_PREFIX}/bin/curl-config"
 
-    if [[ "$CENTOS_EIGHT" -eq 8 || "$CENTOS_NINE" -eq 9 ]]; then
+    if [[ "$CENTOS_EIGHT" -eq 8 || "$CENTOS_NINE" -eq 9 || "$CENTOS_TEN" -eq 10 ]]; then
         export CURL_PHP_PKG_CONFIG_PATH="${CURL_PREFIX}/lib64/pkgconfig:"
         export CURL_PHP_LD_LIBRARY_PATH=":${CURL_PREFIX}/lib64:"
     else

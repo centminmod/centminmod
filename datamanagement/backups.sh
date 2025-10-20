@@ -287,6 +287,11 @@ elif [[ "$CENTOS_NINE" -eq '9' ]]; then
     wget https://centminmod.com/centminmodparts/tar/tar-zstd-gcc13-1.35-1.el9.x86_64.rpm -O /svr-setup/tar-zstd-gcc13-1.35-1.el9.x86_64.rpm
     yum -q -y localinstall /svr-setup/tar-zstd-gcc13-1.35-1.el9.x86_64.rpm
   fi
+elif [[ "$CENTOS_TEN" -eq '10' ]]; then
+  if [ ! -f /svr-setup/tar-zstd-gcc14-1.35-1.el10.x86_64.rpm ]; then
+    wget https://centminmod.com/centminmodparts/tar/tar-zstd-gcc14-1.35-1.el10.x86_64.rpm -O /svr-setup/tar-zstd-gcc14-1.35-1.el10.x86_64.rpm
+    yum -q -y localinstall /svr-setup/tar-zstd-gcc14-1.35-1.el10.x86_64.rpm
+  fi
 fi
 
 CPUS=$(nproc)

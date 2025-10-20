@@ -246,7 +246,7 @@ if [ "$CCACHEINSTALL" == 'y' ]; then
         elif [ -f /opt/rh/devtoolset-13/enable ]; then
           source /opt/rh/devtoolset-13/enable
         fi
-      elif [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]]; then
+      elif [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' || "$CENTOS_TEN" -eq '10' ]]; then
         if [ -f /opt/rh/gcc-toolset-9/enable ]; then
           source /opt/rh/gcc-toolset-9/enable
         elif [ -f /opt/rh/gcc-toolset-10/enable ]; then

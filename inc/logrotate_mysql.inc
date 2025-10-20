@@ -39,7 +39,7 @@ if [ ! -f /var/log/mysqld.log ]; then
   #ls -lah /var/log/mysqld.log
 fi
 
-if [[ "$CENTOS_SEVEN" -eq '7' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]]; then
+if [[ "$CENTOS_SEVEN" -eq '7' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' || "$CENTOS_TEN" -eq '10' ]]; then
         VARDFSIZE=$(df --output=avail /var | tail -1)
 else
         VARDFSIZE=$(df -P /var | tail -1 | awk '{print $4}')

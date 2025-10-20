@@ -960,7 +960,7 @@ echo ""
 
 echo "MariaDB 10.6 YUM install..."
 
-if [[ "$CENTOS_EIGHT" = '8' || "$CENTOS_NINE" = '9' ]]; then
+if [[ "$CENTOS_EIGHT" = '8' || "$CENTOS_NINE" = '9' || "$CENTOS_TEN" = '10' ]]; then
   yumpriorities_opt=""
   # yumdisable_appstream=' --disablerepo=AppStream'
   yumdisable_appstream=""

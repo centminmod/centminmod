@@ -68,7 +68,7 @@ packages=("tar" "zstd" "pigz" "socat" "nmap-ncat" "pv" "sshpass")
 # Check if the system is CentOS 7 or AlmaLinux 8
 os_version=$(rpm -E %{rhel})
 
-if [ "$os_version" -eq 7 ] || [ "$os_version" -eq 8 ] || [ "$os_version" -eq 9 ]; then
+if [ "$os_version" -eq 7 ] || [ "$os_version" -eq 8 ] || [ "$os_version" -eq 9 ] || [ "$os_version" -eq 10 ]; then
   # Check each command and install the corresponding package if the command is not found
   for i in "${!commands[@]}"; do
     command -v "${commands[$i]}" >/dev/null 2>&1 || {
@@ -77,7 +77,7 @@ if [ "$os_version" -eq 7 ] || [ "$os_version" -eq 8 ] || [ "$os_version" -eq 9 ]
     }
   done
 else
-  echo "This script only supports CentOS 7 and AlmaLinux 8."
+  echo "This script only supports EL7, EL8, EL9, and EL10 distributions."
   echo
   exit 1
 fi

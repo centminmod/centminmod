@@ -44,7 +44,7 @@ libzip_remove() {
     rm -rf /usr/local/lib64/pkgconfig/libzip.pc
     ldconfig
   fi
-  if [[ "$CENTOS_EIGHT" = '8' || "$CENTOS_NINE" = '9' ]] && [[ "$IMAGEMAGICK_SEVEN" != [yY] && -f "$(rpm -ql libzip | grep -m1 '.so')" ]]; then
+  if [[ "$CENTOS_EIGHT" = '8' || "$CENTOS_NINE" = '9' || "$CENTOS_TEN" = '10' ]] && [[ "$IMAGEMAGICK_SEVEN" != [yY] && -f "$(rpm -ql libzip | grep -m1 '.so')" ]]; then
     # remove ImageMgick7 installed libzip
     yum -y remove libzip libzip-devel
   fi

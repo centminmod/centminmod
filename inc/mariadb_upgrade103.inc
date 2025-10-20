@@ -1360,7 +1360,7 @@ EFF
 fi
 
 cmservice mysql restart
-if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_EIGHT" = '8' || "$CENTOS_NINE" = '9' ]] ; then
+if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_EIGHT" = '8' || "$CENTOS_NINE" = '9' || "$CENTOS_TEN" = '10' ]] ; then
     cmchkconfig mariadb on
 else
     cmchkconfig mysql on

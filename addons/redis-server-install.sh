@@ -45,12 +45,35 @@ if [ ! -d /etc/systemd/system ]; then
   exit
 fi
 
+# Detect OS version for REMI repository
+if [ -f /etc/redhat-release ]; then
+  CENTOSVER=$(awk '{ print $4 }' /etc/redhat-release | cut -d . -f1)
+  if [[ "$CENTOSVER" = 'release' ]]; then
+    CENTOSVER=$(awk '{ print $3 }' /etc/redhat-release | cut -d . -f1)
+  fi
+  if [[ "$CENTOSVER" -eq '7' ]]; then
+    REMI_VERSION='7'
+  elif [[ "$CENTOSVER" -eq '8' ]]; then
+    REMI_VERSION='8'
+  elif [[ "$CENTOSVER" -eq '9' ]]; then
+    REMI_VERSION='9'
+  elif [[ "$CENTOSVER" -eq '10' ]]; then
+    REMI_VERSION='10'
+  else
+    echo "Unsupported OS version"
+    exit 1
+  fi
+else
+  echo "Unable to detect OS version"
+  exit 1
+fi
+
 if [ ! -f /etc/yum.repos.d/remi.repo ]; then
   echo
   echo "redis REMI YUM repo not installed"
-  echo "installing..."
-  wget -cnv https://rpms.remirepo.net/enterprise/remi-release-7.rpm
-  rpm -Uvh remi-release-7.rpm
+  echo "installing for EL${REMI_VERSION}..."
+  wget -cnv https://rpms.remirepo.net/enterprise/remi-release-${REMI_VERSION}.rpm
+  rpm -Uvh remi-release-${REMI_VERSION}.rpm
 fi
 
 if [ ! -f /etc/yum.repos.d/epel.repo ]; then

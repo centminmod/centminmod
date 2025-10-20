@@ -1,3 +1,53 @@
+# Memcached Systemd Service - Centmin Mod
+#
+# Multi-Distribution Systemd Compatibility:
+# - EL7: systemd 219 (2015) - Basic security features
+# - EL8: systemd 239 (2018) - Enhanced sandboxing and namespacing
+# - EL9: systemd 250-252 (2021-2022) - Modern security directives
+# - EL10: systemd 255+ (2023+) - Advanced security and resource management
+#
+# Security Feature Matrix:
+#
+# Basic Features (EL7+):
+#   PrivateTmp, ProtectSystem, NoNewPrivileges, PrivateDevices
+#   CapabilityBoundingSet, RestrictAddressFamilies
+#
+# Enhanced Features (EL8+) - Marked with ##safer## in this file:
+#   MemoryDenyWriteExecute, ProtectKernelModules
+#   ProtectKernelTunables, ProtectControlGroups
+#   RestrictRealtime, RestrictNamespaces
+#
+# EL9/EL10 Advanced Features (Available but not enabled by default):
+#   ProtectHostname=yes          - Prevents hostname changes
+#   ProtectClock=yes             - Prevents system clock changes
+#   ProtectProc=invisible        - Hides /proc from other users
+#   ProcSubset=pid               - Minimal /proc view
+#   PrivateUsers=yes             - User namespace isolation
+#   RestrictSUIDSGID=yes         - Prevents SUID/SGID execution
+#   LockPersonality=yes          - Locks execution domain
+#   SystemCallArchitectures=native - Restricts to native syscalls only
+#   SystemCallFilter=@system-service - Syscall filtering
+#   ProtectKernelLogs=yes        - Prevents kernel log access
+#
+# EL10-Specific Enhancements:
+#   - Improved cgroup v2 integration with unified hierarchy
+#   - Enhanced systemd-oomd integration for better OOM management
+#   - systemd-soft-reboot support for faster service recovery
+#   - Improved journal compression and rotation
+#   - Better resource accounting with systemd-cgtop
+#
+# To enable ##safer## directives for EL8+ systems:
+#   1. Verify systemd version: systemctl --version
+#   2. Test with: systemctl daemon-reload && systemctl restart memcached
+#   3. Monitor logs: journalctl -u memcached -f
+#   4. Uncomment directives one by one and validate service functionality
+#
+# Performance Tuning for EL10:
+#   - Use TasksMax= to limit process creation
+#   - Set MemoryMax= and MemoryHigh= for cgroup v2 memory management
+#   - Configure CPUQuota= for CPU throttling
+#   - Enable systemd-oomd for proactive OOM prevention
+
 [Unit]
 Description=memcached daemon
 After=network.target

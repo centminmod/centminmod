@@ -307,7 +307,7 @@ echo ""
   cecho "Check Memcached Server Version:" $boldyellow
   cecho "--------------------------------------------------------" $boldyellow  
   /usr/local/bin/memcached -h | head -n1
-  if [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]]; then
+  if [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' || "$CENTOS_TEN" -eq '10' ]]; then
     systemctl status memcached
   fi
 letswait
@@ -446,7 +446,7 @@ if [[ "$NSD_DISABLED" = [yY] ]]; then
   cmchkconfig nsd off
   cecho "--------------------------------------------------------" $boldyellow
   cecho "In future to re-enable NSD service type these 2 commands:" $boldyellow
-  if [[ "$CENTOS_NINE" = '9' || "$CENTOS_EIGHT" = '8' || "$CENTOS_SEVEN" = '7' ]]; then
+  if [[ "$CENTOS_NINE" = '9' || "$CENTOS_EIGHT" = '8' || "$CENTOS_SEVEN" = '7' || "$CENTOS_TEN" = '10' ]]; then
     echo "service nsd start"
     echo "chkconfig nsd on"
   else
@@ -462,20 +462,20 @@ if [[ "$MEMCACHED_DISABLED" = [yY] ]]; then
   echo ""
   cecho "--------------------------------------------------------" $boldyellow
   cecho "Stopping Memcached server service:" $boldyellow
-  if [[ "$CENTOS_NINE" = '9' || "$CENTOS_EIGHT" = '8' ]]; then
+  if [[ "$CENTOS_NINE" = '9' || "$CENTOS_EIGHT" = '8' || "$CENTOS_TEN" = '10' ]]; then
     systemctl stop memcached
   elif [[ "$CENTOS_SEVEN" = '7' ]]; then
     cmservice memcached stop
   fi
   cecho "Disabling Memcached server service:" $boldyellow
-  if [[ "$CENTOS_NINE" = '9' || "$CENTOS_EIGHT" = '8' ]]; then
+  if [[ "$CENTOS_NINE" = '9' || "$CENTOS_EIGHT" = '8' || "$CENTOS_TEN" = '10' ]]; then
     systemctl disable memcached
   elif [[ "$CENTOS_SEVEN" = '7' ]]; then
     cmchkconfig memcached stop
   fi
   cecho "--------------------------------------------------------" $boldyellow
   cecho "In future to re-enable Memcached server service type these 2 commands:" $boldyellow
-  if [[ "$CENTOS_NINE" = '9' || "$CENTOS_EIGHT" = '8' ]]; then
+  if [[ "$CENTOS_NINE" = '9' || "$CENTOS_EIGHT" = '8' || "$CENTOS_TEN" = '10' ]]; then
     echo "systemctl start memcached"
     echo "systemctl enable memcached"
   elif [[ "$CENTOS_SEVEN" = '7' ]]; then
@@ -495,7 +495,7 @@ if [[ "$REDIS_DISABLED" = [yY] ]]; then
   cmchkconfig redis stop
   cecho "--------------------------------------------------------" $boldyellow
   cecho "In future to re-enable Redis server service type these 2 commands:" $boldyellow
-  if [[ "$CENTOS_NINE" = '9' || "$CENTOS_EIGHT" = '8' || "$CENTOS_SEVEN" = '7' ]]; then
+  if [[ "$CENTOS_NINE" = '9' || "$CENTOS_EIGHT" = '8' || "$CENTOS_SEVEN" = '7' || "$CENTOS_TEN" = '10' ]]; then
     echo "systemctl start redis"
     echo "systemctl enable redis"
   else
@@ -515,7 +515,7 @@ if [[ "$PHP_DISABLED" = [yY] ]]; then
   cmchkconfig php-fpm off
   cecho "--------------------------------------------------------" $boldyellow
   cecho "In future to re-enable php-fpm service type these 2 commands:" $boldyellow
-  if [[ "$CENTOS_NINE" = '9' || "$CENTOS_EIGHT" = '8' || "$CENTOS_SEVEN" = '7' ]]; then
+  if [[ "$CENTOS_NINE" = '9' || "$CENTOS_EIGHT" = '8' || "$CENTOS_SEVEN" = '7' || "$CENTOS_TEN" = '10' ]]; then
     echo "systemctl start php-fpm"
     echo "systemctl enable php-fpm"
   else
@@ -535,7 +535,7 @@ if [[ "$MYSQLSERVICE_DISABLED" = [yY] ]]; then
   cmchkconfig mysql off
   cecho "--------------------------------------------------------" $boldyellow
   cecho "In future to re-enable mysql service type these 2 commands:" $boldyellow
-  if [[ "$CENTOS_NINE" = '9' || "$CENTOS_EIGHT" = '8' || "$CENTOS_SEVEN" = '7' ]]; then
+  if [[ "$CENTOS_NINE" = '9' || "$CENTOS_EIGHT" = '8' || "$CENTOS_SEVEN" = '7' || "$CENTOS_TEN" = '10' ]]; then
     echo "systemctl start mariadb"
     echo "systemctl enable mariadb"
   else
@@ -560,7 +560,7 @@ if [[ "$PUREFTPD_DISABLED" = [yY] ]]; then
   cmchkconfig pure-ftpd off
   cecho "--------------------------------------------------------" $boldyellow
   cecho "In future to re-enable pure-ftpd service type these 2 commands:" $boldyellow
-  if [[ "$CENTOS_NINE" = '9' || "$CENTOS_EIGHT" = '8' || "$CENTOS_SEVEN" = '7' ]]; then
+  if [[ "$CENTOS_NINE" = '9' || "$CENTOS_EIGHT" = '8' || "$CENTOS_SEVEN" = '7' || "$CENTOS_TEN" = '10' ]]; then
     echo "systemctl start pure-ftpd"
     echo "systemctl enable pure-ftpd"
   else
