@@ -21,10 +21,11 @@
 # 1. Create the persistent config directory:
 #    mkdir -p /etc/centminmod
 #
-# 2. Copy this file (or create your own):
-#    cp example/custom_config.inc /etc/centminmod/custom_config.inc
+# 2. Select which variables you want to enable and place in
+     /etc/centminmod/custom_config.inc
 #
-# 3. Edit and uncomment ONLY the variables you want to override:
+# 3. Edit and uncomment (remove hash # in front of variable)
+     ONLY the variables you want to override:
 #    nano /etc/centminmod/custom_config.inc
 #
 # 4. Run centmin.sh - your customizations will be automatically loaded
@@ -47,7 +48,7 @@
 # TOTAL VARIABLES DOCUMENTED: 541
 # CATEGORIES: 53
 # BRANCH: 141.00beta01
-# LAST UPDATED: 2025-10-24
+# LAST UPDATED: 2025-10-25
 # ==============================================================================
 
 ################################################################################
@@ -410,8 +411,61 @@
 # Git History: Added 2018-12-02 (b46d28fb)
 #MARCH_TARGETNATIVE_ALWAYS='n'  
 
-# Clang Compiler for Nginx
-# Set to 'y' to build Nginx with Clang instead of GCC
+# Clang Compiler for Nginx Compilation
+# Build Nginx using Clang/LLVM compiler instead of GCC for faster compilation and alternative optimizations.
+# AUTOMATIC BEHAVIOR:
+#   - EL8/9/10: Auto-installs clang from repos if missing (line 2789-2853)
+#   - EL7: Complex version selection (CLANG_FOUR through CLANG_MASTER) (line 2856-2937)
+#   - EL6: Legacy Clang 3.4 support (line 3013-3031)
+#   - Auto-disables devtoolset when CLANG='y' (line 3060-3091)
+#   - Sets compiler paths via CC/CXX environment variables
+# CLANG VERSION SELECTION (EL7):
+#   - CLANG_MASTER: Latest Clang from source (line 3215)
+#   - CLANG_EIGHT: Clang 8.0 (line 3221)
+#   - CLANG_SEVEN: Clang 7.0 from llvm-toolset-7.0 (line 3227-3229)
+#   - CLANG_SIX: Clang 6.0 (line 3235)
+#   - CLANG_FIVE: Clang 5.0 (line 3241)
+#   - CLANG_FOUR: Clang 4.0 (line 3247)
+# NGINX VERSION COMPATIBILITY:
+#   - All Nginx versions compatible
+#   - Clang 3.4+ minimum for modern Nginx
+# OS COMPATIBILITY:
+#   - EL6: Clang 3.4 (legacy, not recommended)
+#   - EL7: Clang 4.0 - 8.0 + master (source compile)
+#   - EL8: Clang 17.x from AppStream (recommended)
+#   - EL9: Clang 17.x+ from AppStream (recommended)
+#   - EL10: Clang 18.x+ from AppStream (recommended)
+# CONFIGURE FLAGS:
+#   - CC=clang CXX=clang++ ./configure ...
+#   - Uses CLANG_CCOPT variable for Clang-specific flags
+#   - Path set via CC/CXX environment: export CC=/path/to/clang
+# CLANG LTO SUPPORT:
+#   - CLANG_LTO_ENABLE='y': Enable Link-Time Optimization (line 3121-3130)
+#   - CLANG_LTO_FULL='y': Use full LTO instead of ThinLTO (line 3122-3126)
+#   - Requires FLTO_COMP='y' on EL8/9/10
+# CONFLICTS:
+#   - Incompatible with DEVTOOLSET* variables (Clang replaces GCC)
+#   - Incompatible with NGINX_DEVTOOLSETGCC='y'
+# PERFORMANCE IMPACT:
+#   - Compilation speed: 10-30% faster than GCC
+#   - Binary size: Similar to GCC
+#   - Runtime performance: 0-5% slower than optimized GCC builds
+#   - LTO compilation: Significantly slower (2-4x) but better runtime
+# COMPILATION FEATURES:
+#   - Better error messages than GCC
+#   - Faster builds (parallel template instantiation)
+#   - Advanced static analysis capabilities
+#   - Modern C++ support
+# USE CASES:
+#   - Development/testing (faster rebuild cycles)
+#   - CI/CD pipelines (faster builds)
+#   - Alternative to GCC for troubleshooting compilation issues
+#   - Clang-specific optimizations research
+# RECOMMENDATION: Keep disabled ('n') for production Nginx builds. GCC provides better
+#   runtime performance with march=native and devtoolset optimizations. Enable Clang
+#   for development/testing where fast compilation is prioritized over runtime performance.
+# Related: CLANG_LTO_ENABLE, CLANG_LTO_FULL, DEVTOOLSET*, NGINX_DEVTOOLSETGCC
+# Reference: https://clang.llvm.org/
 # Git History: First added 2015-06-09 (4c8cb410), Last modified 2016-07-09 (0163b0e6)
 #CLANG='n'  
 
@@ -704,9 +758,34 @@
 # Git History: First added 2014-04-24 (c4b6d98a), Last modified 2024-02-17 (5d801902)
 #NGINX_VERSION='1.29.2'  
 
-# Freenginx Installation
-# Use Maxim Dounin's Freenginx fork instead of official Nginx
-# Reference: https://freenginx.org/en/download.html
+# FreeNginx Installation Switch
+# Switch from nginx.org to freenginx.org fork for Nginx compilation and installation.
+# AUTOMATIC BEHAVIOR:
+#   - Changes download source from nginx-${VERSION}.tar.gz to freenginx-${VERSION}.tar.gz
+#   - Modifies source directory path detection (line 404-417, 727-758)
+#   - Version detection reads from freenginx-${VERSION}/src/core/nginx.h instead
+# NGINX VERSION COMPATIBILITY:
+#   - FreeNginx versions track nginx versions (e.g., FreeNginx 1.27.x)
+#   - All nginx version checks (DETECT_NGXVER) remain functional
+# SOURCE CHANGES:
+#   - Download: https://freenginx.org/download/freenginx-${VERSION}.tar.gz
+#   - Directory: /svr-setup/freenginx-${VERSION}/
+#   - Binary: /usr/local/sbin/nginx (same as nginx.org builds)
+# CONFLICTS:
+#   - None - fully compatible with all other nginx compilation options
+#   - Works with QUIC, AWS-LC, BoringSSL, all modules
+# RATIONALE:
+#   - FreeNginx is a community fork created in 2024 by former nginx core developers
+#   - Maintains API/ABI compatibility with nginx.org
+#   - May receive security updates and features faster than nginx.org
+# USE CASES:
+#   - Organizations preferring community governance over F5/nginx Inc control
+#   - Early access to community-driven features
+#   - Nginx Inc licensing policy concerns
+# RECOMMENDATION: Keep disabled ('n') unless you specifically need FreeNginx fork.
+#   Default nginx.org provides wider ecosystem support and documentation.
+# Related: None (independent choice from all other variables)
+# Reference: https://freenginx.org
 # Git History: Added 2024-02-17 (5d801902)
 #FREENGINX_INSTALL='n'
 
@@ -738,8 +817,51 @@
 # Git History: Added 2017-02-01 (d478ecd6)
 #NGX_LDGOLD='y'  
 
-# Nginx Mold Linker
-# Use experimental mold linker for faster linking
+# Mold Linker for Nginx Compilation
+# Use modern Mold linker instead of GNU ld/gold for dramatically faster Nginx linking.
+# AUTOMATIC BEHAVIOR:
+#   - Calls mold_check() function to verify Mold installation
+#   - Auto-installs Mold if not present (line 586-588)
+#   - Requires GENERAL_DEVTOOLSETGCC='y' for modern GCC (line 506-515)
+#   - Sets linker via -fuse-ld=mold flag
+# NGINX VERSION COMPATIBILITY:
+#   - All Nginx versions compatible
+#   - Requires Nginx build system support for custom linker
+# OS COMPATIBILITY:
+#   - EL8: Supported (Mold 1.x+)
+#   - EL9: Supported (Mold 1.x+)
+#   - EL10: Supported (Mold 2.x+)
+#   - EL6/EL7: Not recommended (glibc incompatibilities)
+# CONFIGURE FLAGS:
+#   - --with-ld-opt: -fuse-ld=mold
+#   - Uses NGXEXTRA_LDGOLDCCOPT variable
+#   - Replaces GNU ld or gold linker
+# COMPILER REQUIREMENTS:
+#   - GCC 10+ or Clang 12+ required
+#   - Triggers devtoolset installation (line 506-515)
+#   - Not compatible with EL7 devtoolset-11 or older
+# PERFORMANCE IMPACT:
+#   - Linking speed: 5-15x faster than GNU ld
+#   - Linking speed: 2-5x faster than gold linker
+#   - Parallel linking support (multi-threaded)
+#   - Most beneficial for large Nginx builds with many modules
+# CONFLICTS:
+#   - Mutually exclusive with NGX_LDGOLD='y' (cannot use both)
+#   - Requires modern GCC (triggers devtoolset even if NGINX_DEVTOOLSETGCC='n')
+# LINK-TIME FEATURES:
+#   - Multi-threaded linking (uses all CPU cores)
+#   - Lower memory usage than gold
+#   - Faster LTO linking when CLANG_LTO_ENABLE='y'
+# USE CASES:
+#   - Large Nginx builds with 10+ dynamic modules
+#   - Development environments (faster rebuild cycles)
+#   - CI/CD pipelines (reduce build times)
+#   - Nginx builds with LTO enabled
+# RECOMMENDATION: Enable on EL8+ for significantly faster linking, especially when:
+#   - Compiling Nginx with many third-party modules
+#   - Using CLANG_LTO_ENABLE='y' or NGINX_FATLTO_OBJECTS='y'
+#   - Frequent Nginx recompilation in development
+# Related: NGX_LDGOLD, CLANG_LTO_ENABLE, NGINX_DEVTOOLSETGCC
 # Reference: https://github.com/rui314/mold
 # Git History: Added 2022-01-24 (5820ffcf)
 #NGX_LDMOLD='n'  
@@ -814,8 +936,83 @@
 # Loaded in: /usr/local/nginx/conf/dynamic-modules.conf
 ################################################################################
 
-# Manual Override for Dynamic Modules
-# Set to 'y' to manually manage nginx dynamic modules directory
+# Nginx Dynamic Module Loading Support
+# Enable Nginx dynamic module system for loading .so modules at runtime without recompilation.
+# AUTOMATIC BEHAVIOR:
+#   - Requires Nginx 1.11.5+ (line 418-422) - checks DETECT_NGXVER >= 1011005
+#   - Auto-creates /usr/local/nginx/conf/dynamic-modules.conf include file
+#   - Auto-adds --with-compat configure flag when enabled (line 418-422)
+#   - Auto-generates load_module directives for each NGXDYNAMIC_* module
+# NGINX VERSION REQUIREMENTS:
+#   - Nginx 1.11.5+ minimum (line 418 DETECT_NGXVER check)
+#   - Nginx 1.9.11+: Partial dynamic support (limited modules)
+#   - Nginx 1.11.5+: Full dynamic module ABI compatibility
+# CONFIGURE FLAGS:
+#   - --with-compat (enables module ABI compatibility)
+#   - Uses WITHCOMPAT_OPT variable (line 419)
+#   - Changes module flags from --add-module to --add-dynamic-module
+# DYNAMIC MODULE DIRECTORY:
+#   - Modules location: /usr/local/nginx/modules/*.so
+#   - Configuration: /usr/local/nginx/conf/dynamic-modules.conf
+#   - Include: load_module "modules/module_name.so";
+# SUPPORTED DYNAMIC MODULES:
+#   - HTTP modules: brotli, zstd, geoip, headers-more, lua, njs, etc.
+#   - Stream modules: stream, stream_geoip, stream_realip
+#   - Image/filter modules: image_filter, xslt
+#   - Third-party modules: Most compatible if built with --with-compat
+# MODULE LOADING ORDER:
+#   - Controlled by NGXMODULE_ALTORDER='y' for alternative load order
+#   - Critical for module dependencies (e.g., lua requires develkit first)
+# PERFORMANCE IMPACT:
+#   - Runtime: Negligible overhead (modules loaded at startup)
+#   - Compilation: Slightly faster (modules built separately)
+#   - Maintenance: Easier module enable/disable without full recompilation
+# UPGRADE BENEFITS:
+#   - Nginx binary upgrades without rebuilding all modules
+#   - Module updates independent of Nginx version
+#   - Easy module testing (load_module on/off)
+# USE CASES:
+#   - Production environments with frequent module changes
+#   - Testing new modules without full Nginx rebuild
+#   - Nginx version upgrades with module compatibility preservation
+# CONFLICTS:
+#   - Some modules not compatible with dynamic loading (requires static compilation)
+#   - Module ABI compatibility must match Nginx version
+# RECOMMENDATION: Enable on production Nginx 1.11.5+ deployments for maximum
+#   flexibility. Allows easy module enable/disable without recompilation. Use
+#   NGXDYNAMIC_* variables to control which modules compile as dynamic.
+# Related: NGXDYNAMIC_* (30+ variables), NGXMODULE_ALTORDER, NGXDYNAMIC_MANUALOVERRIDE
+# Reference: https://nginx.org/en/docs/ngx_core_module.html#load_module
+# Git History: Analysis added 2025-10-25, original Git history not available
+#DYNAMIC_SUPPORT='y'
+
+# Dynamic Module Manual Override Protection
+# Prevent automatic removal of dynamic module .so files when switching from dynamic to static compilation.
+# AUTOMATIC BEHAVIOR:
+#   - When 'n' (default): Auto-removes old .so files when NGXDYNAMIC_MODULE='n' (line 3006-3039 pattern)
+#   - When 'y': Preserves .so files even when switching to static compilation
+#   - Affects cleanup logic for all NGXDYNAMIC_* variables
+# MODULE CLEANUP LOGIC (when NGXDYNAMIC_MANUALOVERRIDE='n'):
+#   - If NGXDYNAMIC_MODULE='y' previously created .so file
+#   - Then user changes to NGXDYNAMIC_MODULE='n' (static compilation)
+#   - Old dynamic .so file automatically deleted (line 3005-3018 examples)
+# EXAMPLE CLEANUP (NGXDYNAMIC_BROTLI):
+#   if [[ -f /usr/local/nginx/modules/ngx_http_brotli_filter_module.so && "$NGXDYNAMIC_MANUALOVERRIDE" != [yY] ]]; then
+#     rm -rf /usr/local/nginx/modules/ngx_http_brotli_filter_module.so
+#   fi
+# USE CASES FOR NGXDYNAMIC_MANUALOVERRIDE='y':
+#   - Manual management of dynamic module files
+#   - Custom module testing (keep both static and dynamic versions)
+#   - Prevent accidental deletion of custom-compiled modules
+#   - Module rollback scenarios (preserve old .so files)
+# MODULES AFFECTED:
+#   - All NGXDYNAMIC_* variables respect this override
+#   - brotli, zstd, lua, njs, geoip, headers-more, stream, etc.
+# RECOMMENDATION: Keep disabled ('n') for automatic cleanup behavior. Only enable
+#   if you manually manage dynamic module files and want to prevent automatic deletion
+#   when switching compilation modes.
+# Related: DYNAMIC_SUPPORT, all NGXDYNAMIC_* variables
+# Reference: Code pattern at line 3006-3018 (repeated for each dynamic module)
 # Git History: Added 2017-04-08 (1f42886e)
 #NGXDYNAMIC_MANUALOVERRIDE='n'  
 
@@ -1168,8 +1365,59 @@
 # Git History: First added 2015-05-29 (ec807dbd), Last modified 2016-02-15 (7240145c)
 #NGINX_VHOSTSTATS='n'  
 
-# Nginx Brotli Module (Static)
-# Brotli compression support (static compilation)
+# Brotli Compression Module for Nginx
+# Add Google Brotli compression support to Nginx for superior compression ratios vs gzip.
+# AUTOMATIC BEHAVIOR:
+#   - Checks for existing dynamic modules and removes old versions (line 3006-3039)
+#   - Creates /usr/local/nginx/conf/brotli_inc.conf configuration include
+#   - Auto-enables/disables include directive based on NGINX_LIBBROTLI setting
+#   - NGINX_LIBBROTLISTATIC='y' enables static-only module (line 3019-3021)
+# NGINX VERSION COMPATIBILITY:
+#   - Nginx 1.11.5+ for dynamic module support (with DYNAMIC_SUPPORT)
+#   - All Nginx versions for static compilation
+# OS COMPATIBILITY:
+#   - EL6/7/8/9/10: All supported
+#   - Requires libbrotli library compilation
+# CONFIGURE FLAGS:
+#   - Static: --add-module=../ngx_brotli
+#   - Dynamic: --add-dynamic-module=../ngx_brotli (when NGXDYNAMIC_BROTLI='y')
+#   - Uses BROTLIOPT variable
+# DYNAMIC MODULE FILES:
+#   - /usr/local/nginx/modules/ngx_http_brotli_filter_module.so (dynamic compression)
+#   - /usr/local/nginx/modules/ngx_http_brotli_static_module.so (pre-compressed files)
+#   - Auto-cleanup of .old module versions (line 3012-3017, 3027-3038)
+# STATIC-ONLY MODE:
+#   - NGINX_LIBBROTLISTATIC='y' sets NGX_BROTLI_STATIC_MODULE_ONLY=1 (line 3020)
+#   - Compiles only brotli_static module (serve .br files)
+#   - Excludes dynamic brotli compression filter
+# PERFORMANCE IMPACT:
+#   - Compression ratio: 15-25% better than gzip level 9
+#   - Compression speed: Slower than gzip (CPU intensive)
+#   - Decompression speed: Similar to gzip
+#   - Best for pre-compressed static assets (.br files)
+# COMPRESSION LEVELS:
+#   - Levels 0-11 (0=fastest, 11=best compression)
+#   - Level 4 ≈ gzip 9 compression ratio but slower
+#   - Level 11: 20-30% better than gzip 9 but 10-20x slower
+# HTTP FEATURES:
+#   - brotli_static on: Serve pre-compressed .br files
+#   - brotli on: Dynamic brotli compression
+#   - brotli_types: MIME types to compress
+#   - brotli_comp_level: Compression level 0-11
+# BROWSER SUPPORT:
+#   - Chrome 50+ (2016): Native brotli support
+#   - Firefox 44+ (2016): Native brotli support
+#   - Safari 11+ (2017): Native brotli support
+#   - Edge 15+ (2017): Native brotli support
+# USE CASES:
+#   - Static asset compression (CSS, JS, HTML) with .br pre-compression
+#   - Modern browsers (universal support since 2017)
+#   - Bandwidth-constrained deployments
+#   - CDN origin compression
+# RECOMMENDATION: Enable for production deployments. Use NGINX_LIBBROTLISTATIC='y'
+#   with pre-compressed .br files for best performance (avoid dynamic compression CPU cost).
+#   Use dynamic module (NGXDYNAMIC_BROTLI='y') for easier enable/disable.
+# Related: NGXDYNAMIC_BROTLI, NGINX_LIBBROTLISTATIC, NGINX_ZSTD, CLOUDFLARE_ZLIB
 # Reference: https://github.com/google/ngx_brotli
 # Git History: First added 2015-10-14 (69e731a0), Last modified 2019-02-04 (938d7b8b)
 #NGINX_LIBBROTLI='n'  
@@ -1189,8 +1437,55 @@
 # Git History: Added 2023-09-26 (c5f6d13d)
 #NGINX_BROTLI_NEW_METHOD='y'  
 
-# Nginx Zstd Module (Static)
-# Zstandard compression support (static compilation)
+# Zstandard (zstd) Compression Module for Nginx
+# Add Zstandard compression support to Nginx for superior compression ratios and performance.
+# AUTOMATIC BEHAVIOR:
+#   - Calls nginx_zstd_setup() function (line 3043, 3086)
+#   - Checks DYNAMIC_SUPPORT and NGXDYNAMIC_ZSTD for dynamic vs static module (line 3046-3098)
+#   - Auto-creates /usr/local/nginx/conf/zstd_inc.conf include file
+#   - Dynamic module: Auto-adds load_module to dynamic-modules.conf (line 3058-3060)
+# NGINX VERSION COMPATIBILITY:
+#   - Nginx 1.11.5+ for dynamic module support
+#   - All modern Nginx versions compatible for static module
+# OS COMPATIBILITY:
+#   - EL6/7/8/9/10: All supported
+#   - Requires zstd library 1.3.0+ installed
+# CONFIGURE FLAGS:
+#   - Dynamic: --add-dynamic-module=../zstd-nginx-module (line 3047, 3091)
+#   - Static: --add-module=../zstd-nginx-module (line 3068, 3095)
+#   - --with-ld-opt: -L/usr/local/nginx-dep/lib (line 3048)
+#   - --with-cc-opt: -I/usr/local/nginx-dep/include (line 3049)
+# DYNAMIC MODULE LOADING:
+#   - Creates /usr/local/nginx/modules/ngx_http_zstd_filter_module.so
+#   - Creates /usr/local/nginx/modules/ngx_http_zstd_static_module.so
+#   - Auto-cleanup of .old module files (line 3061-3066)
+# PERFORMANCE IMPACT:
+#   - Compression speed: 2-5x faster than gzip at similar ratios
+#   - Decompression speed: 3-10x faster than gzip
+#   - Compression ratio: 10-30% better than gzip level 9
+#   - CPU usage: Lower than gzip at equivalent compression levels
+# COMPRESSION LEVELS:
+#   - Levels 1-19: Real-time compression (1=fastest, 19=best ratio)
+#   - Level 3 ≈ gzip 6 compression ratio but 3x faster
+#   - Level 9 ≈ gzip 9 compression ratio but 2x faster
+# HTTP FEATURES:
+#   - zstd_static on: Serve pre-compressed .zst files
+#   - zstd on: Dynamic zstd compression (like gzip on)
+#   - zstd_types: MIME types to compress
+#   - zstd_comp_level: Compression level 1-19
+# BROWSER SUPPORT:
+#   - Chrome 123+ (2024): Native zstd support
+#   - Firefox 126+ (2024): Native zstd support
+#   - Safari: Not yet supported (as of 2024)
+# USE CASES:
+#   - Modern browsers (Chrome/Firefox 2024+)
+#   - API responses (JSON, XML compression)
+#   - Static asset compression (.zst pre-compression)
+#   - Superior compression for large payloads (>10KB)
+# RECOMMENDATION: Enable for modern deployments serving Chrome/Firefox users.
+#   Provides significant performance improvement over gzip. Use dynamic module
+#   (NGXDYNAMIC_ZSTD='y') for easier enable/disable without recompilation.
+# Related: NGXDYNAMIC_ZSTD, NGINX_LIBBROTLI, CLOUDFLARE_ZLIB
 # Reference: https://github.com/tokers/zstd-nginx-module
 # Git History: Added 2024-06-20 (9c1acda3)
 #NGINX_ZSTD='n'  
@@ -1353,10 +1648,71 @@
 # Git History: Added 2022-01-27 (6914d664)
 #NGINX_DYNAMICTLS_ALLOWED_VER='1024005'  
 
-# Nginx HTTP/3 QUIC Support
-# Enable HTTP/3 QUIC protocol (experimental)
-# Requires quicTLS OpenSSL fork
-# Conflicts with AWS_LC_SWITCH
+# HTTP/3 QUIC Protocol Support for Nginx
+# Enable HTTP/3 over QUIC protocol using nginx-quic branch with quicTLS OpenSSL fork.
+# AUTOMATIC BEHAVIOR:
+#   - Auto-sets OPENSSL_SYSTEM_USE='n' (line 482-484, 614) - requires custom quicTLS
+#   - Auto-opens UDP 443 in CSF firewall (line 518-547) - UDP_IN, UDP_OUT, UDP6_IN, UDP6_OUT
+#   - Auto-disabled when AWS_LC_SWITCH='y' (line 493-496) - AWS-LC has priority for QUIC
+#   - Auto-disables NGINX_HPACK when NGINX_QUIC_HPACK_SUPPORT!='y' (line 631-634)
+#   - Requires quicTLS OpenSSL 1.1.1 fork compilation
+# NGINX VERSION REQUIREMENTS:
+#   - Nginx 1.25.0+ for stable QUIC support (line 614, 1107, 1213)
+#   - nginx-quic branch: Development QUIC builds
+#   - DETECT_NGXVER >= 1025000 required
+# OPENSSL REQUIREMENTS:
+#   - quicTLS fork (OpenSSL 1.1.1+quic patches) required
+#   - Location: /opt/openssl-quic/ or ../openssl-quic-nginx/
+#   - QUIC RPM packages: centmin-openssl11-quic-compat (line 615-623)
+# OS COMPATIBILITY:
+#   - EL7/8/9/10: Supported with quicTLS RPMs or source compilation
+#   - Requires kernel UDP stack support (3.10+ kernel)
+# CONFIGURE FLAGS:
+#   - --with-http_v3_module (Nginx 1.25+)
+#   - --with-stream_quic_module (for QUIC stream support)
+#   - --with-openssl=/opt/openssl-quic
+#   - --with-cc-opt: QUICTLS_CC_OPT='-I/opt/openssl-quic/include'
+#   - --with-ld-opt: QUICTLS_LD_OPT='-L/opt/openssl-quic/lib -lssl -lcrypto'
+# QUIC TLS RPM PACKAGES (NGINX_QUIC_RPMS='y'):
+#   - EL7: centmin-openssl11-quic-compat-1.1.1q-1.el7.x86_64.rpm
+#   - EL8: centmin-openssl11-quic-compat-1.1.1q-1.el8.x86_64.rpm
+#   - EL9: centmin-openssl11-quic-compat-1.1.1q-1.el9.x86_64.rpm
+#   - EL10: centmin-openssl11-quic-compat-1.1.1q-1.el10.x86_64.rpm
+# CSF FIREWALL CONFIGURATION:
+#   - Auto-adds UDP 443 to UDP_IN, UDP_OUT (line 519-532)
+#   - Auto-adds UDP 443 to UDP6_IN, UDP6_OUT (line 533-546)
+#   - Creates CSF profile backups before modifications
+# CONFLICTS:
+#   - Incompatible with OPENSSL_SYSTEM_USE='y' (requires custom quicTLS)
+#   - Incompatible with LIBRESSL_SWITCH='y' (LibreSSL lacks QUIC)
+#   - Disabled when AWS_LC_SWITCH='y' (AWS-LC QUIC takes priority)
+#   - Disabled when BORINGSSL_SWITCH='y' (use BoringSSL QUIC instead)
+# HTTP/3 FEATURES:
+#   - QUIC transport protocol (UDP-based)
+#   - 0-RTT connection resumption
+#   - Improved congestion control vs TCP
+#   - Connection migration (IP/port changes)
+#   - Multiplexed streams without head-of-line blocking
+# BROWSER SUPPORT:
+#   - Chrome 87+ (2020): Full HTTP/3 support
+#   - Firefox 88+ (2021): Full HTTP/3 support
+#   - Safari 14+ (2021): Full HTTP/3 support
+#   - Edge 87+ (2020): Full HTTP/3 support
+# PERFORMANCE IMPACT:
+#   - Compilation: 2-3x longer (quicTLS + QUIC module)
+#   - Runtime: 10-30% faster page loads on high-latency networks
+#   - CPU usage: 5-15% higher than HTTP/2 (QUIC crypto overhead)
+#   - Best performance gains: Mobile networks, long-distance connections
+# USE CASES:
+#   - Modern web applications (Chrome/Firefox/Safari users)
+#   - Mobile-first websites (QUIC excels on cellular)
+#   - Global CDN deployments (connection migration benefits)
+#   - Low-latency requirements (0-RTT resumption)
+# RECOMMENDATION: Enable for production on Nginx 1.25+ with modern client base.
+#   HTTP/3 provides significant performance improvements for mobile and high-latency
+#   users. Ensure UDP 443 firewall rules and quicTLS are properly configured.
+# Related: AWS_LC_SWITCH, NGINX_QUIC_HPACK_SUPPORT, NGINX_QUIC_RPMS, OPENSSL_SYSTEM_USE
+# Reference: https://nginx.org/en/docs/http/ngx_http_v3_module.html
 # Git History: Added 2024-06-20 (1cb19e7b)
 #NGINX_QUIC_SUPPORT='n'
 
@@ -1365,9 +1721,48 @@
 # Git History: Added 2022-01-24 (5820ffcf)
 #NGINX_KTLS='n'  
 
-# Nginx zlib-ng Support
-# 64-bit OS only - Nginx compiled against zlib-ng
-# Reference: https://github.com/Dead2/zlib-ng
+# zlib-ng Next-Generation Compression Library
+# Replace standard zlib with zlib-ng for superior compression performance and modern CPU optimizations.
+# AUTOMATIC BEHAVIOR:
+#   - Auto-disables CLOUDFLARE_ZLIB='n' (line 713) - zlib-ng takes priority over Cloudflare zlib
+#   - Auto-disables NGINX_ZLIBCUSTOM='n' (line 714)
+#   - Requires x86_64 architecture (line 710)
+#   - Calls zlibng_install() function for source compilation
+# NGINX VERSION COMPATIBILITY:
+#   - All Nginx versions compatible
+#   - Works with HTTP/2 gzip compression
+# OS COMPATIBILITY:
+#   - x86_64 required (line 710 check)
+#   - EL6/7/8/9/10: All supported
+#   - ARM64: Potential future support (not in current code)
+# CONFIGURE FLAGS:
+#   - --with-zlib=../zlib-ng
+#   - Uses ZLIBNG_OPT=' --with-zlib=../zlib-ng' (line 712)
+# CONFLICTS:
+#   - Mutually exclusive with CLOUDFLARE_ZLIB='y'
+#   - Mutually exclusive with NGINX_ZLIBCUSTOM (custom zlib)
+# PERFORMANCE IMPACT:
+#   - Compression speed: 10-50% faster than zlib 1.2.x (varies by data type)
+#   - Decompression speed: 5-20% faster
+#   - AVX2/AVX-512/NEON optimizations on modern CPUs
+#   - Best performance on Intel Ice Lake+ / AMD Zen3+ / ARM Neoverse
+# CPU OPTIMIZATIONS:
+#   - x86-64: SSE2, SSSE3, AVX2, AVX-512
+#   - ARM: NEON, CRC32 (future support)
+#   - Runtime CPU detection and optimal path selection
+# COMPRESSION FEATURES:
+#   - Maintains full zlib 1.2.x API compatibility
+#   - Improved compression ratios (0.1-3% better depending on data)
+#   - Modern algorithms (slide_hash, compare256)
+# USE CASES:
+#   - Modern CPU deployments (2015+ Intel, 2019+ AMD)
+#   - High-throughput HTTP/2 gzip compression
+#   - Replacing Cloudflare zlib for broader CPU support
+# RECOMMENDATION: Enable on modern x86_64 servers for best-in-class gzip performance.
+#   Preferred over CLOUDFLARE_ZLIB due to broader CPU optimization support and
+#   active maintenance.
+# Related: CLOUDFLARE_ZLIB, NGINX_ZLIBCUSTOM
+# Reference: https://github.com/zlib-ng/zlib-ng
 # Git History: Added 2016-07-29 (bf22a708)
 #NGINX_ZLIBNG='n'  
 
@@ -1789,9 +2184,46 @@
 # Git History: Added 2016-08-26 (a9a5b39e)
 #OPENSSL_CUSTOMPATH='/opt/openssl'  
 
-# OpenSSL System Use
-# Use system OpenSSL instead of custom compiled version
-# Auto-enabled on EL8/EL9/EL10
+# System OpenSSL Library for Nginx
+# Use system-installed OpenSSL instead of compiling custom OpenSSL with Nginx.
+# AUTOMATIC BEHAVIOR:
+#   - Auto-disabled when LIBRESSL_SWITCH='y' (line 474-478)
+#   - Auto-disabled when BORINGSSL_SWITCH='y' (line 479-481)
+#   - Auto-disabled when NGINX_QUIC_SUPPORT='y' (line 482-484) - QUIC needs custom quicTLS
+#   - Auto-disabled when AWS_LC_SWITCH='y' (line 488-492) - AWS-LC is custom library
+# OS COMPATIBILITY:
+#   - EL6: OpenSSL 1.0.1e (outdated, not recommended)
+#   - EL7: OpenSSL 1.0.2k (legacy, not recommended)
+#   - EL8: OpenSSL 1.1.1k (acceptable for non-TLS1.3 deployments)
+#   - EL9: OpenSSL 3.0.7 (recommended)
+#   - EL10: OpenSSL 3.2.x (recommended)
+# CONFIGURE FLAGS:
+#   - No custom --with-openssl flag
+#   - Links against /usr/lib64/libssl.so and /usr/lib64/libcrypto.so
+#   - Uses system OpenSSL headers from /usr/include/openssl/
+# CONFLICTS:
+#   - Disabled by LIBRESSL_SWITCH, BORINGSSL_SWITCH, AWS_LC_SWITCH
+#   - Incompatible with NGINX_QUIC_SUPPORT (QUIC requires custom quicTLS fork)
+#   - Not recommended for NGINX_KTLS (kernel TLS prefers OpenSSL 3.x custom build)
+# USE CASES:
+#   - Quick testing environments
+#   - OS vendor security update reliance (yum/dnf update openssl)
+#   - Centralized OpenSSL patch management
+# LIMITATIONS:
+#   - No HTTP/3 QUIC support (requires quicTLS fork)
+#   - May lack performance patches from custom OpenSSL builds
+#   - Limited control over TLS 1.3 configuration
+#   - EL8/older: Outdated OpenSSL versions with missing features
+# SECURITY CONSIDERATIONS:
+#   - OS vendor provides security updates
+#   - May lag behind upstream OpenSSL releases
+#   - EL7 OpenSSL 1.0.2 lacks TLS 1.3 entirely
+# RECOMMENDATION: Disable ('n') for production. Custom OpenSSL compilation provides:
+#   - Latest TLS 1.3 features
+#   - Performance patches (ECDH optimizations)
+#   - HTTP/3 QUIC support (via quicTLS)
+#   - Kernel TLS offload (OpenSSL 3.x)
+# Related: LIBRESSL_SWITCH, BORINGSSL_SWITCH, AWS_LC_SWITCH, NGINX_QUIC_SUPPORT
 # Git History: First added 2024-03-15 (6cdaab91), Last modified 2025-05-18 (395dea9c)
 #OPENSSL_SYSTEM_USE='n'
 
@@ -1831,9 +2263,48 @@
 # Git History: Added 2018-09-26 (bde188b1)
 #NGINX_PRIORITIZECHACHA='n'  
 
-# Cloudflare zlib
-# Use Cloudflare optimized zlib fork
-# Reference: https://blog.cloudflare.com/cloudflare-fights-cancer/
+# Cloudflare Optimized Zlib Library
+# Replace standard zlib with Cloudflare's optimized fork featuring SSE4.2/PCLMUL acceleration.
+# AUTOMATIC BEHAVIOR:
+#   - Auto-disabled when NGINX_ZLIBNG='y' (line 710-717) - zlib-ng takes priority
+#   - Requires CPU SSE4.2 and PCLMUL instruction support (line 714-734)
+#   - CPU detection: grep /proc/cpuinfo for 'sse4_2' and PCLMUL flags
+#   - Auto-sets CLOUDFLARE_ZLIBRAUTOMAX for optimal compression level (line 726-733)
+# NGINX VERSION COMPATIBILITY:
+#   - All Nginx versions compatible
+#   - Works with HTTP/2 gzip compression
+# CPU REQUIREMENTS:
+#   - x86_64 architecture required (line 710)
+#   - SSE4.2 instruction set (Intel Nehalem+ / AMD Bulldozer+)
+#   - PCLMUL (AES-NI carryless multiply) instruction
+#   - Detection: cat /proc/cpuinfo | grep -o 'sse4_2|pclmul'
+# CONFIGURE FLAGS:
+#   - --with-zlib=../zlib-cloudflare-${CLOUDFLARE_ZLIBVER}
+#   - Uses ZLIBCUSTOM_OPT variable
+#   - ZLIBCUSTOM_DIR="zlib-cloudflare-${CLOUDFLARE_ZLIBVER}"
+# CONFLICTS:
+#   - Mutually exclusive with NGINX_ZLIBNG='y' (zlib-ng has priority)
+#   - Mutually exclusive with NGINX_ZLIBCUSTOM='n'
+# DYNAMIC MODULE SUPPORT:
+#   - CLOUDFLARE_ZLIB_DYNAMIC='y' enables dynamic zlib loading
+#   - Requires Nginx 1.11.5+ for dynamic zlib support
+# PERFORMANCE IMPACT:
+#   - Compression speed: 50-300% faster than stock zlib (CPU-dependent)
+#   - Decompression speed: 30-100% faster
+#   - CPU usage: Similar or lower (hardware acceleration)
+#   - Best performance on Intel Xeon E5+ / AMD EPYC processors
+# COMPRESSION OPTIMIZATION:
+#   - CLOUDFLARE_ZLIBRAUTOMAX='y' adjusts gzip_comp_level automatically
+#   - Sets optimal level based on Cloudflare's research
+#   - Modifies nginx.conf gzip_comp_level directive
+# USE CASES:
+#   - High-traffic HTTP/2 sites with gzip compression
+#   - Modern Intel/AMD processors with SSE4.2+PCLMUL
+#   - Performance-critical gzip workloads
+# RECOMMENDATION: Enable on modern CPUs (2010+ Intel, 2011+ AMD) for significant
+#   gzip performance gains. Disable if CPU lacks SSE4.2 or prefer zlib-ng.
+# Related: NGINX_ZLIBNG, CLOUDFLARE_ZLIB_DYNAMIC, CLOUDFLARE_ZLIBRAUTOMAX
+# Reference: https://github.com/cloudflare/zlib
 # Git History: First added 2017-12-13 (e8d813dd), Last modified 2018-06-11 (fbd55786)
 #CLOUDFLARE_ZLIB='y'  
 
@@ -1897,9 +2368,53 @@
 # 19. SSL/TLS ALTERNATIVE LIBRARIES
 ################################################################################
 
-# LibreSSL Switch
-# Use LibreSSL instead of OpenSSL for Nginx
-# Overrides OPENSSL_SYSTEM_USE, disables Lua modules
+# LibreSSL Library Switch for Nginx
+# Replace OpenSSL with OpenBSD's LibreSSL fork for enhanced security and code audit.
+# AUTOMATIC BEHAVIOR:
+#   - Auto-sets OPENSSL_SYSTEM_USE='n' (line 474-478)
+#   - Auto-disables ORESTY_LUASTREAM='n' (line 477) - Lua incompatibility
+#   - Auto-disables ORESTY_LUANGINX='n' (line 478) - Lua incompatibility
+#   - luaworkaroundfix() checks Lua version and reverts to OpenSSL if needed (line 432-441)
+# NGINX VERSION REQUIREMENTS:
+#   - Nginx 1.13.6+ recommended for LibreSSL 3.x
+#   - Nginx 1.11.x+ minimum for LibreSSL 2.x
+# OS COMPATIBILITY:
+#   - EL6/7/8/9/10: Supported
+# CONFIGURE FLAGS:
+#   - --with-cc-opt: LIBRESSLINC_OPT (include paths)
+#   - --with-ld-opt: LIBRESSL_LIBOPT (library linking)
+#   - --with-openssl=/path/to/libressl
+#   - Uses LIBRESSLOPT variable in configure line
+# CONFLICTS:
+#   - Mutually exclusive with AWS_LC_SWITCH='y'
+#   - Mutually exclusive with BORINGSSL_SWITCH='y'
+#   - Mutually exclusive with OPENSSL_SYSTEM_USE='y'
+#   - Incompatible with ORESTY_LUASTREAM and ORESTY_LUANGINX (Lua modules)
+#   - Incompatible with NGINX_QUIC_SUPPORT (QUIC requires OpenSSL 1.1.1-quic)
+# COMPILATION FIXES:
+#   - libresslcompile_fix() modifies auto/lib/openssl/make (line 443-451)
+#   - Changes 'install_sw' to 'install' for LibreSSL compatibility
+# PERFORMANCE IMPACT:
+#   - Compilation: Similar to OpenSSL
+#   - Runtime: Comparable to OpenSSL 1.1.1 performance
+#   - Memory: Slightly lower memory footprint
+# CRYPTOGRAPHIC FEATURES:
+#   - Modern TLS 1.3 support (LibreSSL 3.4+)
+#   - ChaCha20-Poly1305 ciphers
+#   - Removed legacy SSLv2/SSLv3 code entirely
+#   - OpenBSD security audit and cleanup
+# USE CASES:
+#   - Security-focused deployments (OpenBSD-level code quality)
+#   - Environments without Lua module requirements
+#   - Legacy protocol elimination (no SSLv2/SSLv3 attack surface)
+# SECURITY CONSIDERATIONS:
+#   - Aggressive legacy protocol removal
+#   - OpenBSD security team maintenance
+#   - Smaller attack surface than OpenSSL
+# RECOMMENDATION: Only enable if you specifically need OpenBSD's crypto stack and
+#   do not use Lua modules or QUIC. OpenSSL 3.x provides broader compatibility.
+# Related: AWS_LC_SWITCH, BORINGSSL_SWITCH, ORESTY_LUASTREAM, NGINX_QUIC_SUPPORT
+# Reference: https://www.libressl.org/
 # Git History: First added 2015-06-03 (a823dd20), Last modified 2017-05-10 (fdfc91e4)
 #LIBRESSL_SWITCH='n'  
 
@@ -1909,9 +2424,52 @@
 # Git History: First added 2015-06-03 (a823dd20), Last modified 2016-02-15 (7240145c)
 #LIBRESSL_VERSION='3.9.2'  
 
-# BoringSSL Switch
-# Use BoringSSL instead of OpenSSL for Nginx (experimental)
-# Overrides OPENSSL_SYSTEM_USE
+# Google BoringSSL Library Switch for Nginx
+# Replace OpenSSL with Google's BoringSSL fork for modern TLS 1.3 and QUIC support.
+# AUTOMATIC BEHAVIOR:
+#   - Auto-sets OPENSSL_SYSTEM_USE='n' (line 479-481)
+#   - Auto-disables NGINX_FATLTO_OBJECTS (line 502) - LTO incompatible with BoringSSL
+#   - Checks for BoringSSL at multiple points (line 479, 614, 862)
+# NGINX VERSION REQUIREMENTS:
+#   - Nginx 1.13.10+ minimum for BoringSSL support
+#   - QUIC support: Works with nginx-quic builds
+# OS COMPATIBILITY:
+#   - EL6/7/8/9/10: Supported (CMake required for build)
+# CONFIGURE FLAGS:
+#   - --with-cc-opt: BORINGSSLINC_OPT (include paths)
+#   - --with-ld-opt: BORINGSSL_LIBOPT (library linking)
+#   - --with-openssl=/path/to/boringssl
+#   - Uses BORINGSSLOPT variable in configure line
+# CONFLICTS:
+#   - Mutually exclusive with AWS_LC_SWITCH='y'
+#   - Mutually exclusive with LIBRESSL_SWITCH='y'
+#   - Mutually exclusive with OPENSSL_SYSTEM_USE='y'
+#   - Disables NGINX_FATLTO_OBJECTS (LTO incompatibility)
+# COMPILATION REQUIREMENTS:
+#   - CMake 3.x+ required (BoringSSL build system)
+#   - Go compiler required for BoringSSL assembly
+#   - Longer compilation time vs OpenSSL
+# PERFORMANCE IMPACT:
+#   - Compilation: 2-3x longer than OpenSSL (CMake + Go builds)
+#   - Runtime: Similar or slightly faster TLS 1.3 handshakes
+#   - Binary size: Smaller than OpenSSL
+# CRYPTOGRAPHIC FEATURES:
+#   - Modern TLS 1.3 ciphersuites
+#   - QUIC crypto primitives
+#   - Constant-time operations (timing attack resistance)
+#   - Aggressive deprecation of legacy crypto
+# USE CASES:
+#   - Google Cloud Platform deployments (aligned with GCP standards)
+#   - Modern TLS 1.3-only environments
+#   - QUIC/HTTP3 with Google's crypto stack
+# SECURITY CONSIDERATIONS:
+#   - No legacy protocol support (only TLS 1.2+)
+#   - Google's security-first development model
+#   - Frequent breaking API changes (not API-stable like OpenSSL)
+# RECOMMENDATION: Only enable if you specifically need Google's crypto stack or
+#   Google Cloud Platform alignment. OpenSSL 3.x provides better compatibility.
+# Related: AWS_LC_SWITCH, LIBRESSL_SWITCH, NGINX_FATLTO_OBJECTS, OPENSSL_SYSTEM_USE
+# Reference: https://boringssl.googlesource.com/boringssl/
 # Git History: Added 2016-06-02 (f761a456)
 #BORINGSSL_SWITCH='n'  
 
@@ -1924,10 +2482,47 @@
 # Git History: Added 2018-08-16 (617ce44a)
 #BORINGSSL_DIR="/opt"
 
-# AWS-LC Switch
-# Use AWS-LC instead of OpenSSL for Nginx
-# Overrides OPENSSL_SYSTEM_USE, conflicts with NGINX_QUIC_SUPPORT
-# Only available on EL8/EL9/EL10
+# AWS-LC Cryptographic Library Switch for Nginx
+# Replace OpenSSL with AWS's LibCrypto (AWS-LC) for HTTP/3 QUIC and modern crypto optimizations.
+# AUTOMATIC BEHAVIOR:
+#   - Auto-disables when NGINX_QUIC_SUPPORT='y' (line 493-496) - quicTLS takes priority
+#   - Auto-sets OPENSSL_SYSTEM_USE='n' (line 488-492)
+#   - Auto-disables ORESTY_LUASTREAM and ORESTY_LUANGINX (Lua incompatible)
+#   - Requires EL8/9/10 only (line 486) - not supported on EL6/7
+# NGINX VERSION REQUIREMENTS:
+#   - Nginx 1.27.0+ minimum for AWS-LC support (line 614 DETECT_NGXVER check)
+#   - HTTP/3 QUIC: Nginx 1.25.0+ when AWS_LC_SWITCH='y' (line 614, 1107)
+# OS COMPATIBILITY:
+#   - EL8/9/10: Fully supported
+#   - EL6/7: Not supported (AWS-LC build incompatibilities)
+# CONFIGURE FLAGS:
+#   - --with-cc-opt: AWS_LC_INC_OPT (include paths)
+#   - --with-ld-opt: AWS_LC_LIBOPT (library linking)
+#   - --with-openssl=/path/to/aws-lc
+# CONFLICTS:
+#   - Mutually exclusive with NGINX_QUIC_SUPPORT='y' (quicTLS preferred)
+#   - Mutually exclusive with BORINGSSL_SWITCH='y'
+#   - Mutually exclusive with LIBRESSL_SWITCH='y'
+#   - Incompatible with ORESTY_LUASTREAM and ORESTY_LUANGINX
+# PERFORMANCE IMPACT:
+#   - Runtime: 5-15% faster crypto operations vs OpenSSL 3.x (AWS optimizations)
+#   - Compilation: Similar to OpenSSL builds
+#   - FIPS 140-3 compliance available
+# CRYPTOGRAPHIC FEATURES:
+#   - Post-quantum TLS experiments (ML-KEM, ML-DSA)
+#   - Optimized AES-GCM, ChaCha20-Poly1305, P-256 ECDH
+#   - AWS Graviton/x86 SIMD optimizations
+# USE CASES:
+#   - AWS infrastructure deployments (aligned with AWS crypto standards)
+#   - Modern crypto performance requirements
+#   - HTTP/3 QUIC on Nginx 1.27+ (alternative to quicTLS)
+# SECURITY CONSIDERATIONS:
+#   - FIPS 140-3 validated builds available
+#   - Maintained by AWS cryptography team
+#   - Fewer CVEs than OpenSSL historically
+# RECOMMENDATION: Enable for AWS deployments on EL8+ with Nginx 1.27+ and HTTP/3 requirements.
+#   Disable if using Lua modules or prefer standard quicTLS for QUIC.
+# Related: BORINGSSL_SWITCH, LIBRESSL_SWITCH, NGINX_QUIC_SUPPORT, OPENSSL_SYSTEM_USE
 # Reference: https://github.com/aws/aws-lc
 # Git History: First added 2024-06-10 (304dd425), Last modified 2024-06-20 (1cb19e7b)
 #AWS_LC_SWITCH='n'
@@ -4004,6 +4599,63 @@
 ################################################################################
 # 49. PERFORMANCE TOOLS
 ################################################################################
+
+# Microsoft mimalloc Memory Allocator for Nginx
+# Replace glibc malloc with Microsoft's mimalloc for improved memory performance and reduced fragmentation.
+# AUTOMATIC BEHAVIOR:
+#   - Auto-installs mimalloc RPM from Centmin Mod repo (line 3158-3171)
+#   - Auto-disables GPERFTOOLS_SOURCEINSTALL when enabled (line 3173-3179)
+#   - Auto-disables JEMALLOC when enabled (line 3177-3178, 3187)
+#   - RPM installation by OS: EL7/8/9/10 versions (line 3162-3170)
+# NGINX VERSION COMPATIBILITY:
+#   - All Nginx versions compatible
+#   - Works with all modules and configurations
+# OS COMPATIBILITY:
+#   - EL7: mimalloc-custom-${VERSION}-1.el7.x86_64.rpm (line 3162-3164)
+#   - EL8: mimalloc-custom-${VERSION}-1.el8.x86_64.rpm (line 3159-3161)
+#   - EL9: mimalloc-custom-${VERSION}-1.el9.x86_64.rpm (line 3165-3167)
+#   - EL10: mimalloc-custom-${VERSION}-1.el10.x86_64.rpm (line 3168-3170)
+# CONFIGURE FLAGS:
+#   - --with-ld-opt: -lmimalloc (line 3177)
+#   - Uses MIMALLOC_LD variable
+#   - Links against /usr/local/nginx-dep/lib/libmimalloc.so
+# LIBRARY INSTALLATION:
+#   - Library: /usr/local/nginx-dep/lib/libmimalloc.so
+#   - Headers: /usr/local/nginx-dep/include/mimalloc.h
+#   - Installed via RPM from LOCALCENTMINMOD_MIRROR
+# CONFLICTS:
+#   - Mutually exclusive with GPERFTOOLS_SOURCEINSTALL='y' (tcmalloc)
+#   - Disables jemalloc when enabled (JEMALLOC_LD='')
+# PERFORMANCE IMPACT:
+#   - Memory allocation: 10-25% faster than glibc malloc
+#   - Memory usage: 5-15% lower (reduced fragmentation)
+#   - Throughput: 5-10% higher on memory-intensive workloads
+#   - Best for: High-concurrency Nginx with many connections
+# MIMALLOC FEATURES:
+#   - Secure: Guard pages, free-list randomization
+#   - Low fragmentation: Superior to glibc malloc
+#   - Thread-local caching: Reduced lock contention
+#   - Transparent huge pages support
+# PCRE2 COMPATIBILITY:
+#   - NGINX_MIMALLOC displays with NGINX_PCRE_TWO checks (line 782, 802)
+#   - Fully compatible with PCRE2 dynamic linking
+# USE CASES:
+#   - High-traffic production Nginx (100K+ requests/sec)
+#   - Memory-intensive workloads (large buffers, caching)
+#   - Long-running Nginx processes (reduced fragmentation over time)
+#   - Modern CPUs (Intel Xeon, AMD EPYC) - benefits from thread-local caching
+# MEMORY ALLOCATOR COMPARISON:
+#   - mimalloc: Best overall (performance + security + low fragmentation)
+#   - jemalloc: Similar performance, more mature
+#   - tcmalloc: Profiling tools, slightly slower
+#   - glibc malloc: Slowest, highest fragmentation
+# RECOMMENDATION: Enable for production Nginx deployments handling high concurrency.
+#   Mimalloc provides best-in-class memory performance with security features. Preferred
+#   over jemalloc for modern deployments (2022+).
+# Related: GPERFTOOLS_SOURCEINSTALL (tcmalloc), jemalloc (auto-installed separately)
+# Reference: https://github.com/microsoft/mimalloc
+# Git History: Analysis added 2025-10-25, original Git history not available
+#NGINX_MIMALLOC='n'
 
 # Google Perftools Source Install
 # Install Google Perftools from source
