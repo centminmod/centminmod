@@ -45,10 +45,10 @@
 # - Test changes on non-production systems first
 #
 # ==============================================================================
-# TOTAL VARIABLES DOCUMENTED: 566
+# TOTAL VARIABLES DOCUMENTED: 575
 # CATEGORIES: 53
 # BRANCH: 141.00beta01
-# LAST UPDATED: 2025-10-25
+# LAST UPDATED: 2025-10-25 (part 5 - fixed typo, added missing variables)
 # ==============================================================================
 
 ################################################################################
@@ -76,7 +76,7 @@
 # 19. SSL/TLS Alternative Libraries (9 variables)
 # 20. SSL/TLS Protocol Settings (7 variables)
 # 21. Cloudflare Integration (2 variables)
-# 22. PHP Compilation Settings (22 variables)
+# 22. PHP Compilation Settings (24 variables)
 # 23. PHP PGO & Performance (12 variables)
 # 24. PHP Extensions - Core (11 variables)
 # 25. PHP Extensions - Cache/Performance (14 variables)
@@ -102,7 +102,7 @@
 # 45. WordPress Settings (4 variables)
 # 46. Let's Encrypt Settings (1 variable)
 # 47. Menu Trigger Settings (6 variables)
-# 48. Compression Tools (2 variables)
+# 48. Compression Tools (9 variables)
 # 49. Performance Tools (4 variables)
 # 50. Security Tools (1 variable)
 # 51. MOTD & Alert Settings (1 variable)
@@ -3373,7 +3373,7 @@
 
 # Cloudflare zlib Auto Max
 # Don't auto-raise nginx gzip level to 9 if using Cloudflare zlib
-#CLOUDFLARE_ZLIBR AUTOMAX='n'
+#CLOUDFLARE_ZLIBRAUTOMAX='n'
 
 # Cloudflare zlib for PHP
 # Compile PHP-FPM with Cloudflare's optimized zlib fork instead of system zlib
@@ -4173,6 +4173,36 @@
 # RPM mirror: https://parts.centminmod.com/centminmodparts/rpms/
 # Git History: Added 2025-10-18 (42aa40f0)
 #PHP_USE_CUSTOM_RPMS='n'
+
+# PHP Overwrite Config Prompt
+# Controls interactive prompt during PHP upgrades asking to overwrite php-fpm.conf
+# UPGRADE BEHAVIOR:
+#   - PHP_OVERWRITECONF='y': Shows interactive prompt to overwrite php-fpm.conf (default)
+#   - PHP_OVERWRITECONF='n': Skips prompt, preserves existing php-fpm.conf configuration
+# USE CASES:
+#   - Automated environments: Set to 'n' to prevent interactive prompts
+#   - Manual upgrades: Keep 'y' for safety confirmation
+#   - CI/CD pipelines: Set to 'n' for non-interactive operation
+# RELATED: PHP_UPDATEMAINTENANCE (enables maintenance mode during upgrades)
+# Git History: Added 2014-04-24 (c4b6d98a)
+#PHP_OVERWRITECONF='y'
+
+# PHP Update Maintenance Mode
+# Controls whether maintenance mode is enabled during PHP-FPM upgrades
+# AUTOMATIC BEHAVIOR:
+#   - When PHP_UPDATEMAINTENANCE='y': Creates/enables maintenance mode before PHP upgrade
+#   - Displays maintenance.html page from /usr/local/nginx/html/ during upgrade
+#   - Automatically disables maintenance mode after successful upgrade completion
+# UPGRADE BEHAVIORS:
+#   - Uses HTTP 503 Service Unavailable response during maintenance
+#   - Maintenance page: /usr/local/nginx/html/maintenance.html (customizable)
+#   - PHP-FPM reload used for zero-downtime upgrades
+# RELATED VARIABLES:
+#   - NGINX_UPDATEMAINTENANCE: Maintenance mode for nginx upgrades
+#   - MARIADB_UPDATEMAINTENANCE: Maintenance mode for MariaDB upgrades
+# Reference: https://community.centminmod.com/posts/26485/
+# Git History: Added ~2015-2016 with PHP upgrade workflow improvements
+#PHP_UPDATEMAINTENANCE='n'
 
 ################################################################################
 # 23. PHP PGO & PERFORMANCE SETTINGS
@@ -5742,7 +5772,73 @@
 # Nginx zlib Version
 # Standard zlib version for Nginx
 # Git History: Added 2017-02-05 (171071d2)
-#NGINX_ZLIBVER='1.3.1'  
+#NGINX_ZLIBVER='1.3.1'
+
+# Parallel Gzip Version (pigz)
+# Multi-threaded gzip compression tool version
+# USAGE: Menu option 17 (Multi-thread compression), backup scripts, log compression
+# PERFORMANCE:
+#   - Parallel threads based on CPU core detection
+#   - ~4-6x faster compression on multi-core systems than single-threaded gzip
+# Git History: Added ~2015-03-10
+#PIGZ_VER='2.7'
+
+# Zstandard Compression Version (zstd)
+# High-ratio, high-speed modern compression algorithm version
+# USAGE: Menu option 17 (Multi-thread compression), modern backup systems
+# PERFORMANCE:
+#   - Better compression ratio than gzip
+#   - Faster decompression than bzip2
+#   - Multi-threaded operation support
+# Git History: Added ~2017-08-15
+#ZSTD_VER='1.5.6'
+
+# Parallel Bzip2 Version (pbzip2)
+# Multi-threaded bzip2 compression tool version
+# USAGE: Menu option 17 (Multi-thread compression), tar.bz2 archives
+# PERFORMANCE:
+#   - Parallel processing on multi-core systems
+#   - Better compression ratio than gzip
+# Git History: Added ~2015-03-10
+#PBZIP_VER='1.1.13'
+
+# Multi-threaded Bzip2 Version (lbzip2)
+# Alternative multi-threaded bzip2 implementation version
+# USAGE: Menu option 17 (Multi-thread compression), alternative to pbzip2
+# PERFORMANCE:
+#   - Different approach to parallel bzip2 compression
+#   - May perform better than pbzip2 on certain hardware
+# Git History: Added ~2015-03-10
+#LBZIP_VER='2.5'
+
+# LZ4 Compression Version
+# Ultra-fast compression algorithm version
+# USAGE: Menu option 17 (Multi-thread compression), real-time compression scenarios
+# PERFORMANCE:
+#   - Fastest compression speed of all compression tools
+#   - Moderate compression ratio
+#   - Ideal for speed-critical applications
+# Git History: Added ~2018-06-10
+#LZFOUR_VER='1.10.0'
+
+# Lzip Compression Version
+# LZMA-based compression with data recovery capabilities version
+# USAGE: Menu option 17 (Multi-thread compression), long-term archival
+# PERFORMANCE:
+#   - Excellent compression ratio
+#   - Built-in error detection and recovery
+#   - Good for long-term storage
+# Git History: Added ~2019-02-12
+#LZIP_VER='1.21'
+
+# Parallel Lzip Version (plzip)
+# Parallel implementation of lzip compression version
+# USAGE: Menu option 17 (Multi-thread compression), parallel LZMA compression
+# PERFORMANCE:
+#   - Multi-threaded LZMA compression
+#   - Maintains excellent compression ratio with parallel processing
+# Git History: Added ~2019-06-01
+#PLZIP_VER='1.8'
 
 ################################################################################
 # 49. PERFORMANCE TOOLS
