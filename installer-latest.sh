@@ -314,6 +314,17 @@ if [[ "$ALMALINUXVER" -ge '80000' && "$ALMALINUXVER" -le '80007' ]]; then
   rpm --import https://repo.almalinux.org/almalinux/RPM-GPG-KEY-AlmaLinux
 fi
 
+# ELRepo GPG key conditional import
+# Import ELRepo GPG key only if ELRepo repository is detected
+# Prevents YUM/DNF failures when custom kernels or hardware drivers are installed
+if rpm -qa | grep -q elrepo-release; then
+  if ! rpm -q gpg-pubkey --qf '%{NAME}-%{VERSION}-%{RELEASE}\t%{SUMMARY}\n' | grep -q "elrepo.org"; then
+    echo "Importing ELRepo GPG key..."
+    rpm --import https://www.elrepo.org/RPM-GPG-KEY-elrepo.org
+    rpm --import https://www.elrepo.org/RPM-GPG-KEY-v2-elrepo.org
+  fi
+fi
+
 # If set to yes, will abort centmin mod installation if the memory requirements are not met
 # you can override this setting by setting ABORTINSTALL='n' in which case centmin mod
 # install may either install successfully but very very slowly or crap out
@@ -2186,14 +2197,14 @@ fi
   # $YUMDNFBIN makecache fast
   sar_call
   if [[ "$CENTOS_NINE" = '9' ]]; then
-    time $YUMDNFBIN -y install checksec systemd-libs xxhash-devel libzstd xxhash libzstd-devel datamash qrencode jq clang clang-devel jemalloc jemalloc-devel zstd python2-pip libmcrypt libmcrypt-devel libraqm oniguruma5php oniguruma5php-devel figlet moreutils nghttp2 libnghttp2 libnghttp2-devel pngquant optipng jpegoptim pwgen pigz pbzip2 xz pxz lz4 bash-completion mlocate re2c kernel-headers kernel-devel${DISABLEREPO_DNF} --enablerepo=epel,epel-testing,remi --skip-broken
+    time $YUMDNFBIN -y install checksec systemd-libs xxhash-devel libzstd xxhash libzstd-devel datamash qrencode jq clang clang-devel jemalloc jemalloc-devel zstd python2-pip libmcrypt libmcrypt-devel libraqm oniguruma5php oniguruma5php-devel figlet moreutils nghttp2 libnghttp2 libnghttp2-devel pngquant optipng jpegoptim pwgen pigz pbzip2 xz pxz lz4 bash-completion mlocate re2c kernel-headers kernel-devel${DISABLEREPO_DNF} --enablerepo=epel,epel-testing,remi --skip-broken --allowerasing
     libc_fix
     if [ -f /usr/bin/pip ]; then
       PYTHONWARNINGS=ignore:::pip._internal.cli.base_command pip install --upgrade pip
     fi
     sar_call
   elif [[ "$CENTOS_EIGHT" = '8' ]]; then
-    time $YUMDNFBIN -y install checksec systemd-libs xxhash-devel libzstd xxhash libzstd-devel datamash qrencode jq clang clang-devel jemalloc jemalloc-devel zstd python2-pip libmcrypt libmcrypt-devel libraqm oniguruma5php oniguruma5php-devel figlet moreutils nghttp2 libnghttp2 libnghttp2-devel pngquant optipng jpegoptim pwgen pigz pbzip2 xz pxz lz4 bash-completion mlocate re2c kernel-headers kernel-devel${DISABLEREPO_DNF} --enablerepo=epel,epel-testing,remi --skip-broken
+    time $YUMDNFBIN -y install checksec systemd-libs xxhash-devel libzstd xxhash libzstd-devel datamash qrencode jq clang clang-devel jemalloc jemalloc-devel zstd python2-pip libmcrypt libmcrypt-devel libraqm oniguruma5php oniguruma5php-devel figlet moreutils nghttp2 libnghttp2 libnghttp2-devel pngquant optipng jpegoptim pwgen pigz pbzip2 xz pxz lz4 bash-completion mlocate re2c kernel-headers kernel-devel${DISABLEREPO_DNF} --enablerepo=epel,epel-testing,remi --skip-broken --allowerasing
     libc_fix
     if [ -f /usr/bin/pip ]; then
       PYTHONWARNINGS=ignore:::pip._internal.cli.base_command pip install --upgrade pip
