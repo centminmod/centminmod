@@ -291,6 +291,37 @@ elif [ -f /etc/el-release ] && [[ "$EL_VERID" -eq 8 || "$EL_VERID" -eq 9 ]]; the
   fi
 fi
 
+# Almalinux 8.8 changed GPG keys breaking YUM for <=8.7
+# https://almalinux.org/blog/2023-12-20-almalinux-8-key-update/
+if [[ "$ALMALINUXVER" -ge '80000' && "$ALMALINUXVER" -le '80007' ]]; then
+  rpm --import https://repo.almalinux.org/almalinux/RPM-GPG-KEY-AlmaLinux
+fi
+
+# ELRepo GPG key conditional import
+# Import ELRepo GPG key only if ELRepo repository is detected
+# Prevents YUM/DNF failures when custom kernels or hardware drivers are installed
+if rpm -qa | grep -q elrepo-release; then
+  if ! rpm -q gpg-pubkey --qf '%{NAME}-%{VERSION}-%{RELEASE}\t%{SUMMARY}\n' | grep -q "elrepo.org"; then
+    echo "Importing ELRepo GPG key..."
+    rpm --import https://www.elrepo.org/RPM-GPG-KEY-elrepo.org
+    rpm --import https://www.elrepo.org/RPM-GPG-KEY-v2-elrepo.org
+  fi
+fi
+
+# Detect ELRepo kernel headers to prevent conflicts
+# Web hosts may pre-install kernel-ml-headers or kernel-lt-headers from ELRepo
+# which conflicts with standard kernel-headers package installation
+detect_elrepo_kernel() {
+  if rpm -qa | grep -qE "kernel-(ml|lt)-headers"; then
+    echo "***********************************************************************"
+    echo "* Detected ELRepo kernel headers package (kernel-ml or kernel-lt)    *"
+    echo "* Skipping standard kernel-headers installation to prevent conflicts *"
+    echo "***********************************************************************"
+    SKIP_KERNEL_HEADERS='y'
+  fi
+}
+detect_elrepo_kernel
+
 CENTOSVER_NUMERIC=$(echo $CENTOSVER | sed -e 's|\.||g')
 
 if [[ "$CENTOS_ALPHATEST" != [yY] && "$CENTOS_EIGHT" -eq '8' ]] || [[ "$CENTOS_ALPHATEST" != [yY] && "$CENTOS_NINE" -eq '9' ]]; then
@@ -1696,28 +1727,52 @@ fi
   # $YUMDNFBIN makecache fast
   sar_call
   if [[ "$CENTOS_NINE" = '9' ]]; then
-    time $YUMDNFBIN -y install checksec systemd-libs xxhash-devel libzstd xxhash libzstd-devel datamash qrencode jq clang clang-devel jemalloc jemalloc-devel zstd python2-pip libmcrypt libmcrypt-devel libraqm oniguruma5php oniguruma5php-devel figlet moreutils nghttp2 libnghttp2 libnghttp2-devel pngquant optipng jpegoptim pwgen pigz pbzip2 xz pxz lz4 bash-completion mlocate re2c kernel-headers kernel-devel${DISABLEREPO_DNF} --enablerepo=epel,epel-testing,remi --skip-broken --allowerasing
+    # Conditionally skip kernel-headers if ELRepo kernel headers detected
+    if [[ "$SKIP_KERNEL_HEADERS" != 'y' ]]; then
+      KERNEL_PKGS="kernel-headers kernel-devel"
+    else
+      KERNEL_PKGS=""
+    fi
+    time $YUMDNFBIN -y install checksec systemd-libs xxhash-devel libzstd xxhash libzstd-devel datamash qrencode jq clang clang-devel jemalloc jemalloc-devel zstd python2-pip libmcrypt libmcrypt-devel libraqm oniguruma5php oniguruma5php-devel figlet moreutils nghttp2 libnghttp2 libnghttp2-devel pngquant optipng jpegoptim pwgen pigz pbzip2 xz pxz lz4 bash-completion mlocate re2c ${KERNEL_PKGS}${DISABLEREPO_DNF} --enablerepo=epel,epel-testing,remi --skip-broken --allowerasing
     libc_fix
     if [ -f /usr/bin/pip ]; then
       PYTHONWARNINGS=ignore:::pip._internal.cli.base_command pip install --upgrade pip
     fi
     sar_call
   elif [[ "$CENTOS_EIGHT" = '8' ]]; then
-    time $YUMDNFBIN -y install checksec systemd-libs xxhash-devel libzstd xxhash libzstd-devel datamash qrencode jq clang clang-devel jemalloc jemalloc-devel zstd python2-pip libmcrypt libmcrypt-devel libraqm oniguruma5php oniguruma5php-devel figlet moreutils nghttp2 libnghttp2 libnghttp2-devel pngquant optipng jpegoptim pwgen pigz pbzip2 xz pxz lz4 bash-completion mlocate re2c kernel-headers kernel-devel${DISABLEREPO_DNF} --enablerepo=epel,epel-testing,remi --skip-broken --allowerasing
+    # Conditionally skip kernel-headers if ELRepo kernel headers detected
+    if [[ "$SKIP_KERNEL_HEADERS" != 'y' ]]; then
+      KERNEL_PKGS="kernel-headers kernel-devel"
+    else
+      KERNEL_PKGS=""
+    fi
+    time $YUMDNFBIN -y install checksec systemd-libs xxhash-devel libzstd xxhash libzstd-devel datamash qrencode jq clang clang-devel jemalloc jemalloc-devel zstd python2-pip libmcrypt libmcrypt-devel libraqm oniguruma5php oniguruma5php-devel figlet moreutils nghttp2 libnghttp2 libnghttp2-devel pngquant optipng jpegoptim pwgen pigz pbzip2 xz pxz lz4 bash-completion mlocate re2c ${KERNEL_PKGS}${DISABLEREPO_DNF} --enablerepo=epel,epel-testing,remi --skip-broken --allowerasing
     libc_fix
     if [ -f /usr/bin/pip ]; then
       PYTHONWARNINGS=ignore:::pip._internal.cli.base_command pip install --upgrade pip
     fi
     sar_call
   elif [[ "$CENTOS_SEVEN" = '7' ]]; then
-    time $YUMDNFBIN -y install checksec systemd-libs xxhash-devel libzstd xxhash libzstd-devel datamash qrencode jq clang clang-devel jemalloc jemalloc-devel zstd python2-pip libmcrypt libmcrypt-devel libraqm oniguruma5php oniguruma5php-devel figlet moreutils nghttp2 libnghttp2 libnghttp2-devel pngquant optipng jpegoptim pwgen pigz pbzip2 xz pxz lz4 bash-completion bash-completion-extras mlocate re2c kernel-headers kernel-devel${DISABLEREPO_DNF} --enablerepo=epel
+    # Conditionally skip kernel-headers if ELRepo kernel headers detected
+    if [[ "$SKIP_KERNEL_HEADERS" != 'y' ]]; then
+      KERNEL_PKGS="kernel-headers kernel-devel"
+    else
+      KERNEL_PKGS=""
+    fi
+    time $YUMDNFBIN -y install checksec systemd-libs xxhash-devel libzstd xxhash libzstd-devel datamash qrencode jq clang clang-devel jemalloc jemalloc-devel zstd python2-pip libmcrypt libmcrypt-devel libraqm oniguruma5php oniguruma5php-devel figlet moreutils nghttp2 libnghttp2 libnghttp2-devel pngquant optipng jpegoptim pwgen pigz pbzip2 xz pxz lz4 bash-completion bash-completion-extras mlocate re2c ${KERNEL_PKGS}${DISABLEREPO_DNF} --enablerepo=epel
     libc_fix
     if [ -f /usr/bin/pip ]; then
       PYTHONWARNINGS=ignore:::pip._internal.cli.base_command pip install --upgrade pip==20.3.4
     fi
     sar_call
   else
-    time $YUMDNFBIN -y install datamash qrencode jq clang clang-devel jemalloc jemalloc-devel zstd python-pip libmcrypt libmcrypt-devel libraqm oniguruma5php oniguruma5php-devel figlet moreutils nghttp2 libnghttp2 libnghttp2-devel pngquant optipng jpegoptim pwgen pigz pbzip2 xz pxz lz4 libJudy bash-completion bash-completion-extras mlocate re2c kernel-headers kernel-devel cmake28 uw-imap-devel${DISABLEREPO_DNF} --enablerepo=epel
+    # Conditionally skip kernel-headers if ELRepo kernel headers detected
+    if [[ "$SKIP_KERNEL_HEADERS" != 'y' ]]; then
+      KERNEL_PKGS="kernel-headers kernel-devel"
+    else
+      KERNEL_PKGS=""
+    fi
+    time $YUMDNFBIN -y install datamash qrencode jq clang clang-devel jemalloc jemalloc-devel zstd python-pip libmcrypt libmcrypt-devel libraqm oniguruma5php oniguruma5php-devel figlet moreutils nghttp2 libnghttp2 libnghttp2-devel pngquant optipng jpegoptim pwgen pigz pbzip2 xz pxz lz4 libJudy bash-completion bash-completion-extras mlocate re2c ${KERNEL_PKGS} cmake28 uw-imap-devel${DISABLEREPO_DNF} --enablerepo=epel
     if [ -f /usr/bin/pip ]; then
       PYTHONWARNINGS=ignore:::pip._internal.cli.base_command pip install --upgrade pip
     fi
