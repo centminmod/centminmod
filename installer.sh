@@ -369,12 +369,37 @@ fi
 # Web hosts may pre-install kernel-ml-headers or kernel-lt-headers from ELRepo
 # which conflicts with standard kernel-headers package installation
 detect_elrepo_kernel() {
-  if rpm -qa | grep -qE "kernel-(ml|lt)-headers"; then
+  # Check for ANY ELRepo kernel development packages
+  local ELREPO_PACKAGES=$(rpm -qa | grep -E "kernel-(ml|lt)-(headers|devel)")
+
+  if [[ -n "$ELREPO_PACKAGES" ]]; then
     echo "***********************************************************************"
-    echo "* Detected ELRepo kernel headers package (kernel-ml or kernel-lt)    *"
-    echo "* Skipping standard kernel-headers installation to prevent conflicts *"
+    echo "* Detected ELRepo kernel development packages - removing             *"
     echo "***********************************************************************"
-    SKIP_KERNEL_HEADERS='y'
+    echo ""
+    echo "Found packages:"
+    echo "$ELREPO_PACKAGES" | sed 's/^/  - /'
+    echo ""
+    echo "These packages conflict with standard development tools:"
+    echo "  - kernel-ml-headers: Only for rebuilding glibc (per ELRepo docs)"
+    echo "  - kernel-ml-devel: Cannot install when kernel-ml-headers is present"
+    echo "  - Same issues apply to kernel-lt variants"
+    echo ""
+    echo "Removing conflicting packages and proceeding with standard kernel-headers..."
+    echo ""
+
+    # Remove all conflicting packages at once
+    $YUMDNFBIN remove -y kernel-ml-headers kernel-ml-devel kernel-lt-headers kernel-lt-devel 2>/dev/null
+
+    SKIP_KERNEL_HEADERS='n'  # Allow standard kernel-headers to install
+    ELREPO_KERNEL_REMOVED='y'
+
+    echo ""
+    echo "[SUCCESS] ELRepo development packages removed"
+    echo "[INFO] Your ELRepo kernel is still running and fully functional"
+    echo "[INFO] You can install kernel-ml-devel later if needed:"
+    echo "       dnf install kernel-ml-devel --enablerepo=elrepo-kernel"
+    echo ""
   fi
 }
 detect_elrepo_kernel
