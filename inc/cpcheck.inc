@@ -4284,6 +4284,7 @@ if [[ "$INITIALINSTALL" != [yY] ]]; then
   opendkim_check_enabled
   disable_nginx_ocsp
   update_ius_repo silent
+  perldbiexclude
 fi
 
 }
