@@ -8,14 +8,6 @@ perdbiinstall() {
     fi
 }
 
-# Add perl-DBD-MySQL to yum.conf exclude after MariaDB installation
-# Prevents AppStream OS update conflicts (e.g., AlmaLinux 9.6→9.7)
-perldbiexclude() {
-    if [[ -f "${SCRIPT_DIR}/inc/perl_mysql_utils.inc" ]]; then
-        source "${SCRIPT_DIR}/inc/perl_mysql_utils.inc"
-        manage_perl_dbd_mysql_exclude add
-    fi
-}
 
 mysqlinitfix() {
 
