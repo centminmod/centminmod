@@ -152,6 +152,12 @@ OLDMARIADBCOMMON=`rpm -qa | grep MariaDB | awk '/MariaDB-common/'`
 OLDMARIADBCOMPAT=`rpm -qa | grep MariaDB | awk '/MariaDB-compat/'`
 OLDGALERA=`rpm -qa | grep galera | awk '/galera/'`
 
+# Temporarily remove perl-DBD-MySQL exclusion to allow upgrade operations
+if [[ -f "${SCRIPT_DIR}/inc/perl_mysql_utils.inc" ]]; then
+    source "${SCRIPT_DIR}/inc/perl_mysql_utils.inc"
+    manage_perl_dbd_mysql_exclude remove
+fi
+
 yum -q -y remove perl-DBD-MySQL
 
 echo "rpm -e $OLDMARIADBTEST"
