@@ -11,6 +11,15 @@ perdbiinstall() {
     fi
 }
 
+# Add perl-DBD-MySQL to yum.conf exclude after MariaDB installation
+# Prevents AppStream OS update conflicts (e.g., AlmaLinux 9.6→9.7)
+perldbiexclude() {
+    if [[ -f "${SCRIPT_DIR}/inc/perl_mysql_utils.inc" ]]; then
+        source "${SCRIPT_DIR}/inc/perl_mysql_utils.inc"
+        manage_perl_dbd_mysql_exclude add
+    fi
+}
+
 mysqlinitfix() {
 
 if [[ -z "$(grep 'user_beancounters' /etc/init.d/mysql)" ]]; then
@@ -576,6 +585,7 @@ fi
 echo ""
 
 perdbiinstall
+perldbiexclude
 # reinstall postfix removed from mariadb-libs removale
 if [[ $(rpm -q postfix >/dev/null 2>&1; echo $?) != '0' ]]; then
     time $YUMDNFBIN -y install postfix${DISABLEOTHERREPO} 
@@ -644,6 +654,7 @@ exit
 fi
 
 perdbiinstall
+perldbiexclude
 
 cmservice mysql stop
 

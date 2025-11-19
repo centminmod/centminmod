@@ -30,7 +30,7 @@ DT=$(date +"%d%m%y-%H%M%S")
 branchname='141.00beta01'
 SCRIPT_MAJORVER='141'
 SCRIPT_MINORVER='00'
-SCRIPT_INCREMENTVER='091'
+SCRIPT_INCREMENTVER='092'
 SCRIPT_VERSIONSHORT="${branchname}"
 SCRIPT_VERSION="${SCRIPT_VERSIONSHORT}.b${SCRIPT_INCREMENTVER}"
 SCRIPT_DATE='16/08/25'
@@ -1706,6 +1706,10 @@ source "${SCRIPT_DIR}/inc/nginx_errorpage.inc"
 source "${SCRIPT_DIR}/inc/sendmail.inc"
 source "${SCRIPT_DIR}/inc/postfix.inc"
 source "${SCRIPT_DIR}/inc/diskalert.inc"
+# Perl-DBD-MySQL conflict management for MariaDB
+if [[ -f "${SCRIPT_DIR}/inc/perl_mysql_utils.inc" ]]; then
+    source "${SCRIPT_DIR}/inc/perl_mysql_utils.inc"
+fi
 source "${SCRIPT_DIR}/inc/phpsededit.inc"
 source "${SCRIPT_DIR}/inc/csfinstall.inc"
 source "${SCRIPT_DIR}/inc/csftweaks.inc"
