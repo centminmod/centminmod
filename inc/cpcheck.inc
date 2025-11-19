@@ -1,3 +1,13 @@
+# Add perl-DBD-MySQL to yum.conf exclude after MariaDB installation
+# Prevents AppStream OS update conflicts (e.g., AlmaLinux 9.6→9.7)
+perldbiexclude() {
+    local silent="$1"
+    if [[ -f "${SCRIPT_DIR}/inc/perl_mysql_utils.inc" ]]; then
+        source "${SCRIPT_DIR}/inc/perl_mysql_utils.inc"
+        manage_perl_dbd_mysql_exclude add "$silent"
+    fi
+}
+
 update_ius_repo() {
     local repo_file="/etc/yum.repos.d/ius.repo"
     local old_domain="repo.ius.io"
@@ -4284,7 +4294,7 @@ if [[ "$INITIALINSTALL" != [yY] ]]; then
   opendkim_check_enabled
   disable_nginx_ocsp
   update_ius_repo silent
-  perldbiexclude
+  perldbiexclude silent
 fi
 
 }
