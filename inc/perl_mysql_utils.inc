@@ -7,47 +7,107 @@
 
 manage_perl_dbd_mysql_exclude() {
     local action="${1:-add}"  # add|remove|status
+    local config_file="/etc/yum.conf"
+    local actual_file="$config_file"
+
+    # Repair broken symlinks on EL8/9/10 systems only
+    # EL7 uses a regular yum.conf file, so skip repair there
+    if [[ "$CENTOS_EIGHT" -eq 8 || "$CENTOS_NINE" -eq 9 || "$CENTOS_TEN" -eq 10 ]]; then
+        if [[ -f "$config_file" && ! -L "$config_file" && -f /etc/dnf/dnf.conf ]]; then
+            echo "WARNING: Detected broken symlink - /etc/yum.conf is a regular file (should be symlink on EL${CENTOS_EIGHT}${CENTOS_NINE}${CENTOS_TEN})"
+            echo "Repairing: Restoring symlink to /etc/dnf/dnf.conf"
+
+            # Backup the broken regular file
+            cp -af "$config_file" "${config_file}.broken-$(date +%Y%m%d-%H%M%S)"
+
+            # Merge exclude lines from broken yum.conf to dnf.conf if they exist
+            if grep -q '^exclude=' "$config_file" 2>/dev/null; then
+                local broken_excludes=$(grep '^exclude=' "$config_file")
+                if ! grep -q '^exclude=' /etc/dnf/dnf.conf 2>/dev/null; then
+                    # No exclude line in dnf.conf, copy from broken yum.conf
+                    echo "$broken_excludes" >> /etc/dnf/dnf.conf
+                    echo "Migrated exclusions from broken yum.conf to dnf.conf"
+                else
+                    # Merge exclusions intelligently
+                    local dnf_excludes=$(grep '^exclude=' /etc/dnf/dnf.conf)
+                    local yum_only_excludes=$(echo "$broken_excludes" | sed "s|$dnf_excludes||g" | sed 's/^exclude=//' | sed 's/^ *//')
+                    if [[ -n "$yum_only_excludes" ]]; then
+                        sed -i "s|^exclude=.*|$dnf_excludes $yum_only_excludes|" /etc/dnf/dnf.conf
+                        echo "Merged additional exclusions from broken yum.conf to dnf.conf"
+                    fi
+                fi
+            fi
+
+            # Remove broken regular file and restore symlink
+            rm -f "$config_file"
+            ln -s /etc/dnf/dnf.conf "$config_file"
+            echo "✓ Symlink restored: $config_file -> /etc/dnf/dnf.conf"
+
+            # Clear DNF cache to force config re-read
+            dnf clean metadata 2>/dev/null
+        fi
+    fi
+
+    # If yum.conf is a symlink, resolve to the actual file to prevent sed -i from breaking it
+    if [[ -L "$config_file" ]]; then
+        actual_file="$(readlink -f "$config_file")"
+        if [[ "$action" != "status" ]]; then
+            echo "Detected symlink: $config_file -> $actual_file"
+        fi
+    fi
 
     case "$action" in
         add)
             # Add perl-DBD-MySQL to yum.conf exclude list
-            if [[ "$(grep '^exclude=' /etc/yum.conf | grep -o 'perl-DBD-MySQL')" != 'perl-DBD-MySQL' ]]; then
-                # Backup yum.conf
-                cp -af /etc/yum.conf /etc/yum.conf.backup-perl-dbd-$(date +%Y%m%d-%H%M%S)
+            if [[ "$(grep '^exclude=' "$actual_file" | grep -o 'perl-DBD-MySQL')" != 'perl-DBD-MySQL' ]]; then
+                # Backup the actual config file
+                cp -af "$actual_file" "${actual_file}.backup-perl-dbd-$(date +%Y%m%d-%H%M%S)"
 
-                if [[ "$(grep '^exclude=' /etc/yum.conf)" ]]; then
+                if [[ "$(grep '^exclude=' "$actual_file")" ]]; then
                     # Append to existing exclude line
-                    NEW_EXCLUDES=$(echo "$(grep '^exclude=' /etc/yum.conf) perl-DBD-MySQL")
-                    sed -i "s|^exclude=.*|$NEW_EXCLUDES|" /etc/yum.conf
-                    echo "Added perl-DBD-MySQL to existing /etc/yum.conf exclude line"
+                    NEW_EXCLUDES=$(echo "$(grep '^exclude=' "$actual_file") perl-DBD-MySQL")
+                    sed -i "s|^exclude=.*|$NEW_EXCLUDES|" "$actual_file"
+                    echo "Added perl-DBD-MySQL to existing exclude line in $actual_file"
                 else
                     # Create new exclude line
-                    echo "exclude=perl-DBD-MySQL" >> /etc/yum.conf
-                    echo "Created /etc/yum.conf exclude line with perl-DBD-MySQL"
+                    echo "exclude=perl-DBD-MySQL" >> "$actual_file"
+                    echo "Created exclude line with perl-DBD-MySQL in $actual_file"
                 fi
+
+                # Clear DNF metadata cache to force config re-read
+                dnf clean metadata 2>/dev/null || yum clean metadata 2>/dev/null
             else
-                echo "perl-DBD-MySQL already in /etc/yum.conf excludes"
+                echo "perl-DBD-MySQL already in $actual_file excludes"
             fi
             ;;
         remove)
             # Remove perl-DBD-MySQL from yum.conf exclude list
-            if [[ "$(grep '^exclude=' /etc/yum.conf | grep -o 'perl-DBD-MySQL')" = 'perl-DBD-MySQL' ]]; then
-                cp -af /etc/yum.conf /etc/yum.conf.backup-perl-dbd-$(date +%Y%m%d-%H%M%S)
-                sed -i 's/\s*perl-DBD-MySQL//g' /etc/yum.conf
-                sed -i 's/  */ /g' /etc/yum.conf  # Clean up extra spaces
-                echo "Removed perl-DBD-MySQL from /etc/yum.conf excludes"
+            if [[ "$(grep '^exclude=' "$actual_file" | grep -o 'perl-DBD-MySQL')" = 'perl-DBD-MySQL' ]]; then
+                cp -af "$actual_file" "${actual_file}.backup-perl-dbd-$(date +%Y%m%d-%H%M%S)"
+                sed -i 's/\s*perl-DBD-MySQL//g' "$actual_file"
+                sed -i 's/  */ /g' "$actual_file"  # Clean up extra spaces
+                echo "Removed perl-DBD-MySQL from $actual_file excludes"
+
+                # Clear DNF metadata cache
+                dnf clean metadata 2>/dev/null || yum clean metadata 2>/dev/null
             else
-                echo "perl-DBD-MySQL not in /etc/yum.conf excludes"
+                echo "perl-DBD-MySQL not in $actual_file excludes"
             fi
             ;;
         status)
             # Check current exclusion status
-            echo "Checking /etc/yum.conf perl-DBD-MySQL exclusion status..."
-            if [[ "$(grep '^exclude=' /etc/yum.conf | grep -o 'perl-DBD-MySQL')" = 'perl-DBD-MySQL' ]]; then
-                echo "✓ perl-DBD-MySQL IS EXCLUDED in /etc/yum.conf"
+            echo "Checking perl-DBD-MySQL exclusion status..."
+            echo "Config file: $config_file"
+            if [[ -L "$config_file" ]]; then
+                echo "  (symlink to: $actual_file)"
+            fi
+
+            if [[ "$(grep '^exclude=' "$actual_file" | grep -o 'perl-DBD-MySQL')" = 'perl-DBD-MySQL' ]]; then
+                echo "✓ perl-DBD-MySQL IS EXCLUDED in $actual_file"
+                grep '^exclude=' "$actual_file"
                 return 0
             else
-                echo "✗ perl-DBD-MySQL NOT excluded in /etc/yum.conf"
+                echo "✗ perl-DBD-MySQL NOT excluded in $actual_file"
                 return 1
             fi
             ;;
