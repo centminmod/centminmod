@@ -573,6 +573,7 @@ fi
 echo ""
 
 perdbiinstall
+perldbiexclude
 # reinstall postfix removed from mariadb-libs removale
 if [[ $(rpm -q postfix >/dev/null 2>&1; echo $?) != '0' ]]; then
     time $YUMDNFBIN -y install postfix${DISABLEOTHERREPO} 
@@ -641,6 +642,7 @@ exit
 fi
 
 perdbiinstall
+perldbiexclude
 
 cmservice mysql stop
 
