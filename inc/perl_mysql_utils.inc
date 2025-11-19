@@ -51,7 +51,7 @@ manage_perl_dbd_mysql_exclude() {
     # If yum.conf is a symlink, resolve to the actual file to prevent sed -i from breaking it
     if [[ -L "$config_file" ]]; then
         actual_file="$(readlink -f "$config_file")"
-        if [[ "$action" != "status" ]]; then
+        if [[ "$action" != "status" && "$silent" != "silent" ]]; then
             echo "Detected symlink: $config_file -> $actual_file"
         fi
     fi
@@ -77,7 +77,7 @@ manage_perl_dbd_mysql_exclude() {
                 # Clear DNF metadata cache to force config re-read
                 dnf clean metadata 2>/dev/null || yum clean metadata 2>/dev/null
             else
-                echo "perl-DBD-MySQL already in $actual_file excludes"
+                [[ "$silent" != "silent" ]] && echo "perl-DBD-MySQL already in $actual_file excludes"
             fi
             ;;
         remove)
@@ -91,7 +91,7 @@ manage_perl_dbd_mysql_exclude() {
                 # Clear DNF metadata cache
                 dnf clean metadata 2>/dev/null || yum clean metadata 2>/dev/null
             else
-                echo "perl-DBD-MySQL not in $actual_file excludes"
+                [[ "$silent" != "silent" ]] && echo "perl-DBD-MySQL not in $actual_file excludes"
             fi
             ;;
         status)
