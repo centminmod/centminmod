@@ -81,7 +81,7 @@ do
   cecho "8). MariaDB 10.3.x to MariaDB 10.4.x YUM upgrade" $boldgreen
   cecho "9). MariaDB 10.4.x to MariaDB 10.5.x YUM upgrade" $boldgreen
   cecho "10). MariaDB 10.5.x to MariaDB 10.6.x LTS YUM upgrade" $boldgreen
-  cecho "11). MariaDB 10.6.x to MariaDB 10.11.x YUM upgrade" $boldgreen
+  cecho "11). MariaDB 10.6.x to MariaDB 10.11.x LTS YUM upgrade" $boldgreen
   cecho "12). MariaDB 10.6.x to MariaDB 11.4.x LTS YUM upgrade" $boldgreen
   cecho "13). MariaDB 10.6.x to MariaDB 11.8.x LTS YUM upgrade" $boldgreen
   cecho "14). MariaDB 10.11.x to MariaDB 11.4.x LTS YUM upgrade" $boldgreen
