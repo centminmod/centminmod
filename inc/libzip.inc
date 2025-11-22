@@ -51,6 +51,10 @@ libzip_remove() {
 }
 
 libzip_install() {
+  # PHP 8.5 requires libzip 1.22.7+
+  if [[ "$PHPMVER" = '8.5' || "$PHPMUVER" = '8.5' ]]; then
+    LIBZIP_VER="$LIBZIP_EIGHT_FIVE_VER"
+  fi
   check_pythonthree_six
   if [ ! -f /usr/bin/cmake3 ]; then
       echo
