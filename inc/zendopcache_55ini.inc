@@ -32,12 +32,28 @@ if [[ -z "$ZOPLUSSOCHECK" ]]; then
 
   fi # check if opcache.so exists in zendopcache.ini
 
+  # PHP 8.5+ has opcache built-in, comment out zend_extension line
+  if [[ "$PHPMVER" = '8.5' || "$PHPMVER" = '8.6' ]]; then
+    echo -e "PHP 8.5+ detected: commenting out zend_extension (opcache is built-in)\n"
+    sed -i 's|^zend_extension=.*opcache.*|;zend_extension=opcache.so|' ${CONFIGSCANDIR}/zendopcache.ini
+  fi
+
     # cmservice php-fpm restart
     echo "*************************************************"
     cecho "* Zend Optimizer Plus OPcache installed" $boldgreen
     echo "*************************************************"
 
 fi # $ZOPLUSSOCHECK
+
+# PHP 8.5+ has opcache built-in, comment out zend_extension line (existing file)
+if [[ "$PHPMVER" = '8.5' || "$PHPMVER" = '8.6' ]]; then
+  if [ -f ${CONFIGSCANDIR}/zendopcache.ini ]; then
+    if grep -q '^zend_extension=.*opcache' ${CONFIGSCANDIR}/zendopcache.ini 2>/dev/null; then
+      echo -e "PHP 8.5+ detected: commenting out zend_extension (opcache is built-in)\n"
+      sed -i 's|^zend_extension=.*opcache.*|;zend_extension=opcache.so|' ${CONFIGSCANDIR}/zendopcache.ini
+    fi
+  fi
+fi
 
   # php 5.5+ versions missing opcache.php file
   ######################################################
