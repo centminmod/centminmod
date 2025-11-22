@@ -198,6 +198,12 @@ if [[ "$ZOPLUSSOPATHCHECK" = '0' ]]; then
   replace 'zend_extension=opcache.so' "zend_extension=${PHPEXTDIRD}/opcache.so" -- "${CONFIGSCANDIR}/zendopcache.ini"
 fi
 
+# PHP 8.5+ has opcache built-in, comment out zend_extension line
+if [[ "$PHPMVER" = '8.5' || "$PHPMVER" = '8.6' ]]; then
+  echo -e "PHP 8.5+ detected: commenting out zend_extension=opcache.so (opcache is built-in)\n"
+  sed -i 's|^zend_extension=.*opcache.so|;zend_extension=opcache.so|' ${CONFIGSCANDIR}/zendopcache.ini
+fi
+
     cmservice php-fpm restart
     echo "*************************************************"
     cecho "* Zend Optimizer Plus OPcache re-installed" $boldgreen

@@ -257,6 +257,13 @@ else
   sed -i "s|^opcache.memory_consumption=.*|opcache.memory_consumption=$ZENDOPCACHE_EXISTMEMSIZE|" ${CONFIGSCANDIR}/zendopcache.ini
 
 fi # check if opcache.so exists in zendopcache.ini
+
+  # PHP 8.5+ has opcache built-in, comment out zend_extension line
+  if [[ "$PHPMUVER" = '8.5' || "$PHPMUVER" = '8.6' ]]; then
+    echo -e "PHP 8.5+ detected: commenting out zend_extension=opcache.so (opcache is built-in)\n"
+    sed -i 's|^zend_extension=opcache.so|;zend_extension=opcache.so|' ${CONFIGSCANDIR}/zendopcache.ini
+  fi
+
 fi # zendopcacheon
 
     # cmservice php-fpm restart

@@ -1556,6 +1556,9 @@ fi
 # ZOPCACHE_OVERRIDE=y allows you to override PHP 5.5-7.x's inbuilt included Zend Opcache version with one available from pecl site
 if [[ -n "$PHPMUVER" && "$PHPMUVER" = 5.[234] || "$PHPMVER" = 5.[234] ]]; then
     OPCACHEOPT=''
+# PHP 8.5+ has opcache built-in without --enable-opcache/--disable-opcache flags
+elif [[ "$PHPMVER" = '8.5' || "$PHPMUVER" = '8.5' || "$PHPMVER" = '8.6' || "$PHPMUVER" = '8.6' ]]; then
+    OPCACHEOPT=''
 elif [[ "$ZOPCACHE_OVERRIDE" = [yY] || "$ZOPCACHEDFT" = [nN] || "$zendopcacheon" = [nN] ]]; then
     OPCACHEOPT=' --disable-opcache'
 else
