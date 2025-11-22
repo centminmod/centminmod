@@ -430,7 +430,7 @@ php_imagemagick_seven_detected_libzip() {
     # LIBZIP_RPATH=' -Wl,-rpath,/usr/lib64'
     # LIBZIP_PKG_CONFIG_PATH="/usr/lib64/pkgconfig:"
     # LIBZIP_OPT=' --with-libzip=/usr/lib64'
-    if [[ "$PHPMVER" = '7.4' || "$PHPMUVER" = '7.4' || "$PHPMVER" = '8.0' || "$PHPMUVER" = '8.0' || "$PHPMVER" = '8.1' || "$PHPMUVER" = '8.1' || "$PHPMVER" = '8.2' || "$PHPMUVER" = '8.2' || "$PHPMVER" = '8.3' || "$PHPMUVER" = '8.3' || "$PHPMVER" = '8.4' || "$PHPMUVER" = '8.4' || "$PHPVER_ID" -ge '80000' ]]; then
+    if [[ "$PHPMVER" = '7.4' || "$PHPMUVER" = '7.4' || "$PHPMVER" = '8.0' || "$PHPMUVER" = '8.0' || "$PHPMVER" = '8.1' || "$PHPMUVER" = '8.1' || "$PHPMVER" = '8.2' || "$PHPMUVER" = '8.2' || "$PHPMVER" = '8.3' || "$PHPMUVER" = '8.3' || "$PHPMVER" = '8.4' || "$PHPMUVER" = '8.4' || "$PHPMVER" = '8.5' || "$PHPMUVER" = '8.5' || "$PHPVER_ID" -ge '80000' ]]; then
       if [[ "$(uname -m)" = 'x86_64' ]]; then
         LIBDIR_LIBZIP='lib64'
       else
@@ -638,7 +638,7 @@ oniguruma_check() {
       echo "oni_err=$oni_err"
     fi
   fi
-  if [[ "$PHPMVER" = '7.4' || "$PHPMUVER" = '7.4' || "$PHPMVER" = '8.0' || "$PHPMUVER" = '8.0' || "$PHPMVER" = '8.1' || "$PHPMUVER" = '8.1' || "$PHPMVER" = '8.2' || "$PHPMUVER" = '8.2' || "$PHPMVER" = '8.3' || "$PHPMUVER" = '8.3' || "$PHPMVER" = '8.4' || "$PHPMUVER" = '8.4' || "$PHPVER_ID" -ge '80000' ]]; then
+  if [[ "$PHPMVER" = '7.4' || "$PHPMUVER" = '7.4' || "$PHPMVER" = '8.0' || "$PHPMUVER" = '8.0' || "$PHPMVER" = '8.1' || "$PHPMUVER" = '8.1' || "$PHPMVER" = '8.2' || "$PHPMUVER" = '8.2' || "$PHPMVER" = '8.3' || "$PHPMUVER" = '8.3' || "$PHPMVER" = '8.4' || "$PHPMUVER" = '8.4' || "$PHPMVER" = '8.5' || "$PHPMUVER" = '8.5' || "$PHPVER_ID" -ge '80000' ]]; then
     echo "export ONIG_CFLAGS='-I/usr/include'"
     export ONIG_CFLAGS="-I/usr/include"
     echo "export ONIG_LIBS='-L/usr/lib64 -lonig'"
@@ -735,7 +735,7 @@ if [[ "$CENTOS_EIGHT" -eq '8' && "$CENTOSVER_NUMERIC" -ge '89' ]]; then
     DEVTOOLSETTHIRTEEN='n'
     DEVTOOLSETFOURTEEN='n'
     DEVTOOLSETFIFTTEEN='n'
-  elif [[ "$PHP_PGO_FALLBACK_GCC" = [yY] && "$PHP_PGO" = [yY] ]] && [[ "$PHPMVER" = '7.0' || "$PHPMUVER" = '7.0' || "$PHPMVER" = '7.1' || "$PHPMUVER" = '7.1' || "$PHPMVER" = '7.2' || "$PHPMUVER" = '7.2' || "$PHPMVER" = '7.3' || "$PHPMUVER" = '7.3' || "$PHPMVER" = '7.4' || "$PHPMUVER" = '7.4' || "$PHPMVER" = '8.0' || "$PHPMUVER" = '8.0' || "$PHPMVER" = '8.1' || "$PHPMUVER" = '8.1' || "$PHPMVER" = '8.2' || "$PHPMUVER" = '8.2' || "$PHPMVER" = '8.3' || "$PHPMUVER" = '8.3' || "$PHPMVER" = '8.4' || "$PHPMUVER" = '8.4' ]]; then
+  elif [[ "$PHP_PGO_FALLBACK_GCC" = [yY] && "$PHP_PGO" = [yY] ]] && [[ "$PHPMVER" = '7.0' || "$PHPMUVER" = '7.0' || "$PHPMVER" = '7.1' || "$PHPMUVER" = '7.1' || "$PHPMVER" = '7.2' || "$PHPMUVER" = '7.2' || "$PHPMVER" = '7.3' || "$PHPMUVER" = '7.3' || "$PHPMVER" = '7.4' || "$PHPMUVER" = '7.4' || "$PHPMVER" = '8.0' || "$PHPMUVER" = '8.0' || "$PHPMVER" = '8.1' || "$PHPMUVER" = '8.1' || "$PHPMVER" = '8.2' || "$PHPMUVER" = '8.2' || "$PHPMVER" = '8.3' || "$PHPMUVER" = '8.3' || "$PHPMVER" = '8.4' || "$PHPMUVER" = '8.4' || "$PHPMVER" = '8.5' || "$PHPMUVER" = '8.5' ]]; then
     DEVTOOLSETTWELVE='y'
     DEVTOOLSETTHIRTEEN='n'
     DEVTOOLSETFOURTEEN='n'
@@ -773,7 +773,7 @@ if [[ "$CENTOS_NINE" -eq '9' && "$CENTOSVER_NUMERIC" -ge '93' ]]; then
     DEVTOOLSETTHIRTEEN='n'
     DEVTOOLSETFOURTEEN='n'
     DEVTOOLSETFIFTTEEN='n'
-  elif [[ "$PHP_PGO_FALLBACK_GCC" = [yY] && "$PHP_PGO" = [yY] ]] && [[ "$PHPMVER" = '7.4' || "$PHPMUVER" = '7.4' || "$PHPMVER" = '8.0' || "$PHPMUVER" = '8.0' || "$PHPMVER" = '8.1' || "$PHPMUVER" = '8.1' || "$PHPMVER" = '8.2' || "$PHPMUVER" = '8.2' || "$PHPMVER" = '8.3' || "$PHPMUVER" = '8.3' || "$PHPMVER" = '8.4' || "$PHPMUVER" = '8.4' ]]; then
+  elif [[ "$PHP_PGO_FALLBACK_GCC" = [yY] && "$PHP_PGO" = [yY] ]] && [[ "$PHPMVER" = '7.4' || "$PHPMUVER" = '7.4' || "$PHPMVER" = '8.0' || "$PHPMUVER" = '8.0' || "$PHPMVER" = '8.1' || "$PHPMUVER" = '8.1' || "$PHPMVER" = '8.2' || "$PHPMUVER" = '8.2' || "$PHPMVER" = '8.3' || "$PHPMUVER" = '8.3' || "$PHPMVER" = '8.4' || "$PHPMUVER" = '8.4' || "$PHPMVER" = '8.5' || "$PHPMUVER" = '8.5' ]]; then
     DEVTOOLSETTWELVE='y'
     DEVTOOLSETTHIRTEEN='n'
     DEVTOOLSETFOURTEEN='n'
@@ -812,7 +812,7 @@ if [[ "$CENTOS_TEN" -eq '10' && "$CENTOSVER_NUMERIC" -ge '100' ]]; then
     DEVTOOLSETTHIRTEEN='n'
     DEVTOOLSETFOURTEEN='n'
     DEVTOOLSETFIFTTEEN='n'
-  elif [[ "$PHP_PGO_FALLBACK_GCC" = [yY] && "$PHP_PGO" = [yY] ]] && [[ "$PHPMVER" = '7.4' || "$PHPMUVER" = '7.4' || "$PHPMVER" = '8.0' || "$PHPMUVER" = '8.0' || "$PHPMVER" = '8.1' || "$PHPMUVER" = '8.1' || "$PHPMVER" = '8.2' || "$PHPMUVER" = '8.2' || "$PHPMVER" = '8.3' || "$PHPMUVER" = '8.3' || "$PHPMVER" = '8.4' || "$PHPMUVER" = '8.4' ]]; then
+  elif [[ "$PHP_PGO_FALLBACK_GCC" = [yY] && "$PHP_PGO" = [yY] ]] && [[ "$PHPMVER" = '7.4' || "$PHPMUVER" = '7.4' || "$PHPMVER" = '8.0' || "$PHPMUVER" = '8.0' || "$PHPMVER" = '8.1' || "$PHPMUVER" = '8.1' || "$PHPMVER" = '8.2' || "$PHPMUVER" = '8.2' || "$PHPMVER" = '8.3' || "$PHPMUVER" = '8.3' || "$PHPMVER" = '8.4' || "$PHPMUVER" = '8.4' || "$PHPMVER" = '8.5' || "$PHPMUVER" = '8.5' ]]; then
     # CRITICAL FIX: Use GCC 12 fallback to avoid GCC 14.2.1 SSA corruption bug
     DEVTOOLSETTWELVE='y'
     DEVTOOLSETTHIRTEEN='n'
@@ -1059,7 +1059,7 @@ fi
 
 install_libgd_external() {
   # using --with-external-gd flag only supported in PHP 7.4+ and PHP 8.0+
-  if [[ "$CENTOS_SEVEN" -eq '7' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' || "$CENTOS_TEN" -eq '10' ]] && [[ "$PHP_LIBGD_EXTERNAL" = [yY] ]] && [[ "$PHPMVER" = '7.3' || "$PHPMUVER" = '7.3' || "$PHPMVER" = '7.4' || "$PHPMUVER" = '7.4' || "$PHPMVER" = '8.0' || "$PHPMUVER" = '8.0' || "$PHPMVER" = '8.1' || "$PHPMUVER" = '8.1' || "$PHPMVER" = '8.2' || "$PHPMUVER" = '8.2' || "$PHPMVER" = '8.3' || "$PHPMUVER" = '8.3' || "$PHPMVER" = '8.4' || "$PHPMUVER" = '8.4' || "$PHPVER_ID" -ge '80000' ]]; then
+  if [[ "$CENTOS_SEVEN" -eq '7' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' || "$CENTOS_TEN" -eq '10' ]] && [[ "$PHP_LIBGD_EXTERNAL" = [yY] ]] && [[ "$PHPMVER" = '7.3' || "$PHPMUVER" = '7.3' || "$PHPMVER" = '7.4' || "$PHPMUVER" = '7.4' || "$PHPMVER" = '8.0' || "$PHPMUVER" = '8.0' || "$PHPMVER" = '8.1' || "$PHPMUVER" = '8.1' || "$PHPMVER" = '8.2' || "$PHPMUVER" = '8.2' || "$PHPMVER" = '8.3' || "$PHPMUVER" = '8.3' || "$PHPMVER" = '8.4' || "$PHPMUVER" = '8.4' || "$PHPMVER" = '8.5' || "$PHPMUVER" = '8.5' || "$PHPVER_ID" -ge '80000' ]]; then
     echo
     echo "Internal libgd ${LIBGD_EXTERNAL_VER} external PHP version"
     echo
@@ -1140,13 +1140,13 @@ install_libgd_external() {
   fi
 }
 
-if [[ "$CENTOS_SEVEN" -eq '7' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' || "$CENTOS_TEN" -eq '10' ]] && [[ "$PHPSWOOLE" = [yY] ]] && [[ "$PHPMVER" = '7.0' || "$PHPMUVER" = '7.0' || "$PHPMVER" = '7.1' || "$PHPMUVER" = '7.1' || "$PHPMVER" = '7.2' || "$PHPMUVER" = '7.2' || "$PHPMVER" = '7.3' || "$PHPMUVER" = '7.3' || "$PHPMVER" = '7.4' || "$PHPMUVER" = '7.4' || "$PHPMVER" = '8.0' || "$PHPMUVER" = '8.0' || "$PHPMVER" = '8.1' || "$PHPMUVER" = '8.1' || "$PHPMVER" = '8.2' || "$PHPMUVER" = '8.2' || "$PHPMVER" = '8.3' || "$PHPMUVER" = '8.3' || "$PHPMVER" = '8.4' || "$PHPMUVER" = '8.4' || "$PHPVER_ID" -ge '80000' ]]; then
+if [[ "$CENTOS_SEVEN" -eq '7' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' || "$CENTOS_TEN" -eq '10' ]] && [[ "$PHPSWOOLE" = [yY] ]] && [[ "$PHPMVER" = '7.0' || "$PHPMUVER" = '7.0' || "$PHPMVER" = '7.1' || "$PHPMUVER" = '7.1' || "$PHPMVER" = '7.2' || "$PHPMUVER" = '7.2' || "$PHPMVER" = '7.3' || "$PHPMUVER" = '7.3' || "$PHPMVER" = '7.4' || "$PHPMUVER" = '7.4' || "$PHPMVER" = '8.0' || "$PHPMUVER" = '8.0' || "$PHPMVER" = '8.1' || "$PHPMUVER" = '8.1' || "$PHPMVER" = '8.2' || "$PHPMUVER" = '8.2' || "$PHPMVER" = '8.3' || "$PHPMUVER" = '8.3' || "$PHPMVER" = '8.4' || "$PHPMUVER" = '8.4' || "$PHPMVER" = '8.5' || "$PHPMUVER" = '8.5' || "$PHPVER_ID" -ge '80000' ]]; then
   SWOOLE_OPT=' --with-swoole'
 else
   SWOOLE_OPT=""
 fi
 
-if [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' || "$CENTOS_TEN" -eq '10' ]] && [[ "$PHP_GD_AVIF" = [yY] ]] && [[ "$PHPMVER" = '8.1' || "$PHPMUVER" = '8.1' || "$PHPMVER" = '8.2' || "$PHPMUVER" = '8.2' || "$PHPMVER" = '8.3' || "$PHPMUVER" = '8.3' || "$PHPMVER" = '8.4' || "$PHPMUVER" = '8.4' || "$PHPVER_ID" -ge '80000' ]]; then
+if [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' || "$CENTOS_TEN" -eq '10' ]] && [[ "$PHP_GD_AVIF" = [yY] ]] && [[ "$PHPMVER" = '8.1' || "$PHPMUVER" = '8.1' || "$PHPMVER" = '8.2' || "$PHPMUVER" = '8.2' || "$PHPMVER" = '8.3' || "$PHPMUVER" = '8.3' || "$PHPMVER" = '8.4' || "$PHPMUVER" = '8.4' || "$PHPMVER" = '8.5' || "$PHPMUVER" = '8.5' || "$PHPVER_ID" -ge '80000' ]]; then
   if [[ -z "$(rpm -qa libavif-devel)" ]]; then 
     "$YUMDNFBIN" -y install libavif-devel
   fi
@@ -1157,7 +1157,7 @@ fi
 
 # Enable Foreign Function Interface FFI extension
 # for PHP 7.4+ https://wiki.php.net/rfc/ffi
-if [[ "$CENTOS_SEVEN" -eq '7' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' || "$CENTOS_TEN" -eq '10' ]] && [[ "$PHPMVER" = '7.4' || "$PHPMUVER" = '7.4' || "$PHPMVER" = '8.0' || "$PHPMUVER" = '8.0' || "$PHPMVER" = '8.1' || "$PHPMUVER" = '8.1' || "$PHPMVER" = '8.2' || "$PHPMUVER" = '8.2' || "$PHPMVER" = '8.3' || "$PHPMUVER" = '8.3' || "$PHPMVER" = '8.4' || "$PHPMUVER" = '8.4' || "$PHPVER_ID" -ge '80000' ]]; then
+if [[ "$CENTOS_SEVEN" -eq '7' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' || "$CENTOS_TEN" -eq '10' ]] && [[ "$PHPMVER" = '7.4' || "$PHPMUVER" = '7.4' || "$PHPMVER" = '8.0' || "$PHPMUVER" = '8.0' || "$PHPMVER" = '8.1' || "$PHPMUVER" = '8.1' || "$PHPMVER" = '8.2' || "$PHPMUVER" = '8.2' || "$PHPMVER" = '8.3' || "$PHPMUVER" = '8.3' || "$PHPMVER" = '8.4' || "$PHPMUVER" = '8.4' || "$PHPMVER" = '8.5' || "$PHPMUVER" = '8.5' || "$PHPVER_ID" -ge '80000' ]]; then
   if [[ -z "$(rpm -qa libffi-devel)" ]]; then
     yum -q -y install libffi-devel
   fi
@@ -1393,11 +1393,11 @@ DETECTOPENSSL_THREEFOUR=$(echo $OPENSSL_VERSION  | cut -d . -f1-2 | grep -o 3.4)
 # el10 uses OpenSSL 3.2 and is not supported for PHP builds <=8.0
 # for PHP 7.4 to 8.0, use OpenSSL 1.1.1 instead
 # https://bugs.php.net/bug.php?id=81540
-if [[ "$CENTOS_NINE" -eq '9' && "$PHP_PATCH_OPENSSL_THREE" = [yY] ]] && [[ "$PHPMVER" = '8.1' || "$PHPMUVER" = '8.1' || "$PHPMVER" = '8.2' || "$PHPMUVER" = '8.2' || "$PHPMVER" = '8.3' || "$PHPMUVER" = '8.3' || "$PHPMVER" = '8.4' || "$PHPMUVER" = '8.4' ]]; then
+if [[ "$CENTOS_NINE" -eq '9' && "$PHP_PATCH_OPENSSL_THREE" = [yY] ]] && [[ "$PHPMVER" = '8.1' || "$PHPMUVER" = '8.1' || "$PHPMVER" = '8.2' || "$PHPMUVER" = '8.2' || "$PHPMVER" = '8.3' || "$PHPMUVER" = '8.3' || "$PHPMVER" = '8.4' || "$PHPMUVER" = '8.4' || "$PHPMVER" = '8.5' || "$PHPMUVER" = '8.5' ]]; then
   PHP_CUSTOMSSL='n'
   PHP_PATCH_OPENSSL_THREE='n'
 fi
-if [[ "$CENTOS_TEN" -eq '10' && "$PHP_PATCH_OPENSSL_THREE" = [yY] ]] && [[ "$PHPMVER" = '8.1' || "$PHPMUVER" = '8.1' || "$PHPMVER" = '8.2' || "$PHPMUVER" = '8.2' || "$PHPMVER" = '8.3' || "$PHPMUVER" = '8.3' || "$PHPMVER" = '8.4' || "$PHPMUVER" = '8.4' ]]; then
+if [[ "$CENTOS_TEN" -eq '10' && "$PHP_PATCH_OPENSSL_THREE" = [yY] ]] && [[ "$PHPMVER" = '8.1' || "$PHPMUVER" = '8.1' || "$PHPMVER" = '8.2' || "$PHPMUVER" = '8.2' || "$PHPMVER" = '8.3' || "$PHPMUVER" = '8.3' || "$PHPMVER" = '8.4' || "$PHPMUVER" = '8.4' || "$PHPMVER" = '8.5' || "$PHPMUVER" = '8.5' ]]; then
   PHP_CUSTOMSSL='n'
   PHP_PATCH_OPENSSL_THREE='n'
 fi
@@ -1500,7 +1500,7 @@ fi
 # disable temporarily for php 7.2.0 due to libzip compile errors
 # https://gist.github.com/centminmod/d1b48ef88bda29a7e352b90fd7111ac1
 
-if [[ "$CENTOS_SIX" = '6' ]] && [[ "$PHPMVER" = '7.4' || "$PHPMUVER" = '7.4' || "$PHPMVER" = '8.0' || "$PHPMUVER" = '8.0' || "$PHPMVER" = '8.1' || "$PHPMUVER" = '8.1' || "$PHPMVER" = '8.2' || "$PHPMUVER" = '8.2' || "$PHPMVER" = '8.3' || "$PHPMUVER" = '8.3' || "$PHPMVER" = '8.4' || "$PHPMUVER" = '8.4' || "$PHPVER_ID" -ge '80000' ]]; then
+if [[ "$CENTOS_SIX" = '6' ]] && [[ "$PHPMVER" = '7.4' || "$PHPMUVER" = '7.4' || "$PHPMVER" = '8.0' || "$PHPMUVER" = '8.0' || "$PHPMVER" = '8.1' || "$PHPMUVER" = '8.1' || "$PHPMVER" = '8.2' || "$PHPMUVER" = '8.2' || "$PHPMVER" = '8.3' || "$PHPMUVER" = '8.3' || "$PHPMVER" = '8.4' || "$PHPMUVER" = '8.4' || "$PHPMVER" = '8.5' || "$PHPMUVER" = '8.5' || "$PHPVER_ID" -ge '80000' ]]; then
   DEVTOOLSET_PHP='y'
   GCCINTEL_PHP='y'
   # kerberos / krb5 and krb5-gasspi YUM packages on CentOS 6 is missing .pc files
@@ -1620,7 +1620,7 @@ if [[ "$PHPMVER" = '7.4' ]]; then
   NEWLIBICU='y'
   echo "NEWLIBICU=$NEWLIBICU"
 fi
-if [[ "$PHPMVER" = '8.0' || "$PHPMVER" = '8.1' || "$PHPMVER" = '8.2' || "$PHPMVER" = '8.3' || "$PHPMVER" = '8.4' || "$PHPMVER" = '8.4' || "$PHPVER_ID" -ge '80000' ]]; then
+if [[ "$PHPMVER" = '8.0' || "$PHPMVER" = '8.1' || "$PHPMVER" = '8.2' || "$PHPMVER" = '8.3' || "$PHPMVER" = '8.4' || "$PHPMVER" = '8.5' || "$PHPVER_ID" -ge '80000' ]]; then
   NEWLIBICU='y'
   echo "NEWLIBICU=$NEWLIBICU"
 fi
@@ -1648,7 +1648,7 @@ if [[ "$PHPMUVER" = '7.4' ]]; then
   NEWLIBICU='y'
   echo "NEWLIBICU=$NEWLIBICU"
 fi
-if [[ "$PHPMUVER" = '7.4' || "$PHPMUVER" = '8.0' || "$PHPMUVER" = '8.1' || "$PHPMUVER" = '8.2' || "$PHPMUVER" = '8.3' || "$PHPMUVER" = '8.4' || "$PHPVER_ID" -ge '80000' ]]; then
+if [[ "$PHPMUVER" = '7.4' || "$PHPMUVER" = '8.0' || "$PHPMUVER" = '8.1' || "$PHPMUVER" = '8.2' || "$PHPMUVER" = '8.3' || "$PHPMUVER" = '8.4' || "$PHPMUVER" = '8.5' || "$PHPVER_ID" -ge '80000' ]]; then
   NEWLIBICU='y'
   echo "NEWLIBICU=$NEWLIBICU"
   # check if libicu73 is available
@@ -1825,7 +1825,7 @@ if [[ "$CENTOS_SIX" = '6' && -f /etc/yum.repos.d/remi.repo && -f /usr/bin/icu-co
   yum -y install libicu-last-devel --enablerepo=remi
 fi
 
-if [[ "$PHPMVER" = '7.3' || "$PHPMUVER" = '7.3' || "$PHPMVER" = '7.4' || "$PHPMUVER" = '7.4' || "$PHPMVER" = '8.0' || "$PHPMUVER" = '8.0' || "$PHPMVER" = '8.1' || "$PHPMUVER" = '8.1' || "$PHPMVER" = '8.2' || "$PHPMUVER" = '8.2' || "$PHPMVER" = '8.3' || "$PHPMUVER" = '8.3' || "$PHPMVER" = '8.4' || "$PHPMUVER" = '8.4' || "$PHPVER_ID" -ge '80000' ]]; then
+if [[ "$PHPMVER" = '7.3' || "$PHPMUVER" = '7.3' || "$PHPMVER" = '7.4' || "$PHPMUVER" = '7.4' || "$PHPMVER" = '8.0' || "$PHPMUVER" = '8.0' || "$PHPMVER" = '8.1' || "$PHPMUVER" = '8.1' || "$PHPMVER" = '8.2' || "$PHPMUVER" = '8.2' || "$PHPMVER" = '8.3' || "$PHPMUVER" = '8.3' || "$PHPMVER" = '8.4' || "$PHPMUVER" = '8.4' || "$PHPMVER" = '8.5' || "$PHPMUVER" = '8.5' || "$PHPVER_ID" -ge '80000' ]]; then
   if [[ "$(uname -m)" = 'x86_64' ]]; then
     LIBDIR_LIBICU='lib64'
   else
@@ -1969,14 +1969,14 @@ fi
 
 if [[ "$PHPMVER" > 7 || "$PHPMUVER" > 7 ]]; then
   if [[ "$(rpm -ql libwebp | grep libwebp.so >/dev/null 2>&1; echo $?)" -eq '0' ]]; then
-    if [[ "$PHPMVER" = '7.4' || "$PHPMUVER" = '7.4' || "$PHPMVER" = '8.0' || "$PHPMUVER" = '8.0' || "$PHPMVER" = '8.1' || "$PHPMUVER" = '8.1' || "$PHPMVER" = '8.2' || "$PHPMUVER" = '8.2' || "$PHPMVER" = '8.3' || "$PHPMUVER" = '8.3' || "$PHPMVER" = '8.4' || "$PHPMUVER" = '8.4' || "$PHPVER_ID" -ge '80000' ]]; then
+    if [[ "$PHPMVER" = '7.4' || "$PHPMUVER" = '7.4' || "$PHPMVER" = '8.0' || "$PHPMUVER" = '8.0' || "$PHPMVER" = '8.1' || "$PHPMUVER" = '8.1' || "$PHPMVER" = '8.2' || "$PHPMUVER" = '8.2' || "$PHPMVER" = '8.3' || "$PHPMUVER" = '8.3' || "$PHPMVER" = '8.4' || "$PHPMUVER" = '8.4' || "$PHPMVER" = '8.5' || "$PHPMUVER" = '8.5' || "$PHPVER_ID" -ge '80000' ]]; then
       LIBVPXOPT=' --with-webp'
     else
       LIBVPXOPT=' --with-webp-dir=/usr'
     fi
   else
     time yum${CACHESKIP} -y install libwebp libwebp-devel
-    if [[ "$PHPMVER" = '7.4' || "$PHPMUVER" = '7.4' || "$PHPMVER" = '8.0' || "$PHPMUVER" = '8.0' || "$PHPMVER" = '8.1' || "$PHPMUVER" = '8.1' || "$PHPMVER" = '8.2' || "$PHPMUVER" = '8.2' || "$PHPMVER" = '8.3' || "$PHPMUVER" = '8.3' || "$PHPMVER" = '8.4' || "$PHPMUVER" = '8.4' || "$PHPVER_ID" -ge '80000' ]]; then
+    if [[ "$PHPMVER" = '7.4' || "$PHPMUVER" = '7.4' || "$PHPMVER" = '8.0' || "$PHPMUVER" = '8.0' || "$PHPMVER" = '8.1' || "$PHPMUVER" = '8.1' || "$PHPMVER" = '8.2' || "$PHPMUVER" = '8.2' || "$PHPMVER" = '8.3' || "$PHPMUVER" = '8.3' || "$PHPMVER" = '8.4' || "$PHPMUVER" = '8.4' || "$PHPMVER" = '8.5' || "$PHPMUVER" = '8.5' || "$PHPVER_ID" -ge '80000' ]]; then
       LIBVPXOPT=' --with-webp'
     else
       LIBVPXOPT=' --with-webp-dir=/usr'
@@ -2150,7 +2150,7 @@ if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9'
 fi
 
 # set_intelflags
-if [[ "$(grep -c "processor" /proc/cpuinfo)" -lt '2' ]] && [[ "$PHPMVER" = '7.3' || "$PHPMUVER" = '7.3' || "$PHPMVER" = '7.4' || "$PHPMUVER" = '7.4' || "$PHPMVER" = '8.0' || "$PHPMUVER" = '8.0' || "$PHPMVER" = '8.1' || "$PHPMUVER" = '8.1' || "$PHPMVER" = '8.2' || "$PHPMUVER" = '8.2' || "$PHPMVER" = '8.3' || "$PHPMUVER" = '8.3' || "$PHPMVER" = '8.4' || "$PHPMUVER" = '8.4' || "$PHPVER_ID" -ge '80000' ]]; then
+if [[ "$(grep -c "processor" /proc/cpuinfo)" -lt '2' ]] && [[ "$PHPMVER" = '7.3' || "$PHPMUVER" = '7.3' || "$PHPMVER" = '7.4' || "$PHPMUVER" = '7.4' || "$PHPMVER" = '8.0' || "$PHPMUVER" = '8.0' || "$PHPMVER" = '8.1' || "$PHPMUVER" = '8.1' || "$PHPMVER" = '8.2' || "$PHPMUVER" = '8.2' || "$PHPMVER" = '8.3' || "$PHPMUVER" = '8.3' || "$PHPMVER" = '8.4' || "$PHPMUVER" = '8.4' || "$PHPMVER" = '8.5' || "$PHPMUVER" = '8.5' || "$PHPVER_ID" -ge '80000' ]]; then
   # Enable faster clang compiler for PHP if less than 2 cpu threads
   # CLANG_PHP='y'
 
@@ -2170,7 +2170,7 @@ elif [[ "$(grep -c "processor" /proc/cpuinfo)" -lt '2' ]]; then
   # Disable php intel optimisation flags if less than 2 cpu threads
   # detected due to being very very slow for php compile times
   GCCINTEL_PHP='n'
-elif [[ "$PHPMVER" = '7.3' || "$PHPMUVER" = '7.3' || "$PHPMVER" = '7.4' || "$PHPMUVER" = '7.4' || "$PHPMVER" = '8.0' || "$PHPMUVER" = '8.0' || "$PHPMVER" = '8.1' || "$PHPMUVER" = '8.1' || "$PHPMVER" = '8.2' || "$PHPMUVER" = '8.2' || "$PHPMVER" = '8.3' || "$PHPMUVER" = '8.3' || "$PHPMVER" = '8.4' || "$PHPMUVER" = '8.4' || "$PHPVER_ID" -ge '80000' ]]; then
+elif [[ "$PHPMVER" = '7.3' || "$PHPMUVER" = '7.3' || "$PHPMVER" = '7.4' || "$PHPMUVER" = '7.4' || "$PHPMVER" = '8.0' || "$PHPMUVER" = '8.0' || "$PHPMVER" = '8.1' || "$PHPMUVER" = '8.1' || "$PHPMVER" = '8.2' || "$PHPMUVER" = '8.2' || "$PHPMVER" = '8.3' || "$PHPMUVER" = '8.3' || "$PHPMVER" = '8.4' || "$PHPMUVER" = '8.4' || "$PHPMVER" = '8.5' || "$PHPMUVER" = '8.5' || "$PHPVER_ID" -ge '80000' ]]; then
   # Enable faster clang compiler for PHP if less than 2 cpu threads
   # CLANG_PHP='y'
 
@@ -3984,11 +3984,11 @@ fi
   echo "$PHPMUVER"
   echo "$PHPVER_ID"
 # upgrades check & set PHP_OPENSSLOPT
-  if [[ "$PHP_CUSTOMSSL" = [yY] ]] && [[ "$PHPMUVER" = '7.4' || "$PHPMUVER" = '8.0' || "$PHPMUVER" = '8.1' || "$PHPMUVER" = '8.2' || "$PHPMUVER" = '8.3' || "$PHPMUVER" = '8.4' || "$PHPVER_ID" -ge '80000' ]]; then
+  if [[ "$PHP_CUSTOMSSL" = [yY] ]] && [[ "$PHPMUVER" = '7.4' || "$PHPMUVER" = '8.0' || "$PHPMUVER" = '8.1' || "$PHPMUVER" = '8.2' || "$PHPMUVER" = '8.3' || "$PHPMUVER" = '8.4' || "$PHPMUVER" = '8.5' || "$PHPVER_ID" -ge '80000' ]]; then
     if [[ "$LIBRESSL_SWITCH" = [yY] ]]; then
       PHP_OPENSSLOPT='--with-openssl=/opt/libressl'
       ln -sfn /opt/libressl/lib /opt/libressl/lib64
-    elif [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' || "$CENTOS_TEN" -eq '10' ]] && [[ "$PHPMUVER" = '8.1' || "$PHPMUVER" = '8.2' || "$PHPMUVER" = '8.3' || "$PHPMUVER" = '8.4' ]] && [[ "$DETECTOPENSSL_THREEZERO" = '3.0' && "$LIBRESSL_SWITCH" = [nN] && "$BORINGSSL_SWITCH" = [nN] ]]; then
+    elif [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' || "$CENTOS_TEN" -eq '10' ]] && [[ "$PHPMUVER" = '8.1' || "$PHPMUVER" = '8.2' || "$PHPMUVER" = '8.3' || "$PHPMUVER" = '8.4' || "$PHPMUVER" = '8.5' ]] && [[ "$DETECTOPENSSL_THREEZERO" = '3.0' && "$LIBRESSL_SWITCH" = [nN] && "$BORINGSSL_SWITCH" = [nN] ]]; then
       PHP_OPENSSLOPT="--with-openssl=${OPENSSL_CUSTOMPATH}"
       ln -sfn "${OPENSSL_CUSTOMPATH}/lib64" "${OPENSSL_CUSTOMPATH}/lib"
       echo "PHP_CUSTOMSSL=Y: upgrade PHP + OpenSSL 3.1 OPENSSL_CFLAGS + OPENSSL_LIBS"
@@ -3998,7 +3998,7 @@ fi
       if [[ -f "${DIR_TMP}/openssl-${OPENSSL_VERSION}/apps/openssl.cnf" && ! -f /opt/openssl/openssl.cnf ]]; then
           \cp -af "${DIR_TMP}/openssl-${OPENSSL_VERSION}/apps/openssl.cnf" /opt/openssl/openssl.cnf
       fi
-    elif [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' || "$CENTOS_TEN" -eq '10' ]] && [[ "$PHPMUVER" = '8.1' || "$PHPMUVER" = '8.2' || "$PHPMUVER" = '8.3' || "$PHPMUVER" = '8.4' ]] && [[ "$DETECTOPENSSL_THREEONE" = '3.1' && "$LIBRESSL_SWITCH" = [nN] && "$BORINGSSL_SWITCH" = [nN] ]]; then
+    elif [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' || "$CENTOS_TEN" -eq '10' ]] && [[ "$PHPMUVER" = '8.1' || "$PHPMUVER" = '8.2' || "$PHPMUVER" = '8.3' || "$PHPMUVER" = '8.4' || "$PHPMUVER" = '8.5' ]] && [[ "$DETECTOPENSSL_THREEONE" = '3.1' && "$LIBRESSL_SWITCH" = [nN] && "$BORINGSSL_SWITCH" = [nN] ]]; then
       PHP_OPENSSLOPT="--with-openssl=${OPENSSL_CUSTOMPATH}"
       ln -sfn "${OPENSSL_CUSTOMPATH}/lib64" "${OPENSSL_CUSTOMPATH}/lib"
       echo "PHP_CUSTOMSSL=Y: upgrade PHP + OpenSSL 3.1 OPENSSL_CFLAGS + OPENSSL_LIBS"
@@ -4008,7 +4008,7 @@ fi
       if [[ -f "${DIR_TMP}/openssl-${OPENSSL_VERSION}/apps/openssl.cnf" && ! -f /opt/openssl/openssl.cnf ]]; then
           \cp -af "${DIR_TMP}/openssl-${OPENSSL_VERSION}/apps/openssl.cnf" /opt/openssl/openssl.cnf
       fi
-    elif [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' || "$CENTOS_TEN" -eq '10' ]] && [[ "$PHPMUVER" = '8.1' || "$PHPMUVER" = '8.2' || "$PHPMUVER" = '8.3' || "$PHPMUVER" = '8.4' ]] && [[ "$DETECTOPENSSL_THREETWO" = '3.2' && "$LIBRESSL_SWITCH" = [nN] && "$BORINGSSL_SWITCH" = [nN] ]]; then
+    elif [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' || "$CENTOS_TEN" -eq '10' ]] && [[ "$PHPMUVER" = '8.1' || "$PHPMUVER" = '8.2' || "$PHPMUVER" = '8.3' || "$PHPMUVER" = '8.4' || "$PHPMUVER" = '8.5' ]] && [[ "$DETECTOPENSSL_THREETWO" = '3.2' && "$LIBRESSL_SWITCH" = [nN] && "$BORINGSSL_SWITCH" = [nN] ]]; then
       PHP_OPENSSLOPT="--with-openssl=${OPENSSL_CUSTOMPATH}"
       ln -sfn "${OPENSSL_CUSTOMPATH}/lib64" "${OPENSSL_CUSTOMPATH}/lib"
       echo "PHP_CUSTOMSSL=Y: upgrade PHP + OpenSSL 3.1 OPENSSL_CFLAGS + OPENSSL_LIBS"
@@ -4085,7 +4085,7 @@ if [[ "$PHPMUVER" = '5.5' || "$PHPMUVER" = '5.6' || "$PHPMUVER" = '7.0' || "$PHP
   PHP_OPENSSLOPT='--with-openssl'
 fi
 
-if [[ "$PHPMVER" = '7.3' || "$PHPMUVER" = '7.3' || "$PHPMVER" = '7.4' || "$PHPMUVER" = '7.4' || "$PHPMVER" = '8.0' || "$PHPMUVER" = '8.0' || "$PHPMVER" = '8.1' || "$PHPMUVER" = '8.1' || "$PHPMVER" = '8.2' || "$PHPMUVER" = '8.2' || "$PHPMVER" = '8.3' || "$PHPMUVER" = '8.3' || "$PHPMVER" = '8.4' || "$PHPMUVER" = '8.4' || "$PHPVER_ID" -ge '80000' ]]; then
+if [[ "$PHPMVER" = '7.3' || "$PHPMUVER" = '7.3' || "$PHPMVER" = '7.4' || "$PHPMUVER" = '7.4' || "$PHPMVER" = '8.0' || "$PHPMUVER" = '8.0' || "$PHPMVER" = '8.1' || "$PHPMUVER" = '8.1' || "$PHPMVER" = '8.2' || "$PHPMUVER" = '8.2' || "$PHPMVER" = '8.3' || "$PHPMUVER" = '8.3' || "$PHPMVER" = '8.4' || "$PHPMUVER" = '8.4' || "$PHPMVER" = '8.5' || "$PHPMUVER" = '8.5' || "$PHPVER_ID" -ge '80000' ]]; then
   # seems PHP 7.3 must use libzip unlike PHP 7.2 which can compile without it
   if [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' || "$CENTOS_TEN" -eq '10' ]] && [[ "$IMAGEMAGICK_SEVEN" != [yY] ]]; then
     PHP_LIBZIP='n'
@@ -4245,7 +4245,7 @@ elif [[ "$PHP_ARGON" = [nN] && "$PHP_LIBZIP" = [nN] ]]; then
   # alias for PHP 7.2 argon support
   PHP_LIBZIP='n'
 fi
-if [[ "$PHP_LIBZIP" = [yY] || "$PHP_ARGON" = [yY] ]] && [[ "$PHPMVER" = '7.2' || "$PHPMUVER" = '7.2' || "$PHPMVER" = '7.3' || "$PHPMUVER" = '7.3' || "$PHPMVER" = '7.4' || "$PHPMUVER" = '7.4' || "$PHPMVER" = '8.0' || "$PHPMUVER" = '8.0' || "$PHPMVER" = '8.1' || "$PHPMUVER" = '8.1' || "$PHPMVER" = '8.2' || "$PHPMUVER" = '8.2' || "$PHPMVER" = '8.3' || "$PHPMUVER" = '8.3' || "$PHPMVER" = '8.4' || "$PHPMUVER" = '8.4' || "$PHPVER_ID" -ge '80000' ]]; then
+if [[ "$PHP_LIBZIP" = [yY] || "$PHP_ARGON" = [yY] ]] && [[ "$PHPMVER" = '7.2' || "$PHPMUVER" = '7.2' || "$PHPMVER" = '7.3' || "$PHPMUVER" = '7.3' || "$PHPMVER" = '7.4' || "$PHPMUVER" = '7.4' || "$PHPMVER" = '8.0' || "$PHPMUVER" = '8.0' || "$PHPMVER" = '8.1' || "$PHPMUVER" = '8.1' || "$PHPMVER" = '8.2' || "$PHPMUVER" = '8.2' || "$PHPMVER" = '8.3' || "$PHPMUVER" = '8.3' || "$PHPMVER" = '8.4' || "$PHPMUVER" = '8.4' || "$PHPMVER" = '8.5' || "$PHPMUVER" = '8.5' || "$PHPVER_ID" -ge '80000' ]]; then
   ARGONTWO_OPT=' --with-password-argon2'
   LIBSODIUM_OPT=' --with-sodium'
   echo "libzip check PHPMVER = $PHPMVER"
@@ -4255,7 +4255,7 @@ if [[ "$PHP_LIBZIP" = [yY] || "$PHP_ARGON" = [yY] ]] && [[ "$PHPMVER" = '7.2' ||
   else
     LIBDIR_LIBZIP='lib'
   fi
-  if [[ "$PHPMVER" = '8.0' || "$PHPMUVER" = '8.0' || "$PHPMVER" = '8.1' || "$PHPMUVER" = '8.1' || "$PHPMVER" = '8.2' || "$PHPMUVER" = '8.2' || "$PHPMVER" = '8.3' || "$PHPMUVER" = '8.3' || "$PHPMVER" = '8.4' || "$PHPMUVER" = '8.4' || "$PHPVER_ID" -ge '80000' ]]; then
+  if [[ "$PHPMVER" = '8.0' || "$PHPMUVER" = '8.0' || "$PHPMVER" = '8.1' || "$PHPMUVER" = '8.1' || "$PHPMVER" = '8.2' || "$PHPMUVER" = '8.2' || "$PHPMVER" = '8.3' || "$PHPMUVER" = '8.3' || "$PHPMVER" = '8.4' || "$PHPMUVER" = '8.4' || "$PHPMVER" = '8.5' || "$PHPMUVER" = '8.5' || "$PHPVER_ID" -ge '80000' ]]; then
     # https://bugs.php.net/bug.php?id=76483
     # PHP 7.4 not finding libzip paths
     if [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' || "$CENTOS_TEN" -eq '10' ]] && [[ "$IMAGEMAGICK_SEVEN" != [yY] ]]; then
@@ -4362,7 +4362,7 @@ if [[ "$PHP_LIBZIP" = [yY] || "$PHP_ARGON" = [yY] ]] && [[ "$PHPMVER" = '7.2' ||
       if install_libsodium_rpm "10"; then
         echo "libsodium installed via RPM successfully"
         LIBSODIUM_OPT=' --with-sodium=/usr/local'
-        if [[ "$PHPMVER" = '7.4' || "$PHPMUVER" = '7.4' || "$PHPMVER" = '8.0' || "$PHPMUVER" = '8.0' || "$PHPMVER" = '8.1' || "$PHPMUVER" = '8.1' || "$PHPMVER" = '8.2' || "$PHPMUVER" = '8.2' || "$PHPMVER" = '8.3' || "$PHPMUVER" = '8.3' || "$PHPMVER" = '8.4' || "$PHPMUVER" = '8.4' || "$PHPVER_ID" -ge '80000' ]]; then
+        if [[ "$PHPMVER" = '7.4' || "$PHPMUVER" = '7.4' || "$PHPMVER" = '8.0' || "$PHPMUVER" = '8.0' || "$PHPMVER" = '8.1' || "$PHPMUVER" = '8.1' || "$PHPMVER" = '8.2' || "$PHPMUVER" = '8.2' || "$PHPMVER" = '8.3' || "$PHPMUVER" = '8.3' || "$PHPMVER" = '8.4' || "$PHPMUVER" = '8.4' || "$PHPMVER" = '8.5' || "$PHPMUVER" = '8.5' || "$PHPVER_ID" -ge '80000' ]]; then
           export LIBSODIUM_CFLAGS='-I/usr/local/include'
           export LIBSODIUM_LIBS="-L/usr/local/${LIBDIR_ARGONSODIUM} -lsodium"
         fi
@@ -4412,7 +4412,7 @@ if [[ "$PHP_LIBZIP" = [yY] || "$PHP_ARGON" = [yY] ]] && [[ "$PHPMVER" = '7.2' ||
     make${MAKETHREADS}
     make install
     LIBSODIUM_OPT=' --with-sodium=/usr/local'
-    if [[ "$PHPMVER" = '7.4' || "$PHPMUVER" = '7.4' || "$PHPMVER" = '8.0' || "$PHPMUVER" = '8.0' || "$PHPMVER" = '8.1' || "$PHPMUVER" = '8.1' || "$PHPMVER" = '8.2' || "$PHPMUVER" = '8.2' || "$PHPMVER" = '8.3' || "$PHPMUVER" = '8.3' || "$PHPMVER" = '8.4' || "$PHPMUVER" = '8.4' || "$PHPVER_ID" -ge '80000' ]]; then
+    if [[ "$PHPMVER" = '7.4' || "$PHPMUVER" = '7.4' || "$PHPMVER" = '8.0' || "$PHPMUVER" = '8.0' || "$PHPMVER" = '8.1' || "$PHPMUVER" = '8.1' || "$PHPMVER" = '8.2' || "$PHPMUVER" = '8.2' || "$PHPMVER" = '8.3' || "$PHPMUVER" = '8.3' || "$PHPMVER" = '8.4' || "$PHPMUVER" = '8.4' || "$PHPMVER" = '8.5' || "$PHPMUVER" = '8.5' || "$PHPVER_ID" -ge '80000' ]]; then
       # PHP 7.4 not finding sodium paths
       export LIBSODIUM_CFLAGS='-I/usr/local/include'
       export LIBSODIUM_LIBS="-L/usr/local/${LIBDIR_ARGONSODIUM} -lsodium"
@@ -4439,7 +4439,7 @@ if [[ "$PHP_LIBZIP" = [yY] || "$PHP_ARGON" = [yY] ]] && [[ "$PHPMVER" = '7.2' ||
       if install_libargon2_rpm "10"; then
         echo "libargon2 installed via RPM successfully"
         ARGONTWO_OPT=' --with-password-argon2'
-        if [[ "$PHPMVER" = '7.4' || "$PHPMUVER" = '7.4' || "$PHPMVER" = '8.0' || "$PHPMUVER" = '8.0' || "$PHPMVER" = '8.1' || "$PHPMUVER" = '8.1' || "$PHPMVER" = '8.2' || "$PHPMUVER" = '8.2' || "$PHPMVER" = '8.3' || "$PHPMUVER" = '8.3' || "$PHPMVER" = '8.4' || "$PHPMUVER" = '8.4' || "$PHPVER_ID" -ge '80000' ]]; then
+        if [[ "$PHPMVER" = '7.4' || "$PHPMUVER" = '7.4' || "$PHPMVER" = '8.0' || "$PHPMUVER" = '8.0' || "$PHPMVER" = '8.1' || "$PHPMUVER" = '8.1' || "$PHPMVER" = '8.2' || "$PHPMUVER" = '8.2' || "$PHPMVER" = '8.3' || "$PHPMUVER" = '8.3' || "$PHPMVER" = '8.4' || "$PHPMUVER" = '8.4' || "$PHPMVER" = '8.5' || "$PHPMUVER" = '8.5' || "$PHPVER_ID" -ge '80000' ]]; then
           export ARGON2_CFLAGS='-I/usr/local/include'
           export ARGON2_LIBS="-L/usr/local/${LIBDIR_ARGONSODIUM} -largon2"
         fi
@@ -4480,7 +4480,7 @@ if [[ "$PHP_LIBZIP" = [yY] || "$PHP_ARGON" = [yY] ]] && [[ "$PHPMVER" = '7.2' ||
     make install PREFIX=/usr/local LIBRARY_REL=${LIBDIR_ARGONSODIUM}
     #ARGONTWO_OPT=' --with-password-argon2=/usr/local'
     ARGONTWO_OPT=' --with-password-argon2'
-    if [[ "$PHPMVER" = '7.4' || "$PHPMUVER" = '7.4' || "$PHPMVER" = '8.0' || "$PHPMUVER" = '8.0' || "$PHPMVER" = '8.1' || "$PHPMUVER" = '8.1' || "$PHPMVER" = '8.2' || "$PHPMUVER" = '8.2' || "$PHPMVER" = '8.3' || "$PHPMUVER" = '8.3' || "$PHPMVER" = '8.4' || "$PHPMUVER" = '8.4' || "$PHPVER_ID" -ge '80000' ]]; then
+    if [[ "$PHPMVER" = '7.4' || "$PHPMUVER" = '7.4' || "$PHPMVER" = '8.0' || "$PHPMUVER" = '8.0' || "$PHPMVER" = '8.1' || "$PHPMUVER" = '8.1' || "$PHPMVER" = '8.2' || "$PHPMUVER" = '8.2' || "$PHPMVER" = '8.3' || "$PHPMUVER" = '8.3' || "$PHPMVER" = '8.4' || "$PHPMUVER" = '8.4' || "$PHPMVER" = '8.5' || "$PHPMUVER" = '8.5' || "$PHPVER_ID" -ge '80000' ]]; then
       # PHP 7.4 not finding sodium paths
       export ARGON2_CFLAGS='-I/usr/local/include'
       export ARGON2_LIBS="-L/usr/local/${LIBDIR_ARGONSODIUM} -largon2"
@@ -4535,7 +4535,7 @@ else
   fi
 fi
 
-if [[ "$PHP_LIBGD_EXTERNAL" = [yY] ]] && [[ "$PHPMVER" = '7.4' || "$PHPMUVER" = '7.4' || "$PHPMVER" = '8.0' || "$PHPMUVER" = '8.0' || "$PHPMVER" = '8.1' || "$PHPMUVER" = '8.1' || "$PHPMVER" = '8.2' || "$PHPMUVER" = '8.2' || "$PHPMVER" = '8.3' || "$PHPMUVER" = '8.3' || "$PHPMVER" = '8.4' || "$PHPMUVER" = '8.4' || "$PHPVER_ID" -ge '80000' ]]; then
+if [[ "$PHP_LIBGD_EXTERNAL" = [yY] ]] && [[ "$PHPMVER" = '7.4' || "$PHPMUVER" = '7.4' || "$PHPMVER" = '8.0' || "$PHPMUVER" = '8.0' || "$PHPMVER" = '8.1' || "$PHPMUVER" = '8.1' || "$PHPMVER" = '8.2' || "$PHPMUVER" = '8.2' || "$PHPMVER" = '8.3' || "$PHPMUVER" = '8.3' || "$PHPMVER" = '8.4' || "$PHPMUVER" = '8.4' || "$PHPMVER" = '8.5' || "$PHPMUVER" = '8.5' || "$PHPVER_ID" -ge '80000' ]]; then
   LIBGD_EXT_OPT=' --with-external-gd'
   install_libgd_external
 # elif [[ "$PHP_LIBGD_EXTERNAL" = [yY] ]] && [[ "$PHPMVER" = '7.0' || "$PHPMUVER" = '7.0' || "$PHPMVER" = '7.1' || "$PHPMUVER" = '7.1' || "$PHPMVER" = '7.2' || "$PHPMUVER" = '7.2' || "$PHPMVER" = '7.3' || "$PHPMUVER" = '7.3' ]]; then
@@ -4545,7 +4545,7 @@ else
   LIBGD_EXT_OPT=''
 fi
 
-if [[ "$CENTOS_SEVEN" -eq '7' ]] && [[ "$PHP_LIBXML" = [yY] ]] && [[ "$PHPMVER" = '8.4' || "$PHPMUVER" = '8.4' || "$PHPVER_ID" -ge '80000' ]]; then
+if [[ "$CENTOS_SEVEN" -eq '7' ]] && [[ "$PHP_LIBXML" = [yY] ]] && [[ "$PHPMVER" = '8.4' || "$PHPMUVER" = '8.4' || "$PHPMVER" = '8.5' || "$PHPMUVER" = '8.5' || "$PHPVER_ID" -ge '80000' ]]; then
   libxml_install
 fi
 
@@ -4580,7 +4580,7 @@ elif [[ "$INITIALINSTALL" != [yY] ]]; then
   PHPXPMOPT="--with-xpm-dir=${PLIBDIR}"
 fi
 
-if [[ "$PHPMVER" = '7.4' || "$PHPMUVER" = '7.4' || "$PHPMVER" = '8.0' || "$PHPMUVER" = '8.0' || "$PHPMVER" = '8.1' || "$PHPMUVER" = '8.1' || "$PHPMVER" = '8.2' || "$PHPMUVER" = '8.2' || "$PHPMVER" = '8.3' || "$PHPMUVER" = '8.3' || "$PHPMVER" = '8.4' || "$PHPMUVER" = '8.4' || "$PHPVER_ID" -ge '80000' ]]; then
+if [[ "$PHPMVER" = '7.4' || "$PHPMUVER" = '7.4' || "$PHPMVER" = '8.0' || "$PHPMUVER" = '8.0' || "$PHPMVER" = '8.1' || "$PHPMUVER" = '8.1' || "$PHPMVER" = '8.2' || "$PHPMUVER" = '8.2' || "$PHPMVER" = '8.3' || "$PHPMUVER" = '8.3' || "$PHPMVER" = '8.4' || "$PHPMUVER" = '8.4' || "$PHPMVER" = '8.5' || "$PHPMUVER" = '8.5' || "$PHPVER_ID" -ge '80000' ]]; then
   # ensure libpng-devel paths are found by PHP 7.4+
   if [ -f /usr/bin/libpng-config ]; then
     PHP_PNG_SUFFIX=$(/usr/bin/libpng-config --libs)
@@ -4672,13 +4672,13 @@ else
 
   # only allow custom curl compiles for EL9 + PHP 7.4+ or EL7/EL8 + PHP 7.4+
   # EL9 + PHP 7.4 or 8.0 is built against custom compat-openssl11 opensl 1.1.1 version
-  if [[ "$CENTOS_TEN" -eq '10' ]] && [[ "$PHPMVER" = '7.4' || "$PHPMUVER" = '7.4' ||"$PHPMVER" = '8.0' || "$PHPMUVER" = '8.0' || "$PHPMVER" = '8.1' || "$PHPMUVER" = '8.1' || "$PHPMVER" = '8.2' || "$PHPMUVER" = '8.2' || "$PHPMVER" = '8.3' || "$PHPMUVER" = '8.3' || "$PHPMVER" = '8.4' || "$PHPMUVER" = '8.4' || "$PHPVER_ID" -ge '80100' ]]; then
+  if [[ "$CENTOS_TEN" -eq '10' ]] && [[ "$PHPMVER" = '7.4' || "$PHPMUVER" = '7.4' ||"$PHPMVER" = '8.0' || "$PHPMUVER" = '8.0' || "$PHPMVER" = '8.1' || "$PHPMUVER" = '8.1' || "$PHPMVER" = '8.2' || "$PHPMUVER" = '8.2' || "$PHPMVER" = '8.3' || "$PHPMUVER" = '8.3' || "$PHPMVER" = '8.4' || "$PHPMUVER" = '8.4' || "$PHPMVER" = '8.5' || "$PHPMUVER" = '8.5' || "$PHPVER_ID" -ge '80100' ]]; then
     compile_custom_curl
-  elif [[ "$CENTOS_NINE" -eq '9' ]] && [[ "$PHPMVER" = '7.4' || "$PHPMUVER" = '7.4' ||"$PHPMVER" = '8.0' || "$PHPMUVER" = '8.0' || "$PHPMVER" = '8.1' || "$PHPMUVER" = '8.1' || "$PHPMVER" = '8.2' || "$PHPMUVER" = '8.2' || "$PHPMVER" = '8.3' || "$PHPMUVER" = '8.3' || "$PHPMVER" = '8.4' || "$PHPMUVER" = '8.4' || "$PHPVER_ID" -ge '80100' ]]; then
+  elif [[ "$CENTOS_NINE" -eq '9' ]] && [[ "$PHPMVER" = '7.4' || "$PHPMUVER" = '7.4' ||"$PHPMVER" = '8.0' || "$PHPMUVER" = '8.0' || "$PHPMVER" = '8.1' || "$PHPMUVER" = '8.1' || "$PHPMVER" = '8.2' || "$PHPMUVER" = '8.2' || "$PHPMVER" = '8.3' || "$PHPMUVER" = '8.3' || "$PHPMVER" = '8.4' || "$PHPMUVER" = '8.4' || "$PHPMVER" = '8.5' || "$PHPMUVER" = '8.5' || "$PHPVER_ID" -ge '80100' ]]; then
     compile_custom_curl
-  elif [[ "$CENTOS_EIGHT" -eq '8' ]] && [[ "$PHPMVER" = '7.4' || "$PHPMUVER" = '7.4' ||"$PHPMVER" = '8.0' || "$PHPMUVER" = '8.0' || "$PHPMVER" = '8.1' || "$PHPMUVER" = '8.1' || "$PHPMVER" = '8.2' || "$PHPMUVER" = '8.2' || "$PHPMVER" = '8.3' || "$PHPMUVER" = '8.3' || "$PHPMVER" = '8.4' || "$PHPMUVER" = '8.4' || "$PHPVER_ID" -ge '80000' ]]; then
+  elif [[ "$CENTOS_EIGHT" -eq '8' ]] && [[ "$PHPMVER" = '7.4' || "$PHPMUVER" = '7.4' ||"$PHPMVER" = '8.0' || "$PHPMUVER" = '8.0' || "$PHPMVER" = '8.1' || "$PHPMUVER" = '8.1' || "$PHPMVER" = '8.2' || "$PHPMUVER" = '8.2' || "$PHPMVER" = '8.3' || "$PHPMUVER" = '8.3' || "$PHPMVER" = '8.4' || "$PHPMUVER" = '8.4' || "$PHPMVER" = '8.5' || "$PHPMUVER" = '8.5' || "$PHPVER_ID" -ge '80000' ]]; then
     compile_custom_curl
-  elif [[ "$CENTOS_SEVEN" -eq '7' ]] && [[ "$PHPMVER" = '7.4' || "$PHPMUVER" = '7.4' ||"$PHPMVER" = '8.0' || "$PHPMUVER" = '8.0' || "$PHPMVER" = '8.1' || "$PHPMUVER" = '8.1' || "$PHPMVER" = '8.2' || "$PHPMUVER" = '8.2' || "$PHPMVER" = '8.3' || "$PHPMUVER" = '8.3' || "$PHPMVER" = '8.4' || "$PHPMUVER" = '8.4' || "$PHPVER_ID" -ge '80000' ]]; then
+  elif [[ "$CENTOS_SEVEN" -eq '7' ]] && [[ "$PHPMVER" = '7.4' || "$PHPMUVER" = '7.4' ||"$PHPMVER" = '8.0' || "$PHPMUVER" = '8.0' || "$PHPMVER" = '8.1' || "$PHPMUVER" = '8.1' || "$PHPMVER" = '8.2' || "$PHPMUVER" = '8.2' || "$PHPMVER" = '8.3' || "$PHPMUVER" = '8.3' || "$PHPMVER" = '8.4' || "$PHPMUVER" = '8.4' || "$PHPMVER" = '8.5' || "$PHPMUVER" = '8.5' || "$PHPVER_ID" -ge '80000' ]]; then
     compile_custom_curl
   fi
 
@@ -4757,7 +4757,7 @@ fi
     echo
     echo "php_configure.inc make${MAKETHREADS_PHP}"
     echo "PHP_PGO = $PHP_PGO"
-    if [[ "$PHP_PGO" = [yY] ]] && [[ "$PHPMVER" = '7.0' || "$PHPMVER" = '7.1' || "$PHPMVER" = '7.2' || "$PHPMVER" = '7.3' || "$PHPMVER" = '7.4' || "$PHPMVER" = '8.0' || "$PHPMUVER" = '8.0' || "$PHPMVER" = '8.1' || "$PHPMUVER" = '8.1' || "$PHPMVER" = '8.2' || "$PHPMUVER" = '8.2' || "$PHPMVER" = '8.3' || "$PHPMUVER" = '8.3' || "$PHPMVER" = '8.4' || "$PHPMUVER" = '8.4' || "$PHPVER_ID" -ge '80000' ]]; then
+    if [[ "$PHP_PGO" = [yY] ]] && [[ "$PHPMVER" = '7.0' || "$PHPMVER" = '7.1' || "$PHPMVER" = '7.2' || "$PHPMVER" = '7.3' || "$PHPMVER" = '7.4' || "$PHPMVER" = '8.0' || "$PHPMUVER" = '8.0' || "$PHPMVER" = '8.1' || "$PHPMUVER" = '8.1' || "$PHPMVER" = '8.2' || "$PHPMUVER" = '8.2' || "$PHPMVER" = '8.3' || "$PHPMUVER" = '8.3' || "$PHPMVER" = '8.4' || "$PHPMUVER" = '8.4' || "$PHPMVER" = '8.5' || "$PHPMUVER" = '8.5' || "$PHPVER_ID" -ge '80000' ]]; then
         # get cpu core to fix for PGO training for optimal cpu cache access
         pgo_cpurange=$(echo $(($(nproc)-1)))
         pgo_cpulist=$(seq 1 $pgo_cpurange)

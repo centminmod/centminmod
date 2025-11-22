@@ -26,11 +26,27 @@ checkmongodbtar() {
     PHPEXT_MONGODBLINKFILE="mongodb-${MONGODBPHP_VER}.tgz"
     PHPEXT_MONGODBLINK="https://pecl.php.net/get/${PHPEXT_MONGODBLINKFILE}"
     PHPEXT_MONGODBLINKLOCAL="${LOCALCENTMINMOD_MIRROR}/centminmodparts/mongodb/${PHPEXT_MONGODBLINKFILE}"
-  elif [[ "$CENTOS_SEVEN" -eq '7' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' || "$CENTOS_TEN" -eq '10' ]] && [[ "$PHPMVER" = '8.2' || "$PHPMUVER" = '8.2' || "$PHPVER_ID" -ge '80000' ]]; then
-    # PHP 8 requires mongodb =>1.12.0
-    # PHP 7 requires mongodb 1.11.1+
-    # PHP 5.x requires mongodb <=1.7.5
+  elif [[ "$CENTOS_SEVEN" -eq '7' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' || "$CENTOS_TEN" -eq '10' ]] && [[ "$PHPMVER" = '8.2' || "$PHPMUVER" = '8.2' ]]; then
+    # PHP 8.2 requires mongodb 1.20.0+
     MONGODBPHP_VER="$MONGODBPHP_EIGHTTWO_VER"
+    PHPEXT_MONGODBLINKFILE="mongodb-${MONGODBPHP_VER}.tgz"
+    PHPEXT_MONGODBLINK="https://pecl.php.net/get/${PHPEXT_MONGODBLINKFILE}"
+    PHPEXT_MONGODBLINKLOCAL="${LOCALCENTMINMOD_MIRROR}/centminmodparts/mongodb/${PHPEXT_MONGODBLINKFILE}"
+  elif [[ "$CENTOS_SEVEN" -eq '7' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' || "$CENTOS_TEN" -eq '10' ]] && [[ "$PHPMVER" = '8.3' || "$PHPMUVER" = '8.3' ]]; then
+    # PHP 8.3 requires mongodb 1.21.2+
+    MONGODBPHP_VER="$MONGODBPHP_EIGHTTHREE_VER"
+    PHPEXT_MONGODBLINKFILE="mongodb-${MONGODBPHP_VER}.tgz"
+    PHPEXT_MONGODBLINK="https://pecl.php.net/get/${PHPEXT_MONGODBLINKFILE}"
+    PHPEXT_MONGODBLINKLOCAL="${LOCALCENTMINMOD_MIRROR}/centminmodparts/mongodb/${PHPEXT_MONGODBLINKFILE}"
+  elif [[ "$CENTOS_SEVEN" -eq '7' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' || "$CENTOS_TEN" -eq '10' ]] && [[ "$PHPMVER" = '8.4' || "$PHPMUVER" = '8.4' ]]; then
+    # PHP 8.4 requires mongodb 1.21.2+
+    MONGODBPHP_VER="$MONGODBPHP_EIGHTFOUR_VER"
+    PHPEXT_MONGODBLINKFILE="mongodb-${MONGODBPHP_VER}.tgz"
+    PHPEXT_MONGODBLINK="https://pecl.php.net/get/${PHPEXT_MONGODBLINKFILE}"
+    PHPEXT_MONGODBLINKLOCAL="${LOCALCENTMINMOD_MIRROR}/centminmodparts/mongodb/${PHPEXT_MONGODBLINKFILE}"
+  elif [[ "$CENTOS_SEVEN" -eq '7' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' || "$CENTOS_TEN" -eq '10' ]] && [[ "$PHPMVER" = '8.5' || "$PHPMUVER" = '8.5' || "$PHPVER_ID" -ge '80500' ]]; then
+    # PHP 8.5 requires mongodb 1.21.2+
+    MONGODBPHP_VER="$MONGODBPHP_EIGHTFIVE_VER"
     PHPEXT_MONGODBLINKFILE="mongodb-${MONGODBPHP_VER}.tgz"
     PHPEXT_MONGODBLINK="https://pecl.php.net/get/${PHPEXT_MONGODBLINKFILE}"
     PHPEXT_MONGODBLINKLOCAL="${LOCALCENTMINMOD_MIRROR}/centminmodparts/mongodb/${PHPEXT_MONGODBLINKFILE}"

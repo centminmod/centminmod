@@ -30,7 +30,7 @@ DT=$(date +"%d%m%y-%H%M%S")
 branchname='141.00beta01'
 SCRIPT_MAJORVER='141'
 SCRIPT_MINORVER='00'
-SCRIPT_INCREMENTVER='096'
+SCRIPT_INCREMENTVER='097'
 SCRIPT_VERSIONSHORT="${branchname}"
 SCRIPT_VERSION="${SCRIPT_VERSIONSHORT}.b${SCRIPT_INCREMENTVER}"
 SCRIPT_DATE='16/08/25'
@@ -309,7 +309,7 @@ CENTOSVER_NUMERIC=$(echo $CENTOSVER | sed -e 's|\.||g')
 if [[ "$CENTOS_EIGHT" -eq '8' && "$CENTOSVER_NUMERIC" -ge '89' ]]; then
   DEVTOOLSETTEN='n'
   DEVTOOLSETELEVEN='n'
-  if [[ "$PHP_PGO_FALLBACK_GCC" = [yY] && "$PHP_PGO" = [yY] ]] && [[ "$PHPMVER" = '7.0' || "$PHPMUVER" = '7.0' || "$PHPMVER" = '7.1' || "$PHPMUVER" = '7.1' || "$PHPMVER" = '7.2' || "$PHPMUVER" = '7.2' || "$PHPMVER" = '7.3' || "$PHPMUVER" = '7.3' || "$PHPMVER" = '7.4' || "$PHPMUVER" = '7.4' || "$PHPMVER" = '8.0' || "$PHPMUVER" = '8.0' || "$PHPMVER" = '8.1' || "$PHPMUVER" = '8.1' || "$PHPMVER" = '8.2' || "$PHPMUVER" = '8.2' || "$PHPMVER" = '8.3' || "$PHPMUVER" = '8.3' || "$PHPMVER" = '8.4' || "$PHPMUVER" = '8.4' ]]; then
+  if [[ "$PHP_PGO_FALLBACK_GCC" = [yY] && "$PHP_PGO" = [yY] ]] && [[ "$PHPMVER" = '7.0' || "$PHPMUVER" = '7.0' || "$PHPMVER" = '7.1' || "$PHPMUVER" = '7.1' || "$PHPMVER" = '7.2' || "$PHPMUVER" = '7.2' || "$PHPMVER" = '7.3' || "$PHPMUVER" = '7.3' || "$PHPMVER" = '7.4' || "$PHPMUVER" = '7.4' || "$PHPMVER" = '8.0' || "$PHPMUVER" = '8.0' || "$PHPMVER" = '8.1' || "$PHPMUVER" = '8.1' || "$PHPMVER" = '8.2' || "$PHPMUVER" = '8.2' || "$PHPMVER" = '8.3' || "$PHPMUVER" = '8.3' || "$PHPMVER" = '8.4' || "$PHPMUVER" = '8.4' || "$PHPMVER" = '8.5' || "$PHPMUVER" = '8.5' ]]; then
     DEVTOOLSETTWELVE='y'
     DEVTOOLSETTHIRTEEN='n'
     DEVTOOLSETFOURTEEN='n'
@@ -340,7 +340,7 @@ fi
 if [[ "$CENTOS_NINE" -eq '9' && "$CENTOSVER_NUMERIC" -ge '93' ]]; then
   DEVTOOLSETTEN='n'
   DEVTOOLSETELEVEN='n'
-  if [[ "$PHP_PGO_FALLBACK_GCC" = [yY] && "$PHP_PGO" = [yY] ]] && [[ "$PHPMVER" = '7.4' || "$PHPMUVER" = '7.4' || "$PHPMVER" = '8.0' || "$PHPMUVER" = '8.0' || "$PHPMVER" = '8.1' || "$PHPMUVER" = '8.1' || "$PHPMVER" = '8.2' || "$PHPMUVER" = '8.2' || "$PHPMVER" = '8.3' || "$PHPMUVER" = '8.3' || "$PHPMVER" = '8.4' || "$PHPMUVER" = '8.4' ]]; then
+  if [[ "$PHP_PGO_FALLBACK_GCC" = [yY] && "$PHP_PGO" = [yY] ]] && [[ "$PHPMVER" = '7.4' || "$PHPMUVER" = '7.4' || "$PHPMVER" = '8.0' || "$PHPMUVER" = '8.0' || "$PHPMVER" = '8.1' || "$PHPMUVER" = '8.1' || "$PHPMVER" = '8.2' || "$PHPMUVER" = '8.2' || "$PHPMVER" = '8.3' || "$PHPMUVER" = '8.3' || "$PHPMVER" = '8.4' || "$PHPMUVER" = '8.4' || "$PHPMVER" = '8.5' || "$PHPMUVER" = '8.5' ]]; then
     DEVTOOLSETTWELVE='y'
     DEVTOOLSETTHIRTEEN='n'
     DEVTOOLSETFOURTEEN='n'
@@ -372,7 +372,7 @@ fi
 if [[ "$CENTOS_TEN" -eq '10' && "$CENTOSVER_NUMERIC" -ge '100' ]]; then
   DEVTOOLSETTEN='n'
   DEVTOOLSETELEVEN='n'
-  if [[ "$PHP_PGO_FALLBACK_GCC" = [yY] && "$PHP_PGO" = [yY] ]] && [[ "$PHPMVER" = '7.4' || "$PHPMUVER" = '7.4' || "$PHPMVER" = '8.0' || "$PHPMUVER" = '8.0' || "$PHPMVER" = '8.1' || "$PHPMUVER" = '8.1' || "$PHPMVER" = '8.2' || "$PHPMUVER" = '8.2' || "$PHPMVER" = '8.3' || "$PHPMUVER" = '8.3' || "$PHPMVER" = '8.4' || "$PHPMUVER" = '8.4' ]]; then
+  if [[ "$PHP_PGO_FALLBACK_GCC" = [yY] && "$PHP_PGO" = [yY] ]] && [[ "$PHPMVER" = '7.4' || "$PHPMUVER" = '7.4' || "$PHPMVER" = '8.0' || "$PHPMUVER" = '8.0' || "$PHPMVER" = '8.1' || "$PHPMUVER" = '8.1' || "$PHPMVER" = '8.2' || "$PHPMUVER" = '8.2' || "$PHPMVER" = '8.3' || "$PHPMUVER" = '8.3' || "$PHPMVER" = '8.4' || "$PHPMUVER" = '8.4' || "$PHPMVER" = '8.5' || "$PHPMUVER" = '8.5' ]]; then
     DEVTOOLSETTWELVE='n'
     DEVTOOLSETTHIRTEEN='n'
     DEVTOOLSETFOURTEEN='y'
@@ -906,6 +906,7 @@ PHPSWOOLE_EIGHT_ONE_VER='6.0.0'
 PHPSWOOLE_EIGHT_TWO_VER='6.0.0'
 PHPSWOOLE_EIGHT_THREE_VER='6.0.0'
 PHPSWOOLE_EIGHT_FOUR_VER='6.0.0'
+PHPSWOOLE_EIGHT_FIVE_VER='6.1.2' # placeholder until Swoole officially supports PHP 8.5
 PHPSWOOLE_FIVE_VER='2.0.5' # max PHP 5.0 supported version
 PHPSWOOLE_SEVEN_ZERO_VER='4.3.5' # max PHP 7.0 supported version
 PHPSWOOLE_SEVEN_ONE_VER='4.5.11' # max PHP 7.1 supported version
@@ -931,6 +932,9 @@ MONGODBPHP_SEVEN_ZERO_VER='1.9.2' # MongoDB max PHP =<7.0 version
 MONGODBPHP_SEVEN_VER='1.11.1'     # MongoDB max PHP 7.1+ version
 MONGODBPHP_EIGHT_VER='1.13.0'
 MONGODBPHP_EIGHTTWO_VER='1.20.0'     # MongoDB PHP version
+MONGODBPHP_EIGHTTHREE_VER='1.21.2'   # MongoDB PHP 8.3+ version
+MONGODBPHP_EIGHTFOUR_VER='1.21.2'    # MongoDB PHP 8.4+ version
+MONGODBPHP_EIGHTFIVE_VER='1.21.2'    # MongoDB PHP 8.5+ version
 MONGODB_SASL='n'            # SASL not working yet leave = n
 PDOPGSQL_PHPVER='11'        # pdo-pgsql PHP extension version for postgresql
 PHP_LIBZIP='n'              # use newer libzip instead of PHP embedded zip
@@ -3527,7 +3531,7 @@ if [[ "$NSD_INSTALL" = [yY] ]]; then
     nsdinstall
 fi
 
-php-config --version | cut -d . -f1,2 | grep -Ew '7.0|7.1|7.2|7.3|7.4|8.0|8.1|8.2|8.3|8.4'
+php-config --version | cut -d . -f1,2 | grep -Ew '7.0|7.1|7.2|7.3|7.4|8.0|8.1|8.2|8.3|8.4|8.5'
 PHPSEVEN_CHECKVER=$?
 echo "$PHPSEVEN_CHECKVER"
 if [[ "$PHPSEVEN_CHECKVER" = '0' ]]; then

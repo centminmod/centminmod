@@ -556,7 +556,7 @@ if [[ "$CENTOS_SIX" -eq '6' ]]; then
     fi
 fi
 
-if [[ "$PHPMUVER" = '8.4' || "$PHPVER_ID" -ge '80400' || "$PHPMUVER" = 'NGDEBUG' || "$PHPEIGHT_CHECKVER" = '0' ]]; then
+if [[ "$PHPMUVER" = '8.4' || "$PHPMUVER" = '8.5' || "$PHPVER_ID" -ge '80500' || "$PHPMUVER" = 'NGDEBUG' || "$PHPEIGHT_CHECKVER" = '0' ]]; then
     IMAGICKGITLINK='https://github.com/Imagick/imagick'
     # fallback mirror if official github is down, use gitlab mirror
     curl -${ipv_forceopt}Is --connect-timeout 30 --max-time 30 $IMAGICKGITLINK | grep -qE '^HTTP/.* 200'
