@@ -1118,6 +1118,7 @@ PHPSWOOLE_EIGHT_ONE_VER='6.0.0'
 PHPSWOOLE_EIGHT_TWO_VER='6.0.0'
 PHPSWOOLE_EIGHT_THREE_VER='6.0.0'
 PHPSWOOLE_EIGHT_FOUR_VER='6.0.0'
+PHPSWOOLE_EIGHT_FIVE_VER='6.1.2'    # placeholder until Swoole officially supports PHP 8.5
 PHPSWOOLE_FIVE_VER='2.0.5' # max PHP 5.0 supported version
 PHPSWOOLE_SEVEN_ZERO_VER='4.3.5' # max PHP 7.0 supported version
 PHPSWOOLE_SEVEN_ONE_VER='4.5.11' # max PHP 7.1 supported version
@@ -1143,6 +1144,9 @@ MONGODBPHP_SEVEN_ZERO_VER='1.9.2' # MongoDB max PHP =<7.0 version
 MONGODBPHP_SEVEN_VER='1.11.1'     # MongoDB max PHP 7.1+ version
 MONGODBPHP_EIGHT_VER='1.13.0'
 MONGODBPHP_EIGHTTWO_VER='1.20.0'     # MongoDB PHP version
+MONGODBPHP_EIGHTTHREE_VER='1.21.2'   # MongoDB PHP 8.3+ version
+MONGODBPHP_EIGHTFOUR_VER='1.21.2'    # MongoDB PHP 8.4+ version
+MONGODBPHP_EIGHTFIVE_VER='1.21.2'    # MongoDB PHP 8.5+ version
 MONGODB_SASL='n'            # SASL not working yet leave = n
 PDOPGSQL_PHPVER='11'        # pdo-pgsql PHP extension version for postgresql
 PHP_LIBZIP='n'              # use newer libzip instead of PHP embedded zip
@@ -1298,7 +1302,7 @@ IMAGICKPHP_VER='3.4.4'         # PHP extension for imagick
 IMAGICKPHP_SEVEN_VER='3.7.0'   # PHP extension for imagick
 MAILPARSEPHP_VER='2.1.6'       # https://pecl.php.net/package/mailparse
 MAILPARSEPHP_COMPATVER='3.1.3' # For PHP 7.0-7.3
-MAILPARSEPHPSEVENFOUR_COMPATVER='3.1.8' # For PHP 7.4+
+MAILPARSEPHPSEVENFOUR_COMPATVER='3.1.9' # For PHP 7.4+
 MEMCACHED_INSTALL='y'          # Install Memcached
 LIBEVENT_VERSION='2.1.12'      # Use this version of Libevent
 MEMCACHED_VERSION='1.6.36'    # Use this version of Memcached server
@@ -3353,7 +3357,7 @@ if [[ "$NSD_INSTALL" = [yY] ]]; then
     nsdinstall
 fi
 
-php-config --version | cut -d . -f1,2 | egrep -w '7.0|7.1|7.2|7.3|7.4|8.0|8.1|8.2|8.3|8.4'
+php-config --version | cut -d . -f1,2 | egrep -w '7.0|7.1|7.2|7.3|7.4|8.0|8.1|8.2|8.3|8.4|8.5'
 PHPSEVEN_CHECKVER=$?
 echo "$PHPSEVEN_CHECKVER"
 if [[ "$PHPSEVEN_CHECKVER" = '0' ]]; then

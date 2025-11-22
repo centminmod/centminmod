@@ -2,7 +2,7 @@ imagick_php_patches() {
   echo "imagick patch routine: PHPMVER=$PHPMVER"
   echo "imagick patch routine: PHPMUVER=$PHPMUVER"
   echo "imagick patch routine: PHPVER_ID=$PHPVER_ID"
-  if [[ "$PHPMVER" = '8.4' || "$PHPMUVER" = '8.4' || "$PHPVER_ID" -ge '80400' ]]; then
+  if [[ "$PHPMVER" = '8.4' || "$PHPMUVER" = '8.4' || "$PHPMVER" = '8.5' || "$PHPMUVER" = '8.5' || "$PHPVER_ID" -ge '80400' ]]; then
     # Define the new patch for imagick PHP 8.4 support
     IMAGICK_PATCH="php84-remove-strtolower.patch"
     echo "$CUR_DIR/patches/imagick/$IMAGICK_PATCH"

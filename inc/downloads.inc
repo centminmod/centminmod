@@ -2328,9 +2328,9 @@ echo ""
 mailparsephpexttarball() {
 
   if [[ "$INITIALINSTALL" != [yY] ]]; then
-      php-config --version | cut -d . -f1,2 | egrep -w '7.0|7.1|7.2|7.3|7.4|8.0|8.1|8.2|8.3|8.4'
+      php-config --version | cut -d . -f1,2 | egrep -w '7.0|7.1|7.2|7.3|7.4|8.0|8.1|8.2|8.3|8.4|8.5'
   else
-      echo $PHP_VERSION | cut -d . -f1,2 | egrep -w '7.0|7.1|7.2|7.3|7.4|8.0|8.1|8.2|8.3|8.4'
+      echo $PHP_VERSION | cut -d . -f1,2 | egrep -w '7.0|7.1|7.2|7.3|7.4|8.0|8.1|8.2|8.3|8.4|8.5'
   fi
   PHPSEVEN_CHECKVER=$?
   echo $PHPSEVEN_CHECKVER
@@ -2877,6 +2877,11 @@ elif [[ "$PHPMVER" = '8.4' ]]; then
     PHPEXT_SWOOLELINKFILE="swoole-${PHPSWOOLE_VER}.tgz"
     PHPEXT_SWOOLELINK="https://pecl.php.net/get/${PHPEXT_SWOOLELINKFILE}"
     PHPEXT_SWOOLELINKLOCAL="${LOCALCENTMINMOD_MIRROR}/centminmodparts/swoole/${PHPEXT_SWOOLELINKFILE}"
+elif [[ "$PHPMVER" = '8.5' ]]; then
+    PHPSWOOLE_VER="$PHPSWOOLE_EIGHT_FIVE_VER"
+    PHPEXT_SWOOLELINKFILE="swoole-${PHPSWOOLE_VER}.tgz"
+    PHPEXT_SWOOLELINK="https://pecl.php.net/get/${PHPEXT_SWOOLELINKFILE}"
+    PHPEXT_SWOOLELINKLOCAL="${LOCALCENTMINMOD_MIRROR}/centminmodparts/swoole/${PHPEXT_SWOOLELINKFILE}"
 fi
 
 # For PHPMUVER (upgrade)
@@ -2922,6 +2927,11 @@ elif [[ "$PHPMUVER" = '8.3' ]]; then
     PHPEXT_SWOOLELINKLOCAL="${LOCALCENTMINMOD_MIRROR}/centminmodparts/swoole/${PHPEXT_SWOOLELINKFILE}"
 elif [[ "$PHPMUVER" = '8.4' ]]; then
     PHPSWOOLE_VER="$PHPSWOOLE_EIGHT_FOUR_VER"
+    PHPEXT_SWOOLELINKFILE="swoole-${PHPSWOOLE_VER}.tgz"
+    PHPEXT_SWOOLELINK="https://pecl.php.net/get/${PHPEXT_SWOOLELINKFILE}"
+    PHPEXT_SWOOLELINKLOCAL="${LOCALCENTMINMOD_MIRROR}/centminmodparts/swoole/${PHPEXT_SWOOLELINKFILE}"
+elif [[ "$PHPMUVER" = '8.5' ]]; then
+    PHPSWOOLE_VER="$PHPSWOOLE_EIGHT_FIVE_VER"
     PHPEXT_SWOOLELINKFILE="swoole-${PHPSWOOLE_VER}.tgz"
     PHPEXT_SWOOLELINK="https://pecl.php.net/get/${PHPEXT_SWOOLELINKFILE}"
     PHPEXT_SWOOLELINKLOCAL="${LOCALCENTMINMOD_MIRROR}/centminmodparts/swoole/${PHPEXT_SWOOLELINKFILE}"
@@ -4224,9 +4234,9 @@ yuminstall
 questions
 
 if [[ "$INITIALINSTALL" != [yY] ]]; then
-    php-config --version | cut -d . -f1,2 | egrep -w '7.0|7.1|7.2|7.3|7.4|8.0|8.1|8.2|8.3|8.4'
+    php-config --version | cut -d . -f1,2 | egrep -w '7.0|7.1|7.2|7.3|7.4|8.0|8.1|8.2|8.3|8.4|8.5'
 else
-    echo "$PHP_VERSION" | cut -d . -f1,2 | egrep -w '7.0|7.1|7.2|7.3|7.4|8.0|8.1|8.2|8.3|8.4'
+    echo "$PHP_VERSION" | cut -d . -f1,2 | egrep -w '7.0|7.1|7.2|7.3|7.4|8.0|8.1|8.2|8.3|8.4|8.5'
 fi
 PHPSEVEN_CHECKVER=$?
 echo "$PHPSEVEN_CHECKVER"
