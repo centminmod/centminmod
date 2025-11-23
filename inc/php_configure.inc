@@ -1286,11 +1286,11 @@ fi
 # ZOPCACHE_OVERRIDE=y allows you to override PHP 5.5-7.x's inbuilt included Zend Opcache version with one available from pecl site
 if [[ -n "$PHPMUVER" && "$PHPMUVER" = 5.[234] || "$PHPMVER" = 5.[234] ]]; then
     OPCACHEOPT=''
-elif [[ "$ZOPCACHE_OVERRIDE" = [yY] || "$ZOPCACHEDFT" = [nN] || "$zendopcacheon" = [nN] ]]; then
-    OPCACHEOPT=' --disable-opcache'
 # PHP 8.5+ has opcache built-in without --enable-opcache/--disable-opcache flags
 elif [[ "$PHPMVER" = '8.5' || "$PHPMUVER" = '8.5' || "$PHPMVER" = '8.6' || "$PHPMUVER" = '8.6' ]]; then
     OPCACHEOPT=''
+elif [[ "$ZOPCACHE_OVERRIDE" = [yY] || "$ZOPCACHEDFT" = [nN] || "$zendopcacheon" = [nN] ]]; then
+    OPCACHEOPT=' --disable-opcache'
 else
     OPCACHEOPT=' --enable-opcache'
 fi
@@ -1353,7 +1353,7 @@ if [[ "$PHPMVER" = '7.4' ]]; then
   NEWLIBICU='y'
   echo "NEWLIBICU=$NEWLIBICU"
 fi
-if [[ "$PHPMVER" = '8.0' || "$PHPMVER" = '8.1' || "$PHPMVER" = '8.2' || "$PHPMVER" = '8.3' || "$PHPMVER" = '8.4' || "$PHPMVER" = '8.4' || "$PHPVER_ID" -ge '80000' ]]; then
+if [[ "$PHPMVER" = '8.0' || "$PHPMVER" = '8.1' || "$PHPMVER" = '8.2' || "$PHPMVER" = '8.3' || "$PHPMVER" = '8.4' || "$PHPMVER" = '8.5' || "$PHPVER_ID" -ge '80000' ]]; then
   NEWLIBICU='y'
   echo "NEWLIBICU=$NEWLIBICU"
 fi
@@ -1381,7 +1381,7 @@ if [[ "$PHPMUVER" = '7.4' ]]; then
   NEWLIBICU='y'
   echo "NEWLIBICU=$NEWLIBICU"
 fi
-if [[ "$PHPMUVER" = '7.4' || "$PHPMUVER" = '8.0' || "$PHPMUVER" = '8.1' || "$PHPMUVER" = '8.2' || "$PHPMUVER" = '8.3' || "$PHPMUVER" = '8.4' || "$PHPVER_ID" -ge '80000' ]]; then
+if [[ "$PHPMUVER" = '7.4' || "$PHPMUVER" = '8.0' || "$PHPMUVER" = '8.1' || "$PHPMUVER" = '8.2' || "$PHPMUVER" = '8.3' || "$PHPMUVER" = '8.4' || "$PHPMUVER" = '8.5' || "$PHPVER_ID" -ge '80000' ]]; then
   NEWLIBICU='y'
   echo "NEWLIBICU=$NEWLIBICU"
   # check if libicu73 is available
