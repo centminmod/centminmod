@@ -30,7 +30,7 @@ DT=$(date +"%d%m%y-%H%M%S")
 branchname='140.00beta01'
 SCRIPT_MAJORVER='140'
 SCRIPT_MINORVER='00'
-SCRIPT_INCREMENTVER='276'
+SCRIPT_INCREMENTVER='277'
 SCRIPT_VERSIONSHORT="${branchname}"
 SCRIPT_VERSION="${SCRIPT_VERSIONSHORT}.b${SCRIPT_INCREMENTVER}"
 SCRIPT_DATE='16/01/25'
@@ -1134,9 +1134,10 @@ FFMPEGVER='0.6.0'
 SUHOSINVER='0.9.38'
 
 PHPREDIS='y'                # redis PHP extension install
-REDISPHP_VER='4.3.0'        # redis PHP version for PHP <7.x
-REDISPHPSEVEN_VER='5.3.7'   # redis PHP version for PHP 7.0.x to 7.1.x
-REDISPHPSEVENTWO_VER='6.1.0'   # redis PHP version for PHP =>7.2.x
+REDISPHP_VER='4.3.0'            # redis PHP version for PHP <7.x
+REDISPHPSEVEN_VER='5.3.7'       # redis PHP version for PHP 7.0.x to 7.1.x
+REDISPHPSEVENTWO_VER='6.0.2'    # redis PHP version for PHP 7.2.x to 7.3.x
+REDISPHPSEVENFOUR_VER='6.3.0'   # redis PHP version for PHP >=7.4.x (including 8.5)
 REDISPHP_GIT='n'            # pull php 7 redis extension from git or pecl downloads
 PHPMONGODB='n'              # MongoDB PHP extension install
 MONGODBPHP_VER='1.7.5'      # MongoDB PHP version
