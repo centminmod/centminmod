@@ -198,7 +198,7 @@ move_back() {
   check_dir "$TARGET_DIR"
   backup_dir
   echo "[$(date)] Performing MariaBackup --move-back from $TARGET_DIR ..."
-  echo "$MYSQLBACKUP_CMD_PREFIX --move-back --target-dir=\s"$TARGET_DIR\s"${MDB_VERBOSE_OPT}"
+  echo "$MYSQLBACKUP_CMD_PREFIX --move-back --target-dir=\"$TARGET_DIR\"${MDB_VERBOSE_OPT}"
   $MYSQLBACKUP_CMD_PREFIX --move-back --target-dir="$TARGET_DIR"${MDB_VERBOSE_OPT}
   echo
   change_owner
