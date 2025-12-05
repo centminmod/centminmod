@@ -793,7 +793,7 @@
 # Nginx version to compile and install
 # Check: https://nginx.org/en/download.html
 # Git History: First added 2014-04-24 (c4b6d98a), Last modified 2024-02-17 (5d801902)
-#NGINX_VERSION='1.29.2'  
+#NGINX_VERSION='1.29.3'  
 
 # FreeNginx Installation Switch
 # Switch from nginx.org to freenginx.org fork for Nginx compilation and installation.
@@ -829,7 +829,7 @@
 # Freenginx Version
 # Freenginx version if FREENGINX_INSTALL='y'
 # Git History: Added 2024-02-17 (5d801902)
-#FREENGINX_VERSION='1.29.2'
+#FREENGINX_VERSION='1.29.3'
 
 # Freenginx Backport Patches
 # FreeNginx Security Patches Backported to Standard Nginx
