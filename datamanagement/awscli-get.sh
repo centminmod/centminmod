@@ -67,7 +67,7 @@ AWSCLI_DOWNLOAD='https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip'
 AWSCLI_INSTALLDIR='/usr/local/aws-cli'
 AWSCLI_BINPATH='/usr/local/bin'
 
-SFIVECMD_VER='2.0.0'
+SFIVECMD_VER='2.3.0'
 ######################################################################
 # functions
 #############
