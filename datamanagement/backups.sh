@@ -626,6 +626,10 @@ files_backup() {
       DIRECTORIES_TO_BACKUP+=("/root/.acme.sh")
       DIRECTORIES_TO_BACKUP_NOCOMPRESS+=("/root/.acme.sh")
     fi
+    if [ -d /root/.aws ]; then
+      DIRECTORIES_TO_BACKUP+=("/root/.aws")
+      DIRECTORIES_TO_BACKUP_NOCOMPRESS+=("/root/.aws")
+    fi
     if [ -f /root/.my.cnf ]; then
       DIRECTORIES_TO_BACKUP+=("/root/.my.cnf")
       DIRECTORIES_TO_BACKUP_NOCOMPRESS+=("/root/.my.cnf")
