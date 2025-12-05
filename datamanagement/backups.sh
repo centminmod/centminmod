@@ -694,7 +694,7 @@ files_backup() {
 
     # instructions for backup restoration
 cat > "$BASE_DIR/restore-instructions.txt" <<EOF
-# https://github.com/centminmod/centminmod/blob/130.00beta01/datamanagement/centmin.sh-menu-21.readme.md
+# https://github.com/centminmod/centminmod/blob/141.00beta01/datamanagement/centmin.sh-menu-21.readme.md
 
 To restore the data from the backup, follow these steps:
 
