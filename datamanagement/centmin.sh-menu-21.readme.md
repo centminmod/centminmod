@@ -524,7 +524,8 @@ Then copy command will force override any existing files on destination director
 \cp -af /home/restoredata/etc/redis/* /etc/redis/
 chown redis:root /etc/redis/redis.conf
 \cp -af /home/restoredata/etc/keydb/* /etc/keydb/
-mkdir -p /root/.acme.sh
+mkdir -p /root/.acme.sh /root/tools
+\cp -af /home/restoredata/root/.aws /root/.aws
 \cp -af /home/restoredata/root/.acme.sh/* /root/.acme.sh/
 \cp -af /home/restoredata/root/tools/* /root/tools/
 \cp -af /home/restoredata/usr/local/nginx/* /usr/local/nginx/
