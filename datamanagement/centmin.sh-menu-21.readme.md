@@ -522,6 +522,7 @@ Then copy command will force override any existing files on destination director
 \cp -af /home/restoredata/etc/centminmod/* /etc/centminmod/
 \cp -af /home/restoredata/etc/pure-ftpd/* /etc/pure-ftpd/
 \cp -af /home/restoredata/etc/redis/* /etc/redis/
+chown redis:root /etc/redis/redis.conf
 \cp -af /home/restoredata/etc/keydb/* /etc/keydb/
 mkdir -p /root/.acme.sh
 \cp -af /home/restoredata/root/.acme.sh/* /root/.acme.sh/
