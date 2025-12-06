@@ -45,12 +45,59 @@ if [ ! -d /etc/systemd/system ]; then
   exit
 fi
 
+# Detect OS version for REMI repository
+# Use /etc/os-release VERSION_ID as primary reliable source
+EL_VERID=$(awk -F '=' '/VERSION_ID/ {print $2}' /etc/os-release 2>/dev/null | sed -e 's|"||g' | cut -d . -f1)
+
+if [[ -n "$EL_VERID" ]] && [[ "$EL_VERID" =~ ^[0-9]+$ ]]; then
+  # VERSION_ID from /etc/os-release is reliable
+  if [[ "$EL_VERID" -eq '7' ]]; then
+    REMI_VERSION='7'
+  elif [[ "$EL_VERID" -eq '8' ]]; then
+    REMI_VERSION='8'
+  elif [[ "$EL_VERID" -eq '9' ]]; then
+    REMI_VERSION='9'
+  elif [[ "$EL_VERID" -eq '10' ]]; then
+    REMI_VERSION='10'
+  else
+    echo "Unsupported OS version: EL${EL_VERID}"
+    exit 1
+  fi
+elif [ -f /etc/redhat-release ]; then
+  # Fallback for older systems without /etc/os-release
+  CENTOSVER=$(awk '{ print $4 }' /etc/redhat-release | cut -d . -f1)
+  if [[ "$CENTOSVER" = 'release' ]]; then
+    CENTOSVER=$(awk '{ print $3 }' /etc/redhat-release | cut -d . -f1)
+  fi
+  # Validate it's numeric before comparison
+  if [[ "$CENTOSVER" =~ ^[0-9]+$ ]]; then
+    if [[ "$CENTOSVER" -eq '7' ]]; then
+      REMI_VERSION='7'
+    elif [[ "$CENTOSVER" -eq '8' ]]; then
+      REMI_VERSION='8'
+    elif [[ "$CENTOSVER" -eq '9' ]]; then
+      REMI_VERSION='9'
+    elif [[ "$CENTOSVER" -eq '10' ]]; then
+      REMI_VERSION='10'
+    else
+      echo "Unsupported OS version"
+      exit 1
+    fi
+  else
+    echo "Unable to detect numeric OS version from /etc/redhat-release"
+    exit 1
+  fi
+else
+  echo "Unable to detect OS version"
+  exit 1
+fi
+
 if [ ! -f /etc/yum.repos.d/remi.repo ]; then
   echo
   echo "redis REMI YUM repo not installed"
-  echo "installing..."
-  wget -cnv https://rpms.remirepo.net/enterprise/remi-release-7.rpm
-  rpm -Uvh remi-release-7.rpm
+  echo "installing for EL${REMI_VERSION}..."
+  wget -cnv https://rpms.remirepo.net/enterprise/remi-release-${REMI_VERSION}.rpm
+  rpm -Uvh remi-release-${REMI_VERSION}.rpm
 fi
 
 if [ ! -f /etc/yum.repos.d/epel.repo ]; then
@@ -122,9 +169,19 @@ fi
 EL_VERID=$(awk -F '=' '/VERSION_ID/ {print $2}' /etc/os-release | sed -e 's|"||g' | cut -d . -f1)
 if [ -f /etc/almalinux-release ] && [[ "$EL_VERID" -eq 8 || "$EL_VERID" -eq 9 || "$EL_VERID" -eq 10 ]]; then
   if [[ "$EL_VERID" -eq 10 ]]; then
-    CENTOSVER=$(awk '{ print $4 }' /etc/almalinux-release | cut -d . -f1,2)
-    ALMALINUXVER=$(awk '{ print $4 }' /etc/almalinux-release | cut -d . -f1,2 | sed -e 's|\.|000|g')
+    # Try $4 first (Kitten format), check if it's a valid version number
+    CENTOSVER_TEST=$(awk '{ print $4 }' /etc/almalinux-release | cut -d . -f1)
+    if [[ "$CENTOSVER_TEST" =~ ^[0-9]+$ ]]; then
+      # $4 contains version (Kitten: "AlmaLinux release 10.0")
+      CENTOSVER=$(awk '{ print $4 }' /etc/almalinux-release | cut -d . -f1,2)
+      ALMALINUXVER=$(awk '{ print $4 }' /etc/almalinux-release | cut -d . -f1,2 | sed -e 's|\.|000|g')
+    else
+      # $4 is not numeric (Purple Lion: "AlmaLinux release 10.0 (Purple Lion)"), use $3
+      CENTOSVER=$(awk '{ print $3 }' /etc/almalinux-release | cut -d . -f1,2)
+      ALMALINUXVER=$(awk '{ print $3 }' /etc/almalinux-release | cut -d . -f1,2 | sed -e 's|\.|000|g')
+    fi
   else
+    # EL8/EL9 continue using $3
     CENTOSVER=$(awk '{ print $3 }' /etc/almalinux-release | cut -d . -f1,2)
     ALMALINUXVER=$(awk '{ print $3 }' /etc/almalinux-release | cut -d . -f1,2 | sed -e 's|\.|000|g')
   fi
