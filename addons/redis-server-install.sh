@@ -46,21 +46,45 @@ if [ ! -d /etc/systemd/system ]; then
 fi
 
 # Detect OS version for REMI repository
-if [ -f /etc/redhat-release ]; then
+# Use /etc/os-release VERSION_ID as primary reliable source
+EL_VERID=$(awk -F '=' '/VERSION_ID/ {print $2}' /etc/os-release 2>/dev/null | sed -e 's|"||g' | cut -d . -f1)
+
+if [[ -n "$EL_VERID" ]] && [[ "$EL_VERID" =~ ^[0-9]+$ ]]; then
+  # VERSION_ID from /etc/os-release is reliable
+  if [[ "$EL_VERID" -eq '7' ]]; then
+    REMI_VERSION='7'
+  elif [[ "$EL_VERID" -eq '8' ]]; then
+    REMI_VERSION='8'
+  elif [[ "$EL_VERID" -eq '9' ]]; then
+    REMI_VERSION='9'
+  elif [[ "$EL_VERID" -eq '10' ]]; then
+    REMI_VERSION='10'
+  else
+    echo "Unsupported OS version: EL${EL_VERID}"
+    exit 1
+  fi
+elif [ -f /etc/redhat-release ]; then
+  # Fallback for older systems without /etc/os-release
   CENTOSVER=$(awk '{ print $4 }' /etc/redhat-release | cut -d . -f1)
   if [[ "$CENTOSVER" = 'release' ]]; then
     CENTOSVER=$(awk '{ print $3 }' /etc/redhat-release | cut -d . -f1)
   fi
-  if [[ "$CENTOSVER" -eq '7' ]]; then
-    REMI_VERSION='7'
-  elif [[ "$CENTOSVER" -eq '8' ]]; then
-    REMI_VERSION='8'
-  elif [[ "$CENTOSVER" -eq '9' ]]; then
-    REMI_VERSION='9'
-  elif [[ "$CENTOSVER" -eq '10' ]]; then
-    REMI_VERSION='10'
+  # Validate it's numeric before comparison
+  if [[ "$CENTOSVER" =~ ^[0-9]+$ ]]; then
+    if [[ "$CENTOSVER" -eq '7' ]]; then
+      REMI_VERSION='7'
+    elif [[ "$CENTOSVER" -eq '8' ]]; then
+      REMI_VERSION='8'
+    elif [[ "$CENTOSVER" -eq '9' ]]; then
+      REMI_VERSION='9'
+    elif [[ "$CENTOSVER" -eq '10' ]]; then
+      REMI_VERSION='10'
+    else
+      echo "Unsupported OS version"
+      exit 1
+    fi
   else
-    echo "Unsupported OS version"
+    echo "Unable to detect numeric OS version from /etc/redhat-release"
     exit 1
   fi
 else
