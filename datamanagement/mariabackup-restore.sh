@@ -1,9 +1,10 @@
 #!/bin/bash
-# Set the target directory to the directory containing the script
-SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
+# MariaBackup restore script for Centmin Mod backups
 MY_CNF="/root/.my.cnf"
 DBHOST="localhost"
 MARIABACKUP_VERBOSE='n'
+# Allow environment variable override for version check (default: enabled)
+SKIP_MARIABACKUP_VER_CHECK="${SKIP_MARIABACKUP_VER_CHECK:-n}"
 
 # Function to get MariaDB version
 get_mariadb_version() {
@@ -19,7 +20,7 @@ get_mariadb_version() {
 # Function to set client command variables based on MariaDB version
 set_mariadb_client_commands() {
     local version=$(get_mariadb_version)
-    
+
     # Convert version to a comparable integer (e.g., 10.3 becomes 1003)
     version_number=$(echo "$version" | awk -F. '{printf "%d%02d\n", $1, $2}')
 
@@ -83,8 +84,26 @@ set_mariadb_client_commands
 
 MYSQLBACKUP_CMD_PREFIX="mariabackup --defaults-extra-file=$MY_CNF"
 MYSQLADMIN_CMD_PREFIX="${ALIAS_MYSQLADMIN} --defaults-extra-file=$MY_CNF -h $DBHOST"
-DATADIR=$($MYSQLADMIN_CMD_PREFIX var | grep datadir | awk '{ print $4}'| sed 's:/$::')
-SKIP_MARIABACKUP_VER_CHECK='y'
+
+# Function to get datadir with fallback if MariaDB is not running
+get_datadir() {
+  # Try to get from running MariaDB first
+  if systemctl is-active mariadb >/dev/null 2>&1; then
+    $MYSQLADMIN_CMD_PREFIX var 2>/dev/null | grep datadir | awk '{ print $4}' | sed 's:/$::'
+  else
+    # Fallback: parse from my.cnf
+    local dir=$(grep -E '^datadir' /etc/my.cnf 2>/dev/null | awk -F= '{print $2}' | tr -d ' ' | sed 's:/$::')
+    if [ -z "$dir" ]; then
+      # Check MariaDB specific config
+      dir=$(grep -E '^datadir' /etc/my.cnf.d/*.cnf 2>/dev/null | head -1 | awk -F= '{print $2}' | tr -d ' ' | sed 's:/$::')
+    fi
+    echo "$dir"
+  fi
+}
+
+DATADIR=$(get_datadir)
+# Ultimate fallback if all detection methods fail
+[ -z "$DATADIR" ] && DATADIR="/var/lib/mysql"
 
 if [[ "$MARIABACKUP_VERBOSE" = [yY] ]]; then
   MDB_VERBOSE_OPT=' --verbose'
@@ -96,8 +115,16 @@ check_command_exists() {
   command -v "$1" >/dev/null 2>&1 || {
     local package_name="$2"
     if [ "$1" = "mariabackup" ]; then
-      grep -q "AlmaLinux" /etc/os-release && package_name="mariadb-backup"
-      grep -q "CentOS Linux 7" /etc/os-release && package_name="MariaDB-backup"
+      # Expanded OS detection for package names
+      if grep -qE "(AlmaLinux|Rocky)" /etc/os-release 2>/dev/null; then
+        package_name="mariadb-backup"
+      elif grep -q "CentOS Linux 7" /etc/os-release 2>/dev/null; then
+        package_name="MariaDB-backup"
+      elif grep -q "Oracle" /etc/os-release 2>/dev/null; then
+        package_name="mariadb-backup"
+      elif grep -qE "CentOS Stream|Red Hat" /etc/os-release 2>/dev/null; then
+        package_name="mariadb-backup"
+      fi
     fi
     echo "[$(date)] Command '$1' not found. Installing package '$package_name'..."
     yum install -y "$package_name"
@@ -125,45 +152,76 @@ check_backup_info() {
   if [[ "${MARIABACKUP_DATA_VERSION_SHORT}" = "$DETECT_VERSION_SHORT" ]]; then
     echo "[$(date)] Major versions match: ${MARIABACKUP_DATA_VERSION_SHORT} = $DETECT_VERSION_SHORT"
   elif [[ "$SKIP_MARIABACKUP_VER_CHECK" != [yY] ]]; then
-    echo "[$(date)] Major versions do not match: ${MARIABACKUP_DATA_VERSION_SHORT} = $DETECT_VERSION_SHORT"
+    echo "[$(date)] Major versions do not match: ${MARIABACKUP_DATA_VERSION_SHORT} != $DETECT_VERSION_SHORT"
+    echo "[$(date)] To bypass version check, run: SKIP_MARIABACKUP_VER_CHECK=y $0 $*"
     echo "[$(date)] aborting restore ..."
     exit 1
+  else
+    echo "[$(date)] WARNING: Major versions do not match: ${MARIABACKUP_DATA_VERSION_SHORT} != $DETECT_VERSION_SHORT"
+    echo "[$(date)] Proceeding anyway due to SKIP_MARIABACKUP_VER_CHECK=y"
   fi
 }
 
 check_dir() {
   TARGET_DIR=$1
-  # Check if the second argument is a valid MariaDB backup directory
-  if [[ ! -f "${TARGET_DIR}/xtrabackup_info" && ! -f "${TARGET_DIR}/xtrabackup_checkpoints" && ! -f "${TARGET_DIR}/backup-my.cnf" ]]; then
-    echo "[$(date)] Invalid MariaBackup backup directory. Does not contain valid MariaBackup data"
+  local missing=""
+
+  # Check for all required MariaBackup files
+  [ ! -f "${TARGET_DIR}/xtrabackup_info" ] && missing="$missing xtrabackup_info"
+  [ ! -f "${TARGET_DIR}/xtrabackup_checkpoints" ] && missing="$missing xtrabackup_checkpoints"
+  [ ! -f "${TARGET_DIR}/backup-my.cnf" ] && missing="$missing backup-my.cnf"
+
+  if [ -n "$missing" ]; then
+    echo "[$(date)] Invalid MariaBackup backup directory. Missing files:$missing"
     exit 1
-  elif [[ -f "${TARGET_DIR}/xtrabackup_info" && -f "${TARGET_DIR}/xtrabackup_checkpoints" && -f "${TARGET_DIR}/backup-my.cnf" ]]; then
-    echo "[$(date)] Valid MariaBackup backup directory detected"
-    check_backup_info "$TARGET_DIR"
   fi
+
+  echo "[$(date)] Valid MariaBackup backup directory detected"
+  check_backup_info "$TARGET_DIR"
 }
 
 backup_dir() {
+  # Validate DATADIR before proceeding
+  if [ -z "$DATADIR" ] || [ ! -d "$DATADIR" ]; then
+    echo "[$(date)] ERROR: Invalid or missing DATADIR: '$DATADIR'"
+    echo "[$(date)] Please ensure MariaDB data directory exists"
+    exit 1
+  fi
+
   # Backup and empty data directory if not empty
-  if [ "$(ls -A $DATADIR)" ]; then
+  if [ "$(ls -A "$DATADIR" 2>/dev/null)" ]; then
     DT=$(date +"%d%m%y-%H%M%S")
-    DATADIR=$($MYSQLADMIN_CMD_PREFIX var | grep datadir | awk '{ print $4}'| sed 's:/$::')
+
+    # Check if backup destination already exists
+    if [ -d "${DATADIR}-copy-$DT" ]; then
+      echo "[$(date)] ERROR: Backup destination already exists: ${DATADIR}-copy-$DT"
+      echo "[$(date)] Please remove or rename it before proceeding"
+      exit 1
+    fi
+
     echo "[$(date)] Stopping MariaDB server ..."
     systemctl stop mariadb
+
+    # Wait for MariaDB to fully stop
+    sleep 2
+
     echo
     echo "[$(date)] Backing up existing data directory to ${DATADIR}-copy-$DT ..."
-    mv "$DATADIR" "${DATADIR}-copy-$DT"
-    mkdir -p $DATADIR
+    if ! mv "$DATADIR" "${DATADIR}-copy-$DT"; then
+      echo "[$(date)] ERROR: Failed to backup existing data directory"
+      echo "[$(date)] Starting MariaDB server with original data..."
+      systemctl start mariadb
+      exit 1
+    fi
+
+    mkdir -p "$DATADIR"
     if [ -d "${DATADIR}-copy-$DT" ]; then
       echo "[$(date)] Backed up at ${DATADIR}-copy-$DT"
     fi
     echo "[$(date)] Check if $DATADIR is empty now"
     echo
     echo "ls -Alh $DATADIR"
-    ls -Alh $DATADIR
-    # echo
-    # echo "[$(date)] Starting MariaDB server ..."
-    # systemctl start mariadb
+    ls -Alh "$DATADIR"
   fi
 }
 
@@ -173,10 +231,14 @@ change_owner() {
 }
 
 remove_restore_script() {
+  # Safety check before removing files
+  [ -z "$DATADIR" ] && return 1
+  [ ! -d "$DATADIR" ] && return 1
+
   echo "[$(date)] Remove ${DATADIR}/mariabackup-restore.sh"
-  rm -rf "${DATADIR}/mariabackup-restore.sh"
+  rm -f "${DATADIR}/mariabackup-restore.sh" 2>/dev/null
   echo "[$(date)] Remove ${DATADIR}/mariabackup_*.log"
-  rm -rf "${DATADIR}/mariabackup_*.log"
+  rm -f "${DATADIR}"/mariabackup_*.log 2>/dev/null
 }
 
 copy_back() {
@@ -185,12 +247,21 @@ copy_back() {
   backup_dir
   echo "[$(date)] Performing MariaBackup --copy-back from $TARGET_DIR ..."
   echo "$MYSQLBACKUP_CMD_PREFIX --copy-back --target-dir=\"$TARGET_DIR\"${MDB_VERBOSE_OPT}"
-  $MYSQLBACKUP_CMD_PREFIX --copy-back --target-dir="$TARGET_DIR"${MDB_VERBOSE_OPT}
+  if ! $MYSQLBACKUP_CMD_PREFIX --copy-back --target-dir="$TARGET_DIR"${MDB_VERBOSE_OPT}; then
+    echo "[$(date)] ERROR: MariaBackup --copy-back failed!"
+    echo "[$(date)] Data directory may be incomplete. MariaDB NOT started."
+    echo "[$(date)] Check the backup source and try again."
+    exit 1
+  fi
   echo
   change_owner
   remove_restore_script
   echo "[$(date)] Starting MariaDB server ..."
-  systemctl start mariadb
+  if ! systemctl start mariadb; then
+    echo "[$(date)] WARNING: MariaDB failed to start. Check logs: journalctl -u mariadb"
+    exit 1
+  fi
+  echo "[$(date)] MariaDB restore completed successfully"
 }
 
 move_back() {
@@ -199,18 +270,35 @@ move_back() {
   backup_dir
   echo "[$(date)] Performing MariaBackup --move-back from $TARGET_DIR ..."
   echo "$MYSQLBACKUP_CMD_PREFIX --move-back --target-dir=\"$TARGET_DIR\"${MDB_VERBOSE_OPT}"
-  $MYSQLBACKUP_CMD_PREFIX --move-back --target-dir="$TARGET_DIR"${MDB_VERBOSE_OPT}
+  if ! $MYSQLBACKUP_CMD_PREFIX --move-back --target-dir="$TARGET_DIR"${MDB_VERBOSE_OPT}; then
+    echo "[$(date)] ERROR: MariaBackup --move-back failed!"
+    echo "[$(date)] Data directory may be incomplete. MariaDB NOT started."
+    echo "[$(date)] Note: Source backup may be partially moved. Verify backup integrity."
+    exit 1
+  fi
   echo
   change_owner
   remove_restore_script
   echo "[$(date)] Starting MariaDB server ..."
-  systemctl start mariadb
+  if ! systemctl start mariadb; then
+    echo "[$(date)] WARNING: MariaDB failed to start. Check logs: journalctl -u mariadb"
+    exit 1
+  fi
+  echo "[$(date)] MariaDB restore completed successfully"
 }
 
 # Check if the script is run with the correct number of arguments
 if [ "$#" -ne 2 ]; then
   echo
   echo "Usage: $0 [copy-back|move-back] /path/to/backup/dir/"
+  echo
+  echo "Options:"
+  echo "  copy-back  - Copy backup files to datadir (preserves backup)"
+  echo "  move-back  - Move backup files to datadir (removes backup after)"
+  echo
+  echo "Environment variables:"
+  echo "  SKIP_MARIABACKUP_VER_CHECK=y  - Skip MariaDB version compatibility check"
+  echo "  MARIABACKUP_VERBOSE=y         - Enable verbose output"
   exit 1
 fi
 
