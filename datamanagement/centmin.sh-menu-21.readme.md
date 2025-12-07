@@ -551,7 +551,8 @@ mv -f /home/restoredata/etc/centminmod/* /etc/centminmod/
 mv -f /home/restoredata/etc/pure-ftpd/* /etc/pure-ftpd/
 mv -f /home/restoredata/etc/redis/* /etc/redis/
 mv -f /home/restoredata/etc/keydb/* /etc/keydb/
-mkdir -p /root/.acme.sh
+mkdir -p /root/.acme.sh /root/tools
+mv -f /home/restoredata/root/.aws /root/.aws
 mv -f /home/restoredata/root/.acme.sh/* /root/.acme.sh/
 mv -f /home/restoredata/root/tools/* /root/tools/
 mv -f /home/restoredata/usr/local/nginx/* /usr/local/nginx/
@@ -977,6 +978,8 @@ Then copy command will force override any existing files on destination director
 \cp -af /home/restoredata/etc/pure-ftpd/* /etc/pure-ftpd/
 \cp -af /home/restoredata/etc/redis/* /etc/redis/
 \cp -af /home/restoredata/etc/keydb/* /etc/keydb/
+mkdir -p /root/.acme.sh /root/tools
+\cp -af /home/restoredata/root/.aws /root/.aws
 \cp -af /home/restoredata/root/.acme.sh/* /root/.acme.sh/
 \cp -af /home/restoredata/root/tools/* /root/tools/
 \cp -af /home/restoredata/usr/local/nginx/* /usr/local/nginx/
@@ -1004,6 +1007,8 @@ mv -f /home/restoredata/etc/centminmod/* /etc/centminmod/
 mv -f /home/restoredata/etc/pure-ftpd/* /etc/pure-ftpd/
 mv -f /home/restoredata/etc/redis/* /etc/redis/
 mv -f /home/restoredata/etc/keydb/* /etc/keydb/
+mkdir -p /root/.acme.sh /root/tools
+mv -f /home/restoredata/root/.aws /root/.aws
 mv -f /home/restoredata/root/.acme.sh/* /root/.acme.sh/
 mv -f /home/restoredata/root/tools/* /root/tools/
 mv -f /home/restoredata/usr/local/nginx/* /usr/local/nginx/
