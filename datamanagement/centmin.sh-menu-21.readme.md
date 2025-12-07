@@ -1,74 +1,177 @@
 # Centmin Mod User Guide: centmin.sh Menu Option 21
 
-This guide provides an overview of centmin.sh menu option 21 in Centmin Mod, which focuses on data management tasks. You'll learn about the available menu and submenu options, as well as their functionalities. The underlying `backups.sh` script used has its own documentation [here](https://github.com/centminmod/centminmod/blob/140.00beta01/datamanagement/backups.sh.md). If you appreciate the work and effort, please consider [supporting Centmin Mod](https://community.centminmod.com/threads/ways-to-support-centmin-mod.11435/). Shorten url to [PayPal donation link](https://centminmod.com/donate/).
+This guide provides a comprehensive overview of centmin.sh menu option 21 in Centmin Mod, which focuses on data management tasks. You'll learn about the available menu and submenu options, as well as their functionalities. The underlying `backups.sh` script used has its own documentation [here](https://github.com/centminmod/centminmod/blob/140.00beta01/datamanagement/backups.sh.md). If you appreciate the work and effort, please consider [supporting Centmin Mod](https://community.centminmod.com/threads/ways-to-support-centmin-mod.11435/). Shorten url to [PayPal donation link](https://centminmod.com/donate/).
 
-**Getting Started**
+---
+
+## Quick Start Guide
+
+> **TL;DR**: This section provides experienced users with everything needed to get started quickly.
+
+### 1.1 Prerequisites Checklist
+
+Before using menu option 21, verify these requirements:
+
+| Requirement | Verification Command | Expected Result |
+|-------------|---------------------|-----------------|
+| CSF Firewall whitelist (source server) | `csf -a REMOTE_IP` | IP added to allow list |
+| CSF Firewall whitelist (destination server) | `csf -a SOURCE_IP` | IP added to allow list |
+| SSH key authentication | `ssh -i /root/.ssh/my1.key root@REMOTE_IP` | Successful login without password |
+| AWS CLI installed (for S3) | `aws --version` | Version number displayed |
+| Sufficient disk space | `df -h /home` | At least 2x backup size available |
+| MariaDB running | `systemctl status mariadb` | Active (running) |
+
+### 1.2 Quick Command Reference
+
+| Task | Command |
+|------|---------|
+| **Full backup (Vhosts + MariaBackup)** | `backups.sh backup-all-mariabackup comp` |
+| **Vhosts only backup** | `backups.sh backup-files comp` |
+| **MariaBackup only** | `backups.sh backup-mariabackup comp` |
+| **mysqldump only** | `backups.sh backup-all comp` |
+| **Transfer via SSH** | `tunnel-transfers.sh -p 22 -u root -h REMOTE_IP -m nc -s /path/to/backup -r /destination -k /root/.ssh/my1.key` |
+| **Upload to S3** | `aws s3 sync --profile PROFILE --endpoint-url ENDPOINT /path/to/backup s3://BUCKET/` |
+| **Restore MariaDB** | `mariabackup-restore.sh copy-back /path/to/mariadb_tmp/` |
+
+> **Note**: All backup scripts are located at `/usr/local/src/centminmod/datamanagement/`
+
+### 1.3 Decision Guide: Which Backup Method Should I Use?
+
+```mermaid
+flowchart TD
+    A[Start: What do you need?] --> B{Migrating to NEW server?}
+    B -->|Yes| C{Same MariaDB major version?}
+    B -->|No| D{What to backup?}
+
+    C -->|Yes| E[Option 3 with MariaBackup]
+    C -->|No| F[Option 3 with mysqldump]
+
+    D -->|Everything| G[Option 4: Vhosts + MariaBackup]
+    D -->|Website files only| H[Option 5: Vhosts Only]
+    D -->|Database only| I{Physical or Logical?}
+    D -->|Transfer existing backup| J[Option 8 SSH or Options 9-12 S3]
+
+    I -->|Physical - faster restore| K[Option 6: MariaBackup]
+    I -->|Logical - cross-version| L[Option 7: mysqldump]
+
+    E --> M[Best for: Same version migrations e.g. 10.6 to 10.6]
+    F --> N[Best for: Version upgrades e.g. 10.3 to 10.6]
+```
+
+### 1.4 Backup Type Comparison
+
+| Feature | MariaBackup (Option 4/6) | mysqldump (Option 7) |
+|---------|-------------------------|---------------------|
+| **Backup Speed** | Fast (physical copy) | Slower (logical dump) |
+| **Restore Speed** | Fast | Slower |
+| **Cross-Version Compatible** | No (same major version only) | Yes |
+| **Includes Users/Permissions** | Yes (full MySQL system) | Per-database only |
+| **File Size** | Larger (full datadir) | Smaller (SQL text) |
+| **Best For** | Same-version migrations | Version upgrades, selective restore |
+
+---
+
+## Getting Started
 
 If it's first time using centmin.sh menu option 21, you'd want to at least do the following:
 
-1. In CSF Firewall on both source and destination Centmin Mod servers, whitelist allow their IP addresses i.e. `csf -a remoteip_address` on source server and on destination server `csf -a sourcedata_ip_address`.
-2. centmin.sh menu option 21, submenu option 1 `Manage SSH keys` select [3. Create New SSH Key For Remote Host](#3-create-new-ssh-key-for-remote-host). This will give you the ability to transfer data remotely in unattended manner. 
-   **Tip:** ensure remote server supports root user SSH with a password for this process for initial SSH key setup. Otherise if you're using an existing SSH key, you'd be prompted for the SSH private key path during the process.
-3. centmin.sh menu option 21, submenu option 2 `Manage AWS CLI S3 Profile Credentials` select [3. Create New AWS CLI S3 Profile](#3-create-new-aws-cli-s3-profile). This will give you the ability to transfer data to your S3 compatible provider.
+1. **Whitelist IP addresses in CSF Firewall** on both source and destination Centmin Mod servers:
+   - On source server: `csf -a REMOTE_IP_ADDRESS`
+   - On destination server: `csf -a SOURCE_IP_ADDRESS`
 
-Then if you are concerned with migrating all Centmin Mod data to a new server, centmin.sh menu option 21, submenu option 3 for [Migrate Centmin Mod Data To New Centmin Mod Server](#submenu-option-3-migrate-centmin-mod-data-to-new-centmin-mod-server) would be the one where it's essentially same as [Submenu Option 4: Backup Nginx Vhosts Data + MariaBackup MySQL Backups](#submenu-option-4-backup-nginx-vhosts-data--mariabackup-mysql-backups) just with auto transfer part. As such restoration is the same.
+2. **Set up SSH key authentication** via centmin.sh menu option 21, submenu option 1 `Manage SSH keys`:
+   - Select [3. Create New SSH Key For Remote Host](#33-create-new-ssh-key-for-remote-host)
+   - This enables unattended data transfers to remote servers
 
-Migrations aren't finalised until you change domain's DNS records, so you can do test migrations on test remote servers until you're comfortable with the final move.
+   > **Tip:** Ensure remote server supports root user SSH with a password for initial SSH key setup. Otherwise, if you're using an existing SSH key, you'll be prompted for the SSH private key path during the process.
+
+3. **Configure S3 storage** (optional) via centmin.sh menu option 21, submenu option 2 `Manage AWS CLI S3 Profile Credentials`:
+   - Select [3. Create New AWS CLI S3 Profile](#43-create-new-aws-cli-s3-profile)
+   - This enables data transfers to S3-compatible storage providers
+
+### For Server Migrations
+
+If you're migrating all Centmin Mod data to a new server:
+
+- Use **Submenu Option 3**: [Migrate Centmin Mod Data To New Centmin Mod Server](#5-submenu-option-3-migrate-centmin-mod-data-to-new-centmin-mod-server)
+- This is essentially the same as [Submenu Option 4](#6-submenu-option-4-backup-nginx-vhosts-data--mariabackup-mysql-backups) with automatic transfer
+- Restoration process is identical
+
+> **Important:** Migrations aren't finalized until you change the domain's DNS records. You can perform test migrations on test remote servers until you're comfortable with the final move.
+
+---
 
 ## Table of Contents
 
-- [Menu Option 21: Data Management](#menu-option-21-data-management)
-  - [Submenu Option 1: Manage SSH Keys](#submenu-option-1-manage-ssh-keys)
-    - [1. List Registered SSH Keys](#1-list-registered-ssh-keys)
-    - [2. Register Existing SSH Keys](#2-register-existing-ssh-keys)
-    - [3. Create New SSH Key For Remote Host](#3-create-new-ssh-key-for-remote-host)
-    - [4. Use Existing SSH Key For Remote Host](#4-use-existing-ssh-key-for-remote-host)
-    - [5. Rotate Existing SSH Key For Remote Host](#5-rotate-existing-ssh-key-for-remote-host)
-    - [6. Delete Existing SSH Key For Remote Host](#6-delete-existing-ssh-key-for-remote-host)
-    - [7. Export Existing SSH Key](#7-export-existing-ssh-key)
-    - [8. Backup All Existing SSH Keys](#8-backup-all-existing-ssh-keys)
-    - [9. Back to Main Menu](#9-back-to-main-menu)
-  - [Submenu Option 2: Manage AWS CLI S3 Profile Credentials](#submenu-option-2-manage-aws-cli-s3-profile-credentials)
-    - [1. List Registered AWS CLI S3 Profiles](#1-list-registered-aws-cli-s3-profiles)
-    - [2. List AWS CLI S3 Profile Configuration](#2-list-aws-cli-s3-profile-configuration)
-    - [3. Create New AWS CLI S3 Profile](#3-create-new-aws-cli-s3-profile)
-    - [4. Edit Existing AWS CLI S3 Profile](#4-edit-existing-aws-cli-s3-profile)
-    - [5. Delete Existing AWS CLI S3 Profile](#5-delete-existing-aws-cli-s3-profile)
-    - [6. Export Existing AWS CLI S3 Profile](#6-export-existing-aws-cli-s3-profile)
-    - [7. Backup All Existing AWS CLI S3 Profiles](#7-backup-all-existing-aws-cli-s3-profiles)
-    - [8. Back to Main Menu](#8-back-to-main-menu)
-  - [Submenu Option 3: Migrate Centmin Mod Data To New Centmin Mod Server](#submenu-option-3-migrate-centmin-mod-data-to-new-centmin-mod-server)
-    * [Submenu Option 3 Command Line:](#submenu-option-3-command-line)
-  - [Submenu Option 4: Backup Nginx Vhosts Data + MariaBackup MySQL Backups](#submenu-option-4-backup-nginx-vhosts-data--mariabackup-mysql-backups)
-    * [Submenu Option 4 Command Line:](#submenu-option-4-command-line)
-  - [Submenu Option 5: Backup Nginx Vhosts Data Only](#submenu-option-5-backup-nginx-vhosts-data-only)
-    * [Submenu Option 5 Command Line:](#submenu-option-5-command-line)
-  - [Submenu Option 6: Backup MariaDB MySQL With MariaBackup Only](#submenu-option-6-backup-mariadb-mysql-with-mariabackup-only)
-    * [Submenu Option 6 Command Line:](#submenu-option-6-command-line)
-  - [Submenu Option 7: Backup MariaDB MySQL With mysqldump Only](#submenu-option-7-backup-mariadb-mysql-with-mysqldump-only)
-    * [Submenu Option 7 Command Line:](#submenu-option-7-command-line)
-  - [Submenu Option 8: Transfer Directory Data To Remote Server Via SSH](#submenu-option-8-transfer-directory-data-to-remote-server-via-ssh)
-    * [Submenu Option 8 Command Line:](#submenu-option-8-command-line)
-  - [Submenu Option 9: Transfer Directory Data To S3 Compatible Storage](#submenu-option-9-transfer-directory-data-to-s3-compatible-storage)
-    * [Submenu Option 9 Command Line:](#submenu-option-9-command-line)
-  - [Submenu Option 10: Transfer Files To S3 Compatible Storage](#submenu-option-10-transfer-files-to-s3-compatible-storage)
-    * [Submenu Option 10 Command Line:](#submenu-option-10-command-line)
-  - [Submenu Option 11: Download S3 Compatible Stored Data To Server](#submenu-option-11-download-s3-compatible-stored-data-to-server)
-    * [Submenu Option 11 Command Line:](#submenu-option-11-command-line)
-  - [Submenu Option 12: S3 To S3 Compatible Storage Transfers](#submenu-option-12-s3-to-s3-compatible-storage-transfers)
-    * [Submenu Option 12 Command Line:](#submenu-option-12-command-line)
-  - [Submenu Option 13: List S3 Storage Buckets](#submenu-option-13-list-s3-storage-buckets)
-    * [Submenu Option 13 Command Line:](#submenu-option-13-command-line)
-  - [Submenu Option 14: Back to Main Menu](#submenu-option-14-back-to-main-menu)
+- [Menu Option 21: Data Management](#2-menu-option-21-data-management)
+  - [At-a-Glance Quick Reference](#21-at-a-glance-quick-reference)
+  - [Submenu Option 1: Manage SSH Keys](#3-submenu-option-1-manage-ssh-keys) — Create, register, rotate, and manage SSH keys
+    - [3.1 List Registered SSH Keys](#31-list-registered-ssh-keys)
+    - [3.2 Register Existing SSH Keys](#32-register-existing-ssh-keys)
+    - [3.3 Create New SSH Key For Remote Host](#33-create-new-ssh-key-for-remote-host)
+    - [3.4 Use Existing SSH Key For Remote Host](#34-use-existing-ssh-key-for-remote-host)
+    - [3.5 Rotate Existing SSH Key For Remote Host](#35-rotate-existing-ssh-key-for-remote-host)
+    - [3.6 Delete Existing SSH Key For Remote Host](#36-delete-existing-ssh-key-for-remote-host)
+    - [3.7 Export Existing SSH Key](#37-export-existing-ssh-key)
+    - [3.8 Backup All Existing SSH Keys](#38-backup-all-existing-ssh-keys)
+    - [3.9 Back to Main Menu](#39-back-to-main-menu)
+  - [Submenu Option 2: Manage AWS CLI S3 Profile Credentials](#4-submenu-option-2-manage-aws-cli-s3-profile-credentials) — Configure S3-compatible storage
+    - [4.1 List Registered AWS CLI S3 Profiles](#41-list-registered-aws-cli-s3-profiles)
+    - [4.2 List AWS CLI S3 Profile Configuration](#42-list-aws-cli-s3-profile-configuration)
+    - [4.3 Create New AWS CLI S3 Profile](#43-create-new-aws-cli-s3-profile)
+    - [4.4 Edit Existing AWS CLI S3 Profile](#44-edit-existing-aws-cli-s3-profile)
+    - [4.5 Delete Existing AWS CLI S3 Profile](#45-delete-existing-aws-cli-s3-profile)
+    - [4.6 Export Existing AWS CLI S3 Profile](#46-export-existing-aws-cli-s3-profile)
+    - [4.7 Backup All Existing AWS CLI S3 Profiles](#47-backup-all-existing-aws-cli-s3-profiles)
+    - [4.8 Back to Main Menu](#48-back-to-main-menu)
+  - [Submenu Option 3: Migrate Centmin Mod Data To New Centmin Mod Server](#5-submenu-option-3-migrate-centmin-mod-data-to-new-centmin-mod-server) — Complete server migration
+    - [5.1 Pre-Migration Checklist](#51-pre-migration-checklist)
+    - [5.2 Migration Workflow](#52-migration-workflow)
+    - [5.3 Step-by-Step Guide](#53-step-by-step-guide)
+    - [5.4 Example Run](#54-example-run)
+    - [5.5 Command Line Usage](#54-command-line-usage)
+  - [Submenu Option 4: Backup Nginx Vhosts Data + MariaBackup MySQL Backups](#6-submenu-option-4-backup-nginx-vhosts-data--mariabackup-mysql-backups) — Full backup with binary DB
+    - [6.1 Backup Contents](#61-backup-contents)
+    - [6.2 Restoration Guide](#62-restoration-guide)
+    - [6.3 Command Line Usage](#63-command-line-usage)
+  - [Submenu Option 5: Backup Nginx Vhosts Data Only](#7-submenu-option-5-backup-nginx-vhosts-data-only) — Website files only
+    - [7.1 Command Line Usage](#71-command-line-usage)
+  - [Submenu Option 6: Backup MariaDB MySQL With MariaBackup Only](#8-submenu-option-6-backup-mariadb-mysql-with-mariabackup-only) — Binary database backup
+    - [8.1 Command Line Usage](#81-command-line-usage)
+  - [Submenu Option 7: Backup MariaDB MySQL With mysqldump Only](#9-submenu-option-7-backup-mariadb-mysql-with-mysqldump-only) — SQL dump backup
+    - [9.1 Command Line Usage](#91-command-line-usage)
+  - [Submenu Option 8: Transfer Directory Data To Remote Server Via SSH](#10-submenu-option-8-transfer-directory-data-to-remote-server-via-ssh) — High-speed SSH transfer
+    - [10.1 Required Information](#101-required-information)
+    - [10.2 Example Session](#102-example-session)
+    - [10.3 Remote Server Restoration](#103-remote-server-restoration)
+    - [10.4 Command Line Usage](#104-command-line-usage)
+  - [Submenu Option 9: Transfer Directory Data To S3 Compatible Storage](#11-submenu-option-9-transfer-directory-data-to-s3-compatible-storage) — S3 directory sync
+    - [11.1 Command Line Usage](#111-command-line-usage)
+  - [Submenu Option 10: Transfer Files To S3 Compatible Storage](#12-submenu-option-10-transfer-files-to-s3-compatible-storage) — S3 file upload
+    - [12.1 Command Line Usage](#121-command-line-usage)
+  - [Submenu Option 11: Download S3 Compatible Stored Data To Server](#13-submenu-option-11-download-s3-compatible-stored-data-to-server) — S3 download
+    - [13.1 Command Line Usage](#131-command-line-usage)
+  - [Submenu Option 12: S3 To S3 Compatible Storage Transfers](#14-submenu-option-12-s3-to-s3-compatible-storage-transfers) — Cross-S3 transfer
+    - [14.1 Command Line Usage](#141-command-line-usage)
+  - [Submenu Option 13: List S3 Storage Buckets](#15-submenu-option-13-list-s3-storage-buckets) — View S3 buckets
+    - [15.1 Command Line Usage](#151-command-line-usage)
+  - [Submenu Option 14: Back to Main Menu](#16-submenu-option-14-back-to-main-menu)
+  - [Adding Custom Directories to Backup](#17-adding-custom-directories-to-backup)
+- [S3 Provider Endpoint Reference](#18-s3-provider-endpoint-reference)
+- [Command Line Reference](#19-command-line-reference)
+- [Troubleshooting](#20-troubleshooting)
+- [Recommended Backup Schedule](#21-recommended-backup-schedule)
+- [Performance Benchmarks](#22-performance-benchmarks)
 
+---
 
-## Menu Option 21: Data Management
+## 2. Menu Option 21: Data Management
 
-When you select option 21 from the main Centmin Mod menu, you will access the `datamanager_menu` function. 
+When you select option 21 from the main Centmin Mod menu, you will access the `datamanager_menu` function.
 
 ```bash
 --------------------------------------------------------
-     Centmin Mod Data Management        
+     Centmin Mod Data Management
 --------------------------------------------------------
 1).   Manage SSH Keys
 2).   Manage AWS CLI S3 Profile Credentials
@@ -85,18 +188,40 @@ When you select option 21 from the main Centmin Mod menu, you will access the `d
 13).  List S3 Storage Buckets
 14).  Back to Main menu
 --------------------------------------------------------
-Enter option [ 1 - 14 ] 
+Enter option [ 1 - 14 ]
 --------------------------------------------------------
 ```
 
+### 2.1 At-a-Glance Quick Reference
+
+Use this table for quick lookup of all menu options and their purposes:
+
+| Option | Name | Purpose | Includes |
+|:------:|------|---------|----------|
+| **1** | Manage SSH Keys | SSH key lifecycle management | Create, register, rotate, delete, export, backup keys |
+| **2** | Manage AWS CLI S3 Profiles | S3 storage credential management | Create, edit, delete, export, backup profiles |
+| **3** | Migrate to New Server | Complete server migration | Backup + Transfer + Restore workflow |
+| **4** | Vhosts + MariaBackup | Full backup with binary DB | Nginx configs, vhosts, MariaDB (physical) |
+| **5** | Vhosts Only | Website files backup | Nginx configs, vhost directories only |
+| **6** | MariaBackup Only | Binary database backup | MariaDB physical backup (same-version restore) |
+| **7** | mysqldump Only | SQL dump backup | MariaDB logical backup (cross-version compatible) |
+| **8** | SSH Transfer | High-speed data transfer | zstd-compressed tunnel via nc/socat |
+| **9** | Directory to S3 | Sync directory to S3 | `aws s3 sync` to S3-compatible storage |
+| **10** | Files to S3 | Upload files to S3 | `aws s3 cp` individual files |
+| **11** | Download from S3 | Download S3 data | `aws s3 cp` from S3 to server |
+| **12** | S3 to S3 Transfer | Cross-S3 transfer | Transfer between S3 providers/buckets |
+| **13** | List S3 Buckets | View S3 buckets | `aws s3 ls` for configured profiles |
+| **14** | Back to Main Menu | Exit data management | Return to centmin.sh main menu |
+
 This submenu provides various options related to data management, such as:
 
-### Submenu Option 1: Manage SSH Keys
+---
 
+## 3. Submenu Option 1: Manage SSH Keys
 
 ```bash
 --------------------------------------------------------
-     Manage SSH Keys        
+     Manage SSH Keys
 --------------------------------------------------------
 1).   List Registered SSH Keys
 2).   Register Existing SSH Keys
@@ -108,7 +233,7 @@ This submenu provides various options related to data management, such as:
 8).   Backup All Existing SSH Keys
 9).   Back to Main menu
 --------------------------------------------------------
-Enter option [ 1 - 9 ] 
+Enter option [ 1 - 9 ]
 --------------------------------------------------------
 ```
 
@@ -124,65 +249,99 @@ This option allows you to manage SSH keys for remote hosts. The available action
 8. Backup All Existing SSH Keys
 9. Back to Main Menu
 
-#### 1. List Registered SSH Keys
+### 3.1 List Registered SSH Keys
+
 This option lists all registered SSH keys on your system. There are no prompts for this option.
 
-#### 2. Register Existing SSH Keys
+### 3.2 Register Existing SSH Keys
+
 This option allows you to register an existing SSH key with a remote host. You will be prompted for the following information:
-- Private key path: Enter the full path to the private key file that you want to register.
-- Public key path: Enter the full path to the public key file that you want to register.
 
-#### 3. Create New SSH Key For Remote Host
+| Prompt | Description |
+|--------|-------------|
+| Private key path | Full path to the private key file (e.g., `/root/.ssh/id_ed25519`) |
+| Public key path | Full path to the public key file (e.g., `/root/.ssh/id_ed25519.pub`) |
+
+### 3.3 Create New SSH Key For Remote Host
+
 This option creates a new SSH key and registers it with the specified remote host. You will be prompted for the following information:
-- Key type (rsa, ecdsa, ed25519): Enter the key type you want to generate. The default is `ed25519`.
-- Remote IP address: Enter the IP address of the remote host you want to register the SSH key with.
-- Remote SSH port: Enter the SSH port number of the remote host.
-- Remote SSH username: Enter the username for the remote host.
-- Key comment (unique identifier): Enter a unique comment or identifier for the key.
-- Remote SSH password (optional, leave empty for manual password entry): Enter the remote host's SSH password, or leave it empty to enter the password manually when prompted.
 
-#### 4. Use Existing SSH Key For Remote Host
-This option allows you to use an existing SSH key for a specified remote host. You will be prompted for the following information:
-- Private key path: Enter the full path to the private key file that you want to use.
-- Remote IP address: Enter the IP address of the remote host you want to connect with the SSH key.
-- Remote SSH port: Enter the SSH port number of the remote host.
-- Remote SSH username: Enter the username for the remote host.
+| Prompt | Description | Default |
+|--------|-------------|---------|
+| Key type | `rsa`, `ecdsa`, or `ed25519` | `ed25519` |
+| Remote IP address | IP address of the remote host | — |
+| Remote SSH port | SSH port number | `22` |
+| Remote SSH username | Username for remote connection | `root` |
+| Key comment | Unique identifier for the key | — |
+| Remote SSH password | Password for initial setup (optional) | — |
 
-#### 5. Rotate Existing SSH Key For Remote Host
-This option replaces the existing SSH key for the specified remote host with a newly generated one. You will be prompted for the following information:
-- Key type (rsa, ecdsa, ed25519): Enter the key type you want to generate for the new key. The default is `ed25519`.
-- Remote IP address: Enter the IP address of the remote host you want to update the SSH key for.
-- Remote SSH port: Enter the SSH port number of the remote host.
-- Remote SSH username: Enter the username for the remote host.
-- Key comment (unique identifier): Enter a unique comment or identifier for the new key.
-- Remote SSH password (optional, leave empty for manual password entry): Enter the remote host's SSH password, or leave it empty to enter the password manually when prompted.
+> **Tip:** Leave the password empty to enter it manually when prompted during key installation.
 
-#### 6. Delete Existing SSH Key For Remote Host
-This option deletes an existing SSH key for the specified remote host. You will be prompted for the following information:
-- Remote IP address: Enter the IP address of the remote host you want to delete the SSH key for.
-- Remote SSH port: Enter the SSH port number of the remote host.
-- Remote SSH username: Enter the username for the remote host.
-- Optional private key path for SSH `-i` option: Enter the full path to the private key file that you want to use for the SSH `-i` option, or leave it empty if you don't want to use this option.
+### 3.4 Use Existing SSH Key For Remote Host
 
-#### 7. Export Existing SSH Key
-This option exports an existing SSH key to a specified file. You will be prompted for the following information:
-- Key name: Enter the unique identifier or comment of the SSH key you want to export.
-- Destination path: Enter the full path to the file where you want to export the SSH key.
+This option allows you to use an existing SSH key for a specified remote host. You will be prompted for:
 
-#### 8. Backup All Existing SSH Keys
-This option creates a backup of all existing SSH keys on your system. You will be prompted for the following information:
-- Destination path for SSH keys backup: Enter the full path to the directory where you want to save the backup of all your existing SSH keys. The directory will be created if it does not exist.
+| Prompt | Description |
+|--------|-------------|
+| Private key path | Full path to the private key file |
+| Remote IP address | IP address of the remote host |
+| Remote SSH port | SSH port number |
+| Remote SSH username | Username for remote connection |
 
-#### 9. Back to Main Menu
+### 3.5 Rotate Existing SSH Key For Remote Host
+
+This option replaces the existing SSH key for the specified remote host with a newly generated one. You will be prompted for:
+
+| Prompt | Description | Default |
+|--------|-------------|---------|
+| Key type | `rsa`, `ecdsa`, or `ed25519` | `ed25519` |
+| Remote IP address | IP of remote host to update | — |
+| Remote SSH port | SSH port number | `22` |
+| Remote SSH username | Username for remote connection | `root` |
+| Key comment | Unique identifier for new key | — |
+| Remote SSH password | Password (optional) | — |
+
+### 3.6 Delete Existing SSH Key For Remote Host
+
+This option deletes an existing SSH key for the specified remote host. You will be prompted for:
+
+| Prompt | Description |
+|--------|-------------|
+| Remote IP address | IP of remote host |
+| Remote SSH port | SSH port number |
+| Remote SSH username | Username for remote connection |
+| Private key path (optional) | Path for SSH `-i` option |
+
+### 3.7 Export Existing SSH Key
+
+This option exports an existing SSH key to a specified file. You will be prompted for:
+
+| Prompt | Description |
+|--------|-------------|
+| Key name | Unique identifier or comment of the SSH key |
+| Destination path | Full path for the exported key file |
+
+### 3.8 Backup All Existing SSH Keys
+
+This option creates a backup of all existing SSH keys on your system. You will be prompted for:
+
+| Prompt | Description |
+|--------|-------------|
+| Destination path | Directory for SSH keys backup (created if not exists) |
+
+### 3.9 Back to Main Menu
+
 This option takes you back to the main Data Management menu.
 
-### Submenu Option 2: Manage AWS CLI S3 Profile Credentials
+---
 
-This option allows you to manage AWS CLI S3 profile credentials. 
+## 4. Submenu Option 2: Manage AWS CLI S3 Profile Credentials
+
+This option allows you to manage AWS CLI S3 profile credentials.
 
 ```bash
 --------------------------------------------------------
-     Manage AWS CLI S3 Profile Credentials        
+     Manage AWS CLI S3 Profile Credentials
 --------------------------------------------------------
 1).   List Registered AWS CLI S3 Profiles
 2).   List AWS CLI S3 Profile Configuration
@@ -193,7 +352,7 @@ This option allows you to manage AWS CLI S3 profile credentials.
 7).   Backup All Existing AWS CLI S3 Profiles
 8).   Back to Main menu
 --------------------------------------------------------
-Enter option [ 1 - 8 ] 
+Enter option [ 1 - 8 ]
 --------------------------------------------------------
 ```
 
@@ -208,153 +367,396 @@ The available actions include:
 7. Backup All Existing AWS CLI S3 Profiles
 8. Back to Main Menu
 
-#### 1. List Registered AWS CLI S3 Profiles
+### 4.1 List Registered AWS CLI S3 Profiles
+
 This option lists all registered AWS CLI S3 profiles on your system. It will display the names of all available profiles that have been configured with the `aws configure` command.
 
-#### 2. List AWS CLI S3 Profile Configuration
+### 4.2 List AWS CLI S3 Profile Configuration
+
 This option displays the configuration details of a specified AWS CLI S3 profile. You will be prompted to enter the profile name, and then the script will display the Access Key, Secret Key, Default Region, and Default Output format associated with that profile.
 
-#### 3. Create New AWS CLI S3 Profile
-This option allows you to create a new AWS CLI S3 profile by providing the necessary information, such as S3 storage provider, profile name, endpoint URL, Access Key, Secret Key, Default Region, and Default Output format. The script will guide you through the process, and once the details are confirmed, the new profile will be created.
+### 4.3 Create New AWS CLI S3 Profile
 
-#### 4. Edit Existing AWS CLI S3 Profile
-This option allows you to edit the configuration of an existing AWS CLI S3 profile. You will be prompted to enter the profile name, and the script will display the current configuration settings for that profile. You can then choose a configuration option to edit, such as max concurrent requests, multipart threshold, multipart chunk size, max bandwidth, etc., and provide a new value for that setting.
+This option allows you to create a new AWS CLI S3 profile by providing the necessary information:
 
-#### 5. Delete Existing AWS CLI S3 Profile
+| Prompt | Description |
+|--------|-------------|
+| S3 storage provider | Provider type (AWS, Cloudflare R2, Backblaze, etc.) |
+| Profile name | Unique name for this profile |
+| Endpoint URL | S3-compatible endpoint (see [S3 Provider Endpoint Reference](#18-s3-provider-endpoint-reference)) |
+| Access Key | Your access key ID |
+| Secret Key | Your secret access key |
+| Default Region | Region code (e.g., `us-east-1`, `auto`) |
+| Default Output | Output format: `json`, `text`, or `yaml` |
+
+The script will guide you through the process, and once the details are confirmed, the new profile will be created.
+
+### 4.4 Edit Existing AWS CLI S3 Profile
+
+This option allows you to edit the configuration of an existing AWS CLI S3 profile. You will be prompted to enter the profile name, and the script will display the current configuration settings. You can then choose a configuration option to edit:
+
+- Max concurrent requests
+- Multipart threshold
+- Multipart chunk size
+- Max bandwidth
+- And more...
+
+### 4.5 Delete Existing AWS CLI S3 Profile
+
 This option enables you to delete an existing AWS CLI S3 profile. You will be prompted to enter the profile name to delete, and after confirming the details, the script will remove the profile from the configuration and credentials files.
 
-#### 6. Export Existing AWS CLI S3 Profile
+### 4.6 Export Existing AWS CLI S3 Profile
+
 This option allows you to export an existing AWS CLI S3 profile to separate configuration and credentials files. You will be prompted to enter the profile name to export, and after confirming the details, the script will create two files containing the exported profile configuration and credentials.
 
-#### 7. Backup All Existing AWS CLI S3 Profiles
+### 4.7 Backup All Existing AWS CLI S3 Profiles
+
 This option enables you to create a backup of all existing AWS CLI S3 profiles on your system. The script will copy the configuration and credentials files to a specified backup directory, allowing you to restore the profiles later if needed.
 
-#### 8. Back to Main Menu
+### 4.8 Back to Main Menu
+
 This option takes you back to the main Data Management menu.
 
-### Submenu Option 3: Migrate Centmin Mod Data To New Centmin Mod Server
+---
 
-When using the "Migrate Centmin Mod Data To New Centmin Mod Server" option, you'll be prompted to enter the following information - ideally using MariaBackup (option 1) is recommended:
+## 5. Submenu Option 3: Migrate Centmin Mod Data To New Centmin Mod Server
 
-1. Confirmation to continue with the migration process.
-2. Backup method choice: 
-   - Backup Nginx Vhosts Data + MariaBackup MySQL Backups (option 1) - only choose this method if both old and new servers run the same MariaDB MySQL server major version i.e. 10.3 or 10.4 or 10.6 on both servers. If one server is on an older version, I'd upgrade that major version to match the newer major version.
-   - Backup Nginx Vhosts Data + Backup MariaDB MySQL With mysqldump (option 2) - this method more suited if you MariaDB MySQL server major versions differ where new server has a newer major version i.e. old server uses MariaDB 10.3 and new server uses MariaDB 10.4 or 10.6.
-3. If you chose option 1:
-   - Confirmation to continue with the chosen backup method.
-   - Option to use tar + zstd compression for the backup.
-4. If you chose option 2:
-   - Confirmation to continue with the chosen backup method.
-   - Option to use tar + zstd compression for the backup.
-5. Option to transfer the backup directory to a remote server via SSH.
-6. If you choose to transfer the backup directory to a remote server via SSH, you'll need to provide the following information:
-   - Confirmation to continue with the transfer.
-   - Remote server SSH port (default: 22).
-   - Remote server SSH username (default: root).
-   - Remote server SSH hostname/IP address.
-   - Tunnel method (nc or socat, default: nc).
-   - Buffer size for socat (in bytes, e.g., 131072 for 128 KB).
-   - Listen port for nc or socat (default: 12345).
-   - Source backup directory (default: the directory from the backup process).
-   - Remote (destination) backup directory.
-   - Path to the SSH private key.
+> **TL;DR**: Complete server migration with backup + transfer. Uses either MariaBackup (same DB version) or mysqldump (different DB versions).
 
-After entering the required information, you'll be asked to confirm the details before proceeding with the migration process. If you choose MariaBackup (option 1), the restore process will be same as [Submenu Option 4: Backup Nginx Vhosts Data + MariaBackup MySQL Backups](#submenu-option-4-backup-nginx-vhosts-data--mariabackup-mysql-backups) after you have transferred the backup to the new Centmin Mod installed server running EL8+ or higher OS.
+### 5.1 Pre-Migration Checklist
 
-#### Submenu Option 3 Command Line:
+Before starting the migration, verify:
 
-You can also initiate the option at SSH command line which would consist of multiple commands where `/root/.ssh/my1.key` is your SSH private key setup to connect to your remote server:
+- [ ] Both servers have Centmin Mod installed
+- [ ] CSF Firewall allows traffic between servers
+- [ ] SSH key authentication is configured
+- [ ] Sufficient disk space on both servers
+- [ ] MariaDB versions documented on both servers
+- [ ] Test migration planned (don't change DNS until verified)
 
-With tar + zstd compression:
+### 5.2 Migration Workflow
 
+```mermaid
+flowchart TD
+    subgraph SOURCE["SOURCE SERVER"]
+        A[Start Menu 21 > Option 3] --> B{Choose backup method}
+        B -->|MariaDB versions match| C[MariaBackup - Option 1]
+        B -->|Versions differ| D[mysqldump - Option 2]
+        C --> E[Compress with tar+zstd?]
+        D --> E
+        E --> F[Create backup at /home/databackup/TIMESTAMP]
+        F --> G{Transfer via SSH?}
+        G -->|Yes| H[Configure tunnel-transfers.sh]
+        G -->|No| I[Keep local backup]
+    end
+
+    subgraph TRANSFER["DATA TRANSFER"]
+        H --> J[SSH tunnel with zstd compression]
+        J --> K[High-speed nc/socat transfer]
+    end
+
+    subgraph DEST["DESTINATION SERVER"]
+        K --> L[Receive at /home/remotebackup]
+        I --> L
+        L --> M[Extract backup]
+        M --> N[Compare with diff]
+        N --> O[Backup destination configs]
+        O --> P[Restore files and configs]
+        P --> Q[Restore MariaDB]
+        Q --> R[Restore cronjobs]
+        R --> S[Verify with nginx -t]
+        S --> T[Test sites]
+        T --> U[Update DNS when ready]
+    end
 ```
-# backup Nginx vhost data + MariaBackup MySQL data
+
+### 5.3 Step-by-Step Guide
+
+When using the "Migrate Centmin Mod Data To New Centmin Mod Server" option, you'll be prompted to enter the following information:
+
+**Step 1: Confirmation**
+- Confirm to continue with the migration process
+
+**Step 2: Backup Method Selection**
+
+| Option | Method | When to Use |
+|--------|--------|-------------|
+| **1** | MariaBackup | Both servers have the **same** MariaDB major version (e.g., 10.6 on both) |
+| **2** | mysqldump | Servers have **different** MariaDB versions (e.g., 10.3 → 10.6) |
+
+> **Recommendation:** If one server is on an older version, upgrade it to match before using MariaBackup.
+
+**Step 3: Compression Selection**
+- Option to use tar + zstd compression for the backup (recommended)
+
+**Step 4: Transfer Configuration**
+
+If you choose to transfer the backup directory to a remote server via SSH:
+
+| Prompt | Description | Default |
+|--------|-------------|---------|
+| Remote server SSH port | SSH port number | `22` |
+| Remote server SSH username | Username | `root` |
+| Remote server SSH hostname/IP | IP address or hostname | — |
+| Tunnel method | `nc` (netcat) or `socat` | `nc` |
+| Buffer size | Bytes (e.g., 131072 for 128 KB) | `131072` |
+| Listen port | Port for tunnel | `12345` |
+| Source backup directory | Local backup path | Auto-detected |
+| Remote backup directory | Destination path | — |
+| SSH private key path | Path to key file | — |
+
+After entering the required information, you'll be asked to confirm the details before proceeding.
+
+**Step 5: Restoration (on destination server)**
+
+If you chose MariaBackup (option 1), the restore process is the same as [Submenu Option 4](#6-submenu-option-4-backup-nginx-vhosts-data--mariabackup-mysql-backups). See that section for detailed restoration instructions.
+
+> **Tip:** You can add custom directories to the backup by configuring `/etc/centminmod/backups.ini`. See [Adding Custom Directories to Backup](#17-adding-custom-directories-to-backup) section below.
+
+### 5.4 Example Run
+
+~~~
+--------------------------------------------------------
+      Centmin Mod Data Management        
+--------------------------------------------------------
+      Docs: https://centminmod.com/menu21-141.00beta01
+--------------------------------------------------------
+1).   Manage SSH Keys
+2).   Manage AWS CLI S3 Profile Credentials
+3).   Migrate Centmin Mod Data To New Centmin Mod Server
+4).   Backup Nginx Vhosts Data + MariaBackup MySQL Backups
+5).   Backup Nginx Vhosts Data Only (no MariaDB MySQL backups)
+6).   Backup MariaDB MySQL With MariaBackup Only (no Vhosts Data backups)
+7).   Backup MariaDB MySQL With mysqldump only (no Vhosts Data backups)
+8).   Transfer Directory Data To Remote Server Via SSH
+9).   Transfer Directory Data To S3 Compatible Storage
+10).  Transfer Files To S3 Compatible Storage
+11).  Download S3 Compatible Stored Data To Server
+12).  S3 To S3 Compatible Storage Transfers
+13).  List S3 Storage Buckets
+14).  Back to Main menu
+--------------------------------------------------------
+Enter option [ 1 - 14 ] 3
+--------------------------------------------------------
+
+Migrate Centmin Mod Data To New Centmin Mod Server
+
+Description:
+This option is for full Nginx vhost data and MariaDB MySQL data transfers from
+this server to a new Centmin Mod based server. There are specific requirements
+for this to work:
+
+1. The destination server must already have Centmin Mod LEMP stack installed
+2. The destination server and this server's MairaDB MySQL server versions must
+   be the same major version at least. i.e. MariaDB 10.3 or both
+
+Do you want to continue [y/n]: y
+~~~
+
+Then when you continue choose how you want to backup the data and choice of MariaDB MySQL backup method. For speed of back and restoration, choose option 1, MariaBackup.
+
+~~~
+Choose the backup method:
+1) Backup Nginx Vhosts Data + MariaBackup MySQL Backups
+2) Backup Nginx Vhosts Data + Backup MariaDB MySQL With mysqldump
+
+Enter the backup method (1 or 2): 1
+
+Backup Nginx Vhosts Data + MariaBackup MySQL Backups
+
+Description:
+This option is for full Nginx vhost data and MariaDB MySQL backups using
+tar + zstd compression is optional. If you choose not to use tar + zstd
+the local backup directories will have uncompressed data backups.
+
+Do you want to continue [y/n]: y
+Do you want tar + zstd compress backup [y/n]: y
+~~~
+
+Once backup is complete, you can choose to transfer the backup data file `centminmod_backup.tar.zst` to remote server via SSH. Example run below shows transferring backup data to remote server via SSH.
+
+~~~
+[Fri Dec  5 23:50:38 UTC 2025] Cleaning up temporary directories ...
+rm -rf /home/databackup/051225-223516/domains_tmp
+rm -rf /home/databackup/051225-223516/mariadb_tmp
+[Fri Dec  5 23:51:22 UTC 2025] Backup completed. File: /home/databackup/051225-223516/centminmod_backup.tar.zst
+[Fri Dec  5 23:51:23 UTC 2025] Backup Log saved: /home/databackup/051225-223516/files-backup_051225-223516.log
+[Fri Dec  5 23:51:23 UTC 2025] Script execution time: 4564 seconds
+
+Backup Directory: /home/databackup/051225-223516
+
+Do you want to transfer the backup directory to remote server via SSH? [y/n/exit]: y
+~~~
+
+When you answer yes to transfer the backup directory files to remote server via SSH and saved to remote server directory `/home/remotebackup` i.e. `/home/remotebackup/centminmod_backup.tar.zst`, you will be prompted for the following SSH transfer information:
+
+~~~
+Do you want to transfer the backup directory to remote server via SSH? [y/n/exit]: y
+
+Transfer /home/databackup/051225-223516 Directory Data To Remote Server Via SSH
+
+Description:
+Option allows you to specify a full path to directory name for data transfer
+to a remote server via SSH at speeds near network and disk line rates using
+either netcat (nc) or socat compressed tunnel using zstd fast compression levels
+
+Do you want to continue [y/n]: y
+Remote server SSH port (default: 22): 22
+Remote server SSH username (default: root): root
+Remote server SSH hostname/IP address: 192.168.1.10
+Tunnel method (nc or socat, default: nc): nc
+Buffer size for socat (in bytes, e.g., 131072 for 128 KB): 131072
+Listen port for nc or socat (default: 12345): 12345
+Source backup directory: /home/databackup/051225-223516
+Remote (destination) backup directory i.e. /home/remotebackup : /home/remotebackup
+Path to the SSH private key i.e. /root/.ssh/my1.key : /root/.ssh/my1.key
+
+Please confirm the entered information:
+Remote server SSH port: 22
+Remote server SSH username: root
+Remote server SSH hostname/IP address: 192.168.1.10
+Tunnel method: nc
+Buffer size: 131072
+Listen port: 12345
+Source backup directory: /home/databackup/051225-223516
+Remote (destination) backup directory: /home/remotebackup
+Path to the SSH private key: /root/.ssh/my1.key
+
+Is the information correct? [y/n]: y
+
+
+csf -a 192.168.1.10 remotebackup
+add failed: 192.168.1.10 is in already in the allow file /etc/csf/csf.allow
+
+ssh -i /root/.ssh/my1.key -p 22 root@192.168.1.10 "csf -a 123.123.123.123 cmmbackupip"
+add failed: 123.123.123.123 is in already in the allow file /etc/csf/csf.allow
+
+/usr/local/src/centminmod/datamanagement/tunnel-transfers.sh -p 22 -u root -h 192.168.1.10 -m nc -b 131072 -l 12345 -s /home/databackup/051225-223516 -r /home/remotebackup -k /root/.ssh/my1.key
+Transfer completed successfully in 1266 seconds.
+~~~
+
+### 5.5 Command Line Usage
+
+You can also initiate the migration at the SSH command line. This example uses `/root/.ssh/my1.key` as your SSH private key:
+
+**With tar + zstd compression:**
+
+```bash
+# Step 1: Backup Nginx vhost data + MariaBackup MySQL data
 { /usr/local/src/centminmod/datamanagement/backups.sh backup-all-mariabackup comp } 2>&1 | tee backup-all.log
 
-# inspect backup-all.log to get the backup directory location $transfer_backup_dir
+# Step 2: Extract the backup directory location from the log
 script_output=$(cat backup-all.log)
 transfer_backup_dir=$(echo "$script_output" | grep 'Backup Log saved: ' | awk '{print $10}' | xargs dirname)
 
-# transfer $transfer_backup_dir backup directory to remote server via SSH with root@123.123.123.123 user
-# port 22 using netcat (nc) listening on port 12334 using zstd compressed tunnel with 262144 byte size
-# transfer buffer to remote server's /home/remotebackup directory using SSH private key /root/.ssh/my1.key
-/usr/local/src/centminmod/datamanagement/tunnel-transfers.sh -p 22 -u root -h 123.123.123.123 -m nc -b 262144 -l 12345 -s ${transfer_backup_dir} -r /home/remotebackup -k /root/.ssh/my1.key
+# Step 3: Transfer to remote server
+# Parameters:
+#   -p 22                    : SSH port
+#   -u root                  : SSH username
+#   -h 123.123.123.123       : Remote server IP
+#   -m nc                    : Tunnel method (netcat)
+#   -b 262144                : Buffer size (256 KB)
+#   -l 12345                 : Listen port
+#   -s ${transfer_backup_dir}: Source directory
+#   -r /home/remotebackup    : Destination directory
+#   -k /root/.ssh/my1.key    : SSH private key
+/usr/local/src/centminmod/datamanagement/tunnel-transfers.sh \
+  -p 22 \
+  -u root \
+  -h 123.123.123.123 \
+  -m nc \
+  -b 262144 \
+  -l 12345 \
+  -s ${transfer_backup_dir} \
+  -r /home/remotebackup \
+  -k /root/.ssh/my1.key
 ```
 
-If you choose MariaBackup (option 1), the restore process will be same as [Submenu Option 4: Backup Nginx Vhosts Data + MariaBackup MySQL Backups](#submenu-option-4-backup-nginx-vhosts-data--mariabackup-mysql-backups) after you have transferred the backup to the new Centmin Mod installed server running EL8+ or higher OS.
+If you chose MariaBackup (option 1), the restore process is the same as [Submenu Option 4](#6-submenu-option-4-backup-nginx-vhosts-data--mariabackup-mysql-backups) after you have transferred the backup to the new Centmin Mod installed server running EL8+ or higher OS.
 
-### Submenu Option 4: Backup Nginx Vhosts Data + MariaBackup MySQL Backups
+---
 
-- This option allows you to create a backup of both Nginx Vhosts data and MariaDB MySQL data using MariaBackup.
-- Tar + zstd compression is optional. If you choose not to use tar + zstd, the local backup directories will have uncompressed data backups.
-- When prompted with "Do you want to continue [y/n]:", enter "y" to proceed with the backup or "n" to abort the process.
-- If you choose to continue, you will be asked, "Do you want tar + zstd compress backup [y/n]:". Enter "y" to create a tar + zstd compressed backup or "n" for an uncompressed backup.
-- After making your selection, the backup process will commence, and the progress will be logged in the specified log file.
+## 6. Submenu Option 4: Backup Nginx Vhosts Data + MariaBackup MySQL Backups
+
+> **TL;DR**: Creates a complete backup of website files AND database using MariaBackup. Best for same-version migrations and full server backups.
+
+**Key Features:**
+- Backs up Nginx vhosts data (website files, configs)
+- Backs up MariaDB using MariaBackup (physical/binary backup)
+- Optional tar + zstd compression
+- Includes MariaBackup restore script in backup
+
+**Interactive Prompts:**
+1. "Do you want to continue [y/n]:" — Enter `y` to proceed or `n` to abort
+2. "Do you want tar + zstd compress backup [y/n]:" — Enter `y` for compressed or `n` for uncompressed
+
+> **Tip:** You can add custom directories to the backup by configuring `/etc/centminmod/backups.ini`. See [Adding Custom Directories to Backup](#17-adding-custom-directories-to-backup) section below.
+
+### 6.1 Backup Contents
 
 For example, the resulting `/home/databackup/070523-072252/centminmod_backup.tar.zst` backup file contains:
 
-1. Nginx Vhosts data, which includes:
+1. **Nginx Vhosts data:**
    - Nginx configuration files
    - Web root directories for each domain
    - Any additional related files or directories
-2. MariaDB MySQL data backed up using MariaBackup
-   - All the database files and related information required to restore the databases
+
+2. **MariaDB MySQL data (via MariaBackup):**
+   - All database files and related information required to restore
+
+### 6.2 Restoration Guide
 
 To restore the data from the backup, follow these steps:
 
-1. Transfer the backup file to the server where you want to restore the data from. Below instructions restore to staging directory at `/home/restoredata`
-2. Extract the contents of the backup file
+#### 6.2.1 Step 1: Transfer the Backup
 
+Transfer the backup file to the server where you want to restore the data. Below instructions restore to staging directory at `/home/restoredata`.
 
-If you have tar version 1.31 or higher, it has native zstd compression support, and extract the backup using these 2 commands. Centmin Mod 130.00beta01's centmin.sh menu option 21, will automatically install a custom built tar 1.35 version YUM RPM binary at `/usr/local/bin/tar` to not conflict with system installed `/usr/bin/tar` and the custom tar 1.35 binary will take priority over system tar if called just as `tar`.
+#### 6.2.2 Step 2: Extract the Backup
 
-Change path to `/home/databackup/070523-072252/centminmod_backup.tar.zst` where you saved or transfered the backup to i.e. `/home/remotebackup/centminmod_backup.tar.zst`.
+**For tar version 1.31+ (with native zstd support):**
 
-   ```
-   mkdir -p /home/restoredata
-   tar -I zstd -xf /home/databackup/070523-072252/centminmod_backup.tar.zst -C /home/restoredata
-   ```
-or
+> **Note:** Centmin Mod 130.00beta01 or higher version menu option 21 automatically installs a custom tar 1.35 at `/usr/local/bin/tar` which takes priority over the system `/usr/bin/tar`.
 
-   ```
-   mkdir -p /home/restoredata
-   tar -I zstd -xf /home/remotebackup/centminmod_backup.tar.zst -C /home/restoredata
-   ```
-
-If you have tar version lower than 1.31, you will have to extract the tar zstd compressed backup first.
-
-   ```
-   mkdir -p /home/restoredata
-   zstd -d /home/databackup/070523-072252/centminmod_backup.tar.zst
-   tar -xf /home/databackup/070523-072252/centminmod_backup.tar -C /home/restoredata
-   ```
-
-or
-
-   ```
-   mkdir -p /home/restoredata
-   zstd -d /home/remotebackup/centminmod_backup.tar.zst
-   tar -xf /home/remotebackup/centminmod_backup.tar -C /home/restoredata
-   ```
-
-Custom tar 1.35
-
-```
+```bash
+# Verify tar version
 tar --version
-tar (GNU tar) 1.35
-Copyright (C) 2023 Free Software Foundation, Inc.
-License GPLv3+: GNU GPL version 3 or later <https://gnu.org/licenses/gpl.html>.
-This is free software: you are free to change and redistribute it.
-There is NO WARRANTY, to the extent permitted by law.
+# tar (GNU tar) 1.35
 
-Written by John Gilmore and Jay Fenlason.
+# Create restore directory and extract
+mkdir -p /home/restoredata
+tar -I zstd -xf /home/databackup/070523-072252/centminmod_backup.tar.zst -C /home/restoredata
 ```
 
-3. Follow the instructions in the `mariabackup-restore.sh` script located in the extracted backup directory (e.g., `/home/databackup/070523-072252/mariadb_tmp/mariabackup-restore.sh`) to restore the MariaDB MySQL databases.
+Or if backup is at `/home/remotebackup`:
 
-When you extract the backup `centminmod_backup.tar.zst` file to `/home/restoredata`, you'll find backup directories and files which correspond with the relative directory paths to root `/` for `/etc`, `/home`, `/root` and `/usr` respectively.
-
+```bash
+mkdir -p /home/restoredata
+tar -I zstd -xf /home/remotebackup/centminmod_backup.tar.zst -C /home/restoredata
 ```
+
+**For tar version lower than 1.31:**
+
+```bash
+mkdir -p /home/restoredata
+# First decompress, then extract
+zstd -d /home/databackup/070523-072252/centminmod_backup.tar.zst
+tar -xf /home/databackup/070523-072252/centminmod_backup.tar -C /home/restoredata
+```
+
+Or if backup is at `/home/remotebackup`:
+
+```bash
+mkdir -p /home/restoredata
+zstd -d /home/remotebackup/centminmod_backup.tar.zst
+tar -xf /home/remotebackup/centminmod_backup.tar -C /home/restoredata
+```
+
+#### 6.2.3 Step 3: Understand the Backup Structure
+
+When you extract `centminmod_backup.tar.zst` to `/home/restoredata`, you'll find directories corresponding to root `/`:
+
+```bash
 ls -lAh /home/restoredata/
 total 16K
 drwxr-xr-x 3 root root 4.0K May  7 07:33 etc
@@ -363,103 +765,110 @@ drwxr-xr-x 3 root root 4.0K May  7 07:33 root
 drwxr-xr-x 3 root root 4.0K May  7 07:33 usr
 ```
 
-An breakdown of backup directory structure 6 directory levels max deep with the files hidden for easier visual view. Where:
+**Directory Structure Reference:**
 
-1. `/home/restoredata/etc/centminmod` is the backup data for `/etc/centminmod`
-2. `/home/restoredata/etc/pure-ftpd` is for /etc/pure-ftpd virtual FTP user database files
-3. `/home/restoredata/home/databackup/070523-072252/domains_tmp` is the backup data for `/home/nginx/domains` for Nginx vhost directories
-4. `/home/restoredata/home/databackup/070523-072252/mariadb_tmp` is the backup data for `/var/lib/mysql` MySQL data directory which also contains the MariaBackup MySQL data restore script at `/home/restoredata/home/databackup/070523-072252/mariadb_tmp/mariabackup-restore.sh`
-5. `/home/restoredata/root/tools` is the backup data for `/root/tools`
-6. `/home/restoredata/usr/local/nginx/` is the backup data for `/usr/local/nginx`
+| Backup Path | Original Location | Contents |
+|-------------|-------------------|----------|
+| `/home/restoredata/etc/centminmod` | `/etc/centminmod` | Centmin Mod configs |
+| `/home/restoredata/etc/pure-ftpd` | `/etc/pure-ftpd` | Virtual FTP user database |
+| `/home/restoredata/home/databackup/TIMESTAMP/domains_tmp` | `/home/nginx/domains` | Nginx vhost directories |
+| `/home/restoredata/home/databackup/TIMESTAMP/mariadb_tmp` | `/var/lib/mysql` | MariaDB data + restore script |
+| `/home/restoredata/root/tools` | `/root/tools` | Centmin Mod tools |
+| `/home/restoredata/usr/local/nginx/` | `/usr/local/nginx` | Nginx installation |
 
-```
+**Full directory tree (6 levels deep):**
+
+```bash
 tree -d -L 6 /home/restoredata/
 
 /home/restoredata/
 ├── etc
-│   ├── centminmod
-│   │   ├── cronjobs
-│   │   ├── csf
-│   │   └── php.d
-│   └── pure-ftpd
+│   ├── centminmod
+│   │   ├── cronjobs
+│   │   ├── csf
+│   │   └── php.d
+│   └── pure-ftpd
 ├── home
-│   └── databackup
-│       └── 070523-072252
-│           ├── domains_tmp
-│           │   ├── demodomain.com
-│           │   │   ├── backup
-│           │   │   ├── log
-│           │   │   ├── private
-│           │   │   └── public
-│           │   ├── domain.com
-│           │   │   ├── backup
-│           │   │   ├── log
-│           │   │   ├── private
-│           │   │   └── public
-│           │   ├── log4j.domain.com
-│           │   │   ├── backup
-│           │   │   ├── log
-│           │   │   ├── private
-│           │   │   └── public
-│           │   ├── domain2.com
-│           │   │   ├── backup
-│           │   │   ├── cronjobs
-│           │   │   ├── log
-│           │   │   ├── private
-│           │   │   ├── public
-│           │   │   └── sucuri_data_storage
-│           │   └── domain3.com
-│           │       ├── backup
-│           │       ├── log
-│           │       ├── private
-│           │       └── public
-│           └── mariadb_tmp
-│               ├── mysql
-│               ├── performance_schema
-│               ├── sakila
-│               └── wp3233312196db_24171
+│   └── databackup
+│       └── 070523-072252
+│           ├── domains_tmp
+│           │   ├── demodomain.com
+│           │   │   ├── backup
+│           │   │   ├── log
+│           │   │   ├── private
+│           │   │   └── public
+│           │   ├── domain.com
+│           │   │   ├── backup
+│           │   │   ├── log
+│           │   │   ├── private
+│           │   │   └── public
+│           │   ├── log4j.domain.com
+│           │   │   ├── backup
+│           │   │   ├── log
+│           │   │   ├── private
+│           │   │   └── public
+│           │   ├── domain2.com
+│           │   │   ├── backup
+│           │   │   ├── cronjobs
+│           │   │   ├── log
+│           │   │   ├── private
+│           │   │   ├── public
+│           │   │   └── sucuri_data_storage
+│           │   └── domain3.com
+│           │       ├── backup
+│           │       ├── log
+│           │       ├── private
+│           │       └── public
+│           └── mariadb_tmp
+│               ├── mysql
+│               ├── performance_schema
+│               ├── sakila
+│               └── wp3233312196db_24171
 ├── root
-│   └── tools
-│       ├── acme.sh
-│       │   ├── deploy
-│       │   ├── dnsapi
-│       │   └── notify
-│       ├── awscli
-│       │   └── aws
-│       │       └── dist
-│       │           ├── awscli
-│       │           ├── cryptography
-│       │           ├── docutils
-│       │           └── lib-dynload
-│       └── keygen
+│   └── tools
+│       ├── acme.sh
+│       │   ├── deploy
+│       │   ├── dnsapi
+│       │   └── notify
+│       ├── awscli
+│       │   └── aws
+│       │       └── dist
+│       │           ├── awscli
+│       │           ├── cryptography
+│       │           ├── docutils
+│       │           └── lib-dynload
+│       └── keygen
 └── usr
     └── local
         └── nginx
             ├── conf
-            │   ├── acmevhostbackup
-            │   ├── autoprotect
-            │   │   ├── demodomain.com
-            │   │   ├── domain.com
-            │   │   ├── log4j.domain.com
-            │   │   ├── domain2.com
-            │   │   └── domain3.com
-            │   ├── conf.d
-            │   ├── phpfpmd
-            │   ├── ssl
-            │   │   ├── cloudflare
-            │   │   ├── log4j.domain.com
-            │   │   ├── domain2.com
-            │   │   └── domain3.com
-            │   └── wpincludes
-            │       └── domain2.com
+            │   ├── acmevhostbackup
+            │   ├── autoprotect
+            │   │   ├── demodomain.com
+            │   │   ├── domain.com
+            │   │   ├── log4j.domain.com
+            │   │   ├── domain2.com
+            │   │   └── domain3.com
+            │   ├── conf.d
+            │   ├── phpfpmd
+            │   ├── ssl
+            │   │   ├── cloudflare
+            │   │   ├── log4j.domain.com
+            │   │   ├── domain2.com
+            │   │   └── domain3.com
+            │   └── wpincludes
+            │       └── domain2.com
             └── html
 
 78 directories
 ```
 
-Then proceed to move the restored files to the correct locations. You can first use `diff` command to check backup versus destination directory files. Not all directories may exist as it's dependent on whether you have installed the software i.e. Redis and KeyDB.
+#### 6.2.4 Step 4: Compare Before Restoring
 
-```
+Use `diff` to check backup versus destination files before restoring. Not all directories may exist depending on installed software (e.g., Redis, KeyDB):
+
+```bash
+# Compare configuration directories
 diff -ur /etc/centminmod /home/restoredata/etc/centminmod/
 diff -ur /etc/pure-ftpd /home/restoredata/etc/pure-ftpd
 diff -ur /etc/redis /home/restoredata/etc/redis
@@ -471,20 +880,23 @@ diff -ur /root/.my.cnf /home/restoredata/root/.my.cnf
 diff -ur /var/spool/cron/root /home/remotebackup/cronjobs_tmp/root_cronjobs
 ```
 
-If Elasticsearch is installed on both old and new server, centmin.sh menu option 21 backup script will backup /etc/elasticsearch as a copy located at /etc/elasticsearch-source so that restoration doesn't override, new server Elasticsearch instance. But you'd have /home/restoredata/etc/elasticsearch-source to reference old server's Elasticsearch settings.
+> **Note on Elasticsearch:** If Elasticsearch is installed on both servers, the backup script copies `/etc/elasticsearch` to `/etc/elasticsearch-source` to prevent overwriting the new server's instance. Reference old settings at `/home/restoredata/etc/elasticsearch-source`:
+> ```bash
+> diff -ur /etc/elasticsearch /home/restoredata/etc/elasticsearch-source
+> ```
 
-diff -ur /etc/elasticsearch /home/restoredata/etc/elasticsearch-source
-
-Example where `/etc/centminmod/diff.txt` file exists only on destination side
-
-```
+**Example output** (file exists only on destination):
+```bash
 diff -ur /home/restoredata/etc/centminmod/ /etc/centminmod
 Only in /etc/centminmod: diff.txt
 ```
 
-Then copy command will force override any existing files on destination directory side and ensure to backup new destination server's files for future reference for `/etc/centminmod/custom_config.inc` and `/etc/centminmod/php.d/a_customphp.ini` and `/etc/my.cnf` and `/etc/centminmod/php.d/zendopcache.ini` and `/usr/local/nginx` and `/usr/local/nginx/conf/staticfiles.conf` files/directory as you may want to use the new server's version of these files or directories for server settings instead of using old server's transferred settings.
+#### 6.2.5 Step 5: Backup New Server Files First
 
-```
+Before overwriting, backup the new server's configuration files that you may want to keep:
+
+```bash
+# Backup files you may want to keep from new server
 \cp -af /usr/local/nginx/conf/staticfiles.conf /usr/local/nginx/conf/staticfiles.conf.original
 \cp -af /usr/local/nginx /usr/local/nginx_original
 \cp -af /etc/my.cnf /etc/my.cnf.original
@@ -492,51 +904,58 @@ Then copy command will force override any existing files on destination director
 \cp -af /etc/centminmod/custom_config.inc /etc/centminmod/custom_config.inc.original
 \cp -af /etc/centminmod/php.d/a_customphp.ini /etc/centminmod/php.d/a_customphp.ini.original
 \cp -af /etc/centminmod/php.d/zendopcache.ini /etc/centminmod/php.d/zendopcache.ini.original
+```
+
+#### 6.2.6 Step 6: Restore Configuration Files
+
+**Using copy commands (preserves backup):**
+
+```bash
 \cp -af /home/restoredata/etc/centminmod/* /etc/centminmod/
 \cp -af /home/restoredata/etc/pure-ftpd/* /etc/pure-ftpd/
 \cp -af /home/restoredata/etc/redis/* /etc/redis/
+chown redis:root /etc/redis/redis.conf
 \cp -af /home/restoredata/etc/keydb/* /etc/keydb/
-mkdir -p /root/.acme.sh
+mkdir -p /root/.acme.sh /root/tools
+\cp -af /home/restoredata/root/.aws /root/.aws
 \cp -af /home/restoredata/root/.acme.sh/* /root/.acme.sh/
 \cp -af /home/restoredata/root/tools/* /root/tools/
 \cp -af /home/restoredata/usr/local/nginx/* /usr/local/nginx/
 ```
 
-For Nginx vhost data where backup directory timestamp = `070523-072252`
+**Using move commands (saves disk space):**
 
-```
-\cp -af /home/restoredata/home/databackup/070523-072252/domains_tmp/* /home/nginx/domains/
-```
-
-Or if disk space is a concern, instead of copy command use move commands
-
-```
-\cp -af /usr/local/nginx/conf/staticfiles.conf /usr/local/nginx/conf/staticfiles.conf.original
-\cp -af /usr/local/nginx /usr/local/nginx_original
-\cp -af /etc/my.cnf /etc/my.cnf.original
-\cp -af /root/.my.cnf /root/.my.cnf.original
-\cp -af /etc/centminmod/custom_config.inc /etc/centminmod/custom_config.inc.original
-\cp -af /etc/centminmod/php.d/a_customphp.ini /etc/centminmod/php.d/a_customphp.ini.original
-\cp -af /etc/centminmod/php.d/zendopcache.ini /etc/centminmod/php.d/zendopcache.ini.original
+```bash
 mv -f /home/restoredata/etc/centminmod/* /etc/centminmod/
 mv -f /home/restoredata/etc/pure-ftpd/* /etc/pure-ftpd/
 mv -f /home/restoredata/etc/redis/* /etc/redis/
 mv -f /home/restoredata/etc/keydb/* /etc/keydb/
-mkdir -p /root/.acme.sh
+mkdir -p /root/.acme.sh /root/tools
+mv -f /home/restoredata/root/.aws /root/.aws
 mv -f /home/restoredata/root/.acme.sh/* /root/.acme.sh/
 mv -f /home/restoredata/root/tools/* /root/tools/
 mv -f /home/restoredata/usr/local/nginx/* /usr/local/nginx/
 ```
 
-For Nginx vhost data where backup directory timestamp = `070523-072252`
+#### 6.2.7 Step 7: Restore Nginx Vhost Data
 
+Replace `070523-072252` with your actual backup timestamp:
+
+**Using copy:**
+```bash
+\cp -af /home/restoredata/home/databackup/070523-072252/domains_tmp/* /home/nginx/domains/
 ```
+
+**Using move (saves disk space):**
+```bash
 mv -f /home/restoredata/home/databackup/070523-072252/domains_tmp/* /home/nginx/domains/
 ```
 
-Check overwritten files
+#### 6.2.8 Step 8: Verify Overwritten Files
 
-```
+Check differences between backed-up originals and restored files:
+
+```bash
 diff -ur /etc/centminmod/custom_config.inc.original /etc/centminmod/custom_config.inc
 diff -ur /usr/local/nginx_original/conf/conf.d/virtual.conf /usr/local/nginx/conf/conf.d/virtual.conf
 diff -ur /usr/local/nginx_original/conf/nginx.conf /usr/local/nginx/conf/nginx.conf
@@ -544,9 +963,9 @@ diff -ur /etc/redis/redis.conf.original /etc/redis/redis.conf
 diff -ur /etc/keydb/keydb.conf.original /etc/keydb/keydb.conf
 ```
 
-If no changes to virtual.conf and nginx.conf use new server one
+**If no changes needed to virtual.conf and nginx.conf, use the new server's versions:**
 
-```
+```bash
 \cp -af /usr/local/nginx_original/conf/nginx.conf /usr/local/nginx/conf/nginx.conf
 \cp -af /usr/local/nginx_original/conf/conf.d/virtual.conf /usr/local/nginx/conf/conf.d/virtual.conf
 diff -ur /usr/local/nginx_original/conf/nginx.conf /usr/local/nginx/conf/nginx.conf
@@ -557,138 +976,172 @@ diff -ur /etc/redis/redis.conf.original /etc/redis/redis.conf
 diff -ur /etc/keydb/keydb.conf.original /etc/keydb/keydb.conf
 ```
 
-Restore cronjobs
+#### 6.2.9 Step 9: Restore Cronjobs
 
-```
+```bash
+# Backup current cronjobs first
 crontab -l > /etc/centminmod/cronjobs/cronjoblist-restore-from-migration.txt
 cat /etc/centminmod/cronjobs/cronjoblist-restore-from-migration.txt
+
+# Restore cronjobs from backup
 crontab /home/remotebackup/cronjobs_tmp/root_cronjobs
 ```
 
-The `/home/restoredata/home/databackup/070523-072252/mariadb_tmp/mariabackup-restore.sh` script has 2 options to restore MariaDB MySQL data either via `copy-back` or `move-back`. 
+#### 6.2.10 Step 10: Restore MariaDB Database
 
-1. `copy-back`: This option copies the backup files back to the original data directory at `/var/lib/mysql`. The backup files themselves are not altered or removed. The script checks if the provided backup directory is valid and if the backup and current MariaDB versions match. If everything is fine, it proceeds with copying the backup files back to the original data directory at `/var/lib/mysql`.
-2. `move-back`: This option moves the backup files back to the original data directory at `/var/lib/mysql`. Unlike `copy-back`, the backup files are removed from the backup directory. The script checks if the provided backup directory is valid and if the backup and current MariaDB versions match. If everything is fine, it proceeds with moving the backup files back to the original data directory at `/var/lib/mysql`.
+The `mariabackup-restore.sh` script (located at `/home/restoredata/home/databackup/TIMESTAMP/mariadb_tmp/mariabackup-restore.sh`) has 2 options:
 
-Both options involve the following steps:
+| Option | Behavior | Use When |
+|--------|----------|----------|
+| `copy-back` | Copies backup files to `/var/lib/mysql`, **preserves backup** | You want to keep the backup intact |
+| `move-back` | Moves backup files to `/var/lib/mysql`, **removes backup** | Disk space is limited |
 
-* The script first checks if the provided directory contains valid MariaBackup data.
-* It then compares the MariaDB version used for the backup with the version running on the current system. The script aborts the restore process if the versions do not match.
-* The MariaDB server is stopped, and the existing data directory is backed up to `/var/lib/mysql-copy-datetimestamp` and then `/var/lib/mysql` data directory is emptied.
-* The ownership of the data directory is changed to `mysql:mysql`.
-* The MariaDB server is started.
-* Depending on the option chosen (`copy-back` or `move-back`), the script copies or moves the backup files back to the original data directory.
+**Restoration Process (both options):**
 
-`mariabackup-restore.sh` Usage help output:
+1. Validates that the directory contains valid MariaBackup data
+2. Compares MariaDB versions (backup vs. current) — **aborts if they don't match**
+3. Stops MariaDB server
+4. Backs up existing data directory to `/var/lib/mysql-copy-datetimestamp`
+5. Empties `/var/lib/mysql`
+6. Copies or moves backup files
+7. Changes ownership to `mysql:mysql`
+8. Starts MariaDB server
 
-```
+**Usage:**
+
+```bash
 ./mariabackup-restore.sh
 Usage: ./mariabackup-restore.sh [copy-back|move-back] /path/to/backup/dir/
 ```
 
-Actual command where backup directory timestamp = `070523-072252`
+**Example command** (replace `070523-072252` with your timestamp):
 
-```
+```bash
 time /home/restoredata/home/databackup/070523-072252/mariadb_tmp/mariabackup-restore.sh copy-back /home/restoredata/home/databackup/070523-072252/mariadb_tmp/
 ```
 
-Then restore `/root/.my.cnf`
+#### 6.2.11 Step 11: Restore MySQL Credentials
 
-```
+```bash
 \cp -af /home/restoredata/root/.my.cnf /root/.my.cnf
 ```
 
-**Note:** Make sure to adjust the paths in the commands above to match the actual location of your backup files.
+> **Note:** Make sure to adjust the paths in the commands above to match the actual location of your backup files.
 
-#### Submenu Option 4 Command Line:
+### 6.3 Command Line Usage
 
-You can also initiate the option at SSH command line:
+You can also initiate the backup at SSH command line:
 
-With tar + zstd compression:
-
-```
+**With tar + zstd compression:**
+```bash
 /usr/local/src/centminmod/datamanagement/backups.sh backup-all-mariabackup comp
 ```
 
-Tar without zstd compression:
-
-```
+**Without compression:**
+```bash
 /usr/local/src/centminmod/datamanagement/backups.sh backup-all-mariabackup
 ```
 
-### Submenu Option 5: Backup Nginx Vhosts Data Only
+---
 
-- This option allows you to create a backup of Nginx Vhosts data only, without including any MariaDB MySQL data.
-- Tar + zstd compression is optional. If you choose not to use tar + zstd, the local backup directories will have uncompressed data backups.
-- When prompted with "Do you want to continue [y/n]:", enter "y" to proceed with the backup or "n" to abort the process.
-- If you choose to continue, you will be asked, "Do you want tar + zstd compress backup [y/n]:". Enter "y" to create a tar + zstd compressed backup or "n" for an uncompressed backup.
-- After making your selection, the backup process will commence, and the progress will be logged in the specified log file.
+## 7. Submenu Option 5: Backup Nginx Vhosts Data Only
 
-#### Submenu Option 5 Command Line:
+> **TL;DR**: Backs up website files only, no database backup.
 
-You can also initiate the option at SSH command line:
+- Creates a backup of Nginx Vhosts data only, without MariaDB MySQL data
+- Tar + zstd compression is optional
+- If you choose not to use tar + zstd, the local backup directories will have uncompressed data
 
-```
+**Interactive Prompts:**
+1. "Do you want to continue [y/n]:" — Enter `y` to proceed or `n` to abort
+2. "Do you want tar + zstd compress backup [y/n]:" — Enter `y` for compressed or `n` for uncompressed
+
+> **Tip:** You can add custom directories to the backup by configuring `/etc/centminmod/backups.ini`. See [Adding Custom Directories to Backup](#17-adding-custom-directories-to-backup) section below.
+
+### 7.1 Command Line Usage
+
+```bash
 /usr/local/src/centminmod/datamanagement/backups.sh backup-files
 ```
 
-### Submenu Option 6: Backup MariaDB MySQL With MariaBackup Only
+---
 
-This option allows you to create a backup of MariaDB MySQL databases using the MariaBackup tool without including any Nginx Vhosts data backups. MariaBackup is used for all MySQL databases and MySQL system database backups, which contain your MySQL users' permissions.
+## 8. Submenu Option 6: Backup MariaDB MySQL With MariaBackup Only
+
+> **TL;DR**: Binary/physical database backup using MariaBackup. Fast backup and restore, but requires same MariaDB version.
+
+This option creates a backup of MariaDB MySQL databases using the MariaBackup tool without including any Nginx Vhosts data backups. MariaBackup is used for all MySQL databases and MySQL system database backups, which contain your MySQL users' permissions.
 
 The MariaBackup backup directory can either be uncompressed or tar + zstd compressed.
 
-When prompted with "Do you want to continue [y/n]:", enter "y" to proceed with the backup or "n" to abort the process. If you choose to continue, you will be asked, "Do you want tar + zstd compress backup [y/n]:". Enter "y" to create a tar + zstd compressed backup or "n" for an uncompressed backup.
+**Interactive Prompts:**
+1. "Do you want to continue [y/n]:" — Enter `y` to proceed or `n` to abort
+2. "Do you want tar + zstd compress backup [y/n]:" — Enter `y` for compressed or `n` for uncompressed
 
-After making your selection, the backup process will commence, and the progress will be logged in the specified log file.
+### 8.1 Command Line Usage
 
-#### Submenu Option 6 Command Line:
-
-You can also initiate the option at SSH command line:
-
-```
+```bash
 /usr/local/src/centminmod/datamanagement/backups.sh backup-mariabackup
 ```
 
-### Submenu Option 7: Backup MariaDB MySQL With mysqldump Only
+---
 
-This option allows you to create a backup of MariaDB MySQL databases using mysqldump without including any Nginx Vhosts data backups. The backup process uses the faster `--tab` delimited backup option, which creates separate `.sql` schema structure files and `.txt` data files for each MySQL database table, instead of a single `.sql` file containing both schema and data.
+## 9. Submenu Option 7: Backup MariaDB MySQL With mysqldump Only
 
-The `.sql` database schema-only table files are not compressed, while the `.txt` data files can be optionally compressed using zstd or left uncompressed.
+> **TL;DR**: Logical/SQL dump backup using mysqldump. Slower but cross-version compatible.
 
-During the backup, a `restore.sh` script is generated in the destination backup directory, which can be run to restore each database or all databases on a new server. If the database name already exists on the server, the restore process will create a new database with a suffix `_restorecopy_datetimestamp` to prevent overwriting the existing database.
+This option creates a backup of MariaDB MySQL databases using mysqldump without including any Nginx Vhosts data backups.
 
-When prompted with "Do you want to continue [y/n]:", enter "y" to proceed with the backup or "n" to abort the process.
+**Key Features:**
+- Uses the faster `--tab` delimited backup option
+- Creates separate `.sql` schema structure files and `.txt` data files for each table
+- Schema files are uncompressed, data files can be zstd compressed
+- Generates a `restore.sh` script in the backup directory
 
-#### Submenu Option 7 Command Line:
+**Restore Behavior:**
+- If database name already exists, creates a new database with suffix `_restorecopy_datetimestamp`
+- Prevents accidental overwrites of existing databases
 
-You can also initiate the option at SSH command line:
+**Interactive Prompt:**
+- "Do you want to continue [y/n]:" — Enter `y` to proceed or `n` to abort
 
-```
+### 9.1 Command Line Usage
+
+```bash
 /usr/local/src/centminmod/datamanagement/backups.sh backup-all
 ```
 
-### Submenu Option 8: Transfer Directory Data To Remote Server Via SSH
+---
 
-This option enables you to transfer directory data from your current server to a remote server via SSH. The following information will be required:
+## 10. Submenu Option 8: Transfer Directory Data To Remote Server Via SSH
 
-1. Remote server SSH port (default: 22): Enter the SSH port number for the remote server. If not specified, the default value is 22.
-2. Remote server SSH username (default: root): Enter the SSH username for the remote server. If not specified, the default value is 'root'.
-3. Remote server SSH hostname/IP address: Enter the hostname or IP address of the remote server.
-4. Tunnel method (nc or socat, default: nc): Choose the tunnel method for data transfer. You can select between 'nc' (netcat) or 'socat'. If not specified, the default value is 'nc'.
-5. Buffer size for socat (in bytes, e.g., 131072 for 128 KB): If using 'socat' as the tunnel method, specify the buffer size in bytes. For example, if you want to set the buffer size to 128 KB, enter 131072.
-6. Listen port for nc or socat (default: 12345): Specify the listen port for the chosen tunnel method (nc or socat). If not specified, the default value is 12345.
-7. Source backup directory: Enter the full path to the source directory you want to transfer from your current server.
-8. Remote (destination) backup directory: Enter the full path to the destination directory on the remote server where you want the data to be transferred.
-9. Path to the SSH private key: Provide the path to the SSH private key that will be used for authentication.
+> **TL;DR**: High-speed compressed data transfer via SSH using netcat or socat tunnels.
 
-After entering the information, you will be asked to confirm the entered details. If the information is correct, the script will proceed with the data transfer. If not, you will be prompted to re-enter the information.
+This option enables you to transfer directory data from your current server to a remote server via SSH at speeds near network and disk line rates using zstd compression.
 
-For example if you used `centmin.sh` menu `option 21` submenu `option 4` to create a Nginx vhost data + MariaBackup backup file at `/home/databackup/070523-072252/centminmod_backup.tar.zst`. You can transfer the directory contents for `/home/databackup/070523-072252` to a remote server's `/home/remotebackup` directory via SSH.
+### 10.1 Required Information
 
-```
+| Prompt | Description | Default |
+|--------|-------------|---------|
+| Remote server SSH port | SSH port number | `22` |
+| Remote server SSH username | Username | `root` |
+| Remote server SSH hostname/IP | IP address or hostname | — |
+| Tunnel method | `nc` (netcat) or `socat` | `nc` |
+| Buffer size | Bytes (e.g., 131072 = 128 KB, 262144 = 256 KB) | `131072` |
+| Listen port | Port for nc/socat tunnel | `12345` |
+| Source backup directory | Full path to local directory | — |
+| Remote backup directory | Full path on remote server | — |
+| SSH private key path | Path to private key file | — |
+
+After entering the information, you will be asked to confirm the details.
+
+### 10.2 Example Session
+
+Using `centmin.sh` menu option 21, submenu option 4, you created a backup at `/home/databackup/070523-072252/centminmod_backup.tar.zst`. Now transfer it:
+
+```bash
 --------------------------------------------------------
-     Centmin Mod Data Management        
+     Centmin Mod Data Management
 --------------------------------------------------------
 1).   Manage SSH Keys
 2).   Manage AWS CLI S3 Profile Credentials
@@ -708,7 +1161,8 @@ For example if you used `centmin.sh` menu `option 21` submenu `option 4` to crea
 Enter option [ 1 - 14 ] 8
 --------------------------------------------------------
 ```
-```
+
+```bash
 Transfer Directory Data To Remote Server Via SSH
 
 Description:
@@ -740,67 +1194,44 @@ Path to the SSH private key: /root/.ssh/my1.key
 
 Is the information correct? [y/n]: y
 /usr/local/src/centminmod/datamanagement/tunnel-transfers.sh -p 22 -u root -h 123.123.123.123 -m nc -b 262144 -l 12345 -s /home/databackup/070523-072252 -r /home/remotebackup -k /root/.ssh/my1.key
- 245MiB 0:00:00 [ 345MiB/s] [=================================================================>] 100%            
+ 245MiB 0:00:00 [ 345MiB/s] [=================================================================>] 100%
 Transfer completed successfully in 1 seconds.
 ```
 
-Contents of remote server's `/home/remotebackup/` directory
+#### 10.2.1 Remote Server Contents
 
-```
+After transfer, the remote server's `/home/remotebackup/` contains:
+
+```bash
 ls -lAh /home/remotebackup/
 -rw-r--r-- 1 root root 245M May  7 07:23 /home/remotebackup/centminmod_backup.tar.zst
 -rw-r--r-- 1 root root 1.6M May  7 07:23 /home/remotebackup/files-backup_070523-072252.log
 ```
 
-To extract the contents of the backup file:
+#### 10.2.2 Extracting the Backup (on remote server)
 
-If you have tar version 1.31 or higher, it has native zstd compression support, and extract the backup using these 2 commands. Centmin Mod 130.00beta01's centmin.sh menu option 21, will automatically install a custom built tar 1.35 version YUM RPM binary at `/usr/local/bin/tar` to not conflict with system installed `/usr/bin/tar` and the custom tar 1.35 binary will take priority over system tar if called just as `tar`.
+**For tar version 1.31+ (with native zstd support):**
 
-Change path to `/home/databackup/070523-072252/centminmod_backup.tar.zst` where you saved or transfered the backup to i.e. `/home/remotebackup/centminmod_backup.tar.zst`.
-
-   ```
-   mkdir -p /home/restoredata
-   tar -I zstd -xf /home/databackup/070523-072252/centminmod_backup.tar.zst -C /home/restoredata
-   ```
-or
-
-   ```
-   mkdir -p /home/restoredata
-   tar -I zstd -xf /home/remotebackup/centminmod_backup.tar.zst -C /home/restoredata
-   ```
-
-If you have tar version lower than 1.31, you will have to extract the tar zstd compressed backup first.
-
-   ```
-   mkdir -p /home/restoredata
-   zstd -d /home/databackup/070523-072252/centminmod_backup.tar.zst
-   tar -xf /home/databackup/070523-072252/centminmod_backup.tar -C /home/restoredata
-   ```
-
-or
-
-   ```
-   mkdir -p /home/restoredata
-   zstd -d /home/remotebackup/centminmod_backup.tar.zst
-   tar -xf /home/remotebackup/centminmod_backup.tar -C /home/restoredata
-   ```
-
-Custom tar 1.35
-
-```
-tar --version
-tar (GNU tar) 1.35
-Copyright (C) 2023 Free Software Foundation, Inc.
-License GPLv3+: GNU GPL version 3 or later <https://gnu.org/licenses/gpl.html>.
-This is free software: you are free to change and redistribute it.
-There is NO WARRANTY, to the extent permitted by law.
-
-Written by John Gilmore and Jay Fenlason.
+```bash
+mkdir -p /home/restoredata
+tar -I zstd -xf /home/remotebackup/centminmod_backup.tar.zst -C /home/restoredata
 ```
 
-When you extract the backup `centminmod_backup.tar.zst` file to `/home/restoredata`, you'll find backup directories and files which correspond with the relative directory paths to root `/` for `/etc`, `/home`, `/root` and `/usr` respectively.
+**For tar version lower than 1.31:**
 
+```bash
+mkdir -p /home/restoredata
+zstd -d /home/remotebackup/centminmod_backup.tar.zst
+tar -xf /home/remotebackup/centminmod_backup.tar -C /home/restoredata
 ```
+
+### 10.3 Remote Server Restoration
+
+#### 10.3.1 Backup Directory Structure
+
+When extracted, `/home/restoredata` contains:
+
+```bash
 ls -lAh /home/restoredata/
 total 16K
 drwxr-xr-x 3 root root 4.0K May  7 07:33 etc
@@ -809,103 +1240,109 @@ drwxr-xr-x 3 root root 4.0K May  7 07:33 root
 drwxr-xr-x 3 root root 4.0K May  7 07:33 usr
 ```
 
-An breakdown of backup directory structure 6 directory levels max deep with the files hidden for easier visual view. Where:
+**Directory mapping:**
 
-1. `/home/restoredata/etc/centminmod` is the backup data for `/etc/centminmod`
-2. `/home/restoredata/etc/pure-ftpd` is for /etc/pure-ftpd virtual FTP user database files
-3. `/home/restoredata/home/databackup/070523-072252/domains_tmp` is the backup data for `/home/nginx/domains` for Nginx vhost directories
-4. `/home/restoredata/home/databackup/070523-072252/mariadb_tmp` is the backup data for `/var/lib/mysql` MySQL data directory which also contains the MariaBackup MySQL data restore script at `/home/restoredata/home/databackup/070523-072252/mariadb_tmp/mariabackup-restore.sh`
-5. `/home/restoredata/root/tools` is the backup data for `/root/tools`
-6. `/home/restoredata/usr/local/nginx/` is the backup data for `/usr/local/nginx`
+| Backup Path | Original Location | Contents |
+|-------------|-------------------|----------|
+| `/home/restoredata/etc/centminmod` | `/etc/centminmod` | Centmin Mod configs |
+| `/home/restoredata/etc/pure-ftpd` | `/etc/pure-ftpd` | Virtual FTP user database |
+| `/home/restoredata/home/databackup/TIMESTAMP/domains_tmp` | `/home/nginx/domains` | Nginx vhost directories |
+| `/home/restoredata/home/databackup/TIMESTAMP/mariadb_tmp` | `/var/lib/mysql` | MariaDB data + restore script |
+| `/home/restoredata/root/tools` | `/root/tools` | Centmin Mod tools |
+| `/home/restoredata/usr/local/nginx/` | `/usr/local/nginx` | Nginx installation |
 
-```
+**Full directory tree:**
+
+```bash
 tree -d -L 6 /home/restoredata/
 
 /home/restoredata/
 ├── etc
-│   ├── centminmod
-│   │   ├── cronjobs
-│   │   ├── csf
-│   │   └── php.d
-│   └── pure-ftpd
+│   ├── centminmod
+│   │   ├── cronjobs
+│   │   ├── csf
+│   │   └── php.d
+│   └── pure-ftpd
 ├── home
-│   └── databackup
-│       └── 070523-072252
-│           ├── domains_tmp
-│           │   ├── demodomain.com
-│           │   │   ├── backup
-│           │   │   ├── log
-│           │   │   ├── private
-│           │   │   └── public
-│           │   ├── domain.com
-│           │   │   ├── backup
-│           │   │   ├── log
-│           │   │   ├── private
-│           │   │   └── public
-│           │   ├── log4j.domain.com
-│           │   │   ├── backup
-│           │   │   ├── log
-│           │   │   ├── private
-│           │   │   └── public
-│           │   ├── domain2.com
-│           │   │   ├── backup
-│           │   │   ├── cronjobs
-│           │   │   ├── log
-│           │   │   ├── private
-│           │   │   ├── public
-│           │   │   └── sucuri_data_storage
-│           │   └── domain3.com
-│           │       ├── backup
-│           │       ├── log
-│           │       ├── private
-│           │       └── public
-│           └── mariadb_tmp
-│               ├── mysql
-│               ├── performance_schema
-│               ├── sakila
-│               └── wp3233312196db_24171
+│   └── databackup
+│       └── 070523-072252
+│           ├── domains_tmp
+│           │   ├── demodomain.com
+│           │   │   ├── backup
+│           │   │   ├── log
+│           │   │   ├── private
+│           │   │   └── public
+│           │   ├── domain.com
+│           │   │   ├── backup
+│           │   │   ├── log
+│           │   │   ├── private
+│           │   │   └── public
+│           │   ├── log4j.domain.com
+│           │   │   ├── backup
+│           │   │   ├── log
+│           │   │   ├── private
+│           │   │   └── public
+│           │   ├── domain2.com
+│           │   │   ├── backup
+│           │   │   ├── cronjobs
+│           │   │   ├── log
+│           │   │   ├── private
+│           │   │   ├── public
+│           │   │   └── sucuri_data_storage
+│           │   └── domain3.com
+│           │       ├── backup
+│           │       ├── log
+│           │       ├── private
+│           │       └── public
+│           └── mariadb_tmp
+│               ├── mysql
+│               ├── performance_schema
+│               ├── sakila
+│               └── wp3233312196db_24171
 ├── root
-│   └── tools
-│       ├── acme.sh
-│       │   ├── deploy
-│       │   ├── dnsapi
-│       │   └── notify
-│       ├── awscli
-│       │   └── aws
-│       │       └── dist
-│       │           ├── awscli
-│       │           ├── cryptography
-│       │           ├── docutils
-│       │           └── lib-dynload
-│       └── keygen
+│   └── tools
+│       ├── acme.sh
+│       │   ├── deploy
+│       │   ├── dnsapi
+│       │   └── notify
+│       ├── awscli
+│       │   └── aws
+│       │       └── dist
+│       │           ├── awscli
+│       │           ├── cryptography
+│       │           ├── docutils
+│       │           └── lib-dynload
+│       └── keygen
 └── usr
     └── local
         └── nginx
             ├── conf
-            │   ├── acmevhostbackup
-            │   ├── autoprotect
-            │   │   ├── demodomain.com
-            │   │   ├── domain.com
-            │   │   ├── log4j.domain.com
-            │   │   ├── domain2.com
-            │   │   └── domain3.com
-            │   ├── conf.d
-            │   ├── phpfpmd
-            │   ├── ssl
-            │   │   ├── cloudflare
-            │   │   ├── log4j.domain.com
-            │   │   ├── domain2.com
-            │   │   └── domain3.com
-            │   └── wpincludes
-            │       └── domain2.com
+            │   ├── acmevhostbackup
+            │   ├── autoprotect
+            │   │   ├── demodomain.com
+            │   │   ├── domain.com
+            │   │   ├── log4j.domain.com
+            │   │   ├── domain2.com
+            │   │   └── domain3.com
+            │   ├── conf.d
+            │   ├── phpfpmd
+            │   ├── ssl
+            │   │   ├── cloudflare
+            │   │   ├── log4j.domain.com
+            │   │   ├── domain2.com
+            │   │   └── domain3.com
+            │   └── wpincludes
+            │       └── domain2.com
             └── html
 
 78 directories
 ```
 
-Then proceed to move the restored files to the correct locations. You can first use `diff` command to check backup versus destination directory files. Not all directories may exist as it's dependent on whether you have installed the software i.e. Redis and KeyDB.
+#### 10.3.2 Restoration Steps (on remote server)
 
-```
+**Compare Before Restoring:**
+
+```bash
 diff -ur /etc/centminmod /home/restoredata/etc/centminmod/
 diff -ur /etc/pure-ftpd /home/restoredata/etc/pure-ftpd
 diff -ur /etc/redis /home/restoredata/etc/redis
@@ -917,20 +1354,14 @@ diff -ur /root/.my.cnf /home/restoredata/root/.my.cnf
 diff -ur /var/spool/cron/root /home/remotebackup/cronjobs_tmp/root_cronjobs
 ```
 
-If Elasticsearch is installed on both old and new server, centmin.sh menu option 21 backup script will backup /etc/elasticsearch as a copy located at /etc/elasticsearch-source so that restoration doesn't override, new server Elasticsearch instance. But you'd have /home/restoredata/etc/elasticsearch-source to reference old server's Elasticsearch settings.
+> **Note on Elasticsearch:** If installed on both servers, compare:
+> ```bash
+> diff -ur /etc/elasticsearch /home/restoredata/etc/elasticsearch-source
+> ```
 
-diff -ur /etc/elasticsearch /home/restoredata/etc/elasticsearch-source
+**Backup New Server Files First:**
 
-Example where `/etc/centminmod/diff.txt` file exists only on destination side
-
-```
-diff -ur /home/restoredata/etc/centminmod/ /etc/centminmod
-Only in /etc/centminmod: diff.txt
-```
-
-Then copy command will force override any existing files on destination directory side and ensure to backup new destination server's files for future reference for `/etc/centminmod/custom_config.inc` and `/etc/centminmod/php.d/a_customphp.ini` and `/etc/my.cnf` and `/etc/centminmod/php.d/zendopcache.ini` and `/usr/local/nginx` and `/usr/local/nginx/conf/staticfiles.conf` files/directory as you may want to use the new server's version of these files or directories for server settings instead of using old server's transferred settings.
-
-```
+```bash
 \cp -af /usr/local/nginx/conf/staticfiles.conf /usr/local/nginx/conf/staticfiles.conf.original
 \cp -af /usr/local/nginx /usr/local/nginx_original
 \cp -af /etc/my.cnf /etc/my.cnf.original
@@ -940,51 +1371,51 @@ Then copy command will force override any existing files on destination director
 \cp -af /etc/centminmod/custom_config.inc /etc/centminmod/custom_config.inc.original
 \cp -af /etc/centminmod/php.d/a_customphp.ini /etc/centminmod/php.d/a_customphp.ini.original
 \cp -af /etc/centminmod/php.d/zendopcache.ini /etc/centminmod/php.d/zendopcache.ini.original
+```
+
+**Restore Configuration Files (using copy):**
+
+```bash
 \cp -af /home/restoredata/etc/centminmod/* /etc/centminmod/
 \cp -af /home/restoredata/etc/pure-ftpd/* /etc/pure-ftpd/
 \cp -af /home/restoredata/etc/redis/* /etc/redis/
 \cp -af /home/restoredata/etc/keydb/* /etc/keydb/
+mkdir -p /root/.acme.sh /root/tools
+\cp -af /home/restoredata/root/.aws /root/.aws
 \cp -af /home/restoredata/root/.acme.sh/* /root/.acme.sh/
 \cp -af /home/restoredata/root/tools/* /root/tools/
 \cp -af /home/restoredata/usr/local/nginx/* /usr/local/nginx/
 ```
 
-For Nginx vhost data where backup directory timestamp = `070523-072252`
+**Restore Configuration Files (using move - saves disk space):**
 
-```
-\cp -af /home/restoredata/home/databackup/070523-072252/domains_tmp/* /home/nginx/domains/
-```
-
-Or if disk space is a concern, instead of copy command use move commands
-
-```
-\cp -af /usr/local/nginx/conf/staticfiles.conf /usr/local/nginx/conf/staticfiles.conf.original
-\cp -af /usr/local/nginx /usr/local/nginx_original
-\cp -af /etc/my.cnf /etc/my.cnf.original
-\cp -af /root/.my.cnf /root/.my.cnf.original
-\cp -af /etc/redis/redis.conf /etc/redis/redis.conf.original
-\cp -af /etc/keydb/keydb.conf /etc/keydb/keydb.conf.original
-\cp -af /etc/centminmod/custom_config.inc /etc/centminmod/custom_config.inc.original
-\cp -af /etc/centminmod/php.d/a_customphp.ini /etc/centminmod/php.d/a_customphp.ini.original
-\cp -af /etc/centminmod/php.d/zendopcache.ini /etc/centminmod/php.d/zendopcache.ini.original
+```bash
 mv -f /home/restoredata/etc/centminmod/* /etc/centminmod/
 mv -f /home/restoredata/etc/pure-ftpd/* /etc/pure-ftpd/
 mv -f /home/restoredata/etc/redis/* /etc/redis/
 mv -f /home/restoredata/etc/keydb/* /etc/keydb/
+mkdir -p /root/.acme.sh /root/tools
+mv -f /home/restoredata/root/.aws /root/.aws
 mv -f /home/restoredata/root/.acme.sh/* /root/.acme.sh/
 mv -f /home/restoredata/root/tools/* /root/tools/
 mv -f /home/restoredata/usr/local/nginx/* /usr/local/nginx/
 ```
 
-For Nginx vhost data where backup directory timestamp = `070523-072252`
+**Restore Nginx Vhost Data:**
 
-```
+Replace `070523-072252` with your timestamp:
+
+```bash
+# Using copy:
+\cp -af /home/restoredata/home/databackup/070523-072252/domains_tmp/* /home/nginx/domains/
+
+# Using move:
 mv -f /home/restoredata/home/databackup/070523-072252/domains_tmp/* /home/nginx/domains/
 ```
 
-Check overwritten files
+**Verify Overwritten Files:**
 
-```
+```bash
 diff -ur /etc/centminmod/custom_config.inc.original /etc/centminmod/custom_config.inc
 diff -ur /usr/local/nginx_original/conf/conf.d/virtual.conf /usr/local/nginx/conf/conf.d/virtual.conf
 diff -ur /usr/local/nginx_original/conf/nginx.conf /usr/local/nginx/conf/nginx.conf
@@ -992,9 +1423,9 @@ diff -ur /etc/redis/redis.conf.original /etc/redis/redis.conf
 diff -ur /etc/keydb/keydb.conf.original /etc/keydb/keydb.conf
 ```
 
-If no changes to virtual.conf and nginx.conf use new server one
+**If no changes needed, use new server versions:**
 
-```
+```bash
 \cp -af /usr/local/nginx_original/conf/nginx.conf /usr/local/nginx/conf/nginx.conf
 \cp -af /usr/local/nginx_original/conf/conf.d/virtual.conf /usr/local/nginx/conf/conf.d/virtual.conf
 diff -ur /usr/local/nginx_original/conf/nginx.conf /usr/local/nginx/conf/nginx.conf
@@ -1005,73 +1436,79 @@ diff -ur /etc/redis/redis.conf.original /etc/redis/redis.conf
 diff -ur /etc/keydb/keydb.conf.original /etc/keydb/keydb.conf
 ```
 
-Restore cronjobs
+**Restore Cronjobs:**
 
-```
+```bash
 crontab -l > /etc/centminmod/cronjobs/cronjoblist-restore-from-migration.txt
 cat /etc/centminmod/cronjobs/cronjoblist-restore-from-migration.txt
 crontab /home/remotebackup/cronjobs_tmp/root_cronjobs
 ```
 
-The `/home/restoredata/home/databackup/070523-072252/mariadb_tmp/mariabackup-restore.sh` script has 2 options to restore MariaDB MySQL data either via `copy-back` or `move-back`. 
+**Restore MariaDB Database:**
 
-1. `copy-back`: This option copies the backup files back to the original data directory at `/var/lib/mysql`. The backup files themselves are not altered or removed. The script checks if the provided backup directory is valid and if the backup and current MariaDB versions match. If everything is fine, it proceeds with copying the backup files back to the original data directory at `/var/lib/mysql`.
-2. `move-back`: This option moves the backup files back to the original data directory at `/var/lib/mysql`. Unlike `copy-back`, the backup files are removed from the backup directory. The script checks if the provided backup directory is valid and if the backup and current MariaDB versions match. If everything is fine, it proceeds with moving the backup files back to the original data directory at `/var/lib/mysql`.
+The `mariabackup-restore.sh` script has 2 options:
 
-Both options involve the following steps:
+| Option | Behavior |
+|--------|----------|
+| `copy-back` | Copies backup to `/var/lib/mysql`, **preserves backup** |
+| `move-back` | Moves backup to `/var/lib/mysql`, **removes backup** |
 
-* The script first checks if the provided directory contains valid MariaBackup data.
-* It then compares the MariaDB version used for the backup with the version running on the current system. The script aborts the restore process if the versions do not match.
-* The MariaDB server is stopped, and the existing data directory is backed up to `/var/lib/mysql-copy-datetimestamp` and then `/var/lib/mysql` data directory is emptied.
-* The ownership of the data directory is changed to `mysql:mysql`.
-* The MariaDB server is started.
-* Depending on the option chosen (`copy-back` or `move-back`), the script copies or moves the backup files back to the original data directory.
-
-`mariabackup-restore.sh` Usage help output:
-
-```
+**Usage:**
+```bash
 ./mariabackup-restore.sh
 Usage: ./mariabackup-restore.sh [copy-back|move-back] /path/to/backup/dir
 ```
 
-Actual command where backup directory timestamp = `070523-072252`
-
-```
+**Example:**
+```bash
 time /home/restoredata/home/databackup/070523-072252/mariadb_tmp/mariabackup-restore.sh copy-back /home/restoredata/home/databackup/070523-072252/mariadb_tmp
 ```
 
-Then restore `/root/.my.cnf`
+**Restore MySQL Credentials:**
 
-```
+```bash
 \cp -af /home/restoredata/root/.my.cnf /root/.my.cnf
 ```
 
-**Note:** Make sure to adjust the paths in the commands above to match the actual location of your backup files.
+> **Note:** Adjust paths to match your actual backup location.
 
-#### Submenu Option 8 Command Line:
+### 10.4 Command Line Usage
 
-You can also use equivalent SSH command line below based on above input prompt values where `/root/.ssh/my1.key` is your SSH private key setup to connect to your remote server:
-
+```bash
+/usr/local/src/centminmod/datamanagement/tunnel-transfers.sh \
+  -p 22 \
+  -u root \
+  -h 123.123.123.123 \
+  -m nc \
+  -b 262144 \
+  -l 12345 \
+  -s /home/databackup/070523-072252 \
+  -r /home/remotebackup \
+  -k /root/.ssh/my1.key
 ```
-/usr/local/src/centminmod/datamanagement/tunnel-transfers.sh -p 22 -u root -h 123.123.123.123 -m nc -b 262144 -l 12345 -s /home/databackup/070523-072252 -r /home/remotebackup -k /root/.ssh/my1.key
-```
 
-### Submenu Option 9: Transfer Directory Data To S3 Compatible Storage
+---
 
-This option allows you to transfer directory data from your current server to S3 compatible storage. The following information will be required:
+## 11. Submenu Option 9: Transfer Directory Data To S3 Compatible Storage
 
-1. AWS CLI profile name: Enter the AWS CLI profile name that you have configured with the necessary access keys and secret keys. You may have already created a AWS CLI tool profile name manually via `aws` cli client or via `centmin.sh` menu `option 21` submenu `option 2` options.
-2. S3 bucket name: Enter the name of the S3 bucket to which you want to transfer the data.
-3. S3 endpoint URL: Provide the endpoint URL of the S3 compatible storage provider (e.g., Amazon S3, Cloudflare R2, Backblaze, DigitalOcean, Vultr, Linode).
-4. Source directory path: Enter the full path to the source directory you want to transfer from your current server.
+> **TL;DR**: Sync a directory to S3-compatible storage using `aws s3 sync`.
 
-After entering the information, you will be asked to confirm the entered details. If the information is correct, the script will proceed with the data transfer. If not, you will be prompted to re-enter the information.
+This option allows you to transfer directory data from your current server to S3 compatible storage.
 
-For example if you used `centmin.sh` menu `option 21` submenu `option 4` to create a Nginx vhost data + MariaBackup backup file at `/home/databackup/070523-072252/centminmod_backup.tar.zst`. You can transfer the directory contents for `/home/databackup/070523-072252` to Cloudflare R2 S3 bucket named `BUCKETNAME`
+### 11.1 Required Information
 
-```
+| Prompt | Description |
+|--------|-------------|
+| AWS CLI profile name | Profile configured via submenu option 2 |
+| S3 bucket name | Target bucket name |
+| S3 endpoint URL | See [S3 Provider Endpoint Reference](#18-s3-provider-endpoint-reference) |
+| Source directory path | Full path to local directory |
+
+#### 11.1.1 Example Session
+
+```bash
 --------------------------------------------------------
-     Centmin Mod Data Management        
+     Centmin Mod Data Management
 --------------------------------------------------------
 1).   Manage SSH Keys
 2).   Manage AWS CLI S3 Profile Credentials
@@ -1091,7 +1528,10 @@ For example if you used `centmin.sh` menu `option 21` submenu `option 4` to crea
 Enter option [ 1 - 14 ] 9
 --------------------------------------------------------
 ```
-```
+
+Transfer `/home/databackup/070523-072252` to Cloudflare R2:
+
+```bash
 Transfer Directory Data To S3 Compatible Storage
 
 Description:
@@ -1117,231 +1557,481 @@ upload: ../../../../home/databackup/070523-072252/files-backup_070523-072252.log
 upload: ../../../../home/databackup/070523-072252/centminmod_backup.tar.zst to s3://BUCKETNAME/centminmod_backup.tar.zst
 ```
 
-Contents of Cloudflare R2 S3 bucket named `BUCKETNAME`
+#### 11.1.2 Verify Upload
 
-```
-aws s3 ls --profile r2 --endpoint-url https://YOUR_CF_ACCOUNT_ID.r2.cloudflarestorage.com s3://BUCKETNAME
+```bash
+aws s3 ls --profile PROFILE --endpoint-url ENDPOINT s3://BUCKETNAME
 
 2023-05-07 11:40:04  256261518 centminmod_backup.tar.zst
 2023-05-07 11:39:47    1595586 files-backup_070523-072252.log
 ```
 
+#### 11.1.3 Command Line Usage
 
-Linode S3 object storage
-
-```
-aws s3 ls --profile linode --endpoint-url=https://us-east-1.linodeobjects.com s3://BUCKETNAME
-```
-
-BackBlaze B2 object storage
-
-```
-aws s3 ls --profile b2 --endpoint-url=https://s3.us-west-001.backblazeb2.com s3://BUCKETNAME
+**Template:**
+```bash
+aws s3 sync --profile PROFILE --endpoint-url ENDPOINT /path/to/source s3://BUCKETNAME/
 ```
 
-DigitalOcean S3 object storage
+See [S3 Provider Endpoint Reference](#18-s3-provider-endpoint-reference) for provider-specific endpoints.
 
-```
-aws s3 ls --profile do --endpoint-url=https://sfo2.digitaloceanspaces.com s3://BUCKETNAME
-```
+---
 
-#### Submenu Option 9 Command Line:
+## 12. Submenu Option 10: Transfer Files To S3 Compatible Storage
 
-You can also use equivalent SSH command line below based on above input prompt values:
+> **TL;DR**: Upload individual files to S3-compatible storage using `aws s3 cp`.
 
+This option enables you to transfer individual files from your current server to S3 compatible storage.
 
-Cloudflare R2 S3:
+### 12.1 Required Information
 
-```
-aws s3 sync --profile r2 --endpoint-url https://YOUR_CF_ACCOUNT_ID.r2.cloudflarestorage.com /home/databackup/070523-072252 s3://BUCKETNAME/
-```
+| Prompt | Description |
+|--------|-------------|
+| AWS CLI profile name | Profile configured via submenu option 2 |
+| S3 bucket name | Target bucket name |
+| S3 endpoint URL | See [S3 Provider Endpoint Reference](#18-s3-provider-endpoint-reference) |
+| File path to transfer | Full path to the file |
+| Additional files (optional) | Add more files if needed |
 
-Linode S3 object storage
+#### 12.1.1 Command Line Usage
 
-```
-aws s3 sync --profile linode --endpoint-url=https://us-east-1.linodeobjects.com /home/databackup/070523-072252 s3://BUCKETNAME/
-```
-
-BackBlaze B2 object storage
-
-```
-aws s3 sync --profile b2 --endpoint-url=https://s3.us-west-001.backblazeb2.com /home/databackup/070523-072252 s3://BUCKETNAME/
+**Template:**
+```bash
+aws s3 cp --profile PROFILE --endpoint-url ENDPOINT /path/to/file.tar.zst s3://BUCKETNAME/
 ```
 
-DigitalOcean S3 object storage
+See [S3 Provider Endpoint Reference](#18-s3-provider-endpoint-reference) for provider-specific endpoints.
 
-```
-aws s3 sync --profile do --endpoint-url=https://sfo2.digitaloceanspaces.com /home/databackup/070523-072252 s3://BUCKETNAME/
-```
+---
 
-### Submenu Option 10: Transfer Files To S3 Compatible Storage
+## 13. Submenu Option 11: Download S3 Compatible Stored Data To Server
 
-This option enables you to transfer individual files from your current server to S3 compatible storage. The following information will be required:
+> **TL;DR**: Download files from S3-compatible storage to local server.
 
-1. AWS CLI profile name: Enter the AWS CLI profile name that you have configured with the necessary access keys and secret keys.
-2. S3 bucket name: Enter the name of the S3 bucket to which you want to transfer the files.
-3. S3 endpoint URL: Provide the endpoint URL of the S3 compatible storage provider (e.g., Amazon S3, Cloudflare R2, Backblaze, DigitalOcean, Vultr, Linode).
-4. File path to transfer: Enter the full path to the file you want to transfer from your current server.
-5. (Optional) Additional files to transfer: If you want to transfer more files, answer 'yes' to the prompt and then specify the number of additional files. You will be asked to provide the full paths for each file.
+This option allows you to download data stored in S3 compatible storage to your current server.
 
-After entering the information, you will be asked to confirm the entered details. If the information is correct, the script will proceed with the data transfer. If not, you will be prompted to re-enter the information.
+### 13.1 Required Information
 
-#### Submenu Option 10 Command Line:
+| Prompt | Description |
+|--------|-------------|
+| AWS CLI profile name | Profile configured via submenu option 2 |
+| S3 bucket name | Source bucket name |
+| S3 endpoint URL | See [S3 Provider Endpoint Reference](#18-s3-provider-endpoint-reference) |
+| Remote S3 file path | Path to file in S3 bucket |
+| Local directory | Where to download the file |
 
-You can also use equivalent SSH command line below based on above input prompt values transferring file `/home/databackup/070523-072252/centminmod_backup.tar.zst` to S3 bucket named `BUCKETNAME`:
+#### 13.1.1 Command Line Usage
 
-
-Cloudflare R2 S3:
-
-```
-aws s3 cp --profile r2 --endpoint-url https://YOUR_CF_ACCOUNT_ID.r2.cloudflarestorage.com /home/databackup/070523-072252/centminmod_backup.tar.zst s3://BUCKETNAME/
+**Template:**
+```bash
+aws s3 cp --profile PROFILE --endpoint-url ENDPOINT s3://BUCKETNAME/filename.tar.zst /home/localdirectory/
 ```
 
-Linode S3 object storage
+See [S3 Provider Endpoint Reference](#18-s3-provider-endpoint-reference) for provider-specific endpoints.
 
-```
-aws s3 cp --profile linode --endpoint-url=https://us-east-1.linodeobjects.com /home/databackup/070523-072252/centminmod_backup.tar.zst s3://BUCKETNAME/
-```
+---
 
-BackBlaze B2 object storage
+## 14. Submenu Option 12: S3 To S3 Compatible Storage Transfers
 
-```
-aws s3 cp --profile b2 --endpoint-url=https://s3.us-west-001.backblazeb2.com /home/databackup/070523-072252/centminmod_backup.tar.zst s3://BUCKETNAME/
-```
+> **TL;DR**: Transfer files between two S3 buckets (same or different providers).
 
-DigitalOcean S3 object storage
+This option enables you to transfer data between two S3 compatible storage systems.
 
-```
-aws s3 cp --profile do --endpoint-url=https://sfo2.digitaloceanspaces.com /home/databackup/070523-072252/centminmod_backup.tar.zst s3://BUCKETNAME/
-```
+### 14.1 Required Information
 
-### Submenu Option 11: Download S3 Compatible Stored Data To Server
+| Prompt | Description |
+|--------|-------------|
+| Source AWS CLI profile name | Source provider profile |
+| Source S3 bucket name | Source bucket |
+| Source S3 endpoint URL | Source provider endpoint |
+| Source S3 object path | Path to object in source bucket |
+| Destination AWS CLI profile name | Destination provider profile |
+| Destination S3 bucket name | Destination bucket |
+| Destination S3 endpoint URL | Destination provider endpoint |
+| Destination S3 object path | Path for object in destination bucket |
 
-This option allows you to download data stored in S3 compatible storage to your current server. The following information will be required:
+#### 14.1.1 Command Line Usage
 
-1. AWS CLI profile name: Enter the AWS CLI profile name that you have configured with the necessary access keys and secret keys.
-2. S3 bucket name: Enter the name of the S3 bucket from which you want to download the data.
-3. S3 endpoint URL: Provide the endpoint URL of the S3 compatible storage provider (e.g., Amazon S3, Cloudflare R2, Backblaze, DigitalOcean, Vultr, Linode).
-4. Remote S3 file path: Enter the remote path of the file in the S3 bucket that you want to download.
-5. Local directory to download the file: Enter the local directory path where you want to download the file on your server.
-
-After entering the information, you will be asked to confirm the entered details. If the information is correct, the script will proceed with the data transfer. If not, you will be prompted to re-enter the information.
-
-#### Submenu Option 11 Command Line:
-
-You can also use equivalent SSH command line below based on above input prompt values downloading file to local directory at `/home/localdirectory`:
-
-
-Cloudflare R2 S3:
-
-```
-aws s3 cp --profile r2 --endpoint-url https://YOUR_CF_ACCOUNT_ID.r2.cloudflarestorage.com s3://BUCKETNAME/centminmod_backup.tar.zst" /home/localdirectory
+**Template:**
+```bash
+aws s3 cp --profile PROFILE --endpoint-url ENDPOINT "s3://BUCKET1/filename.tar.zst" "s3://BUCKET2/filename.tar.zst"
 ```
 
-Linode S3 object storage
+See [S3 Provider Endpoint Reference](#18-s3-provider-endpoint-reference) for provider-specific endpoints.
 
-```
-aws s3 cp --profile linode --endpoint-url=https://us-east-1.linodeobjects.com s3://BUCKETNAME/centminmod_backup.tar.zst" /home/localdirectory
-```
+---
 
-BackBlaze B2 object storage
+## 15. Submenu Option 13: List S3 Storage Buckets
 
-```
-aws s3 cp --profile b2 --endpoint-url=https://s3.us-west-001.backblazeb2.com s3://BUCKETNAME/centminmod_backup.tar.zst" /home/localdirectory
-```
+> **TL;DR**: List all S3 buckets in an account.
 
-DigitalOcean S3 object storage
+This option allows you to list all your S3 storage buckets registered with the AWS CLI tool.
 
-```
-aws s3 cp --profile do --endpoint-url=https://sfo2.digitaloceanspaces.com s3://BUCKETNAME/centminmod_backup.tar.zst" /home/localdirectory
-```
+### 15.1 Required Information
 
-### Submenu Option 12: S3 To S3 Compatible Storage Transfers
+| Prompt | Description |
+|--------|-------------|
+| AWS CLI profile name | Profile to list buckets for |
+| S3 endpoint URL | See [S3 Provider Endpoint Reference](#18-s3-provider-endpoint-reference) |
 
-This option enables you to transfer data between two S3 compatible storage systems. The following information will be required:
+#### 15.1.1 Command Line Usage
 
-1. Source AWS CLI profile name: Enter the source AWS CLI profile name that you have configured with the necessary access keys and secret keys.
-2. Source S3 bucket name: Enter the name of the source S3 bucket from which you want to transfer the data.
-3. Source S3 endpoint URL: Provide the endpoint URL of the source S3 compatible storage provider (e.g., Amazon S3, Cloudflare R2, Backblaze, DigitalOcean, Vultr, Linode).
-4. Source S3 object path: Enter the path of the object in the source S3 bucket that you want to transfer.
-5. Destination AWS CLI profile name: Enter the destination AWS CLI profile name that you have configured with the necessary access keys and secret keys.
-6. Destination S3 bucket name: Enter the name of the destination S3 bucket where you want to transfer the data.
-7. Destination S3 endpoint URL: Provide the endpoint URL of the destination S3 compatible storage provider (e.g., Amazon S3, Cloudflare R2, Backblaze, DigitalOcean, Vultr, Linode).
-8. Destination S3 object path: Enter the path where you want to store the object in the destination S3 bucket.
-
-After entering the information, you will be asked to confirm the entered details. If the information is correct, the script will proceed with the data transfer. If not, you will be prompted to re-enter the information.
-
-#### Submenu Option 12 Command Line:
-
-You can also use equivalent SSH command line below based on above input prompt values transferring file `centminmod_backup.tar.zst` from `BUCKETNAME1` to `BUCKETNAME2`:
-
-
-Cloudflare R2 S3:
-
-```
-aws s3 cp --profile r2 --endpoint-url https://YOUR_CF_ACCOUNT_ID.r2.cloudflarestorage.com "s3://BUCKETNAME1/centminmod_backup.tar.zst" "s3://BUCKETNAME2/centminmod_backup.tar.zst"
+**Template:**
+```bash
+aws s3 ls --profile PROFILE --endpoint-url ENDPOINT
 ```
 
-Linode S3 object storage
+See [S3 Provider Endpoint Reference](#18-s3-provider-endpoint-reference) for provider-specific endpoints.
 
-```
-aws s3 cp --profile linode --endpoint-url=https://us-east-1.linodeobjects.com "s3://BUCKETNAME1/centminmod_backup.tar.zst" "s3://BUCKETNAME2/centminmod_backup.tar.zst"
-```
+---
 
-BackBlaze B2 object storage
-
-```
-aws s3 cp --profile b2 --endpoint-url=https://s3.us-west-001.backblazeb2.com "s3://BUCKETNAME1/centminmod_backup.tar.zst" "s3://BUCKETNAME2/centminmod_backup.tar.zst"
-```
-
-DigitalOcean S3 object storage
-
-```
-aws s3 cp --profile do --endpoint-url=https://sfo2.digitaloceanspaces.com "s3://BUCKETNAME1/centminmod_backup.tar.zst" "s3://BUCKETNAME2/centminmod_backup.tar.zst"
-```
-
-### Submenu Option 13: List S3 Storage Buckets
-
-This option allows you to list all your S3 storage buckets registered with the AWS CLI tool. The following information will be required:
-
-To use this option, you will be prompted for the following information:
-
-1. AWS CLI profile name: Enter the AWS CLI profile name that you have configured with the necessary access keys and secret keys.
-2. S3 endpoint URL: Provide the endpoint URL of the S3 compatible storage provider (e.g., Amazon S3, Cloudflare R2, Backblaze, DigitalOcean, Vultr, Linode).
-
-After entering the required information, the script will list all your S3 storage buckets registered with the AWS CLI tool.
-
-#### Submenu Option 13 Command Line:
-
-You can also use equivalent SSH command line below based on above input prompt values:
-
-Cloudflare R2 S3
-
-```
-aws s3 ls --profile r2 --endpoint-url https://YOUR_CF_ACCOUNT_ID.r2.cloudflarestorage.com
-```
-
-Linode S3 object storage
-
-```
-aws s3 ls --profile linode --endpoint-url=https://us-east-1.linodeobjects.com
-```
-
-BackBlaze B2 object storage
-
-```
-aws s3 ls --profile b2 --endpoint-url=https://s3.us-west-001.backblazeb2.com
-```
-
-DigitalOcean S3 object storage
-
-```
-aws s3 ls --profile do --endpoint-url=https://sfo2.digitaloceanspaces.com
-```
-
-### Submenu Option 14: Back to Main Menu
+## 16. Submenu Option 14: Back to Main Menu
 
 This option returns you to the main Centmin Mod menu.
+
+---
+
+## 17. Adding Custom Directories to Backup
+
+You can extend the default backup directories by creating `/etc/centminmod/backups.ini` configuration file. This allows you to include additional directories in your backups without modifying the core backup script.
+
+### 17.1 Default Directories Backed Up
+
+| Directory | Contents |
+|-----------|----------|
+| `/etc/centminmod` | Centmin Mod configurations |
+| `/usr/local/nginx/conf` | Nginx configurations |
+| `/root/tools` | Centmin Mod tools |
+| `/usr/local/nginx/html` | Nginx document root |
+| `/home/nginx/domains/` | All Nginx vhost directories (automatic) |
+
+### 17.2 Adding Custom Directories
+
+Create `/etc/centminmod/backups.ini`:
+
+```bash
+# /etc/centminmod/backups.ini
+
+# Add directories to backup WITH compression (tar.zst)
+DIRECTORIES_TO_BACKUP+=( "/home/username" "/root/.newrelic" )
+
+# Add directories to backup WITHOUT compression (for tunnel-transfers.sh)
+DIRECTORIES_TO_BACKUP_NOCOMPRESS+=( "/home/username" "/root/.newrelic" )
+```
+
+> **Important:** Both `DIRECTORIES_TO_BACKUP` and `DIRECTORIES_TO_BACKUP_NOCOMPRESS` arrays need to have the same directory names populated for both compressed and non-compressed backup modes to work correctly.
+
+### 17.3 Use Cases
+
+- Custom application directories outside standard Centmin Mod paths (e.g., `/opt/myapp`)
+- Additional configuration directories (e.g., `/srv/`)
+- User data directories requiring backup
+- Third-party software configurations (e.g., `/root/.newrelic`)
+
+> **Note:** The `/home/nginx/domains/` directory is handled separately via dynamic iteration — all subdirectories are automatically included regardless of naming convention.
+
+---
+
+## 18. S3 Provider Endpoint Reference
+
+Use this table to find the correct endpoint URL for your S3-compatible storage provider:
+
+| Provider | Profile Example | Endpoint URL |
+|----------|-----------------|--------------|
+| **Amazon S3** | `aws` | `https://s3.REGION.amazonaws.com` |
+| **Cloudflare R2** | `r2` | `https://ACCOUNT_ID.r2.cloudflarestorage.com` |
+| **Backblaze B2** | `b2` | `https://s3.REGION.backblazeb2.com` |
+| **DigitalOcean Spaces** | `do` | `https://REGION.digitaloceanspaces.com` |
+| **Linode Object Storage** | `linode` | `https://REGION.linodeobjects.com` |
+| **Vultr Object Storage** | `vultr` | `https://REGION.vultrobjects.com` |
+| **Wasabi** | `wasabi` | `https://s3.REGION.wasabisys.com` |
+| **UpCloud** | `upcloud` | `https://REGION.upcloudobjects.com` |
+
+### 18.1 Common Region Examples
+
+| Provider | Region Examples |
+|----------|-----------------|
+| **Backblaze B2** | `us-west-001`, `us-west-004`, `eu-central-003` |
+| **DigitalOcean** | `nyc3`, `sfo2`, `sfo3`, `ams3`, `sgp1`, `fra1` |
+| **Linode** | `us-east-1`, `eu-central-1`, `ap-south-1` |
+| **Cloudflare R2** | Use `auto` for region (endpoint includes account ID) |
+
+### 18.2 Quick Reference Commands
+
+**List buckets:**
+```bash
+# Cloudflare R2
+aws s3 ls --profile r2 --endpoint-url https://YOUR_CF_ACCOUNT_ID.r2.cloudflarestorage.com
+
+# Backblaze B2
+aws s3 ls --profile b2 --endpoint-url https://s3.us-west-001.backblazeb2.com
+
+# DigitalOcean Spaces
+aws s3 ls --profile do --endpoint-url https://sfo2.digitaloceanspaces.com
+
+# Linode Object Storage
+aws s3 ls --profile linode --endpoint-url https://us-east-1.linodeobjects.com
+```
+
+**Sync directory:**
+```bash
+aws s3 sync --profile PROFILE --endpoint-url ENDPOINT /local/path s3://BUCKET/
+```
+
+**Upload file:**
+```bash
+aws s3 cp --profile PROFILE --endpoint-url ENDPOINT /local/file.tar.zst s3://BUCKET/
+```
+
+**Download file:**
+```bash
+aws s3 cp --profile PROFILE --endpoint-url ENDPOINT s3://BUCKET/file.tar.zst /local/path/
+```
+
+---
+
+## 19. Command Line Reference
+
+All scripts are located at `/usr/local/src/centminmod/datamanagement/`
+
+### 19.1 Backup Commands
+
+| Command | Description |
+|---------|-------------|
+| `backups.sh backup-all-mariabackup comp` | Full backup (Vhosts + MariaBackup) with compression |
+| `backups.sh backup-all-mariabackup` | Full backup without compression |
+| `backups.sh backup-files comp` | Vhosts only backup with compression |
+| `backups.sh backup-files` | Vhosts only backup without compression |
+| `backups.sh backup-mariabackup comp` | MariaBackup only with compression |
+| `backups.sh backup-mariabackup` | MariaBackup only without compression |
+| `backups.sh backup-all comp` | mysqldump backup with compression |
+| `backups.sh backup-all` | mysqldump backup without compression |
+| `backups.sh backup-mysql` | mysqldump only (no vhosts) |
+| `backups.sh backup-binlogs` | Binary log backup |
+| `backups.sh purge-binlogs` | Purge old binary logs |
+
+### 19.2 Transfer Commands
+
+| Command | Description |
+|---------|-------------|
+| `tunnel-transfers.sh -p PORT -u USER -h HOST -m METHOD -b BUFFER -l LISTEN -s SOURCE -r DEST -k KEY` | SSH tunnel transfer |
+
+**tunnel-transfers.sh Parameters:**
+
+| Flag | Description | Default |
+|------|-------------|---------|
+| `-p` | SSH port | `22` |
+| `-u` | SSH username | `root` |
+| `-h` | Remote hostname/IP | — |
+| `-m` | Tunnel method (`nc` or `socat`) | `nc` |
+| `-b` | Buffer size (bytes) | `131072` |
+| `-l` | Listen port | `12345` |
+| `-s` | Source directory | — |
+| `-r` | Remote destination | — |
+| `-k` | SSH private key path | — |
+
+### 19.3 Restore Commands
+
+| Command | Description |
+|---------|-------------|
+| `mariabackup-restore.sh copy-back /path/to/backup/` | Restore MariaDB (preserve backup) |
+| `mariabackup-restore.sh move-back /path/to/backup/` | Restore MariaDB (remove backup) |
+
+### 19.4 SSH Key Commands
+
+| Command | Description |
+|---------|-------------|
+| `keygen.sh gen KEYTYPE IP PORT USER COMMENT [PASSWORD] [NAME]` | Generate new SSH key |
+| `keygen.sh rotatekeys KEYTYPE IP PORT USER COMMENT KEYNAME [NAME]` | Rotate existing key |
+
+### 19.5 AWS CLI Commands
+
+| Command | Description |
+|---------|-------------|
+| `awscli-get.sh install PROFILE ACCESS_KEY SECRET_KEY REGION OUTPUT` | Create profile |
+| `awscli-get.sh update` | Update AWS CLI |
+| `awscli-get.sh regions` | List AWS regions |
+| `awscli-get.sh regions-wasabi` | List Wasabi regions |
+
+---
+
+## 20. Troubleshooting
+
+### 20.1 Common Issues and Solutions
+
+#### 20.1.1 SSH Connection Issues
+
+**Problem:** "Permission denied (publickey)"
+```
+Solution:
+1. Verify SSH key permissions: chmod 600 /root/.ssh/my1.key
+2. Verify key is registered: ssh -i /root/.ssh/my1.key root@REMOTE_IP
+3. Check CSF firewall allows connection: csf -a REMOTE_IP
+```
+
+**Problem:** "Connection refused" or timeout
+```
+Solution:
+1. Verify CSF firewall whitelist on destination: csf -a SOURCE_IP
+2. Check SSH service is running: systemctl status sshd
+3. Verify SSH port is correct: ss -tlnp | grep ssh
+```
+
+#### 20.1.2 MariaBackup Restore Issues
+
+**Problem:** "MariaDB version mismatch"
+```
+Solution:
+- MariaBackup requires same major version on source and destination
+- Use mysqldump (Option 7) for cross-version migrations
+- Or upgrade the older server's MariaDB version first
+```
+
+**Problem:** "No space left on device"
+```
+Solution:
+1. Check disk space: df -h
+2. Clear old backups
+3. Use move-back instead of copy-back
+4. Expand disk or use external storage
+```
+
+#### 20.1.3 S3 Transfer Issues
+
+**Problem:** "Access Denied" or "InvalidAccessKeyId"
+```
+Solution:
+1. Verify AWS CLI profile: aws configure list --profile PROFILE
+2. Check endpoint URL matches provider
+3. Verify bucket permissions
+4. Regenerate access keys if needed
+```
+
+**Problem:** "Could not connect to the endpoint URL"
+```
+Solution:
+1. Verify endpoint URL format (see S3 Provider Endpoint Reference)
+2. Check network connectivity: curl -I ENDPOINT
+3. Verify region matches endpoint
+```
+
+#### 20.1.4 Tunnel Transfer Issues
+
+**Problem:** "Transfer stalled" or slow performance
+```
+Solution:
+1. Try different tunnel method: -m socat instead of -m nc
+2. Adjust buffer size: -b 262144 (256KB) or -b 524288 (512KB)
+3. Verify network path: mtr REMOTE_IP
+4. Check for firewall throttling
+```
+
+**Problem:** "Port already in use"
+```
+Solution:
+1. Choose different listen port: -l 23456
+2. Kill existing process: lsof -i :12345 | awk 'NR>1 {print $2}' | xargs kill
+```
+
+### 20.2 Verification Commands
+
+| Check | Command |
+|-------|---------|
+| Disk space | `df -h /home` |
+| MariaDB version | `mysql -V` or `mariadb -V` |
+| MariaDB status | `systemctl status mariadb` |
+| Nginx config test | `nginx -t` |
+| SSH key permissions | `ls -la /root/.ssh/` |
+| AWS CLI profile | `aws configure list --profile PROFILE` |
+| Network connectivity | `ping -c 3 REMOTE_IP` |
+| Open ports | `ss -tlnp` |
+| CSF whitelist | `csf -g IP_ADDRESS` |
+
+### 20.3 Getting Help
+
+- [Centmin Mod Community Forums](https://community.centminmod.com/)
+- [backups.sh Documentation](https://github.com/centminmod/centminmod/blob/140.00beta01/datamanagement/backups.sh.md)
+
+---
+
+## 21. Recommended Backup Schedule
+
+Use this table to plan your backup strategy based on your data criticality and recovery requirements:
+
+| Backup Type | Frequency | Command | Retention | Use Case |
+|-------------|-----------|---------|-----------|----------|
+| **Full Backup (Vhosts + MariaBackup)** | Weekly | `backups.sh backup-all-mariabackup comp` | 4 weeks | Complete disaster recovery |
+| **MariaBackup Only** | Daily | `backups.sh backup-mariabackup comp` | 7 days | Database point-in-time recovery |
+| **Vhosts Only** | Daily | `backups.sh backup-files comp` | 7 days | Website file recovery |
+| **mysqldump** | Before upgrades | `backups.sh backup-all comp` | Keep until upgrade verified | Cross-version MariaDB migrations |
+| **Binary Logs** | Continuous | `backups.sh backup-binlogs` | 7 days | Point-in-time recovery between backups |
+| **S3 Offsite Sync** | Daily | `aws s3 sync ...` | 30 days | Offsite disaster recovery |
+
+### 21.1 Best Practices
+
+**3-2-1 Backup Rule:**
+- **3** copies of your data (production + 2 backups)
+- **2** different storage media (local + cloud)
+- **1** offsite copy (S3-compatible storage)
+
+**Security Recommendations:**
+- Store S3 credentials securely (limit access to `/root/.aws/`)
+- Use SSH keys with strong passphrases for remote transfers
+- Encrypt sensitive backups before offsite storage
+- Test restore procedures quarterly
+
+**Storage Management:**
+- Use zstd compression for 60-80% size reduction
+- Implement automated retention policies
+- Monitor disk space before backups: `df -h /home`
+- Purge old binary logs regularly: `backups.sh purge-binlogs`
+
+---
+
+## 22. Performance Benchmarks
+
+The following benchmarks provide reference performance data for planning backup windows and transfer times. Actual performance varies based on hardware, network conditions, and data characteristics.
+
+### 22.1 Backup Performance
+
+| Operation | Data Size | Time | Throughput | Notes |
+|-----------|-----------|------|------------|-------|
+| MariaBackup (uncompressed) | 10 GB | ~2-3 min | 50-80 MB/s | SSD storage |
+| MariaBackup (zstd compressed) | 10 GB | ~4-5 min | 30-40 MB/s | Includes compression overhead |
+| Vhosts backup (compressed) | 5 GB | ~1-2 min | 40-60 MB/s | Varies by file count |
+| mysqldump (--tab mode) | 10 GB | ~10-15 min | 10-15 MB/s | CPU-bound, table locking |
+
+### 22.2 Transfer Performance
+
+| Method | Distance | Expected Speed | Notes |
+|--------|----------|----------------|-------|
+| SSH tunnel (nc) | Same datacenter | 300-500 MB/s | Limited by disk I/O |
+| SSH tunnel (nc) | Cross-region | 50-150 MB/s | Network-limited |
+| SSH tunnel (socat) | Any | Similar to nc | Better for unstable connections |
+| S3 sync | Cloud provider | 50-200 MB/s | Depends on instance type |
+
+### 22.3 Compression Ratios
+
+| Data Type | Typical Compression Ratio | Notes |
+|-----------|---------------------------|-------|
+| MariaDB (InnoDB) | 2:1 to 4:1 | Depends on data entropy |
+| Website files (PHP/HTML) | 3:1 to 6:1 | Text compresses well |
+| Images/Media | 1.1:1 to 1.5:1 | Already compressed formats |
+| Log files | 5:1 to 10:1 | Highly repetitive content |
+| Mixed content | 2:1 to 3:1 | Typical website backup |
+
+### 22.4 Resource Usage
+
+| Operation | CPU Usage | Memory Usage | Disk I/O |
+|-----------|-----------|--------------|----------|
+| MariaBackup | Low (10-20%) | Low (~200 MB) | High |
+| zstd compression | High (50-100%) | Medium (~500 MB) | Medium |
+| SSH tunnel transfer | Low (5-10%) | Low (~100 MB) | High |
+| S3 sync | Low (5-15%) | Low (~200 MB) | High |
+
+> **Note:** Schedule resource-intensive backups during low-traffic periods to minimize impact on production workloads.
+
+---
 
 ## Conclusion
 
