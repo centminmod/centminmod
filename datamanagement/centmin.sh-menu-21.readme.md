@@ -1,6 +1,6 @@
 # Centmin Mod User Guide: centmin.sh Menu Option 21
 
-This guide provides a comprehensive overview of centmin.sh menu option 21 in Centmin Mod, which focuses on data management tasks. You'll learn about the available menu and submenu options, as well as their functionalities. The underlying `backups.sh` script used has its own documentation [here](https://github.com/centminmod/centminmod/blob/140.00beta01/datamanagement/backups.sh.md). If you appreciate the work and effort, please consider [supporting Centmin Mod](https://community.centminmod.com/threads/ways-to-support-centmin-mod.11435/). Shorten url to [PayPal donation link](https://centminmod.com/donate/).
+This guide provides a comprehensive overview of centmin.sh menu option 21 in Centmin Mod, which focuses on data management tasks. You'll learn about the available menu and submenu options, as well as their functionalities. The underlying `backups.sh` script used has its own documentation [here](https://github.com/centminmod/centminmod/blob/141.00beta01/datamanagement/backups.sh.md). If you appreciate the work and effort, please consider [supporting Centmin Mod](https://community.centminmod.com/threads/ways-to-support-centmin-mod.11435/). Shorten url to [PayPal donation link](https://centminmod.com/donate/).
 
 ---
 
@@ -475,6 +475,7 @@ flowchart TD
 When using the "Migrate Centmin Mod Data To New Centmin Mod Server" option, you'll be prompted to enter the following information:
 
 **Step 1: Confirmation**
+
 - Confirm to continue with the migration process
 
 **Step 2: Backup Method Selection**
@@ -487,6 +488,7 @@ When using the "Migrate Centmin Mod Data To New Centmin Mod Server" option, you'
 > **Recommendation:** If one server is on an older version, upgrade it to match before using MariaBackup.
 
 **Step 3: Compression Selection**
+
 - Option to use tar + zstd compression for the backup (recommended)
 
 **Step 4: Transfer Configuration**
@@ -681,12 +683,14 @@ If you chose MariaBackup (option 1), the restore process is the same as [Submenu
 > **TL;DR**: Creates a complete backup of website files AND database using MariaBackup. Best for same-version migrations and full server backups.
 
 **Key Features:**
+
 - Backs up Nginx vhosts data (website files, configs)
 - Backs up MariaDB using MariaBackup (physical/binary backup)
 - Optional tar + zstd compression
 - Includes MariaBackup restore script in backup
 
 **Interactive Prompts:**
+
 1. "Do you want to continue [y/n]:" — Enter `y` to proceed or `n` to abort
 2. "Do you want tar + zstd compress backup [y/n]:" — Enter `y` for compressed or `n` for uncompressed
 
@@ -881,11 +885,13 @@ diff -ur /var/spool/cron/root /home/remotebackup/cronjobs_tmp/root_cronjobs
 ```
 
 > **Note on Elasticsearch:** If Elasticsearch is installed on both servers, the backup script copies `/etc/elasticsearch` to `/etc/elasticsearch-source` to prevent overwriting the new server's instance. Reference old settings at `/home/restoredata/etc/elasticsearch-source`:
+>
 > ```bash
 > diff -ur /etc/elasticsearch /home/restoredata/etc/elasticsearch-source
 > ```
 
 **Example output** (file exists only on destination):
+
 ```bash
 diff -ur /home/restoredata/etc/centminmod/ /etc/centminmod
 Only in /etc/centminmod: diff.txt
@@ -942,11 +948,13 @@ mv -f /home/restoredata/usr/local/nginx/* /usr/local/nginx/
 Replace `070523-072252` with your actual backup timestamp:
 
 **Using copy:**
+
 ```bash
 \cp -af /home/restoredata/home/databackup/070523-072252/domains_tmp/* /home/nginx/domains/
 ```
 
 **Using move (saves disk space):**
+
 ```bash
 mv -f /home/restoredata/home/databackup/070523-072252/domains_tmp/* /home/nginx/domains/
 ```
@@ -1033,11 +1041,13 @@ time /home/restoredata/home/databackup/070523-072252/mariadb_tmp/mariabackup-res
 You can also initiate the backup at SSH command line:
 
 **With tar + zstd compression:**
+
 ```bash
 /usr/local/src/centminmod/datamanagement/backups.sh backup-all-mariabackup comp
 ```
 
 **Without compression:**
+
 ```bash
 /usr/local/src/centminmod/datamanagement/backups.sh backup-all-mariabackup
 ```
@@ -1053,6 +1063,7 @@ You can also initiate the backup at SSH command line:
 - If you choose not to use tar + zstd, the local backup directories will have uncompressed data
 
 **Interactive Prompts:**
+
 1. "Do you want to continue [y/n]:" — Enter `y` to proceed or `n` to abort
 2. "Do you want tar + zstd compress backup [y/n]:" — Enter `y` for compressed or `n` for uncompressed
 
@@ -1075,6 +1086,7 @@ This option creates a backup of MariaDB MySQL databases using the MariaBackup to
 The MariaBackup backup directory can either be uncompressed or tar + zstd compressed.
 
 **Interactive Prompts:**
+
 1. "Do you want to continue [y/n]:" — Enter `y` to proceed or `n` to abort
 2. "Do you want tar + zstd compress backup [y/n]:" — Enter `y` for compressed or `n` for uncompressed
 
@@ -1093,16 +1105,19 @@ The MariaBackup backup directory can either be uncompressed or tar + zstd compre
 This option creates a backup of MariaDB MySQL databases using mysqldump without including any Nginx Vhosts data backups.
 
 **Key Features:**
+
 - Uses the faster `--tab` delimited backup option
 - Creates separate `.sql` schema structure files and `.txt` data files for each table
 - Schema files are uncompressed, data files can be zstd compressed
 - Generates a `restore.sh` script in the backup directory
 
 **Restore Behavior:**
+
 - If database name already exists, creates a new database with suffix `_restorecopy_datetimestamp`
 - Prevents accidental overwrites of existing databases
 
 **Interactive Prompt:**
+
 - "Do you want to continue [y/n]:" — Enter `y` to proceed or `n` to abort
 
 ### 9.1 Command Line Usage
@@ -1355,6 +1370,7 @@ diff -ur /var/spool/cron/root /home/remotebackup/cronjobs_tmp/root_cronjobs
 ```
 
 > **Note on Elasticsearch:** If installed on both servers, compare:
+>
 > ```bash
 > diff -ur /etc/elasticsearch /home/restoredata/etc/elasticsearch-source
 > ```
@@ -1454,12 +1470,14 @@ The `mariabackup-restore.sh` script has 2 options:
 | `move-back` | Moves backup to `/var/lib/mysql`, **removes backup** |
 
 **Usage:**
+
 ```bash
 ./mariabackup-restore.sh
 Usage: ./mariabackup-restore.sh [copy-back|move-back] /path/to/backup/dir
 ```
 
 **Example:**
+
 ```bash
 time /home/restoredata/home/databackup/070523-072252/mariadb_tmp/mariabackup-restore.sh copy-back /home/restoredata/home/databackup/070523-072252/mariadb_tmp
 ```
@@ -1569,6 +1587,7 @@ aws s3 ls --profile PROFILE --endpoint-url ENDPOINT s3://BUCKETNAME
 #### 11.1.3 Command Line Usage
 
 **Template:**
+
 ```bash
 aws s3 sync --profile PROFILE --endpoint-url ENDPOINT /path/to/source s3://BUCKETNAME/
 ```
@@ -1596,6 +1615,7 @@ This option enables you to transfer individual files from your current server to
 #### 12.1.1 Command Line Usage
 
 **Template:**
+
 ```bash
 aws s3 cp --profile PROFILE --endpoint-url ENDPOINT /path/to/file.tar.zst s3://BUCKETNAME/
 ```
@@ -1623,6 +1643,7 @@ This option allows you to download data stored in S3 compatible storage to your 
 #### 13.1.1 Command Line Usage
 
 **Template:**
+
 ```bash
 aws s3 cp --profile PROFILE --endpoint-url ENDPOINT s3://BUCKETNAME/filename.tar.zst /home/localdirectory/
 ```
@@ -1653,6 +1674,7 @@ This option enables you to transfer data between two S3 compatible storage syste
 #### 14.1.1 Command Line Usage
 
 **Template:**
+
 ```bash
 aws s3 cp --profile PROFILE --endpoint-url ENDPOINT "s3://BUCKET1/filename.tar.zst" "s3://BUCKET2/filename.tar.zst"
 ```
@@ -1677,6 +1699,7 @@ This option allows you to list all your S3 storage buckets registered with the A
 #### 15.1.1 Command Line Usage
 
 **Template:**
+
 ```bash
 aws s3 ls --profile PROFILE --endpoint-url ENDPOINT
 ```
@@ -1759,6 +1782,7 @@ Use this table to find the correct endpoint URL for your S3-compatible storage p
 ### 18.2 Quick Reference Commands
 
 **List buckets:**
+
 ```bash
 # Cloudflare R2
 aws s3 ls --profile r2 --endpoint-url https://YOUR_CF_ACCOUNT_ID.r2.cloudflarestorage.com
@@ -1774,16 +1798,19 @@ aws s3 ls --profile linode --endpoint-url https://us-east-1.linodeobjects.com
 ```
 
 **Sync directory:**
+
 ```bash
 aws s3 sync --profile PROFILE --endpoint-url ENDPOINT /local/path s3://BUCKET/
 ```
 
 **Upload file:**
+
 ```bash
 aws s3 cp --profile PROFILE --endpoint-url ENDPOINT /local/file.tar.zst s3://BUCKET/
 ```
 
 **Download file:**
+
 ```bash
 aws s3 cp --profile PROFILE --endpoint-url ENDPOINT s3://BUCKET/file.tar.zst /local/path/
 ```
@@ -1862,6 +1889,7 @@ All scripts are located at `/usr/local/src/centminmod/datamanagement/`
 #### 20.1.1 SSH Connection Issues
 
 **Problem:** "Permission denied (publickey)"
+
 ```
 Solution:
 1. Verify SSH key permissions: chmod 600 /root/.ssh/my1.key
@@ -1870,6 +1898,7 @@ Solution:
 ```
 
 **Problem:** "Connection refused" or timeout
+
 ```
 Solution:
 1. Verify CSF firewall whitelist on destination: csf -a SOURCE_IP
@@ -1880,6 +1909,7 @@ Solution:
 #### 20.1.2 MariaBackup Restore Issues
 
 **Problem:** "MariaDB version mismatch"
+
 ```
 Solution:
 - MariaBackup requires same major version on source and destination
@@ -1888,6 +1918,7 @@ Solution:
 ```
 
 **Problem:** "No space left on device"
+
 ```
 Solution:
 1. Check disk space: df -h
@@ -1899,6 +1930,7 @@ Solution:
 #### 20.1.3 S3 Transfer Issues
 
 **Problem:** "Access Denied" or "InvalidAccessKeyId"
+
 ```
 Solution:
 1. Verify AWS CLI profile: aws configure list --profile PROFILE
@@ -1908,6 +1940,7 @@ Solution:
 ```
 
 **Problem:** "Could not connect to the endpoint URL"
+
 ```
 Solution:
 1. Verify endpoint URL format (see S3 Provider Endpoint Reference)
@@ -1918,6 +1951,7 @@ Solution:
 #### 20.1.4 Tunnel Transfer Issues
 
 **Problem:** "Transfer stalled" or slow performance
+
 ```
 Solution:
 1. Try different tunnel method: -m socat instead of -m nc
@@ -1927,6 +1961,7 @@ Solution:
 ```
 
 **Problem:** "Port already in use"
+
 ```
 Solution:
 1. Choose different listen port: -l 23456
@@ -1970,17 +2005,20 @@ Use this table to plan your backup strategy based on your data criticality and r
 ### 21.1 Best Practices
 
 **3-2-1 Backup Rule:**
+
 - **3** copies of your data (production + 2 backups)
 - **2** different storage media (local + cloud)
 - **1** offsite copy (S3-compatible storage)
 
 **Security Recommendations:**
+
 - Store S3 credentials securely (limit access to `/root/.aws/`)
 - Use SSH keys with strong passphrases for remote transfers
 - Encrypt sensitive backups before offsite storage
 - Test restore procedures quarterly
 
 **Storage Management:**
+
 - Use zstd compression for 60-80% size reduction
 - Implement automated retention policies
 - Monitor disk space before backups: `df -h /home`

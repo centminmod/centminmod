@@ -8,40 +8,42 @@ The `backups.sh` script is the underlying backup tool used in `centmin.sh menu o
 
 ## Table of Contents
 
-1.  [Overview](#1-overview)
-2.  [Key Features](#2-key-features)
-3.  [Prerequisites](#3-prerequisites)
-    * [3.1. System Requirements](#31-system-requirements)
-    * [3.2. Dependencies & Packages](#32-dependencies--packages)
-4.  [Installation & Initial Setup](#4-installation--initial-setup)
-5.  [Configuration](#5-configuration)
-    * [5.1. Configuration Methods](#51-configuration-methods)
-    * [5.2. General Settings](#52-general-settings)
-    * [5.3. Performance & Resource Management](#53-performance--resource-management)
-    * [5.4. Database Connection](#54-database-connection)
-    * [5.5. Compression Settings](#55-compression-settings)
-    * [5.6. Backup Locations & Paths](#56-backup-locations--paths)
-    * [5.7. File Backup Settings (`files_backup`)](#57-file-backup-settings-files_backup)
-    * [5.8. Cloud Storage (S3-Compatible)](#58-cloud-storage-s3-compatible)
-6.  [Usage](#6-usage)
-    * [6.1. Command-Line Interface](#61-command-line-interface)
-    * [6.2. Scheduling Backups (Cron)](#62-scheduling-backups-cron)
-7.  [Backup Workflows Explained](#7-backup-workflows-explained)
-    * [7.1. File & System Backup (`files_backup` function)](#71-file--system-backup-files_backup-function)
-    * [7.2. MariaBackup Physical Backup (within `files_backup`)](#72-mariabackup-physical-backup-within-files_backup)
-    * [7.3. MySQL Logical Backup (`mysql_backup` function)](#73-mysql-logical-backup-mysql_backup-function)
-    * [7.4. Binary Log Backup (`backup_binlogs` function)](#74-binary-log-backup-backup_binlogs-function)
-8.  [Restoration Process](#8-restoration-process)
-    * [8.1. General Guidance](#81-general-guidance)
-    * [8.2. Restoring from `files_backup` / `mariabackup`](#82-restoring-from-files_backup--mariabackup)
-    * [8.3. Restoring from `mysql_backup` / `backup_binlogs`](#83-restoring-from-mysql_backup--backup_binlogs)
-    * [8.4. Point-in-Time Recovery (PITR)](#84-point-in-time-recovery-pitr)
-9.  [Advanced Features & Technical Details](#9-advanced-features--technical-details)
-    * [9.1. MariaDB Version Awareness](#91-mariadb-version-awareness)
-    * [9.2. Performance Tuning & Resource Management](#92-performance-tuning--resource-management)
-    * [9.3. Intelligent Disk Space Management](#93-intelligent-disk-space-management)
-    * [9.4. Automated Cleanup](#94-automated-cleanup)
-    * [9.5. Custom Tar Installation](#95-custom-tar-installation)
+1. [Overview](#1-overview)
+2. [Key Features](#2-key-features)
+3. [Prerequisites](#3-prerequisites)
+   * [3.1. System Requirements](#31-system-requirements)
+   * [3.2. Dependencies & Packages](#32-dependencies--packages)
+4. [Installation & Initial Setup](#4-installation--initial-setup)
+5. [Configuration](#5-configuration)
+   * [5.1. Configuration Methods](#51-configuration-methods)
+   * [5.2. General Settings](#52-general-settings)
+   * [5.3. Performance & Resource Management](#53-performance--resource-management)
+   * [5.4. Database Connection](#54-database-connection)
+   * [5.5. Compression Settings](#55-compression-settings)
+   * [5.6. Backup Locations & Paths](#56-backup-locations--paths)
+   * [5.7. File Backup Settings (`files_backup`)](#57-file-backup-settings-files_backup)
+   * [5.8. Cloud Storage (S3-Compatible)](#58-cloud-storage-s3-compatible)
+   * [5.9. Adding Custom Directories to Backup](#59-adding-custom-directories-to-backup)
+6. [Usage](#6-usage)
+   * [6.1. Command-Line Interface](#61-command-line-interface)
+   * [6.2. Scheduling Backups (Cron)](#62-scheduling-backups-cron)
+7. [Backup Workflows Explained](#7-backup-workflows-explained)
+   * [7.1. File & System Backup (`files_backup` function)](#71-file--system-backup-files_backup-function)
+   * [7.2. MariaBackup Physical Backup (within `files_backup`)](#72-mariabackup-physical-backup-within-files_backup)
+   * [7.3. MySQL Logical Backup (`mysql_backup` function)](#73-mysql-logical-backup-mysql_backup-function)
+   * [7.4. Binary Log Backup (`backup_binlogs` function)](#74-binary-log-backup-backup_binlogs-function)
+8. [Restoration Process](#8-restoration-process)
+   * [8.1. General Guidance](#81-general-guidance)
+   * [8.2. Restoring from `files_backup` / `mariabackup`](#82-restoring-from-files_backup--mariabackup)
+   * [8.3. Restoring from `mysql_backup` / `backup_binlogs`](#83-restoring-from-mysql_backup--backup_binlogs)
+   * [8.4. Point-in-Time Recovery (PITR)](#84-point-in-time-recovery-pitr)
+   * [8.5. Helper Script Reference](#85-helper-script-reference)
+9. [Advanced Features & Technical Details](#9-advanced-features--technical-details)
+   * [9.1. MariaDB Version Awareness](#91-mariadb-version-awareness)
+   * [9.2. Performance Tuning & Resource Management](#92-performance-tuning--resource-management)
+   * [9.3. Intelligent Disk Space Management](#93-intelligent-disk-space-management)
+   * [9.4. Automated Cleanup](#94-automated-cleanup)
+   * [9.5. Custom Tar Installation](#95-custom-tar-installation)
 10. [Troubleshooting & Logging](#10-troubleshooting--logging)
     * [10.1. Common Issues](#101-common-issues)
     * [10.2. Log File Locations](#102-log-file-locations)
@@ -55,7 +57,7 @@ This script allows for comprehensive backup procedures for Centmin Mod LEMP stac
 
 It integrates file system backups (`rsync`, `tar`) with database backups, providing options for unified archives or separate components. Key design goals include efficiency (multi-threading, optimized commands), reliability (checksums, disk checks), flexibility (extensive configuration, cloud options), and ease of use (automated restore helpers, dependency checks).
 
-It is highly recommended, you test the backup script and `centmin.sh menu option 21` ([documentation](https://centminmod.com/menu21-140.00beta01)) on a test Centmin Mod server/VPS server first and get comfortable and familiar with the process of backing up and restoring data. If you run into bugs, you can report them at https://community.centminmod.com/forums/bug-reports.12/.
+It is highly recommended, you test the backup script and `centmin.sh menu option 21` ([documentation](https://centminmod.com/menu21-140.00beta01)) on a test Centmin Mod server/VPS server first and get comfortable and familiar with the process of backing up and restoring data. If you run into bugs, you can report them at <https://community.centminmod.com/forums/bug-reports.12/>.
 
 ## 2. Key Features
 
@@ -75,7 +77,7 @@ It is highly recommended, you test the backup script and `centmin.sh menu option
 
 ### 3.1. System Requirements
 
-* **OS:** CentOS/RHEL 7, 8, 9 or compatible derivatives (AlmaLinux, Rocky Linux, Oracle Linux etc.).
+* **OS:** CentOS/RHEL 7, 8, 9, 10 or compatible derivatives (AlmaLinux, Rocky Linux, Oracle Linux etc.).
 * **Shell:** Bash version 4+.
 * **Database:** MariaDB or MySQL server installed, configured, and running.
 * **Disk Space:** Sufficient free space on `/` (for logs, temporary files) and the primary backup destination partition (often `/home/` or a dedicated mount). Consider the uncompressed size of your data plus overhead for compression/temporary files.
@@ -96,20 +98,103 @@ The script attempts to install some missing dependencies using `yum`/`dnf` via t
 
 ## 4. Installation & Initial Setup
 
-1.  **Installation:** Centmin Mod LEMP stack installs the script at `/usr/local/src/centminmod/datamanagement/backups.sh` and is used as underlying tool for `centmin.sh menu option 21` ([documentation](https://centminmod.com/menu21-140.00beta01)) shell based menu and also for standalone command line usage.
+1. **Installation:** Centmin Mod LEMP stack installs the script at `/usr/local/src/centminmod/datamanagement/backups.sh` and is used as underlying tool for `centmin.sh menu option 21` ([documentation](https://centminmod.com/menu21-140.00beta01)) shell based menu and also for standalone command line usage.
 
-2.  **Configure Script:** Edit the variables within the script (Section 5) or the recommended method is to use `.ini` override files (`/etc/centminmod/backups.ini`, `/etc/centminmod/binlog-backups.ini`).
+2. **Configure Script:** Edit the variables within the script (Section 5) or the recommended method is to use `.ini` override files (`/etc/centminmod/backups.ini`, `/etc/centminmod/binlog-backups.ini`).
 
-3.  **Database Credentials:** **Critically important:** Configure passwordless access for the backup user via `/root/.my.cnf` (see Section 5.4). Avoid storing passwords directly in the script. Ensure the DB user has necessary privileges (e.g., `RELOAD`, `PROCESS`, `LOCK TABLES`, `SELECT`, `SHOW DATABASES`, `REPLICATION CLIENT`). Centmin Mod LEMP stack initial install should have already properly setup  `/root/.my.cnf` for MySQL root user password. If you manually change MySQL root user password, be sure to update  `/root/.my.cnf` as well.
+3. **Database Credentials:** **Critically important:** Configure passwordless access for the backup user via `/root/.my.cnf` (see Section 5.4). Avoid storing passwords directly in the script. Centmin Mod LEMP stack initial install should have already properly setup `/root/.my.cnf` for MySQL root user password. If you manually change MySQL root user password, be sure to update `/root/.my.cnf` as well.
 
-4.  **Run Initial Check/Install:** Execute a simple command like `bash /usr/local/src/centminmod/datamanagement/backups.sh help`. The script may prompt to install dependencies or the custom `tar` if `NEWER_TAR='y'`. Review output for any errors.
+    **Required Database Privileges:**
+
+    The backup user needs these privileges for full functionality:
+
+    | Privilege | Used By | Purpose |
+    |:----------|:--------|:--------|
+    | `SELECT` | `mysqldump`, `mariabackup` | Read table data for backup |
+    | `LOCK TABLES` | `mysqldump` | Consistent backup with `--lock-tables` |
+    | `SHOW DATABASES` | `mysql_backup` | List databases for iteration |
+    | `RELOAD` | `mariabackup`, binlog flush | Flush logs and acquire locks |
+    | `PROCESS` | `mariabackup` | View server process information |
+    | `REPLICATION CLIENT` | `backup_binlogs`, `--master-data` | Read binary log position |
+    | `SUPER` or `BINLOG MONITOR` | Binary log operations | Access binary logs (MariaDB 10.5+: use `BINLOG MONITOR`) |
+
+    **Grant Statement for Backup User:**
+
+    ```sql
+    -- For MariaDB 10.5+ (uses BINLOG MONITOR instead of SUPER)
+    GRANT SELECT, LOCK TABLES, SHOW DATABASES, RELOAD, PROCESS,
+          REPLICATION CLIENT, BINLOG MONITOR
+    ON *.* TO 'backup_user'@'localhost' IDENTIFIED BY 'secure_password';
+    FLUSH PRIVILEGES;
+
+    -- For MariaDB < 10.5 or MySQL (uses SUPER)
+    GRANT SELECT, LOCK TABLES, SHOW DATABASES, RELOAD, PROCESS,
+          REPLICATION CLIENT, SUPER
+    ON *.* TO 'backup_user'@'localhost' IDENTIFIED BY 'secure_password';
+    FLUSH PRIVILEGES;
+    ```
+
+    **Note:** If using the default Centmin Mod root user with `/root/.my.cnf`, these privileges are already available.
+
+4. **Run Initial Check/Install:** Execute a simple command like `bash /usr/local/src/centminmod/datamanagement/backups.sh help`. The script may prompt to install dependencies or the custom `tar` if `NEWER_TAR='y'`. Review output for any errors.
 
 ## 5. Configuration
 
 ### 5.1. Configuration Methods
 
-1.  **Direct Script Edit:** Modify variables directly within the script file (primary method).
-2.  **INI Overrides:** Create `/etc/centminmod/backups.ini` and/or `/etc/centminmod/binlog-backups.ini`. Settings in these files (using `VAR='value'` format) will override script defaults.
+1. **Direct Script Edit:** Modify variables directly within the script file (primary method).
+2. **INI Overrides (Recommended):** Create `/etc/centminmod/backups.ini` and/or `/etc/centminmod/binlog-backups.ini`. Settings in these files override script defaults and survive script updates.
+
+**Precedence:** INI files are sourced *after* script defaults, so INI values take priority. The script sources files in this order:
+
+1. `/etc/centminmod/binlog-backups.ini` (if exists)
+2. `/etc/centminmod/backups.ini` (if exists)
+
+#### Example: `/etc/centminmod/backups.ini`
+
+```bash
+# Compression settings
+COMPRESSION_METHOD='zstd'
+COMPRESSION_LEVEL_ZSTD='6'
+FASTCOMPRESS_ZSTD='y'
+COMPRESS_RSYNCABLE='y'
+
+# Backup retention
+BACKUP_RETAIN_DAYS='7'
+
+# File backup settings
+FILES_TARBALL_CREATION='y'
+
+# Cloudflare R2 S3 storage
+CFR2_UPLOAD='y'
+CFR2_PROFILE='r2'
+CFR2_ACCOUNTID='your_account_id_here'
+CFR2_BUCKETNAME='your-bucket-name'
+
+# Disk space buffer (percentage to keep free)
+BUFFER_PERCENT=30
+
+# Enable debug output
+DEBUG_DISPLAY='n'
+
+# Generate SHA256 checksums
+CHECKSUMS='y'
+```
+
+#### Example: `/etc/centminmod/binlog-backups.ini`
+
+```bash
+# Binary log specific settings
+BACKUP_RETAIN_DAYS='3'
+COMPRESSION_METHOD='zstd'
+COMPRESSION_LEVEL_ZSTD='4'
+
+# S3 upload for binlogs
+AWSUPLOAD='y'
+AWS_PROFILE='default'
+AWS_BUCKETNAME='my-binlog-bucket'
+STORAGECLASS='STANDARD_IA'
+```
 
 ### 5.2. General Settings
 
@@ -150,6 +235,30 @@ The script attempts to install some missing dependencies using `yum`/`dnf` via t
 | `COMPRESSION_LEVEL_GZIP` | `4`         | `pigz` level (1=fastest, 9=smallest).                                                                    |
 | `COMPRESSION_LEVEL_ZSTD` | `4`         | `zstd` level (1-19+, higher=smaller/slower).                                                             |
 | `FASTCOMPRESS_ZSTD`      | `y`         | `y`: Use `zstd --fast=LEVEL` for faster compression (slightly larger files). `n`: Use standard level only. |
+
+#### How `FASTCOMPRESS_ZSTD` Affects Compression
+
+The script constructs the zstd compression command based on `FASTCOMPRESS_ZSTD`:
+
+| `FASTCOMPRESS_ZSTD` | `COMPRESSION_LEVEL_ZSTD` | Resulting Command | Description |
+|:--------------------|:-------------------------|:------------------|:------------|
+| `y` (default) | `4` (default) | `zstd -T{CPUS} --fast=4` | Fast mode: prioritizes speed over compression ratio |
+| `n` | `4` | `zstd -T{CPUS} -4` | Standard mode: better compression, slower |
+| `y` | `1` | `zstd -T{CPUS} --fast=1` | Fastest possible compression |
+| `n` | `9` | `zstd -T{CPUS} -9` | High compression ratio, slowest |
+
+**Zstd Level Guide:**
+
+* **Fast mode (`--fast=N`):** Levels 1-10+ available. Lower numbers = faster. `--fast=1` is fastest, `--fast=10` approaches standard level 1.
+* **Standard mode (`-N`):** Levels 1-19 (up to 22 with `--ultra`). Level 1 = fast, Level 19 = maximum compression.
+
+**CPU Thread Allocation:**
+
+The script auto-detects CPU cores and allocates threads for zstd compression:
+
+* **>48 cores:** Uses half the cores (prevents resource exhaustion)
+* **24-48 cores:** Uses half the cores
+* **<24 cores:** Uses all available cores
 
 ### 5.6. Backup Locations & Paths
 
@@ -192,7 +301,89 @@ Enable **only one** provider at a time. Set `UPLOAD='y'` and configure `PROFILE`
 | Cloudflare R2    | `CFR2_UPLOAD`           | `CFR2_PROFILE`        | `CFR2_BUCKETNAME`        | `CFR2_ENDPOINT`          | `CFR2_ACCOUNTID` (Required) |
 | UpCloud          | `UPCLOUD_UPLOAD`        | `UPCLOUD_PROFILE`     | `UPCLOUD_BUCKETNAME`     | `UPCLOUD_ENDPOINT`       | `UPCLOUD_ENDPOINT_NAME` (Req) |
 
-**Note:** The script attempts to optimize `aws-cli` configuration (concurrency, multipart sizes) via `aws configure set --profile ...` when an S3 provider is enabled.
+**Note:** The script attempts to optimize `aws-cli` configuration (concurrency, multipart sizes) via `aws configure set --profile ...` when an S3 provider is enabled. See [Section 9.2](#92-performance-tuning--resource-management) for specific optimization values.
+
+#### Cloudflare R2 Configuration
+
+Cloudflare R2 requires your **Account ID** to construct the endpoint URL:
+
+```bash
+CFR2_ENDPOINT="https://{CFR2_ACCOUNTID}.r2.cloudflarestorage.com"
+```
+
+**To find your Cloudflare Account ID:**
+
+1. Log in to the [Cloudflare Dashboard](https://dash.cloudflare.com/)
+2. Select your account
+3. Navigate to **R2 Object Storage** in the left sidebar
+4. Your Account ID is displayed on the R2 overview page, or in the URL: `https://dash.cloudflare.com/{ACCOUNT_ID}/r2/`
+5. The Account ID is a 32-character hexadecimal string (e.g., `a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4`)
+
+**Example R2 Configuration:**
+
+```bash
+CFR2_UPLOAD='y'
+CFR2_PROFILE='r2'
+CFR2_ACCOUNTID='a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4'
+CFR2_BUCKETNAME='my-backup-bucket'
+```
+
+**AWS CLI R2 Profile Setup:**
+
+```bash
+aws configure --profile r2
+# Enter your R2 Access Key ID
+# Enter your R2 Secret Access Key
+# Leave region blank (or 'auto')
+# Leave output format as default
+```
+
+### 5.9. Adding Custom Directories to Backup
+
+You can extend the default backup directories by configuring `/etc/centminmod/backups.ini`. This allows additional directories in backups without modifying the core script.
+
+#### Default Directories Backed Up
+
+| Directory | Contents |
+|-----------|----------|
+| `/etc/centminmod` | Centmin Mod configurations |
+| `/usr/local/nginx/conf` | Nginx configurations |
+| `/root/tools` | Centmin Mod tools |
+| `/usr/local/nginx/html` | Nginx document root |
+| `/home/nginx/domains/` | All Nginx vhost directories (automatic) |
+
+The script also dynamically adds these paths when present:
+
+* `/var/spool/cron/root` and `/etc/cron.d/` (cron jobs)
+* `/root/.my.cnf` (MariaDB client config)
+* `/root/.acme.sh/` (Let's Encrypt certificates)
+* Pure-FTPd and Redis/KeyDB configurations
+* `/etc/elasticsearch` (copied as `/etc/elasticsearch-source`)
+
+#### Adding Custom Directories
+
+Create `/etc/centminmod/backups.ini`:
+
+```bash
+# /etc/centminmod/backups.ini
+
+# Add directories to backup WITH compression (tar.zst)
+DIRECTORIES_TO_BACKUP+=( "/home/username" "/root/.newrelic" "/opt/myapp" )
+
+# Add directories to backup WITHOUT compression (for tunnel-transfers.sh)
+DIRECTORIES_TO_BACKUP_NOCOMPRESS+=( "/home/username" "/root/.newrelic" "/opt/myapp" )
+```
+
+> **Important:** Both `DIRECTORIES_TO_BACKUP` and `DIRECTORIES_TO_BACKUP_NOCOMPRESS` arrays need to have the same directory names populated for both compressed and non-compressed backup modes to work correctly.
+
+#### Use Cases
+
+* Custom application directories outside standard Centmin Mod paths (e.g., `/opt/myapp`)
+* Additional configuration directories (e.g., `/srv/`)
+* User data directories requiring backup
+* Third-party software configurations (e.g., `/root/.newrelic`)
+
+> **Note:** The `/home/nginx/domains/` directory is handled separately via dynamic iteration — all subdirectories are automatically included regardless of naming convention.
 
 ## 6. Usage
 
@@ -219,63 +410,116 @@ Use `crontab -e` to schedule regular backups.
 
 ```cron
 # Example 1: Daily full physical backup at 2:15 AM (creates tarball)
-15 2 * * * /usr/local/sbin/backup-script.sh backup-all-mariabackup comp > /var/log/backup_cron_physical.log 2>&1
+15 2 * * * /usr/local/src/centminmod/datamanagement/backups.sh backup-all-mariabackup comp > /var/log/backup_cron_physical.log 2>&1
 
 # Example 2: Daily full logical backup (mysqldump + binlogs) at 3:15 AM
-15 3 * * * /usr/local/sbin/backup-script.sh backup-all > /var/log/backup_cron_logical.log 2>&1
+15 3 * * * /usr/local/src/centminmod/datamanagement/backups.sh backup-all > /var/log/backup_cron_logical.log 2>&1
 
 # Example 3: Hourly binary log backup (using zstd) for fine-grained PITR
-15 * * * * /usr/local/sbin/backup-script.sh backup-binlogs comp > /var/log/backup_cron_binlog.log 2>&1
+15 * * * * /usr/local/src/centminmod/datamanagement/backups.sh backup-binlogs comp > /var/log/backup_cron_binlog.log 2>&1
 ```
+
 **Note:** Redirecting output (`> ... 2>&1`) is crucial for capturing errors. Adjust paths and timings as needed.
 
 ## 7. Backup Workflows Explained
+
+### Choosing the Right Backup Command
+
+```mermaid
+flowchart TD
+    A[What do you need to backup?] --> B{Database backup needed?}
+    B -->|Yes| C{Backup type preference?}
+    B -->|No| D[backup-files]
+    C -->|Fast physical backup| E{Include system files?}
+    C -->|Portable SQL dump| F{Include binary logs?}
+    E -->|Yes| G[backup-all-mariabackup]
+    E -->|No| H[backup-mariabackup]
+    F -->|Yes| I[backup-all]
+    F -->|No| J[backup-mysql]
+
+    D --> K[Files only - rsync + optional tar.zst]
+    G --> L[Complete backup: files + MariaBackup]
+    H --> M[Database only: MariaBackup physical]
+    I --> N[Complete logical: mysqldump + binlogs]
+    J --> O[Database only: mysqldump --tab]
+
+    style G fill:#90EE90
+    style L fill:#90EE90
+```
+
+**Quick Reference:**
+
+| Command | Best For | Speed | Portability |
+|:--------|:---------|:------|:------------|
+| `backup-all-mariabackup` | Full system + DB backup | Fastest | Same DB version |
+| `backup-mariabackup` | Database-only backup | Fastest | Same DB version |
+| `backup-all` | Full logical backup + PITR | Medium | Cross-version |
+| `backup-mysql` | Database SQL dump only | Medium | Cross-version |
+| `backup-files` | System files only (no DB) | Fast | N/A |
+| `backup-binlogs` | Point-in-time recovery | Fast | Cross-version |
 
 ### 7.1. File & System Backup (`files_backup` function)
 
 * **Scope:** Backs up directories defined in `DIRECTORIES_TO_BACKUP`, plus dynamically added paths like `/home/nginx/domains/*` (excluding logs), `/var/spool/cron/root`, `/etc/cron.d/`, `/root/.my.cnf`, `/root/.acme.sh/`, FTP configs, Redis/KeyDB configs, `/etc/elasticsearch` (as `/etc/elasticsearch-source`).
 * **Process:** Uses `rsync` (with optimized flags if available) to copy data into temporary subdirectories within `$BASE_DIR` (e.g., `domains_tmp`, `cronjobs_tmp`).
 * **Output:** Depends on `FILES_TARBALL_CREATION`:
-    * `'n'`: Results in `$BASE_DIR` containing the copied structure (e.g., `$BASE_DIR/etc/centminmod`, `$BASE_DIR/domains_tmp/`).
-    * `'y'`: Results in a single `${BASE_DIR}/centminmod_backup.tar.zst` archive; temporary subdirs are removed post-archival.
+  * `'n'`: Results in `$BASE_DIR` containing the copied structure (e.g., `$BASE_DIR/etc/centminmod`, `$BASE_DIR/domains_tmp/`).
+  * `'y'`: Results in a single `${BASE_DIR}/centminmod_backup.tar.zst` archive; temporary subdirs are removed post-archival.
 * **Restore:** Guided by `restore-instructions.txt`.
+* **Pre-Compressed File Handling:** The script sets `RSYNC_SKIP_COMPRESS` to avoid double-compressing already-compressed files during rsync operations. This includes 76 file extensions:
+
+    <details>
+    <summary>Click to expand full RSYNC_SKIP_COMPRESS list</summary>
+
+    ```text
+    3g2, 3gp, 3gpp, 3mf, 7z, aac, ace, amr, apk, appx, appxbundle, arc, arj, asf, avi,
+    br, bz2, cab, crypt5, crypt7, crypt8, deb, dmg, drc, ear, gz, flac, flv, gpg, h264,
+    h265, heif, iso, jar, jp2, jpg, jpeg, lz, lz4, lzma, lzo, m4a, m4p, m4v, mkv, msi,
+    mov, mp3, mp4, mpeg, mpg, mpv, oga, ogg, ogv, opus, pack, png, qt, rar, rpm, rzip,
+    s7z, sfx, svgz, tbz, tgz, tlz, txz, vob, webm, webp, wim, wma, wmv, xz, z, zip, zst
+    ```
+
+    </details>
 
 ### 7.2. MariaBackup Physical Backup (within `files_backup`)
 
 * **Triggered By:** `backup-all-mariabackup`, `backup-mariabackup`.
 * **Process:** Executes `mariabackup --backup --target-dir=$MARIADB_TMP_DIR` followed by `mariabackup --prepare --target-dir=$MARIADB_TMP_DIR`. Logs to `$MARIABACKUP_LOG`. Copies `mariabackup-restore.sh` into `$MARIADB_TMP_DIR`.
 * **Output:** Prepared physical backup data resides within `$MARIADB_TMP_DIR` (which is either inside `$BASE_DIR` or included in the `.tar.zst`).
-* **Use Case:** Fastest method for large databases; captures a consistent physical snapshot. Ideal for full restores to the same or very similar DB versions. Supports incremental backups (though not explicitly implemented by *this* script's command options).
-* **Restore:** Guided by `restore-instructions.txt` and uses `mariabackup-restore.sh`.
+* **Use Case:** Fastest method for large databases; captures a consistent physical snapshot. Ideal for full restores to the same or very similar DB versions. **Note:** This script performs full backups only; incremental backups are not implemented.
+* **Restore:** Guided by `restore-instructions.txt` and uses `mariabackup-restore.sh` (see [Section 8.5](#85-helper-script-reference) for details).
 
 ### 7.3. MySQL Logical Backup (`mysql_backup` function)
 
 * **Triggered By:** `backup-all`, `backup-mysql`.
 * **Process:**
-    1.  Dumps `mysql` system DB and records master status (`--master-data=2` or `--flush-logs`) into `$MYSQL_BACKUP_DIR/master_data.sql`.
-    2.  Iterates through user databases.
-    3.  For each DB: Dumps schema-only (`-d`) to `DB-schema-only.sql`.
-    4.  Dumps data using `mysqldump --tab=$MYSQL_BACKUP_DIR/DB_NAME`, creating `table.sql` (schema) and `table.txt` (data) files.
-    5.  Compresses `.txt` files using `COMPRESSION_METHOD`.
-    6.  Optionally generates checksums (`CHECKSUMS='y'`).
-    7.  Generates `$MYSQL_BACKUP_DIR/restore.sh`.
+    1. Dumps `mysql` system DB and records master status (`--master-data=2` or `--flush-logs`) into `$MYSQL_BACKUP_DIR/master_data.sql`.
+    2. Iterates through user databases.
+    3. For each DB: Dumps schema-only (`-d`) to `DB-schema-only.sql`.
+    4. Dumps data using `mysqldump --tab=$MYSQL_BACKUP_DIR/DB_NAME`, creating `table.sql` (schema) and `table.txt` (data) files.
+    5. Compresses `.txt` files using `COMPRESSION_METHOD`.
+    6. Optionally generates checksums (`CHECKSUMS='y'`).
+    7. Generates `$MYSQL_BACKUP_DIR/restore.sh`.
 * **Output:** Timestamped directory `$MYSQL_BACKUP_DIR` containing subdirectories for each database, plus helper scripts/logs.
-* **Use Case:** Flexible for migrations, smaller DBs, table-level recovery. Foundation for PITR when combined with `backup_binlogs`.
-* **Restore Helper:** `restore.sh` script automates `mysqlimport` of `.txt` files.
+* **Use Case:** Flexible for migrations, smaller DBs, table-level recovery. Foundation for PITR when combined with `backup_binlogs` (see [Section 8.4](#84-point-in-time-recovery-pitr)).
+* **Restore Helper:** `restore.sh` script automates `mysqlimport` of `.txt` files (see [Section 8.5](#85-helper-script-reference) for details).
 
 ### 7.4. Binary Log Backup (`backup_binlogs` function)
 
 * **Triggered By:** `backup-all`, `backup_binlogs`.
 * **Process:**
-    1.  Optionally flushes logs (`FLUSH BINARY LOGS`) unless `mode=all`.
-    2.  Fetches logs listed by `SHOW MASTER LOGS` using `mysqlbinlog --read-from-remote-server --raw`.
-    3.  Saves raw logs to `$BACKUP_DIR`.
-    4.  Optionally generates checksums (`CHECKSUMS='y'`) *before* compression.
-    5.  Compresses logs using chosen `COMPRESSION_METHOD` (or override).
-    6.  Performs cleanup: `find "$BACKUP_DIR_PARENT/binlog/" -mtime +${BACKUP_RETAIN_DAYS} \( -name "mysql-bin.*.gz" -o -name "mysql-bin.*.zst" \) -exec rm -rf {} \;`.
-    7.  Copies `master_info.log` from corresponding `mysql_backup` run if available.
+    1. Optionally flushes logs (`FLUSH BINARY LOGS`) unless `mode=all`.
+    2. Fetches logs listed by `SHOW MASTER LOGS` using `mysqlbinlog --read-from-remote-server --raw`.
+    3. Saves raw logs to `$BACKUP_DIR`.
+    4. Optionally generates checksums (`CHECKSUMS='y'`) *before* compression.
+    5. Compresses logs using chosen `COMPRESSION_METHOD` (or override).
+    6. Performs cleanup: `find "$BACKUP_DIR_PARENT/binlog/" -mtime +${BACKUP_RETAIN_DAYS} \( -name "mysql-bin.*.gz" -o -name "mysql-bin.*.zst" \) -exec rm -rf {} \;`.
+    7. Copies `master_info.log` from corresponding `mysql_backup` run if available.
 * **Output:** Timestamped directory `$BACKUP_DIR` containing compressed binlog files.
-* **Use Case:** Essential component for Point-in-Time Recovery. Allows recovery to any specific transaction within the log retention period.
+* **Use Case:** Essential component for Point-in-Time Recovery (see [Section 8.4](#84-point-in-time-recovery-pitr)). Allows recovery to any specific transaction within the log retention period.
+* **Size Reporting:** The script reports binlog sizes during backup:
+  * Total binlog size on server (before backup): `[date] Total size of mysql-bin files: X MB`
+  * Backup size (after completion): `[date] Backup size: X KB`
 
 ## 8. Restoration Process
 
@@ -292,8 +536,10 @@ Use `crontab -e` to schedule regular backups.
 **Follow the detailed steps in `restore-instructions.txt` generated within the backup directory (`$BASE_DIR`).**
 
 **Summary:**
-1.  **Transfer:** Move the backup (`.tar.zst` or the `$BASE_DIR` directory) to the target server.
-2.  **Extract (if tarball):**
+
+1. **Transfer:** Move the backup (`.tar.zst` or the `$BASE_DIR` directory) to the target server.
+2. **Extract (if tarball):**
+
     ```bash
     # Requires tar 1.31+ (or the custom tar 1.35 installed by the script)
     mkdir -p /home/restoredata
@@ -303,26 +549,29 @@ Use `crontab -e` to schedule regular backups.
     # zstd -d /path/to/centminmod_backup.tar.zst
     # tar -xf /path/to/centminmod_backup.tar -C /home/restoredata
     ```
-3.  **Restore System Files:** Carefully copy files/directories from the extracted backup (e.g., `/home/restoredata/etc/`) to their live locations (e.g., `/etc/`). **Backup existing files on the target server first!** The `restore-instructions.txt` provides specific `cp` or `mv` commands and diff checks.
-4.  **Restore Database (if `mariabackup` was included):**
+
+3. **Restore System Files:** Carefully copy files/directories from the extracted backup (e.g., `/home/restoredata/etc/`) to their live locations (e.g., `/etc/`). **Backup existing files on the target server first!** The `restore-instructions.txt` provides specific `cp` or `mv` commands and diff checks.
+4. **Restore Database (if `mariabackup` was included):**
     * Locate the `mariabackup-restore.sh` script within the extracted backup's `mariadb_tmp` directory (e.g., `/home/restoredata/$BASE_DIR/mariadb_tmp/mariabackup-restore.sh`).
     * Execute it with the appropriate options (follow instructions in `restore-instructions.txt` and the script's usage help):
+
         ```bash
         # Example (Ensure MariaDB service is stopped first as per instructions)
         bash /home/restoredata/$BASE_DIR/mariadb_tmp/mariabackup-restore.sh copy-back /home/restoredata/$BASE_DIR/mariadb_tmp/
         # Or use 'move-back' to save space
         ```
-5.  **Permissions & Ownership:** Verify file ownership and permissions after restoration.
-6.  **Restart Services:** Restart Nginx, PHP-FPM, MariaDB, etc.
+
+5. **Permissions & Ownership:** Verify file ownership and permissions after restoration.
+6. **Restart Services:** Restart Nginx, PHP-FPM, MariaDB, etc.
 
 ### 8.3. Restoring from `mysql_backup` / `backup_binlogs`
 
-1.  **Full Restore (to Backup Time):**
+1. **Full Restore (to Backup Time):**
     * Transfer the required `$MYSQL_BACKUP_DIR` (e.g., `/home/mysqlbackup/mysql/DDMMYY-HHMMSS/`) to the target.
     * `cd` into the transferred directory.
     * Execute `./restore.sh all` to restore all databases. (Or `./restore.sh dbname` for a single DB).
     * The script handles schema creation, decompression, and data import via `mysqlimport`. It restores to `dbname_restorecopy_TIMESTAMP` if the DB already exists.
-2.  **Point-in-Time Recovery:** See Section 8.4.
+2. **Point-in-Time Recovery:** See Section 8.4.
 
 ### 8.4. Point-in-Time Recovery (PITR)
 
@@ -331,11 +580,13 @@ PITR allows restoring the database state to a specific moment *between* full log
 **Prerequisites:** A full logical backup (`mysql_backup`) and a continuous sequence of subsequent binary log backups (`backup_binlogs`) covering the desired recovery point.
 
 **Steps:**
-1.  **Restore Full Backup:** Perform a full restore using `restore.sh` from the latest `mysql_backup` *before* your target time (Section 8.3, Step 1).
-2.  **Identify Start Point:** Find the exact binary log file and position recorded in the `master_info.log` file within the restored `$MYSQL_BACKUP_DIR`. Example: `mysql-bin.000123,456789`.
-3.  **Gather Binlogs:** Transfer all necessary subsequent `backup_binlogs` directories needed to reach the target time.
-4.  **Decompress Binlogs:** Uncompress the required `.zst` or `.gz` binary log files from the transferred directories.
-5.  **Apply Binlogs:** Use the `mysqlbinlog` utility to apply the logs sequentially, starting from the position identified in step 2 and stopping at your desired point.
+
+1. **Restore Full Backup:** Perform a full restore using `restore.sh` from the latest `mysql_backup` *before* your target time (Section 8.3, Step 1).
+2. **Identify Start Point:** Find the exact binary log file and position recorded in the `master_info.log` file within the restored `$MYSQL_BACKUP_DIR`. Example: `mysql-bin.000123,456789`.
+3. **Gather Binlogs:** Transfer all necessary subsequent `backup_binlogs` directories needed to reach the target time.
+4. **Decompress Binlogs:** Uncompress the required `.zst` or `.gz` binary log files from the transferred directories.
+5. **Apply Binlogs:** Use the `mysqlbinlog` utility to apply the logs sequentially, starting from the position identified in step 2 and stopping at your desired point.
+
     ```bash
     # Example: Restore up to a specific timestamp
 
@@ -347,22 +598,137 @@ PITR allows restoring the database state to a specific moment *between* full log
         # ... include all logs up to the one containing the stop time
         | mysql -u your_user -p your_database # Pipe output to mysql client
     ```
+
     * Use `--start-datetime`, `--stop-datetime`, `--start-position`, `--stop-position` flags as needed.
     * Consult official MariaDB/MySQL `mysqlbinlog` documentation for precise syntax and options.
+
+### 8.5. Helper Script Reference
+
+The backup script generates several helper files to assist with restoration:
+
+#### `restore-instructions.txt` (Generated by `files_backup`)
+
+Located in `$BASE_DIR/restore-instructions.txt`, this file contains step-by-step instructions for:
+
+* Extracting tar.zst archives (with both tar 1.31+ and older tar methods)
+* Directory mapping showing which backup paths correspond to which system paths
+* Diff commands to compare backup vs destination files
+* Copy/move commands for file restoration
+* Special handling notes for Elasticsearch, Redis, KeyDB configurations
+
+**Key directory mappings documented:**
+
+| Backup Path | System Path |
+|:------------|:------------|
+| `/home/restoredata/etc/centminmod/` | `/etc/centminmod/` |
+| `/home/restoredata${BASE_DIR}/domains_tmp/` | `/home/nginx/domains/` |
+| `/home/restoredata${BASE_DIR}/mariadb_tmp/` | `/var/lib/mysql/` (via mariabackup) |
+| `/home/restoredata/root/tools/` | `/root/tools/` |
+| `/home/restoredata/usr/local/nginx/` | `/usr/local/nginx/` |
+
+#### `restore.sh` (Generated by `mysql_backup`)
+
+Located in `$MYSQL_BACKUP_DIR/restore.sh`, this executable script automates database restoration.
+
+**Usage:**
+
+```bash
+./restore.sh all           # Restore all databases
+./restore.sh database_name # Restore single database
+./restore.sh              # Show usage and available databases
+```
+
+**Features:**
+
+* Automatic conflict handling: If a database already exists, restores to `{dbname}_restorecopy_{timestamp}`
+* Parallel import: Uses `mysqlimport --use-threads=$cpu` with all available CPU cores
+* Automatic decompression: Handles both `.zst` and `.gz` compressed files
+* Foreign key handling: Temporarily disables foreign key checks during schema import
+* Cleanup: Removes compressed files after successful import
+
+**Example Output:**
+
+```text
+Checking if database exists: mydb
+Database already exists. Restoring to a new database: mydb_restorecopy_20241207143052
+```
+
+#### `mariabackup-restore.sh` (Copied into backup)
+
+Located in `$MARIADB_TMP_DIR/mariabackup-restore.sh`, this script handles MariaDB physical backup restoration.
+
+**Usage:**
+
+```bash
+./mariabackup-restore.sh copy-back /path/to/backup/mariadb_tmp/
+./mariabackup-restore.sh move-back /path/to/backup/mariadb_tmp/  # Saves disk space
+```
+
+**Prerequisites:**
+
+1. Stop MariaDB service: `systemctl stop mariadb`
+2. Backup existing data directory (if needed)
+3. Empty `/var/lib/mysql/` directory
+4. Run restore script
+5. Fix ownership: `chown -R mysql:mysql /var/lib/mysql`
+6. Start MariaDB: `systemctl start mariadb`
+
+#### `master_info.log` (Generated by `mysql_backup`)
+
+Located in `$MYSQL_BACKUP_DIR/master_info.log`, contains binary log position for PITR:
+
+**Example content:**
+
+```text
+mysql-bin.000042,154789
+mysqlbinlog --start-position=154789 mysql-bin.000042 mysql-bin.000043 | mysql
+```
 
 ## 9. Advanced Features & Technical Details
 
 ### 9.1. MariaDB Version Awareness
 
-The `set_mariadb_client_commands` function executes `mysql -V` to parse the version. It then sets shell variables (`ALIAS_MYSQL`, `ALIAS_MYSQLDUMP`, etc.) to point to either the legacy (`mysql*`) or newer (`mariadb*`) command names based on whether the version is > 10.11. This ensures the script uses the correct syntax regardless of the installed MariaDB version.
+The script uses two functions to handle MariaDB version compatibility:
+
+**`get_mariadb_version()` Function:**
+
+1. First attempts `mariadb -V` (available in MariaDB 11.4+)
+2. Falls back to `mysql -V` if `mariadb` command not found
+3. Extracts major.minor version (e.g., "10.11", "11.4")
+
+**`set_mariadb_client_commands()` Function:**
+
+Based on the detected version, sets command aliases:
+
+| Version | Command Aliases Used | Example Commands |
+|:--------|:--------------------|:-----------------|
+| ≤ 10.11 | Legacy MySQL names | `mysql`, `mysqldump`, `mysqlbinlog`, `mysqladmin` |
+| > 10.11 | New MariaDB names | `mariadb`, `mariadb-dump`, `mariadb-binlog`, `mariadb-admin` |
+
+The script sets 22 command aliases including: `ALIAS_MYSQL`, `ALIAS_MYSQLDUMP`, `ALIAS_MYSQLBINLOG`, `ALIAS_MYSQLADMIN`, `ALIAS_MYSQLIMPORT`, and others. This ensures the script uses correct command names regardless of MariaDB version.
 
 ### 9.2. Performance Tuning & Resource Management
 
 * **CPU:** `CPUS`/`CPUS_ZSTD` logic prevents overwhelming systems with extremely high core counts by limiting compression threads (e.g., halving cores used above 24/48).
 * **I/O:** `IONICEOPT='-c2 -n7'` sets I/O scheduling to Best Effort (class 2) and lowest priority (7) to minimize impact on interactive processes.
 * **CPU Priority:** `NICEOPT='-n 12'` moderately lowers CPU priority (higher nice value = lower priority).
-* **AWS CLI:** `aws configure set` commands tune `s3.max_concurrent_requests`, `s3.multipart_threshold`, `s3.multipart_chunksize` based on CPU cores (or specific values for R2) aiming for better S3 throughput.
-* **Rsync:** Checks if `rsync --help` output contains `zstd`. If yes (rsync >= 3.2.3), uses `--cc=xxhash --zc=none` (or potentially `--zc=zstd` depending on internal tests - script uses `none` currently) which can be faster than default checksum/compression methods for some workloads.
+* **AWS CLI S3 Optimization:** The script automatically configures AWS CLI for optimal S3 upload performance:
+
+    | Setting | Standard Providers | Cloudflare R2 |
+    |:--------|:-------------------|:--------------|
+    | `s3.max_concurrent_requests` | `${CPUS}` (CPU count) | `10` (fixed) |
+    | `s3.max_queue_size` | `1000` | N/A |
+    | `s3.multipart_threshold` | `8MB` | `50MB` |
+    | `s3.multipart_chunksize` | `8MB` | `50MB` |
+    | `s3.addressing_style` | N/A | `path` |
+    | `region` | N/A | `auto` |
+
+    Cloudflare R2 uses different settings due to its API rate limiting characteristics. The script only applies these settings if `~/.aws/config` exists and `max_concurrent_requests` is not already configured.
+
+* **Rsync Optimization:** The script checks rsync version for zstd support. If rsync ≥ 3.2.3:
+  * Uses `--cc=xxhash` for faster checksumming
+  * Uses `--zc=none` to disable rsync's internal compression (data is already compressed)
+  * Falls back to standard rsync flags if zstd support not detected
 
 ### 9.3. Intelligent Disk Space Management
 
@@ -373,17 +739,17 @@ The `set_mariadb_client_commands` function executes `mysql -V` to parse the vers
 
 The `backup_binlogs` function includes:
 `find "$BACKUP_DIR_PARENT/binlog/" -mtime +${BACKUP_RETAIN_DAYS} \( -name "mysql-bin.*.gz" -o -name "mysql-bin.*.zst" \) -exec rm -rf {} \;`
-This command specifically targets *files* within the parent binlog directory structure that are older than the retention period. The current implementation cleans up old *compressed log files* across potentially multiple timestamped directories if they exist directly under `$BACKUP_DIR_PARENT/binlog/`. If backups are strictly within timestamped directories like `$BACKUP_DIR_PARENT/binlog/${DT}`, a command like `find "$BACKUP_DIR_PARENT/binlog/" -maxdepth 1 -type d -mtime +${BACKUP_RETAIN_DAYS} -exec rm -rf {} \;` would be needed to prune entire old directories. 
+This command specifically targets *files* within the parent binlog directory structure that are older than the retention period. The current implementation cleans up old *compressed log files* across potentially multiple timestamped directories if they exist directly under `$BACKUP_DIR_PARENT/binlog/`. If backups are strictly within timestamped directories like `$BACKUP_DIR_PARENT/binlog/${DT}`, a command like `find "$BACKUP_DIR_PARENT/binlog/" -maxdepth 1 -type d -mtime +${BACKUP_RETAIN_DAYS} -exec rm -rf {} \;` would be needed to prune entire old directories.
 
 **Note:** This cleanup is local only; S3 lifecycle policies must be configured separately for cloud storage cleanup.
 
 ### 9.5. Custom Tar Installation
 
-If `NEWER_TAR='y'`, the script checks the OS version (CentOS/EL 7/8/9) and uses `wget` to download a specific `tar-1.35*.rpm` from `centminmod.com`. It then uses `yum -q -y localinstall` to install it. This version includes native `--use-compress-program=zstd` support, which is significantly more efficient than piping through external `zstd`. See benchmarks at https://community.centminmod.com/threads/faster-smaller-compressed-file-backups-with-tar-zstd-compression.16274/.
+If `NEWER_TAR='y'`, the script checks the OS version (CentOS/EL 7/8/9) and uses `wget` to download a specific `tar-1.35*.rpm` from `centminmod.com`. It then uses `yum -q -y localinstall` to install it. This version includes native `--use-compress-program=zstd` support, which is significantly more efficient than piping through external `zstd`. See benchmarks at <https://community.centminmod.com/threads/faster-smaller-compressed-file-backups-with-tar-zstd-compression.16274/>.
 
 ## 10. Troubleshooting & Logging
 
-If you run into bugs, you can report them at https://community.centminmod.com/forums/bug-reports.12/.
+If you run into bugs, you can report them at <https://community.centminmod.com/forums/bug-reports.12/>.
 
 ### 10.1. Common Issues
 
@@ -407,6 +773,23 @@ Consult these logs for detailed execution information and errors:
 * `mariabackup` (Specific): `${MARIADB_TMP_DIR}/mariabackup_DDMMYY-HHMMSS.log`
 * `rsync` (Domains): `${DOMAINS_TMP_DIR}/rsync_DDMMYY-HHMMSS.log`
 
+**Log Message Format:**
+
+All log messages use a consistent timestamp format: `[$(date)]` prefix.
+
+**Example Log Output:**
+
+```text
+[Sat Dec  7 14:30:52 UTC 2024] Starting backup...
+[Sat Dec  7 14:30:53 UTC 2024] Backing up domain: example.com
+[Sat Dec  7 14:31:15 UTC 2024] MariaBackup started
+[Sat Dec  7 14:32:45 UTC 2024] MariaBackup prepare completed
+[Sat Dec  7 14:32:46 UTC 2024] MySQL backup completed. MASTER_LOG_FILE and MASTER_LOG_POS: mysql-bin.000042,154789
+[Sat Dec  7 14:32:47 UTC 2024] Restore script generated: /home/mysqlbackup/mysql/071224-143052/restore.sh
+[Sat Dec  7 14:32:48 UTC 2024] Backup size: 245678 KB
+[Sat Dec  7 14:32:48 UTC 2024] Backup saved to /home/mysqlbackup/mysql/071224-143052
+```
+
 Enable `DEBUG_DISPLAY='y'` for maximum verbosity during troubleshooting runs.
 
 ## 11. Security Considerations
@@ -414,7 +797,7 @@ Enable `DEBUG_DISPLAY='y'` for maximum verbosity during troubleshooting runs.
 * **Credentials:** **Paramount Importance.** Use `/root/.my.cnf` with `0600` permissions. Avoid plaintext passwords in scripts or logs. Grant the backup DB user the minimum required privileges.
 * **File Permissions:** Ensure the script itself (`700`) and all generated backup files/directories (`600`/`700`) have restrictive permissions. Avoid world-readable backups.
 * **Network:** If backing up over a network (e.g., NFS, SSHFS, S3), ensure transport is encrypted (TLS/SSH). Ensure S3 endpoints use HTTPS.
-* **Encryption at Rest:** For maximum security, encrypt backup archives (e.g., using `gpg`) before uploading to S3 or storing locally, especially if containing sensitive data. `mariabackup` also supports built-in encryption.
+* **Backup Storage:** Store backup archives in secure locations with appropriate access controls. Consider S3 bucket policies and IAM restrictions for cloud storage.
 * **Cloud Security:** Utilize dedicated IAM users/roles with least-privilege S3 policies. Enable MFA on AWS accounts. Use S3 bucket versioning and consider Object Lock/legal hold for immutability against accidental deletion or ransomware. Regularly audit S3 access.
 * **Regular Audits & Testing:** Periodically review script configurations, permissions, and logs. **Crucially, perform regular restore tests** to validate backup integrity and procedure effectiveness.
 * **Input Sanitization:** While primarily internally driven, be cautious if modifying the script to accept external input; sanitize paths and parameters.
