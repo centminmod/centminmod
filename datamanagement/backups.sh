@@ -634,6 +634,10 @@ files_backup() {
       DIRECTORIES_TO_BACKUP+=("/root/.my.cnf")
       DIRECTORIES_TO_BACKUP_NOCOMPRESS+=("/root/.my.cnf")
     fi
+    if [ -d /etc/sudoers.d ]; then
+      DIRECTORIES_TO_BACKUP+=("/etc/sudoers.d")
+      DIRECTORIES_TO_BACKUP_NOCOMPRESS+=("/etc/sudoers.d")
+    fi
     if [ -f /etc/pure-ftpd/pureftpd.passwd ]; then
       DIRECTORIES_TO_BACKUP+=("/etc/pure-ftpd/pureftpd.passwd")
       DIRECTORIES_TO_BACKUP_NOCOMPRESS+=("/etc/pure-ftpd/pureftpd.passwd")
@@ -657,6 +661,14 @@ files_backup() {
     if [ -f /etc/keydb/sentinel.conf ]; then
       DIRECTORIES_TO_BACKUP+=("/etc/keydb/sentinel.conf")
       DIRECTORIES_TO_BACKUP_NOCOMPRESS+=("/etc/keydb/sentinel.conf")
+    fi
+    if [ -d /etc/supervisord.d ]; then
+      DIRECTORIES_TO_BACKUP+=("/etc/supervisord.d")
+      DIRECTORIES_TO_BACKUP_NOCOMPRESS+=("/etc/supervisord.d")
+    fi
+    if [ -f /etc/supervisord.conf ]; then
+      DIRECTORIES_TO_BACKUP+=("/etc/supervisord.conf")
+      DIRECTORIES_TO_BACKUP_NOCOMPRESS+=("/etc/supervisord.conf")
     fi
     if [ -d /etc/elasticsearch ]; then
       \cp -af /etc/elasticsearch /etc/elasticsearch-source
