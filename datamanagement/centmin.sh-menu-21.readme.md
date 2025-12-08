@@ -905,6 +905,9 @@ Before overwriting, backup the new server's configuration files that you may wan
 # Backup files you may want to keep from new server
 \cp -af /usr/local/nginx/conf/staticfiles.conf /usr/local/nginx/conf/staticfiles.conf.original
 \cp -af /usr/local/nginx /usr/local/nginx_original
+\cp -af /etc/sudoers.d /etc/sudoers.d_original
+\cp -af /etc/supervisord.d /etc/supervisord.d_original
+\cp -af /etc/supervisord.conf /etc/supervisord.conf.original
 \cp -af /etc/my.cnf /etc/my.cnf.original
 \cp -af /root/.my.cnf /root/.my.cnf.original
 \cp -af /etc/centminmod/custom_config.inc /etc/centminmod/custom_config.inc.original
@@ -920,6 +923,9 @@ Before overwriting, backup the new server's configuration files that you may wan
 \cp -af /home/restoredata/etc/centminmod/* /etc/centminmod/
 \cp -af /home/restoredata/etc/pure-ftpd/* /etc/pure-ftpd/
 \cp -af /home/restoredata/etc/redis/* /etc/redis/
+\cp -af /home/restoredata/etc/sudoers.d/* /etc/sudoers.d
+\cp -af /home/restoredata/etc/supervisord.d/* /etc/supervisord.d
+\cp -af /home/restoredata/etc/supervisord/* /etc/supervisord
 chown redis:root /etc/redis/redis.conf
 \cp -af /home/restoredata/etc/keydb/* /etc/keydb/
 mkdir -p /root/.acme.sh /root/tools
@@ -933,6 +939,9 @@ mkdir -p /root/.acme.sh /root/tools
 
 ```bash
 mv -f /home/restoredata/etc/centminmod/* /etc/centminmod/
+mv -f /home/restoredata/etc/sudoers.d/* /etc/sudoers.d
+mv -f /home/restoredata/etc/supervisord.d/* /etc/supervisord.d
+mv -f /home/restoredata/etc/supervisord/* /etc/supervisord
 mv -f /home/restoredata/etc/pure-ftpd/* /etc/pure-ftpd/
 mv -f /home/restoredata/etc/redis/* /etc/redis/
 mv -f /home/restoredata/etc/keydb/* /etc/keydb/
@@ -1380,6 +1389,9 @@ diff -ur /var/spool/cron/root /home/remotebackup/cronjobs_tmp/root_cronjobs
 ```bash
 \cp -af /usr/local/nginx/conf/staticfiles.conf /usr/local/nginx/conf/staticfiles.conf.original
 \cp -af /usr/local/nginx /usr/local/nginx_original
+\cp -af /etc/sudoers.d /etc/sudoers.d_original
+\cp -af /etc/supervisord.d /etc/supervisord.d_original
+\cp -af /etc/supervisord.conf /etc/supervisord.conf.original
 \cp -af /etc/my.cnf /etc/my.cnf.original
 \cp -af /root/.my.cnf /root/.my.cnf.original
 \cp -af /etc/redis/redis.conf /etc/redis/redis.conf.original
@@ -1395,6 +1407,9 @@ diff -ur /var/spool/cron/root /home/remotebackup/cronjobs_tmp/root_cronjobs
 \cp -af /home/restoredata/etc/centminmod/* /etc/centminmod/
 \cp -af /home/restoredata/etc/pure-ftpd/* /etc/pure-ftpd/
 \cp -af /home/restoredata/etc/redis/* /etc/redis/
+\cp -af /home/restoredata/etc/sudoers.d/* /etc/sudoers.d
+\cp -af /home/restoredata/etc/supervisord.d/* /etc/supervisord.d
+\cp -af /home/restoredata/etc/supervisord/* /etc/supervisord
 \cp -af /home/restoredata/etc/keydb/* /etc/keydb/
 mkdir -p /root/.acme.sh /root/tools
 \cp -af /home/restoredata/root/.aws /root/.aws
@@ -1407,6 +1422,9 @@ mkdir -p /root/.acme.sh /root/tools
 
 ```bash
 mv -f /home/restoredata/etc/centminmod/* /etc/centminmod/
+mv -f /home/restoredata/etc/sudoers.d/* /etc/sudoers.d
+mv -f /home/restoredata/etc/supervisord.d/* /etc/supervisord.d
+mv -f /home/restoredata/etc/supervisord/* /etc/supervisord
 mv -f /home/restoredata/etc/pure-ftpd/* /etc/pure-ftpd/
 mv -f /home/restoredata/etc/redis/* /etc/redis/
 mv -f /home/restoredata/etc/keydb/* /etc/keydb/

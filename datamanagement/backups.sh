@@ -662,6 +662,10 @@ files_backup() {
       DIRECTORIES_TO_BACKUP+=("/etc/keydb/sentinel.conf")
       DIRECTORIES_TO_BACKUP_NOCOMPRESS+=("/etc/keydb/sentinel.conf")
     fi
+    if [ -d /etc/supervisord ]; then
+      DIRECTORIES_TO_BACKUP+=("/etc/supervisord")
+      DIRECTORIES_TO_BACKUP_NOCOMPRESS+=("/etc/supervisord")
+    fi
     if [ -d /etc/supervisord.d ]; then
       DIRECTORIES_TO_BACKUP+=("/etc/supervisord.d")
       DIRECTORIES_TO_BACKUP_NOCOMPRESS+=("/etc/supervisord.d")
