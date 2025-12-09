@@ -2,7 +2,7 @@ check_devtoolset_php() {
   # php 7.3+ require devtoolset provided GCC 7+ to build
   # but standalone php extensions routines aren't aware
   # and don't enable GENERAL_DEVTOOLSETGCC='y'
-    php-config --version | cut -d . -f1,2 | egrep -w '7.3|7.4|8.0|8.1|8.2|8.3|8.4'
+    php-config --version | cut -d . -f1,2 | egrep -w '7.3|7.4|8.0|8.1|8.2|8.3|8.4|8.5'
     PHPSEVENTHREE_CHECKVER=$?
     echo "$PHPSEVENTHREE_CHECKVER"
     if [[ "$PHPSEVENTHREE_CHECKVER" -eq '0' ]]; then

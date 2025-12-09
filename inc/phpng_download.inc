@@ -1,6 +1,6 @@
 ########################################################################
 phpng_download() {
-  if [[ "$(echo $PHPMU_ALPHAVER | cut -c1-10)" = '8.5.0alpha' || "$(echo $PHPMU_ALPHAVER | cut -c1-9)" = '8.5.0beta' || "$(echo $PHPMU_ALPHAVER | cut -c1-7)" = '8.5.0RC'  ]]; then
+  if [[ "$(echo $PHPMU_ALPHAVER | cut -c1-10)" = '8.6.0alpha' || "$(echo $PHPMU_ALPHAVER | cut -c1-9)" = '8.6.0beta' || "$(echo $PHPMU_ALPHAVER | cut -c1-7)" = '8.6.0RC'  ]]; then
     PHPNG_YES='y'
     PHPNGVER=$PHPMU_ALPHAVER
     # curl check as download url keeps changing between releases
@@ -184,13 +184,13 @@ phpng_download() {
         echo ""
       fi    
 ####################################################################    
-  elif [[ "$PHPMUVER" = 'NGDEBUG' || "$PHPMUVER" = '5.7' || "$PHPMUVER" = '8.5' ]] && [[ "$(echo $PHPMU_ALPHAVER | cut -c1-10)" != '7.0.0alpha' || "$(echo $PHPMU_ALPHAVER | cut -c1-9)" != '7.0.0beta' || "$(echo $PHPMU_ALPHAVER | cut -c1-7)" != '7.0.0RC' ]]; then
+  elif [[ "$PHPMUVER" = 'NGDEBUG' || "$PHPMUVER" = '5.7' || "$PHPMUVER" = '8.6' ]] && [[ "$(echo $PHPMU_ALPHAVER | cut -c1-10)" != '7.0.0alpha' || "$(echo $PHPMU_ALPHAVER | cut -c1-9)" != '7.0.0beta' || "$(echo $PHPMU_ALPHAVER | cut -c1-7)" != '7.0.0RC' ]]; then
     if [[ "$PHPMUVER" = 'NGDEBUG' ]]; then
       PHPNGVER='NGDEBUG'
     elif [[ "$PHPMUVER" = '5.7' ]]; then
       PHPNGVER='5.7.0'
-    elif [[ "$PHPMUVER" = '8.5' ]]; then
-      PHPNGVER='8.5.0'
+    elif [[ "$PHPMUVER" = '8.6' ]]; then
+      PHPNGVER='8.6.0'
     fi
     cecho "Downloading PHP $PHPMUVER from https://git.php.net/repository/php-src.git" $boldyellow
     cd $DIR_TMP

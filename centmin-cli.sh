@@ -30,7 +30,7 @@ DT=$(date +"%d%m%y-%H%M%S")
 branchname='140.00beta01'
 SCRIPT_MAJORVER='140'
 SCRIPT_MINORVER='00'
-SCRIPT_INCREMENTVER='271'
+SCRIPT_INCREMENTVER='280'
 SCRIPT_VERSIONSHORT="${branchname}"
 SCRIPT_VERSION="${SCRIPT_VERSIONSHORT}.b${SCRIPT_INCREMENTVER}"
 SCRIPT_DATE='16/01/25'
@@ -1118,6 +1118,7 @@ PHPSWOOLE_EIGHT_ONE_VER='6.0.0'
 PHPSWOOLE_EIGHT_TWO_VER='6.0.0'
 PHPSWOOLE_EIGHT_THREE_VER='6.0.0'
 PHPSWOOLE_EIGHT_FOUR_VER='6.0.0'
+PHPSWOOLE_EIGHT_FIVE_VER='6.1.2'    # placeholder until Swoole officially supports PHP 8.5
 PHPSWOOLE_FIVE_VER='2.0.5' # max PHP 5.0 supported version
 PHPSWOOLE_SEVEN_ZERO_VER='4.3.5' # max PHP 7.0 supported version
 PHPSWOOLE_SEVEN_ONE_VER='4.5.11' # max PHP 7.1 supported version
@@ -1133,9 +1134,10 @@ FFMPEGVER='0.6.0'
 SUHOSINVER='0.9.38'
 
 PHPREDIS='y'                # redis PHP extension install
-REDISPHP_VER='4.3.0'        # redis PHP version for PHP <7.x
-REDISPHPSEVEN_VER='5.3.7'   # redis PHP version for PHP 7.0.x to 7.1.x
-REDISPHPSEVENTWO_VER='6.1.0'   # redis PHP version for PHP =>7.2.x
+REDISPHP_VER='4.3.0'            # redis PHP version for PHP <7.x
+REDISPHPSEVEN_VER='5.3.7'       # redis PHP version for PHP 7.0.x to 7.1.x
+REDISPHPSEVENTWO_VER='6.0.2'    # redis PHP version for PHP 7.2.x to 7.3.x
+REDISPHPSEVENFOUR_VER='6.3.0'   # redis PHP version for PHP >=7.4.x (including 8.5)
 REDISPHP_GIT='n'            # pull php 7 redis extension from git or pecl downloads
 PHPMONGODB='n'              # MongoDB PHP extension install
 MONGODBPHP_VER='1.7.5'      # MongoDB PHP version
@@ -1143,11 +1145,15 @@ MONGODBPHP_SEVEN_ZERO_VER='1.9.2' # MongoDB max PHP =<7.0 version
 MONGODBPHP_SEVEN_VER='1.11.1'     # MongoDB max PHP 7.1+ version
 MONGODBPHP_EIGHT_VER='1.13.0'
 MONGODBPHP_EIGHTTWO_VER='1.20.0'     # MongoDB PHP version
+MONGODBPHP_EIGHTTHREE_VER='1.21.2'   # MongoDB PHP 8.3+ version
+MONGODBPHP_EIGHTFOUR_VER='1.21.2'    # MongoDB PHP 8.4+ version
+MONGODBPHP_EIGHTFIVE_VER='1.21.2'    # MongoDB PHP 8.5+ version
 MONGODB_SASL='n'            # SASL not working yet leave = n
 PDOPGSQL_PHPVER='11'        # pdo-pgsql PHP extension version for postgresql
 PHP_LIBZIP='n'              # use newer libzip instead of PHP embedded zip
 PHP_ARGON='y'               # alias for PHP_LIBZIP, when PHP_ARGON='y' then PHP_LIBZIP='y'
 LIBZIP_VER='1.10.1'          # required for PHP 7.2 + with libsodium & argon2
+LIBZIP_EIGHT_FIVE_VER='1.22.7'   # PHP 8.5+ requires libzip 1.22.7+
 LIBSODIUM_VER='1.0.20'      # https://github.com/jedisct1/libsodium/releases
 LIBSODIUM_NATIVE='n'        # optimise for specific cpu not portable between different cpu modules
 LIBARGON_VER='20190702'     # https://github.com/P-H-C/phc-winner-argon2
@@ -1214,7 +1220,7 @@ MYSQL_INSTALL='n'            # Install official Oracle MySQL Server (MariaDB alt
 SENDMAIL_INSTALL='n'         # Install Sendmail (and mailx) set to y and POSTFIX_INSTALL=n for sendmail
 POSTFIX_INSTALL=y            # Install Postfix (and mailx) set to n and SENDMAIL_INSTALL=y for sendmail
 # Nginx
-NGINX_VERSION='1.29.2'             # Use this version of Nginx
+NGINX_VERSION='1.29.4'             # Use this version of Nginx
 NGINX_ANGIE_VERSION='Angie-1.10.1'
 FREENGINX_VERSION='1.29.2'     # Maxim's Freenginx fork https://freenginx.org/en/download.html
 FREENGINX_INSTALL='n'          # Use Freenginx fork instead of official Nginx
@@ -1298,7 +1304,7 @@ IMAGICKPHP_VER='3.4.4'         # PHP extension for imagick
 IMAGICKPHP_SEVEN_VER='3.7.0'   # PHP extension for imagick
 MAILPARSEPHP_VER='2.1.6'       # https://pecl.php.net/package/mailparse
 MAILPARSEPHP_COMPATVER='3.1.3' # For PHP 7.0-7.3
-MAILPARSEPHPSEVENFOUR_COMPATVER='3.1.8' # For PHP 7.4+
+MAILPARSEPHPSEVENFOUR_COMPATVER='3.1.9' # For PHP 7.4+
 MEMCACHED_INSTALL='y'          # Install Memcached
 LIBEVENT_VERSION='2.1.12'      # Use this version of Libevent
 MEMCACHED_VERSION='1.6.36'    # Use this version of Memcached server
@@ -3353,7 +3359,7 @@ if [[ "$NSD_INSTALL" = [yY] ]]; then
     nsdinstall
 fi
 
-php-config --version | cut -d . -f1,2 | egrep -w '7.0|7.1|7.2|7.3|7.4|8.0|8.1|8.2|8.3|8.4'
+php-config --version | cut -d . -f1,2 | egrep -w '7.0|7.1|7.2|7.3|7.4|8.0|8.1|8.2|8.3|8.4|8.5'
 PHPSEVEN_CHECKVER=$?
 echo "$PHPSEVEN_CHECKVER"
 if [[ "$PHPSEVEN_CHECKVER" = '0' ]]; then

@@ -214,6 +214,14 @@ fi
 
   #replace 'zend_extension=opcache.so' "zend_extension=${PHPEXTDIRD}/opcache.so" -- "$CUR_DIR/config/zendopcache/zendopcache.ini"
 
+# PHP 8.5+ has opcache built-in, comment out zend_extension line
+if [[ "$PHPMUVER" = '8.5' || "$PHPMUVER" = '8.6' ]]; then
+  if [ -f ${CONFIGSCANDIR}/zendopcache.ini ]; then
+    echo -e "PHP 8.5+ detected: commenting out zend_extension (opcache is built-in)\n"
+    sed -i 's|^zend_extension=.*opcache.*|;zend_extension=opcache.so|' ${CONFIGSCANDIR}/zendopcache.ini
+  fi
+fi
+
 fi # zendopcacheon
 
 fi
@@ -255,6 +263,16 @@ else
     ZENDOPCACHE_EXISTMEMSIZE='80'
   fi  
   sed -i "s|^opcache.memory_consumption=.*|opcache.memory_consumption=$ZENDOPCACHE_EXISTMEMSIZE|" ${CONFIGSCANDIR}/zendopcache.ini
+
+# PHP 8.5+ has opcache built-in, comment out zend_extension line (after template copy)
+if [[ "$PHPMUVER" = '8.5' || "$PHPMUVER" = '8.6' ]]; then
+  if [ -f ${CONFIGSCANDIR}/zendopcache.ini ]; then
+    if grep -q '^zend_extension=.*opcache' ${CONFIGSCANDIR}/zendopcache.ini 2>/dev/null; then
+      echo -e "PHP 8.5+ detected: commenting out zend_extension (opcache is built-in)\n"
+      sed -i 's|^zend_extension=.*opcache.*|;zend_extension=opcache.so|' ${CONFIGSCANDIR}/zendopcache.ini
+    fi
+  fi
+fi
 
 fi # check if opcache.so exists in zendopcache.ini
 fi # zendopcacheon

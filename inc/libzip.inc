@@ -51,6 +51,10 @@ libzip_remove() {
 }
 
 libzip_install() {
+  # PHP 8.5 requires libzip 1.22.7+
+  if [[ "$PHPMVER" = '8.5' || "$PHPMUVER" = '8.5' ]]; then
+    LIBZIP_VER="$LIBZIP_EIGHT_FIVE_VER"
+  fi
   check_pythonthree_six
   if [ ! -f /usr/bin/cmake3 ]; then
       echo
@@ -103,7 +107,7 @@ libzip_install() {
   ${LIBZIP_OPENSSL_OPT}
   make${MAKETHREADS}
   make install
-    if [[ "$PHPMVER" = '7.4' || "$PHPMUVER" = '7.4' || "$PHPMVER" = '8.0' || "$PHPMUVER" = '8.0' || "$PHPMVER" = '8.1' || "$PHPMUVER" = '8.1' || "$PHPMVER" = '8.2' || "$PHPMUVER" = '8.2' || "$PHPMVER" = '8.3' || "$PHPMUVER" = '8.3' || "$PHPMVER" = '8.4' || "$PHPMUVER" = '8.4' || "$PHPVER_ID" -ge '80000' ]]; then
+    if [[ "$PHPMVER" = '7.4' || "$PHPMUVER" = '7.4' || "$PHPMVER" = '8.0' || "$PHPMUVER" = '8.0' || "$PHPMVER" = '8.1' || "$PHPMUVER" = '8.1' || "$PHPMVER" = '8.2' || "$PHPMUVER" = '8.2' || "$PHPMVER" = '8.3' || "$PHPMUVER" = '8.3' || "$PHPMVER" = '8.4' || "$PHPMUVER" = '8.4' || "$PHPMVER" = '8.5' || "$PHPMUVER" = '8.5' || "$PHPVER_ID" -ge '80000' ]]; then
       if [[ "$(uname -m)" = 'x86_64' ]]; then
         LIBDIR_LIBZIP='lib64'
       else
