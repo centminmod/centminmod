@@ -2,7 +2,7 @@ imagick_php_patches() {
   echo "imagick patch routine: PHPMVER=$PHPMVER"
   echo "imagick patch routine: PHPMUVER=$PHPMUVER"
   echo "imagick patch routine: PHPVER_ID=$PHPVER_ID"
-  if [[ "$PHPMVER" = '8.4' || "$PHPMUVER" = '8.4' || "$PHPMVER" = '8.5' || "$PHPMUVER" = '8.5' || "$PHPVER_ID" -ge '80400' ]]; then
+  if [[ "$PHPMVER" = '8.4' || "$PHPMUVER" = '8.4' || "$PHPMVER" = '8.5' || "$PHPMUVER" = '8.5' || "$PHPVER_ID" -ge '80500' ]]; then
     # Define the new patch for imagick PHP 8.4 support
     IMAGICK_PATCH="php84-remove-strtolower.patch"
     echo "$CUR_DIR/patches/imagick/$IMAGICK_PATCH"
@@ -1030,7 +1030,7 @@ php_patches() {
   fi
   if [[ "$PHPVER_ID" -ge '70433' && "$PHPVER_ID" -le '70434' ]]; then
       # for 7.4.33 to 7.4.34 only
-      phpseven_bugids='81740 81744 81746 cve-2023-0662 ghsa-76gg-c692-v2mw cve-2023-3823 cve-2023-3824 cve-2024-2756 cve-2024-3096 cve-2024-5458 cve-2024-8925 cve-2024-8926 cve-2024-8927 cve-2024-9026 cve-2024-11236 cve-2024-11234 cve-2024-8932 cve-2024-11233 ghsa-4w77-75f9-2c8w'
+      phpseven_bugids='81740 81744 81746 cve-2023-0662 ghsa-76gg-c692-v2mw cve-2023-3823 cve-2023-3824 cve-2024-2756 cve-2024-3096 cve-2024-5458 cve-2024-8925 cve-2024-8926 cve-2024-8927 cve-2024-9026 cve-2024-11236 cve-2024-11234 cve-2024-8932 cve-2024-11233 ghsa-4w77-75f9-2c8w cve-2024-8929 cve-2025-1217 cve-2025-1734 cve-2025-1861 cve-2025-1736 cve-2025-1219 cve-2025-6491 cve-2025-1220 cve-2025-1735 cve-2025-14177 cve-2025-14178 ghsa-www2-q4fc-65wf pcretests'
 
       for bugid in $phpseven_bugids; do
           if [[ ! -f "php742-${bugid}.patch" && -f "$CUR_DIR/patches/php/php742-${bugid}.patch" ]]; then
@@ -1080,7 +1080,7 @@ php_patches() {
   fi
   if [[ "$PHPVER_ID" -ge '80000' && "$PHPVER_ID" -le '80099' ]]; then
       # for 8.1.x only
-      phpeight_bugids='cve-2024-2756 cve-2024-3096 cve-2024-5458 cve-2024-8925 cve-2024-8926 cve-2024-8927 cve-2024-9026 cve-2024-11236 cve-2024-11234 cve-2024-8932 cve-2024-11233 ghsa-4w77-75f9-2c8w cve-2025-1217 cve-2025-1734 cve-2025-1861 cve-2025-1736 cve-2025-1219 pcretests'
+      phpeight_bugids='cve-2024-2756 cve-2024-3096 cve-2024-5458 cve-2024-8925 cve-2024-8926 cve-2024-8927 cve-2024-9026 cve-2024-11236 cve-2024-11234 cve-2024-8932 cve-2024-11233 ghsa-4w77-75f9-2c8w cve-2025-1217 cve-2025-1734 cve-2025-1861 cve-2025-1736 cve-2025-1219 pcretests cve-2025-14177 cve-2025-14178 ghsa-www2-q4fc-65wf'
 
       for bugid in $phpeight_bugids; do
           if [[ ! -f "php80-${bugid}.patch" && -f "$CUR_DIR/patches/php/php80-${bugid}.patch" ]]; then
@@ -1377,6 +1377,23 @@ php_patches() {
       fi
     done
   fi
+  if [[ "$CENTOS_TEN" -eq '10' && "$PHP_PATCH_OPENSSL_THREE" = [yY] ]] && [[ "$PHPVER_ID" -ge '70400' && "$PHPVER_ID" -lt '80000' ]]; then
+    phpsevenfour_opensslthree_bugids='php74-snmp-openssl3 php74-openssl3'
+    for bugid in $phpsevenfour_opensslthree_bugids; do
+      echo "EL10 PHP 7.4 $bugid"
+      ls -lAh "$CUR_DIR/patches/php/${bugid}.patch"
+      if [[ ! -f "${bugid}.patch" && -f "$CUR_DIR/patches/php/${bugid}.patch" ]]; then
+        echo
+        if [[ "$bugid" != 'php-openssl-cert' ]]; then
+          echo "patching PHP 7.4 for ${bugid}"
+        fi
+        echo
+        cp -a $CUR_DIR/patches/php/${bugid}.patch ${bugid}.patch
+        dos2unix ${bugid}.patch
+        patch -p1 < ${bugid}.patch
+      fi
+    done
+  fi
   # if [[ "$CENTOS_NINE" -eq '9' ]] && [[ "$PHPVER_ID" -ge '70400' && "$PHPVER_ID" -lt '80000' ]]; then
   #   phpsevenfour_opensslthree_bugids='php74-snmp-openssl3'
   #   for bugid in $phpsevenfour_opensslthree_bugids; do
@@ -1435,6 +1452,23 @@ php_patches() {
     phpeightzero_opensslthree_bugids='php80-snmp-openssl3 php80-openssl3-phar-sha php80-openssl3'
     for bugid in $phpeightzero_opensslthree_bugids; do
       echo "EL9 PHP 8.0 $bugid"
+      ls -lAh "$CUR_DIR/patches/php/${bugid}.patch"
+      if [[ ! -f "${bugid}.patch" && -f "$CUR_DIR/patches/php/${bugid}.patch" ]]; then
+        echo
+        if [[ "$bugid" != 'php-openssl-cert' ]]; then
+          echo "patching PHP 8.0 for ${bugid}"
+        fi
+        echo
+        cp -a $CUR_DIR/patches/php/${bugid}.patch ${bugid}.patch
+        dos2unix ${bugid}.patch
+        patch -p1 < ${bugid}.patch
+      fi
+    done
+  fi
+  if [[ "$CENTOS_TEN" -eq '10' && "$PHP_PATCH_OPENSSL_THREE" = [yY] ]] && [[ "$PHPVER_ID" -ge '80000' && "$PHPVER_ID" -lt '80100' ]]; then
+    phpeightzero_opensslthree_bugids='php80-snmp-openssl3 php80-openssl3-phar-sha php80-openssl3'
+    for bugid in $phpeightzero_opensslthree_bugids; do
+      echo "EL10 PHP 8.0 $bugid"
       ls -lAh "$CUR_DIR/patches/php/${bugid}.patch"
       if [[ ! -f "${bugid}.patch" && -f "$CUR_DIR/patches/php/${bugid}.patch" ]]; then
         echo
