@@ -7,6 +7,7 @@
 
 manage_perl_dbd_mysql_exclude() {
     local action="${1:-add}"  # add|remove|status
+    local silent="$2"
     local config_file="/etc/yum.conf"
     local actual_file="$config_file"
 
@@ -56,16 +57,45 @@ manage_perl_dbd_mysql_exclude() {
         fi
     fi
 
+    # Clean up duplicate perl-DBD-MySQL entries (self-healing for bug that caused repeated additions)
+    if [[ -f "$actual_file" ]]; then
+        local exclude_line
+        exclude_line=$(grep '^exclude=' "$actual_file" 2>/dev/null)
+        if [[ -n "$exclude_line" ]]; then
+            # Count occurrences of perl-DBD-MySQL
+            local dbd_count
+            dbd_count=$(echo "$exclude_line" | grep -o 'perl-DBD-MySQL' | wc -l)
+            if [[ "$dbd_count" -gt 1 ]]; then
+                [[ "$silent" != "silent" ]] && echo "Detected $dbd_count duplicate perl-DBD-MySQL entries, cleaning up..."
+                # Remove all perl-DBD-MySQL entries first, then add back one
+                local cleaned_line
+                cleaned_line=$(echo "$exclude_line" | sed 's/[[:space:]]*perl-DBD-MySQL//g' | sed 's/  */ /g' | sed 's/ $//')
+                cleaned_line="${cleaned_line} perl-DBD-MySQL"
+                # Also clean up any duplicate entries (*.i686, etc) using tr/sort/uniq
+                local prefix value_part unique_values
+                prefix="exclude="
+                value_part="${cleaned_line#exclude=}"
+                # Convert space-separated to newline-separated, sort unique, convert back
+                unique_values=$(echo "$value_part" | tr ' ' '\n' | awk '!seen[$0]++' | tr '\n' ' ' | sed 's/ $//')
+                cleaned_line="${prefix}${unique_values}"
+                # Apply the cleaned line
+                sed -i "s|^exclude=.*|$cleaned_line|" "$actual_file"
+                [[ "$silent" != "silent" ]] && echo "Cleaned up duplicates in $actual_file"
+            fi
+        fi
+    fi
+
     case "$action" in
         add)
             # Add perl-DBD-MySQL to yum.conf exclude list
-            if [[ "$(grep '^exclude=' "$actual_file" | grep -o 'perl-DBD-MySQL')" != 'perl-DBD-MySQL' ]]; then
+            # Use grep -q for boolean check (grep -o returns multiple lines if duplicates exist)
+            if ! grep '^exclude=' "$actual_file" 2>/dev/null | grep -q 'perl-DBD-MySQL'; then
                 # Backup the actual config file
                 cp -af "$actual_file" "${actual_file}.backup-perl-dbd-$(date +%Y%m%d-%H%M%S)"
 
-                if [[ "$(grep '^exclude=' "$actual_file")" ]]; then
+                if grep -q '^exclude=' "$actual_file" 2>/dev/null; then
                     # Append to existing exclude line
-                    NEW_EXCLUDES=$(echo "$(grep '^exclude=' "$actual_file") perl-DBD-MySQL")
+                    NEW_EXCLUDES="$(grep '^exclude=' "$actual_file") perl-DBD-MySQL"
                     sed -i "s|^exclude=.*|$NEW_EXCLUDES|" "$actual_file"
                     echo "Added perl-DBD-MySQL to existing exclude line in $actual_file"
                 else
@@ -82,7 +112,7 @@ manage_perl_dbd_mysql_exclude() {
             ;;
         remove)
             # Remove perl-DBD-MySQL from yum.conf exclude list
-            if [[ "$(grep '^exclude=' "$actual_file" | grep -o 'perl-DBD-MySQL')" = 'perl-DBD-MySQL' ]]; then
+            if grep '^exclude=' "$actual_file" 2>/dev/null | grep -q 'perl-DBD-MySQL'; then
                 cp -af "$actual_file" "${actual_file}.backup-perl-dbd-$(date +%Y%m%d-%H%M%S)"
                 sed -i 's/\s*perl-DBD-MySQL//g' "$actual_file"
                 sed -i 's/  */ /g' "$actual_file"  # Clean up extra spaces
@@ -102,7 +132,7 @@ manage_perl_dbd_mysql_exclude() {
                 echo "  (symlink to: $actual_file)"
             fi
 
-            if [[ "$(grep '^exclude=' "$actual_file" | grep -o 'perl-DBD-MySQL')" = 'perl-DBD-MySQL' ]]; then
+            if grep '^exclude=' "$actual_file" 2>/dev/null | grep -q 'perl-DBD-MySQL'; then
                 echo "✓ perl-DBD-MySQL IS EXCLUDED in $actual_file"
                 grep '^exclude=' "$actual_file"
                 return 0
