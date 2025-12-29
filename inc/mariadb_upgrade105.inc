@@ -1486,23 +1486,48 @@ mariadbtenfourtotenfiveupgrade() {
 
     # Normal upgrade flow continues below
 if [ -z "$OLDMARIADBVERS" ]; then
-MYSQLDATADIR=$(${ALIAS_MYSQLADMIN} var | grep 'datadir' | awk '{ print $4}')
+# Get MYSQLDATADIR with fallback if mysqladmin not available
+if command -v ${ALIAS_MYSQLADMIN} >/dev/null 2>&1 && systemctl is-active mariadb >/dev/null 2>&1; then
+    MYSQLDATADIR=$(${ALIAS_MYSQLADMIN} var | grep 'datadir' | awk '{ print $4}')
+else
+    # Fallback: parse from my.cnf or use default
+    if [[ -f /etc/my.cnf ]] && grep -q '^datadir' /etc/my.cnf; then
+        MYSQLDATADIR=$(grep '^datadir' /etc/my.cnf | awk -F'=' '{print $2}' | tr -d ' ')
+    else
+        MYSQLDATADIR='/var/lib/mysql'
+    fi
+    # Validate the datadir exists and looks like a MySQL data directory
+    if [[ ! -d "$MYSQLDATADIR" ]]; then
+        echo "Warning: Data directory $MYSQLDATADIR does not exist"
+        MYSQLDATADIR='/var/lib/mysql'
+    fi
+    # Check for presence of mysql system database or ibdata file as validation
+    if [[ -d "$MYSQLDATADIR" ]] && [[ ! -d "$MYSQLDATADIR/mysql" ]] && [[ ! -f "$MYSQLDATADIR/ibdata1" ]]; then
+        echo "Warning: $MYSQLDATADIR does not appear to be a valid MySQL data directory"
+    fi
+fi
 
 backupmsg105
 #mariadb104uninstall
 
 mariadb_upgrade_check_versionlock
 
-# shutdown existing mysql server
-echo
-echo "shut down existing MariaDB server for upgrade.."
-${ALIAS_MYSQL} -e "set global innodb_buffer_pool_dump_at_shutdown=0;"
-sleep 10
-echo "${ALIAS_MYSQL} -e \"SET GLOBAL innodb_fast_shutdown = 1;\""
-${ALIAS_MYSQL} -e "SET GLOBAL innodb_fast_shutdown = 1;"
-sleep 10
-systemctl stop mariadb
-echo
+# shutdown existing mysql server only if MariaDB is running
+if systemctl is-active mariadb >/dev/null 2>&1; then
+    echo
+    echo "shut down existing MariaDB server for upgrade.."
+    ${ALIAS_MYSQL} -e "set global innodb_buffer_pool_dump_at_shutdown=0;"
+    sleep 10
+    echo "${ALIAS_MYSQL} -e \"SET GLOBAL innodb_fast_shutdown = 1;\""
+    ${ALIAS_MYSQL} -e "SET GLOBAL innodb_fast_shutdown = 1;"
+    sleep 10
+    systemctl stop mariadb
+    echo
+else
+    echo
+    echo "MariaDB server not running, skipping shutdown..."
+    echo
+fi
 # move aside existing ib_logfile* files
 cd $MYSQLDATADIR
 ls -lah $MYSQLDATADIR
