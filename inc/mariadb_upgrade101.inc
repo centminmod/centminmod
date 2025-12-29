@@ -62,9 +62,17 @@ echo
 echo "checking mysql root password works in /root/.my.cnf"
 sleep 5
 echo "mysqladmin ver"
-mysqladmin ver
+# Check if mysqladmin command exists before running password check
+if ! command -v mysqladmin >/dev/null 2>&1; then
+    echo
+    echo "mysqladmin command not found - MariaDB-server may not be installed"
+    echo "Skipping password check, will attempt installation..."
+    CHECK_MYSQLPASS='0'
+else
+    mysqladmin ver
+    CHECK_MYSQLPASS=$?
+fi
 
-CHECK_MYSQLPASS=$?
 if [[ "$CHECK_MYSQLPASS" != '0' ]]; then
     echo
     echo "mysql root user password in /root/.my.cnf is not correct"
