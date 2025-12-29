@@ -376,6 +376,12 @@ echo "#####################################################"
 }
 
 mariadb105install() {
+    # MariaDB 10.5 is deprecated - always use archive.mariadb.org
+    # These variables must be set here since mariadb104uninstall() is skipped
+    # Fix added 2025-12-30: Variables were moved into mariadb104uninstall() but
+    # that function remains commented out, causing empty repo URLs
+    MDB_MIRROR_BASEURL='https://archive.mariadb.org/mariadb-10.5'
+    MDB_ARCHIVES_PUBKEY='https://supplychain.mariadb.com/MariaDB-Server-GPG-KEY'
 
     if command -v figlet >/dev/null 2>&1; then
         figlet -ckf standard "MariaDB 10.5.x Repo Setup"
@@ -1119,101 +1125,10 @@ fi # centos5 check
 
 }
 
-mariadbtenfourtotenfiveupgrade() {
-if [ -z "$OLDMARIADBVERS" ]; then
-MYSQLDATADIR=$(${ALIAS_MYSQLADMIN} var | grep 'datadir' | awk '{ print $4}')
-
-backupmsg105
-#mariadb104uninstall
-
-mariadb_upgrade_check_versionlock
-
-# shutdown existing mysql server
-echo
-echo "shut down existing MariaDB server for upgrade.."
-${ALIAS_MYSQL} -e "set global innodb_buffer_pool_dump_at_shutdown=0;"
-sleep 10
-echo "${ALIAS_MYSQL} -e \"SET GLOBAL innodb_fast_shutdown = 1;\""
-${ALIAS_MYSQL} -e "SET GLOBAL innodb_fast_shutdown = 1;"
-sleep 10
-systemctl stop mariadb
-echo
-# move aside existing ib_logfile* files
-cd $MYSQLDATADIR
-ls -lah $MYSQLDATADIR
-rm -rf ib_logfile0.gz ib_logfile1.gz
-mv ib_logfile0 ib_logfile0.bak
-mv ib_logfile1 ib_logfile1.bak
-echo
-
-#if [[ "$CENTOS_TEN" -eq '10' && "$(rpm -qa | grep mariadb | awk '/mariadb-server-utils/')" ]]; then
-#    remove_mariadb_ten_eleven_native_module
-if [[ "$CENTOS_EIGHT" -eq '8' && "$(rpm -qa | grep mariadb | awk '/mariadb-server-utils/')" ]]; then
-    remove_mariadb_ten_three_native_module
-else
-    OLDMARIADBSERVER=`rpm -qa | grep MariaDB | awk '/MariaDB-server/'`
-    OLDGALERA=`rpm -qa | grep galera | awk '/galera/'`
-    rpm -e $OLDMARIADBSERVER
-    rpm -e $OLDGALERA
-fi
-
-# MariaDB 10.5 client package includes mytop
-# client already so no longer need EPEL version
-yum -y remove mytop
-if [[ -f /etc/yum.repos.d/epel.repo && ! "$(grep 'mytop' /etc/yum.repos.d/epel.repo)" ]]; then
-  NEW_MYTOP_EXCLUDES=$(echo "$(grep '^exclude=' /etc/yum.repos.d/epel.repo) mytop")
-  sed -i "s|^exclude=.*|$NEW_MYTOP_EXCLUDES|" /etc/yum.repos.d/epel.repo
-fi
-if [[ -f /etc/yum.repos.d/rpmforge.repo && ! "$(grep 'mytop' /etc/yum.repos.d/rpmforge.repo)" ]]; then
-  NEW_MYTOP_EXCLUDES=$(echo "$(grep '^exclude=' /etc/yum.repos.d/rpmforge.repo) mytop")
-  sed -i "s|^exclude=.*|$NEW_MYTOP_EXCLUDES|" /etc/yum.repos.d/rpmforge.repo
-fi
-
-mariadb105install
-
-if [[ "1$CENTALTREPO_DISABLE" = [nN] ]]; then
-    DISABLECENTALTREPO=" --disablerepo=CentALT"
-else
-    DISABLECENTALTREPO=""
-fi # CENTALTREPO_DISABLE
-
-if [[ "$CENTALTREPO_DISABLE" = [nN] ]]; then
-# make sure MariaDB 5.5 is updated from only one repo
-echo ""
-if [[ -z "$(grep 'exclude=mariadb' /etc/yum.repos.d/centalt.repo)" ]]; then
-echo "exclude=mariadb*" >> /etc/yum.repos.d/centalt.repo
-fi
-fi # CENTALTREPO_DISABLE
-
-# exclude MariaDB Galera Server
-if [[ -z "$(grep 'exclude=MariaDB-Galera-server' /etc/yum.repos.d/mariadb.repo)" ]]; then
-echo "exclude=MariaDB-Galera-server" >> /etc/yum.repos.d/mariadb.repo
-fi
-
-if [ -f /etc/my.cnf ]; then
-cp /etc/my.cnf /etc/my.cnf-original_before_mariadb105upgrade
-fi
-
-echo ""
-    echo "*************************************************"
-cecho "MariaDB 10.5.x check available packages" $boldgreen
-cecho "yum -q list MariaDB-client MariaDB-common MariaDB-compat MariaDB-devel MariaDB-server MariaDB-shared --disablerepo=epel --disableplugin=priorities" $boldgreen
-    echo "*************************************************"
-echo ""
-time yum -q list MariaDB-client MariaDB-common MariaDB-compat MariaDB-devel MariaDB-server MariaDB-shared --disablerepo=epel --disableplugin=priorities
-
-    if command -v figlet >/dev/null 2>&1; then
-        figlet -ckf standard "MariaDB 10.5.x Install"
-    fi
-
-echo ""
-    echo "*************************************************"
-cecho "MariaDB 10.5.x YUM install..." $boldgreen
-cecho "yum -y install MariaDB-client MariaDB-common MariaDB-compat MariaDB-devel MariaDB-server MariaDB-shared --disablerepo=epel --disableplugin=priorities" $boldgreen
-    echo "*************************************************"
-echo ""
-time yum -y install MariaDB-client MariaDB-common MariaDB-compat MariaDB-devel MariaDB-server MariaDB-shared --disablerepo=epel --disableplugin=priorities
-
+# MariaDB 10.5 post-install steps
+# Called after yum install completes - handles my.cnf, mysql_upgrade, plugins, systemd, etc.
+# Extracted 2025-12-30: Allows reuse by auto-recovery function without code duplication
+mariadb105_postinstall() {
 \cp -af /etc/my.cnf /etc/my.cnf-newold-mariadb10-2
 echo ""
     echo "*************************************************"
@@ -1371,11 +1286,6 @@ if [[ "$mysqlrootset" == [yY] ]]; then
     ${ALIAS_MYSQL} -u root -p -e "INSTALL SONAME 'query_cache_info';"
     echo "${ALIAS_MYSQL} -u root -p -e \"INSTALL SONAME 'query_response_time';\""
     ${ALIAS_MYSQL} -u root -p -e "INSTALL SONAME 'query_response_time';"
-    # echo "------------------------------------------------"
-    # echo "Installing MariaDB 10 XtraDB Engine plugin"
-    # echo "------------------------------------------------"
-    # echo "${ALIAS_MYSQL} -u root -p -e \"INSTALL SONAME 'ha_xtradb';\""
-    # ${ALIAS_MYSQL} -u root -p -e "INSTALL SONAME 'ha_xtradb';"
 
     echo "${ALIAS_MYSQL} -u root -p -e \"SELECT * FROM mysql.plugin;\""
     ${ALIAS_MYSQL} -u root -p -e "SELECT * FROM mysql.plugin;"
@@ -1383,13 +1293,6 @@ if [[ "$mysqlrootset" == [yY] ]]; then
     ${ALIAS_MYSQL} -u root -p -e "SHOW PLUGINS;"
     echo "${ALIAS_MYSQL} -u root -p -e \"SHOW ENGINES;\""
     ${ALIAS_MYSQL} -u root -p -e "SHOW ENGINES;"
-
-    # echo "Enter MySQL root password when prompted"
-    # echo "or hit enter to continue"
-    # echo "mysql_upgrade -u root -p --force"
-    # mysql_upgrade -u root -p --force
-
-    # sed -i 's/innodb=ON/innodb=OFF/g' /etc/my.cnf
 else
     echo "mysql_upgrade --verbose"
     mysql_upgrade --verbose
@@ -1402,33 +1305,13 @@ else
     ${ALIAS_MYSQL} -e "INSTALL SONAME 'query_cache_info';"
     echo "${ALIAS_MYSQL} -e \"INSTALL SONAME 'query_response_time';\""
     ${ALIAS_MYSQL} -e "INSTALL SONAME 'query_response_time';"
-    # echo "------------------------------------------------"
-    # echo "Installing MariaDB 10 XtraDB Engine plugin"
-    # echo "------------------------------------------------"
-    # echo "${ALIAS_MYSQL} -e \"INSTALL SONAME 'ha_xtradb';\""
-    # ${ALIAS_MYSQL} -e "INSTALL SONAME 'ha_xtradb';"
     echo "${ALIAS_MYSQL} -t -e \"SELECT * FROM mysql.plugin;\""
     ${ALIAS_MYSQL} -t -e "SELECT * FROM mysql.plugin;"
     echo "${ALIAS_MYSQL} -t -e \"SHOW PLUGINS;\""
     ${ALIAS_MYSQL} -t -e "SHOW PLUGINS;"
     echo "${ALIAS_MYSQL} -t -e \"SHOW ENGINES;\""
     ${ALIAS_MYSQL} -t -e "SHOW ENGINES;"
-
- #    echo "mysql_upgrade --force"
-    # mysql_upgrade --force
-
-    # sed -i 's/innodb=ON/innodb=OFF/g' /etc/my.cnf
 fi
-
-#   echo "------------------------------------------------"
-#   echo "Enabling MariaDB 10 XtraDB Engine plugin"
-#   echo "------------------------------------------------"
-# sed -i 's/#plugin-load=ha_xtradb/plugin-load=ha_xtradb/g' /etc/my.cnf
-# sed -i 's/#ignore_builtin_innodb/ignore_builtin_innodb/g' /etc/my.cnf
-# sed -i 's/innodb_purge_threads=1/#innodb_purge_threads=1/g' /etc/my.cnf
-
-# sed -i 's/innodb_doublewrite = 1/#innodb_doublewrite = 1/g' /etc/my.cnf
-# sed -i 's/innodb_doublewrite=1/#innodb_doublewrite=1/g' /etc/my.cnf
 
 set_mariadb_mysqldump_charset
 
@@ -1517,6 +1400,188 @@ echo
             /usr/bin/sitestatus on
         fi
     fi
+}
+
+mariadbtenfourtotenfiveupgrade() {
+    # Auto-recovery detection for broken state from previous failed upgrade
+    # Added 2025-12-30: Detects broken repo with /yum/ prefix (missing https://)
+    # and MariaDB-server not installed, offers automatic recovery
+    local repo_file="/etc/yum.repos.d/mariadb.repo"
+    local broken_state=0
+
+    # Detection criteria: broken baseurl starts with /yum/ instead of https://
+    if [[ -f "$repo_file" ]]; then
+        local baseurl_line=$(grep "^baseurl" "$repo_file" 2>/dev/null | head -1)
+        if [[ "$baseurl_line" =~ ^baseurl[[:space:]]*=[[:space:]]*/yum/ ]]; then
+            broken_state=1
+        fi
+    fi
+
+    # Only trigger recovery if repo is broken AND MariaDB-server is NOT installed
+    if [[ "$broken_state" -eq 1 ]] && ! rpm -qa | grep -q "MariaDB-server"; then
+        echo
+        cecho "*************************************************" $boldred
+        cecho "DETECTED: Previous MariaDB upgrade failed!" $boldred
+        cecho "MariaDB-server is NOT installed but broken repo exists" $boldred
+        cecho "*************************************************" $boldred
+        echo
+        echo "Current mariadb.repo contents:"
+        cat "$repo_file"
+        echo
+
+        read -ep "Attempt automatic recovery to MariaDB 10.5? [y/n] " fix_broken
+
+        if [[ "$fix_broken" == [yY] ]]; then
+            echo
+            cecho "Starting automatic recovery..." $boldgreen
+
+            # Re-run install function (now has variables set at start)
+            mariadb105install
+
+            # exclude MariaDB Galera Server
+            if [[ -z "$(grep 'exclude=MariaDB-Galera-server' /etc/yum.repos.d/mariadb.repo)" ]]; then
+                echo "exclude=MariaDB-Galera-server" >> /etc/yum.repos.d/mariadb.repo
+            fi
+
+            # Restore ib_logfile backups if they exist
+            local datadir=$(grep "^datadir" /etc/my.cnf 2>/dev/null | awk -F= '{print $2}' | tr -d ' ')
+            datadir="${datadir:-/var/lib/mysql}"
+            if [[ -f "${datadir}/ib_logfile0.bak" && ! -f "${datadir}/ib_logfile0" ]]; then
+                echo "Restoring InnoDB log files from backup..."
+                mv "${datadir}/ib_logfile0.bak" "${datadir}/ib_logfile0"
+                mv "${datadir}/ib_logfile1.bak" "${datadir}/ib_logfile1"
+            fi
+
+            # Install packages
+            echo "*************************************************"
+            cecho "MariaDB 10.5.x YUM install (recovery)..." $boldgreen
+            echo "*************************************************"
+            time yum -y install MariaDB-client MariaDB-common MariaDB-compat MariaDB-devel MariaDB-server MariaDB-shared --disablerepo=epel --disableplugin=priorities
+
+            # Run post-install steps
+            mariadb105_postinstall
+
+            # Final cleanup
+            rm -rf /usr/bin/mysqlreload
+            echo "------------------------------------------------"
+            echo "MariaDB 10.5.x Recovery completed"
+            echo "------------------------------------------------"
+
+            if command -v figlet >/dev/null 2>&1; then
+                figlet -ckf standard "MariaDB 10.5.x Recovered"
+            fi
+
+            if systemctl is-active --quiet mariadb; then
+                cecho "Recovery complete! MariaDB 10.5 is now running." $boldgreen
+                return 0
+            else
+                cecho "ERROR: Recovery failed. Check logs." $boldred
+                return 1
+            fi
+        else
+            cecho "Aborting. Please manually fix the repository configuration." $boldyellow
+            exit 1
+        fi
+    fi
+
+    # Normal upgrade flow continues below
+if [ -z "$OLDMARIADBVERS" ]; then
+MYSQLDATADIR=$(${ALIAS_MYSQLADMIN} var | grep 'datadir' | awk '{ print $4}')
+
+backupmsg105
+#mariadb104uninstall
+
+mariadb_upgrade_check_versionlock
+
+# shutdown existing mysql server
+echo
+echo "shut down existing MariaDB server for upgrade.."
+${ALIAS_MYSQL} -e "set global innodb_buffer_pool_dump_at_shutdown=0;"
+sleep 10
+echo "${ALIAS_MYSQL} -e \"SET GLOBAL innodb_fast_shutdown = 1;\""
+${ALIAS_MYSQL} -e "SET GLOBAL innodb_fast_shutdown = 1;"
+sleep 10
+systemctl stop mariadb
+echo
+# move aside existing ib_logfile* files
+cd $MYSQLDATADIR
+ls -lah $MYSQLDATADIR
+rm -rf ib_logfile0.gz ib_logfile1.gz
+mv ib_logfile0 ib_logfile0.bak
+mv ib_logfile1 ib_logfile1.bak
+echo
+
+#if [[ "$CENTOS_TEN" -eq '10' && "$(rpm -qa | grep mariadb | awk '/mariadb-server-utils/')" ]]; then
+#    remove_mariadb_ten_eleven_native_module
+if [[ "$CENTOS_EIGHT" -eq '8' && "$(rpm -qa | grep mariadb | awk '/mariadb-server-utils/')" ]]; then
+    remove_mariadb_ten_three_native_module
+else
+    OLDMARIADBSERVER=`rpm -qa | grep MariaDB | awk '/MariaDB-server/'`
+    OLDGALERA=`rpm -qa | grep galera | awk '/galera/'`
+    rpm -e $OLDMARIADBSERVER
+    rpm -e $OLDGALERA
+fi
+
+# MariaDB 10.5 client package includes mytop
+# client already so no longer need EPEL version
+yum -y remove mytop
+if [[ -f /etc/yum.repos.d/epel.repo && ! "$(grep 'mytop' /etc/yum.repos.d/epel.repo)" ]]; then
+  NEW_MYTOP_EXCLUDES=$(echo "$(grep '^exclude=' /etc/yum.repos.d/epel.repo) mytop")
+  sed -i "s|^exclude=.*|$NEW_MYTOP_EXCLUDES|" /etc/yum.repos.d/epel.repo
+fi
+if [[ -f /etc/yum.repos.d/rpmforge.repo && ! "$(grep 'mytop' /etc/yum.repos.d/rpmforge.repo)" ]]; then
+  NEW_MYTOP_EXCLUDES=$(echo "$(grep '^exclude=' /etc/yum.repos.d/rpmforge.repo) mytop")
+  sed -i "s|^exclude=.*|$NEW_MYTOP_EXCLUDES|" /etc/yum.repos.d/rpmforge.repo
+fi
+
+mariadb105install
+
+if [[ "1$CENTALTREPO_DISABLE" = [nN] ]]; then
+    DISABLECENTALTREPO=" --disablerepo=CentALT"
+else
+    DISABLECENTALTREPO=""
+fi # CENTALTREPO_DISABLE
+
+if [[ "$CENTALTREPO_DISABLE" = [nN] ]]; then
+# make sure MariaDB 5.5 is updated from only one repo
+echo ""
+if [[ -z "$(grep 'exclude=mariadb' /etc/yum.repos.d/centalt.repo)" ]]; then
+echo "exclude=mariadb*" >> /etc/yum.repos.d/centalt.repo
+fi
+fi # CENTALTREPO_DISABLE
+
+# exclude MariaDB Galera Server
+if [[ -z "$(grep 'exclude=MariaDB-Galera-server' /etc/yum.repos.d/mariadb.repo)" ]]; then
+echo "exclude=MariaDB-Galera-server" >> /etc/yum.repos.d/mariadb.repo
+fi
+
+if [ -f /etc/my.cnf ]; then
+cp /etc/my.cnf /etc/my.cnf-original_before_mariadb105upgrade
+fi
+
+echo ""
+    echo "*************************************************"
+cecho "MariaDB 10.5.x check available packages" $boldgreen
+cecho "yum -q list MariaDB-client MariaDB-common MariaDB-compat MariaDB-devel MariaDB-server MariaDB-shared --disablerepo=epel --disableplugin=priorities" $boldgreen
+    echo "*************************************************"
+echo ""
+time yum -q list MariaDB-client MariaDB-common MariaDB-compat MariaDB-devel MariaDB-server MariaDB-shared --disablerepo=epel --disableplugin=priorities
+
+    if command -v figlet >/dev/null 2>&1; then
+        figlet -ckf standard "MariaDB 10.5.x Install"
+    fi
+
+echo ""
+    echo "*************************************************"
+cecho "MariaDB 10.5.x YUM install..." $boldgreen
+cecho "yum -y install MariaDB-client MariaDB-common MariaDB-compat MariaDB-devel MariaDB-server MariaDB-shared --disablerepo=epel --disableplugin=priorities" $boldgreen
+    echo "*************************************************"
+echo ""
+time yum -y install MariaDB-client MariaDB-common MariaDB-compat MariaDB-devel MariaDB-server MariaDB-shared --disablerepo=epel --disableplugin=priorities
+
+# Call extracted post-install function - 2025-12-30 refactoring
+# Replaces ~300 lines of inline code with reusable function
+mariadb105_postinstall
 
 # remove mysqlreload cmd shortcut
 rm -rf /usr/bin/mysqlreload

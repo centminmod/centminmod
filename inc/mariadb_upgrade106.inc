@@ -452,6 +452,13 @@ echo "#####################################################"
 
 mariadb106install() {
 
+    # MariaDB 10.6 uses mirror.mariadb.org or yum.mariadb.org
+    # These variables must be set here since mariadb105uninstall() is skipped
+    # Fix added 2025-12-30: Variables were moved into mariadb105uninstall() but
+    # that function remains commented out, causing empty repo URLs
+    MDB_MIRROR_BASEURL='https://yum.mariadb.org'
+    MDB_ARCHIVES_PUBKEY='https://supplychain.mariadb.com/MariaDB-Server-GPG-KEY'
+
     if command -v figlet >/dev/null 2>&1; then
         figlet -ckf standard "MariaDB 10.6.x Repo Setup"
     fi
@@ -1185,101 +1192,10 @@ fi # centos5 check
 
 }
 
-mariadbtenfivetotensixupgrade() {
-if [ -z "$OLDMARIADBVERS" ]; then
-MYSQLDATADIR=$(${ALIAS_MYSQLADMIN} var | grep 'datadir' | awk '{ print $4}')
-
-backupmsg106
-#mariadb105uninstall
-
-mariadb_upgrade_check_versionlock
-
-# shutdown existing mysql server
-echo
-echo "shut down existing MariaDB server for upgrade.."
-${ALIAS_MYSQL} -e "set global innodb_buffer_pool_dump_at_shutdown=0;"
-sleep 10
-echo "${ALIAS_MYSQL} -e \"SET GLOBAL innodb_fast_shutdown = 1;\""
-${ALIAS_MYSQL} -e "SET GLOBAL innodb_fast_shutdown = 1;"
-sleep 10
-systemctl stop mariadb
-echo
-# move aside existing ib_logfile* files
-cd $MYSQLDATADIR
-ls -lah $MYSQLDATADIR
-rm -rf ib_logfile0.gz ib_logfile1.gz
-mv ib_logfile0 ib_logfile0.bak
-mv ib_logfile1 ib_logfile1.bak
-echo
-
-#if [[ "$CENTOS_TEN" -eq '10' && "$(rpm -qa | grep mariadb | awk '/mariadb-server-utils/')" ]]; then
-#    remove_mariadb_ten_eleven_native_module
-if [[ "$CENTOS_EIGHT" -eq '8' && "$(rpm -qa | grep mariadb | awk '/mariadb-server-utils/')" ]]; then
-    remove_mariadb_ten_three_native_module
-else
-    OLDMARIADBSERVER=`rpm -qa | grep MariaDB | awk '/MariaDB-server/'`
-    OLDGALERA=`rpm -qa | grep galera | awk '/galera/'`
-    rpm -e $OLDMARIADBSERVER
-    rpm -e $OLDGALERA
-fi
-
-# MariaDB 10.6 client package includes mytop
-# client already so no longer need EPEL version
-yum -y remove mytop
-if [[ -f /etc/yum.repos.d/epel.repo && ! "$(grep 'mytop' /etc/yum.repos.d/epel.repo)" ]]; then
-  NEW_MYTOP_EXCLUDES=$(echo "$(grep '^exclude=' /etc/yum.repos.d/epel.repo) mytop")
-  sed -i "s|^exclude=.*|$NEW_MYTOP_EXCLUDES|" /etc/yum.repos.d/epel.repo
-fi
-if [[ -f /etc/yum.repos.d/rpmforge.repo && ! "$(grep 'mytop' /etc/yum.repos.d/rpmforge.repo)" ]]; then
-  NEW_MYTOP_EXCLUDES=$(echo "$(grep '^exclude=' /etc/yum.repos.d/rpmforge.repo) mytop")
-  sed -i "s|^exclude=.*|$NEW_MYTOP_EXCLUDES|" /etc/yum.repos.d/rpmforge.repo
-fi
-
-mariadb106install
-
-if [[ "1$CENTALTREPO_DISABLE" = [nN] ]]; then
-    DISABLECENTALTREPO=" --disablerepo=CentALT"
-else
-    DISABLECENTALTREPO=""
-fi # CENTALTREPO_DISABLE
-
-if [[ "$CENTALTREPO_DISABLE" = [nN] ]]; then
-# make sure MariaDB 5.5 is updated from only one repo
-echo ""
-if [[ -z "$(grep 'exclude=mariadb' /etc/yum.repos.d/centalt.repo)" ]]; then
-echo "exclude=mariadb*" >> /etc/yum.repos.d/centalt.repo
-fi
-fi # CENTALTREPO_DISABLE
-
-# exclude MariaDB Galera Server
-if [[ -z "$(grep 'exclude=MariaDB-Galera-server' /etc/yum.repos.d/mariadb.repo)" ]]; then
-echo "exclude=MariaDB-Galera-server" >> /etc/yum.repos.d/mariadb.repo
-fi
-
-if [ -f /etc/my.cnf ]; then
-cp /etc/my.cnf /etc/my.cnf-original_before_mariadb106upgrade
-fi
-
-echo ""
-    echo "*************************************************"
-cecho "MariaDB 10.6.x check available packages" $boldgreen
-cecho "yum -q list MariaDB-client MariaDB-common MariaDB-compat MariaDB-devel MariaDB-server MariaDB-shared --disablerepo=epel --disableplugin=priorities" $boldgreen
-    echo "*************************************************"
-echo ""
-time yum -q list MariaDB-client MariaDB-common MariaDB-compat MariaDB-devel MariaDB-server MariaDB-shared --disablerepo=epel --disableplugin=priorities
-
-    if command -v figlet >/dev/null 2>&1; then
-        figlet -ckf standard "MariaDB 10.6.x Install"
-    fi
-
-echo ""
-    echo "*************************************************"
-cecho "MariaDB 10.6.x YUM install..." $boldgreen
-cecho "yum -y install MariaDB-client MariaDB-common MariaDB-compat MariaDB-devel MariaDB-server MariaDB-shared --disablerepo=epel --disableplugin=priorities" $boldgreen
-    echo "*************************************************"
-echo ""
-time yum -y install MariaDB-client MariaDB-common MariaDB-compat MariaDB-devel MariaDB-server MariaDB-shared --disablerepo=epel --disableplugin=priorities
-
+# Extracted post-install function - 2025-12-30 refactoring
+# Contains all post-yum-install steps for MariaDB 10.6 upgrade
+# Replaces ~300 lines of inline code with reusable function
+mariadb106_postinstall() {
 \cp -af /etc/my.cnf /etc/my.cnf-newold-mariadb10-2
 echo ""
     echo "*************************************************"
@@ -1587,6 +1503,168 @@ echo
             /usr/bin/sitestatus on
         fi
     fi
+}
+
+mariadbtenfivetotensixupgrade() {
+# Auto-recovery detection for broken repository URLs - 2025-12-30
+# Detects if mariadb.repo has broken baseurl (e.g., /yum/ prefix without https://)
+# and offers to fix it before proceeding with upgrade
+if [ -f /etc/yum.repos.d/mariadb.repo ]; then
+    CURRENT_BASEURL=$(grep -E '^baseurl\s*=' /etc/yum.repos.d/mariadb.repo | head -1 | sed 's/baseurl\s*=\s*//')
+    # Check for broken URL pattern: starts with /yum/ or is empty or doesn't start with http
+    if [[ "$CURRENT_BASEURL" =~ ^/yum/ ]] || [[ -z "$CURRENT_BASEURL" ]] || [[ ! "$CURRENT_BASEURL" =~ ^https?:// ]]; then
+        echo
+        echo "*************************************************"
+        cecho "WARNING: Broken MariaDB repository detected!" $boldyellow
+        echo "*************************************************"
+        echo "Current baseurl: $CURRENT_BASEURL"
+        echo
+        echo "This appears to be a corrupted repository configuration."
+        echo "The upgrade cannot proceed with an invalid repository URL."
+        echo
+        read -ep "Would you like to auto-fix the repository configuration? [y/n] " fix_repo
+        if [[ "$fix_repo" == [yY] ]]; then
+            echo
+            echo "Fixing repository configuration..."
+            # Set default mirror URL for recovery
+            MDB_MIRROR_BASEURL='https://yum.mariadb.org'
+            MDB_REPO_VER='10.6'
+            # Determine OS architecture
+            if [[ "$CENTOS_NINE" = '9' && "$(uname -m)" == 'aarch64' ]]; then
+                os_arch="centos9-aarch64"
+            elif [[ "$CENTOS_NINE" = '9' && "$(uname -m)" == 'x86_64' ]]; then
+                os_arch="centos9-amd64"
+            elif [[ "$CENTOS_EIGHT" = '8' && "$(uname -m)" == 'aarch64' ]]; then
+                os_arch="centos8-aarch64"
+            elif [[ "$CENTOS_EIGHT" = '8' && "$(uname -m)" == 'x86_64' ]]; then
+                os_arch="centos8-amd64"
+            elif [[ "$CENTOS_SEVEN" = '7' && "$(uname -m)" == 'aarch64' ]]; then
+                os_arch="centos7-aarch64"
+            elif [[ "$CENTOS_SEVEN" = '7' && "$(uname -m)" == 'x86_64' ]]; then
+                os_arch="centos7-amd64"
+            else
+                os_arch="centos7-amd64"
+            fi
+            FIXED_BASEURL="${MDB_MIRROR_BASEURL}/${MDB_REPO_VER}/${os_arch}"
+            # Backup and fix the repo file
+            cp /etc/yum.repos.d/mariadb.repo /etc/yum.repos.d/mariadb.repo.broken-$(date +%Y%m%d-%H%M%S)
+            sed -i "s|^baseurl\s*=.*|baseurl = ${FIXED_BASEURL}|" /etc/yum.repos.d/mariadb.repo
+            echo "Repository fixed. New baseurl: ${FIXED_BASEURL}"
+            echo
+            # Verify the fix
+            yum clean all
+            echo "Testing repository access..."
+            if yum -q list available MariaDB-server --disablerepo=epel 2>/dev/null; then
+                cecho "Repository fix successful!" $boldgreen
+            else
+                cecho "WARNING: Repository still not accessible. Manual intervention may be required." $boldyellow
+            fi
+            echo
+        else
+            echo
+            cecho "Aborting MariaDB 10.6.x upgrade due to broken repository." $boldyellow
+            exit 1
+        fi
+    fi
+fi
+
+if [ -z "$OLDMARIADBVERS" ]; then
+MYSQLDATADIR=$(${ALIAS_MYSQLADMIN} var | grep 'datadir' | awk '{ print $4}')
+
+backupmsg106
+#mariadb105uninstall
+
+mariadb_upgrade_check_versionlock
+
+# shutdown existing mysql server
+echo
+echo "shut down existing MariaDB server for upgrade.."
+${ALIAS_MYSQL} -e "set global innodb_buffer_pool_dump_at_shutdown=0;"
+sleep 10
+echo "${ALIAS_MYSQL} -e \"SET GLOBAL innodb_fast_shutdown = 1;\""
+${ALIAS_MYSQL} -e "SET GLOBAL innodb_fast_shutdown = 1;"
+sleep 10
+systemctl stop mariadb
+echo
+# move aside existing ib_logfile* files
+cd $MYSQLDATADIR
+ls -lah $MYSQLDATADIR
+rm -rf ib_logfile0.gz ib_logfile1.gz
+mv ib_logfile0 ib_logfile0.bak
+mv ib_logfile1 ib_logfile1.bak
+echo
+
+#if [[ "$CENTOS_TEN" -eq '10' && "$(rpm -qa | grep mariadb | awk '/mariadb-server-utils/')" ]]; then
+#    remove_mariadb_ten_eleven_native_module
+if [[ "$CENTOS_EIGHT" -eq '8' && "$(rpm -qa | grep mariadb | awk '/mariadb-server-utils/')" ]]; then
+    remove_mariadb_ten_three_native_module
+else
+    OLDMARIADBSERVER=`rpm -qa | grep MariaDB | awk '/MariaDB-server/'`
+    OLDGALERA=`rpm -qa | grep galera | awk '/galera/'`
+    rpm -e $OLDMARIADBSERVER
+    rpm -e $OLDGALERA
+fi
+
+# MariaDB 10.6 client package includes mytop
+# client already so no longer need EPEL version
+yum -y remove mytop
+if [[ -f /etc/yum.repos.d/epel.repo && ! "$(grep 'mytop' /etc/yum.repos.d/epel.repo)" ]]; then
+  NEW_MYTOP_EXCLUDES=$(echo "$(grep '^exclude=' /etc/yum.repos.d/epel.repo) mytop")
+  sed -i "s|^exclude=.*|$NEW_MYTOP_EXCLUDES|" /etc/yum.repos.d/epel.repo
+fi
+if [[ -f /etc/yum.repos.d/rpmforge.repo && ! "$(grep 'mytop' /etc/yum.repos.d/rpmforge.repo)" ]]; then
+  NEW_MYTOP_EXCLUDES=$(echo "$(grep '^exclude=' /etc/yum.repos.d/rpmforge.repo) mytop")
+  sed -i "s|^exclude=.*|$NEW_MYTOP_EXCLUDES|" /etc/yum.repos.d/rpmforge.repo
+fi
+
+mariadb106install
+
+if [[ "1$CENTALTREPO_DISABLE" = [nN] ]]; then
+    DISABLECENTALTREPO=" --disablerepo=CentALT"
+else
+    DISABLECENTALTREPO=""
+fi # CENTALTREPO_DISABLE
+
+if [[ "$CENTALTREPO_DISABLE" = [nN] ]]; then
+# make sure MariaDB 5.5 is updated from only one repo
+echo ""
+if [[ -z "$(grep 'exclude=mariadb' /etc/yum.repos.d/centalt.repo)" ]]; then
+echo "exclude=mariadb*" >> /etc/yum.repos.d/centalt.repo
+fi
+fi # CENTALTREPO_DISABLE
+
+# exclude MariaDB Galera Server
+if [[ -z "$(grep 'exclude=MariaDB-Galera-server' /etc/yum.repos.d/mariadb.repo)" ]]; then
+echo "exclude=MariaDB-Galera-server" >> /etc/yum.repos.d/mariadb.repo
+fi
+
+if [ -f /etc/my.cnf ]; then
+cp /etc/my.cnf /etc/my.cnf-original_before_mariadb106upgrade
+fi
+
+echo ""
+    echo "*************************************************"
+cecho "MariaDB 10.6.x check available packages" $boldgreen
+cecho "yum -q list MariaDB-client MariaDB-common MariaDB-compat MariaDB-devel MariaDB-server MariaDB-shared --disablerepo=epel --disableplugin=priorities" $boldgreen
+    echo "*************************************************"
+echo ""
+time yum -q list MariaDB-client MariaDB-common MariaDB-compat MariaDB-devel MariaDB-server MariaDB-shared --disablerepo=epel --disableplugin=priorities
+
+    if command -v figlet >/dev/null 2>&1; then
+        figlet -ckf standard "MariaDB 10.6.x Install"
+    fi
+
+echo ""
+    echo "*************************************************"
+cecho "MariaDB 10.6.x YUM install..." $boldgreen
+cecho "yum -y install MariaDB-client MariaDB-common MariaDB-compat MariaDB-devel MariaDB-server MariaDB-shared --disablerepo=epel --disableplugin=priorities" $boldgreen
+    echo "*************************************************"
+echo ""
+time yum -y install MariaDB-client MariaDB-common MariaDB-compat MariaDB-devel MariaDB-server MariaDB-shared --disablerepo=epel --disableplugin=priorities
+
+# Call extracted post-install function - 2025-12-30 refactoring
+# Replaces ~300 lines of inline code with reusable function
+mariadb106_postinstall
 
 # remove mysqlreload cmd shortcut
 rm -rf /usr/bin/mysqlreload
