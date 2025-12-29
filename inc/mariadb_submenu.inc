@@ -500,7 +500,7 @@ centminlog
   # Check for broken repo state from failed upgrade - bypass version check
   if [[ -z "$MARIADBVERCHECK" ]] && [[ -f /etc/yum.repos.d/mariadb.repo ]]; then
     CURRENT_BASEURL=$(grep -E '^baseurl\s*=' /etc/yum.repos.d/mariadb.repo 2>/dev/null | head -1 | sed 's/baseurl\s*=\s*//')
-    if [[ "$CURRENT_BASEURL" =~ ^/yum/ ]] || [[ -z "$CURRENT_BASEURL" ]] || [[ ! "$CURRENT_BASEURL" =~ ^https?:// ]]; then
+    if [[ "$CURRENT_BASEURL" =~ ^/yum/ ]] || [[ -z "$CURRENT_BASEURL" ]] || [[ ! "$CURRENT_BASEURL" =~ ^https?:// ]] || [[ "$CURRENT_BASEURL" =~ \.org//|\.com// ]]; then
       echo ""
       cecho "Detected broken MariaDB repository from failed upgrade!" $boldred
       cecho "MariaDB-server is not installed. Attempting recovery to 10.4..." $boldyellow
@@ -561,7 +561,7 @@ centminlog
   # Check for broken repo state from failed upgrade - bypass version check
   if [[ -z "$MARIADBVERCHECK" ]] && [[ -f /etc/yum.repos.d/mariadb.repo ]]; then
     CURRENT_BASEURL=$(grep -E '^baseurl\s*=' /etc/yum.repos.d/mariadb.repo 2>/dev/null | head -1 | sed 's/baseurl\s*=\s*//')
-    if [[ "$CURRENT_BASEURL" =~ ^/yum/ ]] || [[ -z "$CURRENT_BASEURL" ]] || [[ ! "$CURRENT_BASEURL" =~ ^https?:// ]]; then
+    if [[ "$CURRENT_BASEURL" =~ ^/yum/ ]] || [[ -z "$CURRENT_BASEURL" ]] || [[ ! "$CURRENT_BASEURL" =~ ^https?:// ]] || [[ "$CURRENT_BASEURL" =~ \.org//|\.com// ]]; then
       echo ""
       cecho "Detected broken MariaDB repository from failed upgrade!" $boldred
       cecho "MariaDB-server is not installed. Attempting recovery to 10.5..." $boldyellow
@@ -622,7 +622,7 @@ centminlog
   # Check for broken repo state from failed upgrade - bypass version check
   if [[ -z "$MARIADBVERCHECK" ]] && [[ -f /etc/yum.repos.d/mariadb.repo ]]; then
     CURRENT_BASEURL=$(grep -E '^baseurl\s*=' /etc/yum.repos.d/mariadb.repo 2>/dev/null | head -1 | sed 's/baseurl\s*=\s*//')
-    if [[ "$CURRENT_BASEURL" =~ ^/yum/ ]] || [[ -z "$CURRENT_BASEURL" ]] || [[ ! "$CURRENT_BASEURL" =~ ^https?:// ]]; then
+    if [[ "$CURRENT_BASEURL" =~ ^/yum/ ]] || [[ -z "$CURRENT_BASEURL" ]] || [[ ! "$CURRENT_BASEURL" =~ ^https?:// ]] || [[ "$CURRENT_BASEURL" =~ \.org//|\.com// ]]; then
       echo ""
       cecho "Detected broken MariaDB repository from failed upgrade!" $boldred
       cecho "MariaDB-server is not installed. Attempting recovery to 10.6..." $boldyellow
@@ -683,7 +683,7 @@ centminlog
   # Check for broken repo state from failed upgrade - bypass version check
   if [[ -z "$MARIADBVERCHECK" ]] && [[ -f /etc/yum.repos.d/mariadb.repo ]]; then
     CURRENT_BASEURL=$(grep -E '^baseurl\s*=' /etc/yum.repos.d/mariadb.repo 2>/dev/null | head -1 | sed 's/baseurl\s*=\s*//')
-    if [[ "$CURRENT_BASEURL" =~ ^/yum/ ]] || [[ -z "$CURRENT_BASEURL" ]] || [[ ! "$CURRENT_BASEURL" =~ ^https?:// ]]; then
+    if [[ "$CURRENT_BASEURL" =~ ^/yum/ ]] || [[ -z "$CURRENT_BASEURL" ]] || [[ ! "$CURRENT_BASEURL" =~ ^https?:// ]] || [[ "$CURRENT_BASEURL" =~ \.org//|\.com// ]]; then
       echo ""
       cecho "Detected broken MariaDB repository from failed upgrade!" $boldred
       cecho "MariaDB-server is not installed. Attempting recovery to 10.11..." $boldyellow
@@ -744,7 +744,7 @@ centminlog
   # Check for broken repo state from failed upgrade - bypass version check
   if [[ -z "$MARIADBVERCHECK" ]] && [[ -f /etc/yum.repos.d/mariadb.repo ]]; then
     CURRENT_BASEURL=$(grep -E '^baseurl\s*=' /etc/yum.repos.d/mariadb.repo 2>/dev/null | head -1 | sed 's/baseurl\s*=\s*//')
-    if [[ "$CURRENT_BASEURL" =~ ^/yum/ ]] || [[ -z "$CURRENT_BASEURL" ]] || [[ ! "$CURRENT_BASEURL" =~ ^https?:// ]]; then
+    if [[ "$CURRENT_BASEURL" =~ ^/yum/ ]] || [[ -z "$CURRENT_BASEURL" ]] || [[ ! "$CURRENT_BASEURL" =~ ^https?:// ]] || [[ "$CURRENT_BASEURL" =~ \.org//|\.com// ]]; then
       echo ""
       cecho "Detected broken MariaDB repository from failed upgrade!" $boldred
       cecho "MariaDB-server is not installed. Attempting recovery to 11.4..." $boldyellow
@@ -805,7 +805,7 @@ centminlog
   # Check for broken repo state from failed upgrade - bypass version check
   if [[ -z "$MARIADBVERCHECK" ]] && [[ -f /etc/yum.repos.d/mariadb.repo ]]; then
     CURRENT_BASEURL=$(grep -E '^baseurl\s*=' /etc/yum.repos.d/mariadb.repo 2>/dev/null | head -1 | sed 's/baseurl\s*=\s*//')
-    if [[ "$CURRENT_BASEURL" =~ ^/yum/ ]] || [[ -z "$CURRENT_BASEURL" ]] || [[ ! "$CURRENT_BASEURL" =~ ^https?:// ]]; then
+    if [[ "$CURRENT_BASEURL" =~ ^/yum/ ]] || [[ -z "$CURRENT_BASEURL" ]] || [[ ! "$CURRENT_BASEURL" =~ ^https?:// ]] || [[ "$CURRENT_BASEURL" =~ \.org//|\.com// ]]; then
       echo ""
       cecho "Detected broken MariaDB repository from failed upgrade!" $boldred
       cecho "MariaDB-server is not installed. Attempting recovery to 11.8..." $boldyellow
@@ -871,7 +871,7 @@ centminlog
   # Check for broken repo state from failed upgrade - bypass version check
   if [[ -z "$MARIADBVERCHECK" ]] && [[ -f /etc/yum.repos.d/mariadb.repo ]]; then
     CURRENT_BASEURL=$(grep -E '^baseurl\s*=' /etc/yum.repos.d/mariadb.repo 2>/dev/null | head -1 | sed 's/baseurl\s*=\s*//')
-    if [[ "$CURRENT_BASEURL" =~ ^/yum/ ]] || [[ -z "$CURRENT_BASEURL" ]] || [[ ! "$CURRENT_BASEURL" =~ ^https?:// ]]; then
+    if [[ "$CURRENT_BASEURL" =~ ^/yum/ ]] || [[ -z "$CURRENT_BASEURL" ]] || [[ ! "$CURRENT_BASEURL" =~ ^https?:// ]] || [[ "$CURRENT_BASEURL" =~ \.org//|\.com// ]]; then
       echo ""
       cecho "Detected broken MariaDB repository from failed upgrade!" $boldred
       cecho "MariaDB-server is not installed. Attempting recovery to 11.4..." $boldyellow
@@ -936,7 +936,7 @@ centminlog
   # Check for broken repo state from failed upgrade - bypass version check
   if [[ -z "$MARIADBVERCHECK" ]] && [[ -f /etc/yum.repos.d/mariadb.repo ]]; then
     CURRENT_BASEURL=$(grep -E '^baseurl\s*=' /etc/yum.repos.d/mariadb.repo 2>/dev/null | head -1 | sed 's/baseurl\s*=\s*//')
-    if [[ "$CURRENT_BASEURL" =~ ^/yum/ ]] || [[ -z "$CURRENT_BASEURL" ]] || [[ ! "$CURRENT_BASEURL" =~ ^https?:// ]]; then
+    if [[ "$CURRENT_BASEURL" =~ ^/yum/ ]] || [[ -z "$CURRENT_BASEURL" ]] || [[ ! "$CURRENT_BASEURL" =~ ^https?:// ]] || [[ "$CURRENT_BASEURL" =~ \.org//|\.com// ]]; then
       echo ""
       cecho "Detected broken MariaDB repository from failed upgrade!" $boldred
       cecho "MariaDB-server is not installed. Attempting recovery to 11.8..." $boldyellow
@@ -1002,7 +1002,7 @@ centminlog
   # Check for broken repo state from failed upgrade - bypass version check
   if [[ -z "$MARIADBVERCHECK" ]] && [[ -f /etc/yum.repos.d/mariadb.repo ]]; then
     CURRENT_BASEURL=$(grep -E '^baseurl\s*=' /etc/yum.repos.d/mariadb.repo 2>/dev/null | head -1 | sed 's/baseurl\s*=\s*//')
-    if [[ "$CURRENT_BASEURL" =~ ^/yum/ ]] || [[ -z "$CURRENT_BASEURL" ]] || [[ ! "$CURRENT_BASEURL" =~ ^https?:// ]]; then
+    if [[ "$CURRENT_BASEURL" =~ ^/yum/ ]] || [[ -z "$CURRENT_BASEURL" ]] || [[ ! "$CURRENT_BASEURL" =~ ^https?:// ]] || [[ "$CURRENT_BASEURL" =~ \.org//|\.com// ]]; then
       echo ""
       cecho "Detected broken MariaDB repository from failed upgrade!" $boldred
       cecho "MariaDB-server is not installed. Attempting recovery to 11.8..." $boldyellow

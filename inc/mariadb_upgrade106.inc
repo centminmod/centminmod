@@ -457,6 +457,7 @@ mariadb106install() {
     # Fix added 2025-12-30: Variables were moved into mariadb105uninstall() but
     # that function remains commented out, causing empty repo URLs
     MDB_MIRROR_BASEURL='https://yum.mariadb.org'
+    MDB_REPO_VER='10.6'
     MDB_ARCHIVES_PUBKEY='https://supplychain.mariadb.com/MariaDB-Server-GPG-KEY'
 
     if command -v figlet >/dev/null 2>&1; then
