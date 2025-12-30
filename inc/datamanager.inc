@@ -389,6 +389,23 @@ done
 }
 
 #######################################################################################
+# Prompt for OVH/Cloud VPS sudo user mode
+# Used when cloud provider disables root SSH login by default
+prompt_cloud_vps_mode() {
+    read -ep "Is this an OVH/cloud VPS with root login disabled? [y/n]: " is_cloud_vps
+    if [[ "$is_cloud_vps" = [yY] ]]; then
+        CLOUD_VPS_MODE='y'
+        read -ep "Sudo username (e.g., almalinux, rocky, cloud-user, opc): " CLOUD_SUDO_USER
+        read -sp "Sudo user password: " CLOUD_SUDO_PASS
+        echo
+    else
+        CLOUD_VPS_MODE='n'
+        CLOUD_SUDO_USER=''
+        CLOUD_SUDO_PASS=''
+    fi
+}
+
+#######################################################################################
 ssh_keys_submenu() {
 while :
 do
@@ -408,10 +425,11 @@ do
   cecho "6).   Delete Existing SSH Key For Remote Host" $boldgreen
   cecho "7).   Export Existing SSH Key" $boldgreen
   cecho "8).   Backup All Existing SSH Keys" $boldgreen
-  cecho "9).   Back to Main menu" $boldgreen
+  cecho "9).   Enable Root Login on Remote OVH/Cloud VPS" $boldgreen
+  cecho "10).  Back to Main menu" $boldgreen
   cecho "--------------------------------------------------------------" $boldyellow
 
-  read -ep "Enter option [ 1 - 9 ] " sshkeys_menu_opt
+  read -ep "Enter option [ 1 - 10 ] " sshkeys_menu_opt
   cecho "--------------------------------------------------------------" $boldyellow
 
 #########################################################
@@ -494,7 +512,7 @@ case "$sshkeys_menu_opt" in
     echo
     echo "Create New SSH Key For Remote Host"
     echo
-    
+
     while true; do
       # Prompt user for required input
       read -ep "Key type (rsa, ecdsa, ed25519): " -i "ed25519" keytype
@@ -502,7 +520,11 @@ case "$sshkeys_menu_opt" in
       read -ep "Remote SSH port: " remoteport
       read -ep "Remote SSH username: " remoteuser
       read -ep "Key comment (unique identifier): " keycomment
-      read -ep "Remote SSH password (optional, leave empty for manual password entry): " remotessh_password
+      read -sp "Remote SSH password (optional, leave empty for manual password entry): " remotessh_password
+      echo
+
+      # Cloud VPS detection for OVH/providers that disable root login
+      prompt_cloud_vps_mode
 
       echo "Please confirm the following information:"
       echo "Key type: $keytype"
@@ -511,12 +533,18 @@ case "$sshkeys_menu_opt" in
       echo "Remote SSH username: $remoteuser"
       echo "Key comment: $keycomment"
       echo "Remote SSH password: ${remotessh_password:-Not provided}"
+      if [[ "$CLOUD_VPS_MODE" = 'y' ]]; then
+        echo "Cloud VPS mode: enabled (sudo user: $CLOUD_SUDO_USER)"
+      fi
 
       read -ep "Is the above information correct? [y/n/exit]: " confirm_input
 
       case "$confirm_input" in
         [Yy]* )
-          if [ -z "$remotessh_password" ]; then
+          if [[ "$CLOUD_VPS_MODE" = 'y' ]]; then
+            # Call keygen.sh with sudo user parameters for cloud VPS
+            "$SCRIPT_DIR/datamanagement/keygen.sh" gen "$keytype" "$remoteip" "$remoteport" "$remoteuser" "$keycomment" "$remotessh_password" "" "$CLOUD_SUDO_USER" "$CLOUD_SUDO_PASS"
+          elif [ -z "$remotessh_password" ]; then
             # Call keygen.sh without remotessh_password
             "$SCRIPT_DIR/datamanagement/keygen.sh" gen "$keytype" "$remoteip" "$remoteport" "$remoteuser" "$keycomment"
           else
@@ -572,7 +600,11 @@ case "$sshkeys_menu_opt" in
       read -ep "Remote IP address: " remoteip
       read -ep "Remote SSH port: " remoteport
       read -ep "Remote SSH username: " remoteuser
-      read -ep "Remote SSH password (optional, leave empty for manual password entry): " remotessh_password
+      read -sp "Remote SSH password (optional, leave empty for manual password entry): " remotessh_password
+      echo
+
+      # Cloud VPS detection for OVH/providers that disable root login
+      prompt_cloud_vps_mode
 
       echo "Please confirm the following information:"
       echo "Key name: $key_name"
@@ -580,12 +612,55 @@ case "$sshkeys_menu_opt" in
       echo "Remote SSH port: $remoteport"
       echo "Remote SSH username: $remoteuser"
       echo "Remote SSH password: ${remotessh_password:-N/A}"
+      if [[ "$CLOUD_VPS_MODE" = 'y' ]]; then
+        echo "Cloud VPS mode: enabled (sudo user: $CLOUD_SUDO_USER)"
+      fi
 
       read -ep "Is the above information correct? [y/n/exit]: " confirm_input
 
       case "$confirm_input" in
         [Yy]* )
-          if [[ -z "$remotessh_password" ]]; then
+          if [[ "$CLOUD_VPS_MODE" = 'y' ]]; then
+            # Use sudo to copy key for cloud VPS
+            pubkey=$(cat "/root/.ssh/${key_name}.pub" 2>/dev/null || cat "/root/.ssh/${key_name}" 2>/dev/null)
+            read -ep "Also enable PermitRootLogin in sshd_config? [y/n]: " enable_root
+            if [[ "$enable_root" = [yY] ]]; then
+              read -sp "Enter new root password (leave empty to skip): " root_pass
+              echo
+            fi
+
+            # Copy key via sudo
+            echo "Copying SSH key via sudo user: $CLOUD_SUDO_USER"
+            sshpass -p "$CLOUD_SUDO_PASS" ssh -o StrictHostKeyChecking=no "$CLOUD_SUDO_USER@$remoteip" -p "$remoteport" \
+                "echo '$CLOUD_SUDO_PASS' | sudo -S bash -c '
+                    mkdir -p /root/.ssh
+                    chmod 700 /root/.ssh
+                    if ! grep -qF \"$pubkey\" /root/.ssh/authorized_keys 2>/dev/null; then
+                        echo \"$pubkey\" >> /root/.ssh/authorized_keys
+                        chmod 600 /root/.ssh/authorized_keys
+                        echo \"SSH key added successfully\"
+                    else
+                        echo \"SSH key already exists in authorized_keys\"
+                    fi
+                '"
+
+            # Enable root login if requested
+            if [[ "$enable_root" = [yY] ]]; then
+              echo "Enabling PermitRootLogin..."
+              sshpass -p "$CLOUD_SUDO_PASS" ssh -o StrictHostKeyChecking=no "$CLOUD_SUDO_USER@$remoteip" -p "$remoteport" \
+                  "echo '$CLOUD_SUDO_PASS' | sudo -S bash -c '
+                      cp /etc/ssh/sshd_config /etc/ssh/sshd_config.bak.\$(date +%Y%m%d%H%M%S)
+                      sed -i \"s/^#*PermitRootLogin.*/PermitRootLogin yes/\" /etc/ssh/sshd_config
+                      systemctl restart sshd
+                  '"
+              if [[ -n "$root_pass" ]]; then
+                sshpass -p "$CLOUD_SUDO_PASS" ssh -o StrictHostKeyChecking=no "$CLOUD_SUDO_USER@$remoteip" -p "$remoteport" \
+                    "echo '$CLOUD_SUDO_PASS' | sudo -S bash -c 'echo \"root:$root_pass\" | chpasswd'"
+                echo "Root password set"
+              fi
+              echo "PermitRootLogin enabled and sshd restarted"
+            fi
+          elif [[ -z "$remotessh_password" ]]; then
             ssh-copy-id -i "/root/.ssh/${key_name}" "${remoteuser}@${remoteip}" -p "${remoteport}"
           else
             sshpass -p "$remotessh_password" ssh-copy-id -o StrictHostKeyChecking=no -i "/root/.ssh/${key_name}" "${remoteuser}@${remoteip}" -p "${remoteport}"
@@ -613,7 +688,10 @@ case "$sshkeys_menu_opt" in
     echo
     echo "Rotate Existing SSH Key For Remote Host"
     echo
-    
+    echo "Note: For OVH/cloud VPS with root login disabled, use option 9 first"
+    echo "      to enable root login, then use this option."
+    echo
+
     while true; do
       # Prompt user for required input
       read -ep "Key type (rsa, ecdsa, ed25519): " -i "ed25519" keytype
@@ -622,7 +700,8 @@ case "$sshkeys_menu_opt" in
       read -ep "Remote SSH username: " remoteuser
       read -ep "Old Key comment (unique identifier): " old_keycomment
       read -ep "New Key comment (unique identifier): " new_keycomment
-      read -ep "Remote SSH password (optional, leave empty for manual password entry): " remotessh_password
+      read -sp "Remote SSH password (optional, leave empty for manual password entry): " remotessh_password
+      echo
 
       echo "Please confirm the following information:"
       echo "Key type: $keytype"
@@ -639,10 +718,10 @@ case "$sshkeys_menu_opt" in
         [Yy]* )
           if [ -z "$remotessh_password" ]; then
             # Call keygen.sh without remotessh_password
-            "$SCRIPT_DIR/datamanagement/keygen.sh" rotate "$keytype" "$remoteip" "$remoteport" "$remoteuser" "$old_keycomment" "$new_keycomment"
+            "$SCRIPT_DIR/datamanagement/keygen.sh" rotatekeys "$keytype" "$remoteip" "$remoteport" "$remoteuser" "$old_keycomment" "$new_keycomment"
           else
             # Call keygen.sh with remotessh_password
-            "$SCRIPT_DIR/datamanagement/keygen.sh" rotate "$keytype" "$remoteip" "$remoteport" "$remoteuser" "$old_keycomment" "$new_keycomment" "$remotessh_password"
+            "$SCRIPT_DIR/datamanagement/keygen.sh" rotatekeys "$keytype" "$remoteip" "$remoteport" "$remoteuser" "$old_keycomment" "$new_keycomment" "$remotessh_password"
           fi
           echo "SSH key rotation completed."
           break
@@ -676,7 +755,11 @@ case "$sshkeys_menu_opt" in
       read -ep "Remote SSH username: " remoteuser
       read -ep "Key comment (unique identifier): " keycomment
       read -ep "Private key path (optional, leave empty if not using a specific key): " private_key_path
-      read -ep "Remote SSH password (optional, leave empty for manual password entry): " remotessh_password
+      read -sp "Remote SSH password (optional, leave empty for manual password entry): " remotessh_password
+      echo
+
+      # Cloud VPS detection for OVH/providers that disable root login
+      prompt_cloud_vps_mode
 
       echo "Please confirm the following information:"
       echo "Remote IP address: $remoteip"
@@ -685,27 +768,37 @@ case "$sshkeys_menu_opt" in
       echo "Key comment: $keycomment"
       echo "Private key path: ${private_key_path:-Not provided}"
       echo "Remote SSH password: ${remotessh_password:-Not provided}"
+      if [[ "$CLOUD_VPS_MODE" = 'y' ]]; then
+        echo "Cloud VPS mode: enabled (sudo user: $CLOUD_SUDO_USER)"
+      fi
 
       read -ep "Is the above information correct? [y/n/exit]: " confirm_input
 
       case "$confirm_input" in
         [Yy]* )
-          # Delete the SSH key from the remote host
-          if [ -z "$private_key_path" ]; then
-            ssh_cmd="ssh"
+          if [[ "$CLOUD_VPS_MODE" = 'y' ]]; then
+            # Delete key via sudo for cloud VPS
+            echo "Deleting SSH key via sudo user: $CLOUD_SUDO_USER"
+            sshpass -p "$CLOUD_SUDO_PASS" ssh -o StrictHostKeyChecking=no "$CLOUD_SUDO_USER@$remoteip" -p "$remoteport" \
+                "echo '$CLOUD_SUDO_PASS' | sudo -S sed -i '/${keycomment}/d' /root/.ssh/authorized_keys"
+            echo "SSH key deletion completed via sudo."
           else
-            ssh_cmd="ssh -i $private_key_path"
-          fi
+            # Delete the SSH key from the remote host
+            if [ -z "$private_key_path" ]; then
+              ssh_cmd="ssh"
+            else
+              ssh_cmd="ssh -i $private_key_path"
+            fi
 
-          if [ -z "$remotessh_password" ]; then
-            # Use the provided ssh command without the remotessh_password
-            $ssh_cmd "${remoteuser}@${remoteip}" -p "${remoteport}" "sed -i '/${keycomment}/d' ~/.ssh/authorized_keys"
-          else
-            # Use the provided ssh command with the remotessh_password
-            sshpass -p "$remotessh_password" $ssh_cmd "${remoteuser}@${remoteip}" -p "${remoteport}" "sed -i '/${keycomment}/d' ~/.ssh/authorized_keys"
+            if [ -z "$remotessh_password" ]; then
+              # Use the provided ssh command without the remotessh_password
+              $ssh_cmd "${remoteuser}@${remoteip}" -p "${remoteport}" "sed -i '/${keycomment}/d' ~/.ssh/authorized_keys"
+            else
+              # Use the provided ssh command with the remotessh_password
+              sshpass -p "$remotessh_password" $ssh_cmd "${remoteuser}@${remoteip}" -p "${remoteport}" "sed -i '/${keycomment}/d' ~/.ssh/authorized_keys"
+            fi
+            echo "SSH key deletion completed."
           fi
-
-          echo "SSH key deletion completed."
           break
           ;;
         [Nn]* )
@@ -840,6 +933,64 @@ case "$sshkeys_menu_opt" in
   } 2>&1 | tee "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_${sshkeys_menu_opt}_sshkeys_menu.log"
 ;;
 9)
+  {
+    check_for_keygen
+    echo
+    echo "Enable Root Login on Remote OVH/Cloud VPS"
+    echo
+    echo "This option enables root SSH login on remote OVH/Cloud VPS servers"
+    echo "that have root login disabled by default."
+    echo
+
+    while true; do
+      # Prompt user for required input
+      read -ep "Remote IP address: " remoteip
+      read -ep "Remote SSH port [22]: " remoteport
+      remoteport=${remoteport:-22}
+      read -ep "Sudo username (e.g., almalinux, rocky, cloud-user, opc): " sudo_user
+      read -sp "Sudo user password: " sudo_pass
+      echo
+      read -sp "New root password (required for password auth): " root_pass
+      echo
+
+      echo
+      echo "Please confirm the following information:"
+      echo "Remote IP address: $remoteip"
+      echo "Remote SSH port: $remoteport"
+      echo "Sudo username: $sudo_user"
+      echo "Sudo password: [hidden]"
+      echo "Root password: [hidden]"
+
+      read -ep "Is the above information correct? [y/n/exit]: " confirm_input
+
+      case "$confirm_input" in
+        [Yy]* )
+          echo
+          echo "Enabling root login on $remoteip..."
+          "$SCRIPT_DIR/datamanagement/keygen.sh" enable-root "$remoteip" "$remoteport" "$sudo_user" "$sudo_pass" "$root_pass"
+
+          echo
+          echo "Root login should now be enabled. You can proceed with:"
+          echo "  - Option 3: Create New SSH Key"
+          echo "  - Option 4: Use Existing SSH Key"
+          break
+          ;;
+        [Nn]* )
+          echo "Please enter the correct information."
+          ;;
+        [Ee][Xx][Ii][Tt] )
+          echo "Exiting the menu."
+          break
+          ;;
+        * )
+          echo "Please answer with 'y', 'n', or 'exit'."
+          ;;
+      esac
+    done
+
+  } 2>&1 | tee "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_${sshkeys_menu_opt}_sshkeys_menu.log"
+;;
+10)
   break
 ;;
 esac

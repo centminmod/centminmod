@@ -36,6 +36,162 @@ elif [ -f /usr/bin/sshpass ]; then
   SSHPASS='y'
 fi
 
+################################################################
+# Enable root SSH login on remote OVH/Cloud VPS
+# Used when cloud provider disables root login by default
+################################################################
+enable_root_login() {
+    local remotehost=${_input_remoteh}
+    local remoteport=${_input_remotep:-22}
+    local sudo_user=${_input_sudo_user}
+    local sudo_pass=${_input_sudo_pass}
+    local root_pass=${_input_root_pass}
+
+    echo
+    echo "-------------------------------------------------------------------"
+    echo "Enabling root SSH login on remote host: $remotehost"
+    echo "-------------------------------------------------------------------"
+
+    if [[ -z "$remotehost" || -z "$sudo_user" || -z "$sudo_pass" ]]; then
+        echo "Error: Missing required parameters"
+        echo "Usage: $0 enable-root <remoteip> <port> <sudo_user> <sudo_pass> [root_pass]"
+        return 1
+    fi
+
+    # Test sudo user connection first
+    echo "Testing connection as $sudo_user@$remotehost..."
+    if ! sshpass -p "$sudo_pass" ssh -o StrictHostKeyChecking=no -o ConnectTimeout=10 \
+        "$sudo_user@$remotehost" -p "$remoteport" "echo 'Connection successful'" 2>/dev/null; then
+        echo "Error: Cannot connect as $sudo_user@$remotehost"
+        return 1
+    fi
+
+    echo "Enabling PermitRootLogin in sshd_config..."
+    sshpass -p "$sudo_pass" ssh -o StrictHostKeyChecking=no "$sudo_user@$remotehost" -p "$remoteport" \
+        "echo '$sudo_pass' | sudo -S bash -c '
+            # Backup sshd_config
+            cp /etc/ssh/sshd_config /etc/ssh/sshd_config.bak.\$(date +%Y%m%d%H%M%S)
+
+            # Enable PermitRootLogin
+            if grep -q \"^#*PermitRootLogin\" /etc/ssh/sshd_config; then
+                sed -i \"s/^#*PermitRootLogin.*/PermitRootLogin yes/\" /etc/ssh/sshd_config
+            else
+                echo \"PermitRootLogin yes\" >> /etc/ssh/sshd_config
+            fi
+
+            echo \"PermitRootLogin enabled\"
+        '"
+
+    # Set root password if provided
+    if [[ -n "$root_pass" ]]; then
+        echo "Setting root password..."
+        sshpass -p "$sudo_pass" ssh -o StrictHostKeyChecking=no "$sudo_user@$remotehost" -p "$remoteport" \
+            "echo '$sudo_pass' | sudo -S bash -c 'echo \"root:$root_pass\" | chpasswd && echo \"Root password set\"'"
+    fi
+
+    # Restart sshd
+    echo "Restarting sshd service..."
+    sshpass -p "$sudo_pass" ssh -o StrictHostKeyChecking=no "$sudo_user@$remotehost" -p "$remoteport" \
+        "echo '$sudo_pass' | sudo -S systemctl restart sshd"
+
+    echo
+    echo "-------------------------------------------------------------------"
+    echo "Root login enabled on $remotehost"
+    echo "You can now use ssh-copy-id to root@$remotehost"
+    echo "-------------------------------------------------------------------"
+}
+
+################################################################
+# Copy SSH key to remote host via sudo user
+# Used when direct root login is disabled on cloud VPS
+################################################################
+sudo_copy_key() {
+    local pubkey_file="$1"
+    local remotehost="$2"
+    local remoteport="$3"
+    local target_user="$4"
+    local sudo_user="$5"
+    local sudo_pass="$6"
+    local enable_root_prompt="$7"
+
+    local pubkey=$(cat "$pubkey_file")
+    local enable_root=""
+    local root_pass=""
+
+    echo
+    echo "-------------------------------------------------------------------"
+    echo "Copying SSH key via sudo user: $sudo_user"
+    echo "Target user: $target_user"
+    echo "-------------------------------------------------------------------"
+
+    # Ask about enabling root login if prompted
+    if [[ "$enable_root_prompt" = 'y' && "$target_user" = 'root' ]]; then
+        read -rep "Also enable PermitRootLogin in sshd_config? [y/n]: " enable_root
+        if [[ "$enable_root" = [yY] ]]; then
+            read -sep "Enter new root password (leave empty to skip): " root_pass
+            echo
+        fi
+    fi
+
+    # Copy key to target user's authorized_keys
+    echo "Copying public key to $target_user@$remotehost..."
+    sshpass -p "$sudo_pass" ssh -o StrictHostKeyChecking=no "$sudo_user@$remotehost" -p "$remoteport" \
+        "echo '$sudo_pass' | sudo -S bash -c '
+            if [[ \"$target_user\" = \"root\" ]]; then
+                target_dir=\"/root/.ssh\"
+            else
+                target_dir=\"/home/$target_user/.ssh\"
+            fi
+
+            mkdir -p \"\$target_dir\"
+            chmod 700 \"\$target_dir\"
+
+            # Check if key already exists
+            if ! grep -qF \"$pubkey\" \"\$target_dir/authorized_keys\" 2>/dev/null; then
+                echo \"$pubkey\" >> \"\$target_dir/authorized_keys\"
+                chmod 600 \"\$target_dir/authorized_keys\"
+                if [[ \"$target_user\" = \"root\" ]]; then
+                    chown -R root:root \"\$target_dir\"
+                else
+                    chown -R $target_user:\$(id -gn $target_user 2>/dev/null || echo $target_user) \"\$target_dir\"
+                fi
+                echo \"SSH key added successfully\"
+            else
+                echo \"SSH key already exists in authorized_keys\"
+            fi
+        '"
+
+    SUDO_COPY_ERR=$?
+
+    # Enable root login if requested
+    if [[ "$enable_root" = [yY] && "$target_user" = 'root' ]]; then
+        echo "Enabling PermitRootLogin..."
+        sshpass -p "$sudo_pass" ssh -o StrictHostKeyChecking=no "$sudo_user@$remotehost" -p "$remoteport" \
+            "echo '$sudo_pass' | sudo -S bash -c '
+                cp /etc/ssh/sshd_config /etc/ssh/sshd_config.bak.\$(date +%Y%m%d%H%M%S)
+                if grep -q \"^#*PermitRootLogin\" /etc/ssh/sshd_config; then
+                    sed -i \"s/^#*PermitRootLogin.*/PermitRootLogin yes/\" /etc/ssh/sshd_config
+                else
+                    echo \"PermitRootLogin yes\" >> /etc/ssh/sshd_config
+                fi
+            '"
+
+        # Set root password if provided
+        if [[ -n "$root_pass" ]]; then
+            sshpass -p "$sudo_pass" ssh -o StrictHostKeyChecking=no "$sudo_user@$remotehost" -p "$remoteport" \
+                "echo '$sudo_pass' | sudo -S bash -c 'echo \"root:$root_pass\" | chpasswd'"
+        fi
+
+        # Restart sshd
+        sshpass -p "$sudo_pass" ssh -o StrictHostKeyChecking=no "$sudo_user@$remotehost" -p "$remoteport" \
+            "echo '$sudo_pass' | sudo -S systemctl restart sshd"
+
+        echo "PermitRootLogin enabled and sshd restarted"
+    fi
+
+    return $SUDO_COPY_ERR
+}
+
 keygen() {
     keyrotate=$1
     _keytype=$_input_keytype
@@ -215,12 +371,17 @@ keygen() {
     fi
     if [[ "$VALIDREMOTE" = 'y' && "$keyrotate" != 'rotate' ]]; then
       pushd "$HOME/.ssh" >/dev/null 2>&1
-      if [[ "$SSHPASS" = [yY] ]]; then
+      # Check if sudo user mode is enabled (for OVH/cloud VPS with root login disabled)
+      if [[ -n "$_sudo_user" ]]; then
+        sudo_copy_key "$HOME/.ssh/${KEYNAME}.key.pub" "$remotehost" "$remoteport" "$remoteuser" "$_sudo_user" "$_sudo_pass" "y"
+        SSHCOPYERR=$?
+      elif [[ "$SSHPASS" = [yY] ]]; then
         sshpass -p "$sshpassword" ssh-copy-id -o StrictHostKeyChecking=no -i $HOME/.ssh/${KEYNAME}.key.pub "$remoteuser@$remotehost" -p "$remoteport"
+        SSHCOPYERR=$?
       else
         ssh-copy-id -i $HOME/.ssh/${KEYNAME}.key.pub "$remoteuser@$remotehost" -p "$remoteport"
+        SSHCOPYERR=$?
       fi
-      SSHCOPYERR=$?
       if [[ "$SSHCOPYERR" -ne '0' ]]; then
         echo
         echo "ssh-copy-id transfer failed: removing generated SSH key files"
@@ -324,6 +485,8 @@ case "$1" in
     _input_comment=$6
     _input_sshpass=$7
     _input_unique_keyname=$8
+    _sudo_user=$9           # Sudo user for OVH/cloud VPS with root login disabled
+    _sudo_pass=${10}        # Sudo user password
     keygen
     exit
         ;;
@@ -336,6 +499,16 @@ case "$1" in
     _input_keyname=$7
     _input_unique_keyname=$8
     keygen rotate
+    exit
+        ;;
+    enable-root )
+    # Enable root SSH login on remote OVH/Cloud VPS
+    _input_remoteh=$2
+    _input_remotep=$3
+    _input_sudo_user=$4
+    _input_sudo_pass=$5
+    _input_root_pass=$6
+    enable_root_login
     exit
         ;;
     * )
@@ -351,6 +524,10 @@ case "$1" in
     echo
     echo "  $0 {gen} keytype remoteip remoteport remoteuser keycomment remotessh_password unique_keyname_filename"
     echo
+    echo "  or (for OVH/cloud VPS with root login disabled)"
+    echo
+    echo "  $0 {gen} keytype remoteip remoteport remoteuser keycomment remotessh_password unique_keyname_filename sudo_user sudo_pass"
+    echo
     echo "-------------------------------------------------------------------------"
     echo "  $0 {rotatekeys}"
     echo "  $0 {rotatekeys} keytype remoteip remoteport remoteuser keycomment keyname"
@@ -358,6 +535,13 @@ case "$1" in
     echo "or"
     echo
     echo "  $0 {rotatekeys} keytype remoteip remoteport remoteuser keycomment \"\" unique_keyname_filename"
+    echo
+    echo "-------------------------------------------------------------------------"
+    echo "  $0 {enable-root}"
+    echo "  $0 {enable-root} remoteip remoteport sudo_user sudo_pass [root_pass]"
+    echo
+    echo "  Enable root SSH login on remote OVH/Cloud VPS"
+    echo "  sudo_user: almalinux, rocky, cloud-user, opc (Oracle Linux)"
     echo
     echo "-------------------------------------------------------------------------"
     echo "  keytype supported: rsa, ecdsa, ed25519"
