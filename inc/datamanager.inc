@@ -646,11 +646,15 @@ case "$sshkeys_menu_opt" in
 
             # Enable root login if requested
             if [[ "$enable_root" = [yY] ]]; then
-              echo "Enabling PermitRootLogin..."
+              echo "Enabling PermitRootLogin via sshd_config.d drop-in..."
               sshpass -p "$CLOUD_SUDO_PASS" ssh -o StrictHostKeyChecking=no "$CLOUD_SUDO_USER@$remoteip" -p "$remoteport" \
                   "echo '$CLOUD_SUDO_PASS' | sudo -S bash -c '
-                      cp /etc/ssh/sshd_config /etc/ssh/sshd_config.bak.\$(date +%Y%m%d%H%M%S)
-                      sed -i \"s/^#*PermitRootLogin.*/PermitRootLogin yes/\" /etc/ssh/sshd_config
+                      if [[ \"\$(sshd -T 2>/dev/null | awk \"/permitrootlogin/ {print \\\$2}\")\" != \"yes\" ]]; then
+                          echo \"PermitRootLogin yes\" > /etc/ssh/sshd_config.d/01-permitrootlogin.conf
+                          echo \"Created /etc/ssh/sshd_config.d/01-permitrootlogin.conf\"
+                      else
+                          echo \"PermitRootLogin already enabled\"
+                      fi
                       systemctl restart sshd
                   '"
               if [[ -n "$root_pass" ]]; then

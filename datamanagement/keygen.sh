@@ -66,20 +66,15 @@ enable_root_login() {
         return 1
     fi
 
-    echo "Enabling PermitRootLogin in sshd_config..."
+    echo "Enabling PermitRootLogin via sshd_config.d drop-in..."
     sshpass -p "$sudo_pass" ssh -o StrictHostKeyChecking=no "$sudo_user@$remotehost" -p "$remoteport" \
         "echo '$sudo_pass' | sudo -S bash -c '
-            # Backup sshd_config
-            cp /etc/ssh/sshd_config /etc/ssh/sshd_config.bak.\$(date +%Y%m%d%H%M%S)
-
-            # Enable PermitRootLogin
-            if grep -q \"^#*PermitRootLogin\" /etc/ssh/sshd_config; then
-                sed -i \"s/^#*PermitRootLogin.*/PermitRootLogin yes/\" /etc/ssh/sshd_config
+            if [[ \"\$(sshd -T 2>/dev/null | awk \"/permitrootlogin/ {print \\\$2}\")\" != \"yes\" ]]; then
+                echo \"PermitRootLogin yes\" > /etc/ssh/sshd_config.d/01-permitrootlogin.conf
+                echo \"Created /etc/ssh/sshd_config.d/01-permitrootlogin.conf\"
             else
-                echo \"PermitRootLogin yes\" >> /etc/ssh/sshd_config
+                echo \"PermitRootLogin already enabled\"
             fi
-
-            echo \"PermitRootLogin enabled\"
         '"
 
     # Set root password if provided
@@ -165,14 +160,14 @@ sudo_copy_key() {
 
     # Enable root login if requested
     if [[ "$enable_root" = [yY] && "$target_user" = 'root' ]]; then
-        echo "Enabling PermitRootLogin..."
+        echo "Enabling PermitRootLogin via sshd_config.d drop-in..."
         sshpass -p "$sudo_pass" ssh -o StrictHostKeyChecking=no "$sudo_user@$remotehost" -p "$remoteport" \
             "echo '$sudo_pass' | sudo -S bash -c '
-                cp /etc/ssh/sshd_config /etc/ssh/sshd_config.bak.\$(date +%Y%m%d%H%M%S)
-                if grep -q \"^#*PermitRootLogin\" /etc/ssh/sshd_config; then
-                    sed -i \"s/^#*PermitRootLogin.*/PermitRootLogin yes/\" /etc/ssh/sshd_config
+                if [[ \"\$(sshd -T 2>/dev/null | awk \"/permitrootlogin/ {print \\\$2}\")\" != \"yes\" ]]; then
+                    echo \"PermitRootLogin yes\" > /etc/ssh/sshd_config.d/01-permitrootlogin.conf
+                    echo \"Created /etc/ssh/sshd_config.d/01-permitrootlogin.conf\"
                 else
-                    echo \"PermitRootLogin yes\" >> /etc/ssh/sshd_config
+                    echo \"PermitRootLogin already enabled\"
                 fi
             '"
 
