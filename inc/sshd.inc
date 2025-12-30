@@ -45,11 +45,13 @@ sshdtweaks() {
   CHECKHOSTKEYB=$(grep '#HostKey /etc/ssh/ssh_host_ecdsa_key' /etc/ssh/sshd_config)
   CHECKHOSTKEYC=$(grep '#PubkeyAuthentication' /etc/ssh/sshd_config)
   CHECKHOSTKEYD=$(grep '#PermitEmptyPasswords' /etc/ssh/sshd_config)
+  CHECKHOSTKEYE=$(grep '#HostKey /etc/ssh/ssh_host_ed25519_key' /etc/ssh/sshd_config)
 
-  if [[ ! -z "$CHECKHOSTKEY" || ! -z "$CHECKHOSTKEYB" || ! -z "$CHECKHOSTKEYC" || ! -z "$CHECKHOSTKEYD" ]]; then
+  if [[ ! -z "$CHECKHOSTKEY" || ! -z "$CHECKHOSTKEYB" || ! -z "$CHECKHOSTKEYC" || ! -z "$CHECKHOSTKEYD" || ! -z "$CHECKHOSTKEYE" ]]; then
     sed -i 's/#HostKey \/etc\/ssh\/ssh_host_rsa_key/HostKey \/etc\/ssh\/ssh_host_rsa_key/g' /etc/ssh/sshd_config
     # sed -i 's/#HostKey \/etc\/ssh\/ssh_host_dsa_key/HostKey \/etc\/ssh\/ssh_host_dsa_key/g' /etc/ssh/sshd_config
     sed -i 's/#HostKey \/etc\/ssh\/ssh_host_ecdsa_key/HostKey \/etc\/ssh\/ssh_host_ecdsa_key/g' /etc/ssh/sshd_config
+    sed -i 's/#HostKey \/etc\/ssh\/ssh_host_ed25519_key/HostKey \/etc\/ssh\/ssh_host_ed25519_key/g' /etc/ssh/sshd_config
     sed -i 's/#PubkeyAuthentication/PubkeyAuthentication/g' /etc/ssh/sshd_config
     # sed -i 's/#RSAAuthentication/RSAAuthentication/g' /etc/ssh/sshd_config
     sed -i 's/#AuthorizedKeysFile/AuthorizedKeysFile/g' /etc/ssh/sshd_config
@@ -108,7 +110,7 @@ EOF
     sed -i 's|^PrintMotd noKexAlgorithms|PrintMotd no\nKexAlgorithms|' /etc/ssh/sshd_config
   fi
   
-  if [[ ! -z "$CHECKHOSTKEY" || ! -z "$CHECKHOSTKEYB" || ! -z "$CHECKHOSTKEYC" || ! -z "$CHECKHOSTKEYD" || ! -z "$CHECKTCPALIVE" || -z "$CHECKVALUES" ]]; then
+  if [[ ! -z "$CHECKHOSTKEY" || ! -z "$CHECKHOSTKEYB" || ! -z "$CHECKHOSTKEYC" || ! -z "$CHECKHOSTKEYD" || ! -z "$CHECKHOSTKEYE" || ! -z "$CHECKTCPALIVE" || -z "$CHECKVALUES" ]]; then
     # echo "----------------------------"
     # echo "Configure sshd_config"
     # echo "----------------------------"
