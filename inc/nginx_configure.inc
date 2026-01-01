@@ -3234,12 +3234,8 @@ fi
       #   popd
       # fi
       if [ -f /usr/local/nginx/conf/dynamic-modules.conf ]; then
-        if [ -f /usr/local/nginx/modules/ngx_http_js_module.so ]; then
-          echo "load_module \"modules/ngx_http_js_module.so\";" >> /usr/local/nginx/conf/dynamic-modules.conf
-        fi
-        if [ -f /usr/local/nginx/modules/ngx_stream_js_module.so ]; then
-          echo "load_module \"modules/ngx_stream_js_module.so\";" >> /usr/local/nginx/conf/dynamic-modules.conf
-        fi
+        echo "load_module \"modules/ngx_http_js_module.so\";" >> /usr/local/nginx/conf/dynamic-modules.conf
+        echo "load_module \"modules/ngx_stream_js_module.so\";" >> /usr/local/nginx/conf/dynamic-modules.conf
       fi
       if [ -f /usr/local/nginx/modules/ngx_http_js_module.so.old ]; then
         rm -rf /usr/local/nginx/modules/ngx_http_js_module.so.old
