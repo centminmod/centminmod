@@ -30,7 +30,7 @@ DT=$(date +"%d%m%y-%H%M%S")
 branchname='141.00beta01'
 SCRIPT_MAJORVER='141'
 SCRIPT_MINORVER='00'
-SCRIPT_INCREMENTVER='129'
+SCRIPT_INCREMENTVER='130'
 SCRIPT_VERSIONSHORT="${branchname}"
 SCRIPT_VERSION="${SCRIPT_VERSIONSHORT}.b${SCRIPT_INCREMENTVER}"
 SCRIPT_DATE='16/08/25'
@@ -989,6 +989,7 @@ MARIADB_INSTALLELEVENFOUR='n' # MariaDB 11.4 YUM default install if set to yes
 MARIADB_INSTALLELEVENEIGHT='n' # MariaDB 11.8 YUM default install if set to yes
 
 MYSQLADMIN_SHELL='y'          # enable centmin.sh menu option 6
+POSTGRESQL_MENU='n'           # enable centmin.sh menu option 8
 
 # Define current MariaDB version
 MDB_VERONLY='5.2.14'
@@ -1678,6 +1679,8 @@ source "${SCRIPT_DIR}/inc/mysql_install.inc"
 source "${SCRIPT_DIR}/inc/mysqladmin.inc"
 source "${SCRIPT_DIR}/inc/mariadb_submenu.inc"
 source "${SCRIPT_DIR}/inc/postgresql.inc"
+source "${SCRIPT_DIR}/inc/postgresql_submenu.inc"
+source "${SCRIPT_DIR}/inc/psqladmin.inc"
 source "${SCRIPT_DIR}/inc/zendopcache_tweaks.inc"
 source "${SCRIPT_DIR}/inc/php_extraopts.inc"
 source "${SCRIPT_DIR}/inc/mysql_legacy.inc"
@@ -3995,7 +3998,7 @@ else
             cecho "5).  PHP Upgrade / Downgrade" $boldgreen
             cecho "6).  MySQL User Database Management" $boldgreen
             cecho "7).  Persistent Config File Management" $boldgreen
-            cecho "8).  Option Being Revised (TBA)" $boldgreen
+            cecho "8).  PostgreSQL Server Management" $boldgreen
             cecho "9).  Option Being Revised (TBA)" $boldgreen
             cecho "10). Memcached Server Re-install" $boldgreen
             cecho "11). MariaDB MySQL Upgrade & Management" $boldgreen
@@ -4272,40 +4275,25 @@ EOF
         fi
         } 2>&1 | tee "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_persistent_config_override.log"       
         ;;
-        8|installxcache)
-        if [ -f "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_xcache_install.log" ]; then
+        8|postgresqlmenu)
+        if [ -f "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_postgresql_menu.log" ]; then
             NEWDT=$(date +"%d%m%y-%H%M%S")
-            mv "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_xcache_install.log" "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${NEWDT}_xcache_install.log"
+            mv "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_postgresql_menu.log" "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${NEWDT}_postgresql_menu.log"
         fi
         # set_logdate
         CM_MENUOPT=8
-        starttime=$(TZ=UTC date +%s.%N)
-        
         centminlog
         {
-        
-        if [ "$CCACHEINSTALL" == 'y' ]; then
-        ccacheinstall
+        if [[ "$POSTGRESQL_MENU" == 'y' ]]; then
+          postgresql_submenu
+        else
+          echo
+          cecho "PostgreSQL Menu is disabled" $boldyellow
+          echo "To enable, add to /etc/centminmod/custom_config.inc:"
+          echo "POSTGRESQL_MENU='y'"
+          echo
         fi
-        
-        MANXCACHEINSTALL='y'
-        
-        funct_installxcache
-        } 2>&1 | tee "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_xcache_install.log"
-        
-        if [ "$CCACHEINSTALL" == 'y' ]; then
-        
-            # check if ccache installed first
-            if [ -f /usr/bin/ccache ]; then
-        { echo ""; source ~/.bashrc; echo "ccache stats:"; ccache -s; echo ""; } 2>&1 | tee -a "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_xcache_install.log"
-            fi
-        fi
-        
-        endtime=$(TZ=UTC date +%s.%N)
-        INSTALLTIME=$(echo "scale=2;$endtime - $starttime"|bc )
-        echo "" >> "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_xcache_install.log"
-        echo "Total Xcache Install Time: $INSTALLTIME seconds" >> "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_xcache_install.log"
-        
+        } 2>&1 | tee "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_postgresql_menu.log"
         ;;
         9|installapc)
         if [ -f "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_apc_install.log" ]; then
@@ -4770,10 +4758,10 @@ EOF
         funct_apcreinstall
         
         ;;
-        installxcache)
-        
-        funct_installxcache
-        
+        postgresqlmenu)
+
+        postgresql_submenu
+
         ;;
         installapc)
         
