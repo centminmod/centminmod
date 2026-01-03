@@ -633,7 +633,7 @@ sleep 2
 service memcached stop
 service memcached start
 echo
-service php-fpm restart
+systemctl restart php-fpm
 echo
 journalctl -xe -u php-fpm --no-pager | tail -20
 echo

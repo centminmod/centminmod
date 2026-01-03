@@ -629,7 +629,7 @@ echo "service nginx reload" >/usr/bin/ngxreload ; chmod 700 /usr/bin/ngxreload
 
 echo "service nginx stop;service php-fpm stop" >/usr/bin/npstop ; chmod 700 /usr/bin/npstop
 echo "service nginx start;service php-fpm start" >/usr/bin/npstart ; chmod 700 /usr/bin/npstart
-echo "service nginx restart;service php-fpm restart" >/usr/bin/nprestart ; chmod 700 /usr/bin/nprestart
+echo "service nginx restart;systemctl restart php-fpm" >/usr/bin/nprestart ; chmod 700 /usr/bin/nprestart
 echo "service nginx reload;service php-fpm reload" >/usr/bin/npreload ; chmod 700 /usr/bin/npreload
 
 systemctl start nginx >/dev/null 2>&1
@@ -656,7 +656,7 @@ if [[ "$CENTOS_NINE" = '9' || "$CENTOS_EIGHT" = '8' || "$CENTOS_SEVEN" = '7' ]] 
   
   echo "service nginx stop;service php-fpm stop" >/usr/bin/npstop ; chmod 700 /usr/bin/npstop
   echo "service nginx start;service php-fpm start" >/usr/bin/npstart ; chmod 700 /usr/bin/npstart
-  echo "service nginx restart;service php-fpm restart" >/usr/bin/nprestart ; chmod 700 /usr/bin/nprestart
+  echo "service nginx restart;systemctl restart php-fpm" >/usr/bin/nprestart ; chmod 700 /usr/bin/nprestart
   echo "service nginx reload;service php-fpm reload" >/usr/bin/npreload ; chmod 700 /usr/bin/npreload
   
   systemctl start nginx >/dev/null 2>&1
@@ -1777,7 +1777,7 @@ update_cmdshortcuts() {
   fi
   if [[ "$CENTOS_SEVEN" = '7' && -f /usr/bin/nprestart ]]; then
     if [[ "$SWITCH_NGINX_SYSTEMD" != [yY] && "$(grep 'service' /usr/bin/nprestart)" ]]; then
-      sed -i 's|service nginx restart;service php-fpm restart|\/etc\/init.d\/nginx restart;\/etc\/init.d\/php-fpm restart|' /usr/bin/nprestart
+      sed -i 's|service nginx restart;systemctl restart php-fpm|\/etc\/init.d\/nginx restart;\/etc\/init.d\/php-fpm restart|' /usr/bin/nprestart
     fi
   fi
   if [[ "$CENTOS_SEVEN" = '7' && -f /usr/bin/npreload ]]; then
@@ -1817,7 +1817,7 @@ update_cmdshortcuts() {
   fi
   if [[ "$CENTOS_SEVEN" = '7' && -f /usr/bin/fpmrestart ]]; then
     if [[ "$SWITCH_PHPFPM_SYSTEMD" != [yY] && "$(grep 'service' /usr/bin/fpmrestart)" ]]; then
-      sed -i 's|service php-fpm restart|\/etc\/init.d\/php-fpm restart|' /usr/bin/fpmrestart
+      sed -i 's|systemctl restart php-fpm|\/etc\/init.d\/php-fpm restart|' /usr/bin/fpmrestart
     fi
   fi
   if [[ "$CENTOS_SEVEN" = '7' && -f /usr/bin/fpmreload ]]; then
@@ -2238,7 +2238,7 @@ fixphpfpm_includes() {
     if [ -f /tmp/phpinc-restart-check ]; then
       rm -rf /tmp/phpinc-restart-check
       service nginx restart
-      service php-fpm restart
+      systemctl restart php-fpm
     fi
   } 2>&1 | tee "/root/centminlogs/fixphpfpm_includes_${DT}.log"
   # remove log if empty
@@ -2268,7 +2268,7 @@ fixphpfpm_httpproxy() {
     if [ -f /tmp/phprestart-check ]; then
       rm -rf /tmp/phprestart-check
       service nginx restart
-      service php-fpm restart
+      systemctl restart php-fpm
     fi
   } 2>&1 | tee "/root/centminlogs/fixphpfpm_httpproxy_${DT}.log"
   # remove log if empty

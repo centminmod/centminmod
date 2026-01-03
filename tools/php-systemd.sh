@@ -454,7 +454,7 @@ restore_initd() {
 
     echo "service php-fpm stop" >/usr/bin/fpmstop ; chmod 700 /usr/bin/fpmstop
     echo "service php-fpm start" >/usr/bin/fpmstart ; chmod 700 /usr/bin/fpmstart
-    echo "service php-fpm restart" >/usr/bin/fpmrestart ; chmod 700 /usr/bin/fpmrestart
+    echo "systemctl restart php-fpm" >/usr/bin/fpmrestart ; chmod 700 /usr/bin/fpmrestart
     echo "service php-fpm reload" >/usr/bin/fpmreload ; chmod 700 /usr/bin/fpmreload
     echo "/etc/init.d/php-fpm configtest" >/usr/bin/fpmconfigtest ; chmod 700 /usr/bin/fpmconfigtest
     echo "/etc/init.d/php-fpm status" >/usr/bin/fpmstatus ; chmod 700 /usr/bin/fpmstatus
@@ -462,7 +462,7 @@ restore_initd() {
 
     echo "service nginx stop;service php-fpm stop" >/usr/bin/npstop ; chmod 700 /usr/bin/npstop
     echo "service nginx start;service php-fpm start" >/usr/bin/npstart ; chmod 700 /usr/bin/npstart
-    echo "service nginx restart;service php-fpm restart" >/usr/bin/nprestart ; chmod 700 /usr/bin/nprestart
+    echo "systemctl restart nginx;systemctl restart php-fpm" >/usr/bin/nprestart ; chmod 700 /usr/bin/nprestart
     echo "service nginx reload;service php-fpm reload" >/usr/bin/npreload ; chmod 700 /usr/bin/npreload
 
     echo "systemctl daemon-reload"

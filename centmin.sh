@@ -30,7 +30,7 @@ DT=$(date +"%d%m%y-%H%M%S")
 branchname='141.00beta01'
 SCRIPT_MAJORVER='141'
 SCRIPT_MINORVER='00'
-SCRIPT_INCREMENTVER='130'
+SCRIPT_INCREMENTVER='131'
 SCRIPT_VERSIONSHORT="${branchname}"
 SCRIPT_VERSION="${SCRIPT_VERSIONSHORT}.b${SCRIPT_INCREMENTVER}"
 SCRIPT_DATE='16/08/25'
@@ -410,7 +410,7 @@ cmservice() {
     if [[ "${servicename}" = 'php-fpm' || "${servicename}" = 'nginx' ]]; then
       echo "service ${servicename} $action"
       if [[ "$CMSDEBUG" = [nN] ]]; then
-        service "${servicename}" "$action"
+        systemctl "$action" "${servicename}.service"
       fi
     elif [[ "${servicename}" = 'mysql' || "${servicename}" = 'mysqld' ]]; then
       servicename='mariadb'
@@ -3351,7 +3351,7 @@ fi
 
     #chown -R root:nginx /var/lib/php/session/
     chkconfig --levels 235 php-fpm on
-    #service php-fpm restart 2>/dev/null
+    #systemctl restart php-fpm 2>/dev/null
     # /etc/init.d/php-fpm force-quit
     service php-fpm start
     fileinfo_standalone
@@ -3543,7 +3543,7 @@ if [[ "$PHPSEVEN_CHECKVER" = '0' ]]; then
   if [[ "$PHPMVER" = '7.3' && -f "${CONFIGSCANDIR}/memcache.ini" ]]; then
       # cecho "PHP 7.3 detected removing incompatible ${CONFIGSCANDIR}/memcache.ini" $boldyellow
       # cecho "rm -rf ${CONFIGSCANDIR}/memcache.ini" $boldyellow
-      # service php-fpm restart >/dev/null 2>&1
+      # systemctl restart php-fpm >/dev/null 2>&1
       echo
   fi
 fi

@@ -164,7 +164,7 @@ fi
     service nginx restart >/dev/null 2>&1
   fi
   if [[ "$(service php-fpm status >/dev/null 2>&1; echo $?)" -eq '0' ]]; then
-    service php-fpm restart >/dev/null 2>&1
+    systemctl restart php-fpm >/dev/null 2>&1
   fi
 
 echo

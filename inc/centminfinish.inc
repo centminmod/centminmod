@@ -130,7 +130,7 @@ echo ""
       service crond restart
       service sysstat restart
       service nginx restart
-      service php-fpm restart
+      systemctl restart php-fpm
       service redis restart
       chkconfig crond on
       chkconfig sysstat on

@@ -1251,7 +1251,7 @@ phpext() {
   echo "restarting php-fpm service ..."
   echo ""
 
-  service php-fpm restart 
+  systemctl restart php-fpm 
 
   echo ""
   echo "check phpinfo for FFMPEG PHP Extension..."
@@ -1262,7 +1262,7 @@ phpext() {
   ffmpeg_err=$?
   if [[ "$ffmpeg_err" -ne '0' ]]; then
     rm -rf /etc/centminmod/php.d/ffmpeg.ini
-    service php-fpm restart
+    systemctl restart php-fpm
     echo
     echo "----------------------------------------------------------------"
     echo "FAILED..."

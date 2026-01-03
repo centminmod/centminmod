@@ -323,7 +323,7 @@ EOF
   echo ""
   ls -lah ${PHPEXTDIRD}
   
-  service php-fpm restart >/dev/null 2>&1
+  systemctl restart php-fpm >/dev/null 2>&1
   
   if [ -f "${PHPEXTDIRD}/mcrypt.so" ]; then
     echo ""

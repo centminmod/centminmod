@@ -134,13 +134,13 @@ if [[ "$CENTOS_SEVEN" = '7' ]]; then
     if [[ "$SWITCH_PHPFPM_SYSTEMD" != [yY] && ! -f /usr/lib/systemd/system/php-fpm.service ]]; then
         echo "service php-fpm stop" >/usr/bin/fpmstop ; chmod 700 /usr/bin/fpmstop
         echo "service php-fpm start" >/usr/bin/fpmstart ; chmod 700 /usr/bin/fpmstart
-        echo "service php-fpm restart" >/usr/bin/fpmrestart ; chmod 700 /usr/bin/fpmrestart
+        echo "systemctl restart php-fpm" >/usr/bin/fpmrestart ; chmod 700 /usr/bin/fpmrestart
         echo "service php-fpm reload" >/usr/bin/fpmreload ; chmod 700 /usr/bin/fpmreload
         echo "/etc/init.d/php-fpm configtest" >/usr/bin/fpmconfigtest ; chmod 700 /usr/bin/fpmconfigtest
     elif [[ "$SWITCH_PHPFPM_SYSTEMD" = [yY] && -f /usr/lib/systemd/system/php-fpm.service ]]; then
         echo "service php-fpm stop" >/usr/bin/fpmstop ; chmod 700 /usr/bin/fpmstop
         echo "service php-fpm start" >/usr/bin/fpmstart ; chmod 700 /usr/bin/fpmstart
-        echo "service php-fpm restart" >/usr/bin/fpmrestart ; chmod 700 /usr/bin/fpmrestart
+        echo "systemctl restart php-fpm" >/usr/bin/fpmrestart ; chmod 700 /usr/bin/fpmrestart
         echo "service php-fpm reload" >/usr/bin/fpmreload ; chmod 700 /usr/bin/fpmreload
     fi
 
@@ -166,12 +166,12 @@ if [[ "$CENTOS_SEVEN" = '7' ]]; then
         if [[ "$SWITCH_PHPFPM_SYSTEMD" != [yY] && ! -f /usr/lib/systemd/system/php-fpm.service ]]; then
             echo "service nginx stop;service php-fpm stop" >/usr/bin/npstop ; chmod 700 /usr/bin/npstop
             echo "service nginx start;service php-fpm start" >/usr/bin/npstart ; chmod 700 /usr/bin/npstart
-            echo "service nginx restart;service php-fpm restart" >/usr/bin/nprestart ; chmod 700 /usr/bin/nprestart
+            echo "systemctl restart nginx;systemctl restart php-fpm" >/usr/bin/nprestart ; chmod 700 /usr/bin/nprestart
             echo "service nginx reload;service php-fpm reload" >/usr/bin/npreload ; chmod 700 /usr/bin/npreload
         elif [[ "$SWITCH_PHPFPM_SYSTEMD" = [yY] && -f /usr/lib/systemd/system/php-fpm.service ]]; then
             echo "service nginx stop;service php-fpm stop" >/usr/bin/npstop ; chmod 700 /usr/bin/npstop
             echo "service nginx start;service php-fpm start" >/usr/bin/npstart ; chmod 700 /usr/bin/npstart
-            echo "service nginx restart;service php-fpm restart" >/usr/bin/nprestart ; chmod 700 /usr/bin/nprestart
+            echo "systemctl restart nginx;systemctl restart php-fpm" >/usr/bin/nprestart ; chmod 700 /usr/bin/nprestart
             echo "service nginx reload;service php-fpm reload" >/usr/bin/npreload ; chmod 700 /usr/bin/npreload
         fi
     
@@ -203,7 +203,7 @@ if [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' || "$CENTOS_TEN" -eq '10
     if [[ "$SWITCH_PHPFPM_SYSTEMD" != [yY] && ! -f /usr/lib/systemd/system/php-fpm.service ]]; then
         echo "service php-fpm stop" >/usr/bin/fpmstop ; chmod 700 /usr/bin/fpmstop
         echo "service php-fpm start" >/usr/bin/fpmstart ; chmod 700 /usr/bin/fpmstart
-        echo "service php-fpm restart" >/usr/bin/fpmrestart ; chmod 700 /usr/bin/fpmrestart
+        echo "systemctl restart php-fpm" >/usr/bin/fpmrestart ; chmod 700 /usr/bin/fpmrestart
         echo "service php-fpm reload" >/usr/bin/fpmreload ; chmod 700 /usr/bin/fpmreload
         echo "/etc/init.d/php-fpm configtest" >/usr/bin/fpmconfigtest ; chmod 700 /usr/bin/fpmconfigtest
     fi
@@ -383,7 +383,7 @@ fi
         if [[ "$SWITCH_PHPFPM_SYSTEMD" != [yY] && ! -f /usr/lib/systemd/system/php-fpm.service ]]; then
             echo "service nginx stop;service php-fpm stop" >/usr/bin/npstop ; chmod 700 /usr/bin/npstop
             echo "service nginx start;service php-fpm start" >/usr/bin/npstart ; chmod 700 /usr/bin/npstart
-            echo "service nginx restart;service php-fpm restart" >/usr/bin/nprestart ; chmod 700 /usr/bin/nprestart
+            echo "systemctl restart nginx;systemctl restart php-fpm" >/usr/bin/nprestart ; chmod 700 /usr/bin/nprestart
             echo "service nginx reload;service php-fpm reload" >/usr/bin/npreload ; chmod 700 /usr/bin/npreload
         fi
     
