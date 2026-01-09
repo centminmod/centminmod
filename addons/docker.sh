@@ -403,6 +403,13 @@ if command -v docker >/dev/null 2>&1 && systemctl is-active docker >/dev/null 2>
     for NETWORK in $CUSTOM_NETWORKS; do
         SUBNET=$(docker network inspect $NETWORK 2>/dev/null | grep -oP '"Subnet": "\K[^"]+')
         BRIDGE_NAME=$(docker network inspect $NETWORK 2>/dev/null | grep -oP '"com.docker.network.bridge.name": "\K[^"]+')
+        # If bridge name option not set, derive from network ID (br-<first 12 chars>)
+        if [ -z "$BRIDGE_NAME" ]; then
+            NETWORK_ID=$(docker network inspect $NETWORK --format '{{.Id}}' 2>/dev/null | cut -c1-12)
+            if [ ! -z "$NETWORK_ID" ]; then
+                BRIDGE_NAME="br-${NETWORK_ID}"
+            fi
+        fi
         if [ ! -z "$SUBNET" ] && [ ! -z "$BRIDGE_NAME" ]; then
             # NAT rules for custom networks
             iptables -t nat -A POSTROUTING -s $SUBNET ! -o $BRIDGE_NAME -j MASQUERADE 2>/dev/null
