@@ -356,7 +356,13 @@ if command -v docker >/dev/null 2>&1 && systemctl is-active docker >/dev/null 2>
             # Allow outbound DNS traffic (both UDP and TCP)
             iptables -I FORWARD -s $SUBNET -p udp --dport 53 -j ACCEPT 2>/dev/null
             iptables -I FORWARD -s $SUBNET -p tcp --dport 53 -j ACCEPT 2>/dev/null
-            
+
+            # Allow outbound HTTPS traffic (port 443)
+            iptables -I FORWARD -s $SUBNET -p tcp --dport 443 -j ACCEPT 2>/dev/null
+
+            # Allow outbound HTTP traffic (port 80)
+            iptables -I FORWARD -s $SUBNET -p tcp --dport 80 -j ACCEPT 2>/dev/null
+
             # Allow return traffic for established connections
             iptables -I FORWARD -d $SUBNET -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT 2>/dev/null
         fi
