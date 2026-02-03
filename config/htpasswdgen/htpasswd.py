@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python3
 """Replacement for htpasswd"""
 # Original author: Eli Carter
 #http://trac.edgewall.org/browser/trunk/contrib/htpasswd.py

@@ -130,13 +130,13 @@ CPASS=$(/usr/bin/openssl rand -base64 21 | tr -dc 'a-zA-Z0-9')
 
 echo ""
 cecho "Creating cinfo_htpasswd user/pass..." $boldyellow
-echo "python /usr/local/nginx/conf/htpasswd.py -b /usr/local/nginx/conf/cinfo_htpasswd $CUSER $CPASS"
+echo "python3 /usr/local/nginx/conf/htpasswd.py -b /usr/local/nginx/conf/cinfo_htpasswd $CUSER $CPASS"
 
 if [ ! -f /usr/local/nginx/conf/cinfo_htpasswd ]; then
 	touch /usr/local/nginx/conf/cinfo_htpasswd
 fi
 
-python /usr/local/nginx/conf/htpasswd.py -b /usr/local/nginx/conf/cinfo_htpasswd $CUSER $CPASS
+python3 /usr/local/nginx/conf/htpasswd.py -b /usr/local/nginx/conf/cinfo_htpasswd $CUSER $CPASS
 
 echo "setup /usr/local/nginx/conf/phpallowed.conf"
 \cp -af /usr/local/nginx/conf/php.conf /usr/local/nginx/conf/phpallowed.conf

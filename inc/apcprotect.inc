@@ -8,7 +8,7 @@ you need to do 3 steps:
 1). Use htpasswd.py script at /usr/local/nginx/conf/htpasswd.py to setup
 username and password using following command:
 
-  python /usr/local/nginx/conf/htpasswd.py -b /usr/local/nginx/conf/htpasswd yourusername yourpassword
+  python3 /usr/local/nginx/conf/htpasswd.py -b /usr/local/nginx/conf/htpasswd yourusername yourpassword
 
 change yourusername and yourpassword to unique values of your own.
 
