@@ -30,7 +30,7 @@ DT=$(date +"%d%m%y-%H%M%S")
 branchname='141.00beta01'
 SCRIPT_MAJORVER='141'
 SCRIPT_MINORVER='00'
-SCRIPT_INCREMENTVER='136'
+SCRIPT_INCREMENTVER='137'
 SCRIPT_VERSIONSHORT="${branchname}"
 SCRIPT_VERSION="${SCRIPT_VERSIONSHORT}.b${SCRIPT_INCREMENTVER}"
 SCRIPT_DATE='16/08/25'
@@ -1009,7 +1009,7 @@ MYSQL_INSTALL='n'            # Install official Oracle MySQL Server (MariaDB alt
 SENDMAIL_INSTALL='n'         # Install Sendmail (and mailx) set to y and POSTFIX_INSTALL=n for sendmail
 POSTFIX_INSTALL=y            # Install Postfix (and mailx) set to n and SENDMAIL_INSTALL=y for sendmail
 # Nginx
-NGINX_VERSION='1.29.4'             # Use this version of Nginx
+NGINX_VERSION='1.29.5'             # Use this version of Nginx
 NGINX_ANGIE_VERSION='Angie-1.10.1'
 FREENGINX_VERSION='1.29.3'     # Maxim's Freenginx fork https://freenginx.org/en/download.html
 FREENGINX_INSTALL='n'          # Use Freenginx fork instead of official Nginx
