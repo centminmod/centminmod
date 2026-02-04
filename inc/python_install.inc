@@ -31,9 +31,13 @@ python_alternatives_setup() {
         if [[ "$(rpm -qa python3-requests | grep -o 'python3-requests')" != 'python3-requests' ]]; then
             yum -y install python3-requests
         fi
-    elif [[ "$PYTHON_INSTALL_ALTERNATIVES" = [yY] && "$CENTOS_NINE" -eq '9' ]] && [[ ! -f /usr/bin/python3 && ! -f /usr/bin/pip ]]; then
+    elif [[ "$PYTHON_INSTALL_ALTERNATIVES" = [yY] && "$CENTOS_NINE" -eq '9' ]]; then
         # ALT_PYTHON_VER_LABEL='3.11'
         ALT_PYTHON_VER_EL9='3.11'
+        # Remove python-unversioned-command if installed to avoid conflicts with alternatives
+        if rpm -q python-unversioned-command &>/dev/null; then
+            yum -y remove python-unversioned-command
+        fi
         if [ ! -f "/usr/bin/python${ALT_PYTHON_VER_EL9}" ]; then
             yum -y install python${ALT_PYTHON_VER_EL9}
         fi
@@ -43,11 +47,19 @@ python_alternatives_setup() {
         if [ ! -f "/usr/bin/pip${ALT_PYTHON_VER_EL9}" ]; then
             yum -y install python${ALT_PYTHON_VER_EL9}-pip
         fi
-        if [[ ! "$(alternatives --list | grep -E 'manual.*\/usr\/bin\/python')" && ! "$(alternatives --list | grep -E -i 'pip|python' | grep -E 'manual.*\/usr\/bin\/pip')" ]]; then
+        if [[ ! "$(alternatives --list | grep -E 'manual.*\/usr\/bin\/python')" || ! "$(alternatives --list | grep -E -i 'pip|python' | grep -E 'manual.*\/usr\/bin\/pip')" || ! -L /usr/bin/python || ! -L /usr/bin/pip ]]; then
             echo
             echo "Setup python${ALT_PYTHON_VER_EL9} and pip${ALT_PYTHON_VER_EL9} alternatives mapping"
             echo "you can reference pip for pip${ALT_PYTHON_VER_EL9}"
             echo "you can reference python for python${ALT_PYTHON_VER_EL9}"
+            # Move existing non-symlink files to allow alternatives to manage them
+            if [[ -f /usr/bin/python && ! -L /usr/bin/python ]]; then
+                mv /usr/bin/python /usr/bin/python.orig
+            fi
+            if [[ -f /usr/bin/pip && ! -L /usr/bin/pip ]]; then
+                mv /usr/bin/pip /usr/bin/pip.orig
+            fi
+            alternatives --install /usr/bin/python python /usr/bin/python${ALT_PYTHON_VER_EL9} 1
             alternatives --set python /usr/bin/python${ALT_PYTHON_VER_EL9}
             alternatives --install /usr/bin/pip pip /usr/bin/pip${ALT_PYTHON_VER_EL9} 1
             alternatives --set pip /usr/bin/pip${ALT_PYTHON_VER_EL9}
@@ -63,9 +75,13 @@ python_alternatives_setup() {
         if [[ "$(rpm -qa python3-requests | grep -o 'python3-requests')" != 'python3-requests' ]]; then
             yum -y install python3-requests
         fi
-    elif [[ "$PYTHON_INSTALL_ALTERNATIVES" = [yY] && "$CENTOS_TEN" -eq '10' ]] && [[ ! -f /usr/bin/python3 && ! -f /usr/bin/pip ]]; then
+    elif [[ "$PYTHON_INSTALL_ALTERNATIVES" = [yY] && "$CENTOS_TEN" -eq '10' ]]; then
         # EL10 ships with Python 3.12
         ALT_PYTHON_VER_EL10='3.12'
+        # Remove python-unversioned-command if installed to avoid conflicts with alternatives
+        if rpm -q python-unversioned-command &>/dev/null; then
+            yum -y remove python-unversioned-command
+        fi
         if [ ! -f "/usr/bin/python${ALT_PYTHON_VER_EL10}" ]; then
             yum -y install python${ALT_PYTHON_VER_EL10}
         fi
@@ -75,11 +91,19 @@ python_alternatives_setup() {
         if [ ! -f "/usr/bin/pip${ALT_PYTHON_VER_EL10}" ]; then
             yum -y install python${ALT_PYTHON_VER_EL10}-pip
         fi
-        if [[ ! "$(alternatives --list | grep -E 'manual.*\/usr\/bin\/python')" && ! "$(alternatives --list | grep -E -i 'pip|python' | grep -E 'manual.*\/usr\/bin\/pip')" ]]; then
+        if [[ ! "$(alternatives --list | grep -E 'manual.*\/usr\/bin\/python')" || ! "$(alternatives --list | grep -E -i 'pip|python' | grep -E 'manual.*\/usr\/bin\/pip')" || ! -L /usr/bin/python || ! -L /usr/bin/pip ]]; then
             echo
             echo "Setup python${ALT_PYTHON_VER_EL10} and pip${ALT_PYTHON_VER_EL10} alternatives mapping"
             echo "you can reference pip for pip${ALT_PYTHON_VER_EL10}"
             echo "you can reference python for python${ALT_PYTHON_VER_EL10}"
+            # Move existing non-symlink files to allow alternatives to manage them
+            if [[ -f /usr/bin/python && ! -L /usr/bin/python ]]; then
+                mv /usr/bin/python /usr/bin/python.orig
+            fi
+            if [[ -f /usr/bin/pip && ! -L /usr/bin/pip ]]; then
+                mv /usr/bin/pip /usr/bin/pip.orig
+            fi
+            alternatives --install /usr/bin/python python /usr/bin/python${ALT_PYTHON_VER_EL10} 1
             alternatives --set python /usr/bin/python${ALT_PYTHON_VER_EL10}
             alternatives --install /usr/bin/pip pip /usr/bin/pip${ALT_PYTHON_VER_EL10} 1
             alternatives --set pip /usr/bin/pip${ALT_PYTHON_VER_EL10}
