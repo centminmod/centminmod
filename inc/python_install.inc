@@ -11,7 +11,7 @@ python_alternatives_setup() {
         if [ ! -f "/usr/bin/pip${ALT_PYTHON_VER_LABEL}" ]; then
             yum -y install python3-pip
         fi
-        if [[ ! "$(alternatives --list | grep -E 'manual.*\/usr\/bin\/python3')" && ! "$(alternatives --list | grep -E -i 'pip|python' | grep -E 'manual.*\/usr\/bin\/pip3')" ]]; then
+        if [[ ! "$(alternatives --list | grep -E 'manual.*/usr/bin/python3')" && ! "$(alternatives --list | grep -E -i 'pip|python' | grep -E 'manual.*/usr/bin/pip3')" ]]; then
             echo
             echo "Setup python3 and pip3 alternatives mapping"
             echo "you can reference pip for pip3"
@@ -47,7 +47,7 @@ python_alternatives_setup() {
         if [ ! -f "/usr/bin/pip${ALT_PYTHON_VER_EL9}" ]; then
             yum -y install python${ALT_PYTHON_VER_EL9}-pip
         fi
-        if [[ ! "$(alternatives --list | grep -E 'manual.*\/usr\/bin\/python')" || ! "$(alternatives --list | grep -E -i 'pip|python' | grep -E 'manual.*\/usr\/bin\/pip')" || ! -L /usr/bin/python || ! -L /usr/bin/pip ]]; then
+        if [[ ! "$(alternatives --list | grep -E 'manual.*/usr/bin/python')" || ! "$(alternatives --list | grep -E -i 'pip|python' | grep -E 'manual.*/usr/bin/pip')" || ! -L /usr/bin/python || ! -L /usr/bin/pip ]]; then
             echo
             echo "Setup python${ALT_PYTHON_VER_EL9} and pip${ALT_PYTHON_VER_EL9} alternatives mapping"
             echo "you can reference pip for pip${ALT_PYTHON_VER_EL9}"
@@ -91,7 +91,7 @@ python_alternatives_setup() {
         if [ ! -f "/usr/bin/pip${ALT_PYTHON_VER_EL10}" ]; then
             yum -y install python${ALT_PYTHON_VER_EL10}-pip
         fi
-        if [[ ! "$(alternatives --list | grep -E 'manual.*\/usr\/bin\/python')" || ! "$(alternatives --list | grep -E -i 'pip|python' | grep -E 'manual.*\/usr\/bin\/pip')" || ! -L /usr/bin/python || ! -L /usr/bin/pip ]]; then
+        if [[ ! "$(alternatives --list | grep -E 'manual.*/usr/bin/python')" || ! "$(alternatives --list | grep -E -i 'pip|python' | grep -E 'manual.*/usr/bin/pip')" || ! -L /usr/bin/python || ! -L /usr/bin/pip ]]; then
             echo
             echo "Setup python${ALT_PYTHON_VER_EL10} and pip${ALT_PYTHON_VER_EL10} alternatives mapping"
             echo "you can reference pip for pip${ALT_PYTHON_VER_EL10}"
