@@ -11,7 +11,7 @@ python_alternatives_setup() {
         if [ ! -f "/usr/bin/pip${ALT_PYTHON_VER_LABEL}" ]; then
             yum -y install python3-pip
         fi
-        if [[ ! "$(alternatives --list | grep -E 'manual.*\/usr\/bin\/python3')" && ! "$(alternatives --list | grep -E -i 'pip|python' | grep -E 'manual.*\/usr\/bin\/pip3')" ]]; then
+        if [[ ! "$(alternatives --list | grep -E 'manual.*/usr/bin/python3')" && ! "$(alternatives --list | grep -E -i 'pip|python' | grep -E 'manual.*/usr/bin/pip3')" ]]; then
             echo
             echo "Setup python3 and pip3 alternatives mapping"
             echo "you can reference pip for pip3"
@@ -47,7 +47,7 @@ python_alternatives_setup() {
         if [ ! -f "/usr/bin/pip${ALT_PYTHON_VER_EL9}" ]; then
             yum -y install python${ALT_PYTHON_VER_EL9}-pip
         fi
-        if [[ ! "$(alternatives --list | grep -E 'manual.*\/usr\/bin\/python')" || ! "$(alternatives --list | grep -E -i 'pip|python' | grep -E 'manual.*\/usr\/bin\/pip')" || ! -L /usr/bin/python || ! -L /usr/bin/pip ]]; then
+        if [[ ! "$(alternatives --list | grep -E 'manual.*/usr/bin/python')" || ! "$(alternatives --list | grep -E -i 'pip|python' | grep -E 'manual.*/usr/bin/pip')" || ! -L /usr/bin/python || ! -L /usr/bin/pip ]]; then
             echo
             echo "Setup python${ALT_PYTHON_VER_EL9} and pip${ALT_PYTHON_VER_EL9} alternatives mapping"
             echo "you can reference pip for pip${ALT_PYTHON_VER_EL9}"
@@ -66,8 +66,8 @@ python_alternatives_setup() {
             alternatives --list | grep -E -i 'pip|python'
             echo
         else
-            echo
-            echo "Skip python${ALT_PYTHON_VER_EL9} and pip${ALT_PYTHON_VER_EL9} alternatives mapping"
+            :
+            # echo "Skip python${ALT_PYTHON_VER_EL9} and pip${ALT_PYTHON_VER_EL9} alternatives mapping"
         fi
         if [[ "$(rpm -qa python3-numpy | grep -o 'python3-numpy')" != 'python3-numpy' ]]; then
             yum -y install python3-numpy
@@ -83,15 +83,15 @@ python_alternatives_setup() {
             yum -y remove python-unversioned-command
         fi
         if [ ! -f "/usr/bin/python${ALT_PYTHON_VER_EL10}" ]; then
-            yum -y install python${ALT_PYTHON_VER_EL10}
+            yum -yq install python${ALT_PYTHON_VER_EL10}
         fi
         if [[ ! "$(rpm -qa python${ALT_PYTHON_VER_EL10}-devel)" ]]; then
-            yum -y install python${ALT_PYTHON_VER_EL10}-devel
+            yum -yq install python${ALT_PYTHON_VER_EL10}-devel
         fi
         if [ ! -f "/usr/bin/pip${ALT_PYTHON_VER_EL10}" ]; then
-            yum -y install python${ALT_PYTHON_VER_EL10}-pip
+            yum -yq install python${ALT_PYTHON_VER_EL10}-pip
         fi
-        if [[ ! "$(alternatives --list | grep -E 'manual.*\/usr\/bin\/python')" || ! "$(alternatives --list | grep -E -i 'pip|python' | grep -E 'manual.*\/usr\/bin\/pip')" || ! -L /usr/bin/python || ! -L /usr/bin/pip ]]; then
+        if [[ ! "$(alternatives --list | grep -E 'manual.*/usr/bin/python')" || ! "$(alternatives --list | grep -E -i 'pip|python' | grep -E 'manual.*/usr/bin/pip')" || ! -L /usr/bin/python || ! -L /usr/bin/pip ]]; then
             echo
             echo "Setup python${ALT_PYTHON_VER_EL10} and pip${ALT_PYTHON_VER_EL10} alternatives mapping"
             echo "you can reference pip for pip${ALT_PYTHON_VER_EL10}"
@@ -110,8 +110,8 @@ python_alternatives_setup() {
             alternatives --list | grep -E -i 'pip|python'
             echo
         else
-            echo
-            echo "Skip python${ALT_PYTHON_VER_EL10} and pip${ALT_PYTHON_VER_EL10} alternatives mapping"
+            :
+            # echo "Skip python${ALT_PYTHON_VER_EL10} and pip${ALT_PYTHON_VER_EL10} alternatives mapping"
         fi
         if [[ "$(rpm -qa python3-numpy | grep -o 'python3-numpy')" != 'python3-numpy' ]]; then
             yum -y install python3-numpy
