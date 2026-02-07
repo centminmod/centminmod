@@ -30,7 +30,7 @@ DT=$(date +"%d%m%y-%H%M%S")
 branchname='140.00beta01'
 SCRIPT_MAJORVER='140'
 SCRIPT_MINORVER='00'
-SCRIPT_INCREMENTVER='283'
+SCRIPT_INCREMENTVER='288'
 SCRIPT_VERSIONSHORT="${branchname}"
 SCRIPT_VERSION="${SCRIPT_VERSIONSHORT}.b${SCRIPT_INCREMENTVER}"
 SCRIPT_DATE='16/01/25'
@@ -1150,7 +1150,7 @@ MONGODBPHP_EIGHTTHREE_VER='1.21.2'   # MongoDB PHP 8.3+ version
 MONGODBPHP_EIGHTFOUR_VER='1.21.2'    # MongoDB PHP 8.4+ version
 MONGODBPHP_EIGHTFIVE_VER='1.21.2'    # MongoDB PHP 8.5+ version
 MONGODB_SASL='n'            # SASL not working yet leave = n
-PDOPGSQL_PHPVER='11'        # pdo-pgsql PHP extension version for postgresql
+PDOPGSQL_PHPVER='18'        # pdo-pgsql PHP extension version for postgresql
 PHP_LIBZIP='n'              # use newer libzip instead of PHP embedded zip
 PHP_ARGON='y'               # alias for PHP_LIBZIP, when PHP_ARGON='y' then PHP_LIBZIP='y'
 LIBZIP_VER='1.10.1'          # required for PHP 7.2 + with libsodium & argon2
@@ -1169,8 +1169,8 @@ PHP_ZSTD='n'                # zstd php extension https://github.com/kjdev/php-ex
 
 SHORTCUTS='y'                # shortcuts
 
-POSTGRESQL='n'               # set to =y to install PostgreSQL 9.6 server, devel packages and pdo-pgsql PHP extension
-POSTGRESQL_BRANCHVER='17'   # PostgresSQL branch version https://www.postgresql.org/ i.e. 16
+POSTGRESQL='n'               # set to =y to install PostgreSQL server, devel packages and pdo-pgsql PHP extension
+POSTGRESQL_BRANCHVER='18'   # PostgresSQL branch version https://www.postgresql.org/ i.e. 16
 
 IMAGEMAGICK_HEIF='n'           # experimental ImageMagick HEIF image format support
 IMAGEMAGICK_SEVEN='n'          # for EL8/EL9 ImageMagick7 7.x install instead of ImageMagick 6.x
@@ -1221,7 +1221,7 @@ MYSQL_INSTALL='n'            # Install official Oracle MySQL Server (MariaDB alt
 SENDMAIL_INSTALL='n'         # Install Sendmail (and mailx) set to y and POSTFIX_INSTALL=n for sendmail
 POSTFIX_INSTALL=y            # Install Postfix (and mailx) set to n and SENDMAIL_INSTALL=y for sendmail
 # Nginx
-NGINX_VERSION='1.29.4'             # Use this version of Nginx
+NGINX_VERSION='1.29.5'             # Use this version of Nginx
 NGINX_ANGIE_VERSION='Angie-1.10.1'
 FREENGINX_VERSION='1.29.2'     # Maxim's Freenginx fork https://freenginx.org/en/download.html
 FREENGINX_INSTALL='n'          # Use Freenginx fork instead of official Nginx
