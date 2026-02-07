@@ -4951,7 +4951,7 @@
 # PDO PostgreSQL Extension Version
 # PostgreSQL version for pdo-pgsql extension
 # Git History: First added 2016-01-12 (903fad47), Last modified 2016-02-15 (7240145c)
-#PDOPGSQL_PHPVER='11'  
+#PDOPGSQL_PHPVER='18'
 
 ################################################################################
 # 28. PHP EXTENSIONS - IMAGES
@@ -5260,11 +5260,10 @@
 #   - Creates pgsql and pdo_pgsql PHP extensions
 #   - Version controlled by PDOPGSQL_PHPVER variable (default: auto-detect latest)
 # OS COMPATIBILITY:
-#   - EL6: Fully supported (PostgreSQL 9.x-13.x)
-#   - EL7: Fully supported (PostgreSQL 10.x-16.x)
-#   - EL8: Fully supported (PostgreSQL 12.x-16.x)
-#   - EL9: Fully supported (PostgreSQL 13.x-17.x)
-#   - EL10: Fully supported (PostgreSQL 14.x-17.x)
+#   - EL7: PostgreSQL 9.6-15 (15 is max; 16+ not available from PGDG)
+#   - EL8: PostgreSQL 14-18 (18 recommended default)
+#   - EL9: PostgreSQL 14-18 (18 recommended default)
+#   - EL10: PostgreSQL 14-18 (18 recommended default)
 # PACKAGES INSTALLED:
 #   - postgresql{VER}-server: PostgreSQL database server
 #   - postgresql{VER}-devel: Development headers for compilation
@@ -5302,7 +5301,7 @@
 # PostgreSQL major version to install
 # Reference: https://www.postgresql.org/
 # Git History: Added 2019-02-07 (57108912)
-#POSTGRESQL_BRANCHVER='17'
+#POSTGRESQL_BRANCHVER='18'
 
 ################################################################################
 # 32. REDIS SERVER SETTINGS

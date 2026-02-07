@@ -36,7 +36,7 @@ postgresql_submenu() {
       3)
         # Detect installed PostgreSQL version
         PGSQL_VER=""
-        for ver in 18 17 16 15 13 12 11 10 9.6; do
+        for ver in 18 17 16 15 14; do
           if [[ -f "/usr/pgsql-${ver}/bin/pg_config" ]]; then
             PGSQL_VER="$ver"
             break
@@ -145,7 +145,7 @@ pgsql_check_version() {
   # Show available upgrade paths
   echo ""
   echo "=== Available Upgrade Paths ==="
-  echo "  Supported: 16 → 17, 17 → 18"
+  echo "  Supported: 14 → 15, 15 → 16, 16 → 17, 17 → 18"
   echo "  Reference: https://www.postgresql.org/docs/current/pgupgrade.html"
 
   echo
@@ -186,13 +186,8 @@ pgsql_preupgrade_check() {
     16) PGSQL_NEW="17" ;;
     15) PGSQL_NEW="16" ;;
     14) PGSQL_NEW="15" ;;
-    13) PGSQL_NEW="14" ;;
-    12) PGSQL_NEW="13" ;;
-    11) PGSQL_NEW="12" ;;
-    10) PGSQL_NEW="11" ;;
-    9.6) PGSQL_NEW="10" ;;
     *)
-      cecho "Error: Unknown version ${PGSQL_OLD}" "$boldred"
+      cecho "Error: Upgrade not supported for EOL version ${PGSQL_OLD}. Supported: 14 -> 15, 15 -> 16, 16 -> 17, 17 -> 18" "$boldred"
       echo
       read -rep "Press [Enter] to continue..."
       return
@@ -318,10 +313,8 @@ pgsql_upgrade_execute() {
     16) PGSQL_NEW="17" ;;
     15) PGSQL_NEW="16" ;;
     14) PGSQL_NEW="15" ;;
-    13) PGSQL_NEW="14" ;;
-    12) PGSQL_NEW="13" ;;
     *)
-      cecho "Error: Upgrade path not supported for version ${PGSQL_OLD}" "$boldred"
+      cecho "Error: Upgrade not supported for EOL version ${PGSQL_OLD}. Supported: 14 -> 15, 15 -> 16, 16 -> 17, 17 -> 18" "$boldred"
       echo
       read -rep "Press [Enter] to continue..."
       return
