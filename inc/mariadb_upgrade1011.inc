@@ -1652,7 +1652,7 @@ mariadbtensixtotenelevenupgrade() {
             echo "*************************************************"
             cecho "MariaDB 10.11.x YUM install (recovery)..." $boldgreen
             echo "*************************************************"
-            time yum -y install MariaDB-client MariaDB-common MariaDB-compat MariaDB-devel MariaDB-server MariaDB-shared --disablerepo=epel --disableplugin=priorities
+            time yum -y install MariaDB-client MariaDB-common MariaDB-devel MariaDB-server MariaDB-shared --disablerepo=epel --disableplugin=priorities
 
             # Run post-install steps
             mariadb1011_postinstall
@@ -1799,10 +1799,10 @@ fi
 echo ""
     echo "*************************************************"
 cecho "MariaDB 10.11.x check available packages" $boldgreen
-cecho "yum -q list MariaDB-client MariaDB-common MariaDB-compat MariaDB-devel MariaDB-server MariaDB-shared --disablerepo=epel --disableplugin=priorities" $boldgreen
+cecho "yum -q list MariaDB-client MariaDB-common MariaDB-devel MariaDB-server MariaDB-shared --disablerepo=epel --disableplugin=priorities" $boldgreen
     echo "*************************************************"
 echo ""
-time yum -q list MariaDB-client MariaDB-common MariaDB-compat MariaDB-devel MariaDB-server MariaDB-shared --disablerepo=epel --disableplugin=priorities
+time yum -q list MariaDB-client MariaDB-common MariaDB-devel MariaDB-server MariaDB-shared --disablerepo=epel --disableplugin=priorities
 
     if command -v figlet >/dev/null 2>&1; then
         figlet -ckf standard "MariaDB 10.11.x Install"
@@ -1811,10 +1811,10 @@ time yum -q list MariaDB-client MariaDB-common MariaDB-compat MariaDB-devel Mari
 echo ""
     echo "*************************************************"
 cecho "MariaDB 10.11.x YUM install..." $boldgreen
-cecho "yum -y install MariaDB-client MariaDB-common MariaDB-compat MariaDB-devel MariaDB-server MariaDB-shared --disablerepo=epel --disableplugin=priorities" $boldgreen
+cecho "yum -y install MariaDB-client MariaDB-common MariaDB-devel MariaDB-server MariaDB-shared --disablerepo=epel --disableplugin=priorities" $boldgreen
     echo "*************************************************"
 echo ""
-time yum -y install MariaDB-client MariaDB-common MariaDB-compat MariaDB-devel MariaDB-server MariaDB-shared --disablerepo=epel --disableplugin=priorities
+time yum -y install MariaDB-client MariaDB-common MariaDB-devel MariaDB-server MariaDB-shared --disablerepo=epel --disableplugin=priorities
 
 # Call extracted post-install function - 2025-12-30 refactoring
 # Replaces ~300 lines of inline code with reusable function

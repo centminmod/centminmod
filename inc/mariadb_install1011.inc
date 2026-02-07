@@ -1239,10 +1239,10 @@ if [[ "$CENTOS_SIX" = '6' ]]; then
     echo ""
     echo "*************************************************"
     cecho "MariaDB 10.11.x YUM install..." $boldgreen
-    cecho "yum -q -y install MariaDB-client MariaDB-common MariaDB-compat MariaDB-devel MariaDB-server MariaDB-shared${DISABLEOTHERREPO}" $boldgreen
+    cecho "yum -q -y install MariaDB-client MariaDB-common MariaDB-devel MariaDB-server MariaDB-shared${DISABLEOTHERREPO}" $boldgreen
     echo "*************************************************"
     echo ""
-    time yum -y install MariaDB-client MariaDB-common MariaDB-compat MariaDB-devel MariaDB-server MariaDB-shared${DISABLEOTHERREPO}
+    time yum -y install MariaDB-client MariaDB-common MariaDB-devel MariaDB-server MariaDB-shared${DISABLEOTHERREPO}
 
     cp -a /etc/my.cnf /etc/my.cnf-newold
 elif [[ "$CENTOS_SEVEN" = '7' ]]; then
@@ -1253,10 +1253,10 @@ elif [[ "$CENTOS_SEVEN" = '7' ]]; then
     echo ""
     echo "*************************************************"
     cecho "MariaDB 10.11.x YUM install..." $boldgreen
-    cecho "yum -y install MariaDB-client MariaDB-common MariaDB-compat MariaDB-devel MariaDB-server MariaDB-shared${DISABLEOTHERREPO}" $boldgreen
+    cecho "yum -y install MariaDB-client MariaDB-common MariaDB-devel MariaDB-server MariaDB-shared${DISABLEOTHERREPO}" $boldgreen
     echo "*************************************************"
     echo ""
-    time time $YUMDNFBIN -y install MariaDB-client MariaDB-common MariaDB-compat MariaDB-devel MariaDB-server MariaDB-shared${DISABLEOTHERREPO}
+    time time $YUMDNFBIN -y install MariaDB-client MariaDB-common MariaDB-devel MariaDB-server MariaDB-shared${DISABLEOTHERREPO}
 
     cp -a /etc/my.cnf /etc/my.cnf-newold
 elif [[ "$CENTOS_EIGHT" = '8' ]]; then
