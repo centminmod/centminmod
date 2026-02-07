@@ -296,8 +296,7 @@ postgresqlinstall() {
             ipv_forceopt_pgsl=' -4'
         fi
         if [[ "$CENTOS_TEN" = '10' ]]; then
-            # install postgresql 16 instead of default el10 module postgresql 13
-            time dnf -y module disable postgresql
+            # install postgresql 16 from PGDG repository on EL10
             wget${ipv_forceopt_pgsl} https://download.postgresql.org/pub/repos/yum/reporpms/EL-10-x86_64/pgdg-redhat-repo-latest.noarch.rpm -O ${DIR_TMP}/pgdg-redhat-repo-latest.noarch.rpm
             # rpm --import https://download.postgresql.org/pub/repos/yum/RPM-GPG-KEY-PGDG
             rpm --import https://download.postgresql.org/pub/repos/yum/keys/PGDG-RPM-GPG-KEY-RHEL
@@ -376,8 +375,7 @@ postgresqlinstall() {
             ipv_forceopt_pgsl=' -4'
         fi
         if [[ "$CENTOS_TEN" = '10' ]]; then
-            # install postgresql 17 instead of default el10 module postgresql 13
-            time dnf -y module disable postgresql
+            # install postgresql 17 from PGDG repository on EL10
             wget${ipv_forceopt_pgsl} https://download.postgresql.org/pub/repos/yum/reporpms/EL-10-x86_64/pgdg-redhat-repo-latest.noarch.rpm -O ${DIR_TMP}/pgdg-redhat-repo-latest.noarch.rpm
             # rpm --import https://download.postgresql.org/pub/repos/yum/RPM-GPG-KEY-PGDG
             rpm --import https://download.postgresql.org/pub/repos/yum/keys/PGDG-RPM-GPG-KEY-RHEL
@@ -456,8 +454,7 @@ postgresqlinstall() {
             ipv_forceopt_pgsl=' -4'
         fi
         if [[ "$CENTOS_TEN" = '10' ]]; then
-            # install postgresql 18 instead of default el10 module postgresql 13
-            time dnf -y module disable postgresql
+            # install postgresql 18 from PGDG repository on EL10
             wget${ipv_forceopt_pgsl} https://download.postgresql.org/pub/repos/yum/reporpms/EL-10-x86_64/pgdg-redhat-repo-latest.noarch.rpm -O ${DIR_TMP}/pgdg-redhat-repo-latest.noarch.rpm
             # rpm --import https://download.postgresql.org/pub/repos/yum/RPM-GPG-KEY-PGDG
             rpm --import https://download.postgresql.org/pub/repos/yum/keys/PGDG-RPM-GPG-KEY-RHEL
