@@ -3,6 +3,8 @@ backupmsg123() {
 echo ""
 cat <<EOF
 -------------------------------------------------------------------------------
+MariaDB 12.3 LTS is a Release Candidate Version Not Ready For Production Use
+-------------------------------------------------------------------------------
  This script's MariaDB 12.3.x upgrade process is still in beta testing stages. 
  So please test on a test server and not a live production server. But if you use 
  on live server or if MySQL databases already exist, please back them up before 
