@@ -3052,8 +3052,8 @@ multiphpcheck() {
 }
 
 mjemalloc() {
-    if [ -f /usr/bin/mysqladmin ]; then
-      JEMALLOC_MARIADBVER=$(mysqladmin -V | awk '{print $5}' | sed -e 's|,||g' -e 's|-||g' -e 's|MariaDB||' | cut -d . -f1,2)
+    if [ -f /usr/bin/mysqladmin ] || [ -f /usr/bin/mariadb-admin ]; then
+      JEMALLOC_MARIADBVER=$(${ALIAS_MYSQLADMIN} -V | awk '{print $5}' | sed -e 's|,||g' -e 's|-||g' -e 's|MariaDB||' | cut -d . -f1,2)
     fi
     if [[ "$JEMALLOC_MARIADBVER" = 10.[56] ]]; then
       jemalloc_mariadb_bin='mariadbd'
