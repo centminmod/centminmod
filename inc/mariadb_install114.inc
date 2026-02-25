@@ -1,7 +1,13 @@
 perdbiinstall() {
     # PERLDBICHECK=$(rpm -qa perl-DBD-MySQL)
-    if [[ $(rpm -q perl-DBD-MySQL >/dev/null 2>&1; echo $?) != '0' ]]; then
-        yum${CACHESKIP} -q -y install perl-DBD-MySQL --disableplugin=priorities
+    if [[ "$CENTOS_TEN" -eq '10' ]]; then
+        if [[ $(rpm -q perl-DBD-MariaDB >/dev/null 2>&1; echo $?) != '0' ]]; then
+            yum${CACHESKIP} -q -y install perl-DBD-MariaDB --disableplugin=priorities
+        fi
+    else
+        if [[ $(rpm -q perl-DBD-MySQL >/dev/null 2>&1; echo $?) != '0' ]]; then
+            yum${CACHESKIP} -q -y install perl-DBD-MySQL --disableplugin=priorities
+        fi
     fi
     if [[ $(rpm -q net-snmp-devel >/dev/null 2>&1; echo $?) != '0' ]]; then
         yum${CACHESKIP} -q -y install cyrus-imapd mytop net-snmp net-snmp-agent-libs net-snmp-devel --disableplugin=priorities

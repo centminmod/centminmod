@@ -49,6 +49,8 @@ remove_mariadb_ten_eleven_native_module() {
   OLD_MARIADB_SERVER=$(rpm -qa | grep mariadb | awk '/mariadb-server/')
   OLD_MARIADB_CONNECTOR_C=$(rpm -qa | grep mariadb | awk '/mariadb-connector-c/')
   OLD_MARIADB_BACKUP=$(rpm -qa | grep mariadb | awk '/mariadb-backup/')
+  OLD_MARIADB_CLIENT_UTILS=$(rpm -qa | grep mariadb | awk '/mariadb-client-utils/')
+  OLD_MARIADB_BASE=$(rpm -q mariadb 2>/dev/null)
   OLDGALERA=$(rpm -qa | grep galera | awk '/galera/')
 
   # echo "${ALIAS_MYSQL} -e \"SET GLOBAL innodb_fast_shutdown = 1;\""
@@ -60,7 +62,7 @@ remove_mariadb_ten_eleven_native_module() {
   echo "systemctl stop mariadb"
   systemctl stop mariadb
   
-  yum -q -y remove perl-DBD-MySQL
+  yum -q -y remove perl-DBD-MySQL perl-DBD-MariaDB
   
   echo "rpm -e --nodeps $OLD_MARIADB_CONNECTOR_C_CONFIG"
   echo "rpm -e --nodeps $OLD_MARIADB_COMMON"
@@ -70,6 +72,8 @@ remove_mariadb_ten_eleven_native_module() {
   echo "rpm -e --nodeps $OLD_MARIADB_SERVER"
   echo "rpm -e --nodeps $OLD_MARIADB_CONNECTOR_C"
   echo "rpm -e --nodeps $OLD_MARIADB_BACKUP"
+  echo "rpm -e --nodeps $OLD_MARIADB_CLIENT_UTILS"
+  echo "rpm -e --nodeps $OLD_MARIADB_BASE"
   echo "rpm -e --nodeps $OLDGALERA"
   
   rpm -e --nodeps $OLD_MARIADB_CONNECTOR_C_CONFIG
@@ -80,6 +84,8 @@ remove_mariadb_ten_eleven_native_module() {
   rpm -e --nodeps $OLD_MARIADB_SERVER
   rpm -e --nodeps $OLD_MARIADB_CONNECTOR_C
   rpm -e --nodeps $OLD_MARIADB_BACKUP
+  rpm -e --nodeps $OLD_MARIADB_CLIENT_UTILS
+  rpm -e --nodeps $OLD_MARIADB_BASE
   rpm -e --nodeps $OLDGALERA
   
   yum -y module disable mariadb
@@ -132,7 +138,7 @@ remove_mariadb_ten_eleven() {
   echo "systemctl stop mariadb"
   systemctl stop mariadb
   
-  yum -q -y remove perl-DBD-MySQL
+  yum -q -y remove perl-DBD-MySQL perl-DBD-MariaDB
   
   echo "rpm -e $OLDMARIADBTEST"
   echo "rpm -e $OLDMARIADBSERVER"
