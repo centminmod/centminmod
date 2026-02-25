@@ -301,10 +301,10 @@ fi
   fi
 centminlog
 {
-MARIADBVERCHECK=`rpm -qa | grep MariaDB-server | awk -F "-" '{print $3}' | cut -c1-3`
+MARIADBVERCHECK=`rpm -qa | grep 'MariaDB-server-[0-9]' | awk -F "-" '{print $3}' | cut -c1-3`
 
 # for MariaDB 5.2 upgrade option
-if [[ "$MARIADBVERCHECK" == '5.3' || "$MARIADBVERCHECK" == '5.5' || $(rpm -qa | grep MariaDB-server | awk -F "-" '{print $3}' | cut -c1-4) = '10.0' || $(rpm -qa | grep MariaDB-server | awk -F "-" '{print $3}' | cut -c1-4) = '10.1' || $(rpm -qa | grep MariaDB-server | awk -F "-" '{print $3}' | cut -c1-4) = '10.2' ]]; then
+if [[ "$MARIADBVERCHECK" == '5.3' || "$MARIADBVERCHECK" == '5.5' || $(rpm -qa | grep 'MariaDB-server-[0-9]' | awk -F "-" '{print $3}' | cut -c1-4) = '10.0' || $(rpm -qa | grep 'MariaDB-server-[0-9]' | awk -F "-" '{print $3}' | cut -c1-4) = '10.1' || $(rpm -qa | grep 'MariaDB-server-[0-9]' | awk -F "-" '{print $3}' | cut -c1-4) = '10.2' ]]; then
 
 echo ""
 cecho "MariaDB 5.3.x or 5.5.x server detected" $boldyellow
@@ -328,10 +328,10 @@ fi
   fi
 centminlog
 {
-MARIADBVERCHECK=`rpm -qa | grep MariaDB-server | awk -F "-" '{print $3}' | cut -c1-3`
+MARIADBVERCHECK=`rpm -qa | grep 'MariaDB-server-[0-9]' | awk -F "-" '{print $3}' | cut -c1-3`
 
 # for MariaDB 5.5 upgrade option
-if [[ "$MARIADBVERCHECK" = '5.5' || $(rpm -qa | grep MariaDB-server | awk -F "-" '{print $3}' | cut -c1-4) = '10.0' || $(rpm -qa | grep MariaDB-server | awk -F "-" '{print $3}' | cut -c1-4) = '10.1' || $(rpm -qa | grep MariaDB-server | awk -F "-" '{print $3}' | cut -c1-4) = '10.2' ]]; then
+if [[ "$MARIADBVERCHECK" = '5.5' || $(rpm -qa | grep 'MariaDB-server-[0-9]' | awk -F "-" '{print $3}' | cut -c1-4) = '10.0' || $(rpm -qa | grep 'MariaDB-server-[0-9]' | awk -F "-" '{print $3}' | cut -c1-4) = '10.1' || $(rpm -qa | grep 'MariaDB-server-[0-9]' | awk -F "-" '{print $3}' | cut -c1-4) = '10.2' ]]; then
 
 echo ""
 cecho "MariaDB 5.5.x server already detected" $boldyellow
@@ -358,8 +358,8 @@ fi
   fi
 centminlog
 {
-MARIADBVERCHECK=`rpm -qa | grep MariaDB-server | awk -F "-" '{print $3}' | cut -c1-4`
-  if [[ "$MARIADBVERCHECK" = '10.0' || $(rpm -qa | grep MariaDB-server | awk -F "-" '{print $3}' | cut -c1-4) = '10.1' || $(rpm -qa | grep MariaDB-server | awk -F "-" '{print $3}' | cut -c1-4) = '10.2' ]]; then
+MARIADBVERCHECK=`rpm -qa | grep 'MariaDB-server-[0-9]' | awk -F "-" '{print $3}' | cut -c1-4`
+  if [[ "$MARIADBVERCHECK" = '10.0' || $(rpm -qa | grep 'MariaDB-server-[0-9]' | awk -F "-" '{print $3}' | cut -c1-4) = '10.1' || $(rpm -qa | grep 'MariaDB-server-[0-9]' | awk -F "-" '{print $3}' | cut -c1-4) = '10.2' ]]; then
 
     echo ""
     cecho "MariaDB 10.x server already detected" $boldyellow
@@ -382,8 +382,8 @@ MARIADBVERCHECK=`rpm -qa | grep MariaDB-server | awk -F "-" '{print $3}' | cut -
   fi
 centminlog
 {
-MARIADBVERCHECK=`rpm -qa | grep MariaDB-server | awk -F "-" '{print $3}' | cut -c1-4`
-  if [[ "$MARIADBVERCHECK" = '10.1' || $(rpm -qa | grep MariaDB-server | awk -F "-" '{print $3}' | cut -c1-4) = '10.2' ]]; then
+MARIADBVERCHECK=`rpm -qa | grep 'MariaDB-server-[0-9]' | awk -F "-" '{print $3}' | cut -c1-4`
+  if [[ "$MARIADBVERCHECK" = '10.1' || $(rpm -qa | grep 'MariaDB-server-[0-9]' | awk -F "-" '{print $3}' | cut -c1-4) = '10.2' ]]; then
 
     echo ""
     cecho "MariaDB 10.1.x server already detected" $boldyellow
@@ -406,7 +406,7 @@ MARIADBVERCHECK=`rpm -qa | grep MariaDB-server | awk -F "-" '{print $3}' | cut -
   fi
 centminlog
 {
-MARIADBVERCHECK=`rpm -qa | grep MariaDB-server | awk -F "-" '{print $3}' | cut -c1-4`
+MARIADBVERCHECK=`rpm -qa | grep 'MariaDB-server-[0-9]' | awk -F "-" '{print $3}' | cut -c1-4`
   if [[ "$MARIADBVERCHECK" = '10.1' ]]; then
 
     echo ""
@@ -431,7 +431,7 @@ MARIADBVERCHECK=`rpm -qa | grep MariaDB-server | awk -F "-" '{print $3}' | cut -
   fi
 centminlog
 {
-MARIADBVERCHECK=`rpm -qa | grep MariaDB-server | awk -F "-" '{print $3}' | cut -c1-4`
+MARIADBVERCHECK=`rpm -qa | grep 'MariaDB-server-[0-9]' | awk -F "-" '{print $3}' | cut -c1-4`
   if [[ "$MARIADBVERCHECK" = '10.2' ]]; then
 
     echo ""
@@ -463,7 +463,7 @@ MARIADBVERCHECK=`rpm -qa | grep MariaDB-server | awk -F "-" '{print $3}' | cut -
   fi
 centminlog
 {
-MARIADBVERCHECK=`rpm -qa | grep MariaDB-server | awk -F "-" '{print $3}' | cut -c1-4`
+MARIADBVERCHECK=`rpm -qa | grep 'MariaDB-server-[0-9]' | awk -F "-" '{print $3}' | cut -c1-4`
   if [[ "$MARIADBVERCHECK" = '10.3' ]]; then
 
     echo ""
@@ -495,10 +495,14 @@ MARIADBVERCHECK=`rpm -qa | grep MariaDB-server | awk -F "-" '{print $3}' | cut -
   fi
 centminlog
 {
-  if [[ "$CENTOS_EIGHT" -eq '8' && "$(rpm -qa | grep mariadb | awk '/mariadb-server-utils/')" ]]; then
+  if [[ "$CENTOS_TEN" -eq '10' && "$(rpm -qa | grep mariadb | awk '/mariadb-server-utils/')" ]]; then
+    MARIADBVERCHECK=`rpm -qa | grep mariadb-server | grep -v utils | awk -F "-" '{print $3}' | cut -c1-4`
+  elif [[ "$CENTOS_TEN" -eq '10' && "$(rpm -qa | grep 'MariaDB-server-[0-9]')" ]]; then
+    MARIADBVERCHECK=`rpm -qa | grep 'MariaDB-server-[0-9]' | awk -F "-" '{print $3}' | cut -c1-4`
+  elif [[ "$CENTOS_EIGHT" -eq '8' && "$(rpm -qa | grep mariadb | awk '/mariadb-server-utils/')" ]]; then
     MARIADBVERCHECK=`rpm -qa | grep mariadb-server | grep -v utils | awk -F "-" '{print $3}' | cut -c1-4`
   else
-    MARIADBVERCHECK=`rpm -qa | grep MariaDB-server | awk -F "-" '{print $3}' | cut -c1-4`
+    MARIADBVERCHECK=`rpm -qa | grep 'MariaDB-server-[0-9]' | awk -F "-" '{print $3}' | cut -c1-4`
   fi
 
   # Check for broken repo state from failed upgrade - bypass version check
@@ -556,10 +560,14 @@ centminlog
   fi
 centminlog
 {
-  if [[ "$CENTOS_EIGHT" -eq '8' && "$(rpm -qa | grep mariadb | awk '/mariadb-server-utils/')" ]]; then
+  if [[ "$CENTOS_TEN" -eq '10' && "$(rpm -qa | grep mariadb | awk '/mariadb-server-utils/')" ]]; then
+    MARIADBVERCHECK=`rpm -qa | grep mariadb-server | grep -v utils | awk -F "-" '{print $3}' | cut -c1-4`
+  elif [[ "$CENTOS_TEN" -eq '10' && "$(rpm -qa | grep 'MariaDB-server-[0-9]')" ]]; then
+    MARIADBVERCHECK=`rpm -qa | grep 'MariaDB-server-[0-9]' | awk -F "-" '{print $3}' | cut -c1-4`
+  elif [[ "$CENTOS_EIGHT" -eq '8' && "$(rpm -qa | grep mariadb | awk '/mariadb-server-utils/')" ]]; then
     MARIADBVERCHECK=`rpm -qa | grep mariadb-server | grep -v utils | awk -F "-" '{print $3}' | cut -c1-4`
   else
-    MARIADBVERCHECK=`rpm -qa | grep MariaDB-server | awk -F "-" '{print $3}' | cut -c1-4`
+    MARIADBVERCHECK=`rpm -qa | grep 'MariaDB-server-[0-9]' | awk -F "-" '{print $3}' | cut -c1-4`
   fi
 
   # Check for broken repo state from failed upgrade - bypass version check
@@ -617,10 +625,14 @@ centminlog
   fi
 centminlog
 {
-  if [[ "$CENTOS_EIGHT" -eq '8' && "$(rpm -qa | grep mariadb | awk '/mariadb-server-utils/')" ]]; then
+  if [[ "$CENTOS_TEN" -eq '10' && "$(rpm -qa | grep mariadb | awk '/mariadb-server-utils/')" ]]; then
+    MARIADBVERCHECK=`rpm -qa | grep mariadb-server | grep -v utils | awk -F "-" '{print $3}' | cut -c1-4`
+  elif [[ "$CENTOS_TEN" -eq '10' && "$(rpm -qa | grep 'MariaDB-server-[0-9]')" ]]; then
+    MARIADBVERCHECK=`rpm -qa | grep 'MariaDB-server-[0-9]' | awk -F "-" '{print $3}' | cut -c1-4`
+  elif [[ "$CENTOS_EIGHT" -eq '8' && "$(rpm -qa | grep mariadb | awk '/mariadb-server-utils/')" ]]; then
     MARIADBVERCHECK=`rpm -qa | grep mariadb-server | grep -v utils | awk -F "-" '{print $3}' | cut -c1-4`
   else
-    MARIADBVERCHECK=`rpm -qa | grep MariaDB-server | awk -F "-" '{print $3}' | cut -c1-4`
+    MARIADBVERCHECK=`rpm -qa | grep 'MariaDB-server-[0-9]' | awk -F "-" '{print $3}' | cut -c1-4`
   fi
 
   # Check for broken repo state from failed upgrade - bypass version check
@@ -678,10 +690,14 @@ centminlog
   fi
 centminlog
 {
-  if [[ "$CENTOS_EIGHT" -eq '8' && "$(rpm -qa | grep mariadb | awk '/mariadb-server-utils/')" ]]; then
+  if [[ "$CENTOS_TEN" -eq '10' && "$(rpm -qa | grep mariadb | awk '/mariadb-server-utils/')" ]]; then
+    MARIADBVERCHECK=`rpm -qa | grep mariadb-server | grep -v utils | awk -F "-" '{print $3}' | cut -c1-4`
+  elif [[ "$CENTOS_TEN" -eq '10' && "$(rpm -qa | grep 'MariaDB-server-[0-9]')" ]]; then
+    MARIADBVERCHECK=`rpm -qa | grep 'MariaDB-server-[0-9]' | awk -F "-" '{print $3}' | cut -c1-4`
+  elif [[ "$CENTOS_EIGHT" -eq '8' && "$(rpm -qa | grep mariadb | awk '/mariadb-server-utils/')" ]]; then
     MARIADBVERCHECK=`rpm -qa | grep mariadb-server | grep -v utils | awk -F "-" '{print $3}' | cut -c1-4`
   else
-    MARIADBVERCHECK=`rpm -qa | grep MariaDB-server | awk -F "-" '{print $3}' | cut -c1-4`
+    MARIADBVERCHECK=`rpm -qa | grep 'MariaDB-server-[0-9]' | awk -F "-" '{print $3}' | cut -c1-4`
   fi
 
   # Check for broken repo state from failed upgrade - bypass version check
@@ -739,10 +755,14 @@ centminlog
   fi
 centminlog
 {
-  if [[ "$CENTOS_EIGHT" -eq '8' && "$(rpm -qa | grep mariadb | awk '/mariadb-server-utils/')" ]]; then
+  if [[ "$CENTOS_TEN" -eq '10' && "$(rpm -qa | grep mariadb | awk '/mariadb-server-utils/')" ]]; then
+    MARIADBVERCHECK=`rpm -qa | grep mariadb-server | grep -v utils | awk -F "-" '{print $3}' | cut -c1-4`
+  elif [[ "$CENTOS_TEN" -eq '10' && "$(rpm -qa | grep 'MariaDB-server-[0-9]')" ]]; then
+    MARIADBVERCHECK=`rpm -qa | grep 'MariaDB-server-[0-9]' | awk -F "-" '{print $3}' | cut -c1-4`
+  elif [[ "$CENTOS_EIGHT" -eq '8' && "$(rpm -qa | grep mariadb | awk '/mariadb-server-utils/')" ]]; then
     MARIADBVERCHECK=`rpm -qa | grep mariadb-server | grep -v utils | awk -F "-" '{print $3}' | cut -c1-4`
   else
-    MARIADBVERCHECK=`rpm -qa | grep MariaDB-server | awk -F "-" '{print $3}' | cut -c1-4`
+    MARIADBVERCHECK=`rpm -qa | grep 'MariaDB-server-[0-9]' | awk -F "-" '{print $3}' | cut -c1-4`
   fi
 
   # Check for broken repo state from failed upgrade - bypass version check
@@ -800,10 +820,14 @@ centminlog
   fi
 centminlog
 {
-  if [[ "$CENTOS_EIGHT" -eq '8' && "$(rpm -qa | grep mariadb | awk '/mariadb-server-utils/')" ]]; then
+  if [[ "$CENTOS_TEN" -eq '10' && "$(rpm -qa | grep mariadb | awk '/mariadb-server-utils/')" ]]; then
+    MARIADBVERCHECK=`rpm -qa | grep mariadb-server | grep -v utils | awk -F "-" '{print $3}' | cut -c1-4`
+  elif [[ "$CENTOS_TEN" -eq '10' && "$(rpm -qa | grep 'MariaDB-server-[0-9]')" ]]; then
+    MARIADBVERCHECK=`rpm -qa | grep 'MariaDB-server-[0-9]' | awk -F "-" '{print $3}' | cut -c1-4`
+  elif [[ "$CENTOS_EIGHT" -eq '8' && "$(rpm -qa | grep mariadb | awk '/mariadb-server-utils/')" ]]; then
     MARIADBVERCHECK=`rpm -qa | grep mariadb-server | grep -v utils | awk -F "-" '{print $3}' | cut -c1-4`
   else
-    MARIADBVERCHECK=`rpm -qa | grep MariaDB-server | awk -F "-" '{print $3}' | cut -c1-4`
+    MARIADBVERCHECK=`rpm -qa | grep 'MariaDB-server-[0-9]' | awk -F "-" '{print $3}' | cut -c1-4`
   fi
 
   # Check for broken repo state from failed upgrade - bypass version check
@@ -864,13 +888,15 @@ centminlog
 {
   if [[ "$CENTOS_TEN" -eq '10' && "$(rpm -qa | grep mariadb | awk '/mariadb-server-utils/')" ]]; then
     MARIADBVERCHECK=`rpm -qa | grep mariadb-server | grep -v utils | awk -F "-" '{print $3}' | cut -c1-5`
+  elif [[ "$CENTOS_TEN" -eq '10' && "$(rpm -qa | grep 'MariaDB-server-[0-9]')" ]]; then
+    MARIADBVERCHECK=`rpm -qa | grep 'MariaDB-server-[0-9]' | awk -F "-" '{print $3}' | cut -c1-5`
   elif [[ "$CENTOS_EIGHT" -eq '8' && "$(rpm -qa | grep mariadb | awk '/mariadb-server-utils/')" ]]; then
     MARIADBVERCHECK=`rpm -qa | grep mariadb-server | grep -v utils | awk -F "-" '{print $3}' | cut -c1-4`
   else
     if [[ "$ENABLE_MARIADBELEVENFOURUPGRADE" = [yY] ]]; then
-      MARIADBVERCHECK=`rpm -qa | grep MariaDB-server | awk -F "-" '{print $3}' | cut -c1-5`
+      MARIADBVERCHECK=`rpm -qa | grep 'MariaDB-server-[0-9]' | awk -F "-" '{print $3}' | cut -c1-5`
     else
-      MARIADBVERCHECK=`rpm -qa | grep MariaDB-server | awk -F "-" '{print $3}' | cut -c1-4`
+      MARIADBVERCHECK=`rpm -qa | grep 'MariaDB-server-[0-9]' | awk -F "-" '{print $3}' | cut -c1-4`
     fi
   fi
 
@@ -933,13 +959,15 @@ centminlog
 {
   if [[ "$CENTOS_TEN" -eq '10' && "$(rpm -qa | grep mariadb | awk '/mariadb-server-utils/')" ]]; then
     MARIADBVERCHECK=`rpm -qa | grep mariadb-server | grep -v utils | awk -F "-" '{print $3}' | cut -c1-5`
+  elif [[ "$CENTOS_TEN" -eq '10' && "$(rpm -qa | grep 'MariaDB-server-[0-9]')" ]]; then
+    MARIADBVERCHECK=`rpm -qa | grep 'MariaDB-server-[0-9]' | awk -F "-" '{print $3}' | cut -c1-5`
   elif [[ "$CENTOS_EIGHT" -eq '8' && "$(rpm -qa | grep mariadb | awk '/mariadb-server-utils/')" ]]; then
     MARIADBVERCHECK=`rpm -qa | grep mariadb-server | grep -v utils | awk -F "-" '{print $3}' | cut -c1-4`
   else
     if [[ "$ENABLE_MARIADBELEVENEIGHTUPGRADE" = [yY] ]]; then
-      MARIADBVERCHECK=`rpm -qa | grep MariaDB-server | awk -F "-" '{print $3}' | cut -c1-5`
+      MARIADBVERCHECK=`rpm -qa | grep 'MariaDB-server-[0-9]' | awk -F "-" '{print $3}' | cut -c1-5`
     else
-      MARIADBVERCHECK=`rpm -qa | grep MariaDB-server | awk -F "-" '{print $3}' | cut -c1-5`
+      MARIADBVERCHECK=`rpm -qa | grep 'MariaDB-server-[0-9]' | awk -F "-" '{print $3}' | cut -c1-5`
     fi
   fi
 
@@ -999,13 +1027,17 @@ centminlog
   fi
 centminlog
 {
-  if [[ "$CENTOS_EIGHT" -eq '8' && "$(rpm -qa | grep mariadb | awk '/mariadb-server-utils/')" ]]; then
+  if [[ "$CENTOS_TEN" -eq '10' && "$(rpm -qa | grep mariadb | awk '/mariadb-server-utils/')" ]]; then
+    MARIADBVERCHECK=`rpm -qa | grep mariadb-server | grep -v utils | awk -F "-" '{print $3}' | cut -c1-4`
+  elif [[ "$CENTOS_TEN" -eq '10' && "$(rpm -qa | grep 'MariaDB-server-[0-9]')" ]]; then
+    MARIADBVERCHECK=`rpm -qa | grep 'MariaDB-server-[0-9]' | awk -F "-" '{print $3}' | cut -c1-4`
+  elif [[ "$CENTOS_EIGHT" -eq '8' && "$(rpm -qa | grep mariadb | awk '/mariadb-server-utils/')" ]]; then
     MARIADBVERCHECK=`rpm -qa | grep mariadb-server | grep -v utils | awk -F "-" '{print $3}' | cut -c1-4`
   else
     if [[ "$ENABLE_MARIADBELEVENEIGHTUPGRADE" = [yY] ]]; then
-      MARIADBVERCHECK=`rpm -qa | grep MariaDB-server | awk -F "-" '{print $3}' | cut -c1-4`
+      MARIADBVERCHECK=`rpm -qa | grep 'MariaDB-server-[0-9]' | awk -F "-" '{print $3}' | cut -c1-4`
     else
-      MARIADBVERCHECK=`rpm -qa | grep MariaDB-server | awk -F "-" '{print $3}' | cut -c1-4`
+      MARIADBVERCHECK=`rpm -qa | grep 'MariaDB-server-[0-9]' | awk -F "-" '{print $3}' | cut -c1-4`
     fi
   fi
 
@@ -1067,13 +1099,15 @@ centminlog
 {
   if [[ "$CENTOS_TEN" -eq '10' && "$(rpm -qa | grep mariadb | awk '/mariadb-server-utils/')" ]]; then
     MARIADBVERCHECK=`rpm -qa | grep mariadb-server | grep -v utils | awk -F "-" '{print $3}' | cut -c1-5`
+  elif [[ "$CENTOS_TEN" -eq '10' && "$(rpm -qa | grep 'MariaDB-server-[0-9]')" ]]; then
+    MARIADBVERCHECK=`rpm -qa | grep 'MariaDB-server-[0-9]' | awk -F "-" '{print $3}' | cut -c1-5`
   elif [[ "$CENTOS_EIGHT" -eq '8' && "$(rpm -qa | grep mariadb | awk '/mariadb-server-utils/')" ]]; then
     MARIADBVERCHECK=`rpm -qa | grep mariadb-server | grep -v utils | awk -F "-" '{print $3}' | cut -c1-5`
   else
     if [[ "$ENABLE_MARIADBTWELVETHREEUPGRADE" = [yY] ]]; then
-      MARIADBVERCHECK=`rpm -qa | grep MariaDB-server | awk -F "-" '{print $3}' | cut -c1-5`
+      MARIADBVERCHECK=`rpm -qa | grep 'MariaDB-server-[0-9]' | awk -F "-" '{print $3}' | cut -c1-5`
     else
-      MARIADBVERCHECK=`rpm -qa | grep MariaDB-server | awk -F "-" '{print $3}' | cut -c1-5`
+      MARIADBVERCHECK=`rpm -qa | grep 'MariaDB-server-[0-9]' | awk -F "-" '{print $3}' | cut -c1-5`
     fi
   fi
 
@@ -1131,13 +1165,17 @@ centminlog
   fi
 centminlog
 {
-  if [[ "$CENTOS_EIGHT" -eq '8' && "$(rpm -qa | grep mariadb | awk '/mariadb-server-utils/')" ]]; then
+  if [[ "$CENTOS_TEN" -eq '10' && "$(rpm -qa | grep mariadb | awk '/mariadb-server-utils/')" ]]; then
+    MARIADBVERCHECK=`rpm -qa | grep mariadb-server | grep -v utils | awk -F "-" '{print $3}' | cut -c1-4`
+  elif [[ "$CENTOS_TEN" -eq '10' && "$(rpm -qa | grep 'MariaDB-server-[0-9]')" ]]; then
+    MARIADBVERCHECK=`rpm -qa | grep 'MariaDB-server-[0-9]' | awk -F "-" '{print $3}' | cut -c1-4`
+  elif [[ "$CENTOS_EIGHT" -eq '8' && "$(rpm -qa | grep mariadb | awk '/mariadb-server-utils/')" ]]; then
     MARIADBVERCHECK=`rpm -qa | grep mariadb-server | grep -v utils | awk -F "-" '{print $3}' | cut -c1-4`
   else
     if [[ "$ENABLE_MARIADBTWELVETHREEUPGRADE" = [yY] ]]; then
-      MARIADBVERCHECK=`rpm -qa | grep MariaDB-server | awk -F "-" '{print $3}' | cut -c1-4`
+      MARIADBVERCHECK=`rpm -qa | grep 'MariaDB-server-[0-9]' | awk -F "-" '{print $3}' | cut -c1-4`
     else
-      MARIADBVERCHECK=`rpm -qa | grep MariaDB-server | awk -F "-" '{print $3}' | cut -c1-4`
+      MARIADBVERCHECK=`rpm -qa | grep 'MariaDB-server-[0-9]' | awk -F "-" '{print $3}' | cut -c1-4`
     fi
   fi
 
@@ -1195,13 +1233,17 @@ centminlog
   fi
 centminlog
 {
-  if [[ "$CENTOS_EIGHT" -eq '8' && "$(rpm -qa | grep mariadb | awk '/mariadb-server-utils/')" ]]; then
+  if [[ "$CENTOS_TEN" -eq '10' && "$(rpm -qa | grep mariadb | awk '/mariadb-server-utils/')" ]]; then
+    MARIADBVERCHECK=`rpm -qa | grep mariadb-server | grep -v utils | awk -F "-" '{print $3}' | cut -c1-4`
+  elif [[ "$CENTOS_TEN" -eq '10' && "$(rpm -qa | grep 'MariaDB-server-[0-9]')" ]]; then
+    MARIADBVERCHECK=`rpm -qa | grep 'MariaDB-server-[0-9]' | awk -F "-" '{print $3}' | cut -c1-4`
+  elif [[ "$CENTOS_EIGHT" -eq '8' && "$(rpm -qa | grep mariadb | awk '/mariadb-server-utils/')" ]]; then
     MARIADBVERCHECK=`rpm -qa | grep mariadb-server | grep -v utils | awk -F "-" '{print $3}' | cut -c1-4`
   else
     if [[ "$ENABLE_MARIADBTWELVETHREEUPGRADE" = [yY] ]]; then
-      MARIADBVERCHECK=`rpm -qa | grep MariaDB-server | awk -F "-" '{print $3}' | cut -c1-4`
+      MARIADBVERCHECK=`rpm -qa | grep 'MariaDB-server-[0-9]' | awk -F "-" '{print $3}' | cut -c1-4`
     else
-      MARIADBVERCHECK=`rpm -qa | grep MariaDB-server | awk -F "-" '{print $3}' | cut -c1-4`
+      MARIADBVERCHECK=`rpm -qa | grep 'MariaDB-server-[0-9]' | awk -F "-" '{print $3}' | cut -c1-4`
     fi
   fi
 
