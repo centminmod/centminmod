@@ -1588,8 +1588,10 @@ echo ""
     echo "*************************************************"
 
 # unalias cp
-if [ -f /etc/my.cnf.rpmorig ]; then
+if [ -f /etc/my.cnf.rpmsave ]; then
 \cp -f /etc/my.cnf.rpmsave /etc/my.cnf
+elif [ -f /etc/my.cnf.rpmorig ]; then
+\cp -f /etc/my.cnf.rpmorig /etc/my.cnf
 fi
 
     if command -v figlet >/dev/null 2>&1; then
@@ -1641,12 +1643,13 @@ query_cache_strip_comments=0
 log_slow_filter =admin,filesort,filesort_on_disk,full_join,full_scan,query_cache,query_cache_miss,tmp_table,tmp_table_on_disk
 
 # Defragmenting unused space on InnoDB tablespace
-innodb_defragment=1
-innodb_defragment_n_pages=7
-innodb_defragment_stats_accuracy=0
-innodb_defragment_fill_factor_n_recs=20
-innodb_defragment_fill_factor=0.9
-innodb_defragment_frequency=40
+# removed in MariaDB 11.4 (MDEV-13529)
+#innodb_defragment=1
+#innodb_defragment_n_pages=7
+#innodb_defragment_stats_accuracy=0
+#innodb_defragment_fill_factor_n_recs=20
+#innodb_defragment_fill_factor=0.9
+#innodb_defragment_frequency=40
 
 # page compression
 # 10.1+ https://mariadb.com/kb/en/mariadb/compression/
@@ -1689,6 +1692,25 @@ sed -i '/^slow_query_log/d' /etc/my.cnf
 sed -i '/^slow_query_log_file/d' /etc/my.cnf
 sed -i '/^long_query_time/d' /etc/my.cnf
 
+# removed in MariaDB 11.4 (MDEV-13529)
+sed -i 's|^innodb_defragment|#innodb_defragment|g' /etc/my.cnf
+
+# Safety net: fix ibdata1 size mismatch if innodb_data_file_path not set in my.cnf
+# Native EL10 MariaDB 10.11 may create ibdata1 at 10M vs MariaDB.org default of 12M
+if [[ "$CENTOS_TEN" -eq '10' && -f /var/lib/mysql/ibdata1 ]]; then
+    if ! grep -q '^innodb_data_file_path' /etc/my.cnf && ! grep -rq '^innodb_data_file_path' /etc/my.cnf.d/ 2>/dev/null; then
+        IBDATA_SIZE=$(stat -c%s /var/lib/mysql/ibdata1 2>/dev/null)
+        if [[ -n "$IBDATA_SIZE" ]]; then
+            IBDATA_DEFAULT=$((12 * 1048576))
+            if [[ "$IBDATA_SIZE" -lt "$IBDATA_DEFAULT" ]]; then
+                IBDATA_SIZE_MB=$((IBDATA_SIZE / 1048576))
+                echo "innodb_data_file_path=ibdata1:${IBDATA_SIZE_MB}M:autoextend" >> /etc/my.cnf
+                echo "Set innodb_data_file_path=ibdata1:${IBDATA_SIZE_MB}M:autoextend to match existing ibdata1 size"
+            fi
+        fi
+    fi
+fi
+
 echo ""
 
 cmservice mysql start
@@ -1720,6 +1742,21 @@ if [[ "$(echo $?)" != '0' ]]; then
         echo "auto comment out $u in /etc/my.cnf"
         sed -i "s|^${u}|#${u}|g" /etc/my.cnf
     done
+    # Auto-fix ibdata1 size mismatch error
+    IBDATA_ERROR=$(tail -50 /var/log/mysqld.log | grep 'different size.*innodb_data_file_path')
+    if [[ -n "$IBDATA_ERROR" && -f /var/lib/mysql/ibdata1 ]]; then
+        echo "detected ibdata1 size mismatch error"
+        IBDATA_SIZE=$(stat -c%s /var/lib/mysql/ibdata1 2>/dev/null)
+        if [[ -n "$IBDATA_SIZE" ]]; then
+            IBDATA_SIZE_MB=$((IBDATA_SIZE / 1048576))
+            echo "auto-fixing innodb_data_file_path=ibdata1:${IBDATA_SIZE_MB}M:autoextend"
+            if grep -q '^innodb_data_file_path' /etc/my.cnf; then
+                sed -i "s|^innodb_data_file_path.*|innodb_data_file_path=ibdata1:${IBDATA_SIZE_MB}M:autoextend|g" /etc/my.cnf
+            else
+                echo "innodb_data_file_path=ibdata1:${IBDATA_SIZE_MB}M:autoextend" >> /etc/my.cnf
+            fi
+        fi
+    fi
     cmservice mysql restart
 fi
 echo
@@ -1863,7 +1900,7 @@ remove_anonymous_mysqlusers
 echo
 systemctl show mariadb --no-pager | grep -E 'LimitNOFILE|NotifyAccess|OOM'
 echo
-if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_EIGHT" = '8' || "$CENTOS_NINE" = '9' ]] ; then
+if [[ "$CENTOS_TEN" = '10' || "$CENTOS_SEVEN" = '7' || "$CENTOS_EIGHT" = '8' || "$CENTOS_NINE" = '9' ]] ; then
     cmchkconfig mariadb on
 else
     cmchkconfig mysql on
