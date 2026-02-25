@@ -858,7 +858,9 @@ centminlog
   fi
 centminlog
 {
-  if [[ "$CENTOS_EIGHT" -eq '8' && "$(rpm -qa | grep mariadb | awk '/mariadb-server-utils/')" ]]; then
+  if [[ "$CENTOS_TEN" -eq '10' && "$(rpm -qa | grep mariadb | awk '/mariadb-server-utils/')" ]]; then
+    MARIADBVERCHECK=`rpm -qa | grep mariadb-server | grep -v utils | awk -F "-" '{print $3}' | cut -c1-5`
+  elif [[ "$CENTOS_EIGHT" -eq '8' && "$(rpm -qa | grep mariadb | awk '/mariadb-server-utils/')" ]]; then
     MARIADBVERCHECK=`rpm -qa | grep mariadb-server | grep -v utils | awk -F "-" '{print $3}' | cut -c1-4`
   else
     if [[ "$ENABLE_MARIADBELEVENFOURUPGRADE" = [yY] ]]; then
@@ -900,14 +902,16 @@ centminlog
     else
       # echo "Place holder for now until MariaDB 10.5.x is ready to be added"
       c7tmpsetup
-      if [[ "$CENTOS_NINE" -eq '9' ]]; then
+      if [[ "$CENTOS_TEN" -eq '10' ]]; then
+        mariadbtentoelevenupgrade
+      elif [[ "$CENTOS_NINE" -eq '9' ]]; then
         mariadbtentoelevenupgrade
       elif [[ "$CENTOS_EIGHT" -eq '8' ]]; then
         mariadbtentoelevenupgrade
       elif [[ "$CENTOS_SEVEN" -eq '7' ]]; then
         mariadbtentoelevenupgrade
       else
-        echo "currently only tested on EL8 or EL9 systems"
+        echo "currently only tested on EL7, EL8, EL9 or EL10 systems"
       fi
     fi
   elif [ "$MARIADBVERCHECK" != '10.11' ]; then
@@ -923,7 +927,9 @@ centminlog
   fi
 centminlog
 {
-  if [[ "$CENTOS_EIGHT" -eq '8' && "$(rpm -qa | grep mariadb | awk '/mariadb-server-utils/')" ]]; then
+  if [[ "$CENTOS_TEN" -eq '10' && "$(rpm -qa | grep mariadb | awk '/mariadb-server-utils/')" ]]; then
+    MARIADBVERCHECK=`rpm -qa | grep mariadb-server | grep -v utils | awk -F "-" '{print $3}' | cut -c1-5`
+  elif [[ "$CENTOS_EIGHT" -eq '8' && "$(rpm -qa | grep mariadb | awk '/mariadb-server-utils/')" ]]; then
     MARIADBVERCHECK=`rpm -qa | grep mariadb-server | grep -v utils | awk -F "-" '{print $3}' | cut -c1-4`
   else
     if [[ "$ENABLE_MARIADBELEVENEIGHTUPGRADE" = [yY] ]]; then

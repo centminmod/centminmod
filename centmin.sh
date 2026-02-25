@@ -30,7 +30,7 @@ DT=$(date +"%d%m%y-%H%M%S")
 branchname='141.00beta01'
 SCRIPT_MAJORVER='141'
 SCRIPT_MINORVER='00'
-SCRIPT_INCREMENTVER='143'
+SCRIPT_INCREMENTVER='144'
 SCRIPT_VERSIONSHORT="${branchname}"
 SCRIPT_VERSION="${SCRIPT_VERSIONSHORT}.b${SCRIPT_INCREMENTVER}"
 SCRIPT_DATE='16/08/25'
@@ -3183,7 +3183,7 @@ elif [[ "$MARIADB_INSTALLELEVENFOUR" = [yY] && "$MARIADB_INSTALLTENTWO" = [nN] ]
   mariadbelevenfour_installfunct
 elif [[ "$MARIADB_INSTALLTENELEVEN" = [yY] && "$MARIADB_INSTALLTENTWO" = [nN] ]]; then
   if [[ "$CENTOS_TEN" -eq '10' ]]; then
-    install_native_mariadb_ten_eleven install-fresh
+    mariadbteneleven_installfunct
   else
     mariadbteneleven_installfunct
   fi
