@@ -61,15 +61,15 @@ fi
 echo
 echo "checking mysql root password works in /root/.my.cnf"
 sleep 5
-echo "mysqladmin ver"
-# Check if mysqladmin command exists before running password check
-if ! command -v mysqladmin >/dev/null 2>&1; then
+echo "${ALIAS_MYSQLADMIN} ver"
+# Check if mysqladmin/mariadb-admin command exists before running password check
+if ! command -v ${ALIAS_MYSQLADMIN} >/dev/null 2>&1; then
     echo
-    echo "mysqladmin command not found - MariaDB-server may not be installed"
+    echo "${ALIAS_MYSQLADMIN} command not found - MariaDB-server may not be installed"
     echo "Skipping password check, will attempt installation..."
     CHECK_MYSQLPASS='0'
 else
-    mysqladmin ver
+    ${ALIAS_MYSQLADMIN} ver
     CHECK_MYSQLPASS=$?
 fi
 
@@ -1580,6 +1580,8 @@ fi # centos5 check
 # Called after yum install completes - handles my.cnf, mariadb-upgrade, plugins, systemd, etc.
 # Extracted 2025-12-30: Allows reuse by auto-recovery function without code duplication
 mariadb118_postinstall() {
+# Refresh client command aliases for newly installed MariaDB version
+set_mariadb_client_commands
 \cp -af /etc/my.cnf /etc/my.cnf-newold-mariadb10-2
 echo ""
     echo "*************************************************"
@@ -1778,8 +1780,8 @@ fi
 if [[ "$mysqlrootset" == [yY] ]]; then
     echo "Enter MySQL root password when prompted"
     echo "or hit enter to continue"
-    echo "mariadb-upgrade -u root -p --verbose"
-    mariadb-upgrade -u root -p --verbose
+    echo "${ALIAS_MYSQL_UPGRADE} -u root -p --verbose"
+    ${ALIAS_MYSQL_UPGRADE} -u root -p --verbose
     echo "------------------------------------------------"
     echo "Installing MariaDB 11 plugins"
     echo "------------------------------------------------"
@@ -1809,8 +1811,8 @@ if [[ "$mysqlrootset" == [yY] ]]; then
 
     # sed -i 's/innodb=ON/innodb=OFF/g' /etc/my.cnf
 else
-    echo "mariadb-upgrade --verbose"
-    mariadb-upgrade --verbose
+    echo "${ALIAS_MYSQL_UPGRADE} --verbose"
+    ${ALIAS_MYSQL_UPGRADE} --verbose
     echo "------------------------------------------------"
     echo "Installing MariaDB 11 plugins"
     echo "------------------------------------------------"
@@ -1921,7 +1923,7 @@ fi
 
 echo ""
 
-mysqladmin ver
+${ALIAS_MYSQLADMIN} ver
 
 echo
 
@@ -2068,8 +2070,8 @@ if systemctl is-active mariadb >/dev/null 2>&1; then
     done
 
     # Issue the shutdown command
-    echo "mysqladmin shutdown"
-    mysqladmin shutdown
+    echo "${ALIAS_MYSQLADMIN} shutdown"
+    ${ALIAS_MYSQLADMIN} shutdown
 
     echo "waiting 60 seconds"
     sleep 60
