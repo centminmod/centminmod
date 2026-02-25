@@ -30,7 +30,7 @@ DT=$(date +"%d%m%y-%H%M%S")
 branchname='141.00beta01'
 SCRIPT_MAJORVER='141'
 SCRIPT_MINORVER='00'
-SCRIPT_INCREMENTVER='144'
+SCRIPT_INCREMENTVER='145'
 SCRIPT_VERSIONSHORT="${branchname}"
 SCRIPT_VERSION="${SCRIPT_VERSIONSHORT}.b${SCRIPT_INCREMENTVER}"
 SCRIPT_DATE='16/08/25'
@@ -1090,7 +1090,7 @@ PCRE_VERSION='8.45'          # PCRE version
 
 # PHP and Cache/Acceleration
 IMAGICKPHP_VER='3.4.4'         # PHP extension for imagick
-IMAGICKPHP_SEVEN_VER='3.7.0'   # PHP extension for imagick
+IMAGICKPHP_SEVEN_VER='3.8.1'   # PHP extension for imagick
 MAILPARSEPHP_VER='2.1.6'       # https://pecl.php.net/package/mailparse
 MAILPARSEPHP_COMPATVER='3.1.3' # For PHP 7.0-7.3
 MAILPARSEPHPSEVENFOUR_COMPATVER='3.1.9' # For PHP 7.4+

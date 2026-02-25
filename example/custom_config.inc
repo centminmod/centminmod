@@ -4973,7 +4973,7 @@
 
 # Imagick PHP 7 Extension Version
 # Git History: First added 2021-12-27 (51649e9d), Last modified 2022-02-04 (3415397a)
-#IMAGICKPHP_SEVEN_VER='3.7.0'  
+#IMAGICKPHP_SEVEN_VER='3.8.1'  
 
 # ImageMagick 7 Use REMI libzip
 # Use REMI repository libzip for ImageMagick 7 + PHP Imagick extension compilation

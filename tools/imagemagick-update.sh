@@ -4,7 +4,7 @@ export PATH="/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin:/root/
 # standalone imagemagick + imagick updater
 ######################################################
 IMAGICKPHP_VER='3.4.4'         # PHP extension for imagick
-IMAGICKPHP_SEVEN_VER='3.7.0'   # PHP extension for imagick
+IMAGICKPHP_SEVEN_VER='3.8.1'   # PHP extension for imagick
 PHP_INSTALL='y'
 PHPIMAGICK='y'
 REMIREPO_DISABLE='n'
