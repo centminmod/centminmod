@@ -10,6 +10,7 @@ ENABLE_MARIADBTENSIXUPGRADE='y'
 ENABLE_MARIADBTENELEVENUPGRADE='n'
 ENABLE_MARIADBELEVENFOURUPGRADE='n'
 ENABLE_MARIADBELEVENEIGHTUPGRADE='n'
+ENABLE_MARIADBTWELVETHREEUPGRADE='n'
 SKIP_INNODBFASTSHUTDOWNDISABLE='y'   # no longer needed as of MariaDB 10.2.5 https://mariadb.com/kb/en/library/upgrading-from-mariadb-101-to-mariadb-102/
 
 # Function to check InnoDB status
@@ -87,10 +88,13 @@ do
   cecho "14). MariaDB 10.11.x to MariaDB 11.4.x LTS YUM upgrade" $boldgreen
   cecho "15). MariaDB 10.11.x to MariaDB 11.8.x LTS YUM upgrade" $boldgreen
   cecho "16). MariaDB 11.4.x to MariaDB 11.8.x LTS YUM upgrade" $boldgreen
-  cecho "17). Back to Main menu" $boldgreen
+  cecho "17). MariaDB 10.11.x to MariaDB 12.3.x LTS YUM upgrade" $boldgreen
+  cecho "18). MariaDB 11.4.x to MariaDB 12.3.x LTS YUM upgrade" $boldgreen
+  cecho "19). MariaDB 11.8.x to MariaDB 12.3.x LTS YUM upgrade" $boldgreen
+  cecho "20). Back to Main menu" $boldgreen
   cecho "--------------------------------------------------------" $boldyellow
 
-  read -ep "Enter option [ 0 - 17 ] " mmoption
+  read -ep "Enter option [ 0 - 20 ] " mmoption
   cecho "--------------------------------------------------------" $boldyellow
 
 #########################################################
@@ -1055,6 +1059,200 @@ centminlog
 } 2>&1 | tee ${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_mariadb_114-to-118_upgrade.log
 ;;
 17)
+  if [ -f /etc/my.cnf ]; then
+    DT=$(date +"%d%m%y-%H%M%S")
+    cp -a /etc/my.cnf "/etc/my.cnf-menu11-submenu17-autobackup-$DT"
+  fi
+centminlog
+{
+  if [[ "$CENTOS_TEN" -eq '10' && "$(rpm -qa | grep mariadb | awk '/mariadb-server-utils/')" ]]; then
+    MARIADBVERCHECK=`rpm -qa | grep mariadb-server | grep -v utils | awk -F "-" '{print $3}' | cut -c1-5`
+  elif [[ "$CENTOS_EIGHT" -eq '8' && "$(rpm -qa | grep mariadb | awk '/mariadb-server-utils/')" ]]; then
+    MARIADBVERCHECK=`rpm -qa | grep mariadb-server | grep -v utils | awk -F "-" '{print $3}' | cut -c1-5`
+  else
+    if [[ "$ENABLE_MARIADBTWELVETHREEUPGRADE" = [yY] ]]; then
+      MARIADBVERCHECK=`rpm -qa | grep MariaDB-server | awk -F "-" '{print $3}' | cut -c1-5`
+    else
+      MARIADBVERCHECK=`rpm -qa | grep MariaDB-server | awk -F "-" '{print $3}' | cut -c1-5`
+    fi
+  fi
+
+  # Check for broken repo state from failed upgrade - bypass version check
+  if [[ -z "$MARIADBVERCHECK" ]] && [[ -f /etc/yum.repos.d/mariadb.repo ]]; then
+    CURRENT_BASEURL=$(grep -E '^baseurl\s*=' /etc/yum.repos.d/mariadb.repo 2>/dev/null | head -1 | sed 's/baseurl\s*=\s*//')
+    if [[ "$CURRENT_BASEURL" =~ ^/yum/ ]] || [[ -z "$CURRENT_BASEURL" ]] || [[ ! "$CURRENT_BASEURL" =~ ^https?:// ]] || [[ "$CURRENT_BASEURL" =~ \.org//|\.com// ]]; then
+      echo ""
+      cecho "Detected broken MariaDB repository from failed upgrade!" $boldred
+      cecho "MariaDB-server is not installed. Attempting recovery to 12.3..." $boldyellow
+      echo ""
+      c7tmpsetup
+      if [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' || "$CENTOS_TEN" -eq '10' ]]; then
+        mariadbtotwelvethreeupgrade
+      fi
+      exit 0
+    fi
+  fi
+
+  if [[ "$MARIADBVERCHECK" = '12.3' ]]; then
+
+    echo ""
+    cecho "MariaDB 12.3.x server already detected" $boldyellow
+
+  elif [ "$MARIADBVERCHECK" == '10.11' ]; then
+
+    if [[ "$ENABLE_MARIADBTWELVETHREEUPGRADE" = [nN] ]]; then
+      echo "Place holder for now until MariaDB 12.3.x is ready to be added"
+      echo "12.3 LTS release officially supported until June 2029"
+      echo "https://mariadb.com/kb/en/changes-improvements-in-mariadb-12-3/"
+      echo
+      echo "Discussions https://community.centminmod.com/tags/mariadb-123/"
+    else
+      c7tmpsetup
+      if [[ "$CENTOS_TEN" -eq '10' ]]; then
+        mariadbtotwelvethreeupgrade
+      elif [[ "$CENTOS_NINE" -eq '9' ]]; then
+        mariadbtotwelvethreeupgrade
+      elif [[ "$CENTOS_EIGHT" -eq '8' ]]; then
+        mariadbtotwelvethreeupgrade
+      else
+        echo "currently only tested on EL8, EL9 or EL10 systems"
+      fi
+    fi
+  elif [ "$MARIADBVERCHECK" != '10.11' ]; then
+    echo "Need to be on MariaDB 10.11 before updating to MariaDB 12.3"
+    exit
+  fi
+} 2>&1 | tee ${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_mariadb_1011-to-123_upgrade.log
+;;
+18)
+  if [ -f /etc/my.cnf ]; then
+    DT=$(date +"%d%m%y-%H%M%S")
+    cp -a /etc/my.cnf "/etc/my.cnf-menu11-submenu18-autobackup-$DT"
+  fi
+centminlog
+{
+  if [[ "$CENTOS_EIGHT" -eq '8' && "$(rpm -qa | grep mariadb | awk '/mariadb-server-utils/')" ]]; then
+    MARIADBVERCHECK=`rpm -qa | grep mariadb-server | grep -v utils | awk -F "-" '{print $3}' | cut -c1-4`
+  else
+    if [[ "$ENABLE_MARIADBTWELVETHREEUPGRADE" = [yY] ]]; then
+      MARIADBVERCHECK=`rpm -qa | grep MariaDB-server | awk -F "-" '{print $3}' | cut -c1-4`
+    else
+      MARIADBVERCHECK=`rpm -qa | grep MariaDB-server | awk -F "-" '{print $3}' | cut -c1-4`
+    fi
+  fi
+
+  # Check for broken repo state from failed upgrade - bypass version check
+  if [[ -z "$MARIADBVERCHECK" ]] && [[ -f /etc/yum.repos.d/mariadb.repo ]]; then
+    CURRENT_BASEURL=$(grep -E '^baseurl\s*=' /etc/yum.repos.d/mariadb.repo 2>/dev/null | head -1 | sed 's/baseurl\s*=\s*//')
+    if [[ "$CURRENT_BASEURL" =~ ^/yum/ ]] || [[ -z "$CURRENT_BASEURL" ]] || [[ ! "$CURRENT_BASEURL" =~ ^https?:// ]] || [[ "$CURRENT_BASEURL" =~ \.org//|\.com// ]]; then
+      echo ""
+      cecho "Detected broken MariaDB repository from failed upgrade!" $boldred
+      cecho "MariaDB-server is not installed. Attempting recovery to 12.3..." $boldyellow
+      echo ""
+      c7tmpsetup
+      if [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' || "$CENTOS_TEN" -eq '10' ]]; then
+        mariadbtotwelvethreeupgrade
+      fi
+      exit 0
+    fi
+  fi
+
+  if [[ "$MARIADBVERCHECK" = '12.3' ]]; then
+
+    echo ""
+    cecho "MariaDB 12.3.x server already detected" $boldyellow
+
+  elif [ "$MARIADBVERCHECK" == '11.4' ]; then
+
+    if [[ "$ENABLE_MARIADBTWELVETHREEUPGRADE" = [nN] ]]; then
+      echo "Place holder for now until MariaDB 12.3.x is ready to be added"
+      echo "12.3 LTS release officially supported until June 2029"
+      echo "https://mariadb.com/kb/en/changes-improvements-in-mariadb-12-3/"
+      echo
+      echo "Discussions https://community.centminmod.com/tags/mariadb-123/"
+    else
+      c7tmpsetup
+      if [[ "$CENTOS_TEN" -eq '10' ]]; then
+        mariadbtotwelvethreeupgrade
+      elif [[ "$CENTOS_NINE" -eq '9' ]]; then
+        mariadbtotwelvethreeupgrade
+      elif [[ "$CENTOS_EIGHT" -eq '8' ]]; then
+        mariadbtotwelvethreeupgrade
+      else
+        echo "currently only tested on EL8, EL9 or EL10 systems"
+      fi
+    fi
+  elif [ "$MARIADBVERCHECK" != '11.4' ]; then
+    echo "Need to be on MariaDB 11.4 before updating to MariaDB 12.3"
+    exit
+  fi
+} 2>&1 | tee ${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_mariadb_114-to-123_upgrade.log
+;;
+19)
+  if [ -f /etc/my.cnf ]; then
+    DT=$(date +"%d%m%y-%H%M%S")
+    cp -a /etc/my.cnf "/etc/my.cnf-menu11-submenu19-autobackup-$DT"
+  fi
+centminlog
+{
+  if [[ "$CENTOS_EIGHT" -eq '8' && "$(rpm -qa | grep mariadb | awk '/mariadb-server-utils/')" ]]; then
+    MARIADBVERCHECK=`rpm -qa | grep mariadb-server | grep -v utils | awk -F "-" '{print $3}' | cut -c1-4`
+  else
+    if [[ "$ENABLE_MARIADBTWELVETHREEUPGRADE" = [yY] ]]; then
+      MARIADBVERCHECK=`rpm -qa | grep MariaDB-server | awk -F "-" '{print $3}' | cut -c1-4`
+    else
+      MARIADBVERCHECK=`rpm -qa | grep MariaDB-server | awk -F "-" '{print $3}' | cut -c1-4`
+    fi
+  fi
+
+  # Check for broken repo state from failed upgrade - bypass version check
+  if [[ -z "$MARIADBVERCHECK" ]] && [[ -f /etc/yum.repos.d/mariadb.repo ]]; then
+    CURRENT_BASEURL=$(grep -E '^baseurl\s*=' /etc/yum.repos.d/mariadb.repo 2>/dev/null | head -1 | sed 's/baseurl\s*=\s*//')
+    if [[ "$CURRENT_BASEURL" =~ ^/yum/ ]] || [[ -z "$CURRENT_BASEURL" ]] || [[ ! "$CURRENT_BASEURL" =~ ^https?:// ]] || [[ "$CURRENT_BASEURL" =~ \.org//|\.com// ]]; then
+      echo ""
+      cecho "Detected broken MariaDB repository from failed upgrade!" $boldred
+      cecho "MariaDB-server is not installed. Attempting recovery to 12.3..." $boldyellow
+      echo ""
+      c7tmpsetup
+      if [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' || "$CENTOS_TEN" -eq '10' ]]; then
+        mariadbtotwelvethreeupgrade
+      fi
+      exit 0
+    fi
+  fi
+
+  if [[ "$MARIADBVERCHECK" = '12.3' ]]; then
+
+    echo ""
+    cecho "MariaDB 12.3.x server already detected" $boldyellow
+
+  elif [ "$MARIADBVERCHECK" == '11.8' ]; then
+
+    if [[ "$ENABLE_MARIADBTWELVETHREEUPGRADE" = [nN] ]]; then
+      echo "Place holder for now until MariaDB 12.3.x is ready to be added"
+      echo "12.3 LTS release officially supported until June 2029"
+      echo "https://mariadb.com/kb/en/changes-improvements-in-mariadb-12-3/"
+      echo
+      echo "Discussions https://community.centminmod.com/tags/mariadb-123/"
+    else
+      c7tmpsetup
+      if [[ "$CENTOS_TEN" -eq '10' ]]; then
+        mariadbtotwelvethreeupgrade
+      elif [[ "$CENTOS_NINE" -eq '9' ]]; then
+        mariadbtotwelvethreeupgrade
+      elif [[ "$CENTOS_EIGHT" -eq '8' ]]; then
+        mariadbtotwelvethreeupgrade
+      else
+        echo "currently only tested on EL8, EL9 or EL10 systems"
+      fi
+    fi
+  elif [ "$MARIADBVERCHECK" != '11.8' ]; then
+    echo "Need to be on MariaDB 11.8 before updating to MariaDB 12.3"
+    exit
+  fi
+} 2>&1 | tee ${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_mariadb_118-to-123_upgrade.log
+;;
+20)
   break
 ;;
 esac
