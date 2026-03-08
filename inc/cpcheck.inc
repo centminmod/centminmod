@@ -2046,6 +2046,18 @@ fixwp_updater() {
       fi
     done
   fi
+
+  # fix wp_updater opcache reload bug - nginx reload doesn't clear opcache
+  # opcache lives in php-fpm workers, so php-fpm reload is needed
+  if [ -d /root/tools ]; then
+    find /root/tools -type f -name "wp_updater_*.sh" | while read w; do
+      if grep -q 'service nginx reload' "$w"; then
+        sed -i 's|service nginx reload|service php-fpm reload|g' "$w"
+        sed -i 's|skipping nginx reload|skipping php-fpm reload|g' "$w"
+        sed -i 's|only do nginx + php-fpm restarts|only do php-fpm reload|g' "$w"
+      fi
+    done
+  fi
 }
 
 fixlshw_rpmforge() {
