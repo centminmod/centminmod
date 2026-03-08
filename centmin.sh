@@ -30,7 +30,7 @@ DT=$(date +"%d%m%y-%H%M%S")
 branchname='141.00beta01'
 SCRIPT_MAJORVER='141'
 SCRIPT_MINORVER='00'
-SCRIPT_INCREMENTVER='156'
+SCRIPT_INCREMENTVER='157'
 SCRIPT_VERSIONSHORT="${branchname}"
 SCRIPT_VERSION="${SCRIPT_VERSIONSHORT}.b${SCRIPT_INCREMENTVER}"
 SCRIPT_DATE='16/08/25'
@@ -1912,6 +1912,50 @@ if [ -f "${CONFIGSCANBASE}/custom_config.inc" ]; then
     if [ -d "${CENTMINLOGDIR}" ]; then
         cat "${CONFIGSCANBASE}/custom_config.inc" > "${CENTMINLOGDIR}/etc-centminmod-custom-config-settings_${DT}.log"
     fi
+fi
+
+#########################################################
+# MariaDB Install Version Override Mutual Exclusion
+# When user sets a specific MariaDB version in custom_config.inc,
+# disable conflicting OS-default version flags for clean selection
+# Supports EL9 (default 10.6) and EL10 (default 10.11) overrides
+#########################################################
+if [[ "$MARIADB_INSTALLTWELVETHREE" = [yY] ]]; then
+  MARIADB_INSTALLELEVENEIGHT='n'
+  MARIADB_INSTALLELEVENFOUR='n'
+  MARIADB_INSTALLTENELEVEN='n'
+  MARIADB_INSTALLTENSIX='n'
+  MARIADB_INSTALLTENFIVE='n'
+  MARIADB_INSTALLTENFOUR='n'
+  MARIADB_INSTALLTENTHREE='n'
+  MARIADB_INSTALLTENTWO='n'
+elif [[ "$MARIADB_INSTALLELEVENEIGHT" = [yY] ]]; then
+  MARIADB_INSTALLTWELVETHREE='n'
+  MARIADB_INSTALLELEVENFOUR='n'
+  MARIADB_INSTALLTENELEVEN='n'
+  MARIADB_INSTALLTENSIX='n'
+  MARIADB_INSTALLTENFIVE='n'
+  MARIADB_INSTALLTENFOUR='n'
+  MARIADB_INSTALLTENTHREE='n'
+  MARIADB_INSTALLTENTWO='n'
+elif [[ "$MARIADB_INSTALLELEVENFOUR" = [yY] ]]; then
+  MARIADB_INSTALLTWELVETHREE='n'
+  MARIADB_INSTALLELEVENEIGHT='n'
+  MARIADB_INSTALLTENELEVEN='n'
+  MARIADB_INSTALLTENSIX='n'
+  MARIADB_INSTALLTENFIVE='n'
+  MARIADB_INSTALLTENFOUR='n'
+  MARIADB_INSTALLTENTHREE='n'
+  MARIADB_INSTALLTENTWO='n'
+elif [[ "$MARIADB_INSTALLTENELEVEN" = [yY] ]]; then
+  MARIADB_INSTALLTWELVETHREE='n'
+  MARIADB_INSTALLELEVENEIGHT='n'
+  MARIADB_INSTALLELEVENFOUR='n'
+  MARIADB_INSTALLTENSIX='n'
+  MARIADB_INSTALLTENFIVE='n'
+  MARIADB_INSTALLTENFOUR='n'
+  MARIADB_INSTALLTENTHREE='n'
+  MARIADB_INSTALLTENTWO='n'
 fi
 
 #########################################################
