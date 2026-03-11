@@ -855,9 +855,18 @@ nginxzlibtarball() {
 ERROR=$?
   if [[ "$ERROR" != '0' ]]; then
   cecho "Error: ${NGX_ZLIBLINKFILE} download failed." $boldgreen
+  cecho "Retrying with local mirror..." $boldyellow
+        echo "wget --progress=bar ${NGX_ZLIBLINKLOCAL} -O ${NGX_ZLIBLINKFILE} --tries=3"
+        wget --progress=bar "${NGX_ZLIBLINKLOCAL}" -O "${NGX_ZLIBLINKFILE}" --tries=3
+ERROR=$?
+  if [[ "$ERROR" != '0' ]]; then
+  cecho "Error: ${NGX_ZLIBLINKFILE} local mirror download failed." $boldgreen
 checklogdetails
   exit #$ERROR
-else 
+else
+         cecho "Download done." $boldyellow
+  fi
+else
          cecho "Download done." $boldyellow
 #echo ""
   fi
