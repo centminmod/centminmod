@@ -30,7 +30,7 @@ DT=$(date +"%d%m%y-%H%M%S")
 branchname='132.00stable'
 SCRIPT_MAJORVER='132'
 SCRIPT_MINORVER='00'
-SCRIPT_INCREMENTVER='129'
+SCRIPT_INCREMENTVER='130'
 SCRIPT_VERSIONSHORT="${branchname}"
 SCRIPT_VERSION="${SCRIPT_VERSIONSHORT}.b${SCRIPT_INCREMENTVER}"
 SCRIPT_DATE='15/02/25'
@@ -991,7 +991,7 @@ NGINX_PCREVER='8.45'         # Version of PCRE used for pcre-jit support in Ngin
 NGINX_PCRE_TWO='n'           # optional PCRE2 for Nginx 1.21.5+
 NGINX_PCRETWOVER='10.39'     # Version of PCRE2 used for pcre-jit support in Nginx
 NGINX_ZLIBCUSTOM='y'         # Use custom zlib instead of system version
-NGINX_ZLIBVER='1.3.1'        # http://www.zlib.net/
+NGINX_ZLIBVER='1.3.2'        # http://www.zlib.net/
 NGINX_VIDEO='n'              # control variable when 'y' set for NGINX_SLICE='y', NGINX_RTMP='y', NGINX_FLV='y', NGINX_MP4='y'
 ORESTY_HEADERSMORE='y'       # openresty headers more https://github.com/openresty/headers-more-nginx-module
 ORESTY_HEADERSMOREGIT='n'    # use git master instead of version specific
