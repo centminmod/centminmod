@@ -800,18 +800,14 @@ if [[ -z "$SECOND_IP" ]]; then
   # 0 = valid and 1 = not valid
   if [[ "$VPS_IPSIX_CHECK_DISABLE" = [yY] ]]; then
     DEDI_LISTEN="listen   80;"
-    echo "DEDI_LISTEN=\"listen   80;\""
   elif [[ "$VPS_IPSIX_CHECK_DISABLE" != [yY] && "$IP_SYSTEM_VALIDATE_V4" -eq '0' ]]; then
     DEDI_LISTEN="listen   80;"
-    echo "DEDI_LISTEN=\"listen   80;\""
   elif [[ "$VPS_IPSIX_CHECK_DISABLE" != [yY] && "$IP_SYSTEM_VALIDATE_V4" -ne '0' ]]; then
     DEDI_LISTEN=""
   fi
   if [[ "$VPS_IPSIX_CHECK_DISABLE" != [yY] && "$IP_SYSTEM_VALIDATE_V6" -eq '0' ]]; then
     DEDI_LISTEN_V6="listen   [::]:80;"
-    echo "DEDI_LISTEN_V6=\"listen   [::]:80;\""
     DEDI_LISTEN_HTTPS_V6="listen   [::]:443 ssl http2;"
-    echo "DEDI_LISTEN_HTTPS_V6=\"listen   [::]:443 ssl http2;\""
   elif [[ "$VPS_IPSIX_CHECK_DISABLE" != [yY] && "$IP_SYSTEM_VALIDATE_V6" -ne '0' ]]; then
     DEDI_LISTEN_V6=""
   else
