@@ -13,7 +13,7 @@ DKIM_LENGTH='2048'
 
 # DKIM selector definition
 CURRENT_YEAR=$(date +"%Y")
-SELECTOR="default${CURRENT_YEAR}"
+SELECTOR="${SELECTOR:-default${CURRENT_YEAR}}"
 
 ###################################################################
 # Backup directory for previous DKIM files
