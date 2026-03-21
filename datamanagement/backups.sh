@@ -24,6 +24,7 @@ MYSQL_PWD='pass'
 # via nc/socat zstd tunnel so no need to wait additional
 # time tar compressing files
 FILES_TARBALL_CREATION='n'
+LOCALCENTMINMOD_MIRROR='https://parts.centminmod.com'
 ################################################################################
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
 MOST_FREE_SPACE_MOUNT=$(df --output=target,avail | sed '1d' | sort -k 2 -n -r | awk 'NR==1 {print $1}')
@@ -274,22 +275,22 @@ CENTOSVER_NUMERIC=$(echo $CENTOSVER | sed -e 's|\.||g')
 # newer tar 1.35 with zstd native support
 if [[ "$CENTOS_SEVEN" -eq '7' ]]; then
   if [ ! -f /svr-setup/tar-zstd-gcc10-1.35-1.el7.x86_64.rpm ]; then
-    wget https://centminmod.com/centminmodparts/tar/tar-zstd-gcc10-1.35-1.el7.x86_64.rpm -O /svr-setup/tar-zstd-gcc10-1.35-1.el7.x86_64.rpm
+    wget ${LOCALCENTMINMOD_MIRROR}/centminmodparts/tar/tar-zstd-gcc10-1.35-1.el7.x86_64.rpm -O /svr-setup/tar-zstd-gcc10-1.35-1.el7.x86_64.rpm
     yum -q -y localinstall /svr-setup/tar-zstd-gcc10-1.35-1.el7.x86_64.rpm
   fi
 elif [[ "$CENTOS_EIGHT" -eq '8' ]]; then
   if [ ! -f /svr-setup/tar-zstd-gcc12-1.35-1.el8.x86_64.rpm ]; then
-    wget https://centminmod.com/centminmodparts/tar/tar-zstd-gcc12-1.35-1.el8.x86_64.rpm -O /svr-setup/tar-zstd-gcc12-1.35-1.el8.x86_64.rpm
+    wget ${LOCALCENTMINMOD_MIRROR}/centminmodparts/tar/tar-zstd-gcc12-1.35-1.el8.x86_64.rpm -O /svr-setup/tar-zstd-gcc12-1.35-1.el8.x86_64.rpm
     yum -q -y localinstall /svr-setup/tar-zstd-gcc12-1.35-1.el8.x86_64.rpm
   fi
 elif [[ "$CENTOS_NINE" -eq '9' ]]; then
   if [ ! -f /svr-setup/tar-zstd-gcc13-1.35-1.el9.x86_64.rpm ]; then
-    wget https://centminmod.com/centminmodparts/tar/tar-zstd-gcc13-1.35-1.el9.x86_64.rpm -O /svr-setup/tar-zstd-gcc13-1.35-1.el9.x86_64.rpm
+    wget ${LOCALCENTMINMOD_MIRROR}/centminmodparts/tar/tar-zstd-gcc13-1.35-1.el9.x86_64.rpm -O /svr-setup/tar-zstd-gcc13-1.35-1.el9.x86_64.rpm
     yum -q -y localinstall /svr-setup/tar-zstd-gcc13-1.35-1.el9.x86_64.rpm
   fi
 elif [[ "$CENTOS_TEN" -eq '10' ]]; then
   if [ ! -f /svr-setup/tar-zstd-gcc14-1.35-1.el10.x86_64.rpm ]; then
-    wget https://centminmod.com/centminmodparts/tar/tar-zstd-gcc14-1.35-1.el10.x86_64.rpm -O /svr-setup/tar-zstd-gcc14-1.35-1.el10.x86_64.rpm
+    wget ${LOCALCENTMINMOD_MIRROR}/centminmodparts/tar/tar-zstd-gcc14-1.35-1.el10.x86_64.rpm -O /svr-setup/tar-zstd-gcc14-1.35-1.el10.x86_64.rpm
     yum -q -y localinstall /svr-setup/tar-zstd-gcc14-1.35-1.el10.x86_64.rpm
   fi
 fi

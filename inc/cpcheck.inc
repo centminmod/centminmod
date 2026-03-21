@@ -3337,8 +3337,8 @@ redisupdates() {
           echo "Details https://community.centminmod.com/threads/29537/"
 
           # Download RPMs directly to DIR_TMP
-          wget -q -O "$DIR_TMP/redis-7.2.11-1.el7.x86_64.rpm" https://parts.centminmod.com/centminmodparts/rpms/redis/el7/redis-7.2.11-1.el7.x86_64.rpm
-          wget -q -O "$DIR_TMP/redis-devel-7.2.11-1.el7.x86_64.rpm" https://parts.centminmod.com/centminmodparts/rpms/redis/el7/redis-devel-7.2.11-1.el7.x86_64.rpm
+          wget -q -O "$DIR_TMP/redis-7.2.11-1.el7.x86_64.rpm" ${LOCALCENTMINMOD_MIRROR}/centminmodparts/rpms/redis/el7/redis-7.2.11-1.el7.x86_64.rpm
+          wget -q -O "$DIR_TMP/redis-devel-7.2.11-1.el7.x86_64.rpm" ${LOCALCENTMINMOD_MIRROR}/centminmodparts/rpms/redis/el7/redis-devel-7.2.11-1.el7.x86_64.rpm
 
           # Install Redis 7.2.11 with full paths
           yum -y -q localinstall "$DIR_TMP/redis-7.2.11-1.el7.x86_64.rpm" "$DIR_TMP/redis-devel-7.2.11-1.el7.x86_64.rpm"
