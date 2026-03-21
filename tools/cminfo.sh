@@ -16,6 +16,7 @@ ARCH_CHECK="$(uname -m)"
 branchname='131.00stable'
 DT=$(date +"%d%m%y-%H%M%S")
 CENTMINLOGDIR='/root/centminlogs'
+LOCALCENTMINMOD_MIRROR='https://parts.centminmod.com'
 #####################################################
 MYCNF='/etc/my.cnf'
 USER='root'
@@ -192,7 +193,7 @@ fi
 if [[ ! -f /usr/bin/datamash && -f /usr/bin/systemctl ]]; then
   if [[ "$CENTOS_TEN" -eq 10 ]]; then
     echo
-    wget -q -4 https://centminmod.com/centminmodparts/rpms/datamash/el10/datamash-1.9-1.el10.x86_64.rpm
+    wget -q -4 ${LOCALCENTMINMOD_MIRROR}/centminmodparts/rpms/datamash/el10/datamash-1.9-1.el10.x86_64.rpm
     echo
     yum -y localinstall datamash-1.9-1.el10.x86_64.rpm --allowerasing
     echo
