@@ -3410,7 +3410,7 @@
 
 # Cloudflare zlib Version
 # Git History: Added 2017-12-14 (577f71d8)
-#CLOUDFLARE_ZLIBVER='1.3.3'
+#CLOUDFLARE_ZLIBVER='1.4.0'
 
 ################################################################################
 # 19. SSL/TLS ALTERNATIVE LIBRARIES
@@ -5766,7 +5766,7 @@
 # Cloudflare zlib Version
 # Optimized zlib fork version
 # Git History: Added 2017-12-14 (577f71d8)
-#CLOUDFLARE_ZLIBVER='1.3.3'
+#CLOUDFLARE_ZLIBVER='1.4.0'
 
 # Nginx zlib Version
 # Standard zlib version for Nginx
