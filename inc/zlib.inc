@@ -446,19 +446,17 @@ install_cfzlib() {
             fi
         fi
         LAST_CFZLIB_COMMIT=$(git rev-parse --short HEAD)
-        TARGET_CFZLIB_COMMIT='47f1285'
-        COMMON_ANCESTOR=$(git rev-parse --short $(git merge-base HEAD ${TARGET_CFZLIB_COMMIT}))
-        
+        TARGET_CFZLIB_COMMIT='3944b7d'
+        FALLBACK_CFZLIB_COMMIT='47f1285'
+        COMMON_ANCESTOR=$(git rev-parse --short $(git merge-base HEAD ${TARGET_CFZLIB_COMMIT} 2>/dev/null) 2>/dev/null)
+
         if [[ "${COMMON_ANCESTOR}" = "${TARGET_CFZLIB_COMMIT}" ]]; then
-            # Workaround Oct 13, 2023 commited rebase changes
-            # https://github.com/cloudflare/zlib/pull/46
-            # If TARGET_CFZLIB_COMMIT is the current commit or an ancestor of the current commit
+            # TARGET_CFZLIB_COMMIT is the current commit or an ancestor of the current commit
             sed -i.bak 's/clean: minizip-clean/clean: #minizip-clean/' Makefile.in
         else
-            # Workaround Oct 13, 2023 commited rebase changes
-            # https://github.com/cloudflare/zlib/pull/46
-            # git checkout d213e64378ec4c289429145ac0e5ee35d1214cd4
-            git checkout d213e64378ec4c289429145ac0e5ee35d1214cd4
+            # Fallback to known-good commit if target not found
+            # Previous target from Oct 13, 2023 (47f1285) used as fallback
+            git checkout ${FALLBACK_CFZLIB_COMMIT} 2>/dev/null || git checkout d213e64378ec4c289429145ac0e5ee35d1214cd4
         fi
 
         # CVE-2018-25032 patch
