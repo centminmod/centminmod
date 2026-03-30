@@ -479,18 +479,14 @@ if [[ -z "$SECOND_IP" ]]; then
   # 0 = valid and 1 = not valid
   if [[ "$VPS_IPSIX_CHECK_DISABLE" = [yY] ]]; then
     DEDI_LISTEN="listen   80;"
-    echo "DEDI_LISTEN=\"listen   80;\""
   elif [[ "$VPS_IPSIX_CHECK_DISABLE" != [yY] && "$IP_SYSTEM_VALIDATE_V4" -eq '0' ]]; then
     DEDI_LISTEN="listen   80;"
-    echo "DEDI_LISTEN=\"listen   80;\""
   elif [[ "$VPS_IPSIX_CHECK_DISABLE" != [yY] && "$IP_SYSTEM_VALIDATE_V4" -ne '0' ]]; then
     DEDI_LISTEN=""
   fi
   if [[ "$VPS_IPSIX_CHECK_DISABLE" != [yY] && "$IP_SYSTEM_VALIDATE_V6" -eq '0' ]]; then
     DEDI_LISTEN_V6="listen   [::]:80;"
-    echo "DEDI_LISTEN_V6=\"listen   [::]:80;\""
     DEDI_LISTEN_HTTPS_V6="listen   [::]:443 ssl http2;"
-    echo "DEDI_LISTEN_HTTPS_V6=\"listen   [::]:443 ssl http2;\""
   elif [[ "$VPS_IPSIX_CHECK_DISABLE" != [yY] && "$IP_SYSTEM_VALIDATE_V6" -ne '0' ]]; then
     DEDI_LISTEN_V6=""
   else
@@ -3748,15 +3744,15 @@ chown -R nginx:nginx /home/nginx/domains/${vhostname}/public${WPSUBDIR}
 if [[ -f .wpcli-status && ! "\$(grep -w 'Plugin already updated' .wpcli-status)" ]]; then
   exec 99>/tmp/wp_updater_phpfpm.lock
   if flock -n -x 99; then
-    # only do nginx + php-fpm restarts when zend opcache caching is enabled and revalidation
+    # only do php-fpm reload when zend opcache caching is enabled and revalidation
     # frequency is greater than 10 seconds set by opcache.revalidate_freq php setting
     if [[ "\$(php --ri "Zend Opcache" >/dev/null 2>&1; echo \$?)" -eq '0' && "\$(php --ri "Zend Opcache" | awk '/opcache.revalidate_freq/ {print \$3}')" -gt '10' ]]; then
-      service nginx reload
+      service php-fpm reload
     fi
   rm -rf /tmp/wp_updater_phpfpm.lock
   else
   echo "already detected running process"
-  echo "skipping nginx reload"
+  echo "skipping php-fpm reload"
   fi
 fi
 rm -rf .wpcli-status

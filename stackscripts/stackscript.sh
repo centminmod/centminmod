@@ -122,6 +122,8 @@
 # MYSQLPASSA=
 
 
+LOCALCENTMINMOD_MIRROR='https://parts.centminmod.com'
+
 # This sets the variable $IPADDR to the IPv4 address the new Linode receives.
 IPADDR=$(hostname -I | cut -f1 -d' ')
 
@@ -389,7 +391,7 @@ if [[ "$WHITELIST" = 'yes' ]]; then
 fi
 
 # fix ups
-wget -O /root/mysqlreport https://centminmod.com/centminmodparts/mysqlreport/mysqlreport
+wget -O /root/mysqlreport ${LOCALCENTMINMOD_MIRROR}/centminmodparts/mysqlreport/mysqlreport
 
 # clean up
 yum clean all

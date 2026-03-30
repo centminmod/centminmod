@@ -30,7 +30,7 @@ DT=$(date +"%d%m%y-%H%M%S")
 branchname='140.00beta01'
 SCRIPT_MAJORVER='140'
 SCRIPT_MINORVER='00'
-SCRIPT_INCREMENTVER='288'
+SCRIPT_INCREMENTVER='299'
 SCRIPT_VERSIONSHORT="${branchname}"
 SCRIPT_VERSION="${SCRIPT_VERSIONSHORT}.b${SCRIPT_INCREMENTVER}"
 SCRIPT_DATE='16/01/25'
@@ -1025,7 +1025,7 @@ NGINX_PCREVER='8.45'         # Version of PCRE used for pcre-jit support in Ngin
 NGINX_PCRE_TWO='n'           # optional PCRE2 for Nginx 1.21.5+
 NGINX_PCRETWOVER='10.39'     # Version of PCRE2 used for pcre-jit support in Nginx
 NGINX_ZLIBCUSTOM='y'         # Use custom zlib instead of system version
-NGINX_ZLIBVER='1.3.1'        # http://www.zlib.net/
+NGINX_ZLIBVER='1.3.2'        # http://www.zlib.net/
 NGINX_VIDEO='n'              # control variable when 'y' set for NGINX_SLICE='y', NGINX_RTMP='y', NGINX_FLV='y', NGINX_MP4='y'
 ORESTY_HEADERSMORE='y'       # openresty headers more https://github.com/openresty/headers-more-nginx-module
 ORESTY_HEADERSMOREGIT='n'    # use git master instead of version specific
@@ -1220,9 +1220,9 @@ MYSQL_INSTALL='n'            # Install official Oracle MySQL Server (MariaDB alt
 SENDMAIL_INSTALL='n'         # Install Sendmail (and mailx) set to y and POSTFIX_INSTALL=n for sendmail
 POSTFIX_INSTALL=y            # Install Postfix (and mailx) set to n and SENDMAIL_INSTALL=y for sendmail
 # Nginx
-NGINX_VERSION='1.29.5'             # Use this version of Nginx
-NGINX_ANGIE_VERSION='Angie-1.10.1'
-FREENGINX_VERSION='1.29.2'     # Maxim's Freenginx fork https://freenginx.org/en/download.html
+NGINX_VERSION='1.29.7'             # Use this version of Nginx
+NGINX_ANGIE_VERSION='Angie-1.11.4'
+FREENGINX_VERSION='1.29.6'     # Maxim's Freenginx fork https://freenginx.org/en/download.html
 FREENGINX_INSTALL='n'          # Use Freenginx fork instead of official Nginx
 FREENGINX_BACKPORT_PATCHES='n' # Backport Freenginx fixes to official Nginx
 NGINX_VHOSTSSL='y'             # enable centmin.sh menu 2 prompt to create self signed SSL vhost 2nd vhost conf
@@ -1264,7 +1264,7 @@ CLOUDFLARE_ZLIBRESET='y'   # if CLOUDFLARE_ZLIB='n' set, then revert gzip compre
 CLOUDFLARE_ZLIBRAUTOMAX='n' # don't auto raise nginx gzip compression level to 9 if using Cloudflare zlib
 CLOUDFLARE_ZLIBPHP='n'     # use Cloudflare optimised zlib fork for PHP-FPM zlib instead of system zlib
 CLOUDFLARE_ZLIBDEBUG='n'   # make install debug verbose mode
-CLOUDFLARE_ZLIBVER='1.3.3'
+CLOUDFLARE_ZLIBVER='1.4.0'
 NGINX_DYNAMICTLS='n'          # set 'y' and recompile nginx https://blog.cloudflare.com/optimizing-tls-over-tcp-to-reduce-latency/
 OPENSSLECDSA_PATCH='n'        # https://community.centminmod.com/posts/57725/
 OPENSSLECDHX_PATCH='n'        # https://community.centminmod.com/posts/57726/

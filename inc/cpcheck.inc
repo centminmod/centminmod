@@ -2055,6 +2055,18 @@ fixwp_updater() {
       fi
     done
   fi
+
+  # fix wp_updater opcache reload bug - nginx reload doesn't clear opcache
+  # opcache lives in php-fpm workers, so php-fpm reload is needed
+  if [ -d /root/tools ]; then
+    find /root/tools -type f -name "wp_updater_*.sh" | while read w; do
+      if grep -q 'service nginx reload' "$w"; then
+        sed -i 's|service nginx reload|service php-fpm reload|g' "$w"
+        sed -i 's|skipping nginx reload|skipping php-fpm reload|g' "$w"
+        sed -i 's|only do nginx + php-fpm restarts|only do php-fpm reload|g' "$w"
+      fi
+    done
+  fi
 }
 
 fixlshw_rpmforge() {
@@ -3322,8 +3334,8 @@ redisupdates() {
           echo "Details https://community.centminmod.com/threads/29537/"
 
           # Download RPMs directly to DIR_TMP
-          wget -q -O "$DIR_TMP/redis-7.2.11-1.el7.x86_64.rpm" https://parts.centminmod.com/centminmodparts/rpms/redis/el7/redis-7.2.11-1.el7.x86_64.rpm
-          wget -q -O "$DIR_TMP/redis-devel-7.2.11-1.el7.x86_64.rpm" https://parts.centminmod.com/centminmodparts/rpms/redis/el7/redis-devel-7.2.11-1.el7.x86_64.rpm
+          wget -q -O "$DIR_TMP/redis-7.2.11-1.el7.x86_64.rpm" ${LOCALCENTMINMOD_MIRROR}/centminmodparts/rpms/redis/el7/redis-7.2.11-1.el7.x86_64.rpm
+          wget -q -O "$DIR_TMP/redis-devel-7.2.11-1.el7.x86_64.rpm" ${LOCALCENTMINMOD_MIRROR}/centminmodparts/rpms/redis/el7/redis-devel-7.2.11-1.el7.x86_64.rpm
 
           # Install Redis 7.2.11 with full paths
           yum -y -q localinstall "$DIR_TMP/redis-7.2.11-1.el7.x86_64.rpm" "$DIR_TMP/redis-devel-7.2.11-1.el7.x86_64.rpm"

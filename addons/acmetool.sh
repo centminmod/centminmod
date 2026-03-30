@@ -1024,7 +1024,7 @@ echo "sed -i 's|^##x# HTTPS-DEFAULT|#x# HTTPS-DEFAULT|g' \"/usr/local/nginx/conf
 echo "sed -i \"s|#x# server {| server {|\" \"/usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf\""
 echo "sed -i \"s|#x#   $DEDI_LISTEN|   $DEDI_LISTEN|\" \"/usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf\""
 if [[ "$VPS_IPSIX_CHECK_DISABLE" != [yY] && "$IP_SYSTEM_VALIDATE_V6" -eq '0' ]]; then
-  echo "sed -i \"s|#x#   $DEDI_LISTEN_V6|   $DEDI_LISTEN_V6|\" \"/usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf\""
+  echo "sed -i \"s|#x#   $DEDI_LISTEN_V6_ESCAPED|   $DEDI_LISTEN_V6|\" \"/usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf\""
 fi
 echo "sed -i \"s|#x#   server_name ${vhostname} www.${vhostname};|   server_name ${vhostname} www.${vhostname};|\" \"/usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf\""
 echo "sed -i \"s|#x#   return 302 https://${vhostname}\$request_uri;|   return 302 https://${vhostname}\$request_uri;|\" \"/usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf\""
@@ -1036,7 +1036,7 @@ sed -i 's|^##x# HTTPS-DEFAULT|#x# HTTPS-DEFAULT|g' "/usr/local/nginx/conf/conf.d
 sed -i "s|#x# server {| server {|" "/usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf"
 sed -i "s|#x#   $DEDI_LISTEN|   $DEDI_LISTEN|" "/usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf"
 if [[ "$VPS_IPSIX_CHECK_DISABLE" != [yY] && "$IP_SYSTEM_VALIDATE_V6" -eq '0' ]]; then
-  sed -i "s|#x#   $DEDI_LISTEN_V6|   $DEDI_LISTEN_V6|" "/usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf"
+  sed -i "s|#x#   $DEDI_LISTEN_V6_ESCAPED|   $DEDI_LISTEN_V6|" "/usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf"
 fi
 sed -i "s|#x#   server_name ${vhostname} www.${vhostname};|   server_name ${vhostname} www.${vhostname};|" "/usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf"
 sed -i "s|#x#   return 302 https:\/\/${vhostname}\$request_uri;|   return 302 https:\/\/${vhostname}\$request_uri;|" "/usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf"
@@ -1190,22 +1190,21 @@ if [[ -z "$SECOND_IP" ]]; then
   # 0 = valid and 1 = not valid
   if [[ "$VPS_IPSIX_CHECK_DISABLE" = [yY] ]]; then
     DEDI_LISTEN="listen   80;"
-    echo "DEDI_LISTEN=\"listen   80;\""
   elif [[ "$VPS_IPSIX_CHECK_DISABLE" != [yY] && "$IP_SYSTEM_VALIDATE_V4" -eq '0' ]]; then
     DEDI_LISTEN="listen   80;"
-    echo "DEDI_LISTEN=\"listen   80;\""
   elif [[ "$VPS_IPSIX_CHECK_DISABLE" != [yY] && "$IP_SYSTEM_VALIDATE_V4" -ne '0' ]]; then
     DEDI_LISTEN=""
   fi
   if [[ "$VPS_IPSIX_CHECK_DISABLE" != [yY] && "$IP_SYSTEM_VALIDATE_V6" -eq '0' ]]; then
     DEDI_LISTEN_V6="listen   [::]:80;"
-    echo "DEDI_LISTEN_V6=\"listen   [::]:80;\""
+    DEDI_LISTEN_V6_ESCAPED=$(echo "$DEDI_LISTEN_V6" | sed 's/\[/\\[/g; s/\]/\\]/g')
     DEDI_LISTEN_HTTPS_V6="listen   [::]:443 ssl http2;"
-    echo "DEDI_LISTEN_HTTPS_V6=\"listen   [::]:443 ssl http2;\""
   elif [[ "$VPS_IPSIX_CHECK_DISABLE" != [yY] && "$IP_SYSTEM_VALIDATE_V6" -ne '0' ]]; then
     DEDI_LISTEN_V6=""
+    DEDI_LISTEN_V6_ESCAPED=""
   else
     DEDI_LISTEN_V6=""
+    DEDI_LISTEN_V6_ESCAPED=""
   fi
 elif [[ "$SECOND_IP" ]]; then
   DEDI_IP=$(echo $(echo ${SECOND_IP}:))
@@ -1627,22 +1626,21 @@ if [[ -z "$SECOND_IP" ]]; then
   # 0 = valid and 1 = not valid
   if [[ "$VPS_IPSIX_CHECK_DISABLE" = [yY] ]]; then
     DEDI_LISTEN="listen   80;"
-    echo "DEDI_LISTEN=\"listen   80;\""
   elif [[ "$VPS_IPSIX_CHECK_DISABLE" != [yY] && "$IP_SYSTEM_VALIDATE_V4" -eq '0' ]]; then
     DEDI_LISTEN="listen   80;"
-    echo "DEDI_LISTEN=\"listen   80;\""
   elif [[ "$VPS_IPSIX_CHECK_DISABLE" != [yY] && "$IP_SYSTEM_VALIDATE_V4" -ne '0' ]]; then
     DEDI_LISTEN=""
   fi
   if [[ "$VPS_IPSIX_CHECK_DISABLE" != [yY] && "$IP_SYSTEM_VALIDATE_V6" -eq '0' ]]; then
     DEDI_LISTEN_V6="listen   [::]:80;"
-    echo "DEDI_LISTEN_V6=\"listen   [::]:80;\""
+    DEDI_LISTEN_V6_ESCAPED=$(echo "$DEDI_LISTEN_V6" | sed 's/\[/\\[/g; s/\]/\\]/g')
     DEDI_LISTEN_HTTPS_V6="listen   [::]:443 ssl http2;"
-    echo "DEDI_LISTEN_HTTPS_V6=\"listen   [::]:443 ssl http2;\""
   elif [[ "$VPS_IPSIX_CHECK_DISABLE" != [yY] && "$IP_SYSTEM_VALIDATE_V6" -ne '0' ]]; then
     DEDI_LISTEN_V6=""
+    DEDI_LISTEN_V6_ESCAPED=""
   else
     DEDI_LISTEN_V6=""
+    DEDI_LISTEN_V6_ESCAPED=""
   fi
 elif [[ "$SECOND_IP" ]]; then
   DEDI_IP=$(echo $(echo ${SECOND_IP}:))
