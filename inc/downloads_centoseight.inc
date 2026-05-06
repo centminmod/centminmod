@@ -30,9 +30,9 @@ if [[ "$REMIREPO_DISABLE" = [nN] ]]; then
       echo
       grep repo_gpgcheck /etc/yum.repos.d/remi*.repo
       echo
-      # set remi redis 6.2 default
+      # set remi redis 8.6 default
       yum -y module disable composer
-      yum -y module enable redis:remi-7.2
+      yum -y module enable redis:remi-8.6
     else
       cecho "Error: problem with Remi repo install." $boldgreen
     fi
