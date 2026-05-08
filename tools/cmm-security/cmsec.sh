@@ -392,6 +392,15 @@ do_one_check_full() {
     return "${PARSE_EXIT:-3}"
   fi
 
+  # Non-JSON interactive run: the check script's startup (function defs, OS
+  # detection, /etc/os-release parse, and on cold cache the dnf metadata
+  # refresh) can take ~1-2s before the first section header appears,
+  # leaving the user staring at a flashing cursor. Print a brief progress
+  # line first so it's clear cmsec is doing work. Suppressed when stdout
+  # is not a terminal (scripted invocation) or QUIET=1.
+  if [ -t 1 ] && [ "${QUIET:-0}" -ne 1 ]; then
+    printf '%b * cmsec: running %s check, please wait...%b\n' "$C_YELLOW" "$cve_id" "$C_RESET"
+  fi
   "$check_path"
   return $?
 }
@@ -433,6 +442,18 @@ do_run() {
   }
 
   if [ "$DMOTD_MODE" -eq 1 ]; then
+    # Print a progress line BEFORE iterating so the SSH login banner doesn't
+    # show only a blank cursor while cmsec runs cold-cache checks (which
+    # can take 1-2s each on a freshly-rebooted kernel where state-key
+    # mismatch forces a synchronous fresh run). On warm cache the verdicts
+    # appear instantly and the progress line is mildly redundant — accepted
+    # as a fair tradeoff vs. the cold-cache UX gap. Suppressed when stdout
+    # is not a terminal (e.g. when output is captured by check-for-updates).
+    if [ -t 1 ]; then
+      local _total
+      _total="$(printf '%s\n' $checks | wc -l | tr -d ' ')"
+      printf '%b * cmsec: running %d kernel CVE check(s), please wait...%b\n' "$C_YELLOW" "$_total" "$C_RESET"
+    fi
     for cve_id in $checks; do
       do_one_check_dmotd "$cve_id" || true
     done
