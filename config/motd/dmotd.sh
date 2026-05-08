@@ -30,10 +30,13 @@ CONFIGSCANBASE='/etc/centminmod'
 CENTMINLOGDIR='/root/centminlogs'
 FREENGINX_INSTALL='n'        # Use Freenginx fork instead of official Nginx
 SSHLOGIN_KERNELCHECK='n'
+DMOTD_CVECHECK='n'           # cmsec CVE detection line in dmotd login banner
+DMOTD_CVECHECK_SUPPRESS=''   # comma-separated CVE IDs to suppress, e.g. 'CVE-2026-31431'
 FORCE_IPVFOUR='y' # curl/wget commands through script force IPv4
 
 # Set cache timeout in minutes
 CACHE_TIMEOUT=60
+CMSEC_CACHE_TIMEOUT=1440     # cmsec CVE cache TTL (24h); state-based invalidation also applies
 # Set cache file path
 CACHE_FILE="/tmp/nginx_version_cache"
 CACHE_PHP_FILE="/tmp/php_version_cache"
@@ -180,8 +183,27 @@ check_git_major_branch() {
 }
 
 push_dmotd_alerts() {
-  pushapp=$1
-  pushapp_ver=$2
+  local pushapp="$1"
+  local pushapp_ver="$2"
+  local _cooldown_dir _cooldown_key _cooldown_file _last_ts _now_ts
+  local _cve_id _cve_rest _cve_kernel _cve_verdict
+  local PUSH_MESSAGE PUSH_TITLE RESPONSE _curl_rc
+  # Per-CVE alert cooldown to prevent login-time alert spam.
+  # Each (CVE-id, kernel) tuple alerts at most once per CVE_ALERT_COOLDOWN seconds.
+  local CVE_ALERT_COOLDOWN="${CVE_ALERT_COOLDOWN:-86400}"
+  if [[ "$pushapp" = 'cve' ]]; then
+    _cooldown_dir="/var/cache/centminmod/cmsec/push"
+    [ -d "$_cooldown_dir" ] || mkdir -p "$_cooldown_dir" 2>/dev/null
+    _cooldown_key="$(printf '%s' "$pushapp_ver" | tr '/|: ' '_____')"
+    _cooldown_file="${_cooldown_dir}/${_cooldown_key}.last"
+    if [ -f "$_cooldown_file" ]; then
+      _last_ts=$(stat -c %Y "$_cooldown_file" 2>/dev/null || echo 0)
+      _now_ts=$(date +%s)
+      if [ "$((_now_ts - _last_ts))" -lt "$CVE_ALERT_COOLDOWN" ]; then
+        return 0
+      fi
+    fi
+  fi
   if [[ "$(id -u)" -eq 0 ]] || sudo -n true 2>/dev/null; then
     if [[ "$pushapp" = 'nginx' ]]; then
       PUSH_MESSAGE="nginx ${pushapp_ver} update available, run centmin.sh menu option 4"
@@ -192,10 +214,18 @@ push_dmotd_alerts() {
     elif [[ "$pushapp" = 'cmm' ]]; then
       PUSH_MESSAGE="centminmod ${pushapp_ver} update available, run cmupdate to update"
       PUSH_TITLE="centminmod ${pushapp_ver} update available ${PUSH_HOSTNAME} ${PUSH_DATE_TIME}"
+    elif [[ "$pushapp" = 'cve' ]]; then
+      # pushapp_ver carries "${cve_id}|${kernel}|${verdict}"
+      _cve_id="${pushapp_ver%%|*}"
+      _cve_rest="${pushapp_ver#*|}"
+      _cve_kernel="${_cve_rest%%|*}"
+      _cve_verdict="${_cve_rest#*|}"
+      PUSH_MESSAGE="${_cve_id} ${_cve_verdict} on ${PUSH_HOSTNAME} (kernel ${_cve_kernel}); run 'cmsec check ${_cve_id}'"
+      PUSH_TITLE="${_cve_id} ${_cve_verdict} ${PUSH_HOSTNAME} ${PUSH_DATE_TIME}"
     fi
     if [[ "$PUSH_MOTD_ALERTS" = [yY] && "$PUSH_API_TOKEN" && "$PUSH_USER_KEY" ]]; then
       log_message "$PUSH_MESSAGE"
-      
+
       # Send Notification
       RESPONSE=$(curl -s \
         --form-string "token=${PUSH_API_TOKEN}" \
@@ -203,9 +233,19 @@ push_dmotd_alerts() {
         --form-string "message=${PUSH_MESSAGE}" \
         --form-string "title=${PUSH_TITLE}" \
         https://api.pushover.net/1/messages.json)
-      
+      _curl_rc=$?
+
       # Log the response from Pushover
       log_message "Notification sent. Response: ${RESPONSE}"
+      # Update CVE alert cooldown marker ONLY after a verified-successful Pushover
+      # delivery — Pushover returns {"status":1,...} on success, {"status":0,...}
+      # on auth/format errors. Without this gate, transient network failures or
+      # bad credentials would still suppress future alerts for the cooldown window.
+      if [[ "$pushapp" = 'cve' ]] && [ -n "${_cooldown_file:-}" ] \
+         && [ "${_curl_rc:-1}" -eq 0 ] \
+         && printf '%s' "$RESPONSE" | grep -q '"status":1'; then
+        touch "$_cooldown_file" 2>/dev/null
+      fi
     fi
   fi
 }
@@ -478,9 +518,11 @@ needrestart_check() {
   if [[ "$NEEDRESTART_CHECK" = [yY] && -f /usr/bin/needs-restarting ]]; then
     # Get the current day of the week (0 for Sunday, 1 for Monday, etc.)
     DAY_OF_WEEK=$(date +%u)
-    
-    # Check if today is Friday (5), Saturday (6), or Sunday (0)
-    if [ "$DAY_OF_WEEK" -eq "5" ] || [ "$DAY_OF_WEEK" -eq "6" ] || [ "$DAY_OF_WEEK" -eq "0" ]; then
+
+    # date +%u returns 1=Mon ... 7=Sun. Original code had `0` for Sunday
+    # which never matches — fixed to 7.
+    # Check if today is Friday (5), Saturday (6), or Sunday (7)
+    if [ "$DAY_OF_WEEK" -eq "5" ] || [ "$DAY_OF_WEEK" -eq "6" ] || [ "$DAY_OF_WEEK" -eq "7" ]; then
         # Run the command and capture its output
         output=$(needs-restarting -r)
         # Modify the output based on the version-specific message
@@ -514,6 +556,39 @@ needrestart_check() {
 kernel_checks() {
   if [[ "$SSHLOGIN_KERNELCHECK" = [yY] && -f "$CMSCRIPT_GITDIR/tools/kernelcheck.sh" ]]; then
     "$CMSCRIPT_GITDIR/tools/kernelcheck.sh"
+  fi
+}
+
+cmsec_checks() {
+  # CVE detection line(s) for the dmotd login banner. Default off.
+  # Enable via: echo "DMOTD_CVECHECK='y'" >> /etc/centminmod/custom_config.inc
+  # Suppress specific CVEs: DMOTD_CVECHECK_SUPPRESS='CVE-2026-31431,CVE-2027-XXXX'
+  if [[ "$DMOTD_CVECHECK" = [yY] && -x "$CMSCRIPT_GITDIR/tools/cmm-security/cmsec.sh" ]]; then
+    CMSEC_CACHE_TTL_MIN="$CMSEC_CACHE_TIMEOUT" \
+    DMOTD_CVECHECK_SUPPRESS="$DMOTD_CVECHECK_SUPPRESS" \
+      "$CMSCRIPT_GITDIR/tools/cmm-security/cmsec.sh" --dmotd 2>/dev/null
+    # Pushover alert on vulnerable verdict (cooldown-throttled inside push_dmotd_alerts).
+    # Same DMOTD_CVECHECK_SUPPRESS env var as the --dmotd call above so the second
+    # invocation also honours per-CVE suppression — otherwise a suppressed CVE would
+    # still trigger Pushover even though its banner line was hidden.
+    cmsec_status="$(CMSEC_CACHE_TTL_MIN="$CMSEC_CACHE_TIMEOUT" \
+                    DMOTD_CVECHECK_SUPPRESS="$DMOTD_CVECHECK_SUPPRESS" \
+                    "$CMSCRIPT_GITDIR/tools/cmm-security/cmsec.sh" --json 2>/dev/null)"
+    if [[ -n "$cmsec_status" ]] && printf '%s' "$cmsec_status" | grep -q '"final_status": "vulnerable"'; then
+      # Multi-CVE-correct extraction: track the most recent "cve" line, emit
+      # it the first time we see "vulnerable". cmsec emits per-CVE JSON docs
+      # back-to-back where "cve" appears before "final_status" within each
+      # document. Avoids the bug where the FIRST CVE (e.g. patched) is named
+      # in the alert when actually a LATER CVE is the vulnerable one.
+      cve_id="$(printf '%s' "$cmsec_status" | awk -F'"' '
+        /"cve":/ { _cve = $4 }
+        /"final_status": "vulnerable"/ { print _cve; exit }
+      ')"
+      if [ -n "$cve_id" ]; then
+        kernel_str="$(uname -r)"
+        push_dmotd_alerts cve "${cve_id}|${kernel_str}|VULNERABLE"
+      fi
+    fi
   fi
 }
 
@@ -568,6 +643,7 @@ if [[ "$(id -u)" -eq 0 ]] || sudo -n true 2>/dev/null; then
   motd_output
   if [[ "$(id -u)" -eq 0 || "$SUDO_USER" ]]; then
     kernel_checks
+    cmsec_checks
     if [[ "$DMOTD_PHPCHECK" = [yY] && "$(which php-fpm >/dev/null 2>&1; echo $?)" = '0' ]]; then
       ngxver_checker &
       phpver_checker &
