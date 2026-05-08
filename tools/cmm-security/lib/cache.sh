@@ -117,8 +117,21 @@ cmsec_cache_read() {
 }
 
 cmsec_cache_read_stale() {
+  # Stale = TTL expired but state key (kernel/OS/baseline) still matches.
+  # If the state key differs (e.g., user rebooted into a new kernel), the
+  # cached payload reflects a system state that no longer exists and MUST
+  # NOT be returned — that would cause dmotd to keep showing "VULNERABLE"
+  # on a freshly-patched system until the async refresh completed. The
+  # state-key argument is optional (omitted = legacy unconditional read,
+  # not used by current callers) so this stays additive.
   local file="$1"
+  local current_key="${2:-}"
   [ -r "$file" ] || return 1
+  if [ -n "$current_key" ]; then
+    local stored_key
+    stored_key="$(awk -F= '/^STATE_KEY=/{print $2; exit}' "$file" 2>/dev/null)"
+    [ "$stored_key" = "$current_key" ] || return 1
+  fi
   awk 'flag{print; next} /^---$/{flag=1}' "$file"
 }
 

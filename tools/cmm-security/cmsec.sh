@@ -208,14 +208,18 @@ run_check_cached() {
       printf '%s' "$payload"
       return 0
     fi
-    # cache miss in dmotd mode: try stale fallback first, refresh in background
-    payload="$(cmsec_cache_read_stale "$cache_file" 2>/dev/null || true)"
+    # cache miss in dmotd mode: try stale fallback first, refresh in background.
+    # Pass state_key so stale fallback only fires when the system state still
+    # matches (TTL expired only). On state changes (kernel reboot, OS conversion,
+    # livepatch applied), stale will return nothing — forcing a synchronous fresh
+    # run rather than serving the now-incorrect prior verdict.
+    payload="$(cmsec_cache_read_stale "$cache_file" "$state_key" 2>/dev/null || true)"
     if [ -n "$payload" ]; then
       printf '%s' "$payload"
       ( run_check_fresh "$check_id" "$check_path" "$state_key" "$cache_file" >/dev/null 2>&1 & ) >/dev/null 2>&1
       return 0
     fi
-    # no stale either — must run synchronously
+    # no usable stale either — must run synchronously
   fi
 
   if [ "$NO_CACHE" -ne 1 ]; then
