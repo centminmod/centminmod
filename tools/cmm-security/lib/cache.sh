@@ -93,8 +93,38 @@ cmsec_cache_state_key() {
   local baseline_sha=""
   [ -n "$baseline_file" ] && [ -r "$baseline_file" ] && \
     baseline_sha="$(sha256sum "$baseline_file" 2>/dev/null | awk '{print $1}' | head -c 16)"
-  printf '%s|%s|%s|%s|%s|%s' \
-    "$kernel" "$os_identity" "$cmdline_mitig" "$livepatch_digest" "$script_sha" "$baseline_sha" \
+  # Dirty Frag (CVE-2026-43284 / CVE-2026-43500) modprobe-blacklist digest.
+  # Toggling /etc/modprobe.d/dirtyfrag.conf (or any conf blacklisting esp4 /
+  # esp6 / rxrpc) invalidates the cached verdict. Search /etc, /usr/lib, and
+  # /run modprobe.d roots so vendor-shipped or systemd-tmpfile-installed
+  # blacklist files also feed the key. Per-conf-file grep + single sha over
+  # the matched-files list runs in <10ms even with hundreds of conf files;
+  # safe in the dmotd hot path. See plan §"4. cache.sh — extend state key".
+  local modprobe_dirtyfrag_digest=""
+  local _mp_dir _mp_files
+  _mp_files=""
+  for _mp_dir in /etc/modprobe.d /usr/lib/modprobe.d /run/modprobe.d; do
+    [ -d "$_mp_dir" ] || continue
+    _mp_files="$_mp_files
+$(grep -lE '^[[:space:]]*(install[[:space:]]+(esp4|esp6|rxrpc)[[:space:]]+/bin/false|blacklist[[:space:]]+(esp4|esp6|rxrpc))' \
+      "$_mp_dir"/*.conf 2>/dev/null || true)"
+  done
+  modprobe_dirtyfrag_digest="$(printf '%s' "$_mp_files" \
+    | sed '/^$/d' | sort -u \
+    | xargs -r sha256sum 2>/dev/null \
+    | sha256sum | awk '{print $1}' | head -c 16 || true)"
+  # Fold lsmod state for the three modules into the digest, so a manual
+  # rmmod / modprobe between sessions invalidates the cache even when the
+  # modprobe.d files don't change.
+  local _mod_loaded=""
+  if [ -r /proc/modules ]; then
+    _mod_loaded="$(awk '$1=="esp4"||$1=="esp6"||$1=="rxrpc" {print $1":1"}' /proc/modules \
+                  | sort | tr '\n' ',')"
+  fi
+  modprobe_dirtyfrag_digest="$(printf '%s|%s' "$modprobe_dirtyfrag_digest" "$_mod_loaded" \
+                                | sha256sum | awk '{print $1}' | head -c 16)"
+  printf '%s|%s|%s|%s|%s|%s|%s' \
+    "$kernel" "$os_identity" "$cmdline_mitig" "$livepatch_digest" "$script_sha" "$baseline_sha" "$modprobe_dirtyfrag_digest" \
     | sha256sum | awk '{print $1}'
 }
 
