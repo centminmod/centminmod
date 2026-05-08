@@ -447,13 +447,21 @@ do_run() {
     # can take 1-2s each on a freshly-rebooted kernel where state-key
     # mismatch forces a synchronous fresh run). On warm cache the verdicts
     # appear instantly and the progress line is mildly redundant — accepted
-    # as a fair tradeoff vs. the cold-cache UX gap. Suppressed when stdout
-    # is not a terminal (e.g. when output is captured by check-for-updates).
-    if [ -t 1 ]; then
-      local _total
-      _total="$(printf '%s\n' $checks | wc -l | tr -d ' ')"
-      printf '%b * cmsec: running %d kernel CVE check(s), please wait...%b\n' "$C_YELLOW" "$_total" "$C_RESET"
-    fi
+    # as a fair tradeoff vs. the cold-cache UX gap.
+    #
+    # NO `[ -t 1 ]` GATE here: dmotd.sh wraps the entire login banner in
+    # `} 2>&1 | tee logfile`, so cmsec.sh's stdout is the pipe to tee
+    # (not the user's tty) even though tee re-emits to the tty downstream.
+    # `[ -t 1 ]` would therefore wrongly suppress this line for the SSH
+    # login flow — the exact case it exists to fix. Cron consumers (e.g.
+    # tools/check-for-updates.sh which also calls --dmotd) get one harmless
+    # extra log line. C_YELLOW/C_RESET are empty under the same pipe
+    # condition (color setup at line 41 still gates on [ -t 1 ]), so the
+    # progress line emits without ANSI codes when piped — that's correct;
+    # the verdict lines below behave the same way.
+    local _total
+    _total="$(printf '%s\n' $checks | wc -l | tr -d ' ')"
+    printf '%b * cmsec: running %d kernel CVE check(s), please wait...%b\n' "$C_YELLOW" "$_total" "$C_RESET"
     for cve_id in $checks; do
       do_one_check_dmotd "$cve_id" || true
     done
