@@ -51,10 +51,13 @@ persistentconfig_submenu() {
     cecho "21). Disable Nginx njs module support NGINX_NJS='n' NGXDYNAMIC_NJS='n'" $boldgreen
     cecho "22). Disable Nginx Video modules (Slice, RTMP, FLV, MP4) NGINX_VIDEO='n'" $boldgreen
     cecho "23). Disable PHP-FPM mold linker compile support PHP_LDMOLD='n'" $boldgreen
-    cecho "24). Back to Main menu" $boldgreen
+    cecho "---------------------------------------------------------------------" $boldyellow
+    cecho "24). Enable cmsec CVE detection in dmotd login banner DMOTD_CVECHECK='y'" $boldgreen
+    cecho "25). Disable cmsec CVE detection in dmotd login banner DMOTD_CVECHECK='n'" $boldgreen
+    cecho "26). Back to Main menu" $boldgreen
     cecho "---------------------------------------------------------------------" $boldyellow
 
-    read -ep "Enter option [ 1 - 24 ] " configoption
+    read -ep "Enter option [ 1 - 26 ] " configoption
     cecho "---------------------------------------------------------------------" $boldyellow
 
     DT=$(date +"%d%m%y-%H%M%S")
@@ -183,6 +186,17 @@ persistentconfig_submenu() {
         cecho "PHP-FPM mold linker compile support disabled" $boldgreen
         ;;
       24)
+        backup_persistent_config_file
+        append_persistent_config "DMOTD_CVECHECK" "y" "$log_file"
+        cecho "cmsec CVE detection in dmotd login banner enabled" $boldgreen
+        cecho "Run 'cmsec list' to see available checks; 'cmsec' for a full report." $boldyellow
+        ;;
+      25)
+        backup_persistent_config_file
+        append_persistent_config "DMOTD_CVECHECK" "n" "$log_file"
+        cecho "cmsec CVE detection in dmotd login banner disabled" $boldgreen
+        ;;
+      26)
         break
         ;;
       *)

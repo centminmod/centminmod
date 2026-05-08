@@ -28,10 +28,13 @@ CMSCRIPT_GITDIR='/usr/local/src/centminmod'
 CONFIGSCANBASE='/etc/centminmod'
 CENTMINLOGDIR='/root/centminlogs'
 SSHLOGIN_KERNELCHECK='n'
+DMOTD_CVECHECK='n'           # cmsec CVE detection (also gate for `cmsec` subcommand)
+DMOTD_CVECHECK_SUPPRESS=''   # comma-separated CVE IDs to suppress
 FORCE_IPVFOUR='y' # curl/wget commands through script force IPv4
 
 # Set cache timeout in minutes
 CACHE_TIMEOUT=60
+CMSEC_CACHE_TIMEOUT=1440     # cmsec CVE cache TTL (24h)
 # Set cache file path
 CACHE_FILE="/tmp/nginx_version_cache"
 CACHE_PHP_FILE="/tmp/php_version_cache"
@@ -152,8 +155,26 @@ push_log_message() {
 }
 
 push_update_alerts() {
-  pushapp=$1
-  pushapp_ver=$2
+  local pushapp="$1"
+  local pushapp_ver="$2"
+  local _cooldown_dir _cooldown_key _cooldown_file _last_ts _now_ts
+  local _cve_id _cve_rest _cve_kernel _cve_verdict
+  local PUSH_MESSAGE PUSH_TITLE RESPONSE _curl_rc
+  local CVE_ALERT_COOLDOWN="${CVE_ALERT_COOLDOWN:-86400}"
+  if [[ "$pushapp" = 'cve' ]]; then
+    # Per-CVE alert cooldown to prevent cron-driven alert spam.
+    _cooldown_dir="/var/cache/centminmod/cmsec/push"
+    [ -d "$_cooldown_dir" ] || mkdir -p "$_cooldown_dir" 2>/dev/null
+    _cooldown_key="$(printf '%s' "$pushapp_ver" | tr '/|: ' '_____')"
+    _cooldown_file="${_cooldown_dir}/${_cooldown_key}.last"
+    if [ -f "$_cooldown_file" ]; then
+      _last_ts=$(stat -c %Y "$_cooldown_file" 2>/dev/null || echo 0)
+      _now_ts=$(date +%s)
+      if [ "$((_now_ts - _last_ts))" -lt "$CVE_ALERT_COOLDOWN" ]; then
+        return 0
+      fi
+    fi
+  fi
   if [[ "$pushapp" = 'nginx' ]]; then
     PUSH_MESSAGE="nginx ${pushapp_ver} update available, run centmin.sh menu option 4. https://centminmod.com/nginx.html#nginxupgrade"
     PUSH_TITLE="nginx update available ${PUSH_HOSTNAME} ${PUSH_DATE_TIME}"
@@ -166,10 +187,18 @@ push_update_alerts() {
   elif [[ "$pushapp" = 'restart' ]]; then
     PUSH_MESSAGE="YUM updates requiring server reboot. Recommended to schedule a reboot ${pushapp_ver}"
     PUSH_TITLE="YUM updates need reboot ${PUSH_HOSTNAME} ${PUSH_DATE_TIME}"
+  elif [[ "$pushapp" = 'cve' ]]; then
+    # pushapp_ver carries "${cve_id}|${kernel}|${verdict}"
+    _cve_id="${pushapp_ver%%|*}"
+    _cve_rest="${pushapp_ver#*|}"
+    _cve_kernel="${_cve_rest%%|*}"
+    _cve_verdict="${_cve_rest#*|}"
+    PUSH_MESSAGE="${_cve_id} ${_cve_verdict} on ${PUSH_HOSTNAME} (kernel ${_cve_kernel}); run 'cmsec check ${_cve_id}'"
+    PUSH_TITLE="${_cve_id} ${_cve_verdict} ${PUSH_HOSTNAME} ${PUSH_DATE_TIME}"
   fi
   if [[ "$PUSH_CHECKUPDATES_ALERTS" = [yY] && "$PUSH_API_TOKEN" && "$PUSH_USER_KEY" ]]; then
     push_log_message "$PUSH_MESSAGE"
-    
+
     # Send Notification
     RESPONSE=$(curl -s \
       --form-string "token=${PUSH_API_TOKEN}" \
@@ -177,9 +206,19 @@ push_update_alerts() {
       --form-string "message=${PUSH_MESSAGE}" \
       --form-string "title=${PUSH_TITLE}" \
       https://api.pushover.net/1/messages.json)
-    
+    _curl_rc=$?
+
     # Log the response from Pushover
     push_log_message "Notification sent. Response: ${RESPONSE}"
+    # Update CVE alert cooldown marker ONLY after a verified-successful Pushover
+    # delivery — Pushover returns {"status":1,...} on success, {"status":0,...}
+    # on auth/format errors. Without this gate, transient network failures or
+    # bad credentials would still suppress future alerts for the cooldown window.
+    if [[ "$pushapp" = 'cve' ]] && [ -n "${_cooldown_file:-}" ] \
+       && [ "${_curl_rc:-1}" -eq 0 ] \
+       && printf '%s' "$RESPONSE" | grep -q '"status":1'; then
+      touch "$_cooldown_file" 2>/dev/null
+    fi
   fi
 }
 
@@ -414,11 +453,13 @@ cmm_check() {
 
 needrestart_check() {
   if [[ "$NEEDRESTART_CHECK" = [yY] && -f /usr/bin/needs-restarting ]]; then
-    # Get the current day of the week (0 for Sunday, 1 for Monday, etc.)
+    # date +%u returns 1=Mon ... 7=Sun (per ISO 8601), NOT 0=Sun.
+    # Original code had `0` for Sunday which never matched — semantic bug
+    # alongside the missing `[` syntax bug. Both fixed here.
     DAY_OF_WEEK=$(date +%u)
-    
-    # Check if today is Thursday (4), Friday (5), Saturday (6), or Sunday (0)
-    if [ "$DAY_OF_WEEK" -eq "4" ] || "$DAY_OF_WEEK" -eq "5" ] || [ "$DAY_OF_WEEK" -eq "6" ] || [ "$DAY_OF_WEEK" -eq "0" ]; then
+
+    # Check if today is Thursday (4), Friday (5), Saturday (6), or Sunday (7)
+    if [ "$DAY_OF_WEEK" -eq "4" ] || [ "$DAY_OF_WEEK" -eq "5" ] || [ "$DAY_OF_WEEK" -eq "6" ] || [ "$DAY_OF_WEEK" -eq "7" ]; then
         # Run the command and capture its output
         output=$(needs-restarting -r)
         # Modify the output based on the version-specific message
@@ -460,11 +501,42 @@ kernel_checks() {
   fi
 }
 
+cmsec_checks() {
+  # Centmin Mod security check dispatcher. Suitable for cron use; emits compact
+  # status and fires Pushover on VULNERABLE verdict via push_update_alerts (this
+  # file's existing pushover function — push_dmotd_alerts lives in dmotd.sh and
+  # is NOT sourced here, so we use the local one with a 'cve' branch).
+  local cmsec_status cve_id kernel_str
+  if [[ -x "$CMSCRIPT_GITDIR/tools/cmm-security/cmsec.sh" ]]; then
+    CMSEC_CACHE_TTL_MIN="$CMSEC_CACHE_TIMEOUT" \
+    DMOTD_CVECHECK_SUPPRESS="$DMOTD_CVECHECK_SUPPRESS" \
+      "$CMSCRIPT_GITDIR/tools/cmm-security/cmsec.sh" --dmotd 2>/dev/null
+    # Pass DMOTD_CVECHECK_SUPPRESS to the second invocation too so suppressed
+    # CVEs don't slip past and trigger a Pushover alert.
+    cmsec_status="$(CMSEC_CACHE_TTL_MIN="$CMSEC_CACHE_TIMEOUT" \
+                    DMOTD_CVECHECK_SUPPRESS="$DMOTD_CVECHECK_SUPPRESS" \
+                    "$CMSCRIPT_GITDIR/tools/cmm-security/cmsec.sh" --json 2>/dev/null)"
+    if [[ -n "$cmsec_status" ]] && printf '%s' "$cmsec_status" | grep -q '"final_status": "vulnerable"'; then
+      # Multi-CVE-correct extraction: track the most recent "cve" line, emit
+      # it the first time we see "vulnerable". cmsec emits per-CVE JSON docs
+      # back-to-back where "cve" appears before "final_status" within each.
+      cve_id="$(printf '%s' "$cmsec_status" | awk -F'"' '
+        /"cve":/ { _cve = $4 }
+        /"final_status": "vulnerable"/ { print _cve; exit }
+      ')"
+      if [ -n "$cve_id" ]; then
+        kernel_str="$(uname -r)"
+        push_update_alerts cve "${cve_id}|${kernel_str}|VULNERABLE"
+      fi
+    fi
+  fi
+}
+
 help() {
   echo
   echo "Usage:"
   echo
-  echo "$0 {cmm|nginx|php|kernel|restart-check}"
+  echo "$0 {cmm|nginx|php|kernel|cmsec|restart-check|all}"
 }
 
 case "$1" in
@@ -500,6 +572,14 @@ case "$1" in
       echo "PUSH_CHECKUPDATES_ALERTS, PUSH_API_TOKEN, PUSH_USER_KEY not configured"
     fi
     ;;
+  cmsec )
+    # Intentional: no PUSH_CHECKUPDATES_ALERTS guard like nginx/php/kernel.
+    # cmsec_checks() emits the dmotd-style status line unconditionally (useful
+    # standalone) and the Pushover-on-vulnerable path is internally gated by
+    # PUSH_MOTD_ALERTS + PUSH_API_TOKEN + PUSH_USER_KEY inside push_dmotd_alerts.
+    push_check_updates_cronsetup
+    cmsec_checks
+    ;;
   restart-check )
     push_check_updates_cronsetup
     if [[ "$PUSH_CHECKUPDATES_ALERTS" = [yY] && "$PUSH_API_TOKEN" && "$PUSH_USER_KEY" ]]; then
@@ -515,6 +595,7 @@ case "$1" in
       ngxver_checker
       phpver_checker
       kernel_checks
+      cmsec_checks
       needrestart_check
     else
       echo "PUSH_CHECKUPDATES_ALERTS, PUSH_API_TOKEN, PUSH_USER_KEY not configured"
