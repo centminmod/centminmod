@@ -63,22 +63,27 @@ disable_nginx_ocsp() {
 }
 
 fix_nginx_logrotate_el9() {
-  if [[ "$CENTOS_TEN" -eq '10' || "$CENTOS_NINE" -eq '9' ]] && [[ ! -f /etc/systemd/system/logrotate.service.d/centminmod.conf ]]; then
-    # Create drop-in directory
-    mkdir -p /etc/systemd/system/logrotate.service.d/
+  if [[ "$CENTOS_TEN" -eq '10' || "$CENTOS_NINE" -eq '9' ]]; then
+    if [[ ! -f /etc/systemd/system/logrotate.service.d/centminmod.conf ]] || ! grep -q '/home/nginx/domains' /etc/systemd/system/logrotate.service.d/centminmod.conf; then
+      mkdir -p /etc/systemd/system/logrotate.service.d/
 
-    # Create override file
 cat > /etc/systemd/system/logrotate.service.d/centminmod.conf << 'EOF'
 [Service]
 ReadWritePaths=/usr/local/nginx/logs
+ReadWritePaths=/home/nginx/domains
 EOF
 
-    # Reload and restart
-    systemctl daemon-reload >/dev/null 2>&1
-    systemctl restart logrotate >/dev/null 2>&1
+      systemctl daemon-reload >/dev/null 2>&1
+      systemctl restart logrotate >/dev/null 2>&1
+    fi
+  fi
+}
 
-    echo "----------------------------------------------------------------------------"
-    cat /etc/systemd/system/logrotate.service.d/centminmod.conf
+fix_nginx_logrotate_domain_su() {
+  if [ -f /etc/logrotate.d/nginx ]; then
+    if grep -q '/home/nginx/domains' /etc/logrotate.d/nginx && ! grep -q 'su nginx nginx' /etc/logrotate.d/nginx; then
+      NGINX_LOGROTATE_DOMAIN_SU_FIXNEEDED=1
+    fi
   fi
 }
 
@@ -3098,16 +3103,59 @@ mjemalloc() {
 
 fixlogrotate() {
   if [ -f /etc/logrotate.d/nginx ]; then
-  if [[ -z "$(grep 'maxsize' /etc/logrotate.d/nginx)" || "$(grep -w 'su nginx' /etc/logrotate.d/nginx)" ]]; then
-    # sed -i "s|kill.*|kill -SIGUSR1 \$(cat \/usr\/local\/nginx\/logs\/nginx.pid 2>\/dev\/null) 2>\/dev\/null \|\| true|g" /etc/logrotate.d/nginx
+  if [[ -z "$(grep 'maxsize' /etc/logrotate.d/nginx)" || -z "$(grep 'su nginx nginx' /etc/logrotate.d/nginx)" ]]; then
+    local USE_ZSTD='n'
+    if grep -q 'compresscmd /usr/local/bin/zstd' /etc/logrotate.d/nginx; then
+      USE_ZSTD='y'
+    fi
   if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' || "$CENTOS_TEN" -eq '10' ]]; then
     VARDFSIZE=$(df --output=avail /var | tail -1)
   else
     VARDFSIZE=$(df -P /var | tail -1 | awk '{print $4}')
   fi
 if [[ "$TOTALMEM" -le '1153433' || "$VARDFSIZE" -le '10485760' ]]; then
+  if [[ "$USE_ZSTD" = 'y' ]]; then
 cat > "/etc/logrotate.d/nginx" <<END
-/var/log/nginx/*.log /usr/local/nginx/logs/*.log /home/nginx/domains/*/log/*.log {
+/var/log/nginx/*.log /usr/local/nginx/logs/*.log /var/log/nginx/*.json /usr/local/nginx/logs/*.json {
+        daily
+        dateext
+        missingok
+        rotate 10
+        maxsize 500M
+        compress
+        delaycompress
+        compresscmd /usr/local/bin/zstd
+        uncompresscmd /usr/local/bin/unzstd
+        compressoptions -9 --long -T0
+        compressext .zst
+        notifempty
+        postrotate
+        /bin/kill -SIGUSR1 \$(cat /usr/local/nginx/logs/nginx.pid 2>/dev/null) 2>/dev/null || true
+        endscript
+}
+
+/home/nginx/domains/*/log/*.log /home/nginx/domains/*/log/*.json {
+        su nginx nginx
+        daily
+        dateext
+        missingok
+        rotate 10
+        maxsize 500M
+        compress
+        delaycompress
+        compresscmd /usr/local/bin/zstd
+        uncompresscmd /usr/local/bin/unzstd
+        compressoptions -9 --long -T0
+        compressext .zst
+        notifempty
+        postrotate
+        /bin/kill -SIGUSR1 \$(cat /usr/local/nginx/logs/nginx.pid 2>/dev/null) 2>/dev/null || true
+        endscript
+}
+END
+  else
+cat > "/etc/logrotate.d/nginx" <<END
+/var/log/nginx/*.log /usr/local/nginx/logs/*.log /var/log/nginx/*.json /usr/local/nginx/logs/*.json {
         daily
         dateext
         missingok
@@ -3118,12 +3166,66 @@ cat > "/etc/logrotate.d/nginx" <<END
         notifempty
         postrotate
         /bin/kill -SIGUSR1 \$(cat /usr/local/nginx/logs/nginx.pid 2>/dev/null) 2>/dev/null || true
-        endscript           
+        endscript
+}
+
+/home/nginx/domains/*/log/*.log /home/nginx/domains/*/log/*.json {
+        su nginx nginx
+        daily
+        dateext
+        missingok
+        rotate 10
+        maxsize 500M
+        compress
+        delaycompress
+        notifempty
+        postrotate
+        /bin/kill -SIGUSR1 \$(cat /usr/local/nginx/logs/nginx.pid 2>/dev/null) 2>/dev/null || true
+        endscript
 }
 END
+  fi
 else
+  if [[ "$USE_ZSTD" = 'y' ]]; then
 cat > "/etc/logrotate.d/nginx" <<END
-/var/log/nginx/*.log /usr/local/nginx/logs/*.log /home/nginx/domains/*/log/*.log {
+/var/log/nginx/*.log /usr/local/nginx/logs/*.log /var/log/nginx/*.json /usr/local/nginx/logs/*.json {
+        daily
+        dateext
+        missingok
+        rotate 10
+        compress
+        delaycompress
+        compresscmd /usr/local/bin/zstd
+        uncompresscmd /usr/local/bin/unzstd
+        compressoptions -9 --long -T0
+        compressext .zst
+        notifempty
+        postrotate
+        /bin/kill -SIGUSR1 \$(cat /usr/local/nginx/logs/nginx.pid 2>/dev/null) 2>/dev/null || true
+        endscript
+}
+
+/home/nginx/domains/*/log/*.log /home/nginx/domains/*/log/*.json {
+        su nginx nginx
+        daily
+        dateext
+        missingok
+        rotate 10
+        compress
+        delaycompress
+        compresscmd /usr/local/bin/zstd
+        uncompresscmd /usr/local/bin/unzstd
+        compressoptions -9 --long -T0
+        compressext .zst
+        notifempty
+        postrotate
+        /bin/kill -SIGUSR1 \$(cat /usr/local/nginx/logs/nginx.pid 2>/dev/null) 2>/dev/null || true
+        endscript
+}
+END
+  else
+cat > "/etc/logrotate.d/nginx" <<END
+/var/log/nginx/*.log /usr/local/nginx/logs/*.log /var/log/nginx/*.json /usr/local/nginx/logs/*.json {
         daily
         dateext
         missingok
@@ -3133,10 +3235,30 @@ cat > "/etc/logrotate.d/nginx" <<END
         notifempty
         postrotate
         /bin/kill -SIGUSR1 \$(cat /usr/local/nginx/logs/nginx.pid 2>/dev/null) 2>/dev/null || true
-        endscript           
+        endscript
+}
+
+/home/nginx/domains/*/log/*.log /home/nginx/domains/*/log/*.json {
+        su nginx nginx
+        daily
+        dateext
+        missingok
+        rotate 10
+        compress
+        delaycompress
+        notifempty
+        postrotate
+        /bin/kill -SIGUSR1 \$(cat /usr/local/nginx/logs/nginx.pid 2>/dev/null) 2>/dev/null || true
+        endscript
 }
 END
+  fi
 fi
+    if [[ "$NGINX_LOGROTATE_DOMAIN_SU_FIXNEEDED" -eq 1 ]]; then
+      echo "one time fix for skipped nginx logrotate"
+      logrotate -f /etc/logrotate.d/nginx >/dev/null 2>&1
+      unset NGINX_LOGROTATE_DOMAIN_SU_FIXNEEDED
+    fi
   fi
   fi
 
@@ -4177,6 +4299,7 @@ if [[ "$INITIALINSTALL" != [yY] ]]; then
   mjemalloc
   blockeditorcheck
   rpcnfsports
+  fix_nginx_logrotate_domain_su
   fixlogrotate
   csf_distftp
   pureftpdupdates
