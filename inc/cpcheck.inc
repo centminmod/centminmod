@@ -3003,6 +3003,31 @@ cmupdatecheck() {
     ln -s "${SCRIPT_DIR}/tools/cmupdate.sh" /usr/bin/cmupdate
     chmod +x /usr/bin/cmupdate
   fi
+  # cmsec: Centmin Mod security check dispatcher (CVE detection framework).
+  # Symlinked unconditionally so cmupdate-distributed updates take effect
+  # immediately without re-running shortcuts_install.inc (which gates on
+  # SHORTCUTS=[yY] that some users disable).
+  # Self-heal cases:
+  #   1. dangling symlink (target removed) — replace
+  #   2. wrong-target symlink (points elsewhere, e.g. previous SCRIPT_DIR
+  #      after the install was relocated) — replace
+  #   3. not a symlink at all — replace
+  if [ -x "${SCRIPT_DIR}/tools/cmm-security/cmsec.sh" ]; then
+    cmsec_target="${SCRIPT_DIR}/tools/cmm-security/cmsec.sh"
+    cmsec_replace=1
+    if [ -L /usr/bin/cmsec ]; then
+      cmsec_current="$(readlink /usr/bin/cmsec 2>/dev/null)"
+      if [ -e /usr/bin/cmsec ] && [ "$cmsec_current" = "$cmsec_target" ]; then
+        cmsec_replace=0
+      fi
+    fi
+    if [ "$cmsec_replace" -eq 1 ]; then
+      rm -rf /usr/bin/cmsec
+      ln -s "$cmsec_target" /usr/bin/cmsec
+      chmod +x /usr/bin/cmsec
+    fi
+    unset cmsec_target cmsec_replace cmsec_current
+  fi
 }
 
 dmotdcheck() {
