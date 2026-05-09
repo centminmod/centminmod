@@ -185,8 +185,9 @@ check_git_major_branch() {
 push_dmotd_alerts() {
   local pushapp="$1"
   local pushapp_ver="$2"
+  local pushapp_severity="${3:-}"
   local _cooldown_dir _cooldown_key _cooldown_file _last_ts _now_ts
-  local _cve_id _cve_rest _cve_kernel _cve_verdict
+  local _cve_id _cve_rest _cve_kernel _cve_verdict _cve_severity _push_priority _push_url
   local PUSH_MESSAGE PUSH_TITLE RESPONSE _curl_rc
   # Per-CVE alert cooldown to prevent login-time alert spam.
   # Each (CVE-id, kernel) tuple alerts at most once per CVE_ALERT_COOLDOWN seconds.
@@ -215,27 +216,45 @@ push_dmotd_alerts() {
       PUSH_MESSAGE="centminmod ${pushapp_ver} update available, run cmupdate to update"
       PUSH_TITLE="centminmod ${pushapp_ver} update available ${PUSH_HOSTNAME} ${PUSH_DATE_TIME}"
     elif [[ "$pushapp" = 'cve' ]]; then
-      # pushapp_ver carries "${cve_id}|${kernel}|${verdict}"
       _cve_id="${pushapp_ver%%|*}"
       _cve_rest="${pushapp_ver#*|}"
       _cve_kernel="${_cve_rest%%|*}"
       _cve_verdict="${_cve_rest#*|}"
+      _cve_severity="${pushapp_severity}"
+      case "$(printf '%s' "${_cve_severity:-high}" | tr '[:upper:]' '[:lower:]')" in
+        critical) _push_priority="${PUSH_CVE_PRIORITY_CRITICAL:-1}" ;;
+        high)     _push_priority="${PUSH_CVE_PRIORITY_HIGH:-0}" ;;
+        *)        _push_priority="0" ;;
+      esac
+      _push_url="${PUSH_CVE_URL_TEMPLATE:-https://nvd.nist.gov/vuln/detail/{CVE}}"
+      _push_url="${_push_url//\{CVE\}/$_cve_id}"
       PUSH_MESSAGE="${_cve_id} ${_cve_verdict} on ${PUSH_HOSTNAME} (kernel ${_cve_kernel}); run 'cmsec check ${_cve_id}'"
       PUSH_TITLE="${_cve_id} ${_cve_verdict} ${PUSH_HOSTNAME} ${PUSH_DATE_TIME}"
     fi
     if [[ "$PUSH_MOTD_ALERTS" = [yY] && "$PUSH_API_TOKEN" && "$PUSH_USER_KEY" ]]; then
       log_message "$PUSH_MESSAGE"
 
-      # Send Notification
-      RESPONSE=$(curl -s \
-        --form-string "token=${PUSH_API_TOKEN}" \
-        --form-string "user=${PUSH_USER_KEY}" \
-        --form-string "message=${PUSH_MESSAGE}" \
-        --form-string "title=${PUSH_TITLE}" \
-        https://api.pushover.net/1/messages.json)
+      local _curl_args=(
+        --form-string "token=${PUSH_API_TOKEN}"
+        --form-string "user=${PUSH_USER_KEY}"
+        --form-string "message=${PUSH_MESSAGE}"
+        --form-string "title=${PUSH_TITLE}"
+      )
+      if [[ "$pushapp" = 'cve' ]]; then
+        _curl_args+=(--form-string "priority=${_push_priority}")
+        _curl_args+=(--form-string "url=${_push_url}")
+        _curl_args+=(--form-string "url_title=View CVE Details")
+        [ -n "${PUSH_CVE_SOUND:-}" ] && _curl_args+=(--form-string "sound=${PUSH_CVE_SOUND}")
+        [ -n "${PUSH_CVE_DEVICE:-}" ] && _curl_args+=(--form-string "device=${PUSH_CVE_DEVICE}")
+        [ "${PUSH_CVE_HTML:-0}" = "1" ] && _curl_args+=(--form-string "html=1")
+        if [ "${_push_priority}" = "2" ]; then
+          _curl_args+=(--form-string "retry=${PUSH_CVE_EMERGENCY_RETRY:-300}")
+          _curl_args+=(--form-string "expire=${PUSH_CVE_EMERGENCY_EXPIRE:-3600}")
+        fi
+      fi
+      RESPONSE=$(curl -s "${_curl_args[@]}" https://api.pushover.net/1/messages.json)
       _curl_rc=$?
 
-      # Log the response from Pushover
       log_message "Notification sent. Response: ${RESPONSE}"
       # Update CVE alert cooldown marker ONLY after a verified-successful Pushover
       # delivery — Pushover returns {"status":1,...} on success, {"status":0,...}
@@ -575,19 +594,14 @@ cmsec_checks() {
                     DMOTD_CVECHECK_SUPPRESS="$DMOTD_CVECHECK_SUPPRESS" \
                     "$CMSCRIPT_GITDIR/tools/cmm-security/cmsec.sh" --json 2>/dev/null)"
     if [[ -n "$cmsec_status" ]] && printf '%s' "$cmsec_status" | grep -q '"final_status": "vulnerable"'; then
-      # Multi-CVE-correct extraction: track the most recent "cve" line, emit
-      # it the first time we see "vulnerable". cmsec emits per-CVE JSON docs
-      # back-to-back where "cve" appears before "final_status" within each
-      # document. Avoids the bug where the FIRST CVE (e.g. patched) is named
-      # in the alert when actually a LATER CVE is the vulnerable one.
-      cve_id="$(printf '%s' "$cmsec_status" | awk -F'"' '
-        /"cve":/ { _cve = $4 }
-        /"final_status": "vulnerable"/ { print _cve; exit }
-      ')"
-      if [ -n "$cve_id" ]; then
-        kernel_str="$(uname -r)"
-        push_dmotd_alerts cve "${cve_id}|${kernel_str}|VULNERABLE"
-      fi
+      kernel_str="$(uname -r)"
+      printf '%s' "$cmsec_status" | awk -F'"' '
+        /"cve":/            { _cve = $4; _sev = "" }
+        /"cvss_severity":/  { _sev = $4 }
+        /"final_status": "vulnerable"/ { print _cve "|" _sev }
+      ' | while IFS='|' read -r cve_id cve_severity; do
+        [ -n "$cve_id" ] && push_dmotd_alerts cve "${cve_id}|${kernel_str}|VULNERABLE" "${cve_severity}"
+      done
     fi
   fi
 }
