@@ -19,3 +19,6 @@ Run Centmin Mod security checks (CVE detection) = cmsec
 List available cmsec checks = cmsec list
 Run a specific cmsec check = cmsec check <cve-id>
 Enable cmsec login banner line: echo "DMOTD_CVECHECK='y'" >> /etc/centminmod/custom_config.inc
+Run all cmsec checks (explicit form) = cmsec run
+Run a cmsec check with JSON output = cmsec check <cve-id> --json
+Run a cmsec active probe (requires consent) = cmsec probe <cve-id> --yes
