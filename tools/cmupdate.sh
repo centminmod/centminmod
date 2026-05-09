@@ -110,6 +110,22 @@ fupdate() {
       fi
     fi
   fi
+  if [ -x "${CM_INSTALLDIR}/tools/cmm-security/cmsec.sh" ]; then
+    cmsec_target="${CM_INSTALLDIR}/tools/cmm-security/cmsec.sh"
+    cmsec_replace=1
+    if [ -L /usr/bin/cmsec ]; then
+      cmsec_current="$(readlink /usr/bin/cmsec 2>/dev/null)"
+      if [ -e /usr/bin/cmsec ] && [ "$cmsec_current" = "$cmsec_target" ]; then
+        cmsec_replace=0
+      fi
+    fi
+    if [ "$cmsec_replace" -eq 1 ]; then
+      rm -f /usr/bin/cmsec
+      ln -s "$cmsec_target" /usr/bin/cmsec
+      chmod +x /usr/bin/cmsec
+    fi
+    unset cmsec_target cmsec_replace cmsec_current
+  fi
 }
 
 ######################################################
