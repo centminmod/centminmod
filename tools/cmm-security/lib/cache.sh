@@ -71,6 +71,10 @@ cmsec_cache_state_key() {
   if [ -r /proc/cmdline ]; then
     cmdline_mitig="$(grep -oE 'initcall_blacklist=algif_aead_init' /proc/cmdline 2>/dev/null || true)"
   fi
+  local sysctl_ptrace_scope=""
+  if [ -r /proc/sys/kernel/yama/ptrace_scope ]; then
+    sysctl_ptrace_scope="$(cat /proc/sys/kernel/yama/ptrace_scope 2>/dev/null || echo unknown)"
+  fi
   local livepatch_digest=""
   if command -v kcarectl >/dev/null 2>&1; then
     # Wrap with `timeout` to prevent hanging the dmotd login banner when the
@@ -123,8 +127,8 @@ $(grep -lE '^[[:space:]]*(install[[:space:]]+(esp4|esp6|rxrpc)[[:space:]]+/bin/f
   fi
   modprobe_dirtyfrag_digest="$(printf '%s|%s' "$modprobe_dirtyfrag_digest" "$_mod_loaded" \
                                 | sha256sum | awk '{print $1}' | head -c 16)"
-  printf '%s|%s|%s|%s|%s|%s|%s' \
-    "$kernel" "$os_identity" "$cmdline_mitig" "$livepatch_digest" "$script_sha" "$baseline_sha" "$modprobe_dirtyfrag_digest" \
+  printf '%s|%s|%s|%s|%s|%s|%s|%s' \
+    "$kernel" "$os_identity" "$cmdline_mitig" "$sysctl_ptrace_scope" "$livepatch_digest" "$script_sha" "$baseline_sha" "$modprobe_dirtyfrag_digest" \
     | sha256sum | awk '{print $1}'
 }
 
