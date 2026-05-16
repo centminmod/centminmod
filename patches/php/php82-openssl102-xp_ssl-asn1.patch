@@ -1,0 +1,22 @@
+--- a/ext/openssl/xp_ssl.c
++++ b/ext/openssl/xp_ssl.c
+@@ -35,7 +35,19 @@
+ #include <openssl/err.h>
+ #include <openssl/bn.h>
+ #include <openssl/dh.h>
+ 
++/* Centmin Mod local compat shim for CentOS 7 / OpenSSL 1.0.2:
++ * PHP backported OpenSSL 4.0 changes that switched xp_ssl.c GEN_IPADD
++ * to ASN1_STRING_get0_data() (OpenSSL 1.1.0+). openssl.c has an
++ * equivalent static shim; mirroring it locally keeps xp_ssl.c
++ * self-contained without touching shared headers. */
++#if PHP_OPENSSL_API_VERSION < 0x10100
++static const unsigned char *ASN1_STRING_get0_data(const ASN1_STRING *asn1)
++{
++	return M_ASN1_STRING_data(asn1);
++}
++#endif
++
+ #ifdef PHP_WIN32
+ #include "win32/winutil.h"
+ #include "win32/time.h"
