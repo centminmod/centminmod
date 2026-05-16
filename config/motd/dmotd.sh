@@ -30,7 +30,7 @@ CONFIGSCANBASE='/etc/centminmod'
 CENTMINLOGDIR='/root/centminlogs'
 FREENGINX_INSTALL='n'        # Use Freenginx fork instead of official Nginx
 SSHLOGIN_KERNELCHECK='n'
-DMOTD_CVECHECK='n'           # cmsec CVE detection line in dmotd login banner
+DMOTD_CVECHECK='y'           # cmsec CVE detection line in dmotd login banner
 DMOTD_CVECHECK_SUPPRESS=''   # comma-separated CVE IDs to suppress, e.g. 'CVE-2026-31431'
 FORCE_IPVFOUR='y' # curl/wget commands through script force IPv4
 
