@@ -1339,6 +1339,59 @@ php_patches() {
     echo "System is not CentOS 7 or PHP version is below 8.3.16. No patches applied."
   fi
 
+  # CentOS 7 / OpenSSL 1.0.2 compat shim for ext/openssl/xp_ssl.c
+  # Upstream PHP (commit 19255f4b78) backported OpenSSL 4.0 compatibility
+  # changes that switched xp_ssl.c GEN_IPADD to ASN1_STRING_get0_data(),
+  # which is OpenSSL 1.1.0+. CentOS 7 ships OpenSSL 1.0.2k which lacks the
+  # accessor. Confirmed affected on first detection: PHP 8.2.31 and 8.3.31.
+  # PHP-8.4 and PHP-8.5 branch HEADs also carry the regression (next point
+  # releases will fail). Detection is content-based so it auto-handles
+  # future point releases and stops applying once upstream lands a proper
+  # shim.
+  if [[ "$CENTOS_SEVEN" -eq '7' ]]; then
+    if [ "$phpver" ]; then
+      C7_OPENSSL_PHP_VERSION="$phpver"
+    else
+      C7_OPENSSL_PHP_VERSION="$PHP_VERSION"
+    fi
+
+    patch_source="$CUR_DIR/patches/php/php82-openssl102-xp_ssl-asn1.patch"
+    patch_target="php82-openssl102-xp_ssl-asn1.patch"
+    target_file="${DIR_TMP}/php-${C7_OPENSSL_PHP_VERSION}/ext/openssl/xp_ssl.c"
+    php_openssl_h="${DIR_TMP}/php-${C7_OPENSSL_PHP_VERSION}/ext/openssl/php_openssl.h"
+
+    if [[ ! -f "$patch_source" ]]; then
+      echo "Patch file $patch_source does not exist. Skipping openssl102 xp_ssl shim."
+    elif [[ ! -f "$target_file" ]]; then
+      echo "Target file $target_file does not exist. Skipping openssl102 xp_ssl shim."
+    elif grep -Eq 'static[[:space:]]+const[[:space:]]+unsigned[[:space:]]+char[[:space:]]*\*[[:space:]]*ASN1_STRING_get0_data' "$target_file"; then
+      echo "Patch php82-openssl102-xp_ssl-asn1.patch has already been applied. Skipping."
+    elif [[ -f "$php_openssl_h" ]] && grep -Eq 'ASN1_STRING_get0_data' "$php_openssl_h"; then
+      # Upstream may eventually move the shim into php_openssl.h shared header.
+      # If so, applying our xp_ssl.c-local shim would duplicate the declaration.
+      echo "Upstream php_openssl.h already declares ASN1_STRING_get0_data. Skipping local xp_ssl.c shim."
+    elif ! grep -Eq 'ASN1_STRING_get0_data[[:space:]]*\([[:space:]]*san->d\.iPAddress[[:space:]]*\)' "$target_file"; then
+      echo "Target xp_ssl.c does not contain the OpenSSL 4.0 backport regression. Skipping openssl102 xp_ssl shim."
+    else
+      echo
+      echo "Applying patch php82-openssl102-xp_ssl-asn1.patch for CentOS 7 / OpenSSL 1.0.2 (PHP $C7_OPENSSL_PHP_VERSION xp_ssl.c)"
+      echo
+
+      cp -a "$patch_source" "$patch_target"
+      dos2unix "$patch_target" > /dev/null 2>&1
+
+      patch -N -p1 < "$patch_target"
+
+      if [[ $? -eq 0 ]]; then
+        echo "Patch php82-openssl102-xp_ssl-asn1.patch applied successfully."
+      else
+        echo "Failed to apply patch php82-openssl102-xp_ssl-asn1.patch."
+      fi
+
+      rm -f "$patch_target"
+    fi
+  fi
+
   # backport PHP 8.0 OpenSSL 3 compatibility for PHP 7.4
   # only compilation fixes but not 100% working as extensive changes
   # needed for 7.4 & 8.0 for compatibility
