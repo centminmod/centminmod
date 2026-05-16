@@ -28,7 +28,7 @@ CMSCRIPT_GITDIR='/usr/local/src/centminmod'
 CONFIGSCANBASE='/etc/centminmod'
 CENTMINLOGDIR='/root/centminlogs'
 SSHLOGIN_KERNELCHECK='n'
-DMOTD_CVECHECK='n'           # cmsec CVE detection (also gate for `cmsec` subcommand)
+DMOTD_CVECHECK='y'           # cmsec CVE detection (also gate for `cmsec` subcommand)
 DMOTD_CVECHECK_SUPPRESS=''   # comma-separated CVE IDs to suppress
 FORCE_IPVFOUR='y' # curl/wget commands through script force IPv4
 
