@@ -1364,13 +1364,14 @@ php_patches() {
       echo "Patch file $patch_source does not exist. Skipping openssl102 xp_ssl shim."
     elif [[ ! -f "$target_file" ]]; then
       echo "Target file $target_file does not exist. Skipping openssl102 xp_ssl shim."
-    elif grep -Eq 'static[[:space:]]+const[[:space:]]+unsigned[[:space:]]+char[[:space:]]*\*[[:space:]]*ASN1_STRING_get0_data' "$target_file"; then
+    elif grep -Eq 'static[[:space:]].*ASN1_STRING_get0_data[[:space:]]*\(' "$target_file" \
+         || grep -q 'Centmin Mod local compat shim for CentOS 7 / OpenSSL 1.0.2' "$target_file"; then
       echo "Patch php82-openssl102-xp_ssl-asn1.patch has already been applied. Skipping."
-    elif [[ -f "$php_openssl_h" ]] && grep -Eq 'ASN1_STRING_get0_data' "$php_openssl_h"; then
+    elif [[ -f "$php_openssl_h" ]] && grep -Eq 'static[[:space:]].*ASN1_STRING_get0_data[[:space:]]*\(' "$php_openssl_h"; then
       # Upstream may eventually move the shim into php_openssl.h shared header.
       # If so, applying our xp_ssl.c-local shim would duplicate the declaration.
       echo "Upstream php_openssl.h already declares ASN1_STRING_get0_data. Skipping local xp_ssl.c shim."
-    elif ! grep -Eq 'ASN1_STRING_get0_data[[:space:]]*\([[:space:]]*san->d\.iPAddress[[:space:]]*\)' "$target_file"; then
+    elif ! { grep -q 'GEN_IPADD' "$target_file" && grep -q 'ASN1_STRING_get0_data' "$target_file"; }; then
       echo "Target xp_ssl.c does not contain the OpenSSL 4.0 backport regression. Skipping openssl102 xp_ssl shim."
     else
       echo
