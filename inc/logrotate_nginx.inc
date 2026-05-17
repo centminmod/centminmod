@@ -50,7 +50,7 @@ fi
 if [[ "$TOTALMEM" -le '1153433' || "$VARDFSIZE" -le '10485760' ]]; then
   if [[ -f /usr/local/bin/zstd && "$ZSTD_LOGROTATE_NGINX" = [yY] ]]; then
 cat > "/etc/logrotate.d/nginx" <<END
-/var/log/nginx/*.log /usr/local/nginx/logs/*.log /home/nginx/domains/*/log/*.log /var/log/nginx/*.json /usr/local/nginx/logs/*.json /home/nginx/domains/*/log/*.json {
+/var/log/nginx/*.log /usr/local/nginx/logs/*.log /var/log/nginx/*.json /usr/local/nginx/logs/*.json {
         daily
         dateext
         missingok
@@ -65,12 +65,31 @@ cat > "/etc/logrotate.d/nginx" <<END
         notifempty
         postrotate
         /bin/kill -SIGUSR1 \$(cat /usr/local/nginx/logs/nginx.pid 2>/dev/null) 2>/dev/null || true
-        endscript           
+        endscript
+}
+
+/home/nginx/domains/*/log/*.log /home/nginx/domains/*/log/*.json {
+        su nginx nginx
+        daily
+        dateext
+        missingok
+        rotate 10
+        maxsize 500M
+        compress
+        delaycompress
+        compresscmd /usr/local/bin/zstd
+        uncompresscmd /usr/local/bin/unzstd
+        compressoptions -9 --long -T0
+        compressext .zst
+        notifempty
+        postrotate
+        /bin/kill -SIGUSR1 \$(cat /usr/local/nginx/logs/nginx.pid 2>/dev/null) 2>/dev/null || true
+        endscript
 }
 END
   else
 cat > "/etc/logrotate.d/nginx" <<END
-/var/log/nginx/*.log /usr/local/nginx/logs/*.log /home/nginx/domains/*/log/*.log /var/log/nginx/*.json /usr/local/nginx/logs/*.json /home/nginx/domains/*/log/*.json {
+/var/log/nginx/*.log /usr/local/nginx/logs/*.log /var/log/nginx/*.json /usr/local/nginx/logs/*.json {
         daily
         dateext
         missingok
@@ -81,14 +100,29 @@ cat > "/etc/logrotate.d/nginx" <<END
         notifempty
         postrotate
         /bin/kill -SIGUSR1 \$(cat /usr/local/nginx/logs/nginx.pid 2>/dev/null) 2>/dev/null || true
-        endscript           
+        endscript
+}
+
+/home/nginx/domains/*/log/*.log /home/nginx/domains/*/log/*.json {
+        su nginx nginx
+        daily
+        dateext
+        missingok
+        rotate 10
+        maxsize 500M
+        compress
+        delaycompress
+        notifempty
+        postrotate
+        /bin/kill -SIGUSR1 \$(cat /usr/local/nginx/logs/nginx.pid 2>/dev/null) 2>/dev/null || true
+        endscript
 }
 END
   fi
 else
   if [[ -f /usr/local/bin/zstd && "$ZSTD_LOGROTATE_NGINX" = [yY] ]]; then
 cat > "/etc/logrotate.d/nginx" <<END
-/var/log/nginx/*.log /usr/local/nginx/logs/*.log /home/nginx/domains/*/log/*.log /var/log/nginx/*.json /usr/local/nginx/logs/*.json /home/nginx/domains/*/log/*.json {
+/var/log/nginx/*.log /usr/local/nginx/logs/*.log /var/log/nginx/*.json /usr/local/nginx/logs/*.json {
         daily
         dateext
         missingok
@@ -102,12 +136,30 @@ cat > "/etc/logrotate.d/nginx" <<END
         notifempty
         postrotate
         /bin/kill -SIGUSR1 \$(cat /usr/local/nginx/logs/nginx.pid 2>/dev/null) 2>/dev/null || true
-        endscript           
+        endscript
+}
+
+/home/nginx/domains/*/log/*.log /home/nginx/domains/*/log/*.json {
+        su nginx nginx
+        daily
+        dateext
+        missingok
+        rotate 10
+        compress
+        delaycompress
+        compresscmd /usr/local/bin/zstd
+        uncompresscmd /usr/local/bin/unzstd
+        compressoptions -9 --long -T0
+        compressext .zst
+        notifempty
+        postrotate
+        /bin/kill -SIGUSR1 \$(cat /usr/local/nginx/logs/nginx.pid 2>/dev/null) 2>/dev/null || true
+        endscript
 }
 END
   else
 cat > "/etc/logrotate.d/nginx" <<END
-/var/log/nginx/*.log /usr/local/nginx/logs/*.log /home/nginx/domains/*/log/*.log /var/log/nginx/*.json /usr/local/nginx/logs/*.json /home/nginx/domains/*/log/*.json {
+/var/log/nginx/*.log /usr/local/nginx/logs/*.log /var/log/nginx/*.json /usr/local/nginx/logs/*.json {
         daily
         dateext
         missingok
@@ -117,7 +169,21 @@ cat > "/etc/logrotate.d/nginx" <<END
         notifempty
         postrotate
         /bin/kill -SIGUSR1 \$(cat /usr/local/nginx/logs/nginx.pid 2>/dev/null) 2>/dev/null || true
-        endscript           
+        endscript
+}
+
+/home/nginx/domains/*/log/*.log /home/nginx/domains/*/log/*.json {
+        su nginx nginx
+        daily
+        dateext
+        missingok
+        rotate 10
+        compress
+        delaycompress
+        notifempty
+        postrotate
+        /bin/kill -SIGUSR1 \$(cat /usr/local/nginx/logs/nginx.pid 2>/dev/null) 2>/dev/null || true
+        endscript
 }
 END
   fi
@@ -131,6 +197,7 @@ fi
 cat > /etc/systemd/system/logrotate.service.d/centminmod.conf << 'EOF'
 [Service]
 ReadWritePaths=/usr/local/nginx/logs
+ReadWritePaths=/home/nginx/domains
 EOF
 
     # Reload and restart
