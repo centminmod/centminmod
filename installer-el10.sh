@@ -1603,7 +1603,13 @@ if [[ "$CENTOS_SEVEN" = '7' ]]; then
 fi # CENTOS_SEVEN != 7
 
 sar_call() {
-  $SARCALL 1 1
+  # M10: guard against $SARCALL being unset or non-executable. If
+  # sysstat install was skipped (very minimal images / containers),
+  # bash would expand "$SARCALL 1 1" to " 1 1" and try to execute
+  # the command "1", emitting `bash: 1: command not found` at every
+  # call site. Reference:
+  # CLAUDE-installer-el10-almalinux10-analysis.md M10.
+  [[ -x "$SARCALL" ]] && "$SARCALL" 1 1 || true
 }
 
 double_check_wget_bc() {
