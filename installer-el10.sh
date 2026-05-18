@@ -75,6 +75,11 @@ CENTOS_ALPHATEST='y'
 #######################################################
 DNF_ENABLE='n'
 DNF_COPR='y'
+# M3: defensive default — CHECK_LXD is consulted by swap_setup() and earlier
+# memory checks. Real value gets assigned later by the virt-what /
+# systemd-detect-virt block (moved to run before swap_setup). Reference:
+# CLAUDE-installer-el10-almalinux10-analysis.md M3.
+CHECK_LXD='n'
 branchname='141.00beta01'
 DOWNLOAD="${branchname}.zip"
 LOCALCENTMINMOD_MIRROR='https://parts.centminmod.com'
@@ -714,9 +719,12 @@ fi
 TOTALMEM_SWAP=$(awk '/SwapTotal/ {print $2}' /proc/meminfo)
 }
 
-swap_setup
-lowmemcheck
-
+# M3: virt-what install + CHECK_LXD detection MUST run before swap_setup —
+# swap_setup() references $CHECK_LXD and `virt-what | grep -o lxc` in its
+# guard conditions. Previously this block lived after swap_setup, so on
+# fresh installs $CHECK_LXD was empty and `virt-what` errored
+# `command not found`, bypassing the container-aware swap protection.
+# Reference: CLAUDE-installer-el10-almalinux10-analysis.md M3.
 if [ ! -f /usr/sbin/virt-what ]; then
   yum -q -y install virt-what
 fi
@@ -733,6 +741,9 @@ if [[ ! -f /proc/user_beancounters ]]; then
         fi
     fi
 fi
+
+swap_setup
+lowmemcheck
 
 # check for Docker environment to skip grub routines
 if [[ ! -f /.dockerenv && "$CHECK_LXD" != 'y' ]]; then
