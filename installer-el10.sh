@@ -673,7 +673,7 @@ if [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' || "$CENTOS_TEN" -eq '10
       free -mlt
       echo
       echo "re-create 4GB swap file";
-      swapoff -a
+      swapoff /swapfile
       if [[ "$(df -hT | grep -wE 'xfs|ext4')" || "$(virt-what | grep -o lxc)" = 'lxc' ]]; then
         dd if=/dev/zero of=/swapfile bs=1M count=4096;
       else
@@ -697,7 +697,7 @@ elif [[ "$FINDSWAPSIZE" -eq '0' && ! -f /proc/user_beancounters && "$CHECK_LXD" 
     free -mlt
     echo
     echo "re-create 1GB swap file";
-    swapoff -a
+    swapoff /swapfile
     if [[ "$(df -hT | grep -wE 'xfs|ext4')" || "$(virt-what | grep -o lxc)" = 'lxc' ]]; then
         dd if=/dev/zero of=/swapfile bs=1M count=4096;
     else
