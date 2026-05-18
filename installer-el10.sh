@@ -461,6 +461,29 @@ detect_elrepo_kernel
 # and fail to successfully install.
 ABORTINSTALL='y'
 
+# M4: disk-space pre-check. PHP `make` consumes ~4 GB across the source
+# tree at /svr-setup and the install tree at /usr/local/src — a low-disk
+# host previously failed mid-compile with a confusing build error.
+# Require >= 5 GB free on the filesystem that will hold both directories.
+# Respect MINDISK_OVERRIDE='y' for power users who want to skip the gate.
+# Reference: CLAUDE-installer-el10-almalinux10-analysis.md M4.
+MINDISK_OVERRIDE="${MINDISK_OVERRIDE:-n}"
+MIN_FREE_MB=5120
+DISK_CHECK_PATH='/'
+[ -d /usr/local/src ] && DISK_CHECK_PATH='/usr/local/src'
+[ -d /svr-setup ] && DISK_CHECK_PATH='/svr-setup'
+FREE_MB=$(df -BM --output=avail "$DISK_CHECK_PATH" 2>/dev/null | tail -1 | tr -dc '0-9')
+if [[ "$MINDISK_OVERRIDE" != [yY] && -n "$FREE_MB" && "$FREE_MB" -lt "$MIN_FREE_MB" ]]; then
+  echo
+  echo "ERROR: Insufficient disk space for Centmin Mod installation."
+  echo "       Path checked : $DISK_CHECK_PATH"
+  echo "       Free         : ${FREE_MB} MB"
+  echo "       Required min : ${MIN_FREE_MB} MB (~5 GB) for /svr-setup + /usr/local/src"
+  echo "       Override with MINDISK_OVERRIDE='y' env var (not recommended)."
+  echo
+  exit 1
+fi
+
 #############################################################
 TOTALMEM=$(awk '/MemTotal/ {print $2}' /proc/meminfo)
 TOTALMEM_T=$(awk '/MemTotal/ {print $2}' /proc/meminfo)
