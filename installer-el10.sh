@@ -1921,27 +1921,23 @@ fileperm_fixes() {
 
 libc_fix() {
   # https://community.centminmod.com/posts/52555/
+  # H1: install the DNF4 versionlock plugin first (was previously commented
+  # out — bare `yum versionlock` silently no-op'd via 2>/dev/null when the
+  # plugin was not on disk yet). Use the explicit `dnf versionlock add`
+  # subcommand. The earlier stricter branches that gated on
+  # `! -f /etc/yum/pluginconf.d/versionlock.conf` were unreachable on EL8/9/10
+  # because that file ships with dnf-plugins-core, and were also shadowed by
+  # the unconditional CENTOS_TEN/NINE/EIGHT cascade above. Removed.
+  # Reference: CLAUDE-installer-el10-almalinux10-analysis.md H1.
   if [[ "$CENTOS_TEN" -eq '10' ]]; then
-    # yum -y -q install python3-dnf-plugin-versionlock
-    yum -y install libc-client uw-imap-devel
-    yum versionlock libc-client uw-imap-devel -q >/dev/null 2>&1
+    yum -y install python3-dnf-plugin-versionlock libc-client uw-imap-devel
+    dnf versionlock add libc-client uw-imap-devel
   elif [[ "$CENTOS_NINE" -eq '9' ]]; then
-    # yum -y -q install python3-dnf-plugin-versionlock
-    yum -y install libc-client uw-imap-devel
-    yum versionlock libc-client uw-imap-devel -q >/dev/null 2>&1
+    yum -y install python3-dnf-plugin-versionlock libc-client uw-imap-devel
+    dnf versionlock add libc-client uw-imap-devel
   elif [[ "$CENTOS_EIGHT" -eq '8' ]]; then
-    # yum -y -q install python3-dnf-plugin-versionlock
-    yum -y install libc-client uw-imap-devel
-    yum versionlock libc-client uw-imap-devel -q >/dev/null 2>&1
-  elif [[ "$CENTOS_TEN" -eq '10' && ! -f /etc/yum/pluginconf.d/versionlock.conf && "$(rpm -qa libc-client)" = 'libc-client-2007f-30.el10.remi.x86_64' ]]; then
-    yum -y -q install python3-dnf-plugin-versionlock
-    yum versionlock libc-client uw-imap-devel -q >/dev/null 2>&1
-  elif [[ "$CENTOS_NINE" -eq '9' && ! -f /etc/yum/pluginconf.d/versionlock.conf && "$(rpm -qa libc-client)" = 'libc-client-2007f-30.el9.remi.x86_64' ]]; then
-    yum -y -q install python3-dnf-plugin-versionlock
-    yum versionlock libc-client uw-imap-devel -q >/dev/null 2>&1
-  elif [[ "$CENTOS_EIGHT" -eq '8' && ! -f /etc/yum/pluginconf.d/versionlock.conf && "$(rpm -qa libc-client)" = 'libc-client-2007f-24.el8.x86_64' ]]; then
-    yum -y -q install python3-dnf-plugin-versionlock
-    yum versionlock libc-client uw-imap-devel -q >/dev/null 2>&1
+    yum -y install python3-dnf-plugin-versionlock libc-client uw-imap-devel
+    dnf versionlock add libc-client uw-imap-devel
   elif [[ "$CENTOS_SEVEN" -eq '7' && ! -f /etc/yum/pluginconf.d/versionlock.conf && "$(rpm -qa libc-client)" = 'libc-client-2007f-16.el7.x86_64' ]]; then
     yum -y install yum-plugin-versionlock uw-imap-devel
     yum versionlock libc-client uw-imap-devel
