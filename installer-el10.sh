@@ -1971,6 +1971,27 @@ libc_fix() {
   fi
 }
 
+skip_broken_report() {
+  # M8: emit a notice surfacing packages silently dropped by --skip-broken
+  # in the most recent DNF transaction. --skip-broken is kept (it is
+  # load-bearing across EL8/9/10 phase 1-4 batches) but its previously-
+  # invisible skips are now logged. Non-fatal: returns success even if
+  # inspection fails so the install flow is not interrupted. Reference:
+  # CLAUDE-installer-el10-almalinux10-analysis.md M8.
+  local label="${1:-batch}"
+  if [ -x /usr/bin/dnf ]; then
+    local skipped
+    skipped=$(dnf history info last 2>/dev/null \
+      | awk '/^[[:space:]]*(Skipped|Failed|Aborted)/ {print}' \
+      | head -5)
+    if [ -n "$skipped" ]; then
+      echo "[--skip-broken] (${label}) DNF reported the following:"
+      printf '  %s\n' "$skipped"
+    fi
+  fi
+  return 0
+}
+
 opt_tcp() {
 #######################################################
 # check if custom open file descriptor limits already exist
@@ -2350,6 +2371,7 @@ if [[ "$CENTOS_TEN" -eq '10' ]]; then
     systemd-libs open-sans-fonts libidn2-devel libpsl-devel gpgme-devel gnutls-devel \
     acl libacl-devel attr libattr-devel lz4-devel libuuid-devel sqlite-devel \
     s-nail perl-LWP-Protocol-https${DISABLEREPO_DNF} --skip-broken
+  skip_broken_report "EL10 Phase 1/3 development tools"
 
   CURL_BATCH1_END=$(date +%s)
   CURL_BATCH1_DURATION=$((CURL_BATCH1_END - CURL_BATCH1_START))
@@ -2374,6 +2396,7 @@ if [[ "$CENTOS_TEN" -eq '10' ]]; then
     pam pam-devel libaio libaio-devel libevent libevent-devel recode recode-devel \
     libtidy libtidy-devel net-snmp net-snmp-devel enchant2 enchant2-devel lua lua-devel \
     libc-client libc-client-devel${DISABLEREPO_DNF} --skip-broken
+  skip_broken_report "EL10 Phase 2/3 development library pairs"
 
   CURL_BATCH2_END=$(date +%s)
   CURL_BATCH2_DURATION=$((CURL_BATCH2_END - CURL_BATCH2_START))
@@ -2395,6 +2418,7 @@ if [[ "$CENTOS_TEN" -eq '10' ]]; then
     libXinerama libXmu libXrandr libXt-devel libXxf86vm-devel libdrm-devel libfontenc \
     librsvg2 libtiff libtiff-devel libwebp libwebp-devel libwmf-lite mesa-libGL-devel \
     mesa-libGLU mesa-libGLU-devel poppler-data urw-fonts xorg-x11-font-utils${USER_PKGS}${DISABLEREPO_DNF} --skip-broken
+  skip_broken_report "EL10 Phase 3/3 graphics and X11 libraries"
 
   CURL_BATCH3_END=$(date +%s)
   CURL_BATCH3_DURATION=$((CURL_BATCH3_END - CURL_BATCH3_START))
@@ -2404,8 +2428,10 @@ if [[ "$CENTOS_TEN" -eq '10' ]]; then
   echo "*************************************************"
 elif [[ "$CENTOS_NINE" -eq '9' ]]; then
   time $YUMDNFBIN -y install perl-FindBin perl-diagnostics libc-client libc-client-devel systemd-devel systemd-libs open-sans-fonts libidn2-devel libpsl-devel gpgme-devel gnutls-devel virt-what acl libacl-devel attr libattr-devel lz4-devel gawk unzip libuuid-devel sqlite-devel bc wget lynx screen ca-certificates yum-utils bash mlocate subversion rsyslog dos2unix boost-program-options net-tools imake bind-utils libatomic_ops-devel time coreutils autoconf cronie crontabs cronie-anacron gcc gcc-c++ automake libtool make libXext-devel unzip patch sysstat openssh flex bison file libtool-ltdl-devel krb5-devel libXpm-devel nano gmp-devel aspell-devel numactl lsof pkgconfig gdbm-devel tk-devel bluez-libs-devel iptables-nft iptables-nft-services iptables-libs iptables-utils rrdtool diffutils which perl-Math-BigInt perl-Test-Simple perl-ExtUtils-Embed perl-ExtUtils-MakeMaker perl-Time-HiRes perl-libwww-perl perl-Net-SSLeay cyrus-imapd cyrus-sasl-md5 cyrus-sasl-plain strace cmake git net-snmp-libs net-snmp-utils iotop libvpx libvpx-devel t1lib t1lib-devel expect readline readline-devel libedit libedit-devel libxslt libxslt-devel openssl openssl-devel curl curl-devel openldap openldap-devel zlib zlib-devel gd gd-devel pcre pcre-devel gettext gettext-devel libidn libidn-devel libjpeg libjpeg-devel libpng libpng-devel freetype freetype-devel libxml2 libxml2-devel glib2 glib2-devel bzip2 bzip2-devel ncurses ncurses-devel e2fsprogs e2fsprogs-devel libc-client libc-client-devel cyrus-sasl cyrus-sasl-devel pam pam-devel libaio libaio-devel libevent libevent-devel recode recode-devel libtidy libtidy-devel net-snmp net-snmp-devel enchant enchant-devel lua lua-devel s-nail perl-LWP-Protocol-https OpenEXR-devel OpenEXR-libs atk cups-libs fftw-libs-double fribidi gdk-pixbuf2 ghostscript-devel gl-manpages graphviz gtk2 hicolor-icon-theme ilmbase ilmbase-devel jasper-devel jasper-libs jbigkit-devel jbigkit-libs lcms2 lcms2-devel libICE-devel libSM-devel libXaw libXcomposite libXcursor libXdamage-devel libXfixes-devel libXi libXinerama libXmu libXrandr libXt-devel libXxf86vm-devel libdrm-devel libfontenc librsvg2 libtiff libtiff-devel libwebp libwebp-devel libwmf-lite mesa-libGL-devel mesa-libGLU mesa-libGLU-devel poppler-data urw-fonts xorg-x11-font-utils${USER_PKGS}${DISABLEREPO_DNF} --skip-broken
+  skip_broken_report "EL9 legacy combined batch"
 elif [[ "$CENTOS_EIGHT" -eq '8' ]]; then
   time $YUMDNFBIN -y install perl-FindBin libc-client libc-client-devel systemd-devel systemd-libs open-sans-fonts libidn2-devel libpsl-devel gpgme-devel gnutls-devel virt-what acl libacl-devel attr libattr-devel lz4-devel gawk unzip libuuid-devel sqlite-devel bc wget lynx screen ca-certificates yum-utils bash mlocate subversion rsyslog dos2unix boost-program-options net-tools imake bind-utils libatomic_ops-devel time coreutils autoconf cronie crontabs cronie-anacron gcc gcc-c++ automake libtool make libXext-devel unzip patch sysstat openssh flex bison file libtool-ltdl-devel krb5-devel libXpm-devel nano gmp-devel aspell-devel numactl lsof pkgconfig gdbm-devel tk-devel bluez-libs-devel iptables* rrdtool diffutils which perl-Math-BigInt perl-Test-Simple perl-ExtUtils-Embed perl-ExtUtils-MakeMaker perl-Time-HiRes perl-libwww-perl perl-Net-SSLeay cyrus-imapd cyrus-sasl-md5 cyrus-sasl-plain strace cmake git net-snmp-libs net-snmp-utils iotop libvpx libvpx-devel t1lib t1lib-devel expect readline readline-devel libedit libedit-devel libxslt libxslt-devel openssl openssl-devel curl curl-devel openldap openldap-devel zlib zlib-devel gd gd-devel pcre pcre-devel gettext gettext-devel libidn libidn-devel libjpeg libjpeg-devel libpng libpng-devel freetype freetype-devel libxml2 libxml2-devel glib2 glib2-devel bzip2 bzip2-devel ncurses ncurses-devel e2fsprogs e2fsprogs-devel libc-client libc-client-devel cyrus-sasl cyrus-sasl-devel pam pam-devel libaio libaio-devel libevent libevent-devel recode recode-devel libtidy libtidy-devel net-snmp net-snmp-devel enchant enchant-devel lua lua-devel mailx perl-LWP-Protocol-https OpenEXR-devel OpenEXR-libs atk cups-libs fftw-libs-double fribidi gdk-pixbuf2 ghostscript-devel gl-manpages graphviz gtk2 hicolor-icon-theme ilmbase ilmbase-devel jasper-devel jasper-libs jbigkit-devel jbigkit-libs lcms2 lcms2-devel libICE-devel libSM-devel libXaw libXcomposite libXcursor libXdamage-devel libXfixes-devel libXi libXinerama libXmu libXrandr libXt-devel libXxf86vm-devel libdrm-devel libfontenc librsvg2 libtiff libtiff-devel libwebp libwebp-devel libwmf-lite mesa-libGL-devel mesa-libGLU mesa-libGLU-devel poppler-data urw-fonts xorg-x11-font-utils${USER_PKGS}${DISABLEREPO_DNF} --skip-broken
+  skip_broken_report "EL8 legacy combined batch"
 else
   time $YUMDNFBIN -y install systemd-libs open-sans-fonts virt-what acl libacl-devel attr libattr-devel lz4-devel python-devel gawk unzip pyOpenSSL python-dateutil libuuid-devel sqlite-devel bc wget lynx screen deltarpm ca-certificates yum-utils bash mlocate subversion rsyslog dos2unix boost-program-options net-tools imake bind-utils libatomic_ops-devel time coreutils autoconf cronie crontabs cronie-anacron gcc gcc-c++ automake libtool make libXext-devel unzip patch sysstat openssh flex bison file libtool-ltdl-devel krb5-devel libXpm-devel nano gmp-devel aspell-devel numactl lsof pkgconfig gdbm-devel tk-devel bluez-libs-devel iptables* rrdtool diffutils which perl-Test-Simple perl-ExtUtils-Embed perl-ExtUtils-MakeMaker perl-Time-HiRes perl-libwww-perl perl-Crypt-SSLeay perl-Net-SSLeay cyrus-imapd cyrus-sasl-md5 cyrus-sasl-plain strace cmake git net-snmp-libs net-snmp-utils iotop libvpx libvpx-devel t1lib t1lib-devel expect expect-devel readline readline-devel libedit libedit-devel libxslt libxslt-devel openssl openssl-devel curl curl-devel openldap openldap-devel zlib zlib-devel gd gd-devel pcre pcre-devel gettext gettext-devel libidn libidn-devel libjpeg libjpeg-devel libpng libpng-devel freetype freetype-devel libxml2 libxml2-devel glib2 glib2-devel bzip2 bzip2-devel ncurses ncurses-devel e2fsprogs e2fsprogs-devel libc-client libc-client-devel cyrus-sasl cyrus-sasl-devel pam pam-devel libaio libaio-devel libevent libevent-devel recode recode-devel libtidy libtidy-devel net-snmp net-snmp-devel enchant enchant-devel lua lua-devel mailx perl-LWP-Protocol-https OpenEXR-devel OpenEXR-libs atk cups-libs fftw-libs-double fribidi gdk-pixbuf2 ghostscript-devel ghostscript-fonts gl-manpages graphviz gtk2 hicolor-icon-theme ilmbase ilmbase-devel jasper-devel jasper-libs jbigkit-devel jbigkit-libs lcms2 lcms2-devel libICE-devel libSM-devel libXaw libXcomposite libXcursor libXdamage-devel libXfixes-devel libXfont libXi libXinerama libXmu libXrandr libXt-devel libXxf86vm-devel libdrm-devel libfontenc librsvg2 libtiff libtiff-devel libwebp libwebp-devel libwmf-lite mesa-libGL-devel mesa-libGLU mesa-libGLU-devel poppler-data urw-fonts xorg-x11-font-utils${USER_PKGS}${DISABLEREPO_DNF}
 fi
@@ -2446,6 +2472,7 @@ fi
     time $YUMDNFBIN -y install \
       libmcrypt libmcrypt-devel libraqm oniguruma5php oniguruma5php-devel \
       --enablerepo=epel,epel-testing,remi --skip-broken
+    skip_broken_report "EL10 Phase 4 utility + REMI"
 
     CURL_BATCH4_END=$(date +%s)
     CURL_BATCH4_DURATION=$((CURL_BATCH4_END - CURL_BATCH4_START))
@@ -2470,6 +2497,7 @@ fi
       KERNEL_PKGS=""
     fi
     time $YUMDNFBIN -y install checksec systemd-libs xxhash-devel libzstd xxhash libzstd-devel datamash qrencode jq clang clang-devel jemalloc jemalloc-devel zstd python2-pip libmcrypt libmcrypt-devel libraqm oniguruma5php oniguruma5php-devel figlet moreutils nghttp2 libnghttp2 libnghttp2-devel pngquant optipng jpegoptim pwgen pigz pbzip2 xz pxz lz4 bash-completion mlocate re2c ${KERNEL_PKGS}${DISABLEREPO_DNF} --enablerepo=epel,epel-testing,remi --skip-broken --allowerasing
+    skip_broken_report "EL9 Phase 4 utility + REMI"
     libc_fix
     if [ -f /usr/bin/pip ]; then
       PYTHONWARNINGS=ignore:::pip._internal.cli.base_command pip install --upgrade pip
@@ -2483,6 +2511,7 @@ fi
       KERNEL_PKGS=""
     fi
     time $YUMDNFBIN -y install checksec systemd-libs xxhash-devel libzstd xxhash libzstd-devel datamash qrencode jq clang clang-devel jemalloc jemalloc-devel zstd python2-pip libmcrypt libmcrypt-devel libraqm oniguruma5php oniguruma5php-devel figlet moreutils nghttp2 libnghttp2 libnghttp2-devel pngquant optipng jpegoptim pwgen pigz pbzip2 xz pxz lz4 bash-completion mlocate re2c ${KERNEL_PKGS}${DISABLEREPO_DNF} --enablerepo=epel,epel-testing,remi --skip-broken --allowerasing
+    skip_broken_report "EL8 Phase 4 utility + REMI"
     libc_fix
     if [ -f /usr/bin/pip ]; then
       PYTHONWARNINGS=ignore:::pip._internal.cli.base_command pip install --upgrade pip
