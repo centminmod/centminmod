@@ -3,6 +3,19 @@
 # centminmod.com cli installer
 #
 #######################################################
+# H3: enable pipefail so `cmd1 | cmd2` exits non-zero when cmd1 fails
+# (not only when cmd2 does). `set -e` / `set -u` intentionally NOT
+# enabled — too disruptive for this codebase's defensive
+# `[ -z "$x" ]` checking style. Reference:
+# CLAUDE-installer-el10-almalinux10-analysis.md H3.
+set -o pipefail
+
+# Cleanup trap: kill backgrounded children (e.g. the `tee` subshell
+# spawned at line ~46 via `exec > >(tee ...)`) on INT/TERM so they
+# do not continue writing to a half-finished log after the user
+# aborts the installer.
+trap '_rc=$?; _jobs=$(jobs -p); [ -n "$_jobs" ] && kill $_jobs 2>/dev/null; exit $_rc' INT TERM
+#######################################################
 # some OS image templates are missing some locales that need to be installed
 check_install_locale() {
   if [[ ! "$(locale -a | grep -qi "en_US.UTF8")" ]]; then
