@@ -68,6 +68,20 @@ if [[ -f "$FIRSTYUM_FILE" ]] || [[ -f /usr/local/src/centminmod/centmin.sh && -f
 fi
 mkdir -p /etc/centminmod
 touch /etc/centminmod/custom_config.inc
+# M6: idempotent append to /etc/centminmod/custom_config.inc. Skips the
+# write if the KEY=... line (anchored ^) already exists, so repeated
+# runs of installer-el10.sh (recovery, golden-image regen) do not
+# duplicate keys. Mirrors the commented-out template above but as a
+# reusable helper. Reference:
+# CLAUDE-installer-el10-almalinux10-analysis.md M6.
+append_config_if_missing() {
+  local kv="$1"
+  local key="${kv%%=*}"
+  local target="${2:-/etc/centminmod/custom_config.inc}"
+  if [ ! -f "$target" ] || ! grep -q "^${key}=" "$target"; then
+    echo "$kv" >> "$target"
+  fi
+}
 #if [ ! "$(grep 'CENTOS_ALPHATEST' /etc/centminmod/custom_config.inc)" ]; then
 #  echo "CENTOS_ALPHATEST='y'" >> /etc/centminmod/custom_config.inc
 #fi
@@ -889,51 +903,51 @@ if [[ "$CENTOS_TEN" -eq '10' ]]; then
   #echo "DEVTOOLSETTEN='n'" >> /etc/centminmod/custom_config.inc
   #echo "DEVTOOLSETELEVEN='n'" >> /etc/centminmod/custom_config.inc
   #echo "DEVTOOLSETTWELVE='y'" >> /etc/centminmod/custom_config.inc
-  echo "SET_DEFAULT_MYSQLCHARSET='utf8mb4'" >> /etc/centminmod/custom_config.inc
-  echo "SELFSIGNEDSSL_ECDSA='y'" >> /etc/centminmod/custom_config.inc
+  append_config_if_missing "SET_DEFAULT_MYSQLCHARSET='utf8mb4'"
+  append_config_if_missing "SELFSIGNEDSSL_ECDSA='y'"
   if [[ "$ISMINMEM_OVERRIDE" = [yY] && "$ISMINSWAP_OVERRIDE" = [yY] ]]; then
-    echo "PHPFINFO='n'" >> /etc/centminmod/custom_config.inc
+    append_config_if_missing "PHPFINFO='n'"
   else
-    echo "PHPFINFO='y'" >> /etc/centminmod/custom_config.inc
+    append_config_if_missing "PHPFINFO='y'"
   fi
-  echo "PHP_OVERWRITECONF='n'" >> /etc/centminmod/custom_config.inc
-  echo "PYTHON_INSTALL_ALTERNATIVES='y'" >> /etc/centminmod/custom_config.inc
+  append_config_if_missing "PHP_OVERWRITECONF='n'"
+  append_config_if_missing "PYTHON_INSTALL_ALTERNATIVES='y'"
 fi
 # set el9 to utf8mb4 charset for MariaDB 10.6
 if [[ "$CENTOS_NINE" -eq '9' ]]; then
   #echo "DEVTOOLSETTEN='n'" >> /etc/centminmod/custom_config.inc
   #echo "DEVTOOLSETELEVEN='n'" >> /etc/centminmod/custom_config.inc
   #echo "DEVTOOLSETTWELVE='y'" >> /etc/centminmod/custom_config.inc
-  echo "SET_DEFAULT_MYSQLCHARSET='utf8mb4'" >> /etc/centminmod/custom_config.inc
-  echo "SELFSIGNEDSSL_ECDSA='y'" >> /etc/centminmod/custom_config.inc
+  append_config_if_missing "SET_DEFAULT_MYSQLCHARSET='utf8mb4'"
+  append_config_if_missing "SELFSIGNEDSSL_ECDSA='y'"
   if [[ "$ISMINMEM_OVERRIDE" = [yY] && "$ISMINSWAP_OVERRIDE" = [yY] ]]; then
-    echo "PHPFINFO='n'" >> /etc/centminmod/custom_config.inc
+    append_config_if_missing "PHPFINFO='n'"
   else
-    echo "PHPFINFO='y'" >> /etc/centminmod/custom_config.inc
+    append_config_if_missing "PHPFINFO='y'"
   fi
-  echo "PHP_OVERWRITECONF='n'" >> /etc/centminmod/custom_config.inc
-  echo "PYTHON_INSTALL_ALTERNATIVES='y'" >> /etc/centminmod/custom_config.inc
+  append_config_if_missing "PHP_OVERWRITECONF='n'"
+  append_config_if_missing "PYTHON_INSTALL_ALTERNATIVES='y'"
 fi
 # set el8 defaults
 if [[ "$CENTOS_EIGHT" -eq '8' ]]; then
   #echo "DEVTOOLSETTEN='n'" >> /etc/centminmod/custom_config.inc
   #echo "DEVTOOLSETELEVEN='n'" >> /etc/centminmod/custom_config.inc
   #echo "DEVTOOLSETTWELVE='y'" >> /etc/centminmod/custom_config.inc
-  echo "SELFSIGNEDSSL_ECDSA='y'" >> /etc/centminmod/custom_config.inc
+  append_config_if_missing "SELFSIGNEDSSL_ECDSA='y'"
   if [[ "$ISMINMEM_OVERRIDE" = [yY] && "$ISMINSWAP_OVERRIDE" = [yY] ]]; then
-    echo "PHPFINFO='n'" >> /etc/centminmod/custom_config.inc
+    append_config_if_missing "PHPFINFO='n'"
   else
-    echo "PHPFINFO='y'" >> /etc/centminmod/custom_config.inc
+    append_config_if_missing "PHPFINFO='y'"
   fi
-  echo "PHP_OVERWRITECONF='n'" >> /etc/centminmod/custom_config.inc
-  echo "PYTHON_INSTALL_ALTERNATIVES='y'" >> /etc/centminmod/custom_config.inc
+  append_config_if_missing "PHP_OVERWRITECONF='n'"
+  append_config_if_missing "PYTHON_INSTALL_ALTERNATIVES='y'"
 fi
 # set el7 defaults
 if [[ "$CENTOS_SEVEN" -eq '7' ]]; then
-  echo "DEVTOOLSETTEN='n'" >> /etc/centminmod/custom_config.inc
-  echo "DEVTOOLSETELEVEN='y'" >> /etc/centminmod/custom_config.inc
-  echo "SELFSIGNEDSSL_ECDSA='y'" >> /etc/centminmod/custom_config.inc
-  echo "PHP_OVERWRITECONF='n'" >> /etc/centminmod/custom_config.inc
+  append_config_if_missing "DEVTOOLSETTEN='n'"
+  append_config_if_missing "DEVTOOLSETELEVEN='y'"
+  append_config_if_missing "SELFSIGNEDSSL_ECDSA='y'"
+  append_config_if_missing "PHP_OVERWRITECONF='n'"
 fi
 
 # el8+ dnf/yum speed tweaks
@@ -2743,7 +2757,7 @@ sed -i "s|ZOPCACHEDFT='n'|ZOPCACHEDFT='y'|" centmin.sh
 # bypass initial setup email prompt
 mkdir -p /etc/centminmod/
 if [[ "$LOWMEM_INSTALL" = [yY] ]]; then
-  echo "LOWMEM_INSTALL='y'" >> /etc/centminmod/custom_config.inc
+  append_config_if_missing "LOWMEM_INSTALL='y'"
 fi
 echo "1" > /etc/centminmod/email-primary.ini
 echo "2" > /etc/centminmod/email-secondary.ini
