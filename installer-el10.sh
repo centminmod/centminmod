@@ -2160,7 +2160,6 @@ net.ipv4.tcp_max_syn_backlog=$TCP_BACKLOG
 net.ipv4.tcp_sack=1
 net.ipv4.tcp_syn_retries=3
 net.ipv4.tcp_synack_retries = 2
-net.ipv4.tcp_tw_recycle = 0
 net.ipv4.tcp_tw_reuse = 0
 net.ipv4.tcp_max_tw_buckets = 1440000
 vm.swappiness=10
@@ -2192,6 +2191,16 @@ net.ipv4.tcp_mtu_probing = 1
 net.ipv4.tcp_base_mss = 1024
 net.unix.max_dgram_qlen = 4096
 EOF
+        # H6: net.ipv4.tcp_tw_recycle was removed from the kernel in 4.12
+        # (2017). It still exists on EL7 (kernel 3.10) but not on EL8
+        # (4.18), EL9 (5.14), EL10 (6.12). Gate the write on file
+        # existence so `/sbin/sysctl --system` does not error on
+        # post-4.12 kernels (which would prevent downstream tunables in
+        # the same file from applying when systemd-sysctl is strict).
+        # Reference: CLAUDE-installer-el10-almalinux10-analysis.md H6.
+        if [ -f /proc/sys/net/ipv4/tcp_tw_recycle ]; then
+          echo "net.ipv4.tcp_tw_recycle = 0" >> /etc/sysctl.d/101-sysctl.conf
+        fi
         # Set higher watchdog threshold for AMD EPYC processors
         if awk '/model name.*AMD EPYC/ {exit 0} END {exit 1}' /proc/cpuinfo; then
           echo "kernel.watchdog_thresh = 20" >> /etc/sysctl.d/101-sysctl.conf
