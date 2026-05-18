@@ -681,15 +681,11 @@ install_nasm() {
       hash -r
     fi
     if [[ "$CENTOS_TEN" -eq '10' ]]; then
-        yum -y install autoconf271
-        export PATH=/opt/rh/autoconf271/bin:$PATH
-        export AUTOCONF=/opt/rh/autoconf271/bin/autoconf
-        export AUTOHEADER=/opt/rh/autoconf271/bin/autoheader
-        export AUTOM4TE=/opt/rh/autoconf271/bin/autom4te
-        export AUTORECONF=/opt/rh/autoconf271/bin/autoreconf
-        export AUTOSCAN=/opt/rh/autoconf271/bin/autoscan
-        export AUTOUPDATE=/opt/rh/autoconf271/bin/autoupdate
-        export IFNAMES=/opt/rh/autoconf271/bin/ifnames
+        # EL10 stock /usr/bin/autoconf is 2.71. No `autoconf271` SCL shim exists in EL10
+        # repos; the `/opt/rh/autoconf271/` SCL path does not exist either — exporting
+        # those phantom paths poisons every subsequent autoreconf (nasm/fdk-aac/opus).
+        # Clear any inherited overrides so the chain resolves to /usr/bin/*.
+        unset AUTOCONF AUTOHEADER AUTOM4TE AUTORECONF AUTOSCAN AUTOUPDATE IFNAMES
     elif [[ "$CENTOS_NINE" -eq '9' ]]; then
         yum -y install autoconf271
         export PATH=/opt/rh/autoconf271/bin:$PATH
@@ -1099,7 +1095,7 @@ cmake -G "Unix Makefiles" -DCMAKE_INSTALL_PREFIX:PATH="${OPT}/ffmpeg" -DENABLE_S
 make${MAKETHREADS}
 make install
 
-cd ${OPT}/ffmpeg_sources/fdk_aac
+cd ${OPT}/ffmpeg_sources/fdk-aac
 make distclean
 git pull
 ./configure --prefix="${OPT}/ffmpeg" --enable-static --enable-shared
