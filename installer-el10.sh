@@ -2713,7 +2713,11 @@ cd $INSTALLDIR
     if [[ -f /usr/local/bin/axel && $AXEL = [yY] ]]; then
       /usr/bin/axel https://github.com/centminmod/centminmod/archive/${DOWNLOAD}
     else
-      wget --no-check-certificate https://github.com/centminmod/centminmod/archive/${DOWNLOAD} --tries=3
+      # H4: removed `--no-check-certificate` (GitHub serves valid Let's
+      # Encrypt / Sectigo certs). The flag was unnecessarily disabling
+      # TLS validation on the largest single download in the script.
+      # Reference: CLAUDE-installer-el10-almalinux10-analysis.md H4.
+      wget https://github.com/centminmod/centminmod/archive/${DOWNLOAD} --tries=3
     fi
     getcmendtime=$(TZ=UTC date +%s.%N)
     rm -rf centminmod-*
