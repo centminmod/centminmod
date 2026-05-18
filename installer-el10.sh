@@ -771,6 +771,16 @@ if [[ ! -f /.dockerenv && "$CHECK_LXD" != 'y' ]]; then
     fi
     echo "grubby --update-kernel ALL --args selinux=0"
     grubby --update-kernel ALL --args selinux=0
+    # M2: defensively sync selinux=0 into /etc/default/grub so the
+    # SELINUX_STATUS_GRUB grep re-check at line 760 stays idempotent
+    # across re-runs (grubby writes BLS entries under /boot/loader/
+    # entries/ on EL10 and may or may not also touch /etc/default/grub
+    # depending on bootloader configuration). grubby remains the
+    # authoritative kernel-arg writer (RH-recommended per the doc link
+    # above). Reference: CLAUDE-installer-el10-almalinux10-analysis.md M2.
+    if [ -f /etc/default/grub ] && ! grep -q 'selinux=0' /etc/default/grub; then
+      sed -i '/^GRUB_CMDLINE_LINUX=/ s/"$/ selinux=0"/' /etc/default/grub
+    fi
     echo
     grep '^GRUB_CMDLINE_LINUX=' /etc/default/grub
     echo
@@ -790,6 +800,16 @@ if [[ ! -f /.dockerenv && "$CHECK_LXD" != 'y' ]]; then
     fi
     echo "grubby --update-kernel ALL --args selinux=0"
     grubby --update-kernel ALL --args selinux=0
+    # M2: defensively sync selinux=0 into /etc/default/grub so the
+    # SELINUX_STATUS_GRUB grep re-check at line 760 stays idempotent
+    # across re-runs (grubby writes BLS entries under /boot/loader/
+    # entries/ on EL9 and may or may not also touch /etc/default/grub
+    # depending on bootloader configuration). grubby remains the
+    # authoritative kernel-arg writer (RH-recommended per the doc link
+    # above). Reference: CLAUDE-installer-el10-almalinux10-analysis.md M2.
+    if [ -f /etc/default/grub ] && ! grep -q 'selinux=0' /etc/default/grub; then
+      sed -i '/^GRUB_CMDLINE_LINUX=/ s/"$/ selinux=0"/' /etc/default/grub
+    fi
     echo
     grep '^GRUB_CMDLINE_LINUX=' /etc/default/grub
     echo
