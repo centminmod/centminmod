@@ -438,7 +438,7 @@ ABORTINSTALL='y'
 #############################################################
 TOTALMEM=$(awk '/MemTotal/ {print $2}' /proc/meminfo)
 TOTALMEM_T=$(awk '/MemTotal/ {print $2}' /proc/meminfo)
-TOTALMEM_SWAP=$(awk '/SwapFree/ {print $2}' /proc/meminfo)
+TOTALMEM_SWAP=$(awk '/SwapTotal/ {print $2}' /proc/meminfo)
 TOTALMEM_PHP=$(($TOTALMEM_T+$TOTALMEM_SWAP))
 
 if [[ "$CENTOS_TEN" -eq '10' ]]; then
@@ -578,7 +578,7 @@ lowmemcheck() {
       fi
     else
       echo ""
-      echo -e "Ok: swap is sufficient for Centmin Mod installation despite low memory\\nInstallation [Installed: $TOTALMEMMB MB < $ISMINMEMMB MB memory, but $TOTALMEM_SWAP MB >= $ISMINSWAPMB MB swap]\\n"
+      echo -e "Ok: swap is sufficient for Centmin Mod installation despite low memory\\nInstallation [Installed: $TOTALMEMMB MB < $ISMINMEMMB MB memory, but $TOTALMEM_SWAP MB >= $ISMINSWAPMB MB total swap]\\n"
     fi
   else
     echo ""
@@ -711,7 +711,7 @@ elif [[ "$FINDSWAPSIZE" -eq '0' && ! -f /proc/user_beancounters && "$CHECK_LXD" 
     } 2>&1 | tee "${CENTMINLOGDIR}/centminmod_swapsetup_installer_${DT}.log"
 fi
 # Recalculate swap after potential swap file creation
-TOTALMEM_SWAP=$(awk '/SwapFree/ {print $2}' /proc/meminfo)
+TOTALMEM_SWAP=$(awk '/SwapTotal/ {print $2}' /proc/meminfo)
 }
 
 swap_setup
