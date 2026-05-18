@@ -740,7 +740,7 @@ elif [[ "$FINDSWAPSIZE" -eq '0' && ! -f /proc/user_beancounters && "$CHECK_LXD" 
     echo
     free -mlt
     echo
-    echo "re-create 1GB swap file";
+    echo "re-create 4GB swap file";
     swapoff /swapfile
     if [[ "$(df -hT | grep -wE 'xfs|ext4')" || "$(virt-what | grep -o lxc)" = 'lxc' ]]; then
         dd if=/dev/zero of=/swapfile bs=1M count=4096;
@@ -1194,6 +1194,11 @@ detect_amd_epyc_cpus() {
   fi
 
   # Only process AMD EPYC processors
+  # L9: SKU lookup table below currently covers Naples / Rome / Milan /
+  # Milan-X / Genoa / Bergamo / Siena. Newer EPYC generations (Turin
+  # 9005 and later) will fall through to `*) echo "0"` and lose the
+  # intended CPUS cap. Refresh the case arms when new generations land.
+  # Reference: CLAUDE-installer-el10-almalinux10-analysis.md L9.
   if [[ "$cpu_model" =~ "AMD EPYC" ]]; then
     # Extract model number
     local model_num=$(echo "$cpu_model" | grep -o 'EPYC [0-9A-Z]\+' | awk '{print $2}')
@@ -2116,7 +2121,13 @@ fi
   systemctl status rc-local.service --no-pager
 fi
         ulimit -n 524288
-        echo "ulimit -n 524288" >> /etc/rc.local
+        # L7: grep-guard the rc.local append so re-runs do not accumulate
+        # duplicate `ulimit -n 524288` lines (mirrors the adjacent guarded
+        # /var/run/php-fpm append below). Reference:
+        # CLAUDE-installer-el10-almalinux10-analysis.md L7.
+        if [[ ! "$(grep '^ulimit -n 524288' /etc/rc.local)" ]]; then
+          echo "ulimit -n 524288" >> /etc/rc.local
+        fi
         if [[ ! "$(grep '/var/run/php-fpm' /etc/rc.local)" ]]; then
           echo 'if [ ! -d /var/run/php-fpm/ ]; then mkdir -p /var/run/php-fpm/; fi' >> /etc/rc.local
         fi
@@ -2543,6 +2554,11 @@ fi
     # Group 4B: REMI repository packages (5 packages)
     time $YUMDNFBIN -y install \
       libmcrypt libmcrypt-devel libraqm oniguruma5php oniguruma5php-devel \
+      # L10: `--enablerepo=remi` here may no-op during installer-el10.sh's
+      # own phase 4 execution because remi-release is installed later via
+      # inc/* during the `centmin.sh install` handoff. After that, the
+      # remi-modular repo is enabled and these packages resolve correctly.
+      # Reference: CLAUDE-installer-el10-almalinux10-analysis.md L10.
       --enablerepo=epel,epel-testing,remi --skip-broken
     skip_broken_report "EL10 Phase 4 utility + REMI"
 
@@ -2552,9 +2568,16 @@ fi
     echo "* Phase 4 completed in ${CURL_BATCH4_DURATION} seconds"
     echo "*************************************************"
     if [ ! -f /usr/lib64/libjemalloc.so ]; then
-      wget -q https://dl.fedoraproject.org/pub/epel/10/Everything/x86_64/Packages/j/jemalloc-5.3.0-10.el10_1.x86_64.rpm -O /svr-setup/jemalloc-5.3.0-10.el10_1.x86_64.rpm
-      wget -q https://dl.fedoraproject.org/pub/epel/10/Everything/x86_64/Packages/j/jemalloc-devel-5.3.0-10.el10_1.x86_64.rpm -O /svr-setup/jemalloc-devel-5.3.0-10.el10_1.x86_64.rpm
-      yum -y localinstall /svr-setup/jemalloc-5.3.0-10.el10_1.x86_64.rpm /svr-setup/jemalloc-devel-5.3.0-10.el10_1.x86_64.rpm
+      # L3: jemalloc RPM filenames are pinned to a specific Fedora EPEL10
+      # release. Extracted to variables so the version bump is a single
+      # point of edit when EPEL refreshes the package. Verify the current
+      # versions at https://dl.fedoraproject.org/pub/epel/10/Everything/x86_64/Packages/j/
+      # Reference: CLAUDE-installer-el10-almalinux10-analysis.md L3.
+      JEMALLOC_RPM_VER='5.3.0-10.el10_1'
+      JEMALLOC_RPM_BASE_URL='https://dl.fedoraproject.org/pub/epel/10/Everything/x86_64/Packages/j'
+      wget -q "${JEMALLOC_RPM_BASE_URL}/jemalloc-${JEMALLOC_RPM_VER}.x86_64.rpm" -O "/svr-setup/jemalloc-${JEMALLOC_RPM_VER}.x86_64.rpm"
+      wget -q "${JEMALLOC_RPM_BASE_URL}/jemalloc-devel-${JEMALLOC_RPM_VER}.x86_64.rpm" -O "/svr-setup/jemalloc-devel-${JEMALLOC_RPM_VER}.x86_64.rpm"
+      yum -y localinstall "/svr-setup/jemalloc-${JEMALLOC_RPM_VER}.x86_64.rpm" "/svr-setup/jemalloc-devel-${JEMALLOC_RPM_VER}.x86_64.rpm"
     fi
     libc_fix
     if [ -f /usr/bin/pip ]; then
@@ -2568,6 +2591,10 @@ fi
     else
       KERNEL_PKGS=""
     fi
+    # L10: `--enablerepo=remi` here depends on remi-release being installed
+    # later by inc/* during the centmin.sh install handoff. During this
+    # phase it may no-op; afterwards remi-modular is fully usable.
+    # Reference: CLAUDE-installer-el10-almalinux10-analysis.md L10.
     time $YUMDNFBIN -y install checksec systemd-libs xxhash-devel libzstd xxhash libzstd-devel datamash qrencode jq clang clang-devel jemalloc jemalloc-devel zstd python2-pip libmcrypt libmcrypt-devel libraqm oniguruma5php oniguruma5php-devel figlet moreutils nghttp2 libnghttp2 libnghttp2-devel pngquant optipng jpegoptim pwgen pigz pbzip2 xz pxz lz4 bash-completion mlocate re2c ${KERNEL_PKGS}${DISABLEREPO_DNF} --enablerepo=epel,epel-testing,remi --skip-broken --allowerasing
     skip_broken_report "EL9 Phase 4 utility + REMI"
     libc_fix
@@ -2582,6 +2609,10 @@ fi
     else
       KERNEL_PKGS=""
     fi
+    # L10: `--enablerepo=remi` here depends on remi-release being installed
+    # later by inc/* during the centmin.sh install handoff. During this
+    # phase it may no-op; afterwards remi-modular is fully usable.
+    # Reference: CLAUDE-installer-el10-almalinux10-analysis.md L10.
     time $YUMDNFBIN -y install checksec systemd-libs xxhash-devel libzstd xxhash libzstd-devel datamash qrencode jq clang clang-devel jemalloc jemalloc-devel zstd python2-pip libmcrypt libmcrypt-devel libraqm oniguruma5php oniguruma5php-devel figlet moreutils nghttp2 libnghttp2 libnghttp2-devel pngquant optipng jpegoptim pwgen pigz pbzip2 xz pxz lz4 bash-completion mlocate re2c ${KERNEL_PKGS}${DISABLEREPO_DNF} --enablerepo=epel,epel-testing,remi --skip-broken --allowerasing
     skip_broken_report "EL8 Phase 4 utility + REMI"
     libc_fix
