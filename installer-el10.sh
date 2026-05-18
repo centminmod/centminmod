@@ -75,6 +75,13 @@ CENTOS_ALPHATEST='y'
 #######################################################
 DNF_ENABLE='n'
 DNF_COPR='y'
+# M1: opt-in by default to the EL10 batch package installers
+# (install_group4_essential_batch / install_group4_system_tools_batch).
+# Without this, the batch optimisation path was dead code on fresh
+# installs (custom_config.inc was sourced AFTER the invocation). The
+# legacy per-package fall-through remains in place if a batch fails.
+# Reference: CLAUDE-installer-el10-almalinux10-analysis.md M1.
+CENTOS_TEN_BATCH_INSTALL='y'
 # M3: defensive default — CHECK_LXD is consulted by swap_setup() and earlier
 # memory checks. Real value gets assigned later by the virt-what /
 # systemd-detect-virt block (moved to run before swap_setup). Reference:
