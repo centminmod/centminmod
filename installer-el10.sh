@@ -392,7 +392,16 @@ detect_elrepo_kernel() {
     echo ""
 
     # Remove all conflicting packages at once
-    $YUMDNFBIN remove -y kernel-ml-headers kernel-ml-devel kernel-lt-headers kernel-lt-devel 2>/dev/null
+    # detect_elrepo_kernel is invoked at line 408 — long before YUMDNFBIN is
+    # assigned at lines 1269/1272/1275. Hardcode dnf vs yum here based on
+    # /usr/bin/dnf presence so the remove actually runs and ELREPO_KERNEL_REMOVED
+    # is set truthfully (kernel-headers/kernel-devel conflicts otherwise mask
+    # under --skip-broken downstream).
+    if [ -f /usr/bin/dnf ]; then
+      dnf remove -y kernel-ml-headers kernel-ml-devel kernel-lt-headers kernel-lt-devel 2>/dev/null
+    else
+      yum remove -y kernel-ml-headers kernel-ml-devel kernel-lt-headers kernel-lt-devel 2>/dev/null
+    fi
 
     SKIP_KERNEL_HEADERS='n'  # Allow standard kernel-headers to install
     ELREPO_KERNEL_REMOVED='y'
