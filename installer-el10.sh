@@ -621,8 +621,8 @@ if [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' || "$CENTOS_TEN" -eq '10
         dd_size=4096
         fallocate_size=4
       fi
-      if [[ "$(df -hT | grep -w xfs)" || "$(virt-what | grep -o lxc)" = 'lxc' ]]; then
-        dd if=/dev/zero of=/swapfile bs=$dd_size count=1048576;
+      if [[ "$(df -hT | grep -wE 'xfs|ext4')" || "$(virt-what | grep -o lxc)" = 'lxc' ]]; then
+        dd if=/dev/zero of=/swapfile bs=1M count=$((fallocate_size*1024));
       else
         fallocate -l ${fallocate_size}G /swapfile
       fi
@@ -651,8 +651,8 @@ if [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' || "$CENTOS_TEN" -eq '10
         dd_size=4096
         fallocate_size=4
       fi
-      if [[ "$(df -hT | grep -w xfs)" || "$(virt-what | grep -o lxc)" = 'lxc' ]]; then
-        dd if=/dev/zero of=/swapfile bs=$dd_size count=1048576;
+      if [[ "$(df -hT | grep -wE 'xfs|ext4')" || "$(virt-what | grep -o lxc)" = 'lxc' ]]; then
+        dd if=/dev/zero of=/swapfile bs=1M count=$((fallocate_size*1024));
       else
         fallocate -l ${fallocate_size}G /swapfile
       fi
@@ -674,8 +674,8 @@ if [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' || "$CENTOS_TEN" -eq '10
       echo
       echo "re-create 4GB swap file";
       swapoff -a
-      if [[ "$(df -hT | grep -w xfs)" || "$(virt-what | grep -o lxc)" = 'lxc' ]]; then
-        dd if=/dev/zero of=/swapfile bs=4096 count=1048576;
+      if [[ "$(df -hT | grep -wE 'xfs|ext4')" || "$(virt-what | grep -o lxc)" = 'lxc' ]]; then
+        dd if=/dev/zero of=/swapfile bs=1M count=4096;
       else
         fallocate -l 4G /swapfile
       fi
@@ -698,8 +698,8 @@ elif [[ "$FINDSWAPSIZE" -eq '0' && ! -f /proc/user_beancounters && "$CHECK_LXD" 
     echo
     echo "re-create 1GB swap file";
     swapoff -a
-    if [[ "$(df -hT | grep -w xfs)" || "$(virt-what | grep -o lxc)" = 'lxc' ]]; then
-        dd if=/dev/zero of=/swapfile bs=4096 count=1024k;
+    if [[ "$(df -hT | grep -wE 'xfs|ext4')" || "$(virt-what | grep -o lxc)" = 'lxc' ]]; then
+        dd if=/dev/zero of=/swapfile bs=1M count=4096;
     else
         fallocate -l 4G /swapfile
     fi
