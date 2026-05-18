@@ -1029,7 +1029,7 @@ cmake -G "Unix Makefiles" -DCMAKE_INSTALL_PREFIX:PATH="${OPT}/ffmpeg" -DENABLE_S
 make${MAKETHREADS}
 make install
 
-cd ${OPT}/ffmpeg_sources/fdk_aac
+cd ${OPT}/ffmpeg_sources/fdk-aac
 make distclean
 git pull
 ./configure --prefix="${OPT}/ffmpeg" --enable-static --enable-shared
