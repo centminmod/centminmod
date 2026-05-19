@@ -1053,6 +1053,10 @@ if [[ "$(id -u)" -eq 0 ]] || sudo -n true 2>/dev/null; then
     _DMOTD_FANCY_ACTIVE='y'
     _DMOTD_COMPACT_EFFECTIVE='y'
   fi
+  # Lock the resolved render-mode signals so the comment at L66-69 is
+  # an enforced guarantee rather than convention. Any later code path
+  # that attempts to mutate either signal fails loudly at runtime.
+  readonly _DMOTD_COMPACT_EFFECTIVE _DMOTD_FANCY_ACTIVE
 
   starttime=$(TZ=UTC date +%s.%N)
   {
