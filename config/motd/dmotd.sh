@@ -121,6 +121,12 @@ echo -e "$color$message" ; $Reset
 return
 }
 
+# Minimum terminal columns required for fancy mode. The 79-char heavy /
+# light rules at _fancy_rule_heavy / _fancy_rule_light would visually wrap
+# at any width below 80, so the gate floor matches actual rule width. Set
+# higher only if a future rule string grows wider.
+_DMOTD_FANCY_MIN_COLS=80
+
 # Capability check for DMOTD_FANCY rendering. Returns 0 (capable) when the
 # terminal can safely render UTF-8 box-drawing + 8+-color ANSI; returns 1
 # (incapable) otherwise so the caller can fall back to compact ASCII.
@@ -159,20 +165,22 @@ _dmotd_fancy_capable() {
   case "${TERM:-dumb}" in
     dumb|unknown|"") return 1 ;;
   esac
-  # 6. Terminal width — fancy layout's widest line is ~80 cols; reject
-  #    narrower. tput cols may read winsize from stdin/stderr; redirect
-  #    from /dev/tty for pam_motd contexts where stdin isn't the
-  #    controlling terminal. Probe the actual PTY first via tput; only
-  #    fall back to $COLUMNS if tput cannot determine the width — a
-  #    stale exported COLUMNS from a previously-wider terminal would
-  #    otherwise let fancy activate on a now-narrower PTY.
+  # 6. Terminal width — must be at least _DMOTD_FANCY_MIN_COLS (matches
+  #    the 79-char heavy/light rule width above; gate at 80 to keep one
+  #    column of margin and avoid edge-case wrap). tput cols may read
+  #    winsize from stdin/stderr; redirect from /dev/tty for pam_motd
+  #    contexts where stdin isn't the controlling terminal. Probe the
+  #    actual PTY first via tput; only fall back to $COLUMNS if tput
+  #    cannot determine the width — a stale exported COLUMNS from a
+  #    previously-wider terminal would otherwise let fancy activate on
+  #    a now-narrower PTY.
   local _cols
   _cols="$(tput cols </dev/tty 2>/dev/null || tput cols 2>/dev/null || echo 0)"
   [ "$_cols" -gt 0 ] 2>/dev/null || _cols="${COLUMNS:-0}"
   case "${_cols:-}" in
     *[!0-9]*|"") return 1 ;;
   esac
-  [ "$_cols" -ge 75 ] || return 1
+  [ "$_cols" -ge "$_DMOTD_FANCY_MIN_COLS" ] || return 1
   return 0
 }
 
