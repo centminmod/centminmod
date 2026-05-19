@@ -49,6 +49,28 @@ NEEDRESTART_CHECK='n'
 # verbose panel without losing the rest of the compact layout.
 #DMOTD_COMPACT='n'
 
+# Fancy DMOTD layout — Unicode box-drawing + colored ASCII badges + bars
+# Opt-in cosmetic upgrade on top of the compact layout. When 'y' AND the
+# terminal is capable (UTF-8 locale, >=8 colors, TERM != dumb, >= 75 cols,
+# real TTY), output uses '━' / '─' heavy/light rules, '│' Unicode column
+# separator, '▓░' progress bars on mem/disk, and colored '[OK]' / '[!!]' /
+# '[XX]' ASCII status badges. When 'y' but the terminal is NOT capable,
+# falls back silently to the compact layout. When 'n' (default), the
+# DMOTD_COMPACT setting controls layout — no fancy bytes emitted.
+#
+# Fancy implies compact data — the user's DMOTD_COMPACT setting is NOT
+# mutated; the script uses an internal _DMOTD_COMPACT_EFFECTIVE variable
+# so admins who set DMOTD_COMPACT='n' deliberately retain that intent.
+#
+# For fully uniform fancy rendering, also set DMOTD_CVECHECK_COMPACT='y';
+# otherwise cmsec's per-CVE block stays verbose in the middle of the
+# fancy banner. Default-off keeps full per-CVE detail visible.
+#
+# Note on log files: cmm-login-git-checks_*.log already contains raw ANSI
+# escapes from cecho (today's behaviour). Fancy adds UTF-8 box bytes;
+# content text remains grep-friendly.
+#DMOTD_FANCY='n'
+
 # CSF version checker toggle (independent of DMOTD_COMPACT)
 # 'n' silences csf_version_checker entirely. Useful on servers that
 # track CSF updates separately or do not want the daily mirror check.

@@ -45,6 +45,10 @@ FORCE_IPVFOUR='y' # curl/wget commands through script force IPv4
 # collapsing — admins typically want CVE detail visible even when the
 # rest of the dmotd is compact.
 DMOTD_COMPACT='n'                  # master: 'y' enables compact layout
+DMOTD_FANCY='n'                    # 'y' enables Unicode box-drawing + colored ASCII badges + bars
+                                   # (requires capable terminal; falls back to compact on incapable).
+                                   # Fancy implies compact data internally via _DMOTD_COMPACT_EFFECTIVE
+                                   # without mutating the user's DMOTD_COMPACT setting.
 DMOTD_CSFVERCHECK='y'              # 'n' silences csf_version_checker entirely
 DMOTD_CVECHECK_COMPACT='n'         # 'y' collapses cmsec to 1 summary line (vulnerable CVEs always expand)
 ENABLEMOTD_HEADERCOMPACT='y'       # 'n' restores 6-line hostname/users/CPU/proc/uptime header
@@ -59,6 +63,10 @@ ENABLEMOTD_NEEDRESTARTCOMPACT='y'  # 'n' restores needrestart_check ~6-line rebo
 
 # Status-footer accumulator (compact mode appends one line per check)
 _dmotd_status_lines=()
+# Render-mode signals — set ONCE per login in the main flow below. Never
+# read from custom_config.inc; never mutated after the resolution block.
+_DMOTD_COMPACT_EFFECTIVE='n'
+_DMOTD_FANCY_ACTIVE='n'
 
 # Set cache timeout in minutes
 CACHE_TIMEOUT=60
@@ -104,6 +112,59 @@ message=$1
 color=$2
 echo -e "$color$message" ; $Reset
 return
+}
+
+# Capability check for DMOTD_FANCY rendering. Returns 0 (capable) when the
+# terminal can safely render UTF-8 box-drawing + 8+-color ANSI; returns 1
+# (incapable) otherwise so the caller can fall back to compact ASCII.
+_dmotd_fancy_capable() {
+  # 1. stdout must be a real TTY (cmsec.sh:41 idiom).
+  [ -t 1 ] || return 1
+  # 2. Locale must be UTF-8. LC_ALL > LC_CTYPE > LANG precedence — first
+  #    non-empty value is authoritative. Avoids the concat false-pass
+  #    where LC_ALL=C LANG=en_US.UTF-8 would otherwise match.
+  local _locale_ok='n' _v
+  for _v in "${LC_ALL:-}" "${LC_CTYPE:-}" "${LANG:-}"; do
+    if [ -n "$_v" ]; then
+      case "$_v" in
+        *[Uu][Tt][Ff]-8*|*[Uu][Tt][Ff]8*) _locale_ok='y' ;;
+        *) _locale_ok='n' ;;
+      esac
+      break
+    fi
+  done
+  [ "$_locale_ok" = 'y' ] || return 1
+  # 3. tput must exist (ncurses-base — almost always present, but
+  #    minimal containers occasionally omit it).
+  command -v tput >/dev/null 2>&1 || return 1
+  # 4. Color support: at least 8 colors. tput prints "-1" on stdout
+  #    when setupterm fails (e.g. TERM=dumb) — validate numeric first
+  #    so the -ge comparison can't error out.
+  local _colors
+  _colors="$(tput colors 2>/dev/null)"
+  case "${_colors:-}" in
+    *[!0-9]*|"") return 1 ;;
+  esac
+  [ "$_colors" -ge 8 ] || return 1
+  # 5. TERM sanity — reject dumb / unknown / empty.
+  case "${TERM:-dumb}" in
+    dumb|unknown|"") return 1 ;;
+  esac
+  # 6. Terminal width — fancy layout's widest line is ~80 cols; reject
+  #    narrower. tput cols may read winsize from stdin/stderr; redirect
+  #    from /dev/tty for pam_motd contexts where stdin isn't the
+  #    controlling terminal.
+  local _cols
+  if [ -n "${COLUMNS:-}" ]; then
+    _cols="$COLUMNS"
+  else
+    _cols="$(tput cols </dev/tty 2>/dev/null || tput cols 2>/dev/null || echo 0)"
+  fi
+  case "${_cols:-}" in
+    *[!0-9]*|"") return 1 ;;
+  esac
+  [ "$_cols" -ge 75 ] || return 1
+  return 0
 }
 
 # Convert nginx version to integer for comparison (1.29.1 -> 1029001)
@@ -197,12 +258,12 @@ check_git_major_branch() {
     for branch in "${branches_to_check[@]}"; do
         [[ "$current_branch" == "$branch" ]] && { _branch_outdated=1; break; }
     done
-    if [[ "$DMOTD_COMPACT" = [yY] && "$ENABLEMOTD_GITCOMPACT" != [nN] ]]; then
+    if [[ "$_DMOTD_COMPACT_EFFECTIVE" = [yY] && "$ENABLEMOTD_GITCOMPACT" != [nN] ]]; then
         # Compact: stash the major-branch warning for the merged footer. The
         # always-printed "branch installed" line is dropped because the
         # status-footer already names the branch via gitenv_askupdate.
         if [[ "$_branch_outdated" -eq 1 ]]; then
-            _dmotd_status_lines+=(" ! Older branch ($current_branch) — newer: 132.00stable or 141.00beta01 (threads/25572)")
+            _dmotd_status_lines+=("warn| ! Older branch ($current_branch) — newer: 132.00stable or 141.00beta01 (threads/25572)")
         fi
         return
     fi
@@ -307,12 +368,14 @@ push_dmotd_alerts() {
 
 motd_output() {
 # Header block: hostname/users/CPU/proc/uptime
-if [[ "$DMOTD_COMPACT" = [yY] && "$ENABLEMOTD_HEADERCOMPACT" != [nN] ]]; then
-echo "
-===============================================================================
- host: $DMOTD_HOSTNAME  on  $DMOTD_RELEASE  |  users: $DMOTD_CURRENTUSER ($DMOTD_USER)
- load: $LOAD1, $LOAD5, $LOAD15 (1/5/15)  |  proc: $PSA  |  up: ${upDays}d ${upHours}h ${upMins}m ${upSecs}s
-==============================================================================="
+if [[ "$_DMOTD_COMPACT_EFFECTIVE" = [yY] && "$ENABLEMOTD_HEADERCOMPACT" != [nN] ]]; then
+local _sep="|"
+[[ "$_DMOTD_FANCY_ACTIVE" = [yY] ]] && _sep="│"
+echo
+_dmotd_sep_heavy
+echo " host: $DMOTD_HOSTNAME  on  $DMOTD_RELEASE  $_sep  users: $DMOTD_CURRENTUSER ($DMOTD_USER)"
+echo " load: $LOAD1, $LOAD5, $LOAD15 (1/5/15)  $_sep  proc: $PSA  $_sep  up: ${upDays}d ${upHours}h ${upMins}m ${upSecs}s"
+_dmotd_sep_heavy
 else
 echo "
 ===============================================================================
@@ -326,7 +389,7 @@ echo "
 fi
 
 # Memory block
-if [[ "$DMOTD_COMPACT" = [yY] && "$ENABLEMOTD_MEMCOMPACT" != [nN] ]]; then
+if [[ "$_DMOTD_COMPACT_EFFECTIVE" = [yY] && "$ENABLEMOTD_MEMCOMPACT" != [nN] ]]; then
   # free -h output is parsed into a 2-line summary. Field positions follow
   # the standard procps-ng `free -h` layout: total used free shared buff/cache available
   local _mem_h _swap_h _m_total _m_used _m_free _m_shared _m_bc _m_avail
@@ -335,19 +398,59 @@ if [[ "$DMOTD_COMPACT" = [yY] && "$ENABLEMOTD_MEMCOMPACT" != [nN] ]]; then
   _swap_h=$(free -h | awk '/^Swap:/ {print $2, $3, $4}')
   read -r _m_total _m_used _m_free _m_shared _m_bc _m_avail <<<"$_mem_h"
   read -r _s_total _s_used _s_free <<<"$_swap_h"
-  printf ' mem:  used %s / %s    free %s   buff/cache %s   avail %s\n' \
-    "${_m_used:-?}" "${_m_total:-?}" "${_m_free:-?}" "${_m_bc:-?}" "${_m_avail:-?}"
-  printf ' swap: used %s / %s\n' "${_s_used:-?}" "${_s_total:-?}"
-  echo "==============================================================================="
+  if [[ "$_DMOTD_FANCY_ACTIVE" = [yY] ]]; then
+    # Compute percentages from bytes (free -b) so the bar matches the human-
+    # readable totals regardless of MB/GB scaling shown above.
+    local _mb_used _mb_total _sb_used _sb_total _mp _sp
+    _mb_used=$(free -b | awk '/^Mem:/  {print $3}')
+    _mb_total=$(free -b | awk '/^Mem:/ {print $2}')
+    _sb_used=$(free -b | awk '/^Swap:/ {print $3}')
+    _sb_total=$(free -b | awk '/^Swap:/ {print $2}')
+    _mp=0
+    [ "${_mb_total:-0}" -gt 0 ] 2>/dev/null && _mp=$(( _mb_used * 100 / _mb_total ))
+    _sp=0
+    [ "${_sb_total:-0}" -gt 0 ] 2>/dev/null && _sp=$(( _sb_used * 100 / _sb_total ))
+    printf ' mem  %s %3d%%  used %s / %s   avail %s\n' \
+      "$(_fancy_bar "$_mp")" "$_mp" "${_m_used:-?}" "${_m_total:-?}" "${_m_avail:-?}"
+    printf ' swap %s %3d%%  used %s / %s\n' \
+      "$(_fancy_bar "$_sp")" "$_sp" "${_s_used:-?}" "${_s_total:-?}"
+  else
+    printf ' mem:  used %s / %s    free %s   buff/cache %s   avail %s\n' \
+      "${_m_used:-?}" "${_m_total:-?}" "${_m_free:-?}" "${_m_bc:-?}" "${_m_avail:-?}"
+    printf ' swap: used %s / %s\n' "${_s_used:-?}" "${_s_total:-?}"
+  fi
+  _dmotd_sep_heavy
 else
   echo "$MEM"
   echo "==============================================================================="
 fi
 
 # Disk block — filter virtual filesystems out in compact mode
-if [[ "$DMOTD_COMPACT" = [yY] && "$ENABLEMOTD_DFCOMPACT" != [nN] ]]; then
-  df -hT -x tmpfs -x devtmpfs -x efivarfs -x squashfs -x overlay -x autofs 2>/dev/null
-  echo "==============================================================================="
+if [[ "$_DMOTD_COMPACT_EFFECTIVE" = [yY] && "$ENABLEMOTD_DFCOMPACT" != [nN] ]]; then
+  if [[ "$_DMOTD_FANCY_ACTIVE" = [yY] ]]; then
+    # Render header + each row, appending a 10-char fancy bar using the
+    # Use% column as the percentage. We strip the % suffix and feed the
+    # remainder to _fancy_bar (numeric-guarded for non-numeric edge rows).
+    df -hT -x tmpfs -x devtmpfs -x efivarfs -x squashfs -x overlay -x autofs 2>/dev/null \
+      | awk 'NR==1 {print; next} { use=$6; sub(/%$/,"",use); print $0 "|" use }' \
+      | while IFS= read -r _line; do
+          case "$_line" in
+            *"|"*)
+              # Subshell scope (while is downstream of a pipe), so plain
+              # var assignment is fine — no `local` needed and would
+              # arguably be wrong inside a subshell anyway.
+              _pct="${_line##*|}"; _row="${_line%|*}"
+              printf '%s  %s\n' "$_row" "$(_fancy_bar "$_pct")"
+              ;;
+            *)
+              printf '%s\n' "$_line"
+              ;;
+          esac
+        done
+  else
+    df -hT -x tmpfs -x devtmpfs -x efivarfs -x squashfs -x overlay -x autofs 2>/dev/null
+  fi
+  _dmotd_sep_heavy
 else
   # Trailing blank line preserved from legacy heredoc output for byte-for-byte parity.
   echo "$DF"
@@ -356,9 +459,13 @@ fi
 
 # CSF safety banner — collapse to 1 line in compact mode
 if [[ "$ENABLEMOTD_CSFMSG" != [nN] ]]; then
-  if [[ "$DMOTD_COMPACT" = [yY] ]]; then
-    echo " ! CSF Firewall present — DO NOT run \`iptables -F\` (will lock you out)"
-    echo "==============================================================================="
+  if [[ "$_DMOTD_COMPACT_EFFECTIVE" = [yY] ]]; then
+    if [[ "$_DMOTD_FANCY_ACTIVE" = [yY] ]]; then
+      printf ' %b CSF Firewall — DO NOT run `iptables -F` (will lock you out)\n' "$(_fancy_badge warn)"
+    else
+      echo " ! CSF Firewall present — DO NOT run \`iptables -F\` (will lock you out)"
+    fi
+    _dmotd_sep_heavy
   else
     # Trailing whitespace on lines 2-5 below is preserved from legacy output
     # for byte-for-byte parity (do not strip).
@@ -374,10 +481,10 @@ fi
 
 # Docs / Forum links — collapse to 2 lines in compact mode
 if [[ "$ENABLEMOTD_LINKSMSG" != [nN] ]]; then
-  if [[ "$DMOTD_COMPACT" = [yY] && "$ENABLEMOTD_LINKSCOMPACT" != [nN] ]]; then
+  if [[ "$_DMOTD_COMPACT_EFFECTIVE" = [yY] && "$ENABLEMOTD_LINKSCOMPACT" != [nN] ]]; then
     echo " Docs:  centminmod.com/{getstarted,faq,configfiles}  ·  blog.centminmod.com"
     echo " Forum: community.centminmod.com   [ << Register ]"
-    echo "==============================================================================="
+    _dmotd_sep_heavy
   else
 echo "
 ===============================================================================
@@ -465,10 +572,10 @@ ngxver_checker() {
     
     # Only show update notification if latest is genuinely newer
     if [[ $LATEST_NGINXVERS_INT -gt $CURRENT_NGINXVERS_INT ]]; then
-      if [[ "$DMOTD_COMPACT" = [yY] && "$ENABLEMOTD_NGINXVERCOMPACT" != [nN] ]]; then
+      if [[ "$_DMOTD_COMPACT_EFFECTIVE" = [yY] && "$ENABLEMOTD_NGINXVERCOMPACT" != [nN] ]]; then
         local _nginx_label='Nginx'
         [[ "$FREENGINX_INSTALL" = [yY] ]] && _nginx_label='FreeNginx'
-        _dmotd_status_lines+=(" ${_nginx_label}  ${CURRENT_NGINXVERS} → ${LATEST_NGINXVERS} available — run centmin.sh menu 4")
+        _dmotd_status_lines+=("warn| ${_nginx_label}  ${CURRENT_NGINXVERS} → ${LATEST_NGINXVERS} available — run centmin.sh menu 4")
       else
         echo
         cecho "===============================================================================" $boldgreen
@@ -541,8 +648,8 @@ phpver_checker() {
     fi
     IS_PHPTAR_AVAIL=$(curl -sI${ipv_forceopt} --connect-timeout 10 https://www.php.net/distributions/php-${LATEST_PHPVERS}.tar.${PHPEXTSION_CHECK}| head -n1 | grep -o 200)
     if [[ "$CURRENT_PHPVERS" != "$LATEST_PHPVERS" ]] && [[ "$IS_PHPTAR_AVAIL" -eq '200' ]]; then
-      if [[ "$DMOTD_COMPACT" = [yY] && "$ENABLEMOTD_PHPVERCOMPACT" != [nN] ]]; then
-        _dmotd_status_lines+=(" PHP    ${CURRENT_PHPVERS} → ${LATEST_PHPVERS} available — run centmin.sh menu 5")
+      if [[ "$_DMOTD_COMPACT_EFFECTIVE" = [yY] && "$ENABLEMOTD_PHPVERCOMPACT" != [nN] ]]; then
+        _dmotd_status_lines+=("warn| PHP    ${CURRENT_PHPVERS} → ${LATEST_PHPVERS} available — run centmin.sh menu 5")
       else
         echo
         cecho "===============================================================================" $boldgreen
@@ -574,7 +681,7 @@ gitenv_askupdate() {
           GET_GITREMOTEURL=$(cd ${CMSCRIPT_GITDIR}; git remote -v | awk '/\(fetch/ {print $2}' | head -n1)
         fi
         if [[ "$GET_GITREMOTEURL" != "$CURL_GITURL" ]] && [[ ! -z "$CURL_GITURL" ]]; then
-          if [[ "$DMOTD_COMPACT" = [yY] && "$ENABLEMOTD_GITCOMPACT" != [nN] ]]; then
+          if [[ "$_DMOTD_COMPACT_EFFECTIVE" = [yY] && "$ENABLEMOTD_GITCOMPACT" != [nN] ]]; then
             : # remote-URL-changed status is reflected as "(remote changed)" suffix on the Centmin Mod status line below
           else
             cecho "===============================================================================" $boldgreen
@@ -613,8 +720,8 @@ gitenv_askupdate() {
           # if remote branch commits don't match local commit, then there are new updates need
           # pulling
           push_dmotd_alerts cmm "$branchname"
-          if [[ "$DMOTD_COMPACT" = [yY] && "$ENABLEMOTD_GITCOMPACT" != [nN] ]]; then
-            _dmotd_status_lines+=(" Centmin Mod ${_local_branch:-?} — updates available, run cmupdate${_remote_changed}")
+          if [[ "$_DMOTD_COMPACT_EFFECTIVE" = [yY] && "$ENABLEMOTD_GITCOMPACT" != [nN] ]]; then
+            _dmotd_status_lines+=("warn| Centmin Mod ${_local_branch:-?} — updates available, run cmupdate${_remote_changed}")
           else
             cecho "===============================================================================" $boldgreen
             cecho " Centmin Mod code updates available for ${CMSCRIPT_GITDIR}" $boldyellow
@@ -627,8 +734,8 @@ gitenv_askupdate() {
           fi
         else
           # no new commits/updates available
-          if [[ "$DMOTD_COMPACT" = [yY] && "$ENABLEMOTD_GITCOMPACT" != [nN] ]]; then
-            _dmotd_status_lines+=(" Centmin Mod ${_local_branch:-?} — up to date${_remote_changed}")
+          if [[ "$_DMOTD_COMPACT_EFFECTIVE" = [yY] && "$ENABLEMOTD_GITCOMPACT" != [nN] ]]; then
+            _dmotd_status_lines+=("ok| Centmin Mod ${_local_branch:-?} — up to date${_remote_changed}")
           else
             cecho "===============================================================================" $boldgreen
             cecho " Centmin Mod local code is up to date at ${CMSCRIPT_GITDIR}" $boldyellow
@@ -664,8 +771,8 @@ needrestart_check() {
             _reboot_required=1   # EL8/9/10 wording
         fi
         if [[ "$_reboot_required" -eq 1 ]]; then
-            if [[ "$DMOTD_COMPACT" = [yY] && "$ENABLEMOTD_NEEDRESTARTCOMPACT" != [nN] ]]; then
-                _dmotd_status_lines+=(" ! Reboot required — flush MySQL first: mysqladmin flush-tables && sleep 180")
+            if [[ "$_DMOTD_COMPACT_EFFECTIVE" = [yY] && "$ENABLEMOTD_NEEDRESTARTCOMPACT" != [nN] ]]; then
+                _dmotd_status_lines+=("warn| ! Reboot required — flush MySQL first: mysqladmin flush-tables && sleep 180")
             else
                 modified_output=$(echo "$output" | sed 's/Reboot/Server Reboot/')
                 echo
@@ -725,14 +832,29 @@ cmsec_checks() {
           }')"
         IFS='|' read -r _vul_list _ind_list _total _patched _notaffected _vulnerable _indeterminate _rest <<<"$_cmsec_summary"
         if [[ "$_vulnerable" -eq 0 && "$_indeterminate" -eq 0 ]]; then
-          printf ' cmsec: kernel %s — %d/%d OK (%d patched, %d n/a)\n' \
-            "$_cmsec_kernel" "$_total" "$_total" "$_patched" "$_notaffected"
+          if [[ "$_DMOTD_FANCY_ACTIVE" = [yY] ]]; then
+            printf ' %b cmsec: kernel %s — %d/%d OK (%d patched, %d n/a)\n' \
+              "$(_fancy_badge ok)" "$_cmsec_kernel" "$_total" "$_total" "$_patched" "$_notaffected"
+          else
+            printf ' cmsec: kernel %s — %d/%d OK (%d patched, %d n/a)\n' \
+              "$_cmsec_kernel" "$_total" "$_total" "$_patched" "$_notaffected"
+          fi
         else
           # Auto-expand: list what is broken regardless of compact toggle.
-          printf ' cmsec: kernel %s — %d/%d checked: %d patched, %d n/a, %d VULNERABLE, %d indeterminate\n' \
-            "$_cmsec_kernel" "$_total" "$_total" "$_patched" "$_notaffected" "$_vulnerable" "$_indeterminate"
-          [[ -n "$_vul_list" ]] && printf ' ! cmsec VULNERABLE: %s — run '"'"'cmsec check'"'"'\n' "$_vul_list"
-          [[ -n "$_ind_list" ]] && printf ' ! cmsec INDETERMINATE: %s\n' "$_ind_list"
+          # Both vulnerable AND indeterminate get the crit badge — indeterminate
+          # means "couldn't verify safety", same visual weight as confirmed
+          # vulnerable.
+          if [[ "$_DMOTD_FANCY_ACTIVE" = [yY] ]]; then
+            printf ' %b cmsec: kernel %s — %d/%d checked: %d patched, %d n/a, %d VULNERABLE, %d indeterminate\n' \
+              "$(_fancy_badge crit)" "$_cmsec_kernel" "$_total" "$_total" "$_patched" "$_notaffected" "$_vulnerable" "$_indeterminate"
+            [[ -n "$_vul_list" ]] && printf ' %b cmsec VULNERABLE: %s — run '"'"'cmsec check'"'"'\n' "$(_fancy_badge crit)" "$_vul_list"
+            [[ -n "$_ind_list" ]] && printf ' %b cmsec INDETERMINATE: %s\n' "$(_fancy_badge crit)" "$_ind_list"
+          else
+            printf ' cmsec: kernel %s — %d/%d checked: %d patched, %d n/a, %d VULNERABLE, %d indeterminate\n' \
+              "$_cmsec_kernel" "$_total" "$_total" "$_patched" "$_notaffected" "$_vulnerable" "$_indeterminate"
+            [[ -n "$_vul_list" ]] && printf ' ! cmsec VULNERABLE: %s — run '"'"'cmsec check'"'"'\n' "$_vul_list"
+            [[ -n "$_ind_list" ]] && printf ' ! cmsec INDETERMINATE: %s\n' "$_ind_list"
+          fi
         fi
         # Reuse cmsec_status for the Pushover loop below — no second call.
       fi
@@ -782,7 +904,7 @@ csf_version_checker() {
 
       # Display notice if remote version is same or newer than local
       if [[ "$REMOTE_CSF_NUM" -ge "$LOCAL_CSF_NUM" ]] 2>/dev/null; then
-        if [[ "$DMOTD_COMPACT" = [yY] && "$ENABLEMOTD_CSFVERCOMPACT" != [nN] ]]; then
+        if [[ "$_DMOTD_COMPACT_EFFECTIVE" = [yY] && "$ENABLEMOTD_CSFVERCOMPACT" != [nN] ]]; then
           # Compact path — append a single line. Skip the announcement banner
           # ("Centmin Mod now hosts its own CSF mirror") because it's one-time
           # info that doesn't need to print every login once admins are aware.
@@ -790,15 +912,15 @@ csf_version_checker() {
             if [[ "$LOCAL_CSF_VER" = "14.24" ]]; then
               CSFCF_CRON_EXISTS=$(crontab -l 2>/dev/null | grep -q 'csfcf.sh auto' && echo "yes" || echo "no")
               if [[ "$CSFCF_CRON_EXISTS" = "yes" ]]; then
-                _dmotd_status_lines+=(" CSF    ${LOCAL_CSF_VER} → ${REMOTE_CSF_VER} available — let csfcf.sh auto run")
+                _dmotd_status_lines+=("warn| CSF    ${LOCAL_CSF_VER} → ${REMOTE_CSF_VER} available — let csfcf.sh auto run")
               else
-                _dmotd_status_lines+=(" CSF    ${LOCAL_CSF_VER} → ${REMOTE_CSF_VER} available — run cmupdate && tools/csfcf.sh auto")
+                _dmotd_status_lines+=("warn| CSF    ${LOCAL_CSF_VER} → ${REMOTE_CSF_VER} available — run cmupdate && tools/csfcf.sh auto")
               fi
             else
-              _dmotd_status_lines+=(" CSF    ${LOCAL_CSF_VER} → ${REMOTE_CSF_VER} available — run csf -u")
+              _dmotd_status_lines+=("warn| CSF    ${LOCAL_CSF_VER} → ${REMOTE_CSF_VER} available — run csf -u")
             fi
           else
-            _dmotd_status_lines+=(" CSF    ${LOCAL_CSF_VER} (matches mirror)")
+            _dmotd_status_lines+=("ok| CSF    ${LOCAL_CSF_VER} (matches mirror)")
           fi
         else
           echo
@@ -830,22 +952,98 @@ csf_version_checker() {
   fi
 }
 
+# Fancy-mode render helpers. _fancy_rule_heavy/light/_fancy_badge/_fancy_bar
+# only print Unicode/ANSI when _DMOTD_FANCY_ACTIVE='y'; _dmotd_sep_heavy/light
+# dispatch between fancy rule and the plain `===` cecho used in compact mode.
+_fancy_rule_heavy() {
+  cecho "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━" $boldgreen
+}
+_fancy_rule_light() {
+  cecho "───────────────────────────────────────────────────────────────────────────────" $boldgreen
+}
+# Colored ASCII badge. Argument $1 = ok|warn|crit. Uses ASCII letters
+# (not ✓/✗ Dingbats — different Unicode block, patchier font coverage on
+# Termux default font and Cascadia Mono Light pre-Windows-Terminal-1.18).
+_fancy_badge() {
+  case "$1" in
+    ok)   printf '\033[1;32m[OK]\033[0m' ;;
+    warn) printf '\033[1;33m[!!]\033[0m' ;;
+    crit) printf '\033[1;31m[XX]\033[0m' ;;
+    *)    printf '[??]' ;;
+  esac
+}
+# 10-char progress bar. Argument $1 = percent (0-100). ▓ filled, ░ empty.
+_fancy_bar() {
+  local _pct="${1:-0}" _filled _empty _bar="" _i
+  # Numeric guard — clamp non-numeric or out-of-range to 0/100
+  case "$_pct" in
+    *[!0-9]*|"") _pct=0 ;;
+  esac
+  [ "$_pct" -gt 100 ] && _pct=100
+  _filled=$(( (_pct + 5) / 10 ))   # round to nearest tenth
+  _empty=$(( 10 - _filled ))
+  for (( _i=0; _i<_filled; _i++ )); do _bar+="▓"; done
+  for (( _i=0; _i<_empty;  _i++ )); do _bar+="░"; done
+  printf '%s' "$_bar"
+}
+# Unified separator dispatchers — let existing call sites in motd_output
+# upgrade their rule chars without per-call if/else.
+_dmotd_sep_heavy() {
+  if [[ "$_DMOTD_FANCY_ACTIVE" = [yY] ]]; then
+    _fancy_rule_heavy
+  else
+    cecho "===============================================================================" $boldgreen
+  fi
+}
+_dmotd_sep_light() {
+  if [[ "$_DMOTD_FANCY_ACTIVE" = [yY] ]]; then
+    _fancy_rule_light
+  else
+    cecho "===============================================================================" $boldgreen
+  fi
+}
+
 render_compact_status_footer() {
   # Render the merged compact status footer captured by per-checker calls
-  # into _dmotd_status_lines. Called once after all checks complete, inside
-  # the same { … } 2>&1 | tee block so the footer lands in the dmotd log
-  # alongside the verbose checks that ran in non-compact sections.
-  [[ "$DMOTD_COMPACT" != [yY] ]] && return 0
+  # into _dmotd_status_lines. Each entry is "<tag>|<text>" where tag is
+  # ok|warn|crit. Under fancy, tag becomes a colored ASCII badge prefix;
+  # under compact, tag is stripped and the text is emitted via cecho.
+  # Called once after all checks complete, inside the { … } 2>&1 | tee
+  # block so the footer lands in the dmotd log alongside the verbose
+  # checks that ran in non-compact sections.
+  [[ "$_DMOTD_COMPACT_EFFECTIVE" != [yY] ]] && return 0
   [[ "${#_dmotd_status_lines[@]}" -eq 0 ]] && return 0
-  cecho "===============================================================================" $boldgreen
-  local _line
+  _dmotd_sep_heavy
+  local _line _tag _text
   for _line in "${_dmotd_status_lines[@]}"; do
-    cecho "$_line" $boldyellow
+    _tag="${_line%%|*}"
+    _text="${_line#*|}"
+    # Defensive: if the entry has no `|` tag delimiter (a future push site
+    # forgets to tag), _tag == _text. Treat that as 'ok' and emit the
+    # whole line as text under fancy; compact branch just emits the text.
+    [[ "$_tag" = "$_text" ]] && _tag="ok"
+    if [[ "$_DMOTD_FANCY_ACTIVE" = [yY] ]]; then
+      printf ' %b %s\n' "$(_fancy_badge "$_tag")" "$_text"
+    else
+      cecho "$_text" $boldyellow
+    fi
   done
-  cecho "===============================================================================" $boldgreen
+  _dmotd_sep_heavy
 }
 
 if [[ "$(id -u)" -eq 0 ]] || sudo -n true 2>/dev/null; then
+
+  # Resolve render mode ONCE per login. _DMOTD_COMPACT_EFFECTIVE is the
+  # single canonical layout signal — it's 'y' when EITHER DMOTD_COMPACT
+  # or DMOTD_FANCY (capability-gated) is active. The user's DMOTD_COMPACT
+  # variable is read once here and never mutated, so admins who set it
+  # explicitly to 'n' don't have their setting silently changed when they
+  # also opt in to fancy mode.
+  [[ "$DMOTD_COMPACT" = [yY] ]] && _DMOTD_COMPACT_EFFECTIVE='y'
+  if [[ "$DMOTD_FANCY" = [yY] ]] && _dmotd_fancy_capable; then
+    _DMOTD_FANCY_ACTIVE='y'
+    _DMOTD_COMPACT_EFFECTIVE='y'
+  fi
 
   starttime=$(TZ=UTC date +%s.%N)
   {
@@ -859,7 +1057,7 @@ if [[ "$(id -u)" -eq 0 ]] || sudo -n true 2>/dev/null; then
     # compact mode (small perf cost — two sequential curl --connect-timeout
     # calls instead of one).
     if [[ "$DMOTD_PHPCHECK" = [yY] && "$(which php-fpm >/dev/null 2>&1; echo $?)" = '0' ]]; then
-      if [[ "$DMOTD_COMPACT" = [yY] ]]; then
+      if [[ "$_DMOTD_COMPACT_EFFECTIVE" = [yY] ]]; then
         ngxver_checker
         phpver_checker
       else
