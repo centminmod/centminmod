@@ -72,7 +72,7 @@ fupdate() {
     cmupdate_branchname_new=$cmupdate_branchname
   fi
 
-  CMUPDATE_GITCURLSTATUS=$(curl -${ipv_forceopt}sL --connect-timeout 20 -sI https://raw.githubusercontent.com/centminmod/centminmod/${cmupdate_branchname}/gitclean.txt | grep 'HTTP\/' | awk '/200/ {print $2}')
+  CMUPDATE_GITCURLSTATUS=$(curl -${ipv_forceopt}sL --connect-timeout 20 -sI https://raw.githubusercontent.com/centminmod/centminmod/${cmupdate_branchname}/gitclean.txt | grep 'HTTP/' | awk '/200/ {print $2}')
     if [[ "$CMUPDATE_GITCURLSTATUS" = '200' ]]; then
       CHECK_GITCLEAN=$(curl -${ipv_forceopt}sLk --connect-timeout 20 https://raw.githubusercontent.com/centminmod/centminmod/${cmupdate_branchname}/gitclean.txt)
     else
@@ -105,7 +105,20 @@ fupdate() {
         echo "       restoring previous copy of ${CM_INSTALLDIR} code base"
       fi
     elif [[ "$CHECK_GITCLEAN" = 'no' ]]; then
+      echo
+      echo "-------------------------------------"
+      echo "Updating Centmin Mod code"
+      echo "-------------------------------------"
+      echo
+      cd "${CM_INSTALLDIR}"
+      git branch
       _cmm_git_sync "$cmupdate_branchname_new" "${CM_INSTALLDIR}"
+      git log -1 --pretty=tformat:'Latest commit: %h (%ad)%n    %s' --date=short
+      echo
+      echo "-------------------------------------"
+      echo "Updated Centmin Mod code"
+      echo "-------------------------------------"
+      echo
     else
       echo
       echo "Detected Centmin Mod Github Remote Repo Changes"
@@ -148,8 +161,6 @@ fupdate() {
 }
 
 ######################################################
-fupdate
-
 case "$1" in
   update )
     fupdate

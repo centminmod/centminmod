@@ -222,8 +222,6 @@ if [[ -d "${SCRIPT_DIR}/.git" ]]; then
         popd >/dev/null 2>&1
     if [[ "$(cd /usr/local/src/centminmod; git rev-parse HEAD)" != "$(cd /usr/local/src/centminmod; git rev-parse @{u})" ]]; then
     cecho " cd /usr/local/src/centminmod" $boldgreen
-    cecho " git stash" $boldgreen
-    cecho " git pull" $boldgreen
     cecho " chmod +x centmin.sh" $boldgreen
     cd /usr/local/src/centminmod 2>/dev/null
     if [ -r "${SCRIPT_DIR}/inc/git_sync.inc" ]; then
