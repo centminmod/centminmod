@@ -18,6 +18,27 @@ export SYSTEMD_PAGER=''
 ARCH_CHECK="$(uname -m)"
 #######################################################
 DT=$(date +"%d%m%y-%H%M%S")
+CM_INSTALLDIR='/usr/local/src/centminmod'
+
+# Rebase-aware git sync wrapper. Prefers the canonical inc/git_sync.inc
+# helper. If the helper is missing (first bootstrap after an upstream
+# rebase), falls through to a 6-line panic stub. Full safety logic lives
+# in inc/git_sync.inc only — do not add features to the panic stub.
+_cmm_git_sync() {
+  local branch="$1"
+  local workdir="${2:-${CM_INSTALLDIR}}"
+  if [ -r "${CM_INSTALLDIR}/inc/git_sync.inc" ]; then
+    . "${CM_INSTALLDIR}/inc/git_sync.inc"
+    _cmm_git_sync_impl "$branch" "$workdir"
+    return $?
+  fi
+  cd "$workdir" || return 2
+  git fetch --prune origin "$branch" || return 2
+  git reset --hard "origin/$branch" || return 2
+  chmod +x centmin.sh
+  echo "RESULT: SUCCESS (panic-stub) — Centmin Mod synced. Run cmupdate again."
+  return 0
+}
 
 update() {
   if [ -d /usr/local/src/centminmod/.git ]; then
@@ -28,8 +49,16 @@ update() {
   echo
     cd /usr/local/src/centminmod
     git branch
-    git stash
-    git pull
+    # Detect the active branch; refuse to operate on a detached HEAD or
+    # an unknown branch — both can corrupt unattended cron updates.
+    branchname=$(git symbolic-ref --short HEAD 2>/dev/null)
+    if [ -z "$branchname" ] || [ "$branchname" = "HEAD" ]; then
+      echo "cmupdate-status: branch=UNKNOWN action=skip reason=detached-or-no-branch" >&2
+      return 1
+    fi
+    _cmm_git_sync "$branchname" /usr/local/src/centminmod
+    _rc=$?
+    echo "cmupdate-status: branch=$branchname rc=$_rc"
     git log -1 | sed -e 's|Author: George Liu <.*>|Author: George Liu <snipped>|g'
   fi
   echo
