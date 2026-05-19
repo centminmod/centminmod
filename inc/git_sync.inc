@@ -42,6 +42,7 @@ _cmm_git_sync_impl() {
 
   pushd "$workdir" >/dev/null 2>&1 || { echo "git_sync: ERROR — could not enter $workdir"; return 2; }
 
+  echo "Checking for updates on origin/$branch ..."
   if ! git fetch --prune origin "$branch" 2>&1; then
     echo "git_sync: ERROR — git fetch failed for origin/$branch (network or auth)"
     popd >/dev/null 2>&1
@@ -59,6 +60,9 @@ _cmm_git_sync_impl() {
   remote_sha=$(git rev-parse "origin/$branch")
 
   if [ "$local_sha" = "$remote_sha" ]; then
+    local short_sha
+    short_sha=$(git rev-parse --short HEAD 2>/dev/null)
+    echo "Already up to date with origin/$branch at ${short_sha}."
     popd >/dev/null 2>&1
     return 1
   fi
@@ -66,15 +70,18 @@ _cmm_git_sync_impl() {
   if git merge-base --is-ancestor HEAD "origin/$branch" 2>/dev/null; then
     # ---- FAST-FORWARD CASE ----
     local stash_before stash_after stash_rc
+    echo "Fast-forwarding $branch to origin/$branch ..."
     stash_before=$(git rev-parse --verify refs/stash 2>/dev/null || echo none)
     git stash save -u "cmupdate-autostash-$(date +%s)" >/dev/null 2>&1
     stash_rc=$?
 
-    if ! git pull --ff-only origin "$branch"; then
-      echo "git_sync: ERROR — git pull --ff-only failed unexpectedly after merge-base check"
+    if ! git merge --ff-only "origin/$branch"; then
+      echo "git_sync: ERROR — git merge --ff-only failed unexpectedly after merge-base check"
       popd >/dev/null 2>&1
       return 2
     fi
+
+    echo "Updated to $(git log -1 --pretty='%h %s')."
 
     if [ "$stash_rc" = "0" ]; then
       stash_after=$(git rev-parse --verify refs/stash 2>/dev/null || echo none)
