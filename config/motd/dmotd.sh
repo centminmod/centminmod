@@ -9,6 +9,13 @@
 # 
 ###########################################################
 export PATH="/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin:/root/bin"
+# Capture the inbound user locale BEFORE forcing en_US.UTF-8 below, so that
+# _dmotd_fancy_capable() can consult what the user's terminal actually
+# supports — not what the script just exported. The fancy capability gate
+# is meaningless if it reads the script's own forced en_US.UTF-8.
+_dmotd_user_lc_all="${LC_ALL-}"
+_dmotd_user_lc_ctype="${LC_CTYPE-}"
+_dmotd_user_lang="${LANG-}"
 # set locale temporarily to english
 # due to some non-english locale issues
 export LC_ALL=en_US.UTF-8
@@ -123,8 +130,10 @@ _dmotd_fancy_capable() {
   # 2. Locale must be UTF-8. LC_ALL > LC_CTYPE > LANG precedence — first
   #    non-empty value is authoritative. Avoids the concat false-pass
   #    where LC_ALL=C LANG=en_US.UTF-8 would otherwise match.
+  #    Reads the user's inbound locale captured at script start (see
+  #    L11-17), NOT the en_US.UTF-8 the script just exported.
   local _locale_ok='n' _v
-  for _v in "${LC_ALL:-}" "${LC_CTYPE:-}" "${LANG:-}"; do
+  for _v in "${_dmotd_user_lc_all:-}" "${_dmotd_user_lc_ctype:-}" "${_dmotd_user_lang:-}"; do
     if [ -n "$_v" ]; then
       case "$_v" in
         *[Uu][Tt][Ff]-8*|*[Uu][Tt][Ff]8*) _locale_ok='y' ;;
@@ -153,13 +162,13 @@ _dmotd_fancy_capable() {
   # 6. Terminal width — fancy layout's widest line is ~80 cols; reject
   #    narrower. tput cols may read winsize from stdin/stderr; redirect
   #    from /dev/tty for pam_motd contexts where stdin isn't the
-  #    controlling terminal.
+  #    controlling terminal. Probe the actual PTY first via tput; only
+  #    fall back to $COLUMNS if tput cannot determine the width — a
+  #    stale exported COLUMNS from a previously-wider terminal would
+  #    otherwise let fancy activate on a now-narrower PTY.
   local _cols
-  if [ -n "${COLUMNS:-}" ]; then
-    _cols="$COLUMNS"
-  else
-    _cols="$(tput cols </dev/tty 2>/dev/null || tput cols 2>/dev/null || echo 0)"
-  fi
+  _cols="$(tput cols </dev/tty 2>/dev/null || tput cols 2>/dev/null || echo 0)"
+  [ "$_cols" -gt 0 ] 2>/dev/null || _cols="${COLUMNS:-0}"
   case "${_cols:-}" in
     *[!0-9]*|"") return 1 ;;
   esac
