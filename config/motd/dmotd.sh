@@ -279,6 +279,14 @@ log_message() {
 
 check_git_major_branch() {
     [[ "$DMOTD_BRANCHCHECK" = [nN] ]] && return 0
+    # Compact mode hides the branch-relationship notice entirely — the
+    # full "latest stable / latest beta — URL" line is wider than the
+    # 80-col footer can carry, and gitenv_askupdate already names the
+    # user's current branch in the compact footer. Non-compact mode
+    # below renders the verbose multi-line panel.
+    if [[ "$_DMOTD_COMPACT_EFFECTIVE" = [yY] && "$ENABLEMOTD_GITCOMPACT" != [nN] ]]; then
+        return
+    fi
     local repo_path="$CMSCRIPT_GITDIR"
     local current_branch=$(git --git-dir="$repo_path/.git" --work-tree="$repo_path" rev-parse --abbrev-ref HEAD)
     local branches_to_check=("123.08stable" "123.09beta01" "124.00stable" "130.00beta01" "131.00stable" "140.00beta01" "141.00beta01")
@@ -302,16 +310,6 @@ check_git_major_branch() {
             _forum_url="https://community.centminmod.com/threads/25572/"
             ;;
     esac
-    local _forum_url_short="${_forum_url#https://}"
-    if [[ "$_DMOTD_COMPACT_EFFECTIVE" = [yY] && "$ENABLEMOTD_GITCOMPACT" != [nN] ]]; then
-        # Compact: stash a single info-tier line for the merged footer. The
-        # always-printed "branch installed" line is dropped because the
-        # status-footer already names the branch via gitenv_askupdate.
-        if [[ "$_branch_outdated" -eq 1 ]]; then
-            _dmotd_push_status info " Centmin Mod ${current_branch} — latest stable: ${_latest_stable} / latest beta: ${_latest_beta} — ${_forum_url_short}"
-        fi
-        return
-    fi
     echo -n " Current local server Centmin Mod branch installed: "
     cecho "$current_branch " $boldyellow
     cecho "===============================================================================" $boldgreen
