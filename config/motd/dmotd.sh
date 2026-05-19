@@ -962,8 +962,8 @@ csf_version_checker() {
 }
 
 # Fancy-mode render helpers. _fancy_rule_heavy/light/_fancy_badge/_fancy_bar
-# only print Unicode/ANSI when _DMOTD_FANCY_ACTIVE='y'; _dmotd_sep_heavy/light
-# dispatch between fancy rule and the plain `===` cecho used in compact mode.
+# only print Unicode/ANSI when _DMOTD_FANCY_ACTIVE='y'; _dmotd_sep_heavy
+# dispatches between fancy rule and the plain `===` cecho used in compact mode.
 _fancy_rule_heavy() {
   cecho "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━" $boldgreen
 }
@@ -1004,14 +1004,6 @@ _dmotd_sep_heavy() {
     cecho "===============================================================================" $boldgreen
   fi
 }
-_dmotd_sep_light() {
-  if [[ "$_DMOTD_FANCY_ACTIVE" = [yY] ]]; then
-    _fancy_rule_light
-  else
-    cecho "===============================================================================" $boldgreen
-  fi
-}
-
 render_compact_status_footer() {
   # Render the merged compact status footer captured by per-checker calls
   # into _dmotd_status_lines. Each entry is "<tag>|<text>" where tag is
