@@ -6,8 +6,7 @@
 # H3: enable pipefail so `cmd1 | cmd2` exits non-zero when cmd1 fails
 # (not only when cmd2 does). `set -e` / `set -u` intentionally NOT
 # enabled — too disruptive for this codebase's defensive
-# `[ -z "$x" ]` checking style. Reference:
-# CLAUDE-installer-el10-almalinux10-analysis.md H3.
+# `[ -z "$x" ]` checking style.
 set -o pipefail
 
 # Cleanup trap: kill backgrounded children (e.g. the `tee` subshell
@@ -72,8 +71,7 @@ touch /etc/centminmod/custom_config.inc
 # write if the KEY=... line (anchored ^) already exists, so repeated
 # runs of installer-el10.sh (recovery, golden-image regen) do not
 # duplicate keys. Mirrors the commented-out template above but as a
-# reusable helper. Reference:
-# CLAUDE-installer-el10-almalinux10-analysis.md M6.
+# reusable helper.
 append_config_if_missing() {
   local kv="$1"
   local key="${kv%%=*}"
@@ -94,12 +92,10 @@ DNF_COPR='y'
 # Without this, the batch optimisation path was dead code on fresh
 # installs (custom_config.inc was sourced AFTER the invocation). The
 # legacy per-package fall-through remains in place if a batch fails.
-# Reference: CLAUDE-installer-el10-almalinux10-analysis.md M1.
 CENTOS_TEN_BATCH_INSTALL='y'
 # M3: defensive default — CHECK_LXD is consulted by swap_setup() and earlier
 # memory checks. Real value gets assigned later by the virt-what /
-# systemd-detect-virt block (moved to run before swap_setup). Reference:
-# CLAUDE-installer-el10-almalinux10-analysis.md M3.
+# systemd-detect-virt block (moved to run before swap_setup).
 CHECK_LXD='n'
 branchname='141.00beta01'
 DOWNLOAD="${branchname}.zip"
@@ -466,7 +462,6 @@ ABORTINSTALL='y'
 # host previously failed mid-compile with a confusing build error.
 # Require >= 5 GB free on the filesystem that will hold both directories.
 # Respect MINDISK_OVERRIDE='y' for power users who want to skip the gate.
-# Reference: CLAUDE-installer-el10-almalinux10-analysis.md M4.
 MINDISK_OVERRIDE="${MINDISK_OVERRIDE:-n}"
 MIN_FREE_MB=5120
 DISK_CHECK_PATH='/'
@@ -768,7 +763,6 @@ TOTALMEM_SWAP=$(awk '/SwapTotal/ {print $2}' /proc/meminfo)
 # guard conditions. Previously this block lived after swap_setup, so on
 # fresh installs $CHECK_LXD was empty and `virt-what` errored
 # `command not found`, bypassing the container-aware swap protection.
-# Reference: CLAUDE-installer-el10-almalinux10-analysis.md M3.
 if [ ! -f /usr/sbin/virt-what ]; then
   yum -q -y install virt-what
 fi
@@ -814,7 +808,7 @@ if [[ ! -f /.dockerenv && "$CHECK_LXD" != 'y' ]]; then
     # entries/ on EL10 and may or may not also touch /etc/default/grub
     # depending on bootloader configuration). grubby remains the
     # authoritative kernel-arg writer (RH-recommended per the doc link
-    # above). Reference: CLAUDE-installer-el10-almalinux10-analysis.md M2.
+    # above).
     if [ -f /etc/default/grub ] && ! grep -q 'selinux=0' /etc/default/grub; then
       sed -i '/^GRUB_CMDLINE_LINUX=/ s/"$/ selinux=0"/' /etc/default/grub
     fi
@@ -843,7 +837,7 @@ if [[ ! -f /.dockerenv && "$CHECK_LXD" != 'y' ]]; then
     # entries/ on EL9 and may or may not also touch /etc/default/grub
     # depending on bootloader configuration). grubby remains the
     # authoritative kernel-arg writer (RH-recommended per the doc link
-    # above). Reference: CLAUDE-installer-el10-almalinux10-analysis.md M2.
+    # above).
     if [ -f /etc/default/grub ] && ! grep -q 'selinux=0' /etc/default/grub; then
       sed -i '/^GRUB_CMDLINE_LINUX=/ s/"$/ selinux=0"/' /etc/default/grub
     fi
@@ -1198,7 +1192,6 @@ detect_amd_epyc_cpus() {
   # Milan-X / Genoa / Bergamo / Siena. Newer EPYC generations (Turin
   # 9005 and later) will fall through to `*) echo "0"` and lose the
   # intended CPUS cap. Refresh the case arms when new generations land.
-  # Reference: CLAUDE-installer-el10-almalinux10-analysis.md L9.
   if [[ "$cpu_model" =~ "AMD EPYC" ]]; then
     # Extract model number
     local model_num=$(echo "$cpu_model" | grep -o 'EPYC [0-9A-Z]\+' | awk '{print $2}')
@@ -1635,8 +1628,7 @@ sar_call() {
   # sysstat install was skipped (very minimal images / containers),
   # bash would expand "$SARCALL 1 1" to " 1 1" and try to execute
   # the command "1", emitting `bash: 1: command not found` at every
-  # call site. Reference:
-  # CLAUDE-installer-el10-almalinux10-analysis.md M10.
+  # call site.
   [[ -x "$SARCALL" ]] && "$SARCALL" 1 1 || true
 }
 
@@ -2003,7 +1995,6 @@ libc_fix() {
   # `! -f /etc/yum/pluginconf.d/versionlock.conf` were unreachable on EL8/9/10
   # because that file ships with dnf-plugins-core, and were also shadowed by
   # the unconditional CENTOS_TEN/NINE/EIGHT cascade above. Removed.
-  # Reference: CLAUDE-installer-el10-almalinux10-analysis.md H1.
   if [[ "$CENTOS_TEN" -eq '10' ]]; then
     yum -y install python3-dnf-plugin-versionlock libc-client uw-imap-devel
     dnf versionlock add libc-client uw-imap-devel
@@ -2044,8 +2035,7 @@ skip_broken_report() {
   # in the most recent DNF transaction. --skip-broken is kept (it is
   # load-bearing across EL8/9/10 phase 1-4 batches) but its previously-
   # invisible skips are now logged. Non-fatal: returns success even if
-  # inspection fails so the install flow is not interrupted. Reference:
-  # CLAUDE-installer-el10-almalinux10-analysis.md M8.
+  # inspection fails so the install flow is not interrupted.
   local label="${1:-batch}"
   if [ -x /usr/bin/dnf ]; then
     local skipped
@@ -2123,8 +2113,7 @@ fi
         ulimit -n 524288
         # L7: grep-guard the rc.local append so re-runs do not accumulate
         # duplicate `ulimit -n 524288` lines (mirrors the adjacent guarded
-        # /var/run/php-fpm append below). Reference:
-        # CLAUDE-installer-el10-almalinux10-analysis.md L7.
+        # /var/run/php-fpm append below).
         if [[ ! "$(grep '^ulimit -n 524288' /etc/rc.local)" ]]; then
           echo "ulimit -n 524288" >> /etc/rc.local
         fi
@@ -2271,7 +2260,6 @@ EOF
         # existence so `/sbin/sysctl --system` does not error on
         # post-4.12 kernels (which would prevent downstream tunables in
         # the same file from applying when systemd-sysctl is strict).
-        # Reference: CLAUDE-installer-el10-almalinux10-analysis.md H6.
         if [ -f /proc/sys/net/ipv4/tcp_tw_recycle ]; then
           echo "net.ipv4.tcp_tw_recycle = 0" >> /etc/sysctl.d/101-sysctl.conf
         fi
@@ -2558,7 +2546,6 @@ fi
       # own phase 4 execution because remi-release is installed later via
       # inc/* during the `centmin.sh install` handoff. After that, the
       # remi-modular repo is enabled and these packages resolve correctly.
-      # Reference: CLAUDE-installer-el10-almalinux10-analysis.md L10.
       --enablerepo=epel,epel-testing,remi --skip-broken
     skip_broken_report "EL10 Phase 4 utility + REMI"
 
@@ -2572,7 +2559,6 @@ fi
       # release. Extracted to variables so the version bump is a single
       # point of edit when EPEL refreshes the package. Verify the current
       # versions at https://dl.fedoraproject.org/pub/epel/10/Everything/x86_64/Packages/j/
-      # Reference: CLAUDE-installer-el10-almalinux10-analysis.md L3.
       JEMALLOC_RPM_VER='5.3.0-10.el10_1'
       JEMALLOC_RPM_BASE_URL='https://dl.fedoraproject.org/pub/epel/10/Everything/x86_64/Packages/j'
       wget -q "${JEMALLOC_RPM_BASE_URL}/jemalloc-${JEMALLOC_RPM_VER}.x86_64.rpm" -O "/svr-setup/jemalloc-${JEMALLOC_RPM_VER}.x86_64.rpm"
@@ -2594,7 +2580,6 @@ fi
     # L10: `--enablerepo=remi` here depends on remi-release being installed
     # later by inc/* during the centmin.sh install handoff. During this
     # phase it may no-op; afterwards remi-modular is fully usable.
-    # Reference: CLAUDE-installer-el10-almalinux10-analysis.md L10.
     time $YUMDNFBIN -y install checksec systemd-libs xxhash-devel libzstd xxhash libzstd-devel datamash qrencode jq clang clang-devel jemalloc jemalloc-devel zstd python2-pip libmcrypt libmcrypt-devel libraqm oniguruma5php oniguruma5php-devel figlet moreutils nghttp2 libnghttp2 libnghttp2-devel pngquant optipng jpegoptim pwgen pigz pbzip2 xz pxz lz4 bash-completion mlocate re2c ${KERNEL_PKGS}${DISABLEREPO_DNF} --enablerepo=epel,epel-testing,remi --skip-broken --allowerasing
     skip_broken_report "EL9 Phase 4 utility + REMI"
     libc_fix
@@ -2612,7 +2597,6 @@ fi
     # L10: `--enablerepo=remi` here depends on remi-release being installed
     # later by inc/* during the centmin.sh install handoff. During this
     # phase it may no-op; afterwards remi-modular is fully usable.
-    # Reference: CLAUDE-installer-el10-almalinux10-analysis.md L10.
     time $YUMDNFBIN -y install checksec systemd-libs xxhash-devel libzstd xxhash libzstd-devel datamash qrencode jq clang clang-devel jemalloc jemalloc-devel zstd python2-pip libmcrypt libmcrypt-devel libraqm oniguruma5php oniguruma5php-devel figlet moreutils nghttp2 libnghttp2 libnghttp2-devel pngquant optipng jpegoptim pwgen pigz pbzip2 xz pxz lz4 bash-completion mlocate re2c ${KERNEL_PKGS}${DISABLEREPO_DNF} --enablerepo=epel,epel-testing,remi --skip-broken --allowerasing
     skip_broken_report "EL8 Phase 4 utility + REMI"
     libc_fix
@@ -2747,7 +2731,6 @@ cd $INSTALLDIR
       # H4: removed `--no-check-certificate` (GitHub serves valid Let's
       # Encrypt / Sectigo certs). The flag was unnecessarily disabling
       # TLS validation on the largest single download in the script.
-      # Reference: CLAUDE-installer-el10-almalinux10-analysis.md H4.
       wget https://github.com/centminmod/centminmod/archive/${DOWNLOAD} --tries=3
     fi
     getcmendtime=$(TZ=UTC date +%s.%N)
