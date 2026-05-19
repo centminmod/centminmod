@@ -57,6 +57,8 @@ DMOTD_FANCY='n'                    # 'y' enables Unicode box-drawing + colored A
                                    # Fancy implies compact data internally via _DMOTD_COMPACT_EFFECTIVE
                                    # without mutating the user's DMOTD_COMPACT setting.
 DMOTD_CSFVERCHECK='y'              # 'n' silences csf_version_checker entirely
+DMOTD_BRANCHCHECK='y'              # 'n' silences check_git_major_branch info notice
+                                   # (use when staying on a specific branch intentionally)
 DMOTD_CVECHECK_COMPACT='n'         # 'y' collapses cmsec to 1 summary line (vulnerable CVEs always expand)
 ENABLEMOTD_HEADERCOMPACT='y'       # 'n' restores 6-line hostname/users/CPU/proc/uptime header
 ENABLEMOTD_MEMCOMPACT='y'          # 'n' restores full free -m output
@@ -276,19 +278,37 @@ log_message() {
 }
 
 check_git_major_branch() {
+    [[ "$DMOTD_BRANCHCHECK" = [nN] ]] && return 0
     local repo_path="$CMSCRIPT_GITDIR"
     local current_branch=$(git --git-dir="$repo_path/.git" --work-tree="$repo_path" rev-parse --abbrev-ref HEAD)
-    local branches_to_check=("123.08stable" "123.09beta01" "124.00stable" "130.00beta01" "131.00stable" "140.00beta01")
+    local branches_to_check=("123.08stable" "123.09beta01" "124.00stable" "130.00beta01" "131.00stable" "140.00beta01" "141.00beta01")
     local _branch_outdated=0
     for branch in "${branches_to_check[@]}"; do
         [[ "$current_branch" == "$branch" ]] && { _branch_outdated=1; break; }
     done
+    # Per-track latest assignments. 141.00beta01 is the EL10 dev branch —
+    # only recommended to hosts already testing it; everyone else gets
+    # pointed at 140.00beta01 (production beta). When 141 graduates, flip
+    # the default arm.
+    local _latest_stable="132.00stable"
+    local _latest_beta _forum_url
+    case "$current_branch" in
+        141.00beta01)
+            _latest_beta="141.00beta01"
+            _forum_url="https://community.centminmod.com/threads/29603/"
+            ;;
+        *)
+            _latest_beta="140.00beta01"
+            _forum_url="https://community.centminmod.com/threads/25572/"
+            ;;
+    esac
+    local _forum_url_short="${_forum_url#https://}"
     if [[ "$_DMOTD_COMPACT_EFFECTIVE" = [yY] && "$ENABLEMOTD_GITCOMPACT" != [nN] ]]; then
-        # Compact: stash the major-branch warning for the merged footer. The
+        # Compact: stash a single info-tier line for the merged footer. The
         # always-printed "branch installed" line is dropped because the
         # status-footer already names the branch via gitenv_askupdate.
         if [[ "$_branch_outdated" -eq 1 ]]; then
-            _dmotd_push_status warn " ! Older branch ($current_branch) — newer: 132.00stable or 141.00beta01 (threads/25572)"
+            _dmotd_push_status info " Centmin Mod ${current_branch} — latest stable: ${_latest_stable} / latest beta: ${_latest_beta} — ${_forum_url_short}"
         fi
         return
     fi
@@ -296,10 +316,12 @@ check_git_major_branch() {
     cecho "$current_branch " $boldyellow
     cecho "===============================================================================" $boldgreen
     if [[ "$_branch_outdated" -eq 1 ]]; then
-        echo -n " Newer Centmin Mod branch version is available: "
-        cecho "132.00stable or 141.00beta01" $boldyellow
+        echo -n " Latest stable Centmin Mod branch: "
+        cecho "${_latest_stable}" $boldyellow
+        echo -n " Latest beta Centmin Mod branch:   "
+        cecho "${_latest_beta}" $boldyellow
         echo -n " Details at "
-        cecho "https://community.centminmod.com/threads/25572/" $boldyellow
+        cecho "${_forum_url}" $boldyellow
         cecho "===============================================================================" $boldgreen
     fi
 }
@@ -994,6 +1016,7 @@ _fancy_badge() {
     ok)   printf '\033[1;32m[OK]\033[0m' ;;
     warn) printf '\033[1;33m[!!]\033[0m' ;;
     crit) printf '\033[1;31m[XX]\033[0m' ;;
+    info) printf '\033[1;36m[--]\033[0m' ;;
     *)    printf '[??]' ;;
   esac
 }
@@ -1032,7 +1055,7 @@ _dmotd_sep_heavy() {
 _dmotd_push_status() {
   local _tag="$1" _text="$2"
   case "$_tag" in
-    ok|warn|crit) ;;
+    ok|warn|crit|info) ;;
     *)
       printf 'dmotd: untagged status entry — defaulted to crit: %s\n' \
         "$_text" >&2
@@ -1062,7 +1085,10 @@ render_compact_status_footer() {
     if [[ "$_DMOTD_FANCY_ACTIVE" = [yY] ]]; then
       printf ' %b %s\n' "$(_fancy_badge "$_tag")" "$_text"
     else
-      cecho "$_text" $boldyellow
+      case "$_tag" in
+        info) cecho "$_text" $boldcyan ;;
+        *)    cecho "$_text" $boldyellow ;;
+      esac
     fi
   done
   _dmotd_sep_heavy
