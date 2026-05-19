@@ -113,7 +113,7 @@ fupdate() {
       cd "${CM_INSTALLDIR}"
       git branch
       _cmm_git_sync "$cmupdate_branchname_new" "${CM_INSTALLDIR}"
-      git log -1 | sed -e 's|Author: George Liu <.*>|Author: George Liu <snipped>|g'
+      git log -1 --pretty=tformat:'Latest commit: %h %ad %s' --date=short
       echo
       echo "-------------------------------------"
       echo "Updated Centmin Mod code"
