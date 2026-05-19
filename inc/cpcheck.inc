@@ -3695,9 +3695,16 @@ auto_gitupdate() {
   if [[ -d "${SCRIPT_DIR}/.git" && "$AUTO_GITUPDATE" = [yY] ]]; then
     cd ${SCRIPT_DIR}
     # totally silence the output
-    git stash -q &> /dev/null
-    git fetch -q &> /dev/null
-    git pull -q &> /dev/null
+    if [ -r "${SCRIPT_DIR}/inc/git_sync.inc" ]; then
+      . "${SCRIPT_DIR}/inc/git_sync.inc"
+      _cmm_git_sync_impl "${branchname}" "${SCRIPT_DIR}" &> /dev/null
+    else
+      # Legacy silent path — --ff-only turns the silent fatal-error into a
+      # silent no-op on rebase divergence. Self-heals once inc/git_sync.inc lands.
+      git stash -q &> /dev/null
+      git fetch -q &> /dev/null
+      git pull --ff-only -q &> /dev/null
+    fi
   fi
 }
 
