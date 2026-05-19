@@ -280,7 +280,7 @@ check_git_major_branch() {
         # always-printed "branch installed" line is dropped because the
         # status-footer already names the branch via gitenv_askupdate.
         if [[ "$_branch_outdated" -eq 1 ]]; then
-            _dmotd_status_lines+=("warn| ! Older branch ($current_branch) — newer: 132.00stable or 141.00beta01 (threads/25572)")
+            _dmotd_push_status warn " ! Older branch ($current_branch) — newer: 132.00stable or 141.00beta01 (threads/25572)"
         fi
         return
     fi
@@ -592,7 +592,7 @@ ngxver_checker() {
       if [[ "$_DMOTD_COMPACT_EFFECTIVE" = [yY] && "$ENABLEMOTD_NGINXVERCOMPACT" != [nN] ]]; then
         local _nginx_label='Nginx'
         [[ "$FREENGINX_INSTALL" = [yY] ]] && _nginx_label='FreeNginx'
-        _dmotd_status_lines+=("warn| ${_nginx_label}  ${CURRENT_NGINXVERS} → ${LATEST_NGINXVERS} available — run centmin.sh menu 4")
+        _dmotd_push_status warn " ${_nginx_label}  ${CURRENT_NGINXVERS} → ${LATEST_NGINXVERS} available — run centmin.sh menu 4"
       else
         echo
         cecho "===============================================================================" $boldgreen
@@ -666,7 +666,7 @@ phpver_checker() {
     IS_PHPTAR_AVAIL=$(curl -sI${ipv_forceopt} --connect-timeout 10 https://www.php.net/distributions/php-${LATEST_PHPVERS}.tar.${PHPEXTSION_CHECK}| head -n1 | grep -o 200)
     if [[ "$CURRENT_PHPVERS" != "$LATEST_PHPVERS" ]] && [[ "$IS_PHPTAR_AVAIL" -eq '200' ]]; then
       if [[ "$_DMOTD_COMPACT_EFFECTIVE" = [yY] && "$ENABLEMOTD_PHPVERCOMPACT" != [nN] ]]; then
-        _dmotd_status_lines+=("warn| PHP    ${CURRENT_PHPVERS} → ${LATEST_PHPVERS} available — run centmin.sh menu 5")
+        _dmotd_push_status warn " PHP    ${CURRENT_PHPVERS} → ${LATEST_PHPVERS} available — run centmin.sh menu 5"
       else
         echo
         cecho "===============================================================================" $boldgreen
@@ -738,7 +738,7 @@ gitenv_askupdate() {
           # pulling
           push_dmotd_alerts cmm "$branchname"
           if [[ "$_DMOTD_COMPACT_EFFECTIVE" = [yY] && "$ENABLEMOTD_GITCOMPACT" != [nN] ]]; then
-            _dmotd_status_lines+=("warn| Centmin Mod ${_local_branch:-?} — updates available, run cmupdate${_remote_changed}")
+            _dmotd_push_status warn " Centmin Mod ${_local_branch:-?} — updates available, run cmupdate${_remote_changed}"
           else
             cecho "===============================================================================" $boldgreen
             cecho " Centmin Mod code updates available for ${CMSCRIPT_GITDIR}" $boldyellow
@@ -752,7 +752,7 @@ gitenv_askupdate() {
         else
           # no new commits/updates available
           if [[ "$_DMOTD_COMPACT_EFFECTIVE" = [yY] && "$ENABLEMOTD_GITCOMPACT" != [nN] ]]; then
-            _dmotd_status_lines+=("ok| Centmin Mod ${_local_branch:-?} — up to date${_remote_changed}")
+            _dmotd_push_status ok " Centmin Mod ${_local_branch:-?} — up to date${_remote_changed}"
           else
             cecho "===============================================================================" $boldgreen
             cecho " Centmin Mod local code is up to date at ${CMSCRIPT_GITDIR}" $boldyellow
@@ -789,7 +789,7 @@ needrestart_check() {
         fi
         if [[ "$_reboot_required" -eq 1 ]]; then
             if [[ "$_DMOTD_COMPACT_EFFECTIVE" = [yY] && "$ENABLEMOTD_NEEDRESTARTCOMPACT" != [nN] ]]; then
-                _dmotd_status_lines+=("warn| ! Reboot required — flush MySQL first: mysqladmin flush-tables && sleep 180")
+                _dmotd_push_status warn " ! Reboot required — flush MySQL first: mysqladmin flush-tables && sleep 180"
             else
                 modified_output=$(echo "$output" | sed 's/Reboot/Server Reboot/')
                 echo
@@ -929,15 +929,15 @@ csf_version_checker() {
             if [[ "$LOCAL_CSF_VER" = "14.24" ]]; then
               CSFCF_CRON_EXISTS=$(crontab -l 2>/dev/null | grep -q 'csfcf.sh auto' && echo "yes" || echo "no")
               if [[ "$CSFCF_CRON_EXISTS" = "yes" ]]; then
-                _dmotd_status_lines+=("warn| CSF    ${LOCAL_CSF_VER} → ${REMOTE_CSF_VER} available — let csfcf.sh auto run")
+                _dmotd_push_status warn " CSF    ${LOCAL_CSF_VER} → ${REMOTE_CSF_VER} available — let csfcf.sh auto run"
               else
-                _dmotd_status_lines+=("warn| CSF    ${LOCAL_CSF_VER} → ${REMOTE_CSF_VER} available — run cmupdate && tools/csfcf.sh auto")
+                _dmotd_push_status warn " CSF    ${LOCAL_CSF_VER} → ${REMOTE_CSF_VER} available — run cmupdate && tools/csfcf.sh auto"
               fi
             else
-              _dmotd_status_lines+=("warn| CSF    ${LOCAL_CSF_VER} → ${REMOTE_CSF_VER} available — run csf -u")
+              _dmotd_push_status warn " CSF    ${LOCAL_CSF_VER} → ${REMOTE_CSF_VER} available — run csf -u"
             fi
           else
-            _dmotd_status_lines+=("ok| CSF    ${LOCAL_CSF_VER} (matches mirror)")
+            _dmotd_push_status ok " CSF    ${LOCAL_CSF_VER} (matches mirror)"
           fi
         else
           echo
@@ -1012,14 +1012,38 @@ _dmotd_sep_heavy() {
     cecho "===============================================================================" $boldgreen
   fi
 }
+# Tag-validating helper for the compact status footer. All push sites
+# should call this rather than appending to _dmotd_status_lines directly.
+# Enforces the ok|warn|crit tag enum at push time so the render-side has
+# no failure-mode for malformed entries. A bad tag is replaced with
+# 'crit' and a stderr warning is emitted so the programming bug is
+# loud — crit is chosen over warn because a future security warning
+# silently downgrading to OK would be the worst-case failure. Embedded
+# newlines are scrubbed to spaces so multiline payloads can't corrupt
+# the footer layout (only the first line would otherwise get a badge).
+_dmotd_push_status() {
+  local _tag="$1" _text="$2"
+  case "$_tag" in
+    ok|warn|crit) ;;
+    *)
+      printf 'dmotd: untagged status entry — defaulted to crit: %s\n' \
+        "$_text" >&2
+      _tag='crit'
+      ;;
+  esac
+  _text="${_text//$'\n'/ }"
+  _dmotd_status_lines+=("${_tag}|${_text}")
+}
+
 render_compact_status_footer() {
   # Render the merged compact status footer captured by per-checker calls
   # into _dmotd_status_lines. Each entry is "<tag>|<text>" where tag is
-  # ok|warn|crit. Under fancy, tag becomes a colored ASCII badge prefix;
-  # under compact, tag is stripped and the text is emitted via cecho.
-  # Called once after all checks complete, inside the { … } 2>&1 | tee
-  # block so the footer lands in the dmotd log alongside the verbose
-  # checks that ran in non-compact sections.
+  # ok|warn|crit (enforced at push time by _dmotd_push_status). Under
+  # fancy, tag becomes a colored ASCII badge prefix; under compact, tag
+  # is stripped and the text is emitted via cecho. Called once after all
+  # checks complete, inside the { … } 2>&1 | tee block so the footer
+  # lands in the dmotd log alongside the verbose checks that ran in
+  # non-compact sections.
   [[ "$_DMOTD_COMPACT_EFFECTIVE" != [yY] ]] && return 0
   [[ "${#_dmotd_status_lines[@]}" -eq 0 ]] && return 0
   _dmotd_sep_heavy
@@ -1027,10 +1051,6 @@ render_compact_status_footer() {
   for _line in "${_dmotd_status_lines[@]}"; do
     _tag="${_line%%|*}"
     _text="${_line#*|}"
-    # Defensive: if the entry has no `|` tag delimiter (a future push site
-    # forgets to tag), _tag == _text. Treat that as 'ok' and emit the
-    # whole line as text under fancy; compact branch just emits the text.
-    [[ "$_tag" = "$_text" ]] && _tag="ok"
     if [[ "$_DMOTD_FANCY_ACTIVE" = [yY] ]]; then
       printf ' %b %s\n' "$(_fancy_badge "$_tag")" "$_text"
     else
