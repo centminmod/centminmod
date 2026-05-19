@@ -193,7 +193,9 @@ nginx_version_to_int() {
 ###########################################################
 if [ -f "${CONFIGSCANBASE}/custom_config.inc" ]; then
     # default is at /etc/centminmod/custom_config.inc
-    dos2unix -q "${CONFIGSCANBASE}/custom_config.inc"
+    if [ -f /usr/bin/dos2unix ]; then
+        dos2unix -q "${CONFIGSCANBASE}/custom_config.inc"
+    fi
     source "${CONFIGSCANBASE}/custom_config.inc"
 fi
 if [ -f "/etc/centminmod/pushover.ini" ]; then
@@ -270,7 +272,7 @@ log_message() {
 check_git_major_branch() {
     local repo_path="$CMSCRIPT_GITDIR"
     local current_branch=$(git --git-dir="$repo_path/.git" --work-tree="$repo_path" rev-parse --abbrev-ref HEAD)
-    local branches_to_check=("123.08stable" "123.09beta01" "124.00stable" "130.00beta01" "131.00stable")
+    local branches_to_check=("123.08stable" "123.09beta01" "124.00stable" "130.00beta01" "131.00stable" "140.00beta01")
     local _branch_outdated=0
     for branch in "${branches_to_check[@]}"; do
         [[ "$current_branch" == "$branch" ]] && { _branch_outdated=1; break; }
@@ -628,7 +630,7 @@ get_latest_php_version() {
     yum -q -y install jq
   fi
   if [[ "$DMOTD_PHPCHECK_DEBUG" = [yY] ]]; then
-      TEST_PHPVERS=$(bash -x getphpver "$(php-config --version | awk -F '.' '{print $1$2}')") | tee "${CENTMINLOGDIR}/cmm-login-phpver-check-debug_${DT}.log"
+      LATEST_PHPVERS=$(bash -x getphpver "$(php-config --version | awk -F '.' '{print $1$2}')" 2>"${CENTMINLOGDIR}/cmm-login-phpver-check-debug_${DT}.log")
   else
     LATEST_PHPVERS=$(getphpver "$(php-config --version | awk -F '.' '{print $1$2}')")
   fi
@@ -736,7 +738,7 @@ gitenv_askupdate() {
       if [[ "$(cd ${CMSCRIPT_GITDIR}; git rev-parse HEAD)" != "$(cd ${CMSCRIPT_GITDIR}; git rev-parse @{u})" ]]; then
           # if remote branch commits don't match local commit, then there are new updates need
           # pulling
-          push_dmotd_alerts cmm "$branchname"
+          push_dmotd_alerts cmm "${_local_branch:-unknown}"
           if [[ "$_DMOTD_COMPACT_EFFECTIVE" = [yY] && "$ENABLEMOTD_GITCOMPACT" != [nN] ]]; then
             _dmotd_push_status warn " Centmin Mod ${_local_branch:-?} — updates available, run cmupdate${_remote_changed}"
           else
