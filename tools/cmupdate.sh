@@ -113,7 +113,7 @@ fupdate() {
       cd "${CM_INSTALLDIR}"
       git branch
       _cmm_git_sync "$cmupdate_branchname_new" "${CM_INSTALLDIR}"
-      git log -1 --pretty=tformat:'Latest commit: %h %ad %s' --date=short
+      git log -1 --pretty=tformat:'Latest commit: %h (%ad)%n    %s' --date=short
       echo
       echo "-------------------------------------"
       echo "Updated Centmin Mod code"
