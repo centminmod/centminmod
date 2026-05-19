@@ -105,7 +105,7 @@
 # 48. Compression Tools (9 variables)
 # 49. Performance Tools (4 variables)
 # 50. Security Tools (1 variable)
-# 51. MOTD & Alert Settings (1 variable)
+# 51. MOTD & Alert Settings (16 variables)
 # 52. Override Flags (2 variables)
 # 53. Miscellaneous Settings (63 variables)
 #
