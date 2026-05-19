@@ -616,15 +616,15 @@ top_info() {
       if [[ "$CENTOS_TEN" -eq '10' ]]; then
         MYSQLUPTIME=$($ALIAS_MYSQLADMIN $MYSQLADMINOPT ext | awk '/Uptime|Uptime_since_flush_status/ { print $4 }' | head -n1)
         MYSQLUPTIMEFORMAT=$($ALIAS_MYSQLADMIN $MYSQLADMINOPT ver | awk '/Uptime/ { print $2, $3, $4, $5, $6, $7, $8, $9 }')
-        MYSQLSTART=$($ALIAS_MYSQL $MYSQLADMINOPT -e "SELECT FROM_UNIXTIME(UNIX_TIMESTAMP() - variable_value) AS server_start FROM INFORMATION_SCHEMA.GLOBAL_STATUS WHERE variable_name='Uptime';" | grep -Ev '+--|server_start')
+        MYSQLSTART=$($ALIAS_MYSQL $MYSQLADMINOPT -e "SELECT FROM_UNIXTIME(UNIX_TIMESTAMP() - variable_value) AS server_start FROM INFORMATION_SCHEMA.GLOBAL_STATUS WHERE variable_name='Uptime';" | grep -Ev '\+--|server_start')
       elif [[ "$CENTOS_NINE" -eq '9' ]]; then
         MYSQLUPTIME=$($ALIAS_MYSQLADMIN $MYSQLADMINOPT ext | awk '/Uptime|Uptime_since_flush_status/ { print $4 }' | head -n1)
         MYSQLUPTIMEFORMAT=$($ALIAS_MYSQLADMIN $MYSQLADMINOPT ver | awk '/Uptime/ { print $2, $3, $4, $5, $6, $7, $8, $9 }')
-        MYSQLSTART=$($ALIAS_MYSQL $MYSQLADMINOPT -e "SELECT FROM_UNIXTIME(UNIX_TIMESTAMP() - variable_value) AS server_start FROM INFORMATION_SCHEMA.GLOBAL_STATUS WHERE variable_name='Uptime';" | grep -Ev '+--|server_start')
+        MYSQLSTART=$($ALIAS_MYSQL $MYSQLADMINOPT -e "SELECT FROM_UNIXTIME(UNIX_TIMESTAMP() - variable_value) AS server_start FROM INFORMATION_SCHEMA.GLOBAL_STATUS WHERE variable_name='Uptime';" | grep -Ev '\+--|server_start')
       else
         MYSQLUPTIME=$($ALIAS_MYSQLADMIN $MYSQLADMINOPT ext | awk '/Uptime|Uptime_since_flush_status/ { print $4 }' | head -n1)
         MYSQLUPTIMEFORMAT=$($ALIAS_MYSQLADMIN $MYSQLADMINOPT ver | awk '/Uptime/ { print $2, $3, $4, $5, $6, $7, $8, $9 }')
-        MYSQLSTART=$($ALIAS_MYSQL $MYSQLADMINOPT -e "SELECT FROM_UNIXTIME(UNIX_TIMESTAMP() - variable_value) AS server_start FROM INFORMATION_SCHEMA.GLOBAL_STATUS WHERE variable_name='Uptime';" | grep -Ev '+--|server_start')
+        MYSQLSTART=$($ALIAS_MYSQL $MYSQLADMINOPT -e "SELECT FROM_UNIXTIME(UNIX_TIMESTAMP() - variable_value) AS server_start FROM INFORMATION_SCHEMA.GLOBAL_STATUS WHERE variable_name='Uptime';" | grep -Ev '\+--|server_start')
       fi
     fi
     PAGESPEEDSTATUS=$(grep 'pagespeed unplugged' /usr/local/nginx/conf/pagespeed.conf)
@@ -849,10 +849,10 @@ top_info() {
     if [[ "$($ALIAS_MYSQLADMIN ping -s >/dev/null 2>&1; echo $?)" -eq '0' ]]; then
         echo "------------------------------------------------------------------"
         echo "$ALIAS_MYSQLADMIN var"
-        $ALIAS_MYSQLADMIN var | tr -s ' ' | grep -E -v '+-' 2>/dev/null
+        $ALIAS_MYSQLADMIN var | tr -s ' ' | grep -E -v '\+-' 2>/dev/null
         echo
         echo "$ALIAS_MYSQLADMIN ext"
-        $ALIAS_MYSQLADMIN ext  | tr -s ' ' | grep -E -v '+-' 2>/dev/null
+        $ALIAS_MYSQLADMIN ext  | tr -s ' ' | grep -E -v '\+-' 2>/dev/null
         echo
     fi
     if [[ "$CMINFO_MYSQL_PROCLIST" = [Yy] && "$($ALIAS_MYSQLADMIN ping -s >/dev/null 2>&1; echo $?)" -eq '0' ]]; then
@@ -1135,11 +1135,11 @@ DATABSELIST=$($ALIAS_MYSQL $MYSQLADMINOPT -e 'show databases;' | grep -Ev '(Data
 if [[ "$CENTOS_NINE" -eq '9' ]]; then
   MYSQLUPTIME=$($ALIAS_MYSQLADMIN $MYSQLADMINOPT ext | awk '/Uptime|Uptime_since_flush_status/ { print $4 }' | head -n1)
   MYSQLUPTIMEFORMAT=$($ALIAS_MYSQLADMIN $MYSQLADMINOPT ver | awk '/Uptime/ { print $2, $3, $4, $5, $6, $7, $8, $9 }')
-  MYSQLSTART=$($ALIAS_MYSQL $MYSQLADMINOPT -e "SELECT FROM_UNIXTIME(UNIX_TIMESTAMP() - variable_value) AS server_start FROM INFORMATION_SCHEMA.GLOBAL_STATUS WHERE variable_name='Uptime';" | grep -Ev '+--|server_start')
+  MYSQLSTART=$($ALIAS_MYSQL $MYSQLADMINOPT -e "SELECT FROM_UNIXTIME(UNIX_TIMESTAMP() - variable_value) AS server_start FROM INFORMATION_SCHEMA.GLOBAL_STATUS WHERE variable_name='Uptime';" | grep -Ev '\+--|server_start')
 else
   MYSQLUPTIME=$($ALIAS_MYSQLADMIN $MYSQLADMINOPT ext | awk '/Uptime|Uptime_since_flush_status/ { print $4 }' | head -n1)
   MYSQLUPTIMEFORMAT=$($ALIAS_MYSQLADMIN $MYSQLADMINOPT ver | awk '/Uptime/ { print $2, $3, $4, $5, $6, $7, $8, $9 }')
-  MYSQLSTART=$($ALIAS_MYSQL $MYSQLADMINOPT -e "SELECT FROM_UNIXTIME(UNIX_TIMESTAMP() - variable_value) AS server_start FROM INFORMATION_SCHEMA.GLOBAL_STATUS WHERE variable_name='Uptime';" | grep -Ev '+--|server_start')
+  MYSQLSTART=$($ALIAS_MYSQL $MYSQLADMINOPT -e "SELECT FROM_UNIXTIME(UNIX_TIMESTAMP() - variable_value) AS server_start FROM INFORMATION_SCHEMA.GLOBAL_STATUS WHERE variable_name='Uptime';" | grep -Ev '\+--|server_start')
 fi
 fi
 PAGESPEEDSTATUS=$(grep 'pagespeed unplugged' /usr/local/nginx/conf/pagespeed.conf)
@@ -1261,9 +1261,9 @@ echo " MySQL Databases:"
 echo "------------------------------------------------------------------"
 echo
 for db in $DATABSELIST; do 
-DBIDXSIZE=$($ALIAS_MYSQL $MYSQLADMINOPT -e "SELECT CONCAT(ROUND(SUM(index_length)/(1024*1024), 2), ' MB') AS 'Total Index Size' FROM information_schema.TABLES WHERE table_schema LIKE '$db';" | grep -Ev '(+-|Total Index Size)')
+DBIDXSIZE=$($ALIAS_MYSQL $MYSQLADMINOPT -e "SELECT CONCAT(ROUND(SUM(index_length)/(1024*1024), 2), ' MB') AS 'Total Index Size' FROM information_schema.TABLES WHERE table_schema LIKE '$db';" | grep -Ev '(\+-|Total Index Size)')
 DBDATASIZE=$($ALIAS_MYSQL $MYSQLADMINOPT -e "SELECT CONCAT(ROUND(SUM(data_length)/(1024*1024), 2), ' MB') AS 'Total Data Size'
-FROM information_schema.TABLES WHERE table_schema LIKE '$db';" | grep -Ev '(+-|Total Data Size)')
+FROM information_schema.TABLES WHERE table_schema LIKE '$db';" | grep -Ev '(\+-|Total Data Size)')
 
 if [ "$DBIDXSIZE" == 'NULL' ]; then
     DBIDXSIZE='0.00 MB'
