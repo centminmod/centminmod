@@ -34,6 +34,32 @@ DMOTD_CVECHECK='y'           # cmsec CVE detection line in dmotd login banner
 DMOTD_CVECHECK_SUPPRESS=''   # comma-separated CVE IDs to suppress, e.g. 'CVE-2026-31431'
 FORCE_IPVFOUR='y' # curl/wget commands through script force IPv4
 
+# Compact dmotd layout (vertical-space-efficient SSH login banner).
+# Master switch defaults to 'n' so existing installs see ZERO change after
+# cmupdate. Set DMOTD_COMPACT='y' in /etc/centminmod/custom_config.inc to
+# enable the ~28-line compact layout. Per-section sub-toggles below take
+# effect only when DMOTD_COMPACT='y' (setting one to 'n' selectively
+# restores that section's verbose panel). Two toggles are intentionally
+# independent of DMOTD_COMPACT: DMOTD_CSFVERCHECK silences the CSF version
+# checker entirely, and DMOTD_CVECHECK_COMPACT controls cmsec output
+# collapsing — admins typically want CVE detail visible even when the
+# rest of the dmotd is compact.
+DMOTD_COMPACT='n'                  # master: 'y' enables compact layout
+DMOTD_CSFVERCHECK='y'              # 'n' silences csf_version_checker entirely
+DMOTD_CVECHECK_COMPACT='n'         # 'y' collapses cmsec to 1 summary line (vulnerable CVEs always expand)
+ENABLEMOTD_HEADERCOMPACT='y'       # 'n' restores 6-line hostname/users/CPU/proc/uptime header
+ENABLEMOTD_MEMCOMPACT='y'          # 'n' restores full free -m output
+ENABLEMOTD_DFCOMPACT='y'           # 'n' restores full df -hT (incl. tmpfs/devtmpfs/efivarfs)
+ENABLEMOTD_LINKSCOMPACT='y'        # 'n' restores 5-line link list (ENABLEMOTD_LINKSMSG='n' still hides)
+ENABLEMOTD_GITCOMPACT='y'          # 'n' restores Centmin Mod git/branch/update panels
+ENABLEMOTD_NGINXVERCOMPACT='y'     # 'n' restores ngxver_checker 7-line panel
+ENABLEMOTD_PHPVERCOMPACT='y'       # 'n' restores phpver_checker 7-line panel
+ENABLEMOTD_CSFVERCOMPACT='y'       # 'n' restores 8-line CSF version panel (DMOTD_CSFVERCHECK='y' still required)
+ENABLEMOTD_NEEDRESTARTCOMPACT='y'  # 'n' restores needrestart_check ~6-line reboot panel
+
+# Status-footer accumulator (compact mode appends one line per check)
+_dmotd_status_lines=()
+
 # Set cache timeout in minutes
 CACHE_TIMEOUT=60
 CMSEC_CACHE_TIMEOUT=1440     # cmsec CVE cache TTL (24h); state-based invalidation also applies
@@ -167,19 +193,29 @@ check_git_major_branch() {
     local repo_path="$CMSCRIPT_GITDIR"
     local current_branch=$(git --git-dir="$repo_path/.git" --work-tree="$repo_path" rev-parse --abbrev-ref HEAD)
     local branches_to_check=("123.08stable" "123.09beta01" "124.00stable" "130.00beta01" "131.00stable")
+    local _branch_outdated=0
+    for branch in "${branches_to_check[@]}"; do
+        [[ "$current_branch" == "$branch" ]] && { _branch_outdated=1; break; }
+    done
+    if [[ "$DMOTD_COMPACT" = [yY] && "$ENABLEMOTD_GITCOMPACT" != [nN] ]]; then
+        # Compact: stash the major-branch warning for the merged footer. The
+        # always-printed "branch installed" line is dropped because the
+        # status-footer already names the branch via gitenv_askupdate.
+        if [[ "$_branch_outdated" -eq 1 ]]; then
+            _dmotd_status_lines+=(" ! Older branch ($current_branch) — newer: 132.00stable or 141.00beta01 (threads/25572)")
+        fi
+        return
+    fi
     echo -n " Current local server Centmin Mod branch installed: "
     cecho "$current_branch " $boldyellow
     cecho "===============================================================================" $boldgreen
-    for branch in "${branches_to_check[@]}"; do
-        if [[ "$current_branch" == "$branch" ]]; then
-            echo -n " Newer Centmin Mod branch version is available: "
-            cecho "132.00stable or 141.00beta01" $boldyellow
-            echo -n " Details at "
-            cecho "https://community.centminmod.com/threads/25572/" $boldyellow
-            cecho "===============================================================================" $boldgreen
-            break
-        fi
-    done
+    if [[ "$_branch_outdated" -eq 1 ]]; then
+        echo -n " Newer Centmin Mod branch version is available: "
+        cecho "132.00stable or 141.00beta01" $boldyellow
+        echo -n " Details at "
+        cecho "https://community.centminmod.com/threads/25572/" $boldyellow
+        cecho "===============================================================================" $boldgreen
+    fi
 }
 
 push_dmotd_alerts() {
@@ -270,6 +306,14 @@ push_dmotd_alerts() {
 }
 
 motd_output() {
+# Header block: hostname/users/CPU/proc/uptime
+if [[ "$DMOTD_COMPACT" = [yY] && "$ENABLEMOTD_HEADERCOMPACT" != [nN] ]]; then
+echo "
+===============================================================================
+ host: $DMOTD_HOSTNAME  on  $DMOTD_RELEASE  |  users: $DMOTD_CURRENTUSER ($DMOTD_USER)
+ load: $LOAD1, $LOAD5, $LOAD15 (1/5/15)  |  proc: $PSA  |  up: ${upDays}d ${upHours}h ${upMins}m ${upSecs}s
+==============================================================================="
+else
 echo "
 ===============================================================================
  - Hostname......: $DMOTD_HOSTNAME on $DMOTD_RELEASE
@@ -278,20 +322,63 @@ echo "
  - CPU usage.....: $LOAD1, $LOAD5, $LOAD15 (1, 5, 15 min)
  - Processes.....: $PSA running
  - System uptime.: $upDays days $upHours hours $upMins minutes $upSecs seconds
-===============================================================================
-$MEM
-===============================================================================
-$DF
-"
-if [[ "$ENABLEMOTD_CSFMSG" != [nN] ]]; then
-echo "===============================================================================
-# ! This server maybe running CSF Firewall !  
-#   DO NOT run the below command or you  will lock yourself out of the server: 
-# 
-#   iptables -F 
-"
+==============================================================================="
 fi
+
+# Memory block
+if [[ "$DMOTD_COMPACT" = [yY] && "$ENABLEMOTD_MEMCOMPACT" != [nN] ]]; then
+  # free -h output is parsed into a 2-line summary. Field positions follow
+  # the standard procps-ng `free -h` layout: total used free shared buff/cache available
+  local _mem_h _swap_h _m_total _m_used _m_free _m_shared _m_bc _m_avail
+  local _s_total _s_used _s_free
+  _mem_h=$(free -h | awk '/^Mem:/  {print $2, $3, $4, $5, $6, $7}')
+  _swap_h=$(free -h | awk '/^Swap:/ {print $2, $3, $4}')
+  read -r _m_total _m_used _m_free _m_shared _m_bc _m_avail <<<"$_mem_h"
+  read -r _s_total _s_used _s_free <<<"$_swap_h"
+  printf ' mem:  used %s / %s    free %s   buff/cache %s   avail %s\n' \
+    "${_m_used:-?}" "${_m_total:-?}" "${_m_free:-?}" "${_m_bc:-?}" "${_m_avail:-?}"
+  printf ' swap: used %s / %s\n' "${_s_used:-?}" "${_s_total:-?}"
+  echo "==============================================================================="
+else
+  echo "$MEM"
+  echo "==============================================================================="
+fi
+
+# Disk block — filter virtual filesystems out in compact mode
+if [[ "$DMOTD_COMPACT" = [yY] && "$ENABLEMOTD_DFCOMPACT" != [nN] ]]; then
+  df -hT -x tmpfs -x devtmpfs -x efivarfs -x squashfs -x overlay -x autofs 2>/dev/null
+  echo "==============================================================================="
+else
+  # Trailing blank line preserved from legacy heredoc output for byte-for-byte parity.
+  echo "$DF"
+  echo
+fi
+
+# CSF safety banner — collapse to 1 line in compact mode
+if [[ "$ENABLEMOTD_CSFMSG" != [nN] ]]; then
+  if [[ "$DMOTD_COMPACT" = [yY] ]]; then
+    echo " ! CSF Firewall present — DO NOT run \`iptables -F\` (will lock you out)"
+    echo "==============================================================================="
+  else
+    # Trailing whitespace on lines 2-5 below is preserved from legacy output
+    # for byte-for-byte parity (do not strip).
+    printf '%s\n' \
+'===============================================================================' \
+'# ! This server maybe running CSF Firewall !  ' \
+'#   DO NOT run the below command or you  will lock yourself out of the server: ' \
+'# ' \
+'#   iptables -F ' \
+''
+  fi
+fi
+
+# Docs / Forum links — collapse to 2 lines in compact mode
 if [[ "$ENABLEMOTD_LINKSMSG" != [nN] ]]; then
+  if [[ "$DMOTD_COMPACT" = [yY] && "$ENABLEMOTD_LINKSCOMPACT" != [nN] ]]; then
+    echo " Docs:  centminmod.com/{getstarted,faq,configfiles}  ·  blog.centminmod.com"
+    echo " Forum: community.centminmod.com   [ << Register ]"
+    echo "==============================================================================="
+  else
 echo "
 ===============================================================================
 * Getting Started Guide - https://centminmod.com/getstarted.html
@@ -301,6 +388,7 @@ echo "
 * Community Forums https://community.centminmod.com  [ << Register ]
 ===============================================================================
 "
+  fi
 fi
 }
 
@@ -377,20 +465,26 @@ ngxver_checker() {
     
     # Only show update notification if latest is genuinely newer
     if [[ $LATEST_NGINXVERS_INT -gt $CURRENT_NGINXVERS_INT ]]; then
-      echo
-      cecho "===============================================================================" $boldgreen
-      if [[ "$FREENGINX_INSTALL" = [yY] ]]; then
-        cecho "* FreeNginx Fork Update May Be Available via centmin.sh menu option 4" $boldyellow
+      if [[ "$DMOTD_COMPACT" = [yY] && "$ENABLEMOTD_NGINXVERCOMPACT" != [nN] ]]; then
+        local _nginx_label='Nginx'
+        [[ "$FREENGINX_INSTALL" = [yY] ]] && _nginx_label='FreeNginx'
+        _dmotd_status_lines+=(" ${_nginx_label}  ${CURRENT_NGINXVERS} → ${LATEST_NGINXVERS} available — run centmin.sh menu 4")
       else
-        cecho "* Nginx Update May Be Available via centmin.sh menu option 4" $boldyellow
+        echo
+        cecho "===============================================================================" $boldgreen
+        if [[ "$FREENGINX_INSTALL" = [yY] ]]; then
+          cecho "* FreeNginx Fork Update May Be Available via centmin.sh menu option 4" $boldyellow
+        else
+          cecho "* Nginx Update May Be Available via centmin.sh menu option 4" $boldyellow
+        fi
+        cecho "* see https://centminmod.com/nginx.html#nginxupgrade" $boldyellow
+        cecho "===============================================================================" $boldgreen
+        cecho "* Current Nginx Version:           $CURRENT_NGINXVERS" $boldyellow
+        cecho "* Latest Nginx Mainline Available: $LATEST_NGINXVERS (centminmod.com/nginxnews)" $boldyellow
+        # cecho "* Latest Nginx Stable Available:   $LATEST_NGINXSTABLEVER" $boldyellow
+        cecho "===============================================================================" $boldgreen
+        echo
       fi
-      cecho "* see https://centminmod.com/nginx.html#nginxupgrade" $boldyellow
-      cecho "===============================================================================" $boldgreen
-      cecho "* Current Nginx Version:           $CURRENT_NGINXVERS" $boldyellow
-      cecho "* Latest Nginx Mainline Available: $LATEST_NGINXVERS (centminmod.com/nginxnews)" $boldyellow
-      # cecho "* Latest Nginx Stable Available:   $LATEST_NGINXSTABLEVER" $boldyellow
-      cecho "===============================================================================" $boldgreen
-      echo
       push_dmotd_alerts nginx "$LATEST_NGINXVERS"
     fi
   fi
@@ -447,15 +541,19 @@ phpver_checker() {
     fi
     IS_PHPTAR_AVAIL=$(curl -sI${ipv_forceopt} --connect-timeout 10 https://www.php.net/distributions/php-${LATEST_PHPVERS}.tar.${PHPEXTSION_CHECK}| head -n1 | grep -o 200)
     if [[ "$CURRENT_PHPVERS" != "$LATEST_PHPVERS" ]] && [[ "$IS_PHPTAR_AVAIL" -eq '200' ]]; then
-      echo
-      cecho "===============================================================================" $boldgreen
-      cecho "* PHP Update May Be Available via centmin.sh menu option 5" $boldyellow
-      cecho "* see https://community.centminmod.com/forums/18/" $boldyellow
-      cecho "===============================================================================" $boldgreen
-      cecho "* Current PHP Version:        $CURRENT_PHPVERS" $boldyellow
-      cecho "* Latest PHP Branch Version:  $LATEST_PHPVERS (github.com/php/php-src/tags)" $boldyellow
-      cecho "===============================================================================" $boldgreen
-      echo
+      if [[ "$DMOTD_COMPACT" = [yY] && "$ENABLEMOTD_PHPVERCOMPACT" != [nN] ]]; then
+        _dmotd_status_lines+=(" PHP    ${CURRENT_PHPVERS} → ${LATEST_PHPVERS} available — run centmin.sh menu 5")
+      else
+        echo
+        cecho "===============================================================================" $boldgreen
+        cecho "* PHP Update May Be Available via centmin.sh menu option 5" $boldyellow
+        cecho "* see https://community.centminmod.com/forums/18/" $boldyellow
+        cecho "===============================================================================" $boldgreen
+        cecho "* Current PHP Version:        $CURRENT_PHPVERS" $boldyellow
+        cecho "* Latest PHP Branch Version:  $LATEST_PHPVERS (github.com/php/php-src/tags)" $boldyellow
+        cecho "===============================================================================" $boldgreen
+        echo
+      fi
       push_dmotd_alerts php "$LATEST_PHPVERS"
     fi
   fi
@@ -476,12 +574,16 @@ gitenv_askupdate() {
           GET_GITREMOTEURL=$(cd ${CMSCRIPT_GITDIR}; git remote -v | awk '/\(fetch/ {print $2}' | head -n1)
         fi
         if [[ "$GET_GITREMOTEURL" != "$CURL_GITURL" ]] && [[ ! -z "$CURL_GITURL" ]]; then
-          cecho "===============================================================================" $boldgreen
-          cecho " Centmin Mod remote branch has changed" $boldyellow
-          cecho " from $GET_GITREMOTEURL" $boldyellow
-          cecho " to $CURL_GITURL" $boldyellow
-          cecho " to update re-run centmin.sh menu option 23 submenu option 1" $boldyellow
-          cecho "===============================================================================" $boldgreen
+          if [[ "$DMOTD_COMPACT" = [yY] && "$ENABLEMOTD_GITCOMPACT" != [nN] ]]; then
+            : # remote-URL-changed status is reflected as "(remote changed)" suffix on the Centmin Mod status line below
+          else
+            cecho "===============================================================================" $boldgreen
+            cecho " Centmin Mod remote branch has changed" $boldyellow
+            cecho " from $GET_GITREMOTEURL" $boldyellow
+            cecho " to $CURL_GITURL" $boldyellow
+            cecho " to update re-run centmin.sh menu option 23 submenu option 1" $boldyellow
+            cecho "===============================================================================" $boldgreen
+          fi
         fi
       fi
       pushd "${CMSCRIPT_GITDIR}" >/dev/null 2>&1
@@ -504,24 +606,35 @@ gitenv_askupdate() {
         git fetch >/dev/null 2>&1
       fi
       popd >/dev/null 2>&1
+      local _local_branch=$(git --git-dir="${CMSCRIPT_GITDIR}/.git" --work-tree="${CMSCRIPT_GITDIR}" rev-parse --abbrev-ref HEAD 2>/dev/null)
+      local _remote_changed=""
+      [[ "$GET_GITREMOTEURL" != "$CURL_GITURL" ]] && [[ ! -z "$CURL_GITURL" ]] && _remote_changed=" (remote changed: menu 23/1)"
       if [[ "$(cd ${CMSCRIPT_GITDIR}; git rev-parse HEAD)" != "$(cd ${CMSCRIPT_GITDIR}; git rev-parse @{u})" ]]; then
           # if remote branch commits don't match local commit, then there are new updates need
           # pulling
-          cecho "===============================================================================" $boldgreen
-          cecho " Centmin Mod code updates available for ${CMSCRIPT_GITDIR}" $boldyellow
           push_dmotd_alerts cmm "$branchname"
-          if [[ "$GET_GITREMOTEURL" != "$CURL_GITURL" ]]; then
-            cecho " to update re-run centmin.sh menu option 23 submenu option 1" $boldyellow
+          if [[ "$DMOTD_COMPACT" = [yY] && "$ENABLEMOTD_GITCOMPACT" != [nN] ]]; then
+            _dmotd_status_lines+=(" Centmin Mod ${_local_branch:-?} — updates available, run cmupdate${_remote_changed}")
           else
-            cecho " to update, run cmupdate command in SSH & re-run centmin.sh once & exit" $boldyellow
+            cecho "===============================================================================" $boldgreen
+            cecho " Centmin Mod code updates available for ${CMSCRIPT_GITDIR}" $boldyellow
+            if [[ "$GET_GITREMOTEURL" != "$CURL_GITURL" ]]; then
+              cecho " to update re-run centmin.sh menu option 23 submenu option 1" $boldyellow
+            else
+              cecho " to update, run cmupdate command in SSH & re-run centmin.sh once & exit" $boldyellow
+            fi
+            cecho "===============================================================================" $boldgreen
           fi
-          cecho "===============================================================================" $boldgreen
         else
           # no new commits/updates available
-          cecho "===============================================================================" $boldgreen
-          cecho " Centmin Mod local code is up to date at ${CMSCRIPT_GITDIR}" $boldyellow
-          cecho " no available updates at this time..." $boldyellow
-          cecho "===============================================================================" $boldgreen
+          if [[ "$DMOTD_COMPACT" = [yY] && "$ENABLEMOTD_GITCOMPACT" != [nN] ]]; then
+            _dmotd_status_lines+=(" Centmin Mod ${_local_branch:-?} — up to date${_remote_changed}")
+          else
+            cecho "===============================================================================" $boldgreen
+            cecho " Centmin Mod local code is up to date at ${CMSCRIPT_GITDIR}" $boldyellow
+            cecho " no available updates at this time..." $boldyellow
+            cecho "===============================================================================" $boldgreen
+          fi
       fi
       if [[ "$DMOTD_DEBUGSSHLOGIN" = [yY] ]]; then
         echo
@@ -544,29 +657,25 @@ needrestart_check() {
     if [ "$DAY_OF_WEEK" -eq "5" ] || [ "$DAY_OF_WEEK" -eq "6" ] || [ "$DAY_OF_WEEK" -eq "7" ]; then
         # Run the command and capture its output
         output=$(needs-restarting -r)
-        # Modify the output based on the version-specific message
+        local _reboot_required=0
         if echo "$output" | grep -q "Reboot is required to ensure that your system benefits from these updates."; then
-            # For EL7
-            modified_output=$(echo "$output" | sed 's/Reboot/Server Reboot/')
-            # Display the modified output and the additional message
-            echo
-            cecho "===============================================================================" $boldgreen
-            echo "$modified_output"
-            echo -e "\nRather than reboot server for each YUM update, you can schedule a specific time\n  i.e. on weekends"
-            echo -e "\nTo ensure all MySQL data in memory buffers is written to disk before reboot"
-            echo -e "Run this command & wait 180 seconds before rebooting server:\n  mysqladmin flush-tables && sleep 180"
-            cecho "===============================================================================" $boldgreen
+            _reboot_required=1   # EL7 wording
         elif echo "$output" | grep -q "Reboot is required to fully utilize these updates."; then
-            # For EL8 & EL9
-            modified_output=$(echo "$output" | sed 's/Reboot/Server Reboot/')
-            # Display the modified output and the additional message
-            echo
-            cecho "===============================================================================" $boldgreen
-            echo "$modified_output"
-            echo -e "\nRather than reboot server for each YUM update, you can schedule a specific time\n  i.e. on weekends"
-            echo -e "\nTo ensure all MySQL data in memory buffers is written to disk before reboot"
-            echo -e "Run this command & wait 180 seconds before rebooting server:\n  mysqladmin flush-tables && sleep 180"
-            cecho "===============================================================================" $boldgreen
+            _reboot_required=1   # EL8/9/10 wording
+        fi
+        if [[ "$_reboot_required" -eq 1 ]]; then
+            if [[ "$DMOTD_COMPACT" = [yY] && "$ENABLEMOTD_NEEDRESTARTCOMPACT" != [nN] ]]; then
+                _dmotd_status_lines+=(" ! Reboot required — flush MySQL first: mysqladmin flush-tables && sleep 180")
+            else
+                modified_output=$(echo "$output" | sed 's/Reboot/Server Reboot/')
+                echo
+                cecho "===============================================================================" $boldgreen
+                echo "$modified_output"
+                echo -e "\nRather than reboot server for each YUM update, you can schedule a specific time\n  i.e. on weekends"
+                echo -e "\nTo ensure all MySQL data in memory buffers is written to disk before reboot"
+                echo -e "Run this command & wait 180 seconds before rebooting server:\n  mysqladmin flush-tables && sleep 180"
+                cecho "===============================================================================" $boldgreen
+            fi
         fi
     fi
   fi
@@ -582,17 +691,66 @@ cmsec_checks() {
   # CVE detection line(s) for the dmotd login banner. Default off.
   # Enable via: echo "DMOTD_CVECHECK='y'" >> /etc/centminmod/custom_config.inc
   # Suppress specific CVEs: DMOTD_CVECHECK_SUPPRESS='CVE-2026-31431,CVE-2027-XXXX'
+  # DMOTD_CVECHECK_COMPACT='y' collapses output to one summary line (independent
+  # of DMOTD_COMPACT); vulnerable / indeterminate CVEs still expand.
   if [[ "$DMOTD_CVECHECK" = [yY] && -x "$CMSCRIPT_GITDIR/tools/cmm-security/cmsec.sh" ]]; then
-    CMSEC_CACHE_TTL_MIN="$CMSEC_CACHE_TIMEOUT" \
-    DMOTD_CVECHECK_SUPPRESS="$DMOTD_CVECHECK_SUPPRESS" \
-      "$CMSCRIPT_GITDIR/tools/cmm-security/cmsec.sh" --dmotd 2>/dev/null
-    # Pushover alert on vulnerable verdict (cooldown-throttled inside push_dmotd_alerts).
-    # Same DMOTD_CVECHECK_SUPPRESS env var as the --dmotd call above so the second
-    # invocation also honours per-CVE suppression — otherwise a suppressed CVE would
-    # still trigger Pushover even though its banner line was hidden.
-    cmsec_status="$(CMSEC_CACHE_TTL_MIN="$CMSEC_CACHE_TIMEOUT" \
-                    DMOTD_CVECHECK_SUPPRESS="$DMOTD_CVECHECK_SUPPRESS" \
-                    "$CMSCRIPT_GITDIR/tools/cmm-security/cmsec.sh" --json 2>/dev/null)"
+    if [[ "$DMOTD_CVECHECK_COMPACT" = [yY] ]]; then
+      # Compact path — single cmsec.sh --json invocation (half the work of
+      # the verbose --dmotd + --json double-call). Tallies the per-CVE
+      # statuses and prints one summary line, plus an auto-expand block
+      # listing vulnerable/indeterminate CVEs so security state is never
+      # silently hidden.
+      cmsec_status="$(CMSEC_CACHE_TTL_MIN="$CMSEC_CACHE_TIMEOUT" \
+                      DMOTD_CVECHECK_SUPPRESS="$DMOTD_CVECHECK_SUPPRESS" \
+                      "$CMSCRIPT_GITDIR/tools/cmm-security/cmsec.sh" --json 2>/dev/null)"
+      if [[ -n "$cmsec_status" ]]; then
+        local _cmsec_kernel _cmsec_summary
+        _cmsec_kernel="$(uname -r)"
+        # Single-pass awk: tally counts and emit pipe-delimited
+        # "<vulnerable_cves>|<indeterminate_cves>|<total>|<patched>|<not_affected>|<vulnerable>|<indeterminate>"
+        _cmsec_summary="$(printf '%s' "$cmsec_status" | awk -F'"' '
+          /"cve":/            { _cve = $4; _sev = "" }
+          /"cvss_severity":/  { _sev = $4 }
+          /"final_status":/   {
+            total++
+            status = $4
+            if (status == "patched")        patched++
+            else if (status == "not_affected") notaffected++
+            else if (status == "vulnerable")  { vulnerable++; vul_list = vul_list (vul_list?", ":"") _cve; vul_sev[_cve] = _sev }
+            else if (status == "indeterminate") { indeterminate++; ind_list = ind_list (ind_list?", ":"") _cve }
+          }
+          END {
+            printf "%s|%s|%d|%d|%d|%d|%d", vul_list, ind_list, total+0, patched+0, notaffected+0, vulnerable+0, indeterminate+0
+            for (c in vul_sev) printf "|%s=%s", c, vul_sev[c]
+          }')"
+        IFS='|' read -r _vul_list _ind_list _total _patched _notaffected _vulnerable _indeterminate _rest <<<"$_cmsec_summary"
+        if [[ "$_vulnerable" -eq 0 && "$_indeterminate" -eq 0 ]]; then
+          printf ' cmsec: kernel %s — %d/%d OK (%d patched, %d n/a)\n' \
+            "$_cmsec_kernel" "$_total" "$_total" "$_patched" "$_notaffected"
+        else
+          # Auto-expand: list what is broken regardless of compact toggle.
+          printf ' cmsec: kernel %s — %d/%d checked: %d patched, %d n/a, %d VULNERABLE, %d indeterminate\n' \
+            "$_cmsec_kernel" "$_total" "$_total" "$_patched" "$_notaffected" "$_vulnerable" "$_indeterminate"
+          [[ -n "$_vul_list" ]] && printf ' ! cmsec VULNERABLE: %s — run '"'"'cmsec check'"'"'\n' "$_vul_list"
+          [[ -n "$_ind_list" ]] && printf ' ! cmsec INDETERMINATE: %s\n' "$_ind_list"
+        fi
+        # Reuse cmsec_status for the Pushover loop below — no second call.
+      fi
+    else
+      # Verbose path — current per-CVE banner from cmsec.sh --dmotd, plus
+      # a second cmsec.sh --json invocation feeding the Pushover loop.
+      CMSEC_CACHE_TTL_MIN="$CMSEC_CACHE_TIMEOUT" \
+      DMOTD_CVECHECK_SUPPRESS="$DMOTD_CVECHECK_SUPPRESS" \
+        "$CMSCRIPT_GITDIR/tools/cmm-security/cmsec.sh" --dmotd 2>/dev/null
+      cmsec_status="$(CMSEC_CACHE_TTL_MIN="$CMSEC_CACHE_TIMEOUT" \
+                      DMOTD_CVECHECK_SUPPRESS="$DMOTD_CVECHECK_SUPPRESS" \
+                      "$CMSCRIPT_GITDIR/tools/cmm-security/cmsec.sh" --json 2>/dev/null)"
+    fi
+    # Pushover alert on vulnerable verdict (cooldown-throttled inside
+    # push_dmotd_alerts). Same DMOTD_CVECHECK_SUPPRESS env var as the --dmotd
+    # call above so the second invocation also honours per-CVE suppression —
+    # otherwise a suppressed CVE would still trigger Pushover even though its
+    # banner line was hidden.
     if [[ -n "$cmsec_status" ]] && printf '%s' "$cmsec_status" | grep -q '"final_status": "vulnerable"'; then
       kernel_str="$(uname -r)"
       printf '%s' "$cmsec_status" | awk -F'"' '
@@ -607,47 +765,84 @@ cmsec_checks() {
 }
 
 csf_version_checker() {
+  # DMOTD_CSFVERCHECK toggle gates the entire function — independent of
+  # DMOTD_COMPACT. When 'n', no CSF version check runs at all.
+  [[ "$DMOTD_CSFVERCHECK" != [yY] ]] && return 0
   if [[ "$(which csf >/dev/null 2>&1; echo $?)" = '0' ]]; then
     # Get remote version from Centmin Mod's self-hosted mirror
     REMOTE_CSF_VER=$(curl -${ipv_forceopt}sL --connect-timeout 10 https://download.centminmod.com/csf/version.txt 2>/dev/null | tr -d '\n' | tr -d '\r' | grep -E '^[0-9]+\.[0-9]+$')
-    
+
     # Get local version from csf -v output (format: "csf: v15.01 (generic)")
     LOCAL_CSF_VER=$(csf -v 2>/dev/null | awk '{print $2}' | sed 's/^v//' | grep -E '^[0-9]+\.[0-9]+$')
-    
+
     if [[ ! -z "$REMOTE_CSF_VER" && ! -z "$LOCAL_CSF_VER" ]]; then
       # Convert versions for numeric comparison (15.01 → 1501)
       REMOTE_CSF_NUM=$(echo "$REMOTE_CSF_VER" | sed 's/\.//')
       LOCAL_CSF_NUM=$(echo "$LOCAL_CSF_VER" | sed 's/\.//')
-      
+
       # Display notice if remote version is same or newer than local
       if [[ "$REMOTE_CSF_NUM" -ge "$LOCAL_CSF_NUM" ]] 2>/dev/null; then
-        echo
-        cecho "===============================================================================" $boldgreen
-        cecho "* Centmin Mod now hosts its own CSF Firewall mirror for continued support" $boldyellow
-        cecho "* Details at https://community.centminmod.com/threads/28985/" $boldyellow
-        cecho "===============================================================================" $boldgreen
-        cecho "* Current CSF Version: $LOCAL_CSF_VER" $boldyellow
-        cecho "* Mirror CSF Version:  $REMOTE_CSF_VER" $boldyellow
-        if [[ "$REMOTE_CSF_NUM" -gt "$LOCAL_CSF_NUM" ]] 2>/dev/null; then
-          if [[ "$LOCAL_CSF_VER" = "14.24" ]]; then
-            # Check if csfcf.sh cronjob exists
-            CSFCF_CRON_EXISTS=$(crontab -l 2>/dev/null | grep -q 'csfcf.sh auto' && echo "yes" || echo "no")
-            if [[ "$CSFCF_CRON_EXISTS" = "yes" ]]; then
-              cecho "* Update available: Run cmupdate && let cronjob tools/csfcf.sh auto update CSF" $boldyellow
+        if [[ "$DMOTD_COMPACT" = [yY] && "$ENABLEMOTD_CSFVERCOMPACT" != [nN] ]]; then
+          # Compact path — append a single line. Skip the announcement banner
+          # ("Centmin Mod now hosts its own CSF mirror") because it's one-time
+          # info that doesn't need to print every login once admins are aware.
+          if [[ "$REMOTE_CSF_NUM" -gt "$LOCAL_CSF_NUM" ]] 2>/dev/null; then
+            if [[ "$LOCAL_CSF_VER" = "14.24" ]]; then
+              CSFCF_CRON_EXISTS=$(crontab -l 2>/dev/null | grep -q 'csfcf.sh auto' && echo "yes" || echo "no")
+              if [[ "$CSFCF_CRON_EXISTS" = "yes" ]]; then
+                _dmotd_status_lines+=(" CSF    ${LOCAL_CSF_VER} → ${REMOTE_CSF_VER} available — let csfcf.sh auto run")
+              else
+                _dmotd_status_lines+=(" CSF    ${LOCAL_CSF_VER} → ${REMOTE_CSF_VER} available — run cmupdate && tools/csfcf.sh auto")
+              fi
             else
-              cecho "* Update available: Run cmupdate && tools/csfcf.sh auto to update CSF" $boldyellow
+              _dmotd_status_lines+=(" CSF    ${LOCAL_CSF_VER} → ${REMOTE_CSF_VER} available — run csf -u")
             fi
           else
-            cecho "* Update available: Run csf -u to update CSF Firewall" $boldyellow
+            _dmotd_status_lines+=(" CSF    ${LOCAL_CSF_VER} (matches mirror)")
           fi
         else
-          cecho "* Your CSF version matches the mirror version" $boldyellow
+          echo
+          cecho "===============================================================================" $boldgreen
+          cecho "* Centmin Mod now hosts its own CSF Firewall mirror for continued support" $boldyellow
+          cecho "* Details at https://community.centminmod.com/threads/28985/" $boldyellow
+          cecho "===============================================================================" $boldgreen
+          cecho "* Current CSF Version: $LOCAL_CSF_VER" $boldyellow
+          cecho "* Mirror CSF Version:  $REMOTE_CSF_VER" $boldyellow
+          if [[ "$REMOTE_CSF_NUM" -gt "$LOCAL_CSF_NUM" ]] 2>/dev/null; then
+            if [[ "$LOCAL_CSF_VER" = "14.24" ]]; then
+              CSFCF_CRON_EXISTS=$(crontab -l 2>/dev/null | grep -q 'csfcf.sh auto' && echo "yes" || echo "no")
+              if [[ "$CSFCF_CRON_EXISTS" = "yes" ]]; then
+                cecho "* Update available: Run cmupdate && let cronjob tools/csfcf.sh auto update CSF" $boldyellow
+              else
+                cecho "* Update available: Run cmupdate && tools/csfcf.sh auto to update CSF" $boldyellow
+              fi
+            else
+              cecho "* Update available: Run csf -u to update CSF Firewall" $boldyellow
+            fi
+          else
+            cecho "* Your CSF version matches the mirror version" $boldyellow
+          fi
+          cecho "===============================================================================" $boldgreen
+          echo
         fi
-        cecho "===============================================================================" $boldgreen
-        echo
       fi
     fi
   fi
+}
+
+render_compact_status_footer() {
+  # Render the merged compact status footer captured by per-checker calls
+  # into _dmotd_status_lines. Called once after all checks complete, inside
+  # the same { … } 2>&1 | tee block so the footer lands in the dmotd log
+  # alongside the verbose checks that ran in non-compact sections.
+  [[ "$DMOTD_COMPACT" != [yY] ]] && return 0
+  [[ "${#_dmotd_status_lines[@]}" -eq 0 ]] && return 0
+  cecho "===============================================================================" $boldgreen
+  local _line
+  for _line in "${_dmotd_status_lines[@]}"; do
+    cecho "$_line" $boldyellow
+  done
+  cecho "===============================================================================" $boldgreen
 }
 
 if [[ "$(id -u)" -eq 0 ]] || sudo -n true 2>/dev/null; then
@@ -658,10 +853,20 @@ if [[ "$(id -u)" -eq 0 ]] || sudo -n true 2>/dev/null; then
   if [[ "$(id -u)" -eq 0 || "$SUDO_USER" ]]; then
     kernel_checks
     cmsec_checks
+    # Parallel ngxver/phpver requires array writes to survive the subshells.
+    # Backgrounded functions run in subshells, so _dmotd_status_lines+=() in
+    # the compact branch would be lost on wait. Serialise these two when in
+    # compact mode (small perf cost — two sequential curl --connect-timeout
+    # calls instead of one).
     if [[ "$DMOTD_PHPCHECK" = [yY] && "$(which php-fpm >/dev/null 2>&1; echo $?)" = '0' ]]; then
-      ngxver_checker &
-      phpver_checker &
-      wait
+      if [[ "$DMOTD_COMPACT" = [yY] ]]; then
+        ngxver_checker
+        phpver_checker
+      else
+        ngxver_checker &
+        phpver_checker &
+        wait
+      fi
     else
       ngxver_checker
     fi
@@ -680,6 +885,9 @@ if [[ "$(id -u)" -eq 0 ]] || sudo -n true 2>/dev/null; then
     check_git_major_branch
     csf_version_checker
   fi
+  # Print the merged compact footer once every check has run. No-op when
+  # DMOTD_COMPACT='n' or when no checker contributed a status line.
+  render_compact_status_footer
   } 2>&1 | tee "${CENTMINLOGDIR}/cmm-login-git-checks_${DT}.log"
 
   endtime=$(TZ=UTC date +%s.%N)
