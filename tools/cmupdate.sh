@@ -105,7 +105,20 @@ fupdate() {
         echo "       restoring previous copy of ${CM_INSTALLDIR} code base"
       fi
     elif [[ "$CHECK_GITCLEAN" = 'no' ]]; then
+      echo
+      echo "-------------------------------------"
+      echo "Updating Centmin Mod code"
+      echo "-------------------------------------"
+      echo
+      cd "${CM_INSTALLDIR}"
+      git branch
       _cmm_git_sync "$cmupdate_branchname_new" "${CM_INSTALLDIR}"
+      git log -1 | sed -e 's|Author: George Liu <.*>|Author: George Liu <snipped>|g'
+      echo
+      echo "-------------------------------------"
+      echo "Updated Centmin Mod code"
+      echo "-------------------------------------"
+      echo
     else
       echo
       echo "Detected Centmin Mod Github Remote Repo Changes"
@@ -148,8 +161,6 @@ fupdate() {
 }
 
 ######################################################
-fupdate
-
 case "$1" in
   update )
     fupdate
