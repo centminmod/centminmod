@@ -46,6 +46,8 @@ FORCE_IPVFOUR='y' # curl/wget commands through script force IPv4
 # rest of the dmotd is compact.
 DMOTD_COMPACT='n'                  # master: 'y' enables compact layout
 DMOTD_CSFVERCHECK='y'              # 'n' silences csf_version_checker entirely
+DMOTD_BRANCHCHECK='y'              # 'n' silences check_git_major_branch notice
+                                   # (use when staying on a specific branch intentionally)
 DMOTD_CVECHECK_COMPACT='n'         # 'y' collapses cmsec to 1 summary line (vulnerable CVEs always expand)
 ENABLEMOTD_HEADERCOMPACT='y'       # 'n' restores 6-line hostname/users/CPU/proc/uptime header
 ENABLEMOTD_MEMCOMPACT='y'          # 'n' restores full free -m output
@@ -190,6 +192,7 @@ log_message() {
 }
 
 check_git_major_branch() {
+    [[ "$DMOTD_BRANCHCHECK" = [nN] ]] && return 0
     local repo_path="$CMSCRIPT_GITDIR"
     local current_branch=$(git --git-dir="$repo_path/.git" --work-tree="$repo_path" rev-parse --abbrev-ref HEAD)
     local branches_to_check=("123.08stable" "123.09beta01" "124.00stable" "130.00beta01" "131.00stable")
@@ -197,12 +200,29 @@ check_git_major_branch() {
     for branch in "${branches_to_check[@]}"; do
         [[ "$current_branch" == "$branch" ]] && { _branch_outdated=1; break; }
     done
+    # Per-track latest assignments. 141.00beta01 is the EL10 dev branch —
+    # only recommended to hosts already testing it; everyone else gets
+    # pointed at 140.00beta01 (production beta). When 141 graduates, flip
+    # the default arm.
+    local _latest_stable="132.00stable"
+    local _latest_beta _forum_url
+    case "$current_branch" in
+        141.00beta01)
+            _latest_beta="141.00beta01"
+            _forum_url="https://community.centminmod.com/threads/29603/"
+            ;;
+        *)
+            _latest_beta="140.00beta01"
+            _forum_url="https://community.centminmod.com/threads/25572/"
+            ;;
+    esac
+    local _forum_url_short="${_forum_url#https://}"
     if [[ "$DMOTD_COMPACT" = [yY] && "$ENABLEMOTD_GITCOMPACT" != [nN] ]]; then
-        # Compact: stash the major-branch warning for the merged footer. The
+        # Compact: stash a single info line for the merged footer. The
         # always-printed "branch installed" line is dropped because the
         # status-footer already names the branch via gitenv_askupdate.
         if [[ "$_branch_outdated" -eq 1 ]]; then
-            _dmotd_status_lines+=(" ! Older branch ($current_branch) — newer: 132.00stable or 141.00beta01 (threads/25572)")
+            _dmotd_status_lines+=(" Centmin Mod ${current_branch} — latest stable: ${_latest_stable} / latest beta: ${_latest_beta} — ${_forum_url_short}")
         fi
         return
     fi
@@ -210,10 +230,12 @@ check_git_major_branch() {
     cecho "$current_branch " $boldyellow
     cecho "===============================================================================" $boldgreen
     if [[ "$_branch_outdated" -eq 1 ]]; then
-        echo -n " Newer Centmin Mod branch version is available: "
-        cecho "132.00stable or 141.00beta01" $boldyellow
+        echo -n " Latest stable Centmin Mod branch: "
+        cecho "${_latest_stable}" $boldyellow
+        echo -n " Latest beta Centmin Mod branch:   "
+        cecho "${_latest_beta}" $boldyellow
         echo -n " Details at "
-        cecho "https://community.centminmod.com/threads/25572/" $boldyellow
+        cecho "${_forum_url}" $boldyellow
         cecho "===============================================================================" $boldgreen
     fi
 }
