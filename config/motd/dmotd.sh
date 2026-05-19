@@ -138,7 +138,13 @@ _dmotd_fancy_capable() {
   #    where LC_ALL=C LANG=en_US.UTF-8 would otherwise match.
   #    Reads the user's inbound locale captured at script start (see
   #    L11-17), NOT the en_US.UTF-8 the script just exported.
-  local _locale_ok='n' _v
+  #    Defaults to 'y' (permissive) so SSH clients that don't forward
+  #    LANG/LC_* (PuTTY default; minimal sshd_config without AcceptEnv
+  #    LANG LC_*; cron-shelled SSH; systemd-spawned shells) still get
+  #    fancy mode — modern terminal emulators universally support
+  #    UTF-8. Only reject when an inbound locale var is EXPLICITLY
+  #    non-UTF-8 (LC_ALL=C, LC_ALL=POSIX, LANG=en_US.iso88591, etc).
+  local _locale_ok='y' _v
   for _v in "${_dmotd_user_lc_all:-}" "${_dmotd_user_lc_ctype:-}" "${_dmotd_user_lang:-}"; do
     if [ -n "$_v" ]; then
       case "$_v" in
