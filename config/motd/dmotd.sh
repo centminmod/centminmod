@@ -42,17 +42,17 @@ DMOTD_CVECHECK_SUPPRESS=''   # comma-separated CVE IDs to suppress, e.g. 'CVE-20
 FORCE_IPVFOUR='y' # curl/wget commands through script force IPv4
 
 # Compact dmotd layout (vertical-space-efficient SSH login banner).
-# Master switch defaults to 'n' so existing installs see ZERO change after
-# cmupdate. Set DMOTD_COMPACT='y' in /etc/centminmod/custom_config.inc to
-# enable the ~28-line compact layout. Per-section sub-toggles below take
+# Master switch defaults to 'y' (the ~28-line compact layout is on). Set
+# DMOTD_COMPACT='n' in /etc/centminmod/custom_config.inc to restore the
+# legacy verbose layout. Per-section sub-toggles below take
 # effect only when DMOTD_COMPACT='y' (setting one to 'n' selectively
 # restores that section's verbose panel). Two toggles are intentionally
 # independent of DMOTD_COMPACT: DMOTD_CSFVERCHECK silences the CSF version
 # checker entirely, and DMOTD_CVECHECK_COMPACT controls cmsec output
 # collapsing — admins typically want CVE detail visible even when the
 # rest of the dmotd is compact.
-DMOTD_COMPACT='n'                  # master: 'y' enables compact layout
-DMOTD_FANCY='n'                    # 'y' enables Unicode box-drawing + colored ASCII badges + bars
+DMOTD_COMPACT='y'                  # master: 'y' enables compact layout
+DMOTD_FANCY='y'                    # 'y' enables Unicode box-drawing + colored ASCII badges + bars
                                    # (requires capable terminal; falls back to compact on incapable).
                                    # Fancy implies compact data internally via _DMOTD_COMPACT_EFFECTIVE
                                    # without mutating the user's DMOTD_COMPACT setting.
