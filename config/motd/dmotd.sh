@@ -623,7 +623,7 @@ gitenv_askupdate() {
         echo "################  DMOTD DEBUG END  ################"
         echo
       else
-        git fetch >/dev/null 2>&1
+        timeout 15 git fetch >/dev/null 2>&1
       fi
       popd >/dev/null 2>&1
       local _local_branch=$(git --git-dir="${CMSCRIPT_GITDIR}/.git" --work-tree="${CMSCRIPT_GITDIR}" rev-parse --abbrev-ref HEAD 2>/dev/null)
@@ -722,7 +722,7 @@ cmsec_checks() {
       # silently hidden.
       cmsec_status="$(CMSEC_CACHE_TTL_MIN="$CMSEC_CACHE_TIMEOUT" \
                       DMOTD_CVECHECK_SUPPRESS="$DMOTD_CVECHECK_SUPPRESS" \
-                      "$CMSCRIPT_GITDIR/tools/cmm-security/cmsec.sh" --json 2>/dev/null)"
+                      "$CMSCRIPT_GITDIR/tools/cmm-security/cmsec.sh" --dmotd --json 2>/dev/null)"
       if [[ -n "$cmsec_status" ]]; then
         local _cmsec_kernel _cmsec_summary
         _cmsec_kernel="$(uname -r)"
@@ -764,7 +764,7 @@ cmsec_checks() {
         "$CMSCRIPT_GITDIR/tools/cmm-security/cmsec.sh" --dmotd 2>/dev/null
       cmsec_status="$(CMSEC_CACHE_TTL_MIN="$CMSEC_CACHE_TIMEOUT" \
                       DMOTD_CVECHECK_SUPPRESS="$DMOTD_CVECHECK_SUPPRESS" \
-                      "$CMSCRIPT_GITDIR/tools/cmm-security/cmsec.sh" --json 2>/dev/null)"
+                      "$CMSCRIPT_GITDIR/tools/cmm-security/cmsec.sh" --dmotd --json 2>/dev/null)"
     fi
     # Pushover alert on vulnerable verdict (cooldown-throttled inside
     # push_dmotd_alerts). Same DMOTD_CVECHECK_SUPPRESS env var as the --dmotd

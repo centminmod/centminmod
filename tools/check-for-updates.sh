@@ -534,7 +534,7 @@ cmsec_checks() {
     # CVEs don't slip past and trigger a Pushover alert.
     cmsec_status="$(CMSEC_CACHE_TTL_MIN="$CMSEC_CACHE_TIMEOUT" \
                     DMOTD_CVECHECK_SUPPRESS="$DMOTD_CVECHECK_SUPPRESS" \
-                    "$CMSCRIPT_GITDIR/tools/cmm-security/cmsec.sh" --json 2>/dev/null)"
+                    "$CMSCRIPT_GITDIR/tools/cmm-security/cmsec.sh" --dmotd --json 2>/dev/null)"
     if [[ -n "$cmsec_status" ]] && printf '%s' "$cmsec_status" | grep -q '"final_status": "vulnerable"'; then
       kernel_str="$(uname -r)"
       printf '%s' "$cmsec_status" | awk -F'"' '
