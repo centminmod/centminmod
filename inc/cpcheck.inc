@@ -1505,11 +1505,15 @@ march_hostcheck() {
   VPS_VIRTWHAT_GET=$(virt-what | xargs | sed -e 's|redhat ||g')
   VPS_VIRTWHAT="${VPS_VIRTWHAT_GET:-d}"
   if [[ "$VPS_GEOIPCHECK_V3" = [yY] ]]; then
-    VPS_GEOIPCHECK=$(curl -${ipv_forceopt}s${CURL_TIMEOUTS} -A "$CURL_AGENT VPSCHECK $SCRIPT_VERSION $CURL_CPUMODEL $CURL_CPUSPEED $VPS_VIRTWHAT" https://geoip.centminmod.com/v3 | jq -r)
-    VPS_ASNCHECK=$(echo "$VPS_GEOIPCHECK" | jq -r '"\(.data.asn) \(.data.description_short)"')
+    _march_geoip=$(curl -${ipv_forceopt}s${CURL_TIMEOUTS} -A "$CURL_AGENT VPSCHECK $SCRIPT_VERSION $CURL_CPUMODEL $CURL_CPUSPEED $VPS_VIRTWHAT" https://geoip.centminmod.com/v3 2>/dev/null)
+    VPS_GEOIPCHECK=$(echo "$_march_geoip" | jq -r 2>/dev/null)
+    unset _march_geoip
+    VPS_ASNCHECK=$(echo "$VPS_GEOIPCHECK" | jq -r '"\(.data.asn) \(.data.description_short)"' 2>/dev/null)
   elif [[ "$VPS_GEOIPCHECK_V4" = [yY] ]]; then
-    VPS_GEOIPCHECK=$(curl -${ipv_forceopt}s${CURL_TIMEOUTS} -A "$CURL_AGENT VPSCHECK $SCRIPT_VERSION $CURL_CPUMODEL $CURL_CPUSPEED $VPS_VIRTWHAT" https://geoip.centminmod.com/v4 | jq -r)
-    VPS_ASNCHECK=$(echo "$VPS_GEOIPCHECK" | jq -r '"\(.asn) \(.asOrganization)"')
+    _march_geoip=$(curl -${ipv_forceopt}s${CURL_TIMEOUTS} -A "$CURL_AGENT VPSCHECK $SCRIPT_VERSION $CURL_CPUMODEL $CURL_CPUSPEED $VPS_VIRTWHAT" https://geoip.centminmod.com/v4 2>/dev/null)
+    VPS_GEOIPCHECK=$(echo "$_march_geoip" | jq -r 2>/dev/null)
+    unset _march_geoip
+    VPS_ASNCHECK=$(echo "$VPS_GEOIPCHECK" | jq -r '"\(.asn) \(.asOrganization)"' 2>/dev/null)
   fi
   if [[ ! -z "${VPS_VIRTWHAT_GET}" && "$(echo "${VPS_ASNCHECK}" | egrep -i -o 'upcloud|linode|digitalocean|digital ocean|vultr|choopa|hetzner|frantech|hostus|ramnode|amazon|google|microsoft|mammoth|contabo|netcup|ibm|softlayer|oracle|alibaba|ovh|leaseweb|scaleway|bluehost|siteground|a2hosting|rackspace|liquidweb|akamai|bigscoots|hivelocity|dedipath|ponynet|multa|telkomnet|heymman|webnx|quadranet|clouvider|ipxo|singlehop|strasmore|racknerd|inmotion|aruba|colocrossing|inception|terrahost|hosthatch|huawei|secured|quickpacket|interserver|aliyun|alicloud|fpt|steadfast|godaddy|go daddy|hostmania|host1|internap|mivocloud|psychz|reliablesite|hostwinds|nodisto|ransom|viet|worldstream|xtom')" && "$MARCH_TARGETNATIVE_ALWAYS" != [yY] ]]; then
     MARCH_TARGETNATIVE='n'
