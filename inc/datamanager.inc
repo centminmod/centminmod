@@ -2,7 +2,9 @@
 # Data Management Routines
 #######################################################################################
 AWSCLI_BIN='/usr/local/bin/aws'
-DATAM_SOURCE_IP=$(curl -4s https://geoip.centminmod.com/v4 | jq -r '.ip')
+_datam_geoip=$(curl -4s${CURL_TIMEOUTS} -A "$CURL_AGENT DataManager IP CHECK $SCRIPT_VERSION $CURL_CPUMODEL $CURL_CPUSPEED" https://geoip.centminmod.com/v4 2>/dev/null)
+DATAM_SOURCE_IP=$(echo "$_datam_geoip" | jq -r '.ip' 2>/dev/null)
+unset _datam_geoip
 #######################################################################################
 check_for_awscli_get() {
   if [[ -d "$SCRIPT_DIR/datamanagement" && ! -f "$SCRIPT_DIR/datamanagement/awscli-get.sh" ]]; then
