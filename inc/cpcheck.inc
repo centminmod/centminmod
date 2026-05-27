@@ -908,6 +908,24 @@ cfauthorigin_cronsetup() {
   fi
 }
 
+# Auto-install the cmsec CVE cache pre-warm cron entry. Refreshes the
+# /var/cache/centminmod/cmsec/*.cache files every 12 h (well inside the
+# 24 h TTL) so SSH logins running config/motd/dmotd.sh's cmsec_checks()
+# hit warm cache instead of paying the cold-cache cost (dnf metadata
+# refresh + kernel KCONFIG probes + KernelCare kcarectl timeout).
+# Idempotent — only adds the entry when missing; sed -i strips any prior
+# version of the line before appending so a future cron schedule change
+# in this function propagates cleanly on the next centmin.sh run.
+cmsec_prewarm_cronsetup() {
+  if [[ -z "$(crontab -l 2>&1 | grep '/usr/local/src/centminmod/tools/cmm-security/cmsec-prewarm.sh')" && -f "/usr/local/src/centminmod/tools/cmm-security/cmsec-prewarm.sh" ]]; then
+    mkdir -p /etc/centminmod/cronjobs/
+    crontab -l > /etc/centminmod/cronjobs/cronjoblist-before-cmsec-prewarm.txt
+    sed -i '/cmsec-prewarm.sh/d' /etc/centminmod/cronjobs/cronjoblist-before-cmsec-prewarm.txt
+    echo "17 */12 * * * /usr/local/src/centminmod/tools/cmm-security/cmsec-prewarm.sh >/dev/null 2>&1" >> /etc/centminmod/cronjobs/cronjoblist-before-cmsec-prewarm.txt
+    crontab /etc/centminmod/cronjobs/cronjoblist-before-cmsec-prewarm.txt
+  fi
+}
+
 mytop_setup() {
   if [[ $(rpm -q mytop >/dev/null 2>&1; echo $?) != '0' ]]; then
       yum -y install mytop
@@ -4281,6 +4299,7 @@ qrencode_setup
 initial_pip_updates initial
 jetpack_ip_whitelist_cronsetup
 push_check_updates_cronsetup
+cmsec_prewarm_cronsetup
 tcp_bbr_setup
 normalize_accept_encoding
 rsync_backport_install
@@ -4442,6 +4461,7 @@ if [[ "$INITIALINSTALL" != [yY] ]]; then
   switch_mariadbtenone_archives
   remove_anonymous_mysqlusers
   push_check_updates_cronsetup
+  cmsec_prewarm_cronsetup
   fix_wordpress_accept_encoding
   normalize_accept_encoding
   elnine_perl_check
