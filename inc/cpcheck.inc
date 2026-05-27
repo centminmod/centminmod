@@ -913,9 +913,14 @@ cfauthorigin_cronsetup() {
 # 24 h TTL) so SSH logins running config/motd/dmotd.sh's cmsec_checks()
 # hit warm cache instead of paying the cold-cache cost (dnf metadata
 # refresh + kernel KCONFIG probes + KernelCare kcarectl timeout).
-# Idempotent — only adds the entry when missing; sed -i strips any prior
-# version of the line before appending so a future cron schedule change
-# in this function propagates cleanly on the next centmin.sh run.
+# Idempotent: the outer grep guard skips the body once any cron entry
+# referencing cmsec-prewarm.sh exists, so re-running centmin.sh never
+# adds a duplicate. The inner `sed -i '/cmsec-prewarm.sh/d'` is
+# defensive — it strips any stray duplicates from the backup file
+# before appending the new entry on a true first install. Note that
+# schedule changes in this function do NOT propagate to existing
+# installs (the grep guard short-circuits); admins who want a new
+# schedule must remove the old entry via `crontab -e` first.
 cmsec_prewarm_cronsetup() {
   if [[ -z "$(crontab -l 2>&1 | grep '/usr/local/src/centminmod/tools/cmm-security/cmsec-prewarm.sh')" && -f "/usr/local/src/centminmod/tools/cmm-security/cmsec-prewarm.sh" ]]; then
     mkdir -p /etc/centminmod/cronjobs/
