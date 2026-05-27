@@ -49,6 +49,12 @@ DMOTD_CSFVERCHECK='y'              # 'n' silences csf_version_checker entirely
 DMOTD_BRANCHCHECK='y'              # 'n' silences check_git_major_branch notice
                                    # (use when staying on a specific branch intentionally)
 DMOTD_CVECHECK_COMPACT='n'         # 'y' collapses cmsec to 1 summary line (vulnerable CVEs always expand)
+DMOTD_CVECHECK_SILENT='n'          # 'y' suppresses cmsec banner entirely; Pushover alerts for vulnerable
+                                   # CVEs still fire and DMOTD_CVECHECK_SUPPRESS is still honoured. Cosmetic
+                                   # for login latency — does NOT fix cold-cache slowness on its own; pair
+                                   # with the tools/cmm-security/cmsec-prewarm.sh cron (auto-installed by
+                                   # inc/cpcheck.inc) for a real perf fix. Independent of DMOTD_COMPACT and
+                                   # DMOTD_CVECHECK_COMPACT — silent takes precedence over both.
 ENABLEMOTD_HEADERCOMPACT='y'       # 'n' restores 6-line hostname/users/CPU/proc/uptime header
 ENABLEMOTD_MEMCOMPACT='y'          # 'n' restores full free -m output
 ENABLEMOTD_DFCOMPACT='y'           # 'n' restores full df -hT (incl. tmpfs/devtmpfs/efivarfs)
@@ -713,8 +719,23 @@ cmsec_checks() {
   # Suppress specific CVEs: DMOTD_CVECHECK_SUPPRESS='CVE-2026-31431,CVE-2027-XXXX'
   # DMOTD_CVECHECK_COMPACT='y' collapses output to one summary line (independent
   # of DMOTD_COMPACT); vulnerable / indeterminate CVEs still expand.
+  # DMOTD_CVECHECK_SILENT='y' suppresses ALL banner output (no per-CVE lines, no
+  # summary, no badges) while still running cmsec.sh and firing Pushover alerts
+  # for vulnerable CVEs. Pairs with the cmsec-prewarm cron — see comments at the
+  # DMOTD_CVECHECK_SILENT declaration above.
   if [[ "$DMOTD_CVECHECK" = [yY] && -x "$CMSCRIPT_GITDIR/tools/cmm-security/cmsec.sh" ]]; then
-    if [[ "$DMOTD_CVECHECK_COMPACT" = [yY] ]]; then
+    if [[ "$DMOTD_CVECHECK_SILENT" = [yY] ]]; then
+      # Silent path — single cmsec.sh --dmotd --json call, no banner output.
+      # --dmotd is REQUIRED (not just --json): it enables the stale-fallback +
+      # background-refresh path at tools/cmm-security/cmsec.sh:206 that returns
+      # instant stale data on TTL-expired-but-state-matching cache. --json alone
+      # would bypass that gate and force synchronous re-runs on every login that
+      # crossed the 24h TTL. Pushover trigger block below uses cmsec_status
+      # unchanged.
+      cmsec_status="$(CMSEC_CACHE_TTL_MIN="$CMSEC_CACHE_TIMEOUT" \
+                      DMOTD_CVECHECK_SUPPRESS="$DMOTD_CVECHECK_SUPPRESS" \
+                      "$CMSCRIPT_GITDIR/tools/cmm-security/cmsec.sh" --dmotd --json 2>/dev/null)"
+    elif [[ "$DMOTD_CVECHECK_COMPACT" = [yY] ]]; then
       # Compact path — single cmsec.sh --json invocation (half the work of
       # the verbose --dmotd + --json double-call). Tallies the per-CVE
       # statuses and prints one summary line, plus an auto-expand block
