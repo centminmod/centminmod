@@ -13,11 +13,13 @@
 # Why --no-cache --dmotd --json:
 #   --no-cache : forces a fresh detection run; a plain --json would
 #                short-circuit on a still-valid cache and not refresh.
-#   --dmotd    : enables the stale-fallback + setsid background-refresh
-#                code path at tools/cmm-security/cmsec.sh:206. While the
-#                stale-fallback isn't useful during an explicit --no-cache
-#                refresh, keeping the flag set ensures DMOTD_CVECHECK_SUPPRESS
-#                semantics match what dmotd.sh consumes.
+#   --dmotd    : keeps the state-key derivation and progress-line gating
+#                consistent with how dmotd.sh's cmsec_checks() invokes
+#                cmsec.sh — so the cache entries this prewarm writes
+#                are the same ones dmotd.sh later reads back. (The
+#                stale-fallback path at cmsec.sh:206 is bypassed by
+#                --no-cache regardless; --dmotd here is about cache-key
+#                parity, not stale-fallback.)
 #   --json     : silences the per-CVE narrative; we only want the cache
 #                populated, not the banner.
 
@@ -31,7 +33,12 @@ PREWARM_LOCK='/var/cache/centminmod/cmsec/.prewarm.lock'
 # the cron entry doesn't generate root mail on every tick.
 [ -x "$CMSEC_BIN" ] || exit 0
 
-mkdir -p "$(dirname "$PREWARM_LOCK")" 2>/dev/null
+# Create the cache dir with 0700 perms BEFORE cmsec.sh runs. cmsec.sh's
+# cmsec_cache_dir() in lib/cache.sh only chmods when it creates the dir,
+# so if this mkdir wins the race, default umask (0755) would leak cache
+# contents to local users. Explicit chmod here preserves the 0700 intent.
+mkdir -p "$(dirname "$PREWARM_LOCK")" 2>/dev/null \
+  && chmod 0700 "$(dirname "$PREWARM_LOCK")" 2>/dev/null
 exec 9>"$PREWARM_LOCK" 2>/dev/null || exit 0
 
 if command -v flock >/dev/null 2>&1; then
