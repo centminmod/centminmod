@@ -87,6 +87,16 @@ fix_nginx_logrotate_domain_su() {
   fi
 }
 
+fix_nginx_logrotate_domain_create() {
+  if [ -f /etc/logrotate.d/nginx ]; then
+    if grep -q '/home/nginx/domains' /etc/logrotate.d/nginx \
+       && grep -q 'su nginx nginx' /etc/logrotate.d/nginx \
+       && ! grep -qE 'create[[:space:]]+[0-9]{3,4}[[:space:]]+nginx[[:space:]]+nginx' /etc/logrotate.d/nginx; then
+      NGINX_LOGROTATE_DOMAIN_CREATE_FIXNEEDED=1
+    fi
+  fi
+}
+
 opendkim_check_enabled() {
   if [[ "$CENTOS_NINE" -eq '9' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_SEVEN" -eq '7' ]]; then
     if [ -d /etc/opendkim/keys ]; then
@@ -3152,7 +3162,7 @@ mjemalloc() {
 
 fixlogrotate() {
   if [ -f /etc/logrotate.d/nginx ]; then
-  if [[ -z "$(grep 'maxsize' /etc/logrotate.d/nginx)" || -z "$(grep 'su nginx nginx' /etc/logrotate.d/nginx)" ]]; then
+  if [[ -z "$(grep 'maxsize' /etc/logrotate.d/nginx)" || -z "$(grep 'su nginx nginx' /etc/logrotate.d/nginx)" || -z "$(grep -E 'create[[:space:]]+[0-9]{3,4}[[:space:]]+nginx[[:space:]]+nginx' /etc/logrotate.d/nginx)" ]]; then
     local USE_ZSTD='n'
     if grep -q 'compresscmd /usr/local/bin/zstd' /etc/logrotate.d/nginx; then
       USE_ZSTD='y'
@@ -3185,6 +3195,7 @@ cat > "/etc/logrotate.d/nginx" <<END
 
 /home/nginx/domains/*/log/*.log /home/nginx/domains/*/log/*.json {
         su nginx nginx
+        create 0644 nginx nginx
         daily
         dateext
         missingok
@@ -3220,6 +3231,7 @@ cat > "/etc/logrotate.d/nginx" <<END
 
 /home/nginx/domains/*/log/*.log /home/nginx/domains/*/log/*.json {
         su nginx nginx
+        create 0644 nginx nginx
         daily
         dateext
         missingok
@@ -3256,6 +3268,7 @@ cat > "/etc/logrotate.d/nginx" <<END
 
 /home/nginx/domains/*/log/*.log /home/nginx/domains/*/log/*.json {
         su nginx nginx
+        create 0644 nginx nginx
         daily
         dateext
         missingok
@@ -3289,6 +3302,7 @@ cat > "/etc/logrotate.d/nginx" <<END
 
 /home/nginx/domains/*/log/*.log /home/nginx/domains/*/log/*.json {
         su nginx nginx
+        create 0644 nginx nginx
         daily
         dateext
         missingok
@@ -3307,6 +3321,11 @@ fi
       echo "one time fix for skipped nginx logrotate"
       logrotate -f /etc/logrotate.d/nginx >/dev/null 2>&1
       unset NGINX_LOGROTATE_DOMAIN_SU_FIXNEEDED
+    fi
+    if [[ "${NGINX_LOGROTATE_DOMAIN_CREATE_FIXNEEDED:-0}" -eq 1 ]]; then
+      echo "one time fix for nginx logrotate create directive"
+      logrotate -f /etc/logrotate.d/nginx >/dev/null 2>&1
+      unset NGINX_LOGROTATE_DOMAIN_CREATE_FIXNEEDED
     fi
   fi
   fi
@@ -4354,6 +4373,7 @@ if [[ "$INITIALINSTALL" != [yY] ]]; then
   blockeditorcheck
   rpcnfsports
   fix_nginx_logrotate_domain_su
+  fix_nginx_logrotate_domain_create
   fixlogrotate
   csf_distftp
   pureftpdupdates
