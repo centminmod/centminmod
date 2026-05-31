@@ -567,7 +567,11 @@ PUREGROUP=nginx
     fi
 # CURRENTIP=$(echo $SSH_CLIENT | awk '{print $1}')
 # CURRENTCOUNTRY=$(curl -${ipv_forceopt}s https://ipinfo.io/$CURRENTIP/country)
-pureftpinstall
+# skip pure-ftpd install/enable when pure-ftpd is disabled so adding a vhost
+# does not silently re-enable the service (FTP user creation is gated below)
+if [[ "$PUREFTPD_DISABLED" != [yY] ]]; then
+  pureftpinstall
+fi
 
 # Support secondary dedicated IP configuration for centmin mod
 # nginx vhost generator, so out of the box, new nginx vhosts 
