@@ -3400,6 +3400,20 @@ csf_distftp() {
 }
 
 pureftpdupdates() {
+  # cpcheck runs before centmin.sh sources custom_config.inc, so the in-memory
+  # PUREFTPD_DISABLED is still its default here. Read the persisted value
+  # directly (only this one var - sourcing the whole file mid-cpcheck would
+  # override other variables cpcheck relies on being at their defaults).
+  local pureftpd_disabled_persist='n'
+  if [ -f /etc/centminmod/custom_config.inc ]; then
+    pureftpd_disabled_persist=$(awk -F= '/^[[:space:]]*PUREFTPD_DISABLED=/ {v=$2; sub(/#.*/,"",v); gsub(/[ \t"'"'"']/,"",v); print v}' /etc/centminmod/custom_config.inc | tail -1)
+    [ -z "$pureftpd_disabled_persist" ] && pureftpd_disabled_persist='n'
+  fi
+  # when pure-ftpd is disabled, skip all pure-ftpd config/cert/port maintenance
+  # (this function otherwise restarts the disabled service every menu pass)
+  if [[ "$pureftpd_disabled_persist" = [yY] ]]; then
+    return 0
+  fi
   if [ -f /etc/pure-ftpd/pure-ftpd.conf ]; then
     if [ "$SECOND_IP" ]; then
       CNIP="$SECOND_IP"

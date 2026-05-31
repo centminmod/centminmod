@@ -317,6 +317,14 @@ if [ -f "/etc/centminmod/custom_config.inc" ]; then
   . "/etc/centminmod/custom_config.inc"
 fi
 
+# label for vhost setup status messages - omit the pure-ftpd wording when
+# pure-ftpd is disabled (no FTP virtual user is created in that case)
+if [[ "$PUREFTPD_DISABLED" = [yY] ]]; then
+  FTPVHOST_LABEL="nginx vhost setup (pure-ftpd disabled)"
+else
+  FTPVHOST_LABEL="nginx vhost + pureftp virtual ftp user setup"
+fi
+
 if [ -f "/etc/centminmod/acmetool-config.ini" ]; then
   dos2unix -q "/etc/centminmod/acmetool-config.ini"
   . "/etc/centminmod/acmetool-config.ini"
@@ -792,6 +800,15 @@ vhostsetup() {
     yum -y -q install pwgen
   fi
   ftpusername=$(/usr/bin/pwgen -s 15 1)
+  # only pass -u (which makes nv install/enable pure-ftpd and create an FTP
+  # user) when pure-ftpd is not disabled. nv treats -u as an explicit opt-in
+  # and flips PUREFTPD_DISABLED=n internally, so omitting it is the only way
+  # to honor PUREFTPD_DISABLED=y here. PUREFTPD_DISABLED is sourced from
+  # /etc/centminmod/custom_config.inc earlier in this script.
+  ftparg=""
+  if [[ "$PUREFTPD_DISABLED" != [yY] ]]; then
+    ftparg="-u ${ftpusername}"
+  fi
   if [ -f /usr/bin/nv ]; then
     echo
     if [[ "$vhost_domain" = "$MAIN_HOSTNAME" ]]; then
@@ -800,11 +817,11 @@ vhostsetup() {
       sslvhostsetup_mainhostname "$vhost_domain"
     else
       if [[ "$HTTPSONLY" = 'https' ]]; then
-        echo "/usr/bin/nv -d "${vhost_domain}" -s ydle -u "${ftpusername}""
-        /usr/bin/nv -d "${vhost_domain}" -s ydle -u "${ftpusername}"
+        echo "/usr/bin/nv -d "${vhost_domain}" -s ydle ${ftparg}"
+        /usr/bin/nv -d "${vhost_domain}" -s ydle ${ftparg}
       else
-        echo "/usr/bin/nv -d "${vhost_domain}" -s y -u "${ftpusername}""
-        /usr/bin/nv -d "${vhost_domain}" -s y -u "${ftpusername}"
+        echo "/usr/bin/nv -d "${vhost_domain}" -s y ${ftparg}"
+        /usr/bin/nv -d "${vhost_domain}" -s y ${ftparg}
       fi
       # initiate the autoprotect.sh include file generation
       # after nginx vhost is created
@@ -2056,7 +2073,7 @@ issue_acme() {
   # + ssl vhost file does not exist
   if [[ ! -d "$WEBROOTPATH_OPT" && ! -f "$SSLVHOST_CONFIG" ]]; then
     echo
-    echo "${vhostname} nginx vhost + pureftp virtual ftp user setup"
+    echo "${vhostname} ${FTPVHOST_LABEL}"
     if [[ "$testcert" = 'lived' || "$testcert" = 'd' ]]; then
       vhostsetup "${vhostname}" https
     else
@@ -2380,7 +2397,7 @@ reissue_acme() {
   # + ssl vhost file does not exist
   if [[ ! -d "$WEBROOTPATH_OPT" && ! -f "$SSLVHOST_CONFIG" ]]; then
     echo
-    echo "${vhostname} nginx vhost + pureftp virtual ftp user setup"
+    echo "${vhostname} ${FTPVHOST_LABEL}"
     if [[ "$testcert" = 'lived' || "$testcert" = 'd' ]]; then
       vhostsetup "${vhostname}" https
     else
@@ -2940,7 +2957,7 @@ renew_acme() {
   # + ssl vhost file does not exist
   if [[ ! -d "$WEBROOTPATH_OPT" && ! -f "$SSLVHOST_CONFIG" ]]; then
     echo
-    echo "${vhostname} nginx vhost + pureftp virtual ftp user setup"
+    echo "${vhostname} ${FTPVHOST_LABEL}"
     if [[ "$testcert" = 'lived' || "$testcert" = 'd' ]]; then
       vhostsetup "${vhostname}" https
     else
@@ -3266,7 +3283,7 @@ webroot_issueacme() {
   # + ssl vhost file does not exist
   if [[ ! -d "$CUSTOM_WEBROOT" && ! -f "$SSLVHOST_CONFIG" ]]; then
     echo
-    echo "${vhostname} nginx vhost + pureftp virtual ftp user setup"
+    echo "${vhostname} ${FTPVHOST_LABEL}"
     if [[ "$testcert" = 'lived' || "$testcert" = 'd' ]]; then
       vhostsetup "${vhostname}" https
     else
@@ -3276,7 +3293,7 @@ webroot_issueacme() {
   # + ssl vhost file does not exist
   elif [[ -d "$CUSTOM_WEBROOT" && ! -f "$SSLVHOST_CONFIG" ]]; then
     echo
-    echo "${vhostname} nginx vhost + pureftp virtual ftp user setup"
+    echo "${vhostname} ${FTPVHOST_LABEL}"
     if [[ "$testcert" = 'lived' || "$testcert" = 'd' ]]; then
       vhostsetup "${vhostname}" https
     else
@@ -3637,7 +3654,7 @@ webroot_reissueacme() {
   # + ssl vhost file does not exist
   if [[ ! -d "$CUSTOM_WEBROOT" && ! -f "$SSLVHOST_CONFIG" ]]; then
     echo
-    echo "${vhostname} nginx vhost + pureftp virtual ftp user setup"
+    echo "${vhostname} ${FTPVHOST_LABEL}"
     if [[ "$testcert" = 'lived' || "$testcert" = 'd' ]]; then
       vhostsetup "${vhostname}" https
     else
@@ -3647,7 +3664,7 @@ webroot_reissueacme() {
   # + ssl vhost file does not exist
   elif [[ -d "$CUSTOM_WEBROOT" && ! -f "$SSLVHOST_CONFIG" ]]; then
     echo
-    echo "${vhostname} nginx vhost + pureftp virtual ftp user setup"
+    echo "${vhostname} ${FTPVHOST_LABEL}"
     if [[ "$testcert" = 'lived' || "$testcert" = 'd' ]]; then
       vhostsetup "${vhostname}" https
     else
@@ -3965,7 +3982,7 @@ webroot_renewacme() {
   # + ssl vhost file does not exist
   if [[ ! -d "$CUSTOM_WEBROOT" && ! -f "$SSLVHOST_CONFIG" ]]; then
     echo
-    echo "${vhostname} nginx vhost + pureftp virtual ftp user setup"
+    echo "${vhostname} ${FTPVHOST_LABEL}"
     if [[ "$testcert" = 'lived' || "$testcert" = 'd' ]]; then
       vhostsetup "${vhostname}" https
     else
@@ -3975,7 +3992,7 @@ webroot_renewacme() {
   # + ssl vhost file does not exist
   elif [[ -d "$CUSTOM_WEBROOT" && ! -f "$SSLVHOST_CONFIG" ]]; then
     echo
-    echo "${vhostname} nginx vhost + pureftp virtual ftp user setup"
+    echo "${vhostname} ${FTPVHOST_LABEL}"
     if [[ "$testcert" = 'lived' || "$testcert" = 'd' ]]; then
       vhostsetup "${vhostname}" https
     else
@@ -4402,7 +4419,7 @@ issue_acmedns() {
     # + ssl vhost file does not exist
     if [[ ! -d "$WEBROOTPATH_OPT" && ! -f "$SSLVHOST_CONFIG" ]]; then
       echo
-      echo "${vhostname} nginx vhost + pureftp virtual ftp user setup"
+      echo "${vhostname} ${FTPVHOST_LABEL}"
       if [[ "$testcert" = 'lived' || "$testcert" = 'd' ]]; then
         vhostsetup "${vhostname}" https
       else

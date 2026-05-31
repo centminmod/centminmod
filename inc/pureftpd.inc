@@ -49,7 +49,10 @@ fi
     fi
     cmchkconfig pure-ftpd on
     sed -i 's/LF_FTPD = "10"/LF_FTPD = "3"/g' /etc/csf/csf.conf
-    sed -i 's/PORTFLOOD = \"\"/PORTFLOOD = \"21;tcp;20;300\"/g' /etc/csf/csf.conf
+    # only set the FTP PORTFLOOD rule when pure-ftpd is not disabled
+    if [[ "$PUREFTPD_DISABLED" != [yY] ]]; then
+      sed -i 's/PORTFLOOD = \"\"/PORTFLOOD = \"21;tcp;20;300\"/g' /etc/csf/csf.conf
+    fi
 
     echo "configuring pure-ftpd for virtual user support"
     # backup original /etc/pure-ftpd/pure-ftpd.conf

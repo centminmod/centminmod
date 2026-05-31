@@ -558,6 +558,20 @@ if [[ "$PUREFTPD_DISABLED" = [yY] ]]; then
   cmservice pure-ftpd stop
   cecho "Disabling pure-ftpd service:" $boldyellow
   cmchkconfig pure-ftpd off
+  # remove the FTP (port 21) PORTFLOOD rule since pure-ftpd is disabled.
+  # only strip the 21;tcp;... rule (match count/interval generically as
+  # CSFPORTFLOOD_OVERRIDE may change them) - leave any other PORTFLOOD rules.
+  if [[ -f /etc/csf/csf.conf ]] && grep -E '^PORTFLOOD = ' /etc/csf/csf.conf | grep -qE '21;tcp;[0-9]+;[0-9]+'; then
+    cecho "Removing FTP PORTFLOOD rule:" $boldyellow
+    csf --profile backup pureftpd-disabled-portflood >/dev/null 2>&1
+    sed -i -E '/^PORTFLOOD = /{
+      s/21;tcp;[0-9]+;[0-9]+//
+      s/,,/,/g
+      s/"(,)/"/
+      s/(,)"/"/
+    }' /etc/csf/csf.conf
+    csf -ra >/dev/null 2>&1
+  fi
   cecho "--------------------------------------------------------" $boldyellow
   cecho "In future to re-enable pure-ftpd service type these 2 commands:" $boldyellow
   if [[ "$CENTOS_NINE" = '9' || "$CENTOS_EIGHT" = '8' || "$CENTOS_SEVEN" = '7' || "$CENTOS_TEN" = '10' ]]; then
