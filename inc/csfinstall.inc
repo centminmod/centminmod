@@ -207,8 +207,16 @@ if [[ "$CSFINSTALLOK" = [yY] ]]; then
 
     echo "CSF adding memcached, varnish ports to csf.allow list..."
     # sed -i 's/20,21,22,25,53,853,80,110,143,443,465,587,993,995/20,21,22,25,53,853,80,110,111,143,161,443,465,587,993,995,1110,1186,1194,2049,81,9418,30001:50011/g' /etc/csf/csf.conf
+    # non-FTP misc ports are always added; the pure-ftpd passive port range
+    # 30001:50011 is only added when pure-ftpd is not disabled (PUREFTPD_DISABLED)
+    # custom_config.inc is sourced in centmin.sh before csfinstalls runs so the
+    # in-memory PUREFTPD_DISABLED value is valid here.
+    CSF_ADDITIONAL_PORTS="1110,1186,1194,2049,81,9418"
+    if [[ "$PUREFTPD_DISABLED" != [yY] ]]; then
+      CSF_ADDITIONAL_PORTS="${CSF_ADDITIONAL_PORTS},30001:50011"
+    fi
     # modify /etc/csf/csf.conf and save modifications /etc/csf/csf.conf.tmp
-    awk -v additional="1110,1186,1194,2049,81,9418,30001:50011" '/^TCP_IN =/ {gsub("\"$", "," additional "\""); print; next} /^TCP6_IN =/ {gsub("\"$", "," additional "\""); print; next} {print}' /etc/csf/csf.conf > /etc/csf/csf.conf.tmp
+    awk -v additional="$CSF_ADDITIONAL_PORTS" '/^TCP_IN =/ {gsub("\"$", "," additional "\""); print; next} /^TCP6_IN =/ {gsub("\"$", "," additional "\""); print; next} {print}' /etc/csf/csf.conf > /etc/csf/csf.conf.tmp
     # compare /etc/csf/csf.conf vs /etc/csf/csf.conf.tmp via diff
     diff -u /etc/csf/csf.conf /etc/csf/csf.conf.tmp
     # overwrite existing csf.conf with modified

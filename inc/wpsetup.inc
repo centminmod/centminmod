@@ -341,7 +341,11 @@ PUREGROUP=nginx
         CNIP=$(curl -${ipv_forceopt}s${CURL_TIMEOUTS} -A "$CURL_AGENT Nginx Wordpress Vhost IP CHECK $SCRIPT_VERSION $CURL_CPUMODEL $CURL_CPUSPEED $VPS_VIRTWHAT" https://geoip.centminmod.com/v4 | jq -r '.ip')
       fi
     fi
-pureftpinstall
+# skip pure-ftpd install/enable when pure-ftpd is disabled so adding a vhost
+# does not silently re-enable the service (FTP user creation is gated below)
+if [[ "$PUREFTPD_DISABLED" != [yY] ]]; then
+  pureftpinstall
+fi
 
 # Support secondary dedicated IP configuration for centmin mod
 # nginx vhost generator, so out of the box, new nginx vhosts 
