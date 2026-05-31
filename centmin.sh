@@ -30,7 +30,7 @@ DT=$(date +"%d%m%y-%H%M%S")
 branchname='140.00beta01'
 SCRIPT_MAJORVER='140'
 SCRIPT_MINORVER='00'
-SCRIPT_INCREMENTVER='350'
+SCRIPT_INCREMENTVER='351'
 SCRIPT_VERSIONSHORT="${branchname}"
 SCRIPT_VERSION="${SCRIPT_VERSIONSHORT}.b${SCRIPT_INCREMENTVER}"
 SCRIPT_DATE='16/01/25'
@@ -362,6 +362,11 @@ cmservice() {
       fi
     elif [[ "${servicename}" = 'mysql' || "${servicename}" = 'mysqld' ]]; then
       servicename='mariadb'
+      echo "systemctl $action ${servicename}.service"
+      if [[ "$CMSDEBUG" = [nN] ]]; then
+        systemctl "$action" "${servicename}.service"
+      fi
+    else
       echo "systemctl $action ${servicename}.service"
       if [[ "$CMSDEBUG" = [nN] ]]; then
         systemctl "$action" "${servicename}.service"
