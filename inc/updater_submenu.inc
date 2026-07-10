@@ -3,6 +3,7 @@
 #######################################################################################
 re_sourcefiles() {
 source "${CM_INSTALLDIR}/centmin.sh"
+source "${CM_INSTALLDIR}/inc/git_sync.inc"
 source "${CM_INSTALLDIR}/inc/customrpms.inc"
 source "${CM_INSTALLDIR}/inc/pureftpd.inc"
 source "${CM_INSTALLDIR}/inc/htpasswdsh.inc"
@@ -221,12 +222,17 @@ if [[ -d "${SCRIPT_DIR}/.git" ]]; then
         popd >/dev/null 2>&1
     if [[ "$(cd /usr/local/src/centminmod; git rev-parse HEAD)" != "$(cd /usr/local/src/centminmod; git rev-parse @{u})" ]]; then
     cecho " cd /usr/local/src/centminmod" $boldgreen
-    cecho " git stash" $boldgreen
-    cecho " git pull" $boldgreen
     cecho " chmod +x centmin.sh" $boldgreen
     cd /usr/local/src/centminmod 2>/dev/null
-    git stash
-    git pull
+    if [ -r "${SCRIPT_DIR}/inc/git_sync.inc" ]; then
+      . "${SCRIPT_DIR}/inc/git_sync.inc"
+    fi
+    _cmm_git_sync_impl "$branchname" /usr/local/src/centminmod
+    _git_sync_rc=$?
+    if [ "$_git_sync_rc" = 2 ]; then
+      cecho "Centmin Mod git sync failed. See messages above and visit:" $boldred
+      cecho "  https://community.centminmod.com/forums/install-upgrades-or-pre-install-questions.8/" $boldred
+    fi
   
     if [[ "$CM_DIRSIZE" -lt '4000000' ]]; then
       # git reflog expire --all --expire=now

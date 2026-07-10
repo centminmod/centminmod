@@ -41,6 +41,60 @@ VPS_GEOIPCHECK_V4='y'
 # after YUM package updates, alerts Fri-Sun only
 NEEDRESTART_CHECK='n'
 
+# Compact DMOTD layout (vertical-space-efficient SSH login banner)
+# Master switch — defaults to 'n' so existing installs see ZERO change.
+# Set to 'y' to enable the ~28-line compact layout (legacy ~63 lines).
+# Per-section sub-toggles below take effect only when DMOTD_COMPACT='y';
+# setting any sub-toggle to 'n' selectively restores that section's
+# verbose panel without losing the rest of the compact layout.
+#DMOTD_COMPACT='n'
+
+# Fancy DMOTD layout — Unicode box-drawing + colored ASCII badges + bars
+# Opt-in cosmetic upgrade on top of the compact layout. When 'y' AND the
+# terminal is capable (UTF-8 locale, >=8 colors, TERM != dumb, >= 75 cols,
+# real TTY), output uses '━' / '─' heavy/light rules, '│' Unicode column
+# separator, '▓░' progress bars on mem/disk, and colored '[OK]' / '[!!]' /
+# '[XX]' ASCII status badges. When 'y' but the terminal is NOT capable,
+# falls back silently to the compact layout. When 'n' (default), the
+# DMOTD_COMPACT setting controls layout — no fancy bytes emitted.
+#
+# Fancy implies compact data — the user's DMOTD_COMPACT setting is NOT
+# mutated; the script uses an internal _DMOTD_COMPACT_EFFECTIVE variable
+# so admins who set DMOTD_COMPACT='n' deliberately retain that intent.
+#
+# For fully uniform fancy rendering, also set DMOTD_CVECHECK_COMPACT='y';
+# otherwise cmsec's per-CVE block stays verbose in the middle of the
+# fancy banner. Default-off keeps full per-CVE detail visible.
+#
+# Note on log files: cmm-login-git-checks_*.log already contains raw ANSI
+# escapes from cecho (today's behaviour). Fancy adds UTF-8 box bytes;
+# content text remains grep-friendly.
+#DMOTD_FANCY='n'
+
+# CSF version checker toggle (independent of DMOTD_COMPACT)
+# 'n' silences csf_version_checker entirely. Useful on servers that
+# track CSF updates separately or do not want the daily mirror check.
+#DMOTD_CSFVERCHECK='y'
+
+# cmsec compact summary (independent of DMOTD_COMPACT)
+# 'y' collapses cmsec output to a single summary line:
+#   cmsec: kernel X.Y.Z — N/N OK (P patched, A n/a)
+# Vulnerable / indeterminate CVEs always expand regardless of this flag
+# so broken security state is never silently hidden.
+#DMOTD_CVECHECK_COMPACT='n'
+
+# Per-section compact sub-toggles (only effective when DMOTD_COMPACT='y')
+# Set any to 'n' to restore that section's verbose multi-line panel.
+#ENABLEMOTD_HEADERCOMPACT='y'       # hostname / users / CPU / proc / uptime
+#ENABLEMOTD_MEMCOMPACT='y'          # free memory output
+#ENABLEMOTD_DFCOMPACT='y'           # df -hT filters tmpfs/devtmpfs/efivarfs/squashfs/overlay/autofs
+#ENABLEMOTD_LINKSCOMPACT='y'        # Docs / Forum link block (ENABLEMOTD_LINKSMSG='n' still hides)
+#ENABLEMOTD_GITCOMPACT='y'          # Centmin Mod git/branch/update status
+#ENABLEMOTD_NGINXVERCOMPACT='y'     # nginx update notice
+#ENABLEMOTD_PHPVERCOMPACT='y'       # PHP update notice
+#ENABLEMOTD_CSFVERCOMPACT='y'       # CSF version status (DMOTD_CSFVERCHECK='y' still required)
+#ENABLEMOTD_NEEDRESTARTCOMPACT='y'  # reboot-required notice
+
 #####################################################
 TIME_NGINX='n'
 TIME_PHPCONFIGURE='n'

@@ -87,6 +87,16 @@ fix_nginx_logrotate_domain_su() {
   fi
 }
 
+fix_nginx_logrotate_domain_create() {
+  if [ -f /etc/logrotate.d/nginx ]; then
+    if grep -q '/home/nginx/domains' /etc/logrotate.d/nginx \
+       && grep -q 'su nginx nginx' /etc/logrotate.d/nginx \
+       && ! grep -qE 'create[[:space:]]+[0-9]{3,4}[[:space:]]+nginx[[:space:]]+nginx' /etc/logrotate.d/nginx; then
+      NGINX_LOGROTATE_DOMAIN_CREATE_FIXNEEDED=1
+    fi
+  fi
+}
+
 opendkim_check_enabled() {
   if [[ "$CENTOS_NINE" -eq '9' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_SEVEN" -eq '7' ]]; then
     if [ -d /etc/opendkim/keys ]; then
@@ -917,6 +927,29 @@ cfauthorigin_cronsetup() {
   fi
 }
 
+# Auto-install the cmsec CVE cache pre-warm cron entry. Refreshes the
+# /var/cache/centminmod/cmsec/*.cache files every 12 h (well inside the
+# 24 h TTL) so SSH logins running config/motd/dmotd.sh's cmsec_checks()
+# hit warm cache instead of paying the cold-cache cost (dnf metadata
+# refresh + kernel KCONFIG probes + KernelCare kcarectl timeout).
+# Idempotent: the outer grep guard skips the body once any cron entry
+# referencing cmsec-prewarm.sh exists, so re-running centmin.sh never
+# adds a duplicate. The inner `sed -i '/cmsec-prewarm.sh/d'` is
+# defensive — it strips any stray duplicates from the backup file
+# before appending the new entry on a true first install. Note that
+# schedule changes in this function do NOT propagate to existing
+# installs (the grep guard short-circuits); admins who want a new
+# schedule must remove the old entry via `crontab -e` first.
+cmsec_prewarm_cronsetup() {
+  if [[ -z "$(crontab -l 2>&1 | grep '/usr/local/src/centminmod/tools/cmm-security/cmsec-prewarm.sh')" && -f "/usr/local/src/centminmod/tools/cmm-security/cmsec-prewarm.sh" ]]; then
+    mkdir -p /etc/centminmod/cronjobs/
+    crontab -l > /etc/centminmod/cronjobs/cronjoblist-before-cmsec-prewarm.txt
+    sed -i '/cmsec-prewarm.sh/d' /etc/centminmod/cronjobs/cronjoblist-before-cmsec-prewarm.txt
+    echo "17 */12 * * * /usr/local/src/centminmod/tools/cmm-security/cmsec-prewarm.sh >/dev/null 2>&1" >> /etc/centminmod/cronjobs/cronjoblist-before-cmsec-prewarm.txt
+    crontab /etc/centminmod/cronjobs/cronjoblist-before-cmsec-prewarm.txt
+  fi
+}
+
 mytop_setup() {
   if [[ $(rpm -q mytop >/dev/null 2>&1; echo $?) != '0' ]]; then
       yum -y install mytop
@@ -1505,11 +1538,15 @@ march_hostcheck() {
   VPS_VIRTWHAT_GET=$(virt-what | xargs | sed -e 's|redhat ||g')
   VPS_VIRTWHAT="${VPS_VIRTWHAT_GET:-d}"
   if [[ "$VPS_GEOIPCHECK_V3" = [yY] ]]; then
-    VPS_GEOIPCHECK=$(curl -${ipv_forceopt}s${CURL_TIMEOUTS} -A "$CURL_AGENT VPSCHECK $SCRIPT_VERSION $CURL_CPUMODEL $CURL_CPUSPEED $VPS_VIRTWHAT" https://geoip.centminmod.com/v3 | jq -r)
-    VPS_ASNCHECK=$(echo "$VPS_GEOIPCHECK" | jq -r '"\(.data.asn) \(.data.description_short)"')
+    _march_geoip=$(curl -${ipv_forceopt}s${CURL_TIMEOUTS} -A "$CURL_AGENT VPSCHECK $SCRIPT_VERSION $CURL_CPUMODEL $CURL_CPUSPEED $VPS_VIRTWHAT" https://geoip.centminmod.com/v3 2>/dev/null)
+    VPS_GEOIPCHECK=$(echo "$_march_geoip" | jq -r 2>/dev/null)
+    unset _march_geoip
+    VPS_ASNCHECK=$(echo "$VPS_GEOIPCHECK" | jq -r '"\(.data.asn) \(.data.description_short)"' 2>/dev/null)
   elif [[ "$VPS_GEOIPCHECK_V4" = [yY] ]]; then
-    VPS_GEOIPCHECK=$(curl -${ipv_forceopt}s${CURL_TIMEOUTS} -A "$CURL_AGENT VPSCHECK $SCRIPT_VERSION $CURL_CPUMODEL $CURL_CPUSPEED $VPS_VIRTWHAT" https://geoip.centminmod.com/v4 | jq -r)
-    VPS_ASNCHECK=$(echo "$VPS_GEOIPCHECK" | jq -r '"\(.asn) \(.asOrganization)"')
+    _march_geoip=$(curl -${ipv_forceopt}s${CURL_TIMEOUTS} -A "$CURL_AGENT VPSCHECK $SCRIPT_VERSION $CURL_CPUMODEL $CURL_CPUSPEED $VPS_VIRTWHAT" https://geoip.centminmod.com/v4 2>/dev/null)
+    VPS_GEOIPCHECK=$(echo "$_march_geoip" | jq -r 2>/dev/null)
+    unset _march_geoip
+    VPS_ASNCHECK=$(echo "$VPS_GEOIPCHECK" | jq -r '"\(.asn) \(.asOrganization)"' 2>/dev/null)
   fi
   if [[ ! -z "${VPS_VIRTWHAT_GET}" && "$(echo "${VPS_ASNCHECK}" | egrep -i -o 'upcloud|linode|digitalocean|digital ocean|vultr|choopa|hetzner|frantech|hostus|ramnode|amazon|google|microsoft|mammoth|contabo|netcup|ibm|softlayer|oracle|alibaba|ovh|leaseweb|scaleway|bluehost|siteground|a2hosting|rackspace|liquidweb|akamai|bigscoots|hivelocity|dedipath|ponynet|multa|telkomnet|heymman|webnx|quadranet|clouvider|ipxo|singlehop|strasmore|racknerd|inmotion|aruba|colocrossing|inception|terrahost|hosthatch|huawei|secured|quickpacket|interserver|aliyun|alicloud|fpt|steadfast|godaddy|go daddy|hostmania|host1|internap|mivocloud|psychz|reliablesite|hostwinds|nodisto|ransom|viet|worldstream|xtom')" && "$MARCH_TARGETNATIVE_ALWAYS" != [yY] ]]; then
     MARCH_TARGETNATIVE='n'
@@ -3125,7 +3162,7 @@ mjemalloc() {
 
 fixlogrotate() {
   if [ -f /etc/logrotate.d/nginx ]; then
-  if [[ -z "$(grep 'maxsize' /etc/logrotate.d/nginx)" || -z "$(grep 'su nginx nginx' /etc/logrotate.d/nginx)" ]]; then
+  if [[ -z "$(grep 'maxsize' /etc/logrotate.d/nginx)" || -z "$(grep 'su nginx nginx' /etc/logrotate.d/nginx)" || -z "$(grep -E 'create[[:space:]]+[0-9]{3,4}[[:space:]]+nginx[[:space:]]+nginx' /etc/logrotate.d/nginx)" ]]; then
     local USE_ZSTD='n'
     if grep -q 'compresscmd /usr/local/bin/zstd' /etc/logrotate.d/nginx; then
       USE_ZSTD='y'
@@ -3158,6 +3195,7 @@ cat > "/etc/logrotate.d/nginx" <<END
 
 /home/nginx/domains/*/log/*.log /home/nginx/domains/*/log/*.json {
         su nginx nginx
+        create 0644 nginx nginx
         daily
         dateext
         missingok
@@ -3193,6 +3231,7 @@ cat > "/etc/logrotate.d/nginx" <<END
 
 /home/nginx/domains/*/log/*.log /home/nginx/domains/*/log/*.json {
         su nginx nginx
+        create 0644 nginx nginx
         daily
         dateext
         missingok
@@ -3229,6 +3268,7 @@ cat > "/etc/logrotate.d/nginx" <<END
 
 /home/nginx/domains/*/log/*.log /home/nginx/domains/*/log/*.json {
         su nginx nginx
+        create 0644 nginx nginx
         daily
         dateext
         missingok
@@ -3262,6 +3302,7 @@ cat > "/etc/logrotate.d/nginx" <<END
 
 /home/nginx/domains/*/log/*.log /home/nginx/domains/*/log/*.json {
         su nginx nginx
+        create 0644 nginx nginx
         daily
         dateext
         missingok
@@ -3280,6 +3321,11 @@ fi
       echo "one time fix for skipped nginx logrotate"
       logrotate -f /etc/logrotate.d/nginx >/dev/null 2>&1
       unset NGINX_LOGROTATE_DOMAIN_SU_FIXNEEDED
+    fi
+    if [[ "${NGINX_LOGROTATE_DOMAIN_CREATE_FIXNEEDED:-0}" -eq 1 ]]; then
+      echo "one time fix for nginx logrotate create directive"
+      logrotate -f /etc/logrotate.d/nginx >/dev/null 2>&1
+      unset NGINX_LOGROTATE_DOMAIN_CREATE_FIXNEEDED
     fi
   fi
   fi
@@ -3351,6 +3397,20 @@ csf_distftp() {
 }
 
 pureftpdupdates() {
+  # cpcheck runs before centmin.sh sources custom_config.inc, so the in-memory
+  # PUREFTPD_DISABLED is still its default here. Read the persisted value
+  # directly (only this one var - sourcing the whole file mid-cpcheck would
+  # override other variables cpcheck relies on being at their defaults).
+  local pureftpd_disabled_persist='n'
+  if [ -f /etc/centminmod/custom_config.inc ]; then
+    pureftpd_disabled_persist=$(awk -F= '/^[[:space:]]*PUREFTPD_DISABLED=/ {v=$2; sub(/#.*/,"",v); gsub(/[ \t"'"'"']/,"",v); print v}' /etc/centminmod/custom_config.inc | tail -1)
+    [ -z "$pureftpd_disabled_persist" ] && pureftpd_disabled_persist='n'
+  fi
+  # when pure-ftpd is disabled, skip all pure-ftpd config/cert/port maintenance
+  # (this function otherwise restarts the disabled service every menu pass)
+  if [[ "$pureftpd_disabled_persist" = [yY] ]]; then
+    return 0
+  fi
   if [ -f /etc/pure-ftpd/pure-ftpd.conf ]; then
     if [ "$SECOND_IP" ]; then
       CNIP="$SECOND_IP"
@@ -3691,9 +3751,16 @@ auto_gitupdate() {
   if [[ -d "${SCRIPT_DIR}/.git" && "$AUTO_GITUPDATE" = [yY] ]]; then
     cd ${SCRIPT_DIR}
     # totally silence the output
-    git stash -q &> /dev/null
-    git fetch -q &> /dev/null
-    git pull -q &> /dev/null
+    if [ -r "${SCRIPT_DIR}/inc/git_sync.inc" ]; then
+      . "${SCRIPT_DIR}/inc/git_sync.inc"
+      _cmm_git_sync_impl "${branchname}" "${SCRIPT_DIR}" &> /dev/null
+    else
+      # Legacy silent path — --ff-only turns the silent fatal-error into a
+      # silent no-op on rebase divergence. Self-heals once inc/git_sync.inc lands.
+      git stash -q &> /dev/null
+      git fetch -q &> /dev/null
+      git pull --ff-only -q &> /dev/null
+    fi
   fi
 }
 
@@ -4279,6 +4346,7 @@ qrencode_setup
 initial_pip_updates initial
 jetpack_ip_whitelist_cronsetup
 push_check_updates_cronsetup
+cmsec_prewarm_cronsetup
 tcp_bbr_setup
 normalize_accept_encoding
 rsync_backport_install
@@ -4319,6 +4387,7 @@ if [[ "$INITIALINSTALL" != [yY] ]]; then
   blockeditorcheck
   rpcnfsports
   fix_nginx_logrotate_domain_su
+  fix_nginx_logrotate_domain_create
   fixlogrotate
   csf_distftp
   pureftpdupdates
@@ -4441,6 +4510,7 @@ if [[ "$INITIALINSTALL" != [yY] ]]; then
   switch_mariadbtenone_archives
   remove_anonymous_mysqlusers
   push_check_updates_cronsetup
+  cmsec_prewarm_cronsetup
   fix_wordpress_accept_encoding
   normalize_accept_encoding
   elnine_perl_check

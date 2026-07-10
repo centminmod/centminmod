@@ -88,7 +88,9 @@ nginx_version_to_int() {
 ###########################################################
 if [ -f "${CONFIGSCANBASE}/custom_config.inc" ]; then
     # default is at /etc/centminmod/custom_config.inc
-    dos2unix -q "${CONFIGSCANBASE}/custom_config.inc"
+    if [ -f /usr/bin/dos2unix ]; then
+        dos2unix -q "${CONFIGSCANBASE}/custom_config.inc"
+    fi
     source "${CONFIGSCANBASE}/custom_config.inc"
 fi
 if [ -f "/etc/centminmod/pushover.ini" ]; then
@@ -347,7 +349,7 @@ get_latest_php_version() {
     yum -q -y install jq
   fi
   if [[ "$DMOTD_PHPCHECK_DEBUG" = [yY] ]]; then
-      TEST_PHPVERS=$(bash -x getphpver "$(php-config --version | awk -F '.' '{print $1$2}')") | tee "${CENTMINLOGDIR}/cmm-check-for-updates-phpver-check-debug_${DT}.log"
+      LATEST_PHPVERS=$(bash -x getphpver "$(php-config --version | awk -F '.' '{print $1$2}')" 2>"${CENTMINLOGDIR}/cmm-check-for-updates-phpver-check-debug_${DT}.log")
   else
     LATEST_PHPVERS=$(getphpver "$(php-config --version | awk -F '.' '{print $1$2}')")
   fi
@@ -534,7 +536,7 @@ cmsec_checks() {
     # CVEs don't slip past and trigger a Pushover alert.
     cmsec_status="$(CMSEC_CACHE_TTL_MIN="$CMSEC_CACHE_TIMEOUT" \
                     DMOTD_CVECHECK_SUPPRESS="$DMOTD_CVECHECK_SUPPRESS" \
-                    "$CMSCRIPT_GITDIR/tools/cmm-security/cmsec.sh" --json 2>/dev/null)"
+                    "$CMSCRIPT_GITDIR/tools/cmm-security/cmsec.sh" --dmotd --json 2>/dev/null)"
     if [[ -n "$cmsec_status" ]] && printf '%s' "$cmsec_status" | grep -q '"final_status": "vulnerable"'; then
       kernel_str="$(uname -r)"
       printf '%s' "$cmsec_status" | awk -F'"' '

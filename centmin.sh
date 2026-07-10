@@ -30,7 +30,7 @@ DT=$(date +"%d%m%y-%H%M%S")
 branchname='140.00beta01'
 SCRIPT_MAJORVER='140'
 SCRIPT_MINORVER='00'
-SCRIPT_INCREMENTVER='322'
+SCRIPT_INCREMENTVER='354'
 SCRIPT_VERSIONSHORT="${branchname}"
 SCRIPT_VERSION="${SCRIPT_VERSIONSHORT}.b${SCRIPT_INCREMENTVER}"
 SCRIPT_DATE='16/01/25'
@@ -362,6 +362,11 @@ cmservice() {
       fi
     elif [[ "${servicename}" = 'mysql' || "${servicename}" = 'mysqld' ]]; then
       servicename='mariadb'
+      echo "systemctl $action ${servicename}.service"
+      if [[ "$CMSDEBUG" = [nN] ]]; then
+        systemctl "$action" "${servicename}.service"
+      fi
+    else
       echo "systemctl $action ${servicename}.service"
       if [[ "$CMSDEBUG" = [nN] ]]; then
         systemctl "$action" "${servicename}.service"
@@ -1115,9 +1120,9 @@ PHPEMBED='y'                 # built php with php embed SAPI library support --e
 PHPSWOOLE='n'                # https://pecl.php.net/package/swoole
 PHPSWOOLE_VER='5.1.6'
 PHPSWOOLE_EIGHT_ZERO_VER='5.1.6'
-PHPSWOOLE_EIGHT_ONE_VER='6.0.0'
-PHPSWOOLE_EIGHT_TWO_VER='6.0.0'
-PHPSWOOLE_EIGHT_THREE_VER='6.0.0'
+PHPSWOOLE_EIGHT_ONE_VER='6.1.8'
+PHPSWOOLE_EIGHT_TWO_VER='6.2.1'
+PHPSWOOLE_EIGHT_THREE_VER='6.2.1'
 PHPSWOOLE_EIGHT_FOUR_VER='6.0.0'
 PHPSWOOLE_EIGHT_FIVE_VER='6.1.2'    # placeholder until Swoole officially supports PHP 8.5
 PHPSWOOLE_FIVE_VER='2.0.5' # max PHP 5.0 supported version
@@ -1221,9 +1226,9 @@ MYSQL_INSTALL='n'            # Install official Oracle MySQL Server (MariaDB alt
 SENDMAIL_INSTALL='n'         # Install Sendmail (and mailx) set to y and POSTFIX_INSTALL=n for sendmail
 POSTFIX_INSTALL=y            # Install Postfix (and mailx) set to n and SENDMAIL_INSTALL=y for sendmail
 # Nginx
-NGINX_VERSION='1.31.0'             # Use this version of Nginx
+NGINX_VERSION='1.31.2'             # Use this version of Nginx
 NGINX_ANGIE_VERSION='Angie-1.11.4'
-FREENGINX_VERSION='1.29.6'     # Maxim's Freenginx fork https://freenginx.org/en/download.html
+FREENGINX_VERSION='1.30.1'     # Maxim's Freenginx fork https://freenginx.org/en/download.html
 FREENGINX_INSTALL='n'          # Use Freenginx fork instead of official Nginx
 FREENGINX_BACKPORT_PATCHES='n' # Backport Freenginx fixes to official Nginx
 NGINX_VHOSTSSL='y'             # enable centmin.sh menu 2 prompt to create self signed SSL vhost 2nd vhost conf

@@ -70,6 +70,7 @@ cat > "/etc/logrotate.d/nginx" <<END
 
 /home/nginx/domains/*/log/*.log /home/nginx/domains/*/log/*.json {
         su nginx nginx
+        create 0644 nginx nginx
         daily
         dateext
         missingok
@@ -105,6 +106,7 @@ cat > "/etc/logrotate.d/nginx" <<END
 
 /home/nginx/domains/*/log/*.log /home/nginx/domains/*/log/*.json {
         su nginx nginx
+        create 0644 nginx nginx
         daily
         dateext
         missingok
@@ -141,6 +143,7 @@ cat > "/etc/logrotate.d/nginx" <<END
 
 /home/nginx/domains/*/log/*.log /home/nginx/domains/*/log/*.json {
         su nginx nginx
+        create 0644 nginx nginx
         daily
         dateext
         missingok
@@ -174,6 +177,7 @@ cat > "/etc/logrotate.d/nginx" <<END
 
 /home/nginx/domains/*/log/*.log /home/nginx/domains/*/log/*.json {
         su nginx nginx
+        create 0644 nginx nginx
         daily
         dateext
         missingok

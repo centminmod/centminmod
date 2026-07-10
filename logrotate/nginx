@@ -17,6 +17,7 @@
 
 /home/nginx/domains/*/log/*.log {
         su nginx nginx
+        create 0644 nginx nginx
         daily
         dateext
         missingok

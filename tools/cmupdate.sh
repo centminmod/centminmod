@@ -41,6 +41,27 @@ else
   WGETOPT="-cnv --no-dns-cache${ipv_forceopt_wget}"
 fi
 
+# Rebase-aware git sync wrapper. Prefers the canonical inc/git_sync.inc
+# helper. If the helper is missing (first bootstrap after an upstream
+# rebase), falls through to a 6-line panic stub that does the bare
+# minimum to unstick. Full safety logic lives in inc/git_sync.inc only —
+# do not add features to the panic stub.
+_cmm_git_sync() {
+  local branch="$1"
+  local workdir="${2:-${CM_INSTALLDIR}}"
+  if [ -r "${CM_INSTALLDIR}/inc/git_sync.inc" ]; then
+    . "${CM_INSTALLDIR}/inc/git_sync.inc"
+    _cmm_git_sync_impl "$branch" "$workdir"
+    return $?
+  fi
+  cd "$workdir" || return 2
+  git fetch --prune origin "$branch" || return 2
+  git reset --hard "origin/$branch" || return 2
+  chmod +x centmin.sh
+  echo "RESULT: SUCCESS (panic-stub) — Centmin Mod synced. Run cmupdate again."
+  return 0
+}
+
 fupdate() {
   branch_opt=$1
   if [[ "$branch_opt" = 'beta' ]]; then
@@ -51,7 +72,7 @@ fupdate() {
     cmupdate_branchname_new=$cmupdate_branchname
   fi
 
-  CMUPDATE_GITCURLSTATUS=$(curl -${ipv_forceopt}sL --connect-timeout 20 -sI https://raw.githubusercontent.com/centminmod/centminmod/${cmupdate_branchname}/gitclean.txt | grep 'HTTP\/' | awk '/200/ {print $2}')
+  CMUPDATE_GITCURLSTATUS=$(curl -${ipv_forceopt}sL --connect-timeout 20 -sI https://raw.githubusercontent.com/centminmod/centminmod/${cmupdate_branchname}/gitclean.txt | grep 'HTTP/' | awk '/200/ {print $2}')
     if [[ "$CMUPDATE_GITCURLSTATUS" = '200' ]]; then
       CHECK_GITCLEAN=$(curl -${ipv_forceopt}sLk --connect-timeout 20 https://raw.githubusercontent.com/centminmod/centminmod/${cmupdate_branchname}/gitclean.txt)
     else
@@ -84,9 +105,20 @@ fupdate() {
         echo "       restoring previous copy of ${CM_INSTALLDIR} code base"
       fi
     elif [[ "$CHECK_GITCLEAN" = 'no' ]]; then
+      echo
+      echo "-------------------------------------"
+      echo "Updating Centmin Mod code"
+      echo "-------------------------------------"
+      echo
       cd "${CM_INSTALLDIR}"
-      git stash
-      git pull
+      git branch
+      _cmm_git_sync "$cmupdate_branchname_new" "${CM_INSTALLDIR}"
+      git log -1 --pretty=tformat:'Latest commit: %h (%ad)%n    %s' --date=short
+      echo
+      echo "-------------------------------------"
+      echo "Updated Centmin Mod code"
+      echo "-------------------------------------"
+      echo
     else
       echo
       echo "Detected Centmin Mod Github Remote Repo Changes"
@@ -129,8 +161,6 @@ fupdate() {
 }
 
 ######################################################
-fupdate
-
 case "$1" in
   update )
     fupdate

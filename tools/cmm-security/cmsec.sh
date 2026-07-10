@@ -26,7 +26,8 @@
 set -uo pipefail
 
 CMSEC_VERSION="0.1.0"
-CMSEC_DIR="$(cd "$(dirname "$(readlink -f "$0" 2>/dev/null || echo "$0")")" && pwd)"
+CMSEC_SELF="$(readlink -f "$0" 2>/dev/null || echo "$0")"
+CMSEC_DIR="$(cd "$(dirname "$CMSEC_SELF")" && pwd)"
 CHECKS_DIR="$CMSEC_DIR/checks"
 PROBES_DIR="$CMSEC_DIR/probes"
 LIB_DIR="$CMSEC_DIR/lib"
@@ -216,7 +217,18 @@ run_check_cached() {
     payload="$(cmsec_cache_read_stale "$cache_file" "$state_key" 2>/dev/null || true)"
     if [ -n "$payload" ]; then
       printf '%s' "$payload"
-      ( run_check_fresh "$check_id" "$check_path" "$state_key" "$cache_file" >/dev/null 2>&1 & ) >/dev/null 2>&1
+      # Detach the refresh into its own session so it survives an immediate
+      # logout (SIGHUP) and reliably warms the cache for the next login.
+      # setsid execs a binary and cannot call the run_check_fresh shell
+      # function, so re-exec cmsec's own public `check --no-cache` path —
+      # that performs a fresh run and writes the cache (--no-cache skips the
+      # reads, falling through to run_check_fresh). Fall back to the in-shell
+      # fork when setsid is unavailable.
+      if command -v setsid >/dev/null 2>&1; then
+        setsid "$CMSEC_SELF" check "$check_id" --no-cache --json --quiet </dev/null >/dev/null 2>&1 &
+      else
+        ( run_check_fresh "$check_id" "$check_path" "$state_key" "$cache_file" </dev/null >/dev/null 2>&1 & ) >/dev/null 2>&1
+      fi
       return 0
     fi
     # no usable stale either — must run synchronously
@@ -441,7 +453,7 @@ do_run() {
     exit 0
   }
 
-  if [ "$DMOTD_MODE" -eq 1 ]; then
+  if [ "$DMOTD_MODE" -eq 1 ] && [ "$JSON_OUT" -ne 1 ]; then
     # Print a progress line BEFORE iterating so the SSH login banner doesn't
     # show only a blank cursor while cmsec runs cold-cache checks (which
     # can take 1-2s each on a freshly-rebooted kernel where state-key
@@ -498,7 +510,7 @@ do_check() {
     printf 'cmsec check: missing <cve-id>\n' >&2
     usage >&2; exit 2
   fi
-  if [ "$DMOTD_MODE" -eq 1 ]; then
+  if [ "$DMOTD_MODE" -eq 1 ] && [ "$JSON_OUT" -ne 1 ]; then
     do_one_check_dmotd "$cve_id"
     return $?
   fi
