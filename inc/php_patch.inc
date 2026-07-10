@@ -1080,7 +1080,7 @@ php_patches() {
   fi
   if [[ "$PHPVER_ID" -ge '80000' && "$PHPVER_ID" -le '80099' ]]; then
       # for 8.0.x only
-      phpeight_bugids='cve-2024-2756 cve-2024-3096 cve-2024-5458 cve-2024-8925 cve-2024-8926 cve-2024-8927 cve-2024-9026 cve-2024-11236 cve-2024-11234 cve-2024-8932 cve-2024-11233 ghsa-4w77-75f9-2c8w cve-2025-1217 cve-2025-1734 cve-2025-1861 cve-2025-1736 cve-2025-1219 pcretests cve-2025-14177 cve-2025-14178 ghsa-www2-q4fc-65wf cve-2025-14179 cve-2026-6722 cve-2026-7261 cve-2026-7262 cve-2026-6735 cve-2026-7259 cve-2026-7568 cve-2026-7258 cve-2026-14355'
+      phpeight_bugids='cve-2024-2756 cve-2024-3096 cve-2024-5458 cve-2024-8925 cve-2024-8926 cve-2024-8927 cve-2024-9026 cve-2024-11236 cve-2024-11234 cve-2024-8932 cve-2024-11233 ghsa-4w77-75f9-2c8w cve-2024-8929 cve-2025-1217 cve-2025-1734 cve-2025-1861 cve-2025-1736 cve-2025-1219 cve-2025-6491 cve-2025-1220 cve-2025-1735 pcretests cve-2025-14177 cve-2025-14178 ghsa-www2-q4fc-65wf cve-2025-14179 cve-2026-6722 cve-2026-7261 cve-2026-7262 cve-2026-6735 cve-2026-7259 cve-2026-7568 cve-2026-7258 cve-2026-14355'
 
       for bugid in $phpeight_bugids; do
           if [[ ! -f "php80-${bugid}.patch" && -f "$CUR_DIR/patches/php/php80-${bugid}.patch" ]]; then
