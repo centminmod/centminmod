@@ -347,6 +347,13 @@ if [ -f "${CM_INSTALLDIR}/inc/z_custom.inc" ]; then
     source "${CM_INSTALLDIR}/inc/z_custom.inc"
 fi
 
+# AWS-LC is not supported on this branch - see the comment at the
+# AWS_LC_SWITCH='n' force in centmin.sh. Re-apply the force here as
+# the persistent config files sourced above would otherwise restore
+# an AWS_LC_SWITCH='y' set by the user, and this runs before
+# installopenssl compiles AWS-LC
+AWS_LC_SWITCH='n'
+
 if [ -f "${CONFIGSCANBASE}/custom_config.inc" ]; then
   OPENSSL_VERSION_CUSTOMCONFIG=$(awk -F "'" '/^OPENSSL_VERSION=/ {print $2}' "${CONFIGSCANBASE}/custom_config.inc")
   if [[ "${OPENSSL_VERSION}" = '1.1.0j' || "$OPENSSL_VERSION_CUSTOMCONFIG" = '1.1.0j' || "$OPENSSL_VERSION_CUSTOMCONFIG" = '1.1.0i' || "$OPENSSL_VERSION_CUSTOMCONFIG" = '1.1.0h' || "$OPENSSL_VERSION_CUSTOMCONFIG" = '1.1.0g' || "$OPENSSL_VERSION_CUSTOMCONFIG" = '1.1.0f' || "$OPENSSL_VERSION_CUSTOMCONFIG" = '1.1.0e' || "$OPENSSL_VERSION_CUSTOMCONFIG" = '1.1.0d' || "$OPENSSL_VERSION_CUSTOMCONFIG" = '1.1.0c' || "$OPENSSL_VERSION_CUSTOMCONFIG" = '1.1.0b' || "$OPENSSL_VERSION_CUSTOMCONFIG" = '1.1.0a' ]]; then

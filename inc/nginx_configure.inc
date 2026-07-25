@@ -421,6 +421,13 @@ if [ -f "${CM_INSTALLDIR}/inc/z_custom.inc" ]; then
     source "${CM_INSTALLDIR}/inc/z_custom.inc"
 fi
 
+# AWS-LC is not supported on this branch - see the comment at the
+# AWS_LC_SWITCH='n' force in centmin.sh. Re-apply the force here as
+# the persistent config files sourced above would otherwise restore
+# an AWS_LC_SWITCH='y' set by the user, and this runs before the
+# AWS-LC include/library paths are added to the nginx ./configure
+AWS_LC_SWITCH='n'
+
 if [[ ! "$(rpm -qa gd | grep -o gd)" || ! "$(rpm -qa gd-devel | grep -o gd-devel)" ]]; then
   yum -y install gd gd-devel
 fi
