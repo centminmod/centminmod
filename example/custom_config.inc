@@ -3544,15 +3544,16 @@
 #   - Nginx 1.29.2+ has native AWS-LC support from upstream commit 93ff1ee1
 #     "SSL: AWS-LC compatibility", so no compatibility patch is applied and
 #     inc/nginx_patch.inc aws_lc_patch() skips straight past the patch arms
-#   - Nginx 1.27.0 to 1.29.1 still use the bundled compatibility patches in
-#     patches/nginx/aws-lc-nginx-1.27.3.patch, aws-lc-nginx-1.27.4.patch and
-#     aws-lc-nginx-1.28.0.patch
+#   - Nginx 1.27.3 to 1.29.1 use the bundled compatibility patches in
+#     patches/nginx/aws-lc-nginx-1.27.3.patch (1.27.3 exactly),
+#     aws-lc-nginx-1.27.4.patch (1.27.4 to 1.27.x) and
+#     aws-lc-nginx-1.28.0.patch (1.28.0 to 1.29.1)
+#   - Nginx 1.27.0 to 1.27.2 have no bundled patch. They fall through to the
+#     legacy upstream download, which AWS-LC removed once nginx 1.29.2 landed,
+#     so those versions log a warning and build against unpatched nginx source
 #   - patches/nginx/aws-lc-nginx2.patch is applied on every nginx version as
 #     it adds the Centmin Mod $ssl_curve variable rather than upstream
 #     compatibility, and is unrelated to native AWS-LC support
-#   - AWS-LC removed its own nginx patches upstream once nginx 1.29.2 landed,
-#     so the legacy download fallback for pre-1.27.3 nginx now fails and logs
-#     a warning instead of patching
 # OS COMPATIBILITY:
 #   - EL8/9/10: Fully supported
 #   - EL6/7: Not supported (AWS-LC build incompatibilities)
