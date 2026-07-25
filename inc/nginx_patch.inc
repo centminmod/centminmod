@@ -1018,69 +1018,77 @@ ngx_dynamic_tls_message() {
 aws_lc_patch() {
   if [[ "$AWS_LC_SWITCH" = [yY] ]]; then
     echo
-    if [[ "$DETECT_NGXVER" -ge '1028000' && -f "$CUR_DIR/patches/nginx/aws-lc-nginx-1.28.0.patch" && ! $(grep 'OPENSSL_IS_AWSLC' src/event/ngx_event_openssl.c) ]]; then
+    # nginx 1.29.2+ has native AWS-LC support from upstream commit 93ff1ee1
+    # "SSL: AWS-LC compatibility" so no compatibility patch is needed. Note
+    # upstream added OPENSSL_IS_AWSLC to the src/event/quic/* sources only,
+    # never to src/event/ngx_event_openssl.c or .h, so the greps in the
+    # older nginx arms below cannot detect native support - without this
+    # explicit version check every hunk of the compatibility patches fails
+    # against 1.29.2+ because upstream already made the same changes
+    if [[ "$DETECT_NGXVER" -ge '1029002' ]]; then
+      echo "nginx 1.29.2+ has native AWS-LC support - no compatibility patch needed"
+    elif [[ "$DETECT_NGXVER" -ge '1028000' && -f "$CUR_DIR/patches/nginx/aws-lc-nginx-1.28.0.patch" && ! $(grep 'OPENSSL_IS_AWSLC' src/event/ngx_event_openssl.c) ]]; then
       echo "nginx 1.28.0+ aws-lc-nginx-1.28.0.patch"
       if [ ! $(grep 'OPENSSL_IS_AWSLC' src/event/ngx_event_openssl.h) ]; then
         echo
         echo "AWS-LC patch: patch -p1 < $CUR_DIR/patches/nginx/aws-lc-nginx-1.28.0.patch"
-        patch -p1 < $CUR_DIR/patches/nginx/aws-lc-nginx-1.28.0.patch
+        patch -p1 < $CUR_DIR/patches/nginx/aws-lc-nginx-1.28.0.patch || echo "WARNING: aws-lc-nginx-1.28.0.patch failed to apply"
       fi
     elif [[ "$DETECT_NGXVER" -ge '1027004' && -f "$CUR_DIR/patches/nginx/aws-lc-nginx-1.27.4.patch" && ! $(grep 'OPENSSL_IS_AWSLC' src/event/ngx_event_openssl.c) ]]; then
       echo "nginx 1.27.4+ aws-lc-nginx-1.27.4.patch"
       if [ ! $(grep 'OPENSSL_IS_AWSLC' src/event/ngx_event_openssl.h) ]; then
         echo
         echo "AWS-LC patch: patch -p1 < $CUR_DIR/patches/nginx/aws-lc-nginx-1.27.4.patch"
-        patch -p1 < $CUR_DIR/patches/nginx/aws-lc-nginx-1.27.4.patch
+        patch -p1 < $CUR_DIR/patches/nginx/aws-lc-nginx-1.27.4.patch || echo "WARNING: aws-lc-nginx-1.27.4.patch failed to apply"
       fi
     elif [[ "$DETECT_NGXVER" -eq '1027003' && -f "$CUR_DIR/patches/nginx/aws-lc-nginx-1.27.3.patch" && ! $(grep 'OPENSSL_IS_AWSLC' src/event/ngx_event_openssl.c) ]]; then
       echo "nginx 1.27.3 aws-lc-nginx-1.27.3.patch"
       if [ ! $(grep 'OPENSSL_IS_AWSLC' src/event/ngx_event_openssl.h) ]; then
         echo
         echo "AWS-LC patch: patch -p1 < $CUR_DIR/patches/nginx/aws-lc-nginx-1.27.3.patch"
-        patch -p1 < $CUR_DIR/patches/nginx/aws-lc-nginx-1.27.3.patch
+        patch -p1 < $CUR_DIR/patches/nginx/aws-lc-nginx-1.27.3.patch || echo "WARNING: aws-lc-nginx-1.27.3.patch failed to apply"
       fi
     elif [ ! -f aws-lc-nginx.patch ] || [[ -f aws-lc-nginx.patch && ! $(grep 'OPENSSL_IS_AWSLC' src/event/ngx_event_openssl.h) ]]; then
+      # AWS-LC removed this patch from its repo once nginx gained native
+      # support, so -f is needed to stop curl writing the 404 error page
+      # into aws-lc-nginx.patch and feeding that to patch
       echo "download aws-lc-nginx.patch"
-      curl -sL https://github.com/aws/aws-lc/raw/main/tests/ci/integration/nginx_patch/aws-lc-nginx.patch -o aws-lc-nginx.patch
-      if [ ! $(grep 'OPENSSL_IS_AWSLC' src/event/ngx_event_openssl.h) ]; then
-        echo
-        echo "AWS-LC patch: patch -p1 < aws-lc-nginx.patch"
-        patch -p1 < aws-lc-nginx.patch
+      if curl -sLf https://github.com/aws/aws-lc/raw/main/tests/ci/integration/nginx_patch/aws-lc-nginx.patch -o aws-lc-nginx.patch; then
+        if [ ! $(grep 'OPENSSL_IS_AWSLC' src/event/ngx_event_openssl.h) ]; then
+          echo
+          echo "AWS-LC patch: patch -p1 < aws-lc-nginx.patch"
+          patch -p1 < aws-lc-nginx.patch || echo "WARNING: aws-lc-nginx.patch failed to apply"
+        fi
+      else
+        rm -f aws-lc-nginx.patch
+        echo "WARNING: aws-lc-nginx.patch download failed - upstream removed it once nginx gained native AWS-LC support in 1.29.2"
       fi
     fi
     if [[ -f "$CUR_DIR/patches/nginx/aws-lc-nginx2.patch" && ! $(grep 'OPENSSL_IS_AWSLC' src/event/ngx_event_openssl.c) ]]; then
       # add support for the $ssl_curve variable when using the AWS-LC
-      # It retrieves the negotiated elliptic curve ID (curve_id) from 
+      # It retrieves the negotiated elliptic curve ID (curve_id) from
       # the SSL connection object (SSL_get_curve_id(c->ssl->connection)
-      # patch includes a switch statement that maps common curve IDs 
-      # to their corresponding standardized names 
+      # patch includes a switch statement that maps common curve IDs
+      # to their corresponding standardized names
       # (e.g., "prime256v1" for SSL_CURVE_SECP256R1)
-      # if a match is found in the table, the $ssl_curve variable 
+      # if a match is found in the table, the $ssl_curve variable
       # is set to the corresponding curve name
+      #
+      # this is a Centmin Mod addition rather than an upstream AWS-LC
+      # compatibility shim, so it is still applied on every nginx version
+      # including 1.29.2+ which needs no compatibility patch
       echo "AWS-LC patch: patch -p1 < $CUR_DIR/patches/nginx/aws-lc-nginx2.patch"
-      patch -p1 < "$CUR_DIR/patches/nginx/aws-lc-nginx2.patch"
+      patch -p1 < "$CUR_DIR/patches/nginx/aws-lc-nginx2.patch" || echo "WARNING: aws-lc-nginx2.patch failed to apply - \$ssl_curve variable will be unavailable"
     fi
     echo
   fi
 }
 
-aws_lc_patch_make() {
-  if [[ "$AWS_LC_SWITCH" = [yY] && "$AWS_LC_SWITCH_TEST" = [yY] ]]; then
-    {
-    echo
-    if [ ! -f aws-lc-nginx-tests.patch ]; then
-      echo "download aws-lc-nginx-tests.patch"
-      curl -sL https://github.com/aws/aws-lc/raw/main/tests/ci/integration/nginx_tests_patch/aws-lc-nginx-tests.patch -o aws-lc-nginx-tests.patch
-      echo
-      if [ ! $(grep 'OPENSSL_IS_AWSLC' h3_ssl_early_data.t) ]; then
-        echo "AWS-LC patch: patch -p1 < aws-lc-nginx-tests.patch"
-        patch -p1 < aws-lc-nginx-tests.patch
-      fi
-    fi
-    echo
-    } 2>&1 | tee -a "${CENTMINLOGDIR}/patch_patchnginx_${DT}.log"
-  fi
-}
+# aws_lc_patch_make() removed - it applied AWS-LC's nginx test suite patch,
+# which upstream deleted along with the nginx compatibility patch once nginx
+# gained native AWS-LC support in 1.29.2. The download URL now 404s, and the
+# patch targeted h3_ssl_early_data.t from the separate nginx-tests repo while
+# the call site ran from the nginx source tree, so it could never apply.
 
 http2_shutdown_fix_patch() {
   # backport freenginx fork's HTTP/2 shutdown bug fix
