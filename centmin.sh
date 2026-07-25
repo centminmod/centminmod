@@ -30,7 +30,7 @@ DT=$(date +"%d%m%y-%H%M%S")
 branchname='141.00beta01'
 SCRIPT_MAJORVER='141'
 SCRIPT_MINORVER='00'
-SCRIPT_INCREMENTVER='247'
+SCRIPT_INCREMENTVER='248'
 SCRIPT_VERSIONSHORT="${branchname}"
 SCRIPT_VERSION="${SCRIPT_VERSIONSHORT}.b${SCRIPT_INCREMENTVER}"
 SCRIPT_DATE='16/08/25'
@@ -1082,6 +1082,7 @@ AWS_LC_SWITCH='n'             # if set to 'y' overrides OpenSSL as default for N
 AWS_LC_VERSION='v1.73.0'      # version as per ttps://github.com/aws/aws-lc/tags
 AWS_LC_DIR="/opt"
 AWS_LC_SWITCH_BUILD_TESTS='n' # run AWS-LC build tests
+AWS_LC_SWITCH_TEST='n'        # patch and run Nginx test suite for AWS-LC
 ##################################
 
 # Choose whether to compile Nginx --with-google_perftools_module
