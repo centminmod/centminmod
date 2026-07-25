@@ -3540,6 +3540,19 @@
 # NGINX VERSION REQUIREMENTS:
 #   - Nginx 1.27.0+ minimum for AWS-LC support (line 614 DETECT_NGXVER check)
 #   - HTTP/3 QUIC: Nginx 1.25.0+ when AWS_LC_SWITCH='y' (line 614, 1107)
+# SOURCE PATCHING:
+#   - Nginx 1.29.2+ has native AWS-LC support from upstream commit 93ff1ee1
+#     "SSL: AWS-LC compatibility", so no compatibility patch is applied and
+#     inc/nginx_patch.inc aws_lc_patch() skips straight past the patch arms
+#   - Nginx 1.27.0 to 1.29.1 still use the bundled compatibility patches in
+#     patches/nginx/aws-lc-nginx-1.27.3.patch, aws-lc-nginx-1.27.4.patch and
+#     aws-lc-nginx-1.28.0.patch
+#   - patches/nginx/aws-lc-nginx2.patch is applied on every nginx version as
+#     it adds the Centmin Mod $ssl_curve variable rather than upstream
+#     compatibility, and is unrelated to native AWS-LC support
+#   - AWS-LC removed its own nginx patches upstream once nginx 1.29.2 landed,
+#     so the legacy download fallback for pre-1.27.3 nginx now fails and logs
+#     a warning instead of patching
 # OS COMPATIBILITY:
 #   - EL8/9/10: Fully supported
 #   - EL6/7: Not supported (AWS-LC build incompatibilities)
