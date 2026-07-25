@@ -1173,7 +1173,6 @@ fi
       exit
   else
      echo -e "\n`date`\nSuccess: Nginx make ok\n"
-     aws_lc_patch_make
   fi
 
 # error check
