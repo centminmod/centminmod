@@ -1230,7 +1230,7 @@ BORINGSSL_DIR="/opt"
 
 # AWS-LC
 AWS_LC_SWITCH='n'             # if set to 'y' overrides OpenSSL as default for Nginx https://github.com/aws/aws-lc
-AWS_LC_VERSION='v1.73.0'      # version as per ttps://github.com/aws/aws-lc/tags
+AWS_LC_VERSION='v1.37.0'      # version as per ttps://github.com/aws/aws-lc/tags
 AWS_LC_DIR="/opt"
 AWS_LC_SWITCH_BUILD_TESTS='n' # run AWS-LC build tests
 ##################################
@@ -1785,9 +1785,15 @@ else
   march_flag='x86-64'
 fi
 
-if [[ "$CENTOS_SEVEN" -eq '7' ]]; then
-  AWS_LC_SWITCH='n'
-fi
+# AWS-LC crypto library support for Nginx is only maintained on the
+# 140.00beta01 and 141.00beta01 branches. The nginx version aware
+# AWS-LC patch selection in inc/nginx_patch.inc, the OpenResty Lua
+# module auto-disable and the centmin.sh menu option 7 toggle were all
+# added after the 131.00stable/140.00beta01 fork and never backported
+# here, so AWS_LC_SWITCH='y' cannot produce a working Nginx build on
+# this branch. Force it off regardless of any value set in the
+# persistent config file /etc/centminmod/custom_config.inc
+AWS_LC_SWITCH='n'
 if [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]]; then
   # give AWS-LC priority over quicTLS for HTTP/3 QUIC
   if [[ "$AWS_LC_SWITCH" = [yY] ]]; then
