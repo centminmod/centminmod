@@ -1920,7 +1920,7 @@ fi
         AWS_LC_INSTALLTIME=$(echo "scale=2;$aws_lc_installendtime - $aws_lc_installstarttime"|bc )
 
         echo "" >> ${CENTMINLOGDIR}/centminmod_aws_lc_installtime_${DT}.log
-        echo "BoringSSL Install Time: $AWS_LC_INSTALLTIME seconds" >> ${CENTMINLOGDIR}/centminmod_aws_lc_installtime_${DT}.log
+        echo "AWS-LC Install Time: $AWS_LC_INSTALLTIME seconds" >> ${CENTMINLOGDIR}/centminmod_aws_lc_installtime_${DT}.log
         ls -lah ${CENTMINLOGDIR}/centminmod_aws_lc_installtime_${DT}.log
         popd
     elif [[ "$BORINGSSL_SWITCH" = [yY] && "$AWS_LC_SWITCH" = [nN] ]]; then
