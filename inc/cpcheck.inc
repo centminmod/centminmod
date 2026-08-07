@@ -1,3 +1,30 @@
+csf_el10_dependencies_install() {
+  if [[ "$CENTOS_TEN" -eq '10' ]]; then
+      local silent="$1"
+      # EL10 moved nft_compat/xt_conntrack/xt_multiport into kernel-modules-extra,
+      # which base installs do not ship - CSF's iptables-nft shim needs them.
+      # Check the module index (what actually matters) rather than rpm state so
+      # elrepo/custom kernels with the modules built in never trigger an install
+      local moddep="/lib/modules/$(uname -r)/modules.dep"
+      if [[ ! -f "$moddep" ]]; then
+          return  # fail open: cannot determine module availability
+      fi
+      # EL10 ships modules xz-compressed (.ko.xz), hence the (\.xz)? - the
+      # colon anchors to the module's own entry in modules.dep
+      if grep -qE "nft_compat\.ko(\.xz)?:" "$moddep" && grep -qE "xt_conntrack\.ko(\.xz)?:" "$moddep" && grep -qE "xt_multiport\.ko(\.xz)?:" "$moddep"; then
+          return  # modules available for the running kernel
+      fi
+      # Pin to the running kernel so an older kernel gets fixed, not just the newest
+      local kmpkg="kernel-modules-extra-$(uname -r)"
+      if [ "$silent" != "silent" ]; then
+          echo "Installing $kmpkg for AlmaLinux 10..."
+          yum${CACHESKIP} -y install "$kmpkg"
+      else
+          yum${CACHESKIP} -q -y install "$kmpkg"
+      fi
+  fi
+}
+
 # Add perl-DBD-MySQL to yum.conf exclude after MariaDB installation
 # Prevents AppStream OS update conflicts (e.g., AlmaLinux 9.6→9.7)
 perldbiexclude() {
@@ -4531,6 +4558,7 @@ if [[ "$INITIALINSTALL" != [yY] ]]; then
   disable_nginx_ocsp
   update_ius_repo silent
   perldbiexclude silent
+  csf_el10_dependencies_install silent
 fi
 
 }

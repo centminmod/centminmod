@@ -178,6 +178,7 @@ if [[ "$CSFINSTALLOK" = [yY] ]]; then
     cd $DIR_TMP
 
 #download csf tarball
+    csf_el10_dependencies_install
 
     if [[ $(rpm -q perl-Crypt-SSLeay >/dev/null 2>&1; echo $?) != '0' ]] || [[ $(rpm -q perl-Net-SSLeay >/dev/null 2>&1; echo $?) != '0' ]]; then
         yum${CACHESKIP} -y install perl-libwww-perl perl-Crypt-SSLeay perl-Net-SSLeay
