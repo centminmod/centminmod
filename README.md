@@ -119,7 +119,7 @@ Below are guidelines for contributing code wise.
 
 ## Star History
 
-[![Star History Chart](https://api.star-history.com/svg?repos=centminmod/centminmod&type=Date)](https://www.star-history.com/#centminmod/centminmod&Date)
+[![Star History Chart](https://star-history.dera.page/svg?repos=centminmod/centminmod&type=Date)](https://star-history.dera.page/#centminmod/centminmod&type=Date)
 
 ## Stats
 
