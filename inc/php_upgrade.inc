@@ -1206,15 +1206,19 @@ if [[ "$PHP_MAJORUPGRADE" = [nN] ]]; then
   fi
   # maxminddb has NO branch in autodetectinstallextensions - repair it directly,
   # otherwise the sweep would re-fire on every future rebuild (permanent loop).
-  # Do NOT rm the .ini before the rebuild (same delete-only-after-success policy
-  # as the generic sweep - a failed rebuild must not leave the user worse off);
-  # geoiptwolite_phpext_install's .so-gated .ini write (3.2.12) refreshes it.
+  # Do NOT rm the .ini before the rebuild - geoiptwolite_phpext_install's
+  # .so-gated .ini write refreshes it on success and removes the stale .ini
+  # itself on a failed build, which is why the post-repair audit below checks
+  # the .so directly instead of php_ext_so_missing (that helper needs the .ini
+  # to still exist and would stay silent after the failed-build cleanup).
   if [[ "$NGINX_GEOIPTWOLITE" = [yY] ]] && php_ext_so_missing maxminddb; then
     cecho "orphaned maxminddb.ini detected - reinstalling GeoIP2 PHP extension" $boldyellow
     geoiptwolite_phpext_install
-    if php_ext_so_missing maxminddb; then
+    _cmm_mmdb_extdir=$(/usr/local/bin/php-config --extension-dir 2>/dev/null)
+    if [ -n "$_cmm_mmdb_extdir" ] && [ ! -f "${_cmm_mmdb_extdir}/maxminddb.so" ]; then
       cecho "WARNING: maxminddb.so still missing after reinstall attempt - manual rebuild needed" $boldyellow
     fi
+    unset _cmm_mmdb_extdir
   fi
   unset _cmmext
 fi
