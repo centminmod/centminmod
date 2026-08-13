@@ -244,6 +244,9 @@ NGINX_NJS='n'                # nginScript https://www.nginx.com/blog/
 NGINX_NJS_VER='0.8.9'        # nginxScript tag version https://github.com/nginx/njslaunching-nginscript-and-looking-ahead/
 NGINX_GEOIP='y'              # Nginx GEOIP module install
 NGINX_GEOIPMEM='y'           # Nginx caches GEOIP databases in memory (default), setting 'n' caches to disk instead
+# Maintained GeoIP2/maxminddb replacement for the legacy geoip PHP extension
+# Recommended on PHP 8.2+ where the legacy geoip PHP extension is skipped
+# Related: PHPGEOIP_MAXVERNUM, PHPGEOIP_ALWAYS
 NGINX_GEOIPTWOLITE='n'       # https://github.com/leev/ngx_http_geoip2_module
 NGINX_SPDY='n'               # Nginx SPDY support
 NGINX_SPDYPATCHED='n'        # Cloudflare HTTP/2 + SPDY patch https://github.com/cloudflare/sslconfig/blob/master/patches/nginx__http2_spdy.patch
@@ -363,6 +366,23 @@ PHP_PCREJIT_STACKSIZE_ADJUST='n' # when enabled, allows you to raise PHP's defau
 PHP_PCREJIT_STACKSIZE='512'  # value to raise PHP PCRE JIT stack size when PHP_PCREJIT_STACKSIZE_ADJUST='y' set on centmin.sh menu option 5 runs
 
 PHPGEOIP_ALWAYS='y'          # GeoIP php extension is always reinstalled on php recompiles
+
+# Skip the legacy geoip PECL PHP extension at/above this php-config --vernum
+# Legacy geoip PECL extension is unmaintained upstream
+# GeoIP2/maxminddb via NGINX_GEOIPTWOLITE='y' is the maintained replacement
+# Set to '90000' to restore the old behaviour
+PHPGEOIP_MAXVERNUM='80200'   # Related: PHPGEOIP_ALWAYS, NGINX_GEOIPTWOLITE
+
+# PHP_SRC_FAILFAST='n' disables only the pre-yuminstall PHP mirror preflight abort
+# PHP source tarball and extraction validation always aborts regardless
+# PHP_TARBALL_MINBYTES is the PHP source tarball size floor in bytes which rejects
+# soft-404 HTML pages and truncated downloads as real php-8.x source tarballs are 12-20MB
+# PHP_EXTRA_MIRRORS is a space separated list of extra PHP mirror base URLs added to the
+# mirror list and is the only way to add a custom mirror as phpgeolocation overwrites PHP_MIRRORURL
+PHP_SRC_FAILFAST='y'         # Related: PHP_TARBALL_MINBYTES, PHP_EXTRA_MIRRORS
+PHP_TARBALL_MINBYTES='3000000' # Related: PHP_SRC_FAILFAST
+PHP_EXTRA_MIRRORS=''         # Related: PHP_MIRRORURL, PHP_SRC_FAILFAST
+
 PHPIMAGICK_ALWAYS='y'        # imagick php extension is always reinstalled on php recompiles
 PHPDEBUGMODE='n'             # --enable-debug PHP compile flag
 PHP_CLEAN_COREDUMPS='y'      # remove PHP-FPM core dumps when PHPDEBUGMODE='n' set

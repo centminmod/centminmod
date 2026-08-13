@@ -33,6 +33,70 @@ checklogdetails() {
   #exit #$ERROR
 }
 
+cmm_php_fatal() {
+  # $1 = short reason. Writable from any subshell depth - this is the propagation channel.
+  # ${DT}_$$ scopes the sentinel to this run AND this process: $DT alone has 1-second
+  # resolution, so two installers started in the same second would otherwise clear or
+  # consume each other's sentinel. $$ is stable across subshells and background jobs
+  # of the same script, so writer (deep in the tee pipeline) and reader (foreground)
+  # always agree on the filename.
+  mkdir -p "${CENTMINLOGDIR}" 2>/dev/null
+  echo "[FATAL] php-src: $1" >> "${CENTMINLOGDIR}/.cmm_install_fatal_${DT}_$$"
+  cecho "[FATAL] php-src: $1" $boldyellow
+  checklogdetails
+  return 1
+}
+
+cmm_php_fatal_clear() {
+  rm -f "${CENTMINLOGDIR}/.cmm_install_fatal_${DT}_$$"
+  # GC: DT-stamped sentinels from older aborted runs are invisible to this run
+  # (different DT/$$) but would otherwise accumulate forever
+  find "${CENTMINLOGDIR}" -maxdepth 1 -name '.cmm_install_fatal_*' -mmin +720 -delete 2>/dev/null
+}
+
+cmm_php_fatal_pending() {
+  [ -f "${CENTMINLOGDIR}/.cmm_install_fatal_${DT}_$$" ]
+}
+
+cmm_archive_valid() {
+  # $1 = file. NOTE: tar -tf (NOT -tzf) - PHPEXTSION may be gz or xz.
+  # tar -tzf is why the existing validcheck_downloads() would never have caught this bug.
+  local f="$1" sz
+  [ -s "$f" ] || return 1
+  sz=$(stat -c %s "$f" 2>/dev/null || wc -c < "$f" 2>/dev/null)
+  [ -n "$sz" ] || return 1
+  [ "$sz" -ge "${PHP_TARBALL_MINBYTES:-3000000}" ] || return 1
+  tar -tf "$f" >/dev/null 2>&1
+}
+
+cmm_php_mirror_list() {
+  # Test hook (T2): when set, REPLACES the entire list - the hardcoded php.net /
+  # centminmod.com fallbacks below make the list impossible to exhaust otherwise.
+  if [ -n "$PHP_MIRROR_LIST_OVERRIDE" ]; then
+    printf '%s\n' $PHP_MIRROR_LIST_OVERRIDE
+    return 0
+  fi
+  # Ordered, dedup'd, one URL per line. $PHP_MIRRORURL comes from phpgeolocation,
+  # which currently resolves to php.net for every country branch - so in practice
+  # php.net leads. centminmod.com/distributions/ is a Cloudflare rewrite onto the
+  # parts.centminmod.com/centminmodparts/php/ mirror: files present serve
+  # correctly (application/x-tar), but the mirror lags latest PHP versions and
+  # a MISSING file falls through to an HTTP 200 text/html soft-404 (verified
+  # 2026-08-10) - the preflight content-type check and cmm_archive_valid are
+  # what make it safe to keep as the fallback for older/EOL tarballs.
+  # NOTE: phpgeolocation unconditionally reassigns PHP_MIRRORURL, so a custom
+  # mirror set via custom_config.inc belongs in PHP_EXTRA_MIRRORS. Precision
+  # (review round 2): the clobber happens on the DOWNLOAD path (phptarball calls
+  # phpgeolocation before building this list); phpsrc_preflight does NOT call
+  # phpgeolocation, so preflight could approve a custom PHP_MIRRORURL that the
+  # downloader then never tries - one more reason custom mirrors must use
+  # PHP_EXTRA_MIRRORS, which BOTH paths honor identically.
+  local m
+  for m in "$PHP_MIRRORURL" "https://www.php.net" "https://centminmod.com" ${PHP_EXTRA_MIRRORS}; do
+    [ -n "$m" ] && printf '%s\n' "$m"
+  done | awk '!seen[$0]++'
+}
+
 ###############################################
 # yumcentosfivedownload moved
 # yumcentossixdownload moved
@@ -79,7 +143,13 @@ phpxz_detect() {
     WGETRETRY_PHP=''
     AXELPHPTARGZ_PHP="-o php-${PHP_VERSION}.tar.${PHPEXTSION}"
     AXELPHPUPGRADETARGZ_PHP="-o php-${phpver}.tar.${PHPEXTSION}"
-  fi   
+  fi
+    # harden the PHP downloader for BOTH the install path (phptarball) and the
+    # menu 5 upgrade path (inc/php_upgrade.inc) - both invoke $DOWNLOADAPP_PHP.
+    # -f  : HTTP 4xx/5xx and soft-404 bodies never land on disk with exit 0
+    # -L  : the probe already treats 301/302 as success, so follow them
+    # --retry / timeouts : WGETRETRY_PHP is empty in every branch today
+    DOWNLOADAPP_PHP="${DOWNLOADAPP_PHP} -fL --retry 3 --retry-delay 5 --connect-timeout 30 --max-time 1800"
 }
 
 phpgeolocation() {
@@ -666,96 +736,106 @@ libresslgeolocation() {
 }
 
 ###############################################
+phpsrc_preflight() {
+  [[ "$PHP_INSTALL" != [yY] ]] && return 0
+  [[ "$PHP_SRC_FAILFAST" != [yY] ]] && return 0
+  local ver="${phpver:-$PHP_VERSION}" m code ctype hdrf
+  phpxz_detect
+  # a valid cached tarball makes the network probe moot - never abort an
+  # install that can proceed from local cache
+  if cmm_archive_valid "${DIR_TMP}/php-${ver}.tar.${PHPEXTSION}"; then
+    cecho "php preflight: valid cached php-${ver}.tar.${PHPEXTSION} found - skipping mirror probe" $boldyellow
+    return 0
+  fi
+  hdrf="${DIR_TMP}/.cmmhdr.$$"
+  while IFS= read -r m; do
+    [ -n "$m" ] || continue
+    code=$(curl${ipv_forceopt_wget} -sIL --connect-timeout 15 --max-time 25 \
+           -w '%{http_code}' -o "$hdrf" \
+           "${m}/distributions/php-${ver}.tar.${PHPEXTSION}" 2>/dev/null)
+    if [ "$code" != '200' ]; then
+      # HEAD-hostile mirror? 1-byte ranged GET before giving up on it
+      code=$(curl${ipv_forceopt_wget} -sL -r 0-0 --connect-timeout 15 --max-time 25 \
+             -D "$hdrf" -o /dev/null -w '%{http_code}' \
+             "${m}/distributions/php-${ver}.tar.${PHPEXTSION}" 2>/dev/null)
+    fi
+    # lowercase so Text/HTML / TEXT/HTML variants still match the case below
+    ctype=$(grep -i '^content-type:' "$hdrf" 2>/dev/null | tail -1 | tr -d '\r' | tr '[:upper:]' '[:lower:]')
+    rm -f "$hdrf"
+    case "$code" in
+      200|206) : ;;
+      *) cecho "php mirror preflight: ${m} http=${code} - skipping" $boldyellow; continue ;;
+    esac
+    case "$ctype" in
+      *text/html*)
+        cecho "php mirror preflight: ${m} returned text/html (soft-404) - skipping" $boldyellow
+        continue
+        ;;
+    esac
+    PHP_MIRRORURL="$m"
+    cecho "php source mirror preflight OK: ${m}" $boldyellow
+    return 0
+  done <<< "$(cmm_php_mirror_list)"
+  cmm_php_fatal "no usable mirror for php-${ver}.tar.${PHPEXTSION}"
+  return 1
+}
+
+phpsrc_phasegate() {
+  [[ "$PHP_INSTALL" != [yY] ]] && return 0
+  local ver="${1:-$PHP_VERSION}"
+  [ -f "${DIR_TMP}/php-${ver}/main/php_version.h" ] && return 0
+  cmm_php_fatal "PHP ${ver} source tree at ${DIR_TMP}/php-${ver} is missing or incomplete"
+  return 1
+}
+
+###############################################
 phptarball() {
+  [[ "$PHP_INSTALL" != [yY] ]] && return 0
+  phpgeolocation
+  local ver="${PHP_VERSION}" f tmpf m dlok=0
+  f="php-${ver}.tar.${PHPEXTSION}"
+  cd "$DIR_TMP" || { cmm_php_fatal "cannot cd ${DIR_TMP}"; return 1; }
 
-if [[ "$PHP_INSTALL" = [yY] ]]; 
-then
-
-    phpgeolocation
-    curl -${ipv_forceopt}Is --connect-timeout 30 --max-time 30 "${PHP_MIRRORURL}/distributions/php-${phpver}.tar.${PHPEXTSION}" | grep 'HTTP\/' | egrep '404|503'
-    PHPGEO_CURLCHECK=$?
-    curl -${ipv_forceopt}Is --connect-timeout 30 --max-time 30 "${PHP_MIRRORURL}/distributions/php-${PHP_VERSION}.tar.${PHPEXTSION}" | grep 'HTTP\/' | egrep '200|301|302'
-    PHPGEO_CURLCHECKOK=$?
-    # check if download url is 404 not found but also 
-    # check for valid status header 200, 301 or 302
-    echo $PHPGEO_CURLCHECK
-    echo $PHPGEO_CURLCHECKOK
-    if [[ "$PHPGEO_CURLCHECK" = '0' && "$PHPGEO_CURLCHECKOK" != '0' ]]; then
-        #PHP_MIRRORURL="https://www.php.net"
-        PHP_MIRRORURL="https://centminmod.com"
-        PHPUPGRADE_MIRRORURL="$PHP_MIRRORURL"
-    elif [[ "$PHPGEO_CURLCHECKOK" != '0' ]]; then
-        #PHP_MIRRORURL="https://www.php.net"
-        PHP_MIRRORURL="https://centminmod.com"
-        PHPUPGRADE_MIRRORURL="$PHP_MIRRORURL"
+  if cmm_archive_valid "$f"; then
+    cecho "${f} found and verified, skipping download..." $boldgreen
+  else
+    if [ -e "$f" ]; then
+      cecho "${f} present but failed integrity validation - discarding" $boldyellow
+      rm -f "$f"
     fi
-    cd "$DIR_TMP"
-
-        cecho "Download php-${PHP_VERSION}.tar.${PHPEXTSION} ..." $boldyellow
-    if [ -s "php-${PHP_VERSION}.tar.${PHPEXTSION}" ]; then
-        cecho "php-${PHP_VERSION}.tar.${PHPEXTSION} found, skipping download..." $boldgreen
-    else
-        echo "$DOWNLOADAPP_PHP "${PHP_MIRRORURL}/distributions/php-${PHP_VERSION}.tar.${PHPEXTSION}" $AXELPHPTARGZ_PHP $WGETRETRY_PHP"
-        $DOWNLOADAPP_PHP "${PHP_MIRRORURL}/distributions/php-${PHP_VERSION}.tar.${PHPEXTSION}" $AXELPHPTARGZ_PHP $WGETRETRY_PHP
-        ERROR=$?
-        if [[ "$ERROR" != '0' ]]; then
-          # retry with local mirror
-          echo
-          echo "retrying local mirror download"
-          echo
-          PHP_MIRRORURL="https://centminmod.com"
-          PHPUPGRADE_MIRRORURL="$PHP_MIRRORURL"
-          if [ -s "php-${PHP_VERSION}.tar.${PHPEXTSION}" ]; then
-              cecho "php-${PHP_VERSION}.tar.${PHPEXTSION} found, skipping download..." $boldgreen
-          else
-              echo "$DOWNLOADAPP_PHP "${PHP_MIRRORURL}/distributions/php-${PHP_VERSION}.tar.${PHPEXTSION}" $AXELPHPTARGZ_PHP $WGETRETRY_PHP"
-              $DOWNLOADAPP_PHP "${PHP_MIRRORURL}/distributions/php-${PHP_VERSION}.tar.${PHPEXTSION}" $AXELPHPTARGZ_PHP $WGETRETRY_PHP
-              ERROR=$?
-              if [[ "$ERROR" != '0' ]]; then
-                cecho "Error: php-${PHP_VERSION}.tar.${PHPEXTSION} download failed." $boldgreen
-                checklogdetails
-                exit #$ERROR      
-              fi
-          fi
-        else 
-         cecho "Download done." $boldyellow
-        fi
-    fi
-  
-  tar $PHPTAR_FLAGS "php-${PHP_VERSION}.tar.${PHPEXTSION}"
-
-ERROR=$?
-  if [[ "$ERROR" != '0' ]]; then
-    cecho "Error: php-${PHP_VERSION}.tar.${PHPEXTSION} extraction failed." $boldgreen
-    checklogdetails
-    # exit #$ERROR
-    if [[ "$ERROR" -eq '2' ]]; then
-      PHP_MIRRORURL="https://www.php.net"
-      PHPUPGRADE_MIRRORURL="$PHP_MIRRORURL"
-      rm -rf "php-${PHP_VERSION}.tar.${PHPEXTSION}"
-      cecho "Download again php-${PHP_VERSION}.tar.${PHPEXTSION} ..." $boldyellow
-      if [ -s "php-${PHP_VERSION}.tar.${PHPEXTSION}" ]; then
-        cecho "php-${PHP_VERSION}.tar.${PHPEXTSION} found, skipping download..." $boldgreen
-      else
-        echo "$DOWNLOADAPP_PHP "${PHP_MIRRORURL}/distributions/php-${PHP_VERSION}.tar.${PHPEXTSION}" $AXELPHPTARGZ_PHP $WGETRETRY_PHP"
-        $DOWNLOADAPP_PHP "${PHP_MIRRORURL}/distributions/php-${PHP_VERSION}.tar.${PHPEXTSION}" $AXELPHPTARGZ_PHP $WGETRETRY_PHP
-        ERROR=$?
-        if [[ "$ERROR" != '0' ]]; then
-          cecho "Error: php-${PHP_VERSION}.tar.${PHPEXTSION} download again failed." $boldgreen
-          checklogdetails
-        else 
-          cecho "Download again done." $boldyellow
-        fi
+    tmpf="${f}.cmmpart"
+    while IFS= read -r m; do
+      [ -n "$m" ] || continue
+      cecho "downloading ${m}/distributions/${f} ..." $boldyellow
+      rm -f "$tmpf"
+      $DOWNLOADAPP_PHP "${m}/distributions/${f}" -o "$tmpf" || { rm -f "$tmpf"; continue; }
+      # validate the .cmmpart FIRST, promote SECOND - only a validated archive
+      # ever occupies the final path, so an interruption between the two steps
+      # can never leave a poisoned file where the cache gate would trust it
+      if ! cmm_archive_valid "$tmpf"; then
+        cecho "${m} served a short or corrupt archive - discarding" $boldyellow
+        rm -f "$tmpf"
+        continue
       fi
-      tar $PHPTAR_FLAGS "php-${PHP_VERSION}.tar.${PHPEXTSION}"
-    fi # error 2
-else 
-  cecho "php-${PHP_VERSION}.tar.${PHPEXTSION} valid file." $boldyellow
-echo ""
+      mv -f "$tmpf" "$f"
+      PHP_MIRRORURL="$m"
+      dlok=1
+      break
+    done <<< "$(cmm_php_mirror_list)"
+    rm -f "$tmpf"
+    if [ "$dlok" -ne 1 ]; then
+      cmm_php_fatal "php-${ver} tarball unavailable or failed integrity validation on every mirror"
+      return 1
+    fi
   fi
 
-fi
-
+  rm -rf "${DIR_TMP}/php-${ver}"
+  tar $PHPTAR_FLAGS "$f"
+  if [ $? -ne 0 ] || [ ! -f "${DIR_TMP}/php-${ver}/main/php_version.h" ]; then
+    cmm_php_fatal "php-${ver} extraction failed or source tree incomplete"
+    return 1
+  fi
+  cecho "php-${ver} source verified and extracted." $boldyellow
 }
 
 
@@ -4209,6 +4289,8 @@ else
   WGETOPT="-cnv --no-dns-cache${ipv_forceopt_wget}"
 fi
 
+    phpsrc_preflight || return 1
+
 echo "*****************************************************"
 cecho "Downloading all required software for install routines." $boldgreen
 echo "*****************************************************"
@@ -4298,6 +4380,7 @@ else
   apctarball
   zopcachetarball
 fi
+    cmm_php_fatal_pending && return 1
 
 if [[ "$PARALLEL_MODE" = [yY] ]] && [[ "$(grep -c "processor" /proc/cpuinfo)" -gt '1' ]]; then
   memcachetarball &
