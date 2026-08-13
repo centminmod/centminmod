@@ -351,10 +351,24 @@ funct_mktempfile
 
 if [[ "$UALL" = 'y' ]]; then
     phpver=$(php-config --version)
+    # PHPMUVER was only ever assigned on the interactive prompt path below -
+    # leaving it empty here made redis extension version selection fall through
+    # to the PHP 7.0-7.1 REDISPHPSEVEN_VER fallback and misclassified every
+    # same version run as a major upgrade
+    PHPMUVER=$(echo "$phpver" | cut -d . -f1,2)
+    if [[ "$PHPMUVER" = '8.4' ]]; then
+        REDISPHP_GIT='y'
+        AUTODETECPHP_OVERRIDE='y'
+    fi
     overwritephpfpmconf='n'
     lessphpmem='y'
 elif [[ "$CLI_PHP_VER" ]]; then
     phpver="$CLI_PHP_VER"
+    PHPMUVER=$(echo "$phpver" | cut -d . -f1,2)
+    if [[ "$PHPMUVER" = '8.4' ]]; then
+        REDISPHP_GIT='y'
+        AUTODETECPHP_OVERRIDE='y'
+    fi
     overwritephpfpmconf='n'
     # lessphpmem='y'
 else
