@@ -356,11 +356,19 @@ if [[ "$UALL" = 'y' ]]; then
     # to the PHP 7.0-7.1 REDISPHPSEVEN_VER fallback and misclassified every
     # same version run as a major upgrade
     PHPMUVER=$(echo "$phpver" | cut -d . -f1,2)
+    if [[ "$PHPMUVER" = '8.4' ]]; then
+        REDISPHP_GIT='y'
+        AUTODETECPHP_OVERRIDE='y'
+    fi
     overwritephpfpmconf='n'
     lessphpmem='y'
 elif [[ "$CLI_PHP_VER" ]]; then
     phpver="$CLI_PHP_VER"
     PHPMUVER=$(echo "$phpver" | cut -d . -f1,2)
+    if [[ "$PHPMUVER" = '8.4' ]]; then
+        REDISPHP_GIT='y'
+        AUTODETECPHP_OVERRIDE='y'
+    fi
     overwritephpfpmconf='n'
     # lessphpmem='y'
 else
