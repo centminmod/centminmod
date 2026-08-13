@@ -30,7 +30,7 @@ DT=$(date +"%d%m%y-%H%M%S")
 branchname='140.00beta01'
 SCRIPT_MAJORVER='140'
 SCRIPT_MINORVER='00'
-SCRIPT_INCREMENTVER='361'
+SCRIPT_INCREMENTVER='362'
 SCRIPT_VERSIONSHORT="${branchname}"
 SCRIPT_VERSION="${SCRIPT_VERSIONSHORT}.b${SCRIPT_INCREMENTVER}"
 SCRIPT_DATE='16/01/25'
@@ -3941,7 +3941,25 @@ else
             exit
             fi
             
+            cmm_php_fatal_clear
             alldownloads
+            if cmm_php_fatal_pending; then
+              echo
+              cecho "=================================================================" $boldyellow
+              cecho " PHP ${PHP_VERSION} source download/validation FAILED" $boldyellow
+              cecho "=================================================================" $boldyellow
+              cat "${CENTMINLOGDIR}/.cmm_install_fatal_${DT}_$$"
+              echo
+              cecho " PHP compilation/installation has NOT started." $boldyellow
+              cecho " Fix connectivity or the PHP mirror, then simply re-run:" $boldyellow
+              cecho "   ./centmin.sh install" $boldyellow
+              echo
+              cecho " Install log:  ${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_install.log" $boldyellow
+              cecho "=================================================================" $boldyellow
+              echo
+              rm -f "${DIR_TMP}/php-${PHP_VERSION}.tar."*
+              exit 1
+            fi
             funct_centmininstall
 
     # setup command shortcut aliases 
@@ -3983,15 +4001,21 @@ EOF
             echo "$SCRIPT_VERSION" > /etc/centminmod-release
             #echo "$SCRIPT_VERSION #`date`" >> /etc/centminmod-versionlog
             } 2>&1 | tee "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_install.log"
-            
+
+if cmm_php_fatal_pending; then
+  cmm_php_fatal_clear
+  echo "Centmin Mod install aborted - see ${CENTMINLOGDIR}/"
+  exit 1
+fi
+
             if [ "$CCACHEINSTALL" == 'y' ]; then
-            
+
                 # check if ccache installed first
                 if [ -f /usr/bin/ccache ]; then
             { echo ""; source ~/.bashrc; echo "ccache stats:"; ccache -s; echo ""; } 2>&1 | tee -a "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_install.log"
                 fi
             fi
-            
+
             endtime=$(TZ=UTC date +%s.%N)
             INSTALLTIME=$(echo "scale=2;$endtime - $starttime"|bc )
             echo "" >> "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_install.log"
