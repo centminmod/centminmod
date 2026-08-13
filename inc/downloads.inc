@@ -150,7 +150,12 @@ phpxz_detect() {
     # -f  : HTTP 4xx/5xx and soft-404 bodies never land on disk with exit 0
     # -L  : the probe already treats 301/302 as success, so follow them
     # --retry / timeouts : WGETRETRY_PHP is empty in every branch today
-    DOWNLOADAPP_PHP="${DOWNLOADAPP_PHP} -fL --retry 3 --retry-delay 5 --connect-timeout 30 --max-time 1800"
+    # append once only - phpxz_detect runs more than once per install
+    # (phpsrc_preflight and phpgeolocation both call it)
+    case "$DOWNLOADAPP_PHP" in
+      *--retry*) : ;;
+      *) DOWNLOADAPP_PHP="${DOWNLOADAPP_PHP} -fL --retry 3 --retry-delay 5 --connect-timeout 30 --max-time 1800" ;;
+    esac
 }
 
 phpgeolocation() {

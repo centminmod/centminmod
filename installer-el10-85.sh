@@ -2815,11 +2815,27 @@ case "$1" in
     install_axel
     fileperm_fixes
     cminstall
+    CMM_INSTALL_RC=$(cat "$CMM_RC_FILE" 2>/dev/null)
+    rm -f "$CMM_RC_FILE"
+    if [ "${CMM_INSTALL_RC:-1}" -ne 0 ]; then
+      echo
+      echo "ERROR: centmin.sh install aborted (exit ${CMM_INSTALL_RC:-unknown})."
+      echo "See /root/centminlogs/ for the failure summary. Fix the cause and re-run this installer."
+      exit "${CMM_INSTALL_RC:-1}"
+    fi
     ;;
   yumupdate)
     yumupdater
     install_axel
     cminstall
+    CMM_INSTALL_RC=$(cat "$CMM_RC_FILE" 2>/dev/null)
+    rm -f "$CMM_RC_FILE"
+    if [ "${CMM_INSTALL_RC:-1}" -ne 0 ]; then
+      echo
+      echo "ERROR: centmin.sh install aborted (exit ${CMM_INSTALL_RC:-unknown})."
+      echo "See /root/centminlogs/ for the failure summary. Fix the cause and re-run this installer."
+      exit "${CMM_INSTALL_RC:-1}"
+    fi
     ;;
   *)
     if [[ "$DEF" = 'novalue' ]]; then
