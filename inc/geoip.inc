@@ -61,9 +61,15 @@ geoiptwolite_phpext_install() {
     make$MAKETHREADS
     # make test
     make install
+    GEOIPTWOLITE_PHP_EXTDIR=$(/usr/local/bin/php-config --extension-dir 2>/dev/null)
+    if [ -n "$GEOIPTWOLITE_PHP_EXTDIR" ] && [ -f "${GEOIPTWOLITE_PHP_EXTDIR}/maxminddb.so" ]; then
 cat > "${CONFIGSCANDIR}/maxminddb.ini" <<EOF
 extension=maxminddb.so
 EOF
+    else
+      cecho "Error: maxminddb.so not produced by build - not writing maxminddb.ini" $boldyellow
+      rm -f "${CONFIGSCANDIR}/maxminddb.ini"
+    fi
     popd
   fi
 }
@@ -75,6 +81,36 @@ geoipphpext() {
       check_devtoolset_php
       enable_devtoolset
 if [[ -d /usr/share/GeoIP ]]; then
+    GEOIP_PHP_VERNUM=$(/usr/local/bin/php-config --vernum 2>/dev/null)
+    GEOIP_PHP_EXTDIR=$(/usr/local/bin/php-config --extension-dir 2>/dev/null)
+    if [ -z "$GEOIP_PHP_VERNUM" ]; then
+      cecho "skipping legacy geoip PHP extension - php-config not found" $boldyellow
+      return 0
+    fi
+    # upstream php/pecl-networking-geoip has had no commits since 2021-06-11;
+    # its last fixes cover PHP 8.0/8.1 only. PHP 8.2+ is unsupported upstream.
+    if [ "$GEOIP_PHP_VERNUM" -ge "${PHPGEOIP_MAXVERNUM:-80200}" ]; then
+      cecho "skipping legacy geoip PHP extension - unmaintained upstream, unsupported on this PHP" $boldyellow
+      cecho "use GeoIP2/maxminddb instead: NGINX_GEOIPTWOLITE='y' in /etc/centminmod/custom_config.inc" $boldyellow
+      if [ -f "${CONFIGSCANDIR}/geoip.ini" ] && [ -n "$GEOIP_PHP_EXTDIR" ] && [ ! -f "${GEOIP_PHP_EXTDIR}/geoip.so" ]; then
+        cecho "removing orphaned ${CONFIGSCANDIR}/geoip.ini" $boldyellow
+        rm -f "${CONFIGSCANDIR}/geoip.ini"
+      fi
+      geoiptwolite_phpext_install "$initial_installation"
+      return 0
+    fi
+    # legacy libGeoIP headers were retired from RHEL/EPEL 9+ and inc/customrpms.inc
+    # has no GeoIP fallback - without them ./configure cannot succeed at all.
+    # This fires on EL9/EL10 regardless of PHP version, incl. PHP 7.4.
+    # /usr/local/include covers a custom-built libGeoIP install.
+    if [ ! -f /usr/include/GeoIP.h ] && [ ! -f /usr/local/include/GeoIP.h ]; then
+      cecho "skipping legacy geoip PHP extension - GeoIP-devel headers not available on this OS" $boldyellow
+      if [ -f "${CONFIGSCANDIR}/geoip.ini" ] && [ -n "$GEOIP_PHP_EXTDIR" ] && [ ! -f "${GEOIP_PHP_EXTDIR}/geoip.so" ]; then
+        rm -f "${CONFIGSCANDIR}/geoip.ini"
+      fi
+      geoiptwolite_phpext_install "$initial_installation"
+      return 0
+    fi
   if [ ! -f /usr/bin/svn ]; then
     echo "installing subversion..."
     yum -y -q install subversion
@@ -127,13 +163,19 @@ if [[ -d /usr/share/GeoIP ]]; then
     make install
     sar_call
 
+    GEOIP_PHP_EXTDIR=$(/usr/local/bin/php-config --extension-dir 2>/dev/null)
+    if [ -n "$GEOIP_PHP_EXTDIR" ] && [ -f "${GEOIP_PHP_EXTDIR}/geoip.so" ]; then
 cat > "${CONFIGSCANDIR}/geoip.ini" <<EOF
 extension=geoip.so
 geoip.custom_directory=/usr/share/GeoIP
 EOF
+    else
+      cecho "Error: geoip.so not produced by build - not writing geoip.ini" $boldyellow
+      rm -f "${CONFIGSCANDIR}/geoip.ini"
+    fi
   geoiptwolite_phpext_install "$initial_installation"
   else
-    echo "Error: geoip php extension not installed. Could not find ${DIR_TMP}/geoip directory" > ${CENTMINLOGDIR}/centminmod_errors_install_${DT}.log
+    echo "Error: geoip php extension not installed. Could not find ${DIR_TMP}/geoip directory" >> ${CENTMINLOGDIR}/centminmod_errors_install_${DT}.log
 fi
     fi # PHP_INSTALL=y
 }
