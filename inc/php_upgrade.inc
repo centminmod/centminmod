@@ -171,6 +171,22 @@ fi
 }
 
 ########################################################################
+php_ext_so_missing() {
+  # $1 = .so basename (without .so). Returns 0 (true) ONLY when the extension
+  # dir is KNOWN and the .so is genuinely absent. An unknown dir must NEVER be
+  # reported as "missing" - a box with no PHP would otherwise trigger a build storm.
+  # Derives the dir itself rather than using PHPEXTDIR_AUTODETECT (:176), which is
+  # assigned only inside autodetectinstallextensions() and is empty on this path.
+  local ext="$1" extdir
+  extdir=$(/usr/local/bin/php-config --extension-dir 2>/dev/null)
+  [ -n "$extdir" ] || return 1
+  [ -d "$extdir" ] || return 1
+  [ -f "${CONFIGSCANDIR}/${ext}.ini" ] || return 1
+  [ -f "${extdir}/${ext}.so" ] && return 1
+  return 0
+}
+
+########################################################################
 autodetectinstallextensions() {
 
 PHPEXTDIR_AUTODETECT=$(cat /usr/local/bin/php-config | awk '/^extension_dir/ {extdir=$1} END {gsub(/\047|extension_dir|=|)/,"",extdir); print extdir}')
@@ -1127,6 +1143,9 @@ if [[ "$overwritephpfpmconf" = [yY] ]]; then
     if [[ "$PHPMUVER" != 'NGDEBUG' ]]; then
         if [[ ! -f "${CONFIGSCANDIR}/redis.ini" && "$PHPREDIS" = [yY] ]]; then
             redisinstall
+        elif [[ "$PHPREDIS" = [yY] ]] && php_ext_so_missing redis; then
+            cecho "redis.ini present but redis.so missing - reinstalling redis" $boldyellow
+            redisinstall
         elif [[ -f "${CONFIGSCANDIR}/redis.ini" && "$PHPREDIS" = [nN] ]]; then
             rm -rf "${CONFIGSCANDIR}/redis.ini"
         fi
@@ -1146,11 +1165,59 @@ else
     if [[ "$PHPMUVER" != 'NGDEBUG' ]]; then
         if [[ ! -f "${CONFIGSCANDIR}/redis.ini" && "$PHPREDIS" = [yY] ]]; then
             redisinstall
+        elif [[ "$PHPREDIS" = [yY] ]] && php_ext_so_missing redis; then
+            cecho "redis.ini present but redis.so missing - reinstalling redis" $boldyellow
+            redisinstall
         elif [[ -f "${CONFIGSCANDIR}/redis.ini" && "$PHPREDIS" = [nN] ]]; then
             rm -rf "${CONFIGSCANDIR}/redis.ini"
         fi
     fi
 fi # overwritephpfpmconf
+
+# A PHP rebuild can leave a stale .ini whose .so no longer exists (new
+# extension_dir on a major upgrade, or a failed/interrupted build). Every
+# reinstall gate above keys off .ini presence only, so those extensions would
+# be silently skipped forever. Detect the orphan and repair.
+if [[ "$PHP_MAJORUPGRADE" = [nN] ]]; then
+  PHP_ORPHANED_EXT=''
+  for _cmmext in redis igbinary memcached memcache mongodb swoole zopfli brotli lz4 lzf zstd mailparse imagick; do
+    if php_ext_so_missing "$_cmmext"; then
+      cecho "orphaned ${CONFIGSCANDIR}/${_cmmext}.ini detected (${_cmmext}.so missing)" $boldyellow
+      PHP_ORPHANED_EXT="$PHP_ORPHANED_EXT $_cmmext"
+    fi
+  done
+  if [ -n "$PHP_ORPHANED_EXT" ]; then
+    # STALE-FLAG NORMALIZATION (multi-AI review round 1): autodetectextensions
+    # (:136-163) leaves DETECTMAILPARSE/DETECTIMAGICK=y even when it just
+    # REMOVED their .ini because the user disabled the feature flag - without
+    # this, one unrelated orphan would reinstall user-disabled extensions
+    [[ "$PHPMAILPARSE" != [yY] ]] && DETECTMAILPARSE=n
+    [[ "$PHPIMAGICK" != [yY] ]] && DETECTIMAGICK=n
+    cecho "auto reinstalling PHP extensions with orphaned .ini files:${PHP_ORPHANED_EXT}" $boldyellow
+    autodetectinstallextensions
+    # POST-REPAIR AUDIT: the extension installers do not reliably propagate
+    # build failures - an attempt-only repair would silently leave the same
+    # orphan while menu 5 completes normally
+    for _cmmext in $PHP_ORPHANED_EXT; do
+      if php_ext_so_missing "$_cmmext"; then
+        cecho "WARNING: ${_cmmext}.so still missing after reinstall attempt - rebuild manually (e.g. menu 5 / pecl)" $boldyellow
+      fi
+    done
+  fi
+  # maxminddb has NO branch in autodetectinstallextensions - repair it directly,
+  # otherwise the sweep would re-fire on every future rebuild (permanent loop).
+  # Do NOT rm the .ini before the rebuild (same delete-only-after-success policy
+  # as the generic sweep - a failed rebuild must not leave the user worse off);
+  # geoiptwolite_phpext_install's .so-gated .ini write (3.2.12) refreshes it.
+  if [[ "$NGINX_GEOIPTWOLITE" = [yY] ]] && php_ext_so_missing maxminddb; then
+    cecho "orphaned maxminddb.ini detected - reinstalling GeoIP2 PHP extension" $boldyellow
+    geoiptwolite_phpext_install
+    if php_ext_so_missing maxminddb; then
+      cecho "WARNING: maxminddb.so still missing after reinstall attempt - manual rebuild needed" $boldyellow
+    fi
+  fi
+  unset _cmmext
+fi
 
 zendopcacheextfix
 
