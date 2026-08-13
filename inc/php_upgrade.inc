@@ -538,6 +538,9 @@ PHPCURRENTVER=$(php-config --version | cut -d . -f1,2)
 PHPMU_ALPHAVER=$(echo "$phpver")
 
     phpng_download
+    if cmm_php_fatal_pending; then
+        exit 1
+    fi
     autodetectextensions
     zopcacheupgrade
     #addmysql_legacy
@@ -579,71 +582,38 @@ if [ "$(rpm -qa | grep '^php*' | grep -E -v 'phonon-backend-gstreamer|php56|php7
 fi
     if [[ "$PHPNG_YES" != [yY] ]]; then
         phpgeolocation
-    
-        if command -v figlet >/dev/null 2>&1; then
-            figlet -ckf standard "PHP: Download"
-        fi
-    
-        curl -${ipv_forceopt}Is --connect-timeout 30 --max-time 30 "${PHP_MIRRORURL}/distributions/php-${phpver}.tar.${PHPEXTSION}" | grep 'HTTP/' | grep -E '404|503'
-        PHPGEO_CURLCHECK=$?
-        curl -${ipv_forceopt}Is --connect-timeout 30 --max-time 30 "${PHP_MIRRORURL}/distributions/php-${phpver}.tar.${PHPEXTSION}" | grep 'HTTP/' | grep -E '200|301|302'
-        PHPGEO_CURLCHECKOK=$?
-        # check if download url is 404 not found but also 
-        # check for valid status header 200, 301 or 302
-        echo $PHPGEO_CURLCHECK
-        echo $PHPGEO_CURLCHECKOK
-        if [[ "$PHPGEO_CURLCHECK" = '0' && "$PHPGEO_CURLCHECKOK" != '0' ]]; then
-            #PHP_MIRRORURL="https://www.php.net"
-            PHP_MIRRORURL="https://centminmod.com"
-            PHPUPGRADE_MIRRORURL="$PHP_MIRRORURL"
-        elif [[ "$PHPGEO_CURLCHECKOK" != '0' ]]; then
-            #PHP_MIRRORURL="https://www.php.net"
-            PHP_MIRRORURL="https://centminmod.com"
-            PHPUPGRADE_MIRRORURL="$PHP_MIRRORURL"
-        fi
-        if [ -s "php-${phpver}.tar.${PHPEXTSION}" ]; then
-            cecho "php ${phpver} Archive found, skipping download..." $boldgreen
+        command -v figlet >/dev/null 2>&1 && figlet -ckf standard "PHP: Download"
+        cd "$DIR_TMP"
+        PHPTARBALL_FILE="php-${phpver}.tar.${PHPEXTSION}"
+        if cmm_archive_valid "$PHPTARBALL_FILE"; then
+            cecho "${PHPTARBALL_FILE} found and verified, skipping download..." $boldgreen
         else
-            $DOWNLOADAPP_PHP "${PHP_MIRRORURL}/distributions/php-${phpver}.tar.${PHPEXTSION}" $AXELPHPUPGRADETARGZ_PHP $WGETRETRY_PHP
-            ERROR=$?
-            if [[ "$ERROR" != '0' ]]; then
-                # retry with local mirror
-                echo
-                echo "retrying local mirror download"
-                echo
-                PHP_MIRRORURL="https://centminmod.com"
-                PHPUPGRADE_MIRRORURL="$PHP_MIRRORURL"
-                if [ -s "php-${phpver}.tar.${PHPEXTSION}" ]; then
-                    cecho "php ${phpver} Archive found, skipping download..." $boldgreen
-                else
-                    $DOWNLOADAPP_PHP "${PHP_MIRRORURL}/distributions/php-${phpver}.tar.${PHPEXTSION}" $AXELPHPUPGRADETARGZ_PHP $WGETRETRY_PHP
-                    ERROR=$?
-                    if [[ "$ERROR" != '0' ]]; then
-                        cecho "Error: php-${phpver}.tar.${PHPEXTSION} download failed." $boldgreen
-                        checklogdetails
-                        exit        
-                    fi
-                fi
-            else 
-                cecho "Download done." $boldyellow
-                echo ""
+            rm -f "$PHPTARBALL_FILE" "${PHPTARBALL_FILE}.cmmpart"
+            while IFS= read -r m; do
+                [ -n "$m" ] || continue
+                $DOWNLOADAPP_PHP "${m}/distributions/${PHPTARBALL_FILE}" \
+                  -o "${PHPTARBALL_FILE}.cmmpart" || { rm -f "${PHPTARBALL_FILE}.cmmpart"; continue; }
+                # validate FIRST, promote SECOND (same reasoning as the install path)
+                cmm_archive_valid "${PHPTARBALL_FILE}.cmmpart" || { rm -f "${PHPTARBALL_FILE}.cmmpart"; continue; }
+                mv -f "${PHPTARBALL_FILE}.cmmpart" "$PHPTARBALL_FILE"
+                PHPUPGRADE_MIRRORURL="$m"
+                break
+            done <<< "$(cmm_php_mirror_list)"
+            rm -f "${PHPTARBALL_FILE}.cmmpart"
+            if ! cmm_archive_valid "$PHPTARBALL_FILE"; then
+                cmm_php_fatal "php-${phpver} source unavailable or corrupt on all mirrors"
+                exit 1
             fi
         fi
-    
-        tar $PHPTAR_FLAGS "php-${phpver}.tar.${PHPEXTSION}"
-    
-        ERROR=$?
-        if [[ "$ERROR" != '0' ]]; then
-            cecho "Error: php-${phpver}.tar.${PHPEXTSION} extraction failed." $boldgreen
-            checklogdetails
-            exit
-        else 
-            cecho "php-${phpver}.tar.${PHPEXTSION} valid file." $boldyellow
-            echo ""
+        rm -rf "${DIR_TMP}/php-${phpver}"
+        tar $PHPTAR_FLAGS "$PHPTARBALL_FILE"
+        if [ $? -ne 0 ] || [ ! -f "${DIR_TMP}/php-${phpver}/main/php_version.h" ]; then
+            cmm_php_fatal "php-${phpver} extraction failed or source tree incomplete"
+            exit 1
         fi
     fi
 
-    cd "php-${phpver}"
+    cd "${DIR_TMP}/php-${phpver}" || { cmm_php_fatal "php-${phpver} source dir missing at compile phase"; exit 1; }
     PHPVER_ID=$(awk '/PHP_VERSION_ID/ {print $3}' ${DIR_TMP}/php-${phpver}/main/php_version.h)
     echo "PHP VERSION ID: $PHPVER_ID"
 

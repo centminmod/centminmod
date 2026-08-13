@@ -1317,7 +1317,10 @@
 
 # Nginx GeoIP2 Lite Module
 # MaxMind GeoIP2 Lite databases (static)
+# Maintained GeoIP2/maxminddb replacement for the legacy geoip PHP extension
+# Recommended on PHP 8.2+ where the legacy geoip PHP extension is skipped
 # Reference: https://github.com/leev/ngx_http_geoip2_module
+# Related: PHPGEOIP_MAXVERNUM, PHPGEOIP_ALWAYS
 # Git History: Added 2018-05-09 (a20e729e)
 #NGINX_GEOIPTWOLITE='n'  
 
@@ -5042,6 +5045,33 @@
 # GeoIP extension always reinstalled on PHP recompiles
 # Git History: First added 2015-09-19 (a852e830), Last modified 2016-02-15 (7240145c)
 #PHPGEOIP_ALWAYS='y'  
+
+# PHP Source Download Fail-Fast
+# 'n' disables only the pre-yuminstall PHP mirror preflight abort
+# PHP source tarball and extraction validation always aborts regardless
+# Related: PHP_TARBALL_MINBYTES, PHP_EXTRA_MIRRORS
+#PHP_SRC_FAILFAST='y'
+
+# PHP Source Tarball Minimum Size
+# PHP source tarball size floor in bytes
+# Rejects soft-404 HTML pages and truncated downloads
+# Real php-8.x source tarballs are 12-20MB
+# Related: PHP_SRC_FAILFAST
+#PHP_TARBALL_MINBYTES='3000000'
+
+# PHP GeoIP Extension Maximum PHP Version
+# Skip the legacy geoip PECL PHP extension at/above this php-config --vernum
+# Legacy geoip PECL extension is unmaintained upstream
+# GeoIP2/maxminddb via NGINX_GEOIPTWOLITE='y' is the maintained replacement
+# Set to '90000' to restore the old behaviour
+# Related: PHPGEOIP_ALWAYS, NGINX_GEOIPTWOLITE
+#PHPGEOIP_MAXVERNUM='80200'
+
+# PHP Extra Source Mirrors
+# Space separated extra PHP mirror base URLs added to the mirror list
+# The only way to add a custom mirror as phpgeolocation overwrites PHP_MIRRORURL
+# Related: PHP_MIRRORURL, PHP_SRC_FAILFAST
+#PHP_EXTRA_MIRRORS=''
 
 # PHP IonCube Loader
 # IonCube encoded file support
