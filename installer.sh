@@ -32,6 +32,11 @@ ARCH_CHECK="$(uname -m)"
 DT=$(date +"%d%m%y-%H%M%S")
 exec > >(tee -a installer_${DT}.log) 2>&1
 if [[ "$ARCH_CHECK" = 'aarch64' ]]; then echo; echo -e "Centmin Mod supports x86_64 CPUs only.\nARM based aarch64 CPUs not supported yet."; echo; exit 1; fi
+# root-owned dir, per-run + per-process name -
+# a fixed /tmp path would be a symlink-race target and would collide across
+# concurrent installer runs
+mkdir -p /root/centminlogs
+CMM_RC_FILE="/root/centminlogs/.cmm_installer_rc_${DT}_$$"
 #######################################################
 # check if Centmin Mod already installed
 FIRSTYUM_FILE=""
@@ -2408,6 +2413,7 @@ echo "${INSTALLDIR}/centminmod"
 cd "${INSTALLDIR}/centminmod"
 sed -i 's|TESTEDCENTOSVER='9.3'|TESTEDCENTOSVER='9.3'|' centmin.sh
 ./centmin.sh install
+echo $? > "$CMM_RC_FILE"
 sar_call
 echo "./centmin.sh install completion"
 rm -rf /etc/centminmod/email-primary.ini
@@ -2468,6 +2474,14 @@ if [[ "$DEF" = 'novalue' ]]; then
   fileperm_fixes
   cminstall
 } 2>&1 | tee "/root/centminlogs/installer_cmm_${DT}.log"
+  CMM_INSTALL_RC=$(cat "$CMM_RC_FILE" 2>/dev/null)
+  rm -f "$CMM_RC_FILE"
+  if [ "${CMM_INSTALL_RC:-1}" -ne 0 ]; then
+    echo
+    echo "ERROR: centmin.sh install aborted (exit ${CMM_INSTALL_RC:-unknown})."
+    echo "See /root/centminlogs/ for the failure summary. Fix the cause and re-run this installer."
+    exit "${CMM_INSTALL_RC:-1}"
+  fi
   echo
   FIRSTYUMINSTALLTIME=$(echo "$firstyuminstallendtime - $firstyuminstallstarttime" | bc)
   FIRSTYUMINSTALLTIME=$(printf "%0.4f\n" $FIRSTYUMINSTALLTIME)
