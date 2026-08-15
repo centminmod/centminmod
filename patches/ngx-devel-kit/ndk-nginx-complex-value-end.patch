@@ -1,0 +1,80 @@
+ngx_devel_kit fix for nginx 1.31.3+ / 1.30.4+ worker SIGSEGV in NDK based
+set_* directives (e.g. set-misc set_escape_uri / set_unescape_uri).
+
+nginx commit a8289aa69c74 (CVE-2026-42533 fix series, in 1.31.3 and 1.30.4)
+split ngx_http_script_complex_value_code() and moved the script engine value
+stack push into a new ngx_http_script_complex_value_end_code() opcode that
+rewrite value compilers must now also emit. ndk_http_rewrite_value() is a
+fork of nginx's ngx_http_rewrite_value() and was never updated, so NDK set
+var codes read an unwritten stack slot and dereference garbage -> SIGSEGV.
+
+From upstream https://github.com/vision5/ngx_devel_kit/pull/42
+Refs: https://github.com/vision5/ngx_devel_kit/issues/43
+      https://github.com/openresty/set-misc-nginx-module/issues/85
+      https://github.com/nginx/nginx/pull/1601
+
+diff --git a/src/ndk_rewrite.c b/src/ndk_rewrite.c
+index 77ce9f8..9f4f2a0 100644
+--- a/src/ndk_rewrite.c
++++ b/src/ndk_rewrite.c
+@@ -5,7 +5,6 @@
+  * be provided later to un-define them as being static
+  */
+ 
+-
+ uintptr_t ndk_http_script_exit_code = (uintptr_t) NULL;
+ 
+ 
+@@ -17,6 +16,9 @@ ndk_http_rewrite_value (ngx_conf_t *cf, ndk_http_rewrite_loc_conf_t *lcf,
+     ngx_http_script_compile_t              sc;
+     ngx_http_script_value_code_t          *val;
+     ngx_http_script_complex_value_code_t  *complex;
++#ifdef NDK_HAVE_HTTP_SCRIPT_COMPLEX_VALUE_END_CODE
++    ngx_http_script_complex_value_end_code_t  *complex_end;
++#endif
+ 
+     n = ngx_http_script_variables_count(value);
+ 
+@@ -63,6 +65,17 @@ ndk_http_rewrite_value (ngx_conf_t *cf, ndk_http_rewrite_loc_conf_t *lcf,
+         return NGX_CONF_ERROR;
+     }
+ 
++#ifdef NDK_HAVE_HTTP_SCRIPT_COMPLEX_VALUE_END_CODE
++    complex_end = ngx_http_script_add_code(lcf->codes,
++                              sizeof(ngx_http_script_complex_value_end_code_t),
++                              &complex);
++    if (complex_end == NULL) {
++        return NGX_CONF_ERROR;
++    }
++
++    complex_end->code = ngx_http_script_complex_value_end_code;
++#endif
++
+     return NGX_CONF_OK;
+ }
+ 
+@@ -99,5 +112,3 @@ ndk_http_rewrite_var (ngx_http_request_t *r, ngx_http_variable_value_t *v,
+ 
+     return  NGX_OK;
+ }
+-
+-
+diff --git a/src/ndk_rewrite.h b/src/ndk_rewrite.h
+index 2479aa2..b0ae283 100644
+--- a/src/ndk_rewrite.h
++++ b/src/ndk_rewrite.h
+@@ -3,6 +3,14 @@
+ /* TODO : should remove this when not needed */
+ 
+ 
++/* Added in nginx 1.31.3 and backported to 1.30.4; not in freenginx. */
++#if !defined(freenginx)                                               \
++    && (nginx_version >= 1030004)                                     \
++    && (nginx_version < 1031000 || nginx_version >= 1031003)
++#define NDK_HAVE_HTTP_SCRIPT_COMPLEX_VALUE_END_CODE
++#endif
++
++
+ 
+ /* used for plugging into the rewrite module (taken from the rewrite module) */
+ 

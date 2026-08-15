@@ -718,6 +718,62 @@ ngx_srcache_patch() {
   } 2>&1 | tee -a "${CENTMINLOGDIR}/patch_patchnginx_${DT}.log"
 }
 
+ngx_develkit_patch() {
+  {
+  # nginx 1.31.3+ / 1.30.4+ (CVE-2026-42533 fix series commit a8289aa69c74)
+  # split ngx_http_script_complex_value_code() and moved the script engine
+  # value stack push into a new ngx_http_script_complex_value_end_code()
+  # opcode. ngx_devel_kit's ndk_http_rewrite_value() is a fork of nginx's
+  # ngx_http_rewrite_value() that never emits the new opcode, so NDK based
+  # set_* directives (set-misc set_escape_uri/set_unescape_uri etc) read an
+  # unwritten value stack slot and SIGSEGV nginx workers on such nginx
+  # versions. Patch NDK to emit the terminating opcode.
+  # https://github.com/vision5/ngx_devel_kit/issues/43
+  # https://github.com/vision5/ngx_devel_kit/pull/42
+  # https://github.com/nginx/nginx/pull/1601
+  if [ "$ngver" ]; then
+    if [[ "$FREENGINX_INSTALL" = [yY] ]]; then
+      NGX_SRCTREEDIR="/svr-setup/freenginx-$ngver"
+    else
+      NGX_SRCTREEDIR="/svr-setup/nginx-$ngver"
+    fi
+  else
+    if [[ "$FREENGINX_INSTALL" = [yY] ]]; then
+      NGX_SRCTREEDIR="/svr-setup/freenginx-${NGINX_VERSION}"
+    else
+      NGX_SRCTREEDIR="/svr-setup/nginx-${NGINX_VERSION}"
+    fi
+  fi
+  DETECT_NGXVER=$(awk '/define nginx_version  / {print $3}' "$NGX_SRCTREEDIR/src/core/nginx.h")
+  echo "$DETECT_NGXVER"
+  if [[ -f "$DIR_TMP/${NGX_DEVELKITLINKFILE}" && -f "$CUR_DIR/patches/ngx-devel-kit/ndk-nginx-complex-value-end.patch" ]]; then
+    NGX_DEVELKITDIR=$(tar -tzf "$DIR_TMP/${NGX_DEVELKITLINKFILE}" | head -1 | cut -f1 -d"/")
+    # always re-extract pristine ngx_devel_kit sources so builds against
+    # nginx versions without ngx_http_script_complex_value_end_code never
+    # reuse a previously patched ngx_devel_kit directory
+    rm -rf "${DIR_TMP}/${NGX_DEVELKITDIR}"
+    pushd "${DIR_TMP}"
+    tar xzf "$DIR_TMP/${NGX_DEVELKITLINKFILE}"
+    popd
+    # feature probe the nginx source tree being built instead of comparing
+    # nginx version numbers so the patch self-enables on nginx 1.31.3+ and
+    # 1.30.4+ backports, self-disables on older nginx and freenginx, and
+    # self-disables via the 2nd grep if a future ngx_devel_kit release
+    # ships with the fix already applied
+    if grep -q 'ngx_http_script_complex_value_end_code' "$NGX_SRCTREEDIR/src/http/ngx_http_script.h" \
+      && ! grep -q 'ngx_http_script_complex_value_end_code' "${DIR_TMP}/${NGX_DEVELKITDIR}/src/ndk_rewrite.c"; then
+      pushd "${DIR_TMP}/${NGX_DEVELKITDIR}"
+      cecho "patching ngx_devel_kit ndk_http_rewrite_value" $boldyellow
+      cecho "patch -p1 < $CUR_DIR/patches/ngx-devel-kit/ndk-nginx-complex-value-end.patch" $boldyellow
+      patch -p1 < "$CUR_DIR/patches/ngx-devel-kit/ndk-nginx-complex-value-end.patch"
+      echo
+      echo "patching ngx_devel_kit for nginx ngx_http_script_complex_value_end_code support"
+      popd
+    fi
+  fi
+  } 2>&1 | tee -a "${CENTMINLOGDIR}/patch_patchnginx_${DT}.log"
+}
+
 ngx_cachepurge_patch() {
   {
   if [ "$ngver" ]; then
@@ -1329,6 +1385,7 @@ patchnginx() {
   ocsp_ttl_override
   ngx_srcache_patch
   ngx_headers_more_patch
+  ngx_develkit_patch
   # nginx_quic_patches
   aws_lc_patch
   http2_shutdown_fix_patch
