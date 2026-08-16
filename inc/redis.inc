@@ -138,8 +138,6 @@ echo "redisinstall: REDIS_PHPCURRENTVER=$REDIS_PHPCURRENTVER"
 echo
 
 if [[ "$REDIS_PHPCURRENTVER" = '8.5' || "$PHPMUVER" = '8.5' || "$REDIS_PHPCURRENTVER" = '8.4' || "$PHPMUVER" = '8.4' || "$REDIS_PHPCURRENTVER" = '8.3' || "$PHPMUVER" = '8.3' || "$REDIS_PHPCURRENTVER" = '8.2' || "$PHPMUVER" = '8.2' || "$REDIS_PHPCURRENTVER" = '8.1' || "$PHPMUVER" = '8.1' || "$REDIS_PHPCURRENTVER" = '8.0' || "$PHPMUVER" = '8.0' || "$PHPVER_ID" -ge '80000' || "$PHPMUVER" = 'NGDEBUG' || "$PHPSEVEN_CHECKVER" = '0' ]] || [[ "$REDIS_PHPCURRENTVER" = '7.4' || "$PHPMUVER" = '7.4' || "$PHPMUVER" = 'NGDEBUG' || "$PHPSEVEN_CHECKVER" = '0' ]] || [[ "$REDIS_PHPCURRENTVER" = '7.3' || "$PHPMUVER" = '7.3' || "$PHPMUVER" = 'NGDEBUG' || "$PHPSEVEN_CHECKVER" = '0' ]] || [[ "$REDIS_PHPCURRENTVER" = '7.2' || "$PHPMUVER" = '7.2' || "$PHPMUVER" = 'NGDEBUG' || "$PHPSEVEN_CHECKVER" = '0' ]] || [[ "$REDIS_PHPCURRENTVER" = '7.1' || "$PHPMUVER" = '7.1' || "$PHPMUVER" = 'NGDEBUG' || "$PHPSEVEN_CHECKVER" = '0' ]] || [[ "$REDIS_PHPCURRENTVER" = '7.0' || "$PHPMUVER" = '7.0' || "$PHPMUVER" = 'NGDEBUG' || "$PHPSEVEN_CHECKVER" = '0' ]] || [[ "$INITIALINSTALL" = [yY] && "$(echo "$PHP_VERSION" | cut -d . -f1,2)" = '7.1' ]] || [[ "$INITIALINSTALL" = [yY] && "$(echo "$PHP_VERSION" | cut -d . -f1,2)" = '7.0' ]]; then
-    cecho "Compiling PHP redis-${REDISPHP_VER} extension for PHP ..." $boldgreen
-
     if [[ "$CENTOS_SEVEN" -eq '7' ]] && [[ "$REDIS_PHPCURRENTVER" = '8.0' || "$PHPMUVER" = '8.0' || "$REDIS_PHPCURRENTVER" = '8.1' || "$PHPMUVER" = '8.1' || "$REDIS_PHPCURRENTVER" = '8.2' || "$PHPMUVER" = '8.2' || "$REDIS_PHPCURRENTVER" = '8.3' || "$PHPMUVER" = '8.3' ]]; then
         REDISPHP_GIT='y'
         AUTODETECPHP_OVERRIDE='y'
@@ -148,6 +146,14 @@ if [[ "$REDIS_PHPCURRENTVER" = '8.5' || "$PHPMUVER" = '8.5' || "$REDIS_PHPCURREN
     if [[ "$REDIS_PHPCURRENTVER" = '8.4' || "$PHPMUVER" = '8.4' || "$REDIS_PHPCURRENTVER" = '8.5' || "$PHPMUVER" = '8.5' ]]; then
         REDISPHP_GIT='y'
         AUTODETECPHP_OVERRIDE='y'
+    fi
+
+    # banner printed after the REDISPHP_GIT dispatch is decided - on the git
+    # path REDISPHP_VER is not used and may hold a stale default
+    if [[ "$REDISPHP_GIT" = [yY] ]]; then
+        cecho "Compiling PHP redis extension from phpredis develop branch for PHP ..." $boldgreen
+    else
+        cecho "Compiling PHP redis-${REDISPHP_VER} extension for PHP ..." $boldgreen
     fi
 
     pwd

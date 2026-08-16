@@ -30,7 +30,7 @@ DT=$(date +"%d%m%y-%H%M%S")
 branchname='140.00beta01'
 SCRIPT_MAJORVER='140'
 SCRIPT_MINORVER='00'
-SCRIPT_INCREMENTVER='359'
+SCRIPT_INCREMENTVER='369'
 SCRIPT_VERSIONSHORT="${branchname}"
 SCRIPT_VERSION="${SCRIPT_VERSIONSHORT}.b${SCRIPT_INCREMENTVER}"
 SCRIPT_DATE='16/01/25'
@@ -1093,6 +1093,15 @@ PHP_PCREJIT_STACKSIZE='512'  # value to raise PHP PCRE JIT stack size when PHP_P
 
 PHPGEOIP_ALWAYS='y'          # GeoIP php extension is always reinstalled on php recompiles
 PHPIMAGICK_ALWAYS='y'        # imagick php extension is always reinstalled on php recompiles
+PHP_SRC_FAILFAST='y'            # 'n' disables ONLY the pre-yuminstall mirror preflight abort;
+                                # tarball/extraction validation always aborts (disabling that
+                                # would restore the reported bug)
+PHP_TARBALL_MINBYTES='3000000'  # size floor; real php-8.x tarballs are 12-20MB
+PHPGEOIP_MAXVERNUM='80200'      # skip legacy geoip PHP ext at/above this php-config --vernum
+PHP_EXTRA_MIRRORS=''            # space separated extra PHP mirror base URLs - the ONLY way to
+                                # add a custom mirror (phpgeolocation clobbers PHP_MIRRORURL)
+# PHP_MIRROR_LIST_OVERRIDE is a test-only hook (undocumented in custom_config):
+# when set it REPLACES the entire mirror list (used by test T2)
 PHPDEBUGMODE='n'             # --enable-debug PHP compile flag
 PHP_CLEAN_COREDUMPS='y'      # remove PHP-FPM core dumps when PHPDEBUGMODE='n' set
 PHPIMAP='y'                  # Disable or Enable PHP Imap extension
@@ -3051,7 +3060,18 @@ if [ "$(rpm -qa | grep '^php*' | grep -v 'phonon-backend-gstreamer')" ]; then
 
 fi
 
-    cd "${DIR_TMP}/php-${PHP_VERSION}"
+    if ! phpsrc_phasegate "$PHP_VERSION"; then
+      echo
+      cecho "=================================================================" $boldyellow
+      cecho " PHP source tree missing - cannot continue into the compile phase" $boldyellow
+      cecho " Nginx and MariaDB are already installed, so DO NOT re-run" $boldyellow
+      cecho " ./centmin.sh install - it will be refused." $boldyellow
+      cecho " Instead run: ./centmin.sh  and use menu option 5 to install PHP." $boldyellow
+      cecho "=================================================================" $boldyellow
+      echo
+      exit 1
+    fi
+    cd "${DIR_TMP}/php-${PHP_VERSION}" || exit 1
     PHPVER_ID=$(awk '/PHP_VERSION_ID/ {print $3}' ${DIR_TMP}/php-${PHP_VERSION}/main/php_version.h)
     echo "PHP VERSION ID: $PHPVER_ID"
 
@@ -3710,11 +3730,30 @@ if [[ "$1" = 'install' ]]; then
     exit
     fi
     
+    cmm_php_fatal_clear
     dlstarttime=$(TZ=UTC date +%s.%N)
     {    
     alldownloads
     } 2>&1 | tee "${CENTMINLOGDIR}/centminmod_downloadtimes_${DT}.log"
     wait
+    if cmm_php_fatal_pending; then
+      echo
+      cecho "=================================================================" $boldyellow
+      cecho " PHP ${PHP_VERSION} source download/validation FAILED" $boldyellow
+      cecho "=================================================================" $boldyellow
+      cat "${CENTMINLOGDIR}/.cmm_install_fatal_${DT}_$$"
+      echo
+      cecho " PHP compilation/installation has NOT started." $boldyellow
+      cecho " Fix connectivity or the PHP mirror, then simply re-run:" $boldyellow
+      cecho "   ./centmin.sh install" $boldyellow
+      echo
+      cecho " Download log: ${CENTMINLOGDIR}/centminmod_downloadtimes_${DT}.log" $boldyellow
+      cecho " Install log:  ${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_install.log" $boldyellow
+      cecho "=================================================================" $boldyellow
+      echo
+      rm -f "${DIR_TMP}/php-${PHP_VERSION}.tar."*
+      exit 1
+    fi
 
     dlendtime=$(TZ=UTC date +%s.%N)
     DOWNLOADTIME=$(echo "scale=2;$dlendtime - $dlstarttime"|bc )
@@ -3756,6 +3795,12 @@ EOF
     echo "$SCRIPT_VERSION" > /etc/centminmod-release
     #echo "$SCRIPT_VERSION #`date`" >> /etc/centminmod-versionlog
     } 2>&1 | tee "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_install.log"
+    
+if cmm_php_fatal_pending; then
+  cmm_php_fatal_clear
+  echo "Centmin Mod install aborted - see ${CENTMINLOGDIR}/"
+  exit 1
+fi
     
     if [ "$CCACHEINSTALL" == 'y' ]; then
     
@@ -3864,7 +3909,25 @@ else
             exit
             fi
             
+            cmm_php_fatal_clear
             alldownloads
+            if cmm_php_fatal_pending; then
+              echo
+              cecho "=================================================================" $boldyellow
+              cecho " PHP ${PHP_VERSION} source download/validation FAILED" $boldyellow
+              cecho "=================================================================" $boldyellow
+              cat "${CENTMINLOGDIR}/.cmm_install_fatal_${DT}_$$"
+              echo
+              cecho " PHP compilation/installation has NOT started." $boldyellow
+              cecho " Fix connectivity or the PHP mirror, then simply re-run:" $boldyellow
+              cecho "   ./centmin.sh install" $boldyellow
+              echo
+              cecho " Install log:  ${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_install.log" $boldyellow
+              cecho "=================================================================" $boldyellow
+              echo
+              rm -f "${DIR_TMP}/php-${PHP_VERSION}.tar."*
+              exit 1
+            fi
             funct_centmininstall
 
     # setup command shortcut aliases 
@@ -3906,6 +3969,12 @@ EOF
             echo "$SCRIPT_VERSION" > /etc/centminmod-release
             #echo "$SCRIPT_VERSION #`date`" >> /etc/centminmod-versionlog
             } 2>&1 | tee "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_install.log"
+            
+if cmm_php_fatal_pending; then
+  cmm_php_fatal_clear
+  echo "Centmin Mod install aborted - see ${CENTMINLOGDIR}/"
+  exit 1
+fi
             
             if [ "$CCACHEINSTALL" == 'y' ]; then
             
@@ -4004,6 +4073,7 @@ EOF
         csftweaks
         
         {
+        cmm_php_fatal_clear
         
         if [ "$CCACHEINSTALL" == 'y' ]; then
         ccacheinstall
@@ -4015,6 +4085,13 @@ EOF
         fi
         funct_phpupgrade
         } 2>&1 | tee "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_php_upgrade.log"
+        if cmm_php_fatal_pending; then
+            cmm_php_fatal_clear
+            echo
+            cecho "PHP upgrade aborted - source download/validation failed. Existing PHP was NOT modified." $boldyellow
+            cecho "See ${CENTMINLOGDIR}/ for the failure summary." $boldyellow
+            exit 1
+        fi
         
         if [ "$CCACHEINSTALL" == 'y' ]; then
         
@@ -4406,7 +4483,24 @@ EOF
         fi
         # setramdisk
         diskalert
+        cmm_php_fatal_clear
         alldownloads
+        if cmm_php_fatal_pending; then
+          echo
+          cecho "=================================================================" $boldyellow
+          cecho " PHP ${PHP_VERSION} source download/validation FAILED" $boldyellow
+          cecho "=================================================================" $boldyellow
+          cat "${CENTMINLOGDIR}/.cmm_install_fatal_${DT}_$$"
+          echo
+          cecho " PHP compilation/installation has NOT started." $boldyellow
+          cecho " Fix connectivity or the PHP mirror, then simply re-run:" $boldyellow
+          cecho "   ./centmin.sh install" $boldyellow
+          cecho "=================================================================" $boldyellow
+          echo
+          rm -f "${DIR_TMP}/php-${PHP_VERSION}.tar."*
+          cmm_php_fatal_clear
+          exit 1
+        fi
         funct_centmininstall
         unsetramdisk
         echo "$SCRIPT_VERSION" > /etc/centminmod-release
@@ -4479,6 +4573,7 @@ EOF
         csftweaks
         
         {
+        cmm_php_fatal_clear
         
         if [ "$CCACHEINSTALL" == 'y' ]; then
         ccacheinstall
@@ -4490,6 +4585,13 @@ EOF
         fi
         funct_phpupgrade "$2"
         } 2>&1 | tee "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_php_upgrade.log"
+        if cmm_php_fatal_pending; then
+            cmm_php_fatal_clear
+            echo
+            cecho "PHP upgrade aborted - source download/validation failed. Existing PHP was NOT modified." $boldyellow
+            cecho "See ${CENTMINLOGDIR}/ for the failure summary." $boldyellow
+            exit 1
+        fi
         
         if [ "$CCACHEINSTALL" == 'y' ]; then
         
@@ -4522,6 +4624,7 @@ EOF
         csftweaks
         
         {
+        cmm_php_fatal_clear
         
         if [ "$CCACHEINSTALL" == 'y' ]; then
         ccacheinstall
@@ -4533,6 +4636,13 @@ EOF
         fi
         funct_phpupgrade "$2" all
         } 2>&1 | tee "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_php_upgrade_all.log"
+        if cmm_php_fatal_pending; then
+            cmm_php_fatal_clear
+            echo
+            cecho "PHP upgrade aborted - source download/validation failed. Existing PHP was NOT modified." $boldyellow
+            cecho "See ${CENTMINLOGDIR}/ for the failure summary." $boldyellow
+            exit 1
+        fi
         
         if [ "$CCACHEINSTALL" == 'y' ]; then
         
@@ -4667,6 +4777,7 @@ EOF
         fi
 
         funct_nginxupgrade
+        cmm_php_fatal_clear
         funct_phpupgrade
         checksiege
         siegeinstall

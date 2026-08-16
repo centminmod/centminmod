@@ -33,20 +33,24 @@ phpng_download() {
     ERROR=$?
       if [[ "$ERROR" != '0' ]]; then
         cecho "Error: php-${PHPNGVER}.tar.xz download failed." $boldgreen
-        checklogdetails
-        exit #$ERROR
+        cmm_php_fatal "php-${PHPNGVER} download failed from ${REMIURL}"
+        return 1
       else 
             cecho "Download done." $boldyellow
         #echo ""
       fi
       fi
 
+    if ! cmm_archive_valid "php-${PHPNGVER}.tar.xz"; then
+      cmm_php_fatal "php-${PHPNGVER} tarball failed integrity validation (soft-404 HTML or short file)"
+      return 1
+    fi
     tar xJf php-${PHPNGVER}.tar.xz 
     ERROR=$?
       if [[ "$ERROR" != '0' ]]; then
         cecho "Error: php-${PHPNGVER}.tar.xz extraction failed." $boldgreen
-        checklogdetails
-        exit #$ERROR
+        cmm_php_fatal "php-${PHPNGVER} extraction failed"
+        return 1
       else 
             cecho "php-${PHPNGVER}.tar.xz valid file." $boldyellow
         echo ""
@@ -79,20 +83,24 @@ phpng_download() {
     ERROR=$?
       if [[ "$ERROR" != '0' ]]; then
         cecho "Error: php-${PHPNGVER}.tar.xz download failed." $boldgreen
-        checklogdetails
-        exit #$ERROR
+        cmm_php_fatal "php-${PHPNGVER} download failed from ${REMIURL}"
+        return 1
       else 
             cecho "Download done." $boldyellow
         #echo ""
       fi
       fi
 
+    if ! cmm_archive_valid "php-${PHPNGVER}.tar.xz"; then
+      cmm_php_fatal "php-${PHPNGVER} tarball failed integrity validation (soft-404 HTML or short file)"
+      return 1
+    fi
     tar xJf php-${PHPNGVER}.tar.xz 
     ERROR=$?
       if [[ "$ERROR" != '0' ]]; then
         cecho "Error: php-${PHPNGVER}.tar.xz extraction failed." $boldgreen
-        checklogdetails
-        exit #$ERROR
+        cmm_php_fatal "php-${PHPNGVER} extraction failed"
+        return 1
       else 
             cecho "php-${PHPNGVER}.tar.xz valid file." $boldyellow
         echo ""
@@ -126,20 +134,24 @@ phpng_download() {
     ERROR=$?
       if [[ "$ERROR" != '0' ]]; then
         cecho "Error: php-${PHPNGVER}.tar.xz download failed." $boldgreen
-        checklogdetails
-        exit #$ERROR
+        cmm_php_fatal "php-${PHPNGVER} download failed from ${REMIURL}"
+        return 1
       else 
             cecho "Download done." $boldyellow
         #echo ""
       fi
       fi
 
+    if ! cmm_archive_valid "php-${PHPNGVER}.tar.xz"; then
+      cmm_php_fatal "php-${PHPNGVER} tarball failed integrity validation (soft-404 HTML or short file)"
+      return 1
+    fi
     tar xJf php-${PHPNGVER}.tar.xz 
     ERROR=$?
       if [[ "$ERROR" != '0' ]]; then
         cecho "Error: php-${PHPNGVER}.tar.xz extraction failed." $boldgreen
-        checklogdetails
-        exit #$ERROR
+        cmm_php_fatal "php-${PHPNGVER} extraction failed"
+        return 1
       else 
             cecho "php-${PHPNGVER}.tar.xz valid file." $boldyellow
         echo ""
@@ -147,6 +159,7 @@ phpng_download() {
 ####################################################################  
   elif [[ "$(echo $PHPMU_ALPHAVER | cut -c1-10)" = '7.0.0alpha' || "$(echo $PHPMU_ALPHAVER | cut -c1-9)" = '7.0.0beta' || "$(echo $PHPMU_ALPHAVER | cut -c1-7)" = '7.0.0RC'  ]]; then
       PHPNGVER=$PHPMU_ALPHAVER
+    PHPNG_YES='y'
     cecho "Downloading PHP $PHPNGVER from https://downloads.php.net/~ab/" $boldyellow
     cd $DIR_TMP
     if [ -f php-${PHPNGVER}.tar.gz ]; then
@@ -165,20 +178,24 @@ phpng_download() {
     ERROR=$?
       if [[ "$ERROR" != '0' ]]; then
         cecho "Error: php-${PHPNGVER}.tar.gz download failed." $boldgreen
-        checklogdetails
-        exit #$ERROR
+        cmm_php_fatal "php-${PHPNGVER} download failed from https://downloads.php.net/~ab/"
+        return 1
       else 
             cecho "Download done." $boldyellow
         #echo ""
       fi
       fi
 
+    if ! cmm_archive_valid "php-${PHPNGVER}.tar.gz"; then
+      cmm_php_fatal "php-${PHPNGVER} tarball failed integrity validation (soft-404 HTML or short file)"
+      return 1
+    fi
     tar xzf php-${PHPNGVER}.tar.gz 
     ERROR=$?
       if [[ "$ERROR" != '0' ]]; then
         cecho "Error: php-${PHPNGVER}.tar.gz extraction failed." $boldgreen
-        checklogdetails
-        exit #$ERROR
+        cmm_php_fatal "php-${PHPNGVER} extraction failed"
+        return 1
       else 
             cecho "php-${PHPNGVER}.tar.gz valid file." $boldyellow
         echo ""
@@ -192,6 +209,7 @@ phpng_download() {
     elif [[ "$PHPMUVER" = '8.6' ]]; then
       PHPNGVER='8.6.0'
     fi
+    PHPNG_YES='y'
     cecho "Downloading PHP $PHPMUVER from https://git.php.net/repository/php-src.git" $boldyellow
     cd $DIR_TMP
     if [ -f php-${PHPNGVER}.tar.gz ]; then
@@ -201,6 +219,10 @@ phpng_download() {
       rm -rf php-${PHPNGVER}
     fi
     time git clone --depth=5 https://git.php.net/repository/php-src.git php-${PHPNGVER}
+    if [ $? -ne 0 ] || [ ! -f "${DIR_TMP}/php-${PHPNGVER}/main/php_version.h" ]; then
+      cmm_php_fatal "php-${PHPNGVER} git clone failed or source tree incomplete (git.php.net)"
+      return 1
+    fi
     cecho "Download PHP $PHPMUVER completed" $boldyellow
     echo
     cecho "Creating tar archive" $boldyellow

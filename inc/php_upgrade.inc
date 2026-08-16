@@ -171,6 +171,22 @@ fi
 }
 
 ########################################################################
+php_ext_so_missing() {
+  # $1 = .so basename (without .so). Returns 0 (true) ONLY when the extension
+  # dir is KNOWN and the .so is genuinely absent. An unknown dir must NEVER be
+  # reported as "missing" - a box with no PHP would otherwise trigger a build storm.
+  # Derives the dir itself rather than using PHPEXTDIR_AUTODETECT (:176), which is
+  # assigned only inside autodetectinstallextensions() and is empty on this path.
+  local ext="$1" extdir
+  extdir=$(/usr/local/bin/php-config --extension-dir 2>/dev/null)
+  [ -n "$extdir" ] || return 1
+  [ -d "$extdir" ] || return 1
+  [ -f "${CONFIGSCANDIR}/${ext}.ini" ] || return 1
+  [ -f "${extdir}/${ext}.so" ] && return 1
+  return 0
+}
+
+########################################################################
 autodetectinstallextensions() {
 
 PHPEXTDIR_AUTODETECT=$(cat /usr/local/bin/php-config | awk '/^extension_dir/ {extdir=$1} END {gsub(/\047|extension_dir|=|)/,"",extdir); print extdir}')
@@ -335,10 +351,24 @@ funct_mktempfile
 
 if [[ "$UALL" = 'y' ]]; then
     phpver=$(php-config --version)
+    # PHPMUVER was only ever assigned on the interactive prompt path below -
+    # leaving it empty here made redis extension version selection fall through
+    # to the PHP 7.0-7.1 REDISPHPSEVEN_VER fallback and misclassified every
+    # same version run as a major upgrade
+    PHPMUVER=$(echo "$phpver" | cut -d . -f1,2)
+    if [[ "$PHPMUVER" = '8.4' ]]; then
+        REDISPHP_GIT='y'
+        AUTODETECPHP_OVERRIDE='y'
+    fi
     overwritephpfpmconf='n'
     lessphpmem='y'
 elif [[ "$CLI_PHP_VER" ]]; then
     phpver="$CLI_PHP_VER"
+    PHPMUVER=$(echo "$phpver" | cut -d . -f1,2)
+    if [[ "$PHPMUVER" = '8.4' ]]; then
+        REDISPHP_GIT='y'
+        AUTODETECPHP_OVERRIDE='y'
+    fi
     overwritephpfpmconf='n'
     # lessphpmem='y'
 else
@@ -538,6 +568,9 @@ PHPCURRENTVER=$(php-config --version | cut -d . -f1,2)
 PHPMU_ALPHAVER=$(echo "$phpver")
 
     phpng_download
+    if cmm_php_fatal_pending; then
+        exit 1
+    fi
     autodetectextensions
     zopcacheupgrade
     #addmysql_legacy
@@ -584,66 +617,37 @@ fi
             figlet -ckf standard "PHP: Download"
         fi
     
-        curl -${ipv_forceopt}Is --connect-timeout 30 --max-time 30 "${PHP_MIRRORURL}/distributions/php-${phpver}.tar.${PHPEXTSION}" | grep 'HTTP\/' | egrep '404|503'
-        PHPGEO_CURLCHECK=$?
-        curl -${ipv_forceopt}Is --connect-timeout 30 --max-time 30 "${PHP_MIRRORURL}/distributions/php-${phpver}.tar.${PHPEXTSION}" | grep 'HTTP\/' | egrep '200|301|302'
-        PHPGEO_CURLCHECKOK=$?
-        # check if download url is 404 not found but also 
-        # check for valid status header 200, 301 or 302
-        echo $PHPGEO_CURLCHECK
-        echo $PHPGEO_CURLCHECKOK
-        if [[ "$PHPGEO_CURLCHECK" = '0' && "$PHPGEO_CURLCHECKOK" != '0' ]]; then
-            #PHP_MIRRORURL="https://www.php.net"
-            PHP_MIRRORURL="https://centminmod.com"
-            PHPUPGRADE_MIRRORURL="$PHP_MIRRORURL"
-        elif [[ "$PHPGEO_CURLCHECKOK" != '0' ]]; then
-            #PHP_MIRRORURL="https://www.php.net"
-            PHP_MIRRORURL="https://centminmod.com"
-            PHPUPGRADE_MIRRORURL="$PHP_MIRRORURL"
-        fi
-        if [ -s "php-${phpver}.tar.${PHPEXTSION}" ]; then
-            cecho "php ${phpver} Archive found, skipping download..." $boldgreen
+        cd "$DIR_TMP"
+        PHPTARBALL_FILE="php-${phpver}.tar.${PHPEXTSION}"
+        if cmm_archive_valid "$PHPTARBALL_FILE"; then
+            cecho "${PHPTARBALL_FILE} found and verified, skipping download..." $boldgreen
         else
-            $DOWNLOADAPP_PHP "${PHP_MIRRORURL}/distributions/php-${phpver}.tar.${PHPEXTSION}" $AXELPHPUPGRADETARGZ_PHP $WGETRETRY_PHP
-            ERROR=$?
-            if [[ "$ERROR" != '0' ]]; then
-                # retry with local mirror
-                echo
-                echo "retrying local mirror download"
-                echo
-                PHP_MIRRORURL="https://centminmod.com"
-                PHPUPGRADE_MIRRORURL="$PHP_MIRRORURL"
-                if [ -s "php-${phpver}.tar.${PHPEXTSION}" ]; then
-                    cecho "php ${phpver} Archive found, skipping download..." $boldgreen
-                else
-                    $DOWNLOADAPP_PHP "${PHP_MIRRORURL}/distributions/php-${phpver}.tar.${PHPEXTSION}" $AXELPHPUPGRADETARGZ_PHP $WGETRETRY_PHP
-                    ERROR=$?
-                    if [[ "$ERROR" != '0' ]]; then
-                        cecho "Error: php-${phpver}.tar.${PHPEXTSION} download failed." $boldgreen
-                        checklogdetails
-                        exit        
-                    fi
-                fi
-            else 
-                cecho "Download done." $boldyellow
-                echo ""
+            rm -f "$PHPTARBALL_FILE" "${PHPTARBALL_FILE}.cmmpart"
+            while IFS= read -r m; do
+                [ -n "$m" ] || continue
+                $DOWNLOADAPP_PHP "${m}/distributions/${PHPTARBALL_FILE}" \
+                  -o "${PHPTARBALL_FILE}.cmmpart" || { rm -f "${PHPTARBALL_FILE}.cmmpart"; continue; }
+                # validate FIRST, promote SECOND (same reasoning as the install path)
+                cmm_archive_valid "${PHPTARBALL_FILE}.cmmpart" || { rm -f "${PHPTARBALL_FILE}.cmmpart"; continue; }
+                mv -f "${PHPTARBALL_FILE}.cmmpart" "$PHPTARBALL_FILE"
+                PHPUPGRADE_MIRRORURL="$m"
+                break
+            done <<< "$(cmm_php_mirror_list)"
+            rm -f "${PHPTARBALL_FILE}.cmmpart"
+            if ! cmm_archive_valid "$PHPTARBALL_FILE"; then
+                cmm_php_fatal "php-${phpver} source unavailable or corrupt on all mirrors"
+                exit 1
             fi
         fi
-    
-        tar $PHPTAR_FLAGS "php-${phpver}.tar.${PHPEXTSION}"
-    
-        ERROR=$?
-        if [[ "$ERROR" != '0' ]]; then
-            cecho "Error: php-${phpver}.tar.${PHPEXTSION} extraction failed." $boldgreen
-            checklogdetails
-            exit
-        else 
-            cecho "php-${phpver}.tar.${PHPEXTSION} valid file." $boldyellow
-            echo ""
+        rm -rf "${DIR_TMP}/php-${phpver}"
+        tar $PHPTAR_FLAGS "$PHPTARBALL_FILE"
+        if [ $? -ne 0 ] || [ ! -f "${DIR_TMP}/php-${phpver}/main/php_version.h" ]; then
+            cmm_php_fatal "php-${phpver} extraction failed or source tree incomplete"
+            exit 1
         fi
     fi
 
-    cd "php-${phpver}"
+    cd "${DIR_TMP}/php-${phpver}" || { cmm_php_fatal "php-${phpver} source dir missing at compile phase"; exit 1; }
     PHPVER_ID=$(awk '/PHP_VERSION_ID/ {print $3}' ${DIR_TMP}/php-${phpver}/main/php_version.h)
     echo "PHP VERSION ID: $PHPVER_ID"
 
@@ -1153,6 +1157,9 @@ if [[ "$overwritephpfpmconf" = [yY] ]]; then
     if [[ "$PHPMUVER" != 'NGDEBUG' ]]; then
         if [[ ! -f "${CONFIGSCANDIR}/redis.ini" && "$PHPREDIS" = [yY] ]]; then
             redisinstall
+        elif [[ "$PHPREDIS" = [yY] ]] && php_ext_so_missing redis; then
+            cecho "redis.ini present but redis.so missing - reinstalling redis" $boldyellow
+            redisinstall
         elif [[ -f "${CONFIGSCANDIR}/redis.ini" && "$PHPREDIS" = [nN] ]]; then
             rm -rf "${CONFIGSCANDIR}/redis.ini"
         fi
@@ -1172,11 +1179,63 @@ else
     if [[ "$PHPMUVER" != 'NGDEBUG' ]]; then
         if [[ ! -f "${CONFIGSCANDIR}/redis.ini" && "$PHPREDIS" = [yY] ]]; then
             redisinstall
+        elif [[ "$PHPREDIS" = [yY] ]] && php_ext_so_missing redis; then
+            cecho "redis.ini present but redis.so missing - reinstalling redis" $boldyellow
+            redisinstall
         elif [[ -f "${CONFIGSCANDIR}/redis.ini" && "$PHPREDIS" = [nN] ]]; then
             rm -rf "${CONFIGSCANDIR}/redis.ini"
         fi
     fi
 fi # overwritephpfpmconf
+
+# A PHP rebuild can leave a stale .ini whose .so no longer exists (new
+# extension_dir on a major upgrade, or a failed/interrupted build). Every
+# reinstall gate above keys off .ini presence only, so those extensions would
+# be silently skipped forever. Detect the orphan and repair.
+if [[ "$PHP_MAJORUPGRADE" = [nN] ]]; then
+  PHP_ORPHANED_EXT=''
+  for _cmmext in redis igbinary memcached memcache mongodb swoole zopfli brotli lz4 lzf zstd mailparse imagick; do
+    if php_ext_so_missing "$_cmmext"; then
+      cecho "orphaned ${CONFIGSCANDIR}/${_cmmext}.ini detected (${_cmmext}.so missing)" $boldyellow
+      PHP_ORPHANED_EXT="$PHP_ORPHANED_EXT $_cmmext"
+    fi
+  done
+  if [ -n "$PHP_ORPHANED_EXT" ]; then
+    # STALE-FLAG NORMALIZATION (multi-AI review round 1): autodetectextensions
+    # (:136-163) leaves DETECTMAILPARSE/DETECTIMAGICK=y even when it just
+    # REMOVED their .ini because the user disabled the feature flag - without
+    # this, one unrelated orphan would reinstall user-disabled extensions
+    [[ "$PHPMAILPARSE" != [yY] ]] && DETECTMAILPARSE=n
+    [[ "$PHPIMAGICK" != [yY] ]] && DETECTIMAGICK=n
+    cecho "auto reinstalling PHP extensions with orphaned .ini files:${PHP_ORPHANED_EXT}" $boldyellow
+    autodetectinstallextensions
+    # POST-REPAIR AUDIT: the extension installers do not reliably propagate
+    # build failures - an attempt-only repair would silently leave the same
+    # orphan while menu 5 completes normally
+    for _cmmext in $PHP_ORPHANED_EXT; do
+      if php_ext_so_missing "$_cmmext"; then
+        cecho "WARNING: ${_cmmext}.so still missing after reinstall attempt - rebuild manually (e.g. menu 5 / pecl)" $boldyellow
+      fi
+    done
+  fi
+  # maxminddb has NO branch in autodetectinstallextensions - repair it directly,
+  # otherwise the sweep would re-fire on every future rebuild (permanent loop).
+  # Do NOT rm the .ini before the rebuild - geoiptwolite_phpext_install's
+  # .so-gated .ini write refreshes it on success and removes the stale .ini
+  # itself on a failed build, which is why the post-repair audit below checks
+  # the .so directly instead of php_ext_so_missing (that helper needs the .ini
+  # to still exist and would stay silent after the failed-build cleanup).
+  if [[ "$NGINX_GEOIPTWOLITE" = [yY] ]] && php_ext_so_missing maxminddb; then
+    cecho "orphaned maxminddb.ini detected - reinstalling GeoIP2 PHP extension" $boldyellow
+    geoiptwolite_phpext_install
+    _cmm_mmdb_extdir=$(/usr/local/bin/php-config --extension-dir 2>/dev/null)
+    if [ -n "$_cmm_mmdb_extdir" ] && [ ! -f "${_cmm_mmdb_extdir}/maxminddb.so" ]; then
+      cecho "WARNING: maxminddb.so still missing after reinstall attempt - manual rebuild needed" $boldyellow
+    fi
+    unset _cmm_mmdb_extdir
+  fi
+  unset _cmmext
+fi
 
 zendopcacheextfix
 
