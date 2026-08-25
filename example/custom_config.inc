@@ -385,16 +385,22 @@
 #FIREWALLD_DISABLE='y'
 
 # Maxmind License Key
-# Your Maxmind account API key for GeoLite2 database downloads
-# Override default with your own key
+# Your own personal Maxmind account API key for GeoLite2 database
+# downloads. Only a personal key set here is written to
+# /etc/csf/csf.conf and used for the Nginx GeoIP2 database downloads.
+# Centmin Mod no longer writes its shared API key into /etc/csf/csf.conf.
 # Reference: https://community.centminmod.com/posts/80656/
 # Git History: First added 2020-01-02 (2f339d20), Last modified 2023-10-28 (28b8c2de)
 #MM_LICENSE_KEY="$GET_CMM_MM_LICENSE_KEY"
 
-# Maxmind CSF source
-# Use Maxmind GeoIP data for CSF firewall
+# Maxmind CSF Source
+# CSF Firewall country code data source
+# 'y' = CC_SRC="1" MaxMind GeoLite2 CSV format (default). Works without a
+#       MaxMind API key - the Centmin Mod CSF Firewall fork downloads the
+#       CSV data from the Centmin Mod mirror
+# 'n' = CC_SRC="2" db-ip.com / ipdeny country data
 # Git History: Added 2020-01-20 (50774ee9)
-#MM_CSF_SRC='n'
+#MM_CSF_SRC='y'
 
 ################################################################################
 # 8. COMPILER & OPTIMIZATION SETTINGS (GENERAL)
@@ -5657,15 +5663,22 @@
 ################################################################################
 
 # Maxmind GeoLite2 API License Key
-# Your Maxmind account API key
+# Your own personal Maxmind account API key. Only a personal key set here
+# is written to /etc/csf/csf.conf and used for the Nginx GeoIP2 database
+# downloads. Centmin Mod no longer writes its shared API key into
+# /etc/csf/csf.conf.
 # Reference: https://community.centminmod.com/posts/80656/
 # Git History: First added 2020-01-02 (2f339d20), Last modified 2023-10-28 (28b8c2de)
 #MM_LICENSE_KEY="$GET_CMM_MM_LICENSE_KEY"
 
 # Maxmind CSF Source
-# Use Maxmind GeoIP for CSF firewall
+# CSF Firewall country code data source
+# 'y' = CC_SRC="1" MaxMind GeoLite2 CSV format (default). Works without a
+#       MaxMind API key - the Centmin Mod CSF Firewall fork downloads the
+#       CSV data from the Centmin Mod mirror
+# 'n' = CC_SRC="2" db-ip.com / ipdeny country data
 # Git History: Added 2020-01-20 (50774ee9)
-#MM_CSF_SRC='n'
+#MM_CSF_SRC='y'
 
 ################################################################################
 # 44. TCP SETTINGS
