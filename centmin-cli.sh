@@ -30,7 +30,7 @@ DT=$(date +"%d%m%y-%H%M%S")
 branchname='140.00beta01'
 SCRIPT_MAJORVER='140'
 SCRIPT_MINORVER='00'
-SCRIPT_INCREMENTVER='370'
+SCRIPT_INCREMENTVER='371'
 SCRIPT_VERSIONSHORT="${branchname}"
 SCRIPT_VERSION="${SCRIPT_VERSIONSHORT}.b${SCRIPT_INCREMENTVER}"
 SCRIPT_DATE='16/01/25'
@@ -806,12 +806,18 @@ VPS_GEOIPCHECK_V4='y'
 #####################################################
 # Maxmind GeoLite2 database API Key
 # https://community.centminmod.com/posts/80656/
-# You can override this API key with your own Maxmind
-# account API key by setting MM_LICENSE_KEY variable 
-# in persistent config file /etc/centminmod/custom_config.inc
+# You can set your own Maxmind account API key via the
+# MM_LICENSE_KEY variable in persistent config file
+# /etc/centminmod/custom_config.inc. Centmin Mod no longer
+# writes the shared API key into /etc/csf/csf.conf - the
+# Centmin Mod CSF Firewall fork downloads GeoLite2 CSV data
+# from the Centmin Mod mirror when MM_LICENSE_KEY is empty.
 GET_CMM_MM_LICENSE_KEY=$(curl -s https://mmkey.centminmod.com/)
 MM_LICENSE_KEY="$GET_CMM_MM_LICENSE_KEY"
-MM_CSF_SRC='n'
+# CSF Firewall CC_* country data source
+# 'y' = CC_SRC="1" MaxMind CSV format (default, mirror-backed)
+# 'n' = CC_SRC="2" db-ip.com / ipdeny country data
+MM_CSF_SRC='y'
 
 #####################################################
 CHECKSEC_VERSION='2.6.0'

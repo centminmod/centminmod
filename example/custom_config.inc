@@ -619,6 +619,19 @@ MARIADB_INSTALLTENTHREE='n' # MariaDB 10.3 YUM default install if set to yes
 MARIADB_INSTALLTENFOUR='n'  # MariaDB 10.4 YUM default install if set to yes
 MARIADB_INSTALLTENFIVE='n'  # MariaDB 10.5 YUM default install if set to yes
 MARIADB_INSTALLTENSIX='n'  # MariaDB 10.6 YUM default install if set to yes
+# Maxmind GeoLite2 API key
+# Optional personal MaxMind account API key. Only a key set here is written
+# to /etc/csf/csf.conf MM_LICENSE_KEY and used by the Nginx GeoIP2 database
+# downloads. Leave unset to use the Centmin Mod GeoLite2 mirror
+#MM_LICENSE_KEY=''
+# Maxmind CSF Source
+# CSF Firewall country code data source
+# 'y' = CC_SRC="1" MaxMind GeoLite2 CSV format (default). Works without a
+#       MaxMind API key - the Centmin Mod CSF Firewall fork downloads the
+#       CSV data from the Centmin Mod mirror
+# 'n' = CC_SRC="2" db-ip.com / ipdeny country data
+#MM_CSF_SRC='y'
+
 ###############################################################
 # centmin.sh menu trigger settings
 SKIP_INITIAL_PIP_UPDATES='n'
