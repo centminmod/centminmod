@@ -30,7 +30,7 @@ DT=$(date +"%d%m%y-%H%M%S")
 branchname='141.00beta01'
 SCRIPT_MAJORVER='141'
 SCRIPT_MINORVER='00'
-SCRIPT_INCREMENTVER='265'
+SCRIPT_INCREMENTVER='266'
 SCRIPT_VERSIONSHORT="${branchname}"
 SCRIPT_VERSION="${SCRIPT_VERSIONSHORT}.b${SCRIPT_INCREMENTVER}"
 SCRIPT_DATE='16/08/25'
@@ -2760,17 +2760,24 @@ EOF
   cat > /etc/systemd/system/mount-loop.service <<EOF
 [Unit]
 Description=Mount loop device for /tmp
-After=local-fs.target
+# mount /tmp before sysinit.target and systemd-tmpfiles-setup so ordinary
+# PrivateTmp= services (chronyd, php-fpm, postfix etc) do not start while
+# /tmp is being replaced underneath them
+# https://community.centminmod.com/threads/29603/
+DefaultDependencies=no
 Requires=local-fs.target
+After=local-fs.target
+Before=systemd-tmpfiles-setup.service sysinit.target shutdown.target
+Conflicts=shutdown.target
 
 [Service]
+Type=oneshot
 ExecStart=/usr/local/bin/mount-loop.sh
 ExecStop=/usr/bin/umount /tmp
-Type=oneshot
 RemainAfterExit=yes
 
 [Install]
-WantedBy=multi-user.target
+WantedBy=sysinit.target
 EOF
 
   # Enable the new systemd service
@@ -2903,11 +2910,7 @@ elif [[ ! -f /proc/user_beancounters && "$CENTOS_SEVEN" = '7' && "$CHECK_LXD" !=
        chmod 1777 /tmp
        cp -ar /tmp_backup/* /tmp
        echo "tmpfs /tmp tmpfs rw,noexec,nosuid 0 0" >> /etc/fstab
-       cp -ar /var/tmp /var/tmp_backup
-       ln -s /tmp /var/tmp
-       cp -ar /var/tmp_backup/* /tmp
        rm -rf /tmp_backup
-       rm -rf /var/tmp_backup
     elif [[ "$TOTALMEM" -ge '8100001' || "$TOTALMEM" -lt '16000000' ]]; then
        # set on disk non-tmpfs /tmp to 6GB size
        # if total memory is between 2GB and <8GB
@@ -2926,11 +2929,7 @@ elif [[ ! -f /proc/user_beancounters && "$CENTOS_SEVEN" = '7' && "$CHECK_LXD" !=
        chmod 1777 /tmp
        cp -ar /tmp_backup/* /tmp
        create_loopmount "loop,rw,noexec,nosuid /home/usertmp_donotdelete /tmp" ext4
-       cp -ar /var/tmp /var/tmp_backup
-       ln -s /tmp /var/tmp
-       cp -ar /var/tmp_backup/* /tmp
        rm -rf /tmp_backup
-       rm -rf /var/tmp_backup
     elif [[ "$TOTALMEM" -ge '2050061' || "$TOTALMEM" -lt '8100000' ]]; then
        # set on disk non-tmpfs /tmp to 4GB size
        # if total memory is between 2GB and <8GB
@@ -2949,11 +2948,7 @@ elif [[ ! -f /proc/user_beancounters && "$CENTOS_SEVEN" = '7' && "$CHECK_LXD" !=
        chmod 1777 /tmp
        cp -ar /tmp_backup/* /tmp
        create_loopmount "loop,rw,noexec,nosuid /home/usertmp_donotdelete /tmp" ext4
-       cp -ar /var/tmp /var/tmp_backup
-       ln -s /tmp /var/tmp
-       cp -ar /var/tmp_backup/* /tmp
        rm -rf /tmp_backup
-       rm -rf /var/tmp_backup
     elif [[ "$TOTALMEM" -ge '1153434' || "$TOTALMEM" -lt '2050060' ]]; then
        # set on disk non-tmpfs /tmp to 2GB size
        # if total memory is between 1.1-2GB
@@ -2972,11 +2967,7 @@ elif [[ ! -f /proc/user_beancounters && "$CENTOS_SEVEN" = '7' && "$CHECK_LXD" !=
        chmod 1777 /tmp
        cp -ar /tmp_backup/* /tmp
        create_loopmount "loop,rw,noexec,nosuid /home/usertmp_donotdelete /tmp" ext4
-       cp -ar /var/tmp /var/tmp_backup
-       ln -s /tmp /var/tmp
-       cp -ar /var/tmp_backup/* /tmp
        rm -rf /tmp_backup
-       rm -rf /var/tmp_backup
     elif [[ "$TOTALMEM" -le '1153433' ]]; then
        # set on disk non-tmpfs /tmp to 1GB size
        # if total memory is <1.1GB
@@ -2995,11 +2986,7 @@ elif [[ ! -f /proc/user_beancounters && "$CENTOS_SEVEN" = '7' && "$CHECK_LXD" !=
        chmod 1777 /tmp
        cp -ar /tmp_backup/* /tmp
        create_loopmount "loop,rw,noexec,nosuid /home/usertmp_donotdelete /tmp" ext4
-       cp -ar /var/tmp /var/tmp_backup
-       ln -s /tmp /var/tmp       
-       cp -ar /var/tmp_backup/* /tmp
        rm -rf /tmp_backup
-       rm -rf /var/tmp_backup
     fi
 elif [[ ! -f /proc/user_beancounters && "$CHECK_LXD" != [yY] ]]; then
 
@@ -3017,11 +3004,7 @@ elif [[ ! -f /proc/user_beancounters && "$CHECK_LXD" != [yY] ]]; then
      chmod 1777 /tmp
        cp -ar /tmp_backup/* /tmp
      create_loopmount "rw,noexec,nosuid tmpfs /tmp" tmpfs
-       cp -ar /var/tmp /var/tmp_backup
-     ln -s /tmp /var/tmp
-       cp -ar /var/tmp_backup/* /tmp
        rm -rf /tmp_backup
-       rm -rf /var/tmp_backup
     elif [[ "$TOTALMEM" -ge '2050061' || "$TOTALMEM" -lt '8100000' ]]; then
        # set on disk non-tmpfs /tmp to 4GB size
        # if total memory is between 2GB and <8GB
@@ -3040,11 +3023,7 @@ elif [[ ! -f /proc/user_beancounters && "$CHECK_LXD" != [yY] ]]; then
        chmod 1777 /tmp
        cp -ar /tmp_backup/* /tmp
        create_loopmount "loop,rw,noexec,nosuid /home/usertmp_donotdelete /tmp" ext4
-       cp -ar /var/tmp /var/tmp_backup
-       ln -s /tmp /var/tmp
-       cp -ar /var/tmp_backup/* /tmp
        rm -rf /tmp_backup
-       rm -rf /var/tmp_backup
     elif [[ "$TOTALMEM" -ge '1153434' || "$TOTALMEM" -lt '2050060' ]]; then
        # set on disk non-tmpfs /tmp to 2GB size
        # if total memory is between 1.1-2GB
@@ -3063,11 +3042,7 @@ elif [[ ! -f /proc/user_beancounters && "$CHECK_LXD" != [yY] ]]; then
        chmod 1777 /tmp
        cp -ar /tmp_backup/* /tmp
        create_loopmount "loop,rw,noexec,nosuid /home/usertmp_donotdelete /tmp" ext4
-       cp -ar /var/tmp /var/tmp_backup
-       ln -s /tmp /var/tmp
-       cp -ar /var/tmp_backup/* /tmp
        rm -rf /tmp_backup
-       rm -rf /var/tmp_backup
     elif [[ "$TOTALMEM" -le '1153433' ]]; then
        # set on disk non-tmpfs /tmp to 1GB size
        # if total memory is <1.1GB
@@ -3086,11 +3061,7 @@ elif [[ ! -f /proc/user_beancounters && "$CHECK_LXD" != [yY] ]]; then
        chmod 1777 /tmp
        cp -ar /tmp_backup/* /tmp
        create_loopmount "loop,rw,noexec,nosuid /home/usertmp_donotdelete /tmp" ext4
-       cp -ar /var/tmp /var/tmp_backup
-       ln -s /tmp /var/tmp       
-       cp -ar /var/tmp_backup/* /tmp
        rm -rf /tmp_backup
-       rm -rf /var/tmp_backup
     fi
 fi # centos 7 + openvz /tmp workaround
 fi

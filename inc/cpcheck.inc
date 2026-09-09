@@ -232,28 +232,52 @@ fix_mount_loop_sh() {
         if grep -qF -- "$INCORRECT_MOUNT1" "$FILE"; then
             # echo "Incorrect mount command found (first pattern). Correcting it now..."
             sed -i "s|${INCORRECT_MOUNT1}|${CORRECT_MOUNT1}|g" "$FILE"
-            # Unmount /tmp if it's currently mounted to avoid the error
-            if [ "$(lsof /tmp | tail -n +2 | grep -E -v 'deleted' | wc -l)" -eq 0 ]; then
-                if mountpoint -q /tmp; then
-                  umount -l /tmp
-                  $FILE
-                fi
-            fi
+            # corrected mount script takes effect on next reboot; re-mounting /tmp
+            # live would hide the PrivateTmp directories of running services
         fi
         
         # Check and correct the second pattern
         if grep -qF -- "$INCORRECT_MOUNT2" "$FILE"; then
             # echo "Incorrect mount command found (second pattern). Correcting it now..."
             sed -i "s|${INCORRECT_MOUNT2}|${CORRECT_MOUNT2}|g" "$FILE"
-            # Unmount /tmp if it's currently mounted to avoid the error
-            if [ "$(lsof /tmp | tail -n +2 | grep -E -v 'deleted' | wc -l)" -eq 0 ]; then
-                if mountpoint -q /tmp; then
-                  umount -l /tmp
-                  $FILE
-                fi
-            fi
+            # corrected mount script takes effect on next reboot; re-mounting /tmp
+            # live would hide the PrivateTmp directories of running services
         fi
     fi
+}
+
+fix_mount_loop_order() {
+  # existing installs: mount-loop.service was ordered only After=local-fs.target
+  # so it raced PrivateTmp= services at boot (chronyd 226/NAMESPACE on EL8).
+  # add an ordering drop-in; takes effect on next reboot. never re-run
+  # mount-loop.sh live as that stacks a second mount over /tmp
+  local unit=/etc/systemd/system/mount-loop.service
+  local dropin_dir=/etc/systemd/system/mount-loop.service.d
+  if [[ -f "$unit" && -f /usr/local/bin/mount-loop.sh ]] && grep -qF -- "ExecStart=/usr/local/bin/mount-loop.sh" "$unit"; then
+    # no --value: unsupported on systemd 219 (EL7)
+    if ! systemctl show -p Before mount-loop.service 2>/dev/null | grep -qwF sysinit.target || ! systemctl show -p DefaultDependencies mount-loop.service 2>/dev/null | grep -q "=no$"; then
+      mkdir -p "$dropin_dir"
+      cat > "$dropin_dir/centminmod-order.conf" <<EOF
+[Unit]
+DefaultDependencies=no
+After=local-fs.target
+Before=systemd-tmpfiles-setup.service sysinit.target shutdown.target
+Conflicts=shutdown.target
+EOF
+      systemctl daemon-reload >/dev/null 2>&1
+      if [[ "$(systemctl is-failed chronyd 2>/dev/null)" = "failed" && "$(systemctl is-active mount-loop.service 2>/dev/null)" = "active" ]] && mountpoint -q /tmp; then
+        systemctl restart chronyd >/dev/null 2>&1
+      fi
+    fi
+  fi
+}
+
+fix_vartmp_stray_symlink() {
+  # earlier installs left a stray /var/tmp/tmp -> /tmp symlink behind
+  # (ln -s /tmp /var/tmp against an existing /var/tmp directory)
+  if [[ ! -L /var/tmp && -L /var/tmp/tmp && "$(readlink /var/tmp/tmp)" = "/tmp" ]]; then
+    rm -f /var/tmp/tmp
+  fi
 }
 
 rsync_backport_install() {
@@ -4378,6 +4402,7 @@ if [[ "$INITIALINSTALL" = [yY] ]]; then
   march_hostcheck
 fi
 yumfastmirror_check
+fix_vartmp_stray_symlink
 ovhkernelcheck
 fileperm_fixes
 cronpathadjust
@@ -4570,6 +4595,7 @@ if [[ "$INITIALINSTALL" != [yY] ]]; then
   rsync_backport_install
   fix_rsync_backport_redirect
   fix_mount_loop_sh
+  fix_mount_loop_order
   if [ -f /etc/yum.repos.d/remi.repo ]; then
     fix_remi_repo_gpgcheck
   fi
