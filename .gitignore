@@ -23,3 +23,7 @@ Thumbs.db
 *.lib
 *.sbr
 desktop.ini
+
+.env.local
+.env.*.local
+.env
