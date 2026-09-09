@@ -2545,12 +2545,12 @@ fi
       --skip-broken --allowerasing
 
     # Group 4B: REMI repository packages (5 packages)
+    # L10: `--enablerepo=remi` here may no-op during installer-el10.sh's
+    # own phase 4 execution because remi-release is installed later via
+    # inc/* during the `centmin.sh install` handoff. After that, the
+    # remi-modular repo is enabled and these packages resolve correctly.
     time $YUMDNFBIN -y install \
       libmcrypt libmcrypt-devel libraqm oniguruma5php oniguruma5php-devel \
-      # L10: `--enablerepo=remi` here may no-op during installer-el10.sh's
-      # own phase 4 execution because remi-release is installed later via
-      # inc/* during the `centmin.sh install` handoff. After that, the
-      # remi-modular repo is enabled and these packages resolve correctly.
       --enablerepo=epel,epel-testing,remi --skip-broken
     skip_broken_report "EL10 Phase 4 utility + REMI"
 

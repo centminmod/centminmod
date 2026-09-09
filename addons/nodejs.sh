@@ -18,6 +18,7 @@ ARCH_CHECK="$(uname -m)"
 # switch to nodesource yum repo instead of source compile
 # specify version branch so set NODEJSVER to 16 max for EL7
 # 20 for EL8 and EL9
+# EL10 uses native AppStream nodejs instead of nodesource repo
 NODEJSVER='16'
 NODEJSVER_EL8='20'
 NODEJSVER_EL9='20'
@@ -552,6 +553,10 @@ installnodejs_new() {
         remove_old_repo
         curl -fsSL https://rpm.nodesource.com/setup_${NODEJSVER_EL9}.x | bash -
         yum install -y nodejs --disablerepo=epel
+      elif [[ "$CENTOS_TEN" -eq '10' ]]; then
+        # EL10 ships nodejs 22.x natively in AppStream as a non-modular
+        # package (EL10 dropped module streams), so no nodesource repo
+        dnf install -y nodejs --disablerepo=epel
       fi
       yum clean all
       # time npm install npm@latest -g
