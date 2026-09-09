@@ -17,11 +17,11 @@ ARCH_CHECK="$(uname -m)"
 ######################################################
 # switch to nodesource yum repo instead of source compile
 # specify version branch so set NODEJSVER to 16 max for EL7
-# 20 for EL8 and EL9
+# 22 for EL8 and EL9
 # EL10 uses native AppStream nodejs instead of nodesource repo
 NODEJSVER='16'
-NODEJSVER_EL8='20'
-NODEJSVER_EL9='20'
+NODEJSVER_EL8='22'
+NODEJSVER_EL9='22'
 # for EL6 only
 NODEJS_SOURCEINSTALL='y'
 NODEJS_REINSTALL='y'
