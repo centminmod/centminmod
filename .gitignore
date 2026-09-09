@@ -26,3 +26,7 @@ desktop.ini
 cmm_logs/
 exports/
 .antigravitycli/
+
+.env.local
+.env.*.local
+.env
