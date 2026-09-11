@@ -30,7 +30,7 @@ DT=$(date +"%d%m%y-%H%M%S")
 branchname='132.00stable'
 SCRIPT_MAJORVER='132'
 SCRIPT_MINORVER='00'
-SCRIPT_INCREMENTVER='190'
+SCRIPT_INCREMENTVER='191'
 SCRIPT_VERSIONSHORT="${branchname}"
 SCRIPT_VERSION="${SCRIPT_VERSIONSHORT}.b${SCRIPT_INCREMENTVER}"
 SCRIPT_DATE='15/02/25'
@@ -3562,6 +3562,10 @@ EOF
     echo "$SCRIPT_VERSION" > /etc/centminmod-release
     #echo "$SCRIPT_VERSION #`date`" >> /etc/centminmod-versionlog
     } 2>&1 | tee "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_install.log"
+if [[ ${PIPESTATUS[0]} -ne 0 ]]; then
+  echo "Centmin Mod install aborted - see ${CENTMINLOGDIR}/"
+  exit 1
+fi
     
     if [ "$CCACHEINSTALL" == 'y' ]; then
     
@@ -3712,6 +3716,10 @@ EOF
             echo "$SCRIPT_VERSION" > /etc/centminmod-release
             #echo "$SCRIPT_VERSION #`date`" >> /etc/centminmod-versionlog
             } 2>&1 | tee "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_install.log"
+if [[ ${PIPESTATUS[0]} -ne 0 ]]; then
+  echo "Centmin Mod install aborted - see ${CENTMINLOGDIR}/"
+  exit 1
+fi
             
             if [ "$CCACHEINSTALL" == 'y' ]; then
             
