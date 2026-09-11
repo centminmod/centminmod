@@ -14,6 +14,124 @@ ARCH_CHECK="$(uname -m)"
 # quick info overview for centminmod.com installs
 #####################################################
 branchname='141.00beta01'
+
+# Read-only cgroup diagnostics. Keep the dedicated command before setup/cron writes.
+cminfo_cgroup_v2() {
+    local label=$1 membership=$2 proc=$3 group root mount dir file seen=n
+    group=$(awk -F: '$1 == "0" && $2 == "" {sub(/^0::/, ""); print; exit}' "$membership" 2>/dev/null)
+    [[ "$group" == /* ]] || { echo "$label: v2 membership unavailable"; return; }
+    while read -r root mount; do
+        root=$(printf '%b' "$root"); mount=$(printf '%b' "$mount")
+        if [[ "$root" == / ]]; then dir="${mount}${group%/}"
+        elif [[ "$group" == "$root" || "$group" == "$root/"* ]]; then dir="${mount}${group#"$root"}"
+        elif [[ "$group" == / ]]; then dir=$mount
+        else continue; fi
+        [[ "$dir" != */../* && "$dir" != */.. && -d "$dir" ]] || continue
+        echo "$label: $group (mount $mount)"
+        while [[ "$dir" == "$mount" || "$dir" == "$mount/"* ]]; do
+            for file in memory.current memory.peak memory.max memory.high memory.swap.current memory.swap.max \
+                        memory.events memory.pressure; do
+                if [[ -r "$dir/$file" ]]; then
+                    seen=y
+                    printf '  %s: ' "$dir/$file"
+                    tr '\n' ' ' < "$dir/$file"; echo
+                fi
+            done
+            [[ "$dir" == "$mount" ]] && break
+            dir=${dir%/*}
+        done
+    done < <(awk '{for(i=7;i<=NF;i++) if($i=="-") {
+        if($(i+1)=="cgroup2") print $4,$5; break
+    }}' "$proc/self/mountinfo" 2>/dev/null)
+    [[ "$seen" == y ]] || echo "$label: readable v2 memory files unavailable; outer limits may be hidden"
+}
+
+cminfo_cgroups() {
+    local proc=${1:-/proc} os_release=${2:-/etc/os-release} custom=${3:-/etc/centminmod/custom_config.inc}
+    local os_id os_version mode pid client eligible=n toggle="n (default)"
+    echo
+    echo '------------------------------------------------------------------'
+    echo ' MariaDB / cgroup memory (read-only snapshot; sizes in bytes unless marked kB)'
+    echo '------------------------------------------------------------------'
+    if [[ -r "$os_release" ]]; then
+        read -r os_id os_version < <(awk -F= '
+            $1=="ID" {id=$2} $1=="VERSION_ID" {version=$2}
+            END {gsub(/\042|\047/,"",id); gsub(/\042|\047/,"",version); print id,version}
+        ' "$os_release")
+    fi
+    mode=$(awk '{for(i=7;i<=NF;i++) if($i=="-") {
+        if($(i+1)=="cgroup" || $(i+1)=="cgroup2") print $(i+1); break
+    }}' "$proc/self/mountinfo" 2>/dev/null | sort -u | tr '\n' ' ')
+    echo "OS: ${os_id:-unknown} ${os_version:-unknown}; mounted hierarchy: ${mode:-unavailable}"
+    awk '/^(MemTotal|MemAvailable|SwapTotal|SwapFree):/ {print}' "$proc/meminfo" 2>/dev/null
+    case "$os_id:${os_version%%.*}" in
+        almalinux:9|almalinux:10) [[ "$mode" == *cgroup2* ]] && eligible=y ;;
+    esac
+    echo "141 cgroup OS/v2 eligibility: $eligible (AlmaLinux 9/10 + v2 only)"
+    if [[ -r "$custom" ]]; then
+        # Read literal y/n assignments only; never execute a user's shell config.
+        toggle=$(awk '
+            BEGIN {value="n (default)"}
+            /^[[:space:]]*(export[[:space:]]+)?MYSQL_CGROUP_DETECTION=/ {
+                line=$0; sub(/^[^=]*=/,"",line)
+                if (line ~ /^([yYnN]|"[yYnN]"|\047[yYnN]\047)([[:space:]]+#.*|[[:space:]]*)$/) {
+                    sub(/[[:space:]]*#.*/,"",line); gsub(/[[:space:]\042\047]/,"",line); value=tolower(line)
+                } else value="unknown (shell expression; not evaluated)"
+            }
+            END {print value}
+        ' "$custom")
+    elif [[ -e "$custom" ]]; then
+        toggle="unknown (config unreadable)"
+    fi
+    echo "MYSQL_CGROUP_DETECTION literal in $custom: $toggle"
+    echo 'Shell logic and other overrides are not evaluated; check the install log for the applied value.'
+    echo 'Diagnostics remain available with tuning detection disabled; no limits are changed.'
+    echo 'This is current eligibility, not proof of the profile applied at installation.'
+    if command -v systemctl >/dev/null 2>&1 && [[ -d /run/systemd/system ]]; then
+        systemctl show mariadb.service -p ControlGroup -p MemoryAccounting -p MemoryCurrent \
+            -p MemoryHigh -p MemoryMax -p EffectiveMemoryMax -p MemoryLimit -p MemorySwapMax \
+            -p TasksMax -p OOMScoreAdjust 2>/dev/null
+        pid=$(systemctl show mariadb.service -p MainPID 2>/dev/null)
+        pid=${pid#MainPID=}
+    fi
+    if [[ ! "$pid" =~ ^[1-9][0-9]*$ ]]; then
+        pid=$(pgrep -x 'mariadbd|mysqld' 2>/dev/null)
+    fi
+    if [[ "$eligible" == y ]]; then
+        cminfo_cgroup_v2 'Inspector process' "$proc/self/cgroup" "$proc"
+        if [[ "$pid" =~ ^[1-9][0-9]*$ && -r "$proc/$pid/cgroup" ]]; then
+            cminfo_cgroup_v2 "MariaDB PID $pid" "$proc/$pid/cgroup" "$proc"
+            awk '/^(VmRSS|VmHWM|VmSwap):/ {print "MariaDB " $0}' "$proc/$pid/status" 2>/dev/null
+        else
+            echo 'MariaDB: no unique running PID / readable membership'
+        fi
+        echo 'Only readable files are shown; missing metrics are unavailable, not zero.'
+        echo 'Parent limits are shared; charged memory differs from RSS. Hidden ancestors may still constrain usage.'
+        echo 'memory.events counters are cumulative for the group lifetime; max/high events are not OOM kills.'
+    else
+        echo 'Detailed cgroup metrics skipped outside the 141 AlmaLinux 9/10 v2 allowlist.'
+    fi
+    client=$(command -v mariadb || command -v mysql) || { echo 'MariaDB client unavailable'; return 0; }
+    echo 'Effective MariaDB settings and cumulative status (default local client connection):'
+    if command -v timeout >/dev/null 2>&1; then
+        timeout 10 "$client" --connect-timeout=5 --batch --skip-column-names -e "
+SHOW GLOBAL VARIABLES WHERE Variable_name IN ('version','innodb_buffer_pool_size','key_buffer_size',
+'aria_pagecache_buffer_size','join_buffer_size','read_buffer_size','read_rnd_buffer_size','sort_buffer_size',
+'max_connections','tmp_table_size','max_heap_table_size','query_cache_type','query_cache_size');
+SHOW GLOBAL STATUS WHERE Variable_name IN ('Uptime','Threads_connected','Threads_running',
+'Max_used_connections','Created_tmp_tables','Created_tmp_disk_tables','Sort_merge_passes');" 2>/dev/null \
+            || echo 'MariaDB metrics unavailable (connection, permission or timeout).'
+    else
+        echo 'MariaDB metrics skipped: timeout command unavailable.'
+    fi
+    return 0
+}
+
+if [[ "$1" == cgroups ]]; then
+    cminfo_cgroups
+    exit $?
+fi
+# End read-only cgroup command.
 DT=$(date +"%d%m%y-%H%M%S")
 CENTMINLOGDIR='/root/centminlogs'
 LOCALCENTMINMOD_MIRROR='https://parts.centminmod.com'
@@ -729,6 +847,7 @@ top_info() {
 
     echo
     echo "------------------------------------------------------------------"
+    cminfo_cgroups
     echo "free -mtl"
     free -mtl
     echo
@@ -1199,6 +1318,7 @@ else
     echo -e " MySQL Uptime (secs): \tnot running"    
 fi
 echo -e " Server Type: \t\t$SYSTYPE"
+cminfo_cgroups
 echo -e " CentOS Version: \t$CENTOSVER"
 echo -e " Centmin Mod: \t\t$CENTMINMOD_INFOVER"
 echo -e " Nginx PageSpeed: \t$PS"
@@ -1545,6 +1665,6 @@ case "$1" in
       service_info_json "$2"
     ;;
     *)
-    echo "$0 {info|update|ssldates|netstat|syn|top|top-cron|sar-json|sar-cpu-interval|sar-cpu|sar-mem|phpmem|phpstats|phpstats-cron|listlogs|debug-menuexit|versions|checkver|service-info|nginx-patch-log|php-patch-log}"
+    echo "$0 {info|cgroups|update|ssldates|netstat|syn|top|top-cron|sar-json|sar-cpu-interval|sar-cpu|sar-mem|phpmem|phpstats|phpstats-cron|listlogs|debug-menuexit|versions|checkver|service-info|nginx-patch-log|php-patch-log}"
         ;;
 esac

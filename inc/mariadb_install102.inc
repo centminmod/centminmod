@@ -677,6 +677,7 @@ mariadbtentwo_installfunct() {
 MDB_DEBUG='n'
 
 if [[ "$MDB_INSTALL" = [yY] ]]; then
+mysql_memory_backup || exit 1
     echo "*************************************************"
     cecho "* Installing MariaDB " $boldgreen
     echo "*************************************************"
@@ -691,9 +692,6 @@ chmod 1777 /home/mysqltmp
 CHOWNMYSQL=y
 fi
 
-if [ -f /etc/my.cnf ]; then
-cp /etc/my.cnf /etc/my.cnf-original
-fi
 #echo -e "\nCopying MariaDB my-mdb.cnf file to /etc/my.cnf\n"
 #    cp $CUR_DIR/config/mysql/my-mdb.cnf /etc/my.cnf
 
@@ -814,10 +812,8 @@ if [[ "$MDB_YUMREPOINSTALL" = [yY] && "$MDB_INSTALL" = [nN] ]]; then
     echo "*************************************************"
 
 #yum -y remove mysql mysql-libs
-if [ -f /etc/my.cnf ]; then
-    cp /etc/my.cnf /etc/my.cnf-original
-    rm -rf /etc/my.cnf
-fi
+# Preserve the original before RPM operations; setmycnf stages its replacement.
+mysql_memory_backup || exit 1
 
 mariadb102_yuminstall
 

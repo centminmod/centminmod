@@ -30,7 +30,7 @@ DT=$(date +"%d%m%y-%H%M%S")
 branchname='141.00beta01'
 SCRIPT_MAJORVER='141'
 SCRIPT_MINORVER='00'
-SCRIPT_INCREMENTVER='268'
+SCRIPT_INCREMENTVER='269'
 SCRIPT_VERSIONSHORT="${branchname}"
 SCRIPT_VERSION="${SCRIPT_VERSIONSHORT}.b${SCRIPT_INCREMENTVER}"
 SCRIPT_DATE='16/08/25'
@@ -992,6 +992,9 @@ REDIS_SERVER_INSTALL='y'      # Install redis server by default on initial insta
 # only applies during initial Centmin Mod install and can be overrident via
 # persistent config file /etc/centminmod/custom_config.inc prior to initial Centmin Mod install
 SET_DEFAULT_MYSQLCHARSET='utf8'
+# Experimental initial my.cnf sizing only; never creates/enforces cgroup limits.
+# Opt in via custom_config.inc; requires AlmaLinux 9/10 and cgroup v2 (141 only).
+MYSQL_CGROUP_DETECTION='n'
 MDB_INSTALL='n'             # Install via RPM MariaDB MySQL Server replacement (Not recommended for VPS with less than 256MB RAM!)
 MDB_YUMREPOINSTALL='y'      # Install MariaDB 5.5 via CentOS YUM Repo
 MARIADB_INSTALLTENTWO='n'     # MariaDB 10.2 YUM default install if set to yes
@@ -4032,6 +4035,10 @@ EOF
     echo "$SCRIPT_VERSION" > /etc/centminmod-release
     #echo "$SCRIPT_VERSION #`date`" >> /etc/centminmod-versionlog
     } 2>&1 | tee "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_install.log"
+if [[ ${PIPESTATUS[0]} -ne 0 ]]; then
+  echo "Centmin Mod install aborted - see ${CENTMINLOGDIR}/"
+  exit 1
+fi
     
 if cmm_php_fatal_pending; then
   cmm_php_fatal_clear
@@ -4206,6 +4213,10 @@ EOF
             echo "$SCRIPT_VERSION" > /etc/centminmod-release
             #echo "$SCRIPT_VERSION #`date`" >> /etc/centminmod-versionlog
             } 2>&1 | tee "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_install.log"
+if [[ ${PIPESTATUS[0]} -ne 0 ]]; then
+  echo "Centmin Mod install aborted - see ${CENTMINLOGDIR}/"
+  exit 1
+fi
             
 if cmm_php_fatal_pending; then
   cmm_php_fatal_clear

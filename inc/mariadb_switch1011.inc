@@ -234,10 +234,8 @@ install_native_mariadb_ten_eleven() {
       CHOWNMYSQL=y
     fi
     
-    if [ -f /etc/my.cnf ]; then
-      cp /etc/my.cnf /etc/my.cnf-original
-      rm -f /etc/my.cnf
-    fi
+    # Preserve the original before RPM operations; setmycnf stages its replacement.
+    mysql_memory_backup || exit 1
     # set /etc/my.cnf templates
     setmycnf
   
