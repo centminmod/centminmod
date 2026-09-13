@@ -11,9 +11,14 @@ set_mariadb_mysqldump_charset() {
 }
 
 remove_anonymous_mysqlusers() {
+  # only query when MariaDB is running, otherwise the client prints ERROR 2002
+  # to the terminal on every centmin.sh launch when the service is stopped
+  if [[ "$(systemctl is-active mariadb 2>/dev/null)" != 'active' ]]; then
+    return 0
+  fi
   # Check for anonymous users
-  ANON_USER_EXISTS=$(mysql -BNe "SELECT User, Host FROM mysql.user WHERE User=''" | wc -l)
-  if [[ "$CENTOS_NINE" = '9' || "$CENTOS_EIGHT" = '8' || "$CENTOS_SEVEN" = '7' ]] && [[ "$(systemctl is-active mariadb)" = 'active' && "$ANON_USER_EXISTS" -gt '1' ]]; then
+  ANON_USER_EXISTS=$(mysql -BNe "SELECT User, Host FROM mysql.user WHERE User=''" 2>/dev/null | wc -l)
+  if [[ "$CENTOS_NINE" = '9' || "$CENTOS_EIGHT" = '8' || "$CENTOS_SEVEN" = '7' ]] && [[ "$ANON_USER_EXISTS" -gt '1' ]]; then
     mysql -e "DROP USER ''@'localhost';" >/dev/null 2>&1
     mysql -e "DROP USER ''@'`hostname`';" >/dev/null 2>&1
   fi
