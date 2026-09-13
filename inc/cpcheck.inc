@@ -1,3 +1,47 @@
+# Service guards for the startup maintenance fixes in cpcheck(). They honour an
+# admin's `systemctl disable` / `systemctl disable --now` so a deliberately
+# disabled service is never resurrected or bounced by a centmin.sh launch.
+
+# true when systemd is running and the unit is disabled, masked or not present
+cmservice_disabled() {
+  local unit="$1" state
+  [[ -d /run/systemd/system ]] || return 1
+  state=$(systemctl is-enabled "$unit" 2>/dev/null)
+  [[ -z "$state" || "$state" = 'disabled' || "$state" = 'not-found' || "$state" = masked* ]]
+}
+
+# run a service action unless cmservice_disabled. Keeps SysV init script
+# semantics (e.g. nginx configtest before stop) when /etc/init.d/<unit> exists,
+# otherwise uses systemctl. Falls back to plain `service` without systemd.
+cmservice_if_enabled() {
+  local unit="$1" action="${2:-restart}"
+  if [[ -d /run/systemd/system ]] && [[ "$unit" = 'mysql' || "$unit" = 'mysqld' ]]; then
+    unit='mariadb'
+  fi
+  if cmservice_disabled "$unit"; then
+    echo "$unit service is disabled, masked or not installed, skipping $action"
+    return 0
+  fi
+  if [[ -x "/etc/init.d/$unit" ]] || [[ ! -d /run/systemd/system ]]; then
+    service "$unit" "$action"
+  else
+    systemctl "$action" "$unit"
+  fi
+}
+
+# one-shot boot-symlink repair: re-enable a RUNNING unit that is disabled, at
+# most once per host (marker in /etc/centminmod). Once the marker exists a
+# disabled unit is treated as the admin's `systemctl disable` and left alone.
+cmservice_enable_once() {
+  local unit="$1" marker="${CONFIGSCANBASE:-/etc/centminmod}/.${1}-boot-enable-checked"
+  [[ -d /run/systemd/system && ! -f "$marker" ]] || return 0
+  if [[ "$(systemctl is-enabled "$unit" 2>/dev/null)" = 'disabled' && "$(systemctl is-active "$unit" 2>/dev/null)" = 'active' ]]; then
+    systemctl enable "$unit" >/dev/null 2>&1
+  fi
+  mkdir -p "${marker%/*}" 2>/dev/null
+  touch "$marker" 2>/dev/null
+}
+
 # Add perl-DBD-MySQL to yum.conf exclude after MariaDB installation
 # Prevents AppStream OS update conflicts (e.g., AlmaLinux 9.6→9.7)
 perldbiexclude() {
@@ -333,7 +377,7 @@ EOF
     # echo
     # echo "include file /usr/local/nginx/conf/normalize_encoding.conf add to nginx.conf"
     sed -i 's|\/usr\/local\/nginx\/conf\/fastcgi_param_https_map.conf;|\/usr\/local\/nginx\/conf\/fastcgi_param_https_map.conf;\ninclude \/usr\/local\/nginx\/conf\/normalize_encoding.conf;|g' /usr/local/nginx/conf/nginx.conf
-    service nginx restart >/dev/null 2>&1
+    cmservice_if_enabled nginx restart >/dev/null 2>&1
     service nginx php-fpm >/dev/null 2>&1
   fi
 }
@@ -720,8 +764,10 @@ if [[ "$CENTOS_NINE" = '9' || "$CENTOS_EIGHT" = '8' || "$CENTOS_SEVEN" = '7' ]] 
   systemctl start nginx >/dev/null 2>&1
   systemctl enable nginx >/dev/null 2>&1
   systemctl status nginx --no-pager >/dev/null 2>&1
-elif [[ "$CENTOS_NINE" = '9' || "$CENTOS_EIGHT" = '8' || "$CENTOS_SEVEN" = '7' ]] && [[ ! -f /etc/init.d/nginx && "$SWITCH_NGINX_SYSTEMD" = [yY] && "$(systemctl is-enabled nginx)" = 'disabled' ]]; then
-  systemctl enable nginx >/dev/null 2>&1
+elif [[ "$CENTOS_NINE" = '9' || "$CENTOS_EIGHT" = '8' || "$CENTOS_SEVEN" = '7' ]] && [[ ! -f /etc/init.d/nginx && "$SWITCH_NGINX_SYSTEMD" = [yY] ]]; then
+  # one-shot repair of a running nginx missing its boot symlink; respects a
+  # later admin `systemctl disable nginx`
+  cmservice_enable_once nginx
 fi
 }
 
@@ -819,7 +865,7 @@ update_wpce_map() {
     if [[ "$(grep '\"' /usr/local/nginx/conf/wpcacheenabler_map.conf)" ]]; then
       sed -i 's|\\"|"|g' /usr/local/nginx/conf/wpcacheenabler_map.conf
       if [[ "$(ps aufx | grep nginx | grep -v grep | grep nginx  >/dev/null 2>&1; echo $?)" -eq '0' ]]; then
-        service nginx reload >/dev/null 2>&1
+        cmservice_if_enabled nginx reload >/dev/null 2>&1
       fi
     fi
   fi
@@ -864,7 +910,7 @@ update_cache_enabler_schemefix() {
       fi
       echo "ce_count=$ce_count updated: $getce_domain"
       if [[ "$ce_count" -gt '1' && "$(ps aufx | grep nginx | grep -v grep | grep nginx  >/dev/null 2>&1; echo $?)" -eq '0' ]]; then
-        service nginx reload >/dev/null 2>&1
+        cmservice_if_enabled nginx reload >/dev/null 2>&1
       fi
     done
     {
@@ -947,16 +993,16 @@ update_webp_inc() {
   if [[ -f /usr/local/nginx/conf/webp.conf && "$(grep -q 'webpok' /usr/local/nginx/conf/webp.conf; echo $?)" -ne '0' ]] && [[ -f /usr/local/src/centminmod/config/nginx/webp.conf && "$(grep -q 'webpok' /usr/local/src/centminmod/config/nginx/webp.conf; echo $?)" -eq '0' ]]; then
     \cp -af /usr/local/src/centminmod/config/nginx/webp.conf /usr/local/nginx/conf/webp.conf
     chown nginx:nginx /usr/local/nginx/conf/webp.conf
-    service nginx restart >/dev/null 2>&1
+    cmservice_if_enabled nginx restart >/dev/null 2>&1
   fi
   if [[ ! "$(grep webp.conf /usr/local/nginx/conf/nginx.conf)" ]] && [[ -f /usr/local/nginx/conf/webp.conf && -f /usr/local/src/centminmod/config/nginx/webp.conf ]]; then
     sed -i 's|\/usr\/local\/nginx\/conf\/geoip.conf;|\/usr\/local\/nginx\/conf\/geoip.conf;\ninclude \/usr\/local\/nginx\/conf\/webp.conf;|g' /usr/local/nginx/conf/nginx.conf
-    service nginx restart >/dev/null 2>&1
+    cmservice_if_enabled nginx restart >/dev/null 2>&1
   elif [[ ! "$(grep webp.conf /usr/local/nginx/conf/nginx.conf)" ]] && [[ ! -f /usr/local/nginx/conf/webp.conf && -f /usr/local/src/centminmod/config/nginx/webp.conf ]]; then
     \cp -af /usr/local/src/centminmod/config/nginx/webp.conf /usr/local/nginx/conf/webp.conf
     chown nginx:nginx /usr/local/nginx/conf/webp.conf
     sed -i 's|\/usr\/local\/nginx\/conf\/geoip.conf;|\/usr\/local\/nginx\/conf\/geoip.conf;\ninclude \/usr\/local\/nginx\/conf\/webp.conf;|g' /usr/local/nginx/conf/nginx.conf
-    service nginx restart >/dev/null 2>&1
+    cmservice_if_enabled nginx restart >/dev/null 2>&1
   fi
 }
 
@@ -1042,9 +1088,12 @@ pureftpd_symlink_fix() {
 }
 
 symlink_setup_mariadb() {
-  if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]] && [[ "$MYSQLSERVICE_DISABLED" = [nN] && ! -h /etc/systemd/system/multi-user.target.wants/mariadb.service ]]; then
-    # ensure MariaDB service startup symlink is setup
-    systemctl enable mariadb >/dev/null 2>&1
+  # ensure MariaDB service startup symlink is setup (legacy chkconfig mysql alias
+  # breakage). cmservice_enable_once repairs a running MariaDB at most once per
+  # host, so a later admin `systemctl disable` is respected.
+  # MYSQLSERVICE_DISABLED=y opts out entirely.
+  if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]] && [[ "$MYSQLSERVICE_DISABLED" = [nN] ]]; then
+    cmservice_enable_once mariadb
   fi
 }
 
@@ -1097,7 +1146,7 @@ opt_sslcache() {
     # shared ssl cache from existing ssl cache name = SSL
     sed -i "s|shared:SSL:.*|shared:SSLv2:${sslcachesize}m;|" /usr/local/nginx/conf/ssl_include.conf
     if [[ "$opt_sslcache_silent" != 'silent' ]]; then
-      service nginx restart >/dev/null 2>&1
+      cmservice_if_enabled nginx restart >/dev/null 2>&1
     fi
   fi
 }
@@ -1158,7 +1207,7 @@ EOF
     # echo
     # echo "include file /usr/local/nginx/conf/default_phpupstream.conf add to nginx.conf"
     sed -i 's|\/usr\/local\/nginx\/conf\/fastcgi_param_https_map.conf;|\/usr\/local\/nginx\/conf\/fastcgi_param_https_map.conf;\ninclude \/usr\/local\/nginx\/conf\/default_phpupstream.conf;|g' /usr/local/nginx/conf/nginx.conf
-    service nginx restart >/dev/null 2>&1
+    cmservice_if_enabled nginx restart >/dev/null 2>&1
     service nginx php-fpm >/dev/null 2>&1
   fi
 }
@@ -1358,7 +1407,7 @@ ngxmaster_openfiles() {
     if [[ "$CENTOS_SEVEN" -eq '7' || "$CENTOS_EIGHT" -eq '8' ]]; then
       systemctl daemon-reload -q
     fi
-    service nginx restart >/dev/null 2>&1
+    cmservice_if_enabled nginx restart >/dev/null 2>&1
   fi
 }
 
@@ -1367,7 +1416,7 @@ ngx_gzipbuffersfix() {
   # large javascript js file libraries that can be as large as 5+ MB
   if [[ -f /usr/local/nginx/conf/nginx.conf && "$(grep -w 'gzip_buffers      32 8k;' /usr/local/nginx/conf/nginx.conf)" ]]; then
     sed -i 's|gzip_buffers .*|gzip_buffers      1024 8k;|' /usr/local/nginx/conf/nginx.conf
-    service nginx restart >/dev/null 2>&1
+    cmservice_if_enabled nginx restart >/dev/null 2>&1
   fi
 }
 
@@ -1376,7 +1425,7 @@ ngx_brotlibuffersfix() {
   # large javascript js file libraries that can be as large as 5+ MB
   if [[ -f /usr/local/nginx/conf/brotli_inc.conf && "$(grep -w 'brotli_buffers 32 8k;' /usr/local/nginx/conf/brotli_inc.conf)" ]]; then
     sed -i 's|brotli_buffers .*|brotli_buffers 1024 8k;|' /usr/local/nginx/conf/brotli_inc.conf
-    service nginx restart >/dev/null 2>&1
+    cmservice_if_enabled nginx restart >/dev/null 2>&1
   fi
 }
 
@@ -1712,7 +1761,7 @@ nginxlargefile_fix() {
       fi
     fi
     if [[ "$nginxfix_count" -ge '1' ]]; then
-      service nginx restart >/dev/null 2>&1
+      cmservice_if_enabled nginx restart >/dev/null 2>&1
     fi
   fi
 }
@@ -2252,7 +2301,7 @@ ProtectSystem=false
 ProtectHome=false
 TDF
   systemctl daemon-reload
-  systemctl restart mysql
+  cmservice_if_enabled mariadb restart
  elif [[ "$CENTOS_SEVEN" -eq '7' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]] && [[ -f /etc/systemd/system/mariadb.service.d/protecthome.conf && -z "$(grep 'ProtectSystem=false' /etc/systemd/system/mariadb.service.d/protecthome.conf)" ]]; then
     # fix https://community.centminmod.com/posts/54571/ CentOS 7.4 changes
     echo "Update MariaDB 10 setting for ProtectSystem=false addition"
@@ -2262,7 +2311,7 @@ ProtectSystem=false
 ProtectHome=false
 TDF
   systemctl daemon-reload
-  systemctl restart mysql
+  cmservice_if_enabled mariadb restart
   fi
 }
 
@@ -2274,7 +2323,7 @@ cat > "/etc/systemd/system/mariadb.service.d/openfileslimit.conf" <<TDG
 LimitNOFILE=524288
 TDG
   systemctl daemon-reload
-  systemctl restart mysql
+  cmservice_if_enabled mariadb restart
   fi
 }
 
@@ -2286,7 +2335,7 @@ cat > "/etc/systemd/system/mariadb.service.d/oomscoreadjust.conf" <<TDG
 OOMScoreAdjust=-1000
 TDG
   systemctl daemon-reload
-  systemctl restart mysql
+  cmservice_if_enabled mariadb restart
   fi
 }
 
@@ -2334,8 +2383,8 @@ fixphpfpm_includes() {
   done
     if [ -f /tmp/phpinc-restart-check ]; then
       rm -rf /tmp/phpinc-restart-check
-      service nginx restart
-      service php-fpm restart
+      cmservice_if_enabled nginx restart
+      cmservice_if_enabled php-fpm restart
     fi
   } 2>&1 | tee "/root/centminlogs/fixphpfpm_includes_${DT}.log"
   # remove log if empty
@@ -2364,8 +2413,8 @@ fixphpfpm_httpproxy() {
   done
     if [ -f /tmp/phprestart-check ]; then
       rm -rf /tmp/phprestart-check
-      service nginx restart
-      service php-fpm restart
+      cmservice_if_enabled nginx restart
+      cmservice_if_enabled php-fpm restart
     fi
   } 2>&1 | tee "/root/centminlogs/fixphpfpm_httpproxy_${DT}.log"
   # remove log if empty
@@ -3465,7 +3514,7 @@ pureftpdupdates() {
     if [ "$CHECKPFTPD_ANON" ]; then
       sed -i 's|NoAnonymous                 no|NoAnonymous                 yes|' /etc/pure-ftpd/pure-ftpd.conf
       if [[ "$(ps aufx | grep pure-ftpd | grep -v grep | grep pure-ftpd  >/dev/null 2>&1; echo $?)" -eq '0' ]]; then
-        service pure-ftpd restart >/dev/null 2>&1
+        cmservice_if_enabled pure-ftpd restart >/dev/null 2>&1
       fi
       echo
       echo "disable pure-ftpd annonymous logins"
@@ -3483,7 +3532,7 @@ pureftpdupdates() {
       sed -i 's|^MaxClientsPerIP .*|MaxClientsPerIP             500|' /etc/pure-ftpd/pure-ftpd.conf
     fi
       if [[ "$(ps aufx | grep pure-ftpd | grep -v grep | grep pure-ftpd  >/dev/null 2>&1; echo $?)" -eq '0' ]]; then
-        service pure-ftpd restart >/dev/null 2>&1
+        cmservice_if_enabled pure-ftpd restart >/dev/null 2>&1
       fi
       # echo
       # echo "increasing pure-ftpd passive port range"
@@ -3506,9 +3555,9 @@ pureftpdupdates() {
     openssl dhparam -out /etc/ssl/private/pure-ftpd-dhparams.pem 2048 >/dev/null 2>&1
     echo "pure-ftpd: /etc/ssl/private/pure-ftpd-dhparams.pem created"
     if [[ "$PUREFTPD_DISABLED" != [yY] && "$(ps aufx | grep pure-ftpd | grep -v grep | grep pure-ftpd  >/dev/null 2>&1; echo $?)" -eq '0' ]]; then
-      service pure-ftpd restart >/dev/null 2>&1
+      cmservice_if_enabled pure-ftpd restart >/dev/null 2>&1
     elif [[ "$PUREFTPD_DISABLED" != [yY] && "$(ps aufx | grep pure-ftpd | grep -v grep | grep pure-ftpd  >/dev/null 2>&1; echo $?)" -ne '0' ]]; then
-      service pure-ftpd restart >/dev/null 2>&1
+      cmservice_if_enabled pure-ftpd restart >/dev/null 2>&1
     fi
   fi
   if [[ "$INITIALINSTALL" != [yY] && -f /etc/pki/pure-ftpd/pure-ftpd.pem && "$(openssl x509 -in /etc/pki/pure-ftpd/pure-ftpd.pem -text -noout | grep '1024 bit')" ]]; then
@@ -3516,14 +3565,14 @@ pureftpdupdates() {
     openssl req -x509 -days 7300 -sha256 -nodes -subj "/C=US/ST=California/L=Los Angeles/O=Default Company Ltd/CN=$CNIP" -newkey rsa:2048 -keyout /etc/pki/pure-ftpd/pure-ftpd.pem -out /etc/pki/pure-ftpd/pure-ftpd.pem >/dev/null 2>&1
     echo "pure-ftpd: /etc/pki/pure-ftpd/pure-ftpd.pem created"
     if [[ "$(ps aufx | grep pure-ftpd | grep -v grep | grep pure-ftpd  >/dev/null 2>&1; echo $?)" -eq '0' ]]; then
-      service pure-ftpd restart >/dev/null 2>&1
+      cmservice_if_enabled pure-ftpd restart >/dev/null 2>&1
     fi
   elif [[ "$INITIALINSTALL" != [yY] && ! -f /etc/pki/pure-ftpd/pure-ftpd.pem ]]; then
     echo "pure-ftpd: create 2048bit /etc/pki/pure-ftpd/pure-ftpd.pem file for $CNIP"
     openssl req -x509 -days 7300 -sha256 -nodes -subj "/C=US/ST=California/L=Los Angeles/O=Default Company Ltd/CN=$CNIP" -newkey rsa:2048 -keyout /etc/pki/pure-ftpd/pure-ftpd.pem -out /etc/pki/pure-ftpd/pure-ftpd.pem >/dev/null 2>&1
     echo "pure-ftpd: /etc/pki/pure-ftpd/pure-ftpd.pem created"
     if [[ "$(ps aufx | grep pure-ftpd | grep -v grep | grep pure-ftpd  >/dev/null 2>&1; echo $?)" -eq '0' ]]; then
-      service pure-ftpd restart >/dev/null 2>&1
+      cmservice_if_enabled pure-ftpd restart >/dev/null 2>&1
     fi
   fi
   # fix bug https://community.centminmod.com/posts/71920/
@@ -3559,7 +3608,7 @@ pureftpdupdates() {
       sdiff -s -w200 /etc/pure-ftpd/pure-ftpd.conf "/etc/pure-ftpd/pure-ftpd.conf.backup.$DT"
       cat /etc/pure-ftpd/pure-ftpd.conf | egrep 'UnixAuthentication|VerboseLog|PureDB |CreateHomeDir|TLS|PassivePortRange|TLSCipherSuite|MaxClientsNumber|MaxClientsPerIP|NoAnonymous|Umask'
       if [[ "$(ps aufx | grep pure-ftpd | grep -v grep | grep pure-ftpd  >/dev/null 2>&1; echo $?)" -eq '0' ]]; then
-        service pure-ftpd restart >/dev/null 2>&1
+        cmservice_if_enabled pure-ftpd restart >/dev/null 2>&1
       fi
     fi
   fi
@@ -3664,7 +3713,7 @@ memcachedupdatechecks() {
               if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]]; then
                 systemctl daemon-reload
               fi
-              if [ "$(ps -C memcached | grep -w memcached)" ]; then
+              if [ "$(ps -C memcached | grep -w memcached)" ] && ! cmservice_disabled memcached; then
                   /usr/bin/memcachedstop >/dev/null
                   /usr/bin/memcachedstart >/dev/null
               fi
@@ -3680,7 +3729,7 @@ memcachedupdatechecks() {
               if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]]; then
                 systemctl daemon-reload
               fi
-              if [ "$(ps -C memcached | grep -w memcached)" ]; then
+              if [ "$(ps -C memcached | grep -w memcached)" ] && ! cmservice_disabled memcached; then
                   /usr/bin/memcachedstop >/dev/null
                   /usr/bin/memcachedstart >/dev/null
               fi
