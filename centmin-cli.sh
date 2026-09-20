@@ -30,7 +30,7 @@ DT=$(date +"%d%m%y-%H%M%S")
 branchname='132.00stable'
 SCRIPT_MAJORVER='132'
 SCRIPT_MINORVER='00'
-SCRIPT_INCREMENTVER='193'
+SCRIPT_INCREMENTVER='194'
 SCRIPT_VERSIONSHORT="${branchname}"
 SCRIPT_VERSION="${SCRIPT_VERSIONSHORT}.b${SCRIPT_INCREMENTVER}"
 SCRIPT_DATE='15/02/25'
@@ -266,41 +266,14 @@ fi
 
 CENTOSVER_NUMERIC=$(echo $CENTOSVER | sed -e 's|\.||g')
 
-# switch el8 OSes to GCC 11 for compile routines
-if [[ "$CENTOS_EIGHT" -eq '8' && "$CENTOSVER_NUMERIC" -ge '89' ]]; then
-  DEVTOOLSETTEN='n'
-  DEVTOOLSETELEVEN='n'
-  DEVTOOLSETTWELVE='n'
-  DEVTOOLSETTHIRTEEN='y'
-elif [[ "$CENTOS_EIGHT" -eq '8' && "$CENTOSVER_NUMERIC" -ge '87' ]]; then
-  DEVTOOLSETTEN='n'
-  DEVTOOLSETELEVEN='n'
-  DEVTOOLSETTWELVE='y'
-  DEVTOOLSETTHIRTEEN='n'
-elif [[ "$CENTOS_EIGHT" -eq '8' ]]; then
-  DEVTOOLSETTEN='n'
-  DEVTOOLSETELEVEN='y'
-  DEVTOOLSETTWELVE='n'
-  DEVTOOLSETTHIRTEEN='n'
-fi
-
-# el9 GCC
-if [[ "$CENTOS_NINE" -eq '9' && "$CENTOSVER_NUMERIC" -ge '93' ]]; then
-  DEVTOOLSETTEN='n'
-  DEVTOOLSETELEVEN='n'
-  DEVTOOLSETTWELVE='n'
-  DEVTOOLSETTHIRTEEN='y'
-elif [[ "$CENTOS_NINE" -eq '9' && "$CENTOSVER_NUMERIC" -ge '91' ]]; then
-  DEVTOOLSETTEN='n'
-  DEVTOOLSETELEVEN='n'
-  DEVTOOLSETTWELVE='y'
-  DEVTOOLSETTHIRTEEN='n'
-elif [[ "$CENTOS_NINE" -eq '9' ]]; then
-  # el9 already defaults to GCC 11
+# Official GCC Toolset 15 on supported EL releases. Keep the historical flag spelling.
+if [[ "$CENTOS_EIGHT" = '8' || "$CENTOS_NINE" = '9' ]]; then
   DEVTOOLSETTEN='n'
   DEVTOOLSETELEVEN='n'
   DEVTOOLSETTWELVE='n'
   DEVTOOLSETTHIRTEEN='n'
+  DEVTOOLSETFOURTEEN='n'
+  DEVTOOLSETFIFTTEEN='y'
 fi
 
 if [[ "$FORCE_IPVFOUR" != [yY] ]]; then
@@ -2904,7 +2877,7 @@ fi
     ls -lah "/usr/${LIBDIR}/mysql/libmysqlclient.so"
   fi
 
-funct_phpconfigure
+funct_phpconfigure || exit $?
 
     cd ../
 
@@ -3788,6 +3761,10 @@ fi
         fi
         funct_nginxupgrade
         } 2>&1 | tee "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_nginx_upgrade.log"
+        NGINX_UPGRADE_STATUS=${PIPESTATUS[0]}
+        if [[ "$NGINX_UPGRADE_STATUS" -ne 0 ]]; then
+            exit "$NGINX_UPGRADE_STATUS"
+        fi
         
         if [ "$CCACHEINSTALL" == 'y' ]; then
         
@@ -3829,6 +3806,10 @@ fi
         fi
         funct_phpupgrade
         } 2>&1 | tee "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_php_upgrade.log"
+        PHP_UPGRADE_STATUS=${PIPESTATUS[0]}
+        if [[ "$PHP_UPGRADE_STATUS" -ne 0 ]]; then
+            exit "$PHP_UPGRADE_STATUS"
+        fi
         
         if [ "$CCACHEINSTALL" == 'y' ]; then
         
@@ -4279,6 +4260,10 @@ fi
         fi
         funct_nginxupgrade "$2"
         } 2>&1 | tee "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_nginx_upgrade.log"
+        NGINX_UPGRADE_STATUS=${PIPESTATUS[0]}
+        if [[ "$NGINX_UPGRADE_STATUS" -ne 0 ]]; then
+            exit "$NGINX_UPGRADE_STATUS"
+        fi
         
         if [ "$CCACHEINSTALL" == 'y' ]; then
         
@@ -4321,6 +4306,10 @@ fi
         fi
         funct_phpupgrade "$2"
         } 2>&1 | tee "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_php_upgrade.log"
+        PHP_UPGRADE_STATUS=${PIPESTATUS[0]}
+        if [[ "$PHP_UPGRADE_STATUS" -ne 0 ]]; then
+            exit "$PHP_UPGRADE_STATUS"
+        fi
         
         if [ "$CCACHEINSTALL" == 'y' ]; then
         
@@ -4364,6 +4353,10 @@ fi
         fi
         funct_phpupgrade "$2" all
         } 2>&1 | tee "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_php_upgrade_all.log"
+        PHP_UPGRADE_STATUS=${PIPESTATUS[0]}
+        if [[ "$PHP_UPGRADE_STATUS" -ne 0 ]]; then
+            exit "$PHP_UPGRADE_STATUS"
+        fi
         
         if [ "$CCACHEINSTALL" == 'y' ]; then
         

@@ -1551,6 +1551,9 @@ fi
 enable_php_debug_steps
 
 if [[ "$GCCINTEL_PHP" = [yY] ]]; then
+  if [[ "$DEVTOOLSETFIFTTEEN" = [yY] ]] && [[ "$CENTOS_EIGHT" = '8' || "$CENTOS_NINE" = '9' ]] && [[ "$CLANG_PHP" != [yY] ]]; then
+    enable_gcc_toolset15 || { PHPCONFIGURE_ERR=1; return 1; }
+  else
   CENTOSVER_NUMERIC=$(echo $CENTOSVER | sed -e 's|\.||g')
   # ensure devtoolset-7 and devtoolset-8 and devtoolset-9 are installed
 
@@ -2589,6 +2592,8 @@ if [[ "$GCCINTEL_PHP" = [yY] ]]; then
     fi
   fi
 
+  fi
+
   # intel specific
   CPUVENDOR=$(cat /proc/cpuinfo | awk '/vendor_id/ {print $3}' | sort -u | head -n1)
   SSECHECK=$(gcc -c -Q -march=native --help=target | awk '/  -msse/ {print $2}' | head -n1)
@@ -3392,6 +3397,14 @@ if [[ "$PHPMVER" = '7.4' || "$PHPMUVER" = '7.4' || "$PHPMVER" = '8.0' || "$PHPMU
   fi
 fi
 
+if [[ "$DEVTOOLSETFIFTTEEN" = [yY] ]] && [[ "$CENTOS_EIGHT" = '8' || "$CENTOS_NINE" = '9' ]] && [[ "$CLANG_PHP" != [yY] ]]; then
+  enable_gcc_toolset15 || { PHPCONFIGURE_ERR=1; return 1; }
+  # GCC 15 defaults to C23; preserve the previous C dialect, never CXXFLAGS.
+  if [[ " $CFLAGS " != *' -std='* ]]; then
+    export CFLAGS="$CFLAGS -std=gnu17"
+  fi
+fi
+
 php_pcrejit_stacksize
 pgo_version_edit
 echo
@@ -3459,6 +3472,9 @@ else
   fi
   PHPCONFIGURE_ERR=$?
 fi
+if [[ "$PHPCONFIGURE_ERR" -ne 0 ]]; then
+  return "$PHPCONFIGURE_ERR"
+fi
 sar_call
 
 if [[ "$PHP_PGO" = [yY] ]]; then
@@ -3505,7 +3521,7 @@ fi
         pgo_cpurange=$(echo $(($(nproc)-1)))
         pgo_cpulist=$(seq 1 $pgo_cpurange)
         echo "make${MAKETHREADS_PHP} prof-gen"
-        time make${MAKETHREADS_PHP} prof-gen
+        time make${MAKETHREADS_PHP} prof-gen || { echo "ERROR: PHP PGO prof-gen failed; installation stopped." >&2; return 1; }
         if [ ! -d "$DIR_TMP/php_pgo_training_scripts" ]; then
             pushd "$DIR_TMP"
             time git clone -b cmm https://github.com/centminmod/php_pgo_training_scripts php_pgo_training_scripts
@@ -3644,9 +3660,9 @@ fi
             fi
         fi
         echo "make prof-clean"
-        time make prof-clean
+        time make prof-clean || { echo "ERROR: PHP PGO prof-clean failed; installation stopped." >&2; return 1; }
         echo "make${MAKETHREADS_PHP} prof-use"
-        time make${MAKETHREADS_PHP} prof-use
+        time make${MAKETHREADS_PHP} prof-use || { echo "ERROR: PHP PGO prof-use failed; installation stopped." >&2; return 1; }
     else
         echo "make${MAKETHREADS_PHP}"
         time make${MAKETHREADS_PHP}
@@ -3686,7 +3702,7 @@ fi
           echo
       fi
     fi
-    time make install
+    time make install || return 1
     sar_call
    
     if [[ "$STRIPPHP" = [yY] && "$PHPDEBUGMODE" != [yY] ]]; then

@@ -180,7 +180,7 @@ opt_tcp
 if [[ "$INITIALINSTALL" = [yY] ]] && [[ "$NGINX_PCRE_TWO" = [yY] || "$NGX_LDMOLD" = [yY] ]]; then
     GENERAL_DEVTOOLSETGCC='y'
     ngx_starttime=$(TZ=UTC date +%s.%N)
-    enable_devtoolset
+    enable_devtoolset || exit $?
     ngx_endtime=$(TZ=UTC date +%s.%N)
     enable_devtoolset_install_time=$(echo "scale=2;$ngx_endtime - $ngx_starttime"|bc )
     echo
@@ -292,7 +292,7 @@ if [[ "$NGINXPATCH" = [yY] && "$FPM_NGINX_RPM" != [yY] ]]; then
 fi
 
     ngx_starttime=$(TZ=UTC date +%s.%N)
-    funct_nginxconfigure
+    funct_nginxconfigure || exit $?
     ngx_endtime=$(TZ=UTC date +%s.%N)
     ngx_configure_time=$(echo "scale=2;$ngx_endtime - $ngx_starttime"|bc )
     echo
@@ -324,14 +324,14 @@ else
     DETECTOPENSSL_ONEONE=$(echo $OPENSSL_VERSION  | cut -d . -f1-3 | grep -o 1.1.1)
     if [[ "$LIBRESSL_SWITCH" = [yY] ]]; then
         echo "time make${MAKETHREADS}"
-        time make${MAKETHREADS}
+        time make${MAKETHREADS} || exit 1
     else
         if [[ "$DETECTOPENSSL_ONEZERO" = '1.1' ]] || [[ "$DETECTOPENSSL_ONEONE" = '1.1.1' ]]; then
             echo "time make${MAKETHREADS}"
-            time make${MAKETHREADS}
+            time make${MAKETHREADS} || exit 1
         else
             echo "time make"
-            time make
+            time make || exit 1
         fi
     fi
     ngx_endtime=$(TZ=UTC date +%s.%N)
@@ -356,7 +356,7 @@ else
         figlet -ckf standard "Nginx Make Install"
     fi
     ngx_make_starttime=$(TZ=UTC date +%s.%N)
-    time make install
+    time make install || exit 1
     ngx_make_endtime=$(TZ=UTC date +%s.%N)
     ngx_make_install_time=$(echo "scale=2;$ngx_make_endtime - $ngx_make_starttime"|bc )
     echo

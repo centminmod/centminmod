@@ -536,6 +536,9 @@ else
     fi
 fi # UALL
 
+# CLI and update-all need the same target version used by interactive upgrades.
+PHPMUVER=$(echo "$phpver" | cut -d . -f1,2)
+
 ## grab newer custom written htpasswd.sh as well
 gethtpasswdsh
 
@@ -726,17 +729,20 @@ fi # PHPDIFF
     fi
 
 if [[ "$TIME_PHPCONFIGURE" = [yY] ]]; then
-    funct_phpconfigure 2>&1 | awk '{ print strftime("%Y-%m-%d %H:%M:%S"), $0; fflush(); }'
+    # Keep compiler PATH/LD_LIBRARY_PATH and configure results in this shell.
+    funct_phpconfigure > >(awk '{ print strftime("%Y-%m-%d %H:%M:%S"), $0; fflush(); }') 2>&1
+    PHPCONFIGURE_ERR=$?
 else
     funct_phpconfigure
+    PHPCONFIGURE_ERR=$?
 fi
 
 ################
 # error check
 
   # PHPCONFIGURE_ERR=$?
-  if [ $PHPCONFIGURE_ERR != 0 ]; then
-      echo -e "\n`date`\nError: $ERR, PHP configure failed ($SCRIPT_VERSION)\n"
+  if [ "$PHPCONFIGURE_ERR" != 0 ]; then
+      echo -e "\n`date`\nError: $PHPCONFIGURE_ERR, PHP configure failed ($SCRIPT_VERSION)\n"
         echo "report errors on the forums at community.centminmod.com/forums/8/"
         echo "with info asked at community.centminmod.com/threads/17857/"
         echo "ensure you're using latest code by running command: cmupdate"
@@ -771,7 +777,7 @@ fi
     echo
     echo "$(date): PHP config.log at: ${DIR_TMP}/php-${phpver}/fpm-build/config.log"
     echo
-      exit
+      exit "$PHPCONFIGURE_ERR"
   else
       echo -e "\n`date`\nSuccess: PHP configure ok\n"
         # cmservice php-fpm restart
@@ -826,7 +832,7 @@ fi
     echo "PHP_PGO = $PHP_PGO"
     if [[ "$PHP_PGO" = [yY] ]] && [[ "$PHPMUVER" = '7.0' || "$PHPMUVER" = '7.1' || "$PHPMUVER" = '7.2' || "$PHPMUVER" = '7.3' || "$PHPMUVER" = '7.4' || "$PHPMUVER" = '8.0' || "$PHPMUVER" = '8.1' || "$PHPVER_ID" -ge '80000' ]]; then
         echo "make${MAKETHREADS_PHP} prof-gen"
-        time make${MAKETHREADS_PHP} prof-gen
+        time make${MAKETHREADS_PHP} prof-gen || { echo "ERROR: PHP PGO prof-gen failed; installation stopped." >&2; exit 1; }
         if [ ! -d "$DIR_TMP/php_pgo_training_scripts" ]; then
             pushd "$DIR_TMP"
             time git clone -b cmm https://github.com/centminmod/php_pgo_training_scripts php_pgo_training_scripts
@@ -915,9 +921,9 @@ fi
             fi
         fi
         echo "make prof-clean"
-        time make prof-clean
+        time make prof-clean || { echo "ERROR: PHP PGO prof-clean failed; installation stopped." >&2; exit 1; }
         echo "make${MAKETHREADS_PHP} prof-use"
-        time make${MAKETHREADS_PHP} prof-use
+        time make${MAKETHREADS_PHP} prof-use || { echo "ERROR: PHP PGO prof-use failed; installation stopped." >&2; exit 1; }
     else
         echo "make${MAKETHREADS_PHP}"
         time make${MAKETHREADS_PHP}

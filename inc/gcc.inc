@@ -1,3 +1,38 @@
+# Install and activate official GCC Toolset 15; shared by all compiler callers.
+enable_gcc_toolset15() {
+  local toolset=/opt/rh/gcc-toolset-15
+  local gcc_version gxx_version toolset_env
+  if [[ ! -x "$toolset/root/usr/bin/gcc" || ! -x "$toolset/root/usr/bin/g++" || ! -x "$toolset/root/usr/bin/ld" ]] || [[ ! -f "$toolset/enable" && ! -f /usr/lib/gcc-toolset/15-env.source ]]; then
+    if ! yum -y install gcc-toolset-15-gcc gcc-toolset-15-gcc-c++ gcc-toolset-15-binutils gcc-toolset-15-runtime; then
+      echo "ERROR: GCC Toolset 15 packages could not be installed. Check enabled repositories and retry." >&2
+      return 1
+    fi
+  fi
+  toolset_env="$toolset/enable"
+  if [[ ! -f "$toolset_env" ]]; then
+    toolset_env=/usr/lib/gcc-toolset/15-env.source
+  fi
+  if [[ ! -x "$toolset/root/usr/bin/gcc" || ! -x "$toolset/root/usr/bin/g++" || ! -x "$toolset/root/usr/bin/ld" || ! -f "$toolset_env" ]]; then
+    echo "ERROR: GCC Toolset 15 installation is incomplete." >&2
+    return 1
+  fi
+  source "$toolset_env" || return 1
+  gcc_version=$("$toolset/root/usr/bin/gcc" -dumpfullversion -dumpversion) || return 1
+  gxx_version=$("$toolset/root/usr/bin/g++" -dumpfullversion -dumpversion) || return 1
+  if [[ "$gcc_version" != 15.* || "$gxx_version" != 15.* ]]; then
+    echo "ERROR: Expected GCC/G++ 15, found $gcc_version / $gxx_version." >&2
+    return 1
+  fi
+  export CC="$toolset/root/usr/bin/gcc"
+  export CXX="$toolset/root/usr/bin/g++"
+  if [[ "$INITIALINSTALL" != [yY] ]]; then
+    export CC="ccache $CC"
+    export CXX="ccache $CXX"
+    export CCACHE_CPP2=yes
+  fi
+  echo "GCC Toolset 15: gcc=$gcc_version g++=$gxx_version; CC=$CC; CXX=$CXX"
+}
+
 check_devtoolset_php() {
   # php 7.3+ require devtoolset provided GCC 7+ to build
   # but standalone php extensions routines aren't aware
@@ -82,7 +117,11 @@ enable_devtoolset() {
       # devtoolset-4 usage for ngx_pagespeed 1.10 branch which doesn't support
       # centos 6 based gcc 4.4.7
       if [[ "$CENTOS_SIX" -eq 6 || "$CENTOS_SEVEN" -eq 7 || "$CENTOS_EIGHT" -eq 8 || "$CENTOS_NINE" -eq 9 ]]; then
-        if [[ "$CENTOS_NINE" = 9 ]]; then
+        if [[ "$DEVTOOLSETFIFTTEEN" = [yY] ]] && [[ "$CENTOS_EIGHT" = '8' || "$CENTOS_NINE" = '9' ]]; then
+            enable_gcc_toolset15 || return 1
+            GENERALDEVTOOLSET_FALLTHROUGH=' -Wimplicit-fallthrough=0'
+            GENERALDEVTOOLSET_EXTRAFLAGS=' -fcode-hoisting -Wno-cast-function-type -Wno-deprecated-declarations'
+        elif [[ "$CENTOS_NINE" = 9 ]]; then
             GENERALDEVTOOLSET_FALLTHROUGH=' -Wimplicit-fallthrough=0'
             GENERALDEVTOOLSET_EXTRAFLAGS=' -fcode-hoisting -Wno-cast-function-type -Wno-cast-align -Wno-implicit-function-declaration -Wno-builtin-declaration-mismatch -Wno-deprecated-declarations -Wno-int-conversion -Wno-unused-result -Wno-vla-parameter -Wno-maybe-uninitialized -Wno-return-local-addr -Wno-array-parameter -Wno-alloc-size-larger-than -Wno-address -Wno-array-bounds -Wno-discarded-qualifiers -Wno-stringop-overread -Wno-stringop-truncation -Wno-missing-field-initializers -Wno-unused-variable -Wno-format -Wno-error=unused-result -Wno-missing-profile -Wno-stringop-overflow -Wno-error=maybe-uninitialized -Wno-free-nonheap-object -Wno-discarded-qualifiers -Wno-bad-function-cast -Wno-dangling-pointer -Wno-array-parameter'
         elif [[ "$CENTOS_NINE" = 9 && "$CENTOSVER_NUMERIC" -ge '93' && "$DEVTOOLSETTHIRTEEN" = [yY] ]] || [[ "$CENTOS_EIGHT" = 8 && "$CENTOSVER_NUMERIC" -ge '89' && "$DEVTOOLSETTHIRTEEN" = [yY] ]]; then
@@ -240,6 +279,13 @@ enable_devtoolset() {
          export CXXFLAGS="$CFLAGS"
       fi
    fi
+   # Preserve the previous C dialect after CXXFLAGS has been copied.
+   if [[ "$GENERAL_DEVTOOLSETGCC" = [yY] && "$DEVTOOLSETFIFTTEEN" = [yY] ]] && [[ "$CENTOS_EIGHT" = '8' || "$CENTOS_NINE" = '9' ]]; then
+      if [[ " $CFLAGS " != *' -std='* ]]; then
+         export CFLAGS="$CFLAGS -std=gnu17"
+      fi
+   fi
+
 }
 
 disable_devtoolset() {
