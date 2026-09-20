@@ -1311,6 +1311,8 @@ END
 
 fi
 
+# This standalone installer creates WordPress at the public web root.
+WPSUBDIR=""
 cat > "/usr/local/nginx/conf/wpincludes/${vhostname}/wpsecure_${vhostname}.conf" <<EEF
 # prevent .zip, .gz, .tar, .bzip2 files from being accessed by default
 # impossible for centmin mod to know which wp backup plugins they installed
@@ -1325,6 +1327,18 @@ location ~ /.well-known {
     more_set_headers    "Content-Type: text/plain";
     }
 }
+
+# WordPress OAuth discovery start
+location = ${WPSUBDIR}/.well-known/oauth-protected-resource {
+  include /usr/local/nginx/conf/503include-only.conf;
+  try_files \$uri ${WPSUBDIR}/index.php?\$args;
+}
+
+location = ${WPSUBDIR}/.well-known/oauth-authorization-server {
+  include /usr/local/nginx/conf/503include-only.conf;
+  try_files \$uri ${WPSUBDIR}/index.php?\$args;
+}
+# WordPress OAuth discovery end
 
 # allow AJAX requests in themes and plugins
 location ~ ^${WPSUBDIR}/wp-admin/admin-ajax.php$ { allow all; include /usr/local/nginx/conf/php.conf; }

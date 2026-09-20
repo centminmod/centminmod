@@ -3921,6 +3921,546 @@ wpcompfix() {
   fi
 }
 
+# Update only recognized WordPress defaults. Recognition stages candidates without
+# executing WordPress or sourcing an installed configuration as shell code.
+wp_config_update() (
+  local conf=/usr/local/nginx/conf work='' backup='' committed=n reload_attempted=n
+  local logdir=${CENTMINLOGDIR:-/root/centminlogs} logfile
+  local file number replacement required i
+  local -a changed_files=() changed_numbers=()
+  [[ -d "$conf/wpincludes" && ! -L "$conf" && ! -L "$conf/wpincludes" ]] || return 0
+  umask 077
+  if ! mkdir -p "$logdir" 2>/dev/null || ! logfile=$(mktemp --suffix=_wordpress_config_update.log "$logdir/centminmod_${SCRIPT_VERSION:-unknown}_$(date +%d%m%y-%H%M%S)_XXXXXXXX" 2>/dev/null); then
+    echo "WordPress configuration update skipped: cannot create log in $logdir."
+    return 1
+  fi
+  # Keep complete diagnostics in the log; only explicit notices reach the menu.
+  exec 3>&1 >>"$logfile" 2>&1 || return 1
+  _wp_notice() {
+    printf '%s\n' "$*"
+    printf '%s\n' "$*" >&3
+  }
+  _wp_nginx_running() {
+    if [[ -d /run/systemd/system ]]; then
+      systemctl is-active --quiet nginx
+    else
+      pgrep -x nginx >/dev/null 2>&1
+    fi
+  }
+  _wp_restore() {
+    local failed=n
+    for ((i=0; i<${#changed_files[@]}; i++)); do
+      file=${changed_files[i]}
+      number=${changed_numbers[i]}
+      replacement=$(mktemp "${file}.wp-restore.XXXXXXXX") || { failed=y; continue; }
+      if cp -a -- "$backup/$number.conf" "$replacement" && mv -f -- "$replacement" "$file"; then
+        :
+      else
+        rm -f -- "$replacement"
+        failed=y
+      fi
+    done
+    if [[ ${#changed_files[@]} -gt 0 ]]; then
+      echo "WordPress configuration rollback: originals saved in $backup"
+      if [[ "$failed" = y ]]; then
+        _wp_notice "ERROR: could not restore every file. Restore the remaining originals using $backup/manifest."
+      elif [[ "$reload_attempted" = y ]] && ! cmservice_disabled nginx && _wp_nginx_running; then
+        if ! command nginx -t || ! cmservice_if_enabled nginx reload; then
+          _wp_notice 'ERROR: originals restored, but nginx could not reload them.'
+        fi
+      fi
+    fi
+  }
+  _wp_cleanup() {
+    trap '' HUP INT TERM
+    local status=$1
+    # A signal can arrive after creating a replacement but before its rename.
+    [[ -z "${replacement:-}" ]] || rm -f -- "$replacement"
+    [[ "$committed" = y ]] || _wp_restore
+    [[ -z "$work" ]] || rm -rf -- "$work"
+    printf 'Finished WordPress configuration check: %s; status=%s; committed=%s\n' "$(date -u +%FT%TZ)" "$status" "$committed"
+    if [[ "$status" -ne 0 ]]; then
+      _wp_notice "WordPress configuration update failed. Log: $logfile"
+    fi
+    return "$status"
+  }
+  trap '_wp_cleanup $?' EXIT
+  trap 'echo "Interrupted WordPress configuration update"; exit 1' HUP INT TERM
+  printf 'Starting WordPress configuration check: %s; version=%s; source=%s\n' "$(date -u +%FT%TZ)" "${SCRIPT_VERSION:-unknown}" "$SCRIPT_DIR"
+  for required in nginx perl flock; do
+    command -v "$required" >/dev/null 2>&1 || { echo "Skipped: missing command $required."; return 0; }
+  done
+  if cmservice_disabled nginx || ! _wp_nginx_running; then
+    echo 'Skipped: nginx is disabled or stopped.'
+    return 0
+  fi
+  [[ ! -L /var/lock/centminmod-wp-config.lock ]] || { echo 'Skipped: update lock is symlinked.'; return 0; }
+  exec 9>/var/lock/centminmod-wp-config.lock || return 1
+  flock -n 9 || { echo 'Skipped: another WordPress configuration update holds the lock.'; return 0; }
+  work=$(mktemp -d /var/tmp/centminmod-wp.XXXXXXXX) || return 1
+  if ! command nginx -T >"$work/nginx.dump"; then
+    _wp_notice "WordPress configuration update skipped: existing nginx configuration does not validate. Log: $logfile"
+    return 0
+  fi
+  # Log per-file skip reasons even when terminal verbosity is disabled.
+  perl - "$SCRIPT_DIR" "$conf" "$work" "${WP_CONFIG_UPDATE_VERBOSE:-n}" <<'CM_WORDPRESS_CONFIG' || return 1
+use strict;
+use warnings;
+use Cwd qw(abs_path);
+use File::Basename qw(basename);
+use File::Temp qw(tempfile);
+my ($repo, $conf, $work, $verbose) = @ARGV;
+open my $console, '>&', 3 or die "cannot open console descriptor\n";
+die "invalid paths\n" unless defined $work && -d $repo && -d $conf && -d $work;
+my (%active, %parents, %staged, %safe_cache);
+my $count = 0;
+my $manifest;
+my $ambiguous_includes = 0;
+sub readfile { my ($p) = @_; open my $fh, '<', $p or return; local $/; return <$fh>; }
+sub plain_file {
+    my ($p) = @_;
+    return 0 unless $p =~ m{^/[A-Za-z0-9_./-]+$} && $p !~ m{(?:^|/)\.\.(?:/|$)};
+    my @st = lstat $p;
+    return @st && -f _ && !-l _ && $st[3] == 1 && (abs_path($p) // '') eq $p;
+}
+sub norm { my $s = shift // ''; return join "\n", grep { length && !/^#/ } map { my $line = $_; $line =~ s/^\s+|\s+$//g; $line } split /\n/, $s; }
+sub note {
+    print "WordPress compatibility: $_[0]\n";
+    print {$console} "WordPress compatibility: $_[0]\n" if $verbose =~ /^[yY]$/;
+}
+sub includes {
+    my $s = shift;
+    my (@paths, @directive);
+    # Read tokens so comments and quoted argument text are not directives.
+    while ($s =~ /\G(?:\s+|\#[^\n]*|("(?:\\.|[^"\\])*"|'(?:\\.|[^'\\])*'|[{};]|(?:\\.|\$\{[A-Za-z0-9_]+\}|[^\s{};"'\\])+))/gc) {
+        my $token = $1;
+        next unless defined $token;
+        if ($token =~ /^[{};]$/) {
+            if (@directive && $directive[0] =~ /^(?:include|"include"|'include')$/) {
+                if ($token ne ';' || @directive != 2) { $ambiguous_includes = 1; }
+                else {
+                    my $path = $directive[1];
+                    $path =~ s/^(?:"([^"]*)"|'([^']*)')$/defined $1 ? $1 : $2/e;
+                    if ($path !~ m{^[A-Za-z0-9_./*?-]+$}) { $ambiguous_includes = 1; }
+                    else { push @paths, $path; }
+                }
+            }
+            @directive = ();
+        } else { push @directive, $token; }
+    }
+    $ambiguous_includes = 1 if (pos($s) // 0) != length($s) || @directive;
+    return @paths;
+}
+sub live {
+    my ($p) = @_;
+    return unless exists $active{$p} && plain_file($p);
+    my $s = readfile($p);
+    return unless defined $s && norm($s) eq norm($active{$p});
+    return $s;
+}
+sub stage {
+    my ($p, $new) = @_;
+    return if exists $staged{$p};
+    my $old = live($p); return unless defined $old;
+    return if $old eq $new;
+    ++$count;
+    for my $item ([old => $old], [new => $new]) {
+        open my $fh, '>', "$work/$item->[0].$count" or die "cannot stage config\n";
+        print {$fh} $item->[1]; close $fh or die "cannot close staged config\n";
+    }
+    $staged{$p} = $new;
+    print {$manifest} "$p\t$count\n";
+}
+my $dump = readfile("$work/nginx.dump") // die "missing nginx dump\n";
+while ($dump =~ /^# configuration file ([^\n]+):\n(.*?)(?=^# configuration file |\z)/msg) {
+    $active{$1} = $2;
+}
+for my $p (keys %active) {
+    for my $child (includes($active{$p})) {
+        $child = "$conf/$child" unless $child =~ m{^/};
+        if ($child =~ /[*?\[]/) {
+            if ($child =~ m{(?:^|/)\.\.?(?:/|$)|//}) { $ambiguous_includes = 1; next; }
+            # Match only files which nginx actually opened, without traversing disk.
+            my $pattern = quotemeta($child); $pattern =~ s{\\\*}{[^/]*}g; $pattern =~ s{\\\?}{[^/]}g;
+            for my $q (grep { /^$pattern$/ } keys %active) { my $target = abs_path($q) // $q; $parents{$target}{$p} = 1; }
+        } else { my $target = abs_path($child) // $child; $parents{$target}{$p} = 1; }
+    }
+}
+open $manifest, '>', "$work/changes" or die "cannot create manifest\n";
+my @sources = qw(inc/wpsetup.inc inc/wpsetup-fastcgi-cache.inc tools/regen_wpsecure.sh tools/nvwp.sh tools/wp-cache-enabler-generate.sh);
+my %source = map { $_ => readfile("$repo/$_") // '' } @sources;
+sub heredoc {
+    my ($file, $target, $delimiter) = @_;
+    my $s = $source{$file};
+    while ($s =~ /^\s*cat\s+>[^\n]*\Q$target\E[^\n]*<<\s*\Q$delimiter\E\s*\n(.*?)^\Q$delimiter\E\s*$/msg) { return $1; }
+    return '';
+}
+sub render {
+    my ($s, $vars) = @_;
+    $s =~ s/(?<!\\)\$(?:\{([A-Za-z_]\w*)\}|([A-Za-z_]\w*))/exists $vars->{defined $1 ? $1 : $2} ? $vars->{defined $1 ? $1 : $2} : ''/ge;
+    $s =~ s/\\([\$`\\])/$1/g;
+    $s =~ s{\Q/usr/local/nginx/conf\E}{$conf}g;
+    return $s;
+}
+sub variants {
+    my ($s) = @_;
+    my $no_geo = $s; $no_geo =~ s/^\s*fastcgi_param GEOIP_[^\n]*\n//mg;
+    return ($s, $no_geo);
+}
+sub matches { my ($s, @templates) = @_; return scalar grep { defined $_ && length($_) && norm($s) eq norm($_) } @templates; }
+sub strip_oauth { my $s = shift; $s =~ s/^# WordPress OAuth discovery start\n.*?^# WordPress OAuth discovery end\n?//msg; return $s; }
+my $map_path = "$conf/wpfastcgi_cache_map.conf";
+my $map_new = render(heredoc('inc/wpsetup-fastcgi-cache.inc', 'wpfastcgi_cache_map.conf', 'FCD'), {});
+my $map_old = $map_new;
+$map_old =~ s/^\s*~\^\/\(\?:\[\^\/\?\]\+\/\)\*wp-json[^\n]*$/    ~^\/wp-json                       1;/m;
+$map_old =~ s/^\s*~\^\/\(\?:\[\^\/\?\]\+\/\)\*\[\.\]well-known[^\n]*\n//m;
+my $map_live = live($map_path);
+if (defined $map_live) {
+    my $empty_includes = 1;
+    for my $p (includes($map_new)) { my $s = live($p); $empty_includes = 0 if !defined $s || length norm($s); }
+    if ($empty_includes && matches($map_live, $map_old, $map_new)) {
+        $safe_cache{$map_path} = 1;
+        if (matches($map_live, $map_old)) {
+            my @rules = grep { /wp-json|well-known\/oauth-/ } split /\n/, $map_new;
+            my $new = $map_live;
+            my $n = $new =~ s/^\s*~\^\/wp-json\s+1;\s*$/join("\n", @rules)/me;
+            stage($map_path, $new) if $n == 1;
+        }
+    } else { note("skip $map_path: customized map or map include"); }
+}
+my $php_template = heredoc('inc/wpsetup-fastcgi-cache.inc', '/php-fastcgicache.conf', 'HFF');
+for my $p (sort keys %active) {
+    next unless $p =~ m{^\Q$conf\E/wpincludes/([a-zA-Z0-9.-]+)/php-fastcgicache\.conf$};
+    my $s = live($p); next unless defined $s;
+    my ($zone) = $s =~ /^\s*fastcgi_cache\s+([A-Za-z0-9_]+);\s*$/m;
+    next unless defined $zone;
+    my $new = render($php_template, { fastcgicache_name => $zone });
+    my $old = $new; $old =~ s/ \$http_authorization(?=;)//g;
+    if ($safe_cache{$map_path} && matches($s, variants($new), variants($old))) {
+        $safe_cache{$p} = 1;
+        my $changed = $s;
+        $changed =~ s/^(\s*fastcgi_(?:no_cache|cache_bypass)\s+[^;\n]*)(;)/$1 . (index($1, '$http_authorization') >= 0 ? '' : ' $http_authorization') . $2/gme;
+        stage($p, $changed);
+    } else { note("skip $p: customized FastCGI configuration or shared map"); }
+}
+my $redis_template = heredoc('inc/wpsetup.inc', '/rediscache_', 'XFF');
+my ($redis_rule) = $redis_template =~ /(# Bypass stored and new OAuth discovery responses[^\n]*\nif .*?\n}\n)/s;
+$redis_rule = render($redis_rule // '', {});
+for my $p (sort keys %active) {
+    next unless $p =~ m{^\Q$conf\E/wpincludes/([a-zA-Z0-9.-]+)/rediscache_\1\.conf$};
+    my $s = live($p); next unless defined $s;
+    my ($prefix) = $s =~ /^\s*location ~\* (.*?)\/wp-content\/uploads\/nginx-helper\//m;
+    next unless defined $prefix && $prefix =~ m{^(?:/[A-Za-z0-9_-]+)*$};
+    my $new = render($redis_template, { WPSUBDIR => $prefix });
+    my $old = $new; $old =~ s/\Q$redis_rule\E//;
+    for my $t ($new, $old) { $t =~ s/^if \(\$redis_device = mobile\) \{ set \$skip_cache 1; \}\n//m unless $s =~ /^\s*if \(\$redis_device = mobile\)/m; }
+    if (matches($s, $old, $new)) {
+        $safe_cache{$p} = 1;
+        if (matches($s, $old)) {
+            my $changed = $s;
+            my $n = $changed =~ s/^(?=\s*if \(\$request_uri ~\*)/$redis_rule\n/m;
+            stage($p, $changed) if $n == 1;
+        }
+    } else { note("skip $p: customized Redis configuration"); }
+}
+sub mysql_read {
+    my ($client, $defaults_path, $sql) = @_;
+    my $pid = open(my $pipe, '-|'); return unless defined $pid;
+    if (!$pid) {
+        open STDERR, '>', '/dev/null';
+        exec $client, "--defaults-file=$defaults_path", '--connect-timeout=3', '--batch', '--raw', '--skip-column-names', '--execute', $sql;
+        exit 1;
+    }
+    my ($out, $ok);
+    eval {
+        local $SIG{ALRM} = sub { die "database timeout\n" };
+        alarm 10; $out = '';
+        while (1) {
+            my $chunk; my $bytes = read $pipe, $chunk, 8193 - length($out);
+            die "database read failed\n" unless defined $bytes;
+            last unless $bytes;
+            $out .= $chunk;
+            die "oversized database response\n" if length($out) > 8192;
+        }
+        $ok = close $pipe; alarm 0;
+    };
+    if ($@) { alarm 0; kill 9, $pid; close $pipe; waitpid $pid, 0; return; }
+    return $ok ? $out : undef;
+}
+sub site_urls {
+    my ($domain, $prefix) = @_;
+    my $p = "/home/nginx/domains/$domain/public$prefix/wp-config.php";
+    return 0 unless plain_file($p);
+    my $s = readfile($p); return 0 unless defined $s && length($s) < 131072;
+    # Keep strings intact while removing comments. Never execute site PHP.
+    $s =~ s{('(?:\\.|[^'\\])*'|"(?:\\.|[^"\\])*"|/\*.*?\*/|//[^\n]*|\#[^\n]*)}{substr($1,0,1) eq q{'} || substr($1,0,1) eq q{"} ? $1 : ''}gse;
+    my %literal;
+    while ($s =~ /^\s*define\s*\(\s*(['"])([A-Z_]+)\1\s*,\s*(['"])([^'"\r\n\\]*)\3\s*\)\s*;\s*$/mg) {
+        return 0 if exists $literal{$2};
+        $literal{$2} = $4;
+    }
+    return 0 if $s =~ /\b(?:MULTISITE|SUBDOMAIN_INSTALL|DOMAIN_CURRENT_SITE|PATH_CURRENT_SITE)\b/;
+    for my $key (qw(DB_NAME DB_HOST DB_USER DB_PASSWORD WP_HOME WP_SITEURL)) {
+        my $occurrences = () = $s =~ /\b\Q$key\E\b/g;
+        return 0 if $occurrences && ($occurrences != 1 || !exists $literal{$key});
+    }
+    return 0 unless ($literal{DB_NAME} // '') =~ /^[A-Za-z0-9_]+$/ &&
+        ($literal{DB_HOST} // '') =~ /^(?:localhost|127\.0\.0\.1)(?::3306)?$/;
+    return 0 unless ($literal{DB_USER} // '') =~ /^wpdb[0-9]+u[0-9]+$/ &&
+        ($literal{DB_PASSWORD} // '') =~ /^[A-Za-z0-9]+$/;
+    my @prefixes = $s =~ /^\s*\$table_prefix\s*=\s*['"]([A-Za-z0-9_]+)['"]\s*;\s*$/mg;
+    return 0 unless @prefixes == 1;
+    # Extra PHP execution can redefine constants or select another database.
+    # Permit literal settings and the stock WordPress bootstrap only.
+    my $code = $s;
+    $code =~ s/<\?php|\?>//g;
+    $code =~ s/^\s*define\s*\(\s*(['"])[A-Z_]+\1\s*,\s*(?:'(?:\\.|[^'\\])*'|"(?:\\.|[^"\\\$])*"|true|false|[0-9]+)\s*\)\s*;\s*$//mg;
+    $code =~ s/^\s*\$table_prefix\s*=\s*['"][A-Za-z0-9_]+['"]\s*;\s*$//mg;
+    $code =~ s/if\s*\(\s*!\s*defined\s*\(\s*['"]ABSPATH['"]\s*\)\s*\)\s*\{\s*define\s*\(\s*['"]ABSPATH['"]\s*,\s*(?:__DIR__|dirname\(\s*__FILE__\s*\))\s*\.\s*['"]\/['"]\s*\)\s*;\s*\}//s;
+    $code =~ s/require_once\s*\(?\s*ABSPATH\s*\.\s*['"]wp-settings\.php['"]\s*\)?\s*;//s;
+    return 0 if $code =~ /\S/;
+    my $client;
+    for my $name (qw(mariadb mysql)) {
+        for my $dir (split /:/, $ENV{PATH} // '') {
+            if ($dir =~ m{^/} && -f "$dir/$name" && -x _) { $client = "$dir/$name"; last; }
+        }
+        last if defined $client;
+    }
+    return 0 unless defined $client;
+    # Use the site's generated account, never the administrator's client defaults.
+    # A custom account/password requires manual verification instead.
+    my ($defaults, $defaults_path) = tempfile('wp-mysql-XXXXXX', DIR => $work, UNLINK => 1);
+    my $db_host = $literal{DB_HOST}; $db_host =~ s/:3306$//;
+    my $protocol = $db_host eq 'localhost' ? 'socket' : 'tcp';
+    print {$defaults} "[client]\nuser=$literal{DB_USER}\npassword=$literal{DB_PASSWORD}\nhost=$db_host\nprotocol=$protocol\nport=3306\n";
+    close $defaults or return 0;
+    my $table = "$prefixes[0]options";
+    my $metadata = "SELECT TABLE_TYPE,ENGINE FROM information_schema.TABLES WHERE TABLE_SCHEMA='$literal{DB_NAME}' AND TABLE_NAME='$table'; SELECT COUNT(*) FROM information_schema.COLUMNS WHERE TABLE_SCHEMA='$literal{DB_NAME}' AND TABLE_NAME='$table' AND EXTRA LIKE '%GENERATED%'";
+    my $metadata_out = mysql_read($client, $defaults_path, $metadata);
+    if (!defined $metadata_out || $metadata_out !~ /\ABASE TABLE\t(?:InnoDB|MyISAM)\n0\n?\z/i) { unlink $defaults_path; return 0; }
+    my $sql = "START TRANSACTION READ ONLY; SELECT option_name,option_value FROM `$literal{DB_NAME}`.`$table` WHERE option_name IN ('home','siteurl'); COMMIT";
+    my $out = mysql_read($client, $defaults_path, $sql);
+    unlink $defaults_path;
+    my $ok = defined $out;
+    return 0 unless $ok && defined $out && length($out) < 8192;
+    my %urls;
+    for my $line (split /\n/, $out) {
+        my ($key, $value) = split /\t/, $line, 2;
+        return 0 unless defined $value && $key =~ /^(?:home|siteurl)$/ && !exists $urls{$key};
+        $urls{$key} = $value;
+    }
+    $urls{home} = $literal{WP_HOME} if exists $literal{WP_HOME};
+    $urls{siteurl} = $literal{WP_SITEURL} if exists $literal{WP_SITEURL};
+    for my $key (qw(home siteurl)) {
+        return 0 unless ($urls{$key} // '') =~ m{^https?://(?:www\.)?\Q$domain$prefix\E/?$};
+    }
+    return 1;
+}
+sub vhost_norm {
+    my $s = norm(shift);
+    $s =~ s/^(?:listen|server_name|access_log|error_log|http2|http2_[a-z_]+|spdy_headers_comp|ssl_(?:dhparam|certificate|certificate_key|ciphers|prefer_server_ciphers|buffer_size|session_tickets|stapling|stapling_verify|trusted_certificate))\s+[^;{}\n]*;\s*$//mg;
+    # acmetool enables these stock resolver directives for live certificates.
+    $s =~ s/^(?:resolver 8\.8\.8\.8 8\.8\.4\.4 1\.1\.1\.1 1\.0\.0\.1 valid=10m;|resolver_timeout 10s;)[ \t]*$//mg;
+    return norm($s);
+}
+sub vhost_match {
+    my ($s, $vars) = @_;
+    # acmetool moves only certificate directives to this validated TLS include.
+    $s =~ s{^\s*include \Q$conf/ssl/$vars->{vhostname}/$vars->{vhostname}.crt.key.conf\E;[ \t]*$}{}mg;
+    my $actual = vhost_norm($s);
+    my $redirect = "server {\nreturn 302 https://$vars->{vhostname}\$request_uri;\nroot /home/nginx/domains/$vars->{vhostname}/public;\ninclude $conf/staticfiles.conf;\n}";
+    $actual =~ s/^\Q$redirect\E\n//;
+    for my $file (@sources[0,1]) {
+        for my $delimiter (qw(ENSS ESS END)) {
+            my $body = heredoc($file, 'conf.d/', $delimiter); next unless length $body;
+            for my $cache (qw(supercache enabler redis fastcgi)) {
+                next if $cache eq 'fastcgi' && $file ne $sources[1];
+                my $t = render($body, $vars);
+                if ($cache ne 'supercache') {
+                    $t =~ s/^(\s*)include ([^\n]*\/wpsupercache_[^\n]*;)/$1#$2/m;
+                    $t =~ s/^(\s*)(try_files \/wp-content\/cache\/supercache\/[^\n]*)/$1#$2/m;
+                    my $name = $cache eq 'enabler' ? 'wpcacheenabler' : $cache eq 'redis' ? 'rediscache' : 'wpfastcgicache_include';
+                    $t =~ s/^(\s*)#(include [^\n]*\/\Q$name\E_[^\n]*;)/$1$2/m;
+                    if ($cache eq 'enabler') { $t =~ s/^(\s*)#(try_files \$cache_enabler_uri_webp[^\n]*)/$1$2/m; }
+                    else {
+                        $t =~ s/^(\s*)#(try_files \$uri \$uri\/ \Q$vars->{WPSUBDIR}\E\/index\.php\?\$args;)/$1$2/m;
+                        my $php = $cache eq 'redis' ? "$conf/php-rediscache.conf" : "$conf/wpincludes/$vars->{vhostname}/php-fastcgicache.conf";
+                        if ($cache eq 'redis') {
+                            $t =~ s{^([ \t]*)(include \Q$conf/php-wpsc.conf\E;)}{$1#$2}mg;
+                            $t =~ s{^([ \t]*)#(include \Q$conf/php-rediscache.conf\E;)}{$1$2}mg;
+                        } else {
+                            $t =~ s{\Q$conf/php-wpsc.conf\E}{$php}g;
+                        }
+                    }
+                }
+                for my $login (0,1) {
+                    my $candidate = $t;
+                    $candidate =~ s/^\s*auth_basic(?:_user_file)?[^\n]*\n//mg unless $login;
+                    return 1 if $actual eq vhost_norm($candidate);
+                }
+            }
+        }
+    }
+    return 0;
+}
+sub dependency_ok {
+    my ($p, $vars, $seen) = @_;
+    return 1 if $seen->{$p}++;
+    my $s = live($p); return 0 unless defined $s;
+    return 0 unless $p =~ m{^\Q$conf\E/(?:[A-Za-z0-9_.-]+/)*[A-Za-z0-9_.-]+$};
+    my $base = basename($p);
+    my $ok = 0;
+    if ($p eq $vars->{wpsecure}) { $ok = 1; }
+    elsif ($p eq "$conf/autoprotect/$vars->{vhostname}/autoprotect-$vars->{vhostname}.conf" || $p eq "$conf/pre-staticfiles-local-$vars->{vhostname}.conf" || $p eq "$conf/pre-staticfiles-global.conf") { $ok = !length norm($s); }
+    elsif ($p eq "$conf/ssl_include.conf" || $p eq "$conf/ssl/$vars->{vhostname}/$vars->{vhostname}.crt.key.conf") {
+        $ok = norm($s) !~ /^(?!ssl_[a-z_]+\s+[^;{}\n]+;$).+/m;
+    }
+    elsif ($p eq "$conf/jetpack_whitelist_ip.conf") {
+        $ok = norm($s) =~ /(?:^|\n)deny all;$/ && norm($s) !~ /^(?!(?:allow [0-9a-fA-F.:\/]+;|deny all;)$).+/m;
+    }
+    elsif ($safe_cache{$p}) { $ok = 1; }
+    elsif ($p =~ m{^\Q$conf\E/(?:php(?:-wpsc)?|staticfiles|drop|503include-main|503include-only|vts_server)\.conf$}) {
+        my $name = $base eq 'php-wpsc.conf' ? 'php.conf' : $base;
+        my $stock = readfile("$repo/config/nginx/$name");
+        if (defined $stock) {
+            $stock =~ s{\Q/usr/local/nginx/conf\E}{$conf}g;
+            my $host = $stock; $host =~ s/fastcgi_param  SERVER_NAME        \$server_name;/fastcgi_param  SERVER_NAME        \$http_host;/;
+            my $candidate = $s;
+            $candidate =~ s/^[ \t]*fastcgi_pass[ \t]+127\.0\.0\.1:9000;[ \t]*$/fastcgi_pass dft_php;/mg if $name eq 'php.conf';
+            $ok = matches($candidate, variants($stock), variants($host)) || ($base eq 'vts_server.conf' && !length norm($s));
+            if ($ok && $s =~ /^\s*fastcgi_pass\s+dft_php;\s*$/m) {
+                my $upstream = live("$conf/default_phpupstream.conf");
+                $ok = defined $upstream && matches($upstream, map {
+                    "upstream dft_php {\nzone dftphp_zone $_;\nserver 127.0.0.1:9000;\nkeepalive 2;\n}"
+                } qw(128k 256k));
+            }
+        }
+    }
+    else {
+        my %templates = (
+            'php-rediscache.conf' => ['inc/wpsetup.inc', 'php-rediscache.conf', 'HFF'],
+            "wpsupercache_$vars->{vhostname}.conf" => ['inc/wpsetup.inc', '/wpsupercache_', 'EFF'],
+            "wpcacheenabler_$vars->{vhostname}.conf" => ['inc/wpsetup.inc', '/wpcacheenabler_', 'HFA'],
+            "wpfastcgicache_include_$vars->{vhostname}.conf" => ['inc/wpsetup-fastcgi-cache.inc', '/wpfastcgicache_include_', 'FCC']);
+        my $expected_path = $base eq 'php-rediscache.conf' ? "$conf/$base" : "$conf/wpincludes/$vars->{vhostname}/$base";
+        if ($p eq $expected_path && (my $spec = $templates{$base})) {
+            my $stock = render(heredoc(@$spec), $vars);
+            my $nomobile = $stock; $nomobile =~ s/^\s*if \(\$cmwpcache_device = mobile\)[^\n]*\n//m;
+            $nomobile =~ s/^if \(\$wpfcgi_cache_mobile = 1\) \{ set \$no_wpfastcgicache 1; \}\n//m;
+            $ok = length($stock) && matches($s, variants($stock), variants($nomobile));
+        }
+    }
+    return 0 unless $ok;
+    for my $child (includes($s)) {
+        $child = "$conf/$child" unless $child =~ m{^/};
+        return 0 unless dependency_ok($child, $vars, $seen);
+    }
+    return 1;
+}
+for my $p (sort keys %active) {
+    next unless $p =~ m{^\Q$conf\E/wpincludes/([a-zA-Z0-9.-]+)/wpsecure_\1\.conf$};
+    my $domain = $1; my $s = live($p);
+    if (!defined $s) { note("skip $p: unsafe path or changed file"); next; }
+    my ($prefix) = $s =~ /^\s*location ~ \^(.*?)\/wp-admin\/admin-ajax\.php\$/m;
+    if (!defined $prefix) { ($prefix) = $s =~ /^\s*location ~\* (.*?)\/wp-content\/cache\/autoptimize\//m; }
+    if (!defined $prefix || $prefix !~ m{^(?:/[A-Za-z0-9_-]+)*$}) { note("skip $p: cannot identify a standard WordPress path"); next; }
+    my %vars = (vhostname => $domain, WPSUBDIR => $prefix, wpsubdir_value => ($prefix ? substr($prefix,1) : ''), wpsecure => $p,
+        DEDI_LISTEN => 'listen 80;', NGX_LOGFORMAT => 'main', COMP_HEADER => '#spdy_headers_comp 5',
+        NONSUBDIR_INCLUDE => $prefix ? '' : "include $p;", SUBDIR_INCLUDE => $prefix ? "include $p;" : '');
+    my ($recognized, $block);
+    my $base = $s;
+    my $tail = 'location ~* /(wp-content)/(.*?)\.(zip|gz|tar|bzip2|7z|txt)$ { deny all; }';
+    my $without_tail = $base; $without_tail =~ s/(?:^|\n)[ \t]*\Q$tail\E[ \t]*\n?\s*\z//;
+    for my $file (@sources) {
+        my $new = render(heredoc($file, '/wpsecure_', 'EEF'), \%vars); next unless length $new;
+        my ($expected) = $new =~ /(^# WordPress OAuth discovery start\n.*?^# WordPress OAuth discovery end\n?)/ms;
+        next unless defined $expected;
+        my $old = strip_oauth($new);
+        if (matches($base, $old) || matches($without_tail, $old)) { $recognized = 1; $block = $expected; last; }
+        my @blocks = $base =~ /(^# WordPress OAuth discovery start\n.*?^# WordPress OAuth discovery end\n?)/msg;
+        my $without_oauth = strip_oauth($base);
+        my $without_oauth_tail = $without_oauth; $without_oauth_tail =~ s/(?:^|\n)[ \t]*\Q$tail\E[ \t]*\n?\s*\z//;
+        if (@blocks == 1 && matches($blocks[0], $expected) && (matches($without_oauth, $old) || matches($without_oauth_tail, $old))) { $recognized = 2; last; }
+    }
+    if (!$recognized) { note("skip $p: customized or partial discovery rules"); next; }
+    next if $recognized == 2;
+    if ($ambiguous_includes) { note("skip $p: unsupported active include syntax may hide another consumer"); next; }
+    my @vhosts = keys %{ $parents{$p} // {} };
+    my $routing_ok = @vhosts > 0;
+    for my $vhost (@vhosts) {
+        my $v = live($vhost);
+        if (!defined $v || $vhost !~ m{^\Q$conf\E/conf\.d/[^/]+\.conf$}) { $routing_ok = 0; last; }
+        my $prestatic = join "\n", grep { /^\s*include \Q$conf\E\/pre-staticfiles-/ } split /\n/, $v;
+        $vars{PRESTATIC_INCLUDES} = $prestatic;
+        my ($zone) = (live("$conf/wpincludes/$domain/php-fastcgicache.conf") // '') =~ /^\s*fastcgi_cache\s+([A-Za-z0-9_]+);/m;
+        $vars{fastcgicache_name} = $zone // '';
+        if (!vhost_match($v, \%vars)) { $routing_ok = 0; last; }
+        for my $child (includes($v)) {
+            $child = "$conf/$child" unless $child =~ m{^/};
+            if (!dependency_ok($child, \%vars, {})) { $routing_ok = 0; last; }
+        }
+        last unless $routing_ok;
+    }
+    if (!$routing_ok) { note("skip $p: customized vhost, cache, or included routing configuration"); next; }
+    if (!site_urls($domain, $prefix)) { note("skip $p: cannot verify matching WordPress home/siteurl without executing site PHP"); next; }
+    stage($p, "$s\n$block");
+}
+close $manifest or die "cannot close manifest\n";
+CM_WORDPRESS_CONFIG
+  [[ -s "$work/changes" ]] || { echo 'No configuration changes required or eligible.'; return 0; }
+  # Recheck all active dependencies, including files which will not be edited.
+  if ! command nginx -T >"$work/recheck.dump" ||
+     ! cmp -s -- "$work/nginx.dump" "$work/recheck.dump"; then
+    echo 'WordPress configuration update aborted: active configuration changed during preparation.'
+    return 1
+  fi
+  backup=$(mktemp -d "$logdir/wordpress-config-backup.XXXXXXXX") || return 1
+  cp -- "$work/changes" "$backup/manifest" || return 1
+  echo "WordPress configuration backups: $backup"
+  # Preserve every original before replacing any file. The recognizer never
+  # stages symlinks, hardlinks, customized files or inactive/sample includes.
+  while IFS=$'\t' read -r file number; do
+    if [[ -L "$file" ]] || ! cmp -s -- "$file" "$work/old.$number" || ! cp -a -- "$file" "$backup/$number.conf"; then
+      echo "WordPress configuration update aborted: $file changed or could not be backed up."
+      return 1
+    fi
+  done < "$work/changes"
+  while IFS=$'\t' read -r file number; do
+    if [[ -L "$file" ]] || ! cmp -s -- "$file" "$work/old.$number"; then
+      echo "WordPress configuration update aborted: $file changed during preparation."
+      return 1
+    fi
+    replacement=$(mktemp "${file}.wp-update.XXXXXXXX") || return 1
+    if ! cp -a -- "$file" "$replacement" || ! cat "$work/new.$number" >"$replacement"; then
+      rm -f -- "$replacement"
+      return 1
+    fi
+    changed_files+=("$file")
+    changed_numbers+=("$number")
+    if ! mv -f -- "$replacement" "$file"; then
+      rm -f -- "$replacement"
+      return 1
+    fi
+    echo "Updated: $file"
+  done < "$work/changes"
+  if ! command nginx -t; then
+    echo 'WordPress configuration update failed validation; restoring originals.'
+    return 1
+  fi
+  if cmservice_disabled nginx || ! _wp_nginx_running; then
+    echo 'WordPress configuration update aborted: nginx service state changed; restoring originals.'
+    return 1
+  fi
+  reload_attempted=y
+  if ! cmservice_if_enabled nginx reload; then
+    echo 'WordPress configuration reload failed; restoring originals.'
+    return 1
+  fi
+  committed=y
+  _wp_notice "Updated WordPress configuration (${#changed_files[@]} files). Backups: $backup"
+)
+# End WordPress configuration update.
+
 entropy_centosseven() {
 if [ -f /usr/lib/systemd/system/haveged.service ] && [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]]; then
   if [[ ! -d /etc/systemd/system/haveged.service.d || ! -f /etc/systemd/system/haveged.service.d/haveged.conf ]]; then
@@ -4498,6 +5038,7 @@ if [[ "$INITIALINSTALL" != [yY] ]]; then
   forgefix
   ngxmodule_cleanups
   wpcompfix
+  wp_config_update || true
   entropy_centosseven
   tcpcheck_centos
   remi_tweaks
