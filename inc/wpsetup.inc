@@ -1,3 +1,113 @@
+wp_php_config_backends() {
+  # Inspect complete directives, including inline blocks, without matching tuning.
+  # ponytail: extra includes are unverifiable; expand them only if needed later.
+  perl - "$1" "$2" <<'WP_PHP_BACKENDS'
+use strict;
+use warnings;
+my ($path, $mode) = @ARGV;
+open my $fh, '<', $path or die "Cannot read $path\n";
+local $/;
+my $text = <$fh>;
+die "Configuration too large: $path\n" if length($text) > 1024 * 1024;
+my (@args, @backends);
+my ($depth, $upstreams) = (0, 0);
+pos($text) = 0;
+while (pos($text) < length($text)) {
+    next if $text =~ /\G(?:\s+|\#[^\n]*)/gc;
+    if ($text =~ /\G([;{}])/gc) {
+        my $end = $1;
+        if ($end eq '}') {
+            die "Unverifiable directive in $path\n" if @args || !$depth--;
+            next;
+        }
+        my $name = shift @args // '';
+        die "Unverifiable directive in $path\n" unless $name =~ /^[a-zA-Z_][a-zA-Z_0-9]*$/;
+        s/^(["'])(.*)\1$/$2/s for @args;
+        if ($name eq 'include') {
+            die "Unverifiable include in $path\n" unless $mode eq 'php' && $end eq ';' &&
+                @args == 1 && $args[0] eq '/usr/local/nginx/conf/503include-only.conf';
+        } elsif ($name eq 'fastcgi_pass' || ($mode eq 'upstream' && $name eq 'server')) {
+            die "Unverifiable backend in $path\n" unless $end eq ';' && @args &&
+                $args[0] =~ /^(?:127\.0\.0\.1:9000|dft_php)$/ &&
+                ($name ne 'fastcgi_pass' || @args == 1);
+            push @backends, $args[0];
+        }
+        if ($end eq '{') {
+            die "Unverifiable upstream in $path\n" if $mode eq 'upstream' &&
+                ($depth || $name ne 'upstream' || @args != 1 || $args[0] ne 'dft_php' || $upstreams++);
+            die "Configuration nesting too deep: $path\n" if ++$depth > 32;
+        }
+        @args = ();
+    } elsif ($text =~ /\G("(?:\\.|[^"\\])*"|'(?:\\.|[^'\\])*'|(?:\$\{[a-zA-Z_0-9]+\}|\\.|[^\s{};"'\\])+)(?=[\s;{})]|\z)/gc) {
+        push @args, $1;
+    } else {
+        die "Unverifiable configuration syntax in $path\n";
+    }
+}
+die "Incomplete configuration in $path\n" if @args || $depth || !@backends ||
+    ($mode eq 'upstream' && !$upstreams);
+print "$_\n" for @backends;
+WP_PHP_BACKENDS
+}
+
+wp_php_config_norm() {
+  # Only the maintenance include requires a stock-content match.
+  sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//' -e '/^#/d' -e '/^$/d' "$1" 2>/dev/null
+}
+
+wp_php_preflight() {
+  local cli_version fpm_version fpm_pid fpm_exe php_backend upstream_servers stock_php nginx_dump
+  if ! cli_version=$(command php -n -r 'echo PHP_VERSION_ID;' 2>/dev/null) ||
+     [[ ! "$cli_version" =~ ^[0-9]{5,6}$ ]] || (( 10#$cli_version < 70400 )); then
+    echo "WordPress 7 requires PHP 7.4 or newer for WP-CLI."
+    echo "Unable to verify a supported CLI PHP version (PHP_VERSION_ID=${cli_version:-unavailable})."
+    echo "Aborting WordPress setup before creating a site. Check the PHP binary in PATH."
+    return 1
+  fi
+
+  # Tuning such as keepalive, timeouts and buffers does not change the backend.
+  if ! php_backend=$(wp_php_config_backends /usr/local/nginx/conf/php.conf php); then
+    echo "Cannot verify every PHP-FPM backend used by php.conf."
+    echo "Aborting WordPress setup before creating a site; existing configuration was not changed."
+    return 1
+  fi
+  stock_php=$(wp_php_config_norm "$SCRIPT_DIR/config/nginx/503include-only.conf")
+  if [[ -z "$stock_php" || "$(wp_php_config_norm /usr/local/nginx/conf/503include-only.conf)" != "$stock_php" ]]; then
+    echo "Cannot verify the custom or missing 503include-only.conf configuration."
+    return 1
+  fi
+  if [[ $'\n'"$php_backend"$'\n' = *$'\ndft_php\n'* ]]; then
+    if ! upstream_servers=$(wp_php_config_backends /usr/local/nginx/conf/default_phpupstream.conf upstream) ||
+       [[ "$upstream_servers" = *dft_php* ]] ||
+       ! nginx_dump=$(command nginx -T 2>/dev/null) ||
+       [[ $'\n'"$nginx_dump"$'\n' != *$'\n# configuration file /usr/local/nginx/conf/default_phpupstream.conf:\n'* ]]; then
+      echo "Cannot verify every backend in the custom, missing, or inactive dft_php upstream."
+      echo "Aborting WordPress setup before creating a site; existing configuration was not changed."
+      return 1
+    fi
+  fi
+
+  # Read the executable serving the generated backend, including an old running
+  # executable after a PHP upgrade, instead of trusting the installed binary.
+  # Older iproute2 prints ("php-fpm",PID,FD), without the pid=/fd= labels.
+  fpm_pid=$(ss -lntp 'sport = :9000' 2>/dev/null | awk '$4 == "127.0.0.1:9000" { print; exit }' | sed -n 's/.*users:(("[^"]*",\(pid=\)\{0,1\}\([0-9][0-9]*\),\(fd=\)\{0,1\}[0-9][0-9]*).*/\2/p')
+  if [[ "$fpm_pid" =~ ^[0-9]+$ && -x "/proc/$fpm_pid/exe" ]]; then
+    fpm_exe=$(readlink "/proc/$fpm_pid/exe" 2>/dev/null) || fpm_exe=''
+    if [[ "$fpm_exe" = '/usr/local/sbin/php-fpm' || "$fpm_exe" = '/usr/local/sbin/php-fpm (deleted)' ]]; then
+      fpm_version=$("/proc/$fpm_pid/exe" -n -v 2>/dev/null) || fpm_version=''
+    fi
+  fi
+  if [[ "$fpm_version" =~ ^PHP\ ([0-9]+)\.([0-9]+)\.[0-9]+.*\(fpm-fcgi\) ]] &&
+     (( 10#${BASH_REMATCH[1]} > 7 || (10#${BASH_REMATCH[1]} == 7 && 10#${BASH_REMATCH[2]} >= 4) )); then
+    return 0
+  fi
+  echo "WordPress 7 requires PHP-FPM 7.4 or newer at 127.0.0.1:9000."
+  echo "Unable to verify a supported running FPM version: ${fpm_version%%$'\n'*}"
+  echo "Check the running PHP-FPM service; CLI PHP alone does not establish the web PHP version."
+  echo "Aborting WordPress setup before creating a site."
+  return 1
+}
+
 wpinstall() {
     if [ ! -f /usr/bin/wp ]; then
       cecho "------------------------------------------------------------" $boldgreen
@@ -330,6 +440,7 @@ fi
 }
 
 wpacctsetup() {
+wp_php_preflight || return 1
 PUREUSER=nginx
 PUREGROUP=nginx
     if [ "$SECOND_IP" ]; then
@@ -1828,6 +1939,18 @@ location ~ /.well-known {
     }
 }
 
+# WordPress OAuth discovery start
+location = ${WPSUBDIR}/.well-known/oauth-protected-resource {
+  include /usr/local/nginx/conf/503include-only.conf;
+  try_files \$uri ${WPSUBDIR}/index.php?\$args;
+}
+
+location = ${WPSUBDIR}/.well-known/oauth-authorization-server {
+  include /usr/local/nginx/conf/503include-only.conf;
+  try_files \$uri ${WPSUBDIR}/index.php?\$args;
+}
+# WordPress OAuth discovery end
+
 location ~* ${WPSUBDIR}/wp-content/cache/autoptimize/.*\.(js|css)\$ {
   include /usr/local/nginx/conf/php.conf;
   add_header AO-Fallback 1;
@@ -2536,6 +2659,11 @@ if (\$request_method = POST) {
 }
 
 if (\$query_string != "") {
+  set \$skip_cache 1;
+}
+
+# Bypass stored and new OAuth discovery responses at any WordPress path.
+if (\$request_uri ~ "^/(?:[^/?]+/)*[.]well-known/oauth-(?:protected-resource|authorization-server)(?:[?]|\$)") {
   set \$skip_cache 1;
 }
 

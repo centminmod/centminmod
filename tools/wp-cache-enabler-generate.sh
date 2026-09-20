@@ -13,6 +13,7 @@ ARCH_CHECK="$(uname -m)"
 DT=$(date +"%d%m%y-%H%M%S")
 SUFFIX="-generated-${DT}"
 vhostname=$2
+WPSUBDIR=""
 PUBLIC_WEBROOT="/home/nginx/domains/$vhostname/public"
 CENTMINLOGDIR='/root/centminlogs'
 ######################################################
@@ -317,6 +318,18 @@ location ~ /.well-known {
     more_set_headers    "Content-Type: text/plain";
     }
 }
+
+# WordPress OAuth discovery start
+location = ${WPSUBDIR}/.well-known/oauth-protected-resource {
+  include /usr/local/nginx/conf/503include-only.conf;
+  try_files \$uri ${WPSUBDIR}/index.php?\$args;
+}
+
+location = ${WPSUBDIR}/.well-known/oauth-authorization-server {
+  include /usr/local/nginx/conf/503include-only.conf;
+  try_files \$uri ${WPSUBDIR}/index.php?\$args;
+}
+# WordPress OAuth discovery end
 
 location ~* ${WPSUBDIR}/wp-content/cache/autoptimize/.*\.(js|css)\$ {
   include /usr/local/nginx/conf/php.conf;

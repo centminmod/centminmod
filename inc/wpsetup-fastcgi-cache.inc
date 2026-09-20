@@ -423,6 +423,7 @@ fi
 }
 
 fc_wpacctsetup() {
+wp_php_preflight || return 1
 PUREUSER=nginx
 PUREGROUP=nginx
     if [ "$SECOND_IP" ]; then
@@ -1134,7 +1135,8 @@ map \$request_uri \$wpfcgi_nocacheuri {
     ~^/wc-api=                       1;
     ~^/wp-admin/                     1;
     ~^/wp-comments-popup.php         1;
-    ~^/wp-json                       1;
+    ~^/(?:[^/?]+/)*wp-json(?:/|[?]|\$) 1;
+    ~^/(?:[^/?]+/)*[.]well-known/oauth-(?:protected-resource|authorization-server)(?:[?]|\$) 1;
     ~^/wp-links-opml.php             1;
     ~^/wp-locations.php              1;
     ~^/wp-login.php                  1;
@@ -1358,8 +1360,8 @@ fastcgi_cache_lock_timeout 5s;
 fastcgi_cache_use_stale    error timeout invalid_header updating http_500;
 fastcgi_ignore_headers     Cache-Control Expires Set-Cookie;
 fastcgi_cache              $fastcgicache_name;
-fastcgi_no_cache           \$no_wpfastcgicache \$wpfcgi_nocachecookie \$wpfcgi_nocacheuri \$wpfcgi_request_nocache;
-fastcgi_cache_bypass       \$no_wpfastcgicache \$wpfcgi_nocachecookie \$wpfcgi_nocacheuri \$wpfcgi_request_nocache;
+fastcgi_no_cache           \$no_wpfastcgicache \$wpfcgi_nocachecookie \$wpfcgi_nocacheuri \$wpfcgi_request_nocache \$http_authorization;
+fastcgi_cache_bypass       \$no_wpfastcgicache \$wpfcgi_nocachecookie \$wpfcgi_nocacheuri \$wpfcgi_request_nocache \$http_authorization;
 fastcgi_cache_valid        200 15m;
 fastcgi_cache_valid        301 302 15m;
 fastcgi_cache_valid        303 304 15m;
@@ -2336,6 +2338,18 @@ location ~ /.well-known {
     }
 }
 
+# WordPress OAuth discovery start
+location = ${WPSUBDIR}/.well-known/oauth-protected-resource {
+  include /usr/local/nginx/conf/503include-only.conf;
+  try_files \$uri ${WPSUBDIR}/index.php?\$args;
+}
+
+location = ${WPSUBDIR}/.well-known/oauth-authorization-server {
+  include /usr/local/nginx/conf/503include-only.conf;
+  try_files \$uri ${WPSUBDIR}/index.php?\$args;
+}
+# WordPress OAuth discovery end
+
 location ~* ${WPSUBDIR}/wp-content/cache/autoptimize/.*\.(js|css)\$ {
   include /usr/local/nginx/conf/php.conf;
   add_header AO-Fallback 1;
@@ -3044,6 +3058,11 @@ if (\$request_method = POST) {
 }
 
 if (\$query_string != "") {
+  set \$skip_cache 1;
+}
+
+# Bypass stored and new OAuth discovery responses at any WordPress path.
+if (\$request_uri ~ "^/(?:[^/?]+/)*[.]well-known/oauth-(?:protected-resource|authorization-server)(?:[?]|\$)") {
   set \$skip_cache 1;
 }
 
