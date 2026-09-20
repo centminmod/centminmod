@@ -30,7 +30,7 @@ DT=$(date +"%d%m%y-%H%M%S")
 branchname='141.00beta01'
 SCRIPT_MAJORVER='141'
 SCRIPT_MINORVER='00'
-SCRIPT_INCREMENTVER='271'
+SCRIPT_INCREMENTVER='272'
 SCRIPT_VERSIONSHORT="${branchname}"
 SCRIPT_VERSION="${SCRIPT_VERSIONSHORT}.b${SCRIPT_INCREMENTVER}"
 SCRIPT_DATE='16/08/25'
@@ -305,84 +305,14 @@ fi
 
 CENTOSVER_NUMERIC=$(echo $CENTOSVER | sed -e 's|\.||g')
 
-# switch el8 OSes to GCC 11 for compile routines
-if [[ "$CENTOS_EIGHT" -eq '8' && "$CENTOSVER_NUMERIC" -ge '89' ]]; then
-  DEVTOOLSETTEN='n'
-  DEVTOOLSETELEVEN='n'
-  if [[ "$PHP_PGO_FALLBACK_GCC" = [yY] && "$PHP_PGO" = [yY] ]] && [[ "$PHPMVER" = '7.0' || "$PHPMUVER" = '7.0' || "$PHPMVER" = '7.1' || "$PHPMUVER" = '7.1' || "$PHPMVER" = '7.2' || "$PHPMUVER" = '7.2' || "$PHPMVER" = '7.3' || "$PHPMUVER" = '7.3' || "$PHPMVER" = '7.4' || "$PHPMUVER" = '7.4' || "$PHPMVER" = '8.0' || "$PHPMUVER" = '8.0' || "$PHPMVER" = '8.1' || "$PHPMUVER" = '8.1' || "$PHPMVER" = '8.2' || "$PHPMUVER" = '8.2' || "$PHPMVER" = '8.3' || "$PHPMUVER" = '8.3' || "$PHPMVER" = '8.4' || "$PHPMUVER" = '8.4' || "$PHPMVER" = '8.5' || "$PHPMUVER" = '8.5' ]]; then
-    DEVTOOLSETTWELVE='y'
-    DEVTOOLSETTHIRTEEN='n'
-    DEVTOOLSETFOURTEEN='n'
-    DEVTOOLSETFIFTTEEN='n'
-  else
-    DEVTOOLSETTWELVE='n'
-    DEVTOOLSETTHIRTEEN='y'
-    DEVTOOLSETFOURTEEN='n'
-    DEVTOOLSETFIFTTEEN='n'
-  fi
-elif [[ "$CENTOS_EIGHT" -eq '8' && "$CENTOSVER_NUMERIC" -ge '87' ]]; then
-  DEVTOOLSETTEN='n'
-  DEVTOOLSETELEVEN='n'
-  DEVTOOLSETTWELVE='y'
-  DEVTOOLSETTHIRTEEN='n'
-  DEVTOOLSETFOURTEEN='n'
-  DEVTOOLSETFIFTTEEN='n'
-elif [[ "$CENTOS_EIGHT" -eq '8' ]]; then
-  DEVTOOLSETTEN='n'
-  DEVTOOLSETELEVEN='y'
-  DEVTOOLSETTWELVE='n'
-  DEVTOOLSETTHIRTEEN='n'
-  DEVTOOLSETFOURTEEN='n'
-  DEVTOOLSETFIFTTEEN='n'
-fi
-
-# el9 GCC
-if [[ "$CENTOS_NINE" -eq '9' && "$CENTOSVER_NUMERIC" -ge '93' ]]; then
-  DEVTOOLSETTEN='n'
-  DEVTOOLSETELEVEN='n'
-  if [[ "$PHP_PGO_FALLBACK_GCC" = [yY] && "$PHP_PGO" = [yY] ]] && [[ "$PHPMVER" = '7.4' || "$PHPMUVER" = '7.4' || "$PHPMVER" = '8.0' || "$PHPMUVER" = '8.0' || "$PHPMVER" = '8.1' || "$PHPMUVER" = '8.1' || "$PHPMVER" = '8.2' || "$PHPMUVER" = '8.2' || "$PHPMVER" = '8.3' || "$PHPMUVER" = '8.3' || "$PHPMVER" = '8.4' || "$PHPMUVER" = '8.4' || "$PHPMVER" = '8.5' || "$PHPMUVER" = '8.5' ]]; then
-    DEVTOOLSETTWELVE='y'
-    DEVTOOLSETTHIRTEEN='n'
-    DEVTOOLSETFOURTEEN='n'
-    DEVTOOLSETFIFTTEEN='n'
-  else
-    DEVTOOLSETTWELVE='n'
-    DEVTOOLSETTHIRTEEN='y'
-    DEVTOOLSETFOURTEEN='n'
-    DEVTOOLSETFIFTTEEN='n'
-  fi
-elif [[ "$CENTOS_NINE" -eq '9' && "$CENTOSVER_NUMERIC" -ge '91' ]]; then
-  DEVTOOLSETTEN='n'
-  DEVTOOLSETELEVEN='n'
-  DEVTOOLSETTWELVE='y'
-  DEVTOOLSETTHIRTEEN='n'
-  DEVTOOLSETFOURTEEN='n'
-  DEVTOOLSETFIFTTEEN='n'
-elif [[ "$CENTOS_NINE" -eq '9' ]]; then
-  # el9 already defaults to GCC 11
+# Official GCC Toolset 15 on supported EL releases. Keep the historical flag spelling.
+if [[ "$CENTOS_EIGHT" = '8' || "$CENTOS_NINE" = '9' || "$CENTOS_TEN" = '10' ]]; then
   DEVTOOLSETTEN='n'
   DEVTOOLSETELEVEN='n'
   DEVTOOLSETTWELVE='n'
   DEVTOOLSETTHIRTEEN='n'
   DEVTOOLSETFOURTEEN='n'
-  DEVTOOLSETFIFTTEEN='n'
-fi
-
-# el10 GCC
-if [[ "$CENTOS_TEN" -eq '10' && "$CENTOSVER_NUMERIC" -ge '100' ]]; then
-  DEVTOOLSETTEN='n'
-  DEVTOOLSETELEVEN='n'
-  if [[ "$PHP_PGO_FALLBACK_GCC" = [yY] && "$PHP_PGO" = [yY] ]] && [[ "$PHPMVER" = '7.4' || "$PHPMUVER" = '7.4' || "$PHPMVER" = '8.0' || "$PHPMUVER" = '8.0' || "$PHPMVER" = '8.1' || "$PHPMUVER" = '8.1' || "$PHPMVER" = '8.2' || "$PHPMUVER" = '8.2' || "$PHPMVER" = '8.3' || "$PHPMUVER" = '8.3' || "$PHPMVER" = '8.4' || "$PHPMUVER" = '8.4' || "$PHPMVER" = '8.5' || "$PHPMUVER" = '8.5' ]]; then
-    DEVTOOLSETTWELVE='n'
-    DEVTOOLSETTHIRTEEN='n'
-    DEVTOOLSETFOURTEEN='y'
-    DEVTOOLSETFIFTTEEN='n'
-  else
-    DEVTOOLSETTWELVE='n'
-    DEVTOOLSETTHIRTEEN='n'
-    DEVTOOLSETFOURTEEN='y'
-    DEVTOOLSETFIFTTEEN='n'
-  fi
+  DEVTOOLSETFIFTTEEN='y'
 fi
 
 if [[ "$FORCE_IPVFOUR" != [yY] ]]; then
@@ -3323,7 +3253,7 @@ fi
     ls -lah "/usr/${LIBDIR}/mysql/libmysqlclient.so"
   fi
 
-funct_phpconfigure
+funct_phpconfigure || exit $?
 
     cd ../
 
@@ -4291,6 +4221,10 @@ fi
         fi
         funct_nginxupgrade
         } 2>&1 | tee "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_nginx_upgrade.log"
+        NGINX_UPGRADE_STATUS=${PIPESTATUS[0]}
+        if [[ "$NGINX_UPGRADE_STATUS" -ne 0 ]]; then
+            exit "$NGINX_UPGRADE_STATUS"
+        fi
         
         if [ "$CCACHEINSTALL" == 'y' ]; then
         
@@ -4333,6 +4267,10 @@ fi
         fi
         funct_phpupgrade
         } 2>&1 | tee "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_php_upgrade.log"
+        PHP_UPGRADE_STATUS=${PIPESTATUS[0]}
+        if [[ "$PHP_UPGRADE_STATUS" -ne 0 ]]; then
+            exit "$PHP_UPGRADE_STATUS"
+        fi
         if cmm_php_fatal_pending; then
             cmm_php_fatal_clear
             echo
@@ -4777,6 +4715,10 @@ fi
         fi
         funct_nginxupgrade "$2"
         } 2>&1 | tee "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_nginx_upgrade.log"
+        NGINX_UPGRADE_STATUS=${PIPESTATUS[0]}
+        if [[ "$NGINX_UPGRADE_STATUS" -ne 0 ]]; then
+            exit "$NGINX_UPGRADE_STATUS"
+        fi
         
         if [ "$CCACHEINSTALL" == 'y' ]; then
         
@@ -4820,6 +4762,10 @@ fi
         fi
         funct_phpupgrade "$2"
         } 2>&1 | tee "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_php_upgrade.log"
+        PHP_UPGRADE_STATUS=${PIPESTATUS[0]}
+        if [[ "$PHP_UPGRADE_STATUS" -ne 0 ]]; then
+            exit "$PHP_UPGRADE_STATUS"
+        fi
         if cmm_php_fatal_pending; then
             cmm_php_fatal_clear
             echo
@@ -4871,6 +4817,10 @@ fi
         fi
         funct_phpupgrade "$2" all
         } 2>&1 | tee "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_php_upgrade_all.log"
+        PHP_UPGRADE_STATUS=${PIPESTATUS[0]}
+        if [[ "$PHP_UPGRADE_STATUS" -ne 0 ]]; then
+            exit "$PHP_UPGRADE_STATUS"
+        fi
         if cmm_php_fatal_pending; then
             cmm_php_fatal_clear
             echo

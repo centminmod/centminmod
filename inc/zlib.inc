@@ -575,8 +575,8 @@ install_cfzlib() {
         g++ --version
     fi
 
-    if [[ "$DEVTOOLSETFIFTTEEN" = [yY] && -f /opt/gcc-custom/gcc15/bin/gcc && -f /opt/gcc-custom/gcc15/bin/g++ ]] && [[ "$(gcc --version | head -n1 | awk '{print $3}' | cut -d . -f1,2 | sed "s|\.|0|")" -gt '407' ]]; then
-        source /etc/profile.d/gcc15-custom.sh
+    if [[ "$DEVTOOLSETFIFTTEEN" = [yY] && -f /opt/rh/gcc-toolset-15/root/usr/bin/gcc && -f /opt/rh/gcc-toolset-15/root/usr/bin/g++ ]] && [[ "$(gcc --version | head -n1 | awk '{print $3}' | cut -d . -f1,2 | sed "s|\.|0|")" -gt '407' ]]; then
+        enable_gcc_toolset15 || return 1
         unset CC
         unset CXX
         if [[ "$INITIALINSTALL" != [yY] ]]; then

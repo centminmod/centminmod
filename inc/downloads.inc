@@ -3634,7 +3634,7 @@ echo ""
 
 fi # for nginx openssl
 
-if [[ "$CENTOSVER" > 6 ]]; then
+if [[ "$CENTOSVER" > 6 || "$CENTOS_TEN" = '10' ]]; then
     # Install OpenSSL
     cd "$DIR_TMP"
 

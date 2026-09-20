@@ -128,8 +128,8 @@ check_version() {
                 current_branch="1.1.1"
                 echo "Consider upgrading Nginx's crypto library to OpenSSL 3.x or alternative library"
                 echo "https://community.centminmod.com/threads/25488/"
-            elif (( current_major == 3 )); then
-                current_branch="3.$current_minor"
+            elif (( current_major == 3 || current_major == 4 )); then
+                current_branch="$current_major.$current_minor"
             else
                 echo "Unknown OpenSSL major version. Please check for updates manually."
                 return

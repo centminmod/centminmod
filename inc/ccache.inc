@@ -259,8 +259,8 @@ if [ "$CCACHEINSTALL" == 'y' ]; then
           source /opt/rh/gcc-toolset-13/enable
         elif [ -f /opt/rh/gcc-toolset-14/enable ]; then
           source /opt/rh/gcc-toolset-14/enable
-        elif [ -f /etc/profile.d/gcc15-custom.sh ]; then
-          source /etc/profile.d/gcc15-custom.sh
+        elif [[ -f /opt/rh/gcc-toolset-15/enable || -f /usr/lib/gcc-toolset/15-env.source ]]; then
+          enable_gcc_toolset15 || return 1
         fi
       fi
       if [[ ! -s /usr/local/lib/libhiredis.so ]]; then

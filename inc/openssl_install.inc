@@ -691,7 +691,11 @@ crypto_gcc() {
       else
         MOLD_LINKER_OPT=""
       fi
-      if [[ "$CENTOS_TEN" -eq '10' && "$CENTOSVER_NUMERIC" -ge '100' && "$DEVTOOLSETFOURTEEN" = [yY] ]] && [[ -f /usr/bin/gcc || -f /usr/bin/g++ ]]; then
+      if [[ "$DEVTOOLSETFIFTTEEN" = [yY] ]] && [[ "$CENTOS_EIGHT" = '8' || "$CENTOS_NINE" = '9' || "$CENTOS_TEN" = '10' ]]; then
+        enable_gcc_toolset15 || return 1
+        export CC="${CC}${MOLD_LINKER_OPT}"
+        export CXX="${CXX}${MOLD_LINKER_OPT}"
+      elif [[ "$CENTOS_TEN" -eq '10' && "$CENTOSVER_NUMERIC" -ge '100' && "$DEVTOOLSETFOURTEEN" = [yY] ]] && [[ -f /usr/bin/gcc || -f /usr/bin/g++ ]]; then
         CRYPTODEVTOOLSETFOURTEEN_FALLTHROUGH=' -Wimplicit-fallthrough=0 -Wno-implicit-function-declaration -Wno-int-conversion -Wno-unused-result'
         CRYPTODEVTOOLSETFOURTEEN_EXTRAFLAGS=' -fcode-hoisting -Wno-cast-function-type -Wno-format-extra-args -Wformat=0  -Wno-error=implicit-function-declaration -Wno-builtin-declaration-mismatch -Wno-unused-result -Wno-return-local-addr -Wno-maybe-uninitialized -Wno-array-parameter -Wno-alloc-size-larger-than -Wno-address -Wno-array-bounds -Wno-deprecated-declarations -Wno-discarded-qualifiers -Wno-stringop-overread -Wno-stringop-truncation -Wno-missing-field-initializers'
         which gcc
@@ -1225,6 +1229,12 @@ crypto_gcc() {
             export CXXFLAGS="$CFLAGS"
         fi
     fi
+    if [[ "$CRYPTO_DEVTOOLSETGCC" = [yY] && "$DEVTOOLSETFIFTTEEN" = [yY] ]] && [[ "$CENTOS_EIGHT" = '8' || "$CENTOS_NINE" = '9' || "$CENTOS_TEN" = '10' ]]; then
+      if [[ " $CFLAGS " != *' -std='* ]]; then
+        export CFLAGS="$CFLAGS -std=gnu17"
+      fi
+    fi
+
 }
 
 crypto_gccunset() {
@@ -1241,12 +1251,16 @@ fi
 perl_ipc_cmd_install() {
   if [[ "$CENTOS_SEVEN" -eq '7' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' || "$CENTOS_TEN" -eq '10' ]] && [[ ! -f /usr/share/perl5/vendor_perl/IPC/Cmd.pm ]]; then
     # required for OpenSSL 3.x
-    yum -y install perl-IPC-Cmd
+    yum -y install perl-IPC-Cmd || return 1
+  fi
+  # Modern OpenSSL needs this separately packaged Perl core module.
+  if [[ "$CENTOS_EIGHT" = '8' || "$CENTOS_NINE" = '9' || "$CENTOS_TEN" = '10' ]] && ! perl -MTime::Piece -e 1 >/dev/null 2>&1; then
+    yum -y install perl-Time-Piece || return 1
   fi
 }
 
 installopenssl() {
-    perl_ipc_cmd_install
+    perl_ipc_cmd_install || exit 1
 
 if [ -f "${CONFIGSCANBASE}/custom_config.inc" ]; then
   OPENSSL_VERSION_CUSTOMCONFIG=$(awk -F "'" '/^OPENSSL_VERSION=/ {print $2}' "${CONFIGSCANBASE}/custom_config.inc")
@@ -1358,7 +1372,7 @@ fi
             CLANG_CFLAGOPT=""
             CFLAGS=""
         fi
-        crypto_gcc
+        crypto_gcc || exit 1
         ./configure --prefix=/opt/libressl
         # make${MAKETHREADS} check
         make${MAKETHREADS}
@@ -1454,7 +1468,7 @@ fi
             make clean
         fi
         # opensslpatches
-        crypto_gcc
+        crypto_gcc || exit 1
         if [[ "$(uname -m)" = 'x86_64' ]]; then
             ECNISTP_CHECK=$(gcc -dM -E - </dev/null | grep __SIZEOF_INT128__)
             if [[ "$ECNISTP_CHECK" && ! -d "${DIR_TMP}/${OPENSSL_QUIC_DIR}" ]]; then
@@ -1569,7 +1583,7 @@ fi
         echo "Skip OpenSSL quictls fork Compile OPENSSLVER_CHECK=$OPENSSLVER_CHECK matches OPENSSL_VERSION=$OPENSSL_VERSION" | tee "${CENTMINLOGDIR}/centminmod_opensslinstall_skipped_${DT}.log"
       fi
     elif [[ "$AWS_LC_SWITCH" = [nN] ]] && [[ "$LIBRESSL_SWITCH" = [nN] ]] && [[ "$BORINGSSL_SWITCH" = [nN] ]] && [[ "$OPENSSL_SYSTEM_USE" != [Yy] ]]; then
-      OPENSSLVER_CHECK=$(/opt/openssl/bin/openssl version | awk '{print $2}')
+      OPENSSLVER_CHECK=$("${OPENSSL_CUSTOMPATH}/bin/openssl" version | awk '{print $2}')
       if [[ "$OPENSSLVER_CHECK" != "$OPENSSL_VERSION" ]] || [[ "$OPENSSL_FORCECOMPILE" = [yY] ]] || [[ "$NGINX_TLS_FINGERPRINT" = [yY] ]]; then
         opensslinstallstarttime=$(TZ=UTC date +%s.%N)
 
@@ -1620,8 +1634,18 @@ fi
         else
             export STATICLIBSSL="${OPENSSL_CUSTOMPATH}"
             rm -rf "${DIR_TMP}/openssl-${OPENSSL_VERSION}"
-            tar xzf ${OPENSSL_LINKFILE}
-            cd "${DIR_TMP}/openssl-${OPENSSL_VERSION}"
+            tar xzf "${OPENSSL_LINKFILE}" || exit 1
+            cd "${DIR_TMP}/openssl-${OPENSSL_VERSION}" || exit 1
+        fi
+        # A major-version replacement must not remove PHP/Nginx's loaded ABI.
+        if [[ "$OPENSSL_VERSION" = 4.0.* ]]; then
+          local openssl_consumer
+          for openssl_consumer in /usr/local/bin/php /usr/local/bin/php-cgi /usr/local/sbin/php-fpm /usr/local/sbin/nginx; do
+            if [[ -x "$openssl_consumer" ]] && ldd "$openssl_consumer" 2>/dev/null | grep -E 'lib(ssl|crypto)\.so\.(1[^ ]*|3) ' | grep -Fq "${STATICLIBSSL}/"; then
+              echo "ERROR: $openssl_consumer still uses older shared OpenSSL libraries in $STATICLIBSSL. Set OPENSSL_CUSTOMPATH to a separate prefix for OpenSSL 4.0." >&2
+              exit 1
+            fi
+          done
         fi
         rm -rf "$STATICLIBSSL"
         mkdir -p "$STATICLIBSSL"
@@ -1629,7 +1653,7 @@ fi
             make clean
         fi
         opensslpatches
-        crypto_gcc
+        crypto_gcc || exit 1
         # Conditional shared library support for PHP 8.3.26+ compatibility
         # When PHP_CUSTOMSSL_FORCE='y', build shared libraries to support PHP dynamic linking
         # Default: no-shared (static only) - maintains nginx static linking compatibility
@@ -1681,7 +1705,7 @@ fi
             elif [[ "$DETECTOPENSSL_THREETWO" = '3.2' ]]; then
                 echo "./Configure --prefix=$STATICLIBSSL --openssldir=$STATICLIBSSL ${OPENSSL_SHARED_OPT} ${ECNISTP_OPT}${OPENSSL_CFZLIB_OPT} -Wl,-rpath=${OPENSSL_CFZLIB_RPATH}${STATICLIBSSL}/lib"
                 ./Configure --prefix=$STATICLIBSSL --openssldir=$STATICLIBSSL ${OPENSSL_SHARED_OPT} ${ECNISTP_OPT}${OPENSSL_CFZLIB_OPT} -Wl,-rpath=${OPENSSL_CFZLIB_RPATH}${STATICLIBSSL}/lib
-            elif [[ "$DETECTOPENSSL_THREETHREE" = '3.3' ]]; then
+            elif [[ "$OPENSSL_VERSION" = 3.* || "$OPENSSL_VERSION" = 4.0.* ]]; then
                 echo "./Configure --prefix=$STATICLIBSSL --openssldir=$STATICLIBSSL ${OPENSSL_SHARED_OPT} ${ECNISTP_OPT}${OPENSSL_CFZLIB_OPT} -Wl,-rpath=${OPENSSL_CFZLIB_RPATH}${STATICLIBSSL}/lib"
                 ./Configure --prefix=$STATICLIBSSL --openssldir=$STATICLIBSSL ${OPENSSL_SHARED_OPT} ${ECNISTP_OPT}${OPENSSL_CFZLIB_OPT} -Wl,-rpath=${OPENSSL_CFZLIB_RPATH}${STATICLIBSSL}/lib
             else
@@ -1705,22 +1729,29 @@ fi
                 fi
                 echo "./config -Wl,--enable-new-dtags,-rpath=${STATICLIBSSL}/lib --prefix=$STATICLIBSSL --openssldir=$STATICLIBSSL ${OPENSSL_SHARED_OPT}${TLSONETHREEOPT}"
                 ./config -Wl,--enable-new-dtags,-rpath=${STATICLIBSSL}/lib --prefix=$STATICLIBSSL --openssldir=$STATICLIBSSL ${OPENSSL_SHARED_OPT}${TLSONETHREEOPT}
+            elif [[ "$OPENSSL_VERSION" = 3.* || "$OPENSSL_VERSION" = 4.0.* ]]; then
+                ./Configure --prefix="$STATICLIBSSL" --openssldir="$STATICLIBSSL" ${OPENSSL_SHARED_OPT}
             else
                 echo "./config --prefix=$STATICLIBSSL --openssldir=$STATICLIBSSL ${OPENSSL_SHARED_OPT} enable-tlsext"
                 ./config --prefix=$STATICLIBSSL --openssldir=$STATICLIBSSL ${OPENSSL_SHARED_OPT} enable-tlsext
             fi
         fi
+        OPENSSL_CONFIGURE_STATUS=$?
+        if [[ "$OPENSSL_CONFIGURE_STATUS" -ne 0 ]]; then
+            echo "ERROR: OpenSSL configure failed." >&2
+            exit "$OPENSSL_CONFIGURE_STATUS"
+        fi
         if [[ "$DETECTOPENSSL_ONEZERO" = '1.1' ]] || [[ "$DETECTOPENSSL_ONEONE" = '1.1.1' ]]; then
-            make${MAKETHREADS}
+            make${MAKETHREADS} || exit 1
         else
-            make depend
-            make
+            make depend || exit 1
+            make${MAKETHREADS} || exit 1
         fi
         # make install
-        make install_sw
+        make install_sw || exit 1
         if [[ "$?" = '0' ]]; then
-          if [[ "$DETECTOPENSSL_THREEZERO" = '3.0' ]] || [[ "$DETECTOPENSSL_THREEONE" = '3.1' ]] || [[ "$DETECTOPENSSL_THREETWO" = '3.2' ]] || [[ "$DETECTOPENSSL_THREETHREE" = '3.3' ]]; then
-            # OpenSSL 3.x installed to lib64
+          if [[ "$OPENSSL_VERSION" = 3.* || "$OPENSSL_VERSION" = 4.0.* ]]; then
+            # OpenSSL 3.x/4.x installed to lib64
             ln -s "${STATICLIBSSL}/lib64" "${STATICLIBSSL}/lib"
           else
             # Older OpenSSL versions might still install to lib
@@ -1729,15 +1760,15 @@ fi
         else
           rm -rf "${STATICLIBSSL}/lib64"
         fi
-        mkdir -p /opt/openssl/certs/
-        \cp -Rpf /etc/ssl/certs/* /opt/openssl/certs/
-        \cp -Pf /etc/pki/tls/cert.pem /opt/openssl/
-        if [[ -f "${DIR_TMP}/openssl-${OPENSSL_VERSION}/apps/openssl.cnf" && ! -f /opt/openssl/openssl.cnf ]]; then
-            \cp -af "${DIR_TMP}/openssl-${OPENSSL_VERSION}/apps/openssl.cnf" /opt/openssl/openssl.cnf
+        mkdir -p "${STATICLIBSSL}/certs/"
+        \cp -Rpf /etc/ssl/certs/* "${STATICLIBSSL}/certs/"
+        \cp -Pf /etc/pki/tls/cert.pem "${STATICLIBSSL}/"
+        if [[ -f "${DIR_TMP}/openssl-${OPENSSL_VERSION}/apps/openssl.cnf" && ! -f "${STATICLIBSSL}/openssl.cnf" ]]; then
+            \cp -af "${DIR_TMP}/openssl-${OPENSSL_VERSION}/apps/openssl.cnf" "${STATICLIBSSL}/openssl.cnf"
         fi
         if [[ "$NGX_LDMOLD" = [yY] ]]; then
             echo
-            readelf -p .comment /opt/openssl/bin/openssl
+            readelf -p .comment "${STATICLIBSSL}/bin/openssl"
         fi
         crypto_gccunset
         opensslinstallendtime=$(TZ=UTC date +%s.%N)
@@ -1755,7 +1786,7 @@ fi
     elif [[ "$AWS_LC_SWITCH" = [yY] && "$BORINGSSL_SWITCH" = [nN] ]]; then
         aws_lc_installstarttime=$(TZ=UTC date +%s.%N)
         OPENSSL_SYSTEM_USE='n'
-        crypto_gcc
+        crypto_gcc || exit 1
         dnf install -y cmake3 ninja-build clang perl golang
         if command -v figlet >/dev/null 2>&1; then
             figlet -ckf standard "Compiling AWS-LC"
@@ -1806,7 +1837,7 @@ fi
     elif [[ "$BORINGSSL_SWITCH" = [yY] && "$AWS_LC_SWITCH" = [nN] ]]; then
         boringsslinstallstarttime=$(TZ=UTC date +%s.%N)
         OPENSSL_SYSTEM_USE='n'
-        crypto_gcc
+        crypto_gcc || exit 1
         if command -v figlet >/dev/null 2>&1; then
             figlet -ckf standard "Compiling BoringSSL"
         fi

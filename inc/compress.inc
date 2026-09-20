@@ -159,19 +159,21 @@ compgcc_fourteen() {
 
 compgcc_fifteen() {
   if [[ -f /opt/rh/devtoolset-15/root/usr/bin/gcc && -f /opt/rh/devtoolset-15/root/usr/bin/g++ ]]; then
-    label='gcc14 built'
+    label='gcc15 built'
     source /opt/rh/devtoolset-15/enable
     export CFLAGS="-Wimplicit-fallthrough=0 -Wno-implicit-function-declaration -Wno-int-conversion -Wno-unused-result -Wno-unused-result -Wno-missing-profile -Wno-stringop-overflow -Wno-alloc-size-larger-than"
     export CXXFLAGS="${CFLAGS}"
+    export CFLAGS="$CFLAGS -std=gnu17"
   else
     label=""
   fi
   COMP_CPU_MARCH=$(gcc -c -Q -march=native --help=target | awk '/  -march/ {print $2}' | head -n1 )
-  if [[ -f /opt/gcc-custom/gcc15/bin/gcc && -f /opt/gcc-custom/gcc15/bin/g++ ]]; then
-    label='gcc14 built'
-    source /etc/profile.d/gcc15-custom.sh
+  if [[ -f /opt/rh/gcc-toolset-15/root/usr/bin/gcc && -f /opt/rh/gcc-toolset-15/root/usr/bin/g++ ]]; then
+    label='gcc15 built'
+    enable_gcc_toolset15 || return 1
     export CFLAGS="-Wimplicit-fallthrough=0 -Wno-implicit-function-declaration -Wno-int-conversion -Wno-error=unused-result -Wno-unused-result"
     export CXXFLAGS="${CFLAGS}"
+    export CFLAGS="$CFLAGS -std=gnu17"
   else
     label=""
   fi

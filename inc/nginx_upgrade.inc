@@ -963,9 +963,12 @@ fi
     fi
 
 if [[ "$TIME_NGINX" = [yY] ]]; then
-    funct_nginxconfigure 2>&1 | awk '{ print strftime("%Y-%m-%d %H:%M:%S"), $0; fflush(); }'
+    # Keep compiler PATH/LD_LIBRARY_PATH and configure results in this shell.
+    funct_nginxconfigure > >(awk '{ print strftime("%Y-%m-%d %H:%M:%S"), $0; fflush(); }') 2>&1
+    NGX_CONFIGURE_ERR=$?
 else
     funct_nginxconfigure
+    NGX_CONFIGURE_ERR=$?
 fi
 
 ################
@@ -973,7 +976,7 @@ fi
 
   # NGX_CONFIGURE_ERR=$?
   if [ "$NGX_CONFIGURE_ERR" != 0 ]; then
-      echo -e "\n`date`\nError: $ERR, Nginx configure failed\n"
+      echo -e "\n`date`\nError: $NGX_CONFIGURE_ERR, Nginx configure failed\n"
         echo "report errors on the forums at community.centminmod.com/forums/8/"
         echo "with info asked at community.centminmod.com/threads/17778/"
         echo "ensure you're using latest code by running command: cmupdate"
@@ -1039,7 +1042,7 @@ fi
             echo "dropbox_generate $DT"
             dropbox_generate "$DT" configure-error
         fi
-        exit
+        exit "$NGX_CONFIGURE_ERR"
   else
       echo -e "\n`date`\nSuccess: Nginx configure ok\n"
   fi
@@ -1063,7 +1066,7 @@ fi
     if [[ "$LIBRESSL_SWITCH" = [yY] ]]; then
         time make${MAKETHREADS}
     else
-        if [[ "$DETECTOPENSSL_ONEZERO" = '1.1' ]] || [[ "$DETECTOPENSSL_ONEONE" = '1.1.1' ]]; then
+        if [[ "$DETECTOPENSSL_ONEZERO" = '1.1' ]] || [[ "$DETECTOPENSSL_ONEONE" = '1.1.1' || "$OPENSSL_VERSION" = 3.* || "$OPENSSL_VERSION" = 4.0.* ]]; then
             time make${MAKETHREADS}
         else
             time make
@@ -1170,7 +1173,7 @@ fi
             echo "dropbox_generate $DT"
             dropbox_generate "$DT" make-error
         fi
-      exit
+      exit 1
   else
      echo -e "\n`date`\nSuccess: Nginx make ok\n"
   fi
@@ -1278,7 +1281,7 @@ fi
         echo
         echo "log files saved at ${CENTMINLOGDIR}"
         ls -lAhrt "${CENTMINLOGDIR}" | grep $DT
-      exit
+      exit 1
   else
         if [ -f objs/autoconf.err ]; then
             cat objs/autoconf.err > "${CENTMINLOGDIR}/nginx_autoconf.err.${DT}.log"

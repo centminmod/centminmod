@@ -506,7 +506,7 @@ fi
 if [[ "$INITIALINSTALL" = [yY] ]] && [[ "$NGINX_PCRE_TWO" = [yY] || "$NGX_LDMOLD" = [yY] ]]; then
     GENERAL_DEVTOOLSETGCC='y'
     ngx_devtoolset_starttime=$(TZ=UTC date +%s.%N)
-    enable_devtoolset
+    enable_devtoolset || { NGX_CONFIGURE_ERR=1; return 1; }
     ngx_devtoolset_endtime=$(TZ=UTC date +%s.%N)
     funct_nginxconfigure_enable_devtoolset_install_time=$(echo "scale=2;$ngx_devtoolset_endtime - $ngx_devtoolset_starttime"|bc )
     echo
@@ -596,7 +596,16 @@ if [[ "$ORESTY_LUANGINX" = [yY] ]]; then
   # https://github.com/openresty/lua-nginx-module/issues/1984
   NGINX_PCRE_TWO='n'
 fi
-if [[ "$NGINX_KTLS" = [yY] && "$KERNEL_NUMERICVER" -ge '5002000000' ]] && [[ "$DETECTOPENSSL_THREEZERO" = '3.0' || "$DETECTOPENSSL_THREEONE" = '3.1' || "$DETECTOPENSSL_THREETWO" = '3.2' || "$DETECTOPENSSL_THREETHREE" = '3.3' || "$DETECTOPENSSL_THREEFOUR" = '3.4' ]]; then
+# Classify the library selected for this build, keeping QuicTLS separate.
+local nginx_openssl_version="$OPENSSL_VERSION"
+if [[ "$LIBRESSL_SWITCH" = [yY] || "$BORINGSSL_SWITCH" = [yY] || "$AWS_LC_SWITCH" = [yY] ]]; then
+  nginx_openssl_version=""
+elif [[ "$ngver" = quic || "$NGINX_QUIC_SUPPORT" = [yY] ]]; then
+  nginx_openssl_version="$OPENSSL_QUIC_VERSION"
+elif [[ "$OPENSSL_SYSTEM_USE" = [yY] ]]; then
+  nginx_openssl_version=""
+fi
+if [[ "$NGINX_KTLS" = [yY] && "$KERNEL_NUMERICVER" -ge '5002000000' ]] && [[ "$nginx_openssl_version" = 3.* || "$nginx_openssl_version" = 4.0.* ]]; then
   KTLS_BUILD_TAG='-ktls'
   NGINX_KTLS_OPT=' enable-ktls'
   NGINX_KTLS_OPT_ALT='enable-ktls'
@@ -756,6 +765,13 @@ if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9'
       DETECT_NGXVER=$(awk '/define nginx_version  / {print $3}' "/svr-setup/nginx-${NGINX_VERSION}/src/core/nginx.h")
     fi
     echo "DETECT_NGXVER=$DETECT_NGXVER"
+  fi
+
+  # Upstream added OpenSSL 4.0 API compatibility in Nginx 1.29.8.
+  if [[ "$nginx_openssl_version" = 4.0.* && "$OPENSSL_SYSTEM_USE" != [yY] && "$LIBRESSL_SWITCH" != [yY] && "$BORINGSSL_SWITCH" != [yY] && "$AWS_LC_SWITCH" != [yY] && "$DETECT_NGXVER" -lt 1029008 ]]; then
+    echo "ERROR: OpenSSL 4.0 requires Nginx 1.29.8 or newer." >&2
+    NGX_CONFIGURE_ERR=1
+    return 1
   fi
 
   if [[ "$DETECT_NGXVER" -ge '1021005' && "$NGINX_PCRE_TWO" = [yY] && "$NGINX_PCRE_DYNAMIC" = [yY] && -s "$(readlink -f /usr/local/nginx-dep/lib/libpcre2-8.so)" ]]; then
@@ -1390,7 +1406,7 @@ if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9'
           OPENSSLOPT=" --with-openssl=../$OPENSSLDIR"
           OPENSSLOPT_B=" --with-openssl-opt=enable-tls1_3"
         fi
-      elif [[ "$NGINX_KTLS" = [yY] && "$KERNEL_NUMERICVER" -ge '5002000000' ]] && [[ "$DETECTOPENSSL_THREEZERO" = '3.0' || "$DETECTOPENSSL_THREEONE" = '3.1' || "$DETECTOPENSSL_THREETWO" = '3.2' || "$DETECTOPENSSL_THREETHREE" = '3.3' || "$DETECTOPENSSL_THREEFOUR" = '3.4' ]]; then
+      elif [[ "$NGINX_KTLS" = [yY] && "$KERNEL_NUMERICVER" -ge '5002000000' ]] && [[ "$nginx_openssl_version" = 3.* || "$nginx_openssl_version" = 4.0.* ]]; then
         OPENSSLOPT=" --with-openssl=../$OPENSSLDIR --with-openssl-opt='${NGINX_KTLS_OPT_ALT}'"
       else
         echo 1c
@@ -1445,72 +1461,13 @@ if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9'
           OPENSSLOPT=" --with-openssl=../$OPENSSLDIR"
           OPENSSLOPT_B=" --with-openssl-opt=enable-tls1_3"
         fi
-      elif [[ "$DETECTOPENSSL_THREEZERO" = '3.0' && "$ORESTY_LUANGINX" != [yY] ]] || [[ "$DETECTOPENSSL_THREEZERO" = '3.0' && "$ORESTY_LUANGINX" = [yY] ]]; then
-        echo 2c
-        if [[ "$(uname -m)" = 'x86_64' ]]; then
-          if [[ "$ECNISTP_CHECK" && ! -d "${DIR_TMP}/${OPENSSL_QUIC_DIR}" ]]; then
-            OPENSSLOPT=" --with-openssl=../$OPENSSLDIR --with-openssl-opt='enable-ec_nistp_64_gcc_128'"
-          else
-            OPENSSLOPT=" --with-openssl=../$OPENSSLDIR"
-          fi
-          TLSTHREEOPT='y'
-        else
-          OPENSSLOPT=" --with-openssl=../$OPENSSLDIR"
-          OPENSSLOPT_B=" --with-openssl-opt=enable-tls1_3"
+      elif [[ "$OPENSSL_VERSION" = 3.* || "$OPENSSL_VERSION" = 4.0.* ]]; then
+        OPENSSLOPT=" --with-openssl=../$OPENSSLDIR"
+        if [[ "$(uname -m)" = x86_64 && "$ECNISTP_CHECK" && ! -d "${DIR_TMP}/${OPENSSL_QUIC_DIR}" ]]; then
+          OPENSSLOPT="$OPENSSLOPT --with-openssl-opt='enable-ec_nistp_64_gcc_128'"
         fi
-      elif [[ "$DETECTOPENSSL_THREEONE" = '3.1' && "$ORESTY_LUANGINX" != [yY] ]] || [[ "$DETECTOPENSSL_THREEONE" = '3.1' && "$ORESTY_LUANGINX" = [yY] ]]; then
-        echo 2d
-        if [[ "$(uname -m)" = 'x86_64' ]]; then
-          if [[ "$ECNISTP_CHECK" && ! -d "${DIR_TMP}/${OPENSSL_QUIC_DIR}" ]]; then
-            OPENSSLOPT=" --with-openssl=../$OPENSSLDIR --with-openssl-opt='enable-ec_nistp_64_gcc_128'"
-          else
-            OPENSSLOPT=" --with-openssl=../$OPENSSLDIR"
-          fi
-          TLSTHREEOPT='y'
-        else
-          OPENSSLOPT=" --with-openssl=../$OPENSSLDIR"
-          OPENSSLOPT_B=" --with-openssl-opt=enable-tls1_3"
-        fi
-      elif [[ "$DETECTOPENSSL_THREETWO" = '3.2' && "$ORESTY_LUANGINX" != [yY] ]] || [[ "$DETECTOPENSSL_THREETWO" = '3.2' && "$ORESTY_LUANGINX" = [yY] ]]; then
-        echo 2e
-        if [[ "$(uname -m)" = 'x86_64' ]]; then
-          if [[ "$ECNISTP_CHECK" && ! -d "${DIR_TMP}/${OPENSSL_QUIC_DIR}" ]]; then
-            OPENSSLOPT=" --with-openssl=../$OPENSSLDIR --with-openssl-opt='enable-ec_nistp_64_gcc_128'"
-          else
-            OPENSSLOPT=" --with-openssl=../$OPENSSLDIR"
-          fi
-          TLSTHREEOPT='y'
-        else
-          OPENSSLOPT=" --with-openssl=../$OPENSSLDIR"
-          OPENSSLOPT_B=" --with-openssl-opt=enable-tls1_3"
-        fi
-      elif [[ "$DETECTOPENSSL_THREETHREE" = '3.3' && "$ORESTY_LUANGINX" != [yY] ]] || [[ "$DETECTOPENSSL_THREETHREE" = '3.3' && "$ORESTY_LUANGINX" = [yY] ]]; then
-        echo 2f
-        if [[ "$(uname -m)" = 'x86_64' ]]; then
-          if [[ "$ECNISTP_CHECK" && ! -d "${DIR_TMP}/${OPENSSL_QUIC_DIR}" ]]; then
-            OPENSSLOPT=" --with-openssl=../$OPENSSLDIR --with-openssl-opt='enable-ec_nistp_64_gcc_128'"
-          else
-            OPENSSLOPT=" --with-openssl=../$OPENSSLDIR"
-          fi
-          TLSTHREEOPT='y'
-        else
-          OPENSSLOPT=" --with-openssl=../$OPENSSLDIR"
-          OPENSSLOPT_B=" --with-openssl-opt=enable-tls1_3"
-        fi
-      elif [[ "$DETECTOPENSSL_THREEFOUR" = '3.4' && "$ORESTY_LUANGINX" != [yY] ]] || [[ "$DETECTOPENSSL_THREEFOUR" = '3.4' && "$ORESTY_LUANGINX" = [yY] ]]; then
-        echo 2g
-        if [[ "$(uname -m)" = 'x86_64' ]]; then
-          if [[ "$ECNISTP_CHECK" && ! -d "${DIR_TMP}/${OPENSSL_QUIC_DIR}" ]]; then
-            OPENSSLOPT=" --with-openssl=../$OPENSSLDIR --with-openssl-opt='enable-ec_nistp_64_gcc_128'"
-          else
-            OPENSSLOPT=" --with-openssl=../$OPENSSLDIR"
-          fi
-          TLSTHREEOPT='y'
-        else
-          OPENSSLOPT=" --with-openssl=../$OPENSSLDIR"
-          OPENSSLOPT_B=" --with-openssl-opt=enable-tls1_3"
-        fi
-      elif [[ "$NGINX_KTLS" = [yY] && "$KERNEL_NUMERICVER" -ge '5002000000' ]] && [[ "$DETECTOPENSSL_THREEZERO" = '3.0' || "$DETECTOPENSSL_THREEONE" = '3.1' || "$DETECTOPENSSL_THREETWO" = '3.2' || "$DETECTOPENSSL_THREETHREE" = '3.3' || "$DETECTOPENSSL_THREEFOUR" = '3.4' ]]; then
+        TLSTHREEOPT='y'
+      elif [[ "$NGINX_KTLS" = [yY] && "$KERNEL_NUMERICVER" -ge '5002000000' ]] && [[ "$nginx_openssl_version" = 3.* || "$nginx_openssl_version" = 4.0.* ]]; then
         echo 2h
         OPENSSLOPT=" --with-openssl=../$OPENSSLDIR --with-openssl-opt='${NGINX_KTLS_OPT_ALT}'"
       else
@@ -4081,11 +4038,20 @@ if [[ "$CENTOS_SIX" = '6' && "$CLANG" = [nN] && "$(uname -m)" = 'x86_64' ]]; the
   fi
 fi
 
+if [[ "$DEVTOOLSETFIFTTEEN" = [yY] ]] && [[ "$CENTOS_EIGHT" = '8' || "$CENTOS_NINE" = '9' || "$CENTOS_TEN" = '10' ]] && [[ "$CLANG" != [yY] && "$NGINX_DEVTOOLSETGCC" = [yY] ]]; then
+  enable_gcc_toolset15 || { NGX_CONFIGURE_ERR=1; return 1; }
+  # Use this toolset's default linker, not a path left over from GCC 13/14.
+  LD_GOLD_GCCPATH=""
+  NGX_GSPLITDWARF='n'
+  if [[ " $NGXEXTRA_CCOPT " != *' -std='* ]]; then
+    NGXEXTRA_CCOPT="${NGXEXTRA_CCOPT} -std=gnu17"
+  fi
+else
 if [[ "$CENTOS_EIGHT" = '8' && "$CLANG" = [nN] && "$NGINX_DEVTOOLSETGCC" = [yY] ]]; then
   CENTOSVER_NUMERIC=$(echo $CENTOSVER | sed -e 's|\.||g')
-  if [[ ! -f /opt/rh/gcc-toolset-9/root/usr/bin/gcc || ! -f /opt/rh/gcc-toolset-9/root/usr/bin/g++ ]] || [[ ! -f /opt/rh/gcc-toolset-10/root/usr/bin/gcc || ! -f /opt/rh/gcc-toolset-10/root/usr/bin/g++ ]] || [[ ! -f /opt/rh/gcc-toolset-11/root/usr/bin/gcc || ! -f /opt/rh/gcc-toolset-11/root/usr/bin/g++ ]] || [[ ! -f /opt/rh/gcc-toolset-12/root/usr/bin/gcc || ! -f /opt/rh/gcc-toolset-12/root/usr/bin/g++ ]] || [[ ! -f /opt/rh/gcc-toolset-13/root/usr/bin/gcc || ! -f /opt/rh/gcc-toolset-13/root/usr/bin/g++ ]] || [[ ! -f /opt/gcc-custom/gcc15/bin/gcc || ! -f /opt/gcc-custom/gcc15/bin/g++ ]]; then
-    if [[ "$CENTOSVER_NUMERIC" -ge '89' && "$DEVTOOLSETFIFTTEEN" = [yY] && ! -f /opt/gcc-custom/gcc15/bin/gcc ]] || [[ "$CENTOSVER_NUMERIC" -ge '89' && "$DEVTOOLSETFIFTTEEN" = [yY] && ! -f /opt/gcc-custom/gcc15/bin/g++ ]]; then
-        yum -y install ${DIR_TMP}/gcc-custom-15.0.0-1.el8.x86_64.rpm
+  if [[ ! -f /opt/rh/gcc-toolset-9/root/usr/bin/gcc || ! -f /opt/rh/gcc-toolset-9/root/usr/bin/g++ ]] || [[ ! -f /opt/rh/gcc-toolset-10/root/usr/bin/gcc || ! -f /opt/rh/gcc-toolset-10/root/usr/bin/g++ ]] || [[ ! -f /opt/rh/gcc-toolset-11/root/usr/bin/gcc || ! -f /opt/rh/gcc-toolset-11/root/usr/bin/g++ ]] || [[ ! -f /opt/rh/gcc-toolset-12/root/usr/bin/gcc || ! -f /opt/rh/gcc-toolset-12/root/usr/bin/g++ ]] || [[ ! -f /opt/rh/gcc-toolset-13/root/usr/bin/gcc || ! -f /opt/rh/gcc-toolset-13/root/usr/bin/g++ ]] || [[ ! -f /opt/rh/gcc-toolset-15/root/usr/bin/gcc || ! -f /opt/rh/gcc-toolset-15/root/usr/bin/g++ ]]; then
+    if [[ "$CENTOSVER_NUMERIC" -ge '89' && "$DEVTOOLSETFIFTTEEN" = [yY] && ! -f /opt/rh/gcc-toolset-15/root/usr/bin/gcc ]] || [[ "$CENTOSVER_NUMERIC" -ge '89' && "$DEVTOOLSETFIFTTEEN" = [yY] && ! -f /opt/rh/gcc-toolset-15/root/usr/bin/g++ ]]; then
+        yum -y install gcc-toolset-15-gcc gcc-toolset-15-gcc-c++ gcc-toolset-15-binutils
     fi
     if [[ "$CENTOSVER_NUMERIC" -ge '89' && "$DEVTOOLSETFOURTEEN" = [yY] && ! -f /opt/rh/gcc-toolset-14/root/usr/bin/gcc ]] || [[ "$CENTOSVER_NUMERIC" -ge '89' && "$DEVTOOLSETFOURTEEN" = [yY] && ! -f /opt/rh/gcc-toolset-14/root/usr/bin/g++ ]]; then
         yum -y install gcc-toolset-14-annobin-annocheck gcc-toolset-14-annobin-docs.noarch gcc-toolset-14-annobin-plugin-gcc gcc-toolset-14-binutils gcc-toolset-14-binutils-devel gcc-toolset-14-dwz gcc-toolset-14-gcc gcc-toolset-14-gcc-c++ gcc-toolset-14-gcc-gfortran gcc-toolset-14-libasan-devel gcc-toolset-14-libatomic-devel gcc-toolset-14-libgccjit gcc-toolset-14-libgccjit-devel gcc-toolset-14-libitm-devel gcc-toolset-14-liblsan-devel gcc-toolset-14-libquadmath-devel gcc-toolset-14-libstdc++-devel gcc-toolset-14-libtsan-devel gcc-toolset-14-libubsan-devel gcc-toolset-14-runtime --skip-broken
@@ -4108,7 +4074,7 @@ if [[ "$CENTOS_EIGHT" = '8' && "$CLANG" = [nN] && "$NGINX_DEVTOOLSETGCC" = [yY] 
     if [[ "$DEVTOOLSETNINE" = [yY] && ! -f /opt/rh/gcc-toolset-9/root/usr/bin/gcc ]] || [[ "$DEVTOOLSETNINE" = [yY] && ! -f /opt/rh/gcc-toolset-9/root/usr/bin/g++ ]]; then
         yum -y install gcc-toolset-9-binutils gcc-toolset-9-gcc gcc-toolset-9-gcc-c++
     fi
-    if [[ "$CENTOSVER_NUMERIC" -ge '89' && "$DEVTOOLSETFIFTTEEN" = [yY] && -f /opt/gcc-custom/gcc15/bin/gcc ]]; then
+    if [[ "$CENTOSVER_NUMERIC" -ge '89' && "$DEVTOOLSETFIFTTEEN" = [yY] && -f /opt/rh/gcc-toolset-15/root/usr/bin/gcc ]]; then
       DEVTOOLSETFIFTTEEN_FALLTHROUGH=' -Wimplicit-fallthrough=0 -Wno-implicit-function-declaration -Wno-cast-align -Wno-builtin-declaration-mismatch -Wno-deprecated-declarations -Wno-int-conversion -Wno-unused-result -Wno-vla-parameter -Wno-maybe-uninitialized -Wno-return-local-addr -Wno-array-parameter -Wno-alloc-size-larger-than -Wno-address -Wno-array-bounds -Wno-discarded-qualifiers -Wno-stringop-overread -Wno-stringop-truncation -Wno-missing-field-initializers -Wno-unused-variable -Wno-format -Wno-error=unused-result -Wno-missing-profile -Wno-stringop-overflow -Wno-free-nonheap-object -Wno-discarded-qualifiers -Wno-bad-function-cast -Wno-dangling-pointer -Wno-array-parameter'
       DEVTOOLSETFIFTTEEN_EXTRAFLAGS=' -fcode-hoisting -Wno-cast-function-type -Wno-format-extra-args'
       DEVTOOLSETFOURTEEN_FALLTHROUGH=""
@@ -4128,7 +4094,7 @@ if [[ "$CENTOS_EIGHT" = '8' && "$CLANG" = [nN] && "$NGINX_DEVTOOLSETGCC" = [yY] 
       DEVTOOLSETSEVEN_FALLTHROUGH=""
       DEVTOOLSETSEVEN_EXTRAFLAGS=""
       if [[ "$INITIALINSTALL" != [yY] ]]; then
-        source /etc/profile.d/gcc15-custom.sh
+        enable_gcc_toolset15 || return 1
         which gcc
         which g++
         unset CC
@@ -4137,7 +4103,7 @@ if [[ "$CENTOS_EIGHT" = '8' && "$CLANG" = [nN] && "$NGINX_DEVTOOLSETGCC" = [yY] 
         export CXX="ccache g++"
         NGX_GSPLITDWARF='n'
       else
-        source /etc/profile.d/gcc15-custom.sh
+        enable_gcc_toolset15 || return 1
         which gcc
         which g++
         unset CC
@@ -4443,7 +4409,7 @@ if [[ "$CENTOS_EIGHT" = '8' && "$CLANG" = [nN] && "$NGINX_DEVTOOLSETGCC" = [yY] 
     if [[ "$DEVTOOLSETNINE" = [yY] && ! -f /opt/rh/gcc-toolset-9/root/usr/bin/gcc ]] || [[ "$DEVTOOLSETNINE" = [yY] && ! -f /opt/rh/gcc-toolset-9/root/usr/bin/g++ ]]; then
         yum -y install gcc-toolset-9-binutils gcc-toolset-9-gcc gcc-toolset-9-gcc-c++
     fi
-    if [[ "$DEVTOOLSETFIFTTEEN" = [yY] && -f /opt/gcc-custom/gcc15/bin/gcc ]]; then
+    if [[ "$DEVTOOLSETFIFTTEEN" = [yY] && -f /opt/rh/gcc-toolset-15/root/usr/bin/gcc ]]; then
       DEVTOOLSETFIFTTEEN_FALLTHROUGH=' -Wimplicit-fallthrough=0 -Wno-implicit-function-declaration -Wno-cast-align -Wno-builtin-declaration-mismatch -Wno-deprecated-declarations -Wno-int-conversion -Wno-unused-result -Wno-vla-parameter -Wno-maybe-uninitialized -Wno-return-local-addr -Wno-array-parameter -Wno-alloc-size-larger-than -Wno-address -Wno-array-bounds -Wno-discarded-qualifiers -Wno-stringop-overread -Wno-stringop-truncation -Wno-missing-field-initializers -Wno-unused-variable -Wno-format -Wno-error=unused-result -Wno-missing-profile -Wno-stringop-overflow -Wno-free-nonheap-object -Wno-discarded-qualifiers -Wno-bad-function-cast -Wno-dangling-pointer -Wno-array-parameter'
       DEVTOOLSETFIFTTEEN_EXTRAFLAGS=' -fcode-hoisting -Wno-cast-function-type -Wno-format-extra-args'
       DEVTOOLSETFOURTEEN_FALLTHROUGH=""
@@ -4463,7 +4429,7 @@ if [[ "$CENTOS_EIGHT" = '8' && "$CLANG" = [nN] && "$NGINX_DEVTOOLSETGCC" = [yY] 
       DEVTOOLSETSEVEN_FALLTHROUGH=""
       DEVTOOLSETSEVEN_EXTRAFLAGS=""
       if [[ "$INITIALINSTALL" != [yY] ]]; then
-        source /etc/profile.d/gcc15-custom.sh
+        enable_gcc_toolset15 || return 1
         which gcc
         which g++
         unset CC
@@ -4472,7 +4438,7 @@ if [[ "$CENTOS_EIGHT" = '8' && "$CLANG" = [nN] && "$NGINX_DEVTOOLSETGCC" = [yY] 
         export CXX="ccache g++"
         NGX_GSPLITDWARF='n'
       else
-        source /etc/profile.d/gcc15-custom.sh
+        enable_gcc_toolset15 || return 1
         which gcc
         which g++
         unset CC
@@ -5284,13 +5250,13 @@ fi
 # el9 default GCC 11, 12, 13 settings
 if [[ "$CENTOS_NINE" -eq '9' && "$CLANG" = [nN] && "$NGINX_DEVTOOLSETGCC" = [yY] ]]; then
   CENTOSVER_NUMERIC=$(echo $CENTOSVER | sed -e 's|\.||g')
-  if [[ "$CENTOSVER_NUMERIC" -ge '93' && "$DEVTOOLSETFIFTTEEN" = [yY] && ! -f /opt/gcc-custom/gcc15/bin/gcc ]]; then
-    if [[ "$(rpm -ql gcc-custom >/dev/null 2>&1; echo $?)" -ne '0' ]]; then
-      time yum -y install ${DIR_TMP}/gcc-custom-15.0.0-1.el9.x86_64.rpm
+  if [[ "$CENTOSVER_NUMERIC" -ge '93' && "$DEVTOOLSETFIFTTEEN" = [yY] && ! -f /opt/rh/gcc-toolset-15/root/usr/bin/gcc ]]; then
+    if [[ "$(rpm -ql gcc-toolset-15-gcc >/dev/null 2>&1; echo $?)" -ne '0' ]]; then
+      time yum -y install gcc-toolset-15-gcc gcc-toolset-15-gcc-c++ gcc-toolset-15-binutils
     fi
     sar_call
-    /opt/gcc-custom/gcc15/bin/gcc --version
-    /opt/gcc-custom/gcc15/bin/g++ --version
+    /opt/rh/gcc-toolset-15/root/usr/bin/gcc --version
+    /opt/rh/gcc-toolset-15/root/usr/bin/g++ --version
   elif [[ "$CENTOSVER_NUMERIC" -ge '93' && "$DEVTOOLSETFOURTEEN" = [yY] && ! -f /opt/rh/gcc-toolset-14/root/usr/bin/gcc ]]; then
     if [[ "$(rpm -ql gcc-toolset-14-gcc >/dev/null 2>&1; echo $?)" -ne '0' ]] || [[ "$(rpm -ql gcc-toolset-14-gcc-c++ >/dev/null 2>&1; echo $?)" -ne '0' ]] || [[ "$(rpm -ql gcc-toolset-14-binutils >/dev/null 2>&1; echo $?)" -ne '0' ]]; then
       time yum -y install gcc-toolset-14-annobin-annocheck gcc-toolset-14-annobin-docs.noarch gcc-toolset-14-annobin-plugin-gcc gcc-toolset-14-binutils gcc-toolset-14-binutils-devel gcc-toolset-14-dwz gcc-toolset-14-gcc gcc-toolset-14-gcc-c++ gcc-toolset-14-gcc-gfortran gcc-toolset-14-libasan-devel gcc-toolset-14-libatomic-devel gcc-toolset-14-libgccjit gcc-toolset-14-libgccjit-devel gcc-toolset-14-libitm-devel gcc-toolset-14-liblsan-devel gcc-toolset-14-libquadmath-devel gcc-toolset-14-libstdc++-devel gcc-toolset-14-libtsan-devel gcc-toolset-14-libubsan-devel gcc-toolset-14-runtime --skip-broken
@@ -5313,7 +5279,7 @@ if [[ "$CENTOS_NINE" -eq '9' && "$CLANG" = [nN] && "$NGINX_DEVTOOLSETGCC" = [yY]
     /opt/rh/gcc-toolset-12/root/usr/bin/gcc --version
     /opt/rh/gcc-toolset-12/root/usr/bin/g++ --version
   fi
-  if [[ "$CENTOSVER_NUMERIC" -ge '93' && "$DEVTOOLSETFIFTTEEN" = [yY] && -f /opt/gcc-custom/gcc15/bin/gcc ]]; then
+  if [[ "$CENTOSVER_NUMERIC" -ge '93' && "$DEVTOOLSETFIFTTEEN" = [yY] && -f /opt/rh/gcc-toolset-15/root/usr/bin/gcc ]]; then
     DEVTOOLSETFIFTTEEN_FALLTHROUGH=' -Wimplicit-fallthrough=0 -Wno-implicit-function-declaration -Wno-cast-align -Wno-builtin-declaration-mismatch -Wno-deprecated-declarations -Wno-int-conversion -Wno-unused-result -Wno-vla-parameter -Wno-maybe-uninitialized -Wno-return-local-addr -Wno-array-parameter -Wno-alloc-size-larger-than -Wno-address -Wno-array-bounds -Wno-discarded-qualifiers -Wno-stringop-overread -Wno-stringop-truncation -Wno-missing-field-initializers -Wno-unused-variable -Wno-format -Wno-error=unused-result -Wno-missing-profile -Wno-stringop-overflow -Wno-free-nonheap-object -Wno-discarded-qualifiers -Wno-bad-function-cast -Wno-dangling-pointer -Wno-array-parameter'
     DEVTOOLSETFIFTTEEN_EXTRAFLAGS=' -fcode-hoisting -Wno-cast-function-type -Wno-format-extra-args'
     DEVTOOLSETFOURTEEN_FALLTHROUGH=""
@@ -5333,7 +5299,7 @@ if [[ "$CENTOS_NINE" -eq '9' && "$CLANG" = [nN] && "$NGINX_DEVTOOLSETGCC" = [yY]
     DEVTOOLSETSEVEN_FALLTHROUGH=""
     DEVTOOLSETSEVEN_EXTRAFLAGS=""
     if [[ "$INITIALINSTALL" != [yY] ]]; then
-      source /etc/profile.d/gcc15-custom.sh
+      enable_gcc_toolset15 || return 1
       which gcc
       which g++
       unset CC
@@ -5342,7 +5308,7 @@ if [[ "$CENTOS_NINE" -eq '9' && "$CLANG" = [nN] && "$NGINX_DEVTOOLSETGCC" = [yY]
       export CXX="ccache g++"
       NGX_GSPLITDWARF='n'
     else
-      source /etc/profile.d/gcc15-custom.sh
+      enable_gcc_toolset15 || return 1
       which gcc
       which g++
       unset CC
@@ -5501,6 +5467,8 @@ if [[ "$CENTOS_NINE" -eq '9' && "$CLANG" = [nN] && "$NGINX_DEVTOOLSETGCC" = [yY]
     fi
   fi
 fi  
+
+fi
 
 # intel specific
 CPUVENDOR=$(cat /proc/cpuinfo | awk '/vendor_id/ {print $3}' | sort -u | head -n1)
@@ -5664,7 +5632,9 @@ if [[ "$(gcc --version | head -n1 | awk '{print $3}' | cut -d . -f1-3 | sed "s|\
       else
         NGINX_MOLDOPT=' -B/usr/bin/mold'
       fi
-      if [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' || "$CENTOS_TEN" -eq '10' ]] && [[ "$NGX_LDGOLD" = [yY] ]] && [[ "$DEVTOOLSETTWELVE" = [yY] || "$DEVTOOLSETTHIRTEEN" = [yY] || "$DEVTOOLSETFOURTEEN" = [yY] ]]; then
+      if [[ "$DEVTOOLSETFIFTTEEN" = [yY] ]]; then
+        SET_LD_GOLD_GCC_PATH=" -fuse-ld=bfd"
+      elif [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' || "$CENTOS_TEN" -eq '10' ]] && [[ "$NGX_LDGOLD" = [yY] ]] && [[ "$DEVTOOLSETTWELVE" = [yY] || "$DEVTOOLSETTHIRTEEN" = [yY] || "$DEVTOOLSETFOURTEEN" = [yY] ]]; then
         SET_LD_GOLD_GCC_PATH="${LD_GOLD_GCCPATH}"
       elif [[ "$NGX_LDGOLD" = [yY] ]]; then
         SET_LD_GOLD_GCC_PATH=" -fuse-ld=gold"
@@ -5866,31 +5836,7 @@ if [[ "$(gcc --version | head -n1 | awk '{print $3}' | cut -d . -f1-3 | sed "s|\
         echo "NGINX_ZSTD=$NGINX_ZSTD"
         echo "ZSTD_NGINX_OPT=$ZSTD_NGINX_OPT"
         echo "CLANG_FLTO_OPT=$CLANG_FLTO_OPT"
-      elif [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' || "$CENTOS_TEN" -eq '10' ]] && [[ "$NGINXOPENSSL_FATLTO_OBJECTS" != [yY] && "$NGX_LDGOLD" = [yY] && "$DETECT_NGXVER" -ge '1015005' && "$(echo $OPENSSL_VERSION | grep -o '3.0')" = '3.0' ]]; then
-        NGINX_OPENSSLOPT_EXTRAS="${SET_LD_GOLD_GCC_PATH}"
-        echo "NGX_LDGOLD=$NGX_LDGOLD"
-        echo "NGX_LDMOLD=$NGX_LDMOLD"
-        echo "NGINX_OPENSSLOPT_EXTRAS=$NGINX_OPENSSLOPT_EXTRAS"
-        echo "NGINXOPENSSL_FATLTO_OBJECTS=$NGINXOPENSSL_FATLTO_OBJECTS"
-        echo "NGINXOPENSSL_NOFATLTO_OBJECTS=$NGINXOPENSSL_NOFATLTO_OBJECTS"
-        echo "OPENSSL_VERSION=$OPENSSL_VERSION"
-        echo "HTTPTWOOPT=$HTTPTWOOPT"
-        echo "NGINX_ZSTD=$NGINX_ZSTD"
-        echo "ZSTD_NGINX_OPT=$ZSTD_NGINX_OPT"
-        echo "CLANG_FLTO_OPT=$CLANG_FLTO_OPT"
-      elif [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' || "$CENTOS_TEN" -eq '10' ]] && [[ "$NGINXOPENSSL_FATLTO_OBJECTS" != [yY] && "$NGX_LDGOLD" = [yY] && "$DETECT_NGXVER" -ge '1015005' && "$(echo $OPENSSL_VERSION | grep -o '3.1')" = '3.1' ]]; then
-        NGINX_OPENSSLOPT_EXTRAS="${SET_LD_GOLD_GCC_PATH}"
-        echo "NGX_LDGOLD=$NGX_LDGOLD"
-        echo "NGX_LDMOLD=$NGX_LDMOLD"
-        echo "NGINX_OPENSSLOPT_EXTRAS=$NGINX_OPENSSLOPT_EXTRAS"
-        echo "NGINXOPENSSL_FATLTO_OBJECTS=$NGINXOPENSSL_FATLTO_OBJECTS"
-        echo "NGINXOPENSSL_NOFATLTO_OBJECTS=$NGINXOPENSSL_NOFATLTO_OBJECTS"
-        echo "OPENSSL_VERSION=$OPENSSL_VERSION"
-        echo "HTTPTWOOPT=$HTTPTWOOPT"
-        echo "NGINX_ZSTD=$NGINX_ZSTD"
-        echo "ZSTD_NGINX_OPT=$ZSTD_NGINX_OPT"
-        echo "CLANG_FLTO_OPT=$CLANG_FLTO_OPT"
-      elif [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' || "$CENTOS_TEN" -eq '10' ]] && [[ "$NGINXOPENSSL_FATLTO_OBJECTS" != [yY] && "$NGX_LDGOLD" = [yY] && "$DETECT_NGXVER" -ge '1015005' && "$(echo $OPENSSL_VERSION | grep -o '3.2')" = '3.2' ]]; then
+      elif [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' || "$CENTOS_TEN" -eq '10' ]] && [[ "$NGINXOPENSSL_FATLTO_OBJECTS" != [yY] && "$NGX_LDGOLD" = [yY] && "$DETECT_NGXVER" -ge '1015005' && ( "$OPENSSL_VERSION" = 3.* || "$OPENSSL_VERSION" = 4.0.* ) ]]; then
         NGINX_OPENSSLOPT_EXTRAS="${SET_LD_GOLD_GCC_PATH}"
         echo "NGX_LDGOLD=$NGX_LDGOLD"
         echo "NGX_LDMOLD=$NGX_LDMOLD"
@@ -6291,7 +6237,7 @@ else
            echo
            echo "./configure --with-ld-opt=\"${NGINX_EXPORTLD_OPT}${LD_OPENSSL11_OPT}${QUICTLS_LD_OPT}${ZLIBCF_OPT}${BORINGSSL_LIBOPT}${AWS_LC_LIBOPT}${LIBRESSL_LIBOPT}${LIBBROTLIENC_OPT}${ZSTD_NGINX_LIB_OPT}${LRT}${JEMALLOC_LD}${MIMALLOC_LD}${PCRE_LD} -Wl,-z,relro,-z,now ${LUALD_OPT}${PCRE_LDOPT}${PIE_LDOPT}${NGXEXTRA_LDGOLDCCOPT}${CLANG_FLTO_LDOPT}${NGINX_SYMBOLIC_AS_NEEDED_OPT}\" --with-cc-opt=\"${CC_OPENSSL11_OPT}${NGINX_DEBUG_QUIC_OPT}${BORINGSSLINC_OPT}${AWS_LC_INC_OPT}${LIBRESSLINC_OPT}${QUICTLS_CC_OPT}${ZLIBCFINC_OPT}${LIBBROTLIINC_OPT}${ZSTD_NGINX_INC_OPT}${MTUNEOPT}${PIE_CCOPT}-g$GCC_OPTLEVEL $FSTACKPROTECT${NGXEXTRA_LDGOLDCCOPT}${CLANG_FLTO_OPT} --param=ssp-buffer-size=4${FORMATSECURITY_OPT}${LIBATOMIC_NGX_OPTS}${DEVTOOLSETSEVEN_FALLTHROUGH}${DEVTOOLSETSEVEN_EXTRAFLAGS}${DEVTOOLSETEIGHT_FALLTHROUGH}${DEVTOOLSETEIGHT_EXTRAFLAGS}${DEVTOOLSETNINE_FALLTHROUGH}${DEVTOOLSETNINE_EXTRAFLAGS}${DEVTOOLSETTEN_FALLTHROUGH}${DEVTOOLSETTEN_EXTRAFLAGS}${DEVTOOLSETELEVEN_FALLTHROUGH}${DEVTOOLSETELEVEN_EXTRAFLAGS}${DEVTOOLSETTWELVE_FALLTHROUGH}${DEVTOOLSETTWELVE_EXTRAFLAGS}${DEVTOOLSETTHIRTEEN_FALLTHROUGH}${DEVTOOLSETTHIRTEEN_EXTRAFLAGS}${DEVTOOLSETFOURTEEN_FALLTHROUGH}${DEVTOOLSETFOURTEEN_EXTRAFLAGS}${DEVTOOLSETFIFTTEEN_FALLTHROUGH}${DEVTOOLSETFFIFTTEEN_EXTRAFLAGS} -Wp,-D_FORTIFY_SOURCE=2${CLANG_CCOPT}${BROTLI_CFLAG}${PCRE_CCOPT}${SET_NGXEXTRA_CCOPT}\" --prefix=/usr/local/nginx --sbin-path=/usr/local/sbin/nginx --conf-path=/usr/local/nginx/conf/nginx.conf --build=${SETBUILD_VALUE}${WITHCOMPAT_OPT}${NGINX_DEBUGOPT}${PCRETWO_DISABLEOPT}${IPVSIXOPT}${DYNAMICOPT_BEGIN}${STUBSTATUSOPT}${AUTHREQOPT}${SECURELINKOPT}${FLVOPT}${MPOPT}${RTMPOPT}${WITHOPENSSL_OPTECHO}${VTSOPT}${LIBATOMICOPT}${DYNAMICOPT_MIDDLE} --with-http_gzip_static_module${HIDELENGTHOPT}${NGX_IORING_OPT}${BROTLIOPT}${ZSTD_NGINX_OPT}${TESTCOOKIEOPT}${DYNAMICOPT_AFTERGZIP}${GEOIPTWOLITEOPT}${PGSPEEDOPT}${SUBOPT}${ADDITIONOPT}${IMAGEFILTEROPT}${GEOIPOPT}${NGINX_NJSOPT}${STREAMGEOIPOPT}${STREAMREALIPOPT}${STREAM_SSLPREREADOPT}${THREADS}${STREAM}${NGXSLICEOPT}${REALIPOPT}${ACCESSKEYOPT}${HTTPCONCATOPT}${FANCYINDEXOPT}${CACHEPURGEOPT}${GPERFOPT}${WEBDAVOPT}${RUBYMODULE}${DEVELKITOPT}${SETMISCOPT}${ECHOOPT}${REDISOPT}${HTTPREDISOPT}${LUAOPT}${STICKYOPT}${UPSTREAMOPT}${MEMCOPT}${SRCCACHEOPT}${HEADERSMOREOPT}${NGXPERLOPT}${NGXXSLTOPT}${PCREJITOPT}${ZLIBNG_OPT}${ZLIBCUSTOM_OPT} --with-http_ssl_module${SPDYOPT}${HTTPTWOOPT}${NGX_HPACK_OPT}${HTTP_PUSHOPT}${OPENSSLOPT}${HTTP_FINGERPRINTOPT} --with-openssl-opt=\"enable-ec_nistp_64_gcc_128 enable-tls1_3${NGINX_KTLS_OPT}${NGINX_OPENSSLOPT_EXTRAS}\"${LIBRESSLOPT}${BORINGSSLOPT}${MODSEC_OPT}${RDNSOPT}${DYNAMICOPT_END}${LUAJIT_XCFLAGOPT}" | tee -a "${CENTMINLOGDIR}/nginx-configure-${DT}.log"
            ./configure --with-ld-opt="${NGINX_EXPORTLD_OPT}${LD_OPENSSL11_OPT}${QUICTLS_LD_OPT}${ZLIBCF_OPT}${BORINGSSL_LIBOPT}${AWS_LC_LIBOPT}${LIBRESSL_LIBOPT}${LIBBROTLIENC_OPT}${ZSTD_NGINX_LIB_OPT}${LRT}${JEMALLOC_LD}${MIMALLOC_LD}${PCRE_LD} -Wl,-z,relro,-z,now ${LUALD_OPT}${PCRE_LDOPT}${PIE_LDOPT}${NGXEXTRA_LDGOLDCCOPT}${CLANG_FLTO_LDOPT}${NGINX_SYMBOLIC_AS_NEEDED_OPT}" --with-cc-opt="${CC_OPENSSL11_OPT}${NGINX_DEBUG_QUIC_OPT}${BORINGSSLINC_OPT}${AWS_LC_INC_OPT}${LIBRESSLINC_OPT}${QUICTLS_CC_OPT}${ZLIBCFINC_OPT}${LIBBROTLIINC_OPT}${ZSTD_NGINX_INC_OPT}${MTUNEOPT}${PIE_CCOPT}-g$GCC_OPTLEVEL $FSTACKPROTECT${NGXEXTRA_LDGOLDCCOPT}${CLANG_FLTO_OPT} --param=ssp-buffer-size=4${FORMATSECURITY_OPT}${LIBATOMIC_NGX_OPTS}${DEVTOOLSETSEVEN_FALLTHROUGH}${DEVTOOLSETSEVEN_EXTRAFLAGS}${DEVTOOLSETEIGHT_FALLTHROUGH}${DEVTOOLSETEIGHT_EXTRAFLAGS}${DEVTOOLSETNINE_FALLTHROUGH}${DEVTOOLSETNINE_EXTRAFLAGS}${DEVTOOLSETTEN_FALLTHROUGH}${DEVTOOLSETTEN_EXTRAFLAGS}${DEVTOOLSETELEVEN_FALLTHROUGH}${DEVTOOLSETELEVEN_EXTRAFLAGS}${DEVTOOLSETTWELVE_FALLTHROUGH}${DEVTOOLSETTWELVE_EXTRAFLAGS}${DEVTOOLSETTHIRTEEN_FALLTHROUGH}${DEVTOOLSETTHIRTEEN_EXTRAFLAGS}${DEVTOOLSETFOURTEEN_FALLTHROUGH}${DEVTOOLSETFOURTEEN_EXTRAFLAGS}${DEVTOOLSETFIFTTEEN_FALLTHROUGH}${DEVTOOLSETFFIFTTEEN_EXTRAFLAGS} -Wp,-D_FORTIFY_SOURCE=2${CLANG_CCOPT}${BROTLI_CFLAG}${PCRE_CCOPT}${SET_NGXEXTRA_CCOPT}" --prefix=/usr/local/nginx --sbin-path=/usr/local/sbin/nginx --conf-path=/usr/local/nginx/conf/nginx.conf --build=${SETBUILD_VALUE}${WITHCOMPAT_OPT}${NGINX_DEBUGOPT}${PCRETWO_DISABLEOPT}${IPVSIXOPT}${DYNAMICOPT_BEGIN}${STUBSTATUSOPT}${AUTHREQOPT}${SECURELINKOPT}${FLVOPT}${MPOPT}${RTMPOPT}${WITHOPENSSL_OPT}${VTSOPT}${LIBATOMICOPT}${DYNAMICOPT_MIDDLE} --with-http_gzip_static_module${HIDELENGTHOPT}${NGX_IORING_OPT}${BROTLIOPT}${ZSTD_NGINX_OPT}${TESTCOOKIEOPT}${DYNAMICOPT_AFTERGZIP}${GEOIPTWOLITEOPT}${PGSPEEDOPT}${SUBOPT}${ADDITIONOPT}${IMAGEFILTEROPT}${GEOIPOPT}${NGINX_NJSOPT}${STREAMGEOIPOPT}${STREAMREALIPOPT}${STREAM_SSLPREREADOPT}${THREADS}${STREAM}${NGXSLICEOPT}${REALIPOPT}${ACCESSKEYOPT}${HTTPCONCATOPT}${FANCYINDEXOPT}${CACHEPURGEOPT}${GPERFOPT}${WEBDAVOPT}${RUBYMODULE}${DEVELKITOPT}${SETMISCOPT}${ECHOOPT}${REDISOPT}${HTTPREDISOPT}${LUAOPT}${STICKYOPT}${UPSTREAMOPT}${MEMCOPT}${SRCCACHEOPT}${HEADERSMOREOPT}${NGXPERLOPT}${NGXXSLTOPT}${PCREJITOPT}${ZLIBNG_OPT}${ZLIBCUSTOM_OPT} --with-http_ssl_module${SPDYOPT}${HTTPTWOOPT}${NGX_HPACK_OPT}${HTTP_PUSHOPT}${OPENSSLOPT}${HTTP_FINGERPRINTOPT} --with-openssl-opt="enable-ec_nistp_64_gcc_128 enable-tls1_3${NGINX_KTLS_OPT}${NGINX_OPENSSLOPT_EXTRAS}"${LIBRESSLOPT}${BORINGSSLOPT}${MODSEC_OPT}${RDNSOPT}${DYNAMICOPT_END}${LUAJIT_XCFLAGOPT} | tee -a "${CENTMINLOGDIR}/nginx-configure-${DT}.log"
-           NGX_CONFIGURE_ERR=$?
+           NGX_CONFIGURE_ERR=${PIPESTATUS[0]}
         elif [[ "$TLSTHREEOPT" = [yY] && "$OPENSSL_TLSONETHREE" = [nN] ]]; then
            echo "2"
            # --- Debugging Nginx Configure Variables ---
@@ -6436,7 +6382,7 @@ else
            echo
            echo "./configure --with-ld-opt=\"${NGINX_EXPORTLD_OPT}${LD_OPENSSL11_OPT}${QUICTLS_LD_OPT}${ZLIBCF_OPT}${BORINGSSL_LIBOPT}${AWS_LC_LIBOPT}${LIBRESSL_LIBOPT}${LIBBROTLIENC_OPT}${ZSTD_NGINX_LIB_OPT}${LRT}${JEMALLOC_LD}${MIMALLOC_LD}${PCRE_LD} -Wl,-z,relro,-z,now ${LUALD_OPT}${PCRE_LDOPT}${PIE_LDOPT}${NGXEXTRA_LDGOLDCCOPT}${CLANG_FLTO_LDOPT}${NGINX_SYMBOLIC_AS_NEEDED_OPT}\" --with-cc-opt=\"${CC_OPENSSL11_OPT}${NGINX_DEBUG_QUIC_OPT}${BORINGSSLINC_OPT}${AWS_LC_INC_OPT}${LIBRESSLINC_OPT}${QUICTLS_CC_OPT}${ZLIBCFINC_OPT}${LIBBROTLIINC_OPT}${ZSTD_NGINX_INC_OPT}${MTUNEOPT}${PIE_CCOPT}-g$GCC_OPTLEVEL $FSTACKPROTECT${NGXEXTRA_LDGOLDCCOPT}${CLANG_FLTO_OPT} --param=ssp-buffer-size=4${FORMATSECURITY_OPT}${LIBATOMIC_NGX_OPTS}${DEVTOOLSETSEVEN_FALLTHROUGH}${DEVTOOLSETSEVEN_EXTRAFLAGS}${DEVTOOLSETEIGHT_FALLTHROUGH}${DEVTOOLSETEIGHT_EXTRAFLAGS}${DEVTOOLSETNINE_FALLTHROUGH}${DEVTOOLSETNINE_EXTRAFLAGS}${DEVTOOLSETTEN_FALLTHROUGH}${DEVTOOLSETTEN_EXTRAFLAGS}${DEVTOOLSETELEVEN_FALLTHROUGH}${DEVTOOLSETELEVEN_EXTRAFLAGS}${DEVTOOLSETTWELVE_FALLTHROUGH}${DEVTOOLSETTWELVE_EXTRAFLAGS}${DEVTOOLSETTHIRTEEN_FALLTHROUGH}${DEVTOOLSETTHIRTEEN_EXTRAFLAGS}${DEVTOOLSETFOURTEEN_FALLTHROUGH}${DEVTOOLSETFOURTEEN_EXTRAFLAGS}${DEVTOOLSETFIFTTEEN_FALLTHROUGH}${DEVTOOLSETFFIFTTEEN_EXTRAFLAGS} -Wp,-D_FORTIFY_SOURCE=2${CLANG_CCOPT}${BROTLI_CFLAG}${PCRE_CCOPT}${SET_NGXEXTRA_CCOPT}\" --prefix=/usr/local/nginx --sbin-path=/usr/local/sbin/nginx --conf-path=/usr/local/nginx/conf/nginx.conf --build=${SETBUILD_VALUE}${WITHCOMPAT_OPT}${NGINX_DEBUGOPT}${PCRETWO_DISABLEOPT}${IPVSIXOPT}${DYNAMICOPT_BEGIN}${STUBSTATUSOPT}${AUTHREQOPT}${SECURELINKOPT}${FLVOPT}${MPOPT}${RTMPOPT}${WITHOPENSSL_OPTECHO}${VTSOPT}${LIBATOMICOPT}${DYNAMICOPT_MIDDLE} --with-http_gzip_static_module${HIDELENGTHOPT}${NGX_IORING_OPT}${BROTLIOPT}${ZSTD_NGINX_OPT}${TESTCOOKIEOPT}${DYNAMICOPT_AFTERGZIP}${GEOIPTWOLITEOPT}${PGSPEEDOPT}${SUBOPT}${ADDITIONOPT}${IMAGEFILTEROPT}${GEOIPOPT}${NGINX_NJSOPT}${STREAMGEOIPOPT}${STREAMREALIPOPT}${STREAM_SSLPREREADOPT}${THREADS}${STREAM}${NGXSLICEOPT}${REALIPOPT}${ACCESSKEYOPT}${HTTPCONCATOPT}${FANCYINDEXOPT}${CACHEPURGEOPT}${GPERFOPT}${WEBDAVOPT}${RUBYMODULE}${DEVELKITOPT}${SETMISCOPT}${ECHOOPT}${REDISOPT}${HTTPREDISOPT}${LUAOPT}${STICKYOPT}${UPSTREAMOPT}${MEMCOPT}${SRCCACHEOPT}${HEADERSMOREOPT}${NGXPERLOPT}${NGXXSLTOPT}${PCREJITOPT}${ZLIBNG_OPT}${ZLIBCUSTOM_OPT} --with-http_ssl_module${SPDYOPT}${HTTPTWOOPT}${NGX_HPACK_OPT}${HTTP_PUSHOPT}${OPENSSLOPT}${HTTP_FINGERPRINTOPT} --with-openssl-opt=\"enable-ec_nistp_64_gcc_128 no-tls1_3${NGINX_KTLS_OPT}${NGINX_OPENSSLOPT_EXTRAS}\"${LIBRESSLOPT}${BORINGSSLOPT}${MODSEC_OPT}${RDNSOPT}${DYNAMICOPT_END}${LUAJIT_XCFLAGOPT}" | tee -a "${CENTMINLOGDIR}/nginx-configure-${DT}.log"
            ./configure --with-ld-opt="${NGINX_EXPORTLD_OPT}${LD_OPENSSL11_OPT}${QUICTLS_LD_OPT}${ZLIBCF_OPT}${BORINGSSL_LIBOPT}${AWS_LC_LIBOPT}${LIBRESSL_LIBOPT}${LIBBROTLIENC_OPT}${ZSTD_NGINX_LIB_OPT}${LRT}${JEMALLOC_LD}${MIMALLOC_LD}${PCRE_LD} -Wl,-z,relro,-z,now ${LUALD_OPT}${PCRE_LDOPT}${PIE_LDOPT}${NGXEXTRA_LDGOLDCCOPT}${CLANG_FLTO_LDOPT}${NGINX_SYMBOLIC_AS_NEEDED_OPT}" --with-cc-opt="${CC_OPENSSL11_OPT}${NGINX_DEBUG_QUIC_OPT}${BORINGSSLINC_OPT}${AWS_LC_INC_OPT}${LIBRESSLINC_OPT}${QUICTLS_CC_OPT}${ZLIBCFINC_OPT}${LIBBROTLIINC_OPT}${ZSTD_NGINX_INC_OPT}${MTUNEOPT}${PIE_CCOPT}-g$GCC_OPTLEVEL $FSTACKPROTECT${NGXEXTRA_LDGOLDCCOPT}${CLANG_FLTO_OPT} --param=ssp-buffer-size=4${FORMATSECURITY_OPT}${LIBATOMIC_NGX_OPTS}${DEVTOOLSETSEVEN_FALLTHROUGH}${DEVTOOLSETSEVEN_EXTRAFLAGS}${DEVTOOLSETEIGHT_FALLTHROUGH}${DEVTOOLSETEIGHT_EXTRAFLAGS}${DEVTOOLSETNINE_FALLTHROUGH}${DEVTOOLSETNINE_EXTRAFLAGS}${DEVTOOLSETTEN_FALLTHROUGH}${DEVTOOLSETTEN_EXTRAFLAGS}${DEVTOOLSETELEVEN_FALLTHROUGH}${DEVTOOLSETELEVEN_EXTRAFLAGS}${DEVTOOLSETTWELVE_FALLTHROUGH}${DEVTOOLSETTWELVE_EXTRAFLAGS}${DEVTOOLSETTHIRTEEN_FALLTHROUGH}${DEVTOOLSETTHIRTEEN_EXTRAFLAGS}${DEVTOOLSETFOURTEEN_FALLTHROUGH}${DEVTOOLSETFOURTEEN_EXTRAFLAGS}${DEVTOOLSETFIFTTEEN_FALLTHROUGH}${DEVTOOLSETFFIFTTEEN_EXTRAFLAGS} -Wp,-D_FORTIFY_SOURCE=2${CLANG_CCOPT}${BROTLI_CFLAG}${PCRE_CCOPT}${SET_NGXEXTRA_CCOPT}" --prefix=/usr/local/nginx --sbin-path=/usr/local/sbin/nginx --conf-path=/usr/local/nginx/conf/nginx.conf --build=${SETBUILD_VALUE}${WITHCOMPAT_OPT}${NGINX_DEBUGOPT}${PCRETWO_DISABLEOPT}${IPVSIXOPT}${DYNAMICOPT_BEGIN}${STUBSTATUSOPT}${AUTHREQOPT}${SECURELINKOPT}${FLVOPT}${MPOPT}${RTMPOPT}${WITHOPENSSL_OPT}${VTSOPT}${LIBATOMICOPT}${DYNAMICOPT_MIDDLE} --with-http_gzip_static_module${HIDELENGTHOPT}${NGX_IORING_OPT}${BROTLIOPT}${ZSTD_NGINX_OPT}${TESTCOOKIEOPT}${DYNAMICOPT_AFTERGZIP}${GEOIPTWOLITEOPT}${PGSPEEDOPT}${SUBOPT}${ADDITIONOPT}${IMAGEFILTEROPT}${GEOIPOPT}${NGINX_NJSOPT}${STREAMGEOIPOPT}${STREAMREALIPOPT}${STREAM_SSLPREREADOPT}${THREADS}${STREAM}${NGXSLICEOPT}${REALIPOPT}${ACCESSKEYOPT}${HTTPCONCATOPT}${FANCYINDEXOPT}${CACHEPURGEOPT}${GPERFOPT}${WEBDAVOPT}${RUBYMODULE}${DEVELKITOPT}${SETMISCOPT}${ECHOOPT}${REDISOPT}${HTTPREDISOPT}${LUAOPT}${STICKYOPT}${UPSTREAMOPT}${MEMCOPT}${SRCCACHEOPT}${HEADERSMOREOPT}${NGXPERLOPT}${NGXXSLTOPT}${PCREJITOPT}${ZLIBNG_OPT}${ZLIBCUSTOM_OPT} --with-http_ssl_module${SPDYOPT}${HTTPTWOOPT}${NGX_HPACK_OPT}${HTTP_PUSHOPT}${OPENSSLOPT}${HTTP_FINGERPRINTOPT} --with-openssl-opt="enable-ec_nistp_64_gcc_128 no-tls1_3${NGINX_KTLS_OPT}${NGINX_OPENSSLOPT_EXTRAS}"${LIBRESSLOPT}${BORINGSSLOPT}${MODSEC_OPT}${RDNSOPT}${DYNAMICOPT_END}${LUAJIT_XCFLAGOPT} | tee -a "${CENTMINLOGDIR}/nginx-configure-${DT}.log"
-           NGX_CONFIGURE_ERR=$?
+           NGX_CONFIGURE_ERR=${PIPESTATUS[0]}
         elif [[ "$BORINGSSL_SWITCH" = [yY] ]]; then
            echo "3"
            # --- Debugging Nginx Configure Variables ---
@@ -6581,7 +6527,7 @@ else
            echo
            echo "./configure --with-ld-opt=\"${NGINX_EXPORTLD_OPT}${LD_OPENSSL11_OPT}${QUICTLS_LD_OPT}${ZLIBCF_OPT}${BORINGSSL_LIBOPT}${AWS_LC_LIBOPT}${LIBRESSL_LIBOPT}${LIBBROTLIENC_OPT}${ZSTD_NGINX_LIB_OPT}${LRT}${JEMALLOC_LD}${MIMALLOC_LD}${PCRE_LD} -Wl,-z,relro,-z,now ${LUALD_OPT}${PCRE_LDOPT}${PIE_LDOPT}${NGXEXTRA_LDGOLDCCOPT}${CLANG_FLTO_LDOPT}${NGINX_SYMBOLIC_AS_NEEDED_OPT}\" --with-cc-opt=\"${CC_OPENSSL11_OPT}${NGINX_DEBUG_QUIC_OPT}${BORINGSSLINC_OPT}${AWS_LC_INC_OPT}${LIBRESSLINC_OPT}${QUICTLS_CC_OPT}${ZLIBCFINC_OPT}${LIBBROTLIINC_OPT}${ZSTD_NGINX_INC_OPT}${MTUNEOPT}${PIE_CCOPT}-g$GCC_OPTLEVEL $FSTACKPROTECT${NGXEXTRA_LDGOLDCCOPT}${CLANG_FLTO_OPT} --param=ssp-buffer-size=4${FORMATSECURITY_OPT}${LIBATOMIC_NGX_OPTS}${DEVTOOLSETSEVEN_FALLTHROUGH}${DEVTOOLSETSEVEN_EXTRAFLAGS}${DEVTOOLSETEIGHT_FALLTHROUGH}${DEVTOOLSETEIGHT_EXTRAFLAGS}${DEVTOOLSETNINE_FALLTHROUGH}${DEVTOOLSETNINE_EXTRAFLAGS}${DEVTOOLSETTEN_FALLTHROUGH}${DEVTOOLSETTEN_EXTRAFLAGS}${DEVTOOLSETELEVEN_FALLTHROUGH}${DEVTOOLSETELEVEN_EXTRAFLAGS}${DEVTOOLSETTWELVE_FALLTHROUGH}${DEVTOOLSETTWELVE_EXTRAFLAGS}${DEVTOOLSETTHIRTEEN_FALLTHROUGH}${DEVTOOLSETTHIRTEEN_EXTRAFLAGS}${DEVTOOLSETFOURTEEN_FALLTHROUGH}${DEVTOOLSETFOURTEEN_EXTRAFLAGS}${DEVTOOLSETFIFTTEEN_FALLTHROUGH}${DEVTOOLSETFFIFTTEEN_EXTRAFLAGS} -Wp,-D_FORTIFY_SOURCE=2${CLANG_CCOPT}${BROTLI_CFLAG}${PCRE_CCOPT}${SET_NGXEXTRA_CCOPT}\" --prefix=/usr/local/nginx --sbin-path=/usr/local/sbin/nginx --conf-path=/usr/local/nginx/conf/nginx.conf --build=${SETBUILD_VALUE}${WITHCOMPAT_OPT}${NGINX_DEBUGOPT}${PCRETWO_DISABLEOPT}${IPVSIXOPT}${DYNAMICOPT_BEGIN}${STUBSTATUSOPT}${AUTHREQOPT}${SECURELINKOPT}${FLVOPT}${MPOPT}${RTMPOPT}${WITHOPENSSL_OPTECHO}${VTSOPT}${LIBATOMICOPT}${DYNAMICOPT_MIDDLE} --with-http_gzip_static_module${HIDELENGTHOPT}${NGX_IORING_OPT}${BROTLIOPT}${ZSTD_NGINX_OPT}${TESTCOOKIEOPT}${DYNAMICOPT_AFTERGZIP}${GEOIPTWOLITEOPT}${PGSPEEDOPT}${SUBOPT}${ADDITIONOPT}${IMAGEFILTEROPT}${GEOIPOPT}${NGINX_NJSOPT}${STREAMGEOIPOPT}${STREAMREALIPOPT}${STREAM_SSLPREREADOPT}${THREADS}${STREAM}${NGXSLICEOPT}${REALIPOPT}${ACCESSKEYOPT}${HTTPCONCATOPT}${FANCYINDEXOPT}${CACHEPURGEOPT}${GPERFOPT}${WEBDAVOPT}${RUBYMODULE}${DEVELKITOPT}${SETMISCOPT}${ECHOOPT}${REDISOPT}${HTTPREDISOPT}${LUAOPT}${STICKYOPT}${UPSTREAMOPT}${MEMCOPT}${SRCCACHEOPT}${HEADERSMOREOPT}${NGXPERLOPT}${NGXXSLTOPT}${PCREJITOPT}${ZLIBNG_OPT}${ZLIBCUSTOM_OPT} --with-http_ssl_module${SPDYOPT}${HTTPTWOOPT}${NGX_HPACK_OPT}${HTTP_PUSHOPT}${OPENSSLOPT}${OPENSSLOPT_B}${LIBRESSLOPT}${BORINGSSLOPT}${HTTP_FINGERPRINTOPT}${MODSEC_OPT}${RDNSOPT}${DYNAMICOPT_END}${LUAJIT_XCFLAGOPT}" | tee -a "${CENTMINLOGDIR}/nginx-configure-${DT}.log"
            ./configure --with-ld-opt="${NGINX_EXPORTLD_OPT}${LD_OPENSSL11_OPT}${QUICTLS_LD_OPT}${ZLIBCF_OPT}${BORINGSSL_LIBOPT}${AWS_LC_LIBOPT}${LIBRESSL_LIBOPT}${LIBBROTLIENC_OPT}${ZSTD_NGINX_LIB_OPT}${LRT}${JEMALLOC_LD}${MIMALLOC_LD}${PCRE_LD} -Wl,-z,relro,-z,now ${LUALD_OPT}${PCRE_LDOPT}${PIE_LDOPT}${NGXEXTRA_LDGOLDCCOPT}${CLANG_FLTO_LDOPT}${NGINX_SYMBOLIC_AS_NEEDED_OPT}" --with-cc-opt="${CC_OPENSSL11_OPT}${NGINX_DEBUG_QUIC_OPT}${BORINGSSLINC_OPT}${AWS_LC_INC_OPT}${LIBRESSLINC_OPT}${QUICTLS_CC_OPT}${ZLIBCFINC_OPT}${LIBBROTLIINC_OPT}${ZSTD_NGINX_INC_OPT}${MTUNEOPT}${PIE_CCOPT}-g$GCC_OPTLEVEL $FSTACKPROTECT${NGXEXTRA_LDGOLDCCOPT}${CLANG_FLTO_OPT} --param=ssp-buffer-size=4${FORMATSECURITY_OPT}${LIBATOMIC_NGX_OPTS}${DEVTOOLSETSEVEN_FALLTHROUGH}${DEVTOOLSETSEVEN_EXTRAFLAGS}${DEVTOOLSETEIGHT_FALLTHROUGH}${DEVTOOLSETEIGHT_EXTRAFLAGS}${DEVTOOLSETNINE_FALLTHROUGH}${DEVTOOLSETNINE_EXTRAFLAGS}${DEVTOOLSETTEN_FALLTHROUGH}${DEVTOOLSETTEN_EXTRAFLAGS}${DEVTOOLSETELEVEN_FALLTHROUGH}${DEVTOOLSETELEVEN_EXTRAFLAGS}${DEVTOOLSETTWELVE_FALLTHROUGH}${DEVTOOLSETTWELVE_EXTRAFLAGS}${DEVTOOLSETTHIRTEEN_FALLTHROUGH}${DEVTOOLSETTHIRTEEN_EXTRAFLAGS}${DEVTOOLSETFOURTEEN_FALLTHROUGH}${DEVTOOLSETFOURTEEN_EXTRAFLAGS}${DEVTOOLSETFIFTTEEN_FALLTHROUGH}${DEVTOOLSETFFIFTTEEN_EXTRAFLAGS} -Wp,-D_FORTIFY_SOURCE=2${CLANG_CCOPT}${BROTLI_CFLAG}${PCRE_CCOPT}${SET_NGXEXTRA_CCOPT}" --prefix=/usr/local/nginx --sbin-path=/usr/local/sbin/nginx --conf-path=/usr/local/nginx/conf/nginx.conf --build=${SETBUILD_VALUE}${WITHCOMPAT_OPT}${NGINX_DEBUGOPT}${PCRETWO_DISABLEOPT}${IPVSIXOPT}${DYNAMICOPT_BEGIN}${STUBSTATUSOPT}${AUTHREQOPT}${SECURELINKOPT}${FLVOPT}${MPOPT}${RTMPOPT}${WITHOPENSSL_OPT}${VTSOPT}${LIBATOMICOPT}${DYNAMICOPT_MIDDLE} --with-http_gzip_static_module${HIDELENGTHOPT}${NGX_IORING_OPT}${BROTLIOPT}${ZSTD_NGINX_OPT}${TESTCOOKIEOPT}${DYNAMICOPT_AFTERGZIP}${GEOIPTWOLITEOPT}${PGSPEEDOPT}${SUBOPT}${ADDITIONOPT}${IMAGEFILTEROPT}${GEOIPOPT}${NGINX_NJSOPT}${STREAMGEOIPOPT}${STREAMREALIPOPT}${STREAM_SSLPREREADOPT}${THREADS}${STREAM}${NGXSLICEOPT}${REALIPOPT}${ACCESSKEYOPT}${HTTPCONCATOPT}${FANCYINDEXOPT}${CACHEPURGEOPT}${GPERFOPT}${WEBDAVOPT}${RUBYMODULE}${DEVELKITOPT}${SETMISCOPT}${ECHOOPT}${REDISOPT}${HTTPREDISOPT}${LUAOPT}${STICKYOPT}${UPSTREAMOPT}${MEMCOPT}${SRCCACHEOPT}${HEADERSMOREOPT}${NGXPERLOPT}${NGXXSLTOPT}${PCREJITOPT}${ZLIBNG_OPT}${ZLIBCUSTOM_OPT} --with-http_ssl_module${SPDYOPT}${HTTPTWOOPT}${NGX_HPACK_OPT}${HTTP_PUSHOPT}${OPENSSLOPT}${OPENSSLOPT_B}${LIBRESSLOPT}${BORINGSSLOPT}${HTTP_FINGERPRINTOPT}${MODSEC_OPT}${RDNSOPT}${DYNAMICOPT_END}${LUAJIT_XCFLAGOPT} | tee -a "${CENTMINLOGDIR}/nginx-configure-${DT}.log"
-           NGX_CONFIGURE_ERR=$?
+           NGX_CONFIGURE_ERR=${PIPESTATUS[0]}
         else
            echo "4"
            # --- Debugging Nginx Configure Variables ---
@@ -6726,7 +6672,7 @@ else
            echo
            echo "./configure --with-ld-opt=\"${NGINX_EXPORTLD_OPT}${LD_OPENSSL11_OPT}${QUICTLS_LD_OPT}${ZLIBCF_OPT}${BORINGSSL_LIBOPT}${AWS_LC_LIBOPT}${LIBRESSL_LIBOPT}${LIBBROTLIENC_OPT}${ZSTD_NGINX_LIB_OPT}${LRT}${JEMALLOC_LD}${MIMALLOC_LD}${PCRE_LD} -Wl,-z,relro,-z,now ${LUALD_OPT}${PCRE_LDOPT}${PIE_LDOPT}${NGXEXTRA_LDGOLDCCOPT}${CLANG_FLTO_LDOPT}${NGINX_SYMBOLIC_AS_NEEDED_OPT}\" --with-cc-opt=\"${CC_OPENSSL11_OPT}${NGINX_DEBUG_QUIC_OPT}${BORINGSSLINC_OPT}${AWS_LC_INC_OPT}${LIBRESSLINC_OPT}${QUICTLS_CC_OPT}${ZLIBCFINC_OPT}${LIBBROTLIINC_OPT}${ZSTD_NGINX_INC_OPT}${MTUNEOPT}${PIE_CCOPT}-g$GCC_OPTLEVEL $FSTACKPROTECT${NGXEXTRA_LDGOLDCCOPT}${CLANG_FLTO_OPT} --param=ssp-buffer-size=4${FORMATSECURITY_OPT}${LIBATOMIC_NGX_OPTS}${DEVTOOLSETSEVEN_FALLTHROUGH}${DEVTOOLSETSEVEN_EXTRAFLAGS}${DEVTOOLSETEIGHT_FALLTHROUGH}${DEVTOOLSETEIGHT_EXTRAFLAGS}${DEVTOOLSETNINE_FALLTHROUGH}${DEVTOOLSETNINE_EXTRAFLAGS}${DEVTOOLSETTEN_FALLTHROUGH}${DEVTOOLSETTEN_EXTRAFLAGS}${DEVTOOLSETELEVEN_FALLTHROUGH}${DEVTOOLSETELEVEN_EXTRAFLAGS}${DEVTOOLSETTWELVE_FALLTHROUGH}${DEVTOOLSETTWELVE_EXTRAFLAGS}${DEVTOOLSETTHIRTEEN_FALLTHROUGH}${DEVTOOLSETTHIRTEEN_EXTRAFLAGS}${DEVTOOLSETFOURTEEN_FALLTHROUGH}${DEVTOOLSETFOURTEEN_EXTRAFLAGS}${DEVTOOLSETFIFTTEEN_FALLTHROUGH}${DEVTOOLSETFFIFTTEEN_EXTRAFLAGS} -Wp,-D_FORTIFY_SOURCE=2${CLANG_CCOPT}${BROTLI_CFLAG}${PCRE_CCOPT}${SET_NGXEXTRA_CCOPT}\" --prefix=/usr/local/nginx --sbin-path=/usr/local/sbin/nginx --conf-path=/usr/local/nginx/conf/nginx.conf --build=${SETBUILD_VALUE}${WITHCOMPAT_OPT}${NGINX_DEBUGOPT}${PCRETWO_DISABLEOPT}${IPVSIXOPT}${DYNAMICOPT_BEGIN}${STUBSTATUSOPT}${AUTHREQOPT}${SECURELINKOPT}${FLVOPT}${MPOPT}${RTMPOPT}${WITHOPENSSL_OPTECHO}${VTSOPT}${LIBATOMICOPT}${DYNAMICOPT_MIDDLE} --with-http_gzip_static_module${HIDELENGTHOPT}${NGX_IORING_OPT}${BROTLIOPT}${ZSTD_NGINX_OPT}${TESTCOOKIEOPT}${DYNAMICOPT_AFTERGZIP}${GEOIPTWOLITEOPT}${PGSPEEDOPT}${SUBOPT}${ADDITIONOPT}${IMAGEFILTEROPT}${GEOIPOPT}${NGINX_NJSOPT}${STREAMGEOIPOPT}${STREAMREALIPOPT}${STREAM_SSLPREREADOPT}${THREADS}${STREAM}${NGXSLICEOPT}${REALIPOPT}${ACCESSKEYOPT}${HTTPCONCATOPT}${FANCYINDEXOPT}${CACHEPURGEOPT}${GPERFOPT}${WEBDAVOPT}${RUBYMODULE}${DEVELKITOPT}${SETMISCOPT}${ECHOOPT}${REDISOPT}${HTTPREDISOPT}${LUAOPT}${STICKYOPT}${UPSTREAMOPT}${MEMCOPT}${SRCCACHEOPT}${HEADERSMOREOPT}${NGXPERLOPT}${NGXXSLTOPT}${PCREJITOPT}${ZLIBNG_OPT}${ZLIBCUSTOM_OPT} --with-http_ssl_module${SPDYOPT}${HTTPTWOOPT}${NGX_HPACK_OPT}${HTTP_PUSHOPT}${OPENSSLOPT}${OPENSSLOPT_B}${LIBRESSLOPT}${BORINGSSLOPT}${HTTP_FINGERPRINTOPT}${MODSEC_OPT}${RDNSOPT}${DYNAMICOPT_END}${LUAJIT_XCFLAGOPT}" | tee -a "${CENTMINLOGDIR}/nginx-configure-${DT}.log"
            ./configure --with-ld-opt="${NGINX_EXPORTLD_OPT}${LD_OPENSSL11_OPT}${QUICTLS_LD_OPT}${ZLIBCF_OPT}${BORINGSSL_LIBOPT}${AWS_LC_LIBOPT}${LIBRESSL_LIBOPT}${LIBBROTLIENC_OPT}${ZSTD_NGINX_LIB_OPT}${LRT}${JEMALLOC_LD}${MIMALLOC_LD}${PCRE_LD} -Wl,-z,relro,-z,now ${LUALD_OPT}${PCRE_LDOPT}${PIE_LDOPT}${NGXEXTRA_LDGOLDCCOPT}${CLANG_FLTO_LDOPT}${NGINX_SYMBOLIC_AS_NEEDED_OPT}" --with-cc-opt="${CC_OPENSSL11_OPT}${NGINX_DEBUG_QUIC_OPT}${BORINGSSLINC_OPT}${AWS_LC_INC_OPT}${LIBRESSLINC_OPT}${QUICTLS_CC_OPT}${ZLIBCFINC_OPT}${LIBBROTLIINC_OPT}${ZSTD_NGINX_INC_OPT}${MTUNEOPT}${PIE_CCOPT}-g$GCC_OPTLEVEL $FSTACKPROTECT${NGXEXTRA_LDGOLDCCOPT}${CLANG_FLTO_OPT} --param=ssp-buffer-size=4${FORMATSECURITY_OPT}${LIBATOMIC_NGX_OPTS}${DEVTOOLSETSEVEN_FALLTHROUGH}${DEVTOOLSETSEVEN_EXTRAFLAGS}${DEVTOOLSETEIGHT_FALLTHROUGH}${DEVTOOLSETEIGHT_EXTRAFLAGS}${DEVTOOLSETNINE_FALLTHROUGH}${DEVTOOLSETNINE_EXTRAFLAGS}${DEVTOOLSETTEN_FALLTHROUGH}${DEVTOOLSETTEN_EXTRAFLAGS}${DEVTOOLSETELEVEN_FALLTHROUGH}${DEVTOOLSETELEVEN_EXTRAFLAGS}${DEVTOOLSETTWELVE_FALLTHROUGH}${DEVTOOLSETTWELVE_EXTRAFLAGS}${DEVTOOLSETTHIRTEEN_FALLTHROUGH}${DEVTOOLSETTHIRTEEN_EXTRAFLAGS}${DEVTOOLSETFOURTEEN_FALLTHROUGH}${DEVTOOLSETFOURTEEN_EXTRAFLAGS}${DEVTOOLSETFIFTTEEN_FALLTHROUGH}${DEVTOOLSETFFIFTTEEN_EXTRAFLAGS} -Wp,-D_FORTIFY_SOURCE=2${CLANG_CCOPT}${BROTLI_CFLAG}${PCRE_CCOPT}${SET_NGXEXTRA_CCOPT}" --prefix=/usr/local/nginx --sbin-path=/usr/local/sbin/nginx --conf-path=/usr/local/nginx/conf/nginx.conf --build=${SETBUILD_VALUE}${WITHCOMPAT_OPT}${NGINX_DEBUGOPT}${PCRETWO_DISABLEOPT}${IPVSIXOPT}${DYNAMICOPT_BEGIN}${STUBSTATUSOPT}${AUTHREQOPT}${SECURELINKOPT}${FLVOPT}${MPOPT}${RTMPOPT}${WITHOPENSSL_OPT}${VTSOPT}${LIBATOMICOPT}${DYNAMICOPT_MIDDLE} --with-http_gzip_static_module${HIDELENGTHOPT}${NGX_IORING_OPT}${BROTLIOPT}${ZSTD_NGINX_OPT}${TESTCOOKIEOPT}${DYNAMICOPT_AFTERGZIP}${GEOIPTWOLITEOPT}${PGSPEEDOPT}${SUBOPT}${ADDITIONOPT}${IMAGEFILTEROPT}${GEOIPOPT}${NGINX_NJSOPT}${STREAMGEOIPOPT}${STREAMREALIPOPT}${STREAM_SSLPREREADOPT}${THREADS}${STREAM}${NGXSLICEOPT}${REALIPOPT}${ACCESSKEYOPT}${HTTPCONCATOPT}${FANCYINDEXOPT}${CACHEPURGEOPT}${GPERFOPT}${WEBDAVOPT}${RUBYMODULE}${DEVELKITOPT}${SETMISCOPT}${ECHOOPT}${REDISOPT}${HTTPREDISOPT}${LUAOPT}${STICKYOPT}${UPSTREAMOPT}${MEMCOPT}${SRCCACHEOPT}${HEADERSMOREOPT}${NGXPERLOPT}${NGXXSLTOPT}${PCREJITOPT}${ZLIBNG_OPT}${ZLIBCUSTOM_OPT} --with-http_ssl_module${SPDYOPT}${HTTPTWOOPT}${NGX_HPACK_OPT}${HTTP_PUSHOPT}${OPENSSLOPT}${OPENSSLOPT_B}${LIBRESSLOPT}${BORINGSSLOPT}${HTTP_FINGERPRINTOPT}${MODSEC_OPT}${RDNSOPT}${DYNAMICOPT_END}${LUAJIT_XCFLAGOPT} | tee -a "${CENTMINLOGDIR}/nginx-configure-${DT}.log"
-           NGX_CONFIGURE_ERR=$?
+           NGX_CONFIGURE_ERR=${PIPESTATUS[0]}
         fi # TLSTHREEOPT=y
       else
         pwd
@@ -6750,7 +6696,7 @@ else
         echo "5"
         echo "./configure --with-ld-opt=\"${NGINX_EXPORTLD_OPT}${LD_OPENSSL11_OPT}${QUICTLS_LD_OPT}${ZLIBCF_OPT}${BORINGSSL_LIBOPT}${AWS_LC_LIBOPT}${LIBRESSL_LIBOPT}${LIBBROTLIENC_OPT}${ZSTD_NGINX_LIB_OPT}${LRT}${JEMALLOC_LD}${MIMALLOC_LD}${PCRE_LD} -Wl,-z,relro,-z,now ${LUALD_OPT}${PCRE_LDOPT}${PIE_LDOPT}${NGXEXTRA_LDGOLDCCOPT}${CLANG_FLTO_LDOPT}${NGINX_SYMBOLIC_AS_NEEDED_OPT}\" --with-cc-opt=\"${CC_OPENSSL11_OPT}${NGINX_DEBUG_QUIC_OPT}${BORINGSSLINC_OPT}${AWS_LC_INC_OPT}${LIBRESSLINC_OPT}${QUICTLS_CC_OPT}${ZLIBCFINC_OPT}${LIBBROTLIINC_OPT}${ZSTD_NGINX_INC_OPT}${MTUNEOPT}${PIE_CCOPT}-g$GCC_OPTLEVEL $FSTACKPROTECT${NGXEXTRA_LDGOLDCCOPT}${CLANG_FLTO_OPT} --param=ssp-buffer-size=4${FORMATSECURITY_OPT}${LIBATOMIC_NGX_OPTS}${DEVTOOLSETSEVEN_FALLTHROUGH}${DEVTOOLSETSEVEN_EXTRAFLAGS}${DEVTOOLSETEIGHT_FALLTHROUGH}${DEVTOOLSETEIGHT_EXTRAFLAGS}${DEVTOOLSETNINE_FALLTHROUGH}${DEVTOOLSETNINE_EXTRAFLAGS}${DEVTOOLSETTEN_FALLTHROUGH}${DEVTOOLSETTEN_EXTRAFLAGS}${DEVTOOLSETELEVEN_FALLTHROUGH}${DEVTOOLSETELEVEN_EXTRAFLAGS}${DEVTOOLSETTWELVE_FALLTHROUGH}${DEVTOOLSETTWELVE_EXTRAFLAGS}${DEVTOOLSETTHIRTEEN_FALLTHROUGH}${DEVTOOLSETTHIRTEEN_EXTRAFLAGS}${DEVTOOLSETFOURTEEN_FALLTHROUGH}${DEVTOOLSETFOURTEEN_EXTRAFLAGS}${DEVTOOLSETFIFTTEEN_FALLTHROUGH}${DEVTOOLSETFFIFTTEEN_EXTRAFLAGS} -Wp,-D_FORTIFY_SOURCE=2${CLANG_CCOPT}${BROTLI_CFLAG}${PCRE_CCOPT}${SET_NGXEXTRA_CCOPT}\" --prefix=/usr/local/nginx --sbin-path=/usr/local/sbin/nginx --conf-path=/usr/local/nginx/conf/nginx.conf --build=${SETBUILD_VALUE}${WITHCOMPAT_OPT}${NGINX_DEBUGOPT}${PCRETWO_DISABLEOPT}${DYNAMICOPT_BEGIN}${STUBSTATUSOPT}${AUTHREQOPT}${SECURELINKOPT}${FLVOPT}${MPOPT}${RTMPOPT}${WITHOPENSSL_OPTECHO}${VTSOPT}${LIBATOMICOPT}${DYNAMICOPT_MIDDLE} --with-http_gzip_static_module${HIDELENGTHOPT}${NGX_IORING_OPT}${BROTLIOPT}${ZSTD_NGINX_OPT}${TESTCOOKIEOPT}${DYNAMICOPT_AFTERGZIP}${GEOIPTWOLITEOPT}${PGSPEEDOPT}${SUBOPT}${ADDITIONOPT}${IMAGEFILTEROPT}${GEOIPOPT}${NGINX_NJSOPT}${STREAMGEOIPOPT}${STREAMREALIPOPT}${STREAM_SSLPREREADOPT}${THREADS}${STREAM}${NGXSLICEOPT}${REALIPOPT}${ACCESSKEYOPT}${HTTPCONCATOPT}${FANCYINDEXOPT}${CACHEPURGEOPT}${GPERFOPT}${WEBDAVOPT}${RUBYMODULE}${DEVELKITOPT}${SETMISCOPT}${ECHOOPT}${REDISOPT}${HTTPREDISOPT}${LUAOPT}${STICKYOPT}${UPSTREAMOPT}${MEMCOPT}${SRCCACHEOPT}${HEADERSMOREOPT}${NGXPERLOPT}${NGXXSLTOPT}${PCREJITOPT}${ZLIBNG_OPT}${ZLIBCUSTOM_OPT} --with-http_ssl_module${SPDYOPT}${HTTPTWOOPT}${NGX_HPACK_OPT}${HTTP_PUSHOPT}${OPENSSLOPT}${HTTP_FINGERPRINTOPT} --with-openssl-opt=\"enable-ec_nistp_64_gcc_128 enable-tls1_3${NGINX_KTLS_OPT}${NGINX_OPENSSLOPT_EXTRAS}\"${LIBRESSLOPT}${BORINGSSLOPT}${MODSEC_OPT}${RDNSOPT}${DYNAMICOPT_END}${LUAJIT_XCFLAGOPT}" | tee -a "${CENTMINLOGDIR}/nginx-configure-${DT}.log"
       ./configure --with-ld-opt="${NGINX_EXPORTLD_OPT}${LD_OPENSSL11_OPT}${QUICTLS_LD_OPT}${ZLIBCF_OPT}${BORINGSSL_LIBOPT}${AWS_LC_LIBOPT}${LIBRESSL_LIBOPT}${LIBBROTLIENC_OPT}${ZSTD_NGINX_LIB_OPT}${LRT}${JEMALLOC_LD}${MIMALLOC_LD}${PCRE_LD} -Wl,-z,relro,-z,now ${LUALD_OPT}${PCRE_LDOPT}${PIE_LDOPT}${NGXEXTRA_LDGOLDCCOPT}${CLANG_FLTO_LDOPT}${NGINX_SYMBOLIC_AS_NEEDED_OPT}" --with-cc-opt="${CC_OPENSSL11_OPT}${NGINX_DEBUG_QUIC_OPT}${BORINGSSLINC_OPT}${AWS_LC_INC_OPT}${LIBRESSLINC_OPT}${QUICTLS_CC_OPT}${ZLIBCFINC_OPT}${LIBBROTLIINC_OPT}${ZSTD_NGINX_INC_OPT}${MTUNEOPT}${PIE_CCOPT}-g$GCC_OPTLEVEL $FSTACKPROTECT${NGXEXTRA_LDGOLDCCOPT}${CLANG_FLTO_OPT} --param=ssp-buffer-size=4${FORMATSECURITY_OPT}${LIBATOMIC_NGX_OPTS}${DEVTOOLSETSEVEN_FALLTHROUGH}${DEVTOOLSETSEVEN_EXTRAFLAGS}${DEVTOOLSETEIGHT_FALLTHROUGH}${DEVTOOLSETEIGHT_EXTRAFLAGS}${DEVTOOLSETNINE_FALLTHROUGH}${DEVTOOLSETNINE_EXTRAFLAGS}${DEVTOOLSETTEN_FALLTHROUGH}${DEVTOOLSETTEN_EXTRAFLAGS}${DEVTOOLSETELEVEN_FALLTHROUGH}${DEVTOOLSETELEVEN_EXTRAFLAGS}${DEVTOOLSETTWELVE_FALLTHROUGH}${DEVTOOLSETTWELVE_EXTRAFLAGS}${DEVTOOLSETTHIRTEEN_FALLTHROUGH}${DEVTOOLSETTHIRTEEN_EXTRAFLAGS}${DEVTOOLSETFOURTEEN_FALLTHROUGH}${DEVTOOLSETFOURTEEN_EXTRAFLAGS}${DEVTOOLSETFIFTTEEN_FALLTHROUGH}${DEVTOOLSETFFIFTTEEN_EXTRAFLAGS} -Wp,-D_FORTIFY_SOURCE=2${CLANG_CCOPT}${BROTLI_CFLAG}${PCRE_CCOPT}${SET_NGXEXTRA_CCOPT}" --prefix=/usr/local/nginx --sbin-path=/usr/local/sbin/nginx --conf-path=/usr/local/nginx/conf/nginx.conf --build=${SETBUILD_VALUE}${WITHCOMPAT_OPT}${NGINX_DEBUGOPT}${PCRETWO_DISABLEOPT}${DYNAMICOPT_BEGIN}${STUBSTATUSOPT}${AUTHREQOPT}${SECURELINKOPT}${FLVOPT}${MPOPT}${RTMPOPT}${WITHOPENSSL_OPT}${VTSOPT}${LIBATOMICOPT}${DYNAMICOPT_MIDDLE} --with-http_gzip_static_module${HIDELENGTHOPT}${NGX_IORING_OPT}${BROTLIOPT}${ZSTD_NGINX_OPT}${TESTCOOKIEOPT}${DYNAMICOPT_AFTERGZIP}${GEOIPTWOLITEOPT}${PGSPEEDOPT}${SUBOPT}${ADDITIONOPT}${IMAGEFILTEROPT}${GEOIPOPT}${NGINX_NJSOPT}${STREAMGEOIPOPT}${STREAMREALIPOPT}${STREAM_SSLPREREADOPT}${THREADS}${STREAM}${NGXSLICEOPT}${REALIPOPT}${ACCESSKEYOPT}${HTTPCONCATOPT}${FANCYINDEXOPT}${CACHEPURGEOPT}${GPERFOPT}${WEBDAVOPT}${RUBYMODULE}${DEVELKITOPT}${SETMISCOPT}${ECHOOPT}${REDISOPT}${HTTPREDISOPT}${LUAOPT}${STICKYOPT}${UPSTREAMOPT}${MEMCOPT}${SRCCACHEOPT}${HEADERSMOREOPT}${NGXPERLOPT}${NGXXSLTOPT}${PCREJITOPT}${ZLIBNG_OPT}${ZLIBCUSTOM_OPT} --with-http_ssl_module${SPDYOPT}${HTTPTWOOPT}${NGX_HPACK_OPT}${HTTP_PUSHOPT}${OPENSSLOPT}${HTTP_FINGERPRINTOPT} --with-openssl-opt="enable-ec_nistp_64_gcc_128 enable-tls1_3${NGINX_KTLS_OPT}${NGINX_OPENSSLOPT_EXTRAS}"${LIBRESSLOPT}${BORINGSSLOPT}${MODSEC_OPT}${RDNSOPT}${DYNAMICOPT_END}${LUAJIT_XCFLAGOPT} | tee -a "${CENTMINLOGDIR}/nginx-configure-${DT}.log"
-      NGX_CONFIGURE_ERR=$?
+      NGX_CONFIGURE_ERR=${PIPESTATUS[0]}
       fi
     else
       if [[ "$asknginxipv" = [yY] || "$NGINX_IPV" = [yY] ]]; then
@@ -6759,17 +6705,18 @@ else
           echo "6"
           echo "./configure --with-ld-opt=\"${NGINX_EXPORTLD_OPT}${LD_OPENSSL11_OPT}${QUICTLS_LD_OPT}${ZLIBCF_OPT}${BORINGSSL_LIBOPT}${AWS_LC_LIBOPT}${LIBRESSL_LIBOPT}${LIBBROTLIENC_OPT}${ZSTD_NGINX_LIB_OPT}${LRT}${JEMALLOC_LD}${MIMALLOC_LD}${PCRE_LD} -Wl,-z,relro,-z,now ${LUALD_OPT}${PCRE_LDOPT}${PIE_LDOPT}${NGXEXTRA_LDGOLDCCOPT}${CLANG_FLTO_LDOPT}${NGINX_SYMBOLIC_AS_NEEDED_OPT}\" --with-cc-opt=\"${CC_OPENSSL11_OPT}${NGINX_DEBUG_QUIC_OPT}${BORINGSSLINC_OPT}${AWS_LC_INC_OPT}${LIBRESSLINC_OPT}${QUICTLS_CC_OPT}${ZLIBCFINC_OPT}${LIBBROTLIINC_OPT}${ZSTD_NGINX_INC_OPT}${MTUNEOPT}${PIE_CCOPT}-g$GCC_OPTLEVEL $FSTACKPROTECT${NGXEXTRA_LDGOLDCCOPT}${CLANG_FLTO_OPT} --param=ssp-buffer-size=4${FORMATSECURITY_OPT}${LIBATOMIC_NGX_OPTS}${DEVTOOLSETSEVEN_FALLTHROUGH}${DEVTOOLSETSEVEN_EXTRAFLAGS}${DEVTOOLSETEIGHT_FALLTHROUGH}${DEVTOOLSETEIGHT_EXTRAFLAGS}${DEVTOOLSETNINE_FALLTHROUGH}${DEVTOOLSETNINE_EXTRAFLAGS}${DEVTOOLSETTEN_FALLTHROUGH}${DEVTOOLSETTEN_EXTRAFLAGS}${DEVTOOLSETELEVEN_FALLTHROUGH}${DEVTOOLSETELEVEN_EXTRAFLAGS}${DEVTOOLSETTWELVE_FALLTHROUGH}${DEVTOOLSETTWELVE_EXTRAFLAGS}${DEVTOOLSETTHIRTEEN_FALLTHROUGH}${DEVTOOLSETTHIRTEEN_EXTRAFLAGS}${DEVTOOLSETFOURTEEN_FALLTHROUGH}${DEVTOOLSETFOURTEEN_EXTRAFLAGS}${DEVTOOLSETFIFTTEEN_FALLTHROUGH}${DEVTOOLSETFFIFTTEEN_EXTRAFLAGS} -Wp,-D_FORTIFY_SOURCE=2${CLANG_CCOPT}${BROTLI_CFLAG}${PCRE_CCOPT}${SET_NGXEXTRA_CCOPT}\" --prefix=/usr/local/nginx --sbin-path=/usr/local/sbin/nginx --conf-path=/usr/local/nginx/conf/nginx.conf --build=${SETBUILD_VALUE}${WITHCOMPAT_OPT}${NGINX_DEBUGOPT}${PCRETWO_DISABLEOPT}${IPVSIXOPT}${DYNAMICOPT_BEGIN} --with-http_ssl_module${HTTPTWOOPT}${NGX_HPACK_OPT}${HTTP_PUSHOPT}${DYNAMICOPT_MIDDLE} --with-http_gzip_static_module${HIDELENGTHOPT}${NGX_IORING_OPT}${BROTLIOPT}${ZSTD_NGINX_OPT}${TESTCOOKIEOPT}${DYNAMICOPT_AFTERGZIP}${STUBSTATUSOPT}${SUBOPT}${ADDITIONOPT}${IMAGEFILTEROPT}${AUTHREQOPT}${SECURELINKOPT}${FLVOPT}${MPOPT}${RTMPOPT}${REALIPOPT}${GEOIPOPT}${NGINX_NJSOPT}${STREAMGEOIPOPT}${STREAMREALIPOPT}${STREAM_SSLPREREADOPT}${THREADS}${STREAM}${WITHOPENSSL_OPTECHO}${FANCYINDEXOPT}${CACHEPURGEOPT}${ACCESSKEYOPT}${HTTPCONCATOPT}${GPERFOPT}${WEBDAVOPT}${RUBYMODULE}${MEMCOPT}${SRCCACHEOPT}${DEVELKITOPT}${SETMISCOPT}${ECHOOPT}${REDISOPT}${HTTPREDISOPT}${LUAOPT}${STICKYOPT}${UPSTREAMOPT}${VTSOPT}${HEADERSMOREOPT}${OPENSSLOPT}${OPENSSLOPT_B}${LIBRESSLOPT}${BORINGSSLOPT}${HTTP_FINGERPRINTOPT}${LIBATOMICOPT}${PCREJITOPT}${ZLIBNG_OPT}${ZLIBCUSTOM_OPT}${SPDYOPT}${NGXPERLOPT}${NGXXSLTOPT}${GEOIPTWOLITEOPT}${PGSPEEDOPT}${MODSEC_OPT}${RDNSOPT}${DYNAMICOPT_END}${LUAJIT_XCFLAGOPT}" | tee -a "${CENTMINLOGDIR}/nginx-configure-${DT}.log"
       ./configure --with-ld-opt="${NGINX_EXPORTLD_OPT}${LD_OPENSSL11_OPT}${QUICTLS_LD_OPT}${ZLIBCF_OPT}${BORINGSSL_LIBOPT}${AWS_LC_LIBOPT}${LIBRESSL_LIBOPT}${LIBBROTLIENC_OPT}${ZSTD_NGINX_LIB_OPT}${LRT}${JEMALLOC_LD}${MIMALLOC_LD}${PCRE_LD} -Wl,-z,relro,-z,now ${LUALD_OPT}${PCRE_LDOPT}${PIE_LDOPT}${NGXEXTRA_LDGOLDCCOPT}${CLANG_FLTO_LDOPT}${NGINX_SYMBOLIC_AS_NEEDED_OPT}" --with-cc-opt="${CC_OPENSSL11_OPT}${NGINX_DEBUG_QUIC_OPT}${BORINGSSLINC_OPT}${AWS_LC_INC_OPT}${LIBRESSLINC_OPT}${QUICTLS_CC_OPT}${ZLIBCFINC_OPT}${LIBBROTLIINC_OPT}${ZSTD_NGINX_INC_OPT}${MTUNEOPT}${PIE_CCOPT}-g$GCC_OPTLEVEL $FSTACKPROTECT${NGXEXTRA_LDGOLDCCOPT}${CLANG_FLTO_OPT} --param=ssp-buffer-size=4${FORMATSECURITY_OPT}${LIBATOMIC_NGX_OPTS}${DEVTOOLSETSEVEN_FALLTHROUGH}${DEVTOOLSETSEVEN_EXTRAFLAGS}${DEVTOOLSETEIGHT_FALLTHROUGH}${DEVTOOLSETEIGHT_EXTRAFLAGS}${DEVTOOLSETNINE_FALLTHROUGH}${DEVTOOLSETNINE_EXTRAFLAGS}${DEVTOOLSETTEN_FALLTHROUGH}${DEVTOOLSETTEN_EXTRAFLAGS}${DEVTOOLSETELEVEN_FALLTHROUGH}${DEVTOOLSETELEVEN_EXTRAFLAGS}${DEVTOOLSETTWELVE_FALLTHROUGH}${DEVTOOLSETTWELVE_EXTRAFLAGS}${DEVTOOLSETTHIRTEEN_FALLTHROUGH}${DEVTOOLSETTHIRTEEN_EXTRAFLAGS}${DEVTOOLSETFOURTEEN_FALLTHROUGH}${DEVTOOLSETFOURTEEN_EXTRAFLAGS}${DEVTOOLSETFIFTTEEN_FALLTHROUGH}${DEVTOOLSETFFIFTTEEN_EXTRAFLAGS} -Wp,-D_FORTIFY_SOURCE=2${CLANG_CCOPT}${BROTLI_CFLAG}${PCRE_CCOPT}${SET_NGXEXTRA_CCOPT}" --prefix=/usr/local/nginx --sbin-path=/usr/local/sbin/nginx --conf-path=/usr/local/nginx/conf/nginx.conf --build=${SETBUILD_VALUE}${WITHCOMPAT_OPT}${NGINX_DEBUGOPT}${PCRETWO_DISABLEOPT}${IPVSIXOPT}${DYNAMICOPT_BEGIN} --with-http_ssl_module${HTTPTWOOPT}${NGX_HPACK_OPT}${HTTP_PUSHOPT}${DYNAMICOPT_MIDDLE} --with-http_gzip_static_module${HIDELENGTHOPT}${NGX_IORING_OPT}${BROTLIOPT}${ZSTD_NGINX_OPT}${TESTCOOKIEOPT}${DYNAMICOPT_AFTERGZIP}${STUBSTATUSOPT}${SUBOPT}${ADDITIONOPT}${IMAGEFILTEROPT}${AUTHREQOPT}${SECURELINKOPT}${FLVOPT}${MPOPT}${RTMPOPT}${REALIPOPT}${GEOIPOPT}${NGINX_NJSOPT}${STREAMGEOIPOPT}${STREAMREALIPOPT}${STREAM_SSLPREREADOPT}${THREADS}${STREAM}${WITHOPENSSL_OPT}${FANCYINDEXOPT}${CACHEPURGEOPT}${ACCESSKEYOPT}${HTTPCONCATOPT}${GPERFOPT}${WEBDAVOPT}${RUBYMODULE}${MEMCOPT}${SRCCACHEOPT}${DEVELKITOPT}${SETMISCOPT}${ECHOOPT}${REDISOPT}${HTTPREDISOPT}${LUAOPT}${STICKYOPT}${UPSTREAMOPT}${VTSOPT}${HEADERSMOREOPT}${OPENSSLOPT}${OPENSSLOPT_B}${LIBRESSLOPT}${BORINGSSLOPT}${HTTP_FINGERPRINTOPT}${LIBATOMICOPT}${PCREJITOPT}${ZLIBNG_OPT}${ZLIBCUSTOM_OPT}${SPDYOPT}${NGXPERLOPT}${NGXXSLTOPT}${GEOIPTWOLITEOPT}${PGSPEEDOPT}${MODSEC_OPT}${RDNSOPT}${DYNAMICOPT_END}${LUAJIT_XCFLAGOPT} | tee -a "${CENTMINLOGDIR}/nginx-configure-${DT}.log"
-      NGX_CONFIGURE_ERR=$?
+      NGX_CONFIGURE_ERR=${PIPESTATUS[0]}
       else
         pwd
         echo "nginx configure options:"
         echo "7"
         echo "./configure --with-ld-opt=\"${NGINX_EXPORTLD_OPT}${LD_OPENSSL11_OPT}${QUICTLS_LD_OPT}${ZLIBCF_OPT}${BORINGSSL_LIBOPT}${AWS_LC_LIBOPT}${LIBRESSL_LIBOPT}${LIBBROTLIENC_OPT}${ZSTD_NGINX_LIB_OPT}${LRT}${JEMALLOC_LD}${MIMALLOC_LD}${PCRE_LD} -Wl,-z,relro,-z,now ${LUALD_OPT}${PCRE_LDOPT}${PIE_LDOPT}${NGXEXTRA_LDGOLDCCOPT}${CLANG_FLTO_LDOPT}${NGINX_SYMBOLIC_AS_NEEDED_OPT}\" --with-cc-opt=\"${CC_OPENSSL11_OPT}${NGINX_DEBUG_QUIC_OPT}${BORINGSSLINC_OPT}${AWS_LC_INC_OPT}${LIBRESSLINC_OPT}${QUICTLS_CC_OPT}${ZLIBCFINC_OPT}${LIBBROTLIINC_OPT}${ZSTD_NGINX_INC_OPT}${MTUNEOPT}${PIE_CCOPT}-g$GCC_OPTLEVEL $FSTACKPROTECT${NGXEXTRA_LDGOLDCCOPT}${CLANG_FLTO_OPT} --param=ssp-buffer-size=4${FORMATSECURITY_OPT}${LIBATOMIC_NGX_OPTS}${DEVTOOLSETSEVEN_FALLTHROUGH}${DEVTOOLSETSEVEN_EXTRAFLAGS}${DEVTOOLSETEIGHT_FALLTHROUGH}${DEVTOOLSETEIGHT_EXTRAFLAGS}${DEVTOOLSETNINE_FALLTHROUGH}${DEVTOOLSETNINE_EXTRAFLAGS}${DEVTOOLSETTEN_FALLTHROUGH}${DEVTOOLSETTEN_EXTRAFLAGS}${DEVTOOLSETELEVEN_FALLTHROUGH}${DEVTOOLSETELEVEN_EXTRAFLAGS}${DEVTOOLSETTWELVE_FALLTHROUGH}${DEVTOOLSETTWELVE_EXTRAFLAGS}${DEVTOOLSETTHIRTEEN_FALLTHROUGH}${DEVTOOLSETTHIRTEEN_EXTRAFLAGS}${DEVTOOLSETFOURTEEN_FALLTHROUGH}${DEVTOOLSETFOURTEEN_EXTRAFLAGS}${DEVTOOLSETFIFTTEEN_FALLTHROUGH}${DEVTOOLSETFFIFTTEEN_EXTRAFLAGS} -Wp,-D_FORTIFY_SOURCE=2${CLANG_CCOPT}${BROTLI_CFLAG}${PCRE_CCOPT}${SET_NGXEXTRA_CCOPT}\" --prefix=/usr/local/nginx --sbin-path=/usr/local/sbin/nginx --conf-path=/usr/local/nginx/conf/nginx.conf --build=${SETBUILD_VALUE}${WITHCOMPAT_OPT}${NGINX_DEBUGOPT}${PCRETWO_DISABLEOPT}${DYNAMICOPT_BEGIN} --with-http_ssl_module${HTTPTWOOPT}${NGX_HPACK_OPT}${HTTP_PUSHOPT}${DYNAMICOPT_MIDDLE} --with-http_gzip_static_module${HIDELENGTHOPT}${NGX_IORING_OPT}${BROTLIOPT}${ZSTD_NGINX_OPT}${TESTCOOKIEOPT}${DYNAMICOPT_AFTERGZIP}${STUBSTATUSOPT}${SUBOPT}${ADDITIONOPT}${IMAGEFILTEROPT}${AUTHREQOPT}${SECURELINKOPT}${FLVOPT}${MPOPT}${RTMPOPT}${REALIPOPT}${GEOIPOPT}${NGINX_NJSOPT}${STREAMGEOIPOPT}${STREAMREALIPOPT}${STREAM_SSLPREREADOPT}${THREADS}${STREAM}${WITHOPENSSL_OPTECHO}${FANCYINDEXOPT}${CACHEPURGEOPT}${ACCESSKEYOPT}${HTTPCONCATOPT}${GPERFOPT}${WEBDAVOPT}${RUBYMODULE}${MEMCOPT}${SRCCACHEOPT}${DEVELKITOPT}${SETMISCOPT}${ECHOOPT}${REDISOPT}${HTTPREDISOPT}${LUAOPT}${STICKYOPT}${UPSTREAMOPT}${VTSOPT}${HEADERSMOREOPT}${OPENSSLOPT}${OPENSSLOPT_B}${LIBRESSLOPT}${BORINGSSLOPT}${HTTP_FINGERPRINTOPT}${LIBATOMICOPT}${PCREJITOPT}${ZLIBNG_OPT}${ZLIBCUSTOM_OPT}${SPDYOPT}${NGXPERLOPT}${NGXXSLTOPT}${GEOIPTWOLITEOPT}${PGSPEEDOPT}${MODSEC_OPT}${RDNSOPT}${DYNAMICOPT_END}${LUAJIT_XCFLAGOPT}" | tee -a "${CENTMINLOGDIR}/nginx-configure-${DT}.log"
       ./configure --with-ld-opt="${NGINX_EXPORTLD_OPT}${LD_OPENSSL11_OPT}${QUICTLS_LD_OPT}${ZLIBCF_OPT}${BORINGSSL_LIBOPT}${AWS_LC_LIBOPT}${LIBRESSL_LIBOPT}${LIBBROTLIENC_OPT}${ZSTD_NGINX_LIB_OPT}${LRT}${JEMALLOC_LD}${MIMALLOC_LD}${PCRE_LD} -Wl,-z,relro,-z,now ${LUALD_OPT}${PCRE_LDOPT}${PIE_LDOPT}${NGXEXTRA_LDGOLDCCOPT}${CLANG_FLTO_LDOPT}${NGINX_SYMBOLIC_AS_NEEDED_OPT}" --with-cc-opt="${CC_OPENSSL11_OPT}${NGINX_DEBUG_QUIC_OPT}${BORINGSSLINC_OPT}${AWS_LC_INC_OPT}${LIBRESSLINC_OPT}${QUICTLS_CC_OPT}${ZLIBCFINC_OPT}${LIBBROTLIINC_OPT}${ZSTD_NGINX_INC_OPT}${MTUNEOPT}${PIE_CCOPT}-g$GCC_OPTLEVEL $FSTACKPROTECT${NGXEXTRA_LDGOLDCCOPT}${CLANG_FLTO_OPT} --param=ssp-buffer-size=4${FORMATSECURITY_OPT}${LIBATOMIC_NGX_OPTS}${DEVTOOLSETSEVEN_FALLTHROUGH}${DEVTOOLSETSEVEN_EXTRAFLAGS}${DEVTOOLSETEIGHT_FALLTHROUGH}${DEVTOOLSETEIGHT_EXTRAFLAGS}${DEVTOOLSETNINE_FALLTHROUGH}${DEVTOOLSETNINE_EXTRAFLAGS}${DEVTOOLSETTEN_FALLTHROUGH}${DEVTOOLSETTEN_EXTRAFLAGS}${DEVTOOLSETELEVEN_FALLTHROUGH}${DEVTOOLSETELEVEN_EXTRAFLAGS}${DEVTOOLSETTWELVE_FALLTHROUGH}${DEVTOOLSETTWELVE_EXTRAFLAGS}${DEVTOOLSETTHIRTEEN_FALLTHROUGH}${DEVTOOLSETTHIRTEEN_EXTRAFLAGS}${DEVTOOLSETFOURTEEN_FALLTHROUGH}${DEVTOOLSETFOURTEEN_EXTRAFLAGS}${DEVTOOLSETFIFTTEEN_FALLTHROUGH}${DEVTOOLSETFFIFTTEEN_EXTRAFLAGS} -Wp,-D_FORTIFY_SOURCE=2${CLANG_CCOPT}${BROTLI_CFLAG}${PCRE_CCOPT}${SET_NGXEXTRA_CCOPT}" --prefix=/usr/local/nginx --sbin-path=/usr/local/sbin/nginx --conf-path=/usr/local/nginx/conf/nginx.conf --build=${SETBUILD_VALUE}${WITHCOMPAT_OPT}${NGINX_DEBUGOPT}${PCRETWO_DISABLEOPT}${DYNAMICOPT_BEGIN} --with-http_ssl_module${HTTPTWOOPT}${NGX_HPACK_OPT}${HTTP_PUSHOPT}${DYNAMICOPT_MIDDLE} --with-http_gzip_static_module${HIDELENGTHOPT}${NGX_IORING_OPT}${BROTLIOPT}${ZSTD_NGINX_OPT}${TESTCOOKIEOPT}${DYNAMICOPT_AFTERGZIP}${STUBSTATUSOPT}${SUBOPT}${ADDITIONOPT}${IMAGEFILTEROPT}${AUTHREQOPT}${SECURELINKOPT}${FLVOPT}${MPOPT}${RTMPOPT}${REALIPOPT}${GEOIPOPT}${NGINX_NJSOPT}${STREAMGEOIPOPT}${STREAMREALIPOPT}${STREAM_SSLPREREADOPT}${THREADS}${STREAM}${WITHOPENSSL_OPT}${FANCYINDEXOPT}${CACHEPURGEOPT}${ACCESSKEYOPT}${HTTPCONCATOPT}${GPERFOPT}${WEBDAVOPT}${RUBYMODULE}${MEMCOPT}${SRCCACHEOPT}${DEVELKITOPT}${SETMISCOPT}${ECHOOPT}${REDISOPT}${HTTPREDISOPT}${LUAOPT}${STICKYOPT}${UPSTREAMOPT}${VTSOPT}${HEADERSMOREOPT}${OPENSSLOPT}${OPENSSLOPT_B}${LIBRESSLOPT}${BORINGSSLOPT}${HTTP_FINGERPRINTOPT}${LIBATOMICOPT}${PCREJITOPT}${ZLIBNG_OPT}${ZLIBCUSTOM_OPT}${SPDYOPT}${NGXPERLOPT}${NGXXSLTOPT}${GEOIPTWOLITEOPT}${PGSPEEDOPT}${MODSEC_OPT}${RDNSOPT}${DYNAMICOPT_END}${LUAJIT_XCFLAGOPT} | tee -a "${CENTMINLOGDIR}/nginx-configure-${DT}.log"
-      NGX_CONFIGURE_ERR=$?
+      NGX_CONFIGURE_ERR=${PIPESTATUS[0]}
       fi
   fi # NGXMODULE_ALTORDER
 fi # FPM_NGINX_RPM
   sar_call
+  return "${NGX_CONFIGURE_ERR:-0}"
 
 }
