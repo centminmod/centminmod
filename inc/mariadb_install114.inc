@@ -94,7 +94,7 @@ elif [[ "$CENTOS_EIGHT" = '8' && "$(uname -m)" == 'x86_64' ]]; then
 elif [[ "$CENTOS_SEVEN" = '7' && "$(uname -m)" == 'aarch64' ]]; then
     MDB_REPO_DIR="${MDB_REPO_VER}/centos7-aarch64"
 elif [[ "$CENTOS_SEVEN" = '7' && "$(uname -m)" == 'x86_64' ]]; then
-    MDB_REPO_DIR="${MDB_REPO_VER}/centos7-amd64"
+    MDB_REPO_DIR="${MDB_REPO_VER}/rhel7-amd64"
 fi
 
 # MariaDB yum mirrors may have connectivity issues for servers in China (CN)
@@ -654,7 +654,7 @@ if [[ "$MDB_COUNTRY" = 'US' || "$MDB_CONTINENT" = 'NA' ]]; then
 cat > "/etc/yum.repos.d/mariadb.repo" <<EOF
 [mariadb]
 name = MariaDB
-baseurl = ${MDB_MIRROR_BASEURL}/${MDB_REPO_VER}/centos7-amd64
+baseurl = ${MDB_MIRROR_BASEURL}/${MDB_REPO_VER}/rhel7-amd64
 gpgkey=${MDB_MIRROR_BASEURL}/RPM-GPG-KEY-MariaDB
 gpgcheck=1
 EOF
@@ -662,7 +662,7 @@ elif [[ "$MDB_COUNTRY" = 'SG' || "$MDB_CONTINENT" = 'AS' ]]; then
 cat > "/etc/yum.repos.d/mariadb.repo" <<EOF
 [mariadb]
 name = MariaDB
-baseurl = ${MDB_MIRROR_BASEURL}/${MDB_REPO_VER}/centos7-amd64
+baseurl = ${MDB_MIRROR_BASEURL}/${MDB_REPO_VER}/rhel7-amd64
 gpgkey=${MDB_MIRROR_BASEURL}/RPM-GPG-KEY-MariaDB
 gpgcheck=1
 EOF
@@ -670,7 +670,7 @@ elif [[ "$MDB_COUNTRY" = 'DE' || "$MDB_CONTINENT" = 'EU' ]]; then
 cat > "/etc/yum.repos.d/mariadb.repo" <<EOF
 [mariadb]
 name = MariaDB
-baseurl = ${MDB_MIRROR_BASEURL}/${MDB_REPO_VER}/centos7-amd64
+baseurl = ${MDB_MIRROR_BASEURL}/${MDB_REPO_VER}/rhel7-amd64
 gpgkey=${MDB_MIRROR_BASEURL}/RPM-GPG-KEY-MariaDB
 gpgcheck=1
 EOF
@@ -678,7 +678,7 @@ elif [[ "$MDB_COUNTRY" = 'AU' || "$MDB_CONTINENT" = 'OC' ]]; then
 cat > "/etc/yum.repos.d/mariadb.repo" <<EOF
 [mariadb]
 name = MariaDB
-baseurl = ${MDB_MIRROR_BASEURL}/${MDB_REPO_VER}/centos7-amd64
+baseurl = ${MDB_MIRROR_BASEURL}/${MDB_REPO_VER}/rhel7-amd64
 gpgkey=${MDB_MIRROR_BASEURL}/RPM-GPG-KEY-MariaDB
 gpgcheck=1
 EOF
@@ -686,7 +686,7 @@ elif [[ "$MDB_COUNTRY" = 'CN' ]]; then
 cat > "/etc/yum.repos.d/mariadb.repo" <<EOF
 [mariadb]
 name = MariaDB
-baseurl = ${MDB_MIRROR_BASEURL}/${MDB_REPO_VER}/centos7-amd64
+baseurl = ${MDB_MIRROR_BASEURL}/${MDB_REPO_VER}/rhel7-amd64
 gpgkey=${MDB_MIRROR_BASEURL}/RPM-GPG-KEY-MariaDB
 gpgcheck=1
 EOF
@@ -694,7 +694,7 @@ else
 cat > "/etc/yum.repos.d/mariadb.repo" <<EOF
 [mariadb]
 name = MariaDB
-baseurl = ${MDB_MIRROR_BASEURL}/${MDB_REPO_VER}/centos7-amd64
+baseurl = ${MDB_MIRROR_BASEURL}/${MDB_REPO_VER}/rhel7-amd64
 gpgkey=${MDB_MIRROR_BASEURL}/RPM-GPG-KEY-MariaDB
 gpgcheck=1
 EOF
@@ -706,7 +706,7 @@ if [[ "$MDB_COUNTRY" = 'US' || "$MDB_CONTINENT" = 'NA' ]]; then
 cat > "/etc/yum.repos.d/mariadb.repo" <<EOF
 [mariadb]
 name = MariaDB
-baseurl = ${MDB_MIRROR_BASEURL}/${MDB_REPO_VER}/centos7-amd64
+baseurl = ${MDB_MIRROR_BASEURL}/${MDB_REPO_VER}/rhel7-amd64
 gpgkey=${MDB_MIRROR_BASEURL}/RPM-GPG-KEY-MariaDB
 gpgcheck=1
 EOF
@@ -714,7 +714,7 @@ elif [[ "$MDB_COUNTRY" = 'SG' || "$MDB_CONTINENT" = 'AS' ]]; then
 cat > "/etc/yum.repos.d/mariadb.repo" <<EOF
 [mariadb]
 name = MariaDB
-baseurl = ${MDB_MIRROR_BASEURL}/${MDB_REPO_VER}/centos7-amd64
+baseurl = ${MDB_MIRROR_BASEURL}/${MDB_REPO_VER}/rhel7-amd64
 gpgkey=${MDB_MIRROR_BASEURL}/RPM-GPG-KEY-MariaDB
 gpgcheck=1
 EOF
@@ -722,7 +722,7 @@ elif [[ "$MDB_COUNTRY" = 'DE' || "$MDB_CONTINENT" = 'EU' ]]; then
 cat > "/etc/yum.repos.d/mariadb.repo" <<EOF
 [mariadb]
 name = MariaDB
-baseurl = ${MDB_MIRROR_BASEURL}/${MDB_REPO_VER}/centos7-amd64
+baseurl = ${MDB_MIRROR_BASEURL}/${MDB_REPO_VER}/rhel7-amd64
 gpgkey=${MDB_MIRROR_BASEURL}/RPM-GPG-KEY-MariaDB
 gpgcheck=1
 EOF
@@ -730,7 +730,7 @@ elif [[ "$MDB_COUNTRY" = 'AU' || "$MDB_CONTINENT" = 'OC' ]]; then
 cat > "/etc/yum.repos.d/mariadb.repo" <<EOF
 [mariadb]
 name = MariaDB
-baseurl = ${MDB_MIRROR_BASEURL}/${MDB_REPO_VER}/centos7-amd64
+baseurl = ${MDB_MIRROR_BASEURL}/${MDB_REPO_VER}/rhel7-amd64
 gpgkey=${MDB_MIRROR_BASEURL}/RPM-GPG-KEY-MariaDB
 gpgcheck=1
 EOF
@@ -738,7 +738,7 @@ elif [[ "$MDB_COUNTRY" = 'CN' ]]; then
 cat > "/etc/yum.repos.d/mariadb.repo" <<EOF
 [mariadb]
 name = MariaDB
-baseurl = ${MDB_MIRROR_BASEURL}/${MDB_REPO_VER}/centos7-amd64
+baseurl = ${MDB_MIRROR_BASEURL}/${MDB_REPO_VER}/rhel7-amd64
 gpgkey=${MDB_MIRROR_BASEURL}/RPM-GPG-KEY-MariaDB
 gpgcheck=1
 EOF
@@ -746,7 +746,7 @@ else
 cat > "/etc/yum.repos.d/mariadb.repo" <<EOF
 [mariadb]
 name = MariaDB
-baseurl = ${MDB_MIRROR_BASEURL}/${MDB_REPO_VER}/centos7-amd64
+baseurl = ${MDB_MIRROR_BASEURL}/${MDB_REPO_VER}/rhel7-amd64
 gpgkey=${MDB_MIRROR_BASEURL}/RPM-GPG-KEY-MariaDB
 gpgcheck=1
 EOF
@@ -1342,6 +1342,7 @@ mariadbelevenfour_installfunct() {
 MDB_DEBUG='n'
 
 if [[ "$MDB_INSTALL" = [yY] ]]; then
+mysql_memory_backup || exit 1
     echo "*************************************************"
     cecho "* Installing MariaDB " $boldgreen
     echo "*************************************************"
@@ -1356,9 +1357,6 @@ chmod 1777 /home/mysqltmp
 CHOWNMYSQL=y
 fi
 
-if [ -f /etc/my.cnf ]; then
-cp /etc/my.cnf /etc/my.cnf-original
-fi
 #echo -e "\nCopying MariaDB my-mdb.cnf file to /etc/my.cnf\n"
 #    cp $CUR_DIR/config/mysql/my-mdb.cnf /etc/my.cnf
 
@@ -1479,10 +1477,8 @@ if [[ "$MDB_YUMREPOINSTALL" = [yY] && "$MDB_INSTALL" = [nN] ]]; then
     echo "*************************************************"
 
 #yum -y remove mysql mysql-libs
-if [ -f /etc/my.cnf ]; then
-    cp /etc/my.cnf /etc/my.cnf-original
-    rm -rf /etc/my.cnf
-fi
+# Preserve the original before RPM operations; setmycnf stages its replacement.
+mysql_memory_backup || exit 1
 
 mariadb114_yuminstall
 

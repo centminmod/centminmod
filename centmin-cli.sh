@@ -30,7 +30,7 @@ DT=$(date +"%d%m%y-%H%M%S")
 branchname='140.00beta01'
 SCRIPT_MAJORVER='140'
 SCRIPT_MINORVER='00'
-SCRIPT_INCREMENTVER='369'
+SCRIPT_INCREMENTVER='378'
 SCRIPT_VERSIONSHORT="${branchname}"
 SCRIPT_VERSION="${SCRIPT_VERSIONSHORT}.b${SCRIPT_INCREMENTVER}"
 SCRIPT_DATE='16/01/25'
@@ -270,67 +270,14 @@ fi
 
 CENTOSVER_NUMERIC=$(echo $CENTOSVER | sed -e 's|\.||g')
 
-# switch el8 OSes to GCC 11 for compile routines
-if [[ "$CENTOS_EIGHT" -eq '8' && "$CENTOSVER_NUMERIC" -ge '89' ]]; then
-  DEVTOOLSETTEN='n'
-  DEVTOOLSETELEVEN='n'
-  if [[ "$PHP_PGO_FALLBACK_GCC" = [yY] && "$PHP_PGO" = [yY] ]] && [[ "$PHPMVER" = '7.0' || "$PHPMUVER" = '7.0' || "$PHPMVER" = '7.1' || "$PHPMUVER" = '7.1' || "$PHPMVER" = '7.2' || "$PHPMUVER" = '7.2' || "$PHPMVER" = '7.3' || "$PHPMUVER" = '7.3' || "$PHPMVER" = '7.4' || "$PHPMUVER" = '7.4' || "$PHPMVER" = '8.0' || "$PHPMUVER" = '8.0' || "$PHPMVER" = '8.1' || "$PHPMUVER" = '8.1' || "$PHPMVER" = '8.2' || "$PHPMUVER" = '8.2' || "$PHPMVER" = '8.3' || "$PHPMUVER" = '8.3' || "$PHPMVER" = '8.4' || "$PHPMUVER" = '8.4' ]]; then
-    DEVTOOLSETTWELVE='y'
-    DEVTOOLSETTHIRTEEN='n'
-    DEVTOOLSETFOURTEEN='n'
-    DEVTOOLSETFIFTTEEN='n'
-  else
-    DEVTOOLSETTWELVE='n'
-    DEVTOOLSETTHIRTEEN='y'
-    DEVTOOLSETFOURTEEN='n'
-    DEVTOOLSETFIFTTEEN='n'
-  fi
-elif [[ "$CENTOS_EIGHT" -eq '8' && "$CENTOSVER_NUMERIC" -ge '87' ]]; then
-  DEVTOOLSETTEN='n'
-  DEVTOOLSETELEVEN='n'
-  DEVTOOLSETTWELVE='y'
-  DEVTOOLSETTHIRTEEN='n'
-  DEVTOOLSETFOURTEEN='n'
-  DEVTOOLSETFIFTTEEN='n'
-elif [[ "$CENTOS_EIGHT" -eq '8' ]]; then
-  DEVTOOLSETTEN='n'
-  DEVTOOLSETELEVEN='y'
-  DEVTOOLSETTWELVE='n'
-  DEVTOOLSETTHIRTEEN='n'
-  DEVTOOLSETFOURTEEN='n'
-  DEVTOOLSETFIFTTEEN='n'
-fi
-
-# el9 GCC
-if [[ "$CENTOS_NINE" -eq '9' && "$CENTOSVER_NUMERIC" -ge '93' ]]; then
-  DEVTOOLSETTEN='n'
-  DEVTOOLSETELEVEN='n'
-  if [[ "$PHP_PGO_FALLBACK_GCC" = [yY] && "$PHP_PGO" = [yY] ]] && [[ "$PHPMVER" = '7.4' || "$PHPMUVER" = '7.4' || "$PHPMVER" = '8.0' || "$PHPMUVER" = '8.0' || "$PHPMVER" = '8.1' || "$PHPMUVER" = '8.1' || "$PHPMVER" = '8.2' || "$PHPMUVER" = '8.2' || "$PHPMVER" = '8.3' || "$PHPMUVER" = '8.3' || "$PHPMVER" = '8.4' || "$PHPMUVER" = '8.4' ]]; then
-    DEVTOOLSETTWELVE='y'
-    DEVTOOLSETTHIRTEEN='n'
-    DEVTOOLSETFOURTEEN='n'
-    DEVTOOLSETFIFTTEEN='n'
-  else
-    DEVTOOLSETTWELVE='n'
-    DEVTOOLSETTHIRTEEN='y'
-    DEVTOOLSETFOURTEEN='n'
-    DEVTOOLSETFIFTTEEN='n'
-  fi
-elif [[ "$CENTOS_NINE" -eq '9' && "$CENTOSVER_NUMERIC" -ge '91' ]]; then
-  DEVTOOLSETTEN='n'
-  DEVTOOLSETELEVEN='n'
-  DEVTOOLSETTWELVE='y'
-  DEVTOOLSETTHIRTEEN='n'
-  DEVTOOLSETFOURTEEN='n'
-  DEVTOOLSETFIFTTEEN='n'
-elif [[ "$CENTOS_NINE" -eq '9' ]]; then
-  # el9 already defaults to GCC 11
+# Official GCC Toolset 15 on supported EL releases. Keep the historical flag spelling.
+if [[ "$CENTOS_EIGHT" = '8' || "$CENTOS_NINE" = '9' ]]; then
   DEVTOOLSETTEN='n'
   DEVTOOLSETELEVEN='n'
   DEVTOOLSETTWELVE='n'
   DEVTOOLSETTHIRTEEN='n'
   DEVTOOLSETFOURTEEN='n'
-  DEVTOOLSETFIFTTEEN='n'
+  DEVTOOLSETFIFTTEEN='y'
 fi
 
 if [[ "$FORCE_IPVFOUR" != [yY] ]]; then
@@ -806,12 +753,18 @@ VPS_GEOIPCHECK_V4='y'
 #####################################################
 # Maxmind GeoLite2 database API Key
 # https://community.centminmod.com/posts/80656/
-# You can override this API key with your own Maxmind
-# account API key by setting MM_LICENSE_KEY variable 
-# in persistent config file /etc/centminmod/custom_config.inc
+# You can set your own Maxmind account API key via the
+# MM_LICENSE_KEY variable in persistent config file
+# /etc/centminmod/custom_config.inc. Centmin Mod no longer
+# writes the shared API key into /etc/csf/csf.conf - the
+# Centmin Mod CSF Firewall fork downloads GeoLite2 CSV data
+# from the Centmin Mod mirror when MM_LICENSE_KEY is empty.
 GET_CMM_MM_LICENSE_KEY=$(curl -s https://mmkey.centminmod.com/)
 MM_LICENSE_KEY="$GET_CMM_MM_LICENSE_KEY"
-MM_CSF_SRC='n'
+# CSF Firewall CC_* country data source
+# 'y' = CC_SRC="1" MaxMind CSV format (default, mirror-backed)
+# 'n' = CC_SRC="2" db-ip.com / ipdeny country data
+MM_CSF_SRC='y'
 
 #####################################################
 CHECKSEC_VERSION='2.6.0'
@@ -1229,7 +1182,7 @@ MYSQL_INSTALL='n'            # Install official Oracle MySQL Server (MariaDB alt
 SENDMAIL_INSTALL='n'         # Install Sendmail (and mailx) set to y and POSTFIX_INSTALL=n for sendmail
 POSTFIX_INSTALL=y            # Install Postfix (and mailx) set to n and SENDMAIL_INSTALL=y for sendmail
 # Nginx
-NGINX_VERSION='1.31.3'             # Use this version of Nginx
+NGINX_VERSION='1.31.5'             # Use this version of Nginx
 NGINX_ANGIE_VERSION='Angie-1.11.4'
 FREENGINX_VERSION='1.30.1'     # Maxim's Freenginx fork https://freenginx.org/en/download.html
 FREENGINX_INSTALL='n'          # Use Freenginx fork instead of official Nginx
@@ -2532,17 +2485,24 @@ EOF
   cat > /etc/systemd/system/mount-loop.service <<EOF
 [Unit]
 Description=Mount loop device for /tmp
-After=local-fs.target
+# mount /tmp before sysinit.target and systemd-tmpfiles-setup so ordinary
+# PrivateTmp= services (chronyd, php-fpm, postfix etc) do not start while
+# /tmp is being replaced underneath them
+# https://community.centminmod.com/threads/29603/
+DefaultDependencies=no
 Requires=local-fs.target
+After=local-fs.target
+Before=systemd-tmpfiles-setup.service sysinit.target shutdown.target
+Conflicts=shutdown.target
 
 [Service]
+Type=oneshot
 ExecStart=/usr/local/bin/mount-loop.sh
 ExecStop=/usr/bin/umount /tmp
-Type=oneshot
 RemainAfterExit=yes
 
 [Install]
-WantedBy=multi-user.target
+WantedBy=sysinit.target
 EOF
 
   # Enable the new systemd service
@@ -2675,11 +2635,7 @@ elif [[ ! -f /proc/user_beancounters && "$CENTOS_SEVEN" = '7' && "$CHECK_LXD" !=
        chmod 1777 /tmp
        cp -ar /tmp_backup/* /tmp
        echo "tmpfs /tmp tmpfs rw,noexec,nosuid 0 0" >> /etc/fstab
-       cp -ar /var/tmp /var/tmp_backup
-       ln -s /tmp /var/tmp
-       cp -ar /var/tmp_backup/* /tmp
        rm -rf /tmp_backup
-       rm -rf /var/tmp_backup
     elif [[ "$TOTALMEM" -ge '8100001' || "$TOTALMEM" -lt '16000000' ]]; then
        # set on disk non-tmpfs /tmp to 6GB size
        # if total memory is between 2GB and <8GB
@@ -2698,11 +2654,7 @@ elif [[ ! -f /proc/user_beancounters && "$CENTOS_SEVEN" = '7' && "$CHECK_LXD" !=
        chmod 1777 /tmp
        cp -ar /tmp_backup/* /tmp
        create_loopmount "loop,rw,noexec,nosuid /home/usertmp_donotdelete /tmp" ext4
-       cp -ar /var/tmp /var/tmp_backup
-       ln -s /tmp /var/tmp
-       cp -ar /var/tmp_backup/* /tmp
        rm -rf /tmp_backup
-       rm -rf /var/tmp_backup
     elif [[ "$TOTALMEM" -ge '2050061' || "$TOTALMEM" -lt '8100000' ]]; then
        # set on disk non-tmpfs /tmp to 4GB size
        # if total memory is between 2GB and <8GB
@@ -2721,11 +2673,7 @@ elif [[ ! -f /proc/user_beancounters && "$CENTOS_SEVEN" = '7' && "$CHECK_LXD" !=
        chmod 1777 /tmp
        cp -ar /tmp_backup/* /tmp
        create_loopmount "loop,rw,noexec,nosuid /home/usertmp_donotdelete /tmp" ext4
-       cp -ar /var/tmp /var/tmp_backup
-       ln -s /tmp /var/tmp
-       cp -ar /var/tmp_backup/* /tmp
        rm -rf /tmp_backup
-       rm -rf /var/tmp_backup
     elif [[ "$TOTALMEM" -ge '1153434' || "$TOTALMEM" -lt '2050060' ]]; then
        # set on disk non-tmpfs /tmp to 2GB size
        # if total memory is between 1.1-2GB
@@ -2744,11 +2692,7 @@ elif [[ ! -f /proc/user_beancounters && "$CENTOS_SEVEN" = '7' && "$CHECK_LXD" !=
        chmod 1777 /tmp
        cp -ar /tmp_backup/* /tmp
        create_loopmount "loop,rw,noexec,nosuid /home/usertmp_donotdelete /tmp" ext4
-       cp -ar /var/tmp /var/tmp_backup
-       ln -s /tmp /var/tmp
-       cp -ar /var/tmp_backup/* /tmp
        rm -rf /tmp_backup
-       rm -rf /var/tmp_backup
     elif [[ "$TOTALMEM" -le '1153433' ]]; then
        # set on disk non-tmpfs /tmp to 1GB size
        # if total memory is <1.1GB
@@ -2767,11 +2711,7 @@ elif [[ ! -f /proc/user_beancounters && "$CENTOS_SEVEN" = '7' && "$CHECK_LXD" !=
        chmod 1777 /tmp
        cp -ar /tmp_backup/* /tmp
        create_loopmount "loop,rw,noexec,nosuid /home/usertmp_donotdelete /tmp" ext4
-       cp -ar /var/tmp /var/tmp_backup
-       ln -s /tmp /var/tmp       
-       cp -ar /var/tmp_backup/* /tmp
        rm -rf /tmp_backup
-       rm -rf /var/tmp_backup
     fi
 elif [[ ! -f /proc/user_beancounters && "$CHECK_LXD" != [yY] ]]; then
 
@@ -2789,11 +2729,7 @@ elif [[ ! -f /proc/user_beancounters && "$CHECK_LXD" != [yY] ]]; then
      chmod 1777 /tmp
        cp -ar /tmp_backup/* /tmp
      create_loopmount "rw,noexec,nosuid tmpfs /tmp" tmpfs
-       cp -ar /var/tmp /var/tmp_backup
-     ln -s /tmp /var/tmp
-       cp -ar /var/tmp_backup/* /tmp
        rm -rf /tmp_backup
-       rm -rf /var/tmp_backup
     elif [[ "$TOTALMEM" -ge '2050061' || "$TOTALMEM" -lt '8100000' ]]; then
        # set on disk non-tmpfs /tmp to 4GB size
        # if total memory is between 2GB and <8GB
@@ -2812,11 +2748,7 @@ elif [[ ! -f /proc/user_beancounters && "$CHECK_LXD" != [yY] ]]; then
        chmod 1777 /tmp
        cp -ar /tmp_backup/* /tmp
        create_loopmount "loop,rw,noexec,nosuid /home/usertmp_donotdelete /tmp" ext4
-       cp -ar /var/tmp /var/tmp_backup
-       ln -s /tmp /var/tmp
-       cp -ar /var/tmp_backup/* /tmp
        rm -rf /tmp_backup
-       rm -rf /var/tmp_backup
     elif [[ "$TOTALMEM" -ge '1153434' || "$TOTALMEM" -lt '2050060' ]]; then
        # set on disk non-tmpfs /tmp to 2GB size
        # if total memory is between 1.1-2GB
@@ -2835,11 +2767,7 @@ elif [[ ! -f /proc/user_beancounters && "$CHECK_LXD" != [yY] ]]; then
        chmod 1777 /tmp
        cp -ar /tmp_backup/* /tmp
        create_loopmount "loop,rw,noexec,nosuid /home/usertmp_donotdelete /tmp" ext4
-       cp -ar /var/tmp /var/tmp_backup
-       ln -s /tmp /var/tmp
-       cp -ar /var/tmp_backup/* /tmp
        rm -rf /tmp_backup
-       rm -rf /var/tmp_backup
     elif [[ "$TOTALMEM" -le '1153433' ]]; then
        # set on disk non-tmpfs /tmp to 1GB size
        # if total memory is <1.1GB
@@ -2858,11 +2786,7 @@ elif [[ ! -f /proc/user_beancounters && "$CHECK_LXD" != [yY] ]]; then
        chmod 1777 /tmp
        cp -ar /tmp_backup/* /tmp
        create_loopmount "loop,rw,noexec,nosuid /home/usertmp_donotdelete /tmp" ext4
-       cp -ar /var/tmp /var/tmp_backup
-       ln -s /tmp /var/tmp       
-       cp -ar /var/tmp_backup/* /tmp
        rm -rf /tmp_backup
-       rm -rf /var/tmp_backup
     fi
 fi # centos 7 + openvz /tmp workaround
 fi
@@ -3118,7 +3042,7 @@ fi
     ls -lah "/usr/${LIBDIR}/mysql/libmysqlclient.so"
   fi
 
-funct_phpconfigure
+funct_phpconfigure || exit $?
 
     cd ../
 
@@ -3795,6 +3719,10 @@ EOF
     echo "$SCRIPT_VERSION" > /etc/centminmod-release
     #echo "$SCRIPT_VERSION #`date`" >> /etc/centminmod-versionlog
     } 2>&1 | tee "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_install.log"
+if [[ ${PIPESTATUS[0]} -ne 0 ]]; then
+  echo "Centmin Mod install aborted - see ${CENTMINLOGDIR}/"
+  exit 1
+fi
     
 if cmm_php_fatal_pending; then
   cmm_php_fatal_clear
@@ -3969,6 +3897,10 @@ EOF
             echo "$SCRIPT_VERSION" > /etc/centminmod-release
             #echo "$SCRIPT_VERSION #`date`" >> /etc/centminmod-versionlog
             } 2>&1 | tee "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_install.log"
+if [[ ${PIPESTATUS[0]} -ne 0 ]]; then
+  echo "Centmin Mod install aborted - see ${CENTMINLOGDIR}/"
+  exit 1
+fi
             
 if cmm_php_fatal_pending; then
   cmm_php_fatal_clear
@@ -4043,6 +3975,10 @@ fi
         fi
         funct_nginxupgrade
         } 2>&1 | tee "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_nginx_upgrade.log"
+        NGINX_UPGRADE_STATUS=${PIPESTATUS[0]}
+        if [[ "$NGINX_UPGRADE_STATUS" -ne 0 ]]; then
+            exit "$NGINX_UPGRADE_STATUS"
+        fi
         
         if [ "$CCACHEINSTALL" == 'y' ]; then
         
@@ -4085,6 +4021,10 @@ fi
         fi
         funct_phpupgrade
         } 2>&1 | tee "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_php_upgrade.log"
+        PHP_UPGRADE_STATUS=${PIPESTATUS[0]}
+        if [[ "$PHP_UPGRADE_STATUS" -ne 0 ]]; then
+            exit "$PHP_UPGRADE_STATUS"
+        fi
         if cmm_php_fatal_pending; then
             cmm_php_fatal_clear
             echo
@@ -4542,6 +4482,10 @@ fi
         fi
         funct_nginxupgrade "$2"
         } 2>&1 | tee "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_nginx_upgrade.log"
+        NGINX_UPGRADE_STATUS=${PIPESTATUS[0]}
+        if [[ "$NGINX_UPGRADE_STATUS" -ne 0 ]]; then
+            exit "$NGINX_UPGRADE_STATUS"
+        fi
         
         if [ "$CCACHEINSTALL" == 'y' ]; then
         
@@ -4585,6 +4529,10 @@ fi
         fi
         funct_phpupgrade "$2"
         } 2>&1 | tee "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_php_upgrade.log"
+        PHP_UPGRADE_STATUS=${PIPESTATUS[0]}
+        if [[ "$PHP_UPGRADE_STATUS" -ne 0 ]]; then
+            exit "$PHP_UPGRADE_STATUS"
+        fi
         if cmm_php_fatal_pending; then
             cmm_php_fatal_clear
             echo
@@ -4636,6 +4584,10 @@ fi
         fi
         funct_phpupgrade "$2" all
         } 2>&1 | tee "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_php_upgrade_all.log"
+        PHP_UPGRADE_STATUS=${PIPESTATUS[0]}
+        if [[ "$PHP_UPGRADE_STATUS" -ne 0 ]]; then
+            exit "$PHP_UPGRADE_STATUS"
+        fi
         if cmm_php_fatal_pending; then
             cmm_php_fatal_clear
             echo

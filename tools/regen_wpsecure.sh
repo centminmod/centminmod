@@ -6,10 +6,10 @@
 # usage:
 # 
 # if wordpress installed at web root i.e. domain.com/
-# ./regen_wpsecure.sh -d domain.com -subdir no
+# ./regen_wpsecure.sh -d domain.com -s no
 # 
 # if wordpress installed in subdirectory i.e. domain.com/blog
-# ./regen_wpsecure.sh -d domain.com -subdir blog
+# ./regen_wpsecure.sh -d domain.com -s blog
 #################################################################
 DT=$(date +"%d%m%y-%H%M%S")
 SCRIPTDIR="$(cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd)"
@@ -138,6 +138,18 @@ location ~ /.well-known {
     more_set_headers    "Content-Type: text/plain";
     }
 }
+
+# WordPress OAuth discovery start
+location = ${WPSUBDIR}/.well-known/oauth-protected-resource {
+  include /usr/local/nginx/conf/503include-only.conf;
+  try_files \$uri ${WPSUBDIR}/index.php?\$args;
+}
+
+location = ${WPSUBDIR}/.well-known/oauth-authorization-server {
+  include /usr/local/nginx/conf/503include-only.conf;
+  try_files \$uri ${WPSUBDIR}/index.php?\$args;
+}
+# WordPress OAuth discovery end
 
 # allow AJAX requests in themes and plugins
 location ~ ^${WPSUBDIR}/wp-admin/admin-ajax.php$ { allow all; include /usr/local/nginx/conf/php.conf; }

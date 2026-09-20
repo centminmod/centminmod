@@ -141,7 +141,7 @@ modsecurity_install() {
       fi
     fi
     if [[ "$CENTOS_EIGHT" -eq 8 || "$CENTOS_NINE" -eq 9 ]]; then
-      if [[ ! -f /opt/gcc-custom/gcc15/bin/gcc || ! -f /opt/gcc-custom/gcc15/bin/g++ ]]; then
+      if [[ ! -f /opt/rh/gcc-toolset-15/root/usr/bin/gcc || ! -f /opt/rh/gcc-toolset-15/root/usr/bin/g++ ]]; then
         scl_install
         unset CC
         unset CXX
@@ -211,8 +211,8 @@ modsecurity_install() {
         # export CFLAGS="-Wimplicit-fallthrough=0"
         gcc --version
         g++ --version
-      elif [[ -f /opt/gcc-custom/gcc15/bin/gcc && -f /opt/gcc-custom/gcc15/bin/g++ ]]; then
-        source /etc/profile.d/gcc15-custom.sh
+      elif [[ -f /opt/rh/gcc-toolset-15/root/usr/bin/gcc && -f /opt/rh/gcc-toolset-15/root/usr/bin/g++ ]]; then
+        enable_gcc_toolset15 || return 1
         unset CC
         unset CXX
         if [[ "$INITIALINSTALL" != [yY] ]]; then
