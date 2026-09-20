@@ -89,7 +89,7 @@ funct_memcachedreinstall() {
       enable_clang
    else
       check_devtoolset_php
-      enable_devtoolset
+      enable_devtoolset || return 1
    fi
 
 PHPEXTDIRD=$(cat /usr/local/bin/php-config | awk '/^extension_dir/ {extdir=$1} END {gsub(/\047|extension_dir|=|)/,"",extdir); print extdir}')
@@ -218,7 +218,7 @@ else
         make clean
     fi
     ./autogen.sh
-    CFLAGS="-fPIC -O2 -fstack-protector-strong -D_FORTIFY_SOURCE=2" CPPFLAGS="-D_FORTIFY_SOURCE=2" CXXFLAGS="-fPIC -O2" LDFLAGS="-Wl,-z,relro,-z,now -pie" ./configure --prefix="/usr/${LIBDIR}"
+    CFLAGS="${COMPILER_CFLAGS} -fPIC -O2 -fstack-protector-strong -D_FORTIFY_SOURCE=2" CPPFLAGS="-D_FORTIFY_SOURCE=2" CXXFLAGS="-fPIC -O2" LDFLAGS="-Wl,-z,relro,-z,now -pie" ./configure --prefix="/usr/${LIBDIR}"
     make${MAKETHREADS}
     make install
 
@@ -353,7 +353,7 @@ if [ "$PHP_MEMCACHE" == 'y' ]; then
            echo "skip git checkout 4a9e4ab0d1"
         fi
         /usr/local/bin/phpize
-        CFLAGS="-fPIC -O2 -fstack-protector-strong -D_FORTIFY_SOURCE=2" CPPFLAGS="-D_FORTIFY_SOURCE=2" CXXFLAGS="-fPIC -O2" LDFLAGS="-Wl,-z,relro,-z,now -pie" ./configure --enable-memcache --with-php-config=/usr/local/bin/php-config
+        CFLAGS="${COMPILER_CFLAGS} -fPIC -O2 -fstack-protector-strong -D_FORTIFY_SOURCE=2" CPPFLAGS="-D_FORTIFY_SOURCE=2" CXXFLAGS="-fPIC -O2" LDFLAGS="-Wl,-z,relro,-z,now -pie" ./configure --enable-memcache --with-php-config=/usr/local/bin/php-config
         make${MAKETHREADS}
         make install
         cecho "PHP memcache extension installed" $boldgreen
@@ -380,7 +380,7 @@ if [ "$PHP_MEMCACHE" == 'y' ]; then
             make clean
         fi
         /usr/local/bin/phpize
-        CFLAGS="-fPIC -O2 -fstack-protector-strong -D_FORTIFY_SOURCE=2" CPPFLAGS="-D_FORTIFY_SOURCE=2" CXXFLAGS="-fPIC -O2" LDFLAGS="-Wl,-z,relro,-z,now -pie" ./configure --enable-memcache --with-php-config=/usr/local/bin/php-config
+        CFLAGS="${COMPILER_CFLAGS} -fPIC -O2 -fstack-protector-strong -D_FORTIFY_SOURCE=2" CPPFLAGS="-D_FORTIFY_SOURCE=2" CXXFLAGS="-fPIC -O2" LDFLAGS="-Wl,-z,relro,-z,now -pie" ./configure --enable-memcache --with-php-config=/usr/local/bin/php-config
         make${MAKETHREADS}
         make install
         cecho "PHP memcache extension installed" $boldgreen
@@ -511,11 +511,11 @@ if [[ "$PHPMUVER" > 7 || "$PHPSEVEN_CHECKVER" = '0' ]]; then
     fi
     /usr/local/bin/phpize
     if [[ "$LIBMEMCACHED_YUM" = [nN] ]]; then
-        CFLAGS="-fPIC -O2 -fstack-protector-strong -D_FORTIFY_SOURCE=2" CPPFLAGS="-D_FORTIFY_SOURCE=2" CXXFLAGS="-fPIC -O2" LDFLAGS="-Wl,-z,relro,-z,now -pie" ./configure --with-php-config=/usr/local/bin/php-config --enable-memcached-json --with-libmemcached-dir=/usr/local
+        CFLAGS="${COMPILER_CFLAGS} -fPIC -O2 -fstack-protector-strong -D_FORTIFY_SOURCE=2" CPPFLAGS="-D_FORTIFY_SOURCE=2" CXXFLAGS="-fPIC -O2" LDFLAGS="-Wl,-z,relro,-z,now -pie" ./configure --with-php-config=/usr/local/bin/php-config --enable-memcached-json --with-libmemcached-dir=/usr/local
     elif [[ "$LIBMEMCACHED_YUM" = [yY] && -f /etc/yum.repos.d/remi.repo ]]; then
-        CFLAGS="-fPIC -O2 -fstack-protector-strong -D_FORTIFY_SOURCE=2" CPPFLAGS="-D_FORTIFY_SOURCE=2" CXXFLAGS="-fPIC -O2" LDFLAGS="-Wl,-z,relro,-z,now -pie" ./configure --with-php-config=/usr/local/bin/php-config --enable-memcached-json --with-libmemcached-dir=/usr
+        CFLAGS="${COMPILER_CFLAGS} -fPIC -O2 -fstack-protector-strong -D_FORTIFY_SOURCE=2" CPPFLAGS="-D_FORTIFY_SOURCE=2" CXXFLAGS="-fPIC -O2" LDFLAGS="-Wl,-z,relro,-z,now -pie" ./configure --with-php-config=/usr/local/bin/php-config --enable-memcached-json --with-libmemcached-dir=/usr
     elif [ ! -f /etc/yum.repos.d/remi.repo ]; then
-        CFLAGS="-fPIC -O2 -fstack-protector-strong -D_FORTIFY_SOURCE=2" CPPFLAGS="-D_FORTIFY_SOURCE=2" CXXFLAGS="-fPIC -O2" LDFLAGS="-Wl,-z,relro,-z,now -pie" ./configure --with-php-config=/usr/local/bin/php-config --enable-memcached-json --with-libmemcached-dir=/usr/local        
+        CFLAGS="${COMPILER_CFLAGS} -fPIC -O2 -fstack-protector-strong -D_FORTIFY_SOURCE=2" CPPFLAGS="-D_FORTIFY_SOURCE=2" CXXFLAGS="-fPIC -O2" LDFLAGS="-Wl,-z,relro,-z,now -pie" ./configure --with-php-config=/usr/local/bin/php-config --enable-memcached-json --with-libmemcached-dir=/usr/local
     fi
     make${MAKETHREADS}
     make install
@@ -533,11 +533,11 @@ else
     fi
     /usr/local/bin/phpize
     if [[ "$LIBMEMCACHED_YUM" = [nN] ]]; then
-        CFLAGS="-fPIC -O2 -fstack-protector-strong -D_FORTIFY_SOURCE=2" CPPFLAGS="-D_FORTIFY_SOURCE=2" CXXFLAGS="-fPIC -O2" LDFLAGS="-Wl,-z,relro,-z,now -pie" ./configure --with-php-config=/usr/local/bin/php-config --enable-memcached-json --with-libmemcached-dir=/usr/local
+        CFLAGS="${COMPILER_CFLAGS} -fPIC -O2 -fstack-protector-strong -D_FORTIFY_SOURCE=2" CPPFLAGS="-D_FORTIFY_SOURCE=2" CXXFLAGS="-fPIC -O2" LDFLAGS="-Wl,-z,relro,-z,now -pie" ./configure --with-php-config=/usr/local/bin/php-config --enable-memcached-json --with-libmemcached-dir=/usr/local
     elif [[ "$LIBMEMCACHED_YUM" = [yY] && -f /etc/yum.repos.d/remi.repo ]]; then
-        CFLAGS="-fPIC -O2 -fstack-protector-strong -D_FORTIFY_SOURCE=2" CPPFLAGS="-D_FORTIFY_SOURCE=2" CXXFLAGS="-fPIC -O2" LDFLAGS="-Wl,-z,relro,-z,now -pie" ./configure --with-php-config=/usr/local/bin/php-config --enable-memcached-json --with-libmemcached-dir=/usr
+        CFLAGS="${COMPILER_CFLAGS} -fPIC -O2 -fstack-protector-strong -D_FORTIFY_SOURCE=2" CPPFLAGS="-D_FORTIFY_SOURCE=2" CXXFLAGS="-fPIC -O2" LDFLAGS="-Wl,-z,relro,-z,now -pie" ./configure --with-php-config=/usr/local/bin/php-config --enable-memcached-json --with-libmemcached-dir=/usr
     elif [ ! -f /etc/yum.repos.d/remi.repo ]; then
-        CFLAGS="-fPIC -O2 -fstack-protector-strong -D_FORTIFY_SOURCE=2" CPPFLAGS="-D_FORTIFY_SOURCE=2" CXXFLAGS="-fPIC -O2" LDFLAGS="-Wl,-z,relro,-z,now -pie" ./configure --with-php-config=/usr/local/bin/php-config --enable-memcached-json --with-libmemcached-dir=/usr/local        
+        CFLAGS="${COMPILER_CFLAGS} -fPIC -O2 -fstack-protector-strong -D_FORTIFY_SOURCE=2" CPPFLAGS="-D_FORTIFY_SOURCE=2" CXXFLAGS="-fPIC -O2" LDFLAGS="-Wl,-z,relro,-z,now -pie" ./configure --with-php-config=/usr/local/bin/php-config --enable-memcached-json --with-libmemcached-dir=/usr/local
     fi
     make${MAKETHREADS}
     make install
@@ -663,7 +663,7 @@ fi
 
 #ASK "Install Memcached Server? (default uses 8MB RAM each) [y/n] "
 if [[ "$MEMCINSTALL" = [yY] ]]; then
-    funct_memcachedreinstall
+    funct_memcachedreinstall || return 1
     cd "$SCRIPT_DIR"
 
     # only run for CentOS 7

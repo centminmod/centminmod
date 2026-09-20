@@ -725,9 +725,11 @@ pagespeeduptasks
   cecho "Installing nginx Modules / Prerequisites..." $boldgreen
 
 checknginxmodules
+nginx_dependency_compiler || return 1
 {
 nginxzlib_install
 } 2>&1 | tee "${CENTMINLOGDIR}/nginx-upgrade-zlib_${DT}.log"
+[[ "${PIPESTATUS[*]}" = "0 0" ]] || return 1
 install_gperftools
 
 # echo ""

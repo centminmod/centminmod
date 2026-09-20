@@ -960,7 +960,7 @@ imagemagick_heif() {
     echo
     echo "Install ImageMagick-heic one time only"
     echo "https://blog.remirepo.net/post/2019/05/22/HEIC-HEIF-images-support"
-    libheif_install
+    libheif_install || return $?
     yum -q -y install ImageMagick-heic --enablerepo=remi
     echo "ImageMagick-heic installed"
     if [[ "$(rpm -qa ImageMagick-heic | grep -o 'ImageMagick-heic')" ]]; then
@@ -971,7 +971,7 @@ imagemagick_heif() {
     echo
     echo "Install ImageMagick6-heic one time only"
     echo "https://blog.remirepo.net/post/2019/05/22/HEIC-HEIF-images-support"
-    libheif_install
+    libheif_install || return $?
     yum -q -y install ImageMagick6-heic --enablerepo=remi
     echo "ImageMagick6-heic installed"
     if [[ "$(rpm -qa ImageMagick6-heic | grep -o 'ImageMagick6-heic')" ]]; then
@@ -982,7 +982,7 @@ imagemagick_heif() {
     echo
     echo "Install ImageMagick6-heic one time only"
     echo "https://blog.remirepo.net/post/2019/05/22/HEIC-HEIF-images-support"
-    libheif_install
+    libheif_install || return $?
     yum -q -y install ImageMagick6-heic --enablerepo=remi
     echo "ImageMagick6-heic installed"
     if [[ "$(rpm -qa ImageMagick6-heic | grep -o 'ImageMagick6-heic')" ]]; then
@@ -5156,7 +5156,7 @@ if [[ "$INITIALINSTALL" != [yY] ]]; then
   update_webp_inc
   phpmyadmin_composer_fix
   phpmyadmin_updater_fix
-  imagemagick_heif
+  imagemagick_heif || return $?
   fix_nasm
   update_cache_enabler_schemefix
   update_wpce_map
@@ -5196,6 +5196,7 @@ if [[ "$INITIALINSTALL" != [yY] ]]; then
   perldbiexclude silent
   csf_el10_dependencies_install silent
 fi
+  return 0
 
 }
 

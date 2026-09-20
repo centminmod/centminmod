@@ -1,4 +1,35 @@
+# Select before dependency pipelines so subsequent builds inherit the same compiler.
+nginx_dependency_compiler() {
+    NGX_DEP_GCC15=n
+    if [[ "$DEVTOOLSETFIFTTEEN" = [yY] && "$NGINX_DEVTOOLSETGCC" = [yY] && "$CLANG" != [yY] ]] && [[ "$CENTOS_EIGHT" = 8 || "$CENTOS_NINE" = 9 || "$CENTOS_TEN" = 10 ]]; then
+        enable_gcc_toolset15 || return 1
+        NGX_DEP_GCC15=y
+        if [[ " $CFLAGS " != *' -std='* ]]; then
+            export CFLAGS="${CFLAGS} -std=gnu17"
+        fi
+        # GCC 15 uses BFD in the Nginx build; an explicit mold request takes priority.
+        local linker=' -fuse-ld=bfd'
+        if [[ "$NGX_LDMOLD" = [yY] ]]; then
+            if [[ -x /usr/bin/mold ]]; then
+                linker=' -fuse-ld=mold'
+            elif [[ -x /usr/local/libexec/mold/ld ]]; then
+                linker=' -B/usr/local/libexec/mold'
+            else
+                echo 'ERROR: Requested Nginx mold linker is unavailable.' >&2
+                return 1
+            fi
+        fi
+        if [[ " $LDFLAGS " != *"$linker "* ]]; then
+            export LDFLAGS="${LDFLAGS}${linker}"
+        fi
+        # Activation alone does not prove that the selected compiler can link.
+        $CC $CFLAGS $LDFLAGS -x c -o /dev/null - <<<'int main(void) { return 0; }' || return 1
+        $CXX $CXXFLAGS $LDFLAGS -x c++ -o /dev/null - <<<'int main() { return 0; }' || return 1
+    fi
+}
+
 zlib_ccache() {
+    local CC="$CC" CXX="$CXX"
     if [[ -d "${DIR_TMP}/ccache-${CCACHE_VER}/" ]]; then
         export CC="gcc"
         export CXX="g++"
@@ -43,10 +74,12 @@ zlibsymlink_fix() {
 }
 
 zlibng_install() {
+  nginx_dependency_compiler || return 1
   if [[ "$NGINX_ZLIBNG" = [yY] ]]; then
     CLOUDFLARE_ZLIB='n'
     NGINX_ZLIBCUSTOM='n'
 
+    if [[ "$NGX_DEP_GCC15" != y && "$CLANG" != [yY] ]]; then
     if [[ "$DEVTOOLSETSEVEN" = [yY] && -f /opt/rh/devtoolset-7/root/usr/bin/gcc && -f /opt/rh/devtoolset-7/root/usr/bin/g++ ]] && [[ "$(gcc --version | head -n1 | awk '{print $3}' | cut -d . -f1,2 | sed "s|\.|0|")" -gt '407' ]]; then
         source /opt/rh/devtoolset-7/enable
         unset CC
@@ -137,6 +170,8 @@ zlibng_install() {
         g++ --version
     fi
 
+    fi
+
     echo
     echo "install zlib-ng..."
     echo
@@ -144,11 +179,11 @@ zlibng_install() {
     if [ -d zlib-ng ]; then
       rm -rf zlib-ng
     fi
-    time git clone https://github.com/zlib-ng/zlib-ng
+    time git clone https://github.com/zlib-ng/zlib-ng || return 1
     cd zlib-ng
-    CFLAGS="-fPIC -O2 -fstack-protector-strong -D_FORTIFY_SOURCE=2" CPPFLAGS="-D_FORTIFY_SOURCE=2" CXXFLAGS="-fPIC -O2" LDFLAGS="-Wl,-z,relro,-z,now -pie" ./configure --zlib-compat --prefix=/usr/local/zlib-ng
-    make${MAKETHREADS}
-    make -d install
+    CFLAGS="$CFLAGS -fPIC -O2 -fstack-protector-strong -D_FORTIFY_SOURCE=2" CPPFLAGS="-D_FORTIFY_SOURCE=2" CXXFLAGS="$CXXFLAGS -fPIC -O2" LDFLAGS="$LDFLAGS -Wl,-z,relro,-z,now -pie" ./configure --zlib-compat --prefix=/usr/local/zlib-ng || return 1
+    make${MAKETHREADS} || return 1
+    make -d install || return 1
     zlibng_check=$?
     if [[ "$(uname -m)" = 'x86_64' ]]; then
         ln -sf /usr/local/zlib-ng/lib /usr/local/zlib-ng/lib64
@@ -161,7 +196,10 @@ zlibng_install() {
 }
 
 install_cfzlib() {
+    local CFLAGS="$CFLAGS" CXXFLAGS="$CXXFLAGS"
+    nginx_dependency_compiler || return 1
     if [[ "$CLOUDFLARE_ZLIB" = [yY] && "$(cat /proc/cpuinfo | grep -o 'sse4_2' | uniq)" = 'sse4_2' && "$CHECK_PCLMUL" = 'enabled' ]]; then
+        if [[ "$NGX_DEP_GCC15" != y && "$CLANG" != [yY] ]]; then
         # disable clang compiler and switch to gcc compiler due to clang 3.4.2 errors when enabling
         # cloudflare zlib
         if [[ "$CLANG" = [yY] && "$CENTOS_SEVEN" -eq '7' ]]; then
@@ -575,24 +613,6 @@ install_cfzlib() {
         g++ --version
     fi
 
-    if [[ "$DEVTOOLSETFIFTTEEN" = [yY] && -f /opt/rh/gcc-toolset-15/root/usr/bin/gcc && -f /opt/rh/gcc-toolset-15/root/usr/bin/g++ ]] && [[ "$(gcc --version | head -n1 | awk '{print $3}' | cut -d . -f1,2 | sed "s|\.|0|")" -gt '407' ]]; then
-        enable_gcc_toolset15 || return 1
-        unset CC
-        unset CXX
-        if [[ "$INITIALINSTALL" != [yY] ]]; then
-            export CC="ccache gcc"
-            export CXX="ccache g++"
-        else
-            export CC="gcc"
-            export CXX="g++"
-        fi
-        # LD_GOLD_GCCPATH=' -B/opt/rh/gcc-toolset-14/root/usr/libexec/gcc/x86_64-redhat-linux/14/ld.gold'
-        ZLIB_DEVTOOLSET_FALLTHROUGH=' -Wimplicit-fallthrough=0'
-        ZLIB_DEVTOOLSET_EXTRAFLAGS=' -fcode-hoisting -Wno-cast-function-type -Wno-cast-align -Wno-implicit-function-declaration -Wno-builtin-declaration-mismatch -Wno-deprecated-declarations -Wno-int-conversion -Wno-unused-result -Wno-vla-parameter -Wno-maybe-uninitialized -Wno-unused-result -Wno-return-local-addr -Wno-maybe-uninitialized -Wno-array-parameter -Wno-alloc-size-larger-than -Wno-address -Wno-array-bounds -Wno-deprecated-declarations -Wno-discarded-qualifiers -Wno-stringop-overread -Wno-stringop-truncation -Wno-missing-field-initializers -Wno-unused-variable -Wno-format -Wno-stringop-overflow -Wno-free-nonheap-object -Wno-bad-function-cast -Wno-dangling-pointer -Wno-array-parameter'
-        gcc --version
-        g++ --version
-    fi
-
         # ld.gold corrections for GCC 14 changes
         if [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' || "$CENTOS_TEN" -eq '10' ]] && [[ "$NGX_LDGOLD" = [yY] ]] && [[ "$DEVTOOLSETTWELVE" = [yY] || "$DEVTOOLSETTHIRTEEN" = [yY] || "$DEVTOOLSETFOURTEEN" = [yY] ]]; then
           NGX_LDGOLD_GCCPATH="$LD_GOLD_GCCPATH"
@@ -607,6 +627,15 @@ install_cfzlib() {
         fi
         export CXXFLAGS="$CFLAGS"
 
+        fi
+        if [[ "$NGX_DEP_GCC15" = y ]]; then
+            if [[ "$CPUS" = 1 ]]; then
+                export CFLAGS="-O2 $CFLAGS -pipe -Wimplicit-fallthrough=0"
+            else
+                export CFLAGS="-O3 $CFLAGS -pipe -Wimplicit-fallthrough=0"
+            fi
+        fi
+
         install_cfzlibstartdir=$(pwd)
         echo
         echo "install zlib cloudflare..."
@@ -616,7 +645,7 @@ install_cfzlib() {
         pushd "$DIR_TMP"
         rm -rf "zlib-cloudflare-${CLOUDFLARE_ZLIBVER}"
         if [ ! -d "zlib-cloudflare-${CLOUDFLARE_ZLIBVER}" ]; then
-            git clone https://github.com/cloudflare/zlib "zlib-cloudflare-${CLOUDFLARE_ZLIBVER}"
+            git clone https://github.com/cloudflare/zlib "zlib-cloudflare-${CLOUDFLARE_ZLIBVER}" || return 1
         fi
         pushd "zlib-cloudflare-${CLOUDFLARE_ZLIBVER}"
         # CVE-2022-37434 patch
@@ -660,14 +689,14 @@ install_cfzlib() {
         if [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' || "$CENTOS_TEN" -eq '10' ]] && [[ "$NGINXCOMPILE_PIE" = [yY] ]]; then
             echo
             echo "CFLAGS=$CFLAGS"
-            ./configure --prefix=/usr/local/zlib-cf
+            ./configure --prefix=/usr/local/zlib-cf || return 1
             if [ ! "$(grep '^CFLAGS=' Makefile | grep -w 'fPIC')" ]; then
                 sed -i '/^CFLAGS=/ s|$| -fPIC|' Makefile
             fi
         else
             echo
             echo "CFLAGS=$CFLAGS"
-            ./configure --prefix=/usr/local/zlib-cf
+            ./configure --prefix=/usr/local/zlib-cf || return 1
             if [ "$(grep '^CFLAGS=' Makefile | grep -w 'fPIC')" ]; then
                 sed -i '/^CFLAGS=/ s/ -fPIC$//' Makefile
             fi
@@ -677,21 +706,21 @@ install_cfzlib() {
             echo
             echo "Before NGINXCOMPILE_PIE='y' CFLAGS=$CFLAGS"
             echo
-            CFLAGS="-fPIC -O2${ZLIB_DEVTOOLSET_FALLTHROUGH}${ZLIB_DEVTOOLSET_EXTRAFLAGS} -fstack-protector-strong -D_FORTIFY_SOURCE=2" CPPFLAGS="-D_FORTIFY_SOURCE=2" CXXFLAGS="-fPIC -O2${ZLIB_DEVTOOLSET_FALLTHROUGH}${ZLIB_DEVTOOLSET_EXTRAFLAGS}" LDFLAGS="-Wl,-z,relro,-z,now -pie" make${MAKETHREADS}
+            CFLAGS="$CFLAGS -fPIC -O2${ZLIB_DEVTOOLSET_FALLTHROUGH}${ZLIB_DEVTOOLSET_EXTRAFLAGS} -fstack-protector-strong -D_FORTIFY_SOURCE=2" CPPFLAGS="-D_FORTIFY_SOURCE=2" CXXFLAGS="$CXXFLAGS -fPIC -O2${ZLIB_DEVTOOLSET_FALLTHROUGH}${ZLIB_DEVTOOLSET_EXTRAFLAGS}" LDFLAGS="$LDFLAGS -Wl,-z,relro,-z,now -pie" make${MAKETHREADS} || return 1
             echo
             echo "After NGINXCOMPILE_PIE='y' CFLAGS=$CFLAGS"
         else
-            make${MAKETHREADS}
+            make${MAKETHREADS} || return 1
         fi
         # ps aufxwww > zlib-process.log
         if [[ "$CLOUDFLARE_ZLIBDEBUG" = [Yy] ]]; then
-            make -d install
+            make -d install || return 1
             cfzlib_check=$?
             if [[ "$(uname -m)" = 'x86_64' ]]; then
                 ln -sf /usr/local/zlib-cf/lib /usr/local/zlib-cf/lib64
             fi
         else
-            make install
+            make install || return 1
             cfzlib_check=$?
             if [[ "$(uname -m)" = 'x86_64' ]]; then
                 ln -sf /usr/local/zlib-cf/lib /usr/local/zlib-cf/lib64
@@ -787,6 +816,7 @@ install_cfzlib() {
         echo
         echo "CFLAGS=$CFLAGS"
         echo "CXXFLAGS=$CXXFLAGS"
+        if [[ "$NGX_DEP_GCC15" != y && "$CLANG" != [yY] ]]; then
         unset CFLAGS
         unset CXXFLAGS
         echo "CFLAGS=$CFLAGS"
@@ -827,10 +857,12 @@ install_cfzlib() {
       unset CXX
     fi
 
+        fi
     fi
 }
 
 install_stdzlib() {
+        nginx_dependency_compiler || return 1
         echo
         echo "install zlib ${NGINX_ZLIBVER}..."
         echo
@@ -950,22 +982,23 @@ install_stdzlib() {
 }
 
 nginxzlib_install() {
+  nginx_dependency_compiler || return 1
   if [[ "$NGINX_ZLIBCUSTOM" = [yY] ]]; then
     CHECK_PCLMUL=$(gcc -c -Q -march=native --help=target | grep -E '[enabled]|mtune|march' | grep 'mpclmul' | grep -o enabled)
     if [[ "$CLOUDFLARE_ZLIB" = [yY] && "$(cat /proc/cpuinfo | grep -o 'sse4_2' | uniq)" = 'sse4_2' && "$CHECK_PCLMUL" = 'enabled' ]]; then
-        install_cfzlib
+        install_cfzlib || return 1
         if [[ "$cfzlib_check" -ne '0' ]]; then
             CLOUDFLARE_ZLIB='n'
-            install_stdzlib
+            install_stdzlib || return 1
         fi
     elif [[ "$NGINX_ZLIBNG" = [yY] && "$(cat /proc/cpuinfo | grep -o 'sse4_2' | uniq)" = 'sse4_2' && "$CHECK_PCLMUL" = 'enabled' ]]; then
-        zlibng_install
-        if [[ "$cfzlib_check" -ne '0' ]]; then
+        zlibng_install || return 1
+        if [[ "$zlibng_check" -ne '0' ]]; then
             CLOUDFLARE_ZLIB='n'
-            install_stdzlib
+            install_stdzlib || return 1
         fi
     else
-        install_stdzlib
+        install_stdzlib || return 1
     fi
   fi
 }
