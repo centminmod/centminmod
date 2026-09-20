@@ -14,7 +14,7 @@ install_libmaxmindb() {
     make$MAKETHREADS
     make install
     popd
-    CFLAGS="-fPIC -O2 -fstack-protector-strong -D_FORTIFY_SOURCE=2" CPPFLAGS="-D_FORTIFY_SOURCE=2" CXXFLAGS="-fPIC -O2" LDFLAGS="-Wl,-z,relro,-z,now -pie" ./configure --prefix=/usr/local/nginx-dep
+    CFLAGS="${COMPILER_CFLAGS} -fPIC -O2 -fstack-protector-strong -D_FORTIFY_SOURCE=2" CPPFLAGS="-D_FORTIFY_SOURCE=2" CXXFLAGS="-fPIC -O2" LDFLAGS="-Wl,-z,relro,-z,now -pie" ./configure --prefix=/usr/local/nginx-dep
     make$MAKETHREADS
     make install
     ldconfig
@@ -41,8 +41,10 @@ geoiptwolite_phpext_install() {
   if [[ "$NGINX_GEOIPTWOLITE" = [yY] && -z "$initial_installation" ]]; then
     if [[ "$INITIALINSTALL" = [yY] ]]; then
       GENERAL_DEVTOOLSETGCC='y'
-      enable_devtoolset
+    else
+      check_devtoolset_php
     fi
+    enable_devtoolset "$CLANG_PHP" || return 1
     GEOIPTWOLITE_PHP_VER_NUM=$(/usr/local/bin/php-config --vernum)
 
     cecho "compiling MaxMind DB Reader PHP API extension..." $boldyellow
@@ -57,7 +59,7 @@ geoiptwolite_phpext_install() {
     fi
     cd ext
     /usr/local/bin/phpize
-    PKG_CONFIG_PATH=/usr/lib64/pkgconfig:/usr/share/pkgconfig:/usr/local/nginx-dep/lib/pkgconfig CFLAGS="-fPIC -O2 -fstack-protector-strong -D_FORTIFY_SOURCE=2" CPPFLAGS="-D_FORTIFY_SOURCE=2" CXXFLAGS="-fPIC -O2" LDFLAGS="-Wl,-z,relro,-z,now -pie" ./configure --prefix=/usr/local/nginx-dep --with-php-config=/usr/local/bin/php-config
+    PKG_CONFIG_PATH=/usr/lib64/pkgconfig:/usr/share/pkgconfig:/usr/local/nginx-dep/lib/pkgconfig CFLAGS="${COMPILER_CFLAGS} -fPIC -O2 -fstack-protector-strong -D_FORTIFY_SOURCE=2" CPPFLAGS="-D_FORTIFY_SOURCE=2" CXXFLAGS="-fPIC -O2" LDFLAGS="-Wl,-z,relro,-z,now -pie" ./configure --prefix=/usr/local/nginx-dep --with-php-config=/usr/local/bin/php-config
     make$MAKETHREADS
     # make test
     make install
@@ -73,7 +75,7 @@ geoipphpext() {
     if [[ "$PHP_INSTALL" = [yY] ]]; then
       # set extra cflags fro devtoolset-7 and devtoolset-8 compatibility
       check_devtoolset_php
-      enable_devtoolset
+      enable_devtoolset "$CLANG_PHP" || return 1
 if [[ -d /usr/share/GeoIP ]]; then
   if [ ! -f /usr/bin/svn ]; then
     echo "installing subversion..."
@@ -120,7 +122,7 @@ if [[ -d /usr/share/GeoIP ]]; then
         fi
     fi
     /usr/local/bin/phpize
-    CFLAGS="-fPIC -O2 -fstack-protector-strong -D_FORTIFY_SOURCE=2" CPPFLAGS="-D_FORTIFY_SOURCE=2" CXXFLAGS="-fPIC -O2" LDFLAGS="-Wl,-z,relro,-z,now -pie" ./configure --with-php-config=/usr/local/bin/php-config
+    CFLAGS="${COMPILER_CFLAGS} -fPIC -O2 -fstack-protector-strong -D_FORTIFY_SOURCE=2" CPPFLAGS="-D_FORTIFY_SOURCE=2" CXXFLAGS="-fPIC -O2" LDFLAGS="-Wl,-z,relro,-z,now -pie" ./configure --with-php-config=/usr/local/bin/php-config
     sar_call
     make$MAKETHREADS
     sar_call
@@ -131,7 +133,7 @@ cat > "${CONFIGSCANDIR}/geoip.ini" <<EOF
 extension=geoip.so
 geoip.custom_directory=/usr/share/GeoIP
 EOF
-  geoiptwolite_phpext_install "$initial_installation"
+  geoiptwolite_phpext_install "$initial_installation" || return 1
   else
     echo "Error: geoip php extension not installed. Could not find ${DIR_TMP}/geoip directory" > ${CENTMINLOGDIR}/centminmod_errors_install_${DT}.log
 fi
@@ -209,9 +211,9 @@ geoiptwolite_install() {
 
   # not for initial installs
   if [[ "$INITIALINSTALL" != [yY] ]]; then
-    geoiptwolite_phpext_install
+    geoiptwolite_phpext_install || return 1
   else
-    geoiptwolite_phpext_install initial_install
+    geoiptwolite_phpext_install initial_install || return 1
   fi
 
   if [ ! -f /etc/centminmod/custom_config.inc ]; then

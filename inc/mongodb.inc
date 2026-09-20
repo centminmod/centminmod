@@ -53,7 +53,7 @@ if [[ "$PHPMONGODB" = [yY] ]]; then
     PHPEXTDIRD=`cat /usr/local/bin/php-config | awk '/^extension_dir/ {extdir=$1} END {gsub(/\047|extension_dir|=|)/,"",extdir); print extdir}'`
       # set extra cflags fro devtoolset-7 and devtoolset-8 compatibility
       check_devtoolset_php
-      enable_devtoolset
+      enable_devtoolset "$CLANG_PHP" || return 1
         echo "*************************************************"
         cecho "* Installing MongoDB PHP extension" $boldgreen
         echo "*************************************************"

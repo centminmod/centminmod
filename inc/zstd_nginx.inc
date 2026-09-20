@@ -24,12 +24,12 @@ zstdinstall() {
       echo
       echo "CFLAGS=\"-fPIC\" make lib-mt -j$(nproc) PREFIX=/usr/local/nginx-dep"
       echo
-      CFLAGS="-fPIC" make lib-mt -j$(nproc) PREFIX=/usr/local/nginx-dep
+      CFLAGS="${COMPILER_CFLAGS} -fPIC" make lib-mt -j$(nproc) PREFIX=/usr/local/nginx-dep
     else
       echo
       echo "CFLAGS=\"-fPIC\" make -j$(nproc) PREFIX=/usr/local/nginx-dep"
       echo
-      CFLAGS="-fPIC" make -j$(nproc) PREFIX=/usr/local/nginx-dep
+      CFLAGS="${COMPILER_CFLAGS} -fPIC" make -j$(nproc) PREFIX=/usr/local/nginx-dep
     fi
     make PREFIX=/usr/local/nginx-dep install
     if [ -f /usr/local/nginx-dep/bin/zstd ]; then
@@ -50,7 +50,7 @@ zstdinstall() {
 nginx_zstd_setup() {
   if [[ "$NGINX_ZSTD" = [yY] ]]; then
     check_devtoolset_php
-    enable_devtoolset
+    enable_devtoolset "$CLANG" || return 1
     zstdinstall
     echo "*************************************************"
     cecho "* Installing Nginx ZSTD Module" $boldgreen
@@ -78,7 +78,7 @@ ZSTD_INCLUDECHECK=$(grep '\/usr\/local\/nginx\/conf\/zstd_inc.conf' /usr/local/n
         sed -i 's/http {/http { \n include \/usr\/local\/nginx\/conf\/zstd_inc.conf;/g' /usr/local/nginx/conf/nginx.conf
     fi
     sed -i 's|^ #include \/usr\/local\/nginx\/conf\/zstd_inc.conf;| include \/usr\/local\/nginx\/conf\/zstd_inc.conf;|g' /usr/local/nginx/conf/nginx.conf
-  else
+  elif [[ -f /usr/local/nginx/conf/nginx.conf ]]; then
     sed -i 's|^ include \/usr\/local\/nginx\/conf\/zstd_inc.conf;| #include \/usr\/local\/nginx\/conf\/zstd_inc.conf;|g' /usr/local/nginx/conf/nginx.conf
   fi
 }

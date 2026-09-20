@@ -61,6 +61,7 @@ highergcc_cflags() {
 }
 
 enable_clang() {
+   COMPILER_CFLAGS=""
    if [[ "$CENTOS_SIX" = 6 || "$CENTOS_SEVEN" = 7 ]] && [[ ! -f /usr/bin/clang ]]; then
       time $YUMDNFBIN -q -y install clang clang-devel${DISABLEREPO_DNF}
    fi
@@ -77,10 +78,17 @@ enable_clang() {
    fi
    CLANG_CFLAGOPT='-Wno-deprecated-declarations -Wno-unused-parameter -Wno-unused-const-variable -Wno-conditional-uninitialized -Wno-mismatched-tags -Wno-sometimes-uninitialized -Wno-parentheses-equality -Wno-tautological-compare -Wno-self-assign -Wno-deprecated-register -Wno-deprecated -Wno-invalid-source-encoding -Wno-pointer-sign -Wno-parentheses -Wno-enum-conversion -Wno-implicit-function-declaration -Wno-incompatible-library-redeclaration -Wno-format -Wno-incompatible-pointer-types -Wno-undefined-inline -Wno-unused-function -Wno-int-conversion -Wno-implicit-function-declaration -Wno-incompatible-library-redeclaration -Wno-format -Wno-non-literal-null-conversion'
    export CFLAGS="$CLANG_CFLAGOPT"
+   COMPILER_CFLAGS="$CLANG_CFLAGOPT"
 }
 
 
 enable_devtoolset() {
+   COMPILER_CFLAGS=""
+   # Optional argument preserves the caller's explicit Clang selection.
+   if [[ "${1:-n}" = [yY] ]]; then
+      enable_clang
+      return $?
+   fi
    # ccache compiler has some initial overhead for compiles but speeds up subsequent
    # recompiles. however on initial install ccache has no benefits, so for initial
    # centmin mod install disabling ccache will in theory speed up first time installs
@@ -94,6 +102,8 @@ enable_devtoolset() {
    fi
    CLANG_CFLAGOPT=""
    CFLAGS=""
+   GENERALDEVTOOLSET_FALLTHROUGH=""
+   GENERALDEVTOOLSET_EXTRAFLAGS=""
 
    if [[ "$GENERAL_DEVTOOLSETGCC" = [yY] ]]; then
       if [[ "$NGX_LDMOLD" = [yY] ]]; then
@@ -279,8 +289,11 @@ enable_devtoolset() {
          export CXXFLAGS="$CFLAGS"
       fi
    fi
+   # Compatibility flags for callers that supply their own optimization flags.
+   COMPILER_CFLAGS="${GENERALDEVTOOLSET_FALLTHROUGH}${GENERALDEVTOOLSET_EXTRAFLAGS}"
    # Preserve the previous C dialect after CXXFLAGS has been copied.
    if [[ "$GENERAL_DEVTOOLSETGCC" = [yY] && "$DEVTOOLSETFIFTTEEN" = [yY] ]] && [[ "$CENTOS_EIGHT" = '8' || "$CENTOS_NINE" = '9' ]]; then
+      COMPILER_CFLAGS="$COMPILER_CFLAGS -std=gnu17"
       if [[ " $CFLAGS " != *' -std='* ]]; then
          export CFLAGS="$CFLAGS -std=gnu17"
       fi

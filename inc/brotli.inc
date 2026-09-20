@@ -578,10 +578,12 @@ brdep_update() {
 
 ngxbrotli_download() {
   if [[ "$NGINX_LIBBROTLI" = [yY] && "$(uname -m)" = 'x86_64' ]]; then
+    nginx_dependency_compiler || return 1
     # update system cmake with cmake3 alternative setup
     # https://community.centminmod.com/posts/92826/
     cmake_alternatives
 
+    if [[ "$NGX_DEP_GCC15" != y && "$CLANG" != [yY] ]]; then
     if [[ "$DEVTOOLSETSEVEN" = [yY] && -f /opt/rh/devtoolset-7/root/usr/bin/gcc && -f /opt/rh/devtoolset-7/root/usr/bin/g++ ]] && [[ "$(gcc --version | head -n1 | awk '{print $3}' | cut -d . -f1,2 | sed "s|\.|0|")" -gt '407' ]]; then
         if [[ "$INITIALINSTALL" != [yY] ]]; then
           source /opt/rh/devtoolset-7/enable
@@ -762,6 +764,8 @@ ngxbrotli_download() {
         fi
     fi
 
+    fi
+
     # only if GCC used to compile nginx with ngx_brotli
     # set BROTLI_CFLAG https://community.centminmod.com/posts/38284/
     if [[ "$CLANG" = [nN] ]]; then
@@ -783,23 +787,24 @@ ngxbrotli_download() {
 
     rm -rf ngx_brotli
     if [ ! -d ngx_brotli ]; then
-      time git clone --recursive "$NGXBROTLILINK"
+      time git clone --recursive "$NGXBROTLILINK" || return 1
       cd ngx_brotli
       if [[ "$NGINX_BROTLI_NEW_METHOD" = [yY] ]]; then
-        git submodule update --init
+        git submodule update --init || return 1
         cd deps/brotli
         brdep_update
-        mkdir out && cd out
+        rm -rf out
+        mkdir out && cd out || return 1
         cmake -DCMAKE_BUILD_TYPE=Release \
         -DBUILD_SHARED_LIBS=ON \
-        -DCMAKE_C_FLAGS="-Ofast -fPIC -fstack-protector-strong -D_FORTIFY_SOURCE=2 -m64 -flto -funroll-loops -ffunction-sections -fdata-sections -Wl,--gc-sections" \
-        -DCMAKE_CXX_FLAGS="-Ofast -fPIC -m64 -flto -funroll-loops -ffunction-sections -fdata-sections -Wl,--gc-sections" \
+        -DCMAKE_C_FLAGS="$CFLAGS -Ofast -fPIC -fstack-protector-strong -D_FORTIFY_SOURCE=2 -m64 -flto -funroll-loops -ffunction-sections -fdata-sections -Wl,--gc-sections" \
+        -DCMAKE_CXX_FLAGS="$CXXFLAGS -Ofast -fPIC -m64 -flto -funroll-loops -ffunction-sections -fdata-sections -Wl,--gc-sections" \
         -DCMAKE_INSTALL_PREFIX=/usr/local/nginx-dep \
         -DCMAKE_PREFIX_PATH=/usr/local/nginx-dep \
         -DCMAKE_INSTALL_LIBDIR=lib \
         -DCMAKE_INSTALL_RPATH=/usr/local/nginx-dep/lib \
-        ..
-        cmake --build . --config Release --target brotlienc install
+        .. || return 1
+        cmake --build . --config Release --target brotlienc install || return 1
         cd ../../../..
       else
         # workaround for ngx_brotli upstream brotli dependency removing
@@ -807,11 +812,11 @@ ngxbrotli_download() {
         # https://github.com/google/ngx_brotli/issues/148#issuecomment-1703859910
         # git checkout 6e975bcb015f62e1f303054897783355e2a877dc
         git checkout 6e975bcb015f62e1f303054897783355e2a877dc
-        git submodule update --init
+        git submodule update --init || return 1
         cd deps/brotli
-        CFLAGS="-fPIC -O2 -fstack-protector-strong -D_FORTIFY_SOURCE=2" CPPFLAGS="-D_FORTIFY_SOURCE=2" CXXFLAGS="-fPIC -O2" LDFLAGS="-Wl,-z,relro,-z,now -pie" ./configure-cmake --prefix=/usr/local/nginx-dep
-        make${MAKETHREADS}
-        make install
+        CFLAGS="$CFLAGS -fPIC -O2 -fstack-protector-strong -D_FORTIFY_SOURCE=2" CPPFLAGS="-D_FORTIFY_SOURCE=2" CXXFLAGS="$CXXFLAGS -fPIC -O2" LDFLAGS="$LDFLAGS -Wl,-z,relro,-z,now -pie" ./configure-cmake --prefix=/usr/local/nginx-dep || return 1
+        make${MAKETHREADS} || return 1
+        make install || return 1
         cd ../../
         cd ../
       fi
@@ -824,6 +829,7 @@ ngxbrotli_download() {
       echo
     fi
 
+    if [[ "$NGX_DEP_GCC15" != y && "$CLANG" != [yY] ]]; then
     if [[ "$DEVTOOLSETSEVEN" = [yY] && -f /opt/rh/devtoolset-7/root/usr/bin/gcc && -f /opt/rh/devtoolset-7/root/usr/bin/g++ ]] && [[ "$(gcc --version | head -n1 | awk '{print $3}' | cut -d . -f1,2 | sed "s|\.|0|")" -gt '407' ]]; then
       unset CC
       unset CXX
@@ -856,6 +862,8 @@ ngxbrotli_download() {
     if [[ "$DEVTOOLSETELEVEN" = [yY] && -f /opt/rh/devtoolset-11/root/usr/bin/gcc && -f /opt/rh/devtoolset-11/root/usr/bin/g++ ]] && [[ "$(gcc --version | head -n1 | awk '{print $3}' | cut -d . -f1,2 | sed "s|\.|0|")" -gt '407' ]]; then
       unset CC
       unset CXX
+    fi
+
     fi
 
     echo

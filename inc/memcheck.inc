@@ -42,9 +42,9 @@ lowmemcheck() {
   # checkfor_lowmem
 
   if [[ "$INITIALINSTALL" = [yY] ]]; then
-    cpcheck initialinstall
+    cpcheck initialinstall || return $?
   else
-    cpcheck
+    cpcheck || return $?
   fi
 
   histformat

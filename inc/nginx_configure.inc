@@ -2773,6 +2773,7 @@ if [[ "$NGINX_LIBBROTLI" = [yY] && "$(uname -m)" = 'x86_64' ]]; then
   { 
   ngxbrotli_download
   } 2>&1 | tee "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_nginx_brotli.log"
+  [[ "${PIPESTATUS[*]}" = "0 0" ]] || { NGX_CONFIGURE_ERR=1; return 1; }
   # initial installs don't have nginx directories setup from inc/brotli.inc routines yet
   # so need to do it at the stage of initial first time nginx installs
   if [[ "$INITIALINSTALL" = [yY] && ! -f /usr/local/nginx/conf/brotli_inc.conf ]]; then
@@ -2862,7 +2863,7 @@ fi
 
 if [[ "$NGINX_ZSTD" = [yY] ]]; then
   {
-  nginx_zstd_setup
+  nginx_zstd_setup || exit $?
   echo "pre-check: DYNAMIC_SUPPORT=$DYNAMIC_SUPPORT"
   echo "pre-check: NGXDYNAMIC_ZSTD=$NGXDYNAMIC_ZSTD"
   if [[ "$DYNAMIC_SUPPORT" = [yY] && "$NGXDYNAMIC_ZSTD" = [yY] ]]; then
@@ -2896,14 +2897,16 @@ if [[ "$NGINX_ZSTD" = [yY] ]]; then
     echo "ZSTD_NGINX_OPT=$ZSTD_NGINX_OPT"
   fi
   } 2>&1 | tee "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_nginx_zstd.log"
+  [[ ${PIPESTATUS[0]} -eq 0 ]] || { NGX_CONFIGURE_ERR=1; return 1; }
 else
   {
   ZSTD_NGINX_OPT=""
   echo "NGINX_ZSTD: NGINX_ZSTD=$NGINX_ZSTD"
   echo "DYNAMIC_SUPPORT=$DYNAMIC_SUPPORT"
   echo "ZSTD_NGINX_OPT=$ZSTD_NGINX_OPT"
-  nginx_zstd_setup
+  nginx_zstd_setup || exit $?
   } 2>&1 | tee "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_nginx_zstd.log"
+  [[ ${PIPESTATUS[0]} -eq 0 ]] || { NGX_CONFIGURE_ERR=1; return 1; }
 fi
 if [[ "$NGINX_ZSTD" = [yY] ]]; then
   if [[ "$DYNAMIC_SUPPORT" = [yY] && "$NGXDYNAMIC_ZSTD" = [yY] && -f /usr/local/nginx/modules/ngx_http_zstd_filter_module.so ]]; then
@@ -3425,7 +3428,7 @@ if [[ "$NGINX_GEOIPTWOLITE" = [yY] ]]; then
     sed -i 's|^#include /usr/local/nginx/conf/geoip2.conf;|include /usr/local/nginx/conf/geoip2.conf;|' /usr/local/nginx/conf/geoip.conf
   fi
   if [[ ! -f /usr/local/nginx-dep/bin/mmdblookup || ! -f /usr/share/GeoIP/GeoLite2-Country.mmdb ]]; then
-    geoiptwolite_install
+    geoiptwolite_install || { NGX_CONFIGURE_ERR=1; return 1; }
   fi
   if [ ! -d ../ngx_http_geoip2_module ]; then
     pushd $DIR_TMP

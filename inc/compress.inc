@@ -136,6 +136,14 @@ compgcc_thirteen() {
   COMP_CPU_MARCH=$(gcc -c -Q -march=native --help=target | awk '/  -march/ {print $2}' | head -n1 )
 }
 
+compgcc_fifteen() {
+  enable_gcc_toolset15 || return 1
+  label='gcc15 built'
+  export CXXFLAGS="-Wimplicit-fallthrough=0 -Wno-error=unused-result -Wno-unused-result"
+  export CFLAGS="$CXXFLAGS -Wno-implicit-function-declaration -Wno-int-conversion -std=gnu17"
+  COMP_CPU_MARCH=$(gcc -c -Q -march=native --help=target | awk '/  -march/ {print $2}' | head -n1 )
+}
+
 pgo_export_compress() {
   if [[ "$GCC_FALIGN_FUNCTION" = [yY] ]] && [[ "$COMP_CPU_MARCH" = 'nehalem' || "$COMP_CPU_MARCH" = 'westmere' || "$COMP_CPU_MARCH" = 'core2' || "$COMP_CPU_MARCH" = 'bonnell' || "$COMP_CPU_MARCH" = 'silvermont' ]]; then
     COMP_FALIGN_FUCTION_OPT=''
@@ -161,6 +169,7 @@ export LDFLAGS_USE="$LDFLAGS${COMP_FALIGN_FUCTION_OPT} -fprofile-use -fprofile-d
 }
 
 compressmenu_notice() {
+  COMPILER_CFLAGS=""
   echo
   echo "Multi-thread compression Install"
   echo
@@ -171,13 +180,17 @@ compressmenu_notice() {
   3. zstd
   4. lz4"
   echo
-  compgcc_seven
-  compgcc_eight
-  compgcc_nine
-  compgcc_ten
-  compgcc_eleven
-  compgcc_twelve
-  compgcc_thirteen
+  if [[ "$DEVTOOLSETFIFTTEEN" = [yY] ]] && [[ "$CENTOS_EIGHT" = 8 || "$CENTOS_NINE" = 9 ]]; then
+    compgcc_fifteen || return 1
+  else
+    compgcc_seven
+    compgcc_eight
+    compgcc_nine
+    compgcc_ten
+    compgcc_eleven
+    compgcc_twelve
+    compgcc_thirteen
+  fi
   # pgo_export_compress
 }
 

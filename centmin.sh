@@ -30,7 +30,7 @@ DT=$(date +"%d%m%y-%H%M%S")
 branchname='132.00stable'
 SCRIPT_MAJORVER='132'
 SCRIPT_MINORVER='00'
-SCRIPT_INCREMENTVER='194'
+SCRIPT_INCREMENTVER='195'
 SCRIPT_VERSIONSHORT="${branchname}"
 SCRIPT_VERSION="${SCRIPT_VERSIONSHORT}.b${SCRIPT_INCREMENTVER}"
 SCRIPT_DATE='15/02/25'
@@ -1583,9 +1583,9 @@ mysqltmpdir
 if [[ "$1" = 'install' ]]; then
   INITIALINSTALL='y'
   export INITIALINSTALL='y'
-  cpcheck initialinstall
+  cpcheck initialinstall || exit $?
 else
-  cpcheck
+  cpcheck || exit $?
 fi
 
 if [ ! -f /etc/centminmod-release ];then
@@ -3049,7 +3049,7 @@ fi
 postfix_presetup
 
 echo "incmemcachedinstall"
-incmemcachedinstall
+incmemcachedinstall || return $?
 
 echo "csfinstalls"
 csfinstalls
@@ -3064,20 +3064,20 @@ echo "installpythonfuct"
 installpythonfuct
 
 echo "mailparseinstall"
-mailparseinstall
+mailparseinstall || return $?
 
 echo "imagickinstall"
-imagickinstall
+imagickinstall || return $?
 
 echo "geoipphpext"
-geoipphpext
+geoipphpext || return $?
 
 echo "geoiptwolite_phpext_install"
-geoiptwolite_phpext_install
+geoiptwolite_phpext_install || return $?
 
 if [[ "$PHPREDIS" = [yY] ]]; then
     echo "redisinstall"
-    redisinstall
+    redisinstall || return $?
 fi
 
 if [[ "$REDIS_SERVER_INSTALL" = [yY] ]]; then
@@ -3086,13 +3086,13 @@ if [[ "$REDIS_SERVER_INSTALL" = [yY] ]]; then
 fi
 
 echo "mongodbinstall"
-mongodbinstall
+mongodbinstall || return $?
 
 echo "swooleinstall"
-swooleinstall
+swooleinstall || return $?
 
 echo "zopfliinstall"
-zopfliinstall
+zopfliinstall || return $?
 
 if [[ "$PHPMSSQL" = [yY] ]]; then
   echo "php_mssqlinstall"
@@ -3101,22 +3101,22 @@ fi
 
 if [[ "$PHP_BROTLI" = [yY] ]]; then
   echo "php_ext_brotli"
-  php_ext_brotli
+  php_ext_brotli || return $?
 fi
 
 if [[ "$PHP_LZFOUR" = [yY] ]]; then
   echo "php_ext_lzfour"
-  php_ext_lzfour
+  php_ext_lzfour || return $?
 fi
 
 if [[ "$PHP_LZF" = [yY] ]]; then
   echo "php_ext_lzf"
-  php_ext_lzf
+  php_ext_lzf || return $?
 fi
 
 if [[ "$PHP_ZSTD" = [yY] ]]; then
   echo "php_ext_zstd"
-  php_ext_zstd
+  php_ext_zstd || return $?
 fi
 
 if [[ "$PHPTIMEZONEDB" = [yY] ]]; then
@@ -3501,9 +3501,9 @@ if [[ "$1" = 'install' ]]; then
     fi
 
     if [[ "$INITIALINSTALL" = [Yy] ]]; then
-        lowmemcheck initialinstall
+        lowmemcheck initialinstall || exit $?
     else
-        lowmemcheck
+        lowmemcheck || exit $?
     fi
     # setramdisk
     centminlog
@@ -3536,7 +3536,7 @@ if [[ "$1" = 'install' ]]; then
     echo "Total YUM + Source Download Time: $DOWNLOADTIME seconds" >> "${CENTMINLOGDIR}/centminmod_downloadtimes_${DT}.log"
     ls -lah "${CENTMINLOGDIR}/centminmod_downloadtimes_${DT}.log"
 
-    funct_centmininstall
+    funct_centmininstall || exit $?
 
     # setup command shortcut aliases 
     # given the known download location
@@ -3659,9 +3659,9 @@ else
             fi
 
             if [[ "$INITIALINSTALL" = [Yy] ]]; then
-                lowmemcheck initialinstall
+                lowmemcheck initialinstall || exit $?
             else
-                lowmemcheck
+                lowmemcheck || exit $?
             fi
             # setramdisk
             centminlog
@@ -3682,7 +3682,7 @@ else
             fi
             
             alldownloads
-            funct_centmininstall
+            funct_centmininstall || exit $?
 
     # setup command shortcut aliases 
     # given the known download location
@@ -3838,7 +3838,7 @@ fi
         if [[ "$yuminstallrun" == [yY] ]]; then
         yuminstall
         fi
-        funct_phpupgrade
+        funct_phpupgrade || exit $?
         } 2>&1 | tee "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_php_upgrade.log"
         PHP_UPGRADE_STATUS=${PIPESTATUS[0]}
         if [[ "$PHP_UPGRADE_STATUS" -ne 0 ]]; then
@@ -3995,11 +3995,12 @@ fi
         fi
         
         if [[ "$TIME_MEMCACHED" = [yY] ]]; then
-            funct_memcachedreinstall 2>&1 | awk '{ print strftime("%Y-%m-%d %H:%M:%S"), $0; fflush(); }'
+            funct_memcachedreinstall > >(awk '{ print strftime("%Y-%m-%d %H:%M:%S"), $0; fflush(); }') 2>&1 || exit $?
         else
-            funct_memcachedreinstall
+            funct_memcachedreinstall || exit $?
         fi
         } 2>&1 | tee "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_memcached_reinstall.log"
+        [[ ${PIPESTATUS[0]} -eq 0 ]] || exit 1
         
         if [ "$CCACHEINSTALL" == 'y' ]; then
         
@@ -4030,7 +4031,7 @@ fi
         13|redisphp)
         # set_logdate
         CM_MENUOPT=13
-        phpredis_submenu
+        phpredis_submenu || exit $?
         
         ;;
         14|selinux)
@@ -4056,11 +4057,12 @@ fi
         fi
         
         if [[ "$TIME_IMAGEMAGICK" = [yY] ]]; then
-            imagickinstall submenu 2>&1 | awk '{ print strftime("%Y-%m-%d %H:%M:%S"), $0; fflush(); }'
+            imagickinstall submenu > >(awk '{ print strftime("%Y-%m-%d %H:%M:%S"), $0; fflush(); }') 2>&1 || exit $?
         else
-            imagickinstall submenu
+            imagickinstall submenu || exit $?
         fi
         } 2>&1 | tee "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_php-imagick-install.log"
+        [[ ${PIPESTATUS[0]} -eq 0 ]] || exit 1
         
         if [ "$CCACHEINSTALL" == 'y' ]; then
         
@@ -4100,7 +4102,7 @@ fi
         ccacheinstall
         fi
         
-        compressmenu_notice
+        compressmenu_notice || exit $?
         funct_pigzinstall
         # funct_pbzip2install
         # funct_lbzip2install
@@ -4110,6 +4112,7 @@ fi
         lzfourinstall
         #funct_p7zipinstall
         } 2>&1 | tee "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_multithread_compression-install.log"
+        [[ ${PIPESTATUS[0]} -eq 0 ]] || exit 1
         
         if [ "$CCACHEINSTALL" == 'y' ]; then
         
@@ -4248,14 +4251,14 @@ fi
         fi
 
         if [[ "$INITIALINSTALL" = [Yy] ]]; then
-            lowmemcheck initialinstall
+            lowmemcheck initialinstall || exit $?
         else
-            lowmemcheck
+            lowmemcheck || exit $?
         fi
         # setramdisk
         diskalert
         alldownloads
-        funct_centmininstall
+        funct_centmininstall || exit $?
         unsetramdisk
         echo "$SCRIPT_VERSION" > /etc/centminmod-release
         echo "$SCRIPT_VERSION #`date`" >> /etc/centminmod-versionlog
@@ -4276,7 +4279,7 @@ fi
         diskalert
         csftweaks
         yuminstall
-        funct_nginxupgrade
+        funct_nginxupgrade || exit $?
         
         ;;
         phpupgrade)
@@ -4284,7 +4287,7 @@ fi
         diskalert
         csftweaks
         yuminstall
-        funct_phpupgrade
+        funct_phpupgrade || exit $?
         
         ;;
         xcachereinstall)
@@ -4309,7 +4312,7 @@ fi
         ;;
         memcachedreinstall)
         
-        funct_memcachedreinstall
+        funct_memcachedreinstall || exit $?
         
         ;;
         mariadbupgrade)
@@ -4344,7 +4347,7 @@ fi
         ;;
         multithreadcomp)
         
-        compressmenu_notice
+        compressmenu_notice || exit $?
         funct_pigzinstall
         funct_pbzip2install
         # funct_lbzip2install
@@ -4374,8 +4377,8 @@ fi
             yuminstall
         fi
 
-        funct_nginxupgrade
-        funct_phpupgrade
+        funct_nginxupgrade || exit $?
+        funct_phpupgrade || exit $?
         checksiege
         siegeinstall
 
