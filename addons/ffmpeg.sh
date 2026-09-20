@@ -498,6 +498,15 @@ else
   MARCH_TARGET='x86-64'
 fi
 
+# Preserve explicit Clang selections. GCC15 remains an addon opt-in.
+if [[ "$CC $CXX" != *clang* ]]; then
+if [[ "$GCC_FIFTTEEN" = [yY] && "$(uname -m)" = x86_64 ]] && [[ "$EL_VERID" = 8 || "$EL_VERID" = 9 ]]; then
+  source "$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)/inc/gcc.inc" || exit 1
+  # Standalone builds can compile directly without requiring ccache.
+  INITIALINSTALL=y enable_gcc_toolset15 || exit 1
+  export CXXFLAGS="${OPT_LEVEL} -march=${MARCH_TARGET} -Wimplicit-fallthrough=0 -Wno-pedantic"
+  export CFLAGS="$CXXFLAGS -std=gnu17"
+else
 if [[ "$CENTOS_SEVEN" -eq '7' ]]; then
   if [[ "$GCC_SEVEN" = [yY] && "$(uname -m)" = 'x86_64' && -f /opt/rh/devtoolset-7/root/usr/bin/gcc && -f /opt/rh/devtoolset-7/root/usr/bin/g++ ]]; then
     source /opt/rh/devtoolset-7/enable
@@ -596,11 +605,8 @@ if [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]]; then
     export CXXFLAGS="${CFLAGS}"
   fi
 
-  if [[ "$GCC_FIFTTEEN" = [yY] && "$(uname -m)" = 'x86_64' && -f /opt/gcc-custom/gcc15/bin/gcc && -f /opt/gcc-custom/gcc15/bin/g++ ]]; then
-    source /etc/profile.d/gcc15-custom.sh
-    export CFLAGS="${OPT_LEVEL} -march=${MARCH_TARGET} -Wimplicit-fallthrough=0 -Wno-pedantic"
-    export CXXFLAGS="${CFLAGS}"
-  fi
+fi
+fi
 fi
 
 do_continue() {
@@ -803,7 +809,7 @@ cd ${OPT}/ffmpeg_sources
 rm -rf x265
 git clone https://bitbucket.org/multicoreware/x265_git x265
 cd ${OPT}/ffmpeg_sources/x265/build/linux
-cmake -G "Unix Makefiles" -DCMAKE_INSTALL_PREFIX:PATH="${OPT}/ffmpeg" -DENABLE_SHARED:bool=off -DCMAKE_C_COMPILER=gcc -DCMAKE_CXX_COMPILER=g++ ../../source
+cmake -G "Unix Makefiles" -DCMAKE_INSTALL_PREFIX:PATH="${OPT}/ffmpeg" -DENABLE_SHARED:bool=off -DCMAKE_C_COMPILER="${CC:-gcc}" -DCMAKE_CXX_COMPILER="${CXX:-g++}" ../../source
 # cmake -DCMAKE_INSTALL_PREFIX:PATH=${OPT}/ffmpeg -DENABLE_SHARED:bool=off ../../source
 make${MAKETHREADS}
 make install
@@ -851,7 +857,7 @@ cd ${OPT}/ffmpeg_sources
 curl -O https://ftp.osuosl.org/pub/xiph/releases/vorbis/libvorbis-${LIBVORBIS_VER}.tar.gz
 tar xzvf libvorbis-${LIBVORBIS_VER}.tar.gz
 cd libvorbis-${LIBVORBIS_VER}
-LD_LIBRARY_PATH=${OPT}/ffmpeg/lib LDFLAGS="-L${OPT}/ffmpeg/lib" CPPFLAGS="-I${OPT}/ffmpeg/include" ./configure --prefix="${OPT}/ffmpeg" --with-ogg="${OPT}/ffmpeg" --enable-static --enable-shared
+LD_LIBRARY_PATH="${OPT}/ffmpeg/lib${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}" LDFLAGS="-L${OPT}/ffmpeg/lib" CPPFLAGS="-I${OPT}/ffmpeg/include" ./configure --prefix="${OPT}/ffmpeg" --with-ogg="${OPT}/ffmpeg" --enable-static --enable-shared
 make${MAKETHREADS}
 make install
 make distclean
@@ -909,7 +915,7 @@ if [[ "$ENABLE_DAVONED" = [yY] ]]; then
   cd "${OPT}/ffmpeg_sources/shaderc"
   ./utils/git-sync-deps
   cd "${OPT}/ffmpeg_sources/shaderc/build"
-  PKG_CONFIG_PATH="${OPT}/ffmpeg/lib/pkgconfig" LD_LIBRARY_PATH=${OPT}/ffmpeg/lib LDFLAGS="-L${OPT}/ffmpeg/lib" CPPFLAGS="-I${OPT}/ffmpeg/include" cmake3 -GNinja -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX="${OPT}/ffmpeg" -DCMAKE_INSTALL_LIBDIR="${OPT}/ffmpeg/lib" ../
+  PKG_CONFIG_PATH="${OPT}/ffmpeg/lib/pkgconfig" LD_LIBRARY_PATH="${OPT}/ffmpeg/lib${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}" LDFLAGS="-L${OPT}/ffmpeg/lib" CPPFLAGS="-I${OPT}/ffmpeg/include" cmake3 -GNinja -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX="${OPT}/ffmpeg" -DCMAKE_INSTALL_LIBDIR="${OPT}/ffmpeg/lib" ../
   ninja-build install
   
   cd ${OPT}/ffmpeg_sources
@@ -917,14 +923,14 @@ if [[ "$ENABLE_DAVONED" = [yY] ]]; then
   git clone --depth 1 https://code.videolan.org/videolan/libplacebo.git
   mkdir -p libplacebo/build
   cd libplacebo
-  PKG_CONFIG_PATH="${OPT}/ffmpeg/lib/pkgconfig" LD_LIBRARY_PATH=${OPT}/ffmpeg/lib LDFLAGS="-L${OPT}/ffmpeg/lib" CPPFLAGS="-I${OPT}/ffmpeg/include" meson build --buildtype release --prefix="${OPT}/ffmpeg" --libdir="${OPT}/ffmpeg/lib"
+  PKG_CONFIG_PATH="${OPT}/ffmpeg/lib/pkgconfig" LD_LIBRARY_PATH="${OPT}/ffmpeg/lib${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}" LDFLAGS="-L${OPT}/ffmpeg/lib" CPPFLAGS="-I${OPT}/ffmpeg/include" meson build --buildtype release --prefix="${OPT}/ffmpeg" --libdir="${OPT}/ffmpeg/lib"
   ninja-build -C build install
   
   cd ${OPT}/ffmpeg_sources
   rm -rf dav1d
   git clone --depth 1 https://code.videolan.org/videolan/dav1d.git
   cd dav1d
-  PKG_CONFIG_PATH="${OPT}/ffmpeg/lib/pkgconfig" LD_LIBRARY_PATH=${OPT}/ffmpeg/lib LDFLAGS="-L${OPT}/ffmpeg/lib" CPPFLAGS="-I${OPT}/ffmpeg/include" meson build --buildtype release --prefix="${OPT}/ffmpeg" --libdir="${OPT}/ffmpeg/lib"
+  PKG_CONFIG_PATH="${OPT}/ffmpeg/lib/pkgconfig" LD_LIBRARY_PATH="${OPT}/ffmpeg/lib${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}" LDFLAGS="-L${OPT}/ffmpeg/lib" CPPFLAGS="-I${OPT}/ffmpeg/include" meson build --buildtype release --prefix="${OPT}/ffmpeg" --libdir="${OPT}/ffmpeg/lib"
   ninja-build -C build install
 fi
 
@@ -933,9 +939,9 @@ rm -rf ffmpeg
 git clone --depth 1 git://source.ffmpeg.org/ffmpeg
 cd ffmpeg
 if [[ "$NASM_SOURCEINSTALL" = [yY] ]]; then
-  PATH="${OPT}/bin:$PATH" LD_LIBRARY_PATH=${OPT}/ffmpeg/lib PKG_CONFIG_PATH="${OPT}/ffmpeg/lib/pkgconfig" ./configure --prefix="${OPT}/ffmpeg" --extra-cflags="${EXTRACFLAG_FPICOPTS} -I${OPT}/ffmpeg/include" --extra-ldflags="-L${OPT}/ffmpeg/lib${LDFLAG_FPIC}${MOLD_OPT}" --bindir="${OPT}/bin" --pkg-config-flags="--static" --extra-libs=-lpthread --extra-libs=-lm --enable-gpl${FFMPEG_DEBUGOPT} --enable-nonfree --enable-libfdk-aac --enable-libfreetype --enable-libmp3lame --enable-libopus --enable-libvorbis --enable-libvpx --enable-libx264 --enable-libx265${ENABLE_AVONEOPT}${ENABLE_DAVONEDOPT}${ENABLE_LIBASSOPT}${ENABLE_ZIMGOPT}${ENABLE_OPENCVOPT} --enable-swscale${ENABLE_FONTCONFIGOPT}${ENABLE_FPICOPT} --enable-shared${DISABLE_FFMPEGNETWORK}
+  PATH="${OPT}/bin:$PATH" LD_LIBRARY_PATH="${OPT}/ffmpeg/lib${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}" PKG_CONFIG_PATH="${OPT}/ffmpeg/lib/pkgconfig" ./configure --prefix="${OPT}/ffmpeg" --cc="${CC:-gcc}" --cxx="${CXX:-g++}" --ld="${CC:-gcc}" --extra-cflags="${CFLAGS} ${EXTRACFLAG_FPICOPTS} -I${OPT}/ffmpeg/include" --extra-ldflags="-L${OPT}/ffmpeg/lib${LDFLAG_FPIC}${MOLD_OPT}" --bindir="${OPT}/bin" --pkg-config-flags="--static" --extra-libs=-lpthread --extra-libs=-lm --enable-gpl${FFMPEG_DEBUGOPT} --enable-nonfree --enable-libfdk-aac --enable-libfreetype --enable-libmp3lame --enable-libopus --enable-libvorbis --enable-libvpx --enable-libx264 --enable-libx265${ENABLE_AVONEOPT}${ENABLE_DAVONEDOPT}${ENABLE_LIBASSOPT}${ENABLE_ZIMGOPT}${ENABLE_OPENCVOPT} --enable-swscale${ENABLE_FONTCONFIGOPT}${ENABLE_FPICOPT} --enable-shared${DISABLE_FFMPEGNETWORK}
 else
-  LD_LIBRARY_PATH=${OPT}/ffmpeg/lib PKG_CONFIG_PATH="${OPT}/ffmpeg/lib/pkgconfig" ./configure --prefix="${OPT}/ffmpeg" --extra-cflags="${EXTRACFLAG_FPICOPTS} -I${OPT}/ffmpeg/include" --extra-ldflags="-L${OPT}/ffmpeg/lib${LDFLAG_FPIC}${MOLD_OPT}" --bindir="${OPT}/bin" --pkg-config-flags="--static" --extra-libs=-lpthread --extra-libs=-lm --enable-gpl${FFMPEG_DEBUGOPT} --enable-nonfree --enable-libfdk-aac --enable-libfreetype --enable-libmp3lame --enable-libopus --enable-libvorbis --enable-libvpx --enable-libx264 --enable-libx265${ENABLE_AVONEOPT}${ENABLE_DAVONEDOPT}${ENABLE_LIBASSOPT}${ENABLE_ZIMGOPT}${ENABLE_OPENCVOPT} --enable-swscale${ENABLE_FONTCONFIGOPT}${ENABLE_FPICOPT} --enable-shared${DISABLE_FFMPEGNETWORK}
+  LD_LIBRARY_PATH="${OPT}/ffmpeg/lib${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}" PKG_CONFIG_PATH="${OPT}/ffmpeg/lib/pkgconfig" ./configure --prefix="${OPT}/ffmpeg" --cc="${CC:-gcc}" --cxx="${CXX:-g++}" --ld="${CC:-gcc}" --extra-cflags="${CFLAGS} ${EXTRACFLAG_FPICOPTS} -I${OPT}/ffmpeg/include" --extra-ldflags="-L${OPT}/ffmpeg/lib${LDFLAG_FPIC}${MOLD_OPT}" --bindir="${OPT}/bin" --pkg-config-flags="--static" --extra-libs=-lpthread --extra-libs=-lm --enable-gpl${FFMPEG_DEBUGOPT} --enable-nonfree --enable-libfdk-aac --enable-libfreetype --enable-libmp3lame --enable-libopus --enable-libvorbis --enable-libvpx --enable-libx264 --enable-libx265${ENABLE_AVONEOPT}${ENABLE_DAVONEDOPT}${ENABLE_LIBASSOPT}${ENABLE_ZIMGOPT}${ENABLE_OPENCVOPT} --enable-swscale${ENABLE_FONTCONFIGOPT}${ENABLE_FPICOPT} --enable-shared${DISABLE_FFMPEGNETWORK}
 fi
 if [[ "$NASM_SOURCEINSTALL" = [yY] ]]; then
   PATH="${OPT}/bin:$PATH" make${MAKETHREADS}
@@ -1038,7 +1044,7 @@ cd ${OPT}/ffmpeg_sources/x265
 rm -rf ${OPT}/ffmpeg_sources/x265/build/linux/*
 hg update
 cd ${OPT}/ffmpeg_sources/x265/build/linux
-cmake -G "Unix Makefiles" -DCMAKE_INSTALL_PREFIX:PATH="${OPT}/ffmpeg" -DENABLE_SHARED:bool=off -DCMAKE_C_COMPILER=gcc -DCMAKE_CXX_COMPILER=g++ ../../source
+cmake -G "Unix Makefiles" -DCMAKE_INSTALL_PREFIX:PATH="${OPT}/ffmpeg" -DENABLE_SHARED:bool=off -DCMAKE_C_COMPILER="${CC:-gcc}" -DCMAKE_CXX_COMPILER="${CXX:-g++}" ../../source
 # cmake -G "Unix Makefiles" -DCMAKE_INSTALL_PREFIX:PATH="${OPT}/ffmpeg" -DENABLE_SHARED:bool=off ../../source
 make${MAKETHREADS}
 make install
@@ -1084,9 +1090,9 @@ cd ${OPT}/ffmpeg_sources/ffmpeg
 make distclean
 git pull
 if [[ "$NASM_SOURCEINSTALL" = [yY] ]]; then
-  PATH="${OPT}/bin:$PATH" LD_LIBRARY_PATH=${OPT}/ffmpeg/lib PKG_CONFIG_PATH="${OPT}/ffmpeg/lib/pkgconfig" ./configure --prefix="${OPT}/ffmpeg" --extra-cflags="${EXTRACFLAG_FPICOPTS} -I${OPT}/ffmpeg/include" --extra-ldflags="-L${OPT}/ffmpeg/lib${LDFLAG_FPIC}${MOLD_OPT}" --bindir="${OPT}/bin" --pkg-config-flags="--static" --extra-libs=-lpthread --extra-libs=-lm --enable-gpl${FFMPEG_DEBUGOPT} --enable-nonfree --enable-libfdk-aac --enable-libfreetype --enable-libmp3lame --enable-libopus --enable-libvorbis --enable-libvpx --enable-libx264 --enable-libx265${ENABLE_AVONEOPT}${ENABLE_DAVONEDOPT}${ENABLE_LIBASSOPT}${ENABLE_ZIMGOPT}${ENABLE_OPENCVOPT} --enable-swscale${ENABLE_FONTCONFIGOPT}${ENABLE_FPICOPT} --enable-shared
+  PATH="${OPT}/bin:$PATH" LD_LIBRARY_PATH="${OPT}/ffmpeg/lib${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}" PKG_CONFIG_PATH="${OPT}/ffmpeg/lib/pkgconfig" ./configure --prefix="${OPT}/ffmpeg" --cc="${CC:-gcc}" --cxx="${CXX:-g++}" --ld="${CC:-gcc}" --extra-cflags="${CFLAGS} ${EXTRACFLAG_FPICOPTS} -I${OPT}/ffmpeg/include" --extra-ldflags="-L${OPT}/ffmpeg/lib${LDFLAG_FPIC}${MOLD_OPT}" --bindir="${OPT}/bin" --pkg-config-flags="--static" --extra-libs=-lpthread --extra-libs=-lm --enable-gpl${FFMPEG_DEBUGOPT} --enable-nonfree --enable-libfdk-aac --enable-libfreetype --enable-libmp3lame --enable-libopus --enable-libvorbis --enable-libvpx --enable-libx264 --enable-libx265${ENABLE_AVONEOPT}${ENABLE_DAVONEDOPT}${ENABLE_LIBASSOPT}${ENABLE_ZIMGOPT}${ENABLE_OPENCVOPT} --enable-swscale${ENABLE_FONTCONFIGOPT}${ENABLE_FPICOPT} --enable-shared
 else
-  LD_LIBRARY_PATH=${OPT}/ffmpeg/lib PKG_CONFIG_PATH="${OPT}/ffmpeg/lib/pkgconfig" ./configure --prefix="${OPT}/ffmpeg" --extra-cflags="${EXTRACFLAG_FPICOPTS} -I${OPT}/ffmpeg/include" --extra-ldflags="-L${OPT}/ffmpeg/lib${LDFLAG_FPIC}${MOLD_OPT}" --bindir="${OPT}/bin" --pkg-config-flags="--static" --extra-libs=-lpthread --extra-libs=-lm --enable-gpl${FFMPEG_DEBUGOPT} --enable-nonfree --enable-libfdk-aac --enable-libfreetype --enable-libmp3lame --enable-libopus --enable-libvorbis --enable-libvpx --enable-libx264 --enable-libx265${ENABLE_AVONEOPT}${ENABLE_DAVONEDOPT}${ENABLE_LIBASSOPT}${ENABLE_ZIMGOPT}${ENABLE_OPENCVOPT} --enable-swscale${ENABLE_FONTCONFIGOPT}${ENABLE_FPICOPT} --enable-shared
+  LD_LIBRARY_PATH="${OPT}/ffmpeg/lib${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}" PKG_CONFIG_PATH="${OPT}/ffmpeg/lib/pkgconfig" ./configure --prefix="${OPT}/ffmpeg" --cc="${CC:-gcc}" --cxx="${CXX:-g++}" --ld="${CC:-gcc}" --extra-cflags="${CFLAGS} ${EXTRACFLAG_FPICOPTS} -I${OPT}/ffmpeg/include" --extra-ldflags="-L${OPT}/ffmpeg/lib${LDFLAG_FPIC}${MOLD_OPT}" --bindir="${OPT}/bin" --pkg-config-flags="--static" --extra-libs=-lpthread --extra-libs=-lm --enable-gpl${FFMPEG_DEBUGOPT} --enable-nonfree --enable-libfdk-aac --enable-libfreetype --enable-libmp3lame --enable-libopus --enable-libvorbis --enable-libvpx --enable-libx264 --enable-libx265${ENABLE_AVONEOPT}${ENABLE_DAVONEDOPT}${ENABLE_LIBASSOPT}${ENABLE_ZIMGOPT}${ENABLE_OPENCVOPT} --enable-swscale${ENABLE_FONTCONFIGOPT}${ENABLE_FPICOPT} --enable-shared
 fi
 if [[ "$NASM_SOURCEINSTALL" = [yY] ]]; then
   PATH="${OPT}/bin:$PATH" make${MAKETHREADS}
@@ -1176,7 +1182,7 @@ phpext() {
   cd $DIR_TMP/ffmpeg-php-git
   # http://stackoverflow.com/a/14947692/272648
   
-  LD_LIBRARY_PATH=${OPT}/ffmpeg/lib LDFLAGS="-L${OPT}/ffmpeg/lib" CPPFLAGS="-I${OPT}/ffmpeg/include" ./configure --with-php-config=/usr/local/bin/php-config --with-ffmpeg=/opt/ffmpeg${GDOPT}
+  LD_LIBRARY_PATH="${OPT}/ffmpeg/lib${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}" LDFLAGS="-L${OPT}/ffmpeg/lib" CPPFLAGS="-I${OPT}/ffmpeg/include" ./configure --with-php-config=/usr/local/bin/php-config --with-ffmpeg=/opt/ffmpeg${GDOPT}
   
   # mv /opt/ffmpeg/include/libavutil/time.h /opt/ffmpeg/include/libavutil/time.h_
   make${MAKETHREADS}

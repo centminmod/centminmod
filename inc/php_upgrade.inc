@@ -221,47 +221,47 @@ fi
 
 if [[ "$DETECTMEMCACHED" = [yY] ]] || [[ "$DETECTMEMCACHED" = [yY] && ! -f "$PHPEXTDIR_AUTODETECT/memcached.so" ]]; then
     cecho "Auto reinstalling previously detected memcached/memcache php extension" $boldyellow
-    funct_memcachedreinstall
+    funct_memcachedreinstall || return $?
 fi
 
 if [[ "$DETECTREDIS" = [yY] ]] || [[ "$DETECTREDIS" = [yY] && ! -f "$PHPEXTDIR_AUTODETECT/redis.so" ]]; then
     cecho "Auto reinstalling previously detected redis PHP extension" $boldyellow
-    redisinstall
+    redisinstall || return $?
 fi
 
 if [[ "$DETECTMONGODB" = [yY] ]] || [[ "$DETECTMONGODB" = [yY] && ! -f "$PHPEXTDIR_AUTODETECT/mongodb.so" ]]; then
     cecho "Auto reinstalling previously detected MongoDB PHP extension" $boldyellow
-    mongodbinstall
+    mongodbinstall || return $?
 fi
 
 if [[ "$DETECTSWOOLE" = [yY] ]] || [[ "$DETECTSWOOLE" = [yY] && ! -f "$PHPEXTDIR_AUTODETECT/swoole.so" ]]; then
     cecho "Auto reinstalling previously detected swoole PHP extension" $boldyellow
-    swooleinstall
+    swooleinstall || return $?
 fi
 
 if [[ "$DETECTZOPFLI" = [yY] ]] || [[ "$DETECTZOPFLI" = [yY] && ! -f "$PHPEXTDIR_AUTODETECT/zopfli.so" ]]; then
     cecho "Auto reinstalling previously detected Zopfli PHP extension" $boldyellow
-    zopfliinstall
+    zopfliinstall || return $?
 fi
 
 if [[ "$DETECTBROTLI" = [yY] ]] || [[ "$DETECTBROTLI" = [yY] && ! -f "$PHPEXTDIR_AUTODETECT/brotli.so" ]]; then
     cecho "Auto reinstalling previously detected brotli PHP extension" $boldyellow
-    php_ext_brotli
+    php_ext_brotli || return $?
 fi
 
 if [[ "$DETECTLZFOUR" = [yY] ]] || [[ "$DETECTLZFOUR" = [yY] && ! -f "$PHPEXTDIR_AUTODETECT/lz4.so" ]]; then
     cecho "Auto reinstalling previously detected lz4 PHP extension" $boldyellow
-    php_ext_lzfour
+    php_ext_lzfour || return $?
 fi
 
 if [[ "$DETECTLZF" = [yY] ]] || [[ "$DETECTLZF" = [yY] && ! -f "$PHPEXTDIR_AUTODETECT/lzf.so" ]]; then
     cecho "Auto reinstalling previously detected lzf PHP extension" $boldyellow
-    php_ext_lzf
+    php_ext_lzf || return $?
 fi
 
 if [[ "$DETECTZSTD" = [yY] ]] || [[ "$DETECTZSTD" = [yY] && ! -f "$PHPEXTDIR_AUTODETECT/zstd.so" ]]; then
     cecho "Auto reinstalling previously detected zstd PHP extension" $boldyellow
-    php_ext_zstd
+    php_ext_zstd || return $?
 fi
 
 if [[ "$DETECTOPCACHE" = [yY] ]]; then
@@ -275,17 +275,17 @@ fi
 
 if [[ "$DETECTMAILPARSE" = [yY] ]] || [[ "$DETECTMAILPARSE" = [yY] && ! -f "$PHPEXTDIR_AUTODETECT/mailparse.so" ]]; then
     cecho "Auto reinstalling previously detected mailparse extension" $boldyellow
-    mailparseinstall
+    mailparseinstall || return $?
 fi
 
 if [[ "$DETECTIMAGICK" = [yY] ]] || [[ "$DETECTIMAGICK" = [yY] && ! -f "$PHPEXTDIR_AUTODETECT/imagick.so" ]]; then
     cecho "Auto reinstalling previously detected imagemagick extension" $boldyellow
-    imagickinstall
+    imagickinstall || return $?
 fi
 
 if [[ "$DETECTGEOIP" = [yY] ]] || [[ "$DETECTGEOIP" = [yY] && ! -f "$PHPEXTDIR_AUTODETECT/geoip.so" ]]; then
     cecho "Auto reinstalling previously detected geoip extension" $boldyellow
-    geoipphpext
+    geoipphpext || return $?
 fi
 
 # Fix extension directory on major PHP version changes 
@@ -295,10 +295,10 @@ PHPEXTDIRDNEW=$(cat /usr/local/bin/php-config | awk '/^extension_dir/ {extdir=$1
 OLD=$(echo $PHPEXTDIRDOLD | sed 's/\//\\\//g')
 NEW=$(echo $PHPEXTDIRDNEW | sed 's/\//\\\//g')
 
-for ini in "$(ls ${CONFIGSCANDIR}/ | grep .ini)"
- do 
+for ini in "${CONFIGSCANDIR}"/*.ini; do
+    [[ -f "$ini" ]] || continue
     echo "$ini"
-    sed -i "s/$OLD/$NEW/g" "${CONFIGSCANDIR}/${ini}" >/dev/null 2>&1
+    sed -i "s/$OLD/$NEW/g" "$ini" >/dev/null 2>&1 || return 1
 done
 
 }
@@ -1086,7 +1086,7 @@ fi
         echo
       # set extra cflags fro devtoolset-7 and devtoolset-8 compatibility
       check_devtoolset_php
-      enable_devtoolset
+      enable_devtoolset "$CLANG_PHP" || return $?
       max_spawn_rate_check
 
         # read -ep "Do you want to update to latest php-fpm.conf ? It will overwrite your existing php-fpm.conf [y/n]: " overwritephpfpmconf
@@ -1148,21 +1148,21 @@ if [[ "$overwritephpfpmconf" = [yY] ]]; then
     # from existing installed PHP version
     if [[ "$PHPMUVER" != "$PHPCURRENTVER" ]] || [[ "$AUTODETECPHP_OVERRIDE" = [yY] ]]; then
         PHP_MAJORUPGRADE='y'
-        autodetectinstallextensions
+        autodetectinstallextensions || return $?
     else
         PHP_MAJORUPGRADE='n'
     fi
 
     if [[ ! -f "${CONFIGSCANDIR}/mssql.ini" || ! -f "${CONFIGSCANDIR}/mongodb.ini" || ! -f "${CONFIGSCANDIR}/swoole.ini" || ! -f "${CONFIGSCANDIR}/zopfli.ini" || ! -f "${CONFIGSCANDIR}/brotli.ini" || ! -f "${CONFIGSCANDIR}/brotli.ini" || ! -f "${CONFIGSCANDIR}/lz4.ini" || ! -f "${CONFIGSCANDIR}/lzf.ini" || ! -f "${CONFIGSCANDIR}/zstd.ini" ]] && [[ "$PHPMSSQL" = [yY] || "$PHPMONGODB" = [yY] || "$PHPSWOOLE" = [yY] || "$PHPZOPFLI" = [yY] || "$PHP_BROTLI" = [yY] || "$PHP_LZFOUR" = [yY] || "$PHP_LZF" = [yY] || "$PHP_ZSTD" = [yY] ]]; then
-        autodetectinstallextensions
+        autodetectinstallextensions || return $?
     fi
 
     if [[ "$PHPMUVER" != 'NGDEBUG' ]]; then
         if [[ ! -f "${CONFIGSCANDIR}/redis.ini" && "$PHPREDIS" = [yY] ]]; then
-            redisinstall
+            redisinstall || return $?
         elif [[ "$PHPREDIS" = [yY] ]] && php_ext_so_missing redis; then
             cecho "redis.ini present but redis.so missing - reinstalling redis" $boldyellow
-            redisinstall
+            redisinstall || return $?
         elif [[ -f "${CONFIGSCANDIR}/redis.ini" && "$PHPREDIS" = [nN] ]]; then
             rm -rf "${CONFIGSCANDIR}/redis.ini"
         fi
@@ -1174,17 +1174,17 @@ else
     # from existing installed PHP version
     if [[ "$PHPMUVER" != "$PHPCURRENTVER" ]] || [[ "$AUTODETECPHP_OVERRIDE" = [yY] ]]; then
         PHP_MAJORUPGRADE='y'
-        autodetectinstallextensions
+        autodetectinstallextensions || return $?
     else
         PHP_MAJORUPGRADE='n'
     fi
 
     if [[ "$PHPMUVER" != 'NGDEBUG' ]]; then
         if [[ ! -f "${CONFIGSCANDIR}/redis.ini" && "$PHPREDIS" = [yY] ]]; then
-            redisinstall
+            redisinstall || return $?
         elif [[ "$PHPREDIS" = [yY] ]] && php_ext_so_missing redis; then
             cecho "redis.ini present but redis.so missing - reinstalling redis" $boldyellow
-            redisinstall
+            redisinstall || return $?
         elif [[ -f "${CONFIGSCANDIR}/redis.ini" && "$PHPREDIS" = [nN] ]]; then
             rm -rf "${CONFIGSCANDIR}/redis.ini"
         fi
@@ -1211,7 +1211,7 @@ if [[ "$PHP_MAJORUPGRADE" = [nN] ]]; then
     [[ "$PHPMAILPARSE" != [yY] ]] && DETECTMAILPARSE=n
     [[ "$PHPIMAGICK" != [yY] ]] && DETECTIMAGICK=n
     cecho "auto reinstalling PHP extensions with orphaned .ini files:${PHP_ORPHANED_EXT}" $boldyellow
-    autodetectinstallextensions
+    autodetectinstallextensions || return $?
     # POST-REPAIR AUDIT: the extension installers do not reliably propagate
     # build failures - an attempt-only repair would silently leave the same
     # orphan while menu 5 completes normally
@@ -1230,7 +1230,7 @@ if [[ "$PHP_MAJORUPGRADE" = [nN] ]]; then
   # to still exist and would stay silent after the failed-build cleanup).
   if [[ "$NGINX_GEOIPTWOLITE" = [yY] ]] && php_ext_so_missing maxminddb; then
     cecho "orphaned maxminddb.ini detected - reinstalling GeoIP2 PHP extension" $boldyellow
-    geoiptwolite_phpext_install
+    geoiptwolite_phpext_install || return $?
     _cmm_mmdb_extdir=$(/usr/local/bin/php-config --extension-dir 2>/dev/null)
     if [ -n "$_cmm_mmdb_extdir" ] && [ ! -f "${_cmm_mmdb_extdir}/maxminddb.so" ]; then
       cecho "WARNING: maxminddb.so still missing after reinstall attempt - manual rebuild needed" $boldyellow
@@ -1245,32 +1245,32 @@ zendopcacheextfix
 if [ ! -f "${CONFIGSCANDIR}/geoip.ini" ]; then
     # always install geoip module
     if [[ "$PHPGEOIP_ALWAYS" = [yY] && "$PHP_MAJORUPGRADE" = [nN] ]]; then
-        geoipphpext
+        geoipphpext || return $?
     fi
 elif [ -f "${CONFIGSCANDIR}/geoip.ini" ]; then
     if [[ "$PHPGEOIP_ALWAYS" = [nN] ]]; then
         rm -rf "${CONFIGSCANDIR}/geoip.ini"
     elif [[ "$PHPGEOIP_ALWAYS" = [yY] && "$PHP_MAJORUPGRADE" = [nN] ]]; then
-        geoipphpext  
+        geoipphpext || return $?
     fi
 fi
 
 if [ ! -f "${CONFIGSCANDIR}/imagick.ini" ]; then
     # always install imagemagick module
     if [[ "$PHPIMAGICK_ALWAYS" = [yY] && "$PHP_MAJORUPGRADE" = [nN] ]]; then
-        imagickinstall
+        imagickinstall || return $?
     fi
 elif [ -f "${CONFIGSCANDIR}/imagick.ini" ]; then
     if [[ "$PHPIMAGICK_ALWAYS" = [nN] ]]; then
         rm -rf "${CONFIGSCANDIR}/imagick.ini"
     elif [[ "$PHPIMAGICK_ALWAYS" = [yY] && "$PHP_MAJORUPGRADE" = [nN] ]]; then
-        imagickinstall
+        imagickinstall || return $?
     fi
 fi
 
 if [[ ! -f "${CONFIGSCANDIR}/mailparse.ini" && "$PHPMAILPARSE" = [yY] ]]; then
     # install mailparse if PHPMAILPARSE=y
-    mailparseinstall
+    mailparseinstall || return $?
 fi
 
 if [[ "$PHPMONGODB" = [nN] ]]; then
@@ -1282,13 +1282,13 @@ fi
 if [ ! -f "${CONFIGSCANDIR}/zopfli.ini" ]; then
     # always install zopfli module
     if [[ "$PHPZOPFLI_ALWAYS" = [yY] && "$PHP_MAJORUPGRADE" = [nN] ]]; then
-        zopfliinstall
+        zopfliinstall || return $?
     fi
 elif [ -f "${CONFIGSCANDIR}/zopfli.ini" ]; then
     if [[ "$PHPZOPFLI_ALWAYS" = [nN] ]]; then
         rm -rf "${CONFIGSCANDIR}/zopfli.ini"
     elif [[ "$PHPZOPFLI_ALWAYS" = [yY] && "$PHP_MAJORUPGRADE" = [nN] ]]; then
-        zopfliinstall  
+        zopfliinstall || return $?
     fi
 fi
 

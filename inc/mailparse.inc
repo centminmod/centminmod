@@ -33,10 +33,10 @@ mailparseinstall() {
     if [[ "$PHP_INSTALL" = [yY] ]]; then
         if [[ "$PHPMAILPARSE" = [yY] ]]; then
 
-            checkphpextmailparse
             # set extra cflags fro devtoolset-7 and devtoolset-8 compatibility
             check_devtoolset_php
-            enable_devtoolset
+            enable_devtoolset "$CLANG_PHP" || return 1
+            checkphpextmailparse
 
             if [[ "$INITIALINSTALL" != [yY] ]]; then
                 php-config --version | cut -d . -f1,2 | egrep -w '7.0|7.1|7.2|7.3|7.4|8.0|8.1|8.2|8.3|8.4|8.5'
@@ -79,7 +79,7 @@ mailparseinstall() {
                 cd mailparse-git
             fi
             /usr/local/bin/phpize
-            CFLAGS="-fPIC -O2 -fstack-protector-strong -D_FORTIFY_SOURCE=2" CPPFLAGS="-D_FORTIFY_SOURCE=2" CXXFLAGS="-fPIC -O2" LDFLAGS="-Wl,-z,relro,-z,now -pie" ./configure --with-php-config=/usr/local/bin/php-config
+            CFLAGS="${COMPILER_CFLAGS} -fPIC -O2 -fstack-protector-strong -D_FORTIFY_SOURCE=2" CPPFLAGS="-D_FORTIFY_SOURCE=2" CXXFLAGS="-fPIC -O2" LDFLAGS="-Wl,-z,relro,-z,now -pie" ./configure --with-php-config=/usr/local/bin/php-config
             make${MAKETHREADS}
             make install
 

@@ -123,6 +123,15 @@ if [[ "$CUSTOM_LIBHEIF_INSTALL" != [yY] ]]; then
   exit
 fi
 
+# Preserve explicit Clang selections. GCC15 remains an addon opt-in.
+if [[ "$CC $CXX" != *clang* ]]; then
+if [[ "$GCC_FIFTTEEN" = [yY] && "$(uname -m)" = x86_64 ]] && [[ "$EL_VERID" = 8 || "$EL_VERID" = 9 ]]; then
+  source "$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)/inc/gcc.inc" || exit 1
+  # Standalone builds can compile directly without requiring ccache.
+  INITIALINSTALL=y enable_gcc_toolset15 || exit 1
+  export CXXFLAGS="-Wimplicit-fallthrough=0 -Wno-pedantic -Wno-sign-compare -Wno-unused-variable -Wno-unused-but-set-variable -Wno-unused-function -Wno-format-overflow -Wno-maybe-uninitialized -Wno-address"
+  export CFLAGS="$CXXFLAGS -std=gnu17"
+else
 if [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]]; then
   if [[ "$GCC_NINE" = [yY] && "$(uname -m)" = 'x86_64' && -f /opt/rh/gcc-toolset-9/root/usr/bin/gcc && -f /opt/rh/gcc-toolset-9/root/usr/bin/g++ ]]; then
     source /opt/rh/gcc-toolset-9/enable
@@ -172,11 +181,8 @@ if [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]]; then
     export CXXFLAGS="${CFLAGS}"
   fi
 
-  if [[ "$GCC_FIFTTEEN" = [yY] && "$(uname -m)" = 'x86_64' && -f /opt/gcc-custom/gcc15/bin/gcc && -f /opt/gcc-custom/gcc15/bin/g++ ]]; then
-    source /etc/profile.d/gcc15-custom.sh
-    export CFLAGS="-Wimplicit-fallthrough=0 -Wno-pedantic -Wno-sign-compare -Wno-unused-variable -Wno-unused-but-set-variable -Wno-unused-function -Wno-format-overflow -Wno-maybe-uninitialized -Wno-address"
-    export CXXFLAGS="${CFLAGS}"
-  fi
+fi
+fi
 fi
 
 # Install required build tools and dependencies
@@ -232,7 +238,7 @@ build_lib() {
 
     # Configure, build, and install the library
     if [[ "$name" = 'x265' ]]; then
-      cmake -G "Unix Makefiles" -DCMAKE_C_COMPILER=gcc -DCMAKE_CXX_COMPILER=g++ -DCMAKE_INSTALL_PREFIX=${install_prefix} ${cmake_args} ../../source
+      cmake -G "Unix Makefiles" -DCMAKE_C_COMPILER="${CC:-gcc}" -DCMAKE_CXX_COMPILER="${CXX:-g++}" -DCMAKE_INSTALL_PREFIX=${install_prefix} ${cmake_args} ../../source
     elif [[ "$name" = 'libaom' ]]; then
       cmake ${cmake_args} -DCMAKE_INSTALL_PREFIX=${install_prefix} -DBUILD_SHARED_LIBS=ON ..
     else
