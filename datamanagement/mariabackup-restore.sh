@@ -1,317 +1,180 @@
 #!/bin/bash
-# MariaBackup restore script for Centmin Mod backups
-MY_CNF="/root/.my.cnf"
-DBHOST="localhost"
-MARIABACKUP_VERBOSE='n'
-# Allow environment variable override for version check (default: enabled)
-SKIP_MARIABACKUP_VER_CHECK="${SKIP_MARIABACKUP_VER_CHECK:-n}"
-
-# Function to get MariaDB version
-get_mariadb_version() {
-    # Try mariadb command first (MariaDB 11.4+), fall back to mysql
-    if command -v mariadb >/dev/null 2>&1; then
-        local version=$(mariadb -V 2>&1 | awk '{print $5}' | awk -F. '{print $1"."$2}')
-    else
-        local version=$(mysql -V 2>&1 | awk '{print $5}' | awk -F. '{print $1"."$2}')
-    fi
-    echo $version
-}
-
-# Function to set client command variables based on MariaDB version
-set_mariadb_client_commands() {
-    local version=$(get_mariadb_version)
-
-    # Convert version to a comparable integer (e.g., 10.3 becomes 1003)
-    version_number=$(echo "$version" | awk -F. '{printf "%d%02d\n", $1, $2}')
-
-    if (( version_number <= 1011 )); then
-        # For versions less than or equal to 10.11, use old MySQL names
-        ALIAS_MYSQLACCESS="mysqlaccess"
-        ALIAS_MYSQLADMIN="mysqladmin"
-        ALIAS_MYSQLBINLOG="mysqlbinlog"
-        ALIAS_MYSQLCHECK="mysqlcheck"
-        ALIAS_MYSQLDUMP="mysqldump"
-        ALIAS_MYSQLDUMPSLOW="mysqldumpslow"
-        ALIAS_MYSQLHOTCOPY="mysqlhotcopy"
-        ALIAS_MYSQLIMPORT="mysqlimport"
-        ALIAS_MYSQLREPORT="mysqlreport"
-        ALIAS_MYSQLSHOW="mysqlshow"
-        ALIAS_MYSQLSLAP="mysqlslap"
-        ALIAS_MYSQL_CONVERT_TABLE_FORMAT="mysql_convert_table_format"
-        ALIAS_MYSQL_EMBEDDED="mysql_embedded"
-        ALIAS_MYSQL_FIND_ROWS="mysql_find_rows"
-        ALIAS_MYSQL_FIX_EXTENSIONS="mysql_fix_extensions"
-        ALIAS_MYSQL_INSTALL_DB="mysql_install_db"
-        ALIAS_MYSQL_PLUGIN="mysql_plugin"
-        ALIAS_MYSQL_SECURE_INSTALLATION="mysql_secure_installation"
-        ALIAS_MYSQL_SETPERMISSION="mysql_setpermission"
-        ALIAS_MYSQL_TZINFO_TO_SQL="mysql_tzinfo_to_sql"
-        ALIAS_MYSQL_UPGRADE="mysql_upgrade"
-        ALIAS_MYSQL_WAITPID="mysql_waitpid"
-        ALIAS_MYSQL="mysql"
-        ALIAS_MYSQLD="mysqld"
-        ALIAS_MYSQLDSAFE="mysqld_safe"
-    else
-        # For versions greater than 10.11, use new MariaDB names
-        ALIAS_MYSQLACCESS="mariadb-access"
-        ALIAS_MYSQLADMIN="mariadb-admin"
-        ALIAS_MYSQLBINLOG="mariadb-binlog"
-        ALIAS_MYSQLCHECK="mariadb-check"
-        ALIAS_MYSQLDUMP="mariadb-dump"
-        ALIAS_MYSQLDUMPSLOW="mariadb-dumpslow"
-        ALIAS_MYSQLHOTCOPY="mariadb-hotcopy"
-        ALIAS_MYSQLIMPORT="mariadb-import"
-        ALIAS_MYSQLREPORT="mariadb-report"
-        ALIAS_MYSQLSHOW="mariadb-show"
-        ALIAS_MYSQLSLAP="mariadb-slap"
-        ALIAS_MYSQL_CONVERT_TABLE_FORMAT="mariadb-convert-table-format"
-        ALIAS_MYSQL_EMBEDDED="mariadb-embedded"
-        ALIAS_MYSQL_FIND_ROWS="mariadb-find-rows"
-        ALIAS_MYSQL_FIX_EXTENSIONS="mariadb-fix-extensions"
-        ALIAS_MYSQL_INSTALL_DB="mariadb-install-db"
-        ALIAS_MYSQL_PLUGIN="mariadb-plugin"
-        ALIAS_MYSQL_SECURE_INSTALLATION="mariadb-secure-installation"
-        ALIAS_MYSQL_SETPERMISSION="mariadb-setpermission"
-        ALIAS_MYSQL_TZINFO_TO_SQL="mariadb-tzinfo-to-sql"
-        ALIAS_MYSQL_UPGRADE="mariadb-upgrade"
-        ALIAS_MYSQL_WAITPID="mariadb-waitpid"
-        ALIAS_MYSQL="mariadb"
-        ALIAS_MYSQLD="mariadbd"
-        ALIAS_MYSQLDSAFE="mariadbd-safe"
-    fi
-}
-set_mariadb_client_commands
-
-MYSQLBACKUP_CMD_PREFIX="mariabackup --defaults-extra-file=$MY_CNF"
-MYSQLADMIN_CMD_PREFIX="${ALIAS_MYSQLADMIN} --defaults-extra-file=$MY_CNF -h $DBHOST"
-
-# Function to get datadir with fallback if MariaDB is not running
-get_datadir() {
-  # Try to get from running MariaDB first
-  if systemctl is-active mariadb >/dev/null 2>&1; then
-    $MYSQLADMIN_CMD_PREFIX var 2>/dev/null | grep datadir | awk '{ print $4}' | sed 's:/$::'
-  else
-    # Fallback: parse from my.cnf
-    local dir=$(grep -E '^datadir' /etc/my.cnf 2>/dev/null | awk -F= '{print $2}' | tr -d ' ' | sed 's:/$::')
-    if [ -z "$dir" ]; then
-      # Check MariaDB specific config
-      dir=$(grep -E '^datadir' /etc/my.cnf.d/*.cnf 2>/dev/null | head -1 | awk -F= '{print $2}' | tr -d ' ' | sed 's:/$::')
-    fi
-    echo "$dir"
-  fi
-}
-
-DATADIR=$(get_datadir)
-# Ultimate fallback if all detection methods fail
-[ -z "$DATADIR" ] && DATADIR="/var/lib/mysql"
-
-if [[ "$MARIABACKUP_VERBOSE" = [yY] ]]; then
-  MDB_VERBOSE_OPT=' --verbose'
-else
-  MDB_VERBOSE_OPT=""
-fi
-
-check_command_exists() {
-  command -v "$1" >/dev/null 2>&1 || {
-    local package_name="$2"
-    if [ "$1" = "mariabackup" ]; then
-      # Expanded OS detection for package names
-      if grep -qE "(AlmaLinux|Rocky)" /etc/os-release 2>/dev/null; then
-        package_name="mariadb-backup"
-      elif grep -q "CentOS Linux 7" /etc/os-release 2>/dev/null; then
-        package_name="MariaDB-backup"
-      elif grep -q "Oracle" /etc/os-release 2>/dev/null; then
-        package_name="mariadb-backup"
-      elif grep -qE "CentOS Stream|Red Hat" /etc/os-release 2>/dev/null; then
-        package_name="mariadb-backup"
+# Standalone physical restore, also copied into each physical backup.
+set -Eeuo pipefail
+umask 077
+SCRIPT_DIR=$(dirname -- "$(readlink -f -- "$0")")
+DATAM_LOG_EXCLUDE_DIR=''
+if [[ -n ${2:-} && -d $2 ]]; then DATAM_LOG_EXCLUDE_DIR=$(realpath -e -- "$2"); fi
+export DATAM_LOG_EXCLUDE_DIR
+# logging.sh is bundled beside this helper when a backup is created.
+source "$SCRIPT_DIR/logging.sh"
+datam_log_init physical-restore "$@"
+original=none; restore_started=n; initial_state=unknown; original_identity=''; recovery_armed=n
+recover() {
+  local rc=$? state=not-inspected context original_location=${DATADIR:-not-selected}
+  if (( rc )); then
+    if [[ $recovery_armed == y ]]; then
+      state=$(systemctl show "$service" -p ActiveState --value) || state=unknown
+      if [[ $initial_state == active && $restore_started == n && -n $original_identity && $(stat -Lc '%d:%i' -- "$DATADIR" 2>/dev/null) == "$original_identity" ]]; then
+        if [[ $state == inactive || $state == failed ]]; then
+          if ! fuser "$DATADIR" "$DATADIR/ibdata1" "$DATADIR/aria_log_control" >/dev/null 2>&1; then
+            datam_log_event INFO 'Recovery: restarting the unchanged original service.'
+            if systemctl start "$service"; then
+              datam_log_event INFO 'Recovery: original-service start command succeeded.'
+            else
+              datam_log_event ERROR 'Recovery: could not restart the unchanged original service.'
+            fi
+          else
+            datam_log_event WARN 'Recovery: original datadir is in use; automatic restart skipped.'
+          fi
+        else
+          datam_log_event INFO "Recovery: no restart attempted; service state=$state."
+        fi
+      else
+        datam_log_event INFO 'Recovery: automatic restart skipped because the original service was not active, its directory changed, or restore copying started.'
       fi
+      state=$(systemctl show "$service" -p ActiveState --value) || state=unknown
+      datam_log_event INFO "Recovery service state: service=$service initial=$initial_state final=$state"
     fi
-    echo "[$(date)] Command '$1' not found. Installing package '$package_name'..."
-    yum install -y "$package_name"
-  }
-}
-check_command_exists mariabackup mariadb-backup
-
-check_backup_info() {
-  TARGET_DIR=$1
-  XTRABACKUP_INFO="${TARGET_DIR}/xtrabackup_info"
-  MARIABACKUP_DATA_VERSION="$(cat "$XTRABACKUP_INFO" | awk -F '= ' '/ibbackup_version / {print $2}')"
-  MARIABACKUP_DATA_VERSION_SHORT="$(echo "$MARIABACKUP_DATA_VERSION" | cut -d . -f1-2)"
-  MARIABACKUP_DATA_VERSION_LONG="$(echo "$MARIABACKUP_DATA_VERSION" | cut -d . -f1-3 | sed -e 's|-MariaDB||g')"
-  DETECT_VERSION_LONG=$($MYSQLADMIN_CMD_PREFIX var | grep '^| version ' | tr -s ' ' | awk -F "| " '{print $4}' | sed -e 's|-MariaDB-log||g' -e 's|-MariaDB||g')
-  DETECT_VERSION_SHORT=$($MYSQLADMIN_CMD_PREFIX var | grep '^| version ' | tr -s ' ' | awk -F "| " '{print $4}' | sed -e 's|-MariaDB-log||g' -e 's|-MariaDB||g' | cut -d . -f1-2)
-  echo "[$(date)] MariaBackup source data version used: ${MARIABACKUP_DATA_VERSION_LONG}"
-  echo "[$(date)] This system MariaDB Server version: ${DETECT_VERSION_LONG}"
-  # if [[ "${MARIABACKUP_DATA_VERSION_LONG}" = "$DETECT_VERSION_LONG" ]]; then
-  #   echo "[$(date)] Minor versions match: ${MARIABACKUP_DATA_VERSION_LONG} = $DETECT_VERSION_LONG"
-  # else
-  #   echo "[$(date)] Minor versions do not match: ${MARIABACKUP_DATA_VERSION_LONG} = $DETECT_VERSION_LONG"
-  #   echo "[$(date)] aborting restore ..."
-  #   exit 1
-  # fi
-  if [[ "${MARIABACKUP_DATA_VERSION_SHORT}" = "$DETECT_VERSION_SHORT" ]]; then
-    echo "[$(date)] Major versions match: ${MARIABACKUP_DATA_VERSION_SHORT} = $DETECT_VERSION_SHORT"
-  elif [[ "$SKIP_MARIABACKUP_VER_CHECK" != [yY] ]]; then
-    echo "[$(date)] Major versions do not match: ${MARIABACKUP_DATA_VERSION_SHORT} != $DETECT_VERSION_SHORT"
-    echo "[$(date)] To bypass version check, run: SKIP_MARIABACKUP_VER_CHECK=y $0 $*"
-    echo "[$(date)] aborting restore ..."
-    exit 1
-  else
-    echo "[$(date)] WARNING: Major versions do not match: ${MARIABACKUP_DATA_VERSION_SHORT} != $DETECT_VERSION_SHORT"
-    echo "[$(date)] Proceeding anyway due to SKIP_MARIABACKUP_VER_CHECK=y"
+    [[ $original == none || ! -d $original ]] || original_location=$original
+    printf -v context 'original_data=%q destination=%q backup=%q' "$original_location" "${DATADIR:-not-selected}" "${TARGET_DIR:-not-selected}"
+    datam_log_event ERROR "Physical restore failed: phase=$DATAM_PHASE exit=$rc restore_started=$restore_started $context"
+    echo 'Preserve all recovery data. After service failures, inspect the selected unit with systemctl status and journalctl before retrying.' >&2
   fi
+  return "$rc"
 }
-
-check_dir() {
-  TARGET_DIR=$1
-  local missing=""
-
-  # Check for all required MariaBackup files
-  [ ! -f "${TARGET_DIR}/xtrabackup_info" ] && missing="$missing xtrabackup_info"
-  [ ! -f "${TARGET_DIR}/xtrabackup_checkpoints" ] && missing="$missing xtrabackup_checkpoints"
-  [ ! -f "${TARGET_DIR}/backup-my.cnf" ] && missing="$missing backup-my.cnf"
-
-  if [ -n "$missing" ]; then
-    echo "[$(date)] Invalid MariaBackup backup directory. Missing files:$missing"
-    exit 1
+trap recover EXIT
+trap 'exit 130' INT
+trap 'exit 143' TERM
+fail() { echo "ERROR: $*" >&2; exit 1; }
+need() { command -v "$1" >/dev/null || fail "Install required command: $1"; }
+client() { command -v "$1" || command -v "$2"; }
+# No live server or package installation is needed just to inspect the backup.
+metadata_file() {
+  local dir=$1 old=$2 new=$3
+  if [[ -f $dir/$old && -f $dir/$new ]]; then
+    cmp -s -- "$dir/$old" "$dir/$new" || fail "Conflicting metadata: $old / $new"
   fi
-
-  echo "[$(date)] Valid MariaBackup backup directory detected"
-  check_backup_info "$TARGET_DIR"
+  if [[ -f $dir/$new && ! -L $dir/$new ]]; then printf '%s\n' "$dir/$new"
+  elif [[ -f $dir/$old && ! -L $dir/$old ]]; then printf '%s\n' "$dir/$old"
+  else fail "Missing metadata: $old or $new"; fi
 }
-
-backup_dir() {
-  # Validate DATADIR before proceeding
-  if [ -z "$DATADIR" ] || [ ! -d "$DATADIR" ]; then
-    echo "[$(date)] ERROR: Invalid or missing DATADIR: '$DATADIR'"
-    echo "[$(date)] Please ensure MariaDB data directory exists"
-    exit 1
-  fi
-
-  # Backup and empty data directory if not empty
-  if [ "$(ls -A "$DATADIR" 2>/dev/null)" ]; then
-    DT=$(date +"%d%m%y-%H%M%S")
-
-    # Check if backup destination already exists
-    if [ -d "${DATADIR}-copy-$DT" ]; then
-      echo "[$(date)] ERROR: Backup destination already exists: ${DATADIR}-copy-$DT"
-      echo "[$(date)] Please remove or rename it before proceeding"
-      exit 1
-    fi
-
-    echo "[$(date)] Stopping MariaDB server ..."
-    systemctl stop mariadb
-
-    # Wait for MariaDB to fully stop
-    sleep 2
-
-    echo
-    echo "[$(date)] Backing up existing data directory to ${DATADIR}-copy-$DT ..."
-    if ! mv "$DATADIR" "${DATADIR}-copy-$DT"; then
-      echo "[$(date)] ERROR: Failed to backup existing data directory"
-      echo "[$(date)] Starting MariaDB server with original data..."
-      systemctl start mariadb
-      exit 1
-    fi
-
-    mkdir -p "$DATADIR"
-    if [ -d "${DATADIR}-copy-$DT" ]; then
-      echo "[$(date)] Backed up at ${DATADIR}-copy-$DT"
-    fi
-    echo "[$(date)] Check if $DATADIR is empty now"
-    echo
-    echo "ls -Alh $DATADIR"
-    ls -Alh "$DATADIR"
-  fi
+field() {
+  awk -F= -v key="$2" '{k=$1; gsub(/^[ \t]+|[ \t]+$/, "", k); if(k==key) {v=substr($0,index($0,"=")+1); gsub(/^[ \t]+|[ \t\r]+$/, "", v); print v}}' "$1"
 }
-
-change_owner() {
-  echo "[$(date)] Changing ownership of $DATADIR to mysql:mysql ..."
-  chown -R mysql:mysql "$DATADIR"
+version() { printf '%s\n' "$1" | grep -oE '[0-9]+\.[0-9]+\.[0-9]+' | head -1; }
+# Prove that this systemd main process has a database file from the selected tree open.
+# This works after restoring source accounts without requiring their SQL password.
+service_owns_datadir() {
+  local pid exe file identity fd
+  pid=$(systemctl show "$service" -p MainPID --value) || return 1
+  [[ $pid =~ ^[1-9][0-9]*$ ]] || { datam_log_event WARN 'Service identity check found no running main process.'; return 1; }
+  exe=$(readlink -e "/proc/$pid/exe") || return 1
+  [[ $exe == "$(readlink -e "$server")" ]] || { datam_log_event WARN "Service identity check found a different executable for PID $pid."; return 1; }
+  for file in "$DATADIR/aria_log_control" "$DATADIR/ibdata1"; do
+    [[ -f $file && ! -L $file ]] || continue
+    identity=$(stat -Lc '%d:%i' -- "$file") || return 1
+    for fd in /proc/"$pid"/fd/*; do
+      [[ $(stat -Lc '%d:%i' -- "$fd" 2>/dev/null) != "$identity" ]] || return 0
+    done
+  done
+  datam_log_event WARN "Service identity check found no matching open database file for PID $pid."
+  return 1
 }
-
-remove_restore_script() {
-  # Safety check before removing files
-  [ -z "$DATADIR" ] && return 1
-  [ ! -d "$DATADIR" ] && return 1
-
-  echo "[$(date)] Remove ${DATADIR}/mariabackup-restore.sh"
-  rm -f "${DATADIR}/mariabackup-restore.sh" 2>/dev/null
-  echo "[$(date)] Remove ${DATADIR}/mariabackup_*.log"
-  rm -f "${DATADIR}"/mariabackup_*.log 2>/dev/null
-}
-
-copy_back() {
-  TARGET_DIR=$1
-  check_dir "$TARGET_DIR"
-  backup_dir
-  echo "[$(date)] Performing MariaBackup --copy-back from $TARGET_DIR ..."
-  echo "$MYSQLBACKUP_CMD_PREFIX --copy-back --target-dir=\"$TARGET_DIR\"${MDB_VERBOSE_OPT}"
-  if ! $MYSQLBACKUP_CMD_PREFIX --copy-back --target-dir="$TARGET_DIR"${MDB_VERBOSE_OPT}; then
-    echo "[$(date)] ERROR: MariaBackup --copy-back failed!"
-    echo "[$(date)] Data directory may be incomplete. MariaDB NOT started."
-    echo "[$(date)] Check the backup source and try again."
-    exit 1
+[[ $# == 2 ]] || fail 'Usage: mariabackup-restore.sh {check|copy-back|move-back} /backup/directory'
+case $1 in check|copy-back|move-back) action=$1 ;; *) fail 'Unknown action.' ;; esac
+[[ -d $2 && ! -L $2 ]] || fail 'Backup must be a real directory.'
+TARGET_DIR=$(realpath -e -- "$2")
+[[ $TARGET_DIR != / ]] || fail 'Invalid backup directory.'
+printf -v context 'backup=%q action=%q' "$TARGET_DIR" "$action"
+datam_log_phase metadata-validation "$context"
+info=$(metadata_file "$TARGET_DIR" xtrabackup_info mariadb_backup_info)
+checkpoints=$(metadata_file "$TARGET_DIR" xtrabackup_checkpoints mariadb_backup_checkpoints)
+[[ -f $TARGET_DIR/backup-my.cnf && ! -L $TARGET_DIR/backup-my.cnf ]] || fail 'Missing backup-my.cnf.'
+# Optional metadata is not mandatory for a standalone nonreplication restore.
+for name in binlog_info slave_info galera_info; do
+  if [[ -e $TARGET_DIR/xtrabackup_$name || -e $TARGET_DIR/mariadb_backup_$name ]]; then
+    metadata_file "$TARGET_DIR" "xtrabackup_$name" "mariadb_backup_$name" >/dev/null
   fi
-  echo
-  change_owner
-  remove_restore_script
-  echo "[$(date)] Starting MariaDB server ..."
-  if ! systemctl start mariadb; then
-    echo "[$(date)] WARNING: MariaDB failed to start. Check logs: journalctl -u mariadb"
-    exit 1
-  fi
-  echo "[$(date)] MariaDB restore completed successfully"
-}
-
-move_back() {
-  TARGET_DIR=$1
-  check_dir "$TARGET_DIR"
-  backup_dir
-  echo "[$(date)] Performing MariaBackup --move-back from $TARGET_DIR ..."
-  echo "$MYSQLBACKUP_CMD_PREFIX --move-back --target-dir=\"$TARGET_DIR\"${MDB_VERBOSE_OPT}"
-  if ! $MYSQLBACKUP_CMD_PREFIX --move-back --target-dir="$TARGET_DIR"${MDB_VERBOSE_OPT}; then
-    echo "[$(date)] ERROR: MariaBackup --move-back failed!"
-    echo "[$(date)] Data directory may be incomplete. MariaDB NOT started."
-    echo "[$(date)] Note: Source backup may be partially moved. Verify backup integrity."
-    exit 1
-  fi
-  echo
-  change_owner
-  remove_restore_script
-  echo "[$(date)] Starting MariaDB server ..."
-  if ! systemctl start mariadb; then
-    echo "[$(date)] WARNING: MariaDB failed to start. Check logs: journalctl -u mariadb"
-    exit 1
-  fi
-  echo "[$(date)] MariaDB restore completed successfully"
-}
-
-# Check if the script is run with the correct number of arguments
-if [ "$#" -ne 2 ]; then
-  echo
-  echo "Usage: $0 [copy-back|move-back] /path/to/backup/dir/"
-  echo
-  echo "Options:"
-  echo "  copy-back  - Copy backup files to datadir (preserves backup)"
-  echo "  move-back  - Move backup files to datadir (removes backup after)"
-  echo
-  echo "Environment variables:"
-  echo "  SKIP_MARIABACKUP_VER_CHECK=y  - Skip MariaDB version compatibility check"
-  echo "  MARIABACKUP_VERBOSE=y         - Enable verbose output"
-  exit 1
+done
+[[ $(field "$checkpoints" backup_type) == log-applied ]] || fail 'Backup is not prepared. Prepare a working copy with the matching producer first.'
+source_version=$(version "$(field "$info" server_version)") || fail 'Missing source server_version.'
+producer_version=$(version "$(field "$info" ibbackup_version)") || fail 'Missing producer ibbackup_version.'
+server=$(client mariadbd mysqld) || fail 'MariaDB server binary missing.'
+tool=$(client mariadb-backup mariabackup) || fail 'Install the matching MariaDB-backup package.'
+datam_log_phase version-validation
+target_version=$(version "$("$server" --version)") || fail 'Could not determine installed MariaDB server version.'
+tool_version=$(version "$("$tool" --version 2>&1)") || fail 'Could not determine installed MariaDB backup-tool version.'
+printf 'Source server=%s; backup producer=%s; target server=%s; restore tool=%s\n' "$source_version" "$producer_version" "$target_version" "$tool_version"
+# Exact patch is deliberately conservative; family agreement alone does not prove compatibility.
+if [[ $source_version != "$target_version" || $producer_version != "$tool_version" || ${source_version%.*} != "${producer_version%.*}" ]]; then
+  [[ ${SKIP_MARIABACKUP_VER_CHECK:-n} == [yY] ]] || fail 'Physical version mismatch. Use matching packages or logical migration. Expert override: SKIP_MARIABACKUP_VER_CHECK=y'
+  echo 'WARNING: explicit version override, compatibility is unverified.' >&2
 fi
-
-# Perform the copy-back or move-back operation based on the argument
-case "$1" in
-  copy-back)
-    copy_back "$2"
-    ;;
-  move-back)
-    move_back "$2"
-    ;;
-  *)
-    echo "Invalid argument. Usage: $0 [copy-back|move-back] /path/to/backup/dir/"
-    exit 1
-    ;;
-esac
+# Let the installed server parse its own includes and defaults while it is offline.
+datam_log_phase datadir-discovery
+DATADIR=${DATADIR:-$("$server" --verbose --help | awk '$1=="datadir" {sub(/^[ \t]*datadir[ \t]+/, ""); dir=$0} END {print dir}')} || fail 'Could not read the configured MariaDB datadir.'
+[[ -n $DATADIR && $DATADIR == /* && ! -L $DATADIR ]] || fail 'Invalid datadir; set DATADIR explicitly.'
+DATADIR=$(realpath -m -- "$DATADIR")
+case $DATADIR in /|/var|/var/lib|/home|/root|/etc|/usr) fail 'Unsafe datadir.' ;; esac
+# Preservation renames the datadir; a directory that is itself a mount point cannot be renamed.
+# findmnt consults the mount table directly: stat %m reports the parent mount for bind mounts.
+need findmnt
+if [[ -d $DATADIR ]] && findmnt -n --mountpoint "$DATADIR" >/dev/null; then
+  fail 'Datadir is a separate mount point and cannot be preserved by rename. Mount the volume one level above the datadir, or preserve its contents with a separately verified manual procedure.'
+fi
+case "$TARGET_DIR/" in "$DATADIR/"*) fail 'Backup is inside datadir.' ;; esac
+case "$DATADIR/" in "$TARGET_DIR/"*) fail 'Datadir is inside backup.' ;; esac
+printf -v context 'destination=%q' "$DATADIR"
+datam_log_event INFO "$context"
+if [[ $action == check ]]; then datam_log_phase complete; echo "Preflight passed for $DATADIR"; exit; fi
+[[ $EUID == 0 ]] || fail 'Run restore as root.'
+service=${MARIADB_SERVICE:-mariadb}
+[[ $service =~ ^[a-zA-Z0-9_.@-]+$ && $service != -* ]] || fail 'Invalid MariaDB service name.'
+[[ $action != move-back || ${ALLOW_MOVE_BACK:-n} == y ]] || fail 'move-back consumes backup media. Set ALLOW_MOVE_BACK=y or use copy-back.'
+need flock
+exec 9>/run/lock/centminmod-physical-restore.lock
+flock -n 9 || fail 'Another physical restore is running.'
+datam_log_phase capacity-check
+parent=$(dirname -- "$DATADIR")
+[[ -d $parent ]] || fail 'Datadir parent is missing.'
+required=$(du -sk -- "$TARGET_DIR" | awk '{print $1}')
+available=$(df -Pk "$parent" | awk 'END {print $4}')
+(( available > required + required / 10 )) || fail 'Insufficient free space for restoration plus 10% reserve.'
+command -v fuser >/dev/null || fail 'Install psmisc for the datadir-in-use check.'
+datam_log_phase service-preflight "service=$service"
+initial_state=$(systemctl show "$service" -p ActiveState --value)
+datam_log_event INFO "Initial service state: service=$service state=$initial_state"
+case $initial_state in active) service_owns_datadir || fail 'Selected datadir does not belong to the running MariaDB service; nothing stopped.' ;; inactive|failed) ;; *) fail "Service is transitioning: $initial_state" ;; esac
+original_identity=$(stat -Lc '%d:%i' -- "$DATADIR" 2>/dev/null || :)
+recovery_armed=y
+datam_log_phase service-stop "service=$service"
+systemctl stop "$service" || fail 'MariaDB stop failed; original data untouched.'
+state=$(systemctl show "$service" -p ActiveState --value)
+[[ $state == inactive || $state == failed ]] || fail "MariaDB has not stopped: $state"
+[[ $(systemctl show "$service" -p MainPID --value) == 0 ]] || fail 'MariaDB still has a main process.'
+# Refuse independently started server processes using this datadir as well.
+if fuser "$DATADIR" "$DATADIR/ibdata1" "$DATADIR/aria_log_control" >/dev/null 2>&1; then fail 'Datadir is still in use.'; fi
+datam_log_phase preserve-original
+original="${DATADIR}-copy-$(date -u +%Y%m%dT%H%M%SZ)-$$"
+[[ ! -e $original ]] || fail 'Recovery directory already exists.'
+if [[ -e $DATADIR ]]; then mv -- "$DATADIR" "$original"; else original=none; fi
+mkdir -- "$DATADIR"
+restore_started=y
+datam_log_phase physical-copy "action=$action"
+"$tool" "--$action" --target-dir="$TARGET_DIR" --datadir="$DATADIR"
+# The tool copies every unrecognized file in the backup; keep the bundled helpers out of the datadir.
+rm -f -- "$DATADIR/logging.sh" "$DATADIR/mariabackup-restore.sh"
+datam_log_phase ownership
+chown -R mysql:mysql -- "$DATADIR"
+datam_log_phase service-start "service=$service"
+systemctl start "$service"
+systemctl is-active --quiet "$service"
+datam_log_phase service-identity "service=$service"
+if ! service_owns_datadir; then
+  systemctl stop "$service" || echo 'Failed to stop the mismatched service; check it immediately.' >&2
+  fail 'Started service is not using the restored datadir. Check service configuration before retrying.'
+fi
+datam_log_phase complete "service=$service final_state=active"
+echo 'The source database accounts are now active. Use matching source credentials and validate application queries before enabling traffic.'
+printf 'Restore completed. Previous datadir retained at %s\n' "$original"

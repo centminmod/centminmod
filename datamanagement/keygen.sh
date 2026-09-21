@@ -1,544 +1,171 @@
 #!/bin/bash
-################################################################
-# ssh private key pair generator for centminmod.com lemp stacks
-################################################################
-# ssh-keygen -t rsa or ecdsa
-KEYTYPE='rsa'
-KEYNAME='my1'
-
-RSA_KEYLENTGH='4096'
-ECDSA_KEYLENTGH='256'
-
-KEYGEN_DIR='/etc/keygen'
-KEYGEN_LOGDIR="${KEYGEN_DIR}/logs"
-DT=$(date +"%d%m%y-%H%M%S")
-################################################################
-if [ ! -d "$KEYGEN_DIR" ]; then
-  mkdir -p "$KEYGEN_DIR"
-fi
-
-if [ ! -d "$KEYGEN_LOGDIR" ]; then
-  mkdir -p "$KEYGEN_LOGDIR"
-fi
-
-# Redirect output of this script log file
-exec &> >(tee -a "${KEYGEN_LOGDIR}/keygen-${DT}.log")
-
-if [ ! -d "$HOME/.ssh" ]; then
-  mkdir -p "$HOME/.ssh"
-  chmod 700 "$HOME/.ssh"
-fi
-
-if [ ! -f /usr/bin/sshpass ]; then
-  yum -q -y install sshpass >/dev/null 2>&1
-  SSHPASS='y'
-elif [ -f /usr/bin/sshpass ]; then
-  SSHPASS='y'
-fi
-
-################################################################
-# Enable root SSH login on remote OVH/Cloud VPS
-# Used when cloud provider disables root login by default
-################################################################
-enable_root_login() {
-    local remotehost=${_input_remoteh}
-    local remoteport=${_input_remotep:-22}
-    local sudo_user=${_input_sudo_user}
-    local sudo_pass=${_input_sudo_pass}
-    local root_pass=${_input_root_pass}
-
-    echo
-    echo "-------------------------------------------------------------------"
-    echo "Enabling root SSH login on remote host: $remotehost"
-    echo "-------------------------------------------------------------------"
-
-    if [[ -z "$remotehost" || -z "$sudo_user" || -z "$sudo_pass" ]]; then
-        echo "Error: Missing required parameters"
-        echo "Usage: $0 enable-root <remoteip> <port> <sudo_user> <sudo_pass> [root_pass]"
-        return 1
-    fi
-
-    # Test sudo user connection first
-    echo "Testing connection as $sudo_user@$remotehost..."
-    if ! sshpass -p "$sudo_pass" ssh -o StrictHostKeyChecking=no -o ConnectTimeout=10 \
-        "$sudo_user@$remotehost" -p "$remoteport" "echo 'Connection successful'" 2>/dev/null; then
-        echo "Error: Cannot connect as $sudo_user@$remotehost"
-        return 1
-    fi
-
-    echo "Enabling PermitRootLogin via sshd_config.d drop-in..."
-    sshpass -p "$sudo_pass" ssh -o StrictHostKeyChecking=no "$sudo_user@$remotehost" -p "$remoteport" \
-        "echo '$sudo_pass' | sudo -S bash -c '
-            if [[ \"\$(sshd -T 2>/dev/null | awk \"/permitrootlogin/ {print \\\$2}\")\" != \"yes\" ]]; then
-                echo \"PermitRootLogin yes\" > /etc/ssh/sshd_config.d/01-permitrootlogin.conf
-                echo \"Created /etc/ssh/sshd_config.d/01-permitrootlogin.conf\"
-            else
-                echo \"PermitRootLogin already enabled\"
-            fi
-        '"
-
-    # Set root password if provided
-    if [[ -n "$root_pass" ]]; then
-        echo "Setting root password..."
-        sshpass -p "$sudo_pass" ssh -o StrictHostKeyChecking=no "$sudo_user@$remotehost" -p "$remoteport" \
-            "echo '$sudo_pass' | sudo -S bash -c 'echo \"root:$root_pass\" | chpasswd && echo \"Root password set\"'"
-    fi
-
-    # Restart sshd
-    echo "Restarting sshd service..."
-    sshpass -p "$sudo_pass" ssh -o StrictHostKeyChecking=no "$sudo_user@$remotehost" -p "$remoteport" \
-        "echo '$sudo_pass' | sudo -S systemctl restart sshd"
-
-    echo
-    echo "-------------------------------------------------------------------"
-    echo "Root login enabled on $remotehost"
-    echo "You can now use ssh-copy-id to root@$remotehost"
-    echo "-------------------------------------------------------------------"
+# Keep old credentials until replacement authentication has been proved.
+set -Eeuo pipefail
+umask 077
+source "$(dirname -- "$(readlink -f -- "$0")")/logging.sh"
+datam_log_init ssh-key "$@"
+fail() { echo "ERROR: $*" >&2; exit 1; }
+quote_command() { local arg; printf -v command 'bash -c %q --' "$1"; shift; for arg in "$@"; do printf -v command '%s %q' "$command" "$arg"; done; }
+validate_host() {
+  [[ $host =~ ^[a-zA-Z0-9][a-zA-Z0-9.-]*$ && $port =~ ^[1-9][0-9]{0,4}$ && $port -le 65535 && $user =~ ^[a-zA-Z_][a-zA-Z0-9_-]*$ ]] || fail 'Invalid host, port or username.'
 }
-
-################################################################
-# Copy SSH key to remote host via sudo user
-# Used when direct root login is disabled on cloud VPS
-################################################################
+remote() { quote_command "$@"; "${SSH[@]}" -n "$user@$host" "$command"; }
+# Parse only the key fields; quoted options and comments may contain key-looking text.
+AUTH_KEYS_AWK=$(cat <<'AWK'
+function token(   c,q,escaped,out) {
+  while (substr($0,pos,1) ~ /[ \t]/ && pos<=length($0)) pos++
+  start=pos; q=0; escaped=0; out=""
+  for (;pos<=length($0);pos++) {
+    c=substr($0,pos,1)
+    if (!q && !escaped && c ~ /[ \t]/) break
+    out=out c
+    if (escaped) escaped=0
+    else if (c=="\\" && q) escaped=1
+    else if (c=="\"") q=!q
+  }
+  if (q || escaped) invalid=1
+  return out
+}
+BEGIN {mode=ARGV[1]; split(ARGV[2],key," "); replacement=ARGV[3]; ARGV[1]=ARGV[2]=ARGV[3]=""}
+/^[ \t]*(#|$)/ {if (mode=="remove") print; next}
+{
+  pos=1; invalid=0; first=token(); key_start=start
+  if (first==key[1]) blob=token()
+  else {first=token(); key_start=start; blob=token()}
+  matched=(!invalid && first==key[1] && blob==key[2])
+  if (matched) {
+    count++
+    if (mode=="replace") print substr($0,1,key_start-1) replacement
+  } else if (mode=="remove") print
+}
+END {if (count<1 || (mode=="replace" && count!=1)) exit 1}
+AWK
+)
+# Public-key installation via a sudo account. Password travels on stdin, never in shell source.
 sudo_copy_key() {
-    local pubkey_file="$1"
-    local remotehost="$2"
-    local remoteport="$3"
-    local target_user="$4"
-    local sudo_user="$5"
-    local sudo_pass="$6"
-    local enable_root_prompt="$7"
-
-    local pubkey=$(cat "$pubkey_file")
-    local enable_root=""
-    local root_pass=""
-
-    echo
-    echo "-------------------------------------------------------------------"
-    echo "Copying SSH key via sudo user: $sudo_user"
-    echo "Target user: $target_user"
-    echo "-------------------------------------------------------------------"
-
-    # Ask about enabling root login if prompted
-    if [[ "$enable_root_prompt" = 'y' && "$target_user" = 'root' ]]; then
-        read -rep "Also enable PermitRootLogin in sshd_config? [y/n]: " enable_root
-        if [[ "$enable_root" = [yY] ]]; then
-            read -sep "Enter new root password (leave empty to skip): " root_pass
-            echo
-        fi
-    fi
-
-    # Copy key to target user's authorized_keys
-    echo "Copying public key to $target_user@$remotehost..."
-    sshpass -p "$sudo_pass" ssh -o StrictHostKeyChecking=no "$sudo_user@$remotehost" -p "$remoteport" \
-        "echo '$sudo_pass' | sudo -S bash -c '
-            if [[ \"$target_user\" = \"root\" ]]; then
-                target_dir=\"/root/.ssh\"
-            else
-                target_dir=\"/home/$target_user/.ssh\"
-            fi
-
-            mkdir -p \"\$target_dir\"
-            chmod 700 \"\$target_dir\"
-
-            # Check if key already exists
-            if ! grep -qF \"$pubkey\" \"\$target_dir/authorized_keys\" 2>/dev/null; then
-                echo \"$pubkey\" >> \"\$target_dir/authorized_keys\"
-                chmod 600 \"\$target_dir/authorized_keys\"
-                if [[ \"$target_user\" = \"root\" ]]; then
-                    chown -R root:root \"\$target_dir\"
-                else
-                    chown -R $target_user:\$(id -gn $target_user 2>/dev/null || echo $target_user) \"\$target_dir\"
-                fi
-                echo \"SSH key added successfully\"
-            else
-                echo \"SSH key already exists in authorized_keys\"
-            fi
-        '"
-
-    SUDO_COPY_ERR=$?
-
-    # Enable root login if requested
-    if [[ "$enable_root" = [yY] && "$target_user" = 'root' ]]; then
-        echo "Enabling PermitRootLogin via sshd_config.d drop-in..."
-        sshpass -p "$sudo_pass" ssh -o StrictHostKeyChecking=no "$sudo_user@$remotehost" -p "$remoteport" \
-            "echo '$sudo_pass' | sudo -S bash -c '
-                if [[ \"\$(sshd -T 2>/dev/null | awk \"/permitrootlogin/ {print \\\$2}\")\" != \"yes\" ]]; then
-                    echo \"PermitRootLogin yes\" > /etc/ssh/sshd_config.d/01-permitrootlogin.conf
-                    echo \"Created /etc/ssh/sshd_config.d/01-permitrootlogin.conf\"
-                else
-                    echo \"PermitRootLogin already enabled\"
-                fi
-            '"
-
-        # Set root password if provided
-        if [[ -n "$root_pass" ]]; then
-            sshpass -p "$sudo_pass" ssh -o StrictHostKeyChecking=no "$sudo_user@$remotehost" -p "$remoteport" \
-                "echo '$sudo_pass' | sudo -S bash -c 'echo \"root:$root_pass\" | chpasswd'"
-        fi
-
-        # Restart sshd
-        sshpass -p "$sudo_pass" ssh -o StrictHostKeyChecking=no "$sudo_user@$remotehost" -p "$remoteport" \
-            "echo '$sudo_pass' | sudo -S systemctl restart sshd"
-
-        echo "PermitRootLogin enabled and sshd restarted"
-    fi
-
-    return $SUDO_COPY_ERR
+  local pubfile=$1 host=$2 port=$3 user=$4 sudo_user=$5 sudo_pass=$6
+  validate_host
+  [[ $sudo_user =~ ^[a-zA-Z_][a-zA-Z0-9_-]*$ ]] || fail 'Invalid sudo user.'
+  quote_command 'set -euo pipefail; umask 077
+home_dir=$(getent passwd "$1" | cut -d: -f6); [[ -n $home_dir ]]
+install -d -m 700 -o "$1" -- "$home_dir/.ssh"
+auth="$home_dir/.ssh/authorized_keys"
+[[ ! -L $auth ]]; touch "$auth"; chmod 600 "$auth"; chown "$1" "$auth"
+grep -qxF -- "$2" "$auth" || printf "\n%s\n" "$2" >> "$auth"
+' "$user" "$(cat -- "$pubfile")"
+  printf '%s\n' "$sudo_pass" | SSHPASS="$sudo_pass" sshpass -e ssh -T -o StrictHostKeyChecking=accept-new -o "UserKnownHostsFile=${SSH_KNOWN_HOSTS:-$HOME/.ssh/known_hosts}" -p "$port" "$sudo_user@$host" "sudo -S -p '' $command"
 }
-
-keygen() {
-    keyrotate=$1
-    _keytype=$_input_keytype
-    _remoteh=$_input_remoteh
-    _remotep=$_input_remotep
-    _remoteu=$_input_remoteu
-    _comment=$_input_comment
-    _sshpass=$_input_sshpass
-    _keyname=$_input_keyname
-    _unique_keyname=$_input_unique_keyname
-
-    # Modify the KEYNAME generation with the unique key name if provided
-    if [[ -n "$_unique_keyname" ]]; then
-      KEYNAME="${_unique_keyname}"
-    fi
-
-    if [[ $_keytype = 'rsa' ]]; then
-      KEYTYPE=$_keytype
-      KEYOPT="-t rsa -b $RSA_KEYLENTGH"
-    elif [[ $_keytype = 'ecdsa' ]]; then
-      KEYTYPE=$_keytype
-      KEYOPT="-t ecdsa -b $ECDSA_KEYLENTGH"
-    elif [[ $_keytype = 'ed25519' ]]; then
-      # openssh 6.7+ supports curve25519-sha256 cipher
-      KEYTYPE=$_keytype
-      KEYOPT='-t ed25519'
-    elif [ -z "$_keytype" ]; then
-      KEYTYPE="$KEYTYPE"
-        if [[ "$KEYTYPE" = 'rsa' ]]; then
-            KEYOPT="-t rsa -b $RSA_KEYLENTGH"
-        elif [[ "$KEYTYPE" = 'ecdsa' ]]; then
-            KEYOPT="-t ecdsa -b $ECDSA_KEYLENTGH"
-        elif [[ "$KEYTYPE" = 'ed25519' ]]; then
-            # openssh 6.7+ supports curve25519-sha256 cipher
-            KEYOPT='-t ed25519'    
-        fi
-    fi
-    if [[ "$keyrotate" = 'rotate' ]]; then
-      echo
-      echo "-------------------------------------------------------------------"
-      echo "Rotating Private Key Pair..."
-      echo "-------------------------------------------------------------------"
-      KEYNAME="$_keyname"
-      # move existing key pair to still be able to use it
-      echo "mv $HOME/.ssh/${KEYNAME}.key $HOME/.ssh/${KEYNAME}-old.key"
-      mv "$HOME/.ssh/${KEYNAME}.key" "$HOME/.ssh/${KEYNAME}-old.key"
-      echo "mv $HOME/.ssh/${KEYNAME}.key.pub $HOME/.ssh/${KEYNAME}-old.key.pub"
-      mv "$HOME/.ssh/${KEYNAME}.key.pub" "$HOME/.ssh/${KEYNAME}-old.key.pub"
-    else
-      echo
-      echo "-------------------------------------------------------------------"
-      echo "Generating Private Key Pair..."
-      echo "-------------------------------------------------------------------"
-      while [ -f "$HOME/.ssh/${KEYNAME}.key" ]; do
-          NUM=$(echo "$KEYNAME" | tr -cd '[[:digit:]]') # Extract digits from the key name
-          INCREMENT=$(echo $(($NUM+1)))
-          if [[ -n "$_unique_keyname" ]]; then
-              # Remove digits from the end of the _unique_keyname and add the incremented number
-              KEYNAME="$(echo "${_unique_keyname}" | sed 's/[[:digit:]]*$//')${INCREMENT}"
-          else
-              KEYNAME="my${INCREMENT}"
-          fi
-      done
-    fi
-    if [ -z "$_comment" ]; then
-      read -rep "enter comment description for key: " keycomment
-    else
-      keycomment=$_comment
-    fi
-    echo "ssh-keygen $KEYOPT -N \"\" -f $HOME/.ssh/${KEYNAME}.key -C \"$keycomment\""
-    ssh-keygen $KEYOPT -N "" -f $HOME/.ssh/${KEYNAME}.key -C "$keycomment"
-
-    if [[ "$keyrotate" = 'rotate' ]]; then
-      OLDPUBKEY=$(cat "$HOME/.ssh/${KEYNAME}-old.key.pub")
-      NEWPUBKEY=$(cat "$HOME/.ssh/${KEYNAME}.key.pub")
-    fi
-
-    echo
-    echo "-------------------------------------------------------------------"
-    echo "${KEYNAME}.key.pub public key"
-    echo "-------------------------------------------------------------------"
-    echo "ssh-keygen -lf $HOME/.ssh/${KEYNAME}.key.pub"
-    echo "[size --------------- fingerprint ---------------     - comment - type]"
-    echo " $(ssh-keygen -lf $HOME/.ssh/${KEYNAME}.key.pub)"
-    
-    echo
-    echo "cat $HOME/.ssh/${KEYNAME}.key.pub"
-    cat "$HOME/.ssh/${KEYNAME}.key.pub"
-    
-    echo
-    echo "-------------------------------------------------------------------"
-    echo "$HOME/.ssh contents" 
-    echo "-------------------------------------------------------------------"
-    ls -lahrt "$HOME/.ssh"
-
-    echo
-    echo "-------------------------------------------------------------------"
-    echo "Add SSH key to SSH Agent" 
-    echo "-------------------------------------------------------------------"
-    # add SSH key to SSH Agent
-    echo "eval \"$(ssh-agent -s)\""
-    eval "$(ssh-agent -s)"
-    echo "ssh-add \"$HOME/.ssh/${KEYNAME}.key\""
-    ssh-add "$HOME/.ssh/${KEYNAME}.key"
-
-    echo
-    echo "-------------------------------------------------------------------"
-    echo "Transfering ${KEYNAME}.key.pub to remote host"
-    echo "-------------------------------------------------------------------"
-    if [ -z "$_remoteh" ]; then
-      read -rep "enter remote ip address or hostname: " remotehost
-    else
-      remotehost=$_remoteh
-    fi
-    if [ -z "$_remotep" ]; then
-      read -rep "enter remote ip/host port number i.e. 22: " remoteport
-    else
-      remoteport=$_remotep
-    fi
-    if [ -z "$_remoteu" ]; then
-      read -rep "enter remote ip/host username i.e. root: " remoteuser
-    else
-      remoteuser=$_remoteu
-    fi
-    if [[ "$SSHPASS" = [yY] ]]; then
-      if [[ -z $_sshpass && "$keyrotate" != 'rotate' ]]; then
-        read -rep "enter remote ip/host username SSH password: " sshpassword
-      else
-        sshpassword=$_sshpass
-      fi
-    fi
-    if [[ "$(ping -c1 "$remotehost" -W 2 >/dev/null 2>&1; echo $?)" -eq '0' ]]; then
-        VALIDREMOTE=y
-      if [[ "$keyrotate" != 'rotate' ]]; then
-        echo
-        echo "-------------------------------------------------------------------"
-        echo "you MAYBE prompted for remote ip/host password"
-        echo "enter below command to copy key to remote ip/host"
-        echo "-------------------------------------------------------------------"
-        echo
-      else
-        echo
-      fi 
-    else
-      echo
-      echo "-------------------------------------------------------------------"
-      echo "enter below command to copy key to remote ip/host"
-      echo "-------------------------------------------------------------------"
-      echo 
-    fi
-    if [[ "$SSHPASS" = [yY] ]]; then
-      if [[ "$keyrotate" = 'rotate' ]]; then
-        # rotate key routine replace old remote public key first using renamed
-        # $HOME/.ssh/${KEYNAME}-old.key identity
-        echo "rotate and replace old public key from remote: $remoteuser@$remotehost"
-        echo
-        echo "ssh $remoteuser@$remotehost -p $remoteport -i $HOME/.ssh/${KEYNAME}-old.key \"sed -i 's|$OLDPUBKEY|$NEWPUBKEY|' /root/.ssh/authorized_keys\"" | tee "${KEYGEN_LOGDIR}/cmd-rotatekeys-${KEYNAME}-old.key.log"
-        echo
-        ssh "$remoteuser@$remotehost" -p "$remoteport" -i $HOME/.ssh/${KEYNAME}-old.key "sed -i 's|$OLDPUBKEY|$NEWPUBKEY|' /root/.ssh/authorized_keys"
-      else
-        echo "copy $HOME/.ssh/${KEYNAME}.key.pub to remote: $remoteuser@$remotehost"
-        echo "sshpass -p $sshpassword ssh-copy-id -o StrictHostKeyChecking=no -i $HOME/.ssh/${KEYNAME}.key.pub $remoteuser@$remotehost -p $remoteport" | tee "${KEYGEN_LOGDIR}/cmd-generated-${KEYNAME}.key.log"
-      fi
-    else
-      if [[ "$keyrotate" = 'rotate' ]]; then
-        # rotate key routine replace old remote public key first using renamed
-        # $HOME/.ssh/${KEYNAME}-old.key identity
-        echo "rotate and replace old public key from remote: "$remoteuser@$remotehost""
-        echo
-        echo "ssh $remoteuser@$remotehost -p $remoteport -i $HOME/.ssh/${KEYNAME}-old.key \"sed -i 's|$OLDPUBKEY|$NEWPUBKEY|' /root/.ssh/authorized_keys\"" | tee "${KEYGEN_LOGDIR}/cmd-rotatekeys-${KEYNAME}-old.key.log"
-        echo
-        ssh "$remoteuser@$remotehost" -p "$remoteport" -i $HOME/.ssh/${KEYNAME}-old.key "sed -i 's|$OLDPUBKEY|$NEWPUBKEY|' /root/.ssh/authorized_keys"
-      else
-        echo "copy $HOME/.ssh/${KEYNAME}.key.pub to remote: $remoteuser@$remotehost" | tee "${KEYGEN_LOGDIR}/cmd-generated-${KEYNAME}.key.log"
-        echo "ssh-copy-id -i $HOME/.ssh/${KEYNAME}.key.pub $remoteuser@$remotehost -p $remoteport"
-      fi
-    fi
-    if [[ "$VALIDREMOTE" = 'y' && "$keyrotate" != 'rotate' ]]; then
-      pushd "$HOME/.ssh" >/dev/null 2>&1
-      # Check if sudo user mode is enabled (for OVH/cloud VPS with root login disabled)
-      if [[ -n "$_sudo_user" ]]; then
-        sudo_copy_key "$HOME/.ssh/${KEYNAME}.key.pub" "$remotehost" "$remoteport" "$remoteuser" "$_sudo_user" "$_sudo_pass" "y"
-        SSHCOPYERR=$?
-      elif [[ "$SSHPASS" = [yY] ]]; then
-        sshpass -p "$sshpassword" ssh-copy-id -o StrictHostKeyChecking=no -i $HOME/.ssh/${KEYNAME}.key.pub "$remoteuser@$remotehost" -p "$remoteport"
-        SSHCOPYERR=$?
-      else
-        ssh-copy-id -i $HOME/.ssh/${KEYNAME}.key.pub "$remoteuser@$remotehost" -p "$remoteport"
-        SSHCOPYERR=$?
-      fi
-      if [[ "$SSHCOPYERR" -ne '0' ]]; then
-        echo
-        echo "ssh-copy-id transfer failed: removing generated SSH key files"
-        echo
-        echo "remove $HOME/.ssh/${KEYNAME}.key"
-        cat "$HOME/.ssh/${KEYNAME}.key"
-        rm -rf "$HOME/.ssh/${KEYNAME}.key"
-        echo "remove $HOME/.ssh/${KEYNAME}.key.pub"
-        cat "$HOME/.ssh/${KEYNAME}.key.pub"
-        rm -rf "$HOME/.ssh/${KEYNAME}.key.pub"
-      fi
-      popd >/dev/null 2>&1
-    fi
-    if [[ "$keyrotate" = 'rotate' ]]; then
-      echo
-      echo "SSH key rotation ssh-copy-id transfer failed: removing generated SSH key files"
-      echo
-      echo "remove $HOME/.ssh/${KEYNAME}-old.key"
-      cat "$HOME/.ssh/${KEYNAME}-old.key"
-      rm -rf "$HOME/.ssh/${KEYNAME}-old.key"
-      echo "remove $HOME/.ssh/${KEYNAME}-old.key.pub"
-      cat "$HOME/.ssh/${KEYNAME}-old.key.pub"
-      rm -rf "$HOME/.ssh/${KEYNAME}-old.key.pub"
-    fi
-
-    if [[ "$VALIDREMOTE" = 'y' && "$SSHCOPYERR" -eq '0' ]]; then
-      echo
-      echo "-------------------------------------------------------------------"
-      echo "Testing connection please wait..."
-      echo "-------------------------------------------------------------------"
-      echo
-      echo "ssh $remoteuser@$remotehost -p $remoteport -i $HOME/.ssh/${KEYNAME}.key 'uname -nr'"
-      echo
-      ssh "$remoteuser@$remotehost" -p "$remoteport" -i $HOME/.ssh/${KEYNAME}.key 'uname -nr' | tee "${KEYGEN_LOGDIR}/tmpfile.log"
-
-      ssh_err=$?
-      if [[ "$ssh_err" -eq '0' ]]; then
-        # log on success
-        if [[ "$keyrotate" = 'rotate' ]]; then
-          menuopt=rotate
-        else
-          menuopt=generate
-        fi
-        sshremote_idname=$(cat "${KEYGEN_LOGDIR}/tmpfile.log")
-        rm -rf "${KEYGEN_LOGDIR}/tmpfile.log"
-        echo "ip: ${remotehost} user: ${remoteuser} keyname: ${KEYNAME} host: ${sshremote_idname}" > "${KEYGEN_DIR}/${menuopt}-${remotehost}-${remoteport}-${KEYNAME}-${DT}.log"
-      fi
-
-      echo
-      echo "-------------------------------------------------------------------"
-      echo "Setup source server file ${HOME}/.ssh/config"
-      echo "-------------------------------------------------------------------"
-      echo
-      echo "Add to ${HOME}/.ssh/config:"
-      echo "Host ${KEYNAME}
-        Hostname $remotehost
-        Port $remoteport
-        IdentityFile $HOME/.ssh/${KEYNAME}.key
-        IdentitiesOnly=yes
-        User $(id -u -n)
-        #LogLevel DEBUG3" | tee "${KEYGEN_LOGDIR}/ssh-config-alias-${KEYNAME}-${remotehost}.key.log"
-      echo
-      echo "saved copy at ${KEYGEN_LOGDIR}/ssh-config-alias-${KEYNAME}-${remotehost}.key.log"
-      echo
-      echo "cat ${KEYGEN_LOGDIR}/ssh-config-alias-${KEYNAME}-${remotehost}.key.log >> ${HOME}/.ssh/config"
-      echo
-      echo "-------------------------------------------------------------------"
-      echo "Once ${HOME}/.ssh/config entry added, can connect via Host label:"
-      echo " ${KEYNAME}"
-      echo "-------------------------------------------------------------------"
-      echo
-      echo "ssh ${KEYNAME}"
-      echo
-      echo "-------------------------------------------------------------------"
-      echo "keygen.sh run logged to: ${KEYGEN_LOGDIR}/keygen-${DT}.log"
-      echo "config logged to: ${KEYGEN_DIR}/${menuopt}-${remotehost}-${remoteport}-${KEYNAME}-${DT}.log"
-      echo
-      echo "-------------------------------------------------------------------"
-      echo "getpk=\$(cat \"$HOME/.ssh/${KEYNAME}.key.pub\")" > "${KEYGEN_LOGDIR}/populate-keygen-${DT}.log"
-      echo "if [[ ! \$(grep -w \"\$getpk\" "$HOME/.ssh/authorized_keys") ]]; then cat \"$HOME/.ssh/${KEYNAME}.key.pub\" >> $HOME/.ssh/authorized_keys; fi" >> "${KEYGEN_LOGDIR}/populate-keygen-${DT}.log"
-      echo "./sshtransfer.sh $HOME/.ssh/${KEYNAME}.key $remotehost $remoteport ${KEYNAME}.key $HOME/.ssh/" >> "${KEYGEN_LOGDIR}/populate-keygen-${DT}.log"
-      echo "populating SSH key file at: ${KEYGEN_LOGDIR}/populate-keygen-${DT}.log"
-      echo
-      echo "To configure remote with same generated SSH Key:"
-      echo "bash ${KEYGEN_LOGDIR}/populate-keygen-${DT}.log"
-      echo
-      echo "-------------------------------------------------------------------"
-      echo "list $KEYGEN_DIR"
-      echo
-      ls -lAhrt "$KEYGEN_DIR"
-      exit
-    fi
-}
-
-case "$1" in
-    gen )
-    _input_keytype=$2
-    _input_remoteh=$3
-    _input_remotep=$4
-    _input_remoteu=$5
-    _input_comment=$6
-    _input_sshpass=$7
-    _input_unique_keyname=$8
-    _sudo_user=$9           # Sudo user for OVH/cloud VPS with root login disabled
-    _sudo_pass=${10}        # Sudo user password
-    keygen
-    exit
-        ;;
-    rotatekeys )
-    _input_keytype=$2
-    _input_remoteh=$3
-    _input_remotep=$4
-    _input_remoteu=$5
-    _input_comment=$6
-    _input_keyname=$7
-    _input_unique_keyname=$8
-    keygen rotate
-    exit
-        ;;
-    enable-root )
-    # Enable root SSH login on remote OVH/Cloud VPS
-    _input_remoteh=$2
-    _input_remotep=$3
-    _input_sudo_user=$4
-    _input_sudo_pass=$5
-    _input_root_pass=$6
-    enable_root_login
-    exit
-        ;;
-    * )
-    echo "-------------------------------------------------------------------------"
-    echo "  $0 {gen}"
-    echo "  $0 {gen} keytype remoteip remoteport remoteuser keycomment"
-    echo
-    echo "  or"
-    echo
-    echo "  $0 {gen} keytype remoteip remoteport remoteuser keycomment remotessh_password"
-    echo
-    echo "  or"
-    echo
-    echo "  $0 {gen} keytype remoteip remoteport remoteuser keycomment remotessh_password unique_keyname_filename"
-    echo
-    echo "  or (for OVH/cloud VPS with root login disabled)"
-    echo
-    echo "  $0 {gen} keytype remoteip remoteport remoteuser keycomment remotessh_password unique_keyname_filename sudo_user sudo_pass"
-    echo
-    echo "-------------------------------------------------------------------------"
-    echo "  $0 {rotatekeys}"
-    echo "  $0 {rotatekeys} keytype remoteip remoteport remoteuser keycomment keyname"
-    echo
-    echo "or"
-    echo
-    echo "  $0 {rotatekeys} keytype remoteip remoteport remoteuser keycomment \"\" unique_keyname_filename"
-    echo
-    echo "-------------------------------------------------------------------------"
-    echo "  $0 {enable-root}"
-    echo "  $0 {enable-root} remoteip remoteport sudo_user sudo_pass [root_pass]"
-    echo
-    echo "  Enable root SSH login on remote OVH/Cloud VPS"
-    echo "  sudo_user: almalinux, rocky, cloud-user, opc (Oracle Linux)"
-    echo
-    echo "-------------------------------------------------------------------------"
-    echo "  keytype supported: rsa, ecdsa, ed25519"
-        ;;
-esac
+action=${1:-help}
+if [[ $action == remove ]]; then
+  datam_log_phase revoke
+  pubfile=${2:-}; host=${3:-}; port=${4:-22}; user=${5:-root}
+  validate_host
+  [[ -f $pubfile ]] || fail 'Public key file missing.'
+  read -r keytype keyblob _ < "$pubfile" || [[ -n $keytype && -n $keyblob ]] || fail 'Invalid public key.'
+  [[ -n $keytype && -n $keyblob ]] || fail 'Invalid public key.'
+  SSH=(ssh -T -o "UserKnownHostsFile=${SSH_KNOWN_HOSTS:-$HOME/.ssh/known_hosts}" -o StrictHostKeyChecking=yes -o ConnectTimeout=10 -p "$port")
+  identity=${6:-}
+  if [[ -n $identity ]]; then
+    [[ -f $identity && -r $identity ]] || fail 'Authentication private key missing.'
+    SSH+=(-i "$identity" -o IdentitiesOnly=yes)
+  fi
+  printf '%s %s\n' "$keytype" "$keyblob" | ssh-keygen -lf - >/dev/null || fail 'Invalid public key.'
+  remote 'set -euo pipefail; umask 077
+cd "$HOME/.ssh"; [[ ! -L authorized_keys ]]
+exec 8>.centmin-authorized-keys.lock; flock -x 8
+cp -p authorized_keys "authorized_keys.before-revoke-$(date +%s)-$$"
+awk "$2" remove "$1" "" authorized_keys > authorized_keys.new
+if [[ $3 != 1 ]] && ! grep -qE "^[[:space:]]*([^#[:space:]].*[[:space:]])?(ssh-(rsa|dss|ed25519)|ecdsa-sha2-nistp[0-9]+|sk-(ssh-ed25519|ecdsa-sha2-nistp256)@openssh[.]com)[[:space:]]+[A-Za-z0-9+/]+=*" authorized_keys.new; then
+  rm -f authorized_keys.new
+  echo "ERROR: Refusing to revoke the last authorized key; authorized_keys is unchanged. Enroll a replacement key first, or set KEYGEN_ALLOW_LAST_KEY_REMOVAL=1 to decommission this account." >&2
+  exit 1
+fi
+chmod 600 authorized_keys.new; mv authorized_keys.new authorized_keys
+' "$keytype $keyblob" "$AUTH_KEYS_AWK" "${KEYGEN_ALLOW_LAST_KEY_REMOVAL:-0}"
+  echo 'Exact public key revoked; remote recovery copy retained.'
+  exit
+fi
+if [[ $action == enable-root ]]; then
+  fail 'Automatic root-login/password changes removed. Use a normal SSH account with a writable backup directory, or explicitly configure PermitRootLogin prohibit-password after validating sshd -t.'
+fi
+[[ $action == gen || $action == rotatekeys ]] || fail 'Usage: keygen.sh gen TYPE HOST PORT USER COMMENT [EMPTY] [KEY_STEM] [SUDO_USER], or rotatekeys TYPE HOST PORT USER NEW_COMMENT KEY_STEM'
+if [[ $action == gen && ( -n ${7:-} || -n ${10:-} ) ]]; then
+  fail 'Password arguments are no longer accepted. Use KEYGEN_SSH_PASSWORD / KEYGEN_SUDO_PASSWORD or interactive authentication.'
+fi
+type=${2:-ed25519}; host=${3:-}; port=${4:-22}; user=${5:-root}; comment=${6:-centminmod-backup}
+validate_host
+[[ $comment != *$'\n'* && $comment != *$'\r'* ]] || fail 'Key comments must be one line.'
+case $type in rsa) keyopts=(-t rsa -b 4096) ;; ecdsa) keyopts=(-t ecdsa -b 256) ;; ed25519) keyopts=(-t ed25519) ;; *) fail 'Invalid key type.' ;; esac
+if [[ $action == rotatekeys ]]; then stem=${7:-}; else stem=${8:-my1}; fi
+stem=${stem%.key}
+[[ $stem =~ ^[a-zA-Z0-9][a-zA-Z0-9._-]*$ ]] || fail 'Specify an existing key filename stem for rotation.'
+mkdir -p "$HOME/.ssh"
+chmod 700 "$HOME/.ssh"
+exec 9>"$HOME/.ssh/.centmin-keygen.lock"
+flock -n 9 || fail 'Another key operation is running.'
+SSH=(ssh -T -o "UserKnownHostsFile=${SSH_KNOWN_HOSTS:-$HOME/.ssh/known_hosts}" -o StrictHostKeyChecking=accept-new -o ConnectTimeout=10 -p "$port")
+if [[ $action == gen ]]; then
+  key="$HOME/.ssh/$stem.key"
+  if [[ -e $key ]]; then key="$HOME/.ssh/$stem-$(date -u +%Y%m%dT%H%M%SZ)-$$.key"; fi
+  if [[ -n ${9:-} || -n ${KEYGEN_SSH_PASSWORD:-} ]]; then
+    command -v sshpass >/dev/null || fail 'sshpass (EPEL) is required for password-assisted enrollment; install it or use interactive ssh-copy-id authentication.'
+  fi
+  datam_log_phase generate
+  ssh-keygen "${keyopts[@]}" -N '' -f "$key" -C "$comment"
+  datam_log_phase enroll
+  if [[ -n ${9:-} ]]; then
+    sudo_password=${KEYGEN_SUDO_PASSWORD:-}
+    [[ -n $sudo_password ]] || { read -rsp 'Sudo account password: ' sudo_password; echo; }
+    sudo_copy_key "$key.pub" "$host" "$port" "$user" "$9" "$sudo_password"
+  elif [[ -n ${KEYGEN_SSH_PASSWORD:-} ]]; then
+    SSHPASS="$KEYGEN_SSH_PASSWORD" sshpass -e ssh-copy-id -o StrictHostKeyChecking=accept-new -o "UserKnownHostsFile=${SSH_KNOWN_HOSTS:-$HOME/.ssh/known_hosts}" -p "$port" -i "$key.pub" "$user@$host"
+  else
+    ssh-copy-id -o StrictHostKeyChecking=accept-new -o "UserKnownHostsFile=${SSH_KNOWN_HOSTS:-$HOME/.ssh/known_hosts}" -p "$port" -i "$key.pub" "$user@$host"
+  fi
+  datam_log_phase verify-enrollment
+  if "${SSH[@]}" -F /dev/null -o BatchMode=yes -o IdentitiesOnly=yes -o IdentityAgent=none -i "$key" "$user@$host" true; then
+    :
+  else
+    verify_status=$?
+    echo "ERROR: Public key installed, but authentication verification failed ($verify_status). Key pair retained: $key" >&2
+    echo 'Review SSH connectivity, authorization restrictions and account policy before retrying. No SSH server policy was changed.' >&2
+    exit "$verify_status"
+  fi
+  echo "Key enrolled and verified: $key"
+else
+  key="$HOME/.ssh/$stem.key"
+  [[ -f $key && ! -L $key && -f $key.pub ]] || fail 'Existing key pair not found.'
+  datam_log_phase rotation-prepare
+  replacement="$key.new-$(date -u +%Y%m%dT%H%M%SZ)-$$"
+  ssh-keygen "${keyopts[@]}" -N '' -f "$replacement" -C "$comment"
+  read -r oldtype oldblob _ < "$key.pub" || [[ -n $oldtype && -n $oldblob ]] || fail 'Invalid existing public key.'
+  old="$oldtype $oldblob"; new=$(cat -- "$replacement.pub")
+  SSH+=(-o BatchMode=yes -o IdentitiesOnly=yes -o IdentityAgent=none -i "$key")
+  # Copy the authorized line's restrictions onto the replacement, leaving old access valid.
+  remote 'set -euo pipefail; umask 077
+cd "$HOME/.ssh"; [[ -f authorized_keys && ! -L authorized_keys ]]
+exec 8>.centmin-authorized-keys.lock; flock -x 8
+cp -p authorized_keys "authorized_keys.before-rotation-$(date +%s)-$$"
+awk "$3" replace "$1" "$2" authorized_keys > replacement.line
+printf "\n" >> authorized_keys
+cat replacement.line >> authorized_keys
+rm replacement.line
+' "$old" "$new" "$AUTH_KEYS_AWK"
+  # A forced command may refuse this probe; preserve both keys and report failure in that case.
+  datam_log_phase verify-replacement "candidate=$replacement"
+  ssh -F /dev/null -T -o "UserKnownHostsFile=${SSH_KNOWN_HOSTS:-$HOME/.ssh/known_hosts}" -o StrictHostKeyChecking=yes -o BatchMode=yes -o IdentitiesOnly=yes -o IdentityAgent=none -o ConnectTimeout=10 -p "$port" -i "$replacement" "$user@$host" true
+  # Make the proven replacement available at the original path before revocation.
+  datam_log_phase activate-replacement
+  recovery="$key.before-rotation-$(date +%s)-$$"
+  cp -p -- "$key" "$recovery"; cp -p -- "$key.pub" "$recovery.pub"
+  mv -- "$replacement" "$key"; mv -- "$replacement.pub" "$key.pub"
+  datam_log_phase revoke-old-key "recovery=$recovery"
+  remote 'set -euo pipefail; umask 077
+cd "$HOME/.ssh"; exec 8>.centmin-authorized-keys.lock; flock -x 8
+[[ ! -L authorized_keys ]]
+awk "$2" remove "$1" "" authorized_keys > authorized_keys.new
+chmod 600 authorized_keys.new; mv authorized_keys.new authorized_keys
+' "$old" "$AUTH_KEYS_AWK"
+  echo "Rotation verified. Recovery key retained locally: $recovery"
+fi
+ssh-keygen -lf "$key.pub"

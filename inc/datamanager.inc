@@ -1,1803 +1,378 @@
-#######################################################################################
-# Data Management Routines
-#######################################################################################
-AWSCLI_BIN='/usr/local/bin/aws'
-_datam_geoip=$(curl -4s${CURL_TIMEOUTS} -A "$CURL_AGENT DataManager IP CHECK $SCRIPT_VERSION $CURL_CPUMODEL $CURL_CPUSPEED" https://geoip.centminmod.com/v4 2>/dev/null)
-DATAM_SOURCE_IP=$(echo "$_datam_geoip" | jq -r '.ip' 2>/dev/null)
-unset _datam_geoip
-#######################################################################################
-check_for_awscli_get() {
-  if [[ -d "$SCRIPT_DIR/datamanagement" && ! -f "$SCRIPT_DIR/datamanagement/awscli-get.sh" ]]; then
-    curl -4sL https://awscli-get.centminmod.com/awscli-get.sh -o "$SCRIPT_DIR/datamanagement/awscli-get.sh"
-    chmod +x "$SCRIPT_DIR/datamanagement/awscli-get.sh"
-  fi
-  if [[ -d "$SCRIPT_DIR/datamanagement" && -f "$SCRIPT_DIR/datamanagement/awscli-get.sh" ]]; then
-    awscli_get_found=y
-  else
-    awscli_get_found=n
-    ls -lAh "$SCRIPT_DIR/datamanagement/awscli-get.sh"
-    echo
-    echo "awscli-get.sh not found"
-    exit 1
-  fi
-  if [ ! -f "${AWSCLI_BIN}" ]; then
-    echo
-    echo "Installing AWS CLI command line tool ${AWSCLI_BIN}"
-    "$SCRIPT_DIR/datamanagement/awscli-get.sh" install >/dev/null 2>&1 
-  elif [ -f "${AWSCLI_BIN}" ]; then
-    echo
-    echo "Updating AWS CLI command line tool ${AWSCLI_BIN}"
-    "$SCRIPT_DIR/datamanagement/awscli-get.sh" update >/dev/null 2>&1
-  fi
+# shellcheck shell=bash
+# Menu 21 keeps actions in subshells so failure settings do not affect centmin.sh.
+# Never log entered secrets or infer a backup path from human-readable messages.
+source "$(dirname -- "${BASH_SOURCE[0]}")/../datamanagement/logging.sh"
+
+datam_profile_section() {
+  local file=$1 section=$2 mode=$3
+  # Match bare or fully quoted config profile names; credential names are literal.
+  # Print the original lines so comments, CRLF and a missing final newline survive.
+  perl -e '
+    my ($file, $section, $mode) = @ARGV;
+    open my $in, "<", $file or die "Cannot read profile file: $!\n";
+    my ($selected, $in_section, $option_indent) = (0, 0, undef);
+    while (<$in>) {
+      if (!/^\s*(?:[#;]|$)/) {
+        my ($space) = /^(\s*)/;
+        my $indent = length($space);
+        # ConfigParser handles deeper-indented option continuations before headers.
+        if (!defined($option_indent) || $indent <= $option_indent) {
+          if (/^\s*\[(.+)\]/) {
+            my $header = $1;
+            $in_section = 1;
+            undef $option_indent;
+            $selected = ($header eq $section);
+            if ($section =~ /^profile (.+)$/) {
+              my $profile = $1;
+              $selected = (($header eq "default" && $profile eq "default") ||
+                $header =~ /^profile[ \t]+(?:\Q$profile\E|"\Q$profile\E"|\x27\Q$profile\E\x27)[ \t]*$/);
+            }
+          } else {
+            $option_indent = ($in_section && /^\s*[^=:]+[=:]/) ? $indent : undef;
+          }
+        }
+      }
+      if (($mode eq "export" && $selected) || ($mode eq "remove" && !$selected)) {
+        print or die "Cannot write profile output: $!\n";
+      }
+    }
+    close $in or die "Cannot close profile file: $!\n";
+    close STDOUT or die "Cannot flush profile output: $!\n";
+  ' "$file" "$section" "$mode"
 }
 
-#######################################################################################
-check_for_keygen() {
-  if [[ -d "$SCRIPT_DIR/datamanagement" && ! -f "$SCRIPT_DIR/datamanagement/keygen.sh" ]]; then
-    curl -4sL https://github.com/centminmod/keygen/raw/master/keygen.sh -o "$SCRIPT_DIR/datamanagement/keygen.sh"
-    chmod +x "$SCRIPT_DIR/datamanagement/keygen.sh"
+datam_profile_action() (
+  set -Eeuo pipefail
+  umask 077
+  datam_log_begin aws-profile
+  local option=$1 profile section config credentials file tmp dest stamp key
+  config=${AWS_CONFIG_FILE:-$HOME/.aws/config}
+  credentials=${AWS_SHARED_CREDENTIALS_FILE:-$HOME/.aws/credentials}
+  # Delete, export and backup work on the profile files alone and stay available without the CLI.
+  [[ $option != [1234] ]] || command -v aws >/dev/null || { echo 'Install AWS CLI with datamanagement/awscli-get.sh install first.'; exit 1; }
+  if [[ $option == 1 ]]; then aws configure list-profiles; exit; fi
+  if [[ $option == 7 ]]; then
+    read -rep 'New directory for credential backup: ' dest
+    [[ -f $config || -f $credentials ]] || { echo 'No AWS profile files found to back up.' >&2; exit 1; }
+    mkdir -m 700 -- "$dest"
+    [[ ! -f $config ]] || install -m 600 -- "$config" "$dest/config"
+    [[ ! -f $credentials ]] || install -m 600 -- "$credentials" "$dest/credentials"
+    echo "Profiles backed up to $dest"; exit
   fi
-  if [[ -d "$SCRIPT_DIR/datamanagement" && -f "$SCRIPT_DIR/datamanagement/keygen.sh" ]]; then
-    keygen_found=y
-  else
-    keygen_found=n
-    ls -lAh "$SCRIPT_DIR/datamanagement/keygen.sh"
-    echo
-    echo "keygen.sh not found"
-    exit 1
-  fi
-}
+  read -rep 'Profile name: ' profile
+  [[ $profile =~ ^[a-zA-Z0-9][a-zA-Z0-9._-]*$ ]] || { echo 'Invalid profile name.'; exit 1; }
+  section="profile $profile"
+  case $option in
+    2) aws configure list --profile "$profile" ;;
+    3) aws configure --profile "$profile" ;;
+    4)
+      echo 'Editable keys: region, output, s3.max_concurrent_requests, s3.multipart_threshold, s3.multipart_chunksize, s3.max_bandwidth, s3.addressing_style'
+      read -rep 'Configuration key: ' key
+      case $key in region|output|s3.max_concurrent_requests|s3.multipart_threshold|s3.multipart_chunksize|s3.max_bandwidth|s3.addressing_style) ;; *) exit 1 ;; esac
+      read -rep 'New value: ' value
+      aws configure set "$key" "$value" --profile "$profile"
+      ;;
+    5)
+      read -rep "Delete profile $profile? [y/N]: " answer
+      [[ $answer == [yY] ]] || exit 0
+      exec 9>/run/lock/centminmod-aws-profile.lock; flock -x 9
+      for file in "$config" "$credentials"; do
+        [[ ! -L $file ]] || { echo "Refusing symlinked profile file: $file" >&2; exit 1; }
+      done
+      stamp=$(date -u +%Y%m%dT%H%M%SZ)-$$
+      for file in "$config" "$credentials"; do
+        [[ -f $file && ! -L $file ]] || continue
+        [[ $file != "$credentials" ]] || section=$profile
+        install -m 600 -- "$file" "$file.$stamp.bak"
+        tmp=$(mktemp "$file.XXXXXX")
+        datam_profile_section "$file" "$section" remove > "$tmp"
+        mv -- "$tmp" "$file"
+      done
+      echo 'Requested profile sections removed if present; private recovery copies retained.'
+      ;;
+    6)
+      read -rep 'New directory for exported profile: ' dest
+      [[ ! -e $dest ]] || { echo "Export directory already exists: $dest" >&2; exit 1; }
+      # Extract first so a missing profile leaves no empty export directory behind.
+      tmp=$(mktemp -d "${TMPDIR:-/tmp}/aws-profile-export.XXXXXX")
+      # Extracted credentials never outlive this action, whichever step fails.
+      # The path is bound now: function locals are gone by the time the subshell's EXIT trap runs.
+      trap "rm -rf -- ${tmp@Q}" EXIT
+      [[ ! -f $config ]] || datam_profile_section "$config" "$section" export > "$tmp/config"
+      [[ ! -f $credentials ]] || datam_profile_section "$credentials" "$profile" export > "$tmp/credentials"
+      [[ -s $tmp/config || -s $tmp/credentials ]] || { echo "Profile not found in AWS profile files: $profile" >&2; exit 1; }
+      mkdir -m 700 -- "$dest"
+      for file in config credentials; do [[ ! -f $tmp/$file ]] || install -m 600 -- "$tmp/$file" "$dest/$file"; done
+      echo "Profile exported to $dest"
+      echo 'Referenced source_profile, SSO sessions and credential-process dependencies are not included; review them separately.'
+      ;;
+    *) exit 1 ;;
+  esac
+)
 
-#######################################################################################
 aws_profiles_submenu() {
-while :
-do
-  # clear
-        # display menu
-  echo
-  cecho "---------------------------------------------------------------------" $boldyellow
-  cecho "      Manage AWS CLI S3 Profile Credentials        " $boldgreen
-  cecho "---------------------------------------------------------------------" $boldyellow
-  cecho "      Partially uses awscli-get.sh https://awscli-get.centminmod.com/" $boldgreen
-  cecho "---------------------------------------------------------------------" $boldyellow
-  cecho "1).   List Registered AWS CLI S3 Profiles" $boldgreen
-  cecho "2).   List AWS CLI S3 Profile Configuration" $boldgreen
-  cecho "3).   Create New AWS CLI S3 Profile" $boldgreen
-  cecho "4).   Edit Existing AWS CLI S3 Profile" $boldgreen
-  cecho "5).   Delete Existing AWS CLI S3 Profile" $boldgreen
-  cecho "6).   Export Existing AWS CLI S3 Profile" $boldgreen
-  cecho "7).   Backup All Existing AWS CLI S3 Profiles" $boldgreen
-  cecho "8).   Back to Main menu" $boldgreen
-  cecho "---------------------------------------------------------------------" $boldyellow
-
-  read -ep "Enter option [ 1 - 8 ] " awscli_profiles_menu_opt
-  cecho "---------------------------------------------------------------------" $boldyellow
-
-#########################################################
-
-case "$awscli_profiles_menu_opt" in
-1)
-  {
-    check_for_awscli_get
-    echo
-    echo "List Registered AWS CLI S3 Profiles"
-    echo
-    ${AWSCLI_BIN} configure list-profiles
-
-  } 2>&1 | tee "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_${awscli_profiles_menu_opt}_awscli_profiles_menu.log"
-;;
-2)
-  {
-    check_for_awscli_get
-    echo
-    echo "List AWS CLI S3 Profile Configuration"
-    echo
-
-    read -ep "Do you want to continue [y/n]: " aws_cli_profile_listconfig_cont
-    if [[ "$aws_cli_profile_listconfig_cont" != [yY] ]]; then
-      echo
-      echo "exiting ..."
-      exit
-    fi
-
-    while true; do
-      read -ep "Enter AWS CLI S3 Profile Name For Configuration Overview: " input_profile_name
-    
-      echo
-      echo "You entered AWS CLI S3 Profile Name = ${input_profile_name}"
-      echo
-      read -ep "Are these details correct? [y/n/exit]: " input_correct
-    
-      if [[ "$input_correct" =~ ^[yY]$ ]]; then
-        ${AWSCLI_BIN} configure list --profile "${input_profile_name}"
-        break
-      elif [[ "$input_correct" == "exit" ]]; then
-        echo
-        echo "Exiting..."
-        break
-      else
-        echo
-        echo "Please re-enter your details."
-        echo
-      fi
-    done
-
-  } 2>&1 | tee "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_${awscli_profiles_menu_opt}_awscli_profiles_menu.log"
-;;
-3)
-  {
-    check_for_awscli_get
-    echo
-    echo "Create New AWS CLI S3 Profile"
-    echo
-    echo "To setup a new AWS CLI S3 Profile, you need to have signed up with a"
-    echo "S3 storage provider like Amazon AWS S3, Backblaze, Cloudflare R2"
-    echo "Linode, Vultr or DigitalOcean S3 object storage provider and obtained"
-    echo "your S3 credentials for Access key ID and Secret Key and your endpoint"
-    echo "url where applicable i.e. Cloudflare R2, Linode, DigitalOcean, Backblaze"
-    echo "all have a their own specific endpoint url to use with their S3 storage."
-    echo
-    echo "The following questions and your input will be used to setup a new AWS"
-    echo "CLI S3 profile."
-    echo
-
-    read -ep "Do you want to continue [y/n]: " aws_cli_profile_create_cont
-    if [[ "$aws_cli_profile_create_cont" != [yY] ]]; then
-      echo
-      echo "exiting ..."
-      exit
-    fi
-
-    while true; do
-      read -ep "Your S3 Storage Provider i.e. aws, cloudflare, digitalocean, backblaze etc : " input_storage_provider
-      read -ep "Desired AWS CLI S3 Profile Name: " input_profile_name
-      read -ep "Endpoint url: i.e. for Cloudflare YOUR_CF_ACCOUNT_ID.r2.cloudflarestorage.com: " input_endpoint
-      read -ep "Enter AWS_ACCESS_KEY_ID: " input_access_key
-      read -ep "Enter AWS_SECRET_ACCESS_KEY: " input_secret_key
-      read -ep "Enter AWS_DEFAULT_REGION for Cloudflare use r2: " input_default_region
-      read -ep "Enter AWS_DEFAULT_OUTPUT: " input_default_output
-    
-      echo
-      echo "You entered S3 Storage Provide=${input_storage_provider}"
-      echo "You entered AWS CLI S3 Profile Name=${input_profile_name}"
-      echo "Your entered endpoint url=${input_endpoint}"
-      echo "You enter AWS_ACCESS_KEY_ID=${input_access_key}"
-      echo "You enter AWS_SECRET_ACCESS_KEY=${input_secret_key}"
-      echo "You enter AWS_DEFAULT_REGION=${input_default_region}"
-      echo "You enter AWS_DEFAULT_OUTPUT=${input_default_output}"
-      echo
-      read -ep "Are these details correct? [y/n/exit]: " input_correct
-    
-      if [[ "$input_correct" =~ ^[yY]$ ]]; then
-        export AWS_ACCESS_KEY_ID="${input_access_key}"
-        export AWS_SECRET_ACCESS_KEY="${input_secret_key}"
-        export AWS_DEFAULT_REGION="${input_default_region}"
-        export AWS_DEFAULT_OUTPUT="${input_default_output}"
-
-        # setup AWS CLI profile
-        $SCRIPT_DIR/datamanagement/awscli-get.sh install "${input_profile_name}"
-        break
-      elif [[ "$input_correct" == "exit" ]]; then
-        echo
-        echo "Exiting..."
-        break
-      else
-        echo
-        echo "Please re-enter your details."
-        echo
-      fi
-    done
-
-
-  } 2>&1 | tee "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_${awscli_profiles_menu_opt}_awscli_profiles_menu.log"
-;;
-4)
-  {
-    check_for_awscli_get
-    echo
-    echo "Edit Existing AWS CLI S3 Profile"
-    echo
-
-    read -ep "Enter AWS CLI S3 Profile Name to Edit: " edit_profile_name
-    echo "Fetching current configuration for profile ${edit_profile_name} ..."
-    
-    CONFIG_KEYS=("s3.max_concurrent_requests" "s3.multipart_threshold" "s3.multipart_chunksize" "s3.max_bandwidth" "s3.addressing_style" "s3.use_accelerate_endpoint" "s3.disable_ssl" "s3.verify_ssl" "region")
-
-    for key in "${CONFIG_KEYS[@]}"; do
-      value=$(${AWSCLI_BIN} configure get ${key} --profile "${edit_profile_name}")
-      echo "   ${key}: ${value}"
-    done
-
-    while true; do
-      echo
-      echo "Select the configuration option you want to edit:"
-      echo "1)  s3.max_concurrent_requests"
-      echo "2)  s3.multipart_threshold"
-      echo "3)  s3.multipart_chunksize"
-      echo "4)  s3.max_bandwidth"
-      echo "5)  s3.addressing_style"
-      echo "6)  s3.use_accelerate_endpoint (AWS S3 only)"
-      echo "7)  s3.disable_ssl (AWS S3 only)"
-      echo "8)  s3.verify_ssl (AWS S3 only)"
-      echo "9)  region"
-      echo "10) exit"
-    
-      read -ep "Enter the number of the option you want to edit [ 1 - 10 ]: " selected_option
-    
-      if [[ "$selected_option" -eq 10 ]]; then
-        break
-      fi
-    
-      selected_key=${CONFIG_KEYS[selected_option - 1]}
-      echo
-      read -ep "Enter the new value for ${selected_key}: " new_value
-    
-      echo "You have chosen to update ${selected_key} to ${new_value}"
-      read -ep "Is this the correct update value? [y/n/exit]: " input_correct
-    
-      if [[ "$input_correct" =~ ^[yY]$ ]]; then
-        echo "${AWSCLI_BIN} configure set ${selected_key} \"${new_value}\" --profile \"${edit_profile_name}\""
-        ${AWSCLI_BIN} configure set ${selected_key} "${new_value}" --profile "${edit_profile_name}"
-        echo "Updated ${selected_key} to ${new_value} for profile ${edit_profile_name}"
-        echo
-        echo "Check new value for ${selected_key} = ${new_value} for profile ${edit_profile_name}"
-        echo "${AWSCLI_BIN} configure get ${selected_key} --profile \"${edit_profile_name}\""
-        ${AWSCLI_BIN} configure get ${selected_key} --profile "${edit_profile_name}"
-        break
-      elif [[ "$input_correct" == "exit" ]]; then
-        echo
-        echo "Exiting..."
-        break
-      else
-        echo
-        echo "Please re-enter your details."
-      fi
-    done
-    
-  } 2>&1 | tee "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_${awscli_profiles_menu_opt}_awscli_profiles_menu.log"
-;;
-5)
-  {
-    check_for_awscli_get
-    echo
-    echo "Delete Existing AWS CLI S3 Profile"
-        echo
-
-    read -ep "Do you want to continue [y/n]: " aws_cli_profile_delete_cont
-    if [[ "$aws_cli_profile_delete_cont" != [yY] ]]; then
-      echo
-      echo "exiting ..."
-      exit
-    fi
-
-    while true; do
-      read -ep "Enter AWS CLI S3 Profile Name To Delete: " input_profile_name
-    
-      echo
-      echo "You entered AWS CLI S3 Profile Name = ${input_profile_name}"
-      echo
-      read -ep "Are these details correct? [y/n/exit]: " input_correct
-    
-      if [[ "$input_correct" =~ ^[yY]$ ]]; then
-        # Remove the profile from the configuration and credentials files
-        aws configure --profile "${input_profile_name}" list  # Ensure the profile exists
-        if [ $? -eq 0 ]; then
-          CONFIG_FILE="${HOME}/.aws/config"
-          CREDENTIALS_FILE="${HOME}/.aws/credentials"
-          timestamp=$(date +%Y%m%d_%H%M%S)
-          sed -i.${timestamp}.bak "/\[profile ${input_profile_name}\]/,/^$/d" "${CONFIG_FILE}"
-          sed -i.${timestamp}.bak "/\[${input_profile_name}\]/,/^$/d" "${CREDENTIALS_FILE}"
-          echo "AWS CLI S3 Profile '${input_profile_name}' deleted."
-        else
-          echo "Profile '${input_profile_name}' not found."
-        fi
-        break
-      elif [[ "$input_correct" == "exit" ]]; then
-        echo
-        echo "Exiting..."
-        break
-      else
-        echo
-        echo "Please re-enter your details."
-        echo
-      fi
-    done
-
-  } 2>&1 | tee "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_${awscli_profiles_menu_opt}_awscli_profiles_menu.log"
-;;
-6)
-  {
-    check_for_awscli_get
-    echo
-    echo "Export Existing AWS CLI S3 Profile"
-        echo
-
-    read -ep "Do you want to continue [y/n]: " aws_cli_profile_export_cont
-    if [[ "$aws_cli_profile_export_cont" != [yY] ]]; then
-      echo
-      echo "exiting ..."
-      exit
-    fi
-
-    while true; do
-      read -ep "Enter AWS CLI S3 Profile Name to Export: " input_profile_name
-    
-      echo
-      echo "You entered AWS CLI S3 Profile Name = ${input_profile_name}"
-      echo
-      read -ep "Are these details correct? [y/n/exit]: " input_correct
-    
-      if [[ "$input_correct" =~ ^[yY]$ ]]; then
-        timestamp=$(date +%Y%m%d_%H%M%S)
-        mkdir -p /etc/centminmod/awscli/export-profiles
-
-        awk -v profile="profile ${input_profile_name}" '
-          $0 ~ /^\[profile .*\]$/ {flag=0}
-          $0 ~ "^\\[" profile "\\]" {flag=1}
-          flag {print}
-        ' "${HOME}/.aws/config" > "/etc/centminmod/awscli/export-profiles/export-profile-${input_profile_name}-config-${timestamp}.conf"
-      
-        sed -n -e "/^\[${input_profile_name}\]/,/^\[/p" "${HOME}/.aws/credentials" > "/etc/centminmod/awscli/export-profiles/export-profile-${input_profile_name}-credentials-${timestamp}.conf"
-
-        echo "Exported AWS CLI S3 Profile ${input_profile_name} to "
-        echo "/etc/centminmod/awscli/export-profiles/export-profile-${input_profile_name}-config-${timestamp}.conf"
-        echo "/etc/centminmod/awscli/export-profiles/export-profile-${input_profile_name}-credentials-${timestamp}.conf"
-        break
-      elif [[ "$input_correct" == "exit" ]]; then
-        echo
-        echo "Exiting..."
-        break
-      else
-        echo
-        echo "Please re-enter your details."
-        echo
-      fi
-    done
-
-  } 2>&1 | tee "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_${awscli_profiles_menu_opt}_awscli_profiles_menu.log"
-;;
-7)
-  {
-    check_for_awscli_get
-    echo
-    echo "Backup All Existing AWS CLI S3 Profiles"
-    echo
-
-    read -ep "Do you want to continue [y/n]: " aws_cli_profiles_backup_cont
-    if [[ "$aws_cli_profiles_backup_cont" != [yY] ]]; then
-      echo
-      echo "exiting ..."
-      exit
-    fi
-
-    timestamp=$(date +%Y%m%d_%H%M%S)
-    backup_directory="/etc/centminmod/awscli/backup-profiles"
-    mkdir -p "${backup_directory}"
-
-    cp "${HOME}/.aws/config" "${backup_directory}/config_backup-${timestamp}.conf"
-    cp "${HOME}/.aws/credentials" "${backup_directory}/credentials_backup-${timestamp}.conf"
-
-    echo "All AWS CLI S3 Profiles backed up to :"
-    echo "${backup_directory}/config_backup-${timestamp}.conf"
-    echo "${backup_directory}/credentials_backup-${timestamp}.conf"
-
-  } 2>&1 | tee "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_${awscli_profiles_menu_opt}_awscli_profiles_menu.log"
-;;
-8)
-  break
-;;
-esac
-done
+  local option
+  while :; do
+    printf '\n1) List profiles\n2) Show profile configuration\n3) Create profile\n4) Edit profile\n5) Delete profile\n6) Export profile\n7) Backup profiles\n8) Back\n'
+    read -rep 'Option: ' option || return
+    [[ $option != 8 ]] || return
+    datam_run_logged "aws-profile-$option" datam_profile_action "$option"
+    [[ $? == 0 ]] || echo 'Profile operation failed.'
+  done
 }
 
-#######################################################################################
-# Prompt for OVH/Cloud VPS sudo user mode
-# Used when cloud provider disables root SSH login by default
-prompt_cloud_vps_mode() {
-    read -ep "Is this an OVH/cloud VPS with root login disabled? [y/n]: " is_cloud_vps
-    if [[ "$is_cloud_vps" = [yY] ]]; then
-        CLOUD_VPS_MODE='y'
-        read -ep "Sudo username (e.g., almalinux, rocky, cloud-user, opc): " CLOUD_SUDO_USER
-        read -sp "Sudo user password: " CLOUD_SUDO_PASS
-        echo
-    else
-        CLOUD_VPS_MODE='n'
-        CLOUD_SUDO_USER=''
-        CLOUD_SUDO_PASS=''
-    fi
-}
+datam_ssh_action() (
+  set -Eeuo pipefail
+  umask 077
+  datam_log_begin ssh-management
+  local option=$1 key host port user type comment stem dest
+  case $option in
+    1) find "$HOME/.ssh" -maxdepth 1 -name '*.pub' -exec ssh-keygen -lf {} \; ;;
+    2)
+      [[ -n ${SSH_AUTH_SOCK:-} ]] || { echo 'Start ssh-agent in your login shell first. Transfers also support a private key path without an agent.'; exit 1; }
+      read -rep 'Private key path: ' key; ssh-add "$key" ;;
+    3|4|5|6)
+      read -rep 'Remote hostname/IP: ' host
+      read -rep 'SSH port [22]: ' port; port=${port:-22}
+      read -rep 'SSH user [root]: ' user; user=${user:-root}
+      [[ $host =~ ^[a-zA-Z0-9][a-zA-Z0-9.-]*$ && $user =~ ^[a-zA-Z_][a-zA-Z0-9_-]*$ && $port =~ ^[1-9][0-9]{0,4}$ && $port -le 65535 ]] || exit 1
+      case $option in
+        3)
+          read -rep 'Key type [ed25519]: ' type; type=${type:-ed25519}
+          read -rep 'Key comment: ' comment
+          read -rep 'New key filename stem [my1]: ' stem; stem=${stem:-my1}
+          "$SCRIPT_DIR/datamanagement/keygen.sh" gen "$type" "$host" "$port" "$user" "$comment" '' "$stem"
+          ;;
+        4)
+          read -rep 'Public key path: ' key
+          ssh-copy-id -o StrictHostKeyChecking=accept-new -o "UserKnownHostsFile=${SSH_KNOWN_HOSTS:-$HOME/.ssh/known_hosts}" -p "$port" -i "$key" "$user@$host"
+          ;;
+        5)
+          read -rep 'Existing key filename stem, without .key: ' stem
+          read -rep 'Replacement key type [ed25519]: ' type; type=${type:-ed25519}
+          read -rep 'Replacement comment: ' comment
+          "$SCRIPT_DIR/datamanagement/keygen.sh" rotatekeys "$type" "$host" "$port" "$user" "$comment" "$stem"
+          ;;
+        6)
+          # Delete by exact public key, never by a comment or regular expression.
+          read -rep 'Public key file to revoke: ' key
+          read -rep 'Authentication private key, blank for SSH defaults/agent: ' identity
+          read -rep 'Revoke this public key on the remote host? [y/N]: ' answer
+          [[ $answer == [yY] ]] || exit 0
+          "$SCRIPT_DIR/datamanagement/keygen.sh" remove "$key" "$host" "$port" "$user" "$identity"
+          ;;
+      esac
+      ;;
+    7)
+      read -rep 'Private key path to export: ' key
+      read -rep 'New directory for export: ' dest
+      mkdir -m 700 -- "$dest"
+      install -m 600 -- "$key" "$dest/$(basename -- "$key")"
+      [[ ! -f $key.pub ]] || install -m 600 -- "$key.pub" "$dest/$(basename -- "$key.pub")"
+      ;;
+    8)
+      read -rep 'New directory for key backup: ' dest
+      mkdir -m 700 -- "$dest"
+      find "$HOME/.ssh" -maxdepth 1 -type f ! -name 'known_hosts*' ! -name authorized_keys ! -name config ! -name '.*' -print0 |
+        while IFS= read -r -d '' key; do install -m 600 -- "$key" "$dest/${key##*/}"; done
+      echo "SSH keys backed up to $dest"
+      ;;
+    9) echo 'Use a normal remote account with its own backup directory. For root key access, explicitly configure PermitRootLogin prohibit-password and validate sshd -t. Menu 21 does not change sshd or root passwords.' ;;
+    *) exit 1 ;;
+  esac
+)
 
-#######################################################################################
 ssh_keys_submenu() {
-while :
-do
-  # clear
-        # display menu
-  echo
-  cecho "--------------------------------------------------------------" $boldyellow
-  cecho "      Manage SSH Keys        " $boldgreen
-  cecho "--------------------------------------------------------------" $boldyellow
-  cecho "      Uses keygen.sh tool https://github.com/centminmod/keygen" $boldgreen
-  cecho "--------------------------------------------------------------" $boldyellow
-  cecho "1).   List Registered SSH Keys" $boldgreen
-  cecho "2).   Register Existing SSH Keys" $boldgreen
-  cecho "3).   Create New SSH Key For Remote Host" $boldgreen
-  cecho "4).   Use Existing SSH Key For Remote Host" $boldgreen
-  cecho "5).   Rotate Existing SSH Key For Remote Host" $boldgreen
-  cecho "6).   Delete Existing SSH Key For Remote Host" $boldgreen
-  cecho "7).   Export Existing SSH Key" $boldgreen
-  cecho "8).   Backup All Existing SSH Keys" $boldgreen
-  cecho "9).   Enable Root Login on Remote OVH/Cloud VPS" $boldgreen
-  cecho "10).  Back to Main menu" $boldgreen
-  cecho "--------------------------------------------------------------" $boldyellow
-
-  read -ep "Enter option [ 1 - 10 ] " sshkeys_menu_opt
-  cecho "--------------------------------------------------------------" $boldyellow
-
-#########################################################
-
-case "$sshkeys_menu_opt" in
-1)
-  {
-    check_for_keygen
-    files=$(find /root/.ssh/ -type f -name "my*.key")
-    
-    if [ -n "$files" ]; then
-        echo "Found matching keygen.sh generated SSH private key files."
-        echo
-        for file in $files; do
-            # ls -lAh $file
-            echo -n "${file}.pub: "
-            ssh-keygen -lf ${file}.pub
-        done
-    else
-        echo "No matching keygen.sh generated SSH private key files found."
-    fi
-    echo
-    echo "List Registered SSH Keys"
-    echo
-    if [ ! -n "$SSH_AGENT_PID" ]; then
-      eval $(ssh-agent -s)
-    fi
-    ssh_keys_info=$(ssh-add -l 2>&1 | grep -E -iv 'error|Not found')
-
-    if [[ -z "$ssh_keys_info" ]]; then
-      echo "No SSH keys registered with the system's ssh-agent."
-    else
-      while IFS= read -r line; do
-        fingerprint=$(echo "$line" | awk '{print $2}')
-        echo -n "$line "
-        keyfile=$(grep -rl "$fingerprint" /root/.ssh 2>/dev/null)
-
-        if [[ -n "$keyfile" ]]; then
-          echo "- Key File: $keyfile"
-        else
-          echo "- Key File: Not found"
-        fi
-      done <<< "$ssh_keys_info"
-    fi
-  } 2>&1 | tee "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_${sshkeys_menu_opt}_sshkeys_menu.log"
-;;
-2)
-  {
-    check_for_keygen
-    echo
-    echo "Register Existing SSH Keys"
-    echo
-
-    read -ep "Enter the path to the existing SSH private key file: " private_key_path
-    
-    if [[ -f "$private_key_path" ]]; then
-      # Check if ssh-agent is already running
-      if [ -n "$SSH_AGENT_PID" ]; then
-        echo "An ssh-agent session is already running with PID: $SSH_AGENT_PID"
-      else
-        # Start a new ssh-agent session if not already running
-        eval "$(ssh-agent -s)"
-      fi
-      
-      # Check if the key is already added
-      if ssh-add -L | grep -q "$private_key_path"; then
-        echo "The specified SSH private key is already added."
-      else
-        ssh-add "$private_key_path"
-        echo "SSH private key registered with the system's ssh-agent."
-      fi
-    else
-      echo "Error: The specified private key file does not exist."
-    fi
-  } 2>&1 | tee "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_${sshkeys_menu_opt}_sshkeys_menu.log"
-;;
-3)
-  {
-    check_for_keygen
-    echo
-    echo "Create New SSH Key For Remote Host"
-    echo
-
-    while true; do
-      # Prompt user for required input
-      read -ep "Key type (rsa, ecdsa, ed25519): " -i "ed25519" keytype
-      read -ep "Remote IP address: " remoteip
-      read -ep "Remote SSH port: " remoteport
-      read -ep "Remote SSH username: " remoteuser
-      read -ep "Key comment (unique identifier): " keycomment
-      read -sp "Remote SSH password (optional, leave empty for manual password entry): " remotessh_password
-      echo
-
-      # Cloud VPS detection for OVH/providers that disable root login
-      prompt_cloud_vps_mode
-
-      echo "Please confirm the following information:"
-      echo "Key type: $keytype"
-      echo "Remote IP address: $remoteip"
-      echo "Remote SSH port: $remoteport"
-      echo "Remote SSH username: $remoteuser"
-      echo "Key comment: $keycomment"
-      echo "Remote SSH password: ${remotessh_password:-Not provided}"
-      if [[ "$CLOUD_VPS_MODE" = 'y' ]]; then
-        echo "Cloud VPS mode: enabled (sudo user: $CLOUD_SUDO_USER)"
-      fi
-
-      read -ep "Is the above information correct? [y/n/exit]: " confirm_input
-
-      case "$confirm_input" in
-        [Yy]* )
-          if [[ "$CLOUD_VPS_MODE" = 'y' ]]; then
-            # Call keygen.sh with sudo user parameters for cloud VPS
-            "$SCRIPT_DIR/datamanagement/keygen.sh" gen "$keytype" "$remoteip" "$remoteport" "$remoteuser" "$keycomment" "$remotessh_password" "" "$CLOUD_SUDO_USER" "$CLOUD_SUDO_PASS"
-          elif [ -z "$remotessh_password" ]; then
-            # Call keygen.sh without remotessh_password
-            "$SCRIPT_DIR/datamanagement/keygen.sh" gen "$keytype" "$remoteip" "$remoteport" "$remoteuser" "$keycomment"
-          else
-            # Call keygen.sh with remotessh_password
-            "$SCRIPT_DIR/datamanagement/keygen.sh" gen "$keytype" "$remoteip" "$remoteport" "$remoteuser" "$keycomment" "$remotessh_password"
-          fi
-          break
-          ;;
-        [Nn]* )
-          echo "Please enter the correct information."
-          ;;
-        [Ee][Xx][Ii][Tt] )
-          echo "Exiting the menu."
-          break
-          ;;
-        * )
-          echo "Please answer with 'y', 'n', or 'exit'."
-          ;;
-      esac
-    done
-
-  } 2>&1 | tee "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_${sshkeys_menu_opt}_sshkeys_menu.log"
-;;
-4)
-  {
-    check_for_keygen
-    echo
-    echo "Use Existing SSH Key For Remote Host"
-    echo
-
-    # List Registered SSH Keys
-    ssh_keys_info=$(ssh-add -l 2>&1 | grep -v error)
-
-    if [[ -z "$ssh_keys_info" ]]; then
-      echo "No SSH keys registered with the system's ssh-agent."
-    else
-      while IFS= read -r line; do
-        fingerprint=$(echo "$line" | awk '{print $2}')
-        echo -n "$line "
-        keyfile=$(grep -rl "$fingerprint" /root/.ssh 2>/dev/null)
-
-        if [[ -n "$keyfile" ]]; then
-          echo "- Key File: $keyfile"
-        else
-          echo "- Key File: Not found"
-        fi
-      done <<< "$ssh_keys_info"
-    fi
-
-    while true; do
-      # Prompt user for required input
-      read -ep "Key name (without file extension): " key_name
-      read -ep "Remote IP address: " remoteip
-      read -ep "Remote SSH port: " remoteport
-      read -ep "Remote SSH username: " remoteuser
-      read -sp "Remote SSH password (optional, leave empty for manual password entry): " remotessh_password
-      echo
-
-      # Cloud VPS detection for OVH/providers that disable root login
-      prompt_cloud_vps_mode
-
-      echo "Please confirm the following information:"
-      echo "Key name: $key_name"
-      echo "Remote IP address: $remoteip"
-      echo "Remote SSH port: $remoteport"
-      echo "Remote SSH username: $remoteuser"
-      echo "Remote SSH password: ${remotessh_password:-N/A}"
-      if [[ "$CLOUD_VPS_MODE" = 'y' ]]; then
-        echo "Cloud VPS mode: enabled (sudo user: $CLOUD_SUDO_USER)"
-      fi
-
-      read -ep "Is the above information correct? [y/n/exit]: " confirm_input
-
-      case "$confirm_input" in
-        [Yy]* )
-          if [[ "$CLOUD_VPS_MODE" = 'y' ]]; then
-            # Use sudo to copy key for cloud VPS
-            pubkey=$(cat "/root/.ssh/${key_name}.pub" 2>/dev/null || cat "/root/.ssh/${key_name}" 2>/dev/null)
-            read -ep "Also enable PermitRootLogin in sshd_config? [y/n]: " enable_root
-            if [[ "$enable_root" = [yY] ]]; then
-              read -sp "Enter new root password (leave empty to skip): " root_pass
-              echo
-            fi
-
-            # Copy key via sudo
-            echo "Copying SSH key via sudo user: $CLOUD_SUDO_USER"
-            sshpass -p "$CLOUD_SUDO_PASS" ssh -o StrictHostKeyChecking=no "$CLOUD_SUDO_USER@$remoteip" -p "$remoteport" \
-                "echo '$CLOUD_SUDO_PASS' | sudo -S bash -c '
-                    mkdir -p /root/.ssh
-                    chmod 700 /root/.ssh
-                    if ! grep -qF \"$pubkey\" /root/.ssh/authorized_keys 2>/dev/null; then
-                        echo \"$pubkey\" >> /root/.ssh/authorized_keys
-                        chmod 600 /root/.ssh/authorized_keys
-                        echo \"SSH key added successfully\"
-                    else
-                        echo \"SSH key already exists in authorized_keys\"
-                    fi
-                '"
-
-            # Enable root login if requested
-            if [[ "$enable_root" = [yY] ]]; then
-              echo "Enabling PermitRootLogin via sshd_config.d drop-in..."
-              sshpass -p "$CLOUD_SUDO_PASS" ssh -o StrictHostKeyChecking=no "$CLOUD_SUDO_USER@$remoteip" -p "$remoteport" \
-                  "echo '$CLOUD_SUDO_PASS' | sudo -S bash -c '
-                      if [[ \"\$(sshd -T 2>/dev/null | awk \"/permitrootlogin/ {print \\\$2}\")\" != \"yes\" ]]; then
-                          echo \"PermitRootLogin yes\" > /etc/ssh/sshd_config.d/01-permitrootlogin.conf
-                          echo \"Created /etc/ssh/sshd_config.d/01-permitrootlogin.conf\"
-                      else
-                          echo \"PermitRootLogin already enabled\"
-                      fi
-                      systemctl restart sshd
-                  '"
-              if [[ -n "$root_pass" ]]; then
-                sshpass -p "$CLOUD_SUDO_PASS" ssh -o StrictHostKeyChecking=no "$CLOUD_SUDO_USER@$remoteip" -p "$remoteport" \
-                    "echo '$CLOUD_SUDO_PASS' | sudo -S bash -c 'echo \"root:$root_pass\" | chpasswd'"
-                echo "Root password set"
-              fi
-              echo "PermitRootLogin enabled and sshd restarted"
-            fi
-          elif [[ -z "$remotessh_password" ]]; then
-            ssh-copy-id -i "/root/.ssh/${key_name}" "${remoteuser}@${remoteip}" -p "${remoteport}"
-          else
-            sshpass -p "$remotessh_password" ssh-copy-id -o StrictHostKeyChecking=no -i "/root/.ssh/${key_name}" "${remoteuser}@${remoteip}" -p "${remoteport}"
-          fi
-          echo "SSH key '$key_name' copied to the remote host."
-          break
-          ;;
-        [Nn]* )
-          echo "Please enter the correct information."
-          ;;
-        [Ee][Xx][Ii][Tt] )
-          echo "Exiting the menu."
-          break
-          ;;
-        * )
-          echo "Please answer with 'y', 'n', or 'exit'."
-          ;;
-      esac
-    done
-  } 2>&1 | tee "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_${sshkeys_menu_opt}_sshkeys_menu.log"
-;;
-5)
-  {
-    check_for_keygen
-    echo
-    echo "Rotate Existing SSH Key For Remote Host"
-    echo
-    echo "Note: For OVH/cloud VPS with root login disabled, use option 9 first"
-    echo "      to enable root login, then use this option."
-    echo
-
-    while true; do
-      # Prompt user for required input
-      read -ep "Key type (rsa, ecdsa, ed25519): " -i "ed25519" keytype
-      read -ep "Remote IP address: " remoteip
-      read -ep "Remote SSH port: " remoteport
-      read -ep "Remote SSH username: " remoteuser
-      read -ep "Old Key comment (unique identifier): " old_keycomment
-      read -ep "New Key comment (unique identifier): " new_keycomment
-      read -sp "Remote SSH password (optional, leave empty for manual password entry): " remotessh_password
-      echo
-
-      echo "Please confirm the following information:"
-      echo "Key type: $keytype"
-      echo "Remote IP address: $remoteip"
-      echo "Remote SSH port: $remoteport"
-      echo "Remote SSH username: $remoteuser"
-      echo "Old Key comment: $old_keycomment"
-      echo "New Key comment: $new_keycomment"
-      echo "Remote SSH password: ${remotessh_password:-Not provided}"
-
-      read -ep "Is the above information correct? [y/n/exit]: " confirm_input
-
-      case "$confirm_input" in
-        [Yy]* )
-          if [ -z "$remotessh_password" ]; then
-            # Call keygen.sh without remotessh_password
-            "$SCRIPT_DIR/datamanagement/keygen.sh" rotatekeys "$keytype" "$remoteip" "$remoteport" "$remoteuser" "$old_keycomment" "$new_keycomment"
-          else
-            # Call keygen.sh with remotessh_password
-            "$SCRIPT_DIR/datamanagement/keygen.sh" rotatekeys "$keytype" "$remoteip" "$remoteport" "$remoteuser" "$old_keycomment" "$new_keycomment" "$remotessh_password"
-          fi
-          echo "SSH key rotation completed."
-          break
-          ;;
-        [Nn]* )
-          echo "Please enter the correct information."
-          ;;
-        [Ee][Xx][Ii][Tt] )
-          echo "Exiting the menu."
-          break
-          ;;
-        * )
-          echo "Please answer with 'y', 'n', or 'exit'."
-          ;;
-      esac
-    done
-
-  } 2>&1 | tee "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_${sshkeys_menu_opt}_sshkeys_menu.log"
-;;
-6)
-  {
-    check_for_keygen
-    echo
-    echo "Delete Existing SSH Key For Remote Host"
-    echo
-
-    while true; do
-      # Prompt user for required input
-      read -ep "Remote IP address: " remoteip
-      read -ep "Remote SSH port: " remoteport
-      read -ep "Remote SSH username: " remoteuser
-      read -ep "Key comment (unique identifier): " keycomment
-      read -ep "Private key path (optional, leave empty if not using a specific key): " private_key_path
-      read -sp "Remote SSH password (optional, leave empty for manual password entry): " remotessh_password
-      echo
-
-      # Cloud VPS detection for OVH/providers that disable root login
-      prompt_cloud_vps_mode
-
-      echo "Please confirm the following information:"
-      echo "Remote IP address: $remoteip"
-      echo "Remote SSH port: $remoteport"
-      echo "Remote SSH username: $remoteuser"
-      echo "Key comment: $keycomment"
-      echo "Private key path: ${private_key_path:-Not provided}"
-      echo "Remote SSH password: ${remotessh_password:-Not provided}"
-      if [[ "$CLOUD_VPS_MODE" = 'y' ]]; then
-        echo "Cloud VPS mode: enabled (sudo user: $CLOUD_SUDO_USER)"
-      fi
-
-      read -ep "Is the above information correct? [y/n/exit]: " confirm_input
-
-      case "$confirm_input" in
-        [Yy]* )
-          if [[ "$CLOUD_VPS_MODE" = 'y' ]]; then
-            # Delete key via sudo for cloud VPS
-            echo "Deleting SSH key via sudo user: $CLOUD_SUDO_USER"
-            sshpass -p "$CLOUD_SUDO_PASS" ssh -o StrictHostKeyChecking=no "$CLOUD_SUDO_USER@$remoteip" -p "$remoteport" \
-                "echo '$CLOUD_SUDO_PASS' | sudo -S sed -i '/${keycomment}/d' /root/.ssh/authorized_keys"
-            echo "SSH key deletion completed via sudo."
-          else
-            # Delete the SSH key from the remote host
-            if [ -z "$private_key_path" ]; then
-              ssh_cmd="ssh"
-            else
-              ssh_cmd="ssh -i $private_key_path"
-            fi
-
-            if [ -z "$remotessh_password" ]; then
-              # Use the provided ssh command without the remotessh_password
-              $ssh_cmd "${remoteuser}@${remoteip}" -p "${remoteport}" "sed -i '/${keycomment}/d' ~/.ssh/authorized_keys"
-            else
-              # Use the provided ssh command with the remotessh_password
-              sshpass -p "$remotessh_password" $ssh_cmd "${remoteuser}@${remoteip}" -p "${remoteport}" "sed -i '/${keycomment}/d' ~/.ssh/authorized_keys"
-            fi
-            echo "SSH key deletion completed."
-          fi
-          break
-          ;;
-        [Nn]* )
-          echo "Please enter the correct information."
-          ;;
-        [Ee][Xx][Ii][Tt] )
-          echo "Exiting the menu."
-          break
-          ;;
-        * )
-          echo "Please answer with 'y', 'n', or 'exit'."
-          ;;
-      esac
-    done
-
-  } 2>&1 | tee "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_${sshkeys_menu_opt}_sshkeys_menu.log"
-;;
-7)
-  {
-    check_for_keygen
-    echo
-    echo "Export (Backup) Existing SSH Key"
-    echo
-
-    while true; do
-      # List Registered SSH Keys
-      ssh_keys_info=$(ssh-add -l 2>&1 | grep -v error)
-
-      if [[ -z "$ssh_keys_info" ]]; then
-        echo "No SSH keys registered with the system's ssh-agent."
-      else
-        while IFS= read -r line; do
-          fingerprint=$(echo "$line" | awk '{print $2}')
-          echo -n "$line "
-          keyfile=$(grep -rl "$fingerprint" /root/.ssh 2>/dev/null)
-
-          if [[ -n "$keyfile" ]]; then
-            echo "- Key File: $keyfile"
-          else
-            echo "- Key File: Not found"
-          fi
-        done <<< "$ssh_keys_info"
-      fi
-
-      # Prompt user for required input
-      read -ep "Key name (without file extension): " key_name
-      read -ep "Destination path for key backup: " backup_path
-
-      echo "Please confirm the following information:"
-      echo "Key name: $key_name"
-      echo "Destination path for key backup: $backup_path"
-
-      read -ep "Is the above information correct? [y/n/exit]: " confirm_input
-
-      case "$confirm_input" in
-        [Yy]* )
-          # Check if key files exist
-          if [[ -f "/root/.ssh/${key_name}" && -f "/root/.ssh/${key_name}.pub" ]]; then
-            # Create backup directory if it doesn't exist
-            mkdir -p "$backup_path"
-
-            # Backup the specified key files
-            cp "/root/.ssh/${key_name}" "${backup_path}/${key_name}"
-            cp "/root/.ssh/${key_name}.pub" "${backup_path}/${key_name}.pub"
-
-            echo "SSH key '$key_name' backed up successfully to $backup_path."
-          else
-            echo "Error: SSH key '$key_name' not found in /root/.ssh/"
-          fi
-          break
-          ;;
-        [Nn]* )
-          echo "Please enter the correct information."
-          ;;
-        [Ee][Xx][Ii][Tt] )
-          echo "Exiting the menu."
-          break
-          ;;
-        * )
-          echo "Please answer with 'y', 'n', or 'exit'."
-          ;;
-      esac
-    done
-
-  } 2>&1 | tee "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_${sshkeys_menu_opt}_sshkeys_menu.log"
-;;
-8)
-  {
-    check_for_keygen
-    echo
-    echo "Backup All Existing SSH Keys"
-    echo
-
-    while true; do
-      # Prompt user for required input
-      read -ep "Destination path for SSH keys backup: " backup_path
-
-      echo "Please confirm the following information:"
-      echo "Destination path for SSH keys backup: $backup_path"
-
-      read -ep "Is the above information correct? [y/n/exit]: " confirm_input
-
-      case "$confirm_input" in
-        [Yy]* )
-          # Create backup directory if it doesn't exist
-          mkdir -p "$backup_path"
-
-          # Find all private and public key files in /root/.ssh/
-          ssh_key_files=$(find /root/.ssh -type f \( -iname "*.pub" -o ! -iname "known_hosts" -o ! -iname "authorized_keys" -o ! -iname "config" \))
-
-          # Backup all SSH keys
-          for key_file in $ssh_key_files; do
-            cp "$key_file" "${backup_path}/"
-          done
-
-          echo "All SSH keys backed up successfully to $backup_path."
-          break
-          ;;
-        [Nn]* )
-          echo "Please enter the correct information."
-          ;;
-        [Ee][Xx][Ii][Tt] )
-          echo "Exiting the menu."
-          break
-          ;;
-        * )
-          echo "Please answer with 'y', 'n', or 'exit'."
-          ;;
-      esac
-    done
-
-  } 2>&1 | tee "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_${sshkeys_menu_opt}_sshkeys_menu.log"
-;;
-9)
-  {
-    check_for_keygen
-    echo
-    echo "Enable Root Login on Remote OVH/Cloud VPS"
-    echo
-    echo "This option enables root SSH login on remote OVH/Cloud VPS servers"
-    echo "that have root login disabled by default."
-    echo
-
-    while true; do
-      # Prompt user for required input
-      read -ep "Remote IP address: " remoteip
-      read -ep "Remote SSH port [22]: " remoteport
-      remoteport=${remoteport:-22}
-      read -ep "Sudo username (e.g., almalinux, rocky, cloud-user, opc): " sudo_user
-      read -sp "Sudo user password: " sudo_pass
-      echo
-      read -sp "New root password (required for password auth): " root_pass
-      echo
-
-      echo
-      echo "Please confirm the following information:"
-      echo "Remote IP address: $remoteip"
-      echo "Remote SSH port: $remoteport"
-      echo "Sudo username: $sudo_user"
-      echo "Sudo password: [hidden]"
-      echo "Root password: [hidden]"
-
-      read -ep "Is the above information correct? [y/n/exit]: " confirm_input
-
-      case "$confirm_input" in
-        [Yy]* )
-          echo
-          echo "Enabling root login on $remoteip..."
-          "$SCRIPT_DIR/datamanagement/keygen.sh" enable-root "$remoteip" "$remoteport" "$sudo_user" "$sudo_pass" "$root_pass"
-
-          echo
-          echo "Root login should now be enabled. You can proceed with:"
-          echo "  - Option 3: Create New SSH Key"
-          echo "  - Option 4: Use Existing SSH Key"
-          break
-          ;;
-        [Nn]* )
-          echo "Please enter the correct information."
-          ;;
-        [Ee][Xx][Ii][Tt] )
-          echo "Exiting the menu."
-          break
-          ;;
-        * )
-          echo "Please answer with 'y', 'n', or 'exit'."
-          ;;
-      esac
-    done
-
-  } 2>&1 | tee "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_${sshkeys_menu_opt}_sshkeys_menu.log"
-;;
-10)
-  break
-;;
-esac
-done
+  local option
+  while :; do
+    printf '\n1) List keys\n2) Register key with SSH agent\n3) Generate and enroll key\n4) Enroll existing key\n5) Rotate key\n6) Revoke remote key\n7) Export key\n8) Backup keys\n9) Cloud/root access guidance\n10) Back\n'
+    read -rep 'Option: ' option || return
+    [[ $option != 10 ]] || return
+    datam_run_logged "ssh-management-$option" datam_ssh_action "$option"
+    [[ $? == 0 ]] || echo 'SSH operation failed. Existing recovery files are retained.'
+  done
 }
 
-#######################################################################################
-check_for_datatools() {
-  if [[ -d "$SCRIPT_DIR/datamanagement" && -f "$SCRIPT_DIR/datamanagement/backups.sh" && -f "$SCRIPT_DIR/datamanagement/mariabackup-restore.sh" && -f "$SCRIPT_DIR/datamanagement/tunnel-transfers.sh" ]]; then
-    datatools_found=y
+datam_transfer() {
+  local source=${1:-} dest host port user key method data_port
+  [[ -n $source ]] || read -rep 'Source directory: ' source
+  read -rep 'Remote hostname/IP: ' host
+  read -rep 'SSH port [22]: ' port; port=${port:-22}
+  read -rep 'SSH user [root]: ' user; user=${user:-root}
+  read -rep 'SSH private key path, blank for default: ' key
+  read -rep 'Destination storage root [/home/remotebackup]: ' dest; dest=${dest:-/home/remotebackup}
+  echo 'nc/socat send unencrypted bulk data. Use a trusted private network; ssh is the encrypted alternative.'
+  echo 'Allow the chosen TCP data port from this source in the receiver firewall. Existing firewall policy is preserved.'
+  read -rep 'Transfer method [nc], socat or ssh: ' method; method=${method:-nc}
+  read -rep 'Data port [12345]: ' data_port; data_port=${data_port:-12345}
+  "$SCRIPT_DIR/datamanagement/tunnel-transfers.sh" -s "$source" -r "$dest" -h "$host" -p "$port" -u "$user" -k "$key" -m "$method" -l "$data_port"
+}
+
+datam_backup() {
+  local command=$1 comp=${2:-} result
+  result=$(mktemp)
+  # Pipeline status is captured before any other command can replace it.
+  local statuses
+  if "$SCRIPT_DIR/datamanagement/backups.sh" "$command" "$comp" | tee "$result"; then
+    statuses=("${PIPESTATUS[@]}")
   else
-    datatools_found=n
-    ls -lAh "$SCRIPT_DIR/datamanagement/backups.sh"
-    ls -lAh "$SCRIPT_DIR/datamanagement/mariabackup-restore.sh"
-    ls -lAh "$SCRIPT_DIR/datamanagement/tunnel-transfers.sh"
-    echo
-    echo "Data management tools not found"
-    exit 1
+    statuses=("${PIPESTATUS[@]}")
   fi
+  if (( statuses[0] || statuses[1] )); then rm -f "$result"; return 1; fi
+  DATAM_BACKUP_RESULT=$(awk -F '\t' '$1=="BACKUP_RESULT" {print $2}' "$result")
+  rm -f "$result"
+  [[ -n $DATAM_BACKUP_RESULT && -f $DATAM_BACKUP_RESULT/COMPLETE && ! -e $DATAM_BACKUP_RESULT/INCOMPLETE ]]
 }
 
-#######################################################################################
-datamanager_menu() {
-while :
-do
-  # clear
-        # display menu
-  echo
-  cecho "--------------------------------------------------------" $boldyellow
-  cecho "      Centmin Mod Data Management        " $boldgreen
-  cecho "--------------------------------------------------------" $boldyellow
-  cecho "      Docs: https://centminmod.com/menu21-${branchname}" $boldgreen
-  cecho "--------------------------------------------------------" $boldyellow
-  cecho "1).   Manage SSH Keys" $boldgreen
-  cecho "2).   Manage AWS CLI S3 Profile Credentials" $boldgreen
-  cecho "3).   Migrate Centmin Mod Data To New Centmin Mod Server" $boldgreen
-  cecho "4).   Backup Nginx Vhosts Data + MariaBackup MySQL Backups" $boldgreen
-  cecho "5).   Backup Nginx Vhosts Data Only (no MariaDB MySQL backups)" $boldgreen
-  cecho "6).   Backup MariaDB MySQL With MariaBackup Only (no Vhosts Data backups)" $boldgreen
-  cecho "7).   Backup MariaDB MySQL With mysqldump only (no Vhosts Data backups)" $boldgreen
-  cecho "8).   Transfer Directory Data To Remote Server Via SSH" $boldgreen
-  cecho "9).   Transfer Directory Data To S3 Compatible Storage" $boldgreen
-  cecho "10).  Transfer Files To S3 Compatible Storage" $boldgreen
-  cecho "11).  Download S3 Compatible Stored Data To Server" $boldgreen
-  cecho "12).  S3 To S3 Compatible Storage Transfers" $boldgreen
-  cecho "13).  List S3 Storage Buckets" $boldgreen
-  cecho "14).  Back to Main menu" $boldgreen
-  cecho "--------------------------------------------------------" $boldyellow
+datam_s3_action() (
+  set -Eeuo pipefail
+  umask 077
+  datam_log_begin s3
+  local option=$1 profile endpoint source dest staging dest_profile dest_endpoint
+  local source_id run_id threads required available
+  local -a args dest_args
+  read -rep 'AWS CLI profile [default]: ' profile; profile=${profile:-default}
+  read -rep 'Endpoint URL, blank for AWS S3: ' endpoint
+  args=(--profile "$profile"); [[ -z $endpoint ]] || args+=(--endpoint-url "$endpoint")
+  case $option in
+    9)
+      read -rep 'Source directory: ' source
+      read -rep 'Destination s3://bucket/prefix: ' dest
+      [[ -d $source && $dest =~ ^s3://[^/[:space:]]+(/.*)?$ ]] || { echo "ERROR: Source must be a directory and destination must be s3://bucket/prefix." >&2; exit 1; }
+      source=$(realpath -e -- "$source")
+      if [[ -n ${MENU21_LOG_FILE:-} ]]; then DATAM_LOG_EXCLUDE_DIR="$source" datam_log_check_location "$MENU21_LOG_FILE" || exit 1; fi
+      [[ $source != / ]] || { echo 'Select a source directory, not the filesystem root.' >&2; exit 1; }
+      [[ ! -e $source/INCOMPLETE ]] || { echo "ERROR: Source generation is incomplete: $source" >&2; exit 1; }
+      for tool in aws tar zstd; do command -v "$tool" >/dev/null || { echo "ERROR: Missing required command: $tool" >&2; exit 1; }; done
+      threads=${COMPRESS_THREADS:-2}
+      [[ $threads =~ ^[1-9][0-9]*$ ]] || { echo "ERROR: COMPRESS_THREADS must be a positive integer." >&2; exit 1; }
+      read -rep 'Local archive staging parent, outside the source [/home/databackup]: ' staging
+      staging=$(realpath -m -- "${staging:-/home/databackup}")
+      case "$staging/" in "$source/"*) echo 'Archive staging must be outside the source directory.' >&2; exit 1 ;; esac
+      mkdir -p -- "$staging"
+      required=$(du -sk -- "$source" | awk '{print $1}')
+      available=$(df -Pk "$staging" | awk 'END {print $4}')
+      (( required <= available * 90 / 100 )) || { echo 'Insufficient archive staging space plus 10% reserve.' >&2; exit 1; }
+      source_id=$(cat /etc/machine-id)
+      read -r run_id < /proc/sys/kernel/random/uuid
+      [[ $source_id =~ ^[a-zA-Z0-9_-]+$ && $run_id =~ ^[0-9a-f-]{36}$ ]] || exit 1
+      dest="${dest%/}/$source_id/$(date -u +%Y%m%dT%H%M%SZ)-$run_id"
+      staging=$(mktemp -d "$staging/menu21-s3.XXXXXXXXXX")
+      # Report before function locals and caller log redirections unwind.
+      trap 'rc=$? pipeline="${PIPESTATUS[*]}"; datam_log_event ERROR "exit=$rc pipeline_status=[$pipeline]"; echo "S3 upload failed. Local media retained: $staging; incomplete remote prefix: $dest" >&2; exit "$rc"' ERR
+      datam_log_phase archive "source=$source staging=$staging destination=$dest"
+      echo 'Archiving directory metadata and contents before S3 upload; source links are not followed.'
+      tar --numeric-owner --acls --xattrs --sparse -C "$source" -cpf - . | zstd -q -T"$threads" --fast=4 > "$staging/directory.tar.zst"
+      datam_log_phase s3-upload
+      aws "${args[@]}" s3 cp "$staging/directory.tar.zst" "$dest/directory.tar.zst" --no-follow-symlinks --no-progress
+      printf 'format=directory-tar-zstd\narchive=directory.tar.zst\narchive_bytes=%s\ncompleted_utc=%s\n' "$(stat -c %s "$staging/directory.tar.zst")" "$(date -u +%FT%TZ)" > "$staging/COMPLETE"
+      datam_log_phase s3-publish
+      aws "${args[@]}" s3 cp "$staging/COMPLETE" "$dest/COMPLETE" --no-follow-symlinks --no-progress
+      datam_log_phase cleanup
+      # Publication succeeded. A local cleanup problem must not invite a duplicate upload.
+      if ! rm -- "$staging/directory.tar.zst" "$staging/COMPLETE" || ! rmdir -- "$staging"; then
+        echo "WARNING: S3 upload completed; local staging cleanup needed: $staging" >&2
+      fi
+      printf 'S3_RESULT\t%s\n' "$dest"
+      ;;
+    10|11)
+      read -rep 'Source file or s3://bucket/key: ' source
+      read -rep 'Destination file or s3://bucket/key: ' dest
+      datam_log_phase s3-copy
+      aws "${args[@]}" s3 cp "$source" "$dest" --no-progress
+      ;;
+    12)
+      read -rep 'Source s3://bucket/key: ' source
+      read -rep 'Destination s3://bucket/key: ' dest
+      [[ $source == s3://*/* && $dest == s3://* ]] || { echo 'ERROR: Source and destination must be S3 object paths.' >&2; exit 1; }
+      # Resolve prefix destinations before staging changes the source basename.
+      [[ ${dest#s3://} == */* ]] || dest+=/
+      if [[ $dest == */ ]]; then
+        [[ -n ${source##*/} ]] || { echo 'ERROR: A prefix destination requires a source object basename.' >&2; exit 1; }
+        dest="${dest}${source##*/}"
+      fi
+      read -rep 'Destination profile [default]: ' dest_profile; dest_profile=${dest_profile:-default}
+      read -rep 'Destination endpoint, blank for AWS S3: ' dest_endpoint
+      dest_args=(--profile "$dest_profile"); [[ -z $dest_endpoint ]] || dest_args+=(--endpoint-url "$dest_endpoint")
+      if [[ $profile == "$dest_profile" && $endpoint == "$dest_endpoint" ]]; then
+        datam_log_phase s3-copy
+        aws "${args[@]}" s3 cp "$source" "$dest" --no-progress
+      else
+        read -rep 'Local staging parent with space for the object [/home/databackup]: ' staging
+        staging=${staging:-/home/databackup}
+        [[ $staging == /?* ]] || { echo 'ERROR: Staging parent must be an absolute path.' >&2; exit 1; }
+        staging=$(realpath -m -- "$staging")
+        [[ $staging != / ]] || { echo 'ERROR: Staging parent must not be the filesystem root.' >&2; exit 1; }
+        mkdir -p -- "$staging"
+        staging=$(mktemp -d "$staging/s3-transfer.XXXXXX")
+        # Keep downloaded media on failure. Separate clients use their own credentials/endpoints.
+        datam_log_phase s3-download "staging=$staging"
+        aws "${args[@]}" s3 cp "$source" "$staging/object" --no-progress
+        datam_log_phase s3-upload "staging=$staging"
+        aws "${dest_args[@]}" s3 cp "$staging/object" "$dest" --no-progress
+        if ! rm -- "$staging/object" || ! rmdir -- "$staging"; then
+          echo "WARNING: S3 copy completed; local staging cleanup needed: $staging" >&2
+        fi
+      fi
+      printf 'S3_RESULT\t%s\n' "$dest"
+      ;;
+    13) aws "${args[@]}" s3 ls ;;
+  esac
+)
 
-  read -ep "Enter option [ 1 - 14 ] " datamenu_opt
-  cecho "--------------------------------------------------------" $boldyellow
-
-#########################################################
-
-case "$datamenu_opt" in
-1)
-  {
-    check_for_datatools
-    echo
-    echo "Manage SSH Keys"
-    echo
-    ssh_keys_submenu
-
-  } 2>&1 | tee "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_${datamenu_opt}_datamanger_menu.log"
-;;
-2)
-  {
-    check_for_datatools
-    echo
-    echo "Manage AWS CLI S3 Profile Credentials"
-    echo
-    aws_profiles_submenu
-
-  } 2>&1 | tee "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_${datamenu_opt}_datamanger_menu.log"
-;;
-3)
-  {
-    check_for_datatools
-    echo
-    echo "Migrate Centmin Mod Data To New Centmin Mod Server"
-    echo
-    echo "Description:"
-    echo "This option is for full Nginx vhost data and MariaDB MySQL data transfers from"
-    echo "this server to a new Centmin Mod based server. There are specific requirements"
-    echo "for this to work:"
-    echo
-    echo "1. The destination server must already have Centmin Mod LEMP stack installed"
-    echo "2. The destination server and this server's MairaDB MySQL server versions must"
-    echo "   be the same major version at least. i.e. MariaDB 10.3 or both"
-    echo
-    read -ep "Do you want to continue [y/n]: " datamanager_cont
-    if [[ "$datamanager_cont" = [yY] ]]; then
-      echo
-      echo "Choose the backup method:"
-      echo "1) Backup Nginx Vhosts Data + MariaBackup MySQL Backups"
-      echo "2) Backup Nginx Vhosts Data + Backup MariaDB MySQL With mysqldump"
-      echo
-      read -ep "Enter the backup method (1 or 2): " backup_method
-      
-      case "$backup_method" in
-        1)
-          # Call the code for 4) Backup Nginx Vhosts Data + MariaBackup MySQL Backups
-          {
-            check_for_datatools
-            echo
-            echo "Backup Nginx Vhosts Data + MariaBackup MySQL Backups"
-            echo
-            echo "Description:"
-            echo "This option is for full Nginx vhost data and MariaDB MySQL backups using"
-            echo "tar + zstd compression is optional. If you choose not to use tar + zstd"
-            echo "the local backup directories will have uncompressed data backups."
-            echo
-        
-            read -ep "Do you want to continue [y/n]: " datamanager_cont
-            if [[ "$datamanager_cont" = [yY] ]]; then
-              # echo
-              # echo "Compressed has full backup - vhost files + MySQL backup including non-vhost files"
-              # echo "Non-compressed has vhost files + MySQL backup only."
-              # echo
-              read -ep "Do you want tar + zstd compress backup [y/n]: " comp_backup_opt
-              if [[ "$comp_backup_opt" = [yY] ]]; then
-                "$SCRIPT_DIR/datamanagement/backups.sh" backup-all-mariabackup comp
-              else
-                "$SCRIPT_DIR/datamanagement/backups.sh" backup-all-mariabackup
-              fi
-            else
-              echo "aborting ..."
-              exit
-            fi
-          } 2>&1 | tee "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_backupmethod-${backup_method}_datamanger_menu.log"
-            if [ -f "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_backupmethod-${backup_method}_datamanger_menu.log" ]; then
-              script_output=$(cat "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_backupmethod-${backup_method}_datamanger_menu.log")
-              # transfer_backup_dir=$(echo "$script_output" | grep 'Backup Log saved: ' | awk '{print $10}' | xargs dirname)
-              transfer_backup_dir=$(echo "$script_output" | grep 'Backup Log saved:' | sed -E 's/.*Backup Log saved: ([^ ]+).*/\1/' | xargs dirname)
-              # Print the extracted information
-              echo
-              if [ -d "$transfer_backup_dir" ]; then
-                echo "Backup Directory: $transfer_backup_dir"
-              else
-                echo "$transfer_backup_dir directory not found"
-              fi
-              # routine to transfer the derived backup directory names to a remote server via SSH
-              # using $SCRIPT_DIR/datamanagement/tunnel-transfers.sh tool
-              echo
-              read -ep "Do you want to transfer the backup directory to remote server via SSH? [y/n/exit]: " transfer_backup_opt
-              if [[ "$transfer_backup_opt" = [yY] ]]; then
-                # transfer backups
-                echo
-                echo "Transfer $transfer_backup_dir Directory Data To Remote Server Via SSH"
-                echo
-                echo "Description:"
-                echo "Option allows you to specify a full path to directory name for data transfer"
-                echo "to a remote server via SSH at speeds near network and disk line rates using"
-                echo "either netcat (nc) or socat compressed tunnel using zstd fast compression levels"
-                echo
-                read -ep "Do you want to continue [y/n]: " datamanager_cont
-                if [[ "$datamanager_cont" = [yY] ]]; then
-                  while true; do
-                    read -ep "Remote server SSH port (default: 22): " remote_port
-                    remote_port=${remote_port:-22}
-                    read -ep "Remote server SSH username (default: root): " remote_user
-                    if [ "$remote_user" != "root" ]; then
-                      echo "non-root user detected, will assume remote SSH username has sudo privileges"
-                      echo
-                      read -ep "continue with $remote_user with assumed sudo privileges [y/n] ?" assume_sudo_user
-                      if [[ "$assume_sudo_user" != [yY] ]]; then
-                        echo
-                        echo "Enter a different username with sudo privileges or root user"
-                        read -ep "Re-enter remote server SSH username: " remote_user
-                      fi
-                    fi
-                    remote_user=${remote_user:-root}
-                    read -ep "Remote server SSH hostname/IP address: " remote_server
-                    read -ep "Tunnel method (nc or socat, default: nc): " tunnel_method
-                    tunnel_method=${tunnel_method:-nc}
-                    read -ep "Buffer size for socat (in bytes, e.g., 131072 for 128 KB): " buffer_size
-                    buffer_size=${buffer_size:-131072}
-                    read -ep "Listen port for nc or socat (default: 12345): " listen_port
-                    listen_port=${listen_port:-12345}
-                    read -e -i "$transfer_backup_dir" -p "Source backup directory: " source_directory
-                    read -ep "Remote (destination) backup directory i.e. /home/remotebackup : " remote_directory
-                    remote_directory=${remote_directory:-/home/remotebackup}
-                    read -ep "Path to the SSH private key i.e. /root/.ssh/my1.key : " private_key
-                
-                    echo
-                    echo "Please confirm the entered information:"
-                    echo "Remote server SSH port: $remote_port"
-                    echo "Remote server SSH username: $remote_user"
-                    echo "Remote server SSH hostname/IP address: $remote_server"
-                    echo "Tunnel method: $tunnel_method"
-                    echo "Buffer size: $buffer_size"
-                    echo "Listen port: $listen_port"
-                    echo "Source backup directory: $source_directory"
-                    echo "Remote (destination) backup directory: $remote_directory"
-                    echo "Path to the SSH private key: $private_key"
-                    echo
-                
-                    read -ep "Is the information correct? [y/n]: " confirmation
-                
-                    if [[ "$confirmation" =~ ^[yY] ]]; then
-                      break
-                    else
-                      echo
-                      echo "Please re-enter the information."
-                      echo
-                    fi
-                  done
-
-                  # allow remote IP in source CSF Firewall
-                  echo
-                  echo "csf -a $remote_server remotebackup"
-                  csf -a $remote_server remotebackup
-                  echo
-
-                  # connect to remote destination to run CSF Firewall allow
-                  echo "ssh -i $private_key -p $remote_port $remote_user@$remote_server \"csf -a $DATAM_SOURCE_IP cmmbackupip\""
-                  ssh -i $private_key -p $remote_port $remote_user@$remote_server "csf -a $DATAM_SOURCE_IP cmmbackupip"
-                  echo
-                
-                  echo "$SCRIPT_DIR/datamanagement/tunnel-transfers.sh -p $remote_port -u $remote_user -h $remote_server -m $tunnel_method -b $buffer_size -l $listen_port -s $source_directory -r $remote_directory -k $private_key"
-                  "$SCRIPT_DIR/datamanagement/tunnel-transfers.sh" -p "$remote_port" -u "$remote_user" -h "$remote_server" -m "$tunnel_method" -b "$buffer_size" -l "$listen_port" -s "$source_directory" -r "$remote_directory" -k "$private_key"
-                else
-                  echo "aborting ..."
-                  exit
-                fi
-              elif [[ "$transfer_backup_opt" = 'exit' ]]; then
-                # exit
-                exit
-              else
-                # exit
-                exit
-              fi
-            fi
-        ;;
+datam_action() (
+  set -Eeuo pipefail
+  umask 077
+  datam_log_begin menu-action
+  local option=$1 method comp answer
+  case $option in
+    3)
+      echo 'Destination must already run Centmin Mod. Data is staged; activation remains explicit.'
+      echo 'Use physical backup for matching MariaDB packages; SQL for a version change.'
+      read -rep 'Backup method: 1 physical, 2 native SQL [2]: ' method; method=${method:-2}
+      read -rep 'Create a local tar.zst archive? [y/N]: ' comp
+      [[ $comp == [yY] ]] && comp=comp || comp=''
+      case $method in
+        1) datam_backup backup-all-mariabackup "$comp"; datam_transfer "$DATAM_BACKUP_RESULT" ;;
         2)
-          # Call the code for 5) Backup Nginx Vhosts Data Only
-          # Call the code for 7) Backup MariaDB MySQL With mysqldump only (no Vhosts Data backups)
-          {
-            check_for_datatools
-            echo
-            echo "Backup Nginx Vhosts Data Only (no MariaDB MySQL backups)"
-            echo
-            echo "Vhosts backup:"
-            echo "This option is for full Nginx vhost data backups"
-            echo "using tar + zstd compression is optional. If you choose not to use tar + zstd"
-            echo "the local backup directories will have uncompressed data backups."
-            echo
-            echo "MySQL backup:"
-            echo "For MariaDB MySQL database backups using mysqldump native client"
-            echo "client but uses faster --tab delimited backup option which backups up each MySQL"
-            echo "database table as separate .sql schema structure files + .txt data files rather"
-            echo "than as a single .sql database backup file which contains both schema + data."
-            echo "The .sql database schema only table files are never compressed while .txt data"
-            echo "files can optionally be zstd compressed or left uncompressed."
-            echo
-            echo "The routine generates a restore.sh script in the destination backup directory"
-            echo "The restore.sh can be run to restore each database or all databases on a new"
-            echo "server. If the database name already exists on the server, it will restore to"
-            echo "a new database name with suffix added _restorecopy_datetimestamp to prevent"
-            echo "overwriting the existing database name."
-            # echo
-            # echo "Compressed has full backup - vhost files + MySQL backup including non-vhost files"
-            # echo "Non-compressed has vhost files + MySQL backup only."
-            echo
-            read -ep "Do you want tar + zstd compress backup [y/n] " comp_backup_opt
-            if [[ "$comp_backup_opt" = [yY] ]]; then
-              "$SCRIPT_DIR/datamanagement/backups.sh" backup-files comp
-              "$SCRIPT_DIR/datamanagement/backups.sh" backup-all
-            else
-              "$SCRIPT_DIR/datamanagement/backups.sh" backup-files
-              "$SCRIPT_DIR/datamanagement/backups.sh" backup-all
-            fi
-          } 2>&1 | tee "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_backupmethod-${backup_method}_datamanger_menu.log"
-            if [ -f "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_backupmethod-${backup_method}_datamanger_menu.log" ]; then
-              # Save the output of the script to a variable
-              script_output=$(cat "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_backupmethod-${backup_method}_datamanger_menu.log" | grep -E 'log file generated: |Backup Log saved: |Backup saved to' | sed -e 's|Backup Log saved:|Vhost Backup Log saved:|' -e 's|Backup log file generated|MySQL Backup log file generated|g')
-              
-              # Extract the required information using grep and awk
-              # transfer_vhost_backup_dir=$(echo "$script_output" | grep "Vhost Backup Log saved:" | awk '{print $11}' | xargs dirname)
-              transfer_vhost_backup_dir=$(echo "$script_output" | grep 'Vhost Backup Log saved:' | sed -E 's/.*Vhost Backup Log saved: ([^ ]+).*/\1/' | xargs dirname)
-              transfer_backup_saved_mysql=$(echo "$script_output" | grep "Backup saved to" | head -n 1 | awk '{print $10}')
-              transfer_backup_saved_binlog=$(echo "$script_output" | grep "Backup saved to" | tail -n 1 | awk '{print $10}')
-              
-              # Print the extracted information
-              echo
-              if [ -d "$transfer_vhost_backup_dir" ]; then
-                echo "Vhost Backup Directory: $transfer_vhost_backup_dir"
-              # else
-              #   echo "$transfer_vhost_backup_dir directory not found"
-              fi
-              if [ -d "$transfer_backup_saved_mysql" ]; then
-                echo "MySQL Backup Directory: $transfer_backup_saved_mysql"
-              # else
-              #   echo "$transfer_backup_saved_mysql directory not found"
-              fi
-              if [ -d "$transfer_backup_saved_binlog" ]; then
-                echo "Binlog Backup Directory: $transfer_backup_saved_binlog"
-              fi
-              # routine to transfer the derived backup directory names to a remote server via SSH
-              # using $SCRIPT_DIR/datamanagement/tunnel-transfers.sh tool
-              echo
-              read -ep "Do you want to transfer the backup directories to remote server via SSH? [y/n/exit]: " transfer_backup_opt
-              if [[ "$transfer_backup_opt" = [yY] ]]; then
-                read -ep "Remote server SSH port (default: 22): " remote_port
-                remote_port=${remote_port:-22}
-                read -ep "Remote server SSH username (default: root): " remote_user
-                if [ "$remote_user" != "root" ]; then
-                  echo "non-root user detected, will assume remote SSH username has sudo privileges"
-                  echo
-                  read -ep "continue with $remote_user with assumed sudo privileges [y/n] ?" assume_sudo_user
-                  if [[ "$assume_sudo_user" != [yY] ]]; then
-                    echo
-                    echo "Enter a different username with sudo privileges or root user"
-                    read -ep "Re-enter remote server SSH username: " remote_user
-                  fi
-                fi
-                remote_user=${remote_user:-root}
-                read -ep "Remote server SSH hostname/IP address: " remote_server
-                read -ep "Tunnel method (nc or socat, default: nc): " tunnel_method
-                tunnel_method=${tunnel_method:-nc}
-                read -ep "Buffer size for socat (in bytes, e.g., 131072 for 128 KB): " buffer_size
-                buffer_size=${buffer_size:-131072}
-                read -ep "Listen port for nc or socat (default: 12345): " listen_port
-                listen_port=${listen_port:-12345}
-                # read -e -i "$transfer_backup_dir" -p "Source backup directory: " source_directory
-                read -ep "Remote (destination) backup directory i.e. /home/remotebackup : " remote_directory
-                remote_directory=${remote_directory:-/home/remotebackup}
-                read -ep "Path to the SSH private key i.e. /root/.ssh/my1.key : " private_key
-
-                # An associative array containing the directories to transfer and their corresponding subdirectories
-                declare -A directories_to_transfer=(
-                    ["$transfer_vhost_backup_dir"]="${remote_directory}/vhosts"
-                    ["$transfer_backup_saved_mysql"]="${remote_directory}/mysql"
-                    ["$transfer_backup_saved_binlog"]="${remote_directory}/mysql-binlogs"
-                )
-
-                # Iterate over the directories and execute the transfer routine for each directory
-                for transfer_backup_dir in "${!directories_to_transfer[@]}"; do
-                  remote_subdir="${directories_to_transfer[$transfer_backup_dir]}"
-                  # transfer backups
-                  echo
-                  echo "Transfer $transfer_backup_dir Directory Data To Remote Server Via SSH"
-                  echo
-                  read -ep "Do you want to continue [y/n]: " datamanager_cont
-                  if [[ "$datamanager_cont" = [yY] ]]; then
-                    # allow remote IP in source CSF Firewall
-                    echo
-                    echo "csf -a $remote_server remotebackup"
-                    csf -a $remote_server remotebackup
-                    echo
-  
-                    # connect to remote destination to run CSF Firewall allow
-                    echo "ssh -i $private_key -p $remote_port $remote_user@$remote_server \"csf -a $DATAM_SOURCE_IP cmmbackupip\""
-                    ssh -i $private_key -p $remote_port $remote_user@$remote_server "csf -a $DATAM_SOURCE_IP cmmbackupip"
-                    echo
-
-                    echo "$SCRIPT_DIR/datamanagement/tunnel-transfers.sh -p $remote_port -u $remote_user -h $remote_server -m $tunnel_method -b $buffer_size -l $listen_port -s $transfer_backup_dir -r $remote_subdir -k $private_key"
-                    "$SCRIPT_DIR/datamanagement/tunnel-transfers.sh" -p "$remote_port" -u "$remote_user" -h "$remote_server" -m "$tunnel_method" -b "$buffer_size" -l "$listen_port" -s "$transfer_backup_dir" -r "$remote_subdir" -k "$private_key"
-                  else
-                    echo "aborting ..."
-                    exit
-                  fi
-                done
-              elif [[ "$transfer_backup_opt" = 'exit' ]]; then
-                # exit
-                exit
-              else
-                # exit
-                exit
-              fi
-            fi
-        ;;
-        *)
-          echo "Invalid option. Aborting migration."
-          exit
-        ;;
+          datam_backup backup-files "$comp"; datam_transfer "$DATAM_BACKUP_RESULT"
+          datam_backup backup-all; datam_transfer "$DATAM_BACKUP_RESULT"
+          ;;
+        *) exit 1 ;;
       esac
-    else
-      echo "aborting ..."
-      exit
-    fi
-  } 2>&1 | tee "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_${datamenu_opt}_datamanger_menu.log"
-;;
-4)
-  {
-    check_for_datatools
-    echo
-    echo "Backup Nginx Vhosts Data + MariaBackup MySQL Backups"
-    echo
-    echo "Description:"
-    echo "This option is for full Nginx vhost data and MariaDB MySQL backups using"
-    echo "tar + zstd compression is optional. If you choose not to use tar + zstd"
-    echo "the local backup directories will have uncompressed data backups."
-    echo
-    read -ep "Do you want to continue [y/n]: " datamanager_cont
-    if [[ "$datamanager_cont" = [yY] ]]; then
-      # echo
-      # echo "Compressed has full backup - vhost files + MySQL backup including non-vhost files"
-      # echo "Non-compressed has vhost files + MySQL backup only."
-      # echo
-      read -ep "Do you want tar + zstd compress backup [y/n]: " comp_backup_opt
-      if [[ "$comp_backup_opt" = [yY] ]]; then
-        "$SCRIPT_DIR/datamanagement/backups.sh" backup-all-mariabackup comp
+      echo 'Rehearse on a separate staging server. Prepare the final SQL destination with application database names absent before freezing source writes. See the menu 21 guide.'
+      ;;
+    4|5|6|7)
+      if [[ $option == 7 ]]; then
+        read -rep 'SQL/binlog encoding: zstd [default], pigz or none: ' comp
+        case $comp in ''|zstd) comp=comp ;; pigz|none) ;; *) exit 1 ;; esac
       else
-        "$SCRIPT_DIR/datamanagement/backups.sh" backup-all-mariabackup
+        read -rep 'Create a local compressed archive? [y/N]: ' comp
+        [[ $comp == [yY] ]] && comp=comp || comp=''
       fi
-    else
-      echo "aborting ..."
-      exit
-    fi
+      case $option in 4) method=backup-all-mariabackup ;; 5) method=backup-files ;; 6) method=backup-mariabackup ;; 7) method=backup-all ;; esac
+      datam_backup "$method" "$comp"
+      ;;
+    8) datam_transfer ;;
+    9|10|11|12|13) datam_s3_action "$option" ;;
+    *) exit 1 ;;
+  esac
+)
 
-  } 2>&1 | tee "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_${datamenu_opt}_datamanger_menu.log"
-;;
-5)
-  {
-    check_for_datatools
-    echo
-    echo "Backup Nginx Vhosts Data Only (no MariaDB MySQL backups)"
-    echo
-    echo "Description:"
-    echo "This option is for full Nginx vhost data only backups (no MariaDB data backups)"
-    echo "using tar + zstd compression is optional. If you choose not to use tar + zstd"
-    echo "the local backup directories will have uncompressed data backups."
-    echo
-    read -ep "Do you want to continue [y/n]: " datamanager_cont
-    if [[ "$datamanager_cont" = [yY] ]]; then
-      # echo
-      # echo "Compressed has full backup - vhost files including non-vhost files"
-      # echo "Non-compressed has vhost files only."
-      # echo
-      read -ep "Do you want tar + zstd compress backup [y/n]: " comp_backup_opt
-      if [[ "$comp_backup_opt" = [yY] ]]; then
-        "$SCRIPT_DIR/datamanagement/backups.sh" backup-files comp
-      else
-        "$SCRIPT_DIR/datamanagement/backups.sh" backup-files
-      fi
-    else
-      echo "aborting ..."
-      exit
-    fi
-
-
-  } 2>&1 | tee "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_${datamenu_opt}_datamanger_menu.log"
-;;
-6)
-  {
-    check_for_datatools
-    echo
-    echo "Backup MariaDB MySQL With MariaBackup Only (no Vhosts Data backups)"
-    echo
-    echo "Description:"
-    echo "This option is for MariaDB MySQL database backups only (no Nginx vhost data)"
-    echo "using MariaBackup tool and not mysqldump for all MySQL databases backups"
-    echo "+ mysql system database backups which contain your MySQL users' permissions"
-    echo "MariaBackup backup directory can either be uncompressed or tar + zstd compressed"
-    echo
-    read -ep "Do you want to continue [y/n]: " datamanager_cont
-    if [[ "$datamanager_cont" = [yY] ]]; then
-      read -ep "Do you want tar + zstd compress backup [y/n]: " comp_backup_opt
-      if [[ "$comp_backup_opt" = [yY] ]]; then
-        "$SCRIPT_DIR/datamanagement/backups.sh" backup-mariabackup comp
-      else
-        "$SCRIPT_DIR/datamanagement/backups.sh" backup-mariabackup
-      fi
-    else
-      echo "aborting ..."
-      exit
-    fi
-
-
-  } 2>&1 | tee "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_${datamenu_opt}_datamanger_menu.log"
-;;
-7)
-  {
-    check_for_datatools
-    echo
-    echo "Backup MariaDB MySQL With mysqldump only (no Vhosts Data backups)"
-    echo
-    echo "Description:"
-    echo "This option is for MariaDB MySQL database backups only using mysqldump native"
-    echo "client but uses faster --tab delimited backup option which backups up each MySQL"
-    echo "database table as separate .sql schema structure files + .txt data files rather"
-    echo "than as a single .sql database backup file which contains both schema + data."
-    echo "The .sql database schema only table files are never compressed while .txt data"
-    echo "files can optionally be zstd compressed or left uncompressed."
-    echo
-    echo "The routine generates a restore.sh script in the destination backup directory"
-    echo "The restore.sh can be run to restore each database or all databases on a new"
-    echo "server. If the database name already exists on the server, it will restore to"
-    echo "a new database name with suffix added _restorecopy_datetimestamp to prevent"
-    echo "overwriting the existing database name."
-    echo
-    read -ep "Do you want to continue [y/n]: " datamanager_cont
-    if [[ "$datamanager_cont" = [yY] ]]; then
-      "$SCRIPT_DIR/datamanagement/backups.sh" backup-all
-    else
-      echo "aborting ..."
-      exit
-    fi
-
-  } 2>&1 | tee "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_${datamenu_opt}_datamanger_menu.log"
-;;
-8)
-  {
-    check_for_datatools
-    echo
-    echo "Transfer Directory Data To Remote Server Via SSH"
-    echo
-    echo "Description:"
-    echo "Option allows you to specify a full path to directory name for data transfer"
-    echo "to a remote server via SSH at speeds near network and disk line rates using"
-    echo "either netcat (nc) or socat compressed tunnel using zstd fast compression levels"
-    echo
-    read -ep "Do you want to continue [y/n]: " datamanager_cont
-    if [[ "$datamanager_cont" = [yY] ]]; then
-      while true; do
-        read -ep "Remote server SSH port (default: 22): " remote_port
-        remote_port=${remote_port:-22}
-        read -ep "Remote server SSH username (default: root): " remote_user
-        if [ "$remote_user" != "root" ]; then
-          echo "non-root user detected, will assume remote SSH username has sudo privileges"
-          echo
-          read -ep "continue with $remote_user with assumed sudo privileges [y/n] ?" assume_sudo_user
-          if [[ "$assume_sudo_user" != [yY] ]]; then
-            echo
-            echo "Enter a different username with sudo privileges or root user"
-            read -ep "Re-enter remote server SSH username: " remote_user
-          fi
-        fi
-        remote_user=${remote_user:-root}
-        read -ep "Remote server SSH hostname/IP address: " remote_server
-        read -ep "Tunnel method (nc or socat, default: nc): " tunnel_method
-        tunnel_method=${tunnel_method:-nc}
-        read -ep "Buffer size for socat (in bytes, e.g., 131072 for 128 KB): " buffer_size
-        buffer_size=${buffer_size:-131072}
-        read -ep "Listen port for nc or socat (default: 12345): " listen_port
-        listen_port=${listen_port:-12345}
-        read -ep "Source backup directory: " source_directory
-        read -ep "Remote (destination) backup directory i.e. /home/remotebackup : " remote_directory
-        remote_directory=${remote_directory:-/home/remotebackup}
-        read -ep "Path to the SSH private key i.e. /root/.ssh/my1.key : " private_key
-    
-        echo
-        echo "Please confirm the entered information:"
-        echo "Remote server SSH port: $remote_port"
-        echo "Remote server SSH username: $remote_user"
-        echo "Remote server SSH hostname/IP address: $remote_server"
-        echo "Tunnel method: $tunnel_method"
-        echo "Buffer size: $buffer_size"
-        echo "Listen port: $listen_port"
-        echo "Source backup directory: $source_directory"
-        echo "Remote (destination) backup directory: $remote_directory"
-        echo "Path to the SSH private key: $private_key"
-        echo
-    
-        read -ep "Is the information correct? [y/n]: " confirmation
-    
-        if [[ "$confirmation" =~ ^[yY] ]]; then
-          break
-        else
-          echo
-          echo "Please re-enter the information."
-          echo
-        fi
-      done
-
-      # allow remote IP in source CSF Firewall
-      echo
-      echo "csf -a $remote_server remotebackup"
-      csf -a $remote_server remotebackup
-      echo
-
-      # connect to remote destination to run CSF Firewall allow
-      echo "ssh -i $private_key -p $remote_port $remote_user@$remote_server \"csf -a $DATAM_SOURCE_IP cmmbackupip\""
-      ssh -i $private_key -p $remote_port $remote_user@$remote_server "csf -a $DATAM_SOURCE_IP cmmbackupip"
-      echo
-    
-      echo "$SCRIPT_DIR/datamanagement/tunnel-transfers.sh -p $remote_port -u $remote_user -h $remote_server -m $tunnel_method -b $buffer_size -l $listen_port -s $source_directory -r $remote_directory -k $private_key"
-      "$SCRIPT_DIR/datamanagement/tunnel-transfers.sh" -p "$remote_port" -u "$remote_user" -h "$remote_server" -m "$tunnel_method" -b "$buffer_size" -l "$listen_port" -s "$source_directory" -r "$remote_directory" -k "$private_key"
-    else
-      echo "aborting ..."
-      exit
-    fi
-
-  } 2>&1 | tee "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_${datamenu_opt}_datamanger_menu.log"
-;;
-9)
-  {
-    check_for_datatools
-    echo
-    echo "Transfer Directory Data To S3 Compatible Storage"
-    echo
-    echo "Description:"
-    echo "Option allows you to specify a full path to directory name for data transfer"
-    echo "to a S3 compatible storage provider like Amazon S3, Cloudflare R2, Backblaze"
-    echo "DigitalOcean, Vultr, Linode"
-    echo
-    read -ep "Do you want to continue [y/n]: " datamanager_cont
-    if [[ "$datamanager_cont" = [yY] ]]; then
-      while true; do
-        read -ep "AWS CLI profile name: " aws_profile
-        read -ep "S3 bucket name: " s3_bucket
-        read -ep "S3 endpoint URL: " s3_endpoint
-        read -ep "Source directory path: " source_directory
-    
-        echo
-        echo "Please confirm the entered information:"
-        echo "AWS CLI profile name: $aws_profile"
-        echo "S3 bucket name: $s3_bucket"
-        echo "S3 endpoint URL: $s3_endpoint"
-        echo "Source directory path: $source_directory"
-        echo
-    
-        read -ep "Is the information correct? [y/n]: " confirmation
-    
-        if [[ "$confirmation" =~ ^[yY] ]]; then
-          break
-        else
-          echo
-          echo "Please re-enter the information."
-          echo
-        fi
-      done
-    
-      echo "aws s3 sync --profile $aws_profile --endpoint-url $s3_endpoint $source_directory s3://$s3_bucket/"
-      aws s3 sync --profile "$aws_profile" --endpoint-url "$s3_endpoint" "$source_directory" "s3://$s3_bucket/"
-    else
-      echo "aborting ..."
-      exit
-    fi
-
-  } 2>&1 | tee "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_${datamenu_opt}_datamanger_menu.log"
-;;
-10)
-  {
-    check_for_datatools
-    echo
-    echo "Transfer Files To S3 Compatible Storage"
-    echo
-    echo "Description:"
-    echo "Option allows you to specify a specific filename(s) for data transfer"
-    echo "to a S3 compatible storage provider like Amazon S3, Cloudflare R2, Backblaze"
-    echo "DigitalOcean, Vultr, Linode"
-    echo
-    read -ep "Do you want to continue [y/n]: " datamanager_cont
-    if [[ "$datamanager_cont" = [yY] ]]; then
-      while true; do
-        read -ep "AWS CLI profile name: " aws_profile
-        read -ep "S3 bucket name: " s3_bucket
-        read -ep "S3 endpoint URL: " s3_endpoint
-        read -ep "File path to transfer: " file_path
-
-        read -ep "Do you want to add additional files to transfer? [y/n]: " additional_files
-        if [[ "$additional_files" =~ ^[yY] ]]; then
-          read -ep "How many additional files do you want to transfer? (Enter a number): " num_files
-          for i in $(seq 1 $num_files); do
-            read -ep "File path to transfer (file $i): " additional_file_path
-            file_path="$file_path $additional_file_path"
-          done
-        fi
-
-        echo
-        echo "Please confirm the entered information:"
-        echo "AWS CLI profile name: $aws_profile"
-        echo "S3 bucket name: $s3_bucket"
-        echo "S3 endpoint URL: $s3_endpoint"
-        echo "Files to transfer:"
-        IFS=' ' read -ra file_list <<< "$file_path"
-        for file in "${file_list[@]}"; do
-          echo "  - $file"
-        done
-        echo
-
-        read -ep "Is the information correct? [y/n]: " confirmation
-
-        if [[ "$confirmation" =~ ^[yY] ]]; then
-          break
-        else
-          echo
-          echo "Please re-enter the information."
-          echo
-        fi
-      done
-
-      for single_file in $file_path; do
-        echo "aws s3 cp --profile $aws_profile --endpoint-url $s3_endpoint $single_file s3://$s3_bucket/"
-        aws s3 cp --profile "$aws_profile" --endpoint-url "$s3_endpoint" "$single_file" "s3://$s3_bucket/"
-      done
-    else
-      echo "aborting ..."
-      exit
-    fi
-
-  } 2>&1 | tee "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_${datamenu_opt}_datamanger_menu.log"
-;;
-11)
-  {
-    check_for_datatools
-    echo
-    echo "Download S3 Compatible Stored Data To Server"
-    echo
-    echo "Description:"
-    echo "This option allows you to download your S3 stored data to this server"
-    echo
-    read -ep "Do you want to continue [y/n]: " datamanager_cont
-    if [[ "$datamanager_cont" = [yY] ]]; then
-      while true; do
-        read -ep "AWS CLI profile name: " aws_profile
-        read -ep "S3 bucket name: " s3_bucket
-        read -ep "S3 endpoint URL: " s3_endpoint
-        read -ep "Remote S3 file path: " remote_s3_file
-        read -ep "Local directory to download the file: " local_directory
-
-        echo "AWS CLI profile: $aws_profile"
-        echo "S3 bucket name: $s3_bucket"
-        echo "S3 endpoint URL: $s3_endpoint"
-        echo "Remote S3 file path: $remote_s3_file"
-        echo "Local directory: $local_directory"
-
-        read -ep "Are the entered values correct? [y/n]: " confirm_values
-        if [[ "$confirm_values" =~ ^[yY] ]]; then
-          break
-        fi
-      done
-
-      echo "aws s3 cp --profile $aws_profile --endpoint-url $s3_endpoint s3://$s3_bucket/$remote_s3_file $local_directory/"
-      aws s3 cp --profile "$aws_profile" --endpoint-url "$s3_endpoint" "s3://$s3_bucket/$remote_s3_file" "$local_directory/"
-    else
-      echo "aborting ..."
-      exit
-    fi
-  } 2>&1 | tee "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_${datamenu_opt}_datamanger_menu.log"
-;;
-12)
-  {
-    check_for_datatools
-    echo
-    echo "S3 To S3 Compatible Storage Transfers"
-    echo
-    echo "Description:"
-    echo "This option allows you to transfer data between two S3 compatible storage"
-    echo
-    read -ep "Do you want to continue [y/n]: " datamanager_cont
-    if [[ "$datamanager_cont" = [yY] ]]; then
-      while true; do
-        read -ep "Source AWS CLI profile name: " src_aws_profile
-        read -ep "Source S3 bucket name: " src_s3_bucket
-        read -ep "Source S3 endpoint URL: " src_s3_endpoint
-        read -ep "Source S3 object path: " src_s3_object_path
-        read -ep "Destination AWS CLI profile name: " dest_aws_profile
-        read -ep "Destination S3 bucket name: " dest_s3_bucket
-        read -ep "Destination S3 endpoint URL: " dest_s3_endpoint
-        read -ep "Destination S3 object path: " dest_s3_object_path
-
-        echo "Source AWS CLI profile: $src_aws_profile"
-        echo "Source S3 bucket name: $src_s3_bucket"
-        echo "Source S3 endpoint URL: $src_s3_endpoint"
-        echo "Source S3 object path: $src_s3_object_path"
-        echo "Destination AWS CLI profile: $dest_aws_profile"
-        echo "Destination S3 bucket name: $dest_s3_bucket"
-        echo "Destination S3 endpoint URL: $dest_s3_endpoint"
-        echo "Destination S3 object path: $dest_s3_object_path"
-
-        read -ep "Are the entered values correct? [y/n]: " confirm_values
-        if [[ "$confirm_values" =~ ^[yY] ]]; then
-          break
-        fi
-      done
-
-      echo "aws s3 cp --profile $src_aws_profile --endpoint-url $src_s3_endpoint s3://$src_s3_bucket/$src_s3_object_path s3://$dest_s3_bucket/$dest_s3_object_path"
-      aws s3 cp --profile "$src_aws_profile" --endpoint-url "$src_s3_endpoint" "s3://$src_s3_bucket/$src_s3_object_path" "s3://$dest_s3_bucket/$dest_s3_object_path"
-    else
-      echo "aborting ..."
-      exit
-    fi
-  } 2>&1 | tee "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_${datamenu_opt}_datamanger_menu.log"
-;;
-13)
-  {
-    check_for_datatools
-    echo
-    echo "List S3 Storage Buckets"
-    echo
-    echo "Description:"
-    echo "This option will list all your S3 storage buckets registered with the AWS CLI tool"
-    echo
-    read -ep "Do you want to continue [y/n]: " datamanager_cont
-    if [[ "$datamanager_cont" = [yY] ]]; then
-      read -ep "Enter the AWS CLI profile name: " aws_profile
-      read -ep "S3 endpoint URL: " s3_endpoint
-      echo "aws s3 ls --profile $aws_profile --endpoint-url $s3_endpoint"
-      aws s3 ls --profile "$aws_profile" --endpoint-url $s3_endpoint
-    else
-      echo "aborting ..."
-      exit
-    fi
-  } 2>&1 | tee "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_${datamenu_opt}_datamanger_menu.log"
-;;
-14)
-  break
-;;
-esac
-done
+datamanager_menu() {
+  local option rc
+  while :; do
+    printf '\nCentmin Mod data management\n1) Manage SSH keys\n2) Manage AWS profiles\n3) Stage migration to a new server\n4) Backup files + physical MariaDB\n5) Backup files\n6) Backup physical MariaDB\n7) Backup native SQL + closed binlogs\n8) Transfer directory, nc/socat or SSH\n9) Archive directory to S3\n10) Upload file to S3\n11) Download S3 file\n12) Copy S3 object\n13) List S3 buckets\n14) Back\n'
+    read -rep 'Option [1-14]: ' option || return
+    case $option in
+      1) ssh_keys_submenu; continue ;;
+      2) aws_profiles_submenu; continue ;;
+      14) return ;;
+      3|4|5|6|7|8|9|10|11|12|13) ;;
+      *) echo 'Invalid option.'; continue ;;
+    esac
+    datam_run_logged "menu-$option" datam_action "$option"
+    rc=$?
+    if (( rc )); then echo "Operation failed ($rc). See the log path above."; else echo 'Operation completed. See the log path above.'; fi
+  done
 }

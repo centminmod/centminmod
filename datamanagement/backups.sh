@@ -1,1326 +1,363 @@
 #!/bin/bash
-################################################################################
-VER=1.5
-DT=$(date +"%d%m%y-%H%M%S")
-DEBUG_DISPLAY='n'
-CHECKSUMS='y'
-BACKUP_RETAIN_DAYS='1'
-# pigz, zstd or none values
-COMPRESS_RSYNCABLE='y'
-COMPRESSION_METHOD='zstd'
-COMPRESSION_LEVEL_GZIP='4'
-COMPRESSION_LEVEL_ZSTD='4'
-FASTCOMPRESS_ZSTD='y'
-
-# MySQL settings
-BUCKET='mysqlbackup'
-DBHOST='localhost'
-DBUSER='admin'
-MYSQL_PWD='pass'
-
-# file_backup function settings
-# don't create tar compressed file as intend to use
-# tunnel-transfers.sh script to move directory contents
-# via nc/socat zstd tunnel so no need to wait additional
-# time tar compressing files
-FILES_TARBALL_CREATION='n'
-LOCALCENTMINMOD_MIRROR='https://parts.centminmod.com'
-################################################################################
-SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
-MOST_FREE_SPACE_MOUNT=$(df --output=target,avail | sed '1d' | sort -k 2 -n -r | awk 'NR==1 {print $1}')
-MOST_FREE_SPACE_MOUNT=$(echo "$MOST_FREE_SPACE_MOUNT" | sed 's#^/\{2,3\}#/#')
-MOST_FREE_SPACE_MOUNT_HOME=$(df --output=target,avail /home | sed '1d' | sort -k 2 -n -r | awk 'NR==1 {print $1}')
-MOST_FREE_SPACE_MOUNT_HOME=$(echo "$MOST_FREE_SPACE_MOUNT_HOME" | sed 's#^/\{2,3\}#/#')
-
-if [[ "$MOST_FREE_SPACE_MOUNT" = "$MOST_FREE_SPACE_MOUNT_HOME" ]]; then
-  MOST_FREE_SPACE_MOUNT='/home'
-else
-  MOST_FREE_SPACE_MOUNT=$MOST_FREE_SPACE_MOUNT
-fi
-
-BACKUP_DIR_PARENT="/home/mysqlbackup"
-MYSQL_BACKUP_DIR="${BACKUP_DIR_PARENT}/mysql/${DT}"
-BACKUP_DIR="${BACKUP_DIR_PARENT}/binlog/${DT}"
-MY_CNF='/root/.my.cnf'
-MY_CNF_SANDBOX='/root/sandboxes/msb_maria10_3_38/my.sandbox.cnf'
-MASTERINFO_LOG_FILE="${MYSQL_BACKUP_DIR}/master_info.log"
-LOG_FILE="/var/log/mysql_binlog_backup_${DT}.log"
-MYSQL_LOG_FILE="/var/log/mysql_backup_${DT}.log"
-MYSQL_OPTS="--default-character-set=utf8mb4 --max_allowed_packet=1024M --net_buffer_length=65536"
-MYSQLIMPORT_OPTS=" --default-character-set=utf8mb4"
-MYSQLDUMP_OPTS=" --default-character-set=utf8mb4 -Q -K --max_allowed_packet=1024M --net_buffer_length=65536 --routines --events --triggers --hex-blob"
-
-#
-BASE_DIR="$MOST_FREE_SPACE_MOUNT/databackup/${DT}"
-BACKUP_NAME="$BASE_DIR/centminmod_backup.tar.zst"
-DOMAINS_TMP_DIR="$BASE_DIR/domains_tmp"
-RSYNC_LOG="$BASE_DIR/domains_tmp/rsync_${DT}.log"
-DIRECTORIES_TO_BACKUP=( "/etc/centminmod" "/usr/local/nginx/conf" "/root/tools" "/usr/local/nginx/html" )
-DIRECTORIES_TO_BACKUP_NOCOMPRESS=( "/etc/centminmod" "/usr/local/nginx/conf" "/root/tools" "/usr/local/nginx/html" )
-MARIADB_TMP_DIR="$BASE_DIR/mariadb_tmp"
-MARIABACKUP_LOG="$MARIADB_TMP_DIR/mariabackup_${DT}.log"
-BACKUP_LOG_FILENAME="files-backup_${DT}.log"
-BACKUP_LOG="$BASE_DIR/$BACKUP_LOG_FILENAME"
-BACKUP_LOG_TMP="/tmp/files-backup_${DT}.log"
-ERROR_LOG="$BASE_DIR/error_log.log"
-
-# Set the backup directory for cron jobs
-CRON_BACKUP_DIR="$BASE_DIR/cronjobs_tmp"
-################################################################################
-NEWER_TAR='y'
-################################################################################
-# disk free space management
-BUFFER_PERCENT=30
-################################################################################
-NICE=$(which nice)
-NICEOPT='-n 12'
-IONICE=$(which ionice)
-IONICEOPT='-c2 -n7'
-################################################################################
-# Amazon s3 support via aws-cli
-AWSUPLOAD='n'
-AWS_PROFILE='default'
-AWS_BUCKETNAME='YOUR_BUCKETNAME'
-# set to either STANDARD, STANDARD_IA or REDUCED_REDUNDANCY
-STORAGECLASS='STANDARD'
-STORAGEOPT=" --storage-class=$STORAGECLASS"
-################################################################################
-# Backblaze s3 support via aws-cli
-BACKBLAZE_UPLOAD='n'
-BACKBLAZE_PROFILE='b2'
-BACKBLAZE_ENDPOINT=' --endpoint-url=https://s3.us-west-001.backblazeb2.com'
-BACKBLAZE_ENDPOINT_LABEL=' --endpoint-url=https://s3.us-west-001.backblazeb2.com'
-BACKBLAZE_BUCKETNAME='YOUR_BUCKETNAME'
-################################################################################
-# DigitalOcean s3 support via aws-cli
-DIGITALOCEAN_UPLOAD='n'
-DIGITALOCEAN_PROFILE='do'
-DIGITALOCEAN_ENDPOINT=' --endpoint-url=https://sfo2.digitaloceanspaces.com'
-DIGITALOCEAN_ENDPOINT_LABEL=' --endpoint-url=https://sfo2.digitaloceanspaces.com'
-DIGITALOCEAN_BUCKETNAME='YOUR_BUCKETNAME'
-######################################################
-# Linode s3 support via aws-cli
-LINODE_UPLOAD='n'
-LINODE_PROFILE='linode'
-LINODE_ENDPOINT=' --endpoint-url=https://us-east-1.linodeobjects.com/'
-LINODE_ENDPOINT_LABEL=' --endpoint-url=https://us-east-1.linodeobjects.com/'
-LINODE_BUCKETNAME='YOUR_BUCKETNAME'
-################################################################################
-# Cloudflare R2 s3 support via aws-cli
-CFR2_UPLOAD='n'
-CFR2_PROFILE='r2'
-CFR2_ACCOUNTID=''
-CFR2_ENDPOINT=" --endpoint-url=https://${CFR2_ACCOUNTID}.r2.cloudflarestorage.com"
-CFR2_ENDPOINT_LABEL=" --endpoint-url=https://CFR2_ACCOUNTID.r2.cloudflarestorage.com"
-CFR2_BUCKETNAME='YOUR_BUCKETNAME'
-################################################################################
-# Upcloud s3 support via aws-cli
-UPCLOUD_UPLOAD='n'
-UPCLOUD_PROFILE='upcloud'
-UPCLOUD_ENDPOINT_NAME=''
-UPCLOUD_ENDPOINT=" --endpoint-url=https://${YOUR_ENDPOINT_NAME}.us-nyc1.upcloudobjects.com"
-UPCLOUD_ENDPOINT_LABEL=" --endpoint-url=https://${YOUR_ENDPOINT_NAME}.us-nyc1.upcloudobjects.com"
-UPCLOUD_BUCKETNAME='YOUR_BUCKETNAME'
-################################################################################
-if [ -f /etc/centminmod/binlog-backups.ini ]; then
-    source /etc/centminmod/binlog-backups.ini
-fi
-if [ -f /etc/centminmod/backups.ini ]; then
-    source /etc/centminmod/backups.ini
-fi
-mkdir -p "$BACKUP_DIR_PARENT" "$MYSQL_BACKUP_DIR" "$BACKUP_DIR" "$CRON_BACKUP_DIR"
-chown -R mysql:mysql "$BACKUP_DIR_PARENT" "$MYSQL_BACKUP_DIR" "$BACKUP_DIR"
-
-CENTOSVER=$(awk '{ print $3 }' /etc/redhat-release)
-KERNEL_NUMERICVER=$(uname -r | awk -F. '{ printf("%d%03d%03d%03d\n", $1,$2,$3,$4); }')
-
-if [ "$CENTOSVER" == 'release' ]; then
-    CENTOSVER=$(awk '{ print $4 }' /etc/redhat-release | cut -d . -f1,2)
-    if [[ "$(cat /etc/redhat-release | awk '{ print $4 }' | cut -d . -f1)" = '7' ]]; then
-        CENTOS_SEVEN='7'
-    elif [[ "$(cat /etc/redhat-release | awk '{ print $4 }' | cut -d . -f1)" = '8' ]]; then
-        CENTOS_EIGHT='8'
-    elif [[ "$(cat /etc/redhat-release | awk '{ print $4 }' | cut -d . -f1)" = '9' ]]; then
-        CENTOS_NINE='9'
-    elif [[ "$(cat /etc/redhat-release | awk '{ print $4 }' | cut -d . -f1)" = '10' ]]; then
-        CENTOS_TEN='10'
-    fi
-fi
-
-if [[ "$(cat /etc/redhat-release | awk '{ print $3 }' | cut -d . -f1)" = '6' ]]; then
-    CENTOS_SIX='6'
-fi
-
-# Check for Redhat Enterprise Linux 7.x
-if [ "$CENTOSVER" == 'Enterprise' ]; then
-    CENTOSVER=$(awk '{ print $7 }' /etc/redhat-release)
-    if [[ "$(awk '{ print $1,$2 }' /etc/redhat-release)" = 'Red Hat' && "$(awk '{ print $7 }' /etc/redhat-release | cut -d . -f1)" = '7' ]]; then
-        CENTOS_SEVEN='7'
-        REDHAT_SEVEN='y'
-    fi
-fi
-
-if [[ -f /etc/system-release && "$(awk '{print $1,$2,$3}' /etc/system-release)" = 'Amazon Linux AMI' ]]; then
-    CENTOS_SIX='6'
-fi
-
-# ensure only el8+ OS versions are being looked at for alma linux, rocky linux
-# oracle linux, vzlinux, circle linux, navy linux, euro linux
-EL_VERID=$(awk -F '=' '/VERSION_ID/ {print $2}' /etc/os-release | sed -e 's|"||g' | cut -d . -f1)
-if [ -f /etc/almalinux-release ] && [[ "$EL_VERID" -eq 8 || "$EL_VERID" -eq 9 || "$EL_VERID" -eq 10 ]]; then
-  if [[ "$EL_VERID" -eq 10 ]]; then
-    # Try $4 first (Kitten format), check if it's a valid version number
-    CENTOSVER_TEST=$(awk '{ print $4 }' /etc/almalinux-release | cut -d . -f1)
-    if [[ "$CENTOSVER_TEST" =~ ^[0-9]+$ ]]; then
-      # $4 contains version (Kitten: "AlmaLinux release 10.0")
-      CENTOSVER=$(awk '{ print $4 }' /etc/almalinux-release | cut -d . -f1,2)
-      ALMALINUXVER=$(awk '{ print $4 }' /etc/almalinux-release | cut -d . -f1,2 | sed -e 's|\.|000|g')
-    else
-      # $4 is not numeric (Purple Lion: "AlmaLinux release 10.0 (Purple Lion)"), use $3
-      CENTOSVER=$(awk '{ print $3 }' /etc/almalinux-release | cut -d . -f1,2)
-      ALMALINUXVER=$(awk '{ print $3 }' /etc/almalinux-release | cut -d . -f1,2 | sed -e 's|\.|000|g')
-    fi
-  else
-    # EL8/EL9 continue using $3
-    CENTOSVER=$(awk '{ print $3 }' /etc/almalinux-release | cut -d . -f1,2)
-    ALMALINUXVER=$(awk '{ print $3 }' /etc/almalinux-release | cut -d . -f1,2 | sed -e 's|\.|000|g')
-  fi
-  if [[ "$(echo $CENTOSVER | cut -d . -f1)" -eq '8' ]]; then
-    CENTOS_EIGHT='8'
-    ALMALINUX_EIGHT='8'
-  elif [[ "$(echo $CENTOSVER | cut -d . -f1)" -eq '9' ]]; then
-    CENTOS_NINE='9'
-    ALMALINUX_NINE='9'
-  elif [[ "$(echo $CENTOSVER | cut -d . -f1)" -eq '10' ]]; then
-    CENTOS_TEN='10'
-    ALMALINUX_TEN='10'
-  fi
-elif [ -f /etc/rocky-release ] && [[ "$EL_VERID" -eq 8 || "$EL_VERID" -eq 9 || "$EL_VERID" -eq 10 ]]; then
-  CENTOSVER=$(awk '{ print $4 }' /etc/rocky-release | cut -d . -f1,2)
-  ROCKYLINUXVER=$(awk '{ print $3 }' /etc/rocky-release | cut -d . -f1,2 | sed -e 's|\.|000|g')
-  if [[ "$(echo $CENTOSVER | cut -d . -f1)" -eq '8' ]]; then
-    CENTOS_EIGHT='8'
-    ROCKYLINUX_EIGHT='8'
-  elif [[ "$(echo $CENTOSVER | cut -d . -f1)" -eq '9' ]]; then
-    CENTOS_NINE='9'
-    ROCKYLINUX_NINE='9'
-  elif [[ "$(echo $CENTOSVER | cut -d . -f1)" -eq '10' ]]; then
-    CENTOS_TEN='10'
-    ROCKYLINUX_TEN='10'
-  fi
-elif [ -f /etc/oracle-release ] && [[ "$EL_VERID" -eq 8 || "$EL_VERID" -eq 9 || "$EL_VERID" -eq 10 ]]; then
-  CENTOSVER=$(awk '{ print $5 }' /etc/oracle-release | cut -d . -f1,2)
-  if [[ "$(echo $CENTOSVER | cut -d . -f1)" -eq '8' ]]; then
-    CENTOS_EIGHT='8'
-    ORACLELINUX_EIGHT='8'
-  elif [[ "$(echo $CENTOSVER | cut -d . -f1)" -eq '9' ]]; then
-    CENTOS_NINE='9'
-    ORACLELINUX_NINE='9'
-  elif [[ "$(echo $CENTOSVER | cut -d . -f1)" -eq '10' ]]; then
-    CENTOS_TEN='10'
-    ORACLELINUX_TEN='10'
-  fi
-elif [ -f /etc/vzlinux-release ] && [[ "$EL_VERID" -eq 8 || "$EL_VERID" -eq 9 || "$EL_VERID" -eq 10 ]]; then
-  CENTOSVER=$(awk '{ print $4 }' /etc/vzlinux-release | cut -d . -f1,2)
-  if [[ "$(echo $CENTOSVER | cut -d . -f1)" -eq '8' ]]; then
-    CENTOS_EIGHT='8'
-    VZLINUX_EIGHT='8'
-  elif [[ "$(echo $CENTOSVER | cut -d . -f1)" -eq '9' ]]; then
-    CENTOS_NINE='9'
-    VZLINUX_NINE='9'
-  elif [[ "$(echo $CENTOSVER | cut -d . -f1)" -eq '10' ]]; then
-    CENTOS_TEN='10'
-    VZLINUX_TEN='10'
-  fi
-elif [ -f /etc/circle-release ] && [[ "$EL_VERID" -eq 8 || "$EL_VERID" -eq 9 || "$EL_VERID" -eq 10 ]]; then
-  CENTOSVER=$(awk '{ print $4 }' /etc/circle-release | cut -d . -f1,2)
-  if [[ "$(echo $CENTOSVER | cut -d . -f1)" -eq '8' ]]; then
-    CENTOS_EIGHT='8'
-    CIRCLELINUX_EIGHT='8'
-  elif [[ "$(echo $CENTOSVER | cut -d . -f1)" -eq '9' ]]; then
-    CENTOS_NINE='9'
-    CIRCLELINUX_NINE='9'
-  elif [[ "$(echo $CENTOSVER | cut -d . -f1)" -eq '10' ]]; then
-    CENTOS_TEN='10'
-    CIRCLELINUX_TEN='10'
-  fi
-elif [ -f /etc/navylinux-release ] && [[ "$EL_VERID" -eq 8 || "$EL_VERID" -eq 9 || "$EL_VERID" -eq 10 ]]; then
-  CENTOSVER=$(awk '{ print $5 }' /etc/navylinux-release | cut -d . -f1,2)
-  if [[ "$(echo $CENTOSVER | cut -d . -f1)" -eq '8' ]]; then
-    CENTOS_EIGHT='8'
-    NAVYLINUX_EIGHT='8'
-  elif [[ "$(echo $CENTOSVER | cut -d . -f1)" -eq '9' ]]; then
-    CENTOS_NINE='9'
-    NAVYLINUX_NINE='9'
-  elif [[ "$(echo $CENTOSVER | cut -d . -f1)" -eq '10' ]]; then
-    CENTOS_TEN='10'
-    NAVYLINUX_TEN='10'
-  fi
-elif [ -f /etc/el-release ] && [[ "$EL_VERID" -eq 8 || "$EL_VERID" -eq 9 || "$EL_VERID" -eq 10 ]]; then
-  CENTOSVER=$(awk '{ print $3 }' /etc/el-release | cut -d . -f1,2)
-  if [[ "$(echo $CENTOSVER | cut -d . -f1)" -eq '8' ]]; then
-    CENTOS_EIGHT='8'
-    EUROLINUX_EIGHT='8'
-  elif [[ "$(echo $CENTOSVER | cut -d . -f1)" -eq '9' ]]; then
-    CENTOS_NINE='9'
-    EUROLINUX_NINE='9'
-  elif [[ "$(echo $CENTOSVER | cut -d . -f1)" -eq '10' ]]; then
-    CENTOS_TEN='10'
-    EUROLINUX_TEN='10'
-  fi
-fi
-
-CENTOSVER_NUMERIC=$(echo $CENTOSVER | sed -e 's|\.||g')
-
-# newer tar 1.35 with zstd native support
-if [[ "$CENTOS_SEVEN" -eq '7' ]]; then
-  if [ ! -f /svr-setup/tar-zstd-gcc10-1.35-1.el7.x86_64.rpm ]; then
-    wget ${LOCALCENTMINMOD_MIRROR}/centminmodparts/tar/tar-zstd-gcc10-1.35-1.el7.x86_64.rpm -O /svr-setup/tar-zstd-gcc10-1.35-1.el7.x86_64.rpm
-    yum -q -y localinstall /svr-setup/tar-zstd-gcc10-1.35-1.el7.x86_64.rpm
-  fi
-elif [[ "$CENTOS_EIGHT" -eq '8' ]]; then
-  if [ ! -f /svr-setup/tar-zstd-gcc12-1.35-1.el8.x86_64.rpm ]; then
-    wget ${LOCALCENTMINMOD_MIRROR}/centminmodparts/tar/tar-zstd-gcc12-1.35-1.el8.x86_64.rpm -O /svr-setup/tar-zstd-gcc12-1.35-1.el8.x86_64.rpm
-    yum -q -y localinstall /svr-setup/tar-zstd-gcc12-1.35-1.el8.x86_64.rpm
-  fi
-elif [[ "$CENTOS_NINE" -eq '9' ]]; then
-  if [ ! -f /svr-setup/tar-zstd-gcc13-1.35-1.el9.x86_64.rpm ]; then
-    wget ${LOCALCENTMINMOD_MIRROR}/centminmodparts/tar/tar-zstd-gcc13-1.35-1.el9.x86_64.rpm -O /svr-setup/tar-zstd-gcc13-1.35-1.el9.x86_64.rpm
-    yum -q -y localinstall /svr-setup/tar-zstd-gcc13-1.35-1.el9.x86_64.rpm
-  fi
-elif [[ "$CENTOS_TEN" -eq '10' ]]; then
-  if [ ! -f /svr-setup/tar-zstd-gcc14-1.35-1.el10.x86_64.rpm ]; then
-    wget ${LOCALCENTMINMOD_MIRROR}/centminmodparts/tar/tar-zstd-gcc14-1.35-1.el10.x86_64.rpm -O /svr-setup/tar-zstd-gcc14-1.35-1.el10.x86_64.rpm
-    yum -q -y localinstall /svr-setup/tar-zstd-gcc14-1.35-1.el10.x86_64.rpm
-  fi
-fi
-
-CPUS=$(nproc)
-if [[ "$CPUS" -gt '48' ]]; then
-    if [[ "$NEWER_TAR" = [yY] ]]; then
-        CPUS_ZSTD=6
-    else
-        CPUS_ZSTD=$((($CPUS/2)-6))
-    fi
-    CPUS=$(($CPUS/2))
-elif [[ "$CPUS" -ge '24' && "$CPUS" -le '48' ]]; then
-    if [[ "$NEWER_TAR" = [yY] ]]; then
-        CPUS_ZSTD=4
-    else
-        CPUS_ZSTD=$((($CPUS/2)-2))
-    fi
-    CPUS=$(($CPUS/2))
-else
-    CPUS=$CPUS
-    if [[ "$NEWER_TAR" = [yY] ]]; then
-        CPUS_ZSTD=$CPUS
-    else
-        CPUS_ZSTD=$CPUS
-    fi
-fi
-
-# Function to get MariaDB version
-get_mariadb_version() {
-    # Try mariadb command first (MariaDB 11.4+), fall back to mysql
-    if command -v mariadb >/dev/null 2>&1; then
-        local version=$(mariadb -V 2>&1 | awk '{print $5}' | awk -F. '{print $1"."$2}')
-    else
-        local version=$(mysql -V 2>&1 | awk '{print $5}' | awk -F. '{print $1"."$2}')
-    fi
-    echo $version
+# Centmin Mod menu 21. A generation is usable only after COMPLETE is written.
+set -Eeuo pipefail
+umask 077
+BACKUP_FORMAT=2
+SCRIPT_DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)
+source "$SCRIPT_DIR/logging.sh"
+datam_log_init backup "$@"
+BACKUP_DIR_PARENT=/home/mysqlbackup
+FILES_BACKUP_ROOT=/home/databackup
+MY_CNF=/root/.my.cnf
+DBHOST=localhost
+COMPRESSION_METHOD=zstd
+COMPRESSION_LEVEL_ZSTD=4
+COMPRESSION_LEVEL_GZIP=4
+FASTCOMPRESS_ZSTD=y
+COMPRESS_THREADS=2
+FILES_TARBALL_CREATION=n
+CHECKSUMS=n
+BUFFER_PERCENT=10
+# Full file checksums require another disk read. Transfers hash the compressed stream.
+DIRECTORIES_TO_BACKUP=(/etc/centminmod /usr/local/nginx/conf /root/tools /usr/local/nginx/html
+  /root/.acme.sh /root/.aws /root/.my.cnf /etc/my.cnf /etc/my.cnf.d
+  /usr/local/etc/php-fpm.conf /usr/local/etc/php-fpm.d /usr/local/lib/php.ini
+  /etc/sudoers.d /etc/pure-ftpd /etc/redis /etc/keydb /etc/supervisord
+  /etc/supervisord.d /etc/supervisord.conf /etc/elasticsearch /etc/systemd/system
+  /var/spool/cron /etc/cron.d /etc/crontab /etc/cron.hourly /etc/cron.daily /etc/cron.weekly /etc/cron.monthly)
+DOMAINS_ROOT=/home/nginx/domains
+# Configuration is trusted root-owned shell. Detect obsolete overrides before work.
+set +u
+for config in /etc/centminmod/binlog-backups.ini /etc/centminmod/backups.ini; do
+  # shellcheck disable=SC1090
+  [[ ! -f $config ]] || source "$config"
+done
+# shellcheck disable=SC1090
+[[ -z ${BACKUP_CONFIG:-} ]] || source "$BACKUP_CONFIG"
+set -u
+fail() { echo "ERROR: $*" >&2; exit 1; }
+need() { command -v "$1" >/dev/null || fail "Install required command: $1"; }
+client() { command -v "$1" || command -v "$2"; }
+usage() {
+  echo "Usage: $0 {backup-all-mariabackup|backup-files|backup-mariabackup} [comp]"
+  echo "       $0 {backup-all|backup-mysql|backup-binlogs} [comp|pigz|none]"
+  echo "       $0 {flush-logs|flush-binlogs|purge-binlogs}"
+  echo "COMPLETE marks success; failed generations are retained. No automatic retention deletion."
 }
-
-# Function to set client command variables based on MariaDB version
-set_mariadb_client_commands() {
-    local version=$(get_mariadb_version)
-    
-    # Convert version to a comparable integer (e.g., 10.3 becomes 1003)
-    version_number=$(echo "$version" | awk -F. '{printf "%d%02d\n", $1, $2}')
-
-    if (( version_number <= 1011 )); then
-        # For versions less than or equal to 10.11, use old MySQL names
-        ALIAS_MYSQLACCESS="mysqlaccess"
-        ALIAS_MYSQLADMIN="mysqladmin"
-        ALIAS_MYSQLBINLOG="mysqlbinlog"
-        ALIAS_MYSQLCHECK="mysqlcheck"
-        ALIAS_MYSQLDUMP="mysqldump"
-        ALIAS_MYSQLDUMPSLOW="mysqldumpslow"
-        ALIAS_MYSQLHOTCOPY="mysqlhotcopy"
-        ALIAS_MYSQLIMPORT="mysqlimport"
-        ALIAS_MYSQLREPORT="mysqlreport"
-        ALIAS_MYSQLSHOW="mysqlshow"
-        ALIAS_MYSQLSLAP="mysqlslap"
-        ALIAS_MYSQL_CONVERT_TABLE_FORMAT="mysql_convert_table_format"
-        ALIAS_MYSQL_EMBEDDED="mysql_embedded"
-        ALIAS_MYSQL_FIND_ROWS="mysql_find_rows"
-        ALIAS_MYSQL_FIX_EXTENSIONS="mysql_fix_extensions"
-        ALIAS_MYSQL_INSTALL_DB="mysql_install_db"
-        ALIAS_MYSQL_PLUGIN="mysql_plugin"
-        ALIAS_MYSQL_SECURE_INSTALLATION="mysql_secure_installation"
-        ALIAS_MYSQL_SETPERMISSION="mysql_setpermission"
-        ALIAS_MYSQL_TZINFO_TO_SQL="mysql_tzinfo_to_sql"
-        ALIAS_MYSQL_UPGRADE="mysql_upgrade"
-        ALIAS_MYSQL_WAITPID="mysql_waitpid"
-        ALIAS_MYSQL="mysql"
-        ALIAS_MYSQLD="mysqld"
-        ALIAS_MYSQLDSAFE="mysqld_safe"
-    else
-        # For versions greater than 10.11, use new MariaDB names
-        ALIAS_MYSQLACCESS="mariadb-access"
-        ALIAS_MYSQLADMIN="mariadb-admin"
-        ALIAS_MYSQLBINLOG="mariadb-binlog"
-        ALIAS_MYSQLCHECK="mariadb-check"
-        ALIAS_MYSQLDUMP="mariadb-dump"
-        ALIAS_MYSQLDUMPSLOW="mariadb-dumpslow"
-        ALIAS_MYSQLHOTCOPY="mariadb-hotcopy"
-        ALIAS_MYSQLIMPORT="mariadb-import"
-        ALIAS_MYSQLREPORT="mariadb-report"
-        ALIAS_MYSQLSHOW="mariadb-show"
-        ALIAS_MYSQLSLAP="mariadb-slap"
-        ALIAS_MYSQL_CONVERT_TABLE_FORMAT="mariadb-convert-table-format"
-        ALIAS_MYSQL_EMBEDDED="mariadb-embedded"
-        ALIAS_MYSQL_FIND_ROWS="mariadb-find-rows"
-        ALIAS_MYSQL_FIX_EXTENSIONS="mariadb-fix-extensions"
-        ALIAS_MYSQL_INSTALL_DB="mariadb-install-db"
-        ALIAS_MYSQL_PLUGIN="mariadb-plugin"
-        ALIAS_MYSQL_SECURE_INSTALLATION="mariadb-secure-installation"
-        ALIAS_MYSQL_SETPERMISSION="mariadb-setpermission"
-        ALIAS_MYSQL_TZINFO_TO_SQL="mariadb-tzinfo-to-sql"
-        ALIAS_MYSQL_UPGRADE="mariadb-upgrade"
-        ALIAS_MYSQL_WAITPID="mariadb-waitpid"
-        ALIAS_MYSQL="mariadb"
-        ALIAS_MYSQLD="mariadbd"
-        ALIAS_MYSQLDSAFE="mariadbd-safe"
-    fi
-}
-set_mariadb_client_commands
-
-if [[ "$COMPRESS_RSYNCABLE" = [Yy] ]]; then
-  COMPRESS_RSYNCABLE_OPT=' --rsyncable'
-fi
-if [ -f "$MY_CNF" ]; then
-  MYSQL_CMD_PREFIX="${ALIAS_MYSQL} --defaults-extra-file=$MY_CNF -h $DBHOST"
-  MYSQLBACKUP_CMD_PREFIX="$NICE $NICEOPT $IONICE $IONICEOPT mariabackup --defaults-extra-file=$MY_CNF -h $DBHOST"
-  MYSQLDUMP_CMD_PREFIX="$NICE $NICEOPT $IONICE $IONICEOPT ${ALIAS_MYSQLDUMP} --defaults-extra-file=$MY_CNF -h $DBHOST${MYSQLDUMP_OPTS}"
-  MYSQLBINLOG_CMD_PREFIX="$NICE $NICEOPT $IONICE $IONICEOPT ${ALIAS_MYSQLBINLOG} --defaults-extra-file=$MY_CNF -h $DBHOST"
-  MYSQLADMIN_CMD_PREFIX="${ALIAS_MYSQLADMIN} --defaults-extra-file=$MY_CNF -h $DBHOST"
-else
-  MYSQL_CMD_PREFIX="${ALIAS_MYSQL} -u $DBUSER -h $DBHOST -p$MYSQL_PWD"
-  MYSQLBACKUP_CMD_PREFIX="$NICE $NICEOPT $IONICE $IONICEOPT mariabackup -u $DBUSER -h $DBHOST -p$MYSQL_PWD"
-  MYSQLDUMP_CMD_PREFIX="$NICE $NICEOPT $IONICE $IONICEOPT mysqldump -u $DBUSER -h $DBHOST -p$MYSQL_PWD${MYSQLDUMP_OPTS}"
-  MYSQLBINLOG_CMD_PREFIX="$NICE $NICEOPT $IONICE $IONICEOPT mysqlbinlog -u $DBUSER -h $DBHOST -p$MYSQL_PWD"
-  MYSQLADMIN_CMD_PREFIX="${ALIAS_MYSQLADMIN} -u $DBUSER -h $DBHOST -p$MYSQL_PWD"
-fi
-# dbdeployer
-SANDBOX_MYSQL_CMD_PREFIX="${ALIAS_MYSQL} --defaults-extra-file=$${MY_CNF_SANDBOX} -h $DBHOST"
-SANDBOX_MYSQLBACKUP_CMD_PREFIX="mariabackup --defaults-extra-file=$${MY_CNF_SANDBOX} -h $DBHOST"
-SANDBOX_MYSQLDUMP_CMD_PREFIX="${ALIAS_MYSQLDUMP} --defaults-extra-file=$${MY_CNF_SANDBOX} -h $DBHOST${MYSQLDUMP_OPTS}"
-SANDBOX_MYSQLBINLOG_CMD_PREFIX="${ALIAS_MYSQLBINLOG} --defaults-extra-file=$${MY_CNF_SANDBOX} -h $DBHOST"
-SANDBOX_MYSQLADMIN_CMD_PREFIX="${ALIAS_MYSQLADMIN} --defaults-extra-file=$${MY_CNF_SANDBOX} -h $DBHOST"
-
-DATADIR=$($MYSQLADMIN_CMD_PREFIX var | grep datadir | awk '{ print $4}')
-
-if [[ "$FASTCOMPRESS_ZSTD" = [Yy] ]]; then
-  COMPRESSION_LEVEL_ZSTD_SET=" -T${CPUS_ZSTD} --fast=${COMPRESSION_LEVEL_ZSTD}"
-  COMPRESSION_LEVEL_ZSTD_SET_LABEL="-T${CPUS_ZSTD} --fast=${COMPRESSION_LEVEL_ZSTD}"
-else
-  COMPRESSION_LEVEL_ZSTD_SET=" -T${CPUS_ZSTD} -$COMPRESSION_LEVEL_ZSTD"
-  COMPRESSION_LEVEL_ZSTD_SET_LABEL="-T${CPUS_ZSTD} -$COMPRESSION_LEVEL_ZSTD"
-fi
-
-if [[ "$AWSUPLOAD" = [yY] ]]; then
-  AWS_PROFILE='default'
-  S3_LABEL='aws s3'
-  S3_ENABLED='y'
-  S3_ENDPOINT_OPT=""
-  S3_ENDPOINT_OPT_LABEL=""
-  BUCKETNAME="$AWS_BUCKETNAME"
-  STORAGECLASS="$STORAGECLASS"
-  STORAGEOPT="$STORAGEOPT"
-elif [[ "$BACKBLAZE_UPLOAD" = [yY] ]]; then
-  AWS_PROFILE='b2'
-  S3_LABEL='backblaze b2'
-  S3_ENABLED='y'
-  S3_ENDPOINT_OPT="$BACKBLAZE_ENDPOINT"
-  S3_ENDPOINT_OPT_LABEL="$BACKBLAZE_ENDPOINT_LABEL"
-  BUCKETNAME="$BACKBLAZE_BUCKETNAME"
-  STORAGECLASS=""
-  STORAGEOPT=""
-elif [[ "$DIGITALOCEAN_UPLOAD" = [yY] ]]; then
-  AWS_PROFILE='do'
-  S3_LABEL='digitalocean s3'
-  S3_ENABLED='y'
-  S3_ENDPOINT_OPT="$DIGITALOCEAN_ENDPOINT"
-  S3_ENDPOINT_OPT_LABEL="$DIGITALOCEAN_ENDPOINT_LABEL"
-  BUCKETNAME="$DIGITALOCEAN_BUCKETNAME"
-  STORAGECLASS=""
-  STORAGEOPT=""
-elif [[ "$LINODE_UPLOAD" = [yY] ]]; then
-  AWS_PROFILE='linode'
-  S3_LABEL='linode s3'
-  S3_ENABLED='y'
-  S3_ENDPOINT_OPT="$LINODE_ENDPOINT"
-  S3_ENDPOINT_OPT_LABEL="$LINODE_ENDPOINT_LABEL"
-  BUCKETNAME="$LINODE_BUCKETNAME"
-  STORAGECLASS=""
-  STORAGEOPT=""
-elif [[ "$CFR2_UPLOAD" = [yY] ]]; then
-  AWS_PROFILE='r2'
-  S3_LABEL='cloudflare r2'
-  S3_ENABLED='y'
-  S3_ENDPOINT_OPT="$CFR2_ENDPOINT"
-  S3_ENDPOINT_OPT_LABEL="$CFR2_ENDPOINT_LABEL"
-  BUCKETNAME="$CFR2_BUCKETNAME"
-  STORAGECLASS=""
-  STORAGEOPT=""
-elif [[ "$UPCLOUD_UPLOAD" = [yY] ]]; then
-  AWS_PROFILE='upcloud'
-  S3_LABEL='upcloud s3'
-  S3_ENABLED='y'
-  S3_ENDPOINT_OPT="$UPCLOUD_ENDPOINT"
-  S3_ENDPOINT_OPT_LABEL="$UPCLOUD_ENDPOINT_LABEL"
-  BUCKETNAME="$UPCLOUD_BUCKETNAME"
-  STORAGECLASS=""
-  STORAGEOPT=""
-fi
-
-# optimize aws cli configuration
-# https://docs.aws.amazon.com/cli/latest/topic/s3-config.html#max-concurrent-requests
-if [[ "$CFR2_UPLOAD" = [yY] && -f ~/.aws/config && ! "$(grep -w 'max_concurrent_requests' ~/.aws/config)" ]]; then
-    /usr/local/bin/aws configure set --profile=${AWS_PROFILE}${S3_ENDPOINT_OPT} s3.max_concurrent_requests 10
-    /usr/local/bin/aws configure set --profile=${AWS_PROFILE}${S3_ENDPOINT_OPT} s3.multipart_threshold 50MB
-    /usr/local/bin/aws configure set --profile=${AWS_PROFILE}${S3_ENDPOINT_OPT} s3.multipart_chunksize 50MB
-    /usr/local/bin/aws configure set --profile=${AWS_PROFILE}${S3_ENDPOINT_OPT} s3.addressing_style path
-    /usr/local/bin/aws configure set --profile=${AWS_PROFILE}${S3_ENDPOINT_OPT} region auto
-    unset AWS_DEFAULT_REGION
-elif [[ "$CFR2_UPLOAD" = [yY] && -f ~/.aws/config && "$(grep -w 'max_concurrent_requests' ~/.aws/config)" ]]; then
-    /usr/local/bin/aws configure set --profile=${AWS_PROFILE}${S3_ENDPOINT_OPT} s3.max_concurrent_requests 10
-    /usr/local/bin/aws configure set --profile=${AWS_PROFILE}${S3_ENDPOINT_OPT} s3.multipart_threshold 50MB
-    /usr/local/bin/aws configure set --profile=${AWS_PROFILE}${S3_ENDPOINT_OPT} s3.multipart_chunksize 50MB
-    /usr/local/bin/aws configure set --profile=${AWS_PROFILE}${S3_ENDPOINT_OPT} s3.addressing_style path
-    /usr/local/bin/aws configure set --profile=${AWS_PROFILE}${S3_ENDPOINT_OPT} region auto
-    unset AWS_DEFAULT_REGION
-elif [[ -f ~/.aws/config && ! "$(grep -w 'max_concurrent_requests' ~/.aws/config)" ]]; then
-    /usr/local/bin/aws configure set --profile=${AWS_PROFILE}${S3_ENDPOINT_OPT} s3.max_concurrent_requests ${CPUS}
-    /usr/local/bin/aws configure set --profile=${AWS_PROFILE}${S3_ENDPOINT_OPT} s3.max_queue_size 1000
-    /usr/local/bin/aws configure set --profile=${AWS_PROFILE}${S3_ENDPOINT_OPT} s3.multipart_threshold 8MB
-    /usr/local/bin/aws configure set --profile=${AWS_PROFILE}${S3_ENDPOINT_OPT} s3.multipart_chunksize 8MB
-fi
-
-check_command_exists() {
-  command -v "$1" >/dev/null 2>&1 || {
-    local package_name="$2"
-    if [ "$1" = "mariabackup" ]; then
-      grep -q "AlmaLinux" /etc/os-release && package_name="mariadb-backup"
-      grep -q "CentOS Linux 7" /etc/os-release && package_name="MariaDB-backup"
-    fi
-    echo "[$(date)] Command '$1' not found. Installing package '$package_name'..."
-    yum install -y "$package_name"
-  }
-}
-calculate_uncompressed_size() {
-  local DIR="$1"
-  local SIZE=$(du -sb "$DIR" | awk '{print $1}')
-  echo "$SIZE"
-}
-human_readable_size() {
-  local SIZE_BYTES="$1"
-  local SIZE_UNITS=("B" "KB" "MB" "GB" "TB")
-  local UNIT_INDEX=0
-  while [ $(echo "$SIZE_BYTES >= 1024" | bc) -eq 1 ]; do
-    SIZE_BYTES=$(echo "scale=2; $SIZE_BYTES / 1024" | bc)
-    UNIT_INDEX=$((UNIT_INDEX + 1))
-  done
-  echo "${SIZE_BYTES}${SIZE_UNITS[$UNIT_INDEX]}"
-}
-
-# Function to check available disk space
-check_disk_space() {
-    available_space=$(df -k --output=avail "$1" | tail -n 1)
-    buffer_space=$(($available_space * $BUFFER_PERCENT / 100))
-    effective_space=$(($available_space - $buffer_space))
-
-    if [[ "$effective_space" -lt "$required_space" ]]; then
-        echo "Not enough disk space. Required: $required_space KB, Effective: $effective_space KB (after considering $BUFFER_PERCENT% buffer)."
-        exit 1
-    fi
-}
-
-files_backup() {
-  files_mode=$1
-  tar_comp="$2"
-  if [[ -z "$tar_comp" ]]; then
-    FILES_TARBALL_CREATION="$FILES_TARBALL_CREATION"
-  elif [[ "$tar_comp" = 'comp' ]]; then
-    FILES_TARBALL_CREATION='y'
-  else
-    FILES_TARBALL_CREATION='n'
-  fi
-  check_command_exists pv pv
-  check_command_exists zstd zstd
-  check_command_exists rsync rsync
-  check_command_exists mariabackup mariadb-backup
-  if [[ "$(rsync --help | grep -o zstd)" = 'zstd' ]]; then
-    # if newer rsync 3.2.3+ detected with zstd support, use more
-    # performant rsync flags for better transfer speeds
-    RSYNC_NEW_FLAGS=' --cc xxhash --zc none'
-  else
-    RSYNC_NEW_FLAGS=""
-  fi
-  START_TIME=$(date +%s)
-  total_uncompressed_size=0
-  for dir in "${DIRECTORIES_TO_BACKUP[@]}"; do
-    dir_size=$(calculate_uncompressed_size "$dir")
-    total_uncompressed_size=$((total_uncompressed_size + dir_size))
-  done
-  hr_total_size=$(human_readable_size "$total_uncompressed_size")
-  # echo "[$(date)] Total uncompressed size of all directories to be backed up: $hr_total_size"
-  
-  MOST_FREE_SPACE_MOUNT_BYTES=$(df --output=avail -B1 "$MOST_FREE_SPACE_MOUNT" | sed '1d')
-  hr_most_free_space_mount=$(human_readable_size "$MOST_FREE_SPACE_MOUNT_BYTES")
-  echo "[$(date)] Free space available on $MOST_FREE_SPACE_MOUNT: $hr_most_free_space_mount"
-  
-  if [ "$total_uncompressed_size" -gt "$MOST_FREE_SPACE_MOUNT_BYTES" ]; then
-    echo "[$(date)] Not enough free space on $MOST_FREE_SPACE_MOUNT. Aborting backup."
-    exit 1
-  fi
-  
-  if [[ "$files_mode" = 'all' || "$files_mode" = 'filesbackup' ]]; then
-    echo "[$(date)] Creating temporary domain data directory ..."
-    mkdir -p "$BASE_DIR"
-    mkdir -p "$DOMAINS_TMP_DIR"
-    echo "[$(date)] Rsync copying domain data (excluding logs) ..."
-    export RSYNC_SKIP_COMPRESS="3g2,3gp,3gpp,3mf,7z,aac,ace,amr,apk,appx,appxbundle,arc,arj,asf,avi,br,bz2,cab,crypt5,crypt7,crypt8,deb,dmg,drc,ear,gz,flac,flv,gpg,h264,h265,heif,iso,jar,jp2,jpg,jpeg,lz,lz4,lzma,lzo,m4a,m4p,m4v,mkv,msi,mov,mp3,mp4,mpeg,mpg,mpv,oga,ogg,ogv,opus,pack,png,qt,rar,rpm,rzip,s7z,sfx,svgz,tbz,tgz,tlz,txz,vob,webm,webp,wim,wma,wmv,xz,z,zip,zst"
-    for domain_path in /home/nginx/domains/*/; do
-      domain=$(basename "$domain_path")
-      destination="$DOMAINS_TMP_DIR/$domain"
-      mkdir -p "$destination"
-      echo "[$(date)] Backup $domain data to $destination"
-      if [[ "$DEBUG_DISPLAY" = [yY] ]]; then
-        echo "rsync -av${RSYNC_NEW_FLAGS} --whole-file --exclude='logs' \"$domain_path\" \"$destination\"" | tee -a "$RSYNC_LOG"
-        rsync -av${RSYNC_NEW_FLAGS} --whole-file --exclude='logs' "$domain_path" "$destination" | tee -a "$RSYNC_LOG"
-      else
-        echo "rsync -av${RSYNC_NEW_FLAGS} --whole-file --exclude='logs' \"$domain_path\" \"$destination\"" >> "$RSYNC_LOG"
-        rsync -av${RSYNC_NEW_FLAGS} --whole-file --exclude='logs' "$domain_path" "$destination" >> "$RSYNC_LOG" 2>&1
-      fi
-      ERR_RSYNC=$?
-      if [[ "$ERR_RSYNC" -eq '0' ]]; then
-        echo "[$(date)] Rsync copy $domain completed ok" | tee -a "${destination}/.rsync_backup_${domain}_completed_${DT}.log"
-      else
-        echo "[$(date)] Rsync copy $domain failed to complete" | tee -a "${destination}/.rsync_backup_${domain}_failed_${DT}.log"
-      fi
-      DIRECTORIES_TO_BACKUP+=("$destination")
-    done
-    cat "$RSYNC_LOG" >> "$BACKUP_LOG_TMP"
-
-    echo "[$(date)] Backup cronjobs to ${CRON_BACKUP_DIR}" | tee -a "$BACKUP_LOG_TMP"
-    # Backup cron jobs for the root user
-    \cp -af /var/spool/cron/root "${CRON_BACKUP_DIR}/root_cronjobs"
-    # Backup system-wide cron jobs
-    if [[ "$DEBUG_DISPLAY" = [yY] ]]; then
-      rsync -av${RSYNC_NEW_FLAGS} --delete /etc/cron.d/ "${CRON_BACKUP_DIR}/system_cronjobs/" | tee -a "$RSYNC_LOG"
-    else
-      rsync -av${RSYNC_NEW_FLAGS} --delete /etc/cron.d/ "${CRON_BACKUP_DIR}/system_cronjobs/" >> "$RSYNC_LOG" 2>&1
-    fi
-    DIRECTORIES_TO_BACKUP+=("$CRON_BACKUP_DIR")
-    if [ -d /root/.acme.sh ]; then
-      DIRECTORIES_TO_BACKUP+=("/root/.acme.sh")
-      DIRECTORIES_TO_BACKUP_NOCOMPRESS+=("/root/.acme.sh")
-    fi
-    if [ -d /root/.aws ]; then
-      DIRECTORIES_TO_BACKUP+=("/root/.aws")
-      DIRECTORIES_TO_BACKUP_NOCOMPRESS+=("/root/.aws")
-    fi
-    if [ -f /root/.my.cnf ]; then
-      DIRECTORIES_TO_BACKUP+=("/root/.my.cnf")
-      DIRECTORIES_TO_BACKUP_NOCOMPRESS+=("/root/.my.cnf")
-    fi
-    if [ -d /etc/sudoers.d ]; then
-      DIRECTORIES_TO_BACKUP+=("/etc/sudoers.d")
-      DIRECTORIES_TO_BACKUP_NOCOMPRESS+=("/etc/sudoers.d")
-    fi
-    if [ -f /etc/pure-ftpd/pureftpd.passwd ]; then
-      DIRECTORIES_TO_BACKUP+=("/etc/pure-ftpd/pureftpd.passwd")
-      DIRECTORIES_TO_BACKUP_NOCOMPRESS+=("/etc/pure-ftpd/pureftpd.passwd")
-    fi
-    if [ -f /etc/pure-ftpd/pureftpd.pdb ]; then
-      DIRECTORIES_TO_BACKUP+=("/etc/pure-ftpd/pureftpd.pdb")
-      DIRECTORIES_TO_BACKUP_NOCOMPRESS+=("/etc/pure-ftpd/pureftpd.pdb")
-    fi
-    if [ -f /etc/redis/redis.conf ]; then
-      DIRECTORIES_TO_BACKUP+=("/etc/redis/redis.conf")
-      DIRECTORIES_TO_BACKUP_NOCOMPRESS+=("/etc/redis/redis.conf")
-    fi
-    if [ -f /etc/redis/sentinel.conf ]; then
-      DIRECTORIES_TO_BACKUP+=("/etc/redis/sentinel.conf")
-      DIRECTORIES_TO_BACKUP_NOCOMPRESS+=("/etc/redis/sentinel.conf")
-    fi
-    if [ -f /etc/keydb/keydb.conf ]; then
-      DIRECTORIES_TO_BACKUP+=("/etc/keydb/keydb.conf")
-      DIRECTORIES_TO_BACKUP_NOCOMPRESS+=("/etc/keydb/keydb.conf")
-    fi
-    if [ -f /etc/keydb/sentinel.conf ]; then
-      DIRECTORIES_TO_BACKUP+=("/etc/keydb/sentinel.conf")
-      DIRECTORIES_TO_BACKUP_NOCOMPRESS+=("/etc/keydb/sentinel.conf")
-    fi
-    if [ -d /etc/supervisord ]; then
-      DIRECTORIES_TO_BACKUP+=("/etc/supervisord")
-      DIRECTORIES_TO_BACKUP_NOCOMPRESS+=("/etc/supervisord")
-    fi
-    if [ -d /etc/supervisord.d ]; then
-      DIRECTORIES_TO_BACKUP+=("/etc/supervisord.d")
-      DIRECTORIES_TO_BACKUP_NOCOMPRESS+=("/etc/supervisord.d")
-    fi
-    if [ -f /etc/supervisord.conf ]; then
-      DIRECTORIES_TO_BACKUP+=("/etc/supervisord.conf")
-      DIRECTORIES_TO_BACKUP_NOCOMPRESS+=("/etc/supervisord.conf")
-    fi
-    if [ -d /etc/elasticsearch ]; then
-      \cp -af /etc/elasticsearch /etc/elasticsearch-source
-      DIRECTORIES_TO_BACKUP+=("/etc/elasticsearch-source")
-      DIRECTORIES_TO_BACKUP_NOCOMPRESS+=("/etc/elasticsearch-source")
-    fi
-  fi
-  
-  if [[ "$files_mode" = 'all' || "$files_mode" = 'mariabackup' ]]; then
-    DIRECTORIES_TO_BACKUP+=("$MARIADB_TMP_DIR")
-    echo "[$(date)] Creating temporary MariaDB data directory ..."
-    mkdir -p "$MARIADB_TMP_DIR"
-    echo "[$(date)] Performing MariaBackup To $MARIADB_TMP_DIR ..."
-    if [[ "$DEBUG_DISPLAY" = [yY] ]]; then
-      echo "$MYSQLBACKUP_CMD_PREFIX --backup --target-dir=$MARIADB_TMP_DIR"
-      $MYSQLBACKUP_CMD_PREFIX --backup --target-dir="$MARIADB_TMP_DIR" 2>&1 | tee "$MARIABACKUP_LOG"
-      mariabackup_exit_status=${PIPESTATUS[2]}
-    else
-      $MYSQLBACKUP_CMD_PREFIX --backup --target-dir="$MARIADB_TMP_DIR" > "$MARIABACKUP_LOG" 2>&1
-      mariabackup_exit_status=${PIPESTATUS[2]}
-    fi
-    echo "[$(date)] Preparing MariaBackup At $MARIADB_TMP_DIR ..."
-    if [[ "$DEBUG_DISPLAY" = [yY] ]]; then
-      echo "$MYSQLBACKUP_CMD_PREFIX --prepare --target-dir=$MARIADB_TMP_DIR"
-      $MYSQLBACKUP_CMD_PREFIX --prepare --target-dir="$MARIADB_TMP_DIR" 2>&1 | tee -a "$MARIABACKUP_LOG"
-      mariabackup_exit_status=${PIPESTATUS[2]}
-    else
-      $MYSQLBACKUP_CMD_PREFIX --prepare --target-dir="$MARIADB_TMP_DIR" >> "$MARIABACKUP_LOG" 2>&1
-      mariabackup_exit_status=${PIPESTATUS[2]}
-    fi
-    if [ -f "$SCRIPT_DIR/mariabackup-restore.sh" ]; then
-      cp -a "$SCRIPT_DIR/mariabackup-restore.sh" "$MARIADB_TMP_DIR/mariabackup-restore.sh"
-      chmod +x "$MARIADB_TMP_DIR/mariabackup-restore.sh"
-    fi
-    cat "$MARIABACKUP_LOG" >> "$BACKUP_LOG_TMP"
-    echo "[$(date)] $MARIADB_TMP_DIR/mariabackup-restore.sh saved"
-    echo "[$(date)] MariaBackup log saved at $MARIABACKUP_LOG"
-  fi
-
-    # instructions for backup restoration
-cat > "$BASE_DIR/restore-instructions.txt" <<EOF
-# https://github.com/centminmod/centminmod/blob/141.00beta01/datamanagement/centmin.sh-menu-21.readme.md
-
-To restore the data from the backup, follow these steps:
-
-1. Transfer the backup file to the server where you want to restore the data from. Below instructions restore to staging directory at /home/restoredata
-2. Extract the contents of the backup file
-
-If you have tar version 1.31 or higher, it has native zstd compression support, and extract the backup using these 2 commands. Centmin Mod 130.00beta01's centmin.sh menu option 21, will automatically install a custom built tar 1.35 version YUM RPM binary at /usr/local/bin/tar to not conflict with system installed /usr/bin/tar and the custom tar 1.35 binary will take priority over system tar if called just as tar.
-
-Change path to /home/databackup/${DT}/centminmod_backup.tar.zst where you saved or transfered the backup to i.e. /home/remotebackup/centminmod_backup.tar.zst.
-
-   mkdir -p /home/restoredata
-   tar -I zstd -xf /home/databackup/${DT}/centminmod_backup.tar.zst -C /home/restoredata
-
-or
-
-   mkdir -p /home/restoredata
-   tar -I zstd -xf /home/remotebackup/vhosts/centminmod_backup.tar.zst -C /home/restoredata
-
-or
-
-   mkdir -p /home/restoredata
-   tar -I zstd -xf /home/remotebackup/centminmod_backup.tar.zst -C /home/restoredata
-
-If you have tar version lower than 1.31, you will have to extract the tar zstd compressed backup first.
-
-   mkdir -p /home/restoredata
-   zstd -d /home/databackup/${DT}/centminmod_backup.tar.zst
-   tar -xf /home/databackup/${DT}/centminmod_backup.tar -C /home/restoredata
-
-or
-
-   mkdir -p /home/restoredata
-   zstd -d /home/remotebackup/vhosts/centminmod_backup.tar.zst
-   tar -xf /home/remotebackup/vhosts/centminmod_backup.tar -C /home/restoredata
-
-or
-
-   mkdir -p /home/restoredata
-   zstd -d /home/remotebackup/centminmod_backup.tar.zst
-   tar -xf /home/remotebackup/centminmod_backup.tar -C /home/restoredata
-
-Custom tar 1.35
-
-tar --version
-tar (GNU tar) 1.35
-Copyright (C) 2023 Free Software Foundation, Inc.
-License GPLv3+: GNU GPL version 3 or later <https://gnu.org/licenses/gpl.html>.
-This is free software: you are free to change and redistribute it.
-There is NO WARRANTY, to the extent permitted by law.
-
-Written by John Gilmore and Jay Fenlason.
-
-3. Follow the instructions in the mariabackup-restore.sh script located in the extracted backup directory (e.g., ${BASE_DIR}/mariadb_tmp/mariabackup-restore.sh or /home/restoredata/${BASE_DIR}/mariadb_tmp/mariabackup-restore.sh) to restore the MariaDB MySQL databases.
-
-When you extract the backup centminmod_backup.tar.zst file to /home/restoredata, you'll find backup directories and files which correspond with the relative directory paths to root / for /etc, /home, /root and /usr respectively.
-
-Where:
-
-* /home/restoredata/etc/centminmod is the backup data for /etc/centminmod
-
-* /home/restoredata/etc/pure-ftpd is for /etc/pure-ftpd virtual FTP user database files
-
-* /home/restoredata${BASE_DIR}/domains_tmp is the backup data for /home/nginx/domains for Nginx vhost directories
-
-* /home/restoredata${BASE_DIR}/mariadb_tmp is the backup data for /var/lib/mysql MySQL data directory which also contains the MariaBackup MySQL data restore script at /home/restoredata${BASE_DIR}/mariadb_tmp/mariabackup-restore.sh. Provided you chose to backup MariaDB MySQL data.
-
-* /home/restoredata/root/tools is the backup data for /root/tools
-
-* /home/restoredata/usr/local/nginx/ is the backup data for /usr/local/nginx
-
-Then proceed to move the restored files to the correct locations. You can first use diff command to check backup versus destination directory files. Not all directories may exist as it's dependent on whether you have installed the software i.e. Redis and KeyDB.
-
-diff -ur /etc/centminmod /home/restoredata/etc/centminmod/
-diff -ur /etc/pure-ftpd /home/restoredata/etc/pure-ftpd
-diff -ur /etc/redis /home/restoredata/etc/redis
-diff -ur /etc/keydb /home/restoredata/etc/keydb
-diff -ur /root/.acme.sh /home/restoredata/root/.acme.sh/
-diff -ur /root/tools /home/restoredata/root/tools/
-diff -ur /usr/local/nginx /home/restoredata/usr/local/nginx/
-diff -ur /root/.my.cnf /home/restoredata/root/.my.cnf
-diff -ur /var/spool/cron/root /home/remotebackup/cronjobs_tmp/root_cronjobs
-
-If Elasticsearch is installed on both old and new server, centmin.sh menu option 21 backup script will backup /etc/elasticsearch as a copy located at /etc/elasticsearch-source so that restoration doesn't override, new server Elasticsearch instance. But you'd have /home/restoredata/etc/elasticsearch-source to reference old server's Elasticsearch settings.
-
-diff -ur /etc/elasticsearch /home/restoredata/etc/elasticsearch-source
-
-Example where /etc/centminmod/diff.txt file exists only on destination side
-
-diff -ur /home/restoredata/etc/centminmod/ /etc/centminmod
-Only in /etc/centminmod: diff.txt
-
-Then copy command will force override any existing files on destination directory side and ensure to backup new destination server's files for future reference for /etc/centminmod/custom_config.inc and /etc/centminmod/php.d/a_customphp.ini and /etc/my.cnf and /etc/centminmod/php.d/zendopcache.ini and /usr/local/nginx and /usr/local/nginx/conf/staticfiles.conf files/directory as you may want to use the new server's version of these files or directories for server settings instead of using old server's transferred settings.
-
-\cp -af /usr/local/nginx/conf/staticfiles.conf /usr/local/nginx/conf/staticfiles.conf.original
-\cp -af /usr/local/nginx /usr/local/nginx_original
-\cp -af /etc/my.cnf /etc/my.cnf.original
-\cp -af /root/.my.cnf /root/.my.cnf.original
-\cp -af /etc/redis/redis.conf /etc/redis/redis.conf.original
-\cp -af /etc/keydb/keydb.conf /etc/keydb/keydb.conf.original
-\cp -af /etc/centminmod/custom_config.inc /etc/centminmod/custom_config.inc.original
-\cp -af /etc/centminmod/php.d/a_customphp.ini /etc/centminmod/php.d/a_customphp.ini.original
-\cp -af /etc/centminmod/php.d/zendopcache.ini /etc/centminmod/php.d/zendopcache.ini.original
-\cp -af /home/restoredata/etc/centminmod/* /etc/centminmod/
-\cp -af /home/restoredata/etc/pure-ftpd/* /etc/pure-ftpd/
-\cp -af /home/restoredata/etc/redis/* /etc/redis/
-\cp -af /home/restoredata/etc/keydb/* /etc/keydb/
-mkdir -p /root/.acme.sh
-\cp -af /home/restoredata/root/.acme.sh/* /root/.acme.sh/
-\cp -af /home/restoredata/root/tools/* /root/tools/
-\cp -af /home/restoredata/usr/local/nginx/* /usr/local/nginx/
-
-For Nginx vhost data where backup directory timestamp = ${DT}
-
-\cp -af /home/restoredata/home/databackup/${DT}/domains_tmp/* /home/nginx/domains/
-
-Or if disk space is a concern, instead of copy command use move commands
-
-\cp -af /usr/local/nginx/conf/staticfiles.conf /usr/local/nginx/conf/staticfiles.conf.original
-\cp -af /usr/local/nginx /usr/local/nginx_original
-\cp -af /etc/my.cnf /etc/my.cnf.original
-\cp -af /etc/centminmod/custom_config.inc /etc/centminmod/custom_config.inc.original
-\cp -af /etc/centminmod/php.d/a_customphp.ini /etc/centminmod/php.d/a_customphp.ini.original
-\cp -af /etc/centminmod/php.d/zendopcache.ini /etc/centminmod/php.d/zendopcache.ini.original
-mv -f /home/restoredata/etc/centminmod/* /etc/centminmod/
-mv -f /home/restoredata/etc/pure-ftpd/* /etc/pure-ftpd/
-mv -f /home/restoredata/etc/redis/* /etc/redis/
-mv -f /home/restoredata/etc/keydb/* /etc/keydb/
-mkdir -p /root/.acme.sh
-mv -f /home/restoredata/root/.acme.sh/* /root/.acme.sh/
-mv -f /home/restoredata/root/tools/* /root/tools/
-mv -f /home/restoredata/usr/local/nginx/* /usr/local/nginx/
-
-For Nginx vhost data where backup directory timestamp = ${DT}
-
-mv -f /home/restoredata/home/databackup/${DT}/domains_tmp/* /home/nginx/domains/
-
-Check overwritten files
-
-diff -ur /etc/centminmod/custom_config.inc.original /etc/centminmod/custom_config.inc
-diff -ur /usr/local/nginx_original/conf/conf.d/virtual.conf /usr/local/nginx/conf/conf.d/virtual.conf
-diff -ur /usr/local/nginx_original/conf/nginx.conf /usr/local/nginx/conf/nginx.conf
-diff -ur /etc/redis/redis.conf.original /etc/redis/redis.conf
-diff -ur /etc/keydb/keydb.conf.original /etc/keydb/keydb.conf
-
-If no changes to virtual.conf and nginx.conf use new server one
-
-\cp -af /usr/local/nginx_original/conf/nginx.conf /usr/local/nginx/conf/nginx.conf
-\cp -af /usr/local/nginx_original/conf/conf.d/virtual.conf /usr/local/nginx/conf/conf.d/virtual.conf
-diff -ur /usr/local/nginx_original/conf/nginx.conf /usr/local/nginx/conf/nginx.conf
-diff -ur /usr/local/nginx_original/conf/conf.d/virtual.conf /usr/local/nginx/conf/conf.d/virtual.conf
-
-\cp -af /etc/redis/redis.conf.original /etc/redis/redis.conf
-\cp -af /etc/keydb/keydb.conf.original /etc/keydb/keydb.conf
-diff -ur /etc/redis/redis.conf.original /etc/redis/redis.conf
-diff -ur /etc/keydb/keydb.conf.original /etc/keydb/keydb.conf
-
-Restore cronjobs
-
-crontab -l > /etc/centminmod/cronjobs/cronjoblist-restore-from-migration.txt
-cat /etc/centminmod/cronjobs/cronjoblist-restore-from-migration.txt
-crontab /home/remotebackup/cronjobs_tmp/root_cronjobs
-
-The /home/restoredata${BASE_DIR}/mariadb_tmp/mariabackup-restore.sh script has 2 options to restore MariaDB MySQL data either via copy-back or move-back. 
-
-1. copy-back: This option copies the backup files back to the original data directory at /var/lib/mysql. The backup files themselves are not altered or removed. The script checks if the provided backup directory is valid and if the backup and current MariaDB versions match. If everything is fine, it proceeds with copying the backup files back to the original data directory at /var/lib/mysql.
-2. move-back: This option moves the backup files back to the original data directory at /var/lib/mysql. Unlike copy-back, the backup files are removed from the backup directory. The script checks if the provided backup directory is valid and if the backup and current MariaDB versions match. If everything is fine, it proceeds with moving the backup files back to the original data directory at /var/lib/mysql.
-
-Both options involve the following steps:
-
-* The script first checks if the provided directory contains valid MariaBackup data.
-* It then compares the MariaDB version used for the backup with the version running on the current system. The script aborts the restore process if the versions do not match.
-* The MariaDB server is stopped, and the existing data directory is backed up to /var/lib/mysql-copy-datetimestamp and then /var/lib/mysql data directory is emptied.
-* The ownership of the data directory is changed to mysql:mysql.
-* The MariaDB server is started.
-* Depending on the option chosen (copy-back or move-back), the script copies or moves the backup files back to the original data directory.
-
-mariabackup-restore.sh Usage help output:
-
-./mariabackup-restore.sh
-Usage: ./mariabackup-restore.sh [copy-back|move-back] /path/to/backup/dir/
-
-Actual command where backup directory timestamp = ${DT}
-
-time /home/restoredata/home/databackup/${DT}/mariadb_tmp/mariabackup-restore.sh copy-back /home/restoredata/home/databackup/${DT}/mariadb_tmp/
-
-Then restore /root/.my.cnf
-
-\cp -af /home/restoredata/root/.my.cnf /root/.my.cnf
-
-**Note:** Make sure to adjust the paths in the commands above to match the actual location of your backup files.
-EOF
-  
-  if [[ "$FILES_TARBALL_CREATION" = [yY] ]]; then
-    # echo "[$(date)] Total uncompressed size of all directories to be backed up: $hr_total_size"
-    echo "[$(date)] Creating backup tarball using zstd compression ($COMPRESSION_LEVEL_ZSTD_SET_LABEL)"
-    if [[ "$DEBUG_DISPLAY" = [yY] ]]; then
-      echo "[$(date)] ls -lAh ${DIRECTORIES_TO_BACKUP[@]}"
-      ls -lAh ${DIRECTORIES_TO_BACKUP[@]}
-      echo
-      echo "[$(date)] tar --use-compress-program=\"zstd${COMPRESSION_LEVEL_ZSTD_SET}${COMPRESS_RSYNCABLE_OPT}\" -cvpf \"$BACKUP_NAME\" ${DIRECTORIES_TO_BACKUP[@]} | tee \"$BACKUP_LOG_TMP\""
-      tar --use-compress-program="zstd${COMPRESSION_LEVEL_ZSTD_SET}${COMPRESS_RSYNCABLE_OPT}" -cvpf "$BACKUP_NAME" ${DIRECTORIES_TO_BACKUP[@]} | tee "$BACKUP_LOG_TMP"
-    else
-      tar --use-compress-program="zstd${COMPRESSION_LEVEL_ZSTD_SET}${COMPRESS_RSYNCABLE_OPT}" -cvpf "$BACKUP_NAME" ${DIRECTORIES_TO_BACKUP[@]} >> "$BACKUP_LOG_TMP" 2>&1
-    fi
-    echo "[$(date)] Cleaning up temporary directories ..."
-    if [[ "$DEBUG_DISPLAY" = [yY] ]]; then
-      echo "rm -rf $DOMAINS_TMP_DIR"
-      rm -rf "$DOMAINS_TMP_DIR"
-      echo "rm -rf $MARIADB_TMP_DIR"
-      rm -rf "$MARIADB_TMP_DIR"
-    else
-      rm -rf "$DOMAINS_TMP_DIR"
-      rm -rf "$MARIADB_TMP_DIR"
-    fi
-    echo "[$(date)] Backup completed. File: $BACKUP_NAME"
-    if [ -f "$BACKUP_LOG_TMP" ]; then
-      mv -f "$BACKUP_LOG_TMP" "$BACKUP_LOG"
-      BACKUP_LOG_FINAL=$BACKUP_LOG
-    fi
-  else
-    if [[ "$files_mode" = 'all' ]]; then
-      # non-vhost files backup that non-tar compressed miss
-      for dir in "${DIRECTORIES_TO_BACKUP_NOCOMPRESS[@]}"; do
-        echo "[$(date)] rsync non-vhost files in $dir to backup location $BASE_DIR"
-        if [[ "$DEBUG_DISPLAY" = [yY] ]]; then
-          mkdir -p "${BASE_DIR}${dir}"
-          rsync -av${RSYNC_NEW_FLAGS} --delete $dir/ "${BASE_DIR}${dir}/" | tee -a "$RSYNC_LOG"
-        else
-          mkdir -p "${BASE_DIR}${dir}"
-          rsync -av${RSYNC_NEW_FLAGS} --delete $dir/ "${BASE_DIR}${dir}/" >> "$RSYNC_LOG" 2>&1
-        fi
-      done
-      echo
-      echo "[$(date)] Backup completed at $BASE_DIR"
-      if [ -f "$BACKUP_LOG_TMP" ]; then
-        mv -f "$BACKUP_LOG_TMP" "$BACKUP_LOG"
-        BACKUP_LOG_FINAL=$BACKUP_LOG
-        BACKUP_DIR_FINAL=$BASE_DIR
-      fi
-    elif [[ "$files_mode" = 'filesbackup' ]]; then
-      # non-vhost files backup that non-tar compressed miss
-      for dir in "${DIRECTORIES_TO_BACKUP_NOCOMPRESS[@]}"; do
-        echo "[$(date)] rsync non-vhost files in $dir to backup location $BASE_DIR"
-        if [[ "$DEBUG_DISPLAY" = [yY] ]]; then
-          mkdir -p "${BASE_DIR}${dir}"
-          rsync -av${RSYNC_NEW_FLAGS} --delete $dir/ "${BASE_DIR}${dir}/" | tee -a "$RSYNC_LOG"
-        else
-          mkdir -p "${BASE_DIR}${dir}"
-          rsync -av${RSYNC_NEW_FLAGS} --delete $dir/ "${BASE_DIR}${dir}/" >> "$RSYNC_LOG" 2>&1
-        fi
-      done
-      echo
-      echo "[$(date)] Backup completed at $DOMAINS_TMP_DIR"
-      if [ -f "$BACKUP_LOG_TMP" ]; then
-        mv -f "$BACKUP_LOG_TMP" "$DOMAINS_TMP_DIR"
-        BACKUP_LOG_FINAL="$DOMAINS_TMP_DIR/$BACKUP_LOG_FILENAME"
-        BACKUP_DIR_FINAL=$BASE_DIR
-      fi
-    elif [[ "$files_mode" = 'mariabackup' ]]; then
-      echo "[$(date)] Backup completed at $MARIADB_TMP_DIR"
-      if [ -f "$BACKUP_LOG_TMP" ]; then
-        mv -f "$BACKUP_LOG_TMP" "$MARIADB_TMP_DIR"
-        BACKUP_LOG_FINAL="$MARIADB_TMP_DIR/$BACKUP_LOG_FILENAME"
-        BACKUP_DIR_FINAL=$BASE_DIR
-      fi
-    else
-      echo "[$(date)] Backup completed at $BASE_DIR"
-      if [ -f "$BACKUP_LOG_TMP" ]; then
-        mv -f "$BACKUP_LOG_TMP" "$BACKUP_LOG"
-        BACKUP_LOG_FINAL=$BACKUP_LOG
-        BACKUP_DIR_FINAL=$BASE_DIR
-      fi
-    fi
-  fi
-
-  # Sync with AWS S3
-  if [[ "$AWSUPLOAD" = [yY] || "$BACKBLAZE_UPLOAD" = [yY] || "$DIGITALOCEAN_UPLOAD" = [yY] || "$LINODE_UPLOAD" = [yY] || "$CFR2_UPLOAD" = [yY] || "$UPCLOUD_UPLOAD" = [yY] ]]; then
-    echo -e "\nTransfer backups to S3 storage to bucket: ${S3_LABEL}"
-    echo "aws --only-show-errors s3 sync --profile=${AWS_PROFILE}${S3_ENDPOINT_OPT_LABEL} \"$BACKUP_DIR_FINAL\" \"s3://$BUCKET/mysql/$DT\""
-    aws --only-show-errors s3 sync --profile=${AWS_PROFILE}${S3_ENDPOINT_OPT} "$BACKUP_DIR_FINAL" "s3://$BUCKET/mysql/$DT" | tee -a "$BACKUP_LOG_FINAL"
-  fi 
-  if [ $? -ne 0 ]; then
-    echo "[$(date)] Error syncing with S3" | tee -a "$BACKUP_LOG_FINAL"
-    error_flag=1
-  else
-    if [[ "$AWSUPLOAD" = [yY] || "$BACKBLAZE_UPLOAD" = [yY] || "$DIGITALOCEAN_UPLOAD" = [yY] || "$LINODE_UPLOAD" = [yY] || "$CFR2_UPLOAD" = [yY] || "$UPCLOUD_UPLOAD" = [yY] ]]; then
-      echo "[$(date)] S3 transfer completed to bucket: ${S3_LABEL}" | tee -a "$BACKUP_LOG_FINAL"
-    fi
-  fi
-
-  echo "[$(date)] Backup Log saved: $BACKUP_LOG_FINAL"
-  END_TIME=$(date +%s)
-  ELAPSED_TIME=$((END_TIME - START_TIME))
-  echo "[$(date)] Script execution time: $ELAPSED_TIME seconds"
-}
-
-mysql_backup() {
-  mode=$1
-  tar_comp="$2"
-  # Check disk space before backup
-  check_disk_space "$MYSQL_BACKUP_DIR"
-  chown mysql:mysql "$MYSQL_BACKUP_DIR"
-  # Check if binary logging is enabled
-  binary_logging=$($MYSQL_CMD_PREFIX -e "SHOW VARIABLES WHERE Variable_name = 'log_bin';" | grep -i "ON")
-  if [ -z "$binary_logging" ]; then
-    error_flag=0
-    $MYSQLDUMP_CMD_PREFIX --single-transaction --flush-logs --databases mysql > "${MYSQL_BACKUP_DIR}/master_data.sql" || error_flag=1
-  else
-    error_flag=0
-    $MYSQLDUMP_CMD_PREFIX --master-data=2 --single-transaction --flush-logs --databases mysql > "${MYSQL_BACKUP_DIR}/master_data.sql" || error_flag=1
-  fi
-  databases=$($MYSQL_CMD_PREFIX -e "SHOW DATABASES;" | grep -Ev "(Database|information_schema|performance_schema|_restorecopy_)")
-  for db in $databases; do
-    # Check disk space during backup
-    check_disk_space "$MYSQL_BACKUP_DIR"
-    db_fs_name=$(echo "$db" | sed -e "s|-|@002d|g"); mkdir -p "${MYSQL_BACKUP_DIR}/${db_fs_name}"; chown -R mysql:mysql "${MYSQL_BACKUP_DIR}/${db_fs_name}"; db_disksize=$(du -s ${DATADIR}${db_fs_name} | awk '{print $1/1024}')
-    if [[ "$DEBUG_DISPLAY" = [yY] ]]; then
-      echo -e "\n[$(date)] backup database: ${db} (${db_disksize} MB)" | tee -a "$MYSQL_LOG_FILE"
-      echo -e "\n[$(date)] $MYSQLDUMP_CMD_PREFIX -d $db > ${MYSQL_BACKUP_DIR}/${db_fs_name}/${db}-schema-only.sql"
-      echo -e "\n[$(date)] $MYSQLDUMP_CMD_PREFIX $db --tab=${MYSQL_BACKUP_DIR}/${db_fs_name}" | tee -a "$MYSQL_LOG_FILE"
-    else
-      echo -e "[$(date)] backup database: ${db} (${db_disksize} MB)" | tee -a "$MYSQL_LOG_FILE"
-    fi
-    # create a full schema only database sql for foreign key based tables proper restoration
-    $MYSQLDUMP_CMD_PREFIX -d $db > "${MYSQL_BACKUP_DIR}/${db_fs_name}/${db}-schema-only.sql"
-    if [[ "$CHECKSUMS" = [yY] ]]; then
-      # Generate and store the checksum for the schema-only .sql file
-      sha256sum "${MYSQL_BACKUP_DIR}/${db_fs_name}/${db}-schema-only.sql" > "${MYSQL_BACKUP_DIR}/${db_fs_name}/${db}-schema-only.sql.sha256"
-    fi
-    rm -f time_output.txt mysqldump_output.txt
-    # Run the mysqldump command and measure its execution time
-    { /usr/bin/time --format='real: %es user: %Us sys: %Ss cpu: %P maxmem: %M KB cswaits: %w' $MYSQLDUMP_CMD_PREFIX $db --tab="${MYSQL_BACKUP_DIR}/${db_fs_name}"; } > mysqldump_output.txt 2> time_output.txt
-    backup_err=${PIPESTATUS[3]}
-    echo "[$(date)] backup time for $db: $(cat time_output.txt| awk '{print $2}')"
-    # Append the time output and mysqldump output to the log file
-    cat time_output.txt mysqldump_output.txt >> "$MYSQL_LOG_FILE"
-    rm -f time_output.txt mysqldump_output.txt
-    if [[ "$backup_err" -ne 0 ]]; then
-      echo "[$(date)] Error backing up database: $db" | tee -a "$MYSQL_LOG_FILE"; error_flag=1; continue
-    fi
-    txt_files="$(find ${MYSQL_BACKUP_DIR}/${db_fs_name}/ -type f -name "*.txt")"
-    if [[ "$CHECKSUMS" = [yY] ]]; then
-      # Generate and store the checksums for the .txt files
-      for txt_file in $txt_files; do
-        sha256sum "$txt_file" > "${txt_file}.sha256"
-      done
-    fi
-    for txt_file in $txt_files; do
-      if [ "$COMPRESSION_METHOD" == "pigz" ]; then
-        if [[ "$DEBUG_DISPLAY" = [yY] ]]; then
-          echo "[$(date)] Compress $txt_file with pigz" | tee -a "$MYSQL_LOG_FILE"
-          echo "pigz ${COMPRESSION_LEVEL_GZIP}${COMPRESS_RSYNCABLE_OPT} \"$txt_file\"" >> "$MYSQL_LOG_FILE"
-        fi
-        echo "pigz ${COMPRESSION_LEVEL_GZIP}${COMPRESS_RSYNCABLE_OPT} \"$txt_file\"" >> "$MYSQL_LOG_FILE"
-        pigz ${COMPRESSION_LEVEL_GZIP}${COMPRESS_RSYNCABLE_OPT} "$txt_file"
-      elif [ "$COMPRESSION_METHOD" == "zstd" ]; then
-        if [[ "$DEBUG_DISPLAY" = [yY] ]]; then
-          echo "[$(date)] Compress $txt_file with zstd" | tee -a "$MYSQL_LOG_FILE"
-          echo "zstd${COMPRESSION_LEVEL_ZSTD_SET}${COMPRESS_RSYNCABLE_OPT} -q -f --rm -o \"${txt_file}.zst\" \"$txt_file\"" >> "$MYSQL_LOG_FILE"
-        fi
-        echo "zstd${COMPRESSION_LEVEL_ZSTD_SET}${COMPRESS_RSYNCABLE_OPT} -q -f --rm -o \"${txt_file}.zst\" \"$txt_file\"" >> "$MYSQL_LOG_FILE"
-        zstd${COMPRESSION_LEVEL_ZSTD_SET}${COMPRESS_RSYNCABLE_OPT} -q -f --rm -o "${txt_file}.zst" "$txt_file"
-      fi
-    done
-  done
-
-  if [ -z "$binary_logging" ]; then
-    master_info=""
-  else
-    master_info=$(grep -m 1 -oP "(?<=-- CHANGE MASTER TO MASTER_LOG_FILE=')[^']+(?=')|(?<=MASTER_LOG_POS=)[0-9]+" "${MYSQL_BACKUP_DIR}/master_data.sql" | paste -sd ',' -)
-  fi
-  restore_script="${MYSQL_BACKUP_DIR}/restore.sh"; echo -e "#!/bin/bash\nset -e\ncpu=\$(nproc)\n\nscript_dir=\$(dirname \"\$(realpath \"\$0\")\")" > "$restore_script"
-  echo "case \"\$1\" in" >> "$restore_script"
-  echo "  all)" >> "$restore_script"
-  for db in $databases; do
-    db_fs_name=$(echo "$db" | sed -e "s|-|@002d|g")
-    echo -e "    echo \"Checking if database exists: $db\"\n    set +e\n    db_exists=\$($MYSQL_CMD_PREFIX -BNe \"SHOW DATABASES LIKE '$db';\" | grep -w \"$db\")\n    if [ ! -z \"\$db_exists\" ]; then\n      DT=\$(date +\"%Y%m%d%H%M%S\")\n      origin_db_name=\"${db}\"\n      new_db_name=\"${db}_restorecopy_\$DT\"\n      echo \"Database already exists. Restoring to a new database: \$new_db_name\"\n    else\n      origin_db_name=\"${db}\"\n      new_db_name=\"$db\"\n    fi\n    $MYSQL_CMD_PREFIX -e \"CREATE DATABASE IF NOT EXISTS \$new_db_name;\"\n    (echo \"SET FOREIGN_KEY_CHECKS=0;\"; cat \"\$script_dir\"/${db_fs_name}/\${origin_db_name}-schema-only.sql; echo \"SET FOREIGN_KEY_CHECKS=1;\") | $MYSQL_CMD_PREFIX \$new_db_name;\n    find \"\$script_dir\"/${db_fs_name} -iname \"*.txt.zst\" -o -iname \"*.txt.gz\" | while read -r file; do ext=\"\${file##*.}\"; orig_file=\"\${file%.*}\"; if [ \"\$ext\" = \"zst\" ]; then zstd -cd \"\$file\" > \"\$orig_file\"; else gzip -cd \"\$file\" > \"\$orig_file\"; fi; done\n    mysqlimport --default-character-set=utf8mb4 --ignore-foreign-keys --use-threads=\$cpu${MYSQLIMPORT_OPTS} \$new_db_name \"\$script_dir\"/${db_fs_name}/*.txt\n    mysqlimport_err=\$?\n    if [ \$mysqlimport_err -eq 0 ]; then\n      rm -f \"\$script_dir\"/${db_fs_name}/*.zst \"\$script_dir\"/${db_fs_name}/*.gz\n    else\n      echo \"Error: mysqlimport exited with status \$mysqlimport_err\"\n      exit \$mysqlimport_err\n    fi\n" >> "$restore_script"
-  done
-  echo "    ;;" >> "$restore_script"
-  for db in $databases; do
-    db_fs_name=$(echo "$db" | sed -e "s|-|@002d|g")
-    echo "  $db)" >> "$restore_script"
-    echo -e "    echo \"Checking if database exists: $db\"\n    set +e\n    db_exists=\$($MYSQL_CMD_PREFIX -BNe \"SHOW DATABASES LIKE '$db';\" | grep -w \"$db\")\n    if [ ! -z \"\$db_exists\" ]; then\n      DT=\$(date +\"%Y%m%d%H%M%S\")\n      origin_db_name=\"${db}\"\n      new_db_name=\"${db}_restorecopy_\$DT\"\n      echo \"Database already exists. Restoring to a new database: \$new_db_name\"\n    else\n      origin_db_name=\"${db}\"\n      new_db_name=\"$db\"\n    fi\n    $MYSQL_CMD_PREFIX -e \"CREATE DATABASE IF NOT EXISTS \$new_db_name;\"\n    (echo \"SET FOREIGN_KEY_CHECKS=0;\" ; cat \"\$script_dir\"/${db_fs_name}/\${origin_db_name}-schema-only.sql ; echo \"SET FOREIGN_KEY_CHECKS=1;\") | $MYSQL_CMD_PREFIX \$new_db_name;\n    find \"\$script_dir\"/${db_fs_name} -iname \"*.txt.zst\" -o -iname \"*.txt.gz\" | while read -r file; do ext=\"\${file##*.}\"; orig_file=\"\${file%.*}\"; if [ \"\$ext\" = \"zst\" ]; then zstd -cd \"\$file\" > \"\$orig_file\"; else gzip -cd \"\$file\" > \"\$orig_file\"; fi; done\n    mysqlimport --default-character-set=utf8mb4 --ignore-foreign-keys --use-threads=\$cpu${MYSQLIMPORT_OPTS} \$new_db_name \"\$script_dir\"/${db_fs_name}/*.txt\n    mysqlimport_err=\$?\n    if [ \$mysqlimport_err -eq 0 ]; then\n      rm -f \"\$script_dir\"/${db_fs_name}/*.zst \"\$script_dir\"/${db_fs_name}/*.gz\n    else\n      echo \"Error: mysqlimport exited with status \$mysqlimport_err\"\n      exit \$mysqlimport_err\n    fi\n    ;;" >> "$restore_script"
-  done
-  db_list=$(echo "$databases" | sed -e "s|^|\$0 |" | tr '\n' '\\n')
-  echo "  *)" >> "$restore_script"
-  echo "    echo -e \"Usage:\\n\\n\$0 all\"" >> "$restore_script"
-  for db in $databases; do
-      echo "    echo \"$restore_script $db\"" >> "$restore_script"
-  done
-  echo "    ;;" >> "$restore_script"
-  echo "esac" >> "$restore_script"
-  chmod +x "$restore_script"
-  if [ $error_flag -eq 0 ]; then
-    if [ -z "$binary_logging" ]; then
-      echo -e "\n[$(date)] MySQL backup completed.\n[$(date)] Restore script generated: $restore_script" | tee -a "$MYSQL_LOG_FILE"
-    else
-      echo -e "\n[$(date)] MySQL backup completed. MASTER_LOG_FILE and MASTER_LOG_POS: $master_info\n[$(date)] Restore script generated: $restore_script\n[$(date)] Master Info log generated: $MASTERINFO_LOG_FILE\n[$(date)] Backup log file generated: $MYSQL_LOG_FILE" | tee -a "$MYSQL_LOG_FILE"
-      echo "$master_info" > "$MASTERINFO_LOG_FILE"
-      if [[ "$mode" = 'all' ]]; then
-        mysqlbackup_binlog_filename=$($MYSQL_CMD_PREFIX -e "SHOW MASTER LOGS;" | grep "mysql-bin" | awk '{print $1}' | xargs)
-        startpos=$(awk -F ',' '{print $2}' $MASTERINFO_LOG_FILE)
-        echo "mysqlbinlog --start-position=${startpos} $mysqlbackup_binlog_filename | mysql" >> "$MASTERINFO_LOG_FILE"
-      fi
-    fi
-    # Sync with AWS S3
-    if [[ "$AWSUPLOAD" = [yY] || "$BACKBLAZE_UPLOAD" = [yY] || "$DIGITALOCEAN_UPLOAD" = [yY] || "$LINODE_UPLOAD" = [yY] || "$CFR2_UPLOAD" = [yY] || "$UPCLOUD_UPLOAD" = [yY] ]]; then
-      echo -e "\nTransfer backup to S3 storage to ${S3_LABEL}"
-      echo "aws --only-show-errors s3 sync --profile=${AWS_PROFILE}${S3_ENDPOINT_OPT_LABEL} \"$MYSQL_BACKUP_DIR\" \"s3://$BUCKET/mysql/$DT\""
-      aws --only-show-errors s3 sync --profile=${AWS_PROFILE}${S3_ENDPOINT_OPT} "$MYSQL_BACKUP_DIR" "s3://$BUCKET/mysql/$DT" | tee -a "$MYSQL_LOG_FILE"
-    fi 
-    if [ $? -ne 0 ]; then
-      echo "[$(date)] Error syncing with S3" | tee -a "$MYSQL_LOG_FILE"
-      error_flag=1
-    fi
-  else
-    echo "[$(date)] MySQL backup encountered errors." | tee -a "$MYSQL_LOG_FILE"
-  fi
-  # After the backup is complete, you can calculate the final disk space utilization
-  mysql_backup_size=$(du -k "$MYSQL_BACKUP_DIR" | tail -1 | cut -f1)
-  echo "[$(date)] Backup size: $mysql_backup_size KB"
-  echo "[$(date)] Backup saved to $MYSQL_BACKUP_DIR"
-}
-
-backup_binlogs() {
-  mode=$1
-  tar_comp="$2"
-  if [[ "$mode" != 'all' ]]; then
-    flush_binlogs
-  fi
-  if [[ -z "$tar_comp" ]]; then
-    COMPRESSION_METHOD="$COMPRESSION_METHOD"
-  elif [[ "$tar_comp" = 'comp' ]]; then
-    COMPRESSION_METHOD='zstd'
-  elif [[ "$tar_comp" = 'pigz' ]]; then
-    COMPRESSION_METHOD='pigz'
-  fi
-  binlogs_size=$(ls -lart $DATADIR | awk "/mysql-bin/ {total += \$5} END {print \"[$(date)] Total size of mysql-bin files:\", total / (1024 * 1024), \"MB\"}")
-  # Check disk space before backup
-  check_disk_space "$BACKUP_DIR"
-  # Check if binary logging is enabled
-  binary_logging=$($MYSQL_CMD_PREFIX -e "SHOW VARIABLES WHERE Variable_name = 'log_bin';" | grep -i "ON")
-  if [ -z "$binary_logging" ]; then
-    echo "[$(date)] Binary logging is not enabled. Exiting..." | tee -a "$LOG_FILE"
-    return 1
-  fi
-
-  # Check if any binary logs exist
-  MYSQL_BINLOG_FILENAME=$($MYSQL_CMD_PREFIX -e "SHOW MASTER LOGS;" | grep "mysql-bin" | awk '{print $1}')
-  if [ -z "$MYSQL_BINLOG_FILENAME" ]; then
-    echo "[$(date)] No binary logs found. Exiting..." | tee -a "$LOG_FILE"
-    return 1
-  fi
-
-  echo "[$(date)] Starting binlog backup process..." | tee -a "$LOG_FILE"
-  error_flag=0
-  echo "$binlogs_size"
-  for file in $MYSQL_BINLOG_FILENAME; do
-    # file_fullpath="${DATADIR}${file}"
-    mkdir -p "$BACKUP_DIR" && chown mysql:mysql "$BACKUP_DIR" && cd "$BACKUP_DIR"
-    # Check disk space during backup
-    check_disk_space "$BACKUP_DIR"
-    if [[ "$DEBUG_DISPLAY" = [yY] ]]; then
-      echo "[$(date)] backup binlog ${DATADIR}/$file" | tee -a "$LOG_FILE"
-      echo "[$(date)] $MYSQLBINLOG_CMD_PREFIX --read-from-remote-server --raw ${file}" | tee -a "$LOG_FILE"
-    else
-      echo "[$(date)] backup binlog ${DATADIR}/${file}" | tee -a "$LOG_FILE"
-    fi
-    $MYSQLBINLOG_CMD_PREFIX --read-from-remote-server --raw "$file" | tee -a "$LOG_FILE"
-    mysqlbinlog_exit_status=${PIPESTATUS[2]}
-    if [[ "$mysqlbinlog_exit_status" -ne 0 ]]; then echo "[$(date)] Error reading binary log $file" | tee -a "$LOG_FILE"; error_flag=1; continue; fi
-    if [ "$COMPRESSION_METHOD" == "none" ]; then
-      if [[ "$CHECKSUMS" = [yY] ]]; then
-        if [[ "$DEBUG_DISPLAY" = [yY] ]]; then
-          echo "[$(date)] sha256sum $BACKUP_DIR/$file" | tee -a "$LOG_FILE"
-        fi
-        sha256sum "$BACKUP_DIR/$file" > "$BACKUP_DIR/$file.sha256"
-      fi
-    elif [ "$COMPRESSION_METHOD" == "pigz" ]; then
-      if [[ "$CHECKSUMS" = [yY] ]]; then
-        if [[ "$DEBUG_DISPLAY" = [yY] ]]; then
-          echo "[$(date)] sha256sum $BACKUP_DIR/$file" | tee -a "$LOG_FILE"
-        fi
-        sha256sum "$BACKUP_DIR/$file" > "$BACKUP_DIR/$file.sha256"
-      fi
-      if [[ "$DEBUG_DISPLAY" = [yY] ]]; then
-        echo "[$(date)] pigz ${COMPRESSION_LEVEL_GZIP}${COMPRESS_RSYNCABLE_OPT} $BACKUP_DIR/$file" | tee -a "$LOG_FILE"
-        echo "pigz ${COMPRESSION_LEVEL_GZIP}${COMPRESS_RSYNCABLE_OPT} \"$BACKUP_DIR/$file\"" >> "$LOG_FILE"
-      fi
-      echo "pigz ${COMPRESSION_LEVEL_GZIP}${COMPRESS_RSYNCABLE_OPT} \"$BACKUP_DIR/$file\"" >> "$LOG_FILE"
-      pigz ${COMPRESSION_LEVEL_GZIP}${COMPRESS_RSYNCABLE_OPT} "$BACKUP_DIR/$file"
-    elif [ "$COMPRESSION_METHOD" == "zstd" ]; then
-      if [[ "$CHECKSUMS" = [yY] ]]; then
-        if [[ "$DEBUG_DISPLAY" = [yY] ]]; then
-          echo "[$(date)] sha256sum $BACKUP_DIR/$file" | tee -a "$LOG_FILE"
-        fi
-        sha256sum "$BACKUP_DIR/$file" > "$BACKUP_DIR/$file.sha256"
-      fi
-      if [[ "$DEBUG_DISPLAY" = [yY] ]]; then
-        echo "[$(date)] zstd${COMPRESSION_LEVEL_ZSTD_SET}${COMPRESS_RSYNCABLE_OPT} -q -f --rm -o $BACKUP_DIR/$file.zst $BACKUP_DIR/$file" | tee -a "$LOG_FILE"
-        echo "zstd${COMPRESSION_LEVEL_ZSTD_SET}${COMPRESS_RSYNCABLE_OPT} -q -f --rm -o \"$BACKUP_DIR/$file.zst\" \"$BACKUP_DIR/$file\"" >> "$LOG_FILE"
-      fi
-      echo "zstd${COMPRESSION_LEVEL_ZSTD_SET}${COMPRESS_RSYNCABLE_OPT} -q -f --rm -o \"$BACKUP_DIR/$file.zst\" \"$BACKUP_DIR/$file\"" >> "$LOG_FILE"
-      zstd${COMPRESSION_LEVEL_ZSTD_SET}${COMPRESS_RSYNCABLE_OPT} -q -f --rm -o "$BACKUP_DIR/$file.zst" "$BACKUP_DIR/$file"; fi
-    if [ $? -ne 0 ]; then echo "[$(date)] Error compressing binary log $file" | tee -a "$LOG_FILE"; error_flag=1; continue; fi
-  done
-  if [[ "$AWSUPLOAD" = [yY] || "$BACKBLAZE_UPLOAD" = [yY] || "$DIGITALOCEAN_UPLOAD" = [yY] || "$LINODE_UPLOAD" = [yY] || "$CFR2_UPLOAD" = [yY] || "$UPCLOUD_UPLOAD" = [yY] ]]; then
-    echo -e "\nTransfer backup to S3 storage to ${S3_LABEL}"
-    echo "aws --only-show-errors s3 sync --profile=${AWS_PROFILE}${S3_ENDPOINT_OPT_LABEL} \"$BACKUP_DIR\" \"s3://$BUCKET/binlog/$DT\""
-    aws --only-show-errors s3 sync --profile=${AWS_PROFILE}${S3_ENDPOINT_OPT} "$BACKUP_DIR" "s3://$BUCKET/binlog/$DT" | tee -a "$LOG_FILE" && if [ $? -ne 0 ]; then echo "[$(date)] Error syncing with S3" | tee -a "$LOG_FILE"; error_flag=1; fi
-  fi
-  if [ $error_flag -eq 0 ]; then find "$BACKUP_DIR_PARENT" -mtime +${BACKUP_RETAIN_DAYS} \( -name "mysql-bin.*.gz" -o -name "mysql-bin.*.zst" \) -exec rm -rf {} \; && echo "[$(date)] Backup saved to ${BACKUP_DIR}" | tee -a "$LOG_FILE"; else echo "[$(date)] Backup to ${BACKUP_DIR} encountered errors." | tee -a "$LOG_FILE"; fi
-  # After the backup is complete, you can calculate the final disk space utilization
-  mysqlbinlog_backup_size=$(du -k "$BACKUP_DIR" | tail -1 | cut -f1)
-  if [ -f "/home/mysqlbackup/mysql/${DT}/master_info.log" ]; then
-    cp -a "/home/mysqlbackup/mysql/${DT}/master_info.log" "${BACKUP_DIR}/master_info.log"
-    sed -i "2i\/home/mysqlbackup/mysql/${DT}/restore.sh all" "${BACKUP_DIR}/master_info.log"
-    echo "[$(date)] Master Info Copied To: ${BACKUP_DIR}/master_info.log"
-  fi
-  echo "[$(date)] Backup size: $mysqlbinlog_backup_size KB"
-  echo "[$(date)] Binlog Backup log file generated: $LOG_FILE"
-}
-
-purge_binlogs() {
-  echo "purge binary logs"
-  echo "$MYSQL_CMD_PREFIX -e \"PURGE BINARY LOGS BEFORE NOW() - INTERVAL 7 DAY;\""
-  $MYSQL_CMD_PREFIX -e "PURGE BINARY LOGS BEFORE NOW() - INTERVAL 7 DAY;"
-  echo
-  echo "$MYSQL_CMD_PREFIX -e \"SHOW BINARY LOGS;\""
-  $MYSQL_CMD_PREFIX -e "SHOW BINARY LOGS;"
-}
-
-flush_logs() {
-  echo "Flush Logs"
-  echo "$MYSQL_CMD_PREFIX -e \"FLUSH LOGS;\""
-  $MYSQL_CMD_PREFIX -e "FLUSH LOGS;"
-  echo
-  $MYSQL_CMD_PREFIX -e "SHOW MASTER LOGS;" | awk '{print $1}' | tail -4
-  echo
-}
-
-flush_binlogs() {
-  echo "Flush Logs"
-  echo "$MYSQL_CMD_PREFIX -e \"FLUSH BINARY LOGS;\""
-  $MYSQL_CMD_PREFIX -e "FLUSH BINARY LOGS;"
-  echo
-  $MYSQL_CMD_PREFIX -e "SHOW MASTER LOGS;" | awk '{print $1}' | tail -4
-  echo
-}
-
-help() {
-  echo
-  echo "Usage:"
-  echo
-  echo "$0 backup-all-mariabackup comp"
-  echo "$0 backup-files comp"
-  echo "$0 backup-all-mariabackup"
-  echo "$0 backup-files"
-  echo "$0 backup-mariabackup"
-  echo
-  echo "$0 backup-all"
-  echo "$0 backup-mysql"
-  echo "$0 backup-binlogs"
-  echo "$0 purge-binlogs"
-  echo "$0 flush-logs"
-  echo "$0 flush-binlogs"
-}
-
-case "$1" in
-  backup-all-mariabackup )
-    {
-      files_backup all "$2"
-    } 2>&1 | tee "$BACKUP_LOG_TMP"
-    ;;
-  backup-files )
-    {
-      files_backup filesbackup "$2"
-    } 2>&1 | tee "$BACKUP_LOG_TMP"
-    ;;
-  backup-mariabackup )
-    {
-      files_backup mariabackup "$2"
-    } 2>&1 | tee "$BACKUP_LOG_TMP"
-    ;;
-  backup-all )
-    mysql_backup all "$2"
-    echo
-    backup_binlogs all "$2"
-    ;;
-  backup-mysql )
-    mysql_backup "$2"
-    ;;
-  backup-binlogs )
-    backup_binlogs "$2"
-    ;;
-  purge-binlogs )
-    purge_binlogs
-    ;;
-  flush-logs )
-    flush_logs
-    ;;
-  flush-binlogs )
-    flush_binlogs
-    ;;
-  * )
-    help
+mode=${1:-help}
+case $mode in
+  backup-all-mariabackup|backup-files|backup-mariabackup|backup-all|backup-mysql|backup-binlogs|flush-logs|flush-binlogs|purge-binlogs) ;;
+  help|-h|--help) usage; exit 0 ;;
+  *) usage; exit 1 ;;
+esac
+case $mode in
+  backup-files|backup-all-mariabackup|backup-mariabackup)
+    [[ -z ${2:-} || ${2:-} == comp ]] || fail 'File/physical backups accept only the optional comp argument.'
+    if [[ ${2:-} == comp || $FILES_TARBALL_CREATION == [yY] ]]; then need tar; need zstd; fi
     ;;
 esac
+for obsolete in BASE_DIR MYSQL_BACKUP_DIR BACKUP_DIR BACKUP_NAME MARIADB_TMP_DIR DIRECTORIES_TO_BACKUP_NOCOMPRESS MYSQLDUMP_OPTS MYSQLIMPORT_OPTS NICEOPT IONICEOPT COMPRESS_RSYNCABLE; do
+  [[ ! ${!obsolete+set} ]] || fail "Obsolete configuration: $obsolete. Migrate this setting using datamanagement/backups.sh.md before running a backup."
+done
+# Validate every provider before creating media or making any remote request.
+s3_args=(); s3_bucket=''; providers=()
+for provider in AWS BACKBLAZE DIGITALOCEAN LINODE CFR2 UPCLOUD; do
+  flag=${provider}_UPLOAD; [[ $provider != AWS ]] || flag=AWSUPLOAD
+  [[ ${!flag:-n} != [yY] ]] || providers+=("$provider")
+done
+(( ${#providers[@]} <= 1 )) || fail 'Enable only one S3 provider per job.'
+if (( ${#providers[@]} )); then
+  provider=${providers[0]}
+  bucket=${provider}_BUCKETNAME; profile=${provider}_PROFILE; endpoint=${provider}_ENDPOINT
+  s3_bucket=${!bucket:-}; profile=${!profile:-}; endpoint=${!endpoint:-}
+  case $provider in
+    AWS) profile=${profile:-default} ;;
+    BACKBLAZE) profile=${profile:-b2}; endpoint=${endpoint:-https://s3.us-west-001.backblazeb2.com} ;;
+    DIGITALOCEAN) profile=${profile:-do}; endpoint=${endpoint:-https://sfo2.digitaloceanspaces.com} ;;
+    LINODE) profile=${profile:-linode}; endpoint=${endpoint:-https://us-east-1.linodeobjects.com} ;;
+    CFR2) profile=${profile:-r2}; [[ -n $endpoint || -z ${CFR2_ACCOUNTID:-} ]] || endpoint="https://${CFR2_ACCOUNTID}.r2.cloudflarestorage.com" ;;
+    UPCLOUD) profile=${profile:-upcloud} ;;
+  esac
+  endpoint=${endpoint# }; endpoint=${endpoint#--endpoint-url=}
+  [[ -n $s3_bucket && $s3_bucket != YOUR_BUCKETNAME && $s3_bucket != */* ]] || fail 'Configure a valid S3 bucket.'
+  [[ $provider == AWS || -n $endpoint ]] || fail "Configure ${provider}_ENDPOINT explicitly."
+  [[ -z $endpoint || ( $endpoint =~ ^https?://[^/[:space:]]+(/[^[:space:]]*)?$ ) ]] || fail 'Invalid S3 endpoint URL.'
+  need aws
+  s3_args=(--profile "$profile"); [[ -z $endpoint ]] || s3_args+=(--endpoint-url "$endpoint")
+fi
+# Object storage cannot represent a filesystem tree's links and metadata.
+if [[ -n $s3_bucket ]]; then
+  case $mode in
+    backup-files|backup-all-mariabackup|backup-mariabackup)
+      FILES_TARBALL_CREATION=y
+      need tar; need zstd
+      echo 'S3 file/physical backup: creating a metadata-preserving tar.zst archive.'
+      ;;
+  esac
+fi
+[[ $EUID == 0 ]] || fail 'Run as root.'
+[[ $COMPRESS_THREADS =~ ^[1-9][0-9]*$ && $BUFFER_PERCENT =~ ^[0-9]+$ && $BUFFER_PERCENT -lt 100 ]] || fail 'Invalid resource limits.'
+[[ $COMPRESSION_LEVEL_ZSTD =~ ^[1-9][0-9]*$ && $COMPRESSION_LEVEL_GZIP =~ ^[1-9]$ ]] || fail 'Invalid compression level.'
+need flock
+# ponytail: one backup at a time per server; use per-source locks if concurrency is needed.
+exec 9>/run/lock/centminmod-backup.lock
+flock -n 9 || fail 'Another menu 21 backup is running.'
+mysql_setup() {
+  datam_log_phase database-preflight
+  [[ -r $MY_CNF ]] || fail "Credential file required: $MY_CNF"
+  MYSQL=$(client mariadb mysql) || fail 'MariaDB client missing.'
+  SQL=("$MYSQL" "--defaults-extra-file=$MY_CNF" -h "$DBHOST")
+  SERVER_VERSION=$("${SQL[@]}" -NBe 'SELECT VERSION()')
+  datam_log_event INFO "server_version=$SERVER_VERSION"
+  DUMP_CHARSET=$("${SQL[@]}" -NBe "SELECT IF(COUNT(*),'utf8mb4','utf8') FROM information_schema.CHARACTER_SETS WHERE CHARACTER_SET_NAME='utf8mb4'")
+}
+if [[ $mode != backup-files ]]; then mysql_setup; fi
+case $mode in
+  flush-logs) "${SQL[@]}" -e 'FLUSH LOGS'; exit ;;
+  flush-binlogs) "${SQL[@]}" -e 'FLUSH BINARY LOGS'; exit ;;
+  purge-binlogs) fail 'Automatic purge removed: select a verified recovery point and purge its unneeded binlogs explicitly.' ;;
+esac
+SOURCE_ID=${SOURCE_ID:-$(cat /etc/machine-id)}
+[[ $SOURCE_ID =~ ^[a-zA-Z0-9._-]+$ && $SOURCE_ID != . && $SOURCE_ID != .. ]] || fail 'Invalid SOURCE_ID.'
+RUN_ID=$(date -u +%Y%m%dT%H%M%SZ)-$$-${RANDOM}
+case $mode in
+  backup-files|backup-all-mariabackup|backup-mariabackup) root=$FILES_BACKUP_ROOT ;;
+  *) root=$BACKUP_DIR_PARENT ;;
+esac
+while [[ $root == */ && $root != / ]]; do root=${root%/}; done
+[[ $root == /* && $root != / ]] || fail 'Backup root must be an absolute non-root directory.'
+# A legacy backup root may belong to mysql. Its ancestors must already be trusted.
+# Require existing parents rather than following a newly inserted mkdir -p component.
+backup_parent_check() {
+  local parent=$1 permissions
+  while :; do
+    [[ -d $parent && $(stat -c %u -- "$parent") == 0 ]] || fail "Backup parent must exist and be root-owned: $parent"
+    if [[ ! -L $parent ]]; then
+      permissions=$(stat -c %a -- "$parent")
+      (( (8#$permissions & 0022) == 0 || (8#$permissions & 01000) != 0 )) || fail "Backup parent is writable by other users: $parent"
+    fi
+    [[ $parent != / ]] || break
+    parent=$(dirname -- "$parent")
+  done
+}
+backup_parent_check "$(dirname -- "$root")"
+[[ ! -L $root || $(stat -c %u -- "$root") == 0 ]] || fail 'Refusing an untrusted backup-root symlink.'
+root=$(realpath -m -- "$root")
+backup_parent_check "$(dirname -- "$root")"
+case $root in /|/home|/root|/etc|/usr|/var|/var/lib|/mnt|/media) fail 'Use a dedicated backup directory, not a shared system parent.' ;; esac
+if [[ ! -e $root && ! -L $root ]]; then mkdir -- "$root"; fi
+[[ -d $root && ! -L $root ]] || fail 'Backup root must be a real directory.'
+# -h never changes a substituted symlink target. Root ownership also protects a
+# legacy mysql-owned entry against rename beneath a root-owned sticky parent.
+chown -h root:root -- "$root"
+[[ -d $root && ! -L $root ]] || fail 'Backup root changed during preflight.'
+chmod 700 -- "$root"
+source_root="$root/$SOURCE_ID"
+[[ ! -L $source_root ]] || fail "Refusing symlinked source directory: $source_root"
+if [[ ! -e $source_root ]]; then mkdir -- "$source_root"; fi
+[[ -d $source_root && ! -L $source_root ]] || fail 'Source namespace must be a real directory.'
+chown -h root:root -- "$source_root"
+chmod 700 -- "$source_root"
+BASE_DIR="$root/$SOURCE_ID/$RUN_ID"
+case "$MENU21_LOG_FILE" in "$BASE_DIR/"*) fail "Operational log is inside backup generation." ;; esac
+mkdir -- "$BASE_DIR"
+datam_log_event INFO "generation=$BASE_DIR mode=$mode"
+printf 'format=%s\nsource=%s\nhost=%s\nrun=%s\nmode=%s\nserver_version=%s\n' "$BACKUP_FORMAT" "$SOURCE_ID" "$(hostname)" "$RUN_ID" "$mode" "${SERVER_VERSION:-none}" > "$BASE_DIR/backup.info"
+touch "$BASE_DIR/INCOMPLETE"
+# shellcheck disable=SC2154
+trap 'rc=$?; if (( rc )); then echo "Backup failed ($rc). Preserved: $BASE_DIR" >&2; fi' EXIT
+space_check() {
+  local required=$1 avail
+  avail=$(df -Pk "$BASE_DIR" | awk 'END {print $4}')
+  (( required <= avail * (100 - BUFFER_PERCENT) / 100 )) || fail "Insufficient space: need $required KiB plus reserve; available $avail KiB."
+}
+compress() {
+  case $COMPRESSION_METHOD in
+    zstd) need zstd; if [[ $FASTCOMPRESS_ZSTD == [yY] ]]; then
+        zstd -q -T"$COMPRESS_THREADS" --fast="$COMPRESSION_LEVEL_ZSTD"
+      else zstd -q -T"$COMPRESS_THREADS" -"$COMPRESSION_LEVEL_ZSTD"; fi ;;
+    pigz) need pigz; pigz -p "$COMPRESS_THREADS" -"$COMPRESSION_LEVEL_GZIP" ;;
+    none) cat ;;
+    *) fail 'COMPRESSION_METHOD must be zstd, pigz or none.' ;;
+  esac
+}
+case ${2:-} in comp) COMPRESSION_METHOD=zstd ;; pigz|none) COMPRESSION_METHOD=$2 ;; '') ;; *) fail 'Invalid compression option.' ;; esac
+case $COMPRESSION_METHOD in zstd) suffix=.zst ;; pigz) suffix=.gz ;; none) suffix='' ;; *) fail 'Invalid COMPRESSION_METHOD.' ;; esac
+# SQL/binlog encoders are checked before any dump or binlog rotation; file/physical modes use their own tar path.
+case $mode in
+  backup-all|backup-mysql|backup-binlogs) case $COMPRESSION_METHOD in zstd) need zstd ;; pigz) need pigz ;; esac ;;
+esac
+# Capacity estimates are advisory. A file vanishing under du must not abort a run; ENOSPC still fails it.
+estimate_kib() {
+  local listing
+  listing=$(du -sk -- "$@" 2>/dev/null) || datam_log_event WARN "partial-estimate paths=$*"
+  printf '%s\n' "$listing" | awk '{s+=$1} END {print s+0}'
+}
+files_backup() {
+  datam_log_phase files-preflight
+  need rsync
+  local path canonical required=0 size
+  local -a sources=()
+  # Equivalent coverage in compressed and uncompressed generations, paths relative to /.
+  for path in "${DIRECTORIES_TO_BACKUP[@]}" "$DOMAINS_ROOT"; do
+    if [[ -e $path || -L $path ]]; then
+      [[ $path == /* && $path != / ]] || fail "Invalid source: $path"
+      canonical=$(realpath -m -- "$path")
+      [[ $canonical != / ]] || fail "Invalid root source alias: $path"
+      DATAM_LOG_EXCLUDE_DIR="$canonical" datam_log_check_location "$MENU21_LOG_FILE" || fail "Set CENTMINLOGDIR outside source: $path"
+      case "$BASE_DIR/" in "$canonical/"*) fail "Backup destination is inside source: $path" ;; esac
+      size=$(estimate_kib "$path")
+      required=$((required + size))
+      sources+=("$path")
+    else printf 'missing\t%s\n' "$path" >> "$BASE_DIR/coverage.tsv"; fi
+  done
+  (( ${#sources[@]} )) || fail 'No configured file source exists; check DIRECTORIES_TO_BACKUP and DOMAINS_ROOT.'
+  [[ ${2:-} != comp && $FILES_TARBALL_CREATION != [yY] ]] || required=$((required * 2))
+  space_check "$required"
+  mkdir "$BASE_DIR/files"
+  datam_log_phase file-copy "sources=${#sources[@]} details=$BASE_DIR/files.log"
+  # One invocation preserves hardlinks across configured roots; -S preserves holes.
+  rsync -aHAXSR --numeric-ids -- "${sources[@]}" "$BASE_DIR/files/" >> "$BASE_DIR/files.log" 2>&1
+  printf 'included\t%s\n' "${sources[@]}" >> "$BASE_DIR/coverage.tsv"
+  printf '%s\n' 'Live files are not an application snapshot. Freeze writes before the final backup.' \
+    'Redis/KeyDB/PostgreSQL/Elasticsearch data requires a separate native backup.' \
+    'Review identity, IP addresses, credentials, PHP and systemd settings before activation.' >> "$BASE_DIR/coverage.tsv"
+}
+physical_backup() {
+  datam_log_phase physical-preflight
+  local tool datadir required
+  [[ $DBHOST == localhost || $DBHOST == 127.0.0.1 ]] || fail 'Physical backup requires a local MariaDB server.'
+  tool=$(client mariadb-backup mariabackup) || fail 'Install the MariaDB-backup package matching the source server.'
+  datadir=$("${SQL[@]}" -NBe 'SELECT @@datadir')
+  required=$(estimate_kib "$datadir")
+  [[ ${2:-} != comp && $FILES_TARBALL_CREATION != [yY] ]] || required=$((required * 2))
+  space_check "$required"
+  mkdir "$BASE_DIR/mariadb_tmp"
+  datam_log_phase physical-backup "details=$BASE_DIR/physical.log"
+  "$tool" "--defaults-extra-file=$MY_CNF" --host="$DBHOST" --backup --target-dir="$BASE_DIR/mariadb_tmp" > "$BASE_DIR/physical.log" 2>&1
+  datam_log_phase physical-prepare "details=$BASE_DIR/physical.log"
+  "$tool" "--defaults-extra-file=$MY_CNF" --prepare --target-dir="$BASE_DIR/mariadb_tmp" >> "$BASE_DIR/physical.log" 2>&1
+  cp -- "$SCRIPT_DIR/logging.sh" "$SCRIPT_DIR/mariabackup-restore.sh" "$BASE_DIR/mariadb_tmp/"
+}
+logical_backup() {
+  datam_log_phase logical-preflight
+  local dump db hex datadir
+  local -a databases=()
+  dump=$(client mariadb-dump mysqldump) || fail 'MariaDB dump client missing.'
+  datadir=$("${SQL[@]}" -NBe 'SELECT @@datadir')
+  # SQL expansion can exceed on-disk data; reserve twice the full datadir size.
+  space_check "$(( $(estimate_kib "$datadir") * 2 ))"
+  mkdir "$BASE_DIR/mysql"
+  "${SQL[@]}" -NBe 'SELECT @@lower_case_table_names' > "$BASE_DIR/mysql/lower_case_table_names"
+  grep -qxE '[012]' "$BASE_DIR/mysql/lower_case_table_names" || fail 'Invalid source lower_case_table_names.'
+  "${SQL[@]}" -NBe "SELECT SCHEMA_NAME FROM information_schema.SCHEMATA WHERE SCHEMA_NAME NOT IN ('information_schema','performance_schema','sys','mysql') ORDER BY SCHEMA_NAME" > "$BASE_DIR/mysql/databases.txt"
+  # Default locks cover nontransactional tables too. Each database is a separate snapshot.
+  # Native SQL installs triggers after their table data, unlike --tab + mysqlimport.
+  while IFS= read -r db; do
+    [[ -n $db && $db != *$'\t'* && $db != *$'\r'* && $db != *\\* ]] || fail 'Unsupported control character in database name.'
+    databases+=("$db")
+    hex=$(printf %s "$db" | sha256sum | cut -d' ' -f1)
+    datam_log_phase logical-dump "database=$db file=$hex.sql$suffix"
+    "$dump" "--defaults-extra-file=$MY_CNF" -h "$DBHOST" --default-character-set="$DUMP_CHARSET" --max-allowed-packet=1024M --opt --routines --events --triggers --hex-blob --databases -- "$db" \
+      | compress > "$BASE_DIR/mysql/$hex.sql$suffix"
+    printf '%s\t%s.sql%s\n' "$db" "$hex" "$suffix" >> "$BASE_DIR/mysql/index.tsv"
+  done < "$BASE_DIR/mysql/databases.txt"
+  touch "$BASE_DIR/mysql/index.tsv"
+  if (( ${#databases[@]} )); then
+    # Native multi-database dumping creates all base objects before final views.
+    # Only schema is repeated; full per-database dumps retain selective restore.
+    datam_log_phase schema-bootstrap-export
+    "$dump" "--defaults-extra-file=$MY_CNF" -h "$DBHOST" --default-character-set="$DUMP_CHARSET" --max-allowed-packet=1024M --opt --no-data --skip-triggers --routines --skip-events --databases -- "${databases[@]}" \
+      | compress > "$BASE_DIR/mysql/all-schema.sql$suffix"
+  fi
+  # System tables are reference media, never automatically imported across releases.
+  datam_log_phase account-reference
+  "$dump" "--defaults-extra-file=$MY_CNF" -h "$DBHOST" --default-character-set="$DUMP_CHARSET" --max-allowed-packet=1024M --opt --routines --events --triggers --hex-blob --databases mysql \
+    | compress > "$BASE_DIR/mysql/system-reference.sql$suffix"
+  if "$dump" --help 2>/dev/null | grep -- '--system' >/dev/null; then
+    "$dump" "--defaults-extra-file=$MY_CNF" -h "$DBHOST" --default-character-set="$DUMP_CHARSET" --system=users > "$BASE_DIR/mysql/accounts-review.sql"
+  fi
+  cp -- "$SCRIPT_DIR/mysql-restore.sh" "$BASE_DIR/mysql/restore.sh"
+  cp -- "$SCRIPT_DIR/logging.sh" "$BASE_DIR/mysql/"
+  (cd "$BASE_DIR/mysql"; find . -maxdepth 1 -type f ! -name SHA256SUMS -print0 | sort -z | xargs -0 -r sha256sum > SHA256SUMS)
+}
+backup_binlogs() {
+  datam_log_phase binlogs
+  local tool file active size enabled
+  enabled=$("${SQL[@]}" -NBe 'SELECT @@log_bin')
+  case $enabled in
+    0) echo 'Binlogs disabled; no PITR coverage.' > "$BASE_DIR/binlogs-unavailable.txt"; return ;;
+    1) ;;
+    *) fail 'Could not determine whether binary logging is enabled.' ;;
+  esac
+  tool=$(client mariadb-binlog mysqlbinlog) || fail 'MariaDB binlog client missing.'
+  # Validate names and budget capacity from the pre-rotation listing so a refusal leaves the
+  # server's binlog set unchanged. The active log can still grow, and concurrent rotation can
+  # add a closed log, before the flush; the per-file recheck below and ENOSPC cover that gap.
+  local listing
+  listing=$("${SQL[@]}" -NBe 'SHOW BINARY LOGS')
+  while IFS=$'\t' read -r file _; do
+    [[ -z $file || ( $file =~ ^[a-zA-Z0-9._-]+$ && $file != . && $file != .. ) ]] || fail 'Unsafe binlog name.'
+  done <<< "$listing"
+  space_check "$(printf '%s\n' "$listing" | awk '{s+=$2} END {printf "%.0f\n", s/1024+1}')"
+  mkdir "$BASE_DIR/binlog"
+  "${SQL[@]}" -e 'FLUSH BINARY LOGS'
+  "${SQL[@]}" -NBe 'SHOW BINARY LOGS' > "$BASE_DIR/binlog/index.tsv"
+  active=$(tail -n 1 "$BASE_DIR/binlog/index.tsv" | cut -f1)
+  while IFS=$'\t' read -r file size _; do
+    [[ $file != "$active" ]] || continue
+    [[ $file =~ ^[a-zA-Z0-9._-]+$ && $file != . && $file != .. ]] || fail 'Unsafe binlog name.'
+    (cd "$BASE_DIR/binlog"; "$tool" "--defaults-extra-file=$MY_CNF" -h "$DBHOST" --read-from-remote-server --raw "$file")
+    [[ $(stat -c %s "$BASE_DIR/binlog/$file") == "$size" ]] || fail "Incomplete binlog: $file"
+    if [[ -n $suffix ]]; then
+      # The raw file still occupies space; allow output expansion before compression.
+      # 1% plus 64 KiB covers zstd/gzip framing for incompressible input.
+      datam_log_phase binlog-compression "file=$file"
+      space_check "$(( (size + size / 100 + 65536) / 1024 + 1 ))"
+      compress < "$BASE_DIR/binlog/$file" > "$BASE_DIR/binlog/$file$suffix"
+      rm -- "$BASE_DIR/binlog/$file"
+    fi
+  done < "$BASE_DIR/binlog/index.tsv"
+  printf '%s\n' 'Closed logs only. Per-database logical dumps do not define one global PITR coordinate.' > "$BASE_DIR/binlog/README.txt"
+}
+s3_upload() {
+  [[ -n $s3_bucket ]] || return 0
+  local dest="s3://$s3_bucket/$SOURCE_ID/$RUN_ID"
+  datam_log_phase s3-upload "provider=$provider destination=$dest"
+  # File/physical trees are now inside their archive; remaining media must be regular.
+  [[ -z $(find "$BASE_DIR" ! -type f ! -type d -print -quit) ]] || fail 'Unexpected non-regular S3 media; upload an archive instead.'
+  aws "${s3_args[@]}" s3 sync "$BASE_DIR/" "$dest/" --no-follow-symlinks --exclude COMPLETE --exclude INCOMPLETE --only-show-errors
+  datam_log_phase s3-publish
+  aws "${s3_args[@]}" s3 cp "$BASE_DIR/COMPLETE" "$dest/COMPLETE" --only-show-errors
+}
+case $mode in
+  backup-files) files_backup "$@" ;;
+  backup-all-mariabackup) files_backup "$@"; physical_backup "$@" ;;
+  backup-mariabackup) physical_backup "$@" ;;
+  backup-mysql) logical_backup ;;
+  backup-all) logical_backup; backup_binlogs ;;
+  backup-binlogs) backup_binlogs ;;
+esac
+if [[ $mode == backup-files || $mode == backup-all-mariabackup || $mode == backup-mariabackup ]]; then
+  if [[ ${2:-} == comp || $FILES_TARBALL_CREATION == [yY] ]]; then
+    need zstd
+    parts=(); [[ ! -d $BASE_DIR/files ]] || parts+=(files)
+    [[ ! -d $BASE_DIR/mariadb_tmp ]] || parts+=(mariadb_tmp)
+    space_check "$(estimate_kib "${parts[@]/#/$BASE_DIR/}")"
+    datam_log_phase archive "file=$BASE_DIR/centminmod_backup.tar.zst"
+    tar --numeric-owner --acls --xattrs --sparse -C "$BASE_DIR" -cpf - "${parts[@]}" | (COMPRESSION_METHOD=zstd; compress) > "$BASE_DIR/centminmod_backup.tar.zst"
+    # Keep staging on any archive failure. On success avoid a second full-data read.
+    for part in "${parts[@]}"; do rm -rf -- "${BASE_DIR:?}/$part"; done
+  fi
+fi
+datam_log_phase inventory
+(cd "$BASE_DIR"; find . -type f ! -path ./inventory.tsv ! -path ./INCOMPLETE ! -path ./COMPLETE ! -path ./SHA256SUMS -printf '%s\t%P\n' > inventory.tsv)
+if [[ $CHECKSUMS == [yY] ]]; then
+  (cd "$BASE_DIR"; find . -type f ! -path ./SHA256SUMS ! -path ./INCOMPLETE -print0 | sort -z | xargs -0 -r sha256sum > SHA256SUMS)
+fi
+printf 'Completed UTC %s\n' "$(date -u +%FT%TZ)" > "$BASE_DIR/COMPLETE"
+rm -- "$BASE_DIR/INCOMPLETE"
+s3_upload
+# Machine-readable result: exactly one record, emitted only after all requested stages.
+printf 'BACKUP_RESULT\t%s\n' "$BASE_DIR"
+echo "Backup saved to $BASE_DIR"

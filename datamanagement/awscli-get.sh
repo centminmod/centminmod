@@ -1,4 +1,13 @@
 #!/bin/bash
+set -Eeo pipefail
+umask 077
+source "$(dirname -- "$(readlink -f -- "$0")")/logging.sh"
+# Credentials never travel on the command line: process arguments are readable by every local account.
+if [[ -n ${3:-} || -n ${4:-} ]]; then
+  echo 'ERROR: Credential arguments are no longer accepted. Export AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY instead.' >&2
+  exit 1
+fi
+datam_log_init awscli-setup "$@"
 ######################################################################
 # install aws-cli & s5cmd
 # written by George Liu (eva2000) centminmod.com
@@ -84,7 +93,8 @@ help_text() {
   echo
   echo "Usage:"
   echo
-  echo "$0 {install|update} {default|profilename|defaultreset} AWS_ACCESS_KEY_ID AWS_SECRET_ACCESS_KEY AWS_DEFAULT_REGION AWS_DEFAULT_OUTPUT"
+  echo "AWS_ACCESS_KEY_ID=... AWS_SECRET_ACCESS_KEY=... $0 {install|update} {default|profilename|defaultreset} '' '' [AWS_DEFAULT_REGION] [AWS_DEFAULT_OUTPUT]"
+  echo "Credentials are read from the environment only; positions 3 and 4 must stay empty."
   echo "$0 regions"
   echo "$0 regions-wasabi"
   exit
@@ -92,10 +102,11 @@ help_text() {
 
 sfive_cmd() {
   echo
+  datam_log_phase s5cmd-install
   echo "install s5cmd https://github.com/peak/s5cmd"
   mkdir -p /root/tools/awscli
   cd /root/tools/awscli
-  wget -q -4 "https://github.com/peak/s5cmd/releases/download/v${SFIVECMD_VER}/s5cmd_${SFIVECMD_VER}_Linux-64bit.tar.gz"
+  wget -q -4 -O "s5cmd_${SFIVECMD_VER}_Linux-64bit.tar.gz" "https://github.com/peak/s5cmd/releases/download/v${SFIVECMD_VER}/s5cmd_${SFIVECMD_VER}_Linux-64bit.tar.gz" || return $?
   tar xzf "s5cmd_${SFIVECMD_VER}_Linux-64bit.tar.gz" -C /usr/local/bin/ s5cmd
   rm -f "s5cmd_${SFIVECMD_VER}_Linux-64bit.tar.gz"
   /usr/local/bin/s5cmd version
@@ -143,40 +154,23 @@ list_regions_wasabi() {
 }
 
 r2_config() {
-  r2config_awsregion=$1
-  r2config_profileid=$2
+  local r2config_awsregion=$1 r2config_profileid=$2 key value
+  local -a r2profargs=()
   if [[ "$r2config_awsregion" = 'r2' || "$r2config_awsregion" = 'auto' ]]; then
-     if [ "$r2config_profileid" ]; then
-       profileopt=" --profile $r2config_profileid"
-     else
-       profileopt=
-     fi
+     [[ -z "$r2config_profileid" ]] || r2profargs=(--profile "$r2config_profileid")
      echo "configure aws cli for Cloudflare R2"
-     # max_concurrent_requests = 2
-     # aws configure get s3.max_concurrent_requests
-     r2_max_concurrent_requests='2'
-     echo "aws configure set s3.max_concurrent_requests ${r2_max_concurrent_requests}${profileopt}"
-     aws configure set s3.max_concurrent_requests ${r2_max_concurrent_requests}${profileopt}
-     # multipart_threshold = 50MB
-     # aws configure get s3.multipart_threshold
-     r2_multipart_threshold='50MB'
-     echo "aws configure set s3.multipart_threshold ${r2_multipart_threshold}${profileopt}"
-     aws configure set s3.multipart_threshold ${r2_multipart_threshold}${profileopt}
-     # multipart_chunksize = 50MB
-     # aws configure get s3.multipart_chunksize
-     r2_multipart_chunksize='50MB'
-     echo "aws configure set s3.multipart_chunksize ${r2_multipart_chunksize}${profileopt}"
-     aws configure set s3.multipart_chunksize ${r2_multipart_chunksize}${profileopt}
-     # addressing_style = path
-     # aws configure get s3.addressing_style
-     r2_addressing_style='path'
-     echo "aws configure set s3.addressing_style ${r2_addressing_style}${profileopt}"
-     aws configure set s3.addressing_style ${r2_addressing_style}${profileopt}
-     # region = auto
-     r2_region='auto'
-     echo "aws configure set region ${r2_region}${profileopt}"
-     aws configure set region ${r2_region}${profileopt}
+     # Absolute binary path: sudo secure_path and cron omit /usr/local/bin.
+     for key in s3.max_concurrent_requests=2 s3.multipart_threshold=50MB s3.multipart_chunksize=50MB s3.addressing_style=path region=auto; do
+       value=${key#*=}; key=${key%%=*}
+       echo "aws configure set $key $value ${r2profargs[*]}"
+       "${AWSCLI_BINPATH}/aws" configure set "$key" "$value" "${r2profargs[@]}"
+     done
   fi
+}
+
+# The configure wizard reads values from stdin, so the secret never appears in any process argument list.
+configure_profile() {
+  printf '%s\n%s\n%s\n%s\n' "$awskey" "$secretkey" "$awsregion" "$outputformat" | "${AWSCLI_BINPATH}/aws" configure --profile "$1" >/dev/null
 }
 
 getcli() {
@@ -188,9 +182,8 @@ getcli() {
   awsregion=$5
   # https://docs.aws.amazon.com/cli/latest/userguide/cli-usage-output.html
   outputformat=$6
-  awsconfigdir='/root/.aws'
-  awsconfig="${awsconfigdir}/config"
-  awscredentials="${awsconfigdir}/credentials"
+  awsconfig=${AWS_CONFIG_FILE:-$HOME/.aws/config}
+  awscredentials=${AWS_SHARED_CREDENTIALS_FILE:-$HOME/.aws/credentials}
   if [ ! -f /usr/bin/jq ]; then
     yum -q -y install jq
   fi
@@ -212,11 +205,12 @@ getcli() {
   if [[ "$mode" = 'install' || "$mode" = 'update' ]]; then
     if [ ! -f "${AWSCLI_BINPATH}/aws" ]; then
       echo
+      datam_log_phase awscli-install
       echo "install aws-cli"
       mkdir -p /root/tools/awscli
       cd /root/tools/awscli
       rm -rf aws
-      curl -4s "$AWSCLI_DOWNLOAD" -o "awscliv2.zip"
+      curl --fail --show-error --location -4s "$AWSCLI_DOWNLOAD" -o "awscliv2.zip"
       unzip awscliv2.zip
       sudo ./aws/install -i "$AWSCLI_INSTALLDIR" -b "${AWSCLI_BINPATH}"
       chmod +x "${AWSCLI_BINPATH}/aws"
@@ -225,11 +219,12 @@ getcli() {
       sfive_cmd
     elif [[ "$mode" = 'update' && -f "${AWSCLI_BINPATH}/aws" ]]; then
       echo
+      datam_log_phase awscli-update
       echo "update aws-cli"
       mkdir -p /root/tools/awscli
       cd /root/tools/awscli
       rm -rf aws
-      curl -4s "$AWSCLI_DOWNLOAD" -o "awscliv2.zip"
+      curl --fail --show-error --location -4s "$AWSCLI_DOWNLOAD" -o "awscliv2.zip"
       unzip awscliv2.zip
       # skip update if aws binary is same version of locally installed one
       localbinver=$("${AWSCLI_BINPATH}/aws" --version| awk '{print $1}')
@@ -239,24 +234,19 @@ getcli() {
         chmod +x "${AWSCLI_BINPATH}/aws"
         rm -rf awscliv2.zip
         "${AWSCLI_BINPATH}/aws" --version
-      elif [[ "$downloadbinver" != "localbinver" ]]; then
+      elif [[ "$downloadbinver" == "$localbinver" ]]; then
         echo "skip update as downloaded version is the same"
       fi
       sfive_cmd
     fi
-    if [[ ! "$awskey" || ! "$secretkey" ]]; then
-      echo
-      echo "Error. AWS Key & Secret not detected"
-      echo "export relevant environment variables"
-      echo "and re-run script"
-      echo
-      echo "example:"
-      echo
-      echo "export AWS_ACCESS_KEY_ID=AKIAIOSFODNN7EXAMPLE"
-      echo "export AWS_SECRET_ACCESS_KEY=wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY"
-      echo "export AWS_DEFAULT_REGION=us-west-2"
-      echo "export AWS_DEFAULT_OUTPUT=text"
-      exit 1
+    datam_log_phase credential-configuration
+    if [[ -z "$awskey" && -z "$secretkey" ]]; then
+      echo "AWS CLI installed/updated. No credential configuration requested. Run aws configure --profile PROFILE to configure credentials."
+      return 0
+    fi
+    if [[ -z "$awskey" || -z "$secretkey" || -z "$awsregion" || -z "$outputformat" ]]; then
+      echo "Credential setup needs access key, secret key, region and output format. No credentials changed." >&2
+      return 1
     fi
     if [[ -f "$awsconfig" && -f "$awscredentials" ]]; then
       echo
@@ -264,28 +254,22 @@ getcli() {
       echo "existing credential file detected: $awscredentials"
     fi
     if [[ "$profileid" = 'default' || "$profileid" = 'defaultreset' ]]; then
-      chkgetkey=$(${AWSCLI_BINPATH}/aws configure get aws_access_key_id >/dev/null 2>&1; echo $?)
-      chkgetsecret=$(${AWSCLI_BINPATH}/aws configure get aws_secret_access_key >/dev/null 2>&1; echo $?)
-      chkgetregion=$(${AWSCLI_BINPATH}/aws configure get default.region >/dev/null 2>&1; echo $?)
-      chkgetoutput=$(${AWSCLI_BINPATH}/aws configure get output >/dev/null 2>&1; echo $?)
+      chkgetkey=$(${AWSCLI_BINPATH}/aws configure get aws_access_key_id --profile default >/dev/null 2>&1; echo $?)
+      chkgetsecret=$(${AWSCLI_BINPATH}/aws configure get aws_secret_access_key --profile default >/dev/null 2>&1; echo $?)
+      chkgetregion=$(${AWSCLI_BINPATH}/aws configure get default.region --profile default >/dev/null 2>&1; echo $?)
+      chkgetoutput=$(${AWSCLI_BINPATH}/aws configure get output --profile default >/dev/null 2>&1; echo $?)
       if [[ "$profileid" = 'defaultreset' ]]; then
         echo
         echo "reset default aws-cli profile"
-        ${AWSCLI_BINPATH}/aws configure set aws_access_key_id "$awskey"
-        ${AWSCLI_BINPATH}/aws configure set aws_secret_access_key "$secretkey"
-        ${AWSCLI_BINPATH}/aws configure set default.region "$awsregion"
-        ${AWSCLI_BINPATH}/aws configure set output "$outputformat"
-        r2_config "$awsregion"
+        configure_profile default
+        r2_config "$awsregion" default
       elif [[ "$profileid" = 'default' ]]; then
-        if [[ "$chkgetkey" -ne '0' ]] || [[ ! -f "$awsconfig" || ! -f "$awscredentials" ]]; then
-          # only configure if there is not existing values or config files do not exist
+        if [[ "$chkgetkey" -ne '0' ]]; then
+          # Let AWS CLI resolve its files; existing credentials require defaultreset.
           echo
           echo "configure default aws-cli profile"
-          ${AWSCLI_BINPATH}/aws configure set aws_access_key_id "$awskey"
-          ${AWSCLI_BINPATH}/aws configure set aws_secret_access_key "$secretkey"
-          ${AWSCLI_BINPATH}/aws configure set default.region "$awsregion"
-          ${AWSCLI_BINPATH}/aws configure set output "$outputformat"
-          r2_config "$awsregion"
+          configure_profile default
+          r2_config "$awsregion" default
         else
           skipconfig='y'
           echo
@@ -304,33 +288,26 @@ getcli() {
         fi
       fi
       if [[ "$profileid" = 'defaultreset' ]] || [[ "$profileid" = 'default' && "$skipconfig" != 'y' ]]; then
-        getkey=$(${AWSCLI_BINPATH}/aws configure get aws_access_key_id)
-        getsecret=$(${AWSCLI_BINPATH}/aws configure get aws_secret_access_key)
-        getregion=$(${AWSCLI_BINPATH}/aws configure get default.region)
-        getoutput=$(${AWSCLI_BINPATH}/aws configure get output)
+        getregion=$(${AWSCLI_BINPATH}/aws configure get default.region --profile default)
+        getoutput=$(${AWSCLI_BINPATH}/aws configure get output --profile default)
         echo -e "\naws-cli profile: $profileid set:\n"
-        echo "aws_access_key_id: $getkey"
-        echo "aws_secret_access_key: $getsecret"
+        echo "aws_access_key_id: [configured]"
+        echo "aws_secret_access_key: [configured]"
         echo "default.region: $getregion"
         echo "default output format: $getoutput"
       fi
     elif [[ "$profileid" != 'default' ]]; then
       echo
       echo "configure aws-cli profile: $profileid"
-      ${AWSCLI_BINPATH}/aws configure set aws_access_key_id $awskey --profile "$profileid"
-      ${AWSCLI_BINPATH}/aws configure set aws_secret_access_key $secretkey --profile "$profileid"
-      ${AWSCLI_BINPATH}/aws configure set default.region $awsregion --profile "$profileid"
-      ${AWSCLI_BINPATH}/aws configure set output $outputformat --profile "$profileid"
+      configure_profile "$profileid"
       r2_config "$awsregion" "$profileid"
 
-      getkey=$(${AWSCLI_BINPATH}/aws configure get aws_access_key_id --profile "$profileid")
-      getsecret=$(${AWSCLI_BINPATH}/aws configure get aws_secret_access_key --profile "$profileid")
-      getregion=$(${AWSCLI_BINPATH}/aws configure get default.region --profile "$profileid")
+      getregion=$(${AWSCLI_BINPATH}/aws configure get region --profile "$profileid")
       getoutput=$(${AWSCLI_BINPATH}/aws configure get output --profile "$profileid")
       echo -e "\naws-cli profile: $profileid set:\n"
-      echo "aws_access_key_id: $getkey"
-      echo "aws_secret_access_key: $getsecret"
-      echo "default.region: $getregion"
+      echo "aws_access_key_id: [configured]"
+      echo "aws_secret_access_key: [configured]"
+      echo "region: $getregion"
       echo "default output format: $getoutput"
       echo
       echo -e "list aws-cli profiles:\n"
@@ -342,15 +319,15 @@ getcli() {
 ######################################################################
 # 1 - help or install
 # 2 - default profile or specific profile
-# 3 - AWS Access Key ID
-# 4 - AWS Secret Access Key
+# 3 - reserved, must be empty (AWS Access Key ID comes from AWS_ACCESS_KEY_ID)
+# 4 - reserved, must be empty (AWS Secret Access Key comes from AWS_SECRET_ACCESS_KEY)
 # 5 - Default region name i.e. us-west-2, us-east-1
 # 6 - Default output format i.e. json or text
 #######################################################################
-# supports detecting environment variables
+# credentials are read from environment variables only
 # export AWS_ACCESS_KEY_ID=AKIAIOSFODNN7EXAMPLE
 # export AWS_SECRET_ACCESS_KEY=wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY
 # export AWS_DEFAULT_REGION=us-west-2
 # export AWS_DEFAULT_OUTPUT=text
 #######################################################################
-getcli "${1:-install}" "${2:-default}" "${3:-$AWS_ACCESS_KEY_ID}" "${4:-$AWS_SECRET_ACCESS_KEY}" "${5:-$AWS_DEFAULT_REGION}" "${6:-$AWS_DEFAULT_OUTPUT}"
+getcli "${1:-install}" "${2:-default}" "${AWS_ACCESS_KEY_ID:-}" "${AWS_SECRET_ACCESS_KEY:-}" "${5:-${AWS_DEFAULT_REGION:-}}" "${6:-${AWS_DEFAULT_OUTPUT:-}}"
