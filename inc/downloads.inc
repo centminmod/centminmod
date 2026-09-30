@@ -1688,36 +1688,6 @@ echo ""
     fi
     fi # ORESTY_LUASTREAM=y|n
 
-        cecho "Download ${NGX_LUAGITLINKFILE} ..." $boldyellow
-if [[ -s "${NGX_LUAGITLINKFILE}" && "$(tar -tzf ${NGX_LUAGITLINKFILE} >/dev/null 2>&1; echo $?)" -eq '0' ]]; then
-  cecho "${NGX_LUAGITLINKFILE} Archive found, skipping download..." $boldgreen
-  else
-  cecho "Error: ${NGX_LUAGITLINKFILE} not found!!! Downloading now......" $boldgreen
-  rm -rf "${NGX_LUAGITLINKFILE}"
-        echo "wget --progress=bar ${NGX_LUAGITLINK} -O ${NGX_LUAGITLINKFILE} --tries=3"
-        wget --progress=bar "${NGX_LUAGITLINK}" -O "${NGX_LUAGITLINKFILE}" --tries=3
-ERROR=$?
-    if [[ "$ERROR" != '0' ]]; then
-    cecho "Error: ${NGX_LUAGITLINKFILE} download failed." $boldgreen
-checklogdetails
-    exit #$ERROR
-else 
-         cecho "Download done." $boldyellow
-#echo ""
-    fi
-    fi
-
-tar xzf "${NGX_LUAGITLINKFILE}"
-ERROR=$?
-    if [[ "$ERROR" != '0' ]]; then
-    cecho "Error: ${NGX_LUAGITLINKFILE} extraction failed." $boldgreen
-checklogdetails
-    exit #$ERROR
-else 
-         cecho "${NGX_LUAGITLINKFILE} valid file." $boldyellow
-echo ""
-    fi
-
         cecho "Download ${NGX_LUAMEMCACHEDLINKFILE} ..." $boldyellow
 if [[ -s "${NGX_LUAMEMCACHEDLINKFILE}" && "$(tar -tzf ${NGX_LUAMEMCACHEDLINKFILE} >/dev/null 2>&1; echo $?)" -eq '0' ]]; then
   cecho "${NGX_LUAMEMCACHEDLINKFILE} Archive found, skipping download..." $boldgreen
