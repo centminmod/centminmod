@@ -1,7 +1,7 @@
 #######################################################
-NGINX_ZSTD_VER='1.5.6'
+NGINX_ZSTD_VER='1.5.7'
 
-zstdinstall() {
+nginx_zstdinstall() {
   if [[ ! -f /usr/local/nginx-dep/bin/zstd || ! -f "${DIR_TMP}/zstd-nginx/zstd-${NGINX_ZSTD_VER}.tar.gz" || "$REBUILD_NGINX_ZSTD" = [yY] ]]; then
     echo
     cecho "nginx zstd dependency install..." $boldyellow
@@ -51,7 +51,7 @@ nginx_zstd_setup() {
   if [[ "$NGINX_ZSTD" = [yY] ]]; then
     check_devtoolset_php
     enable_devtoolset "$CLANG" || return 1
-    zstdinstall
+    nginx_zstdinstall
     echo "*************************************************"
     cecho "* Installing Nginx ZSTD Module" $boldgreen
     echo "*************************************************"

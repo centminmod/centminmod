@@ -102,24 +102,32 @@ check_libzip_openssl_dependency() {
 
 # ------------------------------------------------------------------
 # Function : compile_custom_curl
-# Purpose  : Build & install cURL 8.13.0 in /opt/curl_php when
+# Purpose  : Build & install cURL 8.22.0 (8.17.0 with OpenSSL 1.1.1 or older) in /opt/curl_php when
 #            PHP_CUSTOM_CURL='y' is set.  Leaves system curl untouched.
 # ------------------------------------------------------------------
 compile_custom_curl() {
     local ORIG_DIR=$(pwd)
-    local CURL_VER="8.13.0"
+    local CURL_VER="8.22.0"
+    # curl 8.18.0+ requires OpenSSL 3.0+, builds against OpenSSL 1.1.1 or older use this version
+    local CURL_VER_OSSL11="8.17.0"
     local CURL_PREFIX="/opt/curl_php"
-    local CURL_SRC_FILE="curl-${CURL_VER}.tar.xz"
-    local CURL_SRC_URL="https://curl.se/download/${CURL_SRC_FILE}"
     local SRC_DIR="$DIR_TMP"
+    local CURL_OSSL11='n'
 
     if [[ "$CENTOS_NINE" -eq 9 ]] &&                               \
        ( [[ "$PHPVER_ID" -ge 70400 && "$PHPVER_ID" -lt 70500 ]] || \
          [[ "$PHPVER_ID" -ge 80000 && "$PHPVER_ID" -lt 80100 ]] ); then
         local PHP_CUSTOM_CURL='y'
+        CURL_OSSL11='y'
     fi
 
     [ "${PHP_CUSTOM_CURL}" = 'y' ] || return 0
+    # EL9 PHP 7.4/8.0 builds use compat-openssl11, EL7/EL8 builds use system OpenSSL 1.0.2/1.1.1
+    if [[ "$CURL_OSSL11" = 'y' || "$CENTOS_SEVEN" = '7' || "$CENTOS_EIGHT" -eq 8 ]]; then
+        CURL_VER="$CURL_VER_OSSL11"
+    fi
+    local CURL_SRC_FILE="curl-${CURL_VER}.tar.xz"
+    local CURL_SRC_URL="https://curl.se/download/${CURL_SRC_FILE}"
     echo ">>> PHP_CUSTOM_CURL=y – ensuring cURL ${CURL_VER}"
 
     #
@@ -470,6 +478,11 @@ strip_php_extensions() {
     echo "after stripping"
     ls -lAhrt $strip_php_ext_dir
     echo
+    # strip rewrites the .so files in place, so a running php-fpm master that already
+    # loaded them spawns children which crash (SIGSEGV) until php-fpm is restarted
+    if pgrep -x php-fpm >/dev/null 2>&1; then
+        cmservice php-fpm restart
+    fi
 }
 
 checksec_phpext() {
@@ -485,7 +498,7 @@ checksec_phpext() {
     fi
   done
   if [ -f /usr/local/lib/libpcre.so ]; then
-    checksec --file=/usr/local/lib/libpcre.so --format=json --extended 2>/dev/null | jq -r
+    checksec file /usr/local/lib/libpcre.so --output json 2>/dev/null | jq -r
   fi
 }
 

@@ -1309,7 +1309,7 @@
 # nginScript version tag
 # Reference: https://github.com/nginx/njs
 # Git History: Added 2023-05-31 (769907e5)
-#NGINX_NJS_VER='0.9.0'  
+#NGINX_NJS_VER='1.0.1'  
 
 # Nginx GeoIP Legacy Module
 # MaxMind GeoIP legacy databases
@@ -1537,7 +1537,7 @@
 
 # Nginx Cache Purge Version
 # Git History: First added 2014-12-06 (ff4e5d72), Last modified 2016-02-15 (7240145c)
-#NGINX_CACHEPURGEVER='2.5.3'
+#NGINX_CACHEPURGEVER='3.0.3'
 
 # Nginx Access Key Module
 # Token-based access control
@@ -1623,7 +1623,7 @@
 
 # Nginx Fancy Index Version
 # Git History: Added 2016-02-15 (e29f35ff)
-#NGINX_FANCYINDEXVER='0.5.2'  
+#NGINX_FANCYINDEXVER='0.6.0'  
 
 # Nginx VHost Stats Module
 # Virtual host traffic statistics
@@ -1983,7 +1983,7 @@
 # Nginx PCRE2 Version
 # PCRE2 10.x version
 # Git History: Added 2021-12-29 (dbf5bac3)
-#NGINX_PCRETWOVER='10.39'  
+#NGINX_PCRETWOVER='10.49'  
 
 # Nginx Custom zlib
 # Use custom zlib instead of system version
@@ -2072,7 +2072,7 @@
 # OWASP Core Rule Set version
 # Reference: https://github.com/coreruleset/coreruleset/releases
 # Git History: Added 2017-08-05 (10863ad9)
-#MODSECURITY_OWASPVER='4.4.0'
+#MODSECURITY_OWASPVER='4.29.0'
 
 # Nginx TLS Fingerprint Module
 # SSL/TLS Handshake Fingerprinting Module Integration
@@ -2882,25 +2882,25 @@
 
 # Nginx Headers More Version
 # Git History: First added 2014-04-24 (d962e8b9), Last modified 2016-02-15 (7240145c)
-#NGINX_HEADERSMORE='0.38'
+#NGINX_HEADERSMORE='0.40'
 
 # OpenResty Memc Module Version
 # Memcached module
 # Reference: https://github.com/openresty/memc-nginx-module
 # Git History: First added 2014-07-13 (7266ade2), Last modified 2016-02-15 (7240145c)
-#ORESTY_MEMCVER='0.20'  
+#ORESTY_MEMCVER='0.21'  
 
 # OpenResty SrcCache Module Version
 # Subrequest cache module
 # Reference: https://github.com/openresty/srcache-nginx-module
 # Git History: First added 2014-07-13 (7266ade2), Last modified 2016-02-15 (7240145c)
-#ORESTY_SRCCACHEVER='0.33'  
+#ORESTY_SRCCACHEVER='0.34'  
 
 # OpenResty Devel Kit Version
 # Nginx development kit
 # Reference: https://github.com/vision5/ngx_devel_kit
 # Git History: First added 2015-05-08 (b1006c5f), Last modified 2016-02-15 (7240145c)
-#ORESTY_DEVELKITVER='0.3.2'  
+#ORESTY_DEVELKITVER='0.3.4'  
 
 # OpenResty Set-Misc Module
 # Various set_xxx directives
@@ -2915,7 +2915,7 @@
 
 # OpenResty Set-Misc Version
 # Git History: First added 2015-05-08 (b1006c5f), Last modified 2016-02-15 (7240145c)
-#ORESTY_SETMISCVER='0.33'  
+#ORESTY_SETMISCVER='0.34'  
 
 # OpenResty Echo Module
 # Echo module for debugging
@@ -2925,7 +2925,7 @@
 
 # OpenResty Echo Version
 # Git History: First added 2015-05-08 (6026a7a5), Last modified 2016-02-15 (7240145c)
-#ORESTY_ECHOVER='0.63'  
+#ORESTY_ECHOVER='0.65'  
 
 # OpenResty Redis2 Version
 # Redis module
@@ -2992,37 +2992,37 @@
 
 # Nginx Upstream Check Version
 # Git History: First added 2014-07-12 (418c8ef1), Last modified 2016-02-15 (7240145c)
-#NGINX_UPSTREAMCHECKVER='0.3.0'
+#NGINX_UPSTREAMCHECKVER='0.4.0'
 
 # Additional OpenResty module versions
 # Git History: First added 2015-05-25 (f56179dc), Last modified 2016-02-15 (7240145c)
-#ORESTY_LUAMEMCACHEDVER='0.17'  
+#ORESTY_LUAMEMCACHEDVER='0.18'  
 # Git History: First added 2015-05-25 (f56179dc), Last modified 2016-02-15 (7240145c)
-#ORESTY_LUAMYSQLVER='0.28'  
+#ORESTY_LUAMYSQLVER='0.31'  
 # Git History: First added 2015-05-25 (f56179dc), Last modified 2016-02-15 (7240145c)
-#ORESTY_LUAREDISVER='0.29'  
+#ORESTY_LUAREDISVER='0.33'  
 # Git History: First added 2015-05-25 (f56179dc), Last modified 2016-02-15 (7240145c)
 #ORESTY_LUADNSVER='0.23'  
 # Git History: First added 2015-05-25 (f56179dc), Last modified 2016-02-15 (7240145c)
 #ORESTY_LUAUPLOADVER='0.11'  
 # Git History: First added 2015-05-25 (f56179dc), Last modified 2016-02-15 (7240145c)
-#ORESTY_LUAWEBSOCKETVER='0.13'  
+#ORESTY_LUAWEBSOCKETVER='0.14'  
 # Git History: First added 2015-05-25 (f56179dc), Last modified 2016-02-15 (7240145c)
 #ORESTY_LUALOCKVER='0.09'  
 # Git History: First added 2015-05-25 (f56179dc), Last modified 2016-02-15 (7240145c)
-#ORESTY_LUASTRINGVER='0.16'  
+#ORESTY_LUASTRINGVER='0.19'  
 # Git History: First added 2015-05-25 (963385d2), Last modified 2016-02-15 (7240145c)
 #ORESTY_LUAREDISPARSERVER='0.13'  
 # Git History: First added 2015-05-25 (963385d2), Last modified 2016-02-15 (7240145c)
-#ORESTY_LUAUPSTREAMCHECKVER='0.08'  
+#ORESTY_LUAUPSTREAMCHECKVER='0.10'  
 # Git History: First added 2015-05-25 (963385d2), Last modified 2016-02-15 (7240145c)
 #ORESTY_LUALRUCACHEVER='0.15'  
 # Git History: First added 2015-05-25 (963385d2), Last modified 2016-02-15 (7240145c)
-#ORESTY_LUARESTYCOREVER='0.1.31'  
+#ORESTY_LUARESTYCOREVER='0.1.32'  
 # Git History: Added 2018-10-30 (d91957ae)
-#ORESTY_LUASTREAMVER='0.0.16'  
+#ORESTY_LUASTREAMVER='0.0.17'  
 # Git History: First added 2015-05-25 (963385d2), Last modified 2016-02-15 (7240145c)
-#ORESTY_LUAUPSTREAMVER='0.07'  
+#ORESTY_LUAUPSTREAMVER='0.08'  
 # Git History: First added 2015-05-25 (4098192a), Last modified 2016-02-15 (7240145c)
 #ORESTY_LUALOGGERSOCKETVER='0.1'  
 # Git History: First added 2015-05-25 (4098192a), Last modified 2016-02-15 (7240145c)
@@ -3112,7 +3112,7 @@
 # OpenResty Lua Nginx Module Version
 # Reference: https://github.com/openresty/lua-nginx-module
 # Git History: First added 2015-05-25 (f56179dc), Last modified 2016-02-15 (7240145c)
-#ORESTY_LUANGINXVER='0.10.28'  
+#ORESTY_LUANGINXVER='0.10.29'  
 
 # OpenResty LuaJIT Version
 # Reference: http://luajit.org/
@@ -3127,7 +3127,7 @@
 
 # OpenResty Lua Stream Version
 # Git History: Added 2018-10-30 (d91957ae)
-#ORESTY_LUASTREAMVER='0.0.16'  
+#ORESTY_LUASTREAMVER='0.0.17'  
 
 # Nginx Lua Stream Forced
 # Force enable stream-lua-nginx for Nginx 1.17+
@@ -3150,7 +3150,7 @@
 # Fast JSON encoding/decoding library
 # Reference: https://github.com/openresty/lua-cjson
 # Git History: First added 2015-05-28 (e1355312), Last modified 2016-02-15 (7240145c)
-#LUACJSONVER='2.1.0.9'  
+#LUACJSONVER='2.1.0.19'  
 
 ################################################################################
 # 18. SSL/TLS OPENSSL SETTINGS
@@ -3602,7 +3602,7 @@
 # AWS-LC version tag
 # Reference: https://github.com/aws/aws-lc/tags
 # Git History: Added 2024-06-21 (13e367fa)
-#AWS_LC_VERSION='v5.9.0'
+#AWS_LC_VERSION='v5.10.0'
 
 # AWS-LC Directory
 # Git History: Added 2024-06-10 (304dd425)
@@ -3727,7 +3727,7 @@
 # PHP version to compile and install
 # Reference: https://www.php.net/
 # Git History: First added 2014-04-24 (c4b6d98a), Last modified 2016-02-15 (7240145c)
-#PHP_VERSION='8.3.21'  
+#PHP_VERSION='8.3.35'  
 
 # PHP Install
 # Enable PHP-FPM installation
@@ -3761,7 +3761,7 @@
 #   - Negligible (~1-2% slower)
 #   - Worth the security trade-off
 # CHECKSEC VALIDATION:
-#   - Can be verified with: checksec --file=/usr/local/sbin/php-fpm
+#   - Can be verified with: checksec file /usr/local/sbin/php-fpm
 #   - Expected: RELRO, Stack Canary, NX, PIE (if PHP_SECURED_PIE='y')
 # USE CASES:
 #   - Production servers (highly recommended)
@@ -3785,7 +3785,7 @@
 #   - Modern Linux kernel ASLR (requires PIE binaries)
 #   - Full ASLR coverage (stack, heap, libraries, executable)
 # CHECKSEC VERIFICATION:
-#   - checksec --file=/usr/local/sbin/php-fpm
+#   - checksec file /usr/local/sbin/php-fpm
 #   - Expected output: PIE enabled
 # PERFORMANCE:
 #   - Minimal impact (<1% overhead)
@@ -4118,7 +4118,7 @@
 # Modern crypto library
 # Reference: https://github.com/jedisct1/libsodium/releases
 # Git History: Added 2017-11-14 (4290ff8c)
-#LIBSODIUM_VER='1.0.20'  
+#LIBSODIUM_VER='1.0.22'  
 
 # libsodium Native Optimization
 # Optimize for specific CPU (not portable between different CPUs)
@@ -4964,7 +4964,7 @@
 
 # MongoDB PHP 8.2+ Version
 # Git History: Added 2022-06-11 (059c2212)
-#MONGODBPHP_EIGHTTWO_VER='1.20.0'  
+#MONGODBPHP_EIGHTTWO_VER='1.21.10'  
 
 # MongoDB SASL Support
 # SASL authentication (not working yet, keep = n)
@@ -5093,7 +5093,7 @@
 
 # PHP Timezone DB Version
 # Git History: Added 2019-11-09 (f6622b64)
-#PHPTIMEZONEDB_VER='2025.1'  
+#PHPTIMEZONEDB_VER='2026.4'  
 
 # PHP Swoole Extension
 # Swoole Asynchronous PHP Extension
@@ -5161,19 +5161,19 @@
 
 # PHP Swoole 8.1 Version
 # Git History: Added 2025-01-12 (f79acd1e)
-#PHPSWOOLE_EIGHT_ONE_VER='6.1.8'
+#PHPSWOOLE_EIGHT_ONE_VER='6.1.10'
 
 # PHP Swoole 8.2 Version
 # Git History: Added 2025-01-12 (f79acd1e)
-#PHPSWOOLE_EIGHT_TWO_VER='6.2.1'
+#PHPSWOOLE_EIGHT_TWO_VER='6.2.3'
 
 # PHP Swoole 8.3 Version
 # Git History: Added 2025-01-12 (f79acd1e)
-#PHPSWOOLE_EIGHT_THREE_VER='6.2.1'
+#PHPSWOOLE_EIGHT_THREE_VER='6.2.3'
 
 # PHP Swoole 8.4 Version
 # Git History: Added 2025-01-12 (f79acd1e)
-#PHPSWOOLE_EIGHT_FOUR_VER='6.2.1'
+#PHPSWOOLE_EIGHT_FOUR_VER='6.2.3'
 
 # PHP Swoole PHP 5 Max Version
 # Git History: Added 2021-12-27 (51649e9d)
@@ -5384,11 +5384,11 @@
 # libevent Version
 # libevent library version for Memcached
 # Git History: First added 2014-04-24 (c4b6d98a), Last modified 2016-02-15 (7240145c)
-#LIBEVENT_VERSION='2.1.12'  
+#LIBEVENT_VERSION='2.1.13'  
 
 # Memcached Server Version
 # Git History: First added 2014-04-24 (c4b6d98a), Last modified 2016-02-15 (7240145c)
-#MEMCACHED_VERSION='1.6.36'  
+#MEMCACHED_VERSION='1.6.45'  
 
 # Memcached TLS Support
 # Enable TLS encryption for Memcached connections
@@ -5433,12 +5433,12 @@
 
 # libde265 Version
 # H.265 decoder library for HEIF support
-#LIBDE265_VER='1.0.15'
+#LIBDE265_VER='1.1.3'
 
 # libheif Version
 # HEIF/HEIC image format library
 # Git History: Added 2022-12-05 (a82ad587)
-#LIBHEIF_VER='1.18.2'
+#LIBHEIF_VER='1.23.5'
 
 ################################################################################
 # 35. SERVICE DISABLE FLAGS
@@ -5610,9 +5610,9 @@
 # Git History: Added 2019-04-03 (22e45996)
 #WGET_VERSION_SEVEN='1.20.3'
 # Git History: Added 2021-04-03 (d691f9fb)
-#WGET_VERSION_EIGHT='1.21.4'
+#WGET_VERSION_EIGHT='1.25.0'
 # Git History: Added 2022-05-28 (2f7b7081)
-#WGET_VERSION_NINE='1.21.4'
+#WGET_VERSION_NINE='1.25.0'
 # Git History: Added 2025-05-18 (a0dfe2af)
 #WGET_VERSION_TEN='1.25.0'
 
@@ -5993,7 +5993,7 @@
 # Checksec Version
 # Security property checker for executables
 # Git History: Added 2023-12-01 (533d95fd)
-#CHECKSEC_VERSION='3.0.2'
+#CHECKSEC_VERSION='3.2.0'
 
 ################################################################################
 # 51. MOTD & ALERT SETTINGS

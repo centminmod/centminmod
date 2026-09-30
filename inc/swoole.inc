@@ -307,7 +307,7 @@ if [[ "$PHPSWOOLE" = [yY] ]]; then
     if [ -f "${CONFIGSCANDIR}/swoole_async.ini" ]; then
         rm -f "${CONFIGSCANDIR}/swoole_async.ini"
     fi
-    popd
+    # popd
 fi # PHPSWOOLE=y
     fi # PHP_INSTALL=y
 }

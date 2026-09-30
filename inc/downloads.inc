@@ -10,7 +10,7 @@ checksec_check(){
     wget -q -L "https://github.com/slimm609/checksec/releases/download/${CHECKSEC_VERSION}/checksec_${CHECKSEC_VERSION}_linux_amd64.tar.gz" -O "checksec-${CHECKSEC_VERSION}.tar.gz"
     tar xzf "checksec-${CHECKSEC_VERSION}.tar.gz"
     \cp -af "${DIR_TMP}/checksec" /usr/local/bin/checksec
-    rm -rf LICENSE README.md
+    rm -rf CHANGELOG.md LICENSE README.md
     echo
     popd
   fi
@@ -2393,9 +2393,9 @@ echo ""
 mailparsephpexttarball() {
 
   if [[ "$INITIALINSTALL" != [yY] ]]; then
-      php-config --version | cut -d . -f1,2 | grep -Ew '7.0|7.1|7.2|7.3|7.4|8.0|8.1|8.2|8.3|8.4'
+      php-config --version | cut -d . -f1,2 | grep -Ew '7.0|7.1|7.2|7.3|7.4|8.0|8.1|8.2|8.3|8.4|8.5'
   else
-      echo $PHP_VERSION | cut -d . -f1,2 | grep -Ew '7.0|7.1|7.2|7.3|7.4|8.0|8.1|8.2|8.3|8.4'
+      echo $PHP_VERSION | cut -d . -f1,2 | grep -Ew '7.0|7.1|7.2|7.3|7.4|8.0|8.1|8.2|8.3|8.4|8.5'
   fi
   PHPSEVEN_CHECKVER=$?
   echo $PHPSEVEN_CHECKVER
@@ -2760,8 +2760,11 @@ echo ""
 
 ###############################################
 mongodbphplocaltarball() {
+  # the PHP branch being installed or upgraded to wins over the default PHP_VERSION branch
+  local mongodb_phpver="$PHPMVER"
+  [[ "$PHPMUVER" =~ ^[0-9]+\.[0-9]+$ ]] && mongodb_phpver="$PHPMUVER"
 
-  if [[ "$CENTOS_SEVEN" -eq '7' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' || "$CENTOS_TEN" -eq '10' ]] && [[ "$PHPMVER" = '7.0' || "$PHPMUVER" = '7.0' ]]; then
+  if [[ "$CENTOS_SEVEN" -eq '7' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' || "$CENTOS_TEN" -eq '10' ]] && [[ "$mongodb_phpver" = '7.0' ]]; then
     # PHP 8 requires mongodb =>1.12.0
     # PHP 7.1+ requires mongodb 1.11.1
     # PHP 7.0 requires mongodb 1.9.2
@@ -2770,7 +2773,7 @@ mongodbphplocaltarball() {
     PHPEXT_MONGODBLINKFILE="mongodb-${MONGODBPHP_VER}.tgz"
     PHPEXT_MONGODBLINK="https://pecl.php.net/get/${PHPEXT_MONGODBLINKFILE}"
     PHPEXT_MONGODBLINKLOCAL="${LOCALCENTMINMOD_MIRROR}/centminmodparts/mongodb/${PHPEXT_MONGODBLINKFILE}"
-  elif [[ "$CENTOS_SEVEN" -eq '7' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' || "$CENTOS_TEN" -eq '10' ]] && [[ "$PHPMVER" = '7.1' || "$PHPMUVER" = '7.1' || "$PHPMVER" = '7.2' || "$PHPMUVER" = '7.2' || "$PHPMVER" = '7.3' || "$PHPMUVER" = '7.3' || "$PHPMVER" = '7.4' || "$PHPMUVER" = '7.4' ]]; then
+  elif [[ "$CENTOS_SEVEN" -eq '7' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' || "$CENTOS_TEN" -eq '10' ]] && [[ "$mongodb_phpver" = '7.1' || "$mongodb_phpver" = '7.2' || "$mongodb_phpver" = '7.3' || "$mongodb_phpver" = '7.4' ]]; then
     # PHP 8 requires mongodb =>1.12.0
     # PHP 7 requires mongodb 1.11.1+
     # PHP 5.x requires mongodb <=1.7.5
@@ -2778,7 +2781,7 @@ mongodbphplocaltarball() {
     PHPEXT_MONGODBLINKFILE="mongodb-${MONGODBPHP_VER}.tgz"
     PHPEXT_MONGODBLINK="https://pecl.php.net/get/${PHPEXT_MONGODBLINKFILE}"
     PHPEXT_MONGODBLINKLOCAL="${LOCALCENTMINMOD_MIRROR}/centminmodparts/mongodb/${PHPEXT_MONGODBLINKFILE}"
-  elif [[ "$CENTOS_SEVEN" -eq '7' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' || "$CENTOS_TEN" -eq '10' ]] && [[ "$PHPMVER" = '8.0' || "$PHPMUVER" = '8.0' || "$PHPMVER" = '8.1' || "$PHPMUVER" = '8.1' ]]; then
+  elif [[ "$CENTOS_SEVEN" -eq '7' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' || "$CENTOS_TEN" -eq '10' ]] && [[ "$mongodb_phpver" = '8.0' || "$mongodb_phpver" = '8.1' ]]; then
     # PHP 8 requires mongodb =>1.12.0
     # PHP 7 requires mongodb 1.11.1+
     # PHP 5.x requires mongodb <=1.7.5
@@ -2786,11 +2789,27 @@ mongodbphplocaltarball() {
     PHPEXT_MONGODBLINKFILE="mongodb-${MONGODBPHP_VER}.tgz"
     PHPEXT_MONGODBLINK="https://pecl.php.net/get/${PHPEXT_MONGODBLINKFILE}"
     PHPEXT_MONGODBLINKLOCAL="${LOCALCENTMINMOD_MIRROR}/centminmodparts/mongodb/${PHPEXT_MONGODBLINKFILE}"
-  elif [[ "$CENTOS_SEVEN" -eq '7' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' || "$CENTOS_TEN" -eq '10' ]] && [[ "$PHPMVER" = '8.2' || "$PHPMUVER" = '8.2' || "$PHPVER_ID" -ge '80000' ]]; then
-    # PHP 8 requires mongodb =>1.12.0
-    # PHP 7 requires mongodb 1.11.1+
-    # PHP 5.x requires mongodb <=1.7.5
+  elif [[ "$CENTOS_SEVEN" -eq '7' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' || "$CENTOS_TEN" -eq '10' ]] && [[ "$mongodb_phpver" = '8.2' ]]; then
+    # PHP 8.2 requires mongodb 1.20.0+
     MONGODBPHP_VER="$MONGODBPHP_EIGHTTWO_VER"
+    PHPEXT_MONGODBLINKFILE="mongodb-${MONGODBPHP_VER}.tgz"
+    PHPEXT_MONGODBLINK="https://pecl.php.net/get/${PHPEXT_MONGODBLINKFILE}"
+    PHPEXT_MONGODBLINKLOCAL="${LOCALCENTMINMOD_MIRROR}/centminmodparts/mongodb/${PHPEXT_MONGODBLINKFILE}"
+  elif [[ "$CENTOS_SEVEN" -eq '7' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' || "$CENTOS_TEN" -eq '10' ]] && [[ "$mongodb_phpver" = '8.3' ]]; then
+    # PHP 8.3 requires mongodb 1.21.2+
+    MONGODBPHP_VER="$MONGODBPHP_EIGHTTHREE_VER"
+    PHPEXT_MONGODBLINKFILE="mongodb-${MONGODBPHP_VER}.tgz"
+    PHPEXT_MONGODBLINK="https://pecl.php.net/get/${PHPEXT_MONGODBLINKFILE}"
+    PHPEXT_MONGODBLINKLOCAL="${LOCALCENTMINMOD_MIRROR}/centminmodparts/mongodb/${PHPEXT_MONGODBLINKFILE}"
+  elif [[ "$CENTOS_SEVEN" -eq '7' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' || "$CENTOS_TEN" -eq '10' ]] && [[ "$mongodb_phpver" = '8.4' ]]; then
+    # PHP 8.4 requires mongodb 1.21.2+
+    MONGODBPHP_VER="$MONGODBPHP_EIGHTFOUR_VER"
+    PHPEXT_MONGODBLINKFILE="mongodb-${MONGODBPHP_VER}.tgz"
+    PHPEXT_MONGODBLINK="https://pecl.php.net/get/${PHPEXT_MONGODBLINKFILE}"
+    PHPEXT_MONGODBLINKLOCAL="${LOCALCENTMINMOD_MIRROR}/centminmodparts/mongodb/${PHPEXT_MONGODBLINKFILE}"
+  elif [[ "$CENTOS_SEVEN" -eq '7' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' || "$CENTOS_TEN" -eq '10' ]] && [[ "$mongodb_phpver" = '8.5' || "$PHPVER_ID" -ge '80500' ]]; then
+    # PHP 8.5 requires mongodb 1.21.2+
+    MONGODBPHP_VER="$MONGODBPHP_EIGHTFIVE_VER"
     PHPEXT_MONGODBLINKFILE="mongodb-${MONGODBPHP_VER}.tgz"
     PHPEXT_MONGODBLINK="https://pecl.php.net/get/${PHPEXT_MONGODBLINKFILE}"
     PHPEXT_MONGODBLINKLOCAL="${LOCALCENTMINMOD_MIRROR}/centminmodparts/mongodb/${PHPEXT_MONGODBLINKFILE}"
@@ -2831,8 +2850,11 @@ echo ""
 
 ###############################################
 mongodbphptarball() {
+  # the PHP branch being installed or upgraded to wins over the default PHP_VERSION branch
+  local mongodb_phpver="$PHPMVER"
+  [[ "$PHPMUVER" =~ ^[0-9]+\.[0-9]+$ ]] && mongodb_phpver="$PHPMUVER"
 
-  if [[ "$CENTOS_SEVEN" -eq '7' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' || "$CENTOS_TEN" -eq '10' ]] && [[ "$PHPMVER" = '7.0' || "$PHPMUVER" = '7.0' ]]; then
+  if [[ "$CENTOS_SEVEN" -eq '7' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' || "$CENTOS_TEN" -eq '10' ]] && [[ "$mongodb_phpver" = '7.0' ]]; then
     # PHP 8 requires mongodb =>1.12.0
     # PHP 7.1+ requires mongodb 1.11.1
     # PHP 7.0 requires mongodb 1.9.2
@@ -2841,7 +2863,7 @@ mongodbphptarball() {
     PHPEXT_MONGODBLINKFILE="mongodb-${MONGODBPHP_VER}.tgz"
     PHPEXT_MONGODBLINK="https://pecl.php.net/get/${PHPEXT_MONGODBLINKFILE}"
     PHPEXT_MONGODBLINKLOCAL="${LOCALCENTMINMOD_MIRROR}/centminmodparts/mongodb/${PHPEXT_MONGODBLINKFILE}"
-  elif [[ "$CENTOS_SEVEN" -eq '7' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' || "$CENTOS_TEN" -eq '10' ]] && [[ "$PHPMVER" = '7.1' || "$PHPMUVER" = '7.1' || "$PHPMVER" = '7.2' || "$PHPMUVER" = '7.2' || "$PHPMVER" = '7.3' || "$PHPMUVER" = '7.3' || "$PHPMVER" = '7.4' || "$PHPMUVER" = '7.4' ]]; then
+  elif [[ "$CENTOS_SEVEN" -eq '7' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' || "$CENTOS_TEN" -eq '10' ]] && [[ "$mongodb_phpver" = '7.1' || "$mongodb_phpver" = '7.2' || "$mongodb_phpver" = '7.3' || "$mongodb_phpver" = '7.4' ]]; then
     # PHP 8 requires mongodb =>1.12.0
     # PHP 7 requires mongodb 1.11.1+
     # PHP 5.x requires mongodb <=1.7.5
@@ -2849,11 +2871,35 @@ mongodbphptarball() {
     PHPEXT_MONGODBLINKFILE="mongodb-${MONGODBPHP_VER}.tgz"
     PHPEXT_MONGODBLINK="https://pecl.php.net/get/${PHPEXT_MONGODBLINKFILE}"
     PHPEXT_MONGODBLINKLOCAL="${LOCALCENTMINMOD_MIRROR}/centminmodparts/mongodb/${PHPEXT_MONGODBLINKFILE}"
-  elif [[ "$CENTOS_SEVEN" -eq '7' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' || "$CENTOS_TEN" -eq '10' ]] && [[ "$PHPMVER" = '8.0' || "$PHPMUVER" = '8.0' || "$PHPMVER" = '8.1' || "$PHPMUVER" = '8.1' || "$PHPMVER" = '8.2' || "$PHPMUVER" = '8.2' || "$PHPMVER" = '8.3' || "$PHPMUVER" = '8.3' || "$PHPMVER" = '8.4' || "$PHPMUVER" = '8.4' || "$PHPMVER" = '8.5' || "$PHPMUVER" = '8.5' || "$PHPVER_ID" -ge '80000' ]]; then
+  elif [[ "$CENTOS_SEVEN" -eq '7' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' || "$CENTOS_TEN" -eq '10' ]] && [[ "$mongodb_phpver" = '8.0' || "$mongodb_phpver" = '8.1' ]]; then
     # PHP 8 requires mongodb =>1.12.0
     # PHP 7 requires mongodb 1.11.1+
     # PHP 5.x requires mongodb <=1.7.5
     MONGODBPHP_VER="$MONGODBPHP_EIGHT_VER"
+    PHPEXT_MONGODBLINKFILE="mongodb-${MONGODBPHP_VER}.tgz"
+    PHPEXT_MONGODBLINK="https://pecl.php.net/get/${PHPEXT_MONGODBLINKFILE}"
+    PHPEXT_MONGODBLINKLOCAL="${LOCALCENTMINMOD_MIRROR}/centminmodparts/mongodb/${PHPEXT_MONGODBLINKFILE}"
+  elif [[ "$CENTOS_SEVEN" -eq '7' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' || "$CENTOS_TEN" -eq '10' ]] && [[ "$mongodb_phpver" = '8.2' ]]; then
+    # PHP 8.2 requires mongodb 1.20.0+
+    MONGODBPHP_VER="$MONGODBPHP_EIGHTTWO_VER"
+    PHPEXT_MONGODBLINKFILE="mongodb-${MONGODBPHP_VER}.tgz"
+    PHPEXT_MONGODBLINK="https://pecl.php.net/get/${PHPEXT_MONGODBLINKFILE}"
+    PHPEXT_MONGODBLINKLOCAL="${LOCALCENTMINMOD_MIRROR}/centminmodparts/mongodb/${PHPEXT_MONGODBLINKFILE}"
+  elif [[ "$CENTOS_SEVEN" -eq '7' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' || "$CENTOS_TEN" -eq '10' ]] && [[ "$mongodb_phpver" = '8.3' ]]; then
+    # PHP 8.3 requires mongodb 1.21.2+
+    MONGODBPHP_VER="$MONGODBPHP_EIGHTTHREE_VER"
+    PHPEXT_MONGODBLINKFILE="mongodb-${MONGODBPHP_VER}.tgz"
+    PHPEXT_MONGODBLINK="https://pecl.php.net/get/${PHPEXT_MONGODBLINKFILE}"
+    PHPEXT_MONGODBLINKLOCAL="${LOCALCENTMINMOD_MIRROR}/centminmodparts/mongodb/${PHPEXT_MONGODBLINKFILE}"
+  elif [[ "$CENTOS_SEVEN" -eq '7' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' || "$CENTOS_TEN" -eq '10' ]] && [[ "$mongodb_phpver" = '8.4' ]]; then
+    # PHP 8.4 requires mongodb 1.21.2+
+    MONGODBPHP_VER="$MONGODBPHP_EIGHTFOUR_VER"
+    PHPEXT_MONGODBLINKFILE="mongodb-${MONGODBPHP_VER}.tgz"
+    PHPEXT_MONGODBLINK="https://pecl.php.net/get/${PHPEXT_MONGODBLINKFILE}"
+    PHPEXT_MONGODBLINKLOCAL="${LOCALCENTMINMOD_MIRROR}/centminmodparts/mongodb/${PHPEXT_MONGODBLINKFILE}"
+  elif [[ "$CENTOS_SEVEN" -eq '7' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' || "$CENTOS_TEN" -eq '10' ]] && [[ "$mongodb_phpver" = '8.5' || "$PHPVER_ID" -ge '80500' ]]; then
+    # PHP 8.5 requires mongodb 1.21.2+
+    MONGODBPHP_VER="$MONGODBPHP_EIGHTFIVE_VER"
     PHPEXT_MONGODBLINKFILE="mongodb-${MONGODBPHP_VER}.tgz"
     PHPEXT_MONGODBLINK="https://pecl.php.net/get/${PHPEXT_MONGODBLINKFILE}"
     PHPEXT_MONGODBLINKLOCAL="${LOCALCENTMINMOD_MIRROR}/centminmodparts/mongodb/${PHPEXT_MONGODBLINKFILE}"
@@ -4301,9 +4347,9 @@ yuminstall
 questions
 
 if [[ "$INITIALINSTALL" != [yY] ]]; then
-    php-config --version | cut -d . -f1,2 | grep -Ew '7.0|7.1|7.2|7.3|7.4|8.0|8.1|8.2|8.3|8.4'
+    php-config --version | cut -d . -f1,2 | grep -Ew '7.0|7.1|7.2|7.3|7.4|8.0|8.1|8.2|8.3|8.4|8.5'
 else
-    echo "$PHP_VERSION" | cut -d . -f1,2 | grep -Ew '7.0|7.1|7.2|7.3|7.4|8.0|8.1|8.2|8.3|8.4'
+    echo "$PHP_VERSION" | cut -d . -f1,2 | grep -Ew '7.0|7.1|7.2|7.3|7.4|8.0|8.1|8.2|8.3|8.4|8.5'
 fi
 PHPSEVEN_CHECKVER=$?
 echo "$PHPSEVEN_CHECKVER"

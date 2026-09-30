@@ -67,8 +67,8 @@ ALTPCRELINK="${LOCALCENTMINMOD_MIRROR}/centminmodparts/pcre/${ALTPCRELINKFILE}"
 
 WGET_VERSION='1.20.3'
 WGET_VERSION_SEVEN='1.20.3'
-WGET_VERSION_EIGHT='1.21.4'
-WGET_VERSION_NINE='1.21.4'
+WGET_VERSION_EIGHT='1.25.0'
+WGET_VERSION_NINE='1.25.0'
 WGET_VERSION_TEN='1.25.0'
 WGET_FILENAME="wget-${WGET_VERSION}.tar.gz"
 WGET_LINK="${LOCALCENTMINMOD_MIRROR}/centminmodparts/wget/${WGET_FILENAME}"
@@ -914,56 +914,60 @@ if [ -f /proc/user_beancounters ]; then
 elif [[ "$CHECK_LXD" = [yY] ]]; then
     echo "LXC/LXD container system detected, NTP not installed"
 else
-  if [ ! -f /usr/sbin/ntpd ]; then
-    echo "*************************************************"
-    echo "* Installing NTP (and syncing time)"
-    echo "*************************************************"
-    echo "The date/time before was:"
-    date
-    echo
-    time $YUMDNFBIN -y install chrony
-    systemctl start chronyd
-    systemctl enable chronyd
-    systemctl status chronyd --no-pager
-    echo "current chrony ntp servers"
-    chronyc sources
-else
-    echo
-    time $YUMDNFBIN -y install ntp
-    chkconfig ntpd on
-    if [ -f /etc/ntp.conf ]; then
-    if [[ -z "$(grep 'logfile' /etc/ntp.conf)" ]]; then
-        echo "logfile /var/log/ntpd.log" >> /etc/ntp.conf
-        ls -lahrt /var/log | grep 'ntpd.log'
-    fi
-    echo "current ntp servers"
-    NTPSERVERS=$(awk '/server / {print $2}' /etc/ntp.conf | grep ntp.org | sort -r)
-    for s in $NTPSERVERS; do
-      if [ -f /usr/bin/nc ]; then
-        echo -ne "\n$s test connectivity: "
-        if [[ "$(echo | nc -u -w1 $s 53 >/dev/null 2>&1 ;echo $?)" = '0' ]]; then
-        echo " ok"
-        else
-        echo " error"
+  if [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' || "$CENTOS_TEN" -eq '10' ]]; then
+      echo
+      echo "*************************************************"
+      echo "* Installing chronyd (and syncing time)"
+      echo "*************************************************"
+      time $YUMDNFBIN -y install chrony
+      systemctl start chronyd
+      systemctl enable chronyd
+      systemctl status chronyd --no-pager
+      echo "current chrony ntp servers"
+      chronyc sources
+  else
+    if [ ! -f /usr/sbin/ntpd ]; then
+      echo "*************************************************"
+      echo "* Installing NTP (and syncing time)"
+      echo "*************************************************"
+      echo "The date/time before was:"
+      date
+      echo
+      time $YUMDNFBIN -y install ntp
+      chkconfig ntpd on
+      if [ -f /etc/ntp.conf ]; then
+        if [[ -z "$(grep 'logfile' /etc/ntp.conf)" ]]; then
+            echo "logfile /var/log/ntpd.log" >> /etc/ntp.conf
+            ls -lahrt /var/log | grep 'ntpd.log'
         fi
+        echo "current ntp servers"
+        NTPSERVERS=$(awk '/server / {print $2}' /etc/ntp.conf | grep ntp.org | sort -r)
+        for s in $NTPSERVERS; do
+          if [ -f /usr/bin/nc ]; then
+            echo -ne "\n$s test connectivity: "
+            if [[ "$(echo | nc -u -w1 $s 53 >/dev/null 2>&1 ;echo $?)" = '0' ]]; then
+            echo " ok"
+            else
+            echo " error"
+            fi
+          fi
+            ntpdate -q $s | tail -1
+            if [[ -f /etc/ntp/step-tickers && -z "$(grep $s /etc/ntp/step-tickers )" ]]; then
+            echo "$s" >> /etc/ntp/step-tickers
+            fi
+        done
+        if [ -f /etc/ntp/step-tickers ]; then
+            echo -e "\nsetup /etc/ntp/step-tickers server list\n"
+            cat /etc/ntp/step-tickers
+        fi
+        service ntpd restart >/dev/null 2>&1
+        echo -e "\ncheck ntpd peers list"
+        ntpdc -p
       fi
-        ntpdate -q $s | tail -1
-        if [[ -f /etc/ntp/step-tickers && -z "$(grep $s /etc/ntp/step-tickers )" ]]; then
-        echo "$s" >> /etc/ntp/step-tickers
-        fi
-    done
-    if [ -f /etc/ntp/step-tickers ]; then
-        echo -e "\nsetup /etc/ntp/step-tickers server list\n"
-        cat /etc/ntp/step-tickers
     fi
-    service ntpd restart >/dev/null 2>&1
-    echo -e "\ncheck ntpd peers list"
-    ntpdc -p
-    fi
-fi
-    echo "The date/time is now:"
-    date
   fi
+  echo "The date/time is now:"
+  date
 fi
 
 # only run for CentOS 6.x

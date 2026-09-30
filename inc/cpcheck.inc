@@ -42,6 +42,17 @@ cmservice_enable_once() {
   touch "$marker" 2>/dev/null
 }
 
+# EL9+ moved the service(8) wrapper out of initscripts into initscripts-service,
+# which minimal/cloud images do not ship. Centmin Mod routines and the ngx*/fpm*
+# shortcuts call service, so without it nginx upgrades and memcached reinstalls
+# silently skip their restarts
+service_wrapper_install() {
+  if [[ "$CENTOS_NINE" -eq '9' || "$CENTOS_TEN" -eq '10' ]] && [[ ! -x /usr/sbin/service ]]; then
+    echo "Installing initscripts-service for the service command..."
+    yum${CACHESKIP} -q -y install initscripts-service
+  fi
+}
+
 csf_el10_dependencies_install() {
   if [[ "$CENTOS_TEN" -eq '10' ]]; then
       local silent="$1"
@@ -962,10 +973,12 @@ imagemagick_heif() {
     echo "https://blog.remirepo.net/post/2019/05/22/HEIC-HEIF-images-support"
     libheif_install || return $?
     yum -q -y install ImageMagick-heic --enablerepo=remi
-    echo "ImageMagick-heic installed"
     if [[ "$(rpm -qa ImageMagick-heic | grep -o 'ImageMagick-heic')" ]]; then
+      echo "ImageMagick-heic installed"
       yum -q versionlock delete ImageMagick-heic
       yum -q versionlock ImageMagick-heic
+    else
+      echo "ImageMagick-heic install failed"
     fi
   elif [[ -f /etc/yum.repos.d/remi.repo && "$IMAGEMAGICK_HEIF" = [yY] && "$CENTOS_SEVEN" = '7' && ! "$(rpm -qa ImageMagick6-heic)" ]]; then
     echo
@@ -973,10 +986,12 @@ imagemagick_heif() {
     echo "https://blog.remirepo.net/post/2019/05/22/HEIC-HEIF-images-support"
     libheif_install || return $?
     yum -q -y install ImageMagick6-heic --enablerepo=remi
-    echo "ImageMagick6-heic installed"
     if [[ "$(rpm -qa ImageMagick6-heic | grep -o 'ImageMagick6-heic')" ]]; then
+      echo "ImageMagick6-heic installed"
       yum -q versionlock delete ImageMagick6-heic
       yum -q versionlock ImageMagick6-heic
+    else
+      echo "ImageMagick6-heic install failed"
     fi
   elif [[ -f /etc/yum.repos.d/remi.repo && "$IMAGEMAGICK_HEIF" = [yY] && "$CENTOS_SIX" = '6' && ! "$(rpm -qa ImageMagick6-heic)" ]]; then
     echo
@@ -984,10 +999,12 @@ imagemagick_heif() {
     echo "https://blog.remirepo.net/post/2019/05/22/HEIC-HEIF-images-support"
     libheif_install || return $?
     yum -q -y install ImageMagick6-heic --enablerepo=remi
-    echo "ImageMagick6-heic installed"
     if [[ "$(rpm -qa ImageMagick6-heic | grep -o 'ImageMagick6-heic')" ]]; then
+      echo "ImageMagick6-heic installed"
       yum -q versionlock delete ImageMagick6-heic
       yum -q versionlock ImageMagick6-heic
+    else
+      echo "ImageMagick6-heic install failed"
     fi
   fi
 }
@@ -2656,8 +2673,8 @@ yumupdatechecker() {
     {
     message=$1
     color=$2
-    echo -e "$color$message" ; $Reset
-    return
+    echo -e "$color$message" ; $Reset 2>/dev/null
+    return 0
     }
 
     if [ -f /etc/yum/pluginconf.d/versionlock.conf ]; then
@@ -4933,7 +4950,7 @@ cpcheck() {
   else
     INITIALINSTALL='n'
   fi
-  
+
 if [ -f /var/cpanel/cpanel.config ]; then
 echo "WHM/Cpanel detected.. centmin mod NOT compatible"
 echo "aborting script..."
@@ -4951,6 +4968,7 @@ echo "DirectAdmin detected.. centmin mod NOT compatible"
 echo "aborting script..."
 exit
 fi
+service_wrapper_install
 
 if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]] &&  [[ "$DNF_ENABLE" = [yY] ]]; then
   # yum -y -q install epel-release

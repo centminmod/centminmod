@@ -1863,46 +1863,38 @@ if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9'
     # https://github.com/openresty/echo-nginx-module#installation
     if [[ "$DYNAMIC_SUPPORT" = [yY] && "$NGXDYNAMIC_LUA" = [yY] ]]; then
       # luapatch
-      if [[ "$NGX_LUAUPSTREAMCACHE" = [yY] && "$NGX_LUAUPSTREAM" = [yY] && "$NGX_LUASTREAM" = [yY] ]]; then
-        LUAOPT=" --add-dynamic-module=../$NGX_LUANGINXDIR --add-module=../$NGX_LUAUPSTREAMDIR --add-module=../$NGX_LUASTREAMDIR --add-module=../$NGX_LUAUPSTREAMCACHEDIR"
-      elif [[ "$NGX_LUAUPSTREAMCACHE" = [yY] && "$NGX_LUAUPSTREAM" = [yY] ]]; then
-        LUAOPT=" --add-dynamic-module=../$NGX_LUANGINXDIR --add-module=../$NGX_LUAUPSTREAMDIR --add-module=../$NGX_LUAUPSTREAMCACHEDIR"
-      elif [[ "$NGX_LUAUPSTREAMCACHE" = [yY] && "$NGX_LUAUPSTREAM" = [nN] && "$NGX_LUASTREAM" = [yY] ]]; then
-        LUAOPT=" --add-dynamic-module=../$NGX_LUANGINXDIR --add-module=../$NGX_LUAUPSTREAMCACHEDIR --add-module=../$NGX_LUASTREAMDIR"
-      elif [[ "$NGX_LUAUPSTREAMCACHE" = [yY] && "$NGX_LUAUPSTREAM" = [nN] ]]; then
-        LUAOPT=" --add-dynamic-module=../$NGX_LUANGINXDIR --add-module=../$NGX_LUAUPSTREAMCACHEDIR"
-      elif [[ "$NGX_LUAUPSTREAMCACHE" = [nN] && "$NGX_LUAUPSTREAM" = [yY] ]]; then
-        LUAOPT=" --add-dynamic-module=../$NGX_LUANGINXDIR --add-module=../$NGX_LUAUPSTREAMDIR"
-      elif [[ "$NGX_LUAUPSTREAMCACHE" = [nN] && "$NGX_LUAUPSTREAM" = [yY] && "$NGX_LUASTREAM" = [yY] ]]; then
-        LUAOPT=" --add-dynamic-module=../$NGX_LUANGINXDIR --add-module=../$NGX_LUAUPSTREAMDIR --add-module=../$NGX_LUASTREAMDIR"
-      elif [[ "$NGX_LUAUPSTREAMCACHE" = [nN] && "$NGX_LUAUPSTREAM" = [nN] && "$NGX_LUASTREAM" = [yY] ]]; then
-        LUAOPT=" --add-dynamic-module=../$NGX_LUANGINXDIR --add-module=../$NGX_LUASTREAMDIR"
-      elif [[ "$NGX_LUAUPSTREAMCACHE" = [nN] && "$NGX_LUAUPSTREAM" = [nN] ]]; then
-        LUAOPT=" --add-dynamic-module=../$NGX_LUANGINXDIR"
+      # lua-upstream uses lua-nginx symbols, so it has to be a dynamic module
+      # loaded after ngx_http_lua_module.so, stream-lua is self contained
+      LUAOPT=" --add-dynamic-module=../$NGX_LUANGINXDIR"
+      if [[ "$NGX_LUAUPSTREAM" = [yY] ]]; then
+        LUAOPT="$LUAOPT --add-dynamic-module=../$NGX_LUAUPSTREAMDIR"
+      fi
+      if [[ "$NGX_LUASTREAM" = [yY] ]]; then
+        LUAOPT="$LUAOPT --add-module=../$NGX_LUASTREAMDIR"
+      fi
+      if [[ "$NGX_LUAUPSTREAMCACHE" = [yY] ]]; then
+        # no dynamic module support upstream, it only links into a static lua-nginx
+        echo "skipping lua-upstream-cache-nginx-module, it requires NGXDYNAMIC_LUA='n'"
       fi
       if [ -f /usr/local/nginx/conf/dynamic-modules.conf ]; then
         echo "load_module \"modules/ngx_http_lua_module.so\";" >> /usr/local/nginx/conf/dynamic-modules.conf
+        if [[ "$NGX_LUAUPSTREAM" = [yY] ]]; then
+          echo "load_module \"modules/ngx_http_lua_upstream_module.so\";" >> /usr/local/nginx/conf/dynamic-modules.conf
+        fi
       fi
       if [ -f /usr/local/nginx/modules/ngx_http_lua_module.so.old ]; then
         rm -rf /usr/local/nginx/modules/ngx_http_lua_module.so.old
       fi
     else
-      if [[ "$NGX_LUAUPSTREAMCACHE" = [yY] && "$NGX_LUAUPSTREAM" = [yY] && "$NGX_LUASTREAM" = [yY] ]]; then
-        LUAOPT=" --add-module=../$NGX_LUANGINXDIR --add-module=../$NGX_LUAUPSTREAMDIR --add-module=../$NGX_LUASTREAMDIR --add-module=../$NGX_LUAUPSTREAMCACHEDIR"
-      elif [[ "$NGX_LUAUPSTREAMCACHE" = [yY] && "$NGX_LUAUPSTREAM" = [yY] ]]; then
-        LUAOPT=" --add-module=../$NGX_LUANGINXDIR --add-module=../$NGX_LUAUPSTREAMDIR --add-module=../$NGX_LUAUPSTREAMCACHEDIR"
-      elif [[ "$NGX_LUAUPSTREAMCACHE" = [yY] && "$NGX_LUAUPSTREAM" = [nN] ]]; then
-        LUAOPT=" --add-module=../$NGX_LUANGINXDIR --add-module=../$NGX_LUAUPSTREAMCACHEDIR"
-      elif [[ "$NGX_LUAUPSTREAMCACHE" = [yY] && "$NGX_LUAUPSTREAM" = [nN] && "$NGX_LUASTREAM" = [yY] ]]; then
-        LUAOPT=" --add-module=../$NGX_LUANGINXDIR --add-module=../$NGX_LUAUPSTREAMCACHEDIR --add-module=../$NGX_LUASTREAMDIR"
-      elif [[ "$NGX_LUAUPSTREAMCACHE" = [nN] && "$NGX_LUAUPSTREAM" = [yY] ]]; then
-        LUAOPT=" --add-module=../$NGX_LUANGINXDIR --add-module=../$NGX_LUAUPSTREAMDIR"
-      elif [[ "$NGX_LUAUPSTREAMCACHE" = [nN] && "$NGX_LUAUPSTREAM" = [yY] && "$NGX_LUASTREAM" = [yY] ]]; then
-        LUAOPT=" --add-module=../$NGX_LUANGINXDIR --add-module=../$NGX_LUAUPSTREAMDIR --add-module=../$NGX_LUASTREAMDIR"
-      elif [[ "$NGX_LUAUPSTREAMCACHE" = [nN] && "$NGX_LUAUPSTREAM" = [nN] && "$NGX_LUASTREAM" = [yY] ]]; then
-        LUAOPT=" --add-module=../$NGX_LUANGINXDIR --add-module=../$NGX_LUASTREAMDIR"
-      elif [[ "$NGX_LUAUPSTREAMCACHE" = [nN] && "$NGX_LUAUPSTREAM" = [nN] ]]; then
-        LUAOPT=" --add-module=../$NGX_LUANGINXDIR"
+      LUAOPT=" --add-module=../$NGX_LUANGINXDIR"
+      if [[ "$NGX_LUAUPSTREAM" = [yY] ]]; then
+        LUAOPT="$LUAOPT --add-module=../$NGX_LUAUPSTREAMDIR"
+      fi
+      if [[ "$NGX_LUASTREAM" = [yY] ]]; then
+        LUAOPT="$LUAOPT --add-module=../$NGX_LUASTREAMDIR"
+      fi
+      if [[ "$NGX_LUAUPSTREAMCACHE" = [yY] ]]; then
+        LUAOPT="$LUAOPT --add-module=../$NGX_LUAUPSTREAMCACHEDIR"
       fi
       # if NGXDYNAMIC_LUA='y' was previously set with nginx 1.9.11+, then the nginx
       # dynamic module /usr/local/nginx/modules/ngx_http_lua_module.so would of been
@@ -1956,11 +1948,12 @@ if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9'
       cd "${DIR_TMP}/$NGX_LUAWEBSOCKETDIR"; make clean; LUA_VERSION="$BUILDLUA_VER" make install PREFIX='/usr/local/nginx-dep'
       cd "${DIR_TMP}/$NGX_LUALOCKDIR"; make clean; LUA_VERSION="$BUILDLUA_VER" make install PREFIX='/usr/local/nginx-dep'
       cd "${DIR_TMP}/$NGX_LUASTRINGDIR"; make clean; LUA_VERSION="$BUILDLUA_VER" make install PREFIX='/usr/local/nginx-dep'
-      cd "${DIR_TMP}/$NGX_LUAREDISPARSERDIR"; make clean; make; LUA_VERSION="$BUILDLUA_VER" make install PREFIX='/usr/local/nginx-dep'
+      # C modules must build against the LuaJIT headers, not the system lua-devel 5.3/5.4 ones
+      cd "${DIR_TMP}/$NGX_LUAREDISPARSERDIR"; make clean; make LUA_INCLUDE_DIR="$LUAJIT_INC"; LUA_VERSION="$BUILDLUA_VER" make install PREFIX='/usr/local/nginx-dep' LUA_INCLUDE_DIR="$LUAJIT_INC"
       cd "${DIR_TMP}/$NGX_LUAUPSTREAMCHECKDIR"; make clean; LUA_VERSION="$BUILDLUA_VER" make install PREFIX='/usr/local/nginx-dep';
       cd "${DIR_TMP}/$NGX_LUALOGGERSOCKETDIR"; chmod +x lib/resty/logger/*; \cp -rpf lib/resty/logger/* /usr/local/nginx-dep/lib/lua/${BUILDLUA_VER}/resty/
       cd "${DIR_TMP}/$NGX_LUACOOKIEDIR"; make clean; LUA_VERSION="$BUILDLUA_VER" make install PREFIX='/usr/local/nginx-dep'
-      cd "${DIR_TMP}/$NGX_LUACJSONDIR"; make clean; LUA_VERSION="$BUILDLUA_VER" make install PREFIX='/usr/local/nginx-dep'
+      cd "${DIR_TMP}/$NGX_LUACJSONDIR"; make clean; LUA_VERSION="$BUILDLUA_VER" make install PREFIX='/usr/local/nginx-dep' LUA_INCLUDE_DIR="$LUAJIT_INC"
       cd "${DIR_TMP}/$NGX_LUALRUCACHEDIR"; make clean; LUA_VERSION="$BUILDLUA_VER" make install PREFIX='/usr/local/nginx-dep'
       cd "${DIR_TMP}/$NGX_LUARESTYCOREDIR"; make clean; LUA_VERSION="$BUILDLUA_VER" make install PREFIX='/usr/local/nginx-dep'
       echo
@@ -3375,7 +3368,9 @@ fi
       NGINX_NJSOPT=' --add-dynamic-module=../njs/nginx'
       pushd "$DIR_TMP"
       rm -rf njs
-      git clone https://github.com/nginx/njs && (cd njs && git fetch --tags && git checkout tags/$NGINX_NJS_VER)
+      # njs 1.0.0+ auto/cc quotes $CC in command -v which rejects a CC with a ccache
+      # prefix or compiler flags, check only the first word like njs 0.9.x did
+      git clone https://github.com/nginx/njs && (cd njs && git fetch --tags && git checkout tags/$NGINX_NJS_VER && sed -i 's|command -v "${CC}"|command -v "${CC%% *}"|' auto/cc)
       popd
       # if [ ! -f /usr/bin/hg ]; then
       #   time $YUMDNFBIN -y install mercurial${DISABLEREPO_DNF}
@@ -3406,7 +3401,9 @@ fi
       NGINX_NJSOPT=' --add-module=../njs/nginx'
       pushd "$DIR_TMP"
       rm -rf njs
-      git clone https://github.com/nginx/njs && (cd njs && git fetch --tags && git checkout tags/$NGINX_NJS_VER)
+      # njs 1.0.0+ auto/cc quotes $CC in command -v which rejects a CC with a ccache
+      # prefix or compiler flags, check only the first word like njs 0.9.x did
+      git clone https://github.com/nginx/njs && (cd njs && git fetch --tags && git checkout tags/$NGINX_NJS_VER && sed -i 's|command -v "${CC}"|command -v "${CC%% *}"|' auto/cc)
       popd
       # if [ ! -f /usr/bin/hg ]; then
       #   time $YUMDNFBIN -y install mercurial${DISABLEREPO_DNF}

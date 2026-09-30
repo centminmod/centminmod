@@ -1566,13 +1566,13 @@ if [[ "$zendopcacheon" = [yY] && "$OLD_OPCACHEPHP" != [yY] ]]; then
 fi
 
 # notes for users if PHP 7.0 detected
-php-config --version | cut -d . -f1,2 | grep -Ew '7.0|7.1|7.2|7.3|7.4|8.0|8.1|8.2|8.3|8.4'
+php-config --version | cut -d . -f1,2 | grep -Ew '7.0|7.1|7.2|7.3|7.4|8.0|8.1|8.2|8.3|8.4|8.5'
 PHPSEVEN_CHECKVER=$?
 echo "$PHPSEVEN_CHECKVER"
 
 if [[ "$PHPSEVEN_CHECKVER" = '0' ]]; then
     cecho "***************************************************" $boldgreen
-    cecho "PHP 7.0/7.1/7.2/7.3/7.4/8.0/8.1/8.2/8.3/8.4 detected.. remove unsupported PHP extensions manually" $boldyellow
+    cecho "PHP 7.0/7.1/7.2/7.3/7.4/8.0/8.1/8.2/8.3/8.4/8.5 detected.. remove unsupported PHP extensions manually" $boldyellow
     cecho "by removing their ini files listed below (if list is empty = nothing to do):" $boldyellow
     cecho "***************************************************" $boldgreen
     echo
@@ -1662,8 +1662,8 @@ fi
         echo "***************************************************"
         checksec_phpext
         echo "***************************************************"
-        echo "checksec --output json file /usr/local/sbin/php-fpm --extended 2>/dev/null | jq -r"
-        checksec --output json file /usr/local/sbin/php-fpm --extended 2>/dev/null | jq -r
+        echo "checksec --output json file /usr/local/sbin/php-fpm 2>/dev/null | jq -r"
+        checksec --output json file /usr/local/sbin/php-fpm 2>/dev/null | jq -r
     fi
     if [[ "$PHP_LDMOLD" = [yY] ]]; then
         echo

@@ -30,7 +30,7 @@ DT=$(date +"%d%m%y-%H%M%S")
 branchname='141.00beta01'
 SCRIPT_MAJORVER='141'
 SCRIPT_MINORVER='00'
-SCRIPT_INCREMENTVER='279'
+SCRIPT_INCREMENTVER='280'
 SCRIPT_VERSIONSHORT="${branchname}"
 SCRIPT_VERSION="${SCRIPT_VERSIONSHORT}.b${SCRIPT_INCREMENTVER}"
 SCRIPT_DATE='16/08/25'
@@ -536,7 +536,7 @@ MM_LICENSE_KEY="$GET_CMM_MM_LICENSE_KEY"
 MM_CSF_SRC='y'
 
 #####################################################
-CHECKSEC_VERSION='3.0.2'
+CHECKSEC_VERSION='3.2.0'
 
 #####################################################
 # MOTD prompt alert user if server reboot is required
@@ -688,11 +688,11 @@ NGINX_TLS_FINGERPRINT='n'    # JA3 fingerprint module https://github.com/centmin
 NGINX_MODSECURITY='n'        # modsecurity module support https://github.com/SpiderLabs/ModSecurity/wiki/Reference-Manual#Installation_for_NGINX
 NGINX_MODSECURITY_JSONLOGS='n' # enable to switch to JSON log format, to switch back manually edit /usr/local/nginx/modsec/modsecurity.conf
 NGINX_MODSECURITY_MAXMIND='y' # modsecurity built with libmaxminddb is failing to compile so disable it in favour of GeoIP legacy
-MODSECURITY_OWASPVER='4.4.0' # owasp modsecurity ruleset https://github.com/coreruleset/coreruleset/releases
+MODSECURITY_OWASPVER='4.29.0' # owasp modsecurity ruleset https://github.com/coreruleset/coreruleset/releases
 NGINX_REALIP='y'             # http://nginx.org/en/docs/http/ngx_http_realip_module.html
 NGINX_RDNS='n'               # https://github.com/flant/nginx-http-rdns
 NGINX_NJS='n'                # nginScript https://www.nginx.com/blog/
-NGINX_NJS_VER='0.9.0'        # nginxScript tag version https://github.com/nginx/njslaunching-nginscript-and-looking-ahead/
+NGINX_NJS_VER='1.0.1'        # nginxScript tag version https://github.com/nginx/njslaunching-nginscript-and-looking-ahead/
 NGINX_GEOIP='y'              # Nginx GEOIP module install
 NGINX_GEOIPMEM='y'           # Nginx caches GEOIP databases in memory (default), setting 'n' caches to disk instead
 NGINX_GEOIPTWOLITE='n'       # https://github.com/leev/ngx_http_geoip2_module
@@ -723,7 +723,7 @@ NGINX_MP4='n'                # Nginx MP4 Module http://nginx.org/en/docs/http/ng
 NGINX_AUTHREQ='n'            # http://nginx.org/en/docs/http/ngx_http_auth_request_module.html
 NGINX_SECURELINK='y'         # http://nginx.org/en/docs/http/ngx_http_secure_link_module.html
 NGINX_FANCYINDEX='y'         # https://github.com/aperezdc/ngx-fancyindex/releases
-NGINX_FANCYINDEXVER='0.5.2'  # https://github.com/aperezdc/ngx-fancyindex/releases
+NGINX_FANCYINDEXVER='0.6.0'  # https://github.com/aperezdc/ngx-fancyindex/releases
 NGINX_VHOSTSTATS='n'         # https://github.com/vozlt/nginx-module-vts
 NGINX_LIBBROTLI='n'          # https://github.com/eustas/ngx_brotli
 NGINX_ZSTD='n'               # https://github.com/tokers/zstd-nginx-module
@@ -746,57 +746,57 @@ NGINX_PCREJIT='y'            # Nginx configured with pcre & pcre-jit support
 NGINX_PCRE_DYNAMIC='y'       # compile nginx pcre as dynamic instead of static library
 NGINX_PCREVER='8.45'         # Version of PCRE used for pcre-jit support in Nginx
 NGINX_PCRE_TWO='n'           # optional PCRE2 for Nginx 1.21.5+
-NGINX_PCRETWOVER='10.39'     # Version of PCRE2 used for pcre-jit support in Nginx
+NGINX_PCRETWOVER='10.49'     # Version of PCRE2 used for pcre-jit support in Nginx
 NGINX_ZLIBCUSTOM='y'         # Use custom zlib instead of system version
 NGINX_ZLIBVER='1.3.2'        # http://www.zlib.net/
 NGINX_VIDEO='n'              # control variable when 'y' set for NGINX_SLICE='y', NGINX_RTMP='y', NGINX_FLV='y', NGINX_MP4='y'
 ORESTY_HEADERSMORE='y'       # openresty headers more https://github.com/openresty/headers-more-nginx-module
 ORESTY_HEADERSMOREGIT='n'    # use git master instead of version specific
-NGINX_HEADERSMORE='0.38'
-NGINX_CACHEPURGEVER='2.5.3'
+NGINX_HEADERSMORE='0.40'
+NGINX_CACHEPURGEVER='3.0.3'
 NGINX_STICKY='n'             # nginx sticky module https://bitbucket.org/nginx-goodies/nginx-sticky-module-ng
 NGINX_STICKYVER='master'
 NGINX_UPSTREAMCHECK='n'      # nginx upstream check https://github.com/yaoweibin/nginx_upstream_check_module
-NGINX_UPSTREAMCHECKVER='0.3.0'
+NGINX_UPSTREAMCHECKVER='0.4.0'
 NGINX_OPENRESTY='y'          # Agentzh's openresty Nginx modules
-ORESTY_MEMCVER='0.20'        # openresty memc module https://github.com/openresty/memc-nginx-module
-ORESTY_SRCCACHEVER='0.33'    # openresty subrequest cache module https://github.com/openresty/srcache-nginx-module
-ORESTY_DEVELKITVER='0.3.2'  # openresty ngx_devel_kit module https://github.com/vision5/ngx_devel_kit
+ORESTY_MEMCVER='0.21'        # openresty memc module https://github.com/openresty/memc-nginx-module
+ORESTY_SRCCACHEVER='0.34'    # openresty subrequest cache module https://github.com/openresty/srcache-nginx-module
+ORESTY_DEVELKITVER='0.3.4'  # openresty ngx_devel_kit module https://github.com/vision5/ngx_devel_kit
 ORESTY_SETMISCGIT='n'        # use git master instead of version specific
 ORESTY_SETMISC='y'           # openresty set-misc-nginx module https://github.com/openresty/echo-nginx-module
-ORESTY_SETMISCVER='0.33'     # openresty set-misc-nginx module https://github.com/openresty/set-misc-nginx-module
+ORESTY_SETMISCVER='0.34'     # openresty set-misc-nginx module https://github.com/openresty/set-misc-nginx-module
 ORESTY_ECHOGIT='n'           # use git master instead of version specific
-ORESTY_ECHOVER='0.63'        # openresty set-misc-nginx module https://github.com/openresty/echo-nginx-module
+ORESTY_ECHOVER='0.65'        # openresty set-misc-nginx module https://github.com/openresty/echo-nginx-module
 ORESTY_REDISVER='0.15'       # openresty redis2-nginx-module https://github.com/openresty/redis2-nginx-module
 
 LUAJIT_GITINSTALL='y'        # opt to install luajit 2.1 from dev branch http://repo.or.cz/w/luajit-2.0.git/shortlog/refs/heads/v2.1
 LUAJIT_GITINSTALLVER='2.1-agentzh'   # branch version = v2.1 will override ORESTY_LUAGITVER if LUAJIT_GITINSTALL='y'
 
 ORESTY_LUANGINX='n'             # enable or disable or ORESTY_LUA* nginx modules below
-ORESTY_LUANGINXVER='0.10.28'  # openresty lua-nginx-module https://github.com/openresty/lua-nginx-module
+ORESTY_LUANGINXVER='0.10.29'  # openresty lua-nginx-module https://github.com/openresty/lua-nginx-module
 ORESTY_LUAGITVER='2.0.5'        # luagit http://luajit.org/
-ORESTY_LUAMEMCACHEDVER='0.17'   # openresty https://github.com/openresty/lua-resty-memcached
-ORESTY_LUAMYSQLVER='0.28'    # openresty https://github.com/openresty/lua-resty-mysql
-ORESTY_LUAREDISVER='0.29'       # openresty https://github.com/openresty/lua-resty-redis
+ORESTY_LUAMEMCACHEDVER='0.18'   # openresty https://github.com/openresty/lua-resty-memcached
+ORESTY_LUAMYSQLVER='0.31'    # openresty https://github.com/openresty/lua-resty-mysql
+ORESTY_LUAREDISVER='0.33'       # openresty https://github.com/openresty/lua-resty-redis
 ORESTY_LUADNSVER='0.23'         # openresty https://github.com/openresty/lua-resty-dns
 ORESTY_LUAUPLOADVER='0.11'      # openresty https://github.com/openresty/lua-resty-upload
-ORESTY_LUAWEBSOCKETVER='0.13'   # openresty https://github.com/openresty/lua-resty-websocket
+ORESTY_LUAWEBSOCKETVER='0.14'   # openresty https://github.com/openresty/lua-resty-websocket
 ORESTY_LUALOCKVER='0.09'        # openresty https://github.com/openresty/lua-resty-lock
-ORESTY_LUASTRINGVER='0.16'      # openresty https://github.com/openresty/lua-resty-string
+ORESTY_LUASTRINGVER='0.19'      # openresty https://github.com/openresty/lua-resty-string
 ORESTY_LUAREDISPARSERVER='0.13'    # openresty https://github.com/openresty/lua-redis-parser
-ORESTY_LUAUPSTREAMCHECKVER='0.08'  # openresty https://github.com/openresty/lua-resty-upstream-healthcheck
+ORESTY_LUAUPSTREAMCHECKVER='0.10'  # openresty https://github.com/openresty/lua-resty-upstream-healthcheck
 ORESTY_LUALRUCACHEVER='0.15'       # openresty https://github.com/openresty/lua-resty-lrucache
-ORESTY_LUARESTYCOREVER='0.1.31'    # openresty https://github.com/openresty/lua-resty-core
-ORESTY_LUASTREAMVER='0.0.16'        # https://github.com/openresty/stream-lua-nginx-module
+ORESTY_LUARESTYCOREVER='0.1.32'    # openresty https://github.com/openresty/lua-resty-core
+ORESTY_LUASTREAMVER='0.0.17'        # https://github.com/openresty/stream-lua-nginx-module
 ORESTY_LUASTREAM='y'               # control https://github.com/openresty/stream-lua-nginx-module
 NGX_LUASTREAM_FORCED='y'           # control stream-lua-nginx enabling for nginx 1.17+
-ORESTY_LUAUPSTREAMVER='0.07'       # openresty https://github.com/openresty/lua-upstream-nginx-module
+ORESTY_LUAUPSTREAMVER='0.08'       # openresty https://github.com/openresty/lua-upstream-nginx-module
 NGX_LUAUPSTREAM='n'                # disable https://github.com/openresty/lua-upstream-nginx-module
 ORESTY_LUALOGGERSOCKETVER='0.1'    # cloudflare openresty https://github.com/cloudflare/lua-resty-logger-socket
 ORESTY_LUACOOKIEVER='master'       # cloudflare openresty https://github.com/cloudflare/lua-resty-cookie
 ORESTY_LUAUPSTREAMCACHEVER='0.1.1' # cloudflare openresty https://github.com/cloudflare/lua-upstream-cache-nginx-module
 NGX_LUAUPSTREAMCACHE='n'           # disable https://github.com/cloudflare/lua-upstream-cache-nginx-module
-LUACJSONVER='2.1.0.9'              # https://github.com/openresty/lua-cjson
+LUACJSONVER='2.1.0.19'              # https://github.com/openresty/lua-cjson
 
 STRIPPHP='y'                 # set 'y' to strip PHP binary to reduce size
 PHP_INSTALL='y'              # Install PHP /w Fast Process Manager
@@ -839,18 +839,18 @@ PHPMAILPARSE='y'             # Disable or Enable PHP mailparse extension
 PHPIONCUBE='n'               # Disable or Enable Ioncube Loader via addons/ioncube.sh
 PHPMSSQL='n'                 # Disable or Enable MSSQL server PHP extension
 PHPTIMEZONEDB='y'            # timezonedb PHP extension updated https://pecl.php.net/package/timezonedb
-PHPTIMEZONEDB_VER='2025.1'   # timezonedb PHP extension version
+PHPTIMEZONEDB_VER='2026.4'   # timezonedb PHP extension version
 PHPMSSQL_ALWAYS='n'          # mssql php extension always install on php recompiles
 PHPEMBED='y'                 # built php with php embed SAPI library support --enable-embed=shared
 
 PHPSWOOLE='n'                # https://pecl.php.net/package/swoole
 PHPSWOOLE_VER='5.1.6'
 PHPSWOOLE_EIGHT_ZERO_VER='5.1.8'
-PHPSWOOLE_EIGHT_ONE_VER='6.1.8'
-PHPSWOOLE_EIGHT_TWO_VER='6.2.1'
-PHPSWOOLE_EIGHT_THREE_VER='6.2.1'
-PHPSWOOLE_EIGHT_FOUR_VER='6.2.1'
-PHPSWOOLE_EIGHT_FIVE_VER='6.2.1'
+PHPSWOOLE_EIGHT_ONE_VER='6.1.10'
+PHPSWOOLE_EIGHT_TWO_VER='6.2.3'
+PHPSWOOLE_EIGHT_THREE_VER='6.2.3'
+PHPSWOOLE_EIGHT_FOUR_VER='6.2.3'
+PHPSWOOLE_EIGHT_FIVE_VER='6.2.3'
 PHPSWOOLE_FIVE_VER='2.0.5' # max PHP 5.0 supported version
 PHPSWOOLE_SEVEN_ZERO_VER='4.3.5' # max PHP 7.0 supported version
 PHPSWOOLE_SEVEN_ONE_VER='4.5.11' # max PHP 7.1 supported version
@@ -876,17 +876,16 @@ MONGODBPHP_VER='1.7.5'      # MongoDB PHP version
 MONGODBPHP_SEVEN_ZERO_VER='1.9.2' # MongoDB max PHP =<7.0 version
 MONGODBPHP_SEVEN_VER='1.11.1'     # MongoDB max PHP 7.1+ version
 MONGODBPHP_EIGHT_VER='1.13.0'
-MONGODBPHP_EIGHTTWO_VER='1.20.0'     # MongoDB PHP version
-MONGODBPHP_EIGHTTHREE_VER='1.21.2'   # MongoDB PHP 8.3+ version
-MONGODBPHP_EIGHTFOUR_VER='1.21.2'    # MongoDB PHP 8.4+ version
-MONGODBPHP_EIGHTFIVE_VER='1.21.2'    # MongoDB PHP 8.5+ version
+MONGODBPHP_EIGHTTWO_VER='1.21.10'     # MongoDB PHP version
+MONGODBPHP_EIGHTTHREE_VER='1.21.10'   # MongoDB PHP 8.3+ version
+MONGODBPHP_EIGHTFOUR_VER='1.21.10'    # MongoDB PHP 8.4+ version
+MONGODBPHP_EIGHTFIVE_VER='1.21.10'    # MongoDB PHP 8.5+ version
 MONGODB_SASL='n'            # SASL not working yet leave = n
 PDOPGSQL_PHPVER='18'        # pdo-pgsql PHP extension version for postgresql
 PHP_LIBZIP='n'              # use newer libzip instead of PHP embedded zip
 PHP_ARGON='y'               # alias for PHP_LIBZIP, when PHP_ARGON='y' then PHP_LIBZIP='y'
 LIBZIP_VER='1.11.4'          # required for PHP 7.2 + with libsodium & argon2
-LIBZIP_EIGHT_FIVE_VER='1.22.7'   # PHP 8.5+ requires libzip 1.22.7+
-LIBSODIUM_VER='1.0.20'      # https://github.com/jedisct1/libsodium/releases
+LIBSODIUM_VER='1.0.22'      # https://github.com/jedisct1/libsodium/releases
 LIBSODIUM_NATIVE='n'        # optimise for specific cpu not portable between different cpu modules
 LIBARGON_VER='20190702'     # https://github.com/P-H-C/phc-winner-argon2
 PHP_MCRYPTPECL='y'          # PHP 7.2 deprecated mcrypt support so this adds it back as PECL extension
@@ -907,8 +906,8 @@ IMAGEMAGICK_HEIF='n'           # experimental ImageMagick HEIF image format supp
 IMAGEMAGICK_SEVEN='n'          # for EL8/EL9 ImageMagick7 7.x install instead of ImageMagick 6.x
 IMAGEMAGICK_SOURCE_INSTALL='n' # ImageMagick 7 source install with HEIC support
 PHP_IMAGEMAGICK_SEVEN_USE_REMI_LIBZIP='y' # If IMAGEMAGICK_SEVEN is enabled use REMI libzip
-LIBDE265_VER='1.0.15'
-LIBHEIF_VER='1.18.2'
+LIBDE265_VER='1.1.3'
+LIBHEIF_VER='1.23.5'
 
 # Redis server
 REDIS_SERVER_INSTALL='y'      # Install redis server by default on initial install
@@ -1021,7 +1020,7 @@ BORINGSSL_DIR="/opt"
 
 # AWS-LC
 AWS_LC_SWITCH='n'             # if set to 'y' overrides OpenSSL as default for Nginx https://github.com/aws/aws-lc
-AWS_LC_VERSION='v5.9.0'       # version as per ttps://github.com/aws/aws-lc/tags
+AWS_LC_VERSION='v5.10.0'       # version as per ttps://github.com/aws/aws-lc/tags
 AWS_LC_DIR="/opt"
 AWS_LC_SWITCH_BUILD_TESTS='n' # run AWS-LC build tests
 ##################################
@@ -1042,10 +1041,10 @@ IMAGICKPHP_VER='3.4.4'         # PHP extension for imagick
 IMAGICKPHP_SEVEN_VER='3.8.1'   # PHP extension for imagick
 MAILPARSEPHP_VER='2.1.6'       # https://pecl.php.net/package/mailparse
 MAILPARSEPHP_COMPATVER='3.1.3' # For PHP 7.0-7.3
-MAILPARSEPHPSEVENFOUR_COMPATVER='3.1.9' # For PHP 7.4+
+MAILPARSEPHPSEVENFOUR_COMPATVER='3.2.0' # For PHP 7.4+
 MEMCACHED_INSTALL='y'          # Install Memcached
-LIBEVENT_VERSION='2.1.12'      # Use this version of Libevent
-MEMCACHED_VERSION='1.6.36'    # Use this version of Memcached server
+LIBEVENT_VERSION='2.1.13'      # Use this version of Libevent
+MEMCACHED_VERSION='1.6.45'    # Use this version of Memcached server
 MEMCACHED_TLS='n'             # TLS support https://github.com/memcached/memcached/wiki/ReleaseNotes1513
 MEMCACHE_VERSION='3.0.8'      # Use this version of Memcache
 MEMCACHE_COMPATVER='4.0.5.1'  # For PHP 7
@@ -1056,7 +1055,7 @@ LIBMEMCACHED_VER='1.0.18'     # libmemcached version for source compile
 TWEMPERF_VER='0.1.1'
 
 PHP_OVERWRITECONF='y'       # whether to show the php upgrade prompt to overwrite php-fpm.conf
-PHP_VERSION='8.3.21'        # Use this version of PHP
+PHP_VERSION='8.3.35'        # Use this version of PHP
 PHP_MIRRORURL='https://www.php.net'
 PHPUPGRADE_MIRRORURL="$PHP_MIRRORURL"
 XCACHE_VERSION='3.2.0'      # Use this version of Xcache
@@ -1120,8 +1119,8 @@ CUSTOM_CURLRPMLIBURL='http://mirror.city-fan.org/ftp/contrib/libraries'
 # wget source compile version
 WGET_VERSION='1.20.3'
 WGET_VERSION_SEVEN='1.20.3'
-WGET_VERSION_EIGHT='1.21.4'
-WGET_VERSION_NINE='1.21.4'
+WGET_VERSION_EIGHT='1.25.0'
+WGET_VERSION_NINE='1.25.0'
 WGET_VERSION_TEN='1.25.0'
 
 # TCP BBR congestion control
@@ -2640,8 +2639,8 @@ cecho ()                     # Coloured-echo.
 {
 message=$1
 color=$2
-echo -e "$color$message" ; $Reset
-return
+echo -e "$color$message" ; $Reset 2>/dev/null
+return 0
 }
 
 ###

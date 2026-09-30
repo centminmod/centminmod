@@ -84,6 +84,30 @@ checkigbinary() {
 }
 
 #######################################################
+# restart memcached through its systemd unit on EL8+, creating the unit when missing
+# (EL10 installs never got one), and keep the SysV service path for EL7/no systemd
+memcached_service_restart() {
+  if [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' || "$CENTOS_TEN" -eq '10' ]] && [[ -d /run/systemd/system ]]; then
+    if [ ! -f /usr/lib/systemd/system/memcached.service ] || ! grep -q '/usr/local/bin/memcached' /usr/lib/systemd/system/memcached.service; then
+      echo "setup memcached service file"
+      mkdir -p /etc/sysconfig/ /etc/systemd/system/memcached.service.d
+      if [ ! -f /etc/sysconfig/memcached ]; then
+        \cp -af "$CUR_DIR/config/memcached/memcached.sysconfig" /etc/sysconfig/memcached
+      fi
+      \cp -af "$CUR_DIR/config/memcached/memcached.service" /usr/lib/systemd/system/memcached.service
+      if [ ! -f /etc/systemd/system/memcached.service.d/openfileslimit.conf ]; then
+        printf '[Service]\nLimitNOFILE=524288\n' > /etc/systemd/system/memcached.service.d/openfileslimit.conf
+      fi
+      systemctl daemon-reload
+      systemctl enable memcached
+    fi
+    systemctl restart memcached
+  else
+    service memcached stop
+    service memcached start
+  fi
+}
+
 funct_memcachedreinstall() {
    if [[ "$CLANG_MEMCACHED" = [yY] ]]; then
       enable_clang
@@ -255,7 +279,7 @@ else
         make clean
     fi
     MEMCACHED_VERSION_NUMERIC=$(echo $MEMCACHED_VERSION | awk -F. '{ printf("%d%03d%03d%03d\n", $1,$2,$3,$4); }')
-    if [[ "$MEMCACHED_VERSION_NUMERIC" -ge '1015013000' && "$MEMCACHED_TLS" = [yY] ]]; then
+    if [[ "$MEMCACHED_VERSION_NUMERIC" -ge '1005013000' && "$MEMCACHED_TLS" = [yY] ]]; then
         MEMCACHED_TLSOPTION=' --enable-tls'
     else
         MEMCACHED_TLSOPTION=""
@@ -279,8 +303,7 @@ elif [[ "$CENTOS_SEVEN" -eq '7' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq
     kill -9 $(pidof memcached)
 fi
 sleep 2
-service memcached stop
-service memcached start
+memcached_service_restart
 
 #############################################
     if [[ "$PHP_INSTALL" = [yY] ]]; then
@@ -630,8 +653,7 @@ elif [[ "$CENTOS_SEVEN" -eq '7' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq
     kill -9 $(pidof memcached)
 fi
 sleep 2
-service memcached stop
-service memcached start
+memcached_service_restart
 echo
 systemctl restart php-fpm
 echo
@@ -653,7 +675,7 @@ cecho "memcache/memcached routines completed" $boldgreen
 #######################################################
 incmemcachedinstall() {
 
-if [[ "$CENTOS_NINE" -eq '9' ]]; then
+if [[ "$CENTOS_NINE" -eq '9' || "$CENTOS_TEN" -eq '10' ]]; then
     mkdir -p /etc/init.d
 fi
 if [[ "$MEMCACHED_INSTALL" = [yY] ]]; then
@@ -667,10 +689,12 @@ if [[ "$MEMCINSTALL" = [yY] ]]; then
     cd "$SCRIPT_DIR"
 
     # only run for CentOS 7
-    if [[ "$CENTOS_NINE" -eq '9' ]]; then
+    if [[ "$CENTOS_NINE" -eq '9' || "$CENTOS_TEN" -eq '10' ]]; then
         echo "setup memcached service file"
         mkdir -p /etc/sysconfig/
-        \cp -af "$CUR_DIR/config/memcached/memcached.sysconfig" /etc/sysconfig/memcached
+        if [ ! -f /etc/sysconfig/memcached ]; then
+          \cp -af "$CUR_DIR/config/memcached/memcached.sysconfig" /etc/sysconfig/memcached
+        fi
         \cp -af "$CUR_DIR/config/memcached/memcached.service" /usr/lib/systemd/system/memcached.service
         mkdir -p /etc/systemd/system/memcached.service.d
         if [[ ! -f /etc/systemd/system/memcached.service.d/openfileslimit.conf && -d /etc/systemd/system/memcached.service.d/ ]]; then
@@ -685,7 +709,9 @@ TDG
     elif [[ "$CENTOS_EIGHT" -eq '8' ]]; then
         echo "setup memcached service file"
         mkdir -p /etc/sysconfig/
-        \cp -af "$CUR_DIR/config/memcached/memcached.sysconfig" /etc/sysconfig/memcached
+        if [ ! -f /etc/sysconfig/memcached ]; then
+          \cp -af "$CUR_DIR/config/memcached/memcached.sysconfig" /etc/sysconfig/memcached
+        fi
         \cp -af "$CUR_DIR/config/memcached/memcached.service" /usr/lib/systemd/system/memcached.service
         mkdir -p /etc/systemd/system/memcached.service.d
         if [[ ! -f /etc/systemd/system/memcached.service.d/openfileslimit.conf && -d /etc/systemd/system/memcached.service.d/ ]]; then

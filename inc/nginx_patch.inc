@@ -1164,6 +1164,19 @@ http2_shutdown_fix_patch() {
   fi
 }
 
+ngx_upstreamcheck_patch() {
+  # nginx_upstream_check_module only works with its nginx core patch applied
+  if [[ "$NGINX_UPSTREAMCHECK" = [yY] && "$DETECT_NGXVER" -ge '1020001' ]]; then
+    local ngx_upstreamcheck_dir="$DIR_TMP/$(tar -tzf "$DIR_TMP/${NGX_UPSTREAMCHECKLINKFILE}" | head -1 | cut -f1 -d"/")"
+    if [ -f "${ngx_upstreamcheck_dir}/check_1.20.1+.patch" ]; then
+      echo "patch -p1 < ${ngx_upstreamcheck_dir}/check_1.20.1+.patch"
+      patch -p1 < "${ngx_upstreamcheck_dir}/check_1.20.1+.patch"
+    else
+      echo "${ngx_upstreamcheck_dir}/check_1.20.1+.patch not found, NGINX_UPSTREAMCHECKVER 0.4.0+ required"
+    fi
+  fi
+}
+
 patchnginx() {
   {
   sleep "$NGINXPATCH_DELAY"
@@ -1187,6 +1200,7 @@ patchnginx() {
       DETECT_NGXVER=$(awk '/define nginx_version  / {print $3}' "/svr-setup/nginx-${NGINX_VERSION}/src/core/nginx.h")
     fi
   fi
+  ngx_upstreamcheck_patch
   if [[ "$DETECTOPENSSL_ONEZERO" = '1.1' ]] && [[ "$DETECT_NGXVER" -le '1011003' && "$DETECT_NGXVER" -ge '1011000' ]]; then
     if [[ -f "$CUR_DIR/patches/nginx/openssl-110pre6.patch" && -f "$CUR_DIR/patches/nginx/openssl-110ticket.patch" ]]; then
       if command -v figlet >/dev/null 2>&1; then

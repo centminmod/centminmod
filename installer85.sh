@@ -93,8 +93,8 @@ ALTPCRELINK="${LOCALCENTMINMOD_MIRROR}/centminmodparts/pcre/${ALTPCRELINKFILE}"
 
 WGET_VERSION='1.20.3'
 WGET_VERSION_SEVEN='1.20.3'
-WGET_VERSION_EIGHT='1.21.4'
-WGET_VERSION_NINE='1.21.4'
+WGET_VERSION_EIGHT='1.25.0'
+WGET_VERSION_NINE='1.25.0'
 WGET_VERSION_TEN='1.25.0'
 WGET_FILENAME="wget-${WGET_VERSION}.tar.gz"
 WGET_LINK="${LOCALCENTMINMOD_MIRROR}/centminmodparts/wget/${WGET_FILENAME}"
@@ -2452,11 +2452,11 @@ else
   PHPVERLATEST=$(curl -${ipv_forceopt}sL https://www.php.net/downloads.php?source=Y| grep -E -o "php-[0-9.]+\.tar[.a-z]*" | grep -v '.asc' | awk -F "php-" '/.tar.gz$/ {print $2}' | sed -e 's|.tar.gz||g' | uniq | grep '8.5' | head -n1)
 fi
 if [[ "$CENTOS_NINE" -eq '9' ]]; then
-  PHPVERLATEST=${PHPVERLATEST:-"8.5.8"}
+  PHPVERLATEST=${PHPVERLATEST:-"8.5.11"}
 elif [[ "$CENTOS_EIGHT" -eq '8' ]]; then
-  PHPVERLATEST=${PHPVERLATEST:-"8.5.8"}
+  PHPVERLATEST=${PHPVERLATEST:-"8.5.11"}
 else
-  PHPVERLATEST=${PHPVERLATEST:-"8.5.8"}
+  PHPVERLATEST=${PHPVERLATEST:-"8.5.11"}
 fi
 sed -i "s|^PHP_VERSION='.*'|PHP_VERSION='$PHPVERLATEST'|" centmin.sh
 sed -i "s|ZOPCACHEDFT='n'|ZOPCACHEDFT='y'|" centmin.sh

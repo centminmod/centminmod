@@ -357,7 +357,8 @@ modsecurity_install() {
     fi
     pushd "$DIR_TMP"
 
-    if [[ ! "$(/usr/local/nginx-dep/bin/mmdblookup --version | awk '/version/ {print $3}' | sed -e 's|\.|00|g')" -lt '1004002' ]] || [ ! -f /usr/local/nginx-dep/bin/mmdblookup ]; then
+    # install libmaxminddb when missing or older than 1.4.2
+    if [ ! -f /usr/local/nginx-dep/bin/mmdblookup ] || [[ "$(/usr/local/nginx-dep/bin/mmdblookup --version 2>/dev/null | awk '/version/ {split($3, v, "."); printf "%d%03d%03d", v[1], v[2], v[3]}')" -lt '1004002' ]]; then
       install_libmaxmindb
     fi
     
@@ -365,7 +366,8 @@ modsecurity_install() {
     git clone --depth 1 -b v3/master --single-branch https://github.com/SpiderLabs/ModSecurity
     cd ModSecurity
     git submodule init
-    git submodule update
+    # others/mbedtls carries nested submodules libmodsecurity configure needs
+    git submodule update --init --recursive
     ./build.sh
     if [[ -f /usr/local/nginx-dep/lib/libmaxminddb.so && "$NGINX_MODSECURITY_MAXMIND" = [yY] ]]; then
       export PKG_CONFIG_PATH=/usr/lib64/pkgconfig:/usr/share/pkgconfig:/usr/local/nginx-dep/lib/pkgconfig
@@ -453,7 +455,7 @@ cat > "/usr/local/nginx/modsec/main.conf" <<EOF
 # Edit to set SecRuleEngine On
 Include "/usr/local/nginx/modsec/modsecurity.conf"
 
-# OWASP CRS v3 rules
+# OWASP CRS rules
 Include /usr/local/nginx/coreruleset-${MODSECURITY_OWASPVER}/crs-setup.conf
 Include /usr/local/nginx/coreruleset-${MODSECURITY_OWASPVER}/rules/*.conf
 
@@ -467,9 +469,14 @@ EOF
   
     MODSEC_INCLUDECHECK=$(grep '\/usr\/local\/nginx\/modsec\/main.conf' /usr/local/nginx/conf/conf.d/virtual.conf)
   
-    if [[ "$NGINX_MODSECURITY" = [yY] && -z "$MODSEC_INCLUDECHECK" && -f /usr/local/nginx/modsec/main.conf ]]; then
+    # only enable the modsecurity directives when the connector module is being built,
+    # a failed libmodsecurity build would otherwise leave nginx -t failing
+    if [[ "$NGINX_MODSECURITY" = [yY] && -z "$MODSEC_OPT" ]]; then
+      echo "libmodsecurity or ModSecurity-nginx not available, modsecurity directives left disabled"
+    fi
+    if [[ "$NGINX_MODSECURITY" = [yY] && -n "$MODSEC_OPT" && -z "$MODSEC_INCLUDECHECK" && -f /usr/local/nginx/modsec/main.conf ]]; then
       sed -i 's/# ssi  on;/# ssi  on; \n\n    modsecurity on;\n    modsecurity_rules_file \/usr\/local\/nginx\/modsec\/main.conf;/g' /usr/local/nginx/conf/conf.d/virtual.conf
-    elif [[ "$NGINX_MODSECURITY" = [yY] && "$MODSEC_INCLUDECHECK" && -f /usr/local/nginx/modsec/main.conf ]]; then
+    elif [[ "$NGINX_MODSECURITY" = [yY] && -n "$MODSEC_OPT" && "$MODSEC_INCLUDECHECK" && -f /usr/local/nginx/modsec/main.conf ]]; then
       sed -i 's|^    #modsecurity on;|    modsecurity on;|g' /usr/local/nginx/conf/conf.d/virtual.conf
       sed -i 's|^    #modsecurity_rules_file \/usr\/local\/nginx\/modsec\/main.conf;|    modsecurity_rules_file \/usr\/local\/nginx\/modsec\/main.conf;|g' /usr/local/nginx/conf/conf.d/virtual.conf
     else

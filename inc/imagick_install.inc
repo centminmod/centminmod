@@ -1,4 +1,8 @@
 libheif_install() {
+    if [[ "$(PKG_CONFIG_PATH=/usr/local/lib/pkgconfig pkg-config --modversion libheif 2>/dev/null)" = "$LIBHEIF_VER" && "$(PKG_CONFIG_PATH=/usr/local/lib/pkgconfig pkg-config --modversion libde265 2>/dev/null)" = "$LIBDE265_VER" ]]; then
+        echo "libheif ${LIBHEIF_VER} and libde265 ${LIBDE265_VER} already installed"
+        return 0
+    fi
     if [[ "$CENTOS_TEN" = 10 ]]; then
         # AlmaLinux 10 has GCC 14 as system default
         GENERALDEVTOOLSET_FALLTHROUGH=' -Wimplicit-fallthrough=0'
@@ -80,7 +84,9 @@ libheif_install() {
     git clone https://bitbucket.org/multicoreware/x265_git x265
     cd x265/build/linux
     git checkout Release_3.6
-    cmake -G "Unix Makefiles" -DENABLE_PIC=:BOOL=1 -DENABLE_SHARED:BOOL=1 ../../source
+    # x265 reads the GCC version from "$CMAKE_CXX_COMPILER -dumpversion", which is empty
+    # through a ccache wrapper and leaves the SSE intrinsics unbuilt when NASM is present
+    CC="${CC#ccache }" CXX="${CXX#ccache }" cmake -G "Unix Makefiles" -DENABLE_PIC=:BOOL=1 -DENABLE_SHARED:BOOL=1 ../../source
     make -s -j$(nproc)
     make install
     echo
@@ -93,18 +99,14 @@ libheif_install() {
     wget -q https://github.com/strukturag/libde265/releases/download/v${LIBDE265_VER}/libde265-${LIBDE265_VER}.tar.gz -O libde265-${LIBDE265_VER}.tar.gz
     tar xzf libde265-${LIBDE265_VER}.tar.gz
     cd libde265-${LIBDE265_VER}
-    # cd libde265
-    # mkdir -p build
-    # cd build
-    # rm -rf CMakeCache.txt
-    # cmake3 .. -DCMAKE_INSTALL_PREFIX=/usr/local
-    # sed -i 's|autoheader|\/usr\/bin\/autoheader|g' autogen.sh
-    # sed -i 's|autoconf|\/usr\/bin\/autoconf|g' autogen.sh
-    # sed -i 's|automake|\/usr\/bin\/automake|g' autogen.sh
-    # sed -i 's|autoreconf|\/usr\/bin\/autoreconf|g' autogen.sh
-    # sed -i 's|aclocal|\/usr\/bin\/aclocal|g' autogen.sh
-    # ./autogen.sh
-    ./configure
+    # libde265 1.1.x and libheif 1.16+ ship CMake builds only
+    local CMAKE_BIN='cmake'
+    if [[ "$CENTOS_SEVEN" = '7' ]]; then
+        CMAKE_BIN='cmake3'
+    fi
+    mkdir -p build
+    cd build
+    "$CMAKE_BIN" .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr/local -DCMAKE_INSTALL_LIBDIR=lib -DENABLE_SDL=OFF
     make -s -j$(nproc)
     make install
     echo
@@ -120,15 +122,12 @@ libheif_install() {
     wget -q https://github.com/strukturag/libheif/releases/download/v${LIBHEIF_VER}/libheif-${LIBHEIF_VER}.tar.gz -O libheif-${LIBHEIF_VER}.tar.gz
     tar xzf libheif-${LIBHEIF_VER}.tar.gz
     cd libheif-${LIBHEIF_VER}
-    make clean
-    # export libde265_CFLAGS='-I/usr/local/include'
-    # export libde265_LIBS='-L/usr/local/lib'
-    # export x265_CFLAGS='-I/usr/local/include'
-    # export x265_LIBS='-L/usr/local/lib'   
-    # export LDFLAGS='-L/usr/local/lib'
-    PKG_CONFIG_PATH="/usr/lib64/pkgconfig:/usr/share/pkgconfig:/usr/local/lib/pkgconfig" LD_LIBRARY_PATH=/usr/local/lib LDFLAGS="-L/usr/local/lib" CPPFLAGS="-I/usr/local/include" ./configure --disable-examples
+    mkdir -p build
+    cd build
+    PKG_CONFIG_PATH="/usr/lib64/pkgconfig:/usr/share/pkgconfig:/usr/local/lib64/pkgconfig:/usr/local/lib/pkgconfig" "$CMAKE_BIN" .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr/local -DCMAKE_INSTALL_LIBDIR=lib -DENABLE_PLUGIN_LOADING=OFF -DWITH_EXAMPLES=OFF -DWITH_GDK_PIXBUF=OFF -DBUILD_TESTING=OFF -DBUILD_DOCUMENTATION=OFF
     make -s -j$(nproc)
     make install
+    ldconfig
     echo
     echo "libheif install completed"
     # unset libde265_CFLAGS

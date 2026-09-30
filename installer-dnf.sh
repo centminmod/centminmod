@@ -67,8 +67,8 @@ ALTPCRELINK="${LOCALCENTMINMOD_MIRROR}/centminmodparts/pcre/${ALTPCRELINKFILE}"
 
 WGET_VERSION='1.20.3'
 WGET_VERSION_SEVEN='1.20.3'
-WGET_VERSION_EIGHT='1.21.4'
-WGET_VERSION_NINE='1.21.4'
+WGET_VERSION_EIGHT='1.25.0'
+WGET_VERSION_NINE='1.25.0'
 WGET_VERSION_TEN='1.25.0'
 WGET_FILENAME="wget-${WGET_VERSION}.tar.gz"
 WGET_LINK="${LOCALCENTMINMOD_MIRROR}/centminmodparts/wget/${WGET_FILENAME}"
@@ -914,7 +914,7 @@ if [ -f /proc/user_beancounters ]; then
 elif [[ "$CHECK_LXD" = [yY] ]]; then
     echo "LXC/LXD container system detected, NTP not installed"
 else
-  if [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]]; then
+  if [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' || "$CENTOS_TEN" -eq '10' ]]; then
       echo
       echo "*************************************************"
       echo "* Installing chronyd (and syncing time)"

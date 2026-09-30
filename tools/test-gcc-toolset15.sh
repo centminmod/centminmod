@@ -414,7 +414,7 @@ echo 'PASS: caller failure guards, final C/C++ flags, repeat selection, Clang, o
   libheif=$(sed -n '/^libheif_install() {/,/^}/p' "$repo/inc/imagick_install.inc")
   [[ "$libheif" != *'export CC="gcc"'* && "$libheif" != *'export CXX="g++"'* ]]
   CC='ccache /usr/bin/clang -ferror-limit=0' CXX='ccache /usr/bin/clang++ -ferror-limit=0'
-  cmake() { [[ "$CC" = *clang* && "$CXX" = *clang++* && "$*" != *CMAKE_C_COMPILER=gcc* && "$*" != *CMAKE_CXX_COMPILER=g++* ]]; }
-  eval "$(printf '%s\n' "$libheif" | grep '^[[:space:]]*cmake -G')"
+  cmake() { [[ "$CC" = *clang* && "$CXX" = *clang++* && "$CC" != ccache\ * && "$CXX" != ccache\ * && "$*" != *CMAKE_C_COMPILER=gcc* && "$*" != *CMAKE_CXX_COMPILER=g++* ]]; }
+  eval "$(printf '%s\n' "$libheif" | grep 'cmake -G')"
 )
 echo 'PASS: empty/multiple extension INIs, disabled zstd and libheif compiler preservation'

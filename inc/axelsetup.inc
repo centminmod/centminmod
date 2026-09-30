@@ -30,8 +30,8 @@ cecho ()                     # Coloured-echo.
 {
 message=$1
 color=$2
-echo -e "$color$message" ; $Reset
-return
+echo -e "$color$message" ; $Reset 2>/dev/null
+return 0
 }
 
     if [[ "$AXELVERBOSE" = 'silent' ]]; then
