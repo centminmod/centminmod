@@ -1837,6 +1837,11 @@ if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9'
     if [[ "$DETECT_NGXVER" -ge '1017000' && "$NGX_LUASTREAM_FORCED" != [yY] ]]; then
       NGX_LUASTREAM='n'
     fi
+    # stream-lua-nginx-module requires nginx stream core (--with-stream)
+    # and its source download via ORESTY_LUASTREAM='y'
+    if [[ "$NGINX_STREAM" != [yY] || "$ORESTY_LUASTREAM" != [yY] ]]; then
+      NGX_LUASTREAM='n'
+    fi
     luanginx_patch
     # LUAJIT_XCFLAGOPT=" --with-luajit-xcflags='-DLUAJIT_NUMMODE=2'"
     LUAJIT_XCFLAGOPT=""
