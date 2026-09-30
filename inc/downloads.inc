@@ -4320,10 +4320,6 @@ echo "*****************************************************"
 # use local download source files first 
 # less likely to encounter broken 3rd party
 # urls and speed up initial install
-# unzip svr-setup.zip
-if [ -f "${CM_INSTALLDIR}/downloads/svr-setup.zip" ]; then
-    /usr/bin/unzip -qo "${CM_INSTALLDIR}/downloads/svr-setup.zip" -d /
-fi
 if [ -f "${CM_INSTALLDIR}/downloads/rpms.zip" ]; then
     /usr/bin/unzip -qo "${CM_INSTALLDIR}/downloads/rpms.zip" -d "$DIR_TMP"/
 fi
@@ -4336,11 +4332,6 @@ fi
 if [ -f "${CM_INSTALLDIR}/downloads/${LIBRESSL_LOCALLINKFILE}" ]; then
     cp "${CM_INSTALLDIR}/downloads/${LIBRESSL_LOCALLINKFILE}" "$DIR_TMP"
 fi
-
-CCACHE_ERROR=$?
-    if [[ "$CCACHE_ERROR" != '0' ]]; then
-        /usr/bin/unzip -qo /usr/local/src/centminmod/downloads/svr-setup.zip -d /
-    fi
 
 yuminstall
 

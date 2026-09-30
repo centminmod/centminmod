@@ -1953,7 +1953,7 @@ if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9'
       cd "${DIR_TMP}/$NGX_LUAUPSTREAMCHECKDIR"; make clean; LUA_VERSION="$BUILDLUA_VER" make install PREFIX='/usr/local/nginx-dep';
       # install as resty/logger/socket.lua so require "resty.logger.socket" resolves
       cd "${DIR_TMP}/$NGX_LUALOGGERSOCKETDIR"; chmod +x lib/resty/logger/*; mkdir -p /usr/local/nginx-dep/lib/lua/${BUILDLUA_VER}/resty/logger; \cp -rpf lib/resty/logger/* /usr/local/nginx-dep/lib/lua/${BUILDLUA_VER}/resty/logger/
-      # copy directly, the downloads/svr-setup.zip snapshot of lua-resty-cookie has no Makefile
+      # copy directly, older lua-resty-cookie master snapshots have no Makefile
       cd "${DIR_TMP}/$NGX_LUACOOKIEDIR"; \cp -rpf lib/resty/*.lua /usr/local/nginx-dep/lib/lua/${BUILDLUA_VER}/resty/
       cd "${DIR_TMP}/$NGX_LUACJSONDIR"; make clean; LUA_VERSION="$BUILDLUA_VER" make install PREFIX='/usr/local/nginx-dep' LUA_INCLUDE_DIR="$LUAJIT_INC"
       cd "${DIR_TMP}/$NGX_LUALRUCACHEDIR"; make clean; LUA_VERSION="$BUILDLUA_VER" make install PREFIX='/usr/local/nginx-dep'
