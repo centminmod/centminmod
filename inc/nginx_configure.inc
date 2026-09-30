@@ -1951,7 +1951,8 @@ if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9'
       # C modules must build against the LuaJIT headers, not the system lua-devel 5.3/5.4 ones
       cd "${DIR_TMP}/$NGX_LUAREDISPARSERDIR"; make clean; make LUA_INCLUDE_DIR="$LUAJIT_INC"; LUA_VERSION="$BUILDLUA_VER" make install PREFIX='/usr/local/nginx-dep' LUA_INCLUDE_DIR="$LUAJIT_INC"
       cd "${DIR_TMP}/$NGX_LUAUPSTREAMCHECKDIR"; make clean; LUA_VERSION="$BUILDLUA_VER" make install PREFIX='/usr/local/nginx-dep';
-      cd "${DIR_TMP}/$NGX_LUALOGGERSOCKETDIR"; chmod +x lib/resty/logger/*; \cp -rpf lib/resty/logger/* /usr/local/nginx-dep/lib/lua/${BUILDLUA_VER}/resty/
+      # install as resty/logger/socket.lua so require "resty.logger.socket" resolves
+      cd "${DIR_TMP}/$NGX_LUALOGGERSOCKETDIR"; chmod +x lib/resty/logger/*; mkdir -p /usr/local/nginx-dep/lib/lua/${BUILDLUA_VER}/resty/logger; \cp -rpf lib/resty/logger/* /usr/local/nginx-dep/lib/lua/${BUILDLUA_VER}/resty/logger/
       cd "${DIR_TMP}/$NGX_LUACOOKIEDIR"; make clean; LUA_VERSION="$BUILDLUA_VER" make install PREFIX='/usr/local/nginx-dep'
       cd "${DIR_TMP}/$NGX_LUACJSONDIR"; make clean; LUA_VERSION="$BUILDLUA_VER" make install PREFIX='/usr/local/nginx-dep' LUA_INCLUDE_DIR="$LUAJIT_INC"
       cd "${DIR_TMP}/$NGX_LUALRUCACHEDIR"; make clean; LUA_VERSION="$BUILDLUA_VER" make install PREFIX='/usr/local/nginx-dep'
