@@ -467,26 +467,7 @@ EOF
       # curl -I localhost?testparam=test
     fi
   
-    MODSEC_INCLUDECHECK=$(grep '\/usr\/local\/nginx\/modsec\/main.conf' /usr/local/nginx/conf/conf.d/virtual.conf)
-  
-    # only enable the modsecurity directives when the connector module is being built,
-    # a failed libmodsecurity build would otherwise leave nginx -t failing
-    if [[ "$NGINX_MODSECURITY" = [yY] && -z "$MODSEC_OPT" ]]; then
-      echo "libmodsecurity or ModSecurity-nginx not available, modsecurity directives left disabled"
-    fi
-    if [[ "$NGINX_MODSECURITY" = [yY] && -n "$MODSEC_OPT" && -z "$MODSEC_INCLUDECHECK" && -f /usr/local/nginx/modsec/main.conf ]]; then
-      sed -i 's/# ssi  on;/# ssi  on; \n\n    modsecurity on;\n    modsecurity_rules_file \/usr\/local\/nginx\/modsec\/main.conf;/g' /usr/local/nginx/conf/conf.d/virtual.conf
-    elif [[ "$NGINX_MODSECURITY" = [yY] && -n "$MODSEC_OPT" && "$MODSEC_INCLUDECHECK" && -f /usr/local/nginx/modsec/main.conf ]]; then
-      sed -i 's|^    #modsecurity on;|    modsecurity on;|g' /usr/local/nginx/conf/conf.d/virtual.conf
-      sed -i 's|^    #modsecurity_rules_file \/usr\/local\/nginx\/modsec\/main.conf;|    modsecurity_rules_file \/usr\/local\/nginx\/modsec\/main.conf;|g' /usr/local/nginx/conf/conf.d/virtual.conf
-    else
-      sed -i 's|^    modsecurity on;|    #modsecurity on;|g' /usr/local/nginx/conf/conf.d/virtual.conf
-      sed -i 's|^    modsecurity_rules_file \/usr\/local\/nginx\/modsec\/main.conf;|    #modsecurity_rules_file \/usr\/local\/nginx\/modsec\/main.conf;|g' /usr/local/nginx/conf/conf.d/virtual.conf
-    fi
-    if [[ "$NGINX_MODSECURITY" != [yY] && "$MODSEC_INCLUDECHECK" ]]; then
-      sed -i 's|^    modsecurity on;|    #modsecurity on;|g' /usr/local/nginx/conf/conf.d/virtual.conf
-      sed -i 's|^    modsecurity_rules_file \/usr\/local\/nginx\/modsec\/main.conf;|    #modsecurity_rules_file \/usr\/local\/nginx\/modsec\/main.conf;|g' /usr/local/nginx/conf/conf.d/virtual.conf
-    fi
+    modsec_virtualconf
   if [[ "$NGINX_MODSECURITY" = [yY] ]]; then
 cat > /etc/logrotate.d/modsecurity <<EOF
 /var/log/modsec_audit.log
@@ -515,5 +496,34 @@ EOF
       sed -i 's|^    modsecurity on;|    #modsecurity on;|g' /usr/local/nginx/conf/conf.d/virtual.conf
       sed -i 's|^    modsecurity_rules_file \/usr\/local\/nginx\/modsec\/main.conf;|    #modsecurity_rules_file \/usr\/local\/nginx\/modsec\/main.conf;|g' /usr/local/nginx/conf/conf.d/virtual.conf
     fi
+  fi
+}
+
+modsec_virtualconf() {
+  # enable or disable the modsecurity directives in the default vhost. ngxinstallmain
+  # calls this again after copying the nginx config templates, because on an initial
+  # install virtual.conf does not exist yet when modsecurity_install runs
+  if [ ! -f /usr/local/nginx/conf/conf.d/virtual.conf ]; then
+    return 0
+  fi
+  MODSEC_INCLUDECHECK=$(grep '\/usr\/local\/nginx\/modsec\/main.conf' /usr/local/nginx/conf/conf.d/virtual.conf)
+
+  # only enable the modsecurity directives when the connector module is being built,
+  # a failed libmodsecurity build would otherwise leave nginx -t failing
+  if [[ "$NGINX_MODSECURITY" = [yY] && -z "$MODSEC_OPT" ]]; then
+    echo "libmodsecurity or ModSecurity-nginx not available, modsecurity directives left disabled"
+  fi
+  if [[ "$NGINX_MODSECURITY" = [yY] && -n "$MODSEC_OPT" && -z "$MODSEC_INCLUDECHECK" && -f /usr/local/nginx/modsec/main.conf ]]; then
+    sed -i 's/# ssi  on;/# ssi  on; \n\n    modsecurity on;\n    modsecurity_rules_file \/usr\/local\/nginx\/modsec\/main.conf;/g' /usr/local/nginx/conf/conf.d/virtual.conf
+  elif [[ "$NGINX_MODSECURITY" = [yY] && -n "$MODSEC_OPT" && "$MODSEC_INCLUDECHECK" && -f /usr/local/nginx/modsec/main.conf ]]; then
+    sed -i 's|^    #modsecurity on;|    modsecurity on;|g' /usr/local/nginx/conf/conf.d/virtual.conf
+    sed -i 's|^    #modsecurity_rules_file \/usr\/local\/nginx\/modsec\/main.conf;|    modsecurity_rules_file \/usr\/local\/nginx\/modsec\/main.conf;|g' /usr/local/nginx/conf/conf.d/virtual.conf
+  else
+    sed -i 's|^    modsecurity on;|    #modsecurity on;|g' /usr/local/nginx/conf/conf.d/virtual.conf
+    sed -i 's|^    modsecurity_rules_file \/usr\/local\/nginx\/modsec\/main.conf;|    #modsecurity_rules_file \/usr\/local\/nginx\/modsec\/main.conf;|g' /usr/local/nginx/conf/conf.d/virtual.conf
+  fi
+  if [[ "$NGINX_MODSECURITY" != [yY] && "$MODSEC_INCLUDECHECK" ]]; then
+    sed -i 's|^    modsecurity on;|    #modsecurity on;|g' /usr/local/nginx/conf/conf.d/virtual.conf
+    sed -i 's|^    modsecurity_rules_file \/usr\/local\/nginx\/modsec\/main.conf;|    #modsecurity_rules_file \/usr\/local\/nginx\/modsec\/main.conf;|g' /usr/local/nginx/conf/conf.d/virtual.conf
   fi
 }
