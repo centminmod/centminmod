@@ -48,6 +48,7 @@ DMOTD_COMPACT='n'                  # master: 'y' enables compact layout
 DMOTD_CSFVERCHECK='y'              # 'n' silences csf_version_checker entirely
 DMOTD_BRANCHCHECK='y'              # 'n' silences check_git_major_branch notice
                                    # (use when staying on a specific branch intentionally)
+DMOTD_PHPLIBCHECK='y'              # 'n' silences the missing PHP shared library warning
 DMOTD_CVECHECK_COMPACT='n'         # 'y' collapses cmsec to 1 summary line (vulnerable CVEs always expand)
 DMOTD_CVECHECK_SILENT='n'          # 'y' suppresses cmsec banner entirely; Pushover alerts for vulnerable
                                    # CVEs still fire and DMOTD_CVECHECK_SUPPRESS is still honoured. Cosmetic
@@ -707,6 +708,18 @@ needrestart_check() {
   fi
 }
 
+# A yum/dnf update that removes a library soname the source compiled PHP
+# links against leaves php-fpm running until its next restart or reboot.
+php_libs_check() {
+  local _tool="$CMSCRIPT_GITDIR/tools/php-libs-versionlock.sh" _out
+  [[ "$DMOTD_PHPLIBCHECK" = [yY] && -f "$_tool" && -x /usr/local/sbin/php-fpm ]] || return 0
+  _out=$(bash "$_tool" check 2>&1) && return 0
+  echo
+  cecho "===============================================================================" $boldgreen
+  echo "$_out"
+  cecho "===============================================================================" $boldgreen
+}
+
 kernel_checks() {
   if [[ "$SSHLOGIN_KERNELCHECK" = [yY] && -f "$CMSCRIPT_GITDIR/tools/kernelcheck.sh" ]]; then
     "$CMSCRIPT_GITDIR/tools/kernelcheck.sh"
@@ -922,6 +935,7 @@ if [[ "$(id -u)" -eq 0 ]] || sudo -n true 2>/dev/null; then
     cecho "===============================================================================" $boldgreen
   fi
   needrestart_check
+  php_libs_check
   if [[ "$(id -u)" -eq 0 || "$SUDO_USER" ]]; then
     check_git_major_branch
     csf_version_checker

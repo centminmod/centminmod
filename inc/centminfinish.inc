@@ -644,6 +644,11 @@ DATENOW=$(date +"%b %d")
 YUMLOG=$(grep -h "$DATENOW" "$YUMLOG_FILE")
 echo "$YUMLOG" >> "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_yum-log.log"
 
+# stop yum/dnf updates removing a library soname from under the source
+# compiled PHP; centmin.sh menu 5 updates the locked packages
+if [[ "$PHP_LIBS_VERSIONLOCK" = [yY] && -f "${SCRIPT_DIR}/tools/php-libs-versionlock.sh" ]]; then
+  bash "${SCRIPT_DIR}/tools/php-libs-versionlock.sh" lock
+fi
 
     echo "*************************************************"
     cecho "* Centmin Mod install completed...." $boldgreen
