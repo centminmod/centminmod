@@ -906,6 +906,13 @@ if [[ "$CENTOS_SEVEN" -eq '7' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '
     yum -q -y install libffi-devel
   fi
   FFI_OPT=' --with-ffi'
+  # EL9 libffi.pc reports -L/usr/lib64/../lib64, which PHP's configure does
+  # not treat as a system path, so it lands ahead of the external libgd path.
+  # The gdImageCreateFromAvif check then runs against the gd-devel libgd
+  # (built without AVIF) and PHP silently disables GD AVIF support.
+  if [[ "$(pkg-config --libs libffi 2>/dev/null)" = *'/../'* ]]; then
+    export FFI_LIBS='-lffi'
+  fi
 else
   FFI_OPT=""
 fi
