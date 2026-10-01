@@ -718,6 +718,12 @@ fi # PHPDIFF
     #mkdir -p /usr/${LIBDIR}/mysql
     #ln -s /usr/${LIBDIR}/libmysqlclient.so /usr/${LIBDIR}/mysql/libmysqlclient.so
 
+    # unlock and update the non-base repo packages PHP links against so this
+    # build uses their current versions; locked again after a successful build
+    if [[ "$PHP_LIBS_VERSIONLOCK" = [yY] && -f "${SCRIPT_DIR}/tools/php-libs-versionlock.sh" ]]; then
+        bash "${SCRIPT_DIR}/tools/php-libs-versionlock.sh" update
+    fi
+
     if command -v figlet >/dev/null 2>&1; then
         figlet -ckf standard "PHP: Configure"
     fi
@@ -1774,6 +1780,11 @@ fi
         if [ -f /usr/bin/sitestatus ]; then
             /usr/bin/sitestatus on
         fi
+    fi
+
+    # stop yum/dnf updates removing a library soname from under this build
+    if [[ "$PHP_LIBS_VERSIONLOCK" = [yY] && -f "${SCRIPT_DIR}/tools/php-libs-versionlock.sh" ]]; then
+        bash "${SCRIPT_DIR}/tools/php-libs-versionlock.sh" lock
     fi
 
     if command -v figlet >/dev/null 2>&1; then
