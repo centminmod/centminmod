@@ -938,14 +938,15 @@ nginxzlibtarball() {
         echo "wget --progress=bar ${NGX_ZLIBLINK} -O ${NGX_ZLIBLINKFILE} --tries=3"
         wget --progress=bar "${NGX_ZLIBLINK}" -O "${NGX_ZLIBLINKFILE}" --tries=3
 ERROR=$?
-  if [[ "$ERROR" != '0' ]]; then
-  cecho "Error: ${NGX_ZLIBLINKFILE} download failed." $boldgreen
+  # zlib.net can return HTTP 200 with an HTML page, so validate the archive too
+  if [[ "$ERROR" != '0' ]] || ! tar -tzf "${NGX_ZLIBLINKFILE}" >/dev/null 2>&1; then
+  cecho "Error: ${NGX_ZLIBLINKFILE} download failed or invalid archive." $boldgreen
   cecho "Retrying with local mirror..." $boldyellow
         echo "wget --progress=bar ${NGX_ZLIBLINKLOCAL} -O ${NGX_ZLIBLINKFILE} --tries=3"
         wget --progress=bar "${NGX_ZLIBLINKLOCAL}" -O "${NGX_ZLIBLINKFILE}" --tries=3
 ERROR=$?
-  if [[ "$ERROR" != '0' ]]; then
-  cecho "Error: ${NGX_ZLIBLINKFILE} local mirror download failed." $boldgreen
+  if [[ "$ERROR" != '0' ]] || ! tar -tzf "${NGX_ZLIBLINKFILE}" >/dev/null 2>&1; then
+  cecho "Error: ${NGX_ZLIBLINKFILE} local mirror download failed or invalid archive." $boldgreen
 checklogdetails
   exit #$ERROR
 else
