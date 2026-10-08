@@ -317,8 +317,50 @@ done
 }
 
 ########################################################################
+# Report what is live after a failed menu 5 run and leave maintenance mode
+# when PHP-FPM is still serving. Files are never restored: after the library
+# update, restarting the previous PHP binary could fail.
+php_upgrade_failed() {
+  local status=$1 versionlock="${SCRIPT_DIR}/tools/php-libs-versionlock.sh"
+  [[ "$php_upgrade_reported" = y ]] && return 0
+  php_upgrade_reported=y
+  [[ "$status" -eq 0 && "$php_maintenance_active" != y ]] && return 0
+  echo
+  cecho "PHP upgrade failed (status $status) at stage: $php_upgrade_stage" $boldyellow
+  case "$php_upgrade_stage" in
+    prepare) cecho "  PHP files were not changed; the running PHP-FPM was not restarted." $boldyellow ;;
+    install|installed) cecho "  New PHP files may be on disk, but PHP-FPM still runs the previous build." $boldyellow
+      cecho "  Rerun centmin.sh menu 5 after fixing the error; avoid restarting php-fpm until then." $boldyellow ;;
+    live) cecho "  The new PHP-FPM is running; a later step failed, see the log above." $boldyellow ;;
+  esac
+  if [[ "$php_libs_updated" = y || "$php_upgrade_stage" != prepare ]] && [[ -f "$versionlock" ]]; then
+    bash "$versionlock" check || cecho "  php-fpm will not start until these libraries are restored or PHP is rebuilt." $boldyellow
+  fi
+  if [[ "$php_maintenance_active" = y ]]; then
+    if pgrep -x php-fpm >/dev/null 2>&1 && /usr/bin/sitestatus on; then
+      php_maintenance_active=n
+      cecho "  Maintenance mode turned off: PHP-FPM is running." $boldyellow
+    else
+      cecho "  Maintenance mode is still ON. After fixing, run: /usr/bin/sitestatus on" $boldyellow
+    fi
+  fi
+  return 0
+}
+
 funct_phpupgrade() {
-    local php_maintenance_active=n
+  local status previous_trap
+  php_upgrade_stage=prepare php_upgrade_reported=n php_maintenance_active=n php_libs_updated=n
+  # helpers that abort with exit still get the report
+  previous_trap=$(trap -p EXIT)
+  trap 'php_upgrade_failed $?' EXIT
+  php_upgrade_main "$@"
+  status=$?
+  eval "${previous_trap:-trap - EXIT}"
+  [[ "$status" -eq 0 ]] || php_upgrade_failed "$status"
+  return "$status"
+}
+
+php_upgrade_main() {
     CLI_PHP_VER="$1"
     ENABLE_EXT_OVERRIDE="$2"
     axelsetup
@@ -690,11 +732,9 @@ fi
     # unlock and update the non-base repo packages PHP links against so this
     # build uses their current versions; locked again after a successful build
     if [[ "$PHP_LIBS_VERSIONLOCK" = [yY] && -f "${SCRIPT_DIR}/tools/php-libs-versionlock.sh" ]]; then
-        # Library updates can remove SONAMEs required by the running PHP binary.
-        if [[ "$PHP_UPDATEMAINTENANCE" = [yY] && -f /usr/bin/sitestatus ]]; then
-            /usr/bin/sitestatus off || return $?
-            php_maintenance_active=y
-        fi
+        # The running PHP-FPM keeps its loaded libraries, so maintenance mode
+        # waits until make install; a partial update is reported on failure.
+        php_libs_updated=y
         bash "${SCRIPT_DIR}/tools/php-libs-versionlock.sh" update || return $?
     fi
 
@@ -1006,11 +1046,12 @@ fi
     # updated, disable 503 maintenance mod after
     if [[ "$PHP_UPDATEMAINTENANCE" = [yY] && "$php_maintenance_active" != y ]]; then
         if [ -f /usr/bin/sitestatus ]; then
-            /usr/bin/sitestatus off || return $?
             php_maintenance_active=y
+            /usr/bin/sitestatus off || return $?
         fi
     fi
 
+    php_upgrade_stage=install
     time make install
     ERR=$?
 
@@ -1081,6 +1122,7 @@ fi
       echo -e "\n`date`\nSuccess: PHP was installed properly\n"
         echo
         echo
+      php_upgrade_stage=installed
       # Protect core-linked libraries before extension builds can fail.
       php_libs_lock_warn
 
@@ -1591,6 +1633,7 @@ TDG
     fi
     /usr/local/sbin/php-fpm -t || return $?
     cmservice php-fpm restart || return $?
+    php_upgrade_stage=live
     if [ -f /usr/bin/journalctl ]; then
         journalctl -xe -u php-fpm --no-pager | tail -20
     fi
@@ -1808,10 +1851,9 @@ fi
     # then whenever you run php upgrade, you put all sites
     # on server into 503 maintenance mode first and once
     # updated, disable 503 maintenance mod after
-    if [[ "$PHP_UPDATEMAINTENANCE" = [yY] ]]; then
-        if [ -f /usr/bin/sitestatus ]; then
-            /usr/bin/sitestatus on || return $?
-        fi
+    if [[ "$php_maintenance_active" = y ]]; then
+        /usr/bin/sitestatus on || return $?
+        php_maintenance_active=n
     fi
 
     # stop yum/dnf updates removing a library soname from under this build;

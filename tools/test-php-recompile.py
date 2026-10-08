@@ -127,7 +127,7 @@ for phase in ('source', 'extract', 'patches', 'libs-update', 'configure', 'make'
         assert not set(events) & {'detect', 'opcache', 'yum', 'configure', 'copy', 'maintenance-off'}
     if phase in ('source', 'extract', 'patches', 'libs-update', 'configure', 'make', 'stage'):
         assert 'install' not in events and ini == 'old php.ini\n'
-        assert ('maintenance-off' in events) == (phase in ('libs-update', 'configure', 'make', 'stage')), (phase, events)
+        assert 'maintenance-off' not in events, (phase, events)
     if phase == 'maintenance-off':
         assert 'install' not in events
     if phase == 'install':
@@ -138,7 +138,7 @@ for phase in ('source', 'extract', 'patches', 'libs-update', 'configure', 'make'
     print('PASS:', phase, 'failure stops later changes')
 result, events, ini = run(setup='touch "$CONFIGSCANDIR/igbinary.ini" "$(php-config --extension-dir)/igbinary.so"')
 assert result.returncode == 0, (events, result.stdout, result.stderr)
-assert events.index('extract') < events.index('detect') < events.index('maintenance-off') < events.index('libs-update') < events.index('configure') < events.index('make') < events.index('stage') < events.index('install') < events.index('libs-lock') < events.index('copy') < events.index('configtest') < events.index('restart') < events.index('maintenance-on')
+assert events.index('extract') < events.index('detect') < events.index('libs-update') < events.index('configure') < events.index('make') < events.index('stage') < events.index('maintenance-off') < events.index('install') < events.index('libs-lock') < events.index('copy') < events.index('configtest') < events.index('restart') < events.index('maintenance-on')
 assert ini == 'new php.ini\n' and 'igbinary' not in events and events.count('maintenance-off') == 1
 print('PASS: source/build/install/config/restart ordering and healthy igbinary preservation')
 
@@ -459,22 +459,39 @@ result, events, _ = run(body='\n#' + 'x' * (128 * 1024) + '\nif read -r unexpect
 assert result.returncode == 0 and events == ['large-script'], (events, result.stderr)
 print('PASS: scripts beyond Linux argv limits run from files with EOF stdin')
 
-# Shared-library updates can break the old binary before a successful compile/install.
-for mode, setup in (('enabled', ''), ('inherited-state', 'php_maintenance_active=y'), ('disabled', 'PHP_LIBS_VERSIONLOCK=n'), ('missing', 'command rm "$SCRIPT_DIR/tools/php-libs-versionlock.sh"')):
+# The running PHP-FPM keeps its loaded libraries during the library update and
+# build, so opt-in maintenance starts just before make install.
+for mode, setup in (('enabled', ''), ('disabled', 'PHP_LIBS_VERSIONLOCK=n'), ('missing', 'command rm "$SCRIPT_DIR/tools/php-libs-versionlock.sh"')):
     result, events, _ = run(setup=setup)
-    assert result.returncode == 0 and events.count('maintenance-off') == 1, (mode, events, result.stderr)
-    if mode in ('enabled', 'inherited-state'):
-        assert events.index('maintenance-off') < events.index('libs-update') < events.index('configure'), (mode, events)
+    assert result.returncode == 0 and events.count('maintenance-off') == 1 and events.count('maintenance-on') == 1, (mode, events, result.stderr)
+    assert events.index('stage') < events.index('maintenance-off') < events.index('install') < events.index('maintenance-on'), (mode, events)
+    if mode == 'enabled':
+        assert events.index('libs-update') < events.index('configure'), (mode, events)
     else:
-        assert 'libs-update' not in events and events.index('stage') < events.index('maintenance-off') < events.index('install'), (mode, events)
-for phase in ('maintenance-off', 'libs-update', 'configure'):
-    result, events, _ = run(phase)
-    assert result.returncode != 0 and 'maintenance-off' in events and 'maintenance-on' not in events and 'install' not in events, (phase, events, result.stderr)
-    if phase == 'maintenance-off':
-        assert 'libs-update' not in events
+        assert 'libs-update' not in events, (mode, events)
+report = 'cecho() { echo "$1"; }'
+# Failures before make install never enter maintenance and say PHP was not changed.
+for phase in ('libs-update', 'configure', 'make', 'stage'):
+    result, events, _ = run(phase, setup=report)
+    assert result.returncode != 0 and 'maintenance-off' not in events and 'install' not in events, (phase, events, result.stderr)
+    assert 'stage: prepare' in result.stdout and 'PHP files were not changed' in result.stdout, (phase, result.stdout)
+    # A (possibly partial) library update is checked against the PHP binaries on disk.
+    assert 'libs-check' in events, (phase, events)
+# Later failures leave maintenance only while PHP-FPM is still running.
+for phase in ('maintenance-off', 'install', 'configtest', 'restart'):
+    for running in ('n', 'y'):
+        result, events, _ = run(phase, setup=report, running=running)
+        assert result.returncode != 0, (phase, running, events)
+        assert ('maintenance-on' in events) == (running == 'y'), (phase, running, events)
+        assert ('Maintenance mode is still ON' in result.stdout) == (running == 'n'), (phase, running, result.stdout)
+        if phase != 'maintenance-off':
+            assert 'stage: install' in result.stdout and 'avoid restarting php-fpm' in result.stdout, (phase, result.stdout)
+# A helper that aborts with exit still gets the report and maintenance restore.
+result, events, _ = run(body='\nphptimezonedb_install() { event timezonedb; exit 9; }\nfunct_phpupgrade 8.3.35\n', setup=report, running='y')
+assert result.returncode == 9 and 'maintenance-on' in events and 'failed (status 9)' in result.stdout, (events, result.stdout)
 result, events, _ = run(setup='PHP_UPDATEMAINTENANCE=n')
 assert result.returncode == 0 and 'libs-update' in events and 'maintenance-off' not in events and 'maintenance-on' not in events, (events, result.stderr)
-print('PASS: opt-in maintenance precedes shared-library updates once, failures retain it, disabled/missing helper delays activation')
+print('PASS: maintenance starts at make install, failures report the stage and leave maintenance only while PHP-FPM runs')
 
 # Run the actual publishing helper against regular files; failed operations only touch its temporary copy.
 copy_tool = shutil.which('gcp') if os.uname().sysname == 'Darwin' else shutil.which('cp')
