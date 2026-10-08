@@ -3943,9 +3943,9 @@ maintenance_confcheck() {
       fi
     fi
   elif [[ -f "${SCRIPT_DIR}/tools/sitestatus.sh" ]] && ! cmp -s "${SCRIPT_DIR}/tools/sitestatus.sh" /usr/bin/sitestatus; then
-    # menu 4/5 maintenance relies on the current reload and error returning version
-    \cp -f "${SCRIPT_DIR}/tools/sitestatus.sh" /usr/bin/sitestatus
-    chmod +x /usr/bin/sitestatus
+    # menu 4/5 maintenance relies on the current reload and error returning version;
+    # replace by rename so a running sitestatus never reads a half-written script
+    \cp -f "${SCRIPT_DIR}/tools/sitestatus.sh" /usr/bin/sitestatus.new && chmod +x /usr/bin/sitestatus.new && mv -f /usr/bin/sitestatus.new /usr/bin/sitestatus
   fi
 }
 
