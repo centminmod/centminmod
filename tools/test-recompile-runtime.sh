@@ -54,7 +54,7 @@ recover = re.search(r'^nginx_upgrade_recover\(\) \{.*?^}', nginx, re.M | re.S)
 assert recover, 'missing production Nginx recovery helper'
 recover = recover.group().replace('/usr/local/nginx/logs/nginx.pid', '$work/nginx.pid')
 php = (root/'inc/php_upgrade.inc').read_text()
-gate = re.search(r'^    /usr/local/sbin/php-fpm -t \|\| return \$\?\n    cmservice php-fpm restart \|\| return \$\?', php, re.M)
+gate = re.search(r'^    /usr/local/sbin/php-fpm -t \|\| return \$\?\n(?:    php_upgrade_stage=restart\n)?    cmservice php-fpm restart \|\| return \$\?', php, re.M)
 assert gate, 'missing production PHP config/restart gates'
 gate = gate.group().replace('/usr/local/sbin/php-fpm -t', 'PHP_INI_SCAN_DIR= /usr/local/sbin/php-fpm -n -R -t -y "$work/php.conf"')
 (work/'gates.sh').write_text(ready.group()+'\nnginx_promote() {\n'+promotion+'\n}\nphp_restart_gate() {\n'+gate+'\n}\n'+recover+'\n')

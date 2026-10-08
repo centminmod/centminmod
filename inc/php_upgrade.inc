@@ -317,6 +317,16 @@ done
 }
 
 ########################################################################
+# The php-fpm service itself, not any process named php-fpm (draining
+# workers or another instance would match pgrep).
+php_fpm_serving() {
+  if command -v systemctl >/dev/null 2>&1; then
+    systemctl is-active --quiet php-fpm
+  else
+    pgrep -x php-fpm >/dev/null 2>&1
+  fi
+}
+
 # Report what is live after a failed menu 5 run and leave maintenance mode
 # when PHP-FPM is still serving. Files are never restored: after the library
 # update, restarting the previous PHP binary could fail.
@@ -329,15 +339,19 @@ php_upgrade_failed() {
   cecho "PHP upgrade failed (status $status) at stage: $php_upgrade_stage" $boldyellow
   case "$php_upgrade_stage" in
     prepare) cecho "  PHP files were not changed; the running PHP-FPM was not restarted." $boldyellow ;;
-    install|installed) cecho "  New PHP files may be on disk, but PHP-FPM still runs the previous build." $boldyellow
+    install|installed) cecho "  New PHP files may be on disk; PHP-FPM was not restarted onto them." $boldyellow
       cecho "  Rerun centmin.sh menu 5 after fixing the error; avoid restarting php-fpm until then." $boldyellow ;;
+    restart) cecho "  The PHP-FPM restart onto the new build failed." $boldyellow ;;
     live) cecho "  The new PHP-FPM is running; a later step failed, see the log above." $boldyellow ;;
   esac
+  if ! php_fpm_serving; then
+    cecho "  WARNING: php-fpm is not running. After fixing the error, run: systemctl start php-fpm" $boldyellow
+  fi
   if [[ "$php_libs_updated" = y || "$php_upgrade_stage" != prepare ]] && [[ -f "$versionlock" ]]; then
     bash "$versionlock" check || cecho "  php-fpm will not start until these libraries are restored or PHP is rebuilt." $boldyellow
   fi
   if [[ "$php_maintenance_active" = y ]]; then
-    if pgrep -x php-fpm >/dev/null 2>&1 && /usr/bin/sitestatus on; then
+    if php_fpm_serving && /usr/bin/sitestatus on; then
       php_maintenance_active=n
       cecho "  Maintenance mode turned off: PHP-FPM is running." $boldyellow
     else
@@ -1633,6 +1647,7 @@ TDG
         fi
     fi
     /usr/local/sbin/php-fpm -t || return $?
+    php_upgrade_stage=restart
     cmservice php-fpm restart || return $?
     php_upgrade_stage=live
     if [ -f /usr/bin/journalctl ]; then

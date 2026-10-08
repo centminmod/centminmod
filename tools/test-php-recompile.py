@@ -30,6 +30,7 @@ funct_centos6check() { :; }; rpm() { echo php-cli; }; yum() { event yum; }
 git() { return 1; }; wget() { return 1; }; curl() { return 1; }
 rm() { :; }; sleep() { :; }; find() { event find; [[ "$FAILPHASE" != strip ]] || return 7; }
 pgrep() { [[ "$RUNNING" = y ]]; }; id() { echo 0; }
+systemctl() { [[ "$*" != 'is-active --quiet php-fpm' ]] || [[ "$RUNNING" = y ]]; }
 lscpu() { :; }; free() { :; }; df() { :; }; tail() { :; }; journalctl() { :; }
 sar_call() { :; }; php_patches() { event patches; [[ "$FAILPHASE" != patches ]] || return 7; }; check_devtoolset_php() { :; }
 enable_devtoolset() { :; }; max_spawn_rate_check() { :; }
@@ -494,8 +495,12 @@ for phase in ('maintenance-off', 'install', 'configtest', 'restart'):
         assert result.returncode != 0, (phase, running, events)
         assert ('maintenance-on' in events) == (running == 'y'), (phase, running, events)
         assert ('Maintenance mode is still ON' in result.stdout) == (running == 'n'), (phase, running, result.stdout)
-        if phase != 'maintenance-off':
+        # a stopped service is reported whatever the stage
+        assert ('php-fpm is not running' in result.stdout) == (running == 'n'), (phase, running, result.stdout)
+        if phase in ('install', 'configtest'):
             assert 'stage: install' in result.stdout and 'avoid restarting php-fpm' in result.stdout, (phase, result.stdout)
+        if phase == 'restart':
+            assert 'stage: restart' in result.stdout and 'restart onto the new build failed' in result.stdout, (phase, result.stdout)
 # A helper that aborts with exit still gets the report and maintenance restore.
 result, events, _ = run(body='\nphptimezonedb_install() { event timezonedb; exit 9; }\nfunct_phpupgrade 8.3.35\n', setup=report, running='y')
 assert result.returncode == 9 and 'maintenance-on' in events and 'failed (status 9)' in result.stdout, (events, result.stdout)
