@@ -140,7 +140,7 @@ fi # check if apc.so exists in php.ini
     cecho "* Alternative PHP Cache installed" $boldgreen
     echo "*************************************************"
 
-funct_igbinaryinstall
+funct_igbinaryinstall || return $?
 
 echo
 echo
@@ -162,7 +162,7 @@ echo
 
 function funct_installapc {
     if [[ "$PHP_INSTALL" = [yY] ]]; then
-funct_apcsourceinstall
+funct_apcsourceinstall || return $?
 
 if [[ "$ENABLE_MENU" != [yY] ]]; then
 

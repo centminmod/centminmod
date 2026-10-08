@@ -70,7 +70,7 @@ checkigbinary() {
     cecho "Check if ${PHPEXTDIRD}/igbinary.so or ${CONFIGSCANDIR}/igbinary.ini exists" $boldyellow
 
     if [[ ! -f ${CONFIGSCANDIR}/igbinary.ini || ! -f "${PHPEXTDIRD}/igbinary.so" ]]; then
-       funct_igbinaryinstall
+       funct_igbinaryinstall || return $?
        #echo "will need to reinstall memcached extensions if needed"
     fi
     
@@ -78,7 +78,7 @@ checkigbinary() {
     if [ -f /usr/local/bin/php ]; then
         if [[ "$(php --ri igbinary | awk '/igbinary version/ {print $4}')" != "${IGBINARY_VERSION}" ]]; then
             cecho "Check for different igbinary versions ..." $boldgreen
-            funct_igbinaryinstall
+            funct_igbinaryinstall || return $?
         fi
     fi
 }

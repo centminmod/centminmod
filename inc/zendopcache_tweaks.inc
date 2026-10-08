@@ -1,14 +1,20 @@
 # for php 7 usage only
 opcachehugepages() {
+    FREEMEM=
     if [[ "$CENTOS_SIX" = '6' ]]; then
       if [[ ! -f /proc/user_beancounters && -f /usr/bin/numactl ]]; then
         # account for multiple cpu socket numa based memory
         # https://community.centminmod.com/posts/48189/
         GETCPUNODE_COUNT=$(numactl --hardware | awk '/available: / {print $2}')
         if [[ "$GETCPUNODE_COUNT" -ge '2' ]]; then
-          FREEMEM_NUMANODE=$(($(numactl --hardware | awk '/free:/ {print $4}' | sort -r | head -n1)*1024))
+          FREEMEM_NUMANODE=$(numactl --hardware | awk '/free:/ {print $4}' | sort -r | head -n1)
           FREEMEMCACHED=$(grep -E '^Buffers|^Cached' /proc/meminfo | awk '{summ+=$2} END {print summ}' | head -n1)
-          FREEMEM=$(($FREEMEM_NUMANODE+$FREEMEMCACHED))
+          if [[ ! "$FREEMEM_NUMANODE" =~ ^[0-9]+$ || ! "$FREEMEMCACHED" =~ ^[0-9]+$ ]] || (( 10#$FREEMEM_NUMANODE <= 0 )); then
+            echo "ERROR: invalid NUMA available-memory probe for PHP OPcache hugepages." >&2
+            return 1
+          fi
+          FREEMEM_NUMANODE=$((10#$FREEMEM_NUMANODE*1024))
+          FREEMEM=$((FREEMEM_NUMANODE+10#$FREEMEMCACHED))
         else
           FREEMEM=$(grep -E '^MemFree|^Buffers|^Cached' /proc/meminfo | awk '{summ+=$2} END {print summ}' | head -n1)
         fi
@@ -19,15 +25,20 @@ opcachehugepages() {
       else
         FREEMEM=$(grep -E '^MemFree|^Buffers|^Cached' /proc/meminfo | awk '{summ+=$2} END {print summ}' | head -n1)
       fi
-    elif [[ "$CENTOS_EIGHT" = '8' || "$CENTOS_SEVEN" = '7' ]]; then
+    elif [[ "$CENTOS_EIGHT" = '8' || "$CENTOS_SEVEN" = '7' || "$CENTOS_NINE" = '9' || "$CENTOS_TEN" = '10' ]]; then
       if [[ ! -f /proc/user_beancounters && -f /usr/bin/numactl ]]; then
         # account for multiple cpu socket numa based memory
         # https://community.centminmod.com/posts/48189/
         GETCPUNODE_COUNT=$(numactl --hardware | awk '/available: / {print $2}')
         if [[ "$GETCPUNODE_COUNT" -ge '2' ]]; then
-          FREEMEM_NUMANODE=$(($(numactl --hardware | awk '/free:/ {print $4}' | sort -r | head -n1)*1024))
+          FREEMEM_NUMANODE=$(numactl --hardware | awk '/free:/ {print $4}' | sort -r | head -n1)
           FREEMEMCACHED=$(grep -E '^Buffers|^Cached' /proc/meminfo | awk '{summ+=$2} END {print summ}' | head -n1)
-          FREEMEM=$(($FREEMEM_NUMANODE+$FREEMEMCACHED))
+          if [[ ! "$FREEMEM_NUMANODE" =~ ^[0-9]+$ || ! "$FREEMEMCACHED" =~ ^[0-9]+$ ]] || (( 10#$FREEMEM_NUMANODE <= 0 )); then
+            echo "ERROR: invalid NUMA available-memory probe for PHP OPcache hugepages." >&2
+            return 1
+          fi
+          FREEMEM_NUMANODE=$((10#$FREEMEM_NUMANODE*1024))
+          FREEMEM=$((FREEMEM_NUMANODE+10#$FREEMEMCACHED))
         else
           FREEMEM=$(cat /proc/meminfo | grep MemAvailable | awk '{print $2}')
         fi
@@ -39,6 +50,11 @@ opcachehugepages() {
         FREEMEM=$(cat /proc/meminfo | grep MemAvailable | awk '{print $2}')
       fi
     fi
+    if [[ ! "$FREEMEM" =~ ^[0-9]+$ ]] || (( 10#$FREEMEM <= 0 )); then
+        echo "ERROR: invalid available-memory probe for PHP OPcache hugepages: ${FREEMEM:-empty}." >&2
+        return 1
+    fi
+    FREEMEM=$((10#$FREEMEM))
     NRHUGEPAGES_COUNT=$(($FREEMEM/2/2048/16*16/4))
     MAXLOCKEDMEM_COUNT=$(($FREEMEM/2/2048/16*16*4))
     MAXLOCKEDMEM_SIZE=$(($MAXLOCKEDMEM_COUNT*1024))

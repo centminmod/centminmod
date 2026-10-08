@@ -1,12 +1,14 @@
 function funct_igbinaryinstall {
+    local DISABLESESSION=n igbinary_ext_dir igbinary_php_version
     if [[ "$PHP_INSTALL" = [yY] ]]; then
     axelsetup
 
 if [ "$IGBINARY_INSTALL" == 'y' ]; then
 if [ "$IGBINARYGIT" == 'y' ]; then
-    cd $DIR_TMP
+    cd $DIR_TMP || return $?
 
-    php-config --version | cut -d . -f1,2 | grep -Ew '7.0|7.1|7.2|7.3|7.4|8.0|8.1|8.2|8.3|8.4|8.5'
+    igbinary_php_version=$(php-config --version) || return $?
+    printf '%s\n' "$igbinary_php_version" | cut -d . -f1,2 | grep -Ew '7.0|7.1|7.2|7.3|7.4|8.0|8.1|8.2|8.3|8.4|8.5'
     PHPSEVEN_CHECKVER=$?
     echo $PHPSEVEN_CHECKVER
 
@@ -24,14 +26,14 @@ if [ "$IGBINARYGIT" == 'y' ]; then
         # disable it for now
         DISABLESESSION=y
         if [[ -d "igbinary-php" && -d "igbinary-php/.git" ]]; then       
-            rm -rf igbinary-php
-            git clone "$IGBINARYSEVEN_LINK" igbinary-php
+            rm -rf igbinary-php || return $?
+            git clone "$IGBINARYSEVEN_LINK" igbinary-php || return $?
         elif [[ -d "igbinary-php" && ! -d "igbinary-php/.git" ]]; then
-            rm -rf igbinary-php
-            git clone "$IGBINARYSEVEN_LINK" igbinary-php
+            rm -rf igbinary-php || return $?
+            git clone "$IGBINARYSEVEN_LINK" igbinary-php || return $?
         else
-            rm -rf igbinary-php
-            git clone "$IGBINARYSEVEN_LINK" igbinary-php
+            rm -rf igbinary-php || return $?
+            git clone "$IGBINARYSEVEN_LINK" igbinary-php || return $?
         fi
         echo
         echo "compiling igbinary PHP extension for PHP 7.x ..."
@@ -39,7 +41,7 @@ if [ "$IGBINARYGIT" == 'y' ]; then
             export PHP_AUTOCONF=/usr/bin/autoconf
             export PHP_AUTOHEADER=/usr/bin/autoheader
         
-        cd igbinary-php
+        cd igbinary-php || return $?
         if [[ "$INITIALINSTALL" != [yY] ]]; then
             make clean
         fi
@@ -47,7 +49,7 @@ if [ "$IGBINARYGIT" == 'y' ]; then
             # PHP 7.3.0 + centos 6 issue https://community.centminmod.com/posts/69561/
             if [ ! -f /usr/bin/autoconf268 ]; then
                 echo "yum -q -y install autoconf268"
-                yum -q -y install autoconf268
+                yum -q -y install autoconf268 || return $?
             fi
             if [ -f /usr/bin/autoconf268 ]; then
                 export PHP_AUTOCONF=/usr/bin/autoconf268
@@ -56,43 +58,43 @@ if [ "$IGBINARYGIT" == 'y' ]; then
             autoconf268 -V | head -n1
         fi
         autoconf -V | head -n1
-        /usr/local/bin/phpize -clean
-        /usr/local/bin/phpize
+        /usr/local/bin/phpize -clean || return $?
+        /usr/local/bin/phpize || return $?
         pwd
-        CFLAGS="-fPIC -O2 -fstack-protector-strong -D_FORTIFY_SOURCE=2" CPPFLAGS="-D_FORTIFY_SOURCE=2" CXXFLAGS="-fPIC -O2" LDFLAGS="-Wl,-z,relro,-z,now -pie" ./configure --enable-igbinary --with-php-config=/usr/local/bin/php-config
-        make${MAKETHREADS}
+        CFLAGS="-fPIC -O2 -fstack-protector-strong -D_FORTIFY_SOURCE=2" CPPFLAGS="-D_FORTIFY_SOURCE=2" CXXFLAGS="-fPIC -O2" LDFLAGS="-Wl,-z,relro,-z,now -pie" ./configure --enable-igbinary --with-php-config=/usr/local/bin/php-config || return $?
+        make${MAKETHREADS} || return $?
         #make test
-        make install    
+        make install || return $?
     else
         echo "Compiling igbinary..."
         if [ -s igbinary-igbinary-1.1.2-dev.tar.gz ]; then
             cecho "igbinary-igbinary-1.1.2-dev.tar.gz Archive found, skipping download..." $boldgreen
         else
-            wget --progress=bar --no-check-certificate https://github.com/igbinary/igbinary/tarball/master -O igbinary-igbinary-1.1.2-dev.tar.gz --tries=3
+            wget --progress=bar --no-check-certificate https://github.com/igbinary/igbinary/tarball/master -O igbinary-igbinary-1.1.2-dev.tar.gz --tries=3 || return $?
         fi
     
-        tar -xzvf igbinary-igbinary-1.1.2-dev.tar.gz
+        tar -xzvf igbinary-igbinary-1.1.2-dev.tar.gz || return $?
         
             export PHP_AUTOCONF=/usr/bin/autoconf
             export PHP_AUTOHEADER=/usr/bin/autoheader
         
-        cd ${DIR_TMP}/igbinary-igbinary-*/
+        cd ${DIR_TMP}/igbinary-igbinary-*/ || return $?
         if [[ "$INITIALINSTALL" != [yY] ]]; then
             make clean
         fi
         autoconf -V | head -n1
-        /usr/local/bin/phpize -clean
-        /usr/local/bin/phpize
+        /usr/local/bin/phpize -clean || return $?
+        /usr/local/bin/phpize || return $?
         pwd
-        CFLAGS="-fPIC -O2 -fstack-protector-strong -D_FORTIFY_SOURCE=2" CPPFLAGS="-D_FORTIFY_SOURCE=2" CXXFLAGS="-fPIC -O2" LDFLAGS="-Wl,-z,relro,-z,now -pie" ./configure --enable-igbinary --with-php-config=/usr/local/bin/php-config
-        make${MAKETHREADS}
+        CFLAGS="-fPIC -O2 -fstack-protector-strong -D_FORTIFY_SOURCE=2" CPPFLAGS="-D_FORTIFY_SOURCE=2" CXXFLAGS="-fPIC -O2" LDFLAGS="-Wl,-z,relro,-z,now -pie" ./configure --enable-igbinary --with-php-config=/usr/local/bin/php-config || return $?
+        make${MAKETHREADS} || return $?
         #make test
-        make install
+        make install || return $?
     fi # php 7 or not
 
 else
 
-    cd $DIR_TMP
+    cd $DIR_TMP || return $?
 
     export PHP_AUTOCONF=/usr/bin/autoconf
     export PHP_AUTOHEADER=/usr/bin/autoheader
@@ -101,30 +103,33 @@ else
     if [ -s igbinary-${IGBINARY_VERSION}.tgz ]; then
         cecho "igbinary-${IGBINARY_VERSION}.tgz Archive found, skipping download..." $boldgreen
     else
-        download_cmd https://pecl.php.net/get/igbinary-${IGBINARY_VERSION}.tgz $WGETRETRY
+        download_cmd https://pecl.php.net/get/igbinary-${IGBINARY_VERSION}.tgz $WGETRETRY || return $?
     fi
 
-tar -xzvf igbinary-${IGBINARY_VERSION}.tgz
-cd ${DIR_TMP}/igbinary-${IGBINARY_VERSION}/
+tar -xzvf igbinary-${IGBINARY_VERSION}.tgz || return $?
+cd ${DIR_TMP}/igbinary-${IGBINARY_VERSION}/ || return $?
 if [[ "$INITIALINSTALL" != [yY] ]]; then
     make clean
 fi
 autoconf -V | head -n1
-/usr/local/bin/phpize -clean
-/usr/local/bin/phpize
+/usr/local/bin/phpize -clean || return $?
+/usr/local/bin/phpize || return $?
 pwd
-./configure CFLAGS="-O2 -g" --enable-igbinary --with-php-config=/usr/local/bin/php-config
-make${MAKETHREADS}
+./configure CFLAGS="-O2 -g" --enable-igbinary --with-php-config=/usr/local/bin/php-config || return $?
+make${MAKETHREADS} || return $?
 #make test
-make install 
+make install || return $?
 
 fi
+
+igbinary_ext_dir=$(php-config --extension-dir) || return $?
+[[ "$igbinary_ext_dir" = /* && -s "$igbinary_ext_dir/igbinary.so" ]] || return 1
 
 IGBSOCHECK=$(grep 'extension=igbinary.so' /usr/local/lib/php.ini >/dev/null 2>&1; echo $?)
 IGBSOCHECKB=$(grep 'extension=igbinary.so' "${CONFIGSCANDIR}/igbinary.ini" >/dev/null 2>&1; echo $?)
 
-if [[ "$IGBSOCHECK" = '1' || "$IGBSOCHECKB" = '1' ]]; then
-cat > "${CONFIGSCANDIR}/igbinary.ini" <<END
+if [[ "$IGBSOCHECK" != '0' || "$IGBSOCHECKB" != '0' ]]; then
+cat > "${CONFIGSCANDIR}/igbinary.ini" <<END || return $?
 
 [igbinary]
 extension=igbinary.so
@@ -140,19 +145,22 @@ END
 fi
 else
     # remove igbinary PHP support if IGBINARY_INSTALL=n
-    rm -rf "${CONFIGSCANDIR}/igbinary.ini"
+    rm -rf "${CONFIGSCANDIR}/igbinary.ini" || return $?
+    /usr/local/sbin/php-fpm -t || return $?
+    cmservice php-fpm reload || return $?
+    return 0
 fi # IGBINARY_INSTALL = y
 
 APCSOCHECK=$(grep 'extension=apc.so' "${CONFIGSCANDIR}/apc.ini" >/dev/null 2>&1; echo $?)
 
 if [[ "$APCSOCHECK" = '0' ]]; then
-    sed -i 's/;apc.serializer=igbinary/apc.serializer=igbinary/g' "${CONFIGSCANDIR}/igbinary.ini"
+    sed -i 's/;apc.serializer=igbinary/apc.serializer=igbinary/g' "${CONFIGSCANDIR}/igbinary.ini" || return $?
 fi
 
 if [[ "$DISABLESESSION" = [yY] ]]; then
 # php7 igbinary https://github.com/igbinary/igbinary broken session serialization
 # disable it for now
-    sed -i 's|^session.serialize_handler=igbinary|;session.serialize_handler=igbinary|' "${CONFIGSCANDIR}/igbinary.ini"
+    sed -i 's|^session.serialize_handler=igbinary|;session.serialize_handler=igbinary|' "${CONFIGSCANDIR}/igbinary.ini" || return $?
 fi
 
     # if [[ "$PHPMUVER" = '8.0' || "$PHPVER_ID" -ge '80000' || "$PHPMUVER" = 'NGDEBUG' ]] && [ -f "${CONFIGSCANDIR}/igbinary.ini" ]; then
@@ -163,6 +171,8 @@ fi
     #     echo
     # fi
 
-cmservice php-fpm reload
+php --ri igbinary >/dev/null || return $?
+/usr/local/sbin/php-fpm -t || return $?
+cmservice php-fpm reload || return $?
     fi # PHP_INSTALL=y
 }

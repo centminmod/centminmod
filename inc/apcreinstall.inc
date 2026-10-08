@@ -141,7 +141,7 @@ fi
     cecho "* Alternative PHP Cache reinstalled" $boldgreen
     echo "*************************************************"
 
-funct_igbinaryinstall
+funct_igbinaryinstall || return $?
 
 if [[ "$ENABLE_MENU" != [yY] ]]; then
 
