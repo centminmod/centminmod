@@ -568,6 +568,7 @@ funct_nginxupgrade() {{ return {producer}; }}; funct_phpupgrade() {{ return {pro
 tee() {{ cat >/dev/null; return {logging}; }}
 ''' + wrapper, work, expected)
     finish = function((REPO / 'inc/centminfinish.inc').read_text(), 'centminfinish')
+    finish += '\n' + function((REPO / 'inc/php_upgrade.inc').read_text(), 'php_libs_lock_warn')
     result = run(finish + f'''
 SCRIPT_DIR={shlex.quote(str(REPO))} CENTMINLOGDIR={shlex.quote(str(work))} DT=test
 PHP_LIBS_VERSIONLOCK=y YUMLOG_FILE=/dev/null
@@ -575,8 +576,9 @@ ps() {{ :; }}; cmservice() {{ :; }}; cmchkconfig() {{ :; }}; installchecks() {{ 
 cecho() {{ echo "$1"; }}
 bash() {{ return 77; }}
 centminfinish
-''', work, 77)
-    assert 'install completed' not in result.stdout
+''', work, 0)
+    # The install is complete; a failed library lock is reported, not fatal.
+    assert 'install completed' in result.stdout and 'version locks were not updated' in result.stdout
     print('PASS: initial nginx install and both entry pipelines stop on failure')
 
     downloads = (REPO / 'inc/downloads.inc').read_text()

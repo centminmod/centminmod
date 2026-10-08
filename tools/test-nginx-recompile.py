@@ -236,6 +236,8 @@ ngxinstallmain
     # Optional finish reporting cannot mask or manufacture an install failure.
     finish = (root / "inc/centminfinish.inc").read_text()
     finish = finish[finish.index("centminfinish() {"):]
+    php_upgrade = (root / "inc/php_upgrade.inc").read_text()
+    finish += "\n" + php_upgrade[php_upgrade.index("php_libs_lock_warn() {"):php_upgrade.index("\n########", php_upgrade.index("php_libs_lock_warn() {"))]
     for mode in ("finish-success", "finish-lockfail"):
         work = Path(tmp) / mode
         (work / "repo/tools").mkdir(parents=True)
@@ -251,10 +253,11 @@ curl() { echo optional-curl >> "$work/trace"; return 73; }
 centminfinish
 ''', mode, work)
         trace = (work / "trace").read_text()
-        assert result.returncode == (73 if mode == "finish-lockfail" else 0), (mode, result.returncode, result.stdout, result.stderr)
-        assert "libs-lock" in trace, trace
-        assert ("optional-curl" in trace) == (mode == "finish-success"), trace
-        assert ("Centmin Mod install completed" in trace) == (mode == "finish-success"), trace
+        # A failed library lock after a completed install warns instead of failing it.
+        assert result.returncode == 0, (mode, result.returncode, result.stdout, result.stderr)
+        assert "libs-lock" in trace and "optional-curl" in trace, trace
+        assert "Centmin Mod install completed" in trace, trace
+        assert ("version locks were not updated" in trace) == (mode == "finish-lockfail"), trace
 
     # The real module checker must propagate serial and named background failures.
     work = Path(tmp) / "modules"

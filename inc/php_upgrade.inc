@@ -171,6 +171,18 @@ fi
 }
 
 ########################################################################
+# Lock PHP's non-base libraries after a successful build. The build is already
+# installed, so a failure warns with the command to rerun instead of aborting.
+php_libs_lock_warn() {
+  [[ "$PHP_LIBS_VERSIONLOCK" = [yY] && -f "${SCRIPT_DIR}/tools/php-libs-versionlock.sh" ]] || return 0
+  bash "${SCRIPT_DIR}/tools/php-libs-versionlock.sh" lock && return 0
+  cecho "WARNING: PHP library version locks were not updated (status $?)." $boldyellow
+  cecho "  dnf updates may remove a library PHP links against. After fixing, run:" $boldyellow
+  cecho "  bash ${SCRIPT_DIR}/tools/php-libs-versionlock.sh lock" $boldyellow
+  return 0
+}
+
+########################################################################
 php_ext_so_missing() {
   # $1 = .so basename (without .so). Returns 0 (true) ONLY when the extension
   # dir is KNOWN and the .so is genuinely absent. An unknown dir must NEVER be
@@ -1070,9 +1082,7 @@ fi
         echo
         echo
       # Protect core-linked libraries before extension builds can fail.
-      if [[ "$PHP_LIBS_VERSIONLOCK" = [yY] && -f "${SCRIPT_DIR}/tools/php-libs-versionlock.sh" ]]; then
-          bash "${SCRIPT_DIR}/tools/php-libs-versionlock.sh" lock || return $?
-      fi
+      php_libs_lock_warn
 
 ##############################################
 # begin update php.ini
@@ -1793,11 +1803,6 @@ fi
     fi
     echo "***************************************************"
 
-    # stop yum/dnf updates removing a library soname from under this build
-    if [[ "$PHP_LIBS_VERSIONLOCK" = [yY] && -f "${SCRIPT_DIR}/tools/php-libs-versionlock.sh" ]]; then
-        bash "${SCRIPT_DIR}/tools/php-libs-versionlock.sh" lock || return $?
-    fi
-
     # if you set /etc/centminmod/custom_config.inc file to
     # PHP_UPDATEMAINTENANCE=y
     # then whenever you run php upgrade, you put all sites
@@ -1808,6 +1813,10 @@ fi
             /usr/bin/sitestatus on || return $?
         fi
     fi
+
+    # stop yum/dnf updates removing a library soname from under this build;
+    # the new PHP is already live, so a lock failure only warns
+    php_libs_lock_warn
 
     if command -v figlet >/dev/null 2>&1; then
         figlet -ckf standard "PHP Upgraded"

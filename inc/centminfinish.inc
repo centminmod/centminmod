@@ -647,9 +647,7 @@ echo "$YUMLOG" >> "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_yum-log.l
 
 # stop yum/dnf updates removing a library soname from under the source
 # compiled PHP; centmin.sh menu 5 updates the locked packages
-if [[ "$PHP_LIBS_VERSIONLOCK" = [yY] && -f "${SCRIPT_DIR}/tools/php-libs-versionlock.sh" ]]; then
-  bash "${SCRIPT_DIR}/tools/php-libs-versionlock.sh" lock || return $?
-fi
+php_libs_lock_warn
 
     echo "*************************************************"
     cecho "* Centmin Mod install completed...." $boldgreen

@@ -108,7 +108,17 @@ FPM_PHPFPM_INSTALLDIR='{root}/stage'; INITIALINSTALL=n; IGBINARY_INSTALL=y
         result = subprocess.run(['bash', str(script)], stdin=subprocess.DEVNULL, cwd=root, env=env, capture_output=True, text=True, timeout=10)
         return result, events.read_text().splitlines(), (root / 'usr/local/lib/php.ini').read_text()
 
-for phase in ('source', 'extract', 'patches', 'libs-update', 'configure', 'make', 'stage', 'install', 'backup', 'libs-lock', 'configtest', 'restart', 'strip', 'maintenance-off', 'libs-refresh', 'igbinary'):
+# Post-build lock failures warn: the new PHP is already installed and serving.
+for phase in ('libs-lock', 'libs-refresh'):
+    result, events, ini = run(phase, setup='cecho() { echo "$1"; }; touch "$CONFIGSCANDIR/igbinary.ini" "$(php-config --extension-dir)/igbinary.so"')
+    assert result.returncode == 0, (phase, events, result.stdout, result.stderr)
+    assert 'version locks were not updated' in result.stdout + result.stderr, (phase, result.stdout)
+    assert ini == 'new php.ini\n' and 'restart' in events and 'maintenance-on' in events, (phase, events)
+    if phase == 'libs-refresh':
+        assert events.index('maintenance-on') < len(events) - 1 - events[::-1].index('libs-lock'), events
+    print('PASS:', phase, 'failure warns and keeps the installed PHP online')
+
+for phase in ('source', 'extract', 'patches', 'libs-update', 'configure', 'make', 'stage', 'install', 'backup', 'configtest', 'restart', 'strip', 'maintenance-off', 'igbinary'):
     result, events, ini = run(phase, setup='touch "$CONFIGSCANDIR/igbinary.ini"' if phase == 'igbinary' else '')
     assert result.returncode != 0, (phase, events, result.stdout, result.stderr)
     if phase in ('configure', 'make', 'stage', 'install', 'backup', 'restart', 'strip'):
