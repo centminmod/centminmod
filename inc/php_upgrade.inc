@@ -211,12 +211,12 @@ fi
 
 if [[ "$DETECTAPC" = [yY] ]] || [[ "$DETECTAPC" = [yY] && ! -f "$PHPEXTDIR_AUTODETECT/apc.so" ]]; then
     cecho "Auto reinstalling previously detected APC Cache" $boldyellow
-    funct_apcreinstall
+    funct_apcreinstall || return $?
 fi
 
 if [[ "$DETECTIGBINARY" = [yY] ]] || [[ "$DETECTIGBINARY" = [yY] && ! -f "$PHPEXTDIR_AUTODETECT/igbinary.so" ]]; then
     cecho "Auto reinstalling previously detected igbinary extension" $boldyellow
-    funct_igbinaryinstall
+    funct_igbinaryinstall || return $?
 fi
 
 if [[ "$DETECTMEMCACHED" = [yY] ]] || [[ "$DETECTMEMCACHED" = [yY] && ! -f "$PHPEXTDIR_AUTODETECT/memcached.so" ]]; then
@@ -291,9 +291,10 @@ fi
 # Fix extension directory on major PHP version changes 
 # Zend Opcache related when downgrading PHP major versions
 PHPEXTDIRDNEW=$(cat /usr/local/bin/php-config | awk '/^extension_dir/ {extdir=$1} END {gsub(/\047|extension_dir|=|)/,"",extdir); print extdir}')
+[[ -n "$PHPEXTDIRDOLD" && -n "$PHPEXTDIRDNEW" && "$PHPEXTDIRDOLD" != "$PHPEXTDIRDNEW" ]] || return 0
 
-OLD=$(echo $PHPEXTDIRDOLD | sed 's/\//\\\//g')
-NEW=$(echo $PHPEXTDIRDNEW | sed 's/\//\\\//g')
+OLD=$(echo "$PHPEXTDIRDOLD" | sed 's/\//\\\//g')
+NEW=$(echo "$PHPEXTDIRDNEW" | sed 's/\//\\\//g')
 
 for ini in "${CONFIGSCANDIR}"/*.ini; do
     [[ -f "$ini" ]] || continue
@@ -305,6 +306,7 @@ done
 
 ########################################################################
 funct_phpupgrade() {
+    local php_maintenance_active=n
     CLI_PHP_VER="$1"
     ENABLE_EXT_OVERRIDE="$2"
     axelsetup
@@ -496,6 +498,7 @@ else
         read -ep "Enter PHP Version number you want to upgrade/downgrade to: " phpver
         echo
     fi
+    PHPMUVER=$(echo "$phpver" | cut -d . -f1,2)
     if [[ ("$CENTOS_NINE" -eq '9' || "$CENTOS_TEN" -eq '10') && "$PHP_PATCH_OPENSSL_THREE" = [yY] ]] && [[ "$PHPMUVER" = '7.4' || "$PHPMUVER" = '8.0' ]]; then
         # note for EL9/EL10 PHP 7.4/8.0 for OpenSSL 3.x system compatibility
         echo
@@ -565,51 +568,14 @@ fi # UALL
 gethtpasswdsh
 
 PHPCURRENTVER=$(php-config --version | cut -d . -f1,2)
+PHPEXTDIRDOLD=$(/usr/local/bin/php-config --extension-dir 2>/dev/null)
 PHPMU_ALPHAVER=$(echo "$phpver")
 
     phpng_download
     if cmm_php_fatal_pending; then
         exit 1
     fi
-    autodetectextensions
-    zopcacheupgrade
-    #addmysql_legacy
-
-    echo "*************************************************"
-    cecho "* Upgrading PHP" $boldgreen
-    echo "*************************************************"
-
-    # if you set /etc/centminmod/custom_config.inc file to
-    # PHP_UPDATEMAINTENANCE=y
-    # then whenever you run php upgrade, you put all sites
-    # on server into 503 maintenance mode first and once
-    # updated, disable 503 maintenance mod after
-    if [[ "$PHP_UPDATEMAINTENANCE" = [yY] ]]; then
-        if [ -f /usr/bin/sitestatus ]; then
-            /usr/bin/sitestatus off
-        fi
-    fi
-
-funct_centos6check
-
-  if [[ "$PHPMUVER" = 5.3 ]]; then
-    if [ ! -f /usr/bin/autoconf-2.13 ]; then
-        yum -y -q install autoconf213
-    fi
-    export PHP_AUTOCONF=/usr/bin/autoconf-2.13
-    export PHP_AUTOHEADER=/usr/bin/autoheader-2.13
-  else
-    export PHP_AUTOCONF=/usr/bin/autoconf
-    export PHP_AUTOHEADER=/usr/bin/autoheader
-  fi
-
-    cd "$DIR_TMP"
-
-if [ "$(rpm -qa | grep '^php*' | grep -E -v 'phonon-backend-gstreamer|php56|php70|php71|php72|php73|php74|php80|php81|php82|php83|php84')" ]; then
-    # IMPORTANT Erase any PHP installations first, otherwise conflicts may arise
-    echo "yum -y erase php*"
-    yum -y erase php*
-fi
+    cd "$DIR_TMP" || return 1
     if [[ "$PHPNG_YES" != [yY] ]]; then
         phpgeolocation
         command -v figlet >/dev/null 2>&1 && figlet -ckf standard "PHP: Download"
@@ -644,52 +610,43 @@ fi
     fi
 
     cd "${DIR_TMP}/php-${phpver}" || { cmm_php_fatal "php-${phpver} source dir missing at compile phase"; exit 1; }
+
+    autodetectextensions
+    zopcacheupgrade
+    #addmysql_legacy
+
+    echo "*************************************************"
+    cecho "* Upgrading PHP" $boldgreen
+    echo "*************************************************"
+
+
+funct_centos6check
+
+  if [[ "$PHPMUVER" = 5.3 ]]; then
+    if [ ! -f /usr/bin/autoconf-2.13 ]; then
+        yum -y -q install autoconf213
+    fi
+    export PHP_AUTOCONF=/usr/bin/autoconf-2.13
+    export PHP_AUTOHEADER=/usr/bin/autoheader-2.13
+  else
+    export PHP_AUTOCONF=/usr/bin/autoconf
+    export PHP_AUTOHEADER=/usr/bin/autoheader
+  fi
+
+    cd "$DIR_TMP"
+
+if [ "$(rpm -qa | grep '^php*' | grep -E -v 'phonon-backend-gstreamer|php56|php70|php71|php72|php73|php74|php80|php81|php82|php83|php84')" ]; then
+    # IMPORTANT Erase any PHP installations first, otherwise conflicts may arise
+    echo "yum -y erase php*"
+    yum -y erase php*
+fi
+    cd "${DIR_TMP}/php-${phpver}" || return 1
     PHPVER_ID=$(awk '/PHP_VERSION_ID/ {print $3}' ${DIR_TMP}/php-${phpver}/main/php_version.h)
     echo "PHP VERSION ID: $PHPVER_ID"
 
-##############################################
-# begin update php.ini
-
-echo ""
-echo "*************************************************"
-cecho "* Updating php.ini... " $boldgreen
-echo "*************************************************"
-echo "old php.ini will be saved at /usr/local/lib/php.ini-oldversion_$DT"
-echo "if you have modified your old php.ini i.e. installed and loaded"
-echo "APC, Xcache, Memcache or Suhosin - please re-install them after php upgrade"
-echo "..."
-
-    \cp -f /usr/local/lib/php.ini /usr/local/lib/php.ini-oldversion_$DT
-    \cp -f php.ini-production /usr/local/lib/php.ini
-    chmod 644 /usr/local/lib/php.ini
-
-phpsededit
-phptuning
-
-PHPDIFF=$(diff /usr/local/lib/php.ini /usr/local/lib/php.ini-oldversion_$DT)
-echo ""
-if [ ! -z "$PHPDIFF" ]; then
-echo "checking updated php.ini compared to old /usr/local/lib/php.ini-oldversion_$DT"
-echo "please note the following differences: "
-echo "if APC, Xcache, Memcache, Suhosin or FFMPEG Extensions are listed please re-install them"
-echo ""
-echo "--------------------------------------------------------------------------------------------"
-diff /usr/local/lib/php.ini "/usr/local/lib/php.ini-oldversion_$DT"
-echo "--------------------------------------------------------------------------------------------"
-echo ""
-    echo "*************************************************"
-echo "Automatically continuing upgrade in 4 seconds..."
-    echo "*************************************************"
-sleep 4
-echo ""
-fi # PHPDIFF
-
-# end update php.ini
-##############################################
-
     make clean
 
-    php_patches
+    php_patches || return $?
 
     if [[ "$CENTOS_SIX" -eq '6' ]]; then
         # PHP 7.3.0 + centos 6 issue https://community.centminmod.com/posts/69561/
@@ -721,7 +678,12 @@ fi # PHPDIFF
     # unlock and update the non-base repo packages PHP links against so this
     # build uses their current versions; locked again after a successful build
     if [[ "$PHP_LIBS_VERSIONLOCK" = [yY] && -f "${SCRIPT_DIR}/tools/php-libs-versionlock.sh" ]]; then
-        bash "${SCRIPT_DIR}/tools/php-libs-versionlock.sh" update
+        # Library updates can remove SONAMEs required by the running PHP binary.
+        if [[ "$PHP_UPDATEMAINTENANCE" = [yY] && -f /usr/bin/sitestatus ]]; then
+            /usr/bin/sitestatus off || return $?
+            php_maintenance_active=y
+        fi
+        bash "${SCRIPT_DIR}/tools/php-libs-versionlock.sh" update || return $?
     fi
 
     if command -v figlet >/dev/null 2>&1; then
@@ -977,7 +939,7 @@ fi
     echo
     echo "$(date): PHP config.log at: ${DIR_TMP}/php-${phpver}/fpm-build/config.log"
     echo
-      exit
+      return "$ERR"
   else
       echo -e "\n`date`\nSuccess: PHP make ok\n"
       # cmservice php-fpm restart
@@ -999,12 +961,14 @@ fi
 
     echo "make install"
     if [[ "$FPM_PHPFPM_INSTALLDIR_ENABLE" = [yY] ]]; then
+      [[ "$FPM_PHPFPM_INSTALLDIR" = /* && ! "$FPM_PHPFPM_INSTALLDIR" =~ ^/+$ && "$FPM_PHPFPM_INSTALLDIR" != *$'\n'* ]] || return 1
       echo
-      rm -rf "$FPM_PHPFPM_INSTALLDIR"
-      mkdir -p "$FPM_PHPFPM_INSTALLDIR"
+      rm -rf "$FPM_PHPFPM_INSTALLDIR" || return $?
+      mkdir -p "$FPM_PHPFPM_INSTALLDIR" || return $?
       echo "time make install INSTALL_ROOT=$FPM_PHPFPM_INSTALLDIR"
       time make install INSTALL_ROOT="$FPM_PHPFPM_INSTALLDIR"
       FPM_PHPFPM_INSTALLDIR_ERR=$?
+      [[ "$FPM_PHPFPM_INSTALLDIR_ERR" -eq 0 ]] || return "$FPM_PHPFPM_INSTALLDIR_ERR"
       if [[ "$STRIPPHP" = [yY] && "$PHPDEBUGMODE" != [yY] ]]; then
           echo
           echo "strip PHP binary..."
@@ -1012,9 +976,9 @@ fi
           ls -lah ${FPM_PHPFPM_INSTALLDIR}/usr/local/bin/php-cgi
           ls -lah ${FPM_PHPFPM_INSTALLDIR}/usr/local/sbin/php-fpm
           echo
-          strip -s ${FPM_PHPFPM_INSTALLDIR}/usr/local/bin/php
-          strip -s ${FPM_PHPFPM_INSTALLDIR}/usr/local/bin/php-cgi
-          strip -s ${FPM_PHPFPM_INSTALLDIR}/usr/local/sbin/php-fpm
+          strip -s ${FPM_PHPFPM_INSTALLDIR}/usr/local/bin/php || return $?
+          if [[ -f ${FPM_PHPFPM_INSTALLDIR}/usr/local/bin/php-cgi ]]; then strip -s ${FPM_PHPFPM_INSTALLDIR}/usr/local/bin/php-cgi || return $?; fi
+          strip -s ${FPM_PHPFPM_INSTALLDIR}/usr/local/sbin/php-fpm || return $?
           echo
           echo "after strip PHP binary..."
           ls -lah ${FPM_PHPFPM_INSTALLDIR}/usr/local/bin/php
@@ -1023,10 +987,22 @@ fi
           echo
       fi
     fi
+    # if you set /etc/centminmod/custom_config.inc file to
+    # PHP_UPDATEMAINTENANCE=y
+    # then whenever you run php upgrade, you put all sites
+    # on server into 503 maintenance mode first and once
+    # updated, disable 503 maintenance mod after
+    if [[ "$PHP_UPDATEMAINTENANCE" = [yY] && "$php_maintenance_active" != y ]]; then
+        if [ -f /usr/bin/sitestatus ]; then
+            /usr/bin/sitestatus off || return $?
+            php_maintenance_active=y
+        fi
+    fi
+
     time make install
     ERR=$?
 
-if [[ "$STRIPPHP" = [yY] && "$PHPDEBUGMODE" != [yY] ]]; then
+if [[ "$ERR" -eq 0 && "$STRIPPHP" = [yY] && "$PHPDEBUGMODE" != [yY] ]]; then
     echo
     echo "strip PHP binary..."
     ls -lah /usr/local/bin/php
@@ -1034,12 +1010,12 @@ if [[ "$STRIPPHP" = [yY] && "$PHPDEBUGMODE" != [yY] ]]; then
     ls -lah /usr/local/sbin/php-fpm
     echo
     echo "backup before strip PHP binary..."
-    \cp -af /usr/local/bin/php /usr/local/bin/php-b4strip 
-    \cp -af /usr/local/bin/php-cgi /usr/local/bin/php-cgi-b4strip 
-    \cp -af /usr/local/sbin/php-fpm /usr/local/sbin/php-fpm-b4strip 
-    strip -s /usr/local/bin/php
-    strip -s /usr/local/bin/php-cgi
-    strip -s /usr/local/sbin/php-fpm
+    \cp -af /usr/local/bin/php /usr/local/bin/php-b4strip || return $?
+    if [[ -f /usr/local/bin/php-cgi ]]; then \cp -af /usr/local/bin/php-cgi /usr/local/bin/php-cgi-b4strip || return $?; fi
+    \cp -af /usr/local/sbin/php-fpm /usr/local/sbin/php-fpm-b4strip || return $?
+    strip_php_binary /usr/local/bin/php || return $?
+    if [[ -f /usr/local/bin/php-cgi ]]; then strip_php_binary /usr/local/bin/php-cgi || return $?; fi
+    strip_php_binary /usr/local/sbin/php-fpm || return $?
     echo
     echo "after strip PHP binary..."
     ls -lah /usr/local/bin/php
@@ -1088,12 +1064,57 @@ fi
     echo
     echo "$(date): PHP config.log at: ${DIR_TMP}/php-${phpver}/fpm-build/config.log"
     echo
-      exit
+      return "$ERR"
   else
       echo -e "\n`date`\nSuccess: PHP was installed properly\n"
         echo
         echo
-      # set extra cflags fro devtoolset-7 and devtoolset-8 compatibility
+      # Protect core-linked libraries before extension builds can fail.
+      if [[ "$PHP_LIBS_VERSIONLOCK" = [yY] && -f "${SCRIPT_DIR}/tools/php-libs-versionlock.sh" ]]; then
+          bash "${SCRIPT_DIR}/tools/php-libs-versionlock.sh" lock || return $?
+      fi
+
+##############################################
+# begin update php.ini
+
+echo ""
+echo "*************************************************"
+cecho "* Updating php.ini... " $boldgreen
+echo "*************************************************"
+echo "old php.ini will be saved at /usr/local/lib/php.ini-oldversion_$DT"
+echo "if you have modified your old php.ini i.e. installed and loaded"
+echo "APC, Xcache, Memcache or Suhosin - please re-install them after php upgrade"
+echo "..."
+
+    \cp -f /usr/local/lib/php.ini "/usr/local/lib/php.ini-oldversion_$DT" || return $?
+    \cp -f "${DIR_TMP}/php-${phpver}/php.ini-production" /usr/local/lib/php.ini || return $?
+    chmod 644 /usr/local/lib/php.ini || return $?
+
+phpsededit
+phptuning
+
+PHPDIFF=$(diff /usr/local/lib/php.ini /usr/local/lib/php.ini-oldversion_$DT)
+echo ""
+if [ ! -z "$PHPDIFF" ]; then
+echo "checking updated php.ini compared to old /usr/local/lib/php.ini-oldversion_$DT"
+echo "please note the following differences: "
+echo "if APC, Xcache, Memcache, Suhosin or FFMPEG Extensions are listed please re-install them"
+echo ""
+echo "--------------------------------------------------------------------------------------------"
+diff /usr/local/lib/php.ini "/usr/local/lib/php.ini-oldversion_$DT"
+echo "--------------------------------------------------------------------------------------------"
+echo ""
+    echo "*************************************************"
+echo "Automatically continuing upgrade in 4 seconds..."
+    echo "*************************************************"
+sleep 4
+echo ""
+fi # PHPDIFF
+
+# end update php.ini
+##############################################
+
+      # set extra cflags for devtoolset-7 and devtoolset-8 compatibility
       check_devtoolset_php
       enable_devtoolset "$CLANG_PHP" || return $?
       max_spawn_rate_check
@@ -1109,7 +1130,7 @@ if [[ "$overwritephpfpmconf" = [yY] ]]; then
     echo "If you have made an custom changes to /usr/local/etc/php-fpm.conf, you will find"
     echo "they still exist in backup at /usr/local/etc/php-fpm.conf-oldversion_$DT"
     
-        cp -f /usr/local/etc/php-fpm.conf "/usr/local/etc/php-fpm.conf-oldversion_$DT"
+        cp -f /usr/local/etc/php-fpm.conf "/usr/local/etc/php-fpm.conf-oldversion_$DT" || return $?
         ls -lhrt /usr/local/etc/ | grep php-fpm.conf
     
     sleep 9
@@ -1119,9 +1140,9 @@ if [[ "$overwritephpfpmconf" = [yY] ]]; then
     echo "If you have made an custom changes to /usr/local/nginx/conf/php.conf, you will find"
     echo "they still exist in backup at /usr/local/nginx/conf/php.conf-oldversion_$DT"
     
-        cp -f /usr/local/nginx/conf/php.conf "/usr/local/nginx/conf/php.conf-oldversion_$DT"
+        cp -f /usr/local/nginx/conf/php.conf "/usr/local/nginx/conf/php.conf-oldversion_$DT" || return $?
         ls -lhrt /usr/local/nginx/conf/ | grep php.conf
-        cp -f "$CUR_DIR/config/nginx/php.conf" /usr/local/nginx/conf/php.conf
+        cp -f "$CUR_DIR/config/nginx/php.conf" /usr/local/nginx/conf/php.conf || return $?
     
     # recheck whether fastcgi_param GEOIP_ settings in php.conf need to be disabled or enabled
     if [[ "$NGINX_GEOIP" = [yY] ]]; then
@@ -1137,11 +1158,11 @@ if [[ "$overwritephpfpmconf" = [yY] ]]; then
     if [[ "$lessphpmem" = [yY] ]]; then  
         echo "$lessphpmem"
         echo -e "\nCopying php-fpm-min.conf /usr/local/etc/php-fpm.conf\n"
-        cp -f "$CUR_DIR/config/php-fpm/php-fpm-min.conf" /usr/local/etc/php-fpm.conf
+        cp -f "$CUR_DIR/config/php-fpm/php-fpm-min.conf" /usr/local/etc/php-fpm.conf || return $?
     else
         echo "$lessphpmem"
         echo -e "\nCopying php-fpm.conf /usr/local/etc/php-fpm.conf\n"
-        cp -f "$CUR_DIR/config/php-fpm/php-fpm.conf" /usr/local/etc/php-fpm.conf
+        cp -f "$CUR_DIR/config/php-fpm/php-fpm.conf" /usr/local/etc/php-fpm.conf || return $?
     fi # lessphpmem
 
     if [[ "$CENTOS_NINE" -eq '9' || "$CENTOS_TEN" -eq '10' ]]; then
@@ -1366,13 +1387,13 @@ elif [ -f "${CONFIGSCANDIR}/ioncube.ini" ]; then
 fi
 
 if [[ "$IGBINARY_INSTALL" = [yY] ]]; then
-    if [[ -f "${CONFIGSCANDIR}/igbinary.ini" && ! -f "$PHPEXTDIR_AUTODETECT/igbinary.so" ]]; then
+    if php_ext_so_missing igbinary; then
         cecho "Reinstalling detected igbinary extension" $boldyellow
-        funct_igbinaryinstall
+        funct_igbinaryinstall || return $?
     elif [[ -f "${CONFIGSCANDIR}/igbinary.ini" && "$(php --ri igbinary | awk '/version/ {print $4}' | cut -c1)" -lt '2' ]]; then
         # if igbinary version less than 2.x reinstall igbinary
         cecho "Reinstalling detected igbinary extension" $boldyellow
-        funct_igbinaryinstall
+        funct_igbinaryinstall || return $?
     fi
 fi
 
@@ -1486,8 +1507,8 @@ fi
 #     rm -rf "${CONFIGSCANDIR}/memcached.ini"
 # fi
 
-fileinfo_standalone
-phptimezonedb_install
+fileinfo_standalone || return $?
+phptimezonedb_install || return $?
 run_after_php_upgrade
 
 # set php-fpm alias log inspection shotcuts
@@ -1558,7 +1579,8 @@ RestartSec=5s
 TDG
         fi
     fi
-    cmservice php-fpm restart
+    /usr/local/sbin/php-fpm -t || return $?
+    cmservice php-fpm restart || return $?
     if [ -f /usr/bin/journalctl ]; then
         journalctl -xe -u php-fpm --no-pager | tail -20
     fi
@@ -1663,7 +1685,7 @@ if [[ "$PHPMUVER" = '5.6' && -f "${CONFIGSCANDIR}/timezonedb.ini" ]]; then
         cmservice php-fpm restart >/dev/null 2>&1
     fi
 fi
-    strip_php_extensions
+    strip_php_extensions || return $?
     if [[ "$PHP_SECURED" = [yY] ]]; then
         echo "***************************************************"
         checksec_phpext
@@ -1771,6 +1793,11 @@ fi
     fi
     echo "***************************************************"
 
+    # stop yum/dnf updates removing a library soname from under this build
+    if [[ "$PHP_LIBS_VERSIONLOCK" = [yY] && -f "${SCRIPT_DIR}/tools/php-libs-versionlock.sh" ]]; then
+        bash "${SCRIPT_DIR}/tools/php-libs-versionlock.sh" lock || return $?
+    fi
+
     # if you set /etc/centminmod/custom_config.inc file to
     # PHP_UPDATEMAINTENANCE=y
     # then whenever you run php upgrade, you put all sites
@@ -1778,13 +1805,8 @@ fi
     # updated, disable 503 maintenance mod after
     if [[ "$PHP_UPDATEMAINTENANCE" = [yY] ]]; then
         if [ -f /usr/bin/sitestatus ]; then
-            /usr/bin/sitestatus on
+            /usr/bin/sitestatus on || return $?
         fi
-    fi
-
-    # stop yum/dnf updates removing a library soname from under this build
-    if [[ "$PHP_LIBS_VERSIONLOCK" = [yY] && -f "${SCRIPT_DIR}/tools/php-libs-versionlock.sh" ]]; then
-        bash "${SCRIPT_DIR}/tools/php-libs-versionlock.sh" lock
     fi
 
     if command -v figlet >/dev/null 2>&1; then

@@ -56,8 +56,8 @@ php_patches() {
       # https://community.centminmod.com/posts/63882/
       # pushd ../
       if [ ! -f php53.patch ]; then
-        cp -a $CUR_DIR/patches/php/php53.patch php53.patch
-        patch < php53.patch
+        cp -a $CUR_DIR/patches/php/php53.patch php53.patch || { patch_status=$?; rm -f php53.patch; exit "$patch_status"; }
+        patch < php53.patch || { patch_status=$?; rm -f php53.patch; exit "$patch_status"; }
       fi
       # popd
     fi
@@ -69,9 +69,9 @@ php_patches() {
         echo "patching PHP 5.4 for bug #81719"
         echo "https://bugs.php.net/bug.php?id=81719"
         echo
-        cp -a $CUR_DIR/patches/php/php54-81719.patch php54-81719.patch
-        dos2unix php54-81719.patch
-        patch -p1 < php54-81719.patch
+        cp -a $CUR_DIR/patches/php/php54-81719.patch php54-81719.patch || { patch_status=$?; rm -f php54-81719.patch; exit "$patch_status"; }
+        dos2unix php54-81719.patch || { patch_status=$?; rm -f php54-81719.patch; exit "$patch_status"; }
+        patch -p1 < php54-81719.patch || { patch_status=$?; rm -f php54-81719.patch; exit "$patch_status"; }
       fi
     fi
     if [[ "$PHPMUVER" = '5.5' || "$PHPMVER" = '5.5' ]]; then
@@ -82,9 +82,9 @@ php_patches() {
         echo "patching PHP 5.5 for bug #81719"
         echo "https://bugs.php.net/bug.php?id=81719"
         echo
-        cp -a $CUR_DIR/patches/php/php55-81719.patch php55-81719.patch
-        dos2unix php55-81719.patch
-        patch -p1 < php55-81719.patch
+        cp -a $CUR_DIR/patches/php/php55-81719.patch php55-81719.patch || { patch_status=$?; rm -f php55-81719.patch; exit "$patch_status"; }
+        dos2unix php55-81719.patch || { patch_status=$?; rm -f php55-81719.patch; exit "$patch_status"; }
+        patch -p1 < php55-81719.patch || { patch_status=$?; rm -f php55-81719.patch; exit "$patch_status"; }
       fi
     fi
     if [[ "$PHPMUVER" = '5.6' || "$PHPMVER" = '5.6' ]]; then
@@ -95,9 +95,9 @@ php_patches() {
         echo "patching PHP 5.6 for bug #77540"
         echo "https://bugs.php.net/bug.php?id=77540"
         echo
-        cp -a $CUR_DIR/patches/php/php5640-77540.patch php5640-77540.patch
-        dos2unix php5640-77540.patch
-        patch -p1 < php5640-77540.patch
+        cp -a $CUR_DIR/patches/php/php5640-77540.patch php5640-77540.patch || { patch_status=$?; rm -f php5640-77540.patch; exit "$patch_status"; }
+        dos2unix php5640-77540.patch || { patch_status=$?; rm -f php5640-77540.patch; exit "$patch_status"; }
+        patch -p1 < php5640-77540.patch || { patch_status=$?; rm -f php5640-77540.patch; exit "$patch_status"; }
       fi
       # PHP 5.6 bug #77563 https://bugs.php.net/bug.php?id=77563
       if [ ! -f php5640-77563.patch ]; then
@@ -105,9 +105,9 @@ php_patches() {
         echo "patching PHP 5.6 for bug #77563"
         echo "https://bugs.php.net/bug.php?id=77563"
         echo
-        cp -a $CUR_DIR/patches/php/php5640-77563.patch php5640-77563.patch
-        dos2unix php5640-77563.patch
-        patch -p1 < php5640-77563.patch
+        cp -a $CUR_DIR/patches/php/php5640-77563.patch php5640-77563.patch || { patch_status=$?; rm -f php5640-77563.patch; exit "$patch_status"; }
+        dos2unix php5640-77563.patch || { patch_status=$?; rm -f php5640-77563.patch; exit "$patch_status"; }
+        patch -p1 < php5640-77563.patch || { patch_status=$?; rm -f php5640-77563.patch; exit "$patch_status"; }
       fi
       # PHP 5.6 bug #77630 https://bugs.php.net/bug.php?id=77630
       if [ ! -f php5640-77630.patch ]; then
@@ -115,9 +115,9 @@ php_patches() {
         echo "patching PHP 5.6 for bug #77630"
         echo "https://bugs.php.net/bug.php?id=77630"
         echo
-        cp -a $CUR_DIR/patches/php/php5640-77630.patch php5640-77630.patch
-        dos2unix php5640-77630.patch
-        patch -p1 < php5640-77630.patch
+        cp -a $CUR_DIR/patches/php/php5640-77630.patch php5640-77630.patch || { patch_status=$?; rm -f php5640-77630.patch; exit "$patch_status"; }
+        dos2unix php5640-77630.patch || { patch_status=$?; rm -f php5640-77630.patch; exit "$patch_status"; }
+        patch -p1 < php5640-77630.patch || { patch_status=$?; rm -f php5640-77630.patch; exit "$patch_status"; }
       fi
       # PHP 5.6 bug #76846 https://bugs.php.net/bug.php?id=76846
       if [ ! -f php5640-76846.patch ]; then
@@ -125,9 +125,9 @@ php_patches() {
         echo "patching PHP 5.6 for bug #76846"
         echo "https://bugs.php.net/bug.php?id=76846"
         echo
-        cp -a $CUR_DIR/patches/php/php5640-76846.patch php5640-76846.patch
-        dos2unix php5640-76846.patch
-        patch -p1 < php5640-76846.patch
+        cp -a $CUR_DIR/patches/php/php5640-76846.patch php5640-76846.patch || { patch_status=$?; rm -f php5640-76846.patch; exit "$patch_status"; }
+        dos2unix php5640-76846.patch || { patch_status=$?; rm -f php5640-76846.patch; exit "$patch_status"; }
+        patch -p1 < php5640-76846.patch || { patch_status=$?; rm -f php5640-76846.patch; exit "$patch_status"; }
       fi
       # PHP 5.6 bug #77753 https://bugs.php.net/bug.php?id=77753
       if [ ! -f php5640-77753.patch ]; then
@@ -135,9 +135,9 @@ php_patches() {
         echo "patching PHP 5.6 for bug #77753"
         echo "https://bugs.php.net/bug.php?id=77753"
         echo
-        cp -a $CUR_DIR/patches/php/php5640-77753.patch php5640-77753.patch
-        dos2unix php5640-77753.patch
-        patch -p1 < php5640-77753.patch
+        cp -a $CUR_DIR/patches/php/php5640-77753.patch php5640-77753.patch || { patch_status=$?; rm -f php5640-77753.patch; exit "$patch_status"; }
+        dos2unix php5640-77753.patch || { patch_status=$?; rm -f php5640-77753.patch; exit "$patch_status"; }
+        patch -p1 < php5640-77753.patch || { patch_status=$?; rm -f php5640-77753.patch; exit "$patch_status"; }
       fi
       # PHP 5.6 bug #77831 https://bugs.php.net/bug.php?id=77831
       if [ ! -f php5640-77831.patch ]; then
@@ -145,18 +145,18 @@ php_patches() {
         echo "patching PHP 5.6 for bug #77831"
         echo "https://bugs.php.net/bug.php?id=77831"
         echo
-        cp -a $CUR_DIR/patches/php/php5640-77831.patch php5640-77831.patch
-        dos2unix php5640-77831.patch
-        patch -p1 < php5640-77831.patch
+        cp -a $CUR_DIR/patches/php/php5640-77831.patch php5640-77831.patch || { patch_status=$?; rm -f php5640-77831.patch; exit "$patch_status"; }
+        dos2unix php5640-77831.patch || { patch_status=$?; rm -f php5640-77831.patch; exit "$patch_status"; }
+        patch -p1 < php5640-77831.patch || { patch_status=$?; rm -f php5640-77831.patch; exit "$patch_status"; }
       fi
       # PHP 5.6 Backported from 7.1.28 added sqlite3.defensive INI directive
       if [ ! -f php5640-sqlite3-defensive.patch ]; then
         echo
         echo "patching PHP 5.6 for php5640-sqlite3-defensive patch"
         echo
-        cp -a $CUR_DIR/patches/php/php5640-sqlite3-defensive.patch php5640-sqlite3-defensive.patch
-        dos2unix php5640-sqlite3-defensive.patch
-        patch -p1 < php5640-sqlite3-defensive.patch
+        cp -a $CUR_DIR/patches/php/php5640-sqlite3-defensive.patch php5640-sqlite3-defensive.patch || { patch_status=$?; rm -f php5640-sqlite3-defensive.patch; exit "$patch_status"; }
+        dos2unix php5640-sqlite3-defensive.patch || { patch_status=$?; rm -f php5640-sqlite3-defensive.patch; exit "$patch_status"; }
+        patch -p1 < php5640-sqlite3-defensive.patch || { patch_status=$?; rm -f php5640-sqlite3-defensive.patch; exit "$patch_status"; }
       fi
       # PHP 5.6 bug #77950 https://bugs.php.net/bug.php?id=77950
       if [ ! -f php5640-77950.patch ]; then
@@ -164,9 +164,9 @@ php_patches() {
         echo "patching PHP 5.6 for bug #77950"
         echo "https://bugs.php.net/bug.php?id=77950"
         echo
-        cp -a $CUR_DIR/patches/php/php5640-77950.patch php5640-77950.patch
-        dos2unix php5640-77950.patch
-        patch -p1 < php5640-77950.patch
+        cp -a $CUR_DIR/patches/php/php5640-77950.patch php5640-77950.patch || { patch_status=$?; rm -f php5640-77950.patch; exit "$patch_status"; }
+        dos2unix php5640-77950.patch || { patch_status=$?; rm -f php5640-77950.patch; exit "$patch_status"; }
+        patch -p1 < php5640-77950.patch || { patch_status=$?; rm -f php5640-77950.patch; exit "$patch_status"; }
       fi
       # PHP 5.6 bug #77967 https://bugs.php.net/bug.php?id=77967
       if [ ! -f php5640-77967.patch ]; then
@@ -174,9 +174,9 @@ php_patches() {
         echo "patching PHP 5.6 for bug #77967"
         echo "https://bugs.php.net/bug.php?id=77967"
         echo
-        cp -a $CUR_DIR/patches/php/php5640-77967.patch php5640-77967.patch
-        dos2unix php5640-77967.patch
-        patch -p1 < php5640-77967.patch
+        cp -a $CUR_DIR/patches/php/php5640-77967.patch php5640-77967.patch || { patch_status=$?; rm -f php5640-77967.patch; exit "$patch_status"; }
+        dos2unix php5640-77967.patch || { patch_status=$?; rm -f php5640-77967.patch; exit "$patch_status"; }
+        patch -p1 < php5640-77967.patch || { patch_status=$?; rm -f php5640-77967.patch; exit "$patch_status"; }
       fi
       # PHP 5.6 bug #77988 https://bugs.php.net/bug.php?id=77988
       if [ ! -f php5640-77988.patch ]; then
@@ -184,9 +184,9 @@ php_patches() {
         echo "patching PHP 5.6 for bug #77988"
         echo "https://bugs.php.net/bug.php?id=77988"
         echo
-        cp -a $CUR_DIR/patches/php/php5640-77988.patch php5640-77988.patch
-        dos2unix php5640-77988.patch
-        patch -p1 < php5640-77988.patch
+        cp -a $CUR_DIR/patches/php/php5640-77988.patch php5640-77988.patch || { patch_status=$?; rm -f php5640-77988.patch; exit "$patch_status"; }
+        dos2unix php5640-77988.patch || { patch_status=$?; rm -f php5640-77988.patch; exit "$patch_status"; }
+        patch -p1 < php5640-77988.patch || { patch_status=$?; rm -f php5640-77988.patch; exit "$patch_status"; }
       fi
       # PHP 5.6 bug #78069 https://bugs.php.net/bug.php?id=78069
       if [ ! -f php5640-78069.patch ]; then
@@ -194,9 +194,9 @@ php_patches() {
         echo "patching PHP 5.6 for bug #78069"
         echo "https://bugs.php.net/bug.php?id=78069"
         echo
-        cp -a $CUR_DIR/patches/php/php5640-78069.patch php5640-78069.patch
-        dos2unix php5640-78069.patch
-        patch -p1 < php5640-78069.patch
+        cp -a $CUR_DIR/patches/php/php5640-78069.patch php5640-78069.patch || { patch_status=$?; rm -f php5640-78069.patch; exit "$patch_status"; }
+        dos2unix php5640-78069.patch || { patch_status=$?; rm -f php5640-78069.patch; exit "$patch_status"; }
+        patch -p1 < php5640-78069.patch || { patch_status=$?; rm -f php5640-78069.patch; exit "$patch_status"; }
       fi
       # PHP 5.6 bug #77919 https://bugs.php.net/bug.php?id=77919
       if [ ! -f php5640-77919.patch ]; then
@@ -204,9 +204,9 @@ php_patches() {
         echo "patching PHP 5.6 for bug #77919"
         echo "https://bugs.php.net/bug.php?id=77919"
         echo
-        cp -a $CUR_DIR/patches/php/php5640-77919.patch php5640-77919.patch
-        dos2unix php5640-77919.patch
-        patch -p1 < php5640-77919.patch
+        cp -a $CUR_DIR/patches/php/php5640-77919.patch php5640-77919.patch || { patch_status=$?; rm -f php5640-77919.patch; exit "$patch_status"; }
+        dos2unix php5640-77919.patch || { patch_status=$?; rm -f php5640-77919.patch; exit "$patch_status"; }
+        patch -p1 < php5640-77919.patch || { patch_status=$?; rm -f php5640-77919.patch; exit "$patch_status"; }
       fi
       # PHP 5.6 bug #78222 https://bugs.php.net/bug.php?id=78222
       if [ ! -f php5640-78222.patch ]; then
@@ -214,9 +214,9 @@ php_patches() {
         echo "patching PHP 5.6 for bug #78222"
         echo "https://bugs.php.net/bug.php?id=78222"
         echo
-        cp -a $CUR_DIR/patches/php/php5640-78222.patch php5640-78222.patch
-        dos2unix php5640-78222.patch
-        patch -p1 < php5640-78222.patch
+        cp -a $CUR_DIR/patches/php/php5640-78222.patch php5640-78222.patch || { patch_status=$?; rm -f php5640-78222.patch; exit "$patch_status"; }
+        dos2unix php5640-78222.patch || { patch_status=$?; rm -f php5640-78222.patch; exit "$patch_status"; }
+        patch -p1 < php5640-78222.patch || { patch_status=$?; rm -f php5640-78222.patch; exit "$patch_status"; }
       fi
       # PHP 5.6 bug #78256 https://bugs.php.net/bug.php?id=78256
       if [ ! -f php5640-78256.patch ]; then
@@ -224,9 +224,9 @@ php_patches() {
         echo "patching PHP 5.6 for bug #78256"
         echo "https://bugs.php.net/bug.php?id=78256"
         echo
-        cp -a $CUR_DIR/patches/php/php5640-78256.patch php5640-78256.patch
-        dos2unix php5640-78256.patch
-        patch -p1 < php5640-78256.patch
+        cp -a $CUR_DIR/patches/php/php5640-78256.patch php5640-78256.patch || { patch_status=$?; rm -f php5640-78256.patch; exit "$patch_status"; }
+        dos2unix php5640-78256.patch || { patch_status=$?; rm -f php5640-78256.patch; exit "$patch_status"; }
+        patch -p1 < php5640-78256.patch || { patch_status=$?; rm -f php5640-78256.patch; exit "$patch_status"; }
       fi
       # PHP 5.6 bug #75457 https://bugs.php.net/bug.php?id=75457
       if [ ! -f php5640-75457.patch ]; then
@@ -234,9 +234,9 @@ php_patches() {
         echo "patching PHP 5.6 for bug #75457"
         echo "https://bugs.php.net/bug.php?id=75457"
         echo
-        cp -a $CUR_DIR/patches/php/php5640-75457.patch php5640-75457.patch
-        dos2unix php5640-75457.patch
-        patch -p1 < php5640-75457.patch
+        cp -a $CUR_DIR/patches/php/php5640-75457.patch php5640-75457.patch || { patch_status=$?; rm -f php5640-75457.patch; exit "$patch_status"; }
+        dos2unix php5640-75457.patch || { patch_status=$?; rm -f php5640-75457.patch; exit "$patch_status"; }
+        patch -p1 < php5640-75457.patch || { patch_status=$?; rm -f php5640-75457.patch; exit "$patch_status"; }
       fi
       # PHP 5.6 bug #78380 https://bugs.php.net/bug.php?id=78380
       if [ ! -f php5640-78380.patch ]; then
@@ -244,9 +244,9 @@ php_patches() {
         echo "patching PHP 5.6 for bug #78380"
         echo "https://bugs.php.net/bug.php?id=78380"
         echo
-        cp -a $CUR_DIR/patches/php/php5640-78380.patch php5640-78380.patch
-        dos2unix php5640-78380.patch
-        patch -p1 < php5640-78380.patch
+        cp -a $CUR_DIR/patches/php/php5640-78380.patch php5640-78380.patch || { patch_status=$?; rm -f php5640-78380.patch; exit "$patch_status"; }
+        dos2unix php5640-78380.patch || { patch_status=$?; rm -f php5640-78380.patch; exit "$patch_status"; }
+        patch -p1 < php5640-78380.patch || { patch_status=$?; rm -f php5640-78380.patch; exit "$patch_status"; }
       fi
       # PHP 5.6 bug #78599 https://bugs.php.net/bug.php?id=78599
       if [ ! -f php5640-78599.patch ]; then
@@ -254,9 +254,9 @@ php_patches() {
         echo "patching PHP 5.6 for bug #78599"
         echo "https://bugs.php.net/bug.php?id=78599"
         echo
-        cp -a $CUR_DIR/patches/php/php5640-78599.patch php5640-78599.patch
-        dos2unix php5640-78599.patch
-        patch -p1 < php5640-78599.patch
+        cp -a $CUR_DIR/patches/php/php5640-78599.patch php5640-78599.patch || { patch_status=$?; rm -f php5640-78599.patch; exit "$patch_status"; }
+        dos2unix php5640-78599.patch || { patch_status=$?; rm -f php5640-78599.patch; exit "$patch_status"; }
+        patch -p1 < php5640-78599.patch || { patch_status=$?; rm -f php5640-78599.patch; exit "$patch_status"; }
       fi
       # PHP 5.6 bug #78862 https://bugs.php.net/bug.php?id=78862
       if [ ! -f php5640-78862.patch ]; then
@@ -264,9 +264,9 @@ php_patches() {
         echo "patching PHP 5.6 for bug #78862"
         echo "https://bugs.php.net/bug.php?id=78862"
         echo
-        cp -a $CUR_DIR/patches/php/php5640-78862.patch php5640-78862.patch
-        dos2unix php5640-78862.patch
-        patch -p1 < php5640-78862.patch
+        cp -a $CUR_DIR/patches/php/php5640-78862.patch php5640-78862.patch || { patch_status=$?; rm -f php5640-78862.patch; exit "$patch_status"; }
+        dos2unix php5640-78862.patch || { patch_status=$?; rm -f php5640-78862.patch; exit "$patch_status"; }
+        patch -p1 < php5640-78862.patch || { patch_status=$?; rm -f php5640-78862.patch; exit "$patch_status"; }
       fi
       # PHP 5.6 bug #78863 https://bugs.php.net/bug.php?id=78863
       if [ ! -f php5640-78863.patch ]; then
@@ -274,9 +274,9 @@ php_patches() {
         echo "patching PHP 5.6 for bug #78863"
         echo "https://bugs.php.net/bug.php?id=78863"
         echo
-        cp -a $CUR_DIR/patches/php/php5640-78863.patch php5640-78863.patch
-        dos2unix php5640-78863.patch
-        patch -p1 < php5640-78863.patch
+        cp -a $CUR_DIR/patches/php/php5640-78863.patch php5640-78863.patch || { patch_status=$?; rm -f php5640-78863.patch; exit "$patch_status"; }
+        dos2unix php5640-78863.patch || { patch_status=$?; rm -f php5640-78863.patch; exit "$patch_status"; }
+        patch -p1 < php5640-78863.patch || { patch_status=$?; rm -f php5640-78863.patch; exit "$patch_status"; }
       fi
       # PHP 5.6 bug #78793 https://bugs.php.net/bug.php?id=78793
       if [ ! -f php5640-78793.patch ]; then
@@ -284,9 +284,9 @@ php_patches() {
         echo "patching PHP 5.6 for bug #78793"
         echo "https://bugs.php.net/bug.php?id=78793"
         echo
-        cp -a $CUR_DIR/patches/php/php5640-78793.patch php5640-78793.patch
-        dos2unix php5640-78793.patch
-        patch -p1 < php5640-78793.patch
+        cp -a $CUR_DIR/patches/php/php5640-78793.patch php5640-78793.patch || { patch_status=$?; rm -f php5640-78793.patch; exit "$patch_status"; }
+        dos2unix php5640-78793.patch || { patch_status=$?; rm -f php5640-78793.patch; exit "$patch_status"; }
+        patch -p1 < php5640-78793.patch || { patch_status=$?; rm -f php5640-78793.patch; exit "$patch_status"; }
       fi
       # PHP 5.6 bug #78878 https://bugs.php.net/bug.php?id=78878
       if [ ! -f php5640-78878.patch ]; then
@@ -294,9 +294,9 @@ php_patches() {
         echo "patching PHP 5.6 for bug #78878"
         echo "https://bugs.php.net/bug.php?id=78878"
         echo
-        cp -a $CUR_DIR/patches/php/php5640-78878.patch php5640-78878.patch
-        dos2unix php5640-78878.patch
-        patch -p1 < php5640-78878.patch
+        cp -a $CUR_DIR/patches/php/php5640-78878.patch php5640-78878.patch || { patch_status=$?; rm -f php5640-78878.patch; exit "$patch_status"; }
+        dos2unix php5640-78878.patch || { patch_status=$?; rm -f php5640-78878.patch; exit "$patch_status"; }
+        patch -p1 < php5640-78878.patch || { patch_status=$?; rm -f php5640-78878.patch; exit "$patch_status"; }
       fi
       # PHP 5.6 bug #78910 https://bugs.php.net/bug.php?id=78910
       if [ ! -f php5640-78910.patch ]; then
@@ -304,9 +304,9 @@ php_patches() {
         echo "patching PHP 5.6 for bug #78910"
         echo "https://bugs.php.net/bug.php?id=78910"
         echo
-        cp -a $CUR_DIR/patches/php/php5640-78910.patch php5640-78910.patch
-        dos2unix php5640-78910.patch
-        patch -p1 < php5640-78910.patch
+        cp -a $CUR_DIR/patches/php/php5640-78910.patch php5640-78910.patch || { patch_status=$?; rm -f php5640-78910.patch; exit "$patch_status"; }
+        dos2unix php5640-78910.patch || { patch_status=$?; rm -f php5640-78910.patch; exit "$patch_status"; }
+        patch -p1 < php5640-78910.patch || { patch_status=$?; rm -f php5640-78910.patch; exit "$patch_status"; }
       fi
       # PHP 5.6 bug #79037 https://bugs.php.net/bug.php?id=79037
       if [ ! -f php5640-79037.patch ]; then
@@ -314,9 +314,9 @@ php_patches() {
         echo "patching PHP 5.6 for bug #79037"
         echo "https://bugs.php.net/bug.php?id=79037"
         echo
-        cp -a $CUR_DIR/patches/php/php5640-79037.patch php5640-79037.patch
-        dos2unix php5640-79037.patch
-        patch -p1 < php5640-79037.patch
+        cp -a $CUR_DIR/patches/php/php5640-79037.patch php5640-79037.patch || { patch_status=$?; rm -f php5640-79037.patch; exit "$patch_status"; }
+        dos2unix php5640-79037.patch || { patch_status=$?; rm -f php5640-79037.patch; exit "$patch_status"; }
+        patch -p1 < php5640-79037.patch || { patch_status=$?; rm -f php5640-79037.patch; exit "$patch_status"; }
       fi
       # PHP 5.6 bug #79099 https://bugs.php.net/bug.php?id=79099
       if [ ! -f php5640-79099.patch ]; then
@@ -324,9 +324,9 @@ php_patches() {
         echo "patching PHP 5.6 for bug #79099"
         echo "https://bugs.php.net/bug.php?id=79099"
         echo
-        cp -a $CUR_DIR/patches/php/php5640-79099.patch php5640-79099.patch
-        dos2unix php5640-79099.patch
-        patch -p1 < php5640-79099.patch
+        cp -a $CUR_DIR/patches/php/php5640-79099.patch php5640-79099.patch || { patch_status=$?; rm -f php5640-79099.patch; exit "$patch_status"; }
+        dos2unix php5640-79099.patch || { patch_status=$?; rm -f php5640-79099.patch; exit "$patch_status"; }
+        patch -p1 < php5640-79099.patch || { patch_status=$?; rm -f php5640-79099.patch; exit "$patch_status"; }
       fi
       # PHP 5.6 bug #79082 https://bugs.php.net/bug.php?id=79082
       if [ ! -f php5640-79082.patch ]; then
@@ -334,9 +334,9 @@ php_patches() {
         echo "patching PHP 5.6 for bug #79082"
         echo "https://bugs.php.net/bug.php?id=79082"
         echo
-        cp -a $CUR_DIR/patches/php/php5640-79082.patch php5640-79082.patch
-        dos2unix php5640-79082.patch
-        patch -p1 < php5640-79082.patch
+        cp -a $CUR_DIR/patches/php/php5640-79082.patch php5640-79082.patch || { patch_status=$?; rm -f php5640-79082.patch; exit "$patch_status"; }
+        dos2unix php5640-79082.patch || { patch_status=$?; rm -f php5640-79082.patch; exit "$patch_status"; }
+        patch -p1 < php5640-79082.patch || { patch_status=$?; rm -f php5640-79082.patch; exit "$patch_status"; }
       fi
       # PHP 5.6 bug #79221 https://bugs.php.net/bug.php?id=79221
       if [ ! -f php5640-79221.patch ]; then
@@ -344,18 +344,18 @@ php_patches() {
         echo "patching PHP 5.6 for bug #79221"
         echo "https://bugs.php.net/bug.php?id=79221"
         echo
-        cp -a $CUR_DIR/patches/php/php5640-79221.patch php5640-79221.patch
-        dos2unix php5640-79221.patch
-        patch -p1 < php5640-79221.patch
+        cp -a $CUR_DIR/patches/php/php5640-79221.patch php5640-79221.patch || { patch_status=$?; rm -f php5640-79221.patch; exit "$patch_status"; }
+        dos2unix php5640-79221.patch || { patch_status=$?; rm -f php5640-79221.patch; exit "$patch_status"; }
+        patch -p1 < php5640-79221.patch || { patch_status=$?; rm -f php5640-79221.patch; exit "$patch_status"; }
       fi
       # php-openssl-cert
       if [ ! -f php5640-php-openssl-cert.patch ]; then
         echo
         echo "patching PHP 5.6 for openssl test certs update"
         echo
-        cp -a $CUR_DIR/patches/php/php5640-php-openssl-cert.patch php5640-php-openssl-cert.patch
-        dos2unix php5640-php-openssl-cert.patch
-        patch -p1 < php5640-php-openssl-cert.patch
+        cp -a $CUR_DIR/patches/php/php5640-php-openssl-cert.patch php5640-php-openssl-cert.patch || { patch_status=$?; rm -f php5640-php-openssl-cert.patch; exit "$patch_status"; }
+        dos2unix php5640-php-openssl-cert.patch || { patch_status=$?; rm -f php5640-php-openssl-cert.patch; exit "$patch_status"; }
+        patch -p1 < php5640-php-openssl-cert.patch || { patch_status=$?; rm -f php5640-php-openssl-cert.patch; exit "$patch_status"; }
       fi
       # PHP 5.6 bug #79282 https://bugs.php.net/bug.php?id=79282
       if [ ! -f php5640-79282.patch ]; then
@@ -363,9 +363,9 @@ php_patches() {
         echo "patching PHP 5.6 for bug #79282"
         echo "https://bugs.php.net/bug.php?id=79282"
         echo
-        cp -a $CUR_DIR/patches/php/php5640-79282.patch php5640-79282.patch
-        dos2unix php5640-79282.patch
-        patch -p1 < php5640-79282.patch
+        cp -a $CUR_DIR/patches/php/php5640-79282.patch php5640-79282.patch || { patch_status=$?; rm -f php5640-79282.patch; exit "$patch_status"; }
+        dos2unix php5640-79282.patch || { patch_status=$?; rm -f php5640-79282.patch; exit "$patch_status"; }
+        patch -p1 < php5640-79282.patch || { patch_status=$?; rm -f php5640-79282.patch; exit "$patch_status"; }
       fi
       # PHP 5.6 bug #79329 https://bugs.php.net/bug.php?id=79329
       if [ ! -f php5640-79329.patch ]; then
@@ -373,9 +373,9 @@ php_patches() {
         echo "patching PHP 5.6 for bug #79329"
         echo "https://bugs.php.net/bug.php?id=79329"
         echo
-        cp -a $CUR_DIR/patches/php/php5640-79329.patch php5640-79329.patch
-        dos2unix php5640-79329.patch
-        patch -p1 < php5640-79329.patch
+        cp -a $CUR_DIR/patches/php/php5640-79329.patch php5640-79329.patch || { patch_status=$?; rm -f php5640-79329.patch; exit "$patch_status"; }
+        dos2unix php5640-79329.patch || { patch_status=$?; rm -f php5640-79329.patch; exit "$patch_status"; }
+        patch -p1 < php5640-79329.patch || { patch_status=$?; rm -f php5640-79329.patch; exit "$patch_status"; }
       fi
       # PHP 5.6 bug #79330 https://bugs.php.net/bug.php?id=79330
       if [ ! -f php5640-79330.patch ]; then
@@ -383,9 +383,9 @@ php_patches() {
         echo "patching PHP 5.6 for bug #79330"
         echo "https://bugs.php.net/bug.php?id=79330"
         echo
-        cp -a $CUR_DIR/patches/php/php5640-79330.patch php5640-79330.patch
-        dos2unix php5640-79330.patch
-        patch -p1 < php5640-79330.patch
+        cp -a $CUR_DIR/patches/php/php5640-79330.patch php5640-79330.patch || { patch_status=$?; rm -f php5640-79330.patch; exit "$patch_status"; }
+        dos2unix php5640-79330.patch || { patch_status=$?; rm -f php5640-79330.patch; exit "$patch_status"; }
+        patch -p1 < php5640-79330.patch || { patch_status=$?; rm -f php5640-79330.patch; exit "$patch_status"; }
       fi
       # PHP 5.6 bug #79465 https://bugs.php.net/bug.php?id=79465
       if [ ! -f php5640-79465.patch ]; then
@@ -393,9 +393,9 @@ php_patches() {
         echo "patching PHP 5.6 for bug #79465"
         echo "https://bugs.php.net/bug.php?id=79465"
         echo
-        cp -a $CUR_DIR/patches/php/php5640-79465.patch php5640-79465.patch
-        dos2unix php5640-79465.patch
-        patch -p1 < php5640-79465.patch
+        cp -a $CUR_DIR/patches/php/php5640-79465.patch php5640-79465.patch || { patch_status=$?; rm -f php5640-79465.patch; exit "$patch_status"; }
+        dos2unix php5640-79465.patch || { patch_status=$?; rm -f php5640-79465.patch; exit "$patch_status"; }
+        patch -p1 < php5640-79465.patch || { patch_status=$?; rm -f php5640-79465.patch; exit "$patch_status"; }
       fi
       # PHP 5.6 bug #78875 https://bugs.php.net/bug.php?id=78875
       # PHP 5.6 bug #78876 https://bugs.php.net/bug.php?id=78876
@@ -404,9 +404,9 @@ php_patches() {
         echo "patching PHP 5.6 for bug #78875"
         echo "https://bugs.php.net/bug.php?id=78875"
         echo
-        cp -a $CUR_DIR/patches/php/php5640-78875.patch php5640-78875.patch
-        dos2unix php5640-78875.patch
-        patch -p1 < php5640-78875.patch
+        cp -a $CUR_DIR/patches/php/php5640-78875.patch php5640-78875.patch || { patch_status=$?; rm -f php5640-78875.patch; exit "$patch_status"; }
+        dos2unix php5640-78875.patch || { patch_status=$?; rm -f php5640-78875.patch; exit "$patch_status"; }
+        patch -p1 < php5640-78875.patch || { patch_status=$?; rm -f php5640-78875.patch; exit "$patch_status"; }
       fi
       # PHP 5.6 bug #79797 https://bugs.php.net/bug.php?id=79797
       if [ ! -f php5640-79797.patch ]; then
@@ -414,9 +414,9 @@ php_patches() {
         echo "patching PHP 5.6 for bug #79797"
         echo "https://bugs.php.net/bug.php?id=79797"
         echo
-        cp -a $CUR_DIR/patches/php/php5640-79797.patch php5640-79797.patch
-        dos2unix php5640-79797.patch
-        patch -p1 < php5640-79797.patch
+        cp -a $CUR_DIR/patches/php/php5640-79797.patch php5640-79797.patch || { patch_status=$?; rm -f php5640-79797.patch; exit "$patch_status"; }
+        dos2unix php5640-79797.patch || { patch_status=$?; rm -f php5640-79797.patch; exit "$patch_status"; }
+        patch -p1 < php5640-79797.patch || { patch_status=$?; rm -f php5640-79797.patch; exit "$patch_status"; }
       fi
       # PHP 5.6 bug #79877 https://bugs.php.net/bug.php?id=79877
       if [ ! -f php5640-79877.patch ]; then
@@ -424,9 +424,9 @@ php_patches() {
         echo "patching PHP 5.6 for bug #79877"
         echo "https://bugs.php.net/bug.php?id=79877"
         echo
-        cp -a $CUR_DIR/patches/php/php5640-79877.patch php5640-79877.patch
-        dos2unix php5640-79877.patch
-        patch -p1 < php5640-79877.patch
+        cp -a $CUR_DIR/patches/php/php5640-79877.patch php5640-79877.patch || { patch_status=$?; rm -f php5640-79877.patch; exit "$patch_status"; }
+        dos2unix php5640-79877.patch || { patch_status=$?; rm -f php5640-79877.patch; exit "$patch_status"; }
+        patch -p1 < php5640-79877.patch || { patch_status=$?; rm -f php5640-79877.patch; exit "$patch_status"; }
       fi
       # PHP 5.6 bug #79699 https://bugs.php.net/bug.php?id=79699
       if [ ! -f php5640-79699.patch ]; then
@@ -434,17 +434,17 @@ php_patches() {
         echo "patching PHP 5.6 for bug #79699"
         echo "https://bugs.php.net/bug.php?id=79699"
         echo
-        cp -a $CUR_DIR/patches/php/php5640-79699.patch php5640-79699.patch
-        dos2unix php5640-79699.patch
-        patch -p1 < php5640-79699.patch
+        cp -a $CUR_DIR/patches/php/php5640-79699.patch php5640-79699.patch || { patch_status=$?; rm -f php5640-79699.patch; exit "$patch_status"; }
+        dos2unix php5640-79699.patch || { patch_status=$?; rm -f php5640-79699.patch; exit "$patch_status"; }
+        patch -p1 < php5640-79699.patch || { patch_status=$?; rm -f php5640-79699.patch; exit "$patch_status"; }
       fi
       if [[ ! -f php5640-mysqlnd-fix.patch && "$PHP_MYSQLND_PATCH_FIX" = [yY] ]]; then
         echo
         echo "patching PHP 7.0.33 backport mysqlnd fix from PHP 7.3 for MariaDB issue https://jira.mariadb.org/browse/MDEV-24121"
         echo
-        cp -a $CUR_DIR/patches/php/php5640-mysqlnd-fix.patch php5640-mysqlnd-fix.patch
-        dos2unix php5640-mysqlnd-fix.patch
-        patch -p1 < php5640-mysqlnd-fix.patch
+        cp -a $CUR_DIR/patches/php/php5640-mysqlnd-fix.patch php5640-mysqlnd-fix.patch || { patch_status=$?; rm -f php5640-mysqlnd-fix.patch; exit "$patch_status"; }
+        dos2unix php5640-mysqlnd-fix.patch || { patch_status=$?; rm -f php5640-mysqlnd-fix.patch; exit "$patch_status"; }
+        patch -p1 < php5640-mysqlnd-fix.patch || { patch_status=$?; rm -f php5640-mysqlnd-fix.patch; exit "$patch_status"; }
       fi
       # PHP 5.6 bug #77423 https://bugs.php.net/bug.php?id=77423
       if [ ! -f php5640-77423.patch ]; then
@@ -452,9 +452,9 @@ php_patches() {
         echo "patching PHP 5.6 for bug #77423"
         echo "https://bugs.php.net/bug.php?id=77423"
         echo
-        cp -a $CUR_DIR/patches/php/php5640-77423.patch php5640-77423.patch
-        dos2unix php5640-77423.patch
-        patch -p1 < php5640-77423.patch
+        cp -a $CUR_DIR/patches/php/php5640-77423.patch php5640-77423.patch || { patch_status=$?; rm -f php5640-77423.patch; exit "$patch_status"; }
+        dos2unix php5640-77423.patch || { patch_status=$?; rm -f php5640-77423.patch; exit "$patch_status"; }
+        patch -p1 < php5640-77423.patch || { patch_status=$?; rm -f php5640-77423.patch; exit "$patch_status"; }
       fi
       # PHP 5.6 bug #80672 https://bugs.php.net/bug.php?id=80672
       if [ ! -f php5640-80672.patch ]; then
@@ -462,9 +462,9 @@ php_patches() {
         echo "patching PHP 5.6 for bug #80672"
         echo "https://bugs.php.net/bug.php?id=80672"
         echo
-        cp -a $CUR_DIR/patches/php/php5640-80672.patch php5640-80672.patch
-        dos2unix php5640-80672.patch
-        patch -p1 < php5640-80672.patch
+        cp -a $CUR_DIR/patches/php/php5640-80672.patch php5640-80672.patch || { patch_status=$?; rm -f php5640-80672.patch; exit "$patch_status"; }
+        dos2unix php5640-80672.patch || { patch_status=$?; rm -f php5640-80672.patch; exit "$patch_status"; }
+        patch -p1 < php5640-80672.patch || { patch_status=$?; rm -f php5640-80672.patch; exit "$patch_status"; }
       fi
       # PHP 5.6 bug #80710 https://bugs.php.net/bug.php?id=80710
       if [ ! -f php5640-80710.patch ]; then
@@ -472,9 +472,9 @@ php_patches() {
         echo "patching PHP 5.6 for bug #80710"
         echo "https://bugs.php.net/bug.php?id=80710"
         echo
-        cp -a $CUR_DIR/patches/php/php5640-80710.patch php5640-80710.patch
-        dos2unix php5640-80710.patch
-        patch -p1 < php5640-80710.patch
+        cp -a $CUR_DIR/patches/php/php5640-80710.patch php5640-80710.patch || { patch_status=$?; rm -f php5640-80710.patch; exit "$patch_status"; }
+        dos2unix php5640-80710.patch || { patch_status=$?; rm -f php5640-80710.patch; exit "$patch_status"; }
+        patch -p1 < php5640-80710.patch || { patch_status=$?; rm -f php5640-80710.patch; exit "$patch_status"; }
       fi
       # PHP 5.6 bug #81122 https://bugs.php.net/bug.php?id=81122
       if [ ! -f php5640-81122.patch ]; then
@@ -482,9 +482,9 @@ php_patches() {
         echo "patching PHP 5.6 for bug #81122"
         echo "https://bugs.php.net/bug.php?id=81122"
         echo
-        cp -a $CUR_DIR/patches/php/php5640-81122.patch php5640-81122.patch
-        dos2unix php5640-81122.patch
-        patch -p1 < php5640-81122.patch
+        cp -a $CUR_DIR/patches/php/php5640-81122.patch php5640-81122.patch || { patch_status=$?; rm -f php5640-81122.patch; exit "$patch_status"; }
+        dos2unix php5640-81122.patch || { patch_status=$?; rm -f php5640-81122.patch; exit "$patch_status"; }
+        patch -p1 < php5640-81122.patch || { patch_status=$?; rm -f php5640-81122.patch; exit "$patch_status"; }
       fi
       # PHP 5.6 bug #76488 https://bugs.php.net/bug.php?id=76488
       if [ ! -f php5640-76488.patch ]; then
@@ -492,9 +492,9 @@ php_patches() {
         echo "patching PHP 5.6 for bug #76488"
         echo "https://bugs.php.net/bug.php?id=76488"
         echo
-        cp -a $CUR_DIR/patches/php/php5640-76488.patch php5640-76488.patch
-        dos2unix php5640-76488.patch
-        patch -p1 < php5640-76488.patch
+        cp -a $CUR_DIR/patches/php/php5640-76488.patch php5640-76488.patch || { patch_status=$?; rm -f php5640-76488.patch; exit "$patch_status"; }
+        dos2unix php5640-76488.patch || { patch_status=$?; rm -f php5640-76488.patch; exit "$patch_status"; }
+        patch -p1 < php5640-76488.patch || { patch_status=$?; rm -f php5640-76488.patch; exit "$patch_status"; }
       fi
       # PHP 5.6 bug #81211 https://bugs.php.net/bug.php?id=81211
       if [ ! -f php5640-81211.patch ]; then
@@ -502,9 +502,9 @@ php_patches() {
         echo "patching PHP 5.6 for bug #81211"
         echo "https://bugs.php.net/bug.php?id=81211"
         echo
-        cp -a $CUR_DIR/patches/php/php5640-81211.patch php5640-81211.patch
-        dos2unix php5640-81211.patch
-        patch -p1 < php5640-81211.patch
+        cp -a $CUR_DIR/patches/php/php5640-81211.patch php5640-81211.patch || { patch_status=$?; rm -f php5640-81211.patch; exit "$patch_status"; }
+        dos2unix php5640-81211.patch || { patch_status=$?; rm -f php5640-81211.patch; exit "$patch_status"; }
+        patch -p1 < php5640-81211.patch || { patch_status=$?; rm -f php5640-81211.patch; exit "$patch_status"; }
       fi
       # PHP 5.6 bug #81026 https://bugs.php.net/bug.php?id=81026
       if [ ! -f php5640-81026.patch ]; then
@@ -512,9 +512,9 @@ php_patches() {
         echo "patching PHP 5.6 for bug #81026"
         echo "https://bugs.php.net/bug.php?id=81026"
         echo
-        cp -a $CUR_DIR/patches/php/php5640-81026.patch php5640-81026.patch
-        dos2unix php5640-81026.patch
-        patch -p1 < php5640-81026.patch
+        cp -a $CUR_DIR/patches/php/php5640-81026.patch php5640-81026.patch || { patch_status=$?; rm -f php5640-81026.patch; exit "$patch_status"; }
+        dos2unix php5640-81026.patch || { patch_status=$?; rm -f php5640-81026.patch; exit "$patch_status"; }
+        patch -p1 < php5640-81026.patch || { patch_status=$?; rm -f php5640-81026.patch; exit "$patch_status"; }
       fi
       # PHP 5.6 bug #79971 https://bugs.php.net/bug.php?id=79971
       if [ ! -f php5640-79971.patch ]; then
@@ -522,9 +522,9 @@ php_patches() {
         echo "patching PHP 5.6 for bug #79971"
         echo "https://bugs.php.net/bug.php?id=79971"
         echo
-        cp -a $CUR_DIR/patches/php/php5640-79971.patch php5640-79971.patch
-        dos2unix php5640-79971.patch
-        patch -p1 < php5640-79971.patch
+        cp -a $CUR_DIR/patches/php/php5640-79971.patch php5640-79971.patch || { patch_status=$?; rm -f php5640-79971.patch; exit "$patch_status"; }
+        dos2unix php5640-79971.patch || { patch_status=$?; rm -f php5640-79971.patch; exit "$patch_status"; }
+        patch -p1 < php5640-79971.patch || { patch_status=$?; rm -f php5640-79971.patch; exit "$patch_status"; }
       fi
       # PHP 5.6 bug #81719 https://bugs.php.net/bug.php?id=81719
       if [ ! -f php5640-81719.patch ]; then
@@ -532,9 +532,9 @@ php_patches() {
         echo "patching PHP 5.6 for bug #81719"
         echo "https://bugs.php.net/bug.php?id=81719"
         echo
-        cp -a $CUR_DIR/patches/php/php5640-81719.patch php5640-81719.patch
-        dos2unix php5640-81719.patch
-        patch -p1 < php5640-81719.patch
+        cp -a $CUR_DIR/patches/php/php5640-81719.patch php5640-81719.patch || { patch_status=$?; rm -f php5640-81719.patch; exit "$patch_status"; }
+        dos2unix php5640-81719.patch || { patch_status=$?; rm -f php5640-81719.patch; exit "$patch_status"; }
+        patch -p1 < php5640-81719.patch || { patch_status=$?; rm -f php5640-81719.patch; exit "$patch_status"; }
       fi
       # PHP 5.6 bug #81720 https://bugs.php.net/bug.php?id=81720
       if [ ! -f php5640-81720.patch ]; then
@@ -542,9 +542,9 @@ php_patches() {
         echo "patching PHP 5.6 for bug #81720"
         echo "https://bugs.php.net/bug.php?id=81720"
         echo
-        cp -a $CUR_DIR/patches/php/php5640-81720.patch php5640-81720.patch
-        dos2unix php5640-81720.patch
-        patch -p1 < php5640-81720.patch
+        cp -a $CUR_DIR/patches/php/php5640-81720.patch php5640-81720.patch || { patch_status=$?; rm -f php5640-81720.patch; exit "$patch_status"; }
+        dos2unix php5640-81720.patch || { patch_status=$?; rm -f php5640-81720.patch; exit "$patch_status"; }
+        patch -p1 < php5640-81720.patch || { patch_status=$?; rm -f php5640-81720.patch; exit "$patch_status"; }
       fi
       # PHP 5.6 bug #81726 https://bugs.php.net/bug.php?id=81726
       if [ ! -f php5640-81726.patch ]; then
@@ -552,9 +552,9 @@ php_patches() {
         echo "patching PHP 5.6 for bug #81726"
         echo "https://bugs.php.net/bug.php?id=81726"
         echo
-        cp -a $CUR_DIR/patches/php/php5640-81726.patch php5640-81726.patch
-        dos2unix php5640-81726.patch
-        patch -p1 < php5640-81726.patch
+        cp -a $CUR_DIR/patches/php/php5640-81726.patch php5640-81726.patch || { patch_status=$?; rm -f php5640-81726.patch; exit "$patch_status"; }
+        dos2unix php5640-81726.patch || { patch_status=$?; rm -f php5640-81726.patch; exit "$patch_status"; }
+        patch -p1 < php5640-81726.patch || { patch_status=$?; rm -f php5640-81726.patch; exit "$patch_status"; }
       fi
       # PHP 5.6 bug #81727 https://bugs.php.net/bug.php?id=81727
       if [ ! -f php5640-81727.patch ]; then
@@ -562,9 +562,9 @@ php_patches() {
         echo "patching PHP 5.6 for bug #81727"
         echo "https://bugs.php.net/bug.php?id=81727"
         echo
-        cp -a $CUR_DIR/patches/php/php5640-81727.patch php5640-81727.patch
-        dos2unix php5640-81727.patch
-        patch -p1 < php5640-81727.patch
+        cp -a $CUR_DIR/patches/php/php5640-81727.patch php5640-81727.patch || { patch_status=$?; rm -f php5640-81727.patch; exit "$patch_status"; }
+        dos2unix php5640-81727.patch || { patch_status=$?; rm -f php5640-81727.patch; exit "$patch_status"; }
+        patch -p1 < php5640-81727.patch || { patch_status=$?; rm -f php5640-81727.patch; exit "$patch_status"; }
       fi
       # PHP 5.6 bug #81740 https://bugs.php.net/bug.php?id=81740
       if [ ! -f php5640-81740.patch ]; then
@@ -572,116 +572,116 @@ php_patches() {
         echo "patching PHP 5.6 for bug #81740"
         echo "https://bugs.php.net/bug.php?id=81740"
         echo
-        cp -a $CUR_DIR/patches/php/php5640-81740.patch php5640-81740.patch
-        dos2unix php5640-81740.patch
-        patch -p1 < php5640-81740.patch
+        cp -a $CUR_DIR/patches/php/php5640-81740.patch php5640-81740.patch || { patch_status=$?; rm -f php5640-81740.patch; exit "$patch_status"; }
+        dos2unix php5640-81740.patch || { patch_status=$?; rm -f php5640-81740.patch; exit "$patch_status"; }
+        patch -p1 < php5640-81740.patch || { patch_status=$?; rm -f php5640-81740.patch; exit "$patch_status"; }
       fi
       if [ ! -f php5640-81744.patch ]; then
         echo
         echo "patching PHP 5.6 for bug #81744"
         echo "https://bugs.php.net/bug.php?id=81744"
         echo
-        cp -a $CUR_DIR/patches/php/php5640-81744.patch php5640-81744.patch
-        dos2unix php5640-81744.patch
-        patch -p1 < php5640-81744.patch
+        cp -a $CUR_DIR/patches/php/php5640-81744.patch php5640-81744.patch || { patch_status=$?; rm -f php5640-81744.patch; exit "$patch_status"; }
+        dos2unix php5640-81744.patch || { patch_status=$?; rm -f php5640-81744.patch; exit "$patch_status"; }
+        patch -p1 < php5640-81744.patch || { patch_status=$?; rm -f php5640-81744.patch; exit "$patch_status"; }
       fi
       if [ ! -f php5640-81746.patch ]; then
         echo
         echo "patching PHP 5.6 for bug #81746"
         echo "https://bugs.php.net/bug.php?id=81746"
         echo
-        cp -a $CUR_DIR/patches/php/php5640-81746.patch php5640-81746.patch
-        dos2unix php5640-81746.patch
-        patch -p1 < php5640-81746.patch
+        cp -a $CUR_DIR/patches/php/php5640-81746.patch php5640-81746.patch || { patch_status=$?; rm -f php5640-81746.patch; exit "$patch_status"; }
+        dos2unix php5640-81746.patch || { patch_status=$?; rm -f php5640-81746.patch; exit "$patch_status"; }
+        patch -p1 < php5640-81746.patch || { patch_status=$?; rm -f php5640-81746.patch; exit "$patch_status"; }
       fi
       if [ ! -f php5640-cve-2023-0662.patch ]; then
         echo
         echo "patching PHP 5.6 for bug #cve-2023-0662"
         echo "https://bugs.php.net/bug.php?id=cve-2023-0662"
         echo
-        cp -a $CUR_DIR/patches/php/php5640-cve-2023-0662.patch php5640-cve-2023-0662.patch
-        dos2unix php5640-cve-2023-0662.patch
-        patch -p1 < php5640-cve-2023-0662.patch
+        cp -a $CUR_DIR/patches/php/php5640-cve-2023-0662.patch php5640-cve-2023-0662.patch || { patch_status=$?; rm -f php5640-cve-2023-0662.patch; exit "$patch_status"; }
+        dos2unix php5640-cve-2023-0662.patch || { patch_status=$?; rm -f php5640-cve-2023-0662.patch; exit "$patch_status"; }
+        patch -p1 < php5640-cve-2023-0662.patch || { patch_status=$?; rm -f php5640-cve-2023-0662.patch; exit "$patch_status"; }
       fi
       if [ ! -f php5640-ghsa-76gg-c692-v2mw.patch ]; then
         echo
         echo "patching PHP 5.6 ghsa-76gg-c692-v2mw"
         echo
-        cp -a $CUR_DIR/patches/php/php5640-ghsa-76gg-c692-v2mw.patch php5640-ghsa-76gg-c692-v2mw.patch
-        dos2unix php5640-ghsa-76gg-c692-v2mw.patch
-        patch -p1 < php5640-ghsa-76gg-c692-v2mw.patch
+        cp -a $CUR_DIR/patches/php/php5640-ghsa-76gg-c692-v2mw.patch php5640-ghsa-76gg-c692-v2mw.patch || { patch_status=$?; rm -f php5640-ghsa-76gg-c692-v2mw.patch; exit "$patch_status"; }
+        dos2unix php5640-ghsa-76gg-c692-v2mw.patch || { patch_status=$?; rm -f php5640-ghsa-76gg-c692-v2mw.patch; exit "$patch_status"; }
+        patch -p1 < php5640-ghsa-76gg-c692-v2mw.patch || { patch_status=$?; rm -f php5640-ghsa-76gg-c692-v2mw.patch; exit "$patch_status"; }
       fi
       if [ ! -f php5640-cve-2023-3823.patch ]; then
         echo
         echo "patching PHP 5.6 for bug #cve-2023-3823"
         echo "https://bugs.php.net/bug.php?id=cve-2023-3823"
         echo
-        cp -a $CUR_DIR/patches/php/php5640-cve-2023-3823.patch php5640-cve-2023-3823.patch
-        dos2unix php5640-cve-2023-3823.patch
-        patch -p1 < php5640-cve-2023-3823.patch
+        cp -a $CUR_DIR/patches/php/php5640-cve-2023-3823.patch php5640-cve-2023-3823.patch || { patch_status=$?; rm -f php5640-cve-2023-3823.patch; exit "$patch_status"; }
+        dos2unix php5640-cve-2023-3823.patch || { patch_status=$?; rm -f php5640-cve-2023-3823.patch; exit "$patch_status"; }
+        patch -p1 < php5640-cve-2023-3823.patch || { patch_status=$?; rm -f php5640-cve-2023-3823.patch; exit "$patch_status"; }
       fi
       if [ ! -f php5640-cve-2023-3824.patch ]; then
         echo
         echo "patching PHP 5.6 for bug #cve-2023-3824"
         echo "https://bugs.php.net/bug.php?id=cve-2023-3824"
         echo
-        cp -a $CUR_DIR/patches/php/php5640-cve-2023-3824.patch php5640-cve-2023-3824.patch
-        dos2unix php5640-cve-2023-3824.patch
-        patch -p1 < php5640-cve-2023-3824.patch
+        cp -a $CUR_DIR/patches/php/php5640-cve-2023-3824.patch php5640-cve-2023-3824.patch || { patch_status=$?; rm -f php5640-cve-2023-3824.patch; exit "$patch_status"; }
+        dos2unix php5640-cve-2023-3824.patch || { patch_status=$?; rm -f php5640-cve-2023-3824.patch; exit "$patch_status"; }
+        patch -p1 < php5640-cve-2023-3824.patch || { patch_status=$?; rm -f php5640-cve-2023-3824.patch; exit "$patch_status"; }
       fi
       if [ ! -f php5640-cve-2024-2756.patch ]; then
         echo
         echo "patching PHP 5.6 for bug #cve-2024-2756"
         echo "https://bugs.php.net/bug.php?id=cve-2024-2756"
         echo
-        cp -a $CUR_DIR/patches/php/php5640-cve-2024-2756.patch php5640-cve-2024-2756.patch
-        dos2unix php5640-cve-2024-2756.patch
-        patch -p1 < php5640-cve-2024-2756.patch
+        cp -a $CUR_DIR/patches/php/php5640-cve-2024-2756.patch php5640-cve-2024-2756.patch || { patch_status=$?; rm -f php5640-cve-2024-2756.patch; exit "$patch_status"; }
+        dos2unix php5640-cve-2024-2756.patch || { patch_status=$?; rm -f php5640-cve-2024-2756.patch; exit "$patch_status"; }
+        patch -p1 < php5640-cve-2024-2756.patch || { patch_status=$?; rm -f php5640-cve-2024-2756.patch; exit "$patch_status"; }
       fi
       if [ ! -f php5640-cve-2024-3096.patch ]; then
         echo
         echo "patching PHP 5.6 for bug #cve-2024-3096"
         echo "https://bugs.php.net/bug.php?id=cve-2024-3096"
         echo
-        cp -a $CUR_DIR/patches/php/php5640-cve-2024-3096.patch php5640-cve-2024-3096.patch
-        dos2unix php5640-cve-2024-3096.patch
-        patch -p1 < php5640-cve-2024-3096.patch
+        cp -a $CUR_DIR/patches/php/php5640-cve-2024-3096.patch php5640-cve-2024-3096.patch || { patch_status=$?; rm -f php5640-cve-2024-3096.patch; exit "$patch_status"; }
+        dos2unix php5640-cve-2024-3096.patch || { patch_status=$?; rm -f php5640-cve-2024-3096.patch; exit "$patch_status"; }
+        patch -p1 < php5640-cve-2024-3096.patch || { patch_status=$?; rm -f php5640-cve-2024-3096.patch; exit "$patch_status"; }
       fi
       if [ ! -f php5640-cve-2024-5458.patch ]; then
         echo
         echo "patching PHP 5.6 for bug #cve-2024-5458"
         echo "https://bugs.php.net/bug.php?id=cve-2024-5458"
         echo
-        cp -a $CUR_DIR/patches/php/php5640-cve-2024-5458.patch php5640-cve-2024-5458.patch
-        dos2unix php5640-cve-2024-5458.patch
-        patch -p1 < php5640-cve-2024-5458.patch
+        cp -a $CUR_DIR/patches/php/php5640-cve-2024-5458.patch php5640-cve-2024-5458.patch || { patch_status=$?; rm -f php5640-cve-2024-5458.patch; exit "$patch_status"; }
+        dos2unix php5640-cve-2024-5458.patch || { patch_status=$?; rm -f php5640-cve-2024-5458.patch; exit "$patch_status"; }
+        patch -p1 < php5640-cve-2024-5458.patch || { patch_status=$?; rm -f php5640-cve-2024-5458.patch; exit "$patch_status"; }
       fi
       if [ ! -f php5640-cve-2024-8925.patch ]; then
         echo
         echo "patching PHP 5.6 for bug #cve-2024-8925"
         echo "https://bugs.php.net/bug.php?id=cve-2024-8925"
         echo
-        cp -a $CUR_DIR/patches/php/php5640-cve-2024-8925.patch php5640-cve-2024-8925.patch
-        dos2unix php5640-cve-2024-8925.patch
-        patch -p1 < php5640-cve-2024-8925.patch
+        cp -a $CUR_DIR/patches/php/php5640-cve-2024-8925.patch php5640-cve-2024-8925.patch || { patch_status=$?; rm -f php5640-cve-2024-8925.patch; exit "$patch_status"; }
+        dos2unix php5640-cve-2024-8925.patch || { patch_status=$?; rm -f php5640-cve-2024-8925.patch; exit "$patch_status"; }
+        patch -p1 < php5640-cve-2024-8925.patch || { patch_status=$?; rm -f php5640-cve-2024-8925.patch; exit "$patch_status"; }
       fi
       if [ ! -f php5640-cve-2024-8926.patch ]; then
         echo
         echo "patching PHP 5.6 for bug #cve-2024-8926"
         echo "https://bugs.php.net/bug.php?id=cve-2024-8926"
         echo
-        cp -a $CUR_DIR/patches/php/php5640-cve-2024-8926.patch php5640-cve-2024-8926.patch
-        dos2unix php5640-cve-2024-8926.patch
-        patch -p1 < php5640-cve-2024-8926.patch
+        cp -a $CUR_DIR/patches/php/php5640-cve-2024-8926.patch php5640-cve-2024-8926.patch || { patch_status=$?; rm -f php5640-cve-2024-8926.patch; exit "$patch_status"; }
+        dos2unix php5640-cve-2024-8926.patch || { patch_status=$?; rm -f php5640-cve-2024-8926.patch; exit "$patch_status"; }
+        patch -p1 < php5640-cve-2024-8926.patch || { patch_status=$?; rm -f php5640-cve-2024-8926.patch; exit "$patch_status"; }
       fi
       if [ ! -f php5640-cve-2024-8927.patch ]; then
         echo
         echo "patching PHP 5.6 for bug #cve-2024-8927"
         echo "https://bugs.php.net/bug.php?id=cve-2024-8927"
         echo
-        cp -a $CUR_DIR/patches/php/php5640-cve-2024-8927.patch php5640-cve-2024-8927.patch
-        dos2unix php5640-cve-2024-8927.patch
-        patch -p1 < php5640-cve-2024-8927.patch
+        cp -a $CUR_DIR/patches/php/php5640-cve-2024-8927.patch php5640-cve-2024-8927.patch || { patch_status=$?; rm -f php5640-cve-2024-8927.patch; exit "$patch_status"; }
+        dos2unix php5640-cve-2024-8927.patch || { patch_status=$?; rm -f php5640-cve-2024-8927.patch; exit "$patch_status"; }
+        patch -p1 < php5640-cve-2024-8927.patch || { patch_status=$?; rm -f php5640-cve-2024-8927.patch; exit "$patch_status"; }
       fi
     fi
 
@@ -694,9 +694,9 @@ php_patches() {
         echo "https://bugs.php.net/bug.php?id=77020"
         echo
         pushd ext/imap
-        cp -a $CUR_DIR/patches/php/77020fix.patch 77020fix.patch
-        dos2unix 77020fix.patch
-        patch --ignore-whitespace < 77020fix.patch
+        cp -a $CUR_DIR/patches/php/77020fix.patch 77020fix.patch || { patch_status=$?; rm -f 77020fix.patch; exit "$patch_status"; }
+        dos2unix 77020fix.patch || { patch_status=$?; rm -f 77020fix.patch; exit "$patch_status"; }
+        patch --ignore-whitespace < 77020fix.patch || { patch_status=$?; rm -f 77020fix.patch; exit "$patch_status"; }
         popd
       fi
     fi
@@ -708,9 +708,9 @@ php_patches() {
         echo "patching PHP Zend Opcache Bug"
         echo "https://bugs.php.net/bug.php?id=77275"
         echo
-        cp -a $CUR_DIR/patches/php/77275fix.patch 77275fix.patch
-        dos2unix 77275fix.patch
-        patch --ignore-whitespace -p1 < 77275fix.patch
+        cp -a $CUR_DIR/patches/php/77275fix.patch 77275fix.patch || { patch_status=$?; rm -f 77275fix.patch; exit "$patch_status"; }
+        dos2unix 77275fix.patch || { patch_status=$?; rm -f 77275fix.patch; exit "$patch_status"; }
+        patch --ignore-whitespace -p1 < 77275fix.patch || { patch_status=$?; rm -f 77275fix.patch; exit "$patch_status"; }
       fi
     fi
     if [[ "$PHPMUVER" = '7.0' || "$PHPMVER" = '7.0' ]] && [[ "$PHPVER_ID" -ge '70000' && "$PHPVER_ID" -le '70033' ]]; then
@@ -731,15 +731,15 @@ php_patches() {
           elif [[ "$bugid" = 'mysqlnd-fix' && "$PHP_MYSQLND_PATCH_FIX" = [yY] ]]; then
             echo "patching PHP 7.0.33 backport mysqlnd fix from PHP 7.3 for MariaDB issue https://jira.mariadb.org/browse/MDEV-24121"
             echo
-            cp -a $CUR_DIR/patches/php/php7033-${bugid}.patch php7033-${bugid}.patch
-            dos2unix php7033-${bugid}.patch
-            patch -p1 < php7033-${bugid}.patch
+            cp -a $CUR_DIR/patches/php/php7033-${bugid}.patch php7033-${bugid}.patch || { patch_status=$?; rm -f php7033-${bugid}.patch; exit "$patch_status"; }
+            dos2unix php7033-${bugid}.patch || { patch_status=$?; rm -f php7033-${bugid}.patch; exit "$patch_status"; }
+            patch -p1 < php7033-${bugid}.patch || { patch_status=$?; rm -f php7033-${bugid}.patch; exit "$patch_status"; }
           fi
           if [[ "$bugid" != 'mysqlnd-fix' ]]; then
             echo
             # Copy the patch file
-            cp -a $CUR_DIR/patches/php/php7033-${bugid}.patch php7033-${bugid}.patch
-            dos2unix php7033-${bugid}.patch
+            cp -a $CUR_DIR/patches/php/php7033-${bugid}.patch php7033-${bugid}.patch || { patch_status=$?; rm -f php7033-${bugid}.patch; exit "$patch_status"; }
+            dos2unix php7033-${bugid}.patch || { patch_status=$?; rm -f php7033-${bugid}.patch; exit "$patch_status"; }
             # Attempt to apply the patch
             if patch -p1 < php7033-${bugid}.patch; then
               echo "Patch applied successfully for bug #${bugid}"
@@ -766,6 +766,8 @@ php_patches() {
 
               # Remove the temporary file
               rm "$temp_file"
+              rm -f php7033-${bugid}.patch
+              exit 1
             fi
           fi
         else
@@ -789,15 +791,15 @@ php_patches() {
           elif [[ "$bugid" = 'mysqlnd-fix' && "$PHP_MYSQLND_PATCH_FIX" = [yY] ]]; then
             echo "patching PHP 7.1.33 backport mysqlnd fix from PHP 7.3 for MariaDB issue https://jira.mariadb.org/browse/MDEV-24121"
             echo
-            cp -a $CUR_DIR/patches/php/php7133-${bugid}.patch php7133-${bugid}.patch
-            dos2unix php7133-${bugid}.patch
-            patch -p1 < php7133-${bugid}.patch
+            cp -a $CUR_DIR/patches/php/php7133-${bugid}.patch php7133-${bugid}.patch || { patch_status=$?; rm -f php7133-${bugid}.patch; exit "$patch_status"; }
+            dos2unix php7133-${bugid}.patch || { patch_status=$?; rm -f php7133-${bugid}.patch; exit "$patch_status"; }
+            patch -p1 < php7133-${bugid}.patch || { patch_status=$?; rm -f php7133-${bugid}.patch; exit "$patch_status"; }
           fi
           if [[ "$bugid" != 'mysqlnd-fix' ]]; then
             echo
             # Copy the patch file
-            cp -a $CUR_DIR/patches/php/php7133-${bugid}.patch php7133-${bugid}.patch
-            dos2unix php7133-${bugid}.patch
+            cp -a $CUR_DIR/patches/php/php7133-${bugid}.patch php7133-${bugid}.patch || { patch_status=$?; rm -f php7133-${bugid}.patch; exit "$patch_status"; }
+            dos2unix php7133-${bugid}.patch || { patch_status=$?; rm -f php7133-${bugid}.patch; exit "$patch_status"; }
             # Attempt to apply the patch
             if patch -p1 < php7133-${bugid}.patch; then
               echo "Patch applied successfully for bug #${bugid}"
@@ -824,6 +826,8 @@ php_patches() {
 
               # Remove the temporary file
               rm "$temp_file"
+              rm -f php7133-${bugid}.patch
+              exit 1
             fi
           fi
         else
@@ -839,15 +843,15 @@ php_patches() {
           if [[ "$bugid" = 'mysqlnd-fix' && "$PHP_MYSQLND_PATCH_FIX" = [yY] ]]; then
             echo "patching PHP 7.2.x branch backport mysqlnd fix from PHP 7.3 for MariaDB issue https://jira.mariadb.org/browse/MDEV-24121"
             echo
-            cp -a $CUR_DIR/patches/php/php72-${bugid}.patch php72-${bugid}.patch
-            dos2unix php72-${bugid}.patch
-            patch -p1 < php72-${bugid}.patch
+            cp -a $CUR_DIR/patches/php/php72-${bugid}.patch php72-${bugid}.patch || { patch_status=$?; rm -f php72-${bugid}.patch; exit "$patch_status"; }
+            dos2unix php72-${bugid}.patch || { patch_status=$?; rm -f php72-${bugid}.patch; exit "$patch_status"; }
+            patch -p1 < php72-${bugid}.patch || { patch_status=$?; rm -f php72-${bugid}.patch; exit "$patch_status"; }
           fi
           if [[ "$bugid" != 'mysqlnd-fix' ]]; then
             echo
-            cp -a $CUR_DIR/patches/php/php72-${bugid}.patch php72-${bugid}.patch
-            dos2unix php72-${bugid}.patch
-            patch -p1 < php72-${bugid}.patch
+            cp -a $CUR_DIR/patches/php/php72-${bugid}.patch php72-${bugid}.patch || { patch_status=$?; rm -f php72-${bugid}.patch; exit "$patch_status"; }
+            dos2unix php72-${bugid}.patch || { patch_status=$?; rm -f php72-${bugid}.patch; exit "$patch_status"; }
+            patch -p1 < php72-${bugid}.patch || { patch_status=$?; rm -f php72-${bugid}.patch; exit "$patch_status"; }
           fi
         fi
       done
@@ -868,15 +872,15 @@ php_patches() {
           elif [[ "$bugid" = 'mysqlnd-fix' && "$PHP_MYSQLND_PATCH_FIX" = [yY] ]]; then
             echo "patching PHP 7.2.34 backport mysqlnd fix from PHP 7.3 for MariaDB issue https://jira.mariadb.org/browse/MDEV-24121"
             echo
-            cp -a $CUR_DIR/patches/php/php7234-${bugid}.patch php7234-${bugid}.patch
-            dos2unix php7234-${bugid}.patch
-            patch -p1 < php7234-${bugid}.patch
+            cp -a $CUR_DIR/patches/php/php7234-${bugid}.patch php7234-${bugid}.patch || { patch_status=$?; rm -f php7234-${bugid}.patch; exit "$patch_status"; }
+            dos2unix php7234-${bugid}.patch || { patch_status=$?; rm -f php7234-${bugid}.patch; exit "$patch_status"; }
+            patch -p1 < php7234-${bugid}.patch || { patch_status=$?; rm -f php7234-${bugid}.patch; exit "$patch_status"; }
           fi
           if [[ "$bugid" != 'mysqlnd-fix' ]]; then
             echo
             # Copy the patch file
-            cp -a $CUR_DIR/patches/php/php7234-${bugid}.patch php7234-${bugid}.patch
-            dos2unix php7234-${bugid}.patch
+            cp -a $CUR_DIR/patches/php/php7234-${bugid}.patch php7234-${bugid}.patch || { patch_status=$?; rm -f php7234-${bugid}.patch; exit "$patch_status"; }
+            dos2unix php7234-${bugid}.patch || { patch_status=$?; rm -f php7234-${bugid}.patch; exit "$patch_status"; }
             # Attempt to apply the patch
             if patch -p1 < php7234-${bugid}.patch; then
               echo "Patch applied successfully for bug #${bugid}"
@@ -903,6 +907,8 @@ php_patches() {
 
               # Remove the temporary file
               rm "$temp_file"
+              rm -f php7234-${bugid}.patch
+              exit 1
             fi
           fi
         else
@@ -922,9 +928,9 @@ php_patches() {
             echo "https://bugs.php.net/bug.php?id=${bugid}"
           fi
           echo
-          cp -a $CUR_DIR/patches/php/php735-${bugid}.patch php735-${bugid}.patch
-          dos2unix php735-${bugid}.patch
-          patch -p1 < php735-${bugid}.patch
+          cp -a $CUR_DIR/patches/php/php735-${bugid}.patch php735-${bugid}.patch || { patch_status=$?; rm -f php735-${bugid}.patch; exit "$patch_status"; }
+          dos2unix php735-${bugid}.patch || { patch_status=$?; rm -f php735-${bugid}.patch; exit "$patch_status"; }
+          patch -p1 < php735-${bugid}.patch || { patch_status=$?; rm -f php735-${bugid}.patch; exit "$patch_status"; }
         fi
       done
     fi
@@ -936,17 +942,17 @@ php_patches() {
           echo
           # php7331-pcre1038
           if [[ "$bugid" = 'pcre1038' ]]; then
-            cp -a $CUR_DIR/patches/php/php7331-${bugid}.patch php7331-${bugid}.patch
-            dos2unix php7331-${bugid}.patch
-            patch -p1 < php7331-${bugid}.patch            
+            cp -a $CUR_DIR/patches/php/php7331-${bugid}.patch php7331-${bugid}.patch || { patch_status=$?; rm -f php7331-${bugid}.patch; exit "$patch_status"; }
+            dos2unix php7331-${bugid}.patch || { patch_status=$?; rm -f php7331-${bugid}.patch; exit "$patch_status"; }
+            patch -p1 < php7331-${bugid}.patch || { patch_status=$?; rm -f php7331-${bugid}.patch; exit "$patch_status"; }
           elif [[ "$bugid" != 'php-openssl-cert' ]]; then
             echo "Patching PHP 7.3.31 for bug #${bugid}"
             echo "https://bugs.php.net/bug.php?id=${bugid}"
           fi
           echo
           # Copy the patch file
-          cp -a $CUR_DIR/patches/php/php7331-${bugid}.patch php7331-${bugid}.patch
-          dos2unix php7331-${bugid}.patch
+          cp -a $CUR_DIR/patches/php/php7331-${bugid}.patch php7331-${bugid}.patch || { patch_status=$?; rm -f php7331-${bugid}.patch; exit "$patch_status"; }
+          dos2unix php7331-${bugid}.patch || { patch_status=$?; rm -f php7331-${bugid}.patch; exit "$patch_status"; }
           # Attempt to apply the patch
           if patch -p1 < php7331-${bugid}.patch; then
             echo "Patch applied successfully for bug #${bugid}"
@@ -973,6 +979,8 @@ php_patches() {
 
             # Remove the temporary file
             rm "$temp_file"
+            rm -f php7331-${bugid}.patch
+            exit 1
           fi
         else
           echo "php7331-${bugid}.patch patch file already applied"
@@ -984,9 +992,9 @@ php_patches() {
     echo
     echo "PHP-FPM patch to reduce event wakeups"
     echo
-    cp -a "$CUR_DIR/patches/php/intel/reduce-fpm-event-wakeups.patch" reduce-fpm-event-wakeups.patch
-    dos2unix reduce-fpm-event-wakeups.patch
-    patch -p1 < reduce-fpm-event-wakeups.patch
+    cp -a "$CUR_DIR/patches/php/intel/reduce-fpm-event-wakeups.patch" reduce-fpm-event-wakeups.patch || { patch_status=$?; rm -f reduce-fpm-event-wakeups.patch; exit "$patch_status"; }
+    dos2unix reduce-fpm-event-wakeups.patch || { patch_status=$?; rm -f reduce-fpm-event-wakeups.patch; exit "$patch_status"; }
+    patch -p1 < reduce-fpm-event-wakeups.patch || { patch_status=$?; rm -f reduce-fpm-event-wakeups.patch; exit "$patch_status"; }
   fi
   if [[ "$PHPVER_ID" -eq '70402' ]]; then
     # echo
@@ -1005,9 +1013,9 @@ php_patches() {
           echo "https://bugs.php.net/bug.php?id=${bugid}"
         fi
         echo
-        cp -a $CUR_DIR/patches/php/php742-${bugid}.patch php742-${bugid}.patch
-        dos2unix php742-${bugid}.patch
-        patch -p1 < php742-${bugid}.patch
+        cp -a $CUR_DIR/patches/php/php742-${bugid}.patch php742-${bugid}.patch || { patch_status=$?; rm -f php742-${bugid}.patch; exit "$patch_status"; }
+        dos2unix php742-${bugid}.patch || { patch_status=$?; rm -f php742-${bugid}.patch; exit "$patch_status"; }
+        patch -p1 < php742-${bugid}.patch || { patch_status=$?; rm -f php742-${bugid}.patch; exit "$patch_status"; }
       fi
     done
   fi
@@ -1022,9 +1030,9 @@ php_patches() {
           echo "https://bugs.php.net/bug.php?id=${bugid}"
         fi
         echo
-        cp -a $CUR_DIR/patches/php/php742-${bugid}.patch php742-${bugid}.patch
-        dos2unix php742-${bugid}.patch
-        patch -p1 < php742-${bugid}.patch
+        cp -a $CUR_DIR/patches/php/php742-${bugid}.patch php742-${bugid}.patch || { patch_status=$?; rm -f php742-${bugid}.patch; exit "$patch_status"; }
+        dos2unix php742-${bugid}.patch || { patch_status=$?; rm -f php742-${bugid}.patch; exit "$patch_status"; }
+        patch -p1 < php742-${bugid}.patch || { patch_status=$?; rm -f php742-${bugid}.patch; exit "$patch_status"; }
       fi
     done
   fi
@@ -1042,8 +1050,8 @@ php_patches() {
               echo
 
               # Copy the patch file
-              cp -a $CUR_DIR/patches/php/php742-${bugid}.patch php742-${bugid}.patch
-              dos2unix php742-${bugid}.patch
+              cp -a $CUR_DIR/patches/php/php742-${bugid}.patch php742-${bugid}.patch || { patch_status=$?; rm -f php742-${bugid}.patch; exit "$patch_status"; }
+              dos2unix php742-${bugid}.patch || { patch_status=$?; rm -f php742-${bugid}.patch; exit "$patch_status"; }
 
               # Attempt to apply the patch
               if patch -p1 < php742-${bugid}.patch; then
@@ -1072,6 +1080,8 @@ php_patches() {
 
                   # Remove the temporary file
                   rm "$temp_file"
+                  rm -f php742-${bugid}.patch
+                  exit 1
               fi
           else
             echo "php742-${bugid}.patch patch file already applied"
@@ -1092,8 +1102,8 @@ php_patches() {
               echo
 
               # Copy the patch file
-              cp -a $CUR_DIR/patches/php/php80-${bugid}.patch php80-${bugid}.patch
-              dos2unix php80-${bugid}.patch
+              cp -a $CUR_DIR/patches/php/php80-${bugid}.patch php80-${bugid}.patch || { patch_status=$?; rm -f php80-${bugid}.patch; exit "$patch_status"; }
+              dos2unix php80-${bugid}.patch || { patch_status=$?; rm -f php80-${bugid}.patch; exit "$patch_status"; }
 
               # Attempt to apply the patch
               if patch -p1 < php80-${bugid}.patch; then
@@ -1122,6 +1132,8 @@ php_patches() {
 
                   # Remove the temporary file
                   rm "$temp_file"
+                  rm -f php80-${bugid}.patch
+                  exit 1
               fi
           else
               echo "php80-${bugid}.patch patch file already applied"
@@ -1142,8 +1154,8 @@ php_patches() {
               echo
 
               # Copy the patch file
-              cp -a $CUR_DIR/patches/php/php81-${bugid}.patch php81-${bugid}.patch
-              dos2unix php81-${bugid}.patch
+              cp -a $CUR_DIR/patches/php/php81-${bugid}.patch php81-${bugid}.patch || { patch_status=$?; rm -f php81-${bugid}.patch; exit "$patch_status"; }
+              dos2unix php81-${bugid}.patch || { patch_status=$?; rm -f php81-${bugid}.patch; exit "$patch_status"; }
 
               # Attempt to apply the patch
               if patch -p1 < php81-${bugid}.patch; then
@@ -1172,6 +1184,8 @@ php_patches() {
 
                   # Remove the temporary file
                   rm "$temp_file"
+                  rm -f php81-${bugid}.patch
+                  exit 1
               fi
           else
               echo "php81-${bugid}.patch patch file already applied"
@@ -1190,8 +1204,8 @@ php_patches() {
         echo
 
         # Copy the patch file
-        cp -a $CUR_DIR/patches/php/php8226-${bugid}.patch php8226-${bugid}.patch
-        dos2unix php8226-${bugid}.patch
+        cp -a $CUR_DIR/patches/php/php8226-${bugid}.patch php8226-${bugid}.patch || { patch_status=$?; rm -f php8226-${bugid}.patch; exit "$patch_status"; }
+        dos2unix php8226-${bugid}.patch || { patch_status=$?; rm -f php8226-${bugid}.patch; exit "$patch_status"; }
 
         # Attempt to apply the patch
         patch -p1 < php8226-${bugid}.patch
@@ -1210,6 +1224,8 @@ php_patches() {
             fi
           done < "$temp_file"
           rm "$temp_file"
+          rm -f php8226-${bugid}.patch
+          exit 1
         else
           echo "Patch applied successfully for bug #${bugid}"
         fi
@@ -1230,8 +1246,8 @@ php_patches() {
         echo
 
         # Copy the patch file
-        cp -a $CUR_DIR/patches/php/php8314-${bugid}.patch php8314-${bugid}.patch
-        dos2unix php8314-${bugid}.patch
+        cp -a $CUR_DIR/patches/php/php8314-${bugid}.patch php8314-${bugid}.patch || { patch_status=$?; rm -f php8314-${bugid}.patch; exit "$patch_status"; }
+        dos2unix php8314-${bugid}.patch || { patch_status=$?; rm -f php8314-${bugid}.patch; exit "$patch_status"; }
 
         # Attempt to apply the patch
         patch -p1 < php8314-${bugid}.patch
@@ -1250,6 +1266,8 @@ php_patches() {
             fi
           done < "$temp_file"
           rm "$temp_file"
+          rm -f php8314-${bugid}.patch
+          exit 1
         else
           echo "Patch applied successfully for bug #${bugid}"
         fi
@@ -1270,8 +1288,8 @@ php_patches() {
         echo
 
         # Copy the patch file
-        cp -a $CUR_DIR/patches/php/php841-${bugid}.patch php841-${bugid}.patch
-        dos2unix php841-${bugid}.patch
+        cp -a $CUR_DIR/patches/php/php841-${bugid}.patch php841-${bugid}.patch || { patch_status=$?; rm -f php841-${bugid}.patch; exit "$patch_status"; }
+        dos2unix php841-${bugid}.patch || { patch_status=$?; rm -f php841-${bugid}.patch; exit "$patch_status"; }
 
         # Attempt to apply the patch
         patch -p1 < php841-${bugid}.patch
@@ -1290,6 +1308,8 @@ php_patches() {
             fi
           done < "$temp_file"
           rm "$temp_file"
+          rm -f php841-${bugid}.patch
+          exit 1
         else
           echo "Patch applied successfully for bug #${bugid}"
         fi
@@ -1350,10 +1370,10 @@ php_patches() {
       echo
 
       # Copy the patch file to the PHP source directory
-      cp -a "$patch_source" "$patch_target"
+      cp -a "$patch_source" "$patch_target" || { patch_status=$?; rm -f "$patch_target"; exit "$patch_status"; }
       
       # Convert Windows line endings to Unix if necessary
-      dos2unix "$patch_target" > /dev/null 2>&1
+      dos2unix "$patch_target" > /dev/null 2>&1 || { patch_status=$?; rm -f "$patch_target"; exit "$patch_status"; }
 
       # Attempt to apply the patch with the -N flag to ignore already applied patches
       patch -N -p1 < "$patch_target"
@@ -1380,6 +1400,8 @@ php_patches() {
           # Remove any .rej files
           rm -f *.rej
         fi
+        rm -f "$patch_target"
+        exit 1
       fi
 
       # Clean up the copied patch file
@@ -1428,8 +1450,8 @@ php_patches() {
       echo "Applying patch php82-openssl102-xp_ssl-asn1.patch for CentOS 7 / OpenSSL 1.0.2 (PHP $C7_OPENSSL_PHP_VERSION xp_ssl.c)"
       echo
 
-      cp -a "$patch_source" "$patch_target"
-      dos2unix "$patch_target" > /dev/null 2>&1
+      cp -a "$patch_source" "$patch_target" || { patch_status=$?; rm -f "$patch_target"; exit "$patch_status"; }
+      dos2unix "$patch_target" > /dev/null 2>&1 || { patch_status=$?; rm -f "$patch_target"; exit "$patch_status"; }
 
       patch -N -p1 < "$patch_target"
 
@@ -1437,6 +1459,8 @@ php_patches() {
         echo "Patch php82-openssl102-xp_ssl-asn1.patch applied successfully."
       else
         echo "Failed to apply patch php82-openssl102-xp_ssl-asn1.patch."
+        rm -f "$patch_target"
+        exit 1
       fi
 
       rm -f "$patch_target"
@@ -1458,9 +1482,9 @@ php_patches() {
           echo "patching PHP 7.4 for ${bugid}"
         fi
         echo
-        cp -a $CUR_DIR/patches/php/${bugid}.patch ${bugid}.patch
-        dos2unix ${bugid}.patch
-        patch -p1 < ${bugid}.patch
+        cp -a $CUR_DIR/patches/php/${bugid}.patch ${bugid}.patch || { patch_status=$?; rm -f ${bugid}.patch; exit "$patch_status"; }
+        dos2unix ${bugid}.patch || { patch_status=$?; rm -f ${bugid}.patch; exit "$patch_status"; }
+        patch -p1 < ${bugid}.patch || { patch_status=$?; rm -f ${bugid}.patch; exit "$patch_status"; }
       fi
     done
   fi
@@ -1475,9 +1499,9 @@ php_patches() {
           echo "patching PHP 7.4 for ${bugid}"
         fi
         echo
-        cp -a $CUR_DIR/patches/php/${bugid}.patch ${bugid}.patch
-        dos2unix ${bugid}.patch
-        patch -p1 < ${bugid}.patch
+        cp -a $CUR_DIR/patches/php/${bugid}.patch ${bugid}.patch || { patch_status=$?; rm -f ${bugid}.patch; exit "$patch_status"; }
+        dos2unix ${bugid}.patch || { patch_status=$?; rm -f ${bugid}.patch; exit "$patch_status"; }
+        patch -p1 < ${bugid}.patch || { patch_status=$?; rm -f ${bugid}.patch; exit "$patch_status"; }
       fi
     done
   fi
@@ -1492,9 +1516,9 @@ php_patches() {
           echo "patching PHP 7.4 for ${bugid}"
         fi
         echo
-        cp -a $CUR_DIR/patches/php/${bugid}.patch ${bugid}.patch
-        dos2unix ${bugid}.patch
-        patch -p1 < ${bugid}.patch
+        cp -a $CUR_DIR/patches/php/${bugid}.patch ${bugid}.patch || { patch_status=$?; rm -f ${bugid}.patch; exit "$patch_status"; }
+        dos2unix ${bugid}.patch || { patch_status=$?; rm -f ${bugid}.patch; exit "$patch_status"; }
+        patch -p1 < ${bugid}.patch || { patch_status=$?; rm -f ${bugid}.patch; exit "$patch_status"; }
       fi
     done
   fi
@@ -1546,9 +1570,9 @@ php_patches() {
           echo "patching PHP 8.0 for ${bugid}"
         fi
         echo
-        cp -a $CUR_DIR/patches/php/${bugid}.patch ${bugid}.patch
-        dos2unix ${bugid}.patch
-        patch -p1 < ${bugid}.patch
+        cp -a $CUR_DIR/patches/php/${bugid}.patch ${bugid}.patch || { patch_status=$?; rm -f ${bugid}.patch; exit "$patch_status"; }
+        dos2unix ${bugid}.patch || { patch_status=$?; rm -f ${bugid}.patch; exit "$patch_status"; }
+        patch -p1 < ${bugid}.patch || { patch_status=$?; rm -f ${bugid}.patch; exit "$patch_status"; }
       fi
     done
   fi
@@ -1563,9 +1587,9 @@ php_patches() {
           echo "patching PHP 8.0 for ${bugid}"
         fi
         echo
-        cp -a $CUR_DIR/patches/php/${bugid}.patch ${bugid}.patch
-        dos2unix ${bugid}.patch
-        patch -p1 < ${bugid}.patch
+        cp -a $CUR_DIR/patches/php/${bugid}.patch ${bugid}.patch || { patch_status=$?; rm -f ${bugid}.patch; exit "$patch_status"; }
+        dos2unix ${bugid}.patch || { patch_status=$?; rm -f ${bugid}.patch; exit "$patch_status"; }
+        patch -p1 < ${bugid}.patch || { patch_status=$?; rm -f ${bugid}.patch; exit "$patch_status"; }
       fi
     done
   fi
@@ -1580,18 +1604,21 @@ php_patches() {
           echo "patching PHP 8.0 for ${bugid}"
         fi
         echo
-        cp -a $CUR_DIR/patches/php/${bugid}.patch ${bugid}.patch
-        dos2unix ${bugid}.patch
-        patch -p1 < ${bugid}.patch
+        cp -a $CUR_DIR/patches/php/${bugid}.patch ${bugid}.patch || { patch_status=$?; rm -f ${bugid}.patch; exit "$patch_status"; }
+        dos2unix ${bugid}.patch || { patch_status=$?; rm -f ${bugid}.patch; exit "$patch_status"; }
+        patch -p1 < ${bugid}.patch || { patch_status=$?; rm -f ${bugid}.patch; exit "$patch_status"; }
       fi
     done
   fi
   if [[ "$PHPVER_ID" -lt '80100' && "$FPM_MAX_SPAWN_RATE" -ge '32' && -f sapi/fpm/fpm/fpm_process_ctl.h ]]; then
     echo
     echo "adjust FPM_MAX_SPAWN_RATE for PHP-FPM"
-    sed -i "s|FPM_MAX_SPAWN_RATE .*|FPM_MAX_SPAWN_RATE ($FPM_MAX_SPAWN_RATE)|" sapi/fpm/fpm/fpm_process_ctl.h
+    sed -i "s|FPM_MAX_SPAWN_RATE .*|FPM_MAX_SPAWN_RATE ($FPM_MAX_SPAWN_RATE)|" sapi/fpm/fpm/fpm_process_ctl.h || exit $?
     grep -in 'FPM_MAX_SPAWN_RATE' sapi/fpm/fpm/fpm_process_ctl.h
     echo
   fi
 } 2>&1 | tee -a "${CENTMINLOGDIR}/patch_php_${DT}.log"
+  local patch_pipeline_status=("${PIPESTATUS[@]}")
+  [[ "${patch_pipeline_status[0]}" -eq 0 ]] || return "${patch_pipeline_status[0]}"
+  return "${patch_pipeline_status[1]}"
 }

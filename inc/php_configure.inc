@@ -468,21 +468,49 @@ php_imagemagick_seven_detected_libzip() {
   fi
 }
 
+# PHP-FPM may restart after make install publishes the binary.
+# Strip a private copy so a running executable does not block stripping.
+strip_php_binary() {
+    local strip_target strip_tmp strip_status
+    strip_target=$(readlink -f -- "$1") || return $?
+    [[ -f "$strip_target" ]] || return 1
+    strip_tmp=$(mktemp "${strip_target}.strip.XXXXXX") || return $?
+    cp --preserve=all -- "$strip_target" "$strip_tmp" &&
+        strip -s "$strip_tmp" &&
+        mv -f -- "$strip_tmp" "$strip_target"
+    strip_status=$?
+    if [[ "$strip_status" -ne 0 ]]; then
+        rm -f -- "$strip_tmp"
+    fi
+    return "$strip_status"
+}
+
 strip_php_extensions() {
-    strip_php_ext_dir=$(php-config --extension-dir)
+    local strip_php_ext_dir strip_status=0 fpm_status
+    strip_php_ext_dir=$(php-config --extension-dir) || return $?
+    [[ "$strip_php_ext_dir" = /* && ! "$strip_php_ext_dir" =~ ^/+$ && "$strip_php_ext_dir" != *$'\n'* ]] || return 1
+    # A fresh PHP 8.5 build can have no shared extensions to install.
+    [[ -e "$strip_php_ext_dir" || -L "$strip_php_ext_dir" ]] || return 0
+    [[ -d "$strip_php_ext_dir" ]] || return 1
     echo "Stripping PHP Extensions in $strip_php_ext_dir"
     echo "before stripping"
-    ls -lAhrt $strip_php_ext_dir
+    ls -lAhrt "$strip_php_ext_dir"
     echo
-    find $strip_php_ext_dir -type f -name "*.so" -exec strip -s {} +
+    find "$strip_php_ext_dir" -type f -name "*.so" -exec strip -s {} + || strip_status=$?
+    if [[ "$strip_status" -ne 0 ]]; then
+        echo "ERROR: PHP extension stripping failed (status $strip_status)." >&2
+    fi
     echo "after stripping"
-    ls -lAhrt $strip_php_ext_dir
+    ls -lAhrt "$strip_php_ext_dir"
     echo
     # strip rewrites the .so files in place, so a running php-fpm master that already
     # loaded them spawns children which crash (SIGSEGV) until php-fpm is restarted
+    # A partial strip failure still requires clearing the loaded mappings.
     if pgrep -x php-fpm >/dev/null 2>&1; then
-        cmservice php-fpm restart
+        /usr/local/sbin/php-fpm -t || { fpm_status=$?; echo "ERROR: PHP-FPM configuration test failed after extension stripping (status $fpm_status)." >&2; return "$fpm_status"; }
+        cmservice php-fpm restart || { fpm_status=$?; echo "ERROR: PHP-FPM restart failed after extension stripping (status $fpm_status)." >&2; return "$fpm_status"; }
     fi
+    return "$strip_status"
 }
 
 checksec_phpext() {
@@ -3925,7 +3953,7 @@ fi
 
 # zend opcache hugepages
 if [[ "$PHPMUVER" > 7 && ! -f /proc/user_beancounters ]]; then
-  opcachehugepages
+  opcachehugepages || return $?
 else
   if [ -f "${CONFIGSCANDIR}/zendopcache.ini" ]; then
     if [[ "$(grep 'opcache.huge_code_pages' ${CONFIGSCANDIR}/zendopcache.ini)" ]]; then
@@ -4958,7 +4986,7 @@ fi
         time make${MAKETHREADS_PHP} prof-use || { echo "ERROR: PHP PGO prof-use failed; installation stopped." >&2; return 1; }
     else
         echo "make${MAKETHREADS_PHP}"
-        time make${MAKETHREADS_PHP}
+        time make${MAKETHREADS_PHP} || return $?
     fi
 
     sar_call
@@ -4971,12 +4999,14 @@ fi
     
     echo "php_configure.inc make install"
     if [[ "$FPM_PHPFPM_INSTALLDIR_ENABLE" = [yY] ]]; then
+      [[ "$FPM_PHPFPM_INSTALLDIR" = /* && ! "$FPM_PHPFPM_INSTALLDIR" =~ ^/+$ && "$FPM_PHPFPM_INSTALLDIR" != *$'\n'* ]] || return 1
       echo
-      rm -rf "$FPM_PHPFPM_INSTALLDIR"
-      mkdir -p "$FPM_PHPFPM_INSTALLDIR"
+      rm -rf "$FPM_PHPFPM_INSTALLDIR" || return $?
+      mkdir -p "$FPM_PHPFPM_INSTALLDIR" || return $?
       echo "time make install INSTALL_ROOT=$FPM_PHPFPM_INSTALLDIR"
       time make install INSTALL_ROOT="$FPM_PHPFPM_INSTALLDIR"
       FPM_PHPFPM_INSTALLDIR_ERR=$?
+      [[ "$FPM_PHPFPM_INSTALLDIR_ERR" -eq 0 ]] || return "$FPM_PHPFPM_INSTALLDIR_ERR"
       if [[ "$STRIPPHP" = [yY] && "$PHPDEBUGMODE" != [yY] ]]; then
           echo
           echo "strip PHP binary..."
@@ -4984,9 +5014,9 @@ fi
           ls -lah ${FPM_PHPFPM_INSTALLDIR}/usr/local/bin/php-cgi
           ls -lah ${FPM_PHPFPM_INSTALLDIR}/usr/local/sbin/php-fpm
           echo
-          strip -s ${FPM_PHPFPM_INSTALLDIR}/usr/local/bin/php
-          strip -s ${FPM_PHPFPM_INSTALLDIR}/usr/local/bin/php-cgi
-          strip -s ${FPM_PHPFPM_INSTALLDIR}/usr/local/sbin/php-fpm
+          strip -s ${FPM_PHPFPM_INSTALLDIR}/usr/local/bin/php || return $?
+          if [[ -f ${FPM_PHPFPM_INSTALLDIR}/usr/local/bin/php-cgi ]]; then strip -s ${FPM_PHPFPM_INSTALLDIR}/usr/local/bin/php-cgi || return $?; fi
+          strip -s ${FPM_PHPFPM_INSTALLDIR}/usr/local/sbin/php-fpm || return $?
           echo
           echo "after strip PHP binary..."
           ls -lah ${FPM_PHPFPM_INSTALLDIR}/usr/local/bin/php
@@ -5006,12 +5036,12 @@ fi
         ls -lah /usr/local/sbin/php-fpm
         echo
         echo "backup before strip PHP binary..."
-        \cp -af /usr/local/bin/php /usr/local/bin/php-b4strip 
-        \cp -af /usr/local/bin/php-cgi /usr/local/bin/php-cgi-b4strip 
-        \cp -af /usr/local/sbin/php-fpm /usr/local/sbin/php-fpm-b4strip 
-        strip -s /usr/local/bin/php
-        strip -s /usr/local/bin/php-cgi
-        strip -s /usr/local/sbin/php-fpm
+        \cp -af /usr/local/bin/php /usr/local/bin/php-b4strip || return $?
+        if [[ -f /usr/local/bin/php-cgi ]]; then \cp -af /usr/local/bin/php-cgi /usr/local/bin/php-cgi-b4strip || return $?; fi
+        \cp -af /usr/local/sbin/php-fpm /usr/local/sbin/php-fpm-b4strip || return $?
+        strip_php_binary /usr/local/bin/php || return $?
+        if [[ -f /usr/local/bin/php-cgi ]]; then strip_php_binary /usr/local/bin/php-cgi || return $?; fi
+        strip_php_binary /usr/local/sbin/php-fpm || return $?
         echo
         echo "after strip PHP binary..."
         ls -lah /usr/local/bin/php
