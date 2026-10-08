@@ -1592,8 +1592,9 @@ php -m
 echo
 
 # clean up /svr-setup downloads directory of older PHP source tarball/directories
-find "$DIR_TMP" -maxdepth 1 \( -name 'php-5*' -o -name 'php-7*' -o -name 'php-8*' ! -name "php-${phpver}*" \)  -print
-find "$DIR_TMP" -maxdepth 1 \( -name 'php-5*' -o -name 'php-7*' -o -name 'php-8*' ! -name "php-${phpver}*" \)  -exec rm -rf {} \;
+# keep the current version's source for every PHP major, not only 8.x
+find "$DIR_TMP" -maxdepth 1 \( -name 'php-5*' -o -name 'php-7*' -o -name 'php-8*' \) ! -name "php-${phpver}*" -print
+find "$DIR_TMP" -maxdepth 1 \( -name 'php-5*' -o -name 'php-7*' -o -name 'php-8*' \) ! -name "php-${phpver}*" -exec rm -rf {} \;
 find "$DIR_TMP" -maxdepth 1 \( -name 'libmemcached*' ! -name "libmemcached-${LIBMEMCACHED_VER}*" \)  -print
 find "$DIR_TMP" -maxdepth 1 \( -name 'libmemcached*' ! -name "libmemcached-${LIBMEMCACHED_VER}*" \)  -exec rm -rf {} \;
 
