@@ -154,16 +154,17 @@ for old in ('', 'same', 'missing-new'):
     assert result.returncode == 0 and 'sed-edit' not in events, (old, events, result.stderr)
 print('PASS: unknown/unchanged extension directory skips INI rewrite')
 
-for phase in ('strip', 'configtest', 'restart'):
-    result, events, _ = run(phase, '\nstrip_php_extensions() {' + STRIP + '\n}\nstrip_php_extensions\n', running='y')
-    assert result.returncode != 0, (phase, events)
-    if phase == 'strip':
-        assert 'restart' in events and result.returncode == 7, (events, result.returncode)
-    if phase == 'configtest':
-        assert 'restart' not in events and 'configuration test failed after extension stripping' in result.stderr
-    if phase == 'restart':
-        assert 'restart failed after extension stripping' in result.stderr
-print('PASS: strip failure restarts loaded mappings and preserves original status; cleanup failures propagate')
+# Extensions are stripped through private copies, so a running PHP-FPM keeps
+# its loaded mappings and is never restarted or config-tested here.
+for phase in ('', 'strip', 'binary-strip'):
+    result, events, _ = run(phase, '\nstrip_php_extensions() {' + STRIP + '\n}\nstrip_php_extensions\n',
+                            setup='find() { event find; [[ "$FAILPHASE" != strip ]] || return 7; command find "$@"; }; touch "$(php-config --extension-dir)/a.so" "$(php-config --extension-dir)/b.so"', running='y')
+    assert 'restart' not in events and 'configtest' not in events, (phase, events)
+    if phase == '':
+        assert result.returncode == 0 and sum(e.startswith('binary-strip:-s ') for e in events) == 2, (events, result.stderr)
+    else:
+        assert result.returncode == 7 and 'extension stripping failed' in result.stderr, (phase, result.returncode, result.stderr)
+print('PASS: extension stripping replaces files without restarting PHP-FPM and preserves failure status')
 
 retry = UPGRADE.split('    PHPMUVER=$(echo "$phpver" | cut -d . -f1,2)\n    echo\n    # validate', 1)[1]
 retry = '    # validate' + retry.split('    if [[ ("$CENTOS_NINE"', 1)[0]

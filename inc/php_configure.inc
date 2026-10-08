@@ -489,7 +489,7 @@ strip_php_binary() {
 }
 
 strip_php_extensions() {
-    local strip_php_ext_dir strip_status=0 fpm_status
+    local strip_php_ext_dir strip_status=0 so_files so_file
     strip_php_ext_dir=$(php-config --extension-dir) || return $?
     [[ "$strip_php_ext_dir" = /* && ! "$strip_php_ext_dir" =~ ^/+$ && "$strip_php_ext_dir" != *$'\n'* ]] || return 1
     # A fresh PHP 8.5 build can have no shared extensions to install.
@@ -499,20 +499,20 @@ strip_php_extensions() {
     echo "before stripping"
     ls -lAhrt "$strip_php_ext_dir"
     echo
-    find "$strip_php_ext_dir" -type f -name "*.so" -exec strip -s {} + || strip_status=$?
+    # Strip private copies and rename them into place: stripping in place
+    # rewrote files a running php-fpm had loaded, crashing its children until
+    # a restart. Renamed files leave those mappings intact, so no restart.
+    so_files=$(find "$strip_php_ext_dir" -type f -name "*.so") || strip_status=$?
+    while IFS= read -r so_file; do
+        [[ -n "$so_file" ]] || continue
+        strip_php_binary "$so_file" || strip_status=$?
+    done <<< "$so_files"
     if [[ "$strip_status" -ne 0 ]]; then
         echo "ERROR: PHP extension stripping failed (status $strip_status)." >&2
     fi
     echo "after stripping"
     ls -lAhrt "$strip_php_ext_dir"
     echo
-    # strip rewrites the .so files in place, so a running php-fpm master that already
-    # loaded them spawns children which crash (SIGSEGV) until php-fpm is restarted
-    # A partial strip failure still requires clearing the loaded mappings.
-    if pgrep -x php-fpm >/dev/null 2>&1; then
-        /usr/local/sbin/php-fpm -t || { fpm_status=$?; echo "ERROR: PHP-FPM configuration test failed after extension stripping (status $fpm_status)." >&2; return "$fpm_status"; }
-        cmservice php-fpm restart || { fpm_status=$?; echo "ERROR: PHP-FPM restart failed after extension stripping (status $fpm_status)." >&2; return "$fpm_status"; }
-    fi
     return "$strip_status"
 }
 
