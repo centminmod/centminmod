@@ -6,22 +6,137 @@ nginx_maintenance_on(){
     # updated, disable 503 maintenance mod after
     if [[ "$NGINX_UPDATEMAINTENANCE" = [yY] ]]; then
         if [ -f /usr/bin/sitestatus ]; then
+            # sitestatus reloads nginx, and a reload nginx rejects still exits 0
+            if ! /usr/local/sbin/nginx -t >/dev/null 2>&1; then
+                cecho "WARNING: maintenance mode skipped: the running nginx cannot load the updated config until the new build is installed" $boldyellow
+                return 0
+            fi
+            nginx_maintenance_active=y
             /usr/bin/sitestatus off
         fi
     fi
 }
 
 nginx_maintenance_off(){
-    # if you set /etc/centminmod/custom_config.inc file to
-    # NGINX_UPDATEMAINTENANCE=y
-    # then whenever you run nginx upgrade, you put all sites
-    # on server into 503 maintenance mode first and once
-    # updated, disable 503 maintenance mod after
-    if [[ "$NGINX_UPDATEMAINTENANCE" = [yY] ]]; then
-        if [ -f /usr/bin/sitestatus ]; then
-            /usr/bin/sitestatus on
+    if [[ "$nginx_maintenance_active" = y ]]; then
+        /usr/bin/sitestatus on || return $?
+        nginx_maintenance_active=n
+    fi
+}
+
+# Menu 4 rollback point. Taken before configure, which already rewrites the
+# live dynamic-modules.conf and removes module files. It is kept after a
+# successful upgrade as the previous build.
+nginx_upgrade_snapshot() {
+    local snap="${NGINXBACKUPDIR:-/usr/local/nginxbackup}/upgrade-snapshot" d
+    rm -rf -- "$snap" || return 1
+    mkdir -p -- "$snap" || return 1
+    cp -a /usr/local/sbin/nginx "$snap/nginx" || return 1
+    for d in conf modules; do
+        [[ ! -d "/usr/local/nginx/$d" ]] || cp -a "/usr/local/nginx/$d" "$snap/$d" || return 1
+    done
+    nginx_snapshot_ready=y
+}
+
+# Put the snapshot back by renaming whole directories, so nginx never reads a
+# half-restored module set or config. Replaced copies are kept as .failed-DT.
+nginx_upgrade_restore() {
+    local snap="${NGINXBACKUPDIR:-/usr/local/nginxbackup}/upgrade-snapshot" d
+    local failed=".failed-${DT:-$(date +%d%m%y-%H%M%S)}"
+    [[ "$nginx_snapshot_ready" = y && -f "$snap/nginx" ]] || return 1
+    cp -a "$snap/nginx" /usr/local/sbin/nginx.restore || return 1
+    mv -f /usr/local/sbin/nginx.restore /usr/local/sbin/nginx || return 1
+    for d in conf modules; do
+        [[ -d "$snap/$d" ]] || continue
+        rm -rf -- "/usr/local/nginx/$d.restore" || return 1
+        cp -a "$snap/$d" "/usr/local/nginx/$d.restore" || return 1
+        if [[ -e "/usr/local/nginx/$d" ]]; then
+            mv -- "/usr/local/nginx/$d" "/usr/local/nginx/$d$failed" || return 1
+        fi
+        mv -- "/usr/local/nginx/$d.restore" "/usr/local/nginx/$d" || return 1
+    done
+    /usr/local/sbin/nginx -t
+}
+
+# Bring the previous nginx back after a failed install or binary swap.
+nginx_upgrade_recover() {
+    local pid_file=/usr/local/nginx/logs/nginx.pid current deadline
+    current=$(cat "$pid_file" 2>/dev/null)
+    if [[ "$nginx_old_pid" =~ ^[1-9][0-9]*$ && "$current" =~ ^[1-9][0-9]*$ && "$current" != "$nginx_old_pid" ]] && kill -0 "$nginx_old_pid" 2>/dev/null; then
+        # Both masters exist after USR2. HUP makes the old master start workers
+        # again without re-reading config; QUIT the new master, and the old one
+        # takes back the pid file.
+        [[ "$nginx_winch_sent" != y ]] || kill -HUP "$nginx_old_pid"
+        kill -QUIT "$current" 2>/dev/null
+        deadline=$((SECONDS + 30))
+        until [[ "$(cat "$pid_file" 2>/dev/null)" = "$nginx_old_pid" ]] || (( SECONDS >= deadline )); do
+            sleep 1
+        done
+    fi
+    nginx_upgrade_restore || return 1
+    current=$(cat "$pid_file" 2>/dev/null)
+    if ! nginx_master_ready "$current" && nginx_master_ready "$nginx_old_pid"; then
+        # the new master never took over: point the pid file back at the old one
+        echo "$nginx_old_pid" > "$pid_file" || return 1
+        current=$nginx_old_pid
+    fi
+    [[ "$(cat "${pid_file}.oldbin" 2>/dev/null)" != "$current" ]] || rm -f "${pid_file}.oldbin"
+    if ! nginx_master_ready "$current"; then
+        # the restored files are in place, so reloading or restarting is safe
+        if [[ -n "$nginx_old_pid" && "$current" = "$nginx_old_pid" ]] && kill -0 "$current" 2>/dev/null; then
+            kill -HUP "$current"
+        else
+            service nginx restart
+        fi
+        deadline=$((SECONDS + 30))
+        until nginx_master_ready "$(cat "$pid_file" 2>/dev/null)"; do
+            (( SECONDS < deadline )) || return 1
+            sleep 1
+        done
+    fi
+}
+
+# Report a failed menu 4 run, restore the previous build when nginx files
+# changed, and leave maintenance mode once the previous nginx is serving.
+nginx_upgrade_failed() {
+    local status=$1 snap="${NGINXBACKUPDIR:-/usr/local/nginxbackup}/upgrade-snapshot" serving=n
+    [[ "$nginx_upgrade_reported" = y ]] && return 0
+    nginx_upgrade_reported=y
+    [[ "$status" -eq 0 && "$nginx_maintenance_active" != y ]] && return 0
+    echo
+    cecho "Nginx upgrade failed (status $status) at stage: $nginx_upgrade_stage" $boldyellow
+    case "$nginx_upgrade_stage" in
+        prepare)
+            serving=y
+            cecho "  nginx was not changed." $boldyellow ;;
+        configure)
+            # configure edits the live config and modules before compiling
+            if nginx_upgrade_restore >/dev/null 2>&1; then
+                serving=y
+                cecho "  nginx config and modules restored; the running nginx was not changed." $boldyellow
+            else
+                cecho "  Could not restore nginx config and modules from $snap" $boldyellow
+            fi ;;
+        install|swap)
+            if nginx_upgrade_recover; then
+                serving=y
+                cecho "  The previous nginx build was restored and is running." $boldyellow
+            else
+                cecho "  Automatic restore failed. The previous build is in $snap" $boldyellow
+                cecho "  (nginx binary, conf and modules); restore them and start nginx." $boldyellow
+            fi ;;
+        live)
+            serving=y
+            cecho "  The new nginx is running; a later step failed, see the log above." $boldyellow ;;
+    esac
+    if [[ "$nginx_maintenance_active" = y ]]; then
+        if [[ "$serving" = y ]] && nginx_maintenance_off >/dev/null 2>&1; then
+            cecho "  Maintenance mode turned off." $boldyellow
+        else
+            cecho "  Maintenance mode is still ON. After fixing, run: /usr/bin/sitestatus on" $boldyellow
         fi
     fi
+    return 0
 }
 
 pcre_check_nginx(){
@@ -552,6 +667,20 @@ nginx_master_ready() {
 }
 
 function funct_nginxupgrade {
+    local status previous_trap
+    nginx_upgrade_stage=prepare nginx_upgrade_reported=n nginx_maintenance_active=n
+    nginx_snapshot_ready=n nginx_old_pid= nginx_winch_sent=n
+    # helpers that abort with exit still get the report and restore
+    previous_trap=$(trap -p EXIT)
+    trap 'nginx_upgrade_failed $?' EXIT
+    nginx_upgrade_main "$@"
+    status=$?
+    eval "${previous_trap:-trap - EXIT}"
+    [[ "$status" -eq 0 ]] || nginx_upgrade_failed "$status"
+    return "$status"
+}
+
+function nginx_upgrade_main {
     CLI_NGINX_VER=$1
     # if [ ! -f /usr/local/bin/pcretest ]; then
     #     wgetver_check
@@ -968,6 +1097,8 @@ fi
         figlet -ckf standard "Nginx Configure"
     fi
 
+nginx_upgrade_snapshot || { echo "ERROR: could not snapshot the current nginx build before configure." >&2; return 1; }
+nginx_upgrade_stage=configure
 if [[ "$TIME_NGINX" = [yY] ]]; then
     # Keep compiler PATH/LD_LIBRARY_PATH and configure results in this shell.
     funct_nginxconfigure > >(awk '{ print strftime("%Y-%m-%d %H:%M:%S"), $0; fflush(); }') 2>&1
@@ -1216,7 +1347,9 @@ fi
             nginx_maintenance_off
             return 1
         fi
+        nginx_old_pid=$old_nginx_pid
     fi
+    nginx_upgrade_stage=install
     time make install
     ERR=$?
     sar_call
@@ -1265,7 +1398,7 @@ fi
         echo
         echo "log files saved at ${CENTMINLOGDIR}"
         ls -lAhrt "${CENTMINLOGDIR}" | grep $DT
-      exit 1
+      return 1
   else
         if [ -f objs/autoconf.err ]; then
             cat objs/autoconf.err > "${CENTMINLOGDIR}/nginx_autoconf.err.${DT}.log"
@@ -1350,6 +1483,7 @@ fi
        # zlibsymlink_fix
 
        /usr/local/sbin/nginx -t || return 1
+       nginx_upgrade_stage=swap
        if [[ "$NGINX_ZERODT" = [nN] ]]; then
          service nginx restart || return 1
          nginx_deadline=$((SECONDS + 30))
@@ -1363,7 +1497,7 @@ fi
        elif [[ "$NGINX_ZERODT" = [yY] ]]; then
          nginx_master_ready "$old_nginx_pid" || return 1
          kill -USR2 "$old_nginx_pid" || return 1
-         # ponytail: fixed 30s start and 300s drain; add a timeout override if needed.
+         # 30s for the new master to start; NGINX_ZERODT_DRAIN_TIMEOUT (default 300s) for old workers to drain
          nginx_deadline=$((SECONDS + 30))
          while :; do
            new_nginx_pid=$(cat /usr/local/nginx/logs/nginx.pid 2>/dev/null)
@@ -1377,29 +1511,41 @@ fi
            sleep 1
          done
          kill -WINCH "$old_nginx_pid" || return 1
-         nginx_deadline=$((SECONDS + 300))
+         nginx_winch_sent=y
+         nginx_deadline=$((SECONDS + ${NGINX_ZERODT_DRAIN_TIMEOUT:-300}))
          while :; do
-           if ! nginx_master_ready "$new_nginx_pid" || [[ "$(cat /usr/local/nginx/logs/nginx.pid.oldbin 2>/dev/null)" != "$old_nginx_pid" ]] || ! kill -0 "$old_nginx_pid" 2>/dev/null; then
-             echo "ERROR: Nginx live upgrade lost a master; old master was not sent QUIT. Manual recovery is required." >&2
+           if ! nginx_master_ready "$new_nginx_pid"; then
+             echo "ERROR: New Nginx master stopped serving during the live upgrade." >&2
              return 1
+           fi
+           # the old master already exited: nothing left to drain
+           if [[ "$(cat /usr/local/nginx/logs/nginx.pid.oldbin 2>/dev/null)" != "$old_nginx_pid" ]] || ! kill -0 "$old_nginx_pid" 2>/dev/null; then
+             break
            fi
            if ! ps -eo ppid=,args= | awk -v pid="$old_nginx_pid" '$1 == pid && $2 ~ /^(nginx|angie):$/ && $3 == "worker" { found=1 } END { exit !found }'; then
              break
            fi
            if (( SECONDS >= nginx_deadline )); then
-             echo "ERROR: Old Nginx workers did not drain; old master was not sent QUIT. Manual recovery is required." >&2
-             return 1
+             # the new master is serving; QUIT lets old workers finish their requests
+             echo "WARNING: Old Nginx workers still busy after ${NGINX_ZERODT_DRAIN_TIMEOUT:-300}s; sending QUIT to the old master." >&2
+             break
            fi
            sleep 1
          done
          nginx_master_ready "$new_nginx_pid" || return 1
-         kill -QUIT "$old_nginx_pid" || return 1
+         if kill -0 "$old_nginx_pid" 2>/dev/null; then
+           kill -QUIT "$old_nginx_pid" || return 1
+         fi
        fi
 
         # cecho "Checking OpenSSL version used by Nginx..." $boldyellow
         # SSLIB=$(ldd `which nginx` | grep ssl | awk '{print $3}')
         # OPENSSLVER_CHECK=$(strings $SSLIB | grep "^OpenSSL ")
         # echo $OPENSSLVER_CHECK
+
+        # the new nginx is verified; leave maintenance before reporting and cleanup
+        nginx_upgrade_stage=live
+        nginx_maintenance_off || return 1
 
         CBODYCHECK=$(grep 'client_body_in_file_only on' /usr/local/nginx/conf/nginx.conf)
         if [ $CBODYCHECK ]; then
@@ -1513,7 +1659,6 @@ fi
         fi
         echo "*************************************************"
 
-        nginx_maintenance_off || return 1
     if [[ "$NGINX_NJS" = [yY] && -f "$DIR_TMP/njs/build/njs" ]]; then
         cp -af "$DIR_TMP/njs/build/njs" /usr/local/bin/njs
     fi

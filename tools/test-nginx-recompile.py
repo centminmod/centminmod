@@ -21,8 +21,8 @@ checknginxmodules() { [[ "$mode" != modulesfail ]]; }
 nginx_dependency_compiler() { [[ "$mode" != compilerfail ]]; }
 luajitinstall() { [[ "$mode" != luajitfail ]] || return 23; }
 nginxzlib_install() { [[ "$mode" != zlibfail ]]; }
-nginx_maintenance_on() { echo maintenance_on >> "$work/trace"; [[ "$mode" != maintenanceonfail ]]; }
-nginx_maintenance_off() { echo maintenance_off >> "$work/trace"; [[ "$mode" != maintenanceofffail ]]; }
+nginx_maintenance_on() { echo maintenance_on >> "$work/trace"; nginx_maintenance_active=y; [[ "$mode" != maintenanceonfail ]]; }
+nginx_maintenance_off() { echo maintenance_off >> "$work/trace"; [[ "$mode" != maintenanceofffail ]] || return 1; nginx_maintenance_active=n; }
 funct_nginxconfigure() { [[ "$mode" != configurefail ]]; }
 patchnginx() { [[ "$mode" != patchfail ]]; }
 nginx() { echo 'nginx version: nginx/1.31.6'; }
@@ -38,7 +38,11 @@ make() {
   echo "make $*" >> "$work/trace"
   [[ "$mode" != stagefail || "$*" != *DESTDIR=* ]] || return 7
   [[ "$mode" != makefail || "$1" = clean || "$1" = install ]] || return 1
-  [[ "$mode" != installfail || "$1" != install ]]
+  [[ "$mode" != installfail || "$1" != install ]] || return 1
+  # a live install publishes a new binary; only it fails nginx -t in configtestfail mode
+  if [[ "$*" = install ]]; then
+    printf '#!/bin/bash\necho "nginx $*" >> "$work/trace"\n[[ "$mode" != configtestfail ]]\n' > "$work/local/sbin/nginx"
+  fi
 }
 service() { echo "service $*" >> "$work/trace"; [[ "$mode" != restartfail || "$2" != restart ]]; }
 sleep() { SECONDS=$((SECONDS + 31)); }
@@ -54,6 +58,7 @@ ps() {
 kill() {
   if [[ "$1" = -0 ]]; then
     [[ "$2" = 21 || "$2" = 42 ]] || return 1
+    [[ "$2" != 42 || ! -f "$work/quit42" ]] || return 1
     [[ "$mode" != newdeath || "$2" != 42 || ! -f "$work/draining" ]]
     return
   fi
@@ -66,6 +71,9 @@ kill() {
       if [[ "$mode" = badoldbin ]]; then echo 99; else echo 21; fi > "$work/local/nginx/logs/nginx.pid.oldbin"
       ;;
     -WINCH) touch "$work/draining";;
+    # old master restarts its workers; when the new master exits it takes back the pid file
+    -HUP) [[ "$2" != 21 ]] || rm -f "$work/draining";;
+    -QUIT) if [[ "$2" = 42 ]]; then touch "$work/quit42"; rm -f "$work/switched" "$work/local/nginx/logs/nginx.pid.oldbin"; echo 21 > "$work/local/nginx/logs/nginx.pid"; fi;;
   esac
 }
 DIR_TMP="$work/src" SCRIPT_DIR="$work/absent" CENTMINLOGDIR="$work/logs"
@@ -112,13 +120,13 @@ with tempfile.TemporaryDirectory(prefix="nginx-recompile-") as tmp:
             (work / directory).mkdir(parents=True, exist_ok=True)
         (work / "local/nginx/logs/nginx.pid").write_text("0\n" if mode == "badoldpid" else "21\n")
         binary = work / "local/sbin/nginx"
-        binary.write_text('#!/bin/bash\necho "nginx $*" >> "$work/trace"\n[[ "$mode" != configtestfail ]]\n')
+        binary.write_text('#!/bin/bash\necho "nginx $*" >> "$work/trace"\n')
         binary.chmod(0o700)
         source = upgrade.replace("/usr/local/", str(work / "local") + "/")
         script = mocks if mode != "invalidversion" else 'target="1.31.6 /tmp/unsafe"\n' + mocks
         result = run(source, script, mode, work)
         trace = (work / "trace").read_text() if (work / "trace").exists() else ""
-        expected_success = mode in ("success", "live", "angie", "angielive", "freenginx", "invalidcache", "stagesuccess")
+        expected_success = mode in ("success", "live", "angie", "angielive", "freenginx", "invalidcache", "stagesuccess", "drainhang", "angiedrainhang")
         assert (result.returncode == 0) == expected_success, (mode, result.returncode, result.stderr, result.stdout)
         assert "nginx -s stop" not in trace, mode
         assert "backup\nmap\n" in trace or mode in ("backupfail", "invalidversion"), (mode, trace)
@@ -135,13 +143,26 @@ with tempfile.TemporaryDirectory(prefix="nginx-recompile-") as tmp:
             assert trace.index("make install DESTDIR=") < trace.index("maintenance_on") < trace.index("make install\n"), trace
         if mode in ("maintenanceonfail", "installfail", "configtestfail"):
             assert "service nginx restart" not in trace and "kill -USR2" not in trace, (mode, trace)
-        if mode in ("maintenanceonfail", "installfail", "configtestfail", "restartfail", "usr2fail", "badnewpid",
-                    "samepid", "badoldbin", "noworkers", "newstopping", "angiestopping", "newdeath", "drainhang", "angiedrainhang"):
-            assert "maintenance_off" not in trace, (mode, trace)
+        recovered = ("maintenanceonfail", "installfail", "configtestfail", "restartfail", "usr2fail", "badnewpid",
+                     "samepid", "badoldbin", "noworkers", "newstopping", "angiestopping", "newdeath", "badoldpid")
+        if mode in recovered:
+            # The previous build is restored and serving before maintenance is left;
+            # the old master is never told to quit.
+            assert trace.index("maintenance_on") < trace.rindex("maintenance_off"), (mode, trace)
+            assert "kill -QUIT 21" not in trace, (mode, trace)
+            assert "configtestfail" not in binary.read_text(), (mode, binary.read_text())
+            assert (work / "local/nginxbackup/upgrade-snapshot/nginx").exists(), mode
+            assert (work / "local/nginx/logs/nginx.pid").read_text().strip() == ("0" if mode == "badoldpid" else "21"), mode
+            assert not (work / "local/nginx/logs/nginx.pid.oldbin").exists() or mode == "badoldbin", mode
+        if mode in ("badoldbin", "noworkers", "newstopping", "angiestopping", "newdeath"):
+            assert "kill -QUIT 42" in trace, (mode, trace)
         if mode in ("usr2fail", "badnewpid", "samepid", "badoldbin", "noworkers", "newstopping", "angiestopping", "badoldpid"):
-            assert "kill -WINCH" not in trace and "kill -QUIT" not in trace, (mode, trace)
-        if mode in ("newdeath", "drainhang", "angiedrainhang"):
-            assert "kill -WINCH 21" in trace and "kill -QUIT" not in trace, (mode, trace)
+            assert "kill -WINCH" not in trace, (mode, trace)
+        if mode == "newdeath":
+            assert trace.index("kill -WINCH 21") < trace.index("kill -HUP 21") < trace.index("kill -QUIT 42"), trace
+        if mode in ("drainhang", "angiedrainhang"):
+            # a drain timeout with a healthy new master finishes the upgrade
+            assert trace.index("kill -WINCH 21") < trace.index("kill -QUIT 21") < trace.rindex("maintenance_off"), trace
         if expected_success:
             assert trace.index("make install") < trace.index("nginx -t"), (mode, trace)
         if mode in ("live", "angielive"):

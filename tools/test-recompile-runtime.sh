@@ -3,6 +3,8 @@
 set -euo pipefail
 repo=$(cd "${1:-$(dirname "$0")/..}" && pwd)
 [[ $(id -u) = 0 && $(uname -s) = Linux ]] || { echo 'Run as root on an authorized Linux test VM.' >&2; exit 1; }
+# Starts real nginx and php-fpm masters: never on a production server by accident.
+[[ "${CMM_RUNTIME_TEST:-}" = yes ]] || { echo 'Set CMM_RUNTIME_TEST=yes to run on a disposable test VM.' >&2; exit 1; }
 for binary in /usr/local/sbin/nginx /usr/local/sbin/php-fpm; do
   [[ -x "$binary" ]] || { echo "Missing $binary" >&2; exit 1; }
 done
@@ -48,11 +50,14 @@ promotion = nginx[start:end]
 assert all(x in promotion for x in ('kill -USR2', 'kill -WINCH', 'kill -QUIT', 'nginx_master_ready'))
 promotion = promotion.replace('/usr/local/sbin/nginx -t', '"$work/nginx" -t -p "$work/" -c "$work/nginx.conf"')
 promotion = promotion.replace('/usr/local/nginx/logs/nginx.pid', '$work/nginx.pid')
+recover = re.search(r'^nginx_upgrade_recover\(\) \{.*?^}', nginx, re.M | re.S)
+assert recover, 'missing production Nginx recovery helper'
+recover = recover.group().replace('/usr/local/nginx/logs/nginx.pid', '$work/nginx.pid')
 php = (root/'inc/php_upgrade.inc').read_text()
 gate = re.search(r'^    /usr/local/sbin/php-fpm -t \|\| return \$\?\n    cmservice php-fpm restart \|\| return \$\?', php, re.M)
 assert gate, 'missing production PHP config/restart gates'
 gate = gate.group().replace('/usr/local/sbin/php-fpm -t', 'PHP_INI_SCAN_DIR= /usr/local/sbin/php-fpm -n -R -t -y "$work/php.conf"')
-(work/'gates.sh').write_text(ready.group()+'\nnginx_promote() {\n'+promotion+'\n}\nphp_restart_gate() {\n'+gate+'\n}\n')
+(work/'gates.sh').write_text(ready.group()+'\nnginx_promote() {\n'+promotion+'\n}\nphp_restart_gate() {\n'+gate+'\n}\n'+recover+'\n')
 PY
 source "$work/gates.sh"
 echo 'SOURCE_HASHES'
@@ -198,6 +203,34 @@ nginx_master_ready "$old_nginx_pid"
 [[ $(curl --fail --silent --show-error --unix-socket "$work/nginx.sock" http://localhost/) = runtime-ok ]]
 ln -sfn nginx.good "$work/nginx"
 echo 'PASS: real failed replacement exec preserves old master/workers and request service'
+
+# Recovery after WINCH: the new master is up, the old master has no workers.
+# HUP restarts the old workers without re-reading config, QUIT stops the new
+# master, and the old master takes back the pid file.
+old_nginx_pid=$(cat "$work/nginx.pid")
+kill -USR2 "$old_nginx_pid"
+for ((n=0; n<100; n++)); do
+  # USR2 briefly leaves no pid file (set -e is on here)
+  new_nginx_pid=$(cat "$work/nginx.pid" 2>/dev/null || true)
+  [[ "$new_nginx_pid" != "$old_nginx_pid" ]] && nginx_master_ready "$new_nginx_pid" && break
+  sleep .1
+done
+nginx_master_ready "$new_nginx_pid" && [[ "$new_nginx_pid" != "$old_nginx_pid" ]]
+kill -WINCH "$old_nginx_pid"
+for ((n=0; n<100; n++)); do
+  ps -eo ppid=,args= | awk -v pid="$old_nginx_pid" '$1 == pid && $3 == "worker" { found=1 } END { exit found }' && break
+  sleep .1
+done
+! nginx_master_ready "$old_nginx_pid"
+nginx_upgrade_restore() { return 0; }
+service() { return 1; }
+nginx_old_pid=$old_nginx_pid nginx_winch_sent=y
+nginx_upgrade_recover
+wait_exit "$new_nginx_pid"
+[[ $(cat "$work/nginx.pid") = "$old_nginx_pid" ]] && nginx_master_ready "$old_nginx_pid"
+[[ ! -e "$work/nginx.pid.oldbin" ]]
+[[ $(curl --fail --silent --show-error --unix-socket "$work/nginx.sock" http://localhost/) = runtime-ok ]]
+echo 'PASS: real post-WINCH recovery restores the old master workers, stops the new master and returns the pid file'
 [[ $(systemctl show nginx php-fpm mariadb -p MainPID --value) = "$main_before" ]]
 [[ $(git -C /usr/local/src/centminmod diff --binary | sha256sum) = "$repo_before" ]]
 echo 'PASS: main-service PIDs and existing tracked VM edits unchanged'
