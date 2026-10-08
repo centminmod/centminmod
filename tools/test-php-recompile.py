@@ -538,3 +538,33 @@ if os.uname().sysname == 'Linux':
                 process.terminate()
                 process.wait(timeout=5)
     print('PASS: actual GNU strip atomically replaces running ELF and symlink target while retaining process, mode and owner')
+
+# Configure must not restart the running (old) PHP-FPM: a library update may
+# already have removed a SONAME it needs, and the post-build restart applies
+# systemd drop-in changes anyway.
+DEBUG_STEPS = CONFIGURE[CONFIGURE.index('enable_php_debug_steps() {'):CONFIGURE.index('\n}\n', CONFIGURE.index('enable_php_debug_steps() {')) + 3]
+with tempfile.TemporaryDirectory(prefix='cmm-php-debugsteps-') as tmp:
+    # Every system path is redirected into the temporary tree.
+    steps = DEBUG_STEPS.replace('/etc/', tmp + '/etc/').replace('/proc/', tmp + '/proc/')
+    for directory in ('etc/systemd/system/php-fpm.service.d', 'etc/sysctl.d', 'etc/centminmod', 'proc/sys/kernel', 'proc/sys/fs'):
+        (Path(tmp) / directory).mkdir(parents=True, exist_ok=True)
+    (Path(tmp) / 'proc/sys/kernel/core_pattern').write_text('core\n')
+    (Path(tmp) / 'proc/sys/fs/suid_dumpable').write_text('0\n')
+    for mode, dropin in (('n', False), ('n', True), ('y', False)):
+        dropin_file = Path(tmp) / 'etc/systemd/system/php-fpm.service.d/10-coredump.conf'
+        if dropin:
+            dropin_file.write_text('[Service]\n')
+        trace = Path(tmp) / 'trace'
+        trace.write_text('')
+        script = Path(tmp) / 'debug.sh'
+        script.write_text(f'''
+systemctl() {{ echo "systemctl $*" >> "{trace}"; }}
+sysctl() {{ :; }}
+gdb() {{ :; }}
+HOME={tmp}; PHPDEBUGMODE={mode}; YUMDNFBIN=true
+''' + steps + '\nenable_php_debug_steps\n')
+        result = subprocess.run(['bash', str(script)], stdin=subprocess.DEVNULL, capture_output=True, text=True, timeout=10, env=dict(LC_ALL='C', PATH=os.environ['PATH']))
+        calls = trace.read_text()
+        assert 'restart php-fpm' not in calls, (mode, dropin, calls, result.stderr)
+        assert ('daemon-reload' in calls) == (mode == 'y' or dropin), (mode, dropin, calls)
+print('PASS: PHP debug-mode setup never restarts the running PHP-FPM during configure')

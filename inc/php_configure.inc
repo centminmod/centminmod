@@ -351,8 +351,9 @@ LimitCORE=infinity
 WorkingDirectory=/usr/local/sbin
 PrivateTmp=false
 EOF
+    # applied by the php-fpm restart after the build; restarting the old
+    # binary here, after a library update, can leave php-fpm down
     systemctl daemon-reload >/dev/null 2>&1
-    systemctl restart php-fpm >/dev/null 2>&1
 
     ######################## 3. kernel tunables ###########################
     install -d "${CORE_BACKUP_DIR}"
@@ -393,9 +394,11 @@ EOF
     fi
 
     ###################### remove systemd drop‑in ########################
-    rm -f /etc/systemd/system/php-fpm.service.d/10-coredump.conf
-    systemctl daemon-reload >/dev/null 2>&1
-    systemctl restart php-fpm >/dev/null 2>&1
+    # applied by the php-fpm restart after the build, not mid-configure
+    if [[ -f /etc/systemd/system/php-fpm.service.d/10-coredump.conf ]]; then
+      rm -f /etc/systemd/system/php-fpm.service.d/10-coredump.conf
+      systemctl daemon-reload >/dev/null 2>&1
+    fi
 
     ###################### optional core cleanup #########################
     if [[ "${PHP_CLEAN_COREDUMPS:-n}" = [yY] ]]; then
