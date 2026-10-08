@@ -28,4 +28,6 @@ run_after_php_install() {
       echo "checksec --output json file /usr/local/sbin/php-fpm 2>/dev/null | jq -r"
       checksec --output json file /usr/local/sbin/php-fpm 2>/dev/null | jq -r
   fi
+  # the checksec report is informational; its status must not fail the install
+  return 0
 }

@@ -1560,7 +1560,7 @@ fi
 # fi
 
 fileinfo_standalone || return $?
-phptimezonedb_install || return $?
+php_timezonedb_optional
 run_after_php_upgrade
 
 # set php-fpm alias log inspection shotcuts

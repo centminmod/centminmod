@@ -55,6 +55,10 @@ make() {
 }
 '''
 
+# the real optional wrapper, calling the phptimezonedb_install mock
+_TZ = (REPO / 'inc/timezonedb.inc').read_text()
+MOCKS += '\n' + _TZ[_TZ.index('php_timezonedb_optional() {'):]
+
 def run(phase='', body=None, setup='', running='n'):
     with tempfile.TemporaryDirectory(prefix='cmm-php-test-') as tmp:
         root = Path(tmp)
@@ -197,10 +201,11 @@ sysctl() {{ event hugepage-policy; return 7; }}
             result, events, _ = run(body=body, setup=setup)
             assert 'hugepage-policy' not in events, (release, mode, value, events)
             if expected is None:
-                assert result.returncode == 1 and 'invalid' in result.stderr, (release, mode, value, result.returncode, result.stderr)
+                # an invalid probe skips the optional tuning instead of stopping the build
+                assert result.returncode == 0 and 'invalid' in result.stderr and 'skipping' in result.stderr, (release, mode, value, result.returncode, result.stderr)
             else:
                 assert result.returncode == 0 and f'memory:{expected}' in events, (release, mode, value, events, result.stderr)
-print('PASS: EL9/EL10 memory probes ignore stale values, validate available/NUMA memory and retain hugepage policy')
+print('PASS: EL9/EL10 memory probes ignore stale values, skip hugepages tuning on invalid available/NUMA memory and retain hugepage policy')
 
 with patch.dict(os.environ, BASH_ENV='/nonexistent/inherited-startup.sh', CMM_TEST_INHERITED='yes'):
     result, _, _ = run(body='\n[[ -z ${BASH_ENV+x} && -z ${CMM_TEST_INHERITED+x} ]]\n')
@@ -425,15 +430,20 @@ for include, function, phases in (
 print('PASS: actual fileinfo/timezonedb selected-phase failures stop enablement, module/config/service errors propagate, disabled options skip')
 
 for phase in ('fileinfo', 'timezonedb'):
-    result, events, _ = run(phase)
-    assert result.returncode == 7 and 'restart' not in events and 'maintenance-on' not in events, (phase, events, result.stderr)
+    result, events, _ = run(phase, setup='cecho() { echo "$1"; }')
+    if phase == 'fileinfo':
+        assert result.returncode == 7 and 'restart' not in events and 'maintenance-on' not in events, (phase, events, result.stderr)
+    else:
+        # timezonedb only refreshes PHP's built-in timezone data: warn and finish the upgrade
+        assert result.returncode == 0 and 'restart' in events and 'maintenance-on' in events, (phase, events, result.stderr)
+        assert 'timezonedb PHP extension update failed' in result.stdout, result.stdout
 for entry in ('centmin.sh', 'centmin-cli.sh'):
     lines = (REPO / entry).read_text().splitlines()
-    for phase, needle in (('fileinfo', 'fileinfo_standalone || exit $?'), ('timezonedb', 'phptimezonedb_install || exit $?')):
+    for phase, needle in (('fileinfo', 'fileinfo_standalone || exit $?'), ('timezonedb', 'php_timezonedb_optional')):
         line = next(line for line in lines if line.strip() == needle)
         result, events, _ = run(phase, '\n' + line + '\nevent sentinel\n')
-        assert result.returncode == 7 and 'sentinel' not in events, (entry, phase, events)
-print('PASS: full PHP upgrade and both initial entry callers propagate fileinfo/timezonedb failures')
+        assert (result.returncode, 'sentinel' in events) == ((7, False) if phase == 'fileinfo' else (0, True)), (entry, phase, events)
+print('PASS: fileinfo failures still stop PHP upgrades and installs; timezonedb failures warn and continue')
 
 TIMEZONEDB = (REPO / 'inc/timezonedb.inc').read_text()
 for phase in ('configtest', 'restart', 'success'):

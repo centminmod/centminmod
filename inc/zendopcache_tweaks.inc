@@ -10,8 +10,9 @@ opcachehugepages() {
           FREEMEM_NUMANODE=$(numactl --hardware | awk '/free:/ {print $4}' | sort -r | head -n1)
           FREEMEMCACHED=$(grep -E '^Buffers|^Cached' /proc/meminfo | awk '{summ+=$2} END {print summ}' | head -n1)
           if [[ ! "$FREEMEM_NUMANODE" =~ ^[0-9]+$ || ! "$FREEMEMCACHED" =~ ^[0-9]+$ ]] || (( 10#$FREEMEM_NUMANODE <= 0 )); then
-            echo "ERROR: invalid NUMA available-memory probe for PHP OPcache hugepages." >&2
-            return 1
+            # hugepages are an optional tuning; a bad probe must not stop the PHP build
+            echo "WARNING: invalid NUMA available-memory probe; skipping PHP OPcache hugepages tuning." >&2
+            return 0
           fi
           FREEMEM_NUMANODE=$((10#$FREEMEM_NUMANODE*1024))
           FREEMEM=$((FREEMEM_NUMANODE+10#$FREEMEMCACHED))
@@ -34,8 +35,9 @@ opcachehugepages() {
           FREEMEM_NUMANODE=$(numactl --hardware | awk '/free:/ {print $4}' | sort -r | head -n1)
           FREEMEMCACHED=$(grep -E '^Buffers|^Cached' /proc/meminfo | awk '{summ+=$2} END {print summ}' | head -n1)
           if [[ ! "$FREEMEM_NUMANODE" =~ ^[0-9]+$ || ! "$FREEMEMCACHED" =~ ^[0-9]+$ ]] || (( 10#$FREEMEM_NUMANODE <= 0 )); then
-            echo "ERROR: invalid NUMA available-memory probe for PHP OPcache hugepages." >&2
-            return 1
+            # hugepages are an optional tuning; a bad probe must not stop the PHP build
+            echo "WARNING: invalid NUMA available-memory probe; skipping PHP OPcache hugepages tuning." >&2
+            return 0
           fi
           FREEMEM_NUMANODE=$((10#$FREEMEM_NUMANODE*1024))
           FREEMEM=$((FREEMEM_NUMANODE+10#$FREEMEMCACHED))
@@ -51,8 +53,8 @@ opcachehugepages() {
       fi
     fi
     if [[ ! "$FREEMEM" =~ ^[0-9]+$ ]] || (( 10#$FREEMEM <= 0 )); then
-        echo "ERROR: invalid available-memory probe for PHP OPcache hugepages: ${FREEMEM:-empty}." >&2
-        return 1
+        echo "WARNING: invalid available-memory probe (${FREEMEM:-empty}); skipping PHP OPcache hugepages tuning." >&2
+        return 0
     fi
     FREEMEM=$((10#$FREEMEM))
     NRHUGEPAGES_COUNT=$(($FREEMEM/2/2048/16*16/4))

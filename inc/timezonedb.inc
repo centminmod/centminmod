@@ -30,3 +30,18 @@ EOF
     popd || return $?
   fi
 }
+
+# timezonedb only refreshes PHP's built-in timezone data, so a failed build
+# warns instead of stopping the install or upgrade, and PHP is never left
+# loading a missing or broken timezonedb.so.
+php_timezonedb_optional() {
+  local status dir=$PWD
+  phptimezonedb_install && return 0
+  status=$?
+  cd "$dir" || return $?
+  if [[ -f "${CONFIGSCANDIR}/timezonedb.ini" ]] && ! php -m 2>/dev/null | grep -qx timezonedb; then
+    rm -f "${CONFIGSCANDIR}/timezonedb.ini"
+  fi
+  cecho "WARNING: timezonedb PHP extension update failed (status $status); PHP uses its built-in timezone data." $boldyellow
+  return 0
+}

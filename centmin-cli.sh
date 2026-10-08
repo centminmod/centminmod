@@ -30,7 +30,7 @@ DT=$(date +"%d%m%y-%H%M%S")
 branchname='141.00beta01'
 SCRIPT_MAJORVER='141'
 SCRIPT_MINORVER='00'
-SCRIPT_INCREMENTVER='300'
+SCRIPT_INCREMENTVER='301'
 SCRIPT_VERSIONSHORT="${branchname}"
 SCRIPT_VERSION="${SCRIPT_VERSIONSHORT}.b${SCRIPT_INCREMENTVER}"
 SCRIPT_DATE='16/08/25'
@@ -3496,7 +3496,7 @@ fi
 
 if [[ "$PHPTIMEZONEDB" = [yY] ]]; then
   echo "phptimezonedb_install"
-  phptimezonedb_install || exit $?
+  php_timezonedb_optional
 fi
 
 if [[ "$PHP_MCRYPTPECL" = [yY] ]] && [[ "$PHPMVER" = '7.4' ]]; then
