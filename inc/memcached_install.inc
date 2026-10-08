@@ -655,7 +655,7 @@ fi
 sleep 2
 memcached_service_restart
 echo
-systemctl restart php-fpm
+php_fpm_apply restart
 echo
 journalctl -xe -u php-fpm --no-pager | tail -20
 echo

@@ -601,3 +601,13 @@ HOME={tmp}; PHPDEBUGMODE={mode}; YUMDNFBIN=true
         assert 'restart php-fpm' not in calls, (mode, dropin, calls, result.stderr)
         assert ('daemon-reload' in calls) == (mode == 'y' or dropin), (mode, dropin, calls)
 print('PASS: PHP debug-mode setup never restarts the running PHP-FPM during configure')
+
+# Extension installers must not switch PHP-FPM to the new binary mid-upgrade:
+# during menu 5 their reloads wait for the single gated restart.
+result, events, _ = run(setup='touch "$CONFIGSCANDIR/igbinary.ini"; funct_igbinaryinstall() { event igbinary; php_fpm_apply reload; }')
+assert result.returncode == 0 and 'igbinary' in events and events.count('restart') == 1, (events, result.stderr)
+assert events.index('igbinary') < events.index('restart') < events.index('maintenance-on'), events
+# Outside menu 5 (standalone menus, initial installs) the installer still reloads.
+result, events, _ = run(body='\nphp_fpm_apply reload\n')
+assert result.returncode == 0 and events == ['restart'], (events, result.stderr)
+print('PASS: menu 5 defers extension installer PHP-FPM reloads to one gated restart; standalone use still reloads')

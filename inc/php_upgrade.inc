@@ -327,6 +327,15 @@ php_fpm_serving() {
   fi
 }
 
+# Extension installers reload or restart PHP-FPM to load what they built.
+# During menu 5 that would switch PHP-FPM to the new binary before the other
+# extensions are rebuilt, so they skip it and the gated restart after all
+# rebuilds applies it. Standalone menus and initial installs still restart.
+php_fpm_apply() {
+  [[ "$php_fpm_restart_deferred" = y ]] && return 0
+  cmservice php-fpm "$1"
+}
+
 # Report what is live after a failed menu 5 run and leave maintenance mode
 # when PHP-FPM is still serving. Files are never restored: after the library
 # update, restarting the previous PHP binary could fail.
@@ -364,11 +373,13 @@ php_upgrade_failed() {
 funct_phpupgrade() {
   local status previous_trap
   php_upgrade_stage=prepare php_upgrade_reported=n php_maintenance_active=n php_libs_updated=n
+  php_fpm_restart_deferred=y
   # helpers that abort with exit still get the report
   previous_trap=$(trap -p EXIT)
   trap 'php_upgrade_failed $?' EXIT
   php_upgrade_main "$@"
   status=$?
+  php_fpm_restart_deferred=n
   eval "${previous_trap:-trap - EXIT}"
   [[ "$status" -eq 0 ]] || php_upgrade_failed "$status"
   return "$status"

@@ -15,11 +15,11 @@ fileinfo_standalone() {
         echo 'extension=fileinfo.so' > "${CONFIGSCANDIR}/fileinfo.ini" || return $?
         php --ri fileinfo || return $?
         /usr/local/sbin/php-fpm -t || return $?
-        cmservice php-fpm restart || return $?
+        php_fpm_apply restart || return $?
         if [[ "$(php --ri fileinfo 2>&1 | grep 'already loaded')" ]]; then
             echo ';extension=fileinfo.so' > "${CONFIGSCANDIR}/fileinfo.ini" || return $?
             /usr/local/sbin/php-fpm -t || return $?
-            cmservice php-fpm restart || return $?
+            php_fpm_apply restart || return $?
             php --ri fileinfo || return $?
         fi
         echo "$fileinfo_ext_dir/fileinfo.so installed"

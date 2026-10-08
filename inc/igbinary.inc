@@ -147,7 +147,7 @@ else
     # remove igbinary PHP support if IGBINARY_INSTALL=n
     rm -rf "${CONFIGSCANDIR}/igbinary.ini" || return $?
     /usr/local/sbin/php-fpm -t || return $?
-    cmservice php-fpm reload || return $?
+    php_fpm_apply reload || return $?
     return 0
 fi # IGBINARY_INSTALL = y
 
@@ -173,6 +173,6 @@ fi
 
 php --ri igbinary >/dev/null || return $?
 /usr/local/sbin/php-fpm -t || return $?
-cmservice php-fpm reload || return $?
+php_fpm_apply reload || return $?
     fi # PHP_INSTALL=y
 }
