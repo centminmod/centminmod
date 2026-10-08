@@ -24,9 +24,10 @@ nginx_maintenance_off(){
     fi
 }
 
-# Menu 4 rollback point. Taken before configure, which already rewrites the
-# live dynamic-modules.conf and removes module files. It is kept after a
-# successful upgrade as the previous build.
+# Menu 4 rollback point. Taken before the first live config edit: checkmap
+# and configure already rewrite live config, dynamic-modules.conf and module
+# files before compiling. It is kept after a successful upgrade as the
+# previous build.
 nginx_upgrade_snapshot() {
     local snap="${NGINXBACKUPDIR:-/usr/local/nginxbackup}/upgrade-snapshot" d
     rm -rf -- "$snap" || return 1
@@ -44,10 +45,14 @@ nginx_upgrade_restore() {
     local snap="${NGINXBACKUPDIR:-/usr/local/nginxbackup}/upgrade-snapshot" d
     local failed=".failed-${DT:-$(date +%d%m%y-%H%M%S)}"
     [[ "$nginx_snapshot_ready" = y && -f "$snap/nginx" ]] || return 1
-    cp -a "$snap/nginx" /usr/local/sbin/nginx.restore || return 1
-    mv -f /usr/local/sbin/nginx.restore /usr/local/sbin/nginx || return 1
+    if ! cmp -s "$snap/nginx" /usr/local/sbin/nginx; then
+        cp -a "$snap/nginx" /usr/local/sbin/nginx.restore || return 1
+        mv -f /usr/local/sbin/nginx.restore /usr/local/sbin/nginx || return 1
+    fi
     for d in conf modules; do
         [[ -d "$snap/$d" ]] || continue
+        # unchanged since the snapshot: nothing to swap
+        ! diff -rq --no-dereference "$snap/$d" "/usr/local/nginx/$d" >/dev/null 2>&1 || continue
         rm -rf -- "/usr/local/nginx/$d.restore" || return 1
         cp -a "$snap/$d" "/usr/local/nginx/$d.restore" || return 1
         if [[ -e "/usr/local/nginx/$d" ]]; then
@@ -69,14 +74,28 @@ nginx_upgrade_recover() {
         [[ "$nginx_winch_sent" != y ]] || kill -HUP "$nginx_old_pid"
         kill -QUIT "$current" 2>/dev/null
         deadline=$((SECONDS + 30))
+        while kill -0 "$current" 2>/dev/null && (( SECONDS < deadline )); do
+            sleep 1
+        done
+        if kill -0 "$current" 2>/dev/null; then
+            # the failed build must not hold the pid file for long requests: fast shutdown
+            kill -TERM "$current" 2>/dev/null
+            deadline=$((SECONDS + 10))
+            while kill -0 "$current" 2>/dev/null && (( SECONDS < deadline )); do
+                sleep 1
+            done
+        fi
+        # leave the pid files alone while the new master still owns them
+        ! kill -0 "$current" 2>/dev/null || return 1
+        deadline=$((SECONDS + 10))
         until [[ "$(cat "$pid_file" 2>/dev/null)" = "$nginx_old_pid" ]] || (( SECONDS >= deadline )); do
             sleep 1
         done
     fi
     nginx_upgrade_restore || return 1
     current=$(cat "$pid_file" 2>/dev/null)
-    if ! nginx_master_ready "$current" && nginx_master_ready "$nginx_old_pid"; then
-        # the new master never took over: point the pid file back at the old one
+    if ! { [[ "$current" =~ ^[1-9][0-9]*$ ]] && kill -0 "$current" 2>/dev/null; } && nginx_master_ready "$nginx_old_pid"; then
+        # the pid file names no live process: point it back at the old master
         echo "$nginx_old_pid" > "$pid_file" || return 1
         current=$nginx_old_pid
     fi
@@ -847,6 +866,8 @@ if [ "$NGINXBACKUP" == 'y' ]; then
   nginxbackup || return 1
 fi
 
+nginx_upgrade_snapshot || { echo "ERROR: could not snapshot the current nginx build before changing its config." >&2; return 1; }
+nginx_upgrade_stage=configure
 checkmap
 
 # Backup ngx_pagespeed pagespeed.conf
@@ -1097,8 +1118,6 @@ fi
         figlet -ckf standard "Nginx Configure"
     fi
 
-nginx_upgrade_snapshot || { echo "ERROR: could not snapshot the current nginx build before configure." >&2; return 1; }
-nginx_upgrade_stage=configure
 if [[ "$TIME_NGINX" = [yY] ]]; then
     # Keep compiler PATH/LD_LIBRARY_PATH and configure results in this shell.
     funct_nginxconfigure > >(awk '{ print strftime("%Y-%m-%d %H:%M:%S"), $0; fflush(); }') 2>&1
