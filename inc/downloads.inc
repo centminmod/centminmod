@@ -2347,7 +2347,7 @@ ERROR=$?
   if [[ "$ERROR" != '0' ]]; then
   cecho "Error: ${LIBEVENTLINKFILE} download failed." $boldgreen
 checklogdetails
-  exit #$ERROR
+  exit 1
 else 
          cecho "Download done." $boldyellow
 #echo ""
@@ -2359,7 +2359,7 @@ ERROR=$?
   if [[ "$ERROR" != '0' ]]; then
   cecho "Error: ${LIBEVENTLINKFILE} extraction failed." $boldgreen
 checklogdetails
-  exit #$ERROR
+  exit 1
 else 
          cecho "${LIBEVENTLINKFILE} valid file." $boldyellow
 echo ""
@@ -2384,7 +2384,7 @@ ERROR=$?
   if [[ "$ERROR" != '0' ]]; then
   cecho "Error: ${PHPEXT_MAILPARSELINKFILE} local download failed." $boldgreen
 checklogdetails
-  exit #$ERROR
+  exit 1
 else 
          cecho "Download local done." $boldyellow
 #echo ""
@@ -2396,7 +2396,7 @@ ERROR=$?
   if [[ "$ERROR" != '0' ]]; then
   cecho "Error: ${PHPEXT_MAILPARSELINKFILE} local extraction failed." $boldgreen
 checklogdetails
-  exit #$ERROR
+  exit 1
 else 
          cecho "${PHPEXT_MAILPARSELINKFILE} local valid file." $boldyellow
 echo ""
@@ -2441,7 +2441,7 @@ ERROR=$?
   if [[ "$ERROR" != '0' ]]; then
   cecho "Error: ${PHPEXT_MAILPARSELINKFILE} download failed." $boldgreen
 checklogdetails
-  exit #$ERROR
+  exit 1
 else 
          cecho "Download done." $boldyellow
 #echo ""
@@ -2488,7 +2488,7 @@ ERROR=$?
   if [[ "$ERROR" != '0' ]]; then
   cecho "Error: ${PHPEXT_IMAGICKLINKFILE} local download failed." $boldgreen
 checklogdetails
-  exit #$ERROR
+  exit 1
 else 
          cecho "Download local done." $boldyellow
 #echo ""
@@ -2500,7 +2500,7 @@ ERROR=$?
   if [[ "$ERROR" != '0' ]]; then
   cecho "Error: ${PHPEXT_IMAGICKLINKFILE} local extraction failed." $boldgreen
 checklogdetails
-  exit #$ERROR
+  exit 1
 else 
          cecho "${PHPEXT_IMAGICKLINKFILE} local valid file." $boldyellow
 echo ""
@@ -2532,7 +2532,7 @@ ERROR=$?
   if [[ "$ERROR" != '0' ]]; then
   cecho "Error: ${PHPEXT_IMAGICKLINKFILE} download failed." $boldgreen
 checklogdetails
-  exit #$ERROR
+  exit 1
 else 
          cecho "Download done." $boldyellow
 #echo ""
@@ -2570,7 +2570,7 @@ ERROR=$?
   if [[ "$ERROR" != '0' ]]; then
   cecho "Error: ${PHPEXT_MEMCACHELINKFILE} local download failed." $boldgreen
 checklogdetails
-  exit #$ERROR
+  exit 1
 else 
          cecho "Download local done." $boldyellow
 #echo ""
@@ -2582,7 +2582,7 @@ ERROR=$?
   if [[ "$ERROR" != '0' ]]; then
   cecho "Error: ${PHPEXT_MEMCACHELINKFILE} local extraction failed." $boldgreen
 checklogdetails
-  exit #$ERROR
+  exit 1
 else 
          cecho "${PHPEXT_MEMCACHELINKFILE} local valid file." $boldyellow
 echo ""
@@ -2605,7 +2605,7 @@ ERROR=$?
   if [[ "$ERROR" != '0' ]]; then
   cecho "Error: ${PHPEXT_MEMCACHELINKFILE} download failed." $boldgreen
 checklogdetails
-  exit #$ERROR
+  exit 1
 else 
          cecho "Download done." $boldyellow
 #echo ""
@@ -2643,7 +2643,7 @@ ERROR=$?
   if [[ "$ERROR" != '0' ]]; then
   cecho "Error: ${PHPEXT_MEMCACHEDLINKFILE} local download failed." $boldgreen
 checklogdetails
-  exit #$ERROR
+  exit 1
 else 
          cecho "Download local done." $boldyellow
 #echo ""
@@ -2655,7 +2655,7 @@ ERROR=$?
   if [[ "$ERROR" != '0' ]]; then
   cecho "Error: ${PHPEXT_MEMCACHEDLINKFILE} local extraction failed." $boldgreen
 checklogdetails
-  exit #$ERROR
+  exit 1
 else 
          cecho "${PHPEXT_MEMCACHEDLINKFILE} local valid file." $boldyellow
 echo ""
@@ -2678,7 +2678,7 @@ ERROR=$?
   if [[ "$ERROR" != '0' ]]; then
   cecho "Error: ${PHPEXT_MEMCACHEDLINKFILE} download failed." $boldgreen
 checklogdetails
-  exit #$ERROR
+  exit 1
 else 
          cecho "Download done." $boldyellow
 #echo ""
@@ -2716,7 +2716,7 @@ ERROR=$?
     if [[ "$ERROR" != '0' ]]; then
     cecho "Error: ${PHPEXT_REDISLINKFILE} local download failed." $boldgreen
 checklogdetails
-    exit #$ERROR
+    exit 1
 else 
          cecho "Download local done." $boldyellow
 #echo ""
@@ -2728,7 +2728,7 @@ ERROR=$?
     if [[ "$ERROR" != '0' ]]; then
     cecho "Error: ${PHPEXT_REDISLINKFILE} local extraction failed." $boldgreen
 checklogdetails
-    exit #$ERROR
+    exit 1
 else 
          cecho "${PHPEXT_REDISLINKFILE} local valid file." $boldyellow
 echo ""
@@ -2751,7 +2751,7 @@ ERROR=$?
     if [[ "$ERROR" != '0' ]]; then
     cecho "Error: ${PHPEXT_REDISLINKFILE} download failed." $boldgreen
 checklogdetails
-    exit #$ERROR
+    exit 1
 else 
          cecho "Download done." $boldyellow
 #echo ""
@@ -2843,7 +2843,7 @@ ERROR=$?
     if [[ "$ERROR" != '0' ]]; then
     cecho "Error: ${PHPEXT_MONGODBLINKFILE} local download failed." $boldgreen
 checklogdetails
-    exit #$ERROR
+    exit 1
 else 
          cecho "Download local done." $boldyellow
 #echo ""
@@ -2855,7 +2855,7 @@ ERROR=$?
     if [[ "$ERROR" != '0' ]]; then
     cecho "Error: ${PHPEXT_MONGODBLINKFILE} local extraction failed." $boldgreen
 checklogdetails
-    exit #$ERROR
+    exit 1
 else 
          cecho "${PHPEXT_MONGODBLINKFILE} local valid file." $boldyellow
 echo ""
@@ -2932,7 +2932,7 @@ ERROR=$?
     if [[ "$ERROR" != '0' ]]; then
     cecho "Error: ${PHPEXT_MONGODBLINKFILE} download failed." $boldgreen
 checklogdetails
-    exit #$ERROR
+    exit 1
 else 
          cecho "Download done." $boldyellow
 #echo ""
@@ -3076,7 +3076,7 @@ ERROR=$?
     if [[ "$ERROR" != '0' ]]; then
     cecho "Error: ${PHPEXT_SWOOLELINKFILE} local download failed." $boldgreen
 checklogdetails
-    exit #$ERROR
+    exit 1
 else 
          cecho "Download local done." $boldyellow
 #echo ""
@@ -3088,7 +3088,7 @@ ERROR=$?
     if [[ "$ERROR" != '0' ]]; then
     cecho "Error: ${PHPEXT_SWOOLELINKFILE} local extraction failed." $boldgreen
 checklogdetails
-    exit #$ERROR
+    exit 1
 else 
          cecho "${PHPEXT_SWOOLELINKFILE} local valid file." $boldyellow
 echo ""
@@ -3133,7 +3133,7 @@ ERROR=$?
     if [[ "$ERROR" != '0' ]]; then
     cecho "Error: ${PHPEXT_SWOOLELINKFILE} download failed." $boldgreen
 checklogdetails
-    exit #$ERROR
+    exit 1
 else 
          cecho "Download done." $boldyellow
 #echo ""
@@ -3172,7 +3172,7 @@ ERROR=$?
   if [[ "$ERROR" != '0' ]]; then
   cecho "Error: ${PHPEXT_LIBMEMCACHEDLINKFILE} local download failed." $boldgreen
 checklogdetails
-  exit #$ERROR
+  exit 1
 else 
          cecho "Download local done." $boldyellow
 #echo ""
@@ -3184,7 +3184,7 @@ ERROR=$?
   if [[ "$ERROR" != '0' ]]; then
   cecho "Error: ${PHPEXT_LIBMEMCACHEDLINKFILE} local extraction failed." $boldgreen
 checklogdetails
-  exit #$ERROR
+  exit 1
 else 
          cecho "${PHPEXT_LIBMEMCACHEDLINKFILE} local valid file." $boldyellow
 echo ""
@@ -3210,7 +3210,7 @@ ERROR=$?
   if [[ "$ERROR" != '0' ]]; then
   cecho "Error: ${PHPEXT_LIBMEMCACHEDLINKFILE} download failed." $boldgreen
 checklogdetails
-  exit #$ERROR
+  exit 1
 else 
          cecho "Download done." $boldyellow
 #echo ""
@@ -3250,7 +3250,7 @@ ERROR=$?
   if [[ "$ERROR" != '0' ]]; then
   cecho "Error: ${TWEMPERF_LINKFILE} download failed." $boldgreen
 checklogdetails
-  exit #$ERROR
+  exit 1
 else 
          cecho "Download done." $boldyellow
 #echo ""
@@ -3265,7 +3265,7 @@ ERROR=$?
   if [[ "$ERROR" != '0' ]]; then
   cecho "Error: ${TWEMPERF_LINKFILE} extraction failed." $boldgreen
 checklogdetails
-  exit #$ERROR
+  exit 1
 else 
          cecho "${TWEMPERF_LINKFILE} valid file." $boldyellow
 echo ""
@@ -3321,7 +3321,7 @@ ERROR=$?
   if [[ "$ERROR" != '0' ]]; then
   cecho "Error: ${MEMCACHEDSERVER_LINKFILE} download failed." $boldgreen
 checklogdetails
-  exit #$ERROR
+  exit 1
 else 
          cecho "Download done." $boldyellow
 #echo ""
@@ -3333,7 +3333,7 @@ ERROR=$?
   if [[ "$ERROR" != '0' ]]; then
   cecho "Error: ${MEMCACHEDSERVER_LINKFILE} extraction failed." $boldgreen
 checklogdetails
-  exit #$ERROR
+  exit 1
 else 
          cecho "${MEMCACHEDSERVER_LINKFILE} valid file." $boldyellow
 echo ""
@@ -3364,7 +3364,7 @@ ERROR=$?
   if [[ "$ERROR" != '0' ]]; then
   cecho "Error: ${MYSQLREPORT_LINKFILE} download failed." $boldgreen
 checklogdetails
-  exit #$ERROR
+  exit 1
 else 
          cecho "Download ${MYSQLREPORT_LINKFILE} done." $boldyellow
 #echo ""
@@ -3381,7 +3381,7 @@ ERROR=$?
   if [[ "$ERROR" != '0' ]]; then
   cecho "Error: ${MYSQLTUNER_LINKFILE} download failed." $boldgreen
 checklogdetails
-  exit #$ERROR
+  exit 1
 else 
          cecho "Download ${MYSQLTUNER_LINKFILE} done." $boldyellow
 #echo ""
@@ -3419,7 +3419,7 @@ ERROR=$?
   if [[ "$ERROR" != '0' ]]; then
   cecho "Error: MariaDB-client-${MDB_VERSION}.el5.${ARCH}.rpm download failed." $boldgreen
 checklogdetails
-  exit #$ERROR
+  exit 1
 else 
          cecho "Download done." $boldyellow
 #echo ""
@@ -3435,7 +3435,7 @@ ERROR=$?
   if [[ "$ERROR" != '0' ]]; then
   cecho "Error: MariaDB-devel-${MDB_VERSION}.el5.${ARCH}.rpm download failed." $boldgreen
 checklogdetails
-  exit #$ERROR
+  exit 1
 else 
          cecho "Download done." $boldyellow
 #echo ""
@@ -3451,7 +3451,7 @@ ERROR=$?
   if [[ "$ERROR" != '0' ]]; then
   cecho "Error: MariaDB-server-${MDB_VERSION}.el5.${ARCH}.rpm download failed." $boldgreen
 checklogdetails
-  exit #$ERROR
+  exit 1
 else 
          cecho "Download done." $boldyellow
 #echo ""
@@ -3467,7 +3467,7 @@ ERROR=$?
   if [[ "$ERROR" != '0' ]]; then
   cecho "Error: MariaDB-shared-${MDB_VERSION}.el5.${ARCH}.rpm download failed." $boldgreen
 checklogdetails
-  exit #$ERROR
+  exit 1
 else 
          cecho "Download done." $boldyellow
 #echo ""
@@ -3483,7 +3483,7 @@ ERROR=$?
   if [[ "$ERROR" != '0' ]]; then
   cecho "Error: MariaDB-test-${MDB_VERSION}.el5.${ARCH}.rpm download failed." $boldgreen
 checklogdetails
-  exit #$ERROR
+  exit 1
 else 
          cecho "Download done." $boldyellow
 #echo ""
@@ -3511,7 +3511,7 @@ ERROR=$?
   if [[ "$ERROR" != '0' ]]; then
   cecho "Error: ourdelta-release-5-1.noarch.rpm download failed." $boldgreen
 checklogdetails
-  exit #$ERROR
+  exit 1
 else 
          cecho "Download done." $boldyellow
 #echo ""
@@ -3540,7 +3540,7 @@ ERROR=$?
   if [[ "$ERROR" != '0' ]]; then
   cecho "Error: ${LIBUNWIND_LINKFILE} download failed." $boldgreen
 checklogdetails
-  exit #$ERROR
+  exit 1
 else 
          cecho "Download done." $boldyellow
 #echo ""
@@ -3552,7 +3552,7 @@ ERROR=$?
   if [[ "$ERROR" != '0' ]]; then
   cecho "Error: ${LIBUNWIND_LINKFILE} extraction failed." $boldgreen
 checklogdetails
-  exit #$ERROR
+  exit 1
 else 
          cecho "${LIBUNWIND_LINKFILE} valid file." $boldyellow
 echo ""
@@ -3567,7 +3567,7 @@ ERROR=$?
   if [[ "$ERROR" != '0' ]]; then
   cecho "Error: ${GPERFTOOL_LINKFILE} download failed." $boldgreen
 checklogdetails
-  exit #$ERROR
+  exit 1
 else 
          cecho "Download done." $boldyellow
 #echo ""
@@ -3579,7 +3579,7 @@ ERROR=$?
   if [[ "$ERROR" != '0' ]]; then
   cecho "Error: ${GPERFTOOL_LINKFILE} extraction failed." $boldgreen
 checklogdetails
-  exit #$ERROR
+  exit 1
 else 
          cecho "${GPERFTOOL_LINKFILE} valid file." $boldyellow
 echo ""
@@ -3770,7 +3770,7 @@ ERROR=$?
   if [[ "$ERROR" != '0' ]]; then
   cecho "Error: pcre-${PCRE_VERSION}.tar.gz download failed." $boldgreen
 checklogdetails
-  exit #$ERROR
+  exit 1
 else 
          cecho "Download done." $boldyellow
 #echo ""
@@ -3782,7 +3782,7 @@ ERROR=$?
   if [[ "$ERROR" != '0' ]]; then
   cecho "Error: pcre-${PCRE_VERSION}.tar.gz extraction failed." $boldgreen
 checklogdetails
-  exit #$ERROR
+  exit 1
 else 
          cecho "pcre-${PCRE_VERSION}.tar.gz valid file." $boldyellow
 echo ""
@@ -3817,7 +3817,7 @@ ERROR=$?
   if [[ "$ERROR" != '0' ]]; then
   cecho "Error: ${SIEGE_LINKFILE} download failed." $boldgreen
 checklogdetails
-  exit #$ERROR
+  exit 1
 else 
          cecho "Download done." $boldyellow
 #echo ""
@@ -3829,7 +3829,7 @@ ERROR=$?
   if [[ "$ERROR" != '0' ]]; then
   cecho "Error: ${SIEGE_LINKFILE} extraction failed." $boldgreen
 checklogdetails
-  exit #$ERROR
+  exit 1
 else 
          cecho "${SIEGE_LINKFILE} valid file." $boldyellow
 echo ""
@@ -3844,7 +3844,7 @@ ERROR=$?
   if [[ "$ERROR" != '0' ]]; then
   cecho "Error: ${SPROXY_LINKFILE} download failed." $boldgreen
 checklogdetails
-  exit #$ERROR
+  exit 1
 else 
          cecho "Download done." $boldyellow
 #echo ""
@@ -3857,7 +3857,7 @@ ERROR=$?
   if [[ "$ERROR" != '0' ]]; then
   cecho "Error: ${SPROXY_LINKFILE} extraction failed." $boldgreen
 checklogdetails
-  exit #$ERROR
+  exit 1
 else 
          cecho "${SPROXY_LINKFILE} valid file." $boldyellow
 echo ""
@@ -3892,7 +3892,7 @@ ERROR=$?
   if [[ "$ERROR" != '0' ]]; then
   cecho "${PYTHON_LINKFILE} download failed." $boldgreen
 checklogdetails
-  exit #$ERROR
+  exit 1
 else 
          cecho "Download done." $boldyellow
 #echo ""
@@ -3904,7 +3904,7 @@ ERROR=$?
   if [[ "$ERROR" != '0' ]]; then
   cecho "Error: ${PYTHON_LINKFILE} extraction failed." $boldgreen
 checklogdetails
-  exit #$ERROR
+  exit 1
 else 
          cecho "${PYTHON_LINKFILE} valid file." $boldyellow
 echo ""
@@ -3921,7 +3921,7 @@ ERROR=$?
   if [[ "$ERROR" != '0' ]]; then
   cecho "${PYTHON_SETUPTOOLSLINKFILE} download failed." $boldgreen
 checklogdetails
-  exit #$ERROR
+  exit 1
 else 
          cecho "Download ${PYTHON_SETUPTOOLSLINKFILE} done." $boldyellow
 echo ""
@@ -3963,7 +3963,7 @@ ERROR=$?
   if [[ "$ERROR" != '0' ]]; then
   cecho "Error: ${XCACHE_LINKFILE} download failed." $boldgreen
 checklogdetails
-  exit #$ERROR
+  exit 1
 else 
          cecho "Download done." $boldyellow
 #echo ""
@@ -3975,7 +3975,7 @@ ERROR=$?
   if [[ "$ERROR" != '0' ]]; then
   cecho "Error: ${XCACHE_LINKFILE} extraction failed." $boldgreen
 checklogdetails
-  exit #$ERROR
+  exit 1
 else 
          cecho "${XCACHE_LINKFILE} valid file." $boldyellow
 echo ""
@@ -4009,7 +4009,7 @@ ERROR=$?
   if [[ "$ERROR" != '0' ]]; then
   cecho "Error: ${APCCACHE_LINKFILE} local download failed." $boldgreen
 checklogdetails
-  exit #$ERROR
+  exit 1
 else 
          cecho "Download local done." $boldyellow
 #echo ""
@@ -4021,7 +4021,7 @@ ERROR=$?
   if [[ "$ERROR" != '0' ]]; then
   cecho "Error: ${APCCACHE_LINKFILE} (local) extraction failed." $boldgreen
 checklogdetails
-  exit #$ERROR
+  exit 1
 else 
          cecho "${APCCACHE_LINKFILE} (local) valid file." $boldyellow
 echo ""
@@ -4053,7 +4053,7 @@ ERROR=$?
   if [[ "$ERROR" != '0' ]]; then
   cecho "Error: ${APCCACHE_LINKFILE} download failed." $boldgreen
 checklogdetails
-  exit #$ERROR
+  exit 1
 else 
          cecho "Download done." $boldyellow
 #echo ""
@@ -4100,7 +4100,7 @@ ERROR=$?
   if [[ "$ERROR" != '0' ]]; then
   cecho "Error: ${ZENDOPCACHE_LINKFILE} local download failed." $boldgreen
 checklogdetails
-  exit #$ERROR
+  exit 1
 else 
          cecho "Download local done." $boldyellow
 #echo ""
@@ -4112,7 +4112,7 @@ ERROR=$?
   if [[ "$ERROR" != '0' ]]; then
   cecho "Error: ${ZENDOPCACHE_LINKFILE} local extraction failed." $boldgreen
 checklogdetails
-  exit #$ERROR
+  exit 1
 else 
          cecho "${ZENDOPCACHE_LINKFILE} local valid file." $boldyellow
 echo ""
@@ -4144,7 +4144,7 @@ ERROR=$?
   if [[ "$ERROR" != '0' ]]; then
   cecho "Error: ${ZENDOPCACHE_LINKFILE} download failed." $boldgreen
 checklogdetails
-  exit #$ERROR
+  exit 1
 else 
          cecho "Download done." $boldyellow
 #echo ""
@@ -4185,7 +4185,7 @@ ERROR=$?
   if [[ "$ERROR" != '0' ]]; then
   cecho "Error: ${NSD_LINKFILE} download failed." $boldgreen
 checklogdetails
-  exit #$ERROR
+  exit 1
 else 
          cecho "Download ${NSD_LINKFILE} done." $boldyellow
 #echo ""
@@ -4197,7 +4197,7 @@ ERROR=$?
   if [[ "$ERROR" != '0' ]]; then
   cecho "Error: ${NSD_LINKFILE} extraction failed." $boldgreen
 checklogdetails
-  exit #$ERROR
+  exit 1
 else 
          cecho "${NSD_LINKFILE} valid file." $boldyellow
 echo ""
@@ -4240,7 +4240,7 @@ ERROR=$?
   if [[ "$ERROR" != '0' ]]; then
   cecho "Error: ${CSF_LINKFILE} download failed." $boldgreen
 checklogdetails
-  exit #$ERROR
+  exit 1
 else 
          cecho "Download ${CSF_LINKFILE} done." $boldyellow
 #echo ""
@@ -4252,7 +4252,7 @@ ERROR=$?
   if [[ "$ERROR" != '0' ]]; then
   cecho "Error: ${CSF_LINKFILE} extraction failed." $boldgreen
 checklogdetails
-  exit #$ERROR
+  exit 1
 else 
          cecho "${CSF_LINKFILE} valid file." $boldyellow
 echo ""
@@ -4305,7 +4305,7 @@ ERROR=$?
     if [[ "$ERROR" != '0' ]]; then
     cecho "Error: ${CCACHEFILE} extraction failed." $boldgreen
 checklogdetails
-    exit #$ERROR
+    exit 1
 else 
          cecho "${CCACHEFILE} valid file." $boldyellow
 echo ""

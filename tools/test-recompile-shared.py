@@ -819,3 +819,11 @@ make() {{
             elif failure == 'make':
                 assert 'install' not in phases
     print('PASS: actual PCRE compile helpers stop on configure/make/install/tee failure')
+
+# A failed download that aborts must not report success: a bare `exit` after
+# checklogdetails returned cecho's status 0, so menu 5 looked successful.
+for name in ('inc/downloads.inc', 'inc/zendopcache_reinstall.inc'):
+    source = (REPO / name).read_text()
+    assert not re.search(r'^\s*exit #\$ERROR', source, re.M), name
+assert not re.search(r'^\s*exit\s*$', (REPO / 'inc/php_upgrade.inc').read_text(), re.M)
+print('PASS: download and PHP upgrade aborts exit non-zero')

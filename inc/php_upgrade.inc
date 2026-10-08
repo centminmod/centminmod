@@ -466,7 +466,7 @@ else
         echo "is available. Please run centmin.sh menu option 4 to update Nginx's"
         echo "OpenSSL version first. Then run centmin.sh menu option 5 to update PHP"
         echo
-        exit
+        exit 1
     fi
     echo
     read -ep "Enter PHP Version number you want to upgrade/downgrade to: " phpver
