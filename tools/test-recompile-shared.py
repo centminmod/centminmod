@@ -407,7 +407,7 @@ mktemp() {{ if [[ "$1" = -d ]]; then command mktemp -d {shlex.quote(str(work / '
     mutex = work / 'helper-mutex'
     flock_setup = f'''
 LOCK_MUTEX={shlex.quote(str(mutex))}
-flock() {{ {shlex.quote(sys.executable)} -c 'import fcntl, sys; fcntl.flock(int(sys.argv[1]), fcntl.LOCK_EX)' "$2"; }}
+flock() {{ {shlex.quote(sys.executable)} -c 'import fcntl, sys; fcntl.flock(int(sys.argv[1]), fcntl.LOCK_EX)' "${{@: -1}}"; }}
 '''
     ready, release, waiting, done = (work / name for name in ('update-ready', 'update-release', 'unlock-waiting', 'unlock-done'))
     isolated_env = {key: os.environ[key] for key in ('PATH', 'TMPDIR') if key in os.environ}
@@ -429,7 +429,7 @@ mutate do_update
     try:
         wait_for(ready, first)
         second = subprocess.Popen(['bash', '-c', collector_setup + flock_setup + f'''
-flock() {{ touch {shlex.quote(str(waiting))}; {shlex.quote(sys.executable)} -c 'import fcntl, sys; fcntl.flock(int(sys.argv[1]), fcntl.LOCK_EX)' "$2"; }}
+flock() {{ touch {shlex.quote(str(waiting))}; {shlex.quote(sys.executable)} -c 'import fcntl, sys; fcntl.flock(int(sys.argv[1]), fcntl.LOCK_EX)' "${{@: -1}}"; }}
 mutate do_unlock && touch {shlex.quote(str(done))}
 '''], cwd=work, env=isolated_env, text=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         wait_for(waiting, second)

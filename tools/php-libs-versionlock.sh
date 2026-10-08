@@ -399,7 +399,8 @@ mutate() {
   (
     umask 077
     exec 9>>"$LOCK_MUTEX" || exit $?
-    flock -x 9 || exit $?
+    # bounded: a hung run must not stall menu 5 forever
+    flock -x -w 600 9 || { status=$?; echo "error: could not lock $LOCK_MUTEX within 600s" >&2; exit "$status"; }
     "$@"
   )
 }
