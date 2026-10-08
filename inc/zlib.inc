@@ -867,7 +867,7 @@ install_stdzlib() {
         echo "install zlib ${NGINX_ZLIBVER}..."
         echo
         if [[ ! -f "${DIR_TMP}/${NGX_ZLIBLINKFILE}" || ! -d "${DIR_TMP}/zlib-${NGINX_ZLIBVER}" ]]; then
-            nginxzlibtarball
+            nginxzlibtarball || return $?
         fi
         # CVE-2022-37434 patch
         # https://bugzilla.redhat.com/show_bug.cgi?id=2116639

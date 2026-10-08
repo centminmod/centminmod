@@ -719,6 +719,8 @@ ngx_srcache_patch() {
 }
 
 ngx_develkit_patch() {
+  local ndk_archive_list ndk_first_entry ndk_cache_dir
+  local -a ndk_patch_status
   {
   # nginx 1.31.3+ / 1.30.4+ (CVE-2026-42533 fix series commit a8289aa69c74)
   # split ngx_http_script_complex_value_code() and moved the script engine
@@ -731,30 +733,37 @@ ngx_develkit_patch() {
   # https://github.com/vision5/ngx_devel_kit/issues/43
   # https://github.com/vision5/ngx_devel_kit/pull/42
   # https://github.com/nginx/nginx/pull/1601
+  ndk_cache_dir=$(readlink -f -- "$DIR_TMP") || return $?
+  [[ -d "$ndk_cache_dir" && "$ndk_cache_dir" != / ]] || { echo "error: unsafe ngx_devel_kit cache directory" >&2; return 1; }
   if [ "$ngver" ]; then
     if [[ "$FREENGINX_INSTALL" = [yY] ]]; then
-      NGX_SRCTREEDIR="/svr-setup/freenginx-$ngver"
+      NGX_SRCTREEDIR="${DIR_TMP}/freenginx-$ngver"
     else
-      NGX_SRCTREEDIR="/svr-setup/nginx-$ngver"
+      NGX_SRCTREEDIR="${DIR_TMP}/nginx-$ngver"
     fi
   else
     if [[ "$FREENGINX_INSTALL" = [yY] ]]; then
-      NGX_SRCTREEDIR="/svr-setup/freenginx-${NGINX_VERSION}"
+      NGX_SRCTREEDIR="${DIR_TMP}/freenginx-${FREENGINX_VERSION}"
     else
-      NGX_SRCTREEDIR="/svr-setup/nginx-${NGINX_VERSION}"
+      NGX_SRCTREEDIR="${DIR_TMP}/nginx-${NGINX_VERSION}"
     fi
   fi
-  DETECT_NGXVER=$(awk '/define nginx_version  / {print $3}' "$NGX_SRCTREEDIR/src/core/nginx.h")
+  [[ -f "$NGX_SRCTREEDIR/src/core/nginx.h" && -r "$NGX_SRCTREEDIR/src/core/nginx.h" && -f "$NGX_SRCTREEDIR/src/http/ngx_http_script.h" && -r "$NGX_SRCTREEDIR/src/http/ngx_http_script.h" ]] || { echo "error: ngx_devel_kit requires readable nginx source headers" >&2; return 1; }
+  DETECT_NGXVER=$(awk '/define nginx_version  / {print $3}' "$NGX_SRCTREEDIR/src/core/nginx.h") || return $?
   echo "$DETECT_NGXVER"
   if [[ -f "$DIR_TMP/${NGX_DEVELKITLINKFILE}" && -f "$CUR_DIR/patches/ngx-devel-kit/ndk-nginx-complex-value-end.patch" ]]; then
-    NGX_DEVELKITDIR=$(tar -tzf "$DIR_TMP/${NGX_DEVELKITLINKFILE}" | head -1 | cut -f1 -d"/")
+    ndk_archive_list=$(tar -tzf "$DIR_TMP/${NGX_DEVELKITLINKFILE}") || return $?
+    ndk_first_entry=${ndk_archive_list%%$'\n'*}
+    NGX_DEVELKITDIR=${ndk_first_entry%%/*}
+    case "$NGX_DEVELKITDIR" in
+      ''|.|..|*[!a-zA-Z0-9._+-]*) echo "error: unsafe ngx_devel_kit archive directory" >&2; return 1 ;;
+    esac
+    [[ -n "$DIR_TMP" && -d "$DIR_TMP" && "$ndk_first_entry" = "$NGX_DEVELKITDIR/"* ]] || return 1
     # always re-extract pristine ngx_devel_kit sources so builds against
     # nginx versions without ngx_http_script_complex_value_end_code never
     # reuse a previously patched ngx_devel_kit directory
-    rm -rf "${DIR_TMP}/${NGX_DEVELKITDIR}"
-    pushd "${DIR_TMP}"
-    tar xzf "$DIR_TMP/${NGX_DEVELKITLINKFILE}"
-    popd
+    rm -rf -- "${DIR_TMP}/${NGX_DEVELKITDIR}" || return $?
+    tar xzf "$DIR_TMP/${NGX_DEVELKITLINKFILE}" -C "$DIR_TMP" || return $?
     # feature probe the nginx source tree being built instead of comparing
     # nginx version numbers so the patch self-enables on nginx 1.31.3+ and
     # 1.30.4+ backports, self-disables on older nginx and freenginx, and
@@ -762,16 +771,19 @@ ngx_develkit_patch() {
     # ships with the fix already applied
     if grep -q 'ngx_http_script_complex_value_end_code' "$NGX_SRCTREEDIR/src/http/ngx_http_script.h" \
       && ! grep -q 'ngx_http_script_complex_value_end_code' "${DIR_TMP}/${NGX_DEVELKITDIR}/src/ndk_rewrite.c"; then
-      pushd "${DIR_TMP}/${NGX_DEVELKITDIR}"
+      pushd "${DIR_TMP}/${NGX_DEVELKITDIR}" || return $?
       cecho "patching ngx_devel_kit ndk_http_rewrite_value" $boldyellow
       cecho "patch -p1 < $CUR_DIR/patches/ngx-devel-kit/ndk-nginx-complex-value-end.patch" $boldyellow
-      patch -p1 < "$CUR_DIR/patches/ngx-devel-kit/ndk-nginx-complex-value-end.patch"
+      patch -p1 < "$CUR_DIR/patches/ngx-devel-kit/ndk-nginx-complex-value-end.patch" || return $?
       echo
       echo "patching ngx_devel_kit for nginx ngx_http_script_complex_value_end_code support"
       popd
     fi
   fi
   } 2>&1 | tee -a "${CENTMINLOGDIR}/patch_patchnginx_${DT}.log"
+  ndk_patch_status=("${PIPESTATUS[@]}")
+  [[ "${ndk_patch_status[0]}" -eq 0 ]] || return "${ndk_patch_status[0]}"
+  return "${ndk_patch_status[1]}"
 }
 
 ngx_cachepurge_patch() {
@@ -1178,6 +1190,7 @@ ngx_upstreamcheck_patch() {
 }
 
 patchnginx() {
+  local -a patchnginx_status
   {
   sleep "$NGINXPATCH_DELAY"
   ngx_renegotiate_patch
@@ -1276,7 +1289,7 @@ patchnginx() {
      if [[ "$NGINXTLSPATCH_CURLCHECK" != '0' ]]; then
        NGINXTLSPATCHLINK="https://gitlab.com/centminmod-github-mirror/sslconfig-felix-group/raw/updated-nginx-1.9.15-spdy-patch/patches/${NGINXSPDYPATCHED_NAME}"
      fi
-     wget -${ipv_forceopt}v --no-check-certificate "$NGINXTLSPATCHLINK"
+     wget -${ipv_forceopt}v "$NGINXTLSPATCHLINK"
      if [[ -f "${NGINXSPDYPATCHED_NAME}" && ! "$(grep 'ngx_http_spdy_filter' auto/modules)" ]]; then
        patch -p1 < "${NGINXSPDYPATCHED_NAME}"
      fi
@@ -1338,7 +1351,7 @@ patchnginx() {
       if [[ "$NGINXTLSPATCH_CURLCHECK" != '0' ]]; then
         NGINXTLSPATCHLINK="https://gitlab.com/centminmod-github-mirror/sslconfig/raw/master/patches/${NGINXTLSPATCH_NAME}"
       fi
-      wget -${ipv_forceopt}v --no-check-certificate "$NGINXTLSPATCHLINK"
+      wget -${ipv_forceopt}v "$NGINXTLSPATCHLINK"
       if [[ -f "${NGINXTLSPATCH_NAME}" && ! "$(grep 'dyn_rec.threshold' src/event/ngx_event_openssl.c)" ]]; then
          echo "patch -p1 < "${NGINXTLSPATCH_NAME}""
          patch -p1 < "${NGINXTLSPATCH_NAME}"
@@ -1399,11 +1412,14 @@ patchnginx() {
   ocsp_ttl_override
   ngx_srcache_patch
   ngx_headers_more_patch
-  ngx_develkit_patch
+  ngx_develkit_patch || return $?
   # nginx_quic_patches
   aws_lc_patch
   http2_shutdown_fix_patch
 } 2>&1 | tee -a "${CENTMINLOGDIR}/patch_patchnginx_${DT}.log"
+  patchnginx_status=("${PIPESTATUS[@]}")
+  [[ "${patchnginx_status[0]}" -eq 0 ]] || return "${patchnginx_status[0]}"
+  return "${patchnginx_status[1]}"
 }
 
 luapatch() {
