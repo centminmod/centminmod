@@ -30,7 +30,7 @@ DT=$(date +"%d%m%y-%H%M%S")
 branchname='141.00beta01'
 SCRIPT_MAJORVER='141'
 SCRIPT_MINORVER='00'
-SCRIPT_INCREMENTVER='291'
+SCRIPT_INCREMENTVER='292'
 SCRIPT_VERSIONSHORT="${branchname}"
 SCRIPT_VERSION="${SCRIPT_VERSIONSHORT}.b${SCRIPT_INCREMENTVER}"
 SCRIPT_DATE='16/08/25'
@@ -3134,6 +3134,7 @@ ngxinstallstarttime=$(TZ=UTC date +%s.%N)
 {    
 ngxinstallmain
 } 2>&1 | tee "${CENTMINLOGDIR}/centminmod_ngxinstalltime_${DT}.log"
+[[ "${PIPESTATUS[*]}" = "0 0" ]] || exit 1
 wait
 
 ngxinstallendtime=$(TZ=UTC date +%s.%N)
@@ -3218,7 +3219,7 @@ fi
     echo "Initial Install PHPMVER: $PHPMVER"
 
     if [[ "$INITIALINSTALL" = [yY] ]]; then
-      php_patches
+      php_patches || exit $?
     fi
 
     if [[ "$CENTOS_SIX" -eq '6' ]]; then
@@ -3333,8 +3334,9 @@ fi
     chkconfig --levels 235 php-fpm on
     #systemctl restart php-fpm 2>/dev/null
     # /etc/init.d/php-fpm force-quit
-    service php-fpm start
-    fileinfo_standalone
+    /usr/local/sbin/php-fpm -t || exit $?
+    service php-fpm start || exit $?
+    fileinfo_standalone || exit $?
 
     if [[ "$CENTOS_SEVEN" -eq '7' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' || "$CENTOS_TEN" -eq '10' ]] && [[ "$SWITCH_PHPFPM_SYSTEMD" = [yY] && -f "$CUR_DIR/tools/php-systemd.sh" ]]; then
       $CUR_DIR/tools/php-systemd.sh fpm-systemd
@@ -3366,7 +3368,7 @@ fi
 
 max_spawn_rate_check
 funct_logphprotate
-run_after_php_install
+run_after_php_install || exit $?
 
         echo
         echo "lscpu"
@@ -3416,7 +3418,7 @@ phpsededit
 # igbinary still needed for libmemcached PHP extension if ZOPCACHE=yY
 # or for redis php extension
 if [[ "$APCINSTALL" = [nN] || "$ZOPCACHEDFT" = [yY] ]]; then
-  funct_igbinaryinstall
+  funct_igbinaryinstall || exit $?
 fi
 
 postfix_presetup
@@ -3494,7 +3496,7 @@ fi
 
 if [[ "$PHPTIMEZONEDB" = [yY] ]]; then
   echo "phptimezonedb_install"
-  phptimezonedb_install
+  phptimezonedb_install || exit $?
 fi
 
 if [[ "$PHP_MCRYPTPECL" = [yY] ]] && [[ "$PHPMVER" = '7.4' ]]; then
@@ -3537,7 +3539,7 @@ then
 fi
 
 echo "source_pcreinstall"
-source_pcreinstall
+source_pcreinstall || exit $?
 
 echo
 shortcutsinstall
@@ -3628,11 +3630,13 @@ fi
 
 if [[ "$NGINX_INSTALL" = [yY] && -f /usr/lib/systemd/system/nginx.service ]]; then
   sleep 2
-  systemctl daemon-reload -q
-  systemctl start nginx
+  /usr/local/sbin/nginx -t || exit $?
+  systemctl daemon-reload -q || exit $?
+  systemctl start nginx || exit $?
 elif [[ "$NGINX_INSTALL" = [yY] && -f /etc/init.d/nginx ]]; then
   sleep 2
-  service nginx start
+  /usr/local/sbin/nginx -t || exit $?
+  service nginx start || exit $?
 fi
 
 if [[ "$MYSQL_INSTALL" = [yY] && -f /etc/init.d/mysqld ]]; then
@@ -3673,7 +3677,7 @@ checkxcacheadmin
 
 # time updatedb
 
-centminfinish
+centminfinish || exit $?
 memcacheadmin
 phpiadmin
 
@@ -3903,8 +3907,9 @@ if [[ "$1" = 'install' ]]; then
     cmm_php_fatal_clear
     dlstarttime=$(TZ=UTC date +%s.%N)
     {    
-    alldownloads
+    alldownloads || exit $?
     } 2>&1 | tee "${CENTMINLOGDIR}/centminmod_downloadtimes_${DT}.log"
+    [[ "${PIPESTATUS[*]}" = "0 0" ]] || exit 1
     wait
     if cmm_php_fatal_pending; then
       echo
@@ -3965,7 +3970,7 @@ EOF
     echo "$SCRIPT_VERSION" > /etc/centminmod-release
     #echo "$SCRIPT_VERSION #`date`" >> /etc/centminmod-versionlog
     } 2>&1 | tee "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_install.log"
-if [[ ${PIPESTATUS[0]} -ne 0 ]]; then
+if [[ "${PIPESTATUS[*]}" != "0 0" ]]; then
   echo "Centmin Mod install aborted - see ${CENTMINLOGDIR}/"
   exit 1
 fi
@@ -4084,7 +4089,7 @@ else
             fi
             
             cmm_php_fatal_clear
-            alldownloads
+            alldownloads || exit $?
             if cmm_php_fatal_pending; then
               echo
               cecho "=================================================================" $boldyellow
@@ -4143,7 +4148,7 @@ EOF
             echo "$SCRIPT_VERSION" > /etc/centminmod-release
             #echo "$SCRIPT_VERSION #`date`" >> /etc/centminmod-versionlog
             } 2>&1 | tee "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_install.log"
-if [[ ${PIPESTATUS[0]} -ne 0 ]]; then
+if [[ "${PIPESTATUS[*]}" != "0 0" ]]; then
   echo "Centmin Mod install aborted - see ${CENTMINLOGDIR}/"
   exit 1
 fi
@@ -4221,7 +4226,7 @@ fi
         fi
         funct_nginxupgrade
         } 2>&1 | tee "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_nginx_upgrade.log"
-        NGINX_UPGRADE_STATUS=${PIPESTATUS[0]}
+        NGINX_UPGRADE_STATUS=$(( PIPESTATUS[0] != 0 ? PIPESTATUS[0] : PIPESTATUS[1] ))
         if [[ "$NGINX_UPGRADE_STATUS" -ne 0 ]]; then
             exit "$NGINX_UPGRADE_STATUS"
         fi
@@ -4267,7 +4272,7 @@ fi
         fi
         funct_phpupgrade || exit $?
         } 2>&1 | tee "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_php_upgrade.log"
-        PHP_UPGRADE_STATUS=${PIPESTATUS[0]}
+        PHP_UPGRADE_STATUS=$(( PIPESTATUS[0] != 0 ? PIPESTATUS[0] : PIPESTATUS[1] ))
         if [[ "$PHP_UPGRADE_STATUS" -ne 0 ]]; then
             exit "$PHP_UPGRADE_STATUS"
         fi
@@ -4660,7 +4665,7 @@ fi
         # setramdisk
         diskalert
         cmm_php_fatal_clear
-        alldownloads
+        alldownloads || exit $?
         if cmm_php_fatal_pending; then
           echo
           cecho "=================================================================" $boldyellow
@@ -4718,7 +4723,7 @@ fi
         fi
         funct_nginxupgrade "$2"
         } 2>&1 | tee "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_nginx_upgrade.log"
-        NGINX_UPGRADE_STATUS=${PIPESTATUS[0]}
+        NGINX_UPGRADE_STATUS=$(( PIPESTATUS[0] != 0 ? PIPESTATUS[0] : PIPESTATUS[1] ))
         if [[ "$NGINX_UPGRADE_STATUS" -ne 0 ]]; then
             exit "$NGINX_UPGRADE_STATUS"
         fi
@@ -4765,7 +4770,7 @@ fi
         fi
         funct_phpupgrade "$2" || exit $?
         } 2>&1 | tee "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_php_upgrade.log"
-        PHP_UPGRADE_STATUS=${PIPESTATUS[0]}
+        PHP_UPGRADE_STATUS=$(( PIPESTATUS[0] != 0 ? PIPESTATUS[0] : PIPESTATUS[1] ))
         if [[ "$PHP_UPGRADE_STATUS" -ne 0 ]]; then
             exit "$PHP_UPGRADE_STATUS"
         fi
@@ -4820,7 +4825,7 @@ fi
         fi
         funct_phpupgrade "$2" all || exit $?
         } 2>&1 | tee "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_php_upgrade_all.log"
-        PHP_UPGRADE_STATUS=${PIPESTATUS[0]}
+        PHP_UPGRADE_STATUS=$(( PIPESTATUS[0] != 0 ? PIPESTATUS[0] : PIPESTATUS[1] ))
         if [[ "$PHP_UPGRADE_STATUS" -ne 0 ]]; then
             exit "$PHP_UPGRADE_STATUS"
         fi

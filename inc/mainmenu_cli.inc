@@ -4,8 +4,8 @@ install)
 
 lowmemcheck
 diskalert
-alldownloads
-funct_centmininstall
+alldownloads || return $?
+funct_centmininstall || return $?
 echo "$SCRIPT_VERSION" > /etc/centminmod-release
 echo "$SCRIPT_VERSION #`date`" >> /etc/centminmod-versionlog
 
@@ -25,7 +25,7 @@ nginxupgrade)
 diskalert
 csftweaks
 yuminstall
-funct_nginxupgrade
+funct_nginxupgrade || return $?
 
 ;;
 phpupgrade)
@@ -33,7 +33,7 @@ phpupgrade)
 diskalert
 csftweaks
 yuminstall
-funct_phpupgrade
+funct_phpupgrade || return $?
 
 ;;
 xcachereinstall)
