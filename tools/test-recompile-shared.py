@@ -827,3 +827,11 @@ for name in ('inc/downloads.inc', 'inc/zendopcache_reinstall.inc'):
     assert not re.search(r'^\s*exit #\$ERROR', source, re.M), name
 assert not re.search(r'^\s*exit\s*$', (REPO / 'inc/php_upgrade.inc').read_text(), re.M)
 print('PASS: download and PHP upgrade aborts exit non-zero')
+
+# Addons that menu 5 runs as separate scripts honour the deferred php-fpm
+# restart instead of restarting php-fpm onto a half-updated PHP build.
+for name in ('addons/php72-mcrypt.sh', 'addons/php73-mcrypt.sh', 'addons/php74-mcrypt.sh', 'addons/php80-mcrypt.sh', 'addons/ioncube.sh'):
+    lines = [line for line in (REPO / name).read_text().splitlines() if 'restart php-fpm' in line and not line.lstrip().startswith('#')]
+    assert lines and all('CMM_PHPFPM_RESTART_DEFERRED' in line for line in lines), (name, lines)
+assert 'export CMM_PHPFPM_RESTART_DEFERRED=y' in (REPO / 'inc/php_upgrade.inc').read_text()
+print('PASS: menu 5 addons defer their php-fpm restart')

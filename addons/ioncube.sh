@@ -193,7 +193,8 @@ ls -lah ${CONFIGSCANDIR}
 echo ""
 ls -lah ${PHPEXTDIRD}
 
-systemctl restart php-fpm >/dev/null 2>&1
+# centmin.sh menu 5 restarts php-fpm once after all extension rebuilds
+[[ "$CMM_PHPFPM_RESTART_DEFERRED" = y ]] || systemctl restart php-fpm >/dev/null 2>&1
 
 if [ -f "${PHPEXTDIRD}/ioncube.so" ]; then
   echo ""
