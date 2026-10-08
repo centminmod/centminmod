@@ -4485,7 +4485,8 @@ ovhkernelcheck() {
     # OVH custom kernel for the newer Intel network NIC support
     # Intel Corporation Ethernet Connection X552/X557-AT 10GBASE-T
     # OVHASNCHECK=$(curl -${ipv_forceopt}s${CURL_TIMEOUTS} https://ipinfo.io/org | grep -o 'OVH' >/dev/null 2>&1; echo $?)
-    OVHASNCHECK=$(curl -${ipv_forceopt}s${CURL_TIMEOUTS} https://geoip.centminmod.com/v3 | jq -r '"\(.data.asn) \(.data.description_short)"' | grep -o 'OVH' >/dev/null 2>&1; echo $?)
+    # v3 is retired and returns an error; v4 reports .asn and .asOrganization
+    OVHASNCHECK=$(curl -${ipv_forceopt}s${CURL_TIMEOUTS} -A "$CURL_AGENT OVH CHECK $SCRIPT_VERSION" https://geoip.centminmod.com/v4 | jq -r '"\(.asn) \(.asOrganization)"' 2>/dev/null | grep -o 'OVH' >/dev/null 2>&1; echo $?)
     OVHKERNEL_CHECK=$(uname -r | grep '\-grs' >/dev/null 2>&1; echo $?)
     BROADWELLDE_CHECK=$(grep 'Xeon(R) CPU D-15' /proc/cpuinfo >/dev/null 2>&1; echo $?)
     # more sure way to check for OVH custom kernel if /root/.ovhrc file exists
