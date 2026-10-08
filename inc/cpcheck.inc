@@ -3942,6 +3942,10 @@ maintenance_confcheck() {
             sed -i 's/include \/usr\/local\/nginx\/conf\/geoip.conf;/include \/usr\/local\/nginx\/conf\/geoip.conf;\ninclude \/usr\/local\/nginx\/conf\/maintenance.conf;\n/g' /usr/local/nginx/conf/nginx.conf
       fi
     fi
+  elif [[ -f "${SCRIPT_DIR}/tools/sitestatus.sh" ]] && ! cmp -s "${SCRIPT_DIR}/tools/sitestatus.sh" /usr/bin/sitestatus; then
+    # menu 4/5 maintenance relies on the current reload and error returning version
+    \cp -f "${SCRIPT_DIR}/tools/sitestatus.sh" /usr/bin/sitestatus
+    chmod +x /usr/bin/sitestatus
   fi
 }
 
