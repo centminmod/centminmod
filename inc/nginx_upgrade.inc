@@ -414,35 +414,41 @@ if [[ -d "${DIR_TMP}/ngx_pagespeed-release-${NGXPGSPEED_VER}/ngx_pagespeed-maste
     rm -rf ${DIR_TMP}/ngx_pagespeed-*
     rm -rf ${DIR_TMP}/release-1.9.32*
     rm -rf ${DIR_TMP}/incubator-pagespeed-ngx-master*
-    nginxpgspeedtarball
+    nginxpgspeedtarball || return 1
 fi
 
 cecho "Check for missing nginx modules" $boldyellow
 
 LIBRESSLDIR=$(tar -tzf "$DIR_TMP/${LIBRESSL_LINKFILE}" 2>&1 | head -1 | cut -f1 -d"/" | grep libressl)
 if [[ ! -f "${DIR_TMP}/${LIBRESSL_LINKFILE}" || ! -d "${DIR_TMP}/${LIBRESSLDIR}" ]]; then
-    libressldownload
+    libressldownload || return 1
 elif [[ ! -f "${DIR_TMP}/${LIBRESSL_LINKFILE}" ]]; then
-    libressldownload
+    libressldownload || return 1
 fi
 
 if [[ ! -f "${DIR_TMP}/${NGX_ZLIBLINKFILE}" || ! -d "${DIR_TMP}/zlib-${NGINX_ZLIBVER}" ]]; then
-    nginxzlibtarball
+    nginxzlibtarball || return 1
 fi
 
 if [[ ! -f "${DIR_TMP}/${NGX_FANCYINDEXLINKFILE}" || ! -f "${DIR_TMP}/${NGX_CACHEPURGEFILE}" || ! -f "${DIR_TMP}/${NGX_ACCESSKEYLINKFILE}" || ! -f "${DIR_TMP}/${NGX_CONCATLINKFILE}" || ! -f "${DIR_TMP}/${OPENSSL_LINKFILE}" || ! -f "${DIR_TMP}/${PCRELINKFILE}" || ! -f "${DIR_TMP}/${NGX_WEBDAVLINKFILE}" || ! -f "${DIR_TMP}/${NGX_HEADERSMORELINKFILE}" || ! -f "${DIR_TMP}/${NGX_STICKYLINKFILE}" || ! -f "${DIR_TMP}/${NGX_UPSTREAMCHECKLINKFILE}" || ! -f "${DIR_TMP}/${NGX_HTTPREDISLINKFILE}" ]] || [[ ! -d "${DIR_TMP}/${NGX_FANCYINDEXDIR}" || ! -d "${DIR_TMP}/${NGX_CACHEPURGEDIR}" || ! -d "${DIR_TMP}/nginx-accesskey-2.0.3" || ! -d "${DIR_TMP}/${NGX_CONCATDIR}" || ! -d "${DIR_TMP}/${OPENSSLDIR}" || ! -d "${DIR_TMP}/${PCRELINKDIR}" || ! -d "${DIR_TMP}/${NGX_WEBDAVLINKDIR}" || ! -d "${DIR_TMP}/${NGX_HEADERSMOREDIR}" || ! -d "${DIR_TMP}/${NGX_STICKYDIR}" || ! -d "${DIR_TMP}/${NGX_UPSTREAMCHECKDIR}" || ! -d "${DIR_TMP}/${NGX_HTTPREDISDIR}" ]]; then
 
     if [[ "$PARALLEL_MODE" = [yY] ]] && [[ "$(grep -c "processor" /proc/cpuinfo)" -gt '1' ]]; then
         ngxmoduletarball &
+        local module_pid=$! openssl_pid="" download_status=0
         if [[ "$LIBRESSL_SWITCH" = 'n' ]]; then
             openssldownload &
+            openssl_pid=$!
         fi
         # libressldownload &
-        wait
+        wait "$module_pid" || download_status=1
+        if [[ "$openssl_pid" ]]; then
+            wait "$openssl_pid" || download_status=1
+        fi
+        [[ "$download_status" -eq 0 ]] || return 1
     else
-        ngxmoduletarball
+        ngxmoduletarball || return 1
         if [[ "$LIBRESSL_SWITCH" = 'n' ]]; then
-            openssldownload
+            openssldownload || return 1
         fi
         # libressldownload
     fi
@@ -451,17 +457,17 @@ fi
 cecho "Check for pagespeed nginx module download file" $boldyellow
 # echo "${DIR_TMP}/${NGX_PAGESPEEDGITLINKFILE}"
 # echo "$DIR_TMP/$LIBUNWIND_LINKDIR"
-NGXPGSPEED_DIR=$(tar -tzf "$DIR_TMP/${NGX_PAGESPEEDLINKFILE}" 2>1 | head -1 | cut -f1 -d"/")
+NGXPGSPEED_DIR=$(tar -tzf "$DIR_TMP/${NGX_PAGESPEEDLINKFILE}" 2>/dev/null | head -1 | cut -f1 -d"/")
 if [[ ! -f "${DIR_TMP}/${NGX_PAGESPEEDGITLINKFILE}" || ! -d "$DIR_TMP/$NGXPGSPEED_DIR" ]]; then
     if [[ "$NGINX_PAGESPEED" = [yY] ]]; then
-        nginxpgspeedtarball
+        nginxpgspeedtarball || return 1
 
     # determine top level extracted directory name for $DIR_TMP/${NGX_PAGESPEEDLINKFILE}
     NGXPGSPEED_DIR=$(tar -tzf "$DIR_TMP/${NGX_PAGESPEEDLINKFILE}" | head -1 | cut -f1 -d"/")
     fi
 elif [[ ! -f "${DIR_TMP}/${NGX_PAGESPEEDGITLINKFILE}" ]]; then
     if [[ "$NGINX_PAGESPEED" = [yY] ]]; then
-        nginxpgspeedtarball
+        nginxpgspeedtarball || return 1
 
     # determine top level extracted directory name for $DIR_TMP/${NGX_PAGESPEEDLINKFILE}
     NGXPGSPEED_DIR=$(tar -tzf "$DIR_TMP/${NGX_PAGESPEEDLINKFILE}" | head -1 | cut -f1 -d"/")
@@ -476,18 +482,18 @@ fi
 cecho "Check for pagespeed PSOL library" $boldyellow
 if [ -d "$DIR_TMP/$NGXPGSPEED_DIR" ]; then
     if [[ ! -f "$DIR_TMP/$NGXPGSPEED_DIR/${NGX_PAGESPEEDPSOLINKLFILE}" ]]; then
-        nginxpgspeedtarball
+        nginxpgspeedtarball || return 1
     fi
 fi
 
 cecho "Check for gperf tools + libunwind download files" $boldyellow
 if [[ ! -f "${DIR_TMP}/${LIBUNWIND_LINKFILE}" || ! -d "$DIR_TMP/$LIBUNWIND_LINKDIR" ]] || [[ ! -f "${DIR_TMP}/${GPERFTOOL_LINKFILE}" || ! -d "$DIR_TMP/$GPERFTOOL_LINKDIR" ]]; then
     if [[ "$GPERFTOOLS_SOURCEINSTALL" = [yY] ]]; then
-        gperftools
+        gperftools || return 1
     fi
 elif [[ ! -f "${DIR_TMP}/${LIBUNWIND_LINKFILE}" ]] || [[ ! -f "${DIR_TMP}/${GPERFTOOL_LINKFILE}" ]]; then
     if [[ "$GPERFTOOLS_SOURCEINSTALL" = [yY] ]]; then
-        gperftools
+        gperftools || return 1
     fi
 fi
 
@@ -498,7 +504,7 @@ if [[ "$NGINX_OPENRESTY" = [yY] ]]; then
     cecho "Check for openresty modules" $boldyellow    
     # if the tar.gz files don't exist first the tar test directory variables can not be populated
     if [[ ! -f "${DIR_TMP}/${NGX_MEMCLINKFILE}" || "$(tar -tzf ${DIR_TMP}/${NGX_MEMCLINKFILE} >/dev/null 2>&1; echo $?)" -ne '0' ]] || [[ ! -f "${DIR_TMP}/${NGX_SRCACHELINKFILE}" || "$(tar -tzf ${DIR_TMP}/${NGX_SRCACHELINKFILE} >/dev/null 2>&1; echo $?)" -ne '0' ]] || [[ ! -f "${DIR_TMP}/${NGX_REDISLINKFILE}" || "$(tar -tzf ${DIR_TMP}/${NGX_REDISLINKFILE} >/dev/null 2>&1; echo $?)" -ne '0' ]] || [[ ! -f "${DIR_TMP}/${NGX_ECHOLINKFILE}" || "$(tar -tzf ${DIR_TMP}/${NGX_ECHOLINKFILE} >/dev/null 2>&1; echo $?)" -ne '0' ]] || [[ ! -f "${DIR_TMP}/${NGX_SETMISCLINKFILE}" || "$(tar -tzf ${DIR_TMP}/${NGX_SETMISCLINKFILE} >/dev/null 2>&1; echo $?)" -ne '0' ]] || [[ ! -f "${DIR_TMP}/${NGX_DEVELKITLINKFILE}" || "$(tar -tzf ${DIR_TMP}/${NGX_DEVELKITLINKFILE} >/dev/null 2>&1; echo $?)" -ne '0' ]]; then
-        openrestytarball
+        openrestytarball || return 1
     fi 
     
     MEMCDIR=$(tar -tzf "$DIR_TMP/${NGX_MEMCLINKFILE}" | head -1 | cut -f1 -d"/")
@@ -509,14 +515,14 @@ if [[ "$NGINX_OPENRESTY" = [yY] ]]; then
     REDISDIR=$(tar -tzf "$DIR_TMP/${NGX_REDISLINKFILE}" | head -1 | cut -f1 -d"/")
 
     if [[ ! -f "${DIR_TMP}/${NGX_MEMCLINKFILE}" || ! -f "${DIR_TMP}/${NGX_SRCACHELINKFILE}"|| ! -f "${DIR_TMP}/${NGX_REDISLINKFILE}" || ! -f "${DIR_TMP}/${NGX_ECHOLINKFILE}" || ! -f "${DIR_TMP}/${NGX_SETMISCLINKFILE}" || ! -f "${DIR_TMP}/${NGX_DEVELKITLINKFILE}" ]] || [[ ! -d "${DIR_TMP}/${MEMCDIR}" || ! -d "${DIR_TMP}/${SRCACHEDIR}"|| ! -d "${DIR_TMP}/${REDISDIR}" || ! -d "${DIR_TMP}/${ECHODIR}" || ! -d "${DIR_TMP}/${SETMISCDIR}" || ! -d "${DIR_TMP}/${DEVELKITDIR}" ]]; then
-        openrestytarball
+        openrestytarball || return 1
     fi
 
     # ORESTY_LUANGINX=y|n
     if [[ "$ORESTY_LUANGINX" = [yY] ]]; then
         if [[ ! -f "${DIR_TMP}/${NGX_LUANGINXLINKFILE}" || ! -f "${DIR_TMP}/${NGX_LUAMEMCACHEDLINKFILE}" || ! -f "${DIR_TMP}/${NGX_LUAMYSQLLINKFILE}" || ! -f "${DIR_TMP}/${NGX_LUAREDISLINKFILE}" || ! -f "${DIR_TMP}/${NGX_LUADNSLINKFILE}" || ! -f "${DIR_TMP}/${NGX_LUAUPLOADLINKFILE}" || ! -f "${DIR_TMP}/${NGX_LUAWEBSOCKETLINKFILE}" || ! -f "${DIR_TMP}/${NGX_LUALOCKLINKFILE}" || ! -f "${DIR_TMP}/${NGX_LUASTRINGLINKFILE}" || ! -f "${DIR_TMP}/${NGX_LUAREDISPARSERLINKFILE}" || ! -f "${DIR_TMP}/${NGX_LUAUPSTREAMCHECKLINKFILE}" || ! -f "${DIR_TMP}/${NGX_LUALRUCACHELINKFILE}"  || ! -f "${DIR_TMP}/${NGX_LUARESTYCORELINKFILE}" || ! -f "${DIR_TMP}/${NGX_LUAUPSTREAMLINKFILE}" || ! -f "${DIR_TMP}/${NGX_LUASTREAMLINKFILE}" || ! -f "${DIR_TMP}/${NGX_LUALOGGERSOCKETLINKFILE}" || ! -f "${DIR_TMP}/${NGX_LUACOOKIELINKFILE}" || ! -f "${DIR_TMP}/${NGX_LUAUPSTREAMCACHELINKFILE}" || ! -f "${DIR_TMP}/${NGX_LUACJSONLINKFILE}" ]] || [[ ! -d "${DIR_TMP}/${NGX_LUANGINXDIR}" || ! -d "${DIR_TMP}/${NGX_LUAMEMCACHEDDIR}" || ! -d "${DIR_TMP}/${NGX_LUAMYSQLDIR}" || ! -d "${DIR_TMP}/${NGX_LUAREDISDIR}" || ! -d "${DIR_TMP}/${NGX_LUADNSDIR}" || ! -d "${DIR_TMP}/${NGX_LUAUPLOADDIR}" || ! -d "${DIR_TMP}/${NGX_LUAWEBSOCKETDIR}" || ! -d "${DIR_TMP}/${NGX_LUALOCKDIR}" || ! -d "${DIR_TMP}/${NGX_LUASTRINGDIR}" || ! -d "${DIR_TMP}/${NGX_LUAREDISPARSERDIR}" || ! -d "${DIR_TMP}/${NGX_LUAUPSTREAMCHECKDIR}" || ! -d "${DIR_TMP}/${NGX_LUALRUCACHEDIR}"  || ! -d "${DIR_TMP}/${NGX_LUARESTYCOREDIR}" || ! -d "${DIR_TMP}/${NGX_LUAUPSTREAMDIR}" || ! -d "${DIR_TMP}/${NGX_LUALOGGERSOCKETDIR}" || ! -d "${DIR_TMP}/${NGX_LUACOOKIEDIR}" || ! -d "${DIR_TMP}/${NGX_LUAUPSTREAMCACHEDIR}" || ! -d "${DIR_TMP}/${NGX_LUACJSONDIR}" ]]; then            
 
-            openrestytarball
+            openrestytarball || return 1
         fi
     fi
 fi
@@ -526,7 +532,7 @@ if [[ "$NGINX_PAGESPEEDGITMASTER" = [yY] ]]; then
     # remove old version downloaded & download master tarball instead
     cd "$DIR_TMP"
     rm -rf release-${NGXPGSPEED_VER}*
-    nginxpgspeedtarball
+    nginxpgspeedtarball || return 1
 fi
 
 }
@@ -537,9 +543,16 @@ clear_ps() {
     fi
 }
 
+nginx_master_ready() {
+    local pid="$1"
+    [[ "$pid" =~ ^[1-9][0-9]*$ && "$pid" -gt 1 ]] || return 1
+    kill -0 "$pid" 2>/dev/null || return 1
+    ps -p "$pid" -o args= | grep -Eq '^(nginx|angie): master' || return 1
+    ps -eo ppid=,args= | awk -v pid="$pid" '$1 == pid && $2 ~ /^(nginx|angie):$/ && $3 == "worker" && $4 == "process" && $0 !~ /worker process is shutting down/ { ready=1 } END { exit !ready }'
+}
+
 function funct_nginxupgrade {
     CLI_NGINX_VER=$1
-    checkmap
     # if [ ! -f /usr/local/bin/pcretest ]; then
     #     wgetver_check
     # fi
@@ -579,7 +592,7 @@ mkdir "$DIR_TMP"
 fi
 
 funct_mktempfile
-perl_ipc_cmd_install
+perl_ipc_cmd_install || return 1
 
 # only run for CentOS 6.x
 if [[ "$CENTOS_SIX" = '6' ]]; then
@@ -613,8 +626,6 @@ elif [[ "$CLI_NGINX_VER" ]]; then
             ngver="$LASTEST_NGINXVERS"
         fi
     fi
-
-    nginx_maintenance_on
 
     # auto check if static compiled Nginx openssl version matches
     # the one defined in centmin.sh OPENSSL_VERSION variable
@@ -655,7 +666,7 @@ else
         echo "Centmin Mod Nginx modules like srcache-nginx-module & redis nginx module"
         echo "until then, you can stick with 1.21.6."
         echo
-        exit
+        return 1
     fi
     if [[ "$ngver" = 'quic' || "$NGINX_QUIC_SUPPORT" = [yY] ]]; then
       OPENSSL_SYSTEM_USE='n'
@@ -676,8 +687,6 @@ else
         fi
     fi
 
-    nginx_maintenance_on
-
     # auto check if static compiled Nginx openssl version matches
     # the one defined in centmin.sh OPENSSL_VERSION variable
     # if doesn't match then auto recompile the statically set
@@ -692,6 +701,11 @@ else
     checkgeoip
 fi # UALL
 
+if [[ ! "$ngver" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ && "$ngver" != 'angie' && "$ngver" != 'master' && "$ngver" != 'master-google' && "$ngver" != 'quic' ]]; then
+    echo "ERROR: Invalid or unavailable Nginx version: $ngver" >&2
+    return 1
+fi
+
 ## grab newer custom written htpasswd.sh as well
 gethtpasswdsh
 
@@ -701,8 +715,10 @@ gethtpasswdsh
 
 # Backup Nginx CONF
 if [ "$NGINXBACKUP" == 'y' ]; then
-  nginxbackup
+  nginxbackup || return 1
 fi
+
+checkmap
 
 # Backup ngx_pagespeed pagespeed.conf
 if [[ "$NGINX_PAGESPEED" = [yY] ]]; then
@@ -723,7 +739,7 @@ pagespeeduptasks
     # nginx Modules / Prerequisites
   cecho "Installing nginx Modules / Prerequisites..." $boldgreen
 
-checknginxmodules
+checknginxmodules || return 1
 nginx_dependency_compiler || return 1
 {
 nginxzlib_install
@@ -736,11 +752,11 @@ install_gperftools
 # echo ""
 
 if [[ "$recompileopenssl" = [yY] || "$LIBRESSL_SWITCH" = [yY] || "$BORINGSSL_SWITCH" = [yY] ]] && [[ "$OPENSSL_SYSTEM_USE" != [yY] ]]; then
-    installopenssl
+    installopenssl || return 1
 elif [[ "$recompileopenssl" = [yY] || "$LIBRESSL_SWITCH" = [yY] || "$BORINGSSL_SWITCH" = [yY] ]] && [[ "$OPENSSL_SYSTEM_USE" = [yY] ]]; then
-    installopenssl
+    installopenssl || return 1
 elif [[ "$OPENSSL_SYSTEM_USE" = [nN] ]]; then
-    installopenssl
+    installopenssl || return 1
 fi # recompileopenssl
 
 if [[ "$PCRE_SOURCEINSTALL" = [yY] ]]; 
@@ -771,18 +787,18 @@ then
 fi
 
 if [[ "$DETECT_NGXVER" -ge '1021005' && "$NGINX_PCRE_TWO" = [yY] ]]; then
-    pcre_two_dir_check ngxupgrade
+    pcre_two_dir_check ngxupgrade || return 1
 else
-    pcredir_check ngxupgrade
+    pcredir_check ngxupgrade || return 1
 fi
 
     if [[ -f "$(which figlet)" && "$ORESTY_LUANGINX" = [yY] ]]; then
         figlet -ckf standard "luajit install"
     fi
 
-luajitinstall
+luajitinstall || return 1
 
-funct_nginxmodules
+funct_nginxmodules || return 1
 
 check_requestscheme
 
@@ -818,9 +834,9 @@ fi
     echo "Compiling nginx..."
     if [[ "$ngver" = 'angie' ]]; then
         rm -rf nginx-angie*
-        git clone https://github.com/webserver-llc/angie nginx-angie
-        pushd nginx-angie
-        git checkout $NGINX_ANGIE_VERSION
+        git clone https://github.com/webserver-llc/angie nginx-angie || return 1
+        pushd nginx-angie || return 1
+        git checkout "$NGINX_ANGIE_VERSION" || return 1
         DETECT_NGXVER=$(awk '/define nginx_version  / {print $3}' "/svr-setup/nginx-angie/src/core/nginx.h")
         popd
         angie_console_setup
@@ -828,37 +844,36 @@ fi
     fi
     if [[ "$ngver" = 'master' ]]; then
         rm -rf nginx-${ngver}*
-        git clone --depth=1 https://github.com/nginx/nginx nginx-master
-        mv nginx-master/auto/configure nginx-master/configure
+        git clone --depth=1 https://github.com/nginx/nginx nginx-master || return 1
+        mv nginx-master/auto/configure nginx-master/configure || return 1
     fi
     if [[ "$ngver" = 'quic' ]]; then
         rm -rf nginx-${ngver}*
         # mercurial_check
         # hg clone -b quic https://hg.nginx.org/nginx-quic nginx-quic
-        git clone --depth=1 https://github.com/nginx/nginx/ nginx-quic
-        mv nginx-quic/auto/configure nginx-quic/configure
+        git clone --depth=1 https://github.com/nginx/nginx/ nginx-quic || return 1
+        mv nginx-quic/auto/configure nginx-quic/configure || return 1
     fi
     if [[ "$ngver" = 'master-google' ]]; then
         rm -rf nginx-${ngver}*
-        git clone --depth=1 https://nginx.googlesource.com/nginx nginx-master-google
-        mv nginx-master-google/auto/configure nginx-master-google/configure
+        git clone --depth=1 https://nginx.googlesource.com/nginx nginx-master-google || return 1
+        mv nginx-master-google/auto/configure nginx-master-google/configure || return 1
     fi
-    if [[ -s "nginx-${ngver}.tar.gz" || "$ngver" = 'angie' || "$ngver" = 'master' || "$ngver" = 'master-google' || "$ngver" = 'quic' ]]; then
+    local nginx_source="nginx-${ngver}" nginx_source_url="https://nginx.org/download/nginx-${ngver}.tar.gz"
+    if [[ "$FREENGINX_INSTALL" = [yY] && "$ngver" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+        nginx_source="freenginx-${ngver}"
+        nginx_source_url="https://freenginx.org/download/${nginx_source}.tar.gz"
+    fi
+    if [[ "$ngver" = 'angie' || "$ngver" = 'master' || "$ngver" = 'master-google' || "$ngver" = 'quic' ]] || tar -tzf "${nginx_source}.tar.gz" >/dev/null 2>&1; then
         cecho "nginx ${ngver} download found, skipping download..." $boldgreen
     else
-        if [[ "$FREENGINX_INSTALL" = [yY] ]]; then
-            echo
-            echo "Downloading Freenginx forked version"
-            echo
-            download_cmd "https://freenginx.org/download/freenginx-${ngver}.tar.gz" $WGETRETRY
-        else
-            download_cmd "https://nginx.org/download/nginx-${ngver}.tar.gz" $WGETRETRY
-        fi
+        rm -f "${nginx_source}.tar.gz"
+        download_cmd "$nginx_source_url" $WGETRETRY
         NGINXDOWNLOAD_CHECK=$?
-        if [[ "$NGINXDOWNLOAD_CHECK" != '0' ]]; then
-            wget "https://nginx.org/download/nginx-${ngver}.tar.gz" --tries=3
+        if [[ "$NGINXDOWNLOAD_CHECK" != '0' ]] || ! tar -tzf "${nginx_source}.tar.gz" >/dev/null 2>&1; then
+            wget "$nginx_source_url" -O "${nginx_source}.tar.gz" --tries=3
             NGINXDOWNLOAD_CHECK=$?
-            if [[ "$NGINXDOWNLOAD_CHECK" != '0' ]]; then
+            if [[ "$NGINXDOWNLOAD_CHECK" != '0' ]] || ! tar -tzf "${nginx_source}.tar.gz" >/dev/null 2>&1; then
                 if command -v figlet >/dev/null 2>&1; then
                     figlet -ckf standard "Nginx Failed Download"
                 fi
@@ -870,7 +885,6 @@ fi
                 echo "with info asked at community.centminmod.com/threads/17778/"
                 echo "ensure you're using latest code by running command: cmupdate"
                 echo "and retrying centmin.sh menu option 4 first"
-                nginx_maintenance_off
             echo
             free -m
             echo
@@ -888,17 +902,14 @@ fi
                 popd
             fi
                 echo
-                exit
+                rm -f "${nginx_source}.tar.gz"
+                return 1
             fi
         fi
     fi
 
-    if [[ ! "$(echo $ngver | grep -E 'master|angie|quic')" ]]; then
-        if [[ "$FREENGINX_INSTALL" = [yY] ]]; then
-            tar xvfz "freenginx-${ngver}.tar.gz"
-        else
-            tar xvfz "nginx-${ngver}.tar.gz"
-        fi
+    if [[ "$ngver" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+        tar xvfz "${nginx_source}.tar.gz"
         NGINXTAREXTRACT_CHECK=$?
         if [[ "$NGINXTAREXTRACT_CHECK" != '0' ]]; then
             if command -v figlet >/dev/null 2>&1; then
@@ -916,7 +927,6 @@ fi
             echo "with info asked at community.centminmod.com/threads/17778/"
             echo "ensure you're using latest code by running command: cmupdate"
             echo "and retrying centmin.sh menu option 4 first"
-            nginx_maintenance_off
             echo
             free -m
             echo
@@ -935,16 +945,11 @@ fi
                 popd
             fi
     
-            rm -rf "$DIR_TMP/nginx-*.tar.gz"
-            rm -rf "$DIR_TMP/freenginx-*.tar.gz"
-            exit
+            rm -f "${nginx_source}.tar.gz"
+            return 1
         fi
     fi
-    if [[ "$FREENGINX_INSTALL" = [yY] ]]; then
-        cd "freenginx-${ngver}"
-    else
-        cd "nginx-${ngver}"
-    fi
+    cd "$nginx_source" || return 1
     if [[ "$INITIALINSTALL" != [yY] ]]; then
         make clean
     fi
@@ -956,7 +961,7 @@ if [[ "$NGINXPATCH" = [yY] ]]; then
     cecho "Nginx Patch Time - $NGINXPATCH_DELAY seconds delay" $boldgreen
     cecho "to allow you to patch files" $boldgreen
     echo "*************************************************"
-    patchnginx
+    patchnginx || return 1
 fi
 
     if command -v figlet >/dev/null 2>&1; then
@@ -982,7 +987,6 @@ fi
         echo "with info asked at community.centminmod.com/threads/17778/"
         echo "ensure you're using latest code by running command: cmupdate"
         echo "and retrying centmin.sh menu option 4 first"
-        nginx_maintenance_off
         echo
         free -mlt
         echo
@@ -1111,7 +1115,6 @@ fi
         echo "with info asked at community.centminmod.com/threads/17778/"
         echo "ensure you're using latest code by running command: cmupdate"
         echo "and retrying centmin.sh menu option 4 first"
-        nginx_maintenance_off
         echo
         free -mlt
         echo
@@ -1186,55 +1189,36 @@ fi
             systemctl daemon-reload
         fi
 
-  GETNGXPID=$(cat /usr/local/nginx/logs/nginx.pid)
-  GETNGXPPID=$(ps awx -o pid,ppid,command | grep 'nginx: master' | grep -E -v '(nginx_upgrade|amplify|php-fpm|hhvm)' | grep -E -v grep | awk '{print $1}')
-
-if [[ "$NGINX_ZERODT" = [nN] ]]; then
-  # cmservice nginx stop
-  /usr/local/sbin/nginx -s stop >/dev/null 2>&1
-  
-      # speed up nginx wait time if not many vhosts are on server
-      if [[ "$(ls /usr/local/nginx/conf/conf.d/ | wc -l)" -le 5 ]]; then
-          NGINXUPGRADESLEEP=4
-      fi
-  
-  # sleep "$NGINXUPGRADESLEEP"
-  
-  sleep 3
-  NGINXPSCHECK=$(ps --no-heading -C nginx)
-  
-  if [ ! -z "$NGINXPSCHECK" ]; then
-  echo ""
-  echo "nginx seems to be still running, trying to stop it again..."
-  echo ""
-  # service nginx stop and suppress any error messages
-  /usr/local/sbin/nginx -s stop >/dev/null 2>&1
-  sleep "$NGINXUPGRADESLEEP"
-  fi
-elif [[ "$NGINX_ZERODT" = [yY] ]]; then
-  echo "---------------------------------------------------------------------------"
-  echo "nginx master id: $GETNGXPID"
-  echo
-  echo "---------------------------------------------------------------------------"
-  curl -s -4 localhost/nginx_status
-  echo "---------------------------------------------------------------------------"
-  ps axw -o pid,ppid,user,%cpu,vsz,wchan,command | grep -E '(nginx: |PID)' | grep -E -v '(nginx_upgrade|amplify|php-fpm|hhvm)' | grep -E -v grep
-  echo "---------------------------------------------------------------------------"
-fi
     if command -v figlet >/dev/null 2>&1; then
         figlet -ckf standard "Nginx Make Install"
     fi
 
-    time make install
-    ERR=$?
     if [[ "$FPM_NGINX_INSTALLDIR_ENABLE" = [yY] ]]; then
-      echo
-      rm -rf "$FPM_NGINX_INSTALLDIR"
-      mkdir -p "$FPM_NGINX_INSTALLDIR"
+      [[ "$FPM_NGINX_INSTALLDIR" = /* && ! "$FPM_NGINX_INSTALLDIR" =~ ^/+$ ]] || return 1
+      rm -rf -- "$FPM_NGINX_INSTALLDIR" || return $?
+      mkdir -p -- "$FPM_NGINX_INSTALLDIR" || return $?
       echo "time make install DESTDIR=$FPM_NGINX_INSTALLDIR"
       time make install DESTDIR="$FPM_NGINX_INSTALLDIR"
       FPM_NGINX_INSTALLDIR_ERR=$?
+      if [[ "$FPM_NGINX_INSTALLDIR_ERR" -ne 0 ]]; then
+        echo "ERROR: Nginx staged installation failed ($FPM_NGINX_INSTALLDIR_ERR)." >&2
+        return "$FPM_NGINX_INSTALLDIR_ERR"
+      fi
     fi
+
+    # Maintenance is delayed until the build succeeds; sitestatus uses reload.
+    nginx_maintenance_on || return 1
+    local old_nginx_pid new_nginx_pid nginx_deadline
+    if [[ "$NGINX_ZERODT" = [yY] ]]; then
+        old_nginx_pid=$(cat /usr/local/nginx/logs/nginx.pid 2>/dev/null)
+        if ! nginx_master_ready "$old_nginx_pid" || [[ -e /usr/local/nginx/logs/nginx.pid.oldbin ]]; then
+            echo "ERROR: Nginx live upgrade needs a working master and no existing .oldbin PID file." >&2
+            nginx_maintenance_off
+            return 1
+        fi
+    fi
+    time make install
+    ERR=$?
     sar_call
 
 if [[ "$CLANG" = [yY] ]]; then
@@ -1258,7 +1242,6 @@ fi
         echo "with info asked at community.centminmod.com/threads/17778/"
         echo "ensure you're using latest code by running command: cmupdate"
         echo "and retrying centmin.sh menu option 4 first"
-        nginx_maintenance_off
         echo
         free -m
         echo
@@ -1366,43 +1349,51 @@ fi
 
        # zlibsymlink_fix
 
+       /usr/local/sbin/nginx -t || return 1
        if [[ "$NGINX_ZERODT" = [nN] ]]; then
-         service nginx restart
-       elif [[ "$NGINX_ZERODT" = [yY] ]]; then
-         echo "---------------------------------------------------------------------------"
-         echo "nginx master id: $GETNGXPID"
-         echo "---------------------------------------------------------------------------"
-         curl -s -4 localhost/nginx_status
-         echo "---------------------------------------------------------------------------"
-         echo "kill -USR2 $GETNGXPID"
-         kill -USR2 $GETNGXPID
-         sleep 3
-         ps axw -o pid,ppid,user,%cpu,vsz,wchan,command | grep -E '(nginx: |PID)' | grep -E -v '(nginx_upgrade|amplify|php-fpm|hhvm)' | grep -E -v grep
-         echo
-         ls -lah /usr/local/sbin/nginx*
-         echo "---------------------------------------------------------------------------"
-         curl -s -4 localhost/nginx_status
-         echo "---------------------------------------------------------------------------"
-         echo "kill -WINCH $GETNGXPID"
-         kill -WINCH $GETNGXPID
-         sleep 3
-         ps axw -o pid,ppid,user,%cpu,vsz,wchan,command | grep -E '(nginx: |PID)' | grep -E -v '(nginx_upgrade|amplify|php-fpm|hhvm)' | grep -E -v grep
-         echo "---------------------------------------------------------------------------"
-         curl -s -4 localhost/nginx_status
-         echo "---------------------------------------------------------------------------"
-         echo " waiting for old nginx worker processes to exit..."
-         while [[ "$(ps awx -o ppid,command | grep 'nginx: worker' | grep -E -v '(nginx_upgrade|amplify|php-fpm|hhvm)' | grep -E -v grep | awk '{print $1}' | uniq)" = "$GETNGXPPID" ]]; do
-           echo " checking... worker child PPID=$GETNGXPPID exists"
-           sleep 3
+         service nginx restart || return 1
+         nginx_deadline=$((SECONDS + 30))
+         until nginx_master_ready "$(cat /usr/local/nginx/logs/nginx.pid 2>/dev/null)"; do
+           if (( SECONDS >= nginx_deadline )); then
+             echo "ERROR: Restarted Nginx has no working master and workers." >&2
+             return 1
+           fi
+           sleep 1
          done
-         echo "---------------------------------------------------------------------------"
-         echo "kill -QUIT $GETNGXPID"
-         kill -QUIT $GETNGXPID
-         sleep 3
-         ps axw -o pid,ppid,user,%cpu,vsz,wchan,command | grep -E '(nginx: |PID)' | grep -E -v '(nginx_upgrade|amplify|php-fpm|hhvm)' | grep -E -v grep
-         echo "---------------------------------------------------------------------------"
-         curl -s -4 localhost/nginx_status
-         echo "---------------------------------------------------------------------------"
+       elif [[ "$NGINX_ZERODT" = [yY] ]]; then
+         nginx_master_ready "$old_nginx_pid" || return 1
+         kill -USR2 "$old_nginx_pid" || return 1
+         # ponytail: fixed 30s start and 300s drain; add a timeout override if needed.
+         nginx_deadline=$((SECONDS + 30))
+         while :; do
+           new_nginx_pid=$(cat /usr/local/nginx/logs/nginx.pid 2>/dev/null)
+           if [[ "$new_nginx_pid" != "$old_nginx_pid" && "$(cat /usr/local/nginx/logs/nginx.pid.oldbin 2>/dev/null)" = "$old_nginx_pid" ]] && nginx_master_ready "$new_nginx_pid"; then
+             break
+           fi
+           if (( SECONDS >= nginx_deadline )); then
+             echo "ERROR: New Nginx master did not start; old master was not signalled to stop." >&2
+             return 1
+           fi
+           sleep 1
+         done
+         kill -WINCH "$old_nginx_pid" || return 1
+         nginx_deadline=$((SECONDS + 300))
+         while :; do
+           if ! nginx_master_ready "$new_nginx_pid" || [[ "$(cat /usr/local/nginx/logs/nginx.pid.oldbin 2>/dev/null)" != "$old_nginx_pid" ]] || ! kill -0 "$old_nginx_pid" 2>/dev/null; then
+             echo "ERROR: Nginx live upgrade lost a master; old master was not sent QUIT. Manual recovery is required." >&2
+             return 1
+           fi
+           if ! ps -eo ppid=,args= | awk -v pid="$old_nginx_pid" '$1 == pid && $2 ~ /^(nginx|angie):$/ && $3 == "worker" { found=1 } END { exit !found }'; then
+             break
+           fi
+           if (( SECONDS >= nginx_deadline )); then
+             echo "ERROR: Old Nginx workers did not drain; old master was not sent QUIT. Manual recovery is required." >&2
+             return 1
+           fi
+           sleep 1
+         done
+         nginx_master_ready "$new_nginx_pid" || return 1
+         kill -QUIT "$old_nginx_pid" || return 1
        fi
 
         # cecho "Checking OpenSSL version used by Nginx..." $boldyellow
@@ -1522,7 +1513,7 @@ fi
         fi
         echo "*************************************************"
 
-        nginx_maintenance_off
+        nginx_maintenance_off || return 1
     if [[ "$NGINX_NJS" = [yY] && -f "$DIR_TMP/njs/build/njs" ]]; then
         cp -af "$DIR_TMP/njs/build/njs" /usr/local/bin/njs
     fi

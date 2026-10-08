@@ -116,8 +116,8 @@ soff() {
      ########################################################
      #disable maintainence mode
      if [ -f /usr/local/nginx/conf/sitestatus.conf ]; then
-          sed -i 's|1|0|' /usr/local/nginx/conf/sitestatus.conf
-          service nginx restart
+          sed -i 's|1|0|' /usr/local/nginx/conf/sitestatus.conf || return $?
+          service nginx reload || return $?
           checkstatus
      fi
      }
@@ -126,8 +126,8 @@ son() {
      ########################################################
      #enable maintainence mode
      if [ -f /usr/local/nginx/conf/sitestatus.conf ]; then
-          sed -i 's|0|1|' /usr/local/nginx/conf/sitestatus.conf
-          service nginx restart
+          sed -i 's|0|1|' /usr/local/nginx/conf/sitestatus.conf || return $?
+          service nginx reload || return $?
           checkstatus
      fi
      }
