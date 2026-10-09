@@ -2072,7 +2072,7 @@
 # OWASP Core Rule Set version
 # Reference: https://github.com/coreruleset/coreruleset/releases
 # Git History: Added 2017-08-05 (10863ad9)
-#MODSECURITY_OWASPVER='4.29.0'
+#MODSECURITY_OWASPVER='4.30.0'
 
 # Nginx TLS Fingerprint Module
 # SSL/TLS Handshake Fingerprinting Module Integration
@@ -3602,7 +3602,7 @@
 # AWS-LC version tag
 # Reference: https://github.com/aws/aws-lc/tags
 # Git History: Added 2024-06-21 (13e367fa)
-#AWS_LC_VERSION='v5.10.0'
+#AWS_LC_VERSION='v5.11.0'
 
 # AWS-LC Directory
 # Git History: Added 2024-06-10 (304dd425)
@@ -4964,7 +4964,19 @@
 
 # MongoDB PHP 8.2+ Version
 # Git History: Added 2022-06-11 (059c2212)
-#MONGODBPHP_EIGHTTWO_VER='1.21.10'  
+#MONGODBPHP_EIGHTTWO_VER='1.21.11'
+
+# MongoDB PHP 8.3+ Version
+# Git History: Added 2025-11-23 (6344948c)
+#MONGODBPHP_EIGHTTHREE_VER='1.21.11'
+
+# MongoDB PHP 8.4+ Version
+# Git History: Added 2025-11-23 (6344948c)
+#MONGODBPHP_EIGHTFOUR_VER='1.21.11'
+
+# MongoDB PHP 8.5+ Version
+# Git History: Added 2025-11-23 (6344948c)
+#MONGODBPHP_EIGHTFIVE_VER='1.21.11'
 
 # MongoDB SASL Support
 # SASL authentication (not working yet, keep = n)
@@ -5093,7 +5105,7 @@
 
 # PHP Timezone DB Version
 # Git History: Added 2019-11-09 (f6622b64)
-#PHPTIMEZONEDB_VER='2026.4'  
+#PHPTIMEZONEDB_VER='2026.5'  
 
 # PHP Swoole Extension
 # Swoole Asynchronous PHP Extension
@@ -5438,7 +5450,7 @@
 # libheif Version
 # HEIF/HEIC image format library
 # Git History: Added 2022-12-05 (a82ad587)
-#LIBHEIF_VER='1.23.5'
+#LIBHEIF_VER='1.23.6'
 
 ################################################################################
 # 35. SERVICE DISABLE FLAGS

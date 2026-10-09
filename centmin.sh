@@ -30,7 +30,7 @@ DT=$(date +"%d%m%y-%H%M%S")
 branchname='141.00beta01'
 SCRIPT_MAJORVER='141'
 SCRIPT_MINORVER='00'
-SCRIPT_INCREMENTVER='309'
+SCRIPT_INCREMENTVER='310'
 SCRIPT_VERSIONSHORT="${branchname}"
 SCRIPT_VERSION="${SCRIPT_VERSIONSHORT}.b${SCRIPT_INCREMENTVER}"
 SCRIPT_DATE='16/08/25'
@@ -693,7 +693,7 @@ NGINX_TLS_FINGERPRINT='n'    # JA3 fingerprint module https://github.com/centmin
 NGINX_MODSECURITY='n'        # modsecurity module support https://github.com/SpiderLabs/ModSecurity/wiki/Reference-Manual#Installation_for_NGINX
 NGINX_MODSECURITY_JSONLOGS='n' # enable to switch to JSON log format, to switch back manually edit /usr/local/nginx/modsec/modsecurity.conf
 NGINX_MODSECURITY_MAXMIND='y' # modsecurity built with libmaxminddb is failing to compile so disable it in favour of GeoIP legacy
-MODSECURITY_OWASPVER='4.29.0' # owasp modsecurity ruleset https://github.com/coreruleset/coreruleset/releases
+MODSECURITY_OWASPVER='4.30.0' # owasp modsecurity ruleset https://github.com/coreruleset/coreruleset/releases
 NGINX_REALIP='y'             # http://nginx.org/en/docs/http/ngx_http_realip_module.html
 NGINX_RDNS='n'               # https://github.com/flant/nginx-http-rdns
 NGINX_NJS='n'                # nginScript https://www.nginx.com/blog/
@@ -845,7 +845,7 @@ PHPMAILPARSE='y'             # Disable or Enable PHP mailparse extension
 PHPIONCUBE='n'               # Disable or Enable Ioncube Loader via addons/ioncube.sh
 PHPMSSQL='n'                 # Disable or Enable MSSQL server PHP extension
 PHPTIMEZONEDB='y'            # timezonedb PHP extension updated https://pecl.php.net/package/timezonedb
-PHPTIMEZONEDB_VER='2026.4'   # timezonedb PHP extension version
+PHPTIMEZONEDB_VER='2026.5'   # timezonedb PHP extension version
 PHPMSSQL_ALWAYS='n'          # mssql php extension always install on php recompiles
 PHPEMBED='y'                 # built php with php embed SAPI library support --enable-embed=shared
 
@@ -883,10 +883,10 @@ MONGODBPHP_VER='1.7.5'      # MongoDB PHP version
 MONGODBPHP_SEVEN_ZERO_VER='1.9.2' # MongoDB max PHP =<7.0 version
 MONGODBPHP_SEVEN_VER='1.11.1'     # MongoDB max PHP 7.1+ version
 MONGODBPHP_EIGHT_VER='1.13.0'
-MONGODBPHP_EIGHTTWO_VER='1.21.10'     # MongoDB PHP version
-MONGODBPHP_EIGHTTHREE_VER='1.21.10'   # MongoDB PHP 8.3+ version
-MONGODBPHP_EIGHTFOUR_VER='1.21.10'    # MongoDB PHP 8.4+ version
-MONGODBPHP_EIGHTFIVE_VER='1.21.10'    # MongoDB PHP 8.5+ version
+MONGODBPHP_EIGHTTWO_VER='1.21.11'     # MongoDB PHP version
+MONGODBPHP_EIGHTTHREE_VER='1.21.11'   # MongoDB PHP 8.3+ version
+MONGODBPHP_EIGHTFOUR_VER='1.21.11'    # MongoDB PHP 8.4+ version
+MONGODBPHP_EIGHTFIVE_VER='1.21.11'    # MongoDB PHP 8.5+ version
 MONGODB_SASL='n'            # SASL not working yet leave = n
 PDOPGSQL_PHPVER='18'        # pdo-pgsql PHP extension version for postgresql
 PHP_LIBZIP='n'              # use newer libzip instead of PHP embedded zip
@@ -914,7 +914,7 @@ IMAGEMAGICK_SEVEN='n'          # for EL8/EL9 ImageMagick7 7.x install instead of
 IMAGEMAGICK_SOURCE_INSTALL='n' # ImageMagick 7 source install with HEIC support
 PHP_IMAGEMAGICK_SEVEN_USE_REMI_LIBZIP='y' # If IMAGEMAGICK_SEVEN is enabled use REMI libzip
 LIBDE265_VER='1.1.3'
-LIBHEIF_VER='1.23.5'
+LIBHEIF_VER='1.23.6'
 
 # Redis server
 REDIS_SERVER_INSTALL='y'      # Install redis server by default on initial install
@@ -1027,7 +1027,7 @@ BORINGSSL_DIR="/opt"
 
 # AWS-LC
 AWS_LC_SWITCH='n'             # if set to 'y' overrides OpenSSL as default for Nginx https://github.com/aws/aws-lc
-AWS_LC_VERSION='v5.10.0'       # version as per ttps://github.com/aws/aws-lc/tags
+AWS_LC_VERSION='v5.11.0'       # version as per ttps://github.com/aws/aws-lc/tags
 AWS_LC_DIR="/opt"
 AWS_LC_SWITCH_BUILD_TESTS='n' # run AWS-LC build tests
 ##################################
