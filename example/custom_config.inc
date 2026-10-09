@@ -5859,7 +5859,7 @@
 #   - Faster decompression than bzip2
 #   - Multi-threaded operation support
 # Git History: Added ~2017-08-15
-#ZSTD_VER='1.5.6'
+#ZSTD_VER='1.5.7'
 
 # Parallel Bzip2 Version (pbzip2)
 # Multi-threaded bzip2 compression tool version

@@ -126,8 +126,8 @@ php|PHP 8.3 fallback|installer:installer83.sh|php||url:https://www.php.net/distr
 php|PHP 8.4 fallback|installer:installer84.sh|php||url:https://www.php.net/distributions/php-{V}.tar.gz|minor|installer fetches latest at runtime
 php|PHP 8.5 fallback|installer:installer85.sh|php||url:https://www.php.net/distributions/php-{V}.tar.gz|minor|installer fetches latest at runtime
 php|PHP_VERSION default|PHP_VERSION|php||url:https://www.php.net/distributions/php-{V}.tar.gz|minor|installers rewrite it at install
-php|libzip|LIBZIP_VER|gh:nih-at/libzip:^v[0-9]+\.[0-9]+\.[0-9]+$|s/^v//|url:https://github.com/nih-at/libzip/releases/download/v{V}/libzip-{V}.tar.gz|any|
-php|libzip (PHP 8.5)|LIBZIP_EIGHT_FIVE_VER|gh:nih-at/libzip:^v[0-9]+\.[0-9]+\.[0-9]+$|s/^v//|url:https://github.com/nih-at/libzip/releases/download/v{V}/libzip-{V}.tar.gz|any|
+php|libzip|LIBZIP_VER|gh:nih-at/libzip:^v[0-9]+\.[0-9]+(\.[0-9]+)?$|s/^v//|url:https://github.com/nih-at/libzip/releases/download/v{V}/libzip-{V}.tar.gz|any|
+php|libzip (PHP 8.5)|LIBZIP_EIGHT_FIVE_VER|gh:nih-at/libzip:^v[0-9]+\.[0-9]+(\.[0-9]+)?$|s/^v//|url:https://github.com/nih-at/libzip/releases/download/v{V}/libzip-{V}.tar.gz|any|
 php|libsodium|LIBSODIUM_VER|gh:jedisct1/libsodium:^[0-9.]+-RELEASE$|s/-RELEASE$//|url:https://download.libsodium.org/libsodium/releases/libsodium-{V}.tar.gz|any|
 php|argon2|LIBARGON_VER|gh:P-H-C/phc-winner-argon2:^[0-9]{8}$||tag:{V}|any|
 php|libgd (external)|LIBGD_EXTERNAL_VER|gh:libgd/libgd:^gd-[0-9.]+$|s/^gd-//|tag:gd-{V}|any|
@@ -137,7 +137,7 @@ phpext|mongodb ext (PHP 8.2)|MONGODBPHP_EIGHTTWO_VER|pecl:mongodb||url:https://p
 phpext|mongodb ext (PHP 8.3)|MONGODBPHP_EIGHTTHREE_VER|pecl:mongodb||url:https://pecl.php.net/get/mongodb-{V}.tgz|major|2.x drops deprecated APIs
 phpext|mongodb ext (PHP 8.4)|MONGODBPHP_EIGHTFOUR_VER|pecl:mongodb||url:https://pecl.php.net/get/mongodb-{V}.tgz|major|2.x drops deprecated APIs
 phpext|mongodb ext (PHP 8.5)|MONGODBPHP_EIGHTFIVE_VER|pecl:mongodb||url:https://pecl.php.net/get/mongodb-{V}.tgz|major|2.x drops deprecated APIs
-phpext|swoole (PHP 8.0)|PHPSWOOLE_EIGHT_ZERO_VER|gh:swoole/swoole-src:^v[0-9]+\.[0-9]+\.[0-9]+$|s/^v//|url:https://pecl.php.net/get/swoole-{V}.tgz|major|
+phpext|swoole (PHP 8.0)|PHPSWOOLE_EIGHT_ZERO_VER|gh:swoole/swoole-src:^v[0-9]+\.[0-9]+\.[0-9]+$|s/^v//|url:https://pecl.php.net/get/swoole-{V}.tgz|minor|swoole 6.x needs PHP 8.1+
 phpext|swoole (PHP 8.1)|PHPSWOOLE_EIGHT_ONE_VER|gh:swoole/swoole-src:^v[0-9]+\.[0-9]+\.[0-9]+$|s/^v//|url:https://pecl.php.net/get/swoole-{V}.tgz|minor|check newer minor still supports PHP 8.1
 phpext|swoole (PHP 8.2)|PHPSWOOLE_EIGHT_TWO_VER|gh:swoole/swoole-src:^v[0-9]+\.[0-9]+\.[0-9]+$|s/^v//|url:https://pecl.php.net/get/swoole-{V}.tgz|major|
 phpext|swoole (PHP 8.3)|PHPSWOOLE_EIGHT_THREE_VER|gh:swoole/swoole-src:^v[0-9]+\.[0-9]+\.[0-9]+$|s/^v//|url:https://pecl.php.net/get/swoole-{V}.tgz|major|
@@ -154,7 +154,7 @@ other|libevent|LIBEVENT_VERSION|gh:libevent/libevent:^release-[0-9.]+-stable$|s/
 other|zstd|inc/compress.inc:ZSTD_VER|gh:facebook/zstd:^v1\.[0-9]+\.[0-9]+$|s/^v//|tag:v{V}|any|
 other|OWASP CRS|MODSECURITY_OWASPVER|gh:coreruleset/coreruleset:^v[0-9]+\.[0-9]+\.[0-9]+$|s/^v//|tag:v{V}|major|NGINX_MODSECURITY=n default
 other|checksec|CHECKSEC_VERSION|gh:slimm609/checksec:^[0-9]+\.[0-9]+\.[0-9]+$||tag:{V}|any|3.x is a Go rewrite
-other|mold (EL8+)|MOLD_VERSION_EL8|gh:rui314/mold:^v[0-9]+\.[0-9]+\.[0-9]+$|s/^v//|tag:v{V}|any|NGX_LDMOLD=n default
+other|mold (EL8+)|MOLD_VERSION_EL8|gh:rui314/mold:^v[0-9]+\.[0-9]+\.[0-9]+$|s/^v//|tag:v{V}|any|pin unused: EL8+ installs distro mold
 other|wget (EL8)|WGET_VERSION_EIGHT|gnu:wget||url:MIRROR/centminmodparts/wget/wget-{V}.tar.gz|any|new versions need mirror upload
 other|wget (EL9)|WGET_VERSION_NINE|gnu:wget||url:MIRROR/centminmodparts/wget/wget-{V}.tar.gz|any|new versions need mirror upload
 other|wget (EL10)|WGET_VERSION_TEN|gnu:wget||url:MIRROR/centminmodparts/wget/wget-{V}.tar.gz|any|new versions need mirror upload
