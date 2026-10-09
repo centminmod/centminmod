@@ -450,6 +450,24 @@ libresslcompile_fix() {
   fi
 }
 
+# nginx-dav-ext-module 3.x links libxml2 + libxslt, older 0.x releases link expat
+nginx_webdav_deps() {
+  local pkgs='libxml2-devel libxslt-devel' hdr
+  local hdrs=(/usr/include/libxml2/libxml/parser.h /usr/include/libxslt/xslt.h)
+  if [[ "${NGINX_EXTWEBDAVVER%%.*}" -lt 3 ]]; then
+    pkgs='expat-devel'
+    hdrs=(/usr/include/expat.h)
+  fi
+  for hdr in "${hdrs[@]}"; do
+    if [[ ! -f "$hdr" ]]; then
+      echo "installing $pkgs for nginx-dav-ext-module ${NGINX_EXTWEBDAVVER}"
+      yum${CACHESKIP} -q -y install $pkgs || { echo "ERROR: could not install $pkgs for nginx-dav-ext-module" >&2; return 1; }
+      return 0
+    fi
+  done
+  echo "$pkgs found"
+}
+
 funct_nginxconfigure() {
 
 if [ -f "${CM_INSTALLDIR}/inc/custom_config.inc" ]; then
@@ -2306,21 +2324,7 @@ if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9'
 
   if [[ "$NGINX_WEBDAV" = [yY] ]]; then
     NGX_WEBDAVLINKDIR=$(tar -tzf "$DIR_TMP/${NGX_WEBDAVLINKFILE}" | head -1 | cut -f1 -d"/")
-    if [ ! -f "/${LIBDIR}/libexpat.so.1" ]; then
-     echo "/${LIBDIR}/libexpat.so.1 not found"
-     echo "installing expat"
-      yum${CACHESKIP} -q -y install expat
-    else
-     echo "/${LIBDIR}/libexpat.so.1 found"
-    fi
-
-    if [ ! -f "/usr/include/expat.h" ]; then
-     echo "/usr/include/expat.h not found"
-     echo "installing expat-devel"
-      yum${CACHESKIP} -q -y install expat-devel
-    else
-     echo "/usr/include/expat.h found"
-    fi
+    nginx_webdav_deps || { NGX_CONFIGURE_ERR=1; return 1; }
 
     WEBDAVOPT=" --with-http_dav_module --add-module=../$NGX_WEBDAVLINKDIR"
   else
@@ -2844,12 +2848,7 @@ else
 
   if [[ "$NGINX_WEBDAV" = [yY] ]]; then
     NGX_WEBDAVLINKDIR=$(tar -tzf "$DIR_TMP/${NGX_WEBDAVLINKFILE}" | head -1 | cut -f1 -d"/")
-    if [ ! -f "/${LIBDIR}/libexpat.so.1" ]; then
-     echo "/${LIBDIR}/libexpat.so.1 not found"
-      yum${CACHESKIP} -q -y install expat expat-devel
-    else
-     echo "/${LIBDIR}/libexpat.so.1 found"
-    fi
+    nginx_webdav_deps || { NGX_CONFIGURE_ERR=1; return 1; }
 
     WEBDAVOPT=" --with-http_dav_module --add-module=../$NGX_WEBDAVLINKDIR"
   else

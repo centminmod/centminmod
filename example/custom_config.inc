@@ -1877,7 +1877,7 @@
 
 # Nginx WebDAV Ext Module Version
 # Git History: First added 2014-04-24 (c4b6d98a), Last modified 2016-02-15 (7240145c)
-#NGINX_EXTWEBDAVVER='0.0.3'  
+#NGINX_EXTWEBDAVVER='3.0.0'  
 
 # Nginx Libatomic Support
 # Configure Nginx with libatomic support
