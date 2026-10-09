@@ -183,6 +183,37 @@ php_libs_lock_warn() {
 }
 
 ########################################################################
+# PHP extension directory, or empty output and status 1 when PHP is not installed.
+# Ask php-config rather than parsing its extension_dir= line, which PHP 8.4+
+# writes with double quotes instead of single quotes.
+php_extension_dir() {
+  local dir
+  dir=$(/usr/local/bin/php-config --extension-dir 2>/dev/null)
+  [[ "$dir" = /* ]] || return 1
+  printf '%s\n' "$dir"
+}
+
+########################################################################
+# Point ini files at the installed PHP's extension directory. Runs right after
+# make install, before any extension build can fail, and replaces every stale
+# sibling (no-)debug-(non-)zts-YYYYMMDD dir rather than one remembered old dir,
+# so a rerun after a failed upgrade still repairs what the earlier run left.
+php_ini_extdir_rewrite() {
+  local newdir base_re new_rep stale ini
+  newdir=$(php_extension_dir) || return 0
+  [[ "${newdir##*/}" =~ ^(no-)?debug-(non-)?zts-[0-9]{8}$ ]] || return 0
+  base_re=$(printf '%s' "${newdir%/*}" | sed 's/[][\.*^$+?(){}|#]/\\&/g')
+  new_rep=$(printf '%s' "$newdir" | sed 's/[&#\]/\\&/g')
+  stale="${base_re}/(no-)?debug-(non-)?zts-[0-9]{8}"
+  for ini in "${CONFIGSCANDIR}"/*.ini; do
+    [[ -f "$ini" ]] || continue
+    grep -oE "$stale" "$ini" | grep -qvxF "$newdir" || continue
+    echo "updating PHP extension dir in $ini"
+    sed -i -E "s#${stale}#${new_rep}#g" "$ini" || return 1
+  done
+}
+
+########################################################################
 php_ext_so_missing() {
   # $1 = .so basename (without .so). Returns 0 (true) ONLY when the extension
   # dir is KNOWN and the .so is genuinely absent. An unknown dir must NEVER be
@@ -190,8 +221,7 @@ php_ext_so_missing() {
   # Derives the dir itself rather than using PHPEXTDIR_AUTODETECT (:176), which is
   # assigned only inside autodetectinstallextensions() and is empty on this path.
   local ext="$1" extdir
-  extdir=$(/usr/local/bin/php-config --extension-dir 2>/dev/null)
-  [ -n "$extdir" ] || return 1
+  extdir=$(php_extension_dir) || return 1
   [ -d "$extdir" ] || return 1
   [ -f "${CONFIGSCANDIR}/${ext}.ini" ] || return 1
   [ -f "${extdir}/${ext}.so" ] && return 1
@@ -201,7 +231,7 @@ php_ext_so_missing() {
 ########################################################################
 autodetectinstallextensions() {
 
-PHPEXTDIR_AUTODETECT=$(cat /usr/local/bin/php-config | awk '/^extension_dir/ {extdir=$1} END {gsub(/\047|extension_dir|=|)/,"",extdir); print extdir}')
+PHPEXTDIR_AUTODETECT=$(php_extension_dir)
 
     if command -v figlet >/dev/null 2>&1; then
         figlet -ckf standard "PHP: Auto Detect Previous Extensions"
@@ -299,20 +329,6 @@ if [[ "$DETECTGEOIP" = [yY] ]] || [[ "$DETECTGEOIP" = [yY] && ! -f "$PHPEXTDIR_A
     cecho "Auto reinstalling previously detected geoip extension" $boldyellow
     geoipphpext || return $?
 fi
-
-# Fix extension directory on major PHP version changes 
-# Zend Opcache related when downgrading PHP major versions
-PHPEXTDIRDNEW=$(cat /usr/local/bin/php-config | awk '/^extension_dir/ {extdir=$1} END {gsub(/\047|extension_dir|=|)/,"",extdir); print extdir}')
-[[ -n "$PHPEXTDIRDOLD" && -n "$PHPEXTDIRDNEW" && "$PHPEXTDIRDOLD" != "$PHPEXTDIRDNEW" ]] || return 0
-
-OLD=$(echo "$PHPEXTDIRDOLD" | sed 's/\//\\\//g')
-NEW=$(echo "$PHPEXTDIRDNEW" | sed 's/\//\\\//g')
-
-for ini in "${CONFIGSCANDIR}"/*.ini; do
-    [[ -f "$ini" ]] || continue
-    echo "$ini"
-    sed -i "s/$OLD/$NEW/g" "$ini" >/dev/null 2>&1 || return 1
-done
 
 }
 
@@ -648,7 +664,6 @@ fi # UALL
 gethtpasswdsh
 
 PHPCURRENTVER=$(php-config --version | cut -d . -f1,2)
-PHPEXTDIRDOLD=$(/usr/local/bin/php-config --extension-dir 2>/dev/null)
 PHPMU_ALPHAVER=$(echo "$phpver")
 
     phpng_download
@@ -1151,6 +1166,8 @@ fi
       php_upgrade_stage=installed
       # Protect core-linked libraries before extension builds can fail.
       php_libs_lock_warn
+      # Point ini files at the new extension dir before an extension build can fail.
+      php_ini_extdir_rewrite || return $?
 
 ##############################################
 # begin update php.ini

@@ -71,8 +71,8 @@ def run(phase='', body=None, setup='', running='n'):
                 path.chmod(0o700)
             return path
         events = write('events', '')
-        ext = root / 'extensions'
-        ext.mkdir()
+        ext = root / 'extensions' / 'no-debug-non-zts-20230831'
+        ext.mkdir(parents=True)
         config = root / 'ini'
         config.mkdir()
         source = root / 'src/php-8.3.35'
@@ -153,11 +153,20 @@ for phase in ('make', 'stage'):
     assert result.returncode != 0 and 'install' not in events, (phase, events, result.stderr)
 print('PASS: initial make and staging failures')
 
-# Old extension directories may be unavailable or unchanged when OPcache is disabled.
-for old in ('', 'same', 'missing-new'):
-    result, events, _ = run(body='\nautodetectinstallextensions\n', setup='PHPEXTDIRDOLD="' + ('$(php-config --extension-dir)' if old else '') + '"; ' + ('cat() { :; }; ' if old == 'missing-new' else '') + 'touch "$CONFIGSCANDIR/test.ini"; sed() { event sed-edit; return 7; }')
-    assert result.returncode == 0 and 'sed-edit' not in events, (old, events, result.stderr)
-print('PASS: unknown/unchanged extension directory skips INI rewrite')
+# The INI rewrite runs after make install: it skips an unknown extension dir,
+# leaves current paths alone and stops when editing a stale path fails.
+stale = '"$(dirname "$(php-config --extension-dir)")"/no-debug-non-zts-20220829'
+for case in ('missing-new', 'current', 'stale'):
+    setup = 'printf "extension=%s/a.so\\n" ' + ('"$(php-config --extension-dir)"' if case == 'current' else stale) + ' > "$CONFIGSCANDIR/test.ini"; '
+    if case == 'missing-new':
+        setup += 'printf "#!/bin/bash\\nexit 0\\n" > "$FAKE_PHP_CONFIG"; '
+    setup += 'sed() { if [[ "$1" = -i ]]; then event sed-edit; return 7; fi; command sed "$@"; }'
+    result, events, _ = run(body='\nphp_ini_extdir_rewrite\n', setup=setup)
+    if case == 'stale':
+        assert result.returncode != 0 and 'sed-edit' in events, (case, events, result.stderr)
+    else:
+        assert result.returncode == 0 and 'sed-edit' not in events, (case, events, result.stderr)
+print('PASS: INI rewrite edits only stale extension dirs and stops on edit failure')
 
 # Extensions are stripped through private copies, so a running PHP-FPM keeps
 # its loaded mappings and is never restarted or config-tested here.

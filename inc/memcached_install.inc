@@ -65,7 +65,7 @@ fi
 }
 
 checkigbinary() {
-    PHPEXTDIRD=$(cat /usr/local/bin/php-config | awk '/^extension_dir/ {extdir=$1} END {gsub(/\047|extension_dir|=|)/,"",extdir); print extdir}')
+    PHPEXTDIRD=$(php_extension_dir)
     cecho "Checking for igbinary.so ..." $boldgreen
     cecho "Check if ${PHPEXTDIRD}/igbinary.so or ${CONFIGSCANDIR}/igbinary.ini exists" $boldyellow
 
@@ -116,7 +116,7 @@ funct_memcachedreinstall() {
       enable_devtoolset || return 1
    fi
 
-PHPEXTDIRD=$(cat /usr/local/bin/php-config | awk '/^extension_dir/ {extdir=$1} END {gsub(/\047|extension_dir|=|)/,"",extdir); print extdir}')
+PHPEXTDIRD=$(php_extension_dir)
 
     echo "*************************************************"
     cecho "* Installing memcached" $boldgreen
@@ -586,13 +586,13 @@ fi # php 7 or not
 MEMCACHESOCHECK=$(grep 'memcache.so' /usr/local/lib/php.ini)
 echo "check ${CONFIGSCANDIR}/memcache.ini"
 MEMCACHESOCHECKB=$(grep 'memcache.so' "${CONFIGSCANDIR}/memcache.ini")
-PHPEXTDIR=$(cat /usr/local/bin/php-config | awk '/^extension_dir/ {extdir=$1} END {gsub(/\047|extension_dir|=|)/,"",extdir); print extdir}')
+PHPEXTDIR=$(php_extension_dir)
 
 if [[ -z "$MEMCACHESOCHECK" || -z "$MEMCACHESOCHECKB" ]]; then
     echo ""
     if [ "$PHP_MEMCACHE" == 'y' ]; then
         echo ""
-        echo "extension=${PHPEXTDIR}/memcache.so" > "${CONFIGSCANDIR}/memcache.ini"
+        echo "extension=${PHPEXTDIR:+$PHPEXTDIR/}memcache.so" > "${CONFIGSCANDIR}/memcache.ini"
     fi
 else
     echo ""
@@ -607,13 +607,13 @@ fi # memcache.so check
 MEMCACHEDSOCHECK=$(grep 'memcached.so' /usr/local/lib/php.ini)
 echo "check ${CONFIGSCANDIR}/memcached.ini"
 MEMCACHEDSOCHECKB=$(grep 'memcached.so' "${CONFIGSCANDIR}/memcached.ini")
-PHPEXTDIRD=$(cat /usr/local/bin/php-config | awk '/^extension_dir/ {extdir=$1} END {gsub(/\047|extension_dir|=|)/,"",extdir); print extdir}')
+PHPEXTDIRD=$(php_extension_dir)
 
 if [[ -z "$MEMCACHEDSOCHECK" || -z "$MEMCACHEDSOCHECKB" ]]; then
     echo ""
     if [ "$PHP_MEMCACHED" == 'y' ]; then
         echo ""
-        echo "extension=${PHPEXTDIRD}/memcached.so" > "${CONFIGSCANDIR}/memcached.ini"
+        echo "extension=${PHPEXTDIRD:+$PHPEXTDIRD/}memcached.so" > "${CONFIGSCANDIR}/memcached.ini"
         echo "memcached.sess_connect_timeout=3000" >> "${CONFIGSCANDIR}/memcached.ini"
         echo "; http://php.net/manual/en/memcached.configuration.php" >> "${CONFIGSCANDIR}/memcached.ini"
         echo "memcached.sess_consistent_hash=0" >> "${CONFIGSCANDIR}/memcached.ini"

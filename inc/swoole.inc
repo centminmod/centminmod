@@ -225,7 +225,7 @@ elif [[ "$PHPMUVER" = '8.5' ]]; then
 fi
 
 if [[ "$PHPSWOOLE" = [yY] ]]; then
-    PHPEXTDIRD=`cat /usr/local/bin/php-config | awk '/^extension_dir/ {extdir=$1} END {gsub(/\047|extension_dir|=|)/,"",extdir); print extdir}'`
+    PHPEXTDIRD=$(php_extension_dir)
       # set extra cflags fro devtoolset-7 and devtoolset-8 compatibility
       check_devtoolset_php
       enable_devtoolset "$CLANG_PHP" || return 1
@@ -262,7 +262,7 @@ if [[ "$PHPSWOOLE" = [yY] ]]; then
     
     SWOOLESOCHECK=`grep 'swoole.so' /usr/local/lib/php.ini`
     SWOOLESOCHECKB=$(grep 'swoole.so' ${CONFIGSCANDIR}/swoole.ini)
-    PHPEXTDIRD=`cat /usr/local/bin/php-config | awk '/^extension_dir/ {extdir=$1} END {gsub(/\047|extension_dir|=|)/,"",extdir); print extdir}'`
+    PHPEXTDIRD=$(php_extension_dir)
     
     if [[ -z "$SWOOLESOCHECK" || -z "$SWOOLESOCHECKB" ]]; then
         #echo "" >> /usr/local/lib/php.ini

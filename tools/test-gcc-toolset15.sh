@@ -385,26 +385,35 @@ echo 'PASS: caller failure guards, final C/C++ flags, repeat selection, Clang, o
 (
   mkdir -p "$scratch/ini-check"
   CONFIGSCANDIR="$scratch/ini-check"
-  printf "extension_dir='/new/extensions'\n" > "$scratch/php-config"
-  autodetect=$(sed -n '/^autodetectinstallextensions() {/,/^}/p' "$repo/inc/php_upgrade.inc")
+  newdir=/opt/test/lib/php/extensions/no-debug-non-zts-20250925
+  olddir=/opt/test/lib/php/extensions/no-debug-non-zts-20240924
+  printf '#!/bin/sh\necho %s\n' "$newdir" > "$scratch/php-config"
+  chmod +x "$scratch/php-config"
+  autodetect=$(sed -n '/^php_extension_dir() {/,/^}/p;/^php_ini_extdir_rewrite() {/,/^}/p;/^autodetectinstallextensions() {/,/^}/p' "$repo/inc/php_upgrade.inc")
   autodetect=${autodetect//\/usr\/local\/bin\/php-config/$scratch/php-config}
   eval "$autodetect"
   cecho() { :; }; figlet() { :; }
   # Run the GNU sed edit portably on macOS too.
   sed() {
     if [[ "$1" = -i ]]; then
-      command sed "$2" "$3" > "$scratch/edited-ini" && mv "$scratch/edited-ini" "$3"
+      shift
+      command sed "$@" > "$scratch/edited-ini" && mv "$scratch/edited-ini" "${!#}"
     else command sed "$@"; fi
   }
-  PHPEXTDIRDOLD=/old/extensions
   autodetectinstallextensions >/dev/null
-  printf 'extension=/old/extensions/a.so\n' > "$CONFIGSCANDIR/a.ini"
-  printf 'extension=/old/extensions/b.so\n' > "$CONFIGSCANDIR/b space.ini"
-  autodetectinstallextensions >/dev/null
-  grep -q '/new/extensions/a.so' "$CONFIGSCANDIR/a.ini"
-  grep -q '/new/extensions/b.so' "$CONFIGSCANDIR/b space.ini"
+  php_ini_extdir_rewrite >/dev/null
+  printf 'extension=%s/a.so\n' "$olddir" > "$CONFIGSCANDIR/a.ini"
+  printf 'extension="%s"/b.so\n' "$olddir" > "$CONFIGSCANDIR/b space.ini"
+  printf 'extension=%s/c.so\nextension=redis.so\n' "$newdir" > "$CONFIGSCANDIR/c.ini"
+  php_ini_extdir_rewrite >/dev/null
+  grep -qx "extension=$newdir/a.so" "$CONFIGSCANDIR/a.ini"
+  grep -qx "extension=\"$newdir\"/b.so" "$CONFIGSCANDIR/b space.ini"
+  grep -qx 'extension=redis.so' "$CONFIGSCANDIR/c.ini"
+  # Nothing stale is left, so a rerun must not edit any file.
   sed() { if [[ "$1" = -i ]]; then return 7; else command sed "$@"; fi; }
-  if autodetectinstallextensions >/dev/null; then echo 'FAIL: INI edit failure ignored'; exit 1; fi
+  php_ini_extdir_rewrite >/dev/null || { echo 'FAIL: up-to-date INIs edited again'; exit 1; }
+  printf 'zend_extension=%s/opcache.so\n' "$olddir" > "$CONFIGSCANDIR/d.ini"
+  if php_ini_extdir_rewrite >/dev/null; then echo 'FAIL: INI edit failure ignored'; exit 1; fi
   zstd_setup=$(command sed -n '/^nginx_zstd_setup() {/,/^}/p' "$repo/inc/zstd_nginx.inc")
   zstd_setup=${zstd_setup//\/usr\/local\/nginx\/conf\/nginx.conf/$scratch/absent-nginx.conf}
   eval "$zstd_setup"

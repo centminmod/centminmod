@@ -127,7 +127,7 @@ if [[ -f /usr/local/nginx/html/opcache.php ]]; then
 fi
 
 ######################################################
-PHPEXTDIRD=`cat /usr/local/bin/php-config | awk '/^extension_dir/ {extdir=$1} END {gsub(/\047|extension_dir|=|)/,"",extdir); print extdir}'`
+PHPEXTDIRD=$(php_extension_dir)
 echo "\$PHPEXTDIRD = $PHPEXTDIRD"
 #######################################################
 

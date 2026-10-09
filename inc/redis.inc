@@ -85,7 +85,7 @@ fi
 }
 
 checkigbinary() {
-    PHPEXTDIRD=`cat /usr/local/bin/php-config | awk '/^extension_dir/ {extdir=$1} END {gsub(/\047|extension_dir|=|)/,"",extdir); print extdir}'`
+    PHPEXTDIRD=$(php_extension_dir)
     cecho "Checking for igbinary.so ..." $boldgreen
     cecho "Check if ${PHPEXTDIRD}/igbinary.so or ${CONFIGSCANDIR}/igbinary.ini exists" $boldyellow
 
@@ -113,7 +113,7 @@ redisinstall() {
         REDIS_PHPCURRENTVER=$(php-config --version | cut -d . -f1,2)
     fi
 
-    PHPEXTDIRD=`cat /usr/local/bin/php-config | awk '/^extension_dir/ {extdir=$1} END {gsub(/\047|extension_dir|=|)/,"",extdir); print extdir}'`
+    PHPEXTDIRD=$(php_extension_dir)
 
     echo "*************************************************"
     cecho "* Installing redis PHP extension" $boldgreen
@@ -348,7 +348,7 @@ fi # php 7 or not
 
 REDISSOCHECK=`grep 'redis.so' /usr/local/lib/php.ini`
 REDISSOCHECKB=$(grep 'redis.so' ${CONFIGSCANDIR}/redis.ini)
-PHPEXTDIRD=`cat /usr/local/bin/php-config | awk '/^extension_dir/ {extdir=$1} END {gsub(/\047|extension_dir|=|)/,"",extdir); print extdir}'`
+PHPEXTDIRD=$(php_extension_dir)
 
 if [[ -z "$REDISSOCHECK" || -z "$REDISSOCHECKB" ]]; then
     #echo "" >> /usr/local/lib/php.ini

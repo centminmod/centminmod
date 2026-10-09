@@ -287,7 +287,7 @@ mcrypt_peclinstall() {
     exit
   fi
   
-  PHPEXTDIRD=$(cat /usr/local/bin/php-config | awk '/^extension_dir/ {extdir=$1} END {gsub(/\047|extension_dir|=|)/,"",extdir); print extdir}')
+  PHPEXTDIRD=$(/usr/local/bin/php-config --extension-dir)
   if [ -f /usr/local/src/centminmod/centmin.sh ]; then
     PHP_MCRYPTPECLVER=$(awk -F "'" '/PHP_MCRYPTPECLVER=/ {print $2}' /usr/local/src/centminmod/centmin.sh)
   else
