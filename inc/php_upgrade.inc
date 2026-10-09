@@ -214,6 +214,39 @@ php_ini_extdir_rewrite() {
 }
 
 ########################################################################
+# Opt-in PHP extensions are best effort during initial installs: a failed or
+# unloadable build warns, drops its ini so PHP never loads a missing .so, and is
+# listed by php_ext_optional_report at the end. Menu 5 keeps failing fast.
+# $1 = module/ini name, $2 = its enable flag value, rest = installer command
+php_ext_optional() {
+  local ext="$1" enabled="$2" status=0 dir=$PWD
+  shift 2
+  if [[ "$PHP_INSTALL" != [yY] || "$enabled" != [yY] ]]; then
+    "$@"
+    return $?
+  fi
+  "$@" || status=$?
+  cd "$dir" || return $?
+  if [[ "$status" -eq 0 ]] && php -m 2>/dev/null | grep -qix "$ext"; then
+    return 0
+  fi
+  if [[ -f "${CONFIGSCANDIR}/${ext}.ini" ]] && ! php -m 2>/dev/null | grep -qix "$ext"; then
+    rm -f "${CONFIGSCANDIR}/${ext}.ini"
+  fi
+  PHP_OPTIONAL_EXT_FAILED="${PHP_OPTIONAL_EXT_FAILED} ${ext}"
+  cecho "WARNING: optional PHP extension ${ext} failed to install (status ${status}); continuing without it" $boldyellow
+  return 0
+}
+
+php_ext_optional_report() {
+  [[ -n "$PHP_OPTIONAL_EXT_FAILED" ]] || return 0
+  echo "*************************************************"
+  cecho "* Optional PHP extensions that failed to install:${PHP_OPTIONAL_EXT_FAILED}" $boldyellow
+  cecho "* Fix the cause, then run centmin.sh menu 5 to build them" $boldyellow
+  echo "*************************************************"
+}
+
+########################################################################
 php_ext_so_missing() {
   # $1 = .so basename (without .so). Returns 0 (true) ONLY when the extension
   # dir is KNOWN and the .so is genuinely absent. An unknown dir must NEVER be

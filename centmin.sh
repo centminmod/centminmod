@@ -30,7 +30,7 @@ DT=$(date +"%d%m%y-%H%M%S")
 branchname='141.00beta01'
 SCRIPT_MAJORVER='141'
 SCRIPT_MINORVER='00'
-SCRIPT_INCREMENTVER='316'
+SCRIPT_INCREMENTVER='317'
 SCRIPT_VERSIONSHORT="${branchname}"
 SCRIPT_VERSION="${SCRIPT_VERSIONSHORT}.b${SCRIPT_INCREMENTVER}"
 SCRIPT_DATE='16/08/25'
@@ -3465,13 +3465,13 @@ if [[ "$REDIS_SERVER_INSTALL" = [yY] ]]; then
 fi
 
 echo "mongodbinstall"
-mongodbinstall || return $?
+php_ext_optional mongodb "$PHPMONGODB" mongodbinstall || return $?
 
 echo "swooleinstall"
-swooleinstall || return $?
+php_ext_optional swoole "$PHPSWOOLE" swooleinstall || return $?
 
 echo "zopfliinstall"
-zopfliinstall || return $?
+php_ext_optional zopfli "$PHPZOPFLI" zopfliinstall || return $?
 
 if [[ "$PHPMSSQL" = [yY] ]]; then
   echo "php_mssqlinstall"
@@ -3480,22 +3480,22 @@ fi
 
 if [[ "$PHP_BROTLI" = [yY] ]]; then
   echo "php_ext_brotli"
-  php_ext_brotli || return $?
+  php_ext_optional brotli "$PHP_BROTLI" php_ext_brotli || return $?
 fi
 
 if [[ "$PHP_LZFOUR" = [yY] ]]; then
   echo "php_ext_lzfour"
-  php_ext_lzfour || return $?
+  php_ext_optional lz4 "$PHP_LZFOUR" php_ext_lzfour || return $?
 fi
 
 if [[ "$PHP_LZF" = [yY] ]]; then
   echo "php_ext_lzf"
-  php_ext_lzf || return $?
+  php_ext_optional lzf "$PHP_LZF" php_ext_lzf || return $?
 fi
 
 if [[ "$PHP_ZSTD" = [yY] ]]; then
   echo "php_ext_zstd"
-  php_ext_zstd || return $?
+  php_ext_optional zstd "$PHP_ZSTD" php_ext_zstd || return $?
 fi
 
 if [[ "$PHPTIMEZONEDB" = [yY] ]]; then
@@ -3739,6 +3739,7 @@ fi
 
 disk_cleanups
 bookmark
+php_ext_optional_report
 
 sync 
 
