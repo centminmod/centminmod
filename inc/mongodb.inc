@@ -87,26 +87,32 @@ if [[ "$PHPMONGODB" = [yY] ]]; then
         echo "cd $DIR_TMP"
         cd "$DIR_TMP"
     #tar xvzf ${PHPEXT_MONGODBLINKFILE}
-    cd "${DIR_TMP}/mongodb-${MONGODBPHP_VER}"
+    cd "${DIR_TMP}/mongodb-${MONGODBPHP_VER}" || return $?
     if [[ "$INITIALINSTALL" != [yY] ]]; then
         make clean
     fi
-    /usr/local/bin/phpize
-    if [[ "$MONGODB_SASL" = [yY] ]]; then
-        ./configure --with-php-config=/usr/local/bin/php-config --with-mongo-sasl=/usr/local
-    else
-        ./configure --with-php-config=/usr/local/bin/php-config
+    /usr/local/bin/phpize || return $?
+    # PHP 8.5 removed the IS_INTERNED() alias that mongodb 1.21.x still calls;
+    # map it to ZSTR_IS_INTERNED() at compile time instead of editing the source
+    local mongodb_cppflags=''
+    if [[ "$(/usr/local/bin/php-config --vernum)" -ge 80500 ]]; then
+        mongodb_cppflags=' -DIS_INTERNED=ZSTR_IS_INTERNED'
     fi
-    make${MAKETHREADS}
-    make install
-    
+    if [[ "$MONGODB_SASL" = [yY] ]]; then
+        CPPFLAGS="${CPPFLAGS}${mongodb_cppflags}" ./configure --with-php-config=/usr/local/bin/php-config --with-mongo-sasl=/usr/local || return $?
+    else
+        CPPFLAGS="${CPPFLAGS}${mongodb_cppflags}" ./configure --with-php-config=/usr/local/bin/php-config || return $?
+    fi
+    make${MAKETHREADS} || return $?
+    make install || return $?
+    [[ -s "${PHPEXTDIRD}/mongodb.so" ]] || return 1
+
     #######################################################
     # check to see if mongodb.so already loaded in php.ini
-    
+
     MONGODBSOCHECK=`grep 'mongodb.so' /usr/local/lib/php.ini`
     MONGODBSOCHECKB=$(grep 'mongodb.so' ${CONFIGSCANDIR}/mongodb.ini)
-    PHPEXTDIRD=$(php_extension_dir)
-    
+
     if [[ -z "$MONGODBSOCHECK" || -z "$MONGODBSOCHECKB" ]]; then
         #echo "" >> /usr/local/lib/php.ini
         echo "extension=mongodb.so" > "${CONFIGSCANDIR}/mongodb.ini"
