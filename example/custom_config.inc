@@ -3479,7 +3479,7 @@
 # LibreSSL version to compile
 # Reference: http://www.libressl.org/
 # Git History: First added 2015-06-03 (a823dd20), Last modified 2016-02-15 (7240145c)
-#LIBRESSL_VERSION='3.9.2'  
+#LIBRESSL_VERSION='4.3.3'  
 
 # Google BoringSSL Library Switch for Nginx
 # Replace OpenSSL with Google's BoringSSL fork for modern TLS 1.3 and QUIC support.

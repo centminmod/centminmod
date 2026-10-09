@@ -17,7 +17,7 @@ get_latest_aws_lc_version() {
 get_latest_openssl_version() {
     local branch=$1
     local latest_version
-    latest_version=$(curl -s "https://api.github.com/repos/openssl/openssl/tags?page=1&per_page=500" | jq -r '.[].name' | grep -E -iv 'alpha|beta|rc|fips' | grep "^openssl-${branch}" | head -n1)
+    latest_version=$(curl -s "https://api.github.com/repos/openssl/openssl/tags?page=1&per_page=500" | jq -r '.[].name' | grep -E -iv 'alpha|beta|rc|fips' | grep "^openssl-${branch//./\\.}\." | head -n1)
     if [[ -n "$latest_version" ]]; then
         echo "${latest_version#openssl-}"
     else
@@ -35,12 +35,13 @@ get_latest_openssl_version() {
 get_latest_libressl_version() {
     local branch=$1
     local latest_version
-    latest_version=$(curl -s "https://api.github.com/repos/libressl/portable/tags?page=1&per_page=500" | jq -r '.[].name' | grep -E -iv 'alpha|beta|rc|fips' | grep "^v${branch}" | head -n1)
+    latest_version=$(curl -s "https://api.github.com/repos/libressl/portable/tags?page=1&per_page=500" | jq -r '.[].name' | grep -E -iv 'alpha|beta|rc|fips' | grep "^v${branch//./\\.}\." | head -n1)
     if [[ -n "$latest_version" ]]; then
         echo "${latest_version#v}"
     else
         case $branch in
-            3.9) echo "3.9.2" ;;  # Fallback versions
+            4.3) echo "4.3.3" ;;  # Fallback versions
+            3.9) echo "3.9.2" ;;
             3.8) echo "3.8.4" ;;
             *) echo "unknown" ;;
         esac
@@ -93,8 +94,7 @@ check_nginx_crypto() {
     elif [[ $nginx_v_output =~ "built with LibreSSL" ]]; then
         NGINX_CRYPTO_LIBRARY_USED="LibreSSL"
         NGINX_CRYPTO_LIBRARY_VERSION=$(echo "$nginx_v_output" | grep -oP 'LibreSSL \K[0-9.]+' | head -n1)
-        local current_minor=$(echo $NGINX_CRYPTO_LIBRARY_VERSION | cut -d. -f2)
-        local current_branch="3.$current_minor"
+        local current_branch=$(echo $NGINX_CRYPTO_LIBRARY_VERSION | cut -d. -f1-2)
         local latest_version=$(get_latest_libressl_version $current_branch)
         if [[ "$NGINX_CRYPTO_LIBRARY_VERSION" == "$latest_version" ]]; then
             NGINX_CRYPTO_LIBRARY_VERSION+=" (up to date)"
@@ -149,8 +149,7 @@ check_version() {
             return
             ;;
         "LibreSSL")
-            local current_minor=$(echo $NGINX_CRYPTO_LIBRARY_VERSION | cut -d. -f2)
-            local current_branch="3.$current_minor"
+            local current_branch=$(echo $NGINX_CRYPTO_LIBRARY_VERSION | cut -d. -f1-2)
 
             local latest_version=$(get_latest_libressl_version $current_branch)
             if [[ "$latest_version" == "unknown" ]]; then
@@ -161,7 +160,7 @@ check_version() {
             fi
 
             # Check if there's a newer minor version available
-            if (( current_minor == 8 )); then
+            if [[ "$current_branch" = '3.8' ]]; then
                 local latest_39=$(get_latest_libressl_version "3.9")
                 echo "Consider upgrading to LibreSSL 3.9.x. Latest 3.9.x version: $latest_39"
                 echo "https://community.centminmod.com/threads/25488/"
