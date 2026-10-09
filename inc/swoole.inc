@@ -243,7 +243,7 @@ if [[ "$PHPSWOOLE" = [yY] ]]; then
         echo "cd $DIR_TMP"
         cd "$DIR_TMP"
     #tar xvzf ${PHPEXT_SWOOLELINKFILE}
-    cd "${DIR_TMP}/swoole-${PHPSWOOLE_VER}"
+    cd "${DIR_TMP}/swoole-${PHPSWOOLE_VER}" || return $?
     if [[ "$INITIALINSTALL" != [yY] ]]; then
         make clean
         /usr/local/bin/phpize clean
