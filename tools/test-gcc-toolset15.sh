@@ -133,6 +133,25 @@ if [[ -n "$compression" ]]; then
     if compgcc_fifteen; then echo 'FAIL: compression ignored activation failure'; exit 1; fi
   )
 fi
+# PHP 7.x configure probes need GCC 15 implicit-int compatibility; PHP 8 and C++ flags must not get it.
+php_gcc15=$(sed -n '/^if \[\[ "\$DEVTOOLSETFIFTTEEN" = \[yY\] \]\] && .*CLANG_PHP" != \[yY\] \]\]; then$/,/^fi$/p' "$repo/inc/php_configure.inc")
+[[ -n "$php_gcc15" ]]
+(
+  enable_gcc_toolset15() { return 0; }
+  php_gcc15_flags() { eval "$php_gcc15"; }
+  CENTOS_EIGHT=8 DEVTOOLSETFIFTTEEN=y CXXFLAGS='-fPIC -O2'
+  for PHPVER_ID in 70033 70433 80030 80330; do
+    expected='-O2 -std=gnu17'
+    [[ "$PHPVER_ID" -ge 80000 ]] || expected="$expected -fpermissive"
+    CFLAGS=-O2 CLANG_PHP=n
+    php_gcc15_flags
+    php_gcc15_flags
+    [[ "$CFLAGS" = "$expected" && "$CXXFLAGS" = '-fPIC -O2' ]] || { echo "FAIL: PHP $PHPVER_ID GCC15 CFLAGS '$CFLAGS'"; exit 1; }
+    CFLAGS=-O2 CLANG_PHP=y
+    php_gcc15_flags
+    [[ "$CFLAGS" = -O2 ]] || { echo "FAIL: PHP $PHPVER_ID Clang CFLAGS '$CFLAGS'"; exit 1; }
+  done
+)
 # Missing Perl core modules must be installed or stop the OpenSSL build.
 (
   CENTOS_EIGHT= CENTOS_NINE=9 CENTOS_TEN=
