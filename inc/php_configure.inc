@@ -4155,6 +4155,11 @@ if [[ "$DEVTOOLSETFIFTTEEN" = [yY] ]] && [[ "$CENTOS_EIGHT" = '8' || "$CENTOS_NI
   if [[ " $CFLAGS " != *' -std='* ]]; then
     export CFLAGS="$CFLAGS -std=gnu17"
   fi
+  # PHP 7.x configure probes use implicit int, an error since GCC 14, which
+  # silently drops checks like dlopen in -ldl on EL8 and breaks the FFI build.
+  if [[ "$PHPVER_ID" -lt '80000' && " $CFLAGS " != *' -fpermissive '* ]]; then
+    export CFLAGS="$CFLAGS -fpermissive"
+  fi
 fi
 
 php_pcrejit_stacksize
