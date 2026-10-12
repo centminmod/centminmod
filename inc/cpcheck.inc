@@ -5070,10 +5070,8 @@ if [[ "$INITIALINSTALL" != [yY] ]]; then
   #fixclamav_epel
   nano_highlight
   checkwoff
-  if [[ -z "$SKIP_CHECKIPVSIX" || "$SKIP_CHECKIPVSIX" = 'n' ]]; then
-    # skip checkipvsix    
-    checkipvsix
-  fi
+  # checkipvsix runs from centmin.sh/centmin-cli.sh after custom_config.inc is
+  # sourced, so persistent DISABLE_IPVSIX/FORCE_IPVFOUR overrides are seen
   if [[ -z "$SKIP_FIXWP_UPDATER" || "$SKIP_FIXWP_UPDATER" = 'n' ]]; then
     # skip fixwp_updater    
     fixwp_updater
