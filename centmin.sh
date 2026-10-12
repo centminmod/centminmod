@@ -30,7 +30,7 @@ DT=$(date +"%d%m%y-%H%M%S")
 branchname='132.00stable'
 SCRIPT_MAJORVER='132'
 SCRIPT_MINORVER='00'
-SCRIPT_INCREMENTVER='204'
+SCRIPT_INCREMENTVER='205'
 SCRIPT_VERSIONSHORT="${branchname}"
 SCRIPT_VERSION="${SCRIPT_VERSIONSHORT}.b${SCRIPT_INCREMENTVER}"
 SCRIPT_DATE='15/02/25'
@@ -1727,6 +1727,13 @@ if [ -f "${CM_INSTALLDIR}/inc/z_custom.inc" ]; then
     if [ -d "${CENTMINLOGDIR}" ]; then
         cat "${CM_INSTALLDIR}/inc/z_custom.inc" > "${CENTMINLOGDIR}/inc-zcustom-config-settings_${DT}.log"
     fi
+fi
+
+# run after custom_config.inc and z_custom.inc are sourced so persistent
+# DISABLE_IPVSIX, FORCE_IPVFOUR and SKIP_CHECKIPVSIX overrides are honoured
+# (skipped on initial install, as it was inside cpcheck)
+if [[ "$INITIALINSTALL" != [yY] ]] && [[ -z "$SKIP_CHECKIPVSIX" || "$SKIP_CHECKIPVSIX" = 'n' ]]; then
+  checkipvsix
 fi
 
 if [ -f "${CONFIGSCANBASE}/custom_config.inc" ]; then
