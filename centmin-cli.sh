@@ -30,7 +30,7 @@ DT=$(date +"%d%m%y-%H%M%S")
 branchname='141.00beta01'
 SCRIPT_MAJORVER='141'
 SCRIPT_MINORVER='00'
-SCRIPT_INCREMENTVER='320'
+SCRIPT_INCREMENTVER='321'
 SCRIPT_VERSIONSHORT="${branchname}"
 SCRIPT_VERSION="${SCRIPT_VERSIONSHORT}.b${SCRIPT_INCREMENTVER}"
 SCRIPT_DATE='16/08/25'
@@ -1859,6 +1859,13 @@ if [ -f "${CONFIGSCANBASE}/custom_config.inc" ]; then
     if [ -d "${CENTMINLOGDIR}" ]; then
         cat "${CONFIGSCANBASE}/custom_config.inc" > "${CENTMINLOGDIR}/etc-centminmod-custom-config-settings_${DT}.log"
     fi
+fi
+
+# run after custom_config.inc is sourced so persistent DISABLE_IPVSIX,
+# FORCE_IPVFOUR and SKIP_CHECKIPVSIX overrides are honoured (skipped on
+# initial install, as it was inside cpcheck)
+if [[ "$INITIALINSTALL" != [yY] ]] && [[ -z "$SKIP_CHECKIPVSIX" || "$SKIP_CHECKIPVSIX" = 'n' ]]; then
+  checkipvsix
 fi
 
 #########################################################
