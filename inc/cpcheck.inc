@@ -2073,7 +2073,8 @@ ROF
       systemctl start rpcbind.socket rpcbind.service -q
     fi
   elif [[ "$DISABLE_IPVSIX" != [yY] ]]; then
-    if [[ -d /etc/postfix && "$(grep -w 'inet_protocols' /etc/postfix/main.cf | grep -w 'ipv4')" ]]; then
+    # match postfixsetup(): keep postfix IPv4-only unless FORCE_IPVFOUR='n'
+    if [[ "$FORCE_IPVFOUR" = [nN] && -d /etc/postfix && "$(grep -w 'inet_protocols' /etc/postfix/main.cf | grep -w 'ipv4')" ]]; then
       postconf -e 'inet_protocols = all'
       restartpostfix='y'
     fi
