@@ -4841,6 +4841,11 @@
 # Git History: First added 2015-04-07 (ff4e2d7a), Last modified 2016-02-15 (7240145c)
 #PHPREDIS='y'  
 
+# Opt in to igbinary support in modern PhpRedis builds; requires IGBINARY_INSTALL='y'.
+# Applications must select Redis::SERIALIZER_IGBINARY on their Redis connections.
+# This does not change application or PHP session serialization defaults.
+#PHPREDIS_IGBINARY='n'
+
 # Redis PHP Extension Git
 # Pull PHP 7 Redis extension from git instead of PECL
 # Git History: Added 2016-06-21 (18ffdab3)

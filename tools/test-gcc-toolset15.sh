@@ -152,6 +152,40 @@ php_gcc15=$(sed -n '/^if \[\[ "\$DEVTOOLSETFIFTTEEN" = \[yY\] \]\] && .*CLANG_PH
     [[ "$CFLAGS" = -O2 ]] || { echo "FAIL: PHP $PHPVER_ID Clang CFLAGS '$CFLAGS'"; exit 1; }
   done
 )
+# Unmatched CPU models still need optimization before dialect/hardening flags are added.
+php_cpu_flags=$(awk '/^  if .*CPUVENDOR.*GenuineIntel.*SSECHECK.*enabled/ {copy=1} copy && /^fi$/ {exit} copy {print}' "$repo/inc/php_configure.inc")
+[[ -n "$php_cpu_flags" ]]
+(
+  uname() { echo x86_64; }
+  grep() { if [[ "${!#}" = /proc/cpuinfo ]]; then echo 8; else command grep "$@"; fi; }
+  select_cpu_flags() { eval "$php_cpu_flags"; }
+  CPUVENDOR=AuthenticAMD CLANG_PHP=n MARCH_TARGET=x86-64
+  SET_PHPEXTRA_CFLAGS=' -fno-omit-frame-pointer' CXXFLAGS='-g -O2'
+  for CPU_MARCH in bdver4 znver5 unknown; do
+    unset CFLAGS
+    select_cpu_flags >/dev/null
+    [[ "$CFLAGS" = '-O2 -pipe -fno-omit-frame-pointer' && "$CXXFLAGS" = '-g -O2' ]] || { echo "FAIL: unmatched AMD $CPU_MARCH lost default optimization: '$CFLAGS'"; exit 1; }
+    for CFLAGS in '-O0 -g3' '-O3 -pipe' '-Os' '-g -Wall'; do
+      before="$CFLAGS"
+      select_cpu_flags >/dev/null
+      [[ "$CFLAGS" = "$before" ]] || { echo 'FAIL: CPU fallback replaced explicit CFLAGS'; exit 1; }
+    done
+  done
+  CPU_MARCH=znver4 CFLAGS=
+  select_cpu_flags >/dev/null
+  [[ "$CFLAGS" = '-O3 -m64 -march=x86-64 -pipe -fno-omit-frame-pointer' ]] || exit 1
+  CPU_MARCH=bdver4 CLANG_PHP=y CFLAGS=
+  select_cpu_flags >/dev/null
+  [[ -z "$CFLAGS" ]] || { echo 'FAIL: GCC CPU fallback changed Clang flags'; exit 1; }
+  CLANG_PHP=n CFLAGS=
+  select_cpu_flags >/dev/null
+  enable_gcc_toolset15() { return 0; }
+  CENTOS_EIGHT=0 CENTOS_NINE=0 CENTOS_TEN=10 DEVTOOLSETFIFTTEEN=y PHPVER_ID=80426
+  eval "$php_gcc15"
+  CFLAGS="$CFLAGS -fstack-protector-strong -fPIC"
+  [[ "$CFLAGS" = '-O2 -pipe -fno-omit-frame-pointer -std=gnu17 -fstack-protector-strong -fPIC' ]] || exit 1
+)
+echo 'PASS: PHP generic CPU optimization, explicit flags, tuned CPUs and Clang preservation'
 # Missing Perl core modules must be installed or stop the OpenSSL build.
 (
   CENTOS_EIGHT= CENTOS_NINE=9 CENTOS_TEN=

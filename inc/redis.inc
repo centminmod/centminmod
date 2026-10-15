@@ -75,16 +75,29 @@ checkredistar() {
 cecho "Check if ${PHPEXT_REDISLINKFILE} exists" $boldyellow
 if [ ! -f "${DIR_TMP}/${PHPEXT_REDISLINKFILE}" ]; then
   cecho "Downloading redis PHP extension.." $boldgreen
-  redisphptarball
+  redisphptarball || return $?
 elif [[ -f "${DIR_TMP}/${PHPEXT_REDISLINKFILE}" && ! -d "${DIR_TMP}/phpredis-${REDISPHP_VER}" ]]; then
   pushd "$DIR_TMP"
-  tar xzf "${PHPEXT_REDISLINKFILE}"
+  tar xzf "${PHPEXT_REDISLINKFILE}" || return $?
   popd
 fi
 
 }
 
+phpredis_igbinary_validate() {
+    if [[ "$PHPREDIS_IGBINARY" = [yY] && "$IGBINARY_INSTALL" != [yY] ]]; then
+        echo "PHPREDIS_IGBINARY=y requires IGBINARY_INSTALL=y"
+        return 1
+    fi
+    return 0
+}
+
+phpredis_igbinary_available() {
+    php -r 'exit(extension_loaded("igbinary") && class_exists("Redis", false) && defined("Redis::SERIALIZER_IGBINARY") && (new Redis)->setOption(Redis::OPT_SERIALIZER, Redis::SERIALIZER_IGBINARY) ? 0 : 1);'
+}
+
 checkigbinary() {
+    [[ "$IGBINARY_INSTALL" = [yY] ]] || return 0
     PHPEXTDIRD=$(php_extension_dir)
     cecho "Checking for igbinary.so ..." $boldgreen
     cecho "Check if ${PHPEXTDIRD}/igbinary.so or ${CONFIGSCANDIR}/igbinary.ini exists" $boldyellow
@@ -92,11 +105,12 @@ checkigbinary() {
     if [[ ! -f ${CONFIGSCANDIR}/igbinary.ini || ! -f "${PHPEXTDIRD}/igbinary.so" ]]; then
      funct_igbinaryinstall || return $?
      #echo "will need to reinstall memcached extensions if needed"
+     return 0
     fi
     
     # check for different igbinary versions
     if [ -f /usr/local/bin/php ]; then
-        if [[ "$(php --ri igbinary | awk '/igbinary version/ {print $4}')" != "${IGBINARY_VERSION}" ]]; then
+        if ! php --ri igbinary >/dev/null 2>&1 || { [[ "$IGBINARYGIT" != [yY] ]] && [[ "$(php --ri igbinary | awk '/igbinary version/ {print $4}')" != "${IGBINARY_VERSION}" ]]; }; then
             cecho "Check for different igbinary versions ..." $boldgreen
             funct_igbinaryinstall || return $?
         fi
@@ -106,6 +120,7 @@ checkigbinary() {
 #######################################################
 redisinstall() {
     if [[ "$PHP_INSTALL" = [yY] ]]; then
+    phpredis_igbinary_validate || return $?
 
     REDIS_SUBMENU=$1
 
@@ -119,15 +134,15 @@ redisinstall() {
     cecho "* Installing redis PHP extension" $boldgreen
     echo "*************************************************"
     echo "Downloading redis PHP extension..."
-    cd $DIR_TMP
+    cd $DIR_TMP || return $?
       # set extra cflags fro devtoolset-7 and devtoolset-8 compatibility
       check_devtoolset_php
       enable_devtoolset "$CLANG_PHP" || return 1
-if [[ "$INITIALINSTALL" != [yY] ]]; then
+if [[ "$INITIALINSTALL" != [yY] || "$PHPREDIS_IGBINARY" = [yY] ]]; then
     checkigbinary || return $?
 fi
 
-checkredistar
+checkredistar || return $?
 
 echo
 echo "redisinstall: PHPVER_ID=$PHPVER_ID"
@@ -157,7 +172,7 @@ if [[ "$REDIS_PHPCURRENTVER" = '8.5' || "$PHPMUVER" = '8.5' || "$REDIS_PHPCURREN
 
     pwd
     echo "cd $DIR_TMP"
-    cd $DIR_TMP
+    cd $DIR_TMP || return $?
     if [[ "$REDISPHP_GIT" = [yY] ]]; then
         rm -rf redis-develop
     
@@ -169,10 +184,10 @@ if [[ "$REDIS_PHPCURRENTVER" = '8.5' || "$PHPMUVER" = '8.5' || "$REDIS_PHPCURREN
             PHPREDISGITLINK='https://gitlab.com/centminmod-github-mirror/phpredis.git'
         fi
         if [ ! -d redis-develop ]; then
-            time git clone -b develop "$PHPREDISGITLINK" redis-develop
-            git submodule update --init
+            time git clone -b develop "$PHPREDISGITLINK" redis-develop || return $?
+            git -C redis-develop submodule update --init || return $?
         fi
-        cd redis-develop
+        cd redis-develop || return $?
         if [[ "$INITIALINSTALL" != [yY] ]]; then
             make clean
         fi
@@ -180,18 +195,18 @@ if [[ "$REDIS_PHPCURRENTVER" = '8.5' || "$PHPMUVER" = '8.5' || "$REDIS_PHPCURREN
             # PHP 7.3.0 + centos 6 issue https://community.centminmod.com/posts/69561/
             if [ ! -f /usr/bin/autoconf268 ]; then
                 echo "yum -q -y install autoconf268"
-                yum -q -y install autoconf268
+                yum -q -y install autoconf268 || return $?
             fi
             if [ -f /usr/bin/autoconf268 ]; then
                 export PHP_AUTOCONF=/usr/bin/autoconf268
                 export PHP_AUTOHEADER=/usr/bin/autoheader268
             fi
         fi
-        /usr/local/bin/phpize
+        /usr/local/bin/phpize || return $?
         redis_check_zstd=$(grep -o 'enable-redis-zstd' config.m4)
         if [[ "$redis_check_zstd" = 'enable-redis-zstd' ]]; then
             if [[ ! "$(rpm -qa libzstd-devel)" ]]; then
-                yum -q -y install libzstd libzstd-devel
+                yum -q -y install libzstd libzstd-devel || return $?
             fi
             redis_zstd_opt=' --enable-redis-zstd'
         else
@@ -200,7 +215,7 @@ if [[ "$REDIS_PHPCURRENTVER" = '8.5' || "$PHPMUVER" = '8.5' || "$REDIS_PHPCURREN
         redis_check_lz4=$(grep -o 'enable-redis-lz4' config.m4)
         if [[ "$redis_check_lz4" = 'enable-redis-lz4' ]]; then
             if [[ ! "$(rpm -qa lz4-devel)" ]]; then
-                yum -q -y install lz4 lz4-devel
+                yum -q -y install lz4 lz4-devel || return $?
             fi
             redis_lzfour_opt=' --enable-redis-lz4 --with-liblz4'
         else
@@ -209,7 +224,7 @@ if [[ "$REDIS_PHPCURRENTVER" = '8.5' || "$PHPMUVER" = '8.5' || "$REDIS_PHPCURREN
         redis_check_lzf=$(grep -o 'enable-redis-lzf' config.m4)
         if [[ "$redis_check_lzf" = 'enable-redis-lzf' ]]; then
             if [[ ! "$(rpm -qa liblzf)" ]]; then
-                yum -q -y install liblzf liblzf-devel
+                yum -q -y install liblzf liblzf-devel || return $?
             fi
             # redis_lzf_opt=' --enable-redis-lzf'
             redis_lzf_opt=''
@@ -217,23 +232,23 @@ if [[ "$REDIS_PHPCURRENTVER" = '8.5' || "$PHPMUVER" = '8.5' || "$REDIS_PHPCURREN
             redis_lzf_opt=''
         fi
         if [[ -f "${PHPEXTDIRD}/igbinary.so" ]] && [ "$IGBINARY_INSTALL" == 'y' ]; then
-            if [[ "$(/usr/local/bin/php-config --vernum 2>/dev/null)" -ge 70400 || "$PHPMUVER" = 'NGDEBUG' ]]; then
-                # disable igbinary on PHP 7.4+ (segfaults seen on PHP 8.0+)
+            if [[ "$PHPREDIS_IGBINARY" != [yY] ]] && [[ "$(/usr/local/bin/php-config --vernum 2>/dev/null)" -ge 70400 || "$PHPMUVER" = 'NGDEBUG' ]]; then
+                # Keep modern igbinary integration opt-in until tested on the target stack.
                 echo "redis php configure"
                 echo "CFLAGS="${COMPILER_CFLAGS} -fPIC -O2 -fstack-protector-strong -D_FORTIFY_SOURCE=2" CPPFLAGS="-D_FORTIFY_SOURCE=2" CXXFLAGS="-fPIC -O2" LDFLAGS="-Wl,-z,relro,-z,now -pie" ./configure --with-php-config=/usr/local/bin/php-config${redis_zstd_opt}${redis_lzfour_opt}${redis_lzf_opt}"
-                CFLAGS="${COMPILER_CFLAGS} -fPIC -O2 -fstack-protector-strong -D_FORTIFY_SOURCE=2" CPPFLAGS="-D_FORTIFY_SOURCE=2" CXXFLAGS="-fPIC -O2" LDFLAGS="-Wl,-z,relro,-z,now -pie" ./configure --with-php-config=/usr/local/bin/php-config${redis_zstd_opt}${redis_lzfour_opt}${redis_lzf_opt}
+                CFLAGS="${COMPILER_CFLAGS} -fPIC -O2 -fstack-protector-strong -D_FORTIFY_SOURCE=2" CPPFLAGS="-D_FORTIFY_SOURCE=2" CXXFLAGS="-fPIC -O2" LDFLAGS="-Wl,-z,relro,-z,now -pie" ./configure --with-php-config=/usr/local/bin/php-config${redis_zstd_opt}${redis_lzfour_opt}${redis_lzf_opt} || return $?
             else
                 echo "redis php configure"
                 echo "CFLAGS="${COMPILER_CFLAGS} -fPIC -O2 -fstack-protector-strong -D_FORTIFY_SOURCE=2" CPPFLAGS="-D_FORTIFY_SOURCE=2" CXXFLAGS="-fPIC -O2" LDFLAGS="-Wl,-z,relro,-z,now -pie" ./configure --with-php-config=/usr/local/bin/php-config --enable-redis-igbinary${redis_zstd_opt}${redis_lzfour_opt}${redis_lzf_opt}"
-                CFLAGS="${COMPILER_CFLAGS} -fPIC -O2 -fstack-protector-strong -D_FORTIFY_SOURCE=2" CPPFLAGS="-D_FORTIFY_SOURCE=2" CXXFLAGS="-fPIC -O2" LDFLAGS="-Wl,-z,relro,-z,now -pie" ./configure --with-php-config=/usr/local/bin/php-config --enable-redis-igbinary${redis_zstd_opt}${redis_lzfour_opt}${redis_lzf_opt}
+                CFLAGS="${COMPILER_CFLAGS} -fPIC -O2 -fstack-protector-strong -D_FORTIFY_SOURCE=2" CPPFLAGS="-D_FORTIFY_SOURCE=2" CXXFLAGS="-fPIC -O2" LDFLAGS="-Wl,-z,relro,-z,now -pie" ./configure --with-php-config=/usr/local/bin/php-config --enable-redis-igbinary${redis_zstd_opt}${redis_lzfour_opt}${redis_lzf_opt} || return $?
             fi
         else
             echo "redis php configure"
             echo "CFLAGS="${COMPILER_CFLAGS} -fPIC -O2 -fstack-protector-strong -D_FORTIFY_SOURCE=2" CPPFLAGS="-D_FORTIFY_SOURCE=2" CXXFLAGS="-fPIC -O2" LDFLAGS="-Wl,-z,relro,-z,now -pie" ./configure --with-php-config=/usr/local/bin/php-config${redis_zstd_opt}${redis_lzfour_opt}${redis_lzf_opt}"
-            CFLAGS="${COMPILER_CFLAGS} -fPIC -O2 -fstack-protector-strong -D_FORTIFY_SOURCE=2" CPPFLAGS="-D_FORTIFY_SOURCE=2" CXXFLAGS="-fPIC -O2" LDFLAGS="-Wl,-z,relro,-z,now -pie" ./configure --with-php-config=/usr/local/bin/php-config${redis_zstd_opt}${redis_lzfour_opt}${redis_lzf_opt}
+            CFLAGS="${COMPILER_CFLAGS} -fPIC -O2 -fstack-protector-strong -D_FORTIFY_SOURCE=2" CPPFLAGS="-D_FORTIFY_SOURCE=2" CXXFLAGS="-fPIC -O2" LDFLAGS="-Wl,-z,relro,-z,now -pie" ./configure --with-php-config=/usr/local/bin/php-config${redis_zstd_opt}${redis_lzfour_opt}${redis_lzf_opt} || return $?
         fi
-        make${MAKETHREADS}
-        make install
+        make${MAKETHREADS} || return $?
+        make install || return $?
     else
         # PHP 7.4+ (including 8.0-8.5) uses Redis PHP 6.3.0
         if [[ "$REDIS_PHPCURRENTVER" = '8.5' || "$PHPMUVER" = '8.5' || "$REDIS_PHPCURRENTVER" = '8.4' || "$PHPMUVER" = '8.4' || "$REDIS_PHPCURRENTVER" = '8.3' || "$PHPMUVER" = '8.3' || "$REDIS_PHPCURRENTVER" = '8.2' || "$PHPMUVER" = '8.2' || "$REDIS_PHPCURRENTVER" = '8.1' || "$PHPMUVER" = '8.1' || "$REDIS_PHPCURRENTVER" = '8.0' || "$PHPMUVER" = '8.0' || "$REDIS_PHPCURRENTVER" = '7.4' || "$PHPMUVER" = '7.4' ]]; then
@@ -258,17 +273,17 @@ if [[ "$REDIS_PHPCURRENTVER" = '8.5' || "$PHPMUVER" = '8.5' || "$REDIS_PHPCURREN
         fi
         pwd
         echo "cd $DIR_TMP"
-        cd $DIR_TMP
+        cd $DIR_TMP || return $?
         #tar xvzf ${PHPEXT_REDISLINKFILE}
-        cd ${DIR_TMP}/phpredis-${REDISPHP_VER}
+        cd ${DIR_TMP}/phpredis-${REDISPHP_VER} || return $?
         if [[ "$INITIALINSTALL" != [yY] ]]; then
             make clean
         fi
-        /usr/local/bin/phpize
+        /usr/local/bin/phpize || return $?
         redis_check_zstd=$(grep -o 'enable-redis-zstd' config.m4)
         if [[ "$redis_check_zstd" = 'enable-redis-zstd' ]]; then
             if [[ ! "$(rpm -qa libzstd-devel)" ]]; then
-                yum -q -y install libzstd libzstd-devel
+                yum -q -y install libzstd libzstd-devel || return $?
             fi
             redis_zstd_opt=' --enable-redis-zstd'
         else
@@ -277,7 +292,7 @@ if [[ "$REDIS_PHPCURRENTVER" = '8.5' || "$PHPMUVER" = '8.5' || "$REDIS_PHPCURREN
         redis_check_lz4=$(grep -o 'enable-redis-lz4' config.m4)
         if [[ "$redis_check_lz4" = 'enable-redis-lz4' ]]; then
             if [[ ! "$(rpm -qa lz4-devel)" ]]; then
-                yum -q -y install lz4 lz4-devel
+                yum -q -y install lz4 lz4-devel || return $?
             fi
             redis_lzfour_opt=' --enable-redis-lz4 --with-liblz4'
         else
@@ -286,7 +301,7 @@ if [[ "$REDIS_PHPCURRENTVER" = '8.5' || "$PHPMUVER" = '8.5' || "$REDIS_PHPCURREN
         redis_check_lzf=$(grep -o 'enable-redis-lzf' config.m4)
         if [[ "$redis_check_lzf" = 'enable-redis-lzf' ]]; then
             if [[ ! "$(rpm -qa liblzf)" ]]; then
-                yum -q -y install liblzf liblzf-devel
+                yum -q -y install liblzf liblzf-devel || return $?
             fi
             # redis_lzf_opt=' --enable-redis-lzf'
             redis_lzf_opt=''
@@ -297,50 +312,50 @@ if [[ "$REDIS_PHPCURRENTVER" = '8.5' || "$PHPMUVER" = '8.5' || "$REDIS_PHPCURREN
             if [[ "$PHPMUVER" = '5.5' ]] || [[ "$INITIALINSTALL" = [yY] && "$(echo "$PHP_VERSION" | cut -d . -f1,2)" = '5.5' ]]; then
                 echo "php configure alt"
                 echo "CFLAGS="${COMPILER_CFLAGS} -fPIC -O2 -fstack-protector-strong -D_FORTIFY_SOURCE=2" CPPFLAGS="-D_FORTIFY_SOURCE=2" CXXFLAGS="-fPIC -O2" LDFLAGS="-Wl,-z,relro,-z,now -pie" ./configure --with-php-config=/usr/local/bin/php-config"
-                CFLAGS="${COMPILER_CFLAGS} -fPIC -O2 -fstack-protector-strong -D_FORTIFY_SOURCE=2" CPPFLAGS="-D_FORTIFY_SOURCE=2" CXXFLAGS="-fPIC -O2" LDFLAGS="-Wl,-z,relro,-z,now -pie" ./configure --with-php-config=/usr/local/bin/php-config
+                CFLAGS="${COMPILER_CFLAGS} -fPIC -O2 -fstack-protector-strong -D_FORTIFY_SOURCE=2" CPPFLAGS="-D_FORTIFY_SOURCE=2" CXXFLAGS="-fPIC -O2" LDFLAGS="-Wl,-z,relro,-z,now -pie" ./configure --with-php-config=/usr/local/bin/php-config || return $?
             else
-                if [[ "$(/usr/local/bin/php-config --vernum 2>/dev/null)" -ge 70400 || "$PHPMUVER" = 'NGDEBUG' ]]; then
-                    # disable igbinary on PHP 7.4+ (segfaults seen on PHP 8.0+)
+                if [[ "$PHPREDIS_IGBINARY" != [yY] ]] && [[ "$(/usr/local/bin/php-config --vernum 2>/dev/null)" -ge 70400 || "$PHPMUVER" = 'NGDEBUG' ]]; then
+                    # Keep modern igbinary integration opt-in until tested on the target stack.
                     echo "redis php configure alt"
                     echo "CFLAGS="${COMPILER_CFLAGS} -fPIC -O2 -fstack-protector-strong -D_FORTIFY_SOURCE=2" CPPFLAGS="-D_FORTIFY_SOURCE=2" CXXFLAGS="-fPIC -O2" LDFLAGS="-Wl,-z,relro,-z,now -pie" ./configure --with-php-config=/usr/local/bin/php-config${redis_zstd_opt}${redis_lzfour_opt}${redis_lzf_opt}"
-                    CFLAGS="${COMPILER_CFLAGS} -fPIC -O2 -fstack-protector-strong -D_FORTIFY_SOURCE=2" CPPFLAGS="-D_FORTIFY_SOURCE=2" CXXFLAGS="-fPIC -O2" LDFLAGS="-Wl,-z,relro,-z,now -pie" ./configure --with-php-config=/usr/local/bin/php-config${redis_zstd_opt}${redis_lzfour_opt}${redis_lzf_opt}
+                    CFLAGS="${COMPILER_CFLAGS} -fPIC -O2 -fstack-protector-strong -D_FORTIFY_SOURCE=2" CPPFLAGS="-D_FORTIFY_SOURCE=2" CXXFLAGS="-fPIC -O2" LDFLAGS="-Wl,-z,relro,-z,now -pie" ./configure --with-php-config=/usr/local/bin/php-config${redis_zstd_opt}${redis_lzfour_opt}${redis_lzf_opt} || return $?
                 else
                     echo "redis php configure alt"
                     echo "CFLAGS="${COMPILER_CFLAGS} -fPIC -O2 -fstack-protector-strong -D_FORTIFY_SOURCE=2" CPPFLAGS="-D_FORTIFY_SOURCE=2" CXXFLAGS="-fPIC -O2" LDFLAGS="-Wl,-z,relro,-z,now -pie" ./configure --with-php-config=/usr/local/bin/php-config --enable-redis-igbinary${redis_zstd_opt}${redis_lzfour_opt}${redis_lzf_opt}"
-                    CFLAGS="${COMPILER_CFLAGS} -fPIC -O2 -fstack-protector-strong -D_FORTIFY_SOURCE=2" CPPFLAGS="-D_FORTIFY_SOURCE=2" CXXFLAGS="-fPIC -O2" LDFLAGS="-Wl,-z,relro,-z,now -pie" ./configure --with-php-config=/usr/local/bin/php-config --enable-redis-igbinary${redis_zstd_opt}${redis_lzfour_opt}${redis_lzf_opt}
+                    CFLAGS="${COMPILER_CFLAGS} -fPIC -O2 -fstack-protector-strong -D_FORTIFY_SOURCE=2" CPPFLAGS="-D_FORTIFY_SOURCE=2" CXXFLAGS="-fPIC -O2" LDFLAGS="-Wl,-z,relro,-z,now -pie" ./configure --with-php-config=/usr/local/bin/php-config --enable-redis-igbinary${redis_zstd_opt}${redis_lzfour_opt}${redis_lzf_opt} || return $?
                 fi
             fi
         else
             echo "php configure alt"
             echo "CFLAGS="${COMPILER_CFLAGS} -fPIC -O2 -fstack-protector-strong -D_FORTIFY_SOURCE=2" CPPFLAGS="-D_FORTIFY_SOURCE=2" CXXFLAGS="-fPIC -O2" LDFLAGS="-Wl,-z,relro,-z,now -pie" ./configure --with-php-config=/usr/local/bin/php-config${redis_zstd_opt}${redis_lzfour_opt}${redis_lzf_opt}"
-            CFLAGS="${COMPILER_CFLAGS} -fPIC -O2 -fstack-protector-strong -D_FORTIFY_SOURCE=2" CPPFLAGS="-D_FORTIFY_SOURCE=2" CXXFLAGS="-fPIC -O2" LDFLAGS="-Wl,-z,relro,-z,now -pie" ./configure --with-php-config=/usr/local/bin/php-config${redis_zstd_opt}${redis_lzfour_opt}${redis_lzf_opt}
+            CFLAGS="${COMPILER_CFLAGS} -fPIC -O2 -fstack-protector-strong -D_FORTIFY_SOURCE=2" CPPFLAGS="-D_FORTIFY_SOURCE=2" CXXFLAGS="-fPIC -O2" LDFLAGS="-Wl,-z,relro,-z,now -pie" ./configure --with-php-config=/usr/local/bin/php-config${redis_zstd_opt}${redis_lzfour_opt}${redis_lzf_opt} || return $?
         fi
-        make${MAKETHREADS}
-        make install   
+        make${MAKETHREADS} || return $?
+        make install || return $?
     fi
 else
     cecho "Compiling PHP redis-${REDISPHP_VER} extension..." $boldgreen
 
     pwd
     echo "cd $DIR_TMP"
-    cd $DIR_TMP
+    cd $DIR_TMP || return $?
     #tar xvzf ${PHPEXT_REDISLINKFILE}
-    cd ${DIR_TMP}/phpredis-${REDISPHP_VER}
+    cd ${DIR_TMP}/phpredis-${REDISPHP_VER} || return $?
     if [[ "$INITIALINSTALL" != [yY] ]]; then
         make clean
     fi
-    /usr/local/bin/phpize
+    /usr/local/bin/phpize || return $?
     if [[ -f "${PHPEXTDIRD}/igbinary.so" ]] && [ "$IGBINARY_INSTALL" == 'y' ]; then
         if [[ "$PHPMUVER" = '5.5' ]] || [[ "$INITIALINSTALL" = [yY] && "$(echo "$PHP_VERSION" | cut -d . -f1,2)" = '5.5' ]]; then
-            CFLAGS="${COMPILER_CFLAGS} -fPIC -O2 -fstack-protector-strong -D_FORTIFY_SOURCE=2" CPPFLAGS="-D_FORTIFY_SOURCE=2" CXXFLAGS="-fPIC -O2" LDFLAGS="-Wl,-z,relro,-z,now -pie" ./configure --with-php-config=/usr/local/bin/php-config
+            CFLAGS="${COMPILER_CFLAGS} -fPIC -O2 -fstack-protector-strong -D_FORTIFY_SOURCE=2" CPPFLAGS="-D_FORTIFY_SOURCE=2" CXXFLAGS="-fPIC -O2" LDFLAGS="-Wl,-z,relro,-z,now -pie" ./configure --with-php-config=/usr/local/bin/php-config || return $?
         else
-            CFLAGS="${COMPILER_CFLAGS} -fPIC -O2 -fstack-protector-strong -D_FORTIFY_SOURCE=2" CPPFLAGS="-D_FORTIFY_SOURCE=2" CXXFLAGS="-fPIC -O2" LDFLAGS="-Wl,-z,relro,-z,now -pie" ./configure --with-php-config=/usr/local/bin/php-config --enable-redis-igbinary
+            CFLAGS="${COMPILER_CFLAGS} -fPIC -O2 -fstack-protector-strong -D_FORTIFY_SOURCE=2" CPPFLAGS="-D_FORTIFY_SOURCE=2" CXXFLAGS="-fPIC -O2" LDFLAGS="-Wl,-z,relro,-z,now -pie" ./configure --with-php-config=/usr/local/bin/php-config --enable-redis-igbinary || return $?
         fi
     else
-        CFLAGS="${COMPILER_CFLAGS} -fPIC -O2 -fstack-protector-strong -D_FORTIFY_SOURCE=2" CPPFLAGS="-D_FORTIFY_SOURCE=2" CXXFLAGS="-fPIC -O2" LDFLAGS="-Wl,-z,relro,-z,now -pie" ./configure --with-php-config=/usr/local/bin/php-config
+        CFLAGS="${COMPILER_CFLAGS} -fPIC -O2 -fstack-protector-strong -D_FORTIFY_SOURCE=2" CPPFLAGS="-D_FORTIFY_SOURCE=2" CXXFLAGS="-fPIC -O2" LDFLAGS="-Wl,-z,relro,-z,now -pie" ./configure --with-php-config=/usr/local/bin/php-config || return $?
     fi
-    make${MAKETHREADS}
-    make install
+    make${MAKETHREADS} || return $?
+    make install || return $?
 fi # php 7 or not
 
 #######################################################
@@ -352,13 +367,15 @@ PHPEXTDIRD=$(php_extension_dir)
 
 if [[ -z "$REDISSOCHECK" || -z "$REDISSOCHECKB" ]]; then
     #echo "" >> /usr/local/lib/php.ini
-    echo "extension=redis.so" > ${CONFIGSCANDIR}/redis.ini
+    echo "extension=redis.so" > "${CONFIGSCANDIR}/redis.ini" || return $?
 else
     echo ""
     echo "redis.so already loaded in ${CONFIGSCANDIR}/redis.ini"
     echo "$REDISSOCHECK"
     echo ""
 fi # redis.so check
+
+    php --ri redis >/dev/null || return $?
 
     # if [[ "$PHPMUVER" = '8.0' || "$PHPVER_ID" -ge '80000' || "$PHPMUVER" = 'NGDEBUG' ]] && [ -f "${CONFIGSCANDIR}/redis.ini" ]; then
     #     # disable redis on PHP 8.0+ due to segfaulting
@@ -367,8 +384,12 @@ fi # redis.so check
     #     rm -f ${CONFIGSCANDIR}/redis.ini
     #     echo
     # fi
+    if [[ "$PHPREDIS_IGBINARY" = [yY] ]]; then
+        phpredis_igbinary_available || { echo "PhpRedis igbinary support is unavailable after installation"; return 1; }
+    fi
     if [[ "$REDIS_SUBMENU" = 'submenu' ]]; then
-        cmservice php-fpm restart
+        /usr/local/sbin/php-fpm -t || return $?
+        php_fpm_apply restart || return $?
     fi
     fi # PHP_INSTALL=y
 }

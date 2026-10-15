@@ -125,10 +125,13 @@ fi
 igbinary_ext_dir=$(php-config --extension-dir) || return $?
 [[ "$igbinary_ext_dir" = /* && -s "$igbinary_ext_dir/igbinary.so" ]] || return 1
 
-IGBSOCHECK=$(grep 'extension=igbinary.so' /usr/local/lib/php.ini >/dev/null 2>&1; echo $?)
-IGBSOCHECKB=$(grep 'extension=igbinary.so' "${CONFIGSCANDIR}/igbinary.ini" >/dev/null 2>&1; echo $?)
+IGBSOCHECK=$(grep -Eq '^[[:space:]]*extension[[:space:]]*=[^;]*\bigbinary[.]so\b' /usr/local/lib/php.ini; echo $?)
+IGBSOCHECKB=$(grep -Eq '^[[:space:]]*extension[[:space:]]*=[^;]*\bigbinary[.]so\b' "${CONFIGSCANDIR}/igbinary.ini" 2>/dev/null; echo $?)
 
-if [[ "$IGBSOCHECK" != '0' || "$IGBSOCHECKB" != '0' ]]; then
+if [[ "$IGBSOCHECK" != '0' && "$IGBSOCHECKB" != '0' ]]; then
+if [[ -f "${CONFIGSCANDIR}/igbinary.ini" ]]; then
+    printf '\nextension=igbinary.so\n' >> "${CONFIGSCANDIR}/igbinary.ini" || return $?
+else
 cat > "${CONFIGSCANDIR}/igbinary.ini" <<END || return $?
 
 [igbinary]
@@ -143,6 +146,7 @@ igbinary.compact_strings=On
 ;apc.serializer=igbinary
 END
 fi
+fi
 else
     # remove igbinary PHP support if IGBINARY_INSTALL=n
     rm -rf "${CONFIGSCANDIR}/igbinary.ini" || return $?
@@ -153,11 +157,11 @@ fi # IGBINARY_INSTALL = y
 
 APCSOCHECK=$(grep 'extension=apc.so' "${CONFIGSCANDIR}/apc.ini" >/dev/null 2>&1; echo $?)
 
-if [[ "$APCSOCHECK" = '0' ]]; then
+if [[ "$APCSOCHECK" = '0' && -f "${CONFIGSCANDIR}/igbinary.ini" ]]; then
     sed -i 's/;apc.serializer=igbinary/apc.serializer=igbinary/g' "${CONFIGSCANDIR}/igbinary.ini" || return $?
 fi
 
-if [[ "$DISABLESESSION" = [yY] ]]; then
+if [[ "$DISABLESESSION" = [yY] && -f "${CONFIGSCANDIR}/igbinary.ini" ]]; then
 # php7 igbinary https://github.com/igbinary/igbinary broken session serialization
 # disable it for now
     sed -i 's|^session.serialize_handler=igbinary|;session.serialize_handler=igbinary|' "${CONFIGSCANDIR}/igbinary.ini" || return $?

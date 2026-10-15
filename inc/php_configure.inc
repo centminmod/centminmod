@@ -3951,6 +3951,10 @@ gcc -c -Q -march=${march_flag}${PHPEXTRA_CFLAGS} --help=target | grep -E 'mtune|
     export CXXFLAGS="$CFLAGS"
   else
     PHP_MTUNEOPT=""
+    if [[ "$CLANG_PHP" != [yY] ]]; then
+      # Keep optimization when the CPU model has no tuning rule.
+      export CFLAGS="${CFLAGS:--O2 -pipe${SET_PHPEXTRA_CFLAGS}}"
+    fi
   fi
 fi
 

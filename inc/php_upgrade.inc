@@ -438,6 +438,7 @@ funct_phpupgrade() {
 php_upgrade_main() {
     CLI_PHP_VER="$1"
     ENABLE_EXT_OVERRIDE="$2"
+    phpredis_igbinary_validate || return $?
     axelsetup
 
     if [[ "$ENABLE_EXT_OVERRIDE" = 'all' ]]; then
@@ -1348,6 +1349,15 @@ else
         fi
     fi
 fi # overwritephpfpmconf
+
+# A same-version rebuild must also apply changes to the optional Redis serializer.
+if [[ "$PHPREDIS" = [yY] && "$PHPMUVER" != 'NGDEBUG' ]] && [[ "$(/usr/local/bin/php-config --vernum)" -ge 70400 ]]; then
+    if ! php --ri redis >/dev/null 2>&1 ||
+       { [[ "$PHPREDIS_IGBINARY" = [yY] ]] && ! phpredis_igbinary_available; } ||
+       { [[ "$PHPREDIS_IGBINARY" != [yY] ]] && phpredis_igbinary_available; }; then
+        redisinstall || return $?
+    fi
+fi
 
 # A PHP rebuild can leave a stale .ini whose .so no longer exists (new
 # extension_dir on a major upgrade, or a failed/interrupted build). Every

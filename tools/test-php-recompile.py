@@ -19,6 +19,7 @@ INITIAL = INITIAL[INITIAL.index('  if [[ "$FPM_PHPFPM_RPM"'):]
 MOCKS = r'''
 event() { printf '%s\n' "$*" >> "$EVENTS"; }
 cecho() { :; }; figlet() { :; }; axelsetup() { :; }; funct_mktempfile() { :; }
+phpredis_igbinary_validate() { :; }; phpredis_igbinary_available() { return 1; }
 gethtpasswdsh() { :; }; phpng_download() { :; }; cmm_php_fatal_pending() { return 1; }
 cmm_php_fatal() { event source-failure; return 1; }
 cmm_archive_valid() { event validate; [[ "$FAILPHASE" != source ]]; }
@@ -347,6 +348,112 @@ assert result.returncode == 7 and 'igbinary' in events and 'install' not in even
 result, events, _ = run('igbinary', REDIS + '\nfunct_phpupgrade 8.3.35\n', 'PHP_INSTALL=y; PHPREDIS=y; INITIALINSTALL=n')
 assert result.returncode == 7 and 'igbinary' in events and 'maintenance-on' not in events and 'restart' not in events, (events, result.stderr)
 print('PASS: redis install and actual full PHP upgrade propagate nested igbinary failure')
+
+for call in ('redisinstall', 'funct_phpupgrade 8.3.35'):
+    result, events, _ = run(body=REDIS + '\n' + call + '\n',
+                            setup='PHP_INSTALL=y; PHPREDIS_IGBINARY=y; IGBINARY_INSTALL=n')
+    assert result.returncode == 1 and not events, (call, events, result.stderr)
+print('PASS: conflicting igbinary opt-in stops Redis install and PHP rebuild before changes')
+
+setup = ig_setup + r'''
+printf 'extension=igbinary.so\nigbinary.compact_strings=Off\n; keep this setting\n' > "$CONFIGSCANDIR/igbinary.ini"
+'''
+body = IGBINARY + r'''
+funct_igbinaryinstall || exit $?
+grep -q '^igbinary.compact_strings=Off$' "$CONFIGSCANDIR/igbinary.ini" || exit 8
+grep -q '^; keep this setting$' "$CONFIGSCANDIR/igbinary.ini" || exit 8
+'''
+result, events, _ = run(body=body, setup=setup)
+assert result.returncode == 0, (events, result.stdout, result.stderr)
+print('PASS: igbinary reinstall preserves existing scan-directory settings')
+
+for location in ('main-comment', 'scan-comment', 'main-active'):
+    setup = ig_setup + '\nIGBINARYGIT=y; PHPMUVER=8.3; PHPVER_ID=80335\n'
+    setup += 'git() { mkdir -p igbinary-php; command cp "$DIR_TMP/igbinary-3.2.16/configure" igbinary-php/configure; };\n'
+    setup += 'sed() { [[ -f "$3" ]]; };\n'
+    if location == 'main-comment':
+        setup += "printf ';extension=igbinary.so\\n' > \"${FAKE_PHP_CONFIG%/bin/php-config}/lib/php.ini\"\n"
+    elif location == 'scan-comment':
+        setup += "printf ';extension=igbinary.so\\nigbinary.compact_strings=Off\\n' > \"$CONFIGSCANDIR/igbinary.ini\"\n"
+    else:
+        setup += "printf 'extension=igbinary.so\\n' > \"${FAKE_PHP_CONFIG%/bin/php-config}/lib/php.ini\"\n"
+    body = IGBINARY + '\nfunct_igbinaryinstall || exit $?\n'
+    if location != 'main-active':
+        body += "grep -q '^extension=igbinary.so$' \"$CONFIGSCANDIR/igbinary.ini\" || exit 8\n"
+    else:
+        body += '[[ ! -f "$CONFIGSCANDIR/igbinary.ini" ]] || exit 8\n'
+    result, events, _ = run(body=body, setup=setup)
+    assert result.returncode == 0, (location, events, result.stderr)
+print('PASS: commented loaders are enabled and php.ini-only loaders need no scan file')
+
+result, events, _ = run(body=REDIS + '\ncheckigbinary\n', setup=r'''
+IGBINARY_VERSION=1.2.1; IGBINARYGIT=y
+touch "$CONFIGSCANDIR/igbinary.ini" "$(php-config --extension-dir)/igbinary.so"
+''')
+assert result.returncode == 0 and 'igbinary' not in events, (events, result.stderr)
+print('PASS: modern Git igbinary is not rebuilt against the legacy release version marker')
+
+redis_setup = ig_setup + r'''
+IGBINARYGIT=y; PHPVER_ID=80335; PHPMVER=8.3; PHPMUVER=8.3; REDIS_PHPCURRENTVER=8.3
+REDISPHPSEVENFOUR_VER=6.3.0
+PHPEXT_REDISLINKFILE=phpredis-6.3.0.tgz
+touch "$DIR_TMP/$PHPEXT_REDISLINKFILE"
+touch "$CONFIGSCANDIR/igbinary.ini"
+mkdir -p "$DIR_TMP/phpredis-6.3.0"
+cat > "$DIR_TMP/phpredis-6.3.0/configure" <<'CONFIGURE'
+#!/bin/bash
+echo "redis-configure:$*" >> "$EVENTS"
+[[ "$FAILPHASE" != redis-configure ]] || exit 7
+if [[ "$*" = *--enable-redis-igbinary* ]]; then touch "$EVENTS.capability"; fi
+CONFIGURE
+chmod +x "$DIR_TMP/phpredis-6.3.0/configure"
+printf 'enable-redis-zstd\nenable-redis-lz4\n' > "$DIR_TMP/phpredis-6.3.0/config.m4"
+php() {
+  if [[ "$1" = -r ]]; then [[ -f "$EVENTS.capability" && "$FAILPHASE" != redis-capability ]];
+  else echo 'igbinary version => 3.2.16'; fi
+}
+checkredistar() { :; }
+git() {
+  [[ "$FAILPHASE" != redis-clone ]] || return 7
+  [[ "$1" != clone ]] || command cp -R "$DIR_TMP/phpredis-6.3.0" "$DIR_TMP/redis-develop"
+  return 0
+}
+printf '#!/bin/bash\ncase "$1" in --extension-dir) echo "%s";; --version) echo 8.3.35;; --vernum) echo 80335;; esac\n' "$(php-config --extension-dir)" > "$FAKE_PHP_CONFIG"
+'''
+for source_mode in ('n', 'y'):
+    for opt_in in ('n', 'y'):
+        setup = redis_setup + f'\nREDISPHP_GIT={source_mode}; PHPREDIS_IGBINARY={opt_in}\n'
+        result, events, _ = run(body=REDIS + '\nredisinstall\n', setup=setup)
+        configured = [e for e in events if e.startswith('redis-configure:')]
+        assert result.returncode == 0 and len(configured) == 1, (source_mode, opt_in, events, result.stderr)
+        assert ('--enable-redis-igbinary' in configured[0]) == (opt_in == 'y'), configured
+        assert '--enable-redis-zstd' in configured[0] and '--enable-redis-lz4' in configured[0], configured
+        for phase in ('phpize', 'redis-configure', 'make', 'install', 'redis-capability'):
+            if phase == 'redis-capability' and opt_in == 'n':
+                continue
+            result, events, _ = run(phase, REDIS + '\nredisinstall\n', setup)
+            assert result.returncode != 0 and 'restart' not in events, (source_mode, opt_in, phase, events, result.stderr)
+            if phase in ('phpize', 'redis-configure', 'make'):
+                assert 'install' not in events, events
+print('PASS: both Redis build paths honor opt-in and compression, and stop on build/capability failures')
+
+# Exercise the actual same-version upgrade with an existing redis.so and changed capability.
+for opt_in, installed, rebuild in [('y', False, True), ('y', True, False), ('n', True, True), ('n', False, False), ('n', None, True)]:
+    setup = r'''
+PHPREDIS=y
+touch "$CONFIGSCANDIR/redis.ini" "$(php-config --extension-dir)/redis.so"
+touch "$CONFIGSCANDIR/igbinary.ini" "$(php-config --extension-dir)/igbinary.so"
+printf '#!/bin/bash\ncase "$1" in --extension-dir) echo "%s";; --version) echo 8.3.35;; --vernum) echo 80335;; esac\n' "$(php-config --extension-dir)" > "$FAKE_PHP_CONFIG"
+'''
+    setup += f'PHPREDIS_IGBINARY={opt_in}; phpredis_igbinary_available() {{ return {0 if installed else 1}; }}\n'
+    if installed is None:
+        setup += 'php() { [[ "$*" != "--ri redis" ]] || return 1; [[ "$*" != "--ri igbinary" ]] || echo "igbinary version => 3.2.16"; }\n'
+    setup += 'redisinstall() { event redis-rebuild; return 0; }\n'
+    result, events, _ = run(setup=setup)
+    assert result.returncode == 0 and ('redis-rebuild' in events) == rebuild, (opt_in, installed, events, result.stderr)
+    if rebuild:
+        assert events.index('redis-rebuild') < events.index('restart'), events
+print('PASS: same-version upgrades apply opt-in changes in both directions before the gated FPM restart')
 
 for include, function in (('inc/apcinstall.inc', 'funct_apcsourceinstall_disabled'), ('inc/apcreinstall.inc', 'funct_apcreinstall_disabled')):
     setup = r'''
