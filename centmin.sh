@@ -30,7 +30,7 @@ DT=$(date +"%d%m%y-%H%M%S")
 branchname='141.00beta01'
 SCRIPT_MAJORVER='141'
 SCRIPT_MINORVER='00'
-SCRIPT_INCREMENTVER='323'
+SCRIPT_INCREMENTVER='324'
 SCRIPT_VERSIONSHORT="${branchname}"
 SCRIPT_VERSION="${SCRIPT_VERSIONSHORT}.b${SCRIPT_INCREMENTVER}"
 SCRIPT_DATE='16/08/25'
@@ -874,6 +874,7 @@ SUHOSINVER='0.9.38'
 
 PHPREDIS='y'                # redis PHP extension install
 PHPREDIS_IGBINARY='n'       # opt in to igbinary support in modern PhpRedis builds
+PHPREDIS_STABLE='n'         # prefer release tarballs over automatic Git selection
 REDISPHP_VER='4.3.0'            # redis PHP version for PHP <7.x
 REDISPHPSEVEN_VER='5.3.7'       # redis PHP version for PHP 7.0.x to 7.1.x
 REDISPHPSEVENTWO_VER='6.0.2'    # redis PHP version for PHP 7.2.x to 7.3.x

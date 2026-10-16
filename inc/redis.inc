@@ -142,6 +142,10 @@ if [[ "$INITIALINSTALL" != [yY] || "$PHPREDIS_IGBINARY" = [yY] ]]; then
     checkigbinary || return $?
 fi
 
+# Menu 5 can force Git before reaching the installer; honor the explicit release choice.
+if [[ "$PHPREDIS_STABLE" = [yY] ]]; then
+    REDISPHP_GIT='n'
+fi
 checkredistar || return $?
 
 echo
@@ -153,12 +157,12 @@ echo
 
 if [[ "$REDIS_PHPCURRENTVER" = '8.5' || "$PHPMUVER" = '8.5' || "$REDIS_PHPCURRENTVER" = '8.4' || "$PHPMUVER" = '8.4' || "$REDIS_PHPCURRENTVER" = '8.3' || "$PHPMUVER" = '8.3' || "$REDIS_PHPCURRENTVER" = '8.2' || "$PHPMUVER" = '8.2' || "$REDIS_PHPCURRENTVER" = '8.1' || "$PHPMUVER" = '8.1' || "$REDIS_PHPCURRENTVER" = '8.0' || "$PHPMUVER" = '8.0' || "$PHPVER_ID" -ge '80000' || "$PHPMUVER" = 'NGDEBUG' || "$PHPSEVEN_CHECKVER" = '0' ]] || [[ "$REDIS_PHPCURRENTVER" = '7.4' || "$PHPMUVER" = '7.4' || "$PHPMUVER" = 'NGDEBUG' || "$PHPSEVEN_CHECKVER" = '0' ]] || [[ "$REDIS_PHPCURRENTVER" = '7.3' || "$PHPMUVER" = '7.3' || "$PHPMUVER" = 'NGDEBUG' || "$PHPSEVEN_CHECKVER" = '0' ]] || [[ "$REDIS_PHPCURRENTVER" = '7.2' || "$PHPMUVER" = '7.2' || "$PHPMUVER" = 'NGDEBUG' || "$PHPSEVEN_CHECKVER" = '0' ]] || [[ "$REDIS_PHPCURRENTVER" = '7.1' || "$PHPMUVER" = '7.1' || "$PHPMUVER" = 'NGDEBUG' || "$PHPSEVEN_CHECKVER" = '0' ]] || [[ "$REDIS_PHPCURRENTVER" = '7.0' || "$PHPMUVER" = '7.0' || "$PHPMUVER" = 'NGDEBUG' || "$PHPSEVEN_CHECKVER" = '0' ]] || [[ "$INITIALINSTALL" = [yY] && "$(echo "$PHP_VERSION" | cut -d . -f1,2)" = '7.1' ]] || [[ "$INITIALINSTALL" = [yY] && "$(echo "$PHP_VERSION" | cut -d . -f1,2)" = '7.0' ]]; then
     if [[ "$CENTOS_SEVEN" -eq '7' ]] && [[ "$REDIS_PHPCURRENTVER" = '8.0' || "$PHPMUVER" = '8.0' || "$REDIS_PHPCURRENTVER" = '8.1' || "$PHPMUVER" = '8.1' || "$REDIS_PHPCURRENTVER" = '8.2' || "$PHPMUVER" = '8.2' || "$REDIS_PHPCURRENTVER" = '8.3' || "$PHPMUVER" = '8.3' ]]; then
-        REDISPHP_GIT='y'
+        [[ "$PHPREDIS_STABLE" = [yY] ]] || REDISPHP_GIT='y'
         AUTODETECPHP_OVERRIDE='y'
     fi
 
     if [[ "$REDIS_PHPCURRENTVER" = '8.4' || "$PHPMUVER" = '8.4' ]]; then
-        REDISPHP_GIT='y'
+        [[ "$PHPREDIS_STABLE" = [yY] ]] || REDISPHP_GIT='y'
         AUTODETECPHP_OVERRIDE='y'
     fi
 

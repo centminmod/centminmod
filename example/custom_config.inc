@@ -4846,6 +4846,10 @@
 # This does not change application or PHP session serialization defaults.
 #PHPREDIS_IGBINARY='n'
 
+# Use stable PhpRedis release tarballs, including on PHP 8.4 menu 5 rebuilds.
+# This takes precedence over REDISPHP_GIT and automatic Git selection.
+#PHPREDIS_STABLE='n'
+
 # Redis PHP Extension Git
 # Pull PHP 7 Redis extension from git instead of PECL
 # Git History: Added 2016-06-21 (18ffdab3)

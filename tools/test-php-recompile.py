@@ -403,6 +403,7 @@ mkdir -p "$DIR_TMP/phpredis-6.3.0"
 cat > "$DIR_TMP/phpredis-6.3.0/configure" <<'CONFIGURE'
 #!/bin/bash
 echo "redis-configure:$*" >> "$EVENTS"
+echo "redis-source:${PWD##*/}" >> "$EVENTS"
 [[ "$FAILPHASE" != redis-configure ]] || exit 7
 if [[ "$*" = *--enable-redis-igbinary* ]]; then touch "$EVENTS.capability"; fi
 CONFIGURE
@@ -436,6 +437,22 @@ for source_mode in ('n', 'y'):
             if phase in ('phpize', 'redis-configure', 'make'):
                 assert 'install' not in events, events
 print('PASS: both Redis build paths honor opt-in and compression, and stop on build/capability failures')
+
+# Menu 5 can set REDISPHP_GIT=y before redisinstall; stable selection must win there.
+for stable in ('', 'n', 'y'):
+    for initial in ('n', 'y'):
+        for opt_in in ('n', 'y'):
+            setup = redis_setup + f'''
+PHPVER_ID=80426; PHPMVER=8.4; PHPMUVER=8.4; REDIS_PHPCURRENTVER=8.4
+PHPREDIS_STABLE={stable}; REDISPHP_GIT={'y' if stable == 'y' else 'n'}; INITIALINSTALL={initial}; PHPREDIS_IGBINARY={opt_in}
+'''
+            result, events, _ = run(body=REDIS + '\ncheckredistar() { event "redis-download:$REDISPHP_GIT"; }\nredisinstall\n', setup=setup)
+            selected = 'phpredis-6.3.0' if stable == 'y' else 'redis-develop'
+            assert result.returncode == 0 and f'redis-source:{selected}' in events, (stable, initial, opt_in, events, result.stderr)
+            assert 'redis-download:n' in events, events
+            configured = [e for e in events if e.startswith('redis-configure:')]
+            assert len(configured) == 1 and ('--enable-redis-igbinary' in configured[0]) == (opt_in == 'y'), configured
+print('PASS: PHP 8.4 stable selection overrides menu 5 Git selection before download, with igbinary off/on; defaults stay Git')
 
 # Exercise the actual same-version upgrade with an existing redis.so and changed capability.
 for opt_in, installed, rebuild in [('y', False, True), ('y', True, False), ('n', True, True), ('n', False, False), ('n', None, True)]:
