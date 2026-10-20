@@ -1,0 +1,136 @@
+From 3f74c8a960c866da1b016bac2fc9e476955fbbc7 Mon Sep 17 00:00:00 2001
+From: Ilija Tovilo <ilija.tovilo@me.com>
+Date: Tue, 7 Jul 2026 20:32:58 +0200
+Subject: [PATCH 4/5] Fix leak on double DatePeriod::__construct() call
+
+Closes GH-22643
+
+(cherry picked from commit 2d86f8cf489ea5410edd19d301c1aefe330599ab)
+(cherry picked from commit 591e613e1cf6cc10d84df2c799ede593b7371bc1)
+---
+ NEWS                                          |  5 +++++
+ ext/date/php_date.c                           | 21 ++++++++++++++++++-
+ .../DatePeriod_double_constructor_call.phpt   | 14 +++++++++++++
+ 3 files changed, 39 insertions(+), 1 deletion(-)
+ create mode 100644 ext/date/tests/DatePeriod_double_constructor_call.phpt
+
+diff --git a/NEWS b/NEWS
+index e3cb991135..b7b43af995 100644
+--- a/NEWS
++++ b/NEWS
+@@ -1,6 +1,11 @@
+ PHP                                                                        NEWS
+ |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+ 
++Backported from 8.2.33
++
++- Date:
++  . Fixed leak on double DatePeriod::__construct() call. (ilutov)
++
+ Backported from 8.2.32
+ 
+ - OpenSSL:
+diff --git a/ext/date/php_date.c b/ext/date/php_date.c
+index 082b475e43..b340eb76dd 100644
+--- a/ext/date/php_date.c
++++ b/ext/date/php_date.c
+@@ -4185,6 +4185,23 @@ static int date_period_initialize(timelib_time **st, timelib_time **et, timelib_
+ 	return retval;
+ } /* }}} */
+ 
++static void date_period_reset(php_period_obj *period_obj)
++{
++	if (period_obj->start) {
++		timelib_time_dtor(period_obj->start);
++	}
++	if (period_obj->current) {
++		timelib_time_dtor(period_obj->current);
++	}
++	if (period_obj->end) {
++		timelib_time_dtor(period_obj->end);
++	}
++	if (period_obj->interval) {
++		timelib_rel_time_dtor(period_obj->interval);
++	}
++	memset(period_obj, 0, XtOffsetOf(php_period_obj, std));
++}
++
+ /* {{{ Creates new DatePeriod object. */
+ PHP_METHOD(DatePeriod, __construct)
+ {
+@@ -4207,7 +4224,7 @@ PHP_METHOD(DatePeriod, __construct)
+ 	}
+ 
+ 	dpobj = Z_PHPPERIOD_P(ZEND_THIS);
+-	dpobj->current = NULL;
++	date_period_reset(dpobj);
+ 
+ 	if (isostr) {
+ 		zend_replace_error_handling(EH_THROW, NULL, &error_handling);
+@@ -4244,6 +4261,8 @@ PHP_METHOD(DatePeriod, __construct)
+ 		}
+ 		dpobj->start_ce = date_ce_date;
+ 	} else {
++		DATE_CHECK_INITIALIZED(Z_PHPINTERVAL_P(interval)->initialized, Z_OBJCE_P(interval));
++
+ 		/* init */
+ 		php_interval_obj *intobj = Z_PHPINTERVAL_P(interval);
+ 
+diff --git a/ext/date/tests/DatePeriod_double_constructor_call.phpt b/ext/date/tests/DatePeriod_double_constructor_call.phpt
+new file mode 100644
+index 0000000000..551d272728
+--- /dev/null
++++ b/ext/date/tests/DatePeriod_double_constructor_call.phpt
+@@ -0,0 +1,14 @@
++--TEST--
++Double DatePeriod::__construct() call
++--FILE--
++<?php
++
++$start = new \DateTime();
++$interval = new \DateInterval('P1D');
++$period = new \DatePeriod($start, $interval, 1);
++$period->__construct($start, $interval, 1);
++
++?>
++===DONE===
++--EXPECT--
++===DONE===
+-- 
+2.55.0
+
+From 9aa1f1c43308560bb5dc97cbf8995c66108aeef0 Mon Sep 17 00:00:00 2001
+From: Remi Collet <remi@remirepo.net>
+Date: Thu, 30 Jul 2026 09:07:49 +0200
+Subject: [PATCH 5/5] NEWS from 8.2.33
+
+(cherry picked from commit 11b947ce14c7fcc77adc740349add4c5c8967a62)
+---
+ NEWS | 11 +++++++++++
+ 1 file changed, 11 insertions(+)
+
+diff --git a/NEWS b/NEWS
+index b7b43af995..cffb061d76 100644
+--- a/NEWS
++++ b/NEWS
+@@ -6,6 +6,17 @@ Backported from 8.2.33
+ - Date:
+   . Fixed leak on double DatePeriod::__construct() call. (ilutov)
+ 
++- GD:
++  . Upgrade libgd. (CVE-2026-9672) (Pierre Joye)
++
++- PGSQL:
++  . Fixed GHSA-7qpv-r5mr-78m4 (SQL injection via E'...' backslash breakout).
++    (CVE-2026-17543) (ilutov)
++
++- Phar:
++  . Fixed GHSA-vc5h-9ppw-p5f3 (Crash via recursive symlinks). (CVE-2026-7260)
++    (Jakub Zelenka)
++
+ Backported from 8.2.32
+ 
+ - OpenSSL:
+-- 
+2.55.0
+
