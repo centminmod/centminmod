@@ -852,6 +852,15 @@ install_libgd_external() {
         # Remove the temporary file
         rm "$temp_file"
       fi
+
+      # CVE-2026-9672 GIF decoder fix, not in any libgd release yet
+      if patch -p1 < "$CUR_DIR/patches/libgd/libgd-2.3.3-cve-2026-9672.patch"; then
+        echo "Patch applied successfully for libgd 2.3.3 CVE-2026-9672"
+      else
+        echo "Error: libgd 2.3.3 CVE-2026-9672 patch failed to apply"
+        popd
+        return 1
+      fi
     fi
 
     make clean
@@ -4081,7 +4090,7 @@ fi
 
 if [[ "$PHP_LIBGD_EXTERNAL" = [yY] ]] && [[ "$PHPMVER" = '7.4' || "$PHPMUVER" = '7.4' || "$PHPMVER" = '8.0' || "$PHPMUVER" = '8.0' || "$PHPMVER" = '8.1' || "$PHPMUVER" = '8.1' || "$PHPMVER" = '8.2' || "$PHPMUVER" = '8.2' || "$PHPMVER" = '8.3' || "$PHPMUVER" = '8.3' || "$PHPMVER" = '8.4' || "$PHPMUVER" = '8.4' || "$PHPMVER" = '8.5' || "$PHPMUVER" = '8.5' || "$PHPVER_ID" -ge '80000' ]]; then
   LIBGD_EXT_OPT=' --with-external-gd'
-  install_libgd_external
+  install_libgd_external || return $?
 # elif [[ "$PHP_LIBGD_EXTERNAL" = [yY] ]] && [[ "$PHPMVER" = '7.0' || "$PHPMUVER" = '7.0' || "$PHPMVER" = '7.1' || "$PHPMUVER" = '7.1' || "$PHPMVER" = '7.2' || "$PHPMUVER" = '7.2' || "$PHPMVER" = '7.3' || "$PHPMUVER" = '7.3' ]]; then
 #   install_libgd_external
 #   LIBGD_EXTERNAL_PATH="=/usr/local/libgd/${LIBGD_EXTERNAL_VER}"
