@@ -979,8 +979,9 @@ cmsec_checks() {
 }
 
 # Critical PHP CVE-2026-109618 + CVE-2026-109619 (unauthenticated RCE), fixed
-# upstream in PHP 8.2.35, 8.3.36, 8.4.27 and 8.5.12, and for PHP 7.4.33,
-# 8.0.30 and 8.1.34 by the Centmin Mod backport patch in inc/php_patch.inc.
+# upstream in PHP 8.2.35, 8.3.36, 8.4.27 and 8.5.12, and for PHP 7.2.34,
+# 7.3.33, 7.4.33, 8.0.30 and 8.1.34 by the Centmin Mod backport patch in
+# inc/php_patch.inc (bug id cve-2026-109618 or <major.minor>-cve-2026-109618).
 # Args: PHP version, php-fpm binary, patch log dir. Prints "<status> <target>":
 #   fixed            nothing to do
 #   upgrade X.Y.Z    newer release in the same PHP branch has the fix
@@ -992,6 +993,8 @@ php_cve_2026_109618_status() {
   _pat="${_pat%%[!0-9]*}"
   [[ "$_maj" =~ ^[0-9]+$ && "$_min" =~ ^[0-9]+$ && "$_pat" =~ ^[0-9]+$ ]] || return 1
   case "${_maj}.${_min}" in
+    7.2) _fixpat=34; _backport='y' ;;
+    7.3) _fixpat=33; _backport='y' ;;
     7.4) _fixpat=33; _backport='y' ;;
     8.0) _fixpat=30; _backport='y' ;;
     8.1) _fixpat=34; _backport='y' ;;
@@ -1023,7 +1026,8 @@ php_cve_2026_109618_status() {
       [[ -f "$_f" && ! "$_f" -nt "$_fpm" ]] || continue
       [[ -z "$_log" || "$_f" -nt "$_log" ]] && _log="$_f"
     done
-    if [[ -n "$_log" ]] && grep -qF "Patch applied successfully for bug #${_maj}.${_min}-cve-2026-109618" "$_log"; then
+    if [[ -n "$_log" ]] && grep -qF -e "Patch applied successfully for bug #cve-2026-109618" \
+         -e "Patch applied successfully for bug #${_maj}.${_min}-cve-2026-109618" "$_log"; then
       echo "fixed"
       return 0
     fi
