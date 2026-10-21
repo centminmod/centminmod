@@ -2792,11 +2792,11 @@ else
   PHPVERLATEST=$(curl -${ipv_forceopt}sL https://www.php.net/downloads.php?source=Y| grep -E -o "php-[0-9.]+\.tar[.a-z]*" | grep -v '.asc' | awk -F "php-" '/.tar.gz$/ {print $2}' | sed -e 's|.tar.gz||g' | uniq | grep '8.1' | head -n1)
 fi
 if [[ "$CENTOS_TEN" -eq '10' ]]; then
-  PHPVERLATEST=${PHPVERLATEST:-"8.3.35"}
+  PHPVERLATEST=${PHPVERLATEST:-"8.3.36"}
 elif [[ "$CENTOS_NINE" -eq '9' ]]; then
-  PHPVERLATEST=${PHPVERLATEST:-"8.3.35"}
+  PHPVERLATEST=${PHPVERLATEST:-"8.3.36"}
 elif [[ "$CENTOS_EIGHT" -eq '8' ]]; then
-  PHPVERLATEST=${PHPVERLATEST:-"8.3.35"}
+  PHPVERLATEST=${PHPVERLATEST:-"8.3.36"}
 else
   PHPVERLATEST=${PHPVERLATEST:-"8.1.34"}
 fi
