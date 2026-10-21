@@ -55,6 +55,18 @@ _cmm_git_sync_impl() {
     return 2
   fi
 
+  # Track origin/$branch from the checked out branch. The update checks for
+  # centmin.sh menu 24 exit, gitenv_update and dmotd compare HEAD with @{u},
+  # so an old checkout on a local master branch tracking origin/master kept
+  # reporting updates after every sync.
+  local head_branch
+  head_branch=$(git symbolic-ref -q HEAD 2>/dev/null)
+  head_branch=${head_branch#refs/heads/}
+  if [ -n "$head_branch" ] && { [ "$(git config "branch.${head_branch}.remote")" != 'origin' ] || [ "$(git config "branch.${head_branch}.merge")" != "refs/heads/$branch" ]; }; then
+    git config "branch.${head_branch}.remote" origin
+    git config "branch.${head_branch}.merge" "refs/heads/$branch"
+  fi
+
   local local_sha remote_sha
   local_sha=$(git rev-parse HEAD)
   remote_sha=$(git rev-parse "origin/$branch")
