@@ -1586,7 +1586,7 @@ php_patches() {
       fi
     done
   fi
-  if [[ "$PHPVER_ID" -ge '80100' && "$PHPVER_ID" -le '80199' && -f Zend/zend_vm_gen.php ]]; then
+  if [[ "$PHPVER_ID" -ge '80100' && "$PHPVER_ID" -lt '80200' && -f Zend/zend_vm_gen.php ]]; then
     # patches that edit Zend/zend_vm_def.h ship the regenerated Zend/zend_vm_execute.h, so
     # keep the generated VM files newer than it. Otherwise make reruns zend_vm_gen.php with
     # the installed PHP, and PHP 8.5's built-in ZEND_VM_KIND constant breaks the 8.1 generator
