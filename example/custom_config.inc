@@ -1255,8 +1255,8 @@
 # Installs njs (nginx JavaScript) module for embedding JavaScript in nginx configuration using ECMAScript subset.
 # AUTOMATIC BEHAVIOR:
 #   - When NGINX_NJS='y': Clones njs repository from GitHub and checks out specific tag version (nginx_configure.inc:3413,3448)
-#   - Automatically compiles njs binary and libnjs library
-#   - Installs njs command-line tool to /usr/local/nginx/sbin/njs (nginx_install.inc:608, nginx_upgrade.inc:1523)
+#   - Compiles the libnjs library; the nginx module build does not produce the njs CLI binary
+#   - Copies the njs command-line tool to /usr/local/bin/njs only if njs/build/njs exists (nginx_install.inc:614, nginx_upgrade.inc:1681)
 #   - DYNAMIC_SUPPORT='y': Builds njs as loadable module (.so file)
 #   - Static build: Compiles njs directly into nginx binary
 # NGINX VERSION REQUIREMENTS:
@@ -1264,7 +1264,7 @@
 #   - Recommended: Nginx 1.19.0+ for modern njs features
 #   - njs version tied to nginx version compatibility (NGINX_NJS_VER variable)
 # UPGRADE BEHAVIORS: (from nginx_upgrade.inc)
-#   - Line 1523: if NGINX_NJS='y' and njs binary exists, copies njs CLI to /usr/local/nginx/sbin/
+#   - Line 1681: if NGINX_NJS='y' and njs binary exists, copies njs CLI to /usr/local/bin/njs
 #   - Recompiles njs module with new nginx version during upgrades
 #   - Preserves existing njs scripts in /usr/local/nginx/conf/njs/
 # PATCH BEHAVIORS:

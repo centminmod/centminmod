@@ -3369,8 +3369,8 @@ fi
       NGINX_NJSOPT=' --add-dynamic-module=../njs/nginx'
       pushd "$DIR_TMP"
       rm -rf njs
-      # njs 1.0.0+ auto/cc quotes $CC in command -v which rejects a CC with a ccache
-      # prefix or compiler flags, check only the first word like njs 0.9.x did
+      # njs 0.9.6+ auto/cc checks the whole quoted $CC with command -v, which rejects a
+      # CC with a ccache prefix or compiler flags, so check only its first word
       git clone https://github.com/nginx/njs && (cd njs && git fetch --tags && git checkout tags/$NGINX_NJS_VER && sed -i 's|command -v "${CC}"|command -v "${CC%% *}"|' auto/cc)
       popd
       # if [ ! -f /usr/bin/hg ]; then
@@ -3402,8 +3402,8 @@ fi
       NGINX_NJSOPT=' --add-module=../njs/nginx'
       pushd "$DIR_TMP"
       rm -rf njs
-      # njs 1.0.0+ auto/cc quotes $CC in command -v which rejects a CC with a ccache
-      # prefix or compiler flags, check only the first word like njs 0.9.x did
+      # njs 0.9.6+ auto/cc checks the whole quoted $CC with command -v, which rejects a
+      # CC with a ccache prefix or compiler flags, so check only its first word
       git clone https://github.com/nginx/njs && (cd njs && git fetch --tags && git checkout tags/$NGINX_NJS_VER && sed -i 's|command -v "${CC}"|command -v "${CC%% *}"|' auto/cc)
       popd
       # if [ ! -f /usr/bin/hg ]; then
