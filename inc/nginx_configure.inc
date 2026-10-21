@@ -1817,6 +1817,11 @@ if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9'
     if [[ "$DETECT_NGXVER" -ge '1017000' && "$NGX_LUASTREAM_FORCED" != [yY] ]]; then
       NGX_LUASTREAM='n'
     fi
+    # stream-lua-nginx-module requires nginx stream core (--with-stream)
+    # and its source download via ORESTY_LUASTREAM='y'
+    if [[ "$NGINX_STREAM" != [yY] || "$ORESTY_LUASTREAM" != [yY] ]]; then
+      NGX_LUASTREAM='n'
+    fi
     luanginx_patch
     # LUAJIT_XCFLAGOPT=" --with-luajit-xcflags='-DLUAJIT_NUMMODE=2'"
     LUAJIT_XCFLAGOPT=""
@@ -2859,6 +2864,7 @@ if [[ "$NGINX_LIBBROTLI" = [yY] && "$(uname -m)" = 'x86_64' ]]; then
   { 
   ngxbrotli_download
   } 2>&1 | tee "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_nginx_brotli.log"
+  [[ "${PIPESTATUS[*]}" = "0 0" ]] || { NGX_CONFIGURE_ERR=1; return 1; }
   # initial installs don't have nginx directories setup from inc/brotli.inc routines yet
   # so need to do it at the stage of initial first time nginx installs
   if [[ "$INITIALINSTALL" = [yY] && ! -f /usr/local/nginx/conf/brotli_inc.conf ]]; then
@@ -2948,7 +2954,7 @@ fi
 
 if [[ "$NGINX_ZSTD" = [yY] ]]; then
   {
-  nginx_zstd_setup
+  nginx_zstd_setup || exit $?
   echo "pre-check: DYNAMIC_SUPPORT=$DYNAMIC_SUPPORT"
   echo "pre-check: NGXDYNAMIC_ZSTD=$NGXDYNAMIC_ZSTD"
   if [[ "$DYNAMIC_SUPPORT" = [yY] && "$NGXDYNAMIC_ZSTD" = [yY] ]]; then
@@ -2984,6 +2990,7 @@ if [[ "$NGINX_ZSTD" = [yY] ]]; then
     echo "CLANG_FLTO_OPT=$CLANG_FLTO_OPT"
   fi
   } 2>&1 | tee "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_nginx_zstd.log"
+  [[ ${PIPESTATUS[0]} -eq 0 ]] || { NGX_CONFIGURE_ERR=1; return 1; }
 else
   {
   ZSTD_NGINX_OPT=""
@@ -2991,8 +2998,9 @@ else
   echo "DYNAMIC_SUPPORT=$DYNAMIC_SUPPORT"
   echo "ZSTD_NGINX_OPT=$ZSTD_NGINX_OPT"
   echo "CLANG_FLTO_OPT=$CLANG_FLTO_OPT"
-  nginx_zstd_setup
+  nginx_zstd_setup || exit $?
   } 2>&1 | tee "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_nginx_zstd.log"
+  [[ ${PIPESTATUS[0]} -eq 0 ]] || { NGX_CONFIGURE_ERR=1; return 1; }
 fi
 if [[ "$NGINX_ZSTD" = [yY] ]]; then
   if [[ "$DYNAMIC_SUPPORT" = [yY] && "$NGXDYNAMIC_ZSTD" = [yY] && -f /usr/local/nginx/modules/ngx_http_zstd_filter_module.so ]]; then
@@ -3312,7 +3320,9 @@ fi
       NGINX_NJSOPT=' --add-dynamic-module=../njs/nginx'
       pushd "$DIR_TMP"
       rm -rf njs
-      git clone https://github.com/nginx/njs && (cd njs && git fetch --tags && git checkout tags/$NGINX_NJS_VER)
+      # njs 0.9.6+ auto/cc checks the whole quoted $CC with command -v, which rejects a
+      # CC with a ccache prefix or compiler flags, so check only its first word
+      git clone https://github.com/nginx/njs && (cd njs && git fetch --tags && git checkout tags/$NGINX_NJS_VER && sed -i 's|command -v "${CC}"|command -v "${CC%% *}"|' auto/cc)
       popd
       # if [ ! -f /usr/bin/hg ]; then
       #   time $YUMDNFBIN -y install mercurial${DISABLEREPO_DNF}
@@ -3343,7 +3353,9 @@ fi
       NGINX_NJSOPT=' --add-module=../njs/nginx'
       pushd "$DIR_TMP"
       rm -rf njs
-      git clone https://github.com/nginx/njs && (cd njs && git fetch --tags && git checkout tags/$NGINX_NJS_VER)
+      # njs 0.9.6+ auto/cc checks the whole quoted $CC with command -v, which rejects a
+      # CC with a ccache prefix or compiler flags, so check only its first word
+      git clone https://github.com/nginx/njs && (cd njs && git fetch --tags && git checkout tags/$NGINX_NJS_VER && sed -i 's|command -v "${CC}"|command -v "${CC%% *}"|' auto/cc)
       popd
       # if [ ! -f /usr/bin/hg ]; then
       #   time $YUMDNFBIN -y install mercurial${DISABLEREPO_DNF}
@@ -3530,7 +3542,7 @@ if [[ "$NGINX_GEOIPTWOLITE" = [yY] ]]; then
     sed -i 's|^#include /usr/local/nginx/conf/geoip2.conf;|include /usr/local/nginx/conf/geoip2.conf;|' /usr/local/nginx/conf/geoip.conf
   fi
   if [[ ! -f /usr/local/nginx-dep/bin/mmdblookup || ! -f /usr/share/GeoIP/GeoLite2-Country.mmdb ]]; then
-    geoiptwolite_install
+    geoiptwolite_install || { NGX_CONFIGURE_ERR=1; return 1; }
   fi
   if [ ! -d ../ngx_http_geoip2_module ]; then
     pushd $DIR_TMP

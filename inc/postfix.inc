@@ -267,18 +267,17 @@ if [[ ! -S /var/spool/postfix/public/pickup ]]; then
   chown postfix:postfix /var/spool/postfix/public/pickup
 fi
 
-postconf -e default_destination_concurrency_limit=100
+# destination concurrency limits, smtp_mx_session_limit and maximal_backoff_time
+# stay at postfix defaults (20, 20, 2, 4000s) so retries back off when a mailbox
+# provider like Gmail rate limits the server
 postconf -e default_destination_recipient_limit=100
 postconf -e default_process_limit=200
 postconf -e mailbox_size_limit=$INCLIMIT
-postconf -e maximal_backoff_time=1000s
 postconf -e minimal_backoff_time=300s
 postconf -e qmgr_message_active_limit=40000
 postconf -e qmgr_message_recipient_limit=40000
 postconf -e smtp_connect_timeout=20s
-postconf -e smtp_destination_concurrency_limit=200
 postconf -e smtp_helo_timeout=200s
-postconf -e smtp_mx_session_limit=100
 postconf -e smtpd_client_connection_count_limit=50
 #postconf -e smtpd_client_connection_rate_limit=60
 postconf -e 'recipient_delimiter = +'

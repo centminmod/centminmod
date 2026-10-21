@@ -30,7 +30,7 @@ DT=$(date +"%d%m%y-%H%M%S")
 branchname='140.00beta01'
 SCRIPT_MAJORVER='140'
 SCRIPT_MINORVER='00'
-SCRIPT_INCREMENTVER='378'
+SCRIPT_INCREMENTVER='403'
 SCRIPT_VERSIONSHORT="${branchname}"
 SCRIPT_VERSION="${SCRIPT_VERSIONSHORT}.b${SCRIPT_INCREMENTVER}"
 SCRIPT_DATE='16/01/25'
@@ -927,7 +927,7 @@ MODSECURITY_OWASPVER='4.4.0' # owasp modsecurity ruleset https://github.com/core
 NGINX_REALIP='y'             # http://nginx.org/en/docs/http/ngx_http_realip_module.html
 NGINX_RDNS='n'               # https://github.com/flant/nginx-http-rdns
 NGINX_NJS='n'                # nginScript https://www.nginx.com/blog/
-NGINX_NJS_VER='0.8.9'        # nginxScript tag version https://github.com/nginx/njslaunching-nginscript-and-looking-ahead/
+NGINX_NJS_VER='1.0.1'        # nginxScript tag version https://github.com/nginx/njslaunching-nginscript-and-looking-ahead/
 NGINX_GEOIP='y'              # Nginx GEOIP module install
 NGINX_GEOIPMEM='y'           # Nginx caches GEOIP databases in memory (default), setting 'n' caches to disk instead
 NGINX_GEOIPTWOLITE='n'       # https://github.com/leev/ngx_http_geoip2_module
@@ -1092,6 +1092,7 @@ PHPSWOOLE_SEVEN_ZERO_VER='4.3.5' # max PHP 7.0 supported version
 PHPSWOOLE_SEVEN_ONE_VER='4.5.11' # max PHP 7.1 supported version
 PHP_LIBGD_EXTERNAL='y'       # optional use external libgd instead of bundled PHP gd version
 PHP_GD_AVIF='y'              # enable external libgd with AVIF support for PHP >8.1
+PHP_LIBS_VERSIONLOCK='y'     # versionlock non-base repo packages PHP links against, menu 5 updates them
 
 LIBGD_EXTERNAL_VER='2.3.3'   # https://github.com/libgd/libgd/releases
 
@@ -1188,7 +1189,7 @@ MYSQL_INSTALL='n'            # Install official Oracle MySQL Server (MariaDB alt
 SENDMAIL_INSTALL='n'         # Install Sendmail (and mailx) set to y and POSTFIX_INSTALL=n for sendmail
 POSTFIX_INSTALL=y            # Install Postfix (and mailx) set to n and SENDMAIL_INSTALL=y for sendmail
 # Nginx
-NGINX_VERSION='1.31.5'             # Use this version of Nginx
+NGINX_VERSION='1.31.7'             # Use this version of Nginx
 NGINX_ANGIE_VERSION='Angie-1.11.4'
 FREENGINX_VERSION='1.30.1'     # Maxim's Freenginx fork https://freenginx.org/en/download.html
 FREENGINX_INSTALL='n'          # Use Freenginx fork instead of official Nginx
@@ -1251,7 +1252,7 @@ BORINGSSL_DIR="/opt"
 
 # AWS-LC
 AWS_LC_SWITCH='n'             # if set to 'y' overrides OpenSSL as default for Nginx https://github.com/aws/aws-lc
-AWS_LC_VERSION='v1.73.0'      # version as per ttps://github.com/aws/aws-lc/tags
+AWS_LC_VERSION='v5.9.0'       # version as per ttps://github.com/aws/aws-lc/tags
 AWS_LC_DIR="/opt"
 AWS_LC_SWITCH_BUILD_TESTS='n' # run AWS-LC build tests
 ##################################
@@ -1635,9 +1636,9 @@ mysqltmpdir
 if [[ "$1" = 'install' ]]; then
   INITIALINSTALL='y'
   export INITIALINSTALL='y'
-  cpcheck initialinstall
+  cpcheck initialinstall || exit $?
 else
-  cpcheck
+  cpcheck || exit $?
 fi
 
 if [ ! -f /etc/centminmod-release ];then
@@ -1782,6 +1783,13 @@ if [ -f "${CM_INSTALLDIR}/inc/z_custom.inc" ]; then
     if [ -d "${CENTMINLOGDIR}" ]; then
         cat "${CM_INSTALLDIR}/inc/z_custom.inc" > "${CENTMINLOGDIR}/inc-zcustom-config-settings_${DT}.log"
     fi
+fi
+
+# run after custom_config.inc and z_custom.inc are sourced so persistent
+# DISABLE_IPVSIX, FORCE_IPVFOUR and SKIP_CHECKIPVSIX overrides are honoured
+# (skipped on initial install, as it was inside cpcheck)
+if [[ "$INITIALINSTALL" != [yY] ]] && [[ -z "$SKIP_CHECKIPVSIX" || "$SKIP_CHECKIPVSIX" = 'n' ]]; then
+  checkipvsix
 fi
 
 if [ -f "${CONFIGSCANBASE}/custom_config.inc" ]; then
@@ -3213,7 +3221,7 @@ fi
 postfix_presetup
 
 echo "incmemcachedinstall"
-incmemcachedinstall
+incmemcachedinstall || return $?
 
 echo "csfinstalls"
 csfinstalls
@@ -3228,20 +3236,20 @@ echo "installpythonfuct"
 installpythonfuct
 
 echo "mailparseinstall"
-mailparseinstall
+mailparseinstall || return $?
 
 echo "imagickinstall"
-imagickinstall
+imagickinstall || return $?
 
 echo "geoipphpext"
-geoipphpext
+geoipphpext || return $?
 
 echo "geoiptwolite_phpext_install"
-geoiptwolite_phpext_install
+geoiptwolite_phpext_install || return $?
 
 if [[ "$PHPREDIS" = [yY] ]]; then
     echo "redisinstall"
-    redisinstall
+    redisinstall || return $?
 fi
 
 if [[ "$REDIS_SERVER_INSTALL" = [yY] ]]; then
@@ -3250,13 +3258,13 @@ if [[ "$REDIS_SERVER_INSTALL" = [yY] ]]; then
 fi
 
 echo "mongodbinstall"
-mongodbinstall
+mongodbinstall || return $?
 
 echo "swooleinstall"
-swooleinstall
+swooleinstall || return $?
 
 echo "zopfliinstall"
-zopfliinstall
+zopfliinstall || return $?
 
 if [[ "$PHPMSSQL" = [yY] ]]; then
   echo "php_mssqlinstall"
@@ -3265,22 +3273,22 @@ fi
 
 if [[ "$PHP_BROTLI" = [yY] ]]; then
   echo "php_ext_brotli"
-  php_ext_brotli
+  php_ext_brotli || return $?
 fi
 
 if [[ "$PHP_LZFOUR" = [yY] ]]; then
   echo "php_ext_lzfour"
-  php_ext_lzfour
+  php_ext_lzfour || return $?
 fi
 
 if [[ "$PHP_LZF" = [yY] ]]; then
   echo "php_ext_lzf"
-  php_ext_lzf
+  php_ext_lzf || return $?
 fi
 
 if [[ "$PHP_ZSTD" = [yY] ]]; then
   echo "php_ext_zstd"
-  php_ext_zstd
+  php_ext_zstd || return $?
 fi
 
 if [[ "$PHPTIMEZONEDB" = [yY] ]]; then
@@ -3665,9 +3673,9 @@ if [[ "$1" = 'install' ]]; then
     fi
 
     if [[ "$INITIALINSTALL" = [Yy] ]]; then
-        lowmemcheck initialinstall
+        lowmemcheck initialinstall || exit $?
     else
-        lowmemcheck
+        lowmemcheck || exit $?
     fi
     # setramdisk
     centminlog
@@ -3719,7 +3727,7 @@ if [[ "$1" = 'install' ]]; then
     echo "Total YUM + Source Download Time: $DOWNLOADTIME seconds" >> "${CENTMINLOGDIR}/centminmod_downloadtimes_${DT}.log"
     ls -lah "${CENTMINLOGDIR}/centminmod_downloadtimes_${DT}.log"
 
-    funct_centmininstall
+    funct_centmininstall || exit $?
 
     # setup command shortcut aliases 
     # given the known download location
@@ -3847,9 +3855,9 @@ else
             fi
 
             if [[ "$INITIALINSTALL" = [Yy] ]]; then
-                lowmemcheck initialinstall
+                lowmemcheck initialinstall || exit $?
             else
-                lowmemcheck
+                lowmemcheck || exit $?
             fi
             # setramdisk
             centminlog
@@ -3888,7 +3896,7 @@ else
               rm -f "${DIR_TMP}/php-${PHP_VERSION}.tar."*
               exit 1
             fi
-            funct_centmininstall
+            funct_centmininstall || exit $?
 
     # setup command shortcut aliases 
     # given the known download location
@@ -4051,7 +4059,7 @@ fi
         if [[ "$yuminstallrun" == [yY] ]]; then
         yuminstall
         fi
-        funct_phpupgrade
+        funct_phpupgrade || exit $?
         } 2>&1 | tee "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_php_upgrade.log"
         PHP_UPGRADE_STATUS=${PIPESTATUS[0]}
         if [[ "$PHP_UPGRADE_STATUS" -ne 0 ]]; then
@@ -4198,11 +4206,12 @@ fi
         fi
         
         if [[ "$TIME_MEMCACHED" = [yY] ]]; then
-            funct_memcachedreinstall 2>&1 | awk '{ print strftime("%Y-%m-%d %H:%M:%S"), $0; fflush(); }'
+            funct_memcachedreinstall > >(awk '{ print strftime("%Y-%m-%d %H:%M:%S"), $0; fflush(); }') 2>&1 || exit $?
         else
-            funct_memcachedreinstall
+            funct_memcachedreinstall || exit $?
         fi
         } 2>&1 | tee "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_memcached_reinstall.log"
+        [[ ${PIPESTATUS[0]} -eq 0 ]] || exit 1
         
         if [ "$CCACHEINSTALL" == 'y' ]; then
         
@@ -4233,7 +4242,7 @@ fi
         13|redisphp)
         # set_logdate
         CM_MENUOPT=13
-        phpredis_submenu
+        phpredis_submenu || exit $?
         
         ;;
         14|selinux)
@@ -4259,11 +4268,12 @@ fi
         fi
         
         if [[ "$TIME_IMAGEMAGICK" = [yY] ]]; then
-            imagickinstall submenu 2>&1 | awk '{ print strftime("%Y-%m-%d %H:%M:%S"), $0; fflush(); }'
+            imagickinstall submenu > >(awk '{ print strftime("%Y-%m-%d %H:%M:%S"), $0; fflush(); }') 2>&1 || exit $?
         else
-            imagickinstall submenu
+            imagickinstall submenu || exit $?
         fi
         } 2>&1 | tee "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_php-imagick-install.log"
+        [[ ${PIPESTATUS[0]} -eq 0 ]] || exit 1
         
         if [ "$CCACHEINSTALL" == 'y' ]; then
         
@@ -4303,7 +4313,7 @@ fi
         ccacheinstall
         fi
         
-        compressmenu_notice
+        compressmenu_notice || exit $?
         funct_pigzinstall
         # funct_pbzip2install
         # funct_lbzip2install
@@ -4313,6 +4323,7 @@ fi
         lzfourinstall
         #funct_p7zipinstall
         } 2>&1 | tee "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_multithread_compression-install.log"
+        [[ ${PIPESTATUS[0]} -eq 0 ]] || exit 1
         
         if [ "$CCACHEINSTALL" == 'y' ]; then
         
@@ -4451,14 +4462,14 @@ fi
         fi
 
         if [[ "$INITIALINSTALL" = [Yy] ]]; then
-            lowmemcheck initialinstall
+            lowmemcheck initialinstall || exit $?
         else
-            lowmemcheck
+            lowmemcheck || exit $?
         fi
         # setramdisk
         diskalert
         alldownloads
-        funct_centmininstall
+        funct_centmininstall || exit $?
         unsetramdisk
         echo "$SCRIPT_VERSION" > /etc/centminmod-release
         echo "$SCRIPT_VERSION #`date`" >> /etc/centminmod-versionlog
@@ -4479,7 +4490,7 @@ fi
         diskalert
         csftweaks
         yuminstall
-        funct_nginxupgrade
+        funct_nginxupgrade || exit $?
         
         ;;
         phpupgrade)
@@ -4488,7 +4499,7 @@ fi
         csftweaks
         yuminstall
         cmm_php_fatal_clear
-        funct_phpupgrade
+        funct_phpupgrade || exit $?
         
         ;;
         xcachereinstall)
@@ -4513,7 +4524,7 @@ fi
         ;;
         memcachedreinstall)
         
-        funct_memcachedreinstall
+        funct_memcachedreinstall || exit $?
         
         ;;
         mariadbupgrade)
@@ -4548,7 +4559,7 @@ fi
         ;;
         multithreadcomp)
         
-        compressmenu_notice
+        compressmenu_notice || exit $?
         funct_pigzinstall
         funct_pbzip2install
         # funct_lbzip2install
@@ -4578,9 +4589,9 @@ fi
             yuminstall
         fi
 
-        funct_nginxupgrade
+        funct_nginxupgrade || exit $?
         cmm_php_fatal_clear
-        funct_phpupgrade
+        funct_phpupgrade || exit $?
         checksiege
         siegeinstall
 

@@ -852,6 +852,15 @@ install_libgd_external() {
         # Remove the temporary file
         rm "$temp_file"
       fi
+
+      # CVE-2026-9672 GIF decoder fix, not in any libgd release yet
+      if patch -p1 < "$CUR_DIR/patches/libgd/libgd-2.3.3-cve-2026-9672.patch"; then
+        echo "Patch applied successfully for libgd 2.3.3 CVE-2026-9672"
+      else
+        echo "Error: libgd 2.3.3 CVE-2026-9672 patch failed to apply"
+        popd
+        return 1
+      fi
     fi
 
     make clean
@@ -890,7 +899,8 @@ else
   SWOOLE_OPT=""
 fi
 
-if [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]] && [[ "$PHP_GD_AVIF" = [yY] ]] && [[ "$PHPMVER" = '8.1' || "$PHPMUVER" = '8.1' || "$PHPMVER" = '8.2' || "$PHPMUVER" = '8.2' || "$PHPMVER" = '8.3' || "$PHPMUVER" = '8.3' || "$PHPMVER" = '8.4' || "$PHPMUVER" = '8.4' || "$PHPMVER" = '8.5' || "$PHPMUVER" = '8.5' || "$PHPVER_ID" -ge '80000' ]]; then
+# key on PHPVER_ID, the PHP being built; PHPMVER is the default PHP_VERSION, not a menu 5 target
+if [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]] && [[ "$PHP_GD_AVIF" = [yY] ]] && [[ "$PHPVER_ID" -ge '80100' ]]; then
   if [[ -z "$(rpm -qa libavif-devel)" ]]; then 
     "$YUMDNFBIN" -y install libavif-devel
   fi
@@ -901,11 +911,19 @@ fi
 
 # Enable Foreign Function Interface FFI extension
 # for PHP 7.4+ https://wiki.php.net/rfc/ffi
-if [[ "$CENTOS_SEVEN" -eq '7' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]] && [[ "$PHPMVER" = '7.4' || "$PHPMUVER" = '7.4' || "$PHPMVER" = '8.0' || "$PHPMUVER" = '8.0' || "$PHPMVER" = '8.1' || "$PHPMUVER" = '8.1' || "$PHPMVER" = '8.2' || "$PHPMUVER" = '8.2' || "$PHPMVER" = '8.3' || "$PHPMUVER" = '8.3' || "$PHPMVER" = '8.4' || "$PHPMUVER" = '8.4' || "$PHPMVER" = '8.5' || "$PHPMUVER" = '8.5' || "$PHPVER_ID" -ge '80000' ]]; then
+# key on PHPVER_ID, the PHP being built; PHPMVER is the default PHP_VERSION, not a menu 5 target
+if [[ "$CENTOS_SEVEN" -eq '7' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]] && [[ "$PHPVER_ID" -ge '70400' ]]; then
   if [[ -z "$(rpm -qa libffi-devel)" ]]; then
     yum -q -y install libffi-devel
   fi
   FFI_OPT=' --with-ffi'
+  # EL9 libffi.pc reports -L/usr/lib64/../lib64, which PHP's configure does
+  # not treat as a system path, so it lands ahead of the external libgd path.
+  # The gdImageCreateFromAvif check then runs against the gd-devel libgd
+  # (built without AVIF) and PHP silently disables GD AVIF support.
+  if [[ "$(pkg-config --libs libffi 2>/dev/null)" = *'/../'* ]]; then
+    export FFI_LIBS='-lffi'
+  fi
 else
   FFI_OPT=""
 fi
@@ -1695,22 +1713,23 @@ else
   LDAPOPT=""
 fi
 
-if [[ "$PHPMVER" > 7 || "$PHPMUVER" > 7 ]]; then
+# key on PHPVER_ID, the PHP being built; PHPMVER is the default PHP_VERSION, not a menu 5 target
+if [[ "$PHPVER_ID" -ge '70000' ]]; then
   if [[ "$(rpm -ql libwebp | grep libwebp.so >/dev/null 2>&1; echo $?)" -eq '0' ]]; then
-    if [[ "$PHPMVER" = '7.4' || "$PHPMUVER" = '7.4' || "$PHPMVER" = '8.0' || "$PHPMUVER" = '8.0' || "$PHPMVER" = '8.1' || "$PHPMUVER" = '8.1' || "$PHPMVER" = '8.2' || "$PHPMUVER" = '8.2' || "$PHPMVER" = '8.3' || "$PHPMUVER" = '8.3' || "$PHPMVER" = '8.4' || "$PHPMUVER" = '8.4' || "$PHPMVER" = '8.5' || "$PHPMUVER" = '8.5' || "$PHPVER_ID" -ge '80000' ]]; then
+    if [[ "$PHPVER_ID" -ge '70400' ]]; then
       LIBVPXOPT=' --with-webp'
     else
       LIBVPXOPT=' --with-webp-dir=/usr'
     fi
   else
     time yum${CACHESKIP} -y install libwebp libwebp-devel
-    if [[ "$PHPMVER" = '7.4' || "$PHPMUVER" = '7.4' || "$PHPMVER" = '8.0' || "$PHPMUVER" = '8.0' || "$PHPMVER" = '8.1' || "$PHPMUVER" = '8.1' || "$PHPMVER" = '8.2' || "$PHPMUVER" = '8.2' || "$PHPMVER" = '8.3' || "$PHPMUVER" = '8.3' || "$PHPMVER" = '8.4' || "$PHPMUVER" = '8.4' || "$PHPMVER" = '8.5' || "$PHPMUVER" = '8.5' || "$PHPVER_ID" -ge '80000' ]]; then
+    if [[ "$PHPVER_ID" -ge '70400' ]]; then
       LIBVPXOPT=' --with-webp'
     else
       LIBVPXOPT=' --with-webp-dir=/usr'
     fi
   fi
-elif [[ "$PHPMVER" = 5.[56] || "$PHPMUVER" = 5.[56] ]] && [[ "$PHPMVER" < 7 || "$PHPMUVER" < 7 ]]; then
+elif [[ "$PHPVER_ID" -ge '50500' && "$PHPVER_ID" -lt '70000' ]]; then
   if [[ -d /usr/include/vpx ]]; then
    LIBVPXOPT=" --with-vpx-dir=${PLIBDIR}"
   else
@@ -4072,9 +4091,10 @@ else
   fi
 fi
 
-if [[ "$PHP_LIBGD_EXTERNAL" = [yY] ]] && [[ "$PHPMVER" = '7.4' || "$PHPMUVER" = '7.4' || "$PHPMVER" = '8.0' || "$PHPMUVER" = '8.0' || "$PHPMVER" = '8.1' || "$PHPMUVER" = '8.1' || "$PHPMVER" = '8.2' || "$PHPMUVER" = '8.2' || "$PHPMVER" = '8.3' || "$PHPMUVER" = '8.3' || "$PHPMVER" = '8.4' || "$PHPMUVER" = '8.4' || "$PHPMVER" = '8.5' || "$PHPMUVER" = '8.5' || "$PHPVER_ID" -ge '80000' ]]; then
+# key on PHPVER_ID, the PHP being built; PHPMVER is the default PHP_VERSION, not a menu 5 target
+if [[ "$PHP_LIBGD_EXTERNAL" = [yY] ]] && [[ "$PHPVER_ID" -ge '70400' ]]; then
   LIBGD_EXT_OPT=' --with-external-gd'
-  install_libgd_external
+  install_libgd_external || return $?
 # elif [[ "$PHP_LIBGD_EXTERNAL" = [yY] ]] && [[ "$PHPMVER" = '7.0' || "$PHPMUVER" = '7.0' || "$PHPMVER" = '7.1' || "$PHPMUVER" = '7.1' || "$PHPMVER" = '7.2' || "$PHPMUVER" = '7.2' || "$PHPMVER" = '7.3' || "$PHPMUVER" = '7.3' ]]; then
 #   install_libgd_external
 #   LIBGD_EXTERNAL_PATH="=/usr/local/libgd/${LIBGD_EXTERNAL_VER}"
@@ -4147,6 +4167,11 @@ if [[ "$DEVTOOLSETFIFTTEEN" = [yY] ]] && [[ "$CENTOS_EIGHT" = '8' || "$CENTOS_NI
   # GCC 15 defaults to C23; preserve the previous C dialect, never CXXFLAGS.
   if [[ " $CFLAGS " != *' -std='* ]]; then
     export CFLAGS="$CFLAGS -std=gnu17"
+  fi
+  # PHP 7.x configure probes use implicit int, an error since GCC 14, which
+  # silently drops checks like dlopen in -ldl on EL8 and breaks the FFI build.
+  if [[ "$PHPVER_ID" -lt '80000' && " $CFLAGS " != *' -fpermissive '* ]]; then
+    export CFLAGS="$CFLAGS -fpermissive"
   fi
 fi
 

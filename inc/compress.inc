@@ -158,25 +158,10 @@ compgcc_fourteen() {
 }
 
 compgcc_fifteen() {
-  if [[ -f /opt/rh/devtoolset-15/root/usr/bin/gcc && -f /opt/rh/devtoolset-15/root/usr/bin/g++ ]]; then
-    label='gcc15 built'
-    source /opt/rh/devtoolset-15/enable
-    export CFLAGS="-Wimplicit-fallthrough=0 -Wno-implicit-function-declaration -Wno-int-conversion -Wno-unused-result -Wno-unused-result -Wno-missing-profile -Wno-stringop-overflow -Wno-alloc-size-larger-than"
-    export CXXFLAGS="${CFLAGS}"
-    export CFLAGS="$CFLAGS -std=gnu17"
-  else
-    label=""
-  fi
-  COMP_CPU_MARCH=$(gcc -c -Q -march=native --help=target | awk '/  -march/ {print $2}' | head -n1 )
-  if [[ -f /opt/rh/gcc-toolset-15/root/usr/bin/gcc && -f /opt/rh/gcc-toolset-15/root/usr/bin/g++ ]]; then
-    label='gcc15 built'
-    enable_gcc_toolset15 || return 1
-    export CFLAGS="-Wimplicit-fallthrough=0 -Wno-implicit-function-declaration -Wno-int-conversion -Wno-error=unused-result -Wno-unused-result"
-    export CXXFLAGS="${CFLAGS}"
-    export CFLAGS="$CFLAGS -std=gnu17"
-  else
-    label=""
-  fi
+  enable_gcc_toolset15 || return 1
+  label='gcc15 built'
+  export CXXFLAGS="-Wimplicit-fallthrough=0 -Wno-error=unused-result -Wno-unused-result"
+  export CFLAGS="$CXXFLAGS -Wno-implicit-function-declaration -Wno-int-conversion -std=gnu17"
   COMP_CPU_MARCH=$(gcc -c -Q -march=native --help=target | awk '/  -march/ {print $2}' | head -n1 )
 }
 
@@ -205,6 +190,7 @@ export LDFLAGS_USE="$LDFLAGS${COMP_FALIGN_FUCTION_OPT} -fprofile-use -fprofile-d
 }
 
 compressmenu_notice() {
+  COMPILER_CFLAGS=""
   echo
   echo "Multi-thread compression Install"
   echo
@@ -215,15 +201,18 @@ compressmenu_notice() {
   3. zstd
   4. lz4"
   echo
-  compgcc_seven
-  compgcc_eight
-  compgcc_nine
-  compgcc_ten
-  compgcc_eleven
-  compgcc_twelve
-  compgcc_thirteen
-  compgcc_fourteen
-  compgcc_fifteen
+  if [[ "$DEVTOOLSETFIFTTEEN" = [yY] ]] && [[ "$CENTOS_EIGHT" = 8 || "$CENTOS_NINE" = 9 ]]; then
+    compgcc_fifteen || return 1
+  else
+    compgcc_seven
+    compgcc_eight
+    compgcc_nine
+    compgcc_ten
+    compgcc_eleven
+    compgcc_twelve
+    compgcc_thirteen
+    compgcc_fourteen
+  fi
   # pgo_export_compress
 }
 

@@ -29,13 +29,14 @@ centminlog
 {
 if [[ "$TIME_REDIS" = [yY] ]]; then
   checkredis_server_install 2>&1 | awk '{ print strftime("%Y-%m-%d %H:%M:%S"), $0; fflush(); }'
-  redisinstall submenu 2>&1 | awk '{ print strftime("%Y-%m-%d %H:%M:%S"), $0; fflush(); }'
+  redisinstall submenu > >(awk '{ print strftime("%Y-%m-%d %H:%M:%S"), $0; fflush(); }') 2>&1 || exit $?
 else
   checkredis_server_install
-  redisinstall submenu
+  redisinstall submenu || exit $?
 fi
 /usr/bin/nprestart >/dev/null 2>&1
 } 2>&1 | tee "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_redis-php-install.log"
+[[ ${PIPESTATUS[0]} -eq 0 ]] || return 1
 
 ;;
 2)
@@ -45,13 +46,14 @@ centminlog
 PHPREDIS='y'
 if [[ "$TIME_REDIS" = [yY] ]]; then
   checkredis_server_install 2>&1 | awk '{ print strftime("%Y-%m-%d %H:%M:%S"), $0; fflush(); }'
-  redisinstall submenu 2>&1 | awk '{ print strftime("%Y-%m-%d %H:%M:%S"), $0; fflush(); }'
+  redisinstall submenu > >(awk '{ print strftime("%Y-%m-%d %H:%M:%S"), $0; fflush(); }') 2>&1 || exit $?
 else
   checkredis_server_install
-  redisinstall submenu
+  redisinstall submenu || exit $?
 fi
 /usr/bin/nprestart >/dev/null 2>&1
 } 2>&1 | tee "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_redis-php-reinstall.log"
+[[ ${PIPESTATUS[0]} -eq 0 ]] || return 1
 
 ;;
 3)

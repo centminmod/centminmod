@@ -20,6 +20,7 @@ DEVTOOLSETEIGHT='n'
 DEVTOOLSETNINE='n'
 DEVTOOLSETTEN='y'
 DEVTOOLSETELEVEN='n'
+DEVTOOLSETFIFTTEEN=${DEVTOOLSETFIFTTEEN:-y}
 GOLDLINKER='n'
 FLTO='n'
 DWARF='n'
@@ -587,6 +588,17 @@ redisinstall() {
 
 redisinstall_source() {
   echo "source install redis server..."
+  local redis_gcc15=n
+  if [[ "$CC $CXX" != *clang* ]]; then
+  if [[ "$DEVTOOLSETFIFTTEEN" = [yY] ]] && [[ "$EL_VERID" = 8 || "$EL_VERID" = 9 ]]; then
+    source "$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)/inc/gcc.inc" || exit 1
+    INITIALINSTALL=y enable_gcc_toolset15 || return 1
+    redis_gcc15=y
+    if [[ "$HOIST" = [yY] ]]; then
+      HOIST_OPT=' -fcode-hoisting'
+    fi
+    EXTRA_CFLAGS=" -Wimplicit-fallthrough=0${HOIST_OPT} -Wno-maybe-uninitialized -Wno-stringop-truncation -Wno-lto-type-mismatch -Wno-misleading-indentation -Wno-format-truncation"
+  else
   if [[ "$DEVTOOLSETFOUR" = [yY] ]]; then
     if [[ -f /opt/rh/devtoolset-4/root/usr/bin/gcc && -f /opt/rh/devtoolset-4/root/usr/bin/g++ ]]; then
       source /opt/rh/devtoolset-4/enable
@@ -651,6 +663,8 @@ redisinstall_source() {
       EXTRA_CFLAGS=" -Wimplicit-fallthrough=0${HOIST_OPT} -Wno-maybe-uninitialized -Wno-stringop-truncation -Wno-lto-type-mismatch -Wno-misleading-indentation -Wno-format-truncation"
     fi
   fi
+  fi
+  fi
   if [[ "$FLTO" = [yY] ]]; then
     FLTO_OPT=' -flto -ffat-lto-objects'
   fi
@@ -663,6 +677,9 @@ redisinstall_source() {
   export OPT=-03
   export CFLAGS="-march=native${FLTO_OPT}${GOLDLINKER_OPT} -fvisibility=hidden${DWARF_OPT}${EXTRA_CFLAGS}"
   export CXXFLAGS="$CFLAGS"
+  if [[ "$redis_gcc15" = y ]]; then
+    export CFLAGS="$CFLAGS -std=gnu17"
+  fi
   cd "$SRCDIR"
   rm -rf redis-${REDIS_SOURCEVER}*
   rm -rf redis-${REDIS_SOURCEVER}-threaded*
@@ -677,8 +694,8 @@ redisinstall_source() {
   fi
   make distclean
   make clean
-  make${MAKETHREADS}
-  make install
+  make${MAKETHREADS} CC="${CC:-gcc}" CXX="${CXX:-g++}" || return 1
+  make install CC="${CC:-gcc}" CXX="${CXX:-g++}" || return 1
   echo "redis server source installled" 
 }
 
@@ -692,7 +709,7 @@ case "$1" in
     redisupgrade_el
     ;;
   install-source )
-    redisinstall_source
+    redisinstall_source || exit 1
     ;;
   apply-tweaks )
     redis_apply_tweaks "standalone"

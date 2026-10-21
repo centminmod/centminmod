@@ -933,7 +933,7 @@ imagemagick_heif() {
     echo
     echo "Install ImageMagick-heic one time only"
     echo "https://blog.remirepo.net/post/2019/05/22/HEIC-HEIF-images-support"
-    libheif_install
+    libheif_install || return $?
     yum -q -y install ImageMagick-heic --enablerepo=remi
     echo "ImageMagick-heic installed"
     if [[ "$(rpm -qa ImageMagick-heic | grep -o 'ImageMagick-heic')" ]]; then
@@ -944,7 +944,7 @@ imagemagick_heif() {
     echo
     echo "Install ImageMagick6-heic one time only"
     echo "https://blog.remirepo.net/post/2019/05/22/HEIC-HEIF-images-support"
-    libheif_install
+    libheif_install || return $?
     yum -q -y install ImageMagick6-heic --enablerepo=remi
     echo "ImageMagick6-heic installed"
     if [[ "$(rpm -qa ImageMagick6-heic | grep -o 'ImageMagick6-heic')" ]]; then
@@ -955,7 +955,7 @@ imagemagick_heif() {
     echo
     echo "Install ImageMagick6-heic one time only"
     echo "https://blog.remirepo.net/post/2019/05/22/HEIC-HEIF-images-support"
-    libheif_install
+    libheif_install || return $?
     yum -q -y install ImageMagick6-heic --enablerepo=remi
     echo "ImageMagick6-heic installed"
     if [[ "$(rpm -qa ImageMagick6-heic | grep -o 'ImageMagick6-heic')" ]]; then
@@ -2073,7 +2073,8 @@ ROF
       systemctl start rpcbind.socket rpcbind.service -q
     fi
   elif [[ "$DISABLE_IPVSIX" != [yY] ]]; then
-    if [[ -d /etc/postfix && "$(grep -w 'inet_protocols' /etc/postfix/main.cf | grep -w 'ipv4')" ]]; then
+    # match postfixsetup(): keep postfix IPv4-only unless FORCE_IPVFOUR='n'
+    if [[ "$FORCE_IPVFOUR" = [nN] && -d /etc/postfix && "$(grep -w 'inet_protocols' /etc/postfix/main.cf | grep -w 'ipv4')" ]]; then
       postconf -e 'inet_protocols = all'
       restartpostfix='y'
     fi
@@ -4485,7 +4486,8 @@ ovhkernelcheck() {
     # OVH custom kernel for the newer Intel network NIC support
     # Intel Corporation Ethernet Connection X552/X557-AT 10GBASE-T
     # OVHASNCHECK=$(curl -${ipv_forceopt}s${CURL_TIMEOUTS} https://ipinfo.io/org | grep -o 'OVH' >/dev/null 2>&1; echo $?)
-    OVHASNCHECK=$(curl -${ipv_forceopt}s${CURL_TIMEOUTS} https://geoip.centminmod.com/v3 | jq -r '"\(.data.asn) \(.data.description_short)"' | grep -o 'OVH' >/dev/null 2>&1; echo $?)
+    # v3 is retired and returns an error; v4 reports .asn and .asOrganization
+    OVHASNCHECK=$(curl -${ipv_forceopt}s${CURL_TIMEOUTS} -A "$CURL_AGENT OVH CHECK $SCRIPT_VERSION" https://geoip.centminmod.com/v4 | jq -r '"\(.asn) \(.asOrganization)"' 2>/dev/null | grep -o 'OVH' >/dev/null 2>&1; echo $?)
     OVHKERNEL_CHECK=$(uname -r | grep '\-grs' >/dev/null 2>&1; echo $?)
     BROADWELLDE_CHECK=$(grep 'Xeon(R) CPU D-15' /proc/cpuinfo >/dev/null 2>&1; echo $?)
     # more sure way to check for OVH custom kernel if /root/.ovhrc file exists
@@ -5068,10 +5070,8 @@ if [[ "$INITIALINSTALL" != [yY] ]]; then
   #fixclamav_epel
   nano_highlight
   checkwoff
-  if [[ -z "$SKIP_CHECKIPVSIX" || "$SKIP_CHECKIPVSIX" = 'n' ]]; then
-    # skip checkipvsix    
-    checkipvsix
-  fi
+  # checkipvsix runs from centmin.sh/centmin-cli.sh after custom_config.inc is
+  # sourced, so persistent DISABLE_IPVSIX/FORCE_IPVFOUR overrides are seen
   if [[ -z "$SKIP_FIXWP_UPDATER" || "$SKIP_FIXWP_UPDATER" = 'n' ]]; then
     # skip fixwp_updater    
     fixwp_updater
@@ -5123,7 +5123,7 @@ if [[ "$INITIALINSTALL" != [yY] ]]; then
   update_webp_inc
   phpmyadmin_composer_fix
   phpmyadmin_updater_fix
-  imagemagick_heif
+  imagemagick_heif || return $?
   fix_nasm
   update_cache_enabler_schemefix
   update_wpce_map
@@ -5162,6 +5162,7 @@ if [[ "$INITIALINSTALL" != [yY] ]]; then
   update_ius_repo silent
   perldbiexclude silent
 fi
+  return 0
 
 }
 

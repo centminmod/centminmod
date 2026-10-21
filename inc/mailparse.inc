@@ -1,16 +1,18 @@
 checkphpextmailparse() {
     if [[ "$INITIALINSTALL" != [yY] ]]; then
-        php-config --version | cut -d . -f1,2 | egrep -w '7.0|7.1|7.2|7.3|7.4|8.0|8.1|8.2|8.3|8.4|8.5'
+        MAILPARSE_PHPVER=$(php-config --version | cut -d . -f1,2)
     else
-        echo $PHP_VERSION | cut -d . -f1,2 | egrep -w '7.0|7.1|7.2|7.3|7.4|8.0|8.1|8.2|8.3|8.4|8.5'
+        MAILPARSE_PHPVER=$(echo $PHP_VERSION | cut -d . -f1,2)
     fi
+    echo "$MAILPARSE_PHPVER" | egrep -w '7.0|7.1|7.2|7.3|7.4|8.0|8.1|8.2|8.3|8.4|8.5'
     PHPSEVEN_CHECKVER=$?
     echo "checkphpextmailparse $PHPSEVEN_CHECKVER"
 
     # mailparse 3.0.0 only works with PHP 7.0 branch
     # so use 2.1.6 if not PHP 7.0 branch
     if [[ "$PHPSEVEN_CHECKVER" = '0' ]]; then
-        if [[ "$PHPMVER" = '8.5' || "$PHPMVER" = '8.4' || "$PHPMVER" = '8.3' || "$PHPMVER" = '8.2' || "$PHPMVER" = '8.1' || "$PHPMVER" = '8.0' || "$REDIS_PHPCURRENTVER" = '8.5' || "$PHPMUVER" = '8.5' || "$REDIS_PHPCURRENTVER" = '8.4' || "$PHPMUVER" = '8.4' || "$REDIS_PHPCURRENTVER" = '8.3' || "$PHPMUVER" = '8.3' || "$REDIS_PHPCURRENTVER" = '8.2' || "$PHPMUVER" = '8.2' || "$REDIS_PHPCURRENTVER" = '8.1' || "$PHPMUVER" = '8.1' || "$REDIS_PHPCURRENTVER" = '8.0' || "$PHPMUVER" = '8.0' ]] || [[ "$PHPMVER" = '7.4' || "$REDIS_PHPCURRENTVER" = '7.4' || "$PHPMUVER" = '7.4' ]]; then
+        # pick by the PHP being built, PHPMVER is the PHP_VERSION default and not a menu 5 target
+        if [[ "$MAILPARSE_PHPVER" != 7.[0-3] ]]; then
             MAILPARSEPHP_VER="$MAILPARSEPHPSEVENFOUR_COMPATVER"
         else
             MAILPARSEPHP_VER="$MAILPARSEPHP_COMPATVER"
@@ -33,23 +35,25 @@ mailparseinstall() {
     if [[ "$PHP_INSTALL" = [yY] ]]; then
         if [[ "$PHPMAILPARSE" = [yY] ]]; then
 
-            checkphpextmailparse
             # set extra cflags fro devtoolset-7 and devtoolset-8 compatibility
             check_devtoolset_php
-            enable_devtoolset
+            enable_devtoolset "$CLANG_PHP" || return 1
+            checkphpextmailparse
 
             if [[ "$INITIALINSTALL" != [yY] ]]; then
-                php-config --version | cut -d . -f1,2 | egrep -w '7.0|7.1|7.2|7.3|7.4|8.0|8.1|8.2|8.3|8.4|8.5'
+                MAILPARSE_PHPVER=$(php-config --version | cut -d . -f1,2)
             else
-                echo $PHP_VERSION | cut -d . -f1,2 | egrep -w '7.0|7.1|7.2|7.3|7.4|8.0|8.1|8.2|8.3|8.4|8.5'
+                MAILPARSE_PHPVER=$(echo $PHP_VERSION | cut -d . -f1,2)
             fi
+            echo "$MAILPARSE_PHPVER" | egrep -w '7.0|7.1|7.2|7.3|7.4|8.0|8.1|8.2|8.3|8.4|8.5'
             PHPSEVEN_CHECKVER=$?
             echo "mailparseinstall $PHPSEVEN_CHECKVER"
 
             # mailparse 3.0.0 only works with PHP 7.0 branch
             # so use 2.1.6 if not PHP 7.0 branch
             if [[ "$PHPSEVEN_CHECKVER" = '0' ]]; then
-                if [[ "$PHPMVER" = '8.5' || "$PHPMVER" = '8.4' || "$PHPMVER" = '8.3' || "$PHPMVER" = '8.2' || "$PHPMVER" = '8.1' || "$PHPMVER" = '8.0' || "$REDIS_PHPCURRENTVER" = '8.5' || "$PHPMUVER" = '8.5' || "$REDIS_PHPCURRENTVER" = '8.4' || "$PHPMUVER" = '8.4' || "$REDIS_PHPCURRENTVER" = '8.3' || "$PHPMUVER" = '8.3' || "$REDIS_PHPCURRENTVER" = '8.2' || "$PHPMUVER" = '8.2' || "$REDIS_PHPCURRENTVER" = '8.1' || "$PHPMUVER" = '8.1' || "$REDIS_PHPCURRENTVER" = '8.0' || "$PHPMUVER" = '8.0' ]] || [[ "$PHPMVER" = '7.4' || "$REDIS_PHPCURRENTVER" = '7.4' || "$PHPMUVER" = '7.4' ]]; then
+                # pick by the PHP being built, PHPMVER is the PHP_VERSION default and not a menu 5 target
+                if [[ "$MAILPARSE_PHPVER" != 7.[0-3] ]]; then
                     MAILPARSEPHP_VER="$MAILPARSEPHPSEVENFOUR_COMPATVER"
                 else
                     MAILPARSEPHP_VER="$MAILPARSEPHP_COMPATVER"
@@ -79,7 +83,7 @@ mailparseinstall() {
                 cd mailparse-git
             fi
             /usr/local/bin/phpize
-            CFLAGS="-fPIC -O2 -fstack-protector-strong -D_FORTIFY_SOURCE=2" CPPFLAGS="-D_FORTIFY_SOURCE=2" CXXFLAGS="-fPIC -O2" LDFLAGS="-Wl,-z,relro,-z,now -pie" ./configure --with-php-config=/usr/local/bin/php-config
+            CFLAGS="${COMPILER_CFLAGS} -fPIC -O2 -fstack-protector-strong -D_FORTIFY_SOURCE=2" CPPFLAGS="-D_FORTIFY_SOURCE=2" CXXFLAGS="-fPIC -O2" LDFLAGS="-Wl,-z,relro,-z,now -pie" ./configure --with-php-config=/usr/local/bin/php-config
             make${MAKETHREADS}
             make install
 

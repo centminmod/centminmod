@@ -83,6 +83,16 @@ NEEDRESTART_CHECK='n'
 # so broken security state is never silently hidden.
 #DMOTD_CVECHECK_COMPACT='n'
 
+# Critical PHP CVE-2026-109618 + CVE-2026-109619 notice (independent of
+# DMOTD_PHPCHECK, DMOTD_COMPACT and the cmsec toggles)
+# Shown on SSH login while the installed PHP is older than 8.2.35, 8.3.36,
+# 8.4.27 or 8.5.12, is PHP 7.2.34, 7.3.33, 7.4.33, 8.0.30 or 8.1.34 not yet
+# rebuilt with the backport patch via centmin.sh menu option 5, or is an older
+# end-of-life PHP.
+# Details: https://community.centminmod.com/threads/33134/
+# 'n' silences it.
+#DMOTD_PHPCVE_2026_109618='y'
+
 # Per-section compact sub-toggles (only effective when DMOTD_COMPACT='y')
 # Set any to 'n' to restore that section's verbose multi-line panel.
 #ENABLEMOTD_HEADERCOMPACT='y'       # hostname / users / CPU / proc / uptime
@@ -241,7 +251,7 @@ NGINX_MODSECURITY_MAXMIND='y' # modsecurity built with libmaxminddb is failing t
 NGINX_REALIP='y'             # http://nginx.org/en/docs/http/ngx_http_realip_module.html
 NGINX_RDNS='n'               # https://github.com/flant/nginx-http-rdns
 NGINX_NJS='n'                # nginScript https://www.nginx.com/blog/
-NGINX_NJS_VER='0.8.9'        # nginxScript tag version https://github.com/nginx/njslaunching-nginscript-and-looking-ahead/
+NGINX_NJS_VER='1.0.1'        # nginxScript tag version https://github.com/nginx/njslaunching-nginscript-and-looking-ahead/
 NGINX_GEOIP='y'              # Nginx GEOIP module install
 NGINX_GEOIPMEM='y'           # Nginx caches GEOIP databases in memory (default), setting 'n' caches to disk instead
 # Maintained GeoIP2/maxminddb replacement for the legacy geoip PHP extension

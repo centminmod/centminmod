@@ -188,6 +188,7 @@ if [[ "$INITIALINSTALL" = [yY] ]] && [[ "$NGINX_PCRE_TWO" = [yY] || "$NGX_LDMOLD
     echo
 fi
 
+nginx_dependency_compiler || exit 1
 install_gperftools
 
 pcredir_check
@@ -226,13 +227,14 @@ fi
 
 {
     ngx_starttime=$(TZ=UTC date +%s.%N)
-    nginxzlib_install
+    nginxzlib_install || exit 1
     ngx_endtime=$(TZ=UTC date +%s.%N)
     nginx_zlib_install_time=$(echo "scale=2;$ngx_endtime - $ngx_starttime"|bc )
     echo
     echo "nginx install: nginx zlib install completed in $nginx_zlib_install_time seconds"
     echo
 } 2>&1 | tee "${CENTMINLOGDIR}/nginx-install-zlib_${DT}.log"
+[[ "${PIPESTATUS[*]}" = "0 0" ]] || exit 1
 nginx_libuuid
 
     # Install nginx

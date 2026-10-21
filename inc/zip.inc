@@ -5,7 +5,7 @@ zip_php_install() {
       PHPEXTDIRD=`cat /usr/local/bin/php-config | awk '/^extension_dir/ {extdir=$1} END {gsub(/\047|extension_dir|=|)/,"",extdir); print extdir}'`
       # set extra cflags fro devtoolset-7 and devtoolset-8 compatibility
       check_devtoolset_php
-      enable_devtoolset
+      enable_devtoolset "$CLANG_PHP" || return 1
       echo "*************************************************"
       cecho "* Installing ZIP PHP extension" $boldgreen
       echo "*************************************************"
@@ -26,7 +26,7 @@ zip_php_install() {
           make clean
       fi
       /usr/local/bin/phpize
-      CFLAGS="-fPIC -O2 -fstack-protector-strong -D_FORTIFY_SOURCE=2" CPPFLAGS="-D_FORTIFY_SOURCE=2" CXXFLAGS="-fPIC -O2" LDFLAGS="-Wl,-z,relro,-z,now -pie" ./configure --with-php-config=/usr/local/bin/php-config
+      CFLAGS="${COMPILER_CFLAGS} -fPIC -O2 -fstack-protector-strong -D_FORTIFY_SOURCE=2" CPPFLAGS="-D_FORTIFY_SOURCE=2" CXXFLAGS="-fPIC -O2" LDFLAGS="-Wl,-z,relro,-z,now -pie" ./configure --with-php-config=/usr/local/bin/php-config
       make${MAKETHREADS}
       make install
       

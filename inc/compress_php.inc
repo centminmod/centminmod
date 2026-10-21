@@ -5,7 +5,7 @@ php_ext_brotli() {
     echo "*************************************************"
       # set extra cflags fro devtoolset-7 and devtoolset-8 compatibility
       check_devtoolset_php
-      enable_devtoolset
+      enable_devtoolset "$CLANG_PHP" || return 1
       # export PKG_CONFIG_PATH=/usr/lib64/pkgconfig:/usr/share/pkgconfig:/usr/local/nginx-dep/lib/pkgconfig
     echo "Downloading brotli PHP extension..."
     pushd "$DIR_TMP"
@@ -13,7 +13,7 @@ php_ext_brotli() {
     git clone --recursive --depth=1 https://github.com/kjdev/php-ext-brotli.git
     cd php-ext-brotli
     phpize
-    CFLAGS="-fPIC -O2 -fstack-protector-strong -D_FORTIFY_SOURCE=2" CPPFLAGS="-D_FORTIFY_SOURCE=2" CXXFLAGS="-fPIC -O2" LDFLAGS="-Wl,-z,relro,-z,now -pie" ./configure
+    CFLAGS="${COMPILER_CFLAGS} -fPIC -O2 -fstack-protector-strong -D_FORTIFY_SOURCE=2" CPPFLAGS="-D_FORTIFY_SOURCE=2" CXXFLAGS="-fPIC -O2" LDFLAGS="-Wl,-z,relro,-z,now -pie" ./configure
     time make -j$(nproc)
     time make install
     echo "extension=brotli.so" > "${CONFIGSCANDIR}/brotli.ini"
@@ -33,7 +33,7 @@ php_ext_lzfour() {
     echo "*************************************************"
       # set extra cflags fro devtoolset-7 and devtoolset-8 compatibility
       check_devtoolset_php
-      enable_devtoolset
+      enable_devtoolset "$CLANG_PHP" || return 1
     echo "Downloading lz4 PHP extension..."
     pushd "$DIR_TMP"
     rm -rf lz4 
@@ -49,7 +49,7 @@ php_ext_lzfour() {
     cd php-ext-lz4
     make clean
     phpize
-    CFLAGS="-fPIC -O2 -fstack-protector-strong -D_FORTIFY_SOURCE=2" CPPFLAGS="-D_FORTIFY_SOURCE=2" CXXFLAGS="-fPIC -O2" LDFLAGS="-Wl,-z,relro,-z,now -pie" ./configure --with-php-config=/usr/local/bin/php-config
+    CFLAGS="${COMPILER_CFLAGS} -fPIC -O2 -fstack-protector-strong -D_FORTIFY_SOURCE=2" CPPFLAGS="-D_FORTIFY_SOURCE=2" CXXFLAGS="-fPIC -O2" LDFLAGS="-Wl,-z,relro,-z,now -pie" ./configure --with-php-config=/usr/local/bin/php-config
     time make -j$(nproc)
     time make install
     echo "extension=lz4.so" > "${CONFIGSCANDIR}/lz4.ini"
@@ -69,7 +69,7 @@ php_ext_lzf() {
     echo "*************************************************"
       # set extra cflags fro devtoolset-7 and devtoolset-8 compatibility
       check_devtoolset_php
-      enable_devtoolset
+      enable_devtoolset "$CLANG_PHP" || return 1
     echo "Downloading lzf PHP extension..."
     if [ ! -f /usr/bin/lzf ]; then
       yum -y -q install liblzf
@@ -80,7 +80,7 @@ php_ext_lzf() {
     cd php-ext-lzf
     make clean
     phpize
-    CFLAGS="-fPIC -O2 -fstack-protector-strong -D_FORTIFY_SOURCE=2" CPPFLAGS="-D_FORTIFY_SOURCE=2" CXXFLAGS="-fPIC -O2" LDFLAGS="-Wl,-z,relro,-z,now -pie" ./configure --with-php-config=/usr/local/bin/php-config
+    CFLAGS="${COMPILER_CFLAGS} -fPIC -O2 -fstack-protector-strong -D_FORTIFY_SOURCE=2" CPPFLAGS="-D_FORTIFY_SOURCE=2" CXXFLAGS="-fPIC -O2" LDFLAGS="-Wl,-z,relro,-z,now -pie" ./configure --with-php-config=/usr/local/bin/php-config
     time make -j$(nproc)
     time make install
     echo "extension=lzf.so" > "${CONFIGSCANDIR}/lzf.ini"
@@ -100,7 +100,7 @@ php_ext_zopfli() {
     echo "*************************************************"
       # set extra cflags fro devtoolset-7 and devtoolset-8 compatibility
       check_devtoolset_php
-      enable_devtoolset
+      enable_devtoolset "$CLANG_PHP" || return 1
     echo "Downloading Zopfli PHP extension..."
     if [ ! -f /usr/bin/zopfli ]; then
       yum -y -q install zopfli
@@ -111,7 +111,7 @@ php_ext_zopfli() {
     cd php-ext-zopfli
     git submodule update --init
     phpize
-    CFLAGS="-fPIC -O2 -fstack-protector-strong -D_FORTIFY_SOURCE=2" CPPFLAGS="-D_FORTIFY_SOURCE=2" CXXFLAGS="-fPIC -O2" LDFLAGS="-Wl,-z,relro,-z,now -pie" ./configure --with-php-config=/usr/local/bin/php-config
+    CFLAGS="${COMPILER_CFLAGS} -fPIC -O2 -fstack-protector-strong -D_FORTIFY_SOURCE=2" CPPFLAGS="-D_FORTIFY_SOURCE=2" CXXFLAGS="-fPIC -O2" LDFLAGS="-Wl,-z,relro,-z,now -pie" ./configure --with-php-config=/usr/local/bin/php-config
     time make -j$(nproc)
     time make install
     echo "extension=zopfli.so" > "${CONFIGSCANDIR}/zopfli.ini"
@@ -131,7 +131,7 @@ php_ext_zstd() {
     echo "*************************************************"
       # set extra cflags fro devtoolset-7 and devtoolset-8 compatibility
       check_devtoolset_php
-      enable_devtoolset
+      enable_devtoolset "$CLANG_PHP" || return 1
     echo "Downloading zstd PHP extension..."
     zstdinstall
     pushd "$DIR_TMP"
@@ -139,7 +139,7 @@ php_ext_zstd() {
     git clone --recursive --depth=1 https://github.com/kjdev/php-ext-zstd.git
     cd php-ext-zstd
     phpize
-    CFLAGS="-fPIC -O2 -fstack-protector-strong -D_FORTIFY_SOURCE=2" CPPFLAGS="-D_FORTIFY_SOURCE=2" CXXFLAGS="-fPIC -O2" LDFLAGS="-Wl,-z,relro,-z,now -pie" ./configure --with-php-config=/usr/local/bin/php-config
+    CFLAGS="${COMPILER_CFLAGS} -fPIC -O2 -fstack-protector-strong -D_FORTIFY_SOURCE=2" CPPFLAGS="-D_FORTIFY_SOURCE=2" CXXFLAGS="-fPIC -O2" LDFLAGS="-Wl,-z,relro,-z,now -pie" ./configure --with-php-config=/usr/local/bin/php-config
     time make -j$(nproc)
     time make install
     echo "extension=zstd.so" > "${CONFIGSCANDIR}/zstd.ini"
