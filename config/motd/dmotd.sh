@@ -60,6 +60,8 @@ DMOTD_CSFVERCHECK='y'              # 'n' silences csf_version_checker entirely
 DMOTD_BRANCHCHECK='y'              # 'n' silences check_git_major_branch info notice
                                    # (use when staying on a specific branch intentionally)
 DMOTD_PHPLIBCHECK='y'              # 'n' silences the missing PHP shared library warning
+DMOTD_PHPCVE_2026_109618='y'       # 'n' silences the critical PHP CVE-2026-109618/109619 notice
+                                   # (independent of DMOTD_PHPCHECK and all compact toggles)
 DMOTD_CVECHECK_COMPACT='n'         # 'y' collapses cmsec to 1 summary line (vulnerable CVEs always expand)
 DMOTD_CVECHECK_SILENT='n'          # 'y' suppresses cmsec banner entirely; Pushover alerts for vulnerable
                                    # CVEs still fire and DMOTD_CVECHECK_SUPPRESS is still honoured. Cosmetic
@@ -341,7 +343,7 @@ push_dmotd_alerts() {
   # Per-CVE alert cooldown to prevent login-time alert spam.
   # Each (CVE-id, kernel) tuple alerts at most once per CVE_ALERT_COOLDOWN seconds.
   local CVE_ALERT_COOLDOWN="${CVE_ALERT_COOLDOWN:-86400}"
-  if [[ "$pushapp" = 'cve' ]]; then
+  if [[ "$pushapp" = 'cve' || "$pushapp" = 'phpcve' ]]; then
     _cooldown_dir="/var/cache/centminmod/cmsec/push"
     [ -d "$_cooldown_dir" ] || mkdir -p "$_cooldown_dir" 2>/dev/null
     _cooldown_key="$(printf '%s' "$pushapp_ver" | tr '/|: ' '_____')"
@@ -379,6 +381,13 @@ push_dmotd_alerts() {
       _push_url="${_push_url//\{CVE\}/$_cve_id}"
       PUSH_MESSAGE="${_cve_id} ${_cve_verdict} on ${PUSH_HOSTNAME} (kernel ${_cve_kernel}); run 'cmsec check ${_cve_id}'"
       PUSH_TITLE="${_cve_id} ${_cve_verdict} ${PUSH_HOSTNAME} ${PUSH_DATE_TIME}"
+    elif [[ "$pushapp" = 'phpcve' ]]; then
+      # pushapp_ver is "<CVE-id>|PHP <version>|VULNERABLE", cooldown keyed per PHP version
+      _cve_rest="${pushapp_ver#*|}"
+      _push_priority="${PUSH_CVE_PRIORITY_CRITICAL:-1}"
+      _push_url="https://community.centminmod.com/threads/33134/"
+      PUSH_MESSAGE="CVE-2026-109618 + CVE-2026-109619 critical unauthenticated RCE in ${_cve_rest%%|*} on ${PUSH_HOSTNAME}; run cmupdate, then centmin.sh menu option 5"
+      PUSH_TITLE="PHP CVE-2026-109618 VULNERABLE ${PUSH_HOSTNAME} ${PUSH_DATE_TIME}"
     fi
     if [[ "$PUSH_MOTD_ALERTS" = [yY] && "$PUSH_API_TOKEN" && "$PUSH_USER_KEY" ]]; then
       log_message "$PUSH_MESSAGE"
@@ -389,7 +398,7 @@ push_dmotd_alerts() {
         --form-string "message=${PUSH_MESSAGE}"
         --form-string "title=${PUSH_TITLE}"
       )
-      if [[ "$pushapp" = 'cve' ]]; then
+      if [[ "$pushapp" = 'cve' || "$pushapp" = 'phpcve' ]]; then
         _curl_args+=(--form-string "priority=${_push_priority}")
         _curl_args+=(--form-string "url=${_push_url}")
         _curl_args+=(--form-string "url_title=View CVE Details")
@@ -409,7 +418,7 @@ push_dmotd_alerts() {
       # delivery — Pushover returns {"status":1,...} on success, {"status":0,...}
       # on auth/format errors. Without this gate, transient network failures or
       # bad credentials would still suppress future alerts for the cooldown window.
-      if [[ "$pushapp" = 'cve' ]] && [ -n "${_cooldown_file:-}" ] \
+      if [[ "$pushapp" = 'cve' || "$pushapp" = 'phpcve' ]] && [ -n "${_cooldown_file:-}" ] \
          && [ "${_curl_rc:-1}" -eq 0 ] \
          && printf '%s' "$RESPONSE" | grep -q '"status":1'; then
         touch "$_cooldown_file" 2>/dev/null
@@ -969,6 +978,78 @@ cmsec_checks() {
   fi
 }
 
+# Critical PHP CVE-2026-109618 + CVE-2026-109619 (unauthenticated RCE), fixed
+# upstream in PHP 8.2.35, 8.3.36, 8.4.27 and 8.5.12, and for PHP 7.4.33,
+# 8.0.30 and 8.1.34 by the Centmin Mod backport patch in inc/php_patch.inc.
+# Args: PHP version, php-fpm binary, patch log dir. Prints "<status> <target>":
+#   fixed            nothing to do
+#   upgrade X.Y.Z    newer release in the same PHP branch has the fix
+#   rebuild X.Y.Z    rebuild with the backport patch via centmin.sh menu 5
+#   eol X.Y          end-of-life PHP with no fix
+php_cve_2026_109618_status() {
+  local _ver="$1" _fpm="$2" _logdir="$3" _maj _min _pat _fixpat _backport='n' _log='' _f
+  IFS=. read -r _maj _min _pat <<<"$_ver"
+  _pat="${_pat%%[!0-9]*}"
+  [[ "$_maj" =~ ^[0-9]+$ && "$_min" =~ ^[0-9]+$ && "$_pat" =~ ^[0-9]+$ ]] || return 1
+  case "${_maj}.${_min}" in
+    7.4) _fixpat=33; _backport='y' ;;
+    8.0) _fixpat=30; _backport='y' ;;
+    8.1) _fixpat=34; _backport='y' ;;
+    8.2) _fixpat=35 ;;
+    8.3) _fixpat=36 ;;
+    8.4) _fixpat=27 ;;
+    8.5) _fixpat=12 ;;
+    *)
+      if (( _maj > 8 || (_maj == 8 && _min > 5) )); then
+        echo "fixed"
+      else
+        echo "eol ${_maj}.${_min}"
+      fi
+      return 0
+      ;;
+  esac
+  if [[ "$_backport" != 'y' ]]; then
+    if (( _pat >= _fixpat )); then
+      echo "fixed"
+    else
+      echo "upgrade ${_maj}.${_min}.${_fixpat}"
+    fi
+    return 0
+  fi
+  if (( _pat >= _fixpat )); then
+    # The build that installed php-fpm wrote the newest patch log that is not
+    # newer than the binary. Later logs are from builds that failed or stopped.
+    for _f in "$_logdir"/patch_php_*.log; do
+      [[ -f "$_f" && ! "$_f" -nt "$_fpm" ]] || continue
+      [[ -z "$_log" || "$_f" -nt "$_log" ]] && _log="$_f"
+    done
+    if [[ -n "$_log" ]] && grep -qF "Patch applied successfully for bug #${_maj}.${_min}-cve-2026-109618" "$_log"; then
+      echo "fixed"
+      return 0
+    fi
+  fi
+  echo "rebuild ${_maj}.${_min}.${_fixpat}"
+}
+
+php_cve_2026_109618_check() {
+  [[ "$DMOTD_PHPCVE_2026_109618" = [nN] || ! -x /usr/local/sbin/php-fpm ]] && return 0
+  local _ver _res _status _target _fix
+  _ver=$(php-config --version 2>/dev/null)
+  _res=$(php_cve_2026_109618_status "$_ver" /usr/local/sbin/php-fpm /root/centminlogs) || return 0
+  read -r _status _target <<<"$_res"
+  case "$_status" in
+    upgrade) _fix="upgrade to PHP ${_target}+" ;;
+    rebuild) _fix="install patched PHP ${_target}" ;;
+    eol)     _fix="upgrade PHP" ;;
+    *)       return 0 ;;
+  esac
+  printf '\033[1;31m * CRITICAL: PHP %s — CVE-2026-109618 + CVE-2026-109619 unauthenticated RCE\033[0m\n' "$_ver"
+  [[ "$_status" = 'eol' ]] && printf '   PHP %s is end-of-life with no fix: upgrade to a supported PHP 8.2 or newer\n' "$_target"
+  printf '   Run cmupdate, then centmin.sh menu option 5 to %s\n' "$_fix"
+  printf '   Details: https://community.centminmod.com/threads/33134/\n'
+  push_dmotd_alerts phpcve "CVE-2026-109618|PHP ${_ver}|VULNERABLE"
+}
+
 csf_version_checker() {
   # DMOTD_CSFVERCHECK toggle gates the entire function — independent of
   # DMOTD_COMPACT. When 'n', no CSF version check runs at all.
@@ -1154,6 +1235,7 @@ if [[ "$(id -u)" -eq 0 ]] || sudo -n true 2>/dev/null; then
   if [[ "$(id -u)" -eq 0 || "$SUDO_USER" ]]; then
     kernel_checks
     cmsec_checks
+    php_cve_2026_109618_check
     # Parallel ngxver/phpver requires array writes to survive the subshells.
     # Backgrounded functions run in subshells, so _dmotd_status_lines+=() in
     # the compact branch would be lost on wait. Serialise these two when in
