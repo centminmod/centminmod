@@ -938,7 +938,8 @@ php_patches() {
           if [[ "$bugid" = 'pcre1038' ]]; then
             cp -a $CUR_DIR/patches/php/php7331-${bugid}.patch php7331-${bugid}.patch
             dos2unix php7331-${bugid}.patch
-            patch -p1 < php7331-${bugid}.patch            
+            patch -p1 < php7331-${bugid}.patch
+            continue
           elif [[ "$bugid" != 'php-openssl-cert' ]]; then
             echo "Patching PHP 7.3.31 for bug #${bugid}"
             echo "https://bugs.php.net/bug.php?id=${bugid}"
