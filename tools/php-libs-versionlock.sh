@@ -183,9 +183,9 @@ do_status() {
     return 0
   fi
   echo "php-libs-versionlock: $(echo $names | wc -w) locked packages: $(echo $names)"
-  dnf -q list updates --disableplugin=versionlock $names 2>/dev/null | awk 'NF == 3 && $2 ~ /^[0-9]/ {print $1, $2}' | while read -r name newver; do
+  dnf -q list updates --disableplugin=versionlock --disablerepo=mariadb $names 2>/dev/null | awk 'NF == 3 && $2 ~ /^[0-9]/ {print $1, $2}' | while read -r name newver; do
     name=${name%.*}
-    gone=$(comm -23 <(rpm -q --provides "$name" | sonames) <(dnf -q repoquery --disableplugin=versionlock --provides "${name}-${newver}" 2>/dev/null | sonames) | tr '\n' ' ')
+    gone=$(comm -23 <(rpm -q --provides "$name" | sonames) <(dnf -q repoquery --disableplugin=versionlock --disablerepo=mariadb --provides "${name}-${newver}" 2>/dev/null | sonames) | tr '\n' ' ')
     if [[ -n "$gone" ]]; then
       echo "  held: $name $(rpm -q --qf '%{VERSION}-%{RELEASE}' "$name") -> $newver SONAME CHANGE removes: $gone"
     else
