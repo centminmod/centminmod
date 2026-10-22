@@ -126,26 +126,33 @@ send_ses_mail() {
   fi
   email_date=$(date)
   SES_FROM_DOMAIN=$(echo "$EMAILNOTIFY_SES_FROM_EMAIL" | awk -F '@' '{print $2}')
-  if [ "$EMAILNOTIFY_SES_CC_EMAIL" ]; then
-    ses_cc="\nCc: $EMAILNOTIFY_SES_CC_EMAIL"
-  else
-    ses_cc=
-  fi
-  if [ "$EMAILNOTIFY_SES_BCC_EMAIL" ]; then
-    ses_bcc="\nBcc: $EMAILNOTIFY_SES_BCC_EMAIL"
-  else
-    ses_bcc=
-  fi
-cat > /tmp/email_body_template.txt <<EOF
+  # SMTP delivers to RCPT TO recipients only: Cc and Bcc addresses each need
+  # one, and Bcc must not appear in the headers. Values without an @ (the
+  # placeholder defaults above) are skipped.
+  ses_rcpt="RCPT TO: ${EMAILNOTIFY_SES_TO_EMAIL}"
+  ses_cc=
+  for ses_addr in $(echo "$EMAILNOTIFY_SES_CC_EMAIL $EMAILNOTIFY_SES_BCC_EMAIL" | tr ',' ' '); do
+    [[ "$ses_addr" = *@* ]] || continue
+    ses_rcpt="${ses_rcpt}"$'\n'"RCPT TO: ${ses_addr}"
+  done
+  for ses_addr in $(echo "$EMAILNOTIFY_SES_CC_EMAIL" | tr ',' ' '); do
+    [[ "$ses_addr" = *@* ]] && ses_cc="${ses_cc:+$ses_cc, }${ses_addr}"
+  done
+  [ -n "$ses_cc" ] && ses_cc=$'\n'"Cc: ${ses_cc}"
+  # template holds SES SMTP credentials: private 0700 dir + 0600 file, removed on exit
+  ses_tmpdir=$(mktemp -d) || return 1
+  trap 'rm -rf -- "$ses_tmpdir"' EXIT
+  ses_template="${ses_tmpdir}/email_body_template.txt"
+(umask 077; cat > "$ses_template") <<EOF
 EHLO $SES_FROM_DOMAIN
 AUTH LOGIN
 $SES_SMTP_USER
 $SES_SMTP_PASS
 MAIL FROM: ${EMAILNOTIFY_SES_FROM_EMAIL}
-RCPT TO: ${EMAILNOTIFY_SES_TO_EMAIL}
+${ses_rcpt}
 DATA
 From: $EMAILNOTIFY_SES_FROM_EMAIL <${EMAILNOTIFY_SES_FROM_EMAIL}>
-To: ${EMAILNOTIFY_SES_TO_EMAIL}${ses_cc}${ses_bcc}
+To: ${EMAILNOTIFY_SES_TO_EMAIL}${ses_cc}
 Subject: $subject $(hostname) $email_date
 
 $body
@@ -166,8 +173,7 @@ EOF
     echo "and return to command prompt after 10 seconds"
     echo "----------------------------------------------------"
     echo
-    openssl s_client -crlf -quiet${brief_opt} -starttls smtp -connect ${EMAILNOTIFY_SES_SMTP_SERVER}:${EMAILNOTIFY_SES_SMTP_PORT} < /tmp/email_body_template.txt
-    # rm -f /tmp/email_body_template.txt
+    openssl s_client -crlf -quiet${brief_opt} -starttls smtp -connect ${EMAILNOTIFY_SES_SMTP_SERVER}:${EMAILNOTIFY_SES_SMTP_PORT} < "$ses_template"
   elif [[ "$EMAILNOTIFY_SES_SMTP_PORT" = '465' ]]; then
     echo "----------------------------------------------------"
     echo "Send email via SES using openssl client"
@@ -176,8 +182,7 @@ EOF
     echo "and return to command prompt after 10 seconds"
     echo "----------------------------------------------------"
     echo
-    openssl s_client -crlf -quiet${brief_opt} -connect ${EMAILNOTIFY_SES_SMTP_SERVER}:${EMAILNOTIFY_SES_SMTP_PORT} < /tmp/email_body_template.txt
-    # rm -f /tmp/email_body_template.txt
+    openssl s_client -crlf -quiet${brief_opt} -connect ${EMAILNOTIFY_SES_SMTP_SERVER}:${EMAILNOTIFY_SES_SMTP_PORT} < "$ses_template"
   fi
 }
 
