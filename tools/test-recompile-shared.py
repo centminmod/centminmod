@@ -369,8 +369,8 @@ class Plugin:
     lockfile.write_text(lockfile.read_text() + negative)
     result = run(collector_setup + '''
 dnf() {
-  [[ "$1" = -y && "$2" = --setopt=pluginconfpath=/etc/dnf/plugins,* && "$3" = update ]] || return 75
-  overlay=${2##*,}
+  [[ "$1" = -y && "$2" = --disablerepo=mariadb && "$3" = --setopt=pluginconfpath=/etc/dnf/plugins,* && "$4" = update ]] || return 75
+  overlay=${3##*,}
   [[ $(cat "$overlay/locks.list") = $'user-package-0:9.0-1.*\\nImageMagick-0:7-1.*\\n!other-package-0:2-1.*' ]] || return 75
   [[ $(owned_entries) = $'libavif-0:0.11-1.*\\nlibavif-devel-0:0.11-1.*' ]] || return 75
   [[ $(cat "$overlay/versionlock.conf") = $'[main]\\nlocklist='"$overlay/locks.list" ]] || return 75

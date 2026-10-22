@@ -27,7 +27,7 @@ cmm_php_mirror_list() { echo https://mock.invalid; }; fake_download() { return 7
 phpgeolocation() { PHPEXTSION=gz; PHPTAR_FLAGS=xzf; }
 tar() { event extract; [[ "$FAILPHASE" != extract ]]; }
 autodetectextensions() { event detect; }; zopcacheupgrade() { event opcache; }
-funct_centos6check() { :; }; rpm() { echo php-cli; }; yum() { event yum; }
+funct_centos6check() { :; }; rpm() { echo php-cli; }
 git() { return 1; }; wget() { return 1; }; curl() { return 1; }
 rm() { :; }; sleep() { :; }; find() { event find; [[ "$FAILPHASE" != strip ]] || return 7; }
 pgrep() { [[ "$RUNNING" = y ]]; }; id() { echo 0; }
@@ -88,6 +88,8 @@ def run(phase='', body=None, setup='', running='n'):
         write('usr/bin/sitestatus', '#!/bin/bash\necho maintenance-$1 >> "$EVENTS"\n[[ "$FAILPHASE" != maintenance-$1 ]] || exit 7\n', True)
         write('repo/tools/php-libs-versionlock.sh', '#!/bin/bash\necho libs-$1 >> "$EVENTS"\n[[ "$FAILPHASE" != libs-$1 ]] || exit 7\n[[ "$FAILPHASE" != libs-refresh || "$1" != lock || $(grep -c "^libs-lock$" "$EVENTS") -lt 2 ]] || exit 7\n', True)
         write('src/php-8.3.35/buildconf', '#!/bin/bash\nexit 0\n', True)
+        # a PATH binary, not a function mock, so funct_phpupgrade's yum wrapper reaches it
+        write('bin/yum', '#!/bin/bash\necho yum >> "$EVENTS"\n[[ "$1" = --disablerepo=mariadb ]] || echo yum-unscoped >> "$EVENTS"\n', True)
         body = UPGRADE + MOCKS + '\nfunct_phpupgrade 8.3.35\n' if body is None else UPGRADE + MOCKS + body
         for old in ('/usr/local', '/usr/bin/sitestatus', '/root/.bashrc'):
             body = body.replace(old, str(root) + old)
@@ -104,6 +106,7 @@ FPM_PHPFPM_INSTALLDIR='{root}/stage'; INITIALINSTALL=n; IGBINARY_INSTALL=y
 '''
         env = {key: os.environ[key] for key in ('PATH', 'TMPDIR') if key in os.environ}
         env.update(LC_ALL='C', EVENTS=str(events), FAILPHASE=phase, RUNNING=running)
+        env['PATH'] = f'{root}/bin:' + env.get('PATH', '')
         # Inject setup after mocks, before the tested call.
         marker = '\nfunct_phpupgrade 8.3.35\n'
         if marker in body:
@@ -147,6 +150,10 @@ assert result.returncode == 0, (events, result.stdout, result.stderr)
 assert events.index('extract') < events.index('detect') < events.index('libs-update') < events.index('configure') < events.index('make') < events.index('stage') < events.index('maintenance-off') < events.index('install') < events.index('libs-lock') < events.index('copy') < events.index('configtest') < events.index('restart') < events.index('maintenance-on')
 assert ini == 'new php.ini\n' and 'igbinary' not in events and events.count('maintenance-off') == 1
 print('PASS: source/build/install/config/restart ordering and healthy igbinary preservation')
+assert 'yum' in events and 'yum-unscoped' not in events, events
+result, events, _ = run(body='\nfunct_phpupgrade 8.3.35\nevent after\nyum -q list\n', setup='touch "$CONFIGSCANDIR/igbinary.ini" "$(php-config --extension-dir)/igbinary.so"')
+assert events[events.index('after') + 1:] == ['yum', 'yum-unscoped'], events
+print('PASS: yum skips the MariaDB repo only while funct_phpupgrade runs')
 
 # Run the actual initial-install body with failed ordinary make and staging.
 for phase in ('make', 'stage'):

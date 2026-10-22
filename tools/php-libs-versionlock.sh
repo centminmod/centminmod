@@ -47,7 +47,7 @@ lock_file() {
 
 ensure_plugin() {
   if [[ ! -f "$LOCK_CONF" ]]; then
-    dnf -y -q install python3-dnf-plugin-versionlock >/dev/null 2>&1
+    dnf -y -q --disablerepo=mariadb install python3-dnf-plugin-versionlock >/dev/null 2>&1
   fi
   [[ -f "$LOCK_CONF" ]]
 }
@@ -307,7 +307,7 @@ do_update() {
     echo "dnf -y update $(echo $names)"
     # Only this invocation bypasses our own pins. Foreign pins/exclusions and
     # every other plugin's effective settings remain in force.
-    dnf -y "--setopt=pluginconfpath=${paths:+$paths,}$overlay" update $names || status=$?
+    dnf -y --disablerepo=mariadb "--setopt=pluginconfpath=${paths:+$paths,}$overlay" update $names || status=$?
     # Keep the saved names protected even if PHP rebuilding aborts. A partial
     # update is locked at its installed versions rather than rolled back.
     write_block $names || {

@@ -427,8 +427,13 @@ funct_phpupgrade() {
   # helpers that abort with exit still get the report
   previous_trap=$(trap -p EXIT)
   trap 'php_upgrade_failed $?' EXIT
+  # PHP builds never install from the MariaDB repo, so a broken or blocked
+  # MariaDB mirror must not fail PHP dependency installs
+  yum() { command yum --disablerepo=mariadb "$@"; }
+  dnf() { command dnf --disablerepo=mariadb "$@"; }
   php_upgrade_main "$@"
   status=$?
+  unset -f yum dnf
   unset CMM_PHPFPM_RESTART_DEFERRED
   eval "${previous_trap:-trap - EXIT}"
   [[ "$status" -eq 0 ]] || php_upgrade_failed "$status"
