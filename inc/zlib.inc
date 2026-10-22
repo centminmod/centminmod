@@ -594,7 +594,8 @@ install_cfzlib() {
         # ld.gold corrections for GCC 14 changes
         if [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]] && [[ "$NGX_LDGOLD" = [yY] ]] && [[ "$DEVTOOLSETTWELVE" = [yY] || "$DEVTOOLSETTHIRTEEN" = [yY] || "$DEVTOOLSETFOURTEEN" = [yY] ]]; then
           NGX_LDGOLD_GCCPATH="$LD_GOLD_GCCPATH"
-        elif [[ "$NGX_LDGOLD" = [yY] ]]; then
+        elif [[ "$NGX_LDGOLD" = [yY] && "$CENTOS_SIX" -ne '6' ]]; then
+          # CentOS 6 without devtoolset builds cloudflare zlib with system GCC 4.4.7 which has no -fuse-ld option
           NGX_LDGOLD_GCCPATH=" -fuse-ld=gold"
         fi
         # if only 1 cpu thread use -O2 to keep compile times sane

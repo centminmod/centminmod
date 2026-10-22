@@ -624,6 +624,14 @@ ngxbrotli_download() {
     # update system cmake with cmake3 alternative setup
     # https://community.centminmod.com/posts/92826/
     cmake_alternatives
+    if [[ "$CENTOS_SIX" -eq '6' ]]; then
+      # CentOS 6 cmake 2.8 and cmake3 3.6 are too old for brotli 1.1.0+ CMake 3.15+ requirement
+      # so use older brotli method which needs CMake 3.0+ cmake3 for CMP0048 policy
+      NGINX_BROTLI_NEW_METHOD='n'
+      if [ -f /usr/bin/cmake3 ]; then
+        BROTLI_CMAKE_CMD='cmake3'
+      fi
+    fi
 
     if [[ "$NGX_DEP_GCC15" != y && "$CLANG" != [yY] ]]; then
     if [[ "$DEVTOOLSETSEVEN" = [yY] && -f /opt/rh/devtoolset-7/root/usr/bin/gcc && -f /opt/rh/devtoolset-7/root/usr/bin/g++ ]] && [[ "$(gcc --version | head -n1 | awk '{print $3}' | cut -d . -f1,2 | sed "s|\.|0|")" -gt '407' ]]; then
@@ -856,7 +864,9 @@ ngxbrotli_download() {
         git checkout 6e975bcb015f62e1f303054897783355e2a877dc
         git submodule update --init || return 1
         cd deps/brotli
-        CFLAGS="$CFLAGS -fPIC -O2 -fstack-protector-strong -D_FORTIFY_SOURCE=2" CPPFLAGS="-D_FORTIFY_SOURCE=2" CXXFLAGS="$CXXFLAGS -fPIC -O2" LDFLAGS="$LDFLAGS -Wl,-z,relro,-z,now -pie" ./configure-cmake --prefix=/usr/local/nginx-dep || return 1
+        CMAKE_CMD="${BROTLI_CMAKE_CMD:-cmake}" CFLAGS="$CFLAGS -fPIC -O2 -fstack-protector-strong -D_FORTIFY_SOURCE=2" CPPFLAGS="-D_FORTIFY_SOURCE=2" CXXFLAGS="$CXXFLAGS -fPIC -O2" LDFLAGS="$LDFLAGS -Wl,-z,relro,-z,now -pie" ./configure-cmake --prefix=/usr/local/nginx-dep || return 1
+        # configure-cmake also passes LDFLAGS to CMAKE_STATIC_LINKER_FLAGS which ar can't use
+        "${BROTLI_CMAKE_CMD:-cmake}" -DCMAKE_STATIC_LINKER_FLAGS="" . || return 1
         make${MAKETHREADS} || return 1
         make install || return 1
         cd ../../
