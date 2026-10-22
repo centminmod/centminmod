@@ -1122,7 +1122,9 @@ autoupdate_cronsetup() {
 # autoupdate run itself sets CMM_AUTOUPDATE_RUN=y for its centmin-cli.sh.
 autoupdate_lockcheck() {
   local au_lock=/var/run/centminmod-autoupdate.lock
-  [[ "$CMM_AUTOUPDATE_RUN" = y || ! -f "$au_lock" ]] && return 0
+  [[ "$CMM_AUTOUPDATE_RUN" = y || ! -f "$au_lock" || -L "$au_lock" ]] && return 0
+  # autoupdate creates it as root's 0600 file; anything else is not its lock
+  [[ "$(stat -c '%u %a' "$au_lock" 2>/dev/null)" = '0 600' ]] || return 0
   if ! flock -n "$au_lock" -c true 2>/dev/null; then
     # plain echo: cpcheck runs before centmin-cli.sh defines cecho
     echo "An unattended tools/autoupdate.sh nginx/PHP-FPM update is running."

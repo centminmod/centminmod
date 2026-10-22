@@ -183,18 +183,19 @@ au_date() {
   date -d "@$1" '+%Y-%m-%d %H:%M' 2>/dev/null
 }
 
-# true while another process holds the autoupdate lock
+# true while another process holds the autoupdate lock; a lock file that is
+# not root's 0600 file was not made by autoupdate and is ignored
 au_lock_held() {
-  [[ -f "$AU_LOCK" ]] && ! flock -n "$AU_LOCK" -c true 2>/dev/null
+  [[ -f "$AU_LOCK" && ! -L "$AU_LOCK" && "$(stat -c '%u %a' "$AU_LOCK" 2>/dev/null)" = '0 600' ]] && ! flock -n "$AU_LOCK" -c true 2>/dev/null
 }
 
 au_service_active() {
   if [[ "$AU_SYSTEMD" = y ]]; then
     systemctl is-active --quiet "$1"
   elif [[ "$1" = nginx ]]; then
-    pgrep -x nginx >/dev/null 2>&1
+    pgrep -u root -x nginx >/dev/null 2>&1
   else
-    pgrep -f 'php-fpm: master process' >/dev/null 2>&1
+    pgrep -u root -f 'php-fpm: master process' >/dev/null 2>&1
   fi
 }
 
@@ -220,7 +221,7 @@ au_master_pid() {
   if [[ "$pid" =~ ^[0-9]+$ ]] && kill -0 "$pid" 2>/dev/null; then
     echo "$pid"
   else
-    pgrep -o -f "^$1: master process" 2>/dev/null
+    pgrep -u root -o -f "^$1: master process" 2>/dev/null
   fi
 }
 
@@ -635,9 +636,11 @@ au_plan() {
 
 # A running centmin.sh, centmin-cli.sh or cmupdate, also behind wrappers such
 # as sudo, nice or nohup. Viewers and editors that only name one are ignored.
+# Only root's processes count: any local user (a compromised PHP-FPM pool
+# user, say) can start a process with those names to hold updates back.
 au_cmm_running() {
   local pid arg args
-  for pid in $(pgrep -f 'centmin(-cli)?\.sh|cmupdate'); do
+  for pid in $(pgrep -u root -f 'centmin(-cli)?\.sh|cmupdate'); do
     args=()
     while IFS= read -r -d '' arg; do
       args+=("$arg")
@@ -661,7 +664,7 @@ au_blocked() {
     echo "ENABLE_MENU='y' in custom_config.inc makes centmin-cli.sh interactive, so it cannot run unattended"; return
   fi
   p=$(au_cmm_running) && { echo "$p is running"; return; }
-  pgrep -x 'yum|dnf|rpm|dnf-automatic|yum-cron' >/dev/null 2>&1 && { echo "a yum/dnf/rpm process is running"; return; }
+  pgrep -u root -x 'yum|dnf|rpm|dnf-automatic|yum-cron' >/dev/null 2>&1 && { echo "a yum/dnf/rpm process is running"; return; }
   max=${AUTOUPDATE_MAXLOAD:-$(nproc 2>/dev/null || echo 1)}
   load=$(awk '{print $2}' /proc/loadavg)
   awk -v l="$load" -v m="$max" 'BEGIN { exit !(l > m) }' && { echo "5 minute load $load is above AUTOUPDATE_MAXLOAD $max"; return; }
@@ -925,7 +928,16 @@ au_check_stuck() {
 au_take_lock() {
   local pid started
   [[ "$AU_LOCKED" = y ]] && return 0
+  # Other users must not be able to open the lock: flock works on a read-only
+  # fd, so a world-readable lock file could be held forever by anyone, which
+  # stops every update and makes centmin.sh and cmupdate refuse to start.
+  if [[ -L "$AU_LOCK" ]] || { [[ -e "$AU_LOCK" ]] && [[ ! -f "$AU_LOCK" || "$(stat -c '%u %a' "$AU_LOCK" 2>/dev/null)" != '0 600' ]]; }; then
+    au_log "lock: $AU_LOCK had the wrong owner, type or mode, recreated"
+    rm -f "$AU_LOCK"
+  fi
+  umask 077
   exec 9>>"$AU_LOCK"
+  umask 022
   if ! flock -n 9; then
     exec 9>&-
     read -r pid started 2>/dev/null < "${AU_LOCK}.info"
