@@ -161,9 +161,25 @@ push_update_alerts() {
   local pushapp_ver="$2"
   local pushapp_severity="${3:-}"
   local _cooldown_dir _cooldown_key _cooldown_file _last_ts _now_ts
+  local _sent_dir _sent_key _sent_file
   local _cve_id _cve_rest _cve_kernel _cve_verdict _cve_severity _push_priority _push_url
   local PUSH_MESSAGE PUSH_TITLE RESPONSE _curl_rc
   local CVE_ALERT_COOLDOWN="${CVE_ALERT_COOLDOWN:-86400}"
+  # nginx/php/cmm update available alerts are pushed once per app and version,
+  # not on every cron run. Markers are shared with dmotd push_dmotd_alerts()
+  # so each version is pushed once in total. cmm is keyed on the upstream
+  # commit because its branch name stays the same between code updates.
+  if [[ "$pushapp" = 'nginx' || "$pushapp" = 'php' || "$pushapp" = 'cmm' ]]; then
+    _sent_dir="/var/cache/centminmod/dmotd-push"
+    _sent_key="$pushapp_ver"
+    if [[ "$pushapp" = 'cmm' ]]; then
+      _sent_key="$(git --git-dir="${CMSCRIPT_GITDIR}/.git" rev-parse --verify -q '@{u}' 2>/dev/null)"
+    fi
+    _sent_file="${_sent_dir}/${pushapp}-$(printf '%s' "$_sent_key" | tr '/|: ' '_____').sent"
+    if [ -f "$_sent_file" ]; then
+      return 0
+    fi
+  fi
   if [[ "$pushapp" = 'cve' ]]; then
     # Per-CVE alert cooldown to prevent cron-driven alert spam.
     _cooldown_dir="/var/cache/centminmod/cmsec/push"
@@ -179,10 +195,18 @@ push_update_alerts() {
     fi
   fi
   if [[ "$pushapp" = 'nginx' ]]; then
-    PUSH_MESSAGE="nginx ${pushapp_ver} update available, run centmin.sh menu option 4. https://centminmod.com/nginx.html#nginxupgrade"
+    if [[ "$AUTOUPDATE_NGINX" = [yY] ]]; then
+      PUSH_MESSAGE="nginx ${pushapp_ver} update available, will be applied automatically within AUTOUPDATE_HOURS ${AUTOUPDATE_HOURS:-2-5}"
+    else
+      PUSH_MESSAGE="nginx ${pushapp_ver} update available, run centmin.sh menu option 4. https://centminmod.com/nginx.html#nginxupgrade"
+    fi
     PUSH_TITLE="nginx update available ${PUSH_HOSTNAME} ${PUSH_DATE_TIME}"
   elif [[ "$pushapp" = 'php' ]]; then
-    PUSH_MESSAGE="php-fpm ${pushapp_ver} update available, run centmin.sh menu option 5. https://community.centminmod.com/forums/18/"
+    if [[ "$AUTOUPDATE_PHP" = [yY] ]]; then
+      PUSH_MESSAGE="php-fpm ${pushapp_ver} update available, will be applied automatically within AUTOUPDATE_HOURS ${AUTOUPDATE_HOURS:-2-5}"
+    else
+      PUSH_MESSAGE="php-fpm ${pushapp_ver} update available, run centmin.sh menu option 5. https://community.centminmod.com/forums/18/"
+    fi
     PUSH_TITLE="php update available ${PUSH_HOSTNAME} ${PUSH_DATE_TIME}"
   elif [[ "$pushapp" = 'cmm' ]]; then
     PUSH_MESSAGE="centminmod ${pushapp_ver} update available, run cmupdate to update. https://community.centminmod.com/forums/centmin-mod-github-commits.41/?prefix_id=19"
@@ -239,6 +263,14 @@ push_update_alerts() {
        && [ "${_curl_rc:-1}" -eq 0 ] \
        && printf '%s' "$RESPONSE" | grep -q '"status":1'; then
       touch "$_cooldown_file" 2>/dev/null
+    fi
+    # Same gate for the nginx/php/cmm sent marker, which replaces the
+    # marker of any older version of the same app.
+    if [ -n "${_sent_file:-}" ] && [ "${_curl_rc:-1}" -eq 0 ] \
+       && printf '%s' "$RESPONSE" | grep -q '"status":1'; then
+      [ -d "$_sent_dir" ] || mkdir -p -m 0700 "$_sent_dir" 2>/dev/null
+      rm -f "${_sent_dir}/${pushapp}-"*.sent 2>/dev/null
+      touch "$_sent_file" 2>/dev/null
     fi
   fi
 }
