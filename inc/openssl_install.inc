@@ -1245,6 +1245,16 @@ if [[ "$CRYPTO_DEVTOOLSETGCC" = [yY] ]]; then
     unset CXXFLAGS
     export CC="ccache /usr/bin/gcc"
     export CXX="ccache /usr/bin/g++"
+    if [[ "$CENTOS_SIX" -eq '6' ]]; then
+      # CentOS 6 system GCC 4.4.7 can't build later nginx dependencies, use newest installed devtoolset GCC
+      for dts in 9 8 7; do
+        if [[ -f "/opt/rh/devtoolset-${dts}/root/usr/bin/gcc" && -f "/opt/rh/devtoolset-${dts}/root/usr/bin/g++" ]]; then
+          export CC="ccache /opt/rh/devtoolset-${dts}/root/usr/bin/gcc"
+          export CXX="ccache /opt/rh/devtoolset-${dts}/root/usr/bin/g++"
+          break
+        fi
+      done
+    fi
 fi
 }
 
