@@ -44,7 +44,7 @@ lock_file() {
 
 ensure_plugin() {
   if [[ ! -f "$LOCK_CONF" ]]; then
-    dnf -y -q install python3-dnf-plugin-versionlock >/dev/null 2>&1
+    dnf -y -q --disablerepo=mariadb install python3-dnf-plugin-versionlock >/dev/null 2>&1
   fi
   [[ -f "$LOCK_CONF" ]]
 }
@@ -168,7 +168,7 @@ do_update() {
   do_unlock
   [[ -z "$names" ]] && return 0
   echo "dnf -y update $(echo $names)"
-  dnf -y update $names
+  dnf -y --disablerepo=mariadb update $names
 }
 
 sonames() {
