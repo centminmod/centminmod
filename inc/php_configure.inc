@@ -935,7 +935,15 @@ if [[ "$CENTOS_SEVEN" -eq '7' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '
     if [[ $(rpm -q systemd-devel >/dev/null 2>&1; echo $?) != '0' ]]; then
       "$YUMDNFBIN" -y install systemd-devel --disableplugin=priorities >/dev/null 2>&1
     fi
-    FPMSYSTEMD_INTEGRATEOPT=' --with-fpm-systemd'
+    # without systemd-devel, configure aborts with "Your system does not support systemd"
+    # (i.e. the install above failed on unreachable repos); php-fpm.service is Type=forking
+    # so php-fpm runs fine without the systemd integration
+    if [[ $(rpm -q systemd-devel >/dev/null 2>&1; echo $?) = '0' ]]; then
+      FPMSYSTEMD_INTEGRATEOPT=' --with-fpm-systemd'
+    else
+      cecho "systemd-devel install failed: building PHP-FPM without --with-fpm-systemd" $boldyellow
+      FPMSYSTEMD_INTEGRATEOPT=""
+    fi
   else
     FPMSYSTEMD_INTEGRATEOPT=""
   fi
