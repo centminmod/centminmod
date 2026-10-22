@@ -2466,10 +2466,11 @@
 #     tools/autoupdate.sh. Root/sudo dmotd SSH logins, centmin.sh, cmupdate and the
 #     check-for-updates.sh cron job re-add it if it is deleted; set both to 'n'
 #     to turn auto-updates off (the entry is then removed).
-#   - nginx follows the newest nginx.org release, or Centmin Mod's NGINX_VERSION
-#     default (cmupdate runs first) with AUTOUPDATE_NGINX_TARGET='centmin'. An
-#     NGINX_VERSION line in this file holds nginx at that version. Releases
-#     Centmin Mod lists in tools/autoupdate-skip.txt are never installed.
+#   - nginx follows the newest nginx.org release on the branch you run (mainline
+#     or stable), or Centmin Mod's NGINX_VERSION default (cmupdate runs first)
+#     with AUTOUPDATE_NGINX_TARGET='centmin'. An NGINX_VERSION line in this file
+#     sets the version auto-update installs and stops at. Releases Centmin Mod
+#     lists in tools/autoupdate-skip.txt are never installed.
 #   - PHP updates stay within the installed major.minor branch (8.3.x -> 8.3.y),
 #     using php.net release data. End-of-life branches are rebuilt when Centmin Mod
 #     adds security backports (tools/autoupdate-rebuilds.txt).
