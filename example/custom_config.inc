@@ -2463,7 +2463,7 @@
 # Opt in to automatic centmin.sh menu option 4 (nginx) and 5 (PHP-FPM) updates.
 # AUTOMATIC BEHAVIOR:
 #   - While either is 'y', an hourly /etc/cron.d/centminmod-autoupdate entry runs
-#     tools/autoupdate.sh. dmotd SSH logins, centmin.sh, cmupdate and the
+#     tools/autoupdate.sh. Root/sudo dmotd SSH logins, centmin.sh, cmupdate and the
 #     check-for-updates.sh cron job re-add it if it is deleted; set both to 'n'
 #     to turn auto-updates off (the entry is then removed).
 #   - nginx follows NGINX_VERSION from the Centmin Mod code (cmupdate runs first),
@@ -2473,17 +2473,18 @@
 #     adds security backports (tools/autoupdate-rebuilds.txt).
 #   - Updates start only within AUTOUPDATE_HOURS (server local time, e.g. 2-5,
 #     22-3, 3 or any) and wait AUTOUPDATE_DELAY_HOURS after a version is first
-#     seen; PHP security releases do not wait. Invalid values fall back to the
+#     seen; PHP security releases and rebuilds do not wait. Invalid values fall back to the
 #     default and are reported by check/status and the dmotd banner.
 #   - Skipped while centmin.sh, cmupdate or yum/dnf runs, load or disk space is
 #     outside limits, or nginx -t / php-fpm -t fails; centmin.sh and cmupdate in
 #     turn refuse to start while an update runs. Updates blocked for 72 hours
 #     send one alert.
 #   - After an update nginx/php-fpm must be running on the new binary, configs
-#     must test OK, PHP modules must all still load and AUTOUPDATE_CHECK_URLS
-#     must not start failing; a failed nginx check puts the previous build back.
-#     A failed update is retried after a cmupdate code change and 24 hours, at
-#     most 3 times, or after autoupdate.sh reset.
+#     must test OK, PHP modules (php -m) must all still load and
+#     AUTOUPDATE_CHECK_URLS must not start failing; when a new nginx binary fails
+#     a check, menu 4's snapshot of the previous build is restored. A failed
+#     update is retried after a cmupdate code change and 24 hours, at most 3
+#     attempts in all, or after autoupdate.sh reset.
 #   - Results go to Pushover (PUSH_API_TOKEN/PUSH_USER_KEY) and/or
 #     AUTOUPDATE_EMAIL. Email uses the EMAILNOTIFY_SES_* SMTP login when
 #     EMAILNOTIFY_SES='y' (Amazon SES, a Gmail app password or any SMTP login),
@@ -2497,7 +2498,8 @@
 #AUTOUPDATE_PHP='n'
 # Keep one PHP version, e.g. after a deliberate downgrade: while PHP 8.4.26 is
 # installed auto-update leaves PHP alone; it resumes once another version is
-# installed or the hold is removed. For nginx, set NGINX_VERSION here instead.
+# installed or the hold is removed. For nginx, NGINX_VERSION here pins the
+# version (listed same-version rebuilds still run); AUTOUPDATE_NGINX='n' stops all.
 #AUTOUPDATE_PHP_HOLD='8.4.26'
 #AUTOUPDATE_NGINX_TARGET='centmin'
 #AUTOUPDATE_HOURS='2-5'
