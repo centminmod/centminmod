@@ -2,26 +2,135 @@
 ###########################################################
 # Centmin Mod unattended nginx and PHP-FPM updates
 #
-# Opt in via the persistent config /etc/centminmod/custom_config.inc
+# WHAT IT DOES
+# Keeps nginx and/or PHP-FPM updated with nobody logged in, using the same
+# routines as centmin.sh menu option 4 (nginx) and 5 (PHP-FPM), run as
+# `centmin-cli.sh nginxupgrade|phpupgrade <version>`. Off by default. Opt in
+# via the persistent config /etc/centminmod/custom_config.inc:
 #
-#   AUTOUPDATE_NGINX='y'   # nginx updates via centmin.sh menu option 4 routines
-#   AUTOUPDATE_PHP='y'     # PHP-FPM updates via centmin.sh menu option 5 routines
+#   AUTOUPDATE_NGINX='y'
+#   AUTOUPDATE_PHP='y'
 #
-# While either is 'y', an hourly /etc/cron.d/centminmod-autoupdate entry
-# runs this script, and updates start only inside AUTOUPDATE_HOURS. The
-# entry is removed when both are 'n'. dmotd SSH logins, centmin.sh,
-# cmupdate and the check-for-updates.sh cron job put it back if it goes
-# missing while an option is still 'y'. While an update runs, centmin.sh
-# and cmupdate refuse to start.
+# then see what it would do: bash tools/autoupdate.sh check
 #
-# Usage:
-#   autoupdate.sh check        show what an update run would do now
-#   autoupdate.sh status       show settings, scheduler and last results
-#   autoupdate.sh run          update now, ignoring AUTOUPDATE_HOURS,
-#                              AUTOUPDATE_DELAY_HOURS and failed-update holds
-#   autoupdate.sh ensure       add, repair or remove the cron entry
-#   autoupdate.sh notify-test  send a test email and Pushover notification
-#   autoupdate.sh reset        forget failed updates so they are retried
+# WHAT IT INSTALLS
+# - nginx: Centmin Mod's NGINX_VERSION pin (from centmin.sh after cmupdate,
+#   or custom_config.inc if set there), or FREENGINX_VERSION when
+#   FREENGINX_INSTALL='y'. AUTOUPDATE_NGINX_TARGET='latest' uses the newest
+#   nginx.org/freenginx.org release instead. Only nginx.org and freenginx
+#   builds are updated; Angie and other builds are skipped.
+# - PHP-FPM: the newest php.net release of the installed major.minor branch,
+#   e.g. 8.4.26 -> 8.4.27. It never moves PHP to another branch.
+# - Never downgrades. A new version waits AUTOUPDATE_DELAY_HOURS after it is
+#   first seen; php.net releases tagged security go ahead at once.
+# - Same-version rebuilds listed in tools/autoupdate-rebuilds.txt, which
+#   Centmin Mod adds when patches change without a new upstream release,
+#   e.g. security backports for end-of-life PHP 7.2-8.1.
+#
+# HOW A RUN WORKS
+# An hourly /etc/cron.d/centminmod-autoupdate entry runs `autoupdate.sh cron`.
+# Outside AUTOUPDATE_HOURS it only repairs that entry and looks for a stuck
+# run. Inside the window it:
+#  1. takes a lock; centmin.sh and cmupdate refuse to start until it ends
+#  2. runs cmupdate (AUTOUPDATE_CMUPDATE) so patches and version pins are
+#     current, then carries on with the updated copy of this script
+#  3. for nginx, then PHP-FPM, works out the target and waits for a later
+#     run while centmin.sh, cmupdate or yum/dnf/rpm is running, the load or
+#     free disk is outside AUTOUPDATE_MAXLOAD / AUTOUPDATE_MINDISK_MB,
+#     nginx -t or (for PHP) php-fpm -t fails, the service is stopped, or
+#     ENABLE_MENU='y' would make centmin-cli.sh interactive
+#  4. builds through menu 4/5, niced on systemd hosts (AUTOUPDATE_NICE)
+#  5. checks the result: the new version is installed and running on the new
+#     binary, config tests pass, no PHP extension went missing, no new PHP
+#     startup errors, and every AUTOUPDATE_CHECK_URLS entry that answered
+#     below 500 before still does. If nginx fails a check, the previous build
+#     is restored from menu 4's snapshot. PHP has no automatic rollback (menu
+#     5 also updates shared libraries), so a PHP failure needs a look.
+#  6. notifies by Pushover and/or email (AUTOUPDATE_NOTIFY)
+#
+# SAFETY NETS
+# - A failed update is retried only after the Centmin Mod code changes and 24
+#   hours pass, at most 3 times; `reset` or `run` retries now. The failure
+#   clears itself once nothing is pending and the service is healthy again.
+# - A run interrupted mid-build (reboot, OOM, kill) is held like a failure.
+# - One alert each when an update stays blocked or skipped for 72 hours, when
+#   a run holds the lock for AUTOUPDATE_STUCK_HOURS, or after an interrupted run.
+# - Deleting the cron entry does not turn auto-updates off: dmotd logins,
+#   centmin.sh, cmupdate and the check-for-updates.sh cron put it back and
+#   say so. Set AUTOUPDATE_NGINX and AUTOUPDATE_PHP to 'n' to turn it off.
+# - AUTOUPDATE_PHP_HOLD keeps a PHP version, e.g. after a deliberate
+#   downgrade. For nginx, set NGINX_VERSION in custom_config.inc instead.
+# - Invalid setting values fall back to the default, and check, status, the
+#   log and the dmotd login banner say so.
+#
+# COMMANDS   bash /usr/local/src/centminmod/tools/autoupdate.sh <command>
+#   check        what a run would do now and why; changes nothing
+#   status       settings, cron entry, last results, held failures, recent log
+#   run          update now, ignoring AUTOUPDATE_HOURS, the delay and
+#                failed-update holds (AUTOUPDATE_PHP_HOLD still applies)
+#   ensure       add, repair or remove the cron entry to match the settings
+#   notify-test  send a test Pushover/email notification
+#   reset        forget failed updates and the delay and blocked-update timers
+#   help         show this text
+#   (cron and motd are used by the cron entry and the dmotd login banner)
+#
+# FILES
+#   /etc/cron.d/centminmod-autoupdate   the hourly cron entry (managed)
+#   /var/log/centminmod-autoupdate.log  what each run did (1MB, then one .1)
+#   /root/centminlogs/autoupdate_*.log  per-update log tail, kept 30 days; it
+#                                       names the full centminmod_*_upgrade.log
+#   /var/lib/centminmod/autoupdate/     state: last results, failures, timers
+#   tools/autoupdate-rebuilds.txt       same-version rebuild list
+#
+# RELATED SETTINGS IT USES (also set in custom_config.inc)
+#   PUSH_API_TOKEN, PUSH_USER_KEY       Pushover app token and user key
+#   EMAILNOTIFY_SES='y' with EMAILNOTIFY_SES_SMTP_SERVER, _SMTP_PORT,
+#     _SMTP_USERNAME, _SMTP_PASSWORD, _FROM_EMAIL
+#                                       SMTP login for email: Amazon SES, a
+#                                       Gmail app password or any SMTP server
+#   NGINX_VERSION, FREENGINX_INSTALL, FREENGINX_VERSION   the nginx target
+#   NGINX_UPDATEMAINTENANCE, PHP_UPDATEMAINTENANCE        503 maintenance page
+#                                       during the build (menu 4/5 apply them)
+#   FORCE_IPVFOUR                       IPv4 for version checks and notifications
+###########################################################
+# SETTINGS: defaults; override any of them in /etc/centminmod/custom_config.inc
+#
+# What to update
+AUTOUPDATE_NGINX='n'              # 'y' = keep nginx updated
+AUTOUPDATE_PHP='n'                # 'y' = keep PHP-FPM updated within its installed major.minor
+AUTOUPDATE_PHP_HOLD=''            # x.y.z, e.g. 8.4.26: while that PHP version is installed, leave
+                                  # PHP alone (no upgrade, rebuild or repair, also for `run`);
+                                  # resumes once another version is installed or this is removed.
+                                  # A value that is not a version holds PHP and is reported
+AUTOUPDATE_NGINX_TARGET='centmin' # 'centmin' = Centmin Mod's NGINX_VERSION pin,
+                                  # 'latest' = newest nginx.org (or freenginx.org) release
+#
+# When
+AUTOUPDATE_HOURS='2-5'            # server local hours an update may start in: 2-5, 22-3, 3 or any
+AUTOUPDATE_DELAY_HOURS='24'       # hours to wait after a new version is first seen (inside
+                                  # AUTOUPDATE_HOURS); PHP security releases don't wait
+AUTOUPDATE_CRON_MINUTE=''         # 0-59, minute of the hourly cron run; default derived from the
+                                  # hostname so servers don't all update at the same minute
+AUTOUPDATE_CMUPDATE='y'           # run cmupdate before checking, so patches and pins are current
+#
+# Safety limits
+AUTOUPDATE_MAXLOAD=''             # wait while the 5 minute load average is above this;
+                                  # default = CPU thread count
+AUTOUPDATE_MINDISK_MB='3072'      # free MB needed on the /svr-setup and /usr/local filesystems
+AUTOUPDATE_CHECK_URLS='http://127.0.0.1/' # space separated URLs that must keep answering below
+                                  # 500 after an update; add a site's PHP page to cover PHP-FPM
+AUTOUPDATE_NICE='10'              # CPU nice level for the build (systemd hosts only)
+AUTOUPDATE_STUCK_HOURS='4'        # alert once when a run holds the lock this long
+#
+# Notifications
+AUTOUPDATE_NOTIFY='all'           # all (successes and notices too), failures or none
+AUTOUPDATE_PUSHOVER='y'           # use Pushover when PUSH_API_TOKEN and PUSH_USER_KEY are set
+AUTOUPDATE_EMAIL=''               # space separated recipients. Sent through the EMAILNOTIFY_SES_*
+                                  # SMTP login when EMAILNOTIFY_SES='y', else the local mail or
+                                  # sendmail command, which Gmail and other large providers
+                                  # reject unless the server has SPF/DKIM or a relay host
+AUTOUPDATE_EMAIL_FROM=''          # sender address; default EMAILNOTIFY_SES_FROM_EMAIL for SMTP
+# end of settings
 ###########################################################
 export PATH="/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin:/root/bin"
 export LC_ALL=en_US.UTF-8
@@ -48,32 +157,6 @@ AU_REBUILDS="${CM_INSTALLDIR}/tools/autoupdate-rebuilds.txt"
 AU_NGINX_BIN='/usr/local/sbin/nginx'
 AU_PHPFPM_BIN='/usr/local/sbin/php-fpm'
 AU_MAX_ATTEMPTS=3
-
-# defaults, override in /etc/centminmod/custom_config.inc
-AUTOUPDATE_NGINX='n'            # y = keep nginx updated
-AUTOUPDATE_PHP='n'              # y = keep PHP-FPM updated within its installed major.minor branch
-AUTOUPDATE_PHP_HOLD=''          # x.y.z, e.g. 8.4.26: while that PHP version is installed, leave PHP
-                                # alone (no upgrade, rebuild or repair); updates resume once another
-                                # version is installed or the hold is removed
-AUTOUPDATE_NGINX_TARGET='centmin' # centmin = NGINX_VERSION set by Centmin Mod code (cmupdate)
-                                # latest = newest nginx.org (or freenginx.org) release
-AUTOUPDATE_HOURS='2-5'          # server local hours an update may start in, e.g. 2-5, 22-3 or 3, or any
-AUTOUPDATE_DELAY_HOURS='24'     # wait after a new version is first seen inside AUTOUPDATE_HOURS;
-                                # PHP security releases don't wait
-AUTOUPDATE_CMUPDATE='y'         # run cmupdate first so patches and NGINX_VERSION are current
-AUTOUPDATE_NOTIFY='all'         # all, failures or none
-AUTOUPDATE_EMAIL=''             # space separated recipients. Sent through the EMAILNOTIFY_SES_* SMTP
-                                # login when EMAILNOTIFY_SES='y' (see tools/emailnotify.sh), else via
-                                # the local mail/sendmail command, which Gmail and other large
-                                # providers reject unless the server has SPF/DKIM or a relay host
-AUTOUPDATE_EMAIL_FROM=''        # sender address, default EMAILNOTIFY_SES_FROM_EMAIL for SMTP
-AUTOUPDATE_PUSHOVER='y'         # notify via Pushover when PUSH_API_TOKEN and PUSH_USER_KEY are set
-AUTOUPDATE_CHECK_URLS='http://127.0.0.1/' # space separated URLs that must not start failing (5xx or no answer)
-AUTOUPDATE_MAXLOAD=''           # skip while the 5 minute load average is above this, default CPU thread count
-AUTOUPDATE_MINDISK_MB='3072'    # free MB needed on the /svr-setup and /usr/local filesystems
-AUTOUPDATE_NICE='10'            # CPU nice level for the build (systemd hosts only)
-AUTOUPDATE_CRON_MINUTE=''       # minute of the hourly cron run, default derived from the hostname
-AUTOUPDATE_STUCK_HOURS='4'      # notify once when a run has held the lock for this long
 
 NGINX_VERSION=$(sed -n "s/^NGINX_VERSION='\([^']*\)'.*/\1/p" "${CM_INSTALLDIR}/centmin.sh" 2>/dev/null | head -n1)
 FREENGINX_VERSION=$(sed -n "s/^FREENGINX_VERSION='\([^']*\)'.*/\1/p" "${CM_INSTALLDIR}/centmin.sh" 2>/dev/null | head -n1)
@@ -1139,8 +1222,8 @@ au_main() {
       rm -f "$AU_STATE_DIR"/failed-* "$AU_STATE_DIR"/seen-* "$AU_STATE_DIR"/pending-* "$AU_STATE_DIR"/stuck-* "$AU_STATE_DIR/cmupdate.stamp"
       au_say "reset: cleared failed update holds, delay timers, blocked-update timers and the cmupdate stamp"
       ;;
-    *)
-      sed -n '2,25p' "$0" | sed 's/^# \{0,1\}//'
+    help|*)
+      sed -n '2,/^# end of settings$/p' "$0" | sed -e '/^#\{10,\}$/d' -e '/^# end of settings$/d' -e 's/^# \{0,1\}//'
       ;;
   esac
 }

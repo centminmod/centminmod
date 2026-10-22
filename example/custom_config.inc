@@ -2491,6 +2491,8 @@
 #     unless the server has SPF/DKIM or a relay host.
 # COMMANDS:
 #   - bash /usr/local/src/centminmod/tools/autoupdate.sh check|status|run|reset|notify-test
+#   - full reference (how it works, every AUTOUPDATE_* setting and default):
+#     bash /usr/local/src/centminmod/tools/autoupdate.sh help
 #AUTOUPDATE_NGINX='n'
 #AUTOUPDATE_PHP='n'
 # Keep one PHP version, e.g. after a deliberate downgrade: while PHP 8.4.26 is
