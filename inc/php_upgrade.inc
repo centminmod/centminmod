@@ -289,6 +289,18 @@ done
 
 ########################################################################
 funct_phpupgrade() {
+  local status
+  # PHP builds never install from the MariaDB repo, so a broken or blocked
+  # MariaDB mirror must not fail PHP dependency installs
+  yum() { command yum --disablerepo=mariadb "$@"; }
+  dnf() { command dnf --disablerepo=mariadb "$@"; }
+  php_upgrade_main "$@"
+  status=$?
+  unset -f yum dnf
+  return "$status"
+}
+
+php_upgrade_main() {
     CLI_PHP_VER="$1"
     ENABLE_EXT_OVERRIDE="$2"
     axelsetup
