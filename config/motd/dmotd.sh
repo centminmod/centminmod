@@ -381,7 +381,7 @@ push_dmotd_alerts() {
       fi
       PUSH_TITLE="nginx ${pushapp_ver} update available ${PUSH_HOSTNAME} ${PUSH_DATE_TIME}"
     elif [[ "$pushapp" = 'php' ]]; then
-      if [[ "$AUTOUPDATE_PHP" = [yY] ]]; then
+      if [[ "$AUTOUPDATE_PHP" = [yY] && -z "$AUTOUPDATE_PHP_HOLD" ]]; then
         PUSH_MESSAGE="php-fpm ${pushapp_ver} update available, will be applied automatically within AUTOUPDATE_HOURS ${AUTOUPDATE_HOURS:-2-5}"
       else
         PUSH_MESSAGE="php-fpm ${pushapp_ver} update available, run centmin.sh menu option 5"

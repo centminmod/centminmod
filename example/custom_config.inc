@@ -2493,6 +2493,10 @@
 #   - bash /usr/local/src/centminmod/tools/autoupdate.sh check|status|run|reset|notify-test
 #AUTOUPDATE_NGINX='n'
 #AUTOUPDATE_PHP='n'
+# Keep one PHP version, e.g. after a deliberate downgrade: while PHP 8.4.26 is
+# installed auto-update leaves PHP alone; it resumes once another version is
+# installed or the hold is removed. For nginx, set NGINX_VERSION here instead.
+#AUTOUPDATE_PHP_HOLD='8.4.26'
 #AUTOUPDATE_NGINX_TARGET='centmin'
 #AUTOUPDATE_HOURS='2-5'
 #AUTOUPDATE_DELAY_HOURS='24'

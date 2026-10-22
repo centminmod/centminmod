@@ -52,6 +52,9 @@ AU_MAX_ATTEMPTS=3
 # defaults, override in /etc/centminmod/custom_config.inc
 AUTOUPDATE_NGINX='n'            # y = keep nginx updated
 AUTOUPDATE_PHP='n'              # y = keep PHP-FPM updated within its installed major.minor branch
+AUTOUPDATE_PHP_HOLD=''          # x.y.z, e.g. 8.4.26: while that PHP version is installed, leave PHP
+                                # alone (no upgrade, rebuild or repair); updates resume once another
+                                # version is installed or the hold is removed
 AUTOUPDATE_NGINX_TARGET='centmin' # centmin = NGINX_VERSION set by Centmin Mod code (cmupdate)
                                 # latest = newest nginx.org (or freenginx.org) release
 AUTOUPDATE_HOURS='2-5'          # server local hours an update may start in, e.g. 2-5, 22-3 or 3, or any
@@ -132,6 +135,13 @@ au_validate_config() {
   if [[ -n "$AUTOUPDATE_CRON_MINUTE" ]] && ! { [[ "$AUTOUPDATE_CRON_MINUTE" =~ ^[0-9]{1,2}$ ]] && (( 10#$AUTOUPDATE_CRON_MINUTE < 60 )); }; then
     AU_CONFIG_WARN="$AU_CONFIG_WARN AUTOUPDATE_CRON_MINUTE='$AUTOUPDATE_CRON_MINUTE' is not 0-59, using the hostname-derived minute;"
     AUTOUPDATE_CRON_MINUTE=''
+  fi
+  AU_PHP_HOLD_INVALID=n
+  AUTOUPDATE_PHP_HOLD=$(printf '%s' "$AUTOUPDATE_PHP_HOLD" | tr -d '[:space:]')
+  if [[ -n "$AUTOUPDATE_PHP_HOLD" ]] && ! [[ "$AUTOUPDATE_PHP_HOLD" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+    # a mistyped hold must not let PHP update: hold whatever is installed
+    AU_PHP_HOLD_INVALID=y
+    AU_CONFIG_WARN="$AU_CONFIG_WARN AUTOUPDATE_PHP_HOLD='$AUTOUPDATE_PHP_HOLD' is not a version like 8.4.26, holding PHP updates until it is fixed;"
   fi
   case "$AUTOUPDATE_NOTIFY" in
     all|failures|none) ;;
@@ -557,6 +567,12 @@ au_plan() {
     AU_INSTALLED=$(au_php_installed)
     if ! au_is_ver "$AU_INSTALLED"; then
       AU_ACTION=skip AU_WHY="installed PHP version '$AU_INSTALLED' is not a release build"; return
+    fi
+    if [[ "$AU_PHP_HOLD_INVALID" = y || ( -n "$AUTOUPDATE_PHP_HOLD" && "$AUTOUPDATE_PHP_HOLD" = "$AU_INSTALLED" ) ]]; then
+      # explicit admin choice: autoupdate.sh run does not override it
+      AU_ACTION=held AU_TARGET=$AU_INSTALLED
+      AU_WHY="AUTOUPDATE_PHP_HOLD='$AUTOUPDATE_PHP_HOLD' keeps PHP $AU_INSTALLED, remove it to resume PHP updates"
+      return
     fi
     branch=${AU_INSTALLED%.*}
     AU_REBUILD_COMP="php-$branch"
@@ -1034,6 +1050,7 @@ au_status() {
   local comp
   echo "Settings: AUTOUPDATE_NGINX=$AUTOUPDATE_NGINX AUTOUPDATE_PHP=$AUTOUPDATE_PHP AUTOUPDATE_NGINX_TARGET=$AUTOUPDATE_NGINX_TARGET AUTOUPDATE_HOURS=$AUTOUPDATE_HOURS AUTOUPDATE_DELAY_HOURS=$AUTOUPDATE_DELAY_HOURS AUTOUPDATE_CMUPDATE=$AUTOUPDATE_CMUPDATE"
   [[ -n "$AU_CONFIG_WARN" ]] && echo "Config:   $AU_CONFIG_WARN"
+  [[ -n "$AUTOUPDATE_PHP_HOLD" ]] && echo "PHP hold: AUTOUPDATE_PHP_HOLD=$AUTOUPDATE_PHP_HOLD, installed PHP $(au_php_installed) -> $([[ "$AU_PHP_HOLD_INVALID" = y || "$AUTOUPDATE_PHP_HOLD" = "$(au_php_installed)" ]] && echo held || echo 'not held, versions differ')"
   echo "Notify:   AUTOUPDATE_NOTIFY=$AUTOUPDATE_NOTIFY email=${AUTOUPDATE_EMAIL:-none} pushover=$([[ "$AUTOUPDATE_PUSHOVER" = [yY] && -n "$PUSH_API_TOKEN" && -n "$PUSH_USER_KEY" ]] && echo on || echo off)"
   if [[ -f "$AU_CRON_FILE" ]]; then
     echo "Cron:     $AU_CRON_FILE: $(grep -v '^#' "$AU_CRON_FILE" | grep autoupdate.sh)"
@@ -1050,7 +1067,7 @@ au_status() {
 
 # one "tag|text" line for the dmotd login banner, or nothing
 au_motd() {
-  local comp fkey fhead failed parts=''
+  local comp fkey fhead failed parts='' held=''
   AU_ENSURE_BY=dmotd au_ensure
   au_enabled || return 0
   if [[ -f "$AU_STATE_DIR/inprogress" ]] && au_lock_held; then
@@ -1076,8 +1093,17 @@ au_motd() {
     return 0
   fi
   [[ "$AUTOUPDATE_NGINX" = [yY] ]] && parts="nginx"
-  [[ "$AUTOUPDATE_PHP" = [yY] ]] && parts="${parts:+$parts + }PHP-FPM"
-  echo "info|Auto-update: $parts on, hours $AUTOUPDATE_HOURS"
+  if [[ "$AUTOUPDATE_PHP" = [yY] ]]; then
+    parts="${parts:+$parts + }PHP-FPM"
+    if [[ -n "$AUTOUPDATE_PHP_HOLD" ]]; then
+      if [[ "$AUTOUPDATE_PHP_HOLD" != "$(au_php_installed)" ]]; then
+        echo "warn|Auto-update: AUTOUPDATE_PHP_HOLD='$AUTOUPDATE_PHP_HOLD' but PHP $(au_php_installed) is installed, so PHP is not held"
+        return 0
+      fi
+      held=", PHP held at $AUTOUPDATE_PHP_HOLD"
+    fi
+  fi
+  echo "info|Auto-update: $parts on${held}, hours $AUTOUPDATE_HOURS"
 }
 
 ###########################################################
