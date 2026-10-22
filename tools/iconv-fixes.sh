@@ -42,7 +42,11 @@ fi
 
 # ensure only el8+ OS versions are being looked at for alma linux, rocky linux
 # oracle linux, vzlinux, circle linux, navy linux, euro linux
-EL_VERID=$(awk -F '=' '/VERSION_ID/ {print $2}' /etc/os-release | sed -e 's|"||g' | cut -d . -f1)
+if [ -f /etc/os-release ]; then
+  EL_VERID=$(awk -F '=' '/VERSION_ID/ {print $2}' /etc/os-release | sed -e 's|"||g' | cut -d . -f1)
+else
+  EL_VERID="6"
+fi
 if [ -f /etc/almalinux-release ] && [[ "$EL_VERID" -eq 8 || "$EL_VERID" -eq 9 ]]; then
   CENTOSVER=$(awk '{ print $3 }' /etc/almalinux-release | cut -d . -f1,2)
   ALMALINUXVER=$(awk '{ print $3 }' /etc/almalinux-release | cut -d . -f1,2 | sed -e 's|\.|000|g')
@@ -112,7 +116,7 @@ fi
 
 CENTOSVER_NUMERIC=$(echo $CENTOSVER | sed -e 's|\.||g')
 
-if [[ "$CENTOS_SEVEN" -eq '7' ]]; then
+if [[ "$CENTOS_SIX" -eq '6' || "$CENTOS_SEVEN" -eq '7' ]]; then
     CONF_FILES=("/usr/lib64/gconv/gconv-modules")
 else
     CONF_FILES=("/usr/lib64/gconv/gconv-modules.d/gconv-modules-extra.conf")
@@ -169,12 +173,12 @@ for FILE in "${CONF_FILES[@]}"; do
         fi
 
         # Modify the file
-        sudo sed -i -e '/ISO-2022-CN-EXT\// s/^/#/' "$FILE"
+        sed -i -e '/ISO-2022-CN-EXT\// s/^/#/' "$FILE"
         log "Modifications applied to $FILE."
 
         # Regenerate iconv cache if iconvconfig is available
         if hash iconvconfig 2>/dev/null; then
-            sudo iconvconfig
+            iconvconfig
             log "iconv cache regenerated."
         else
             log "iconvconfig not available, no cache regenerated."
