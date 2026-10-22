@@ -781,6 +781,11 @@ au_plan() {
     fi
     return
   fi
+  # a failed update left the service down: the new build is what brings it
+  # back, so the stopped-service gate in au_blocked must not hold it
+  if [[ -n "$fkey" && "$AU_ACTION" = upgrade ]] && ! au_healthy "$comp"; then
+    AU_REPAIR=y
+  fi
   # A failed update is retried only after the Centmin Mod code changed and a
   # day has passed, at most AU_MAX_ATTEMPTS times; reset or run override it
   if [[ "$fkey" = "$AU_KEY" && "$AU_FORCE" != y ]]; then
@@ -809,6 +814,19 @@ au_plan() {
       AU_ACTION=wait AU_WHY="$AU_WHY: first seen ${age}h ago, waiting until AUTOUPDATE_DELAY_HOURS=${AUTOUPDATE_DELAY_HOURS}h"
     fi
   fi
+}
+
+# True when an enabled component has an upgrade or rebuild ready to start.
+# Changes no state.
+au_work_due() {
+  local comp AU_DRYRUN=y
+  for comp in nginx php; do
+    [[ "$comp" = nginx && "$AUTOUPDATE_NGINX" != [yY] ]] && continue
+    [[ "$comp" = php && "$AUTOUPDATE_PHP" != [yY] ]] && continue
+    au_plan "$comp"
+    [[ "$AU_ACTION" = upgrade || "$AU_ACTION" = rebuild ]] && return 0
+  done
+  return 1
 }
 
 ###########################################################
@@ -1060,17 +1078,27 @@ au_pending() {
 # Returns 2 when the code tree is unusable for a build.
 au_cmupdate() {
   local stamp="$AU_STATE_DIR/cmupdate.stamp" before after rc
+  local moved="${CM_INSTALLDIR}-automoved-cmupdate" premoved=n
   [[ "$AUTOUPDATE_CMUPDATE" = [yY] && "$AU_NO_CMUPDATE" != y ]] || return 0
   # once per hourly run inside the update hours
   [[ -n "$(find "$stamp" -mmin -50 2>/dev/null)" ]] && return 0
   before=$(au_head)
+  # a copy left by an earlier interrupted re-clone is not this run's to restore
+  [[ -e "$moved" ]] && premoved=y
   timeout -k 30 1800 bash "${CM_INSTALLDIR}/tools/cmupdate.sh" update > "$AU_STATE_DIR/cmupdate.log" 2>&1 9>&-
   rc=$?
   # cmupdate's re-clone moves the tree aside first and puts it back itself on
-  # a failed clone; a timeout kill skips that, so put it back here
-  if [[ "$rc" -eq 124 || "$rc" -eq 137 ]] && [[ -d "${CM_INSTALLDIR}-automoved-cmupdate" ]]; then
-    rm -rf "$CM_INSTALLDIR" && mv "${CM_INSTALLDIR}-automoved-cmupdate" "$CM_INSTALLDIR"
-    au_say "cmupdate: timed out while re-cloning, restored the previous ${CM_INSTALLDIR}"
+  # a failed clone; a timeout kill skips that, so put it back here unless the
+  # new clone finished
+  if [[ "$rc" -eq 124 || "$rc" -eq 137 ]] && [[ "$premoved" = n && -d "$moved" ]]; then
+    if au_git rev-parse --verify -q HEAD >/dev/null && au_git diff --quiet HEAD; then
+      au_say "cmupdate: timed out after re-cloning, kept the new ${CM_INSTALLDIR}; the previous copy is in $moved"
+    else
+      rm -rf "$CM_INSTALLDIR" && mv "$moved" "$CM_INSTALLDIR"
+      au_say "cmupdate: timed out while re-cloning, restored the previous ${CM_INSTALLDIR}"
+    fi
+  elif [[ "$rc" -eq 124 || "$rc" -eq 137 ]] && [[ "$premoved" = y ]]; then
+    au_say "cmupdate: timed out; left $moved alone, it was there before this run"
   fi
   after=$(au_head)
   if [[ -z "$after" ]]; then
@@ -1188,7 +1216,12 @@ au_run() {
   # before cmupdate: it must not change the code under a running centmin.sh
   if why=$(au_cmm_running); then
     au_say "deferred, $why is running"
-    au_pending run "$why is running"
+    # alert only when an update is actually waiting on it
+    if au_work_due; then
+      au_pending run "$why is running"
+    else
+      rm -f "$AU_STATE_DIR"/pending-run*
+    fi
     return 0
   fi
   rm -f "$AU_STATE_DIR"/pending-run*
