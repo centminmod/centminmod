@@ -573,6 +573,21 @@ switch_mariadb_repo_rhel_paths() {
   fi
 }
 
+switch_mariadbtenfive_archives() {
+  # MariaDB 10.5 is EOL: yum.mariadb.org and its mirrors removed the 10.5
+  # directories, which fails every yum/dnf command. Only archive.mariadb.org
+  # still has them (centos7/8 and rhel7/8/9 amd64).
+  if [ -f /etc/yum.repos.d/mariadb.repo ]; then
+    if grep -qE '^[[:space:]]*baseurl[[:space:]]*=.*/10\.5/(centos[78]|rhel[789])-amd64' /etc/yum.repos.d/mariadb.repo; then
+        cp -a /etc/yum.repos.d/mariadb.repo /etc/yum.repos.d/mariadb.repo.bak-$(date +%Y%m%d-%H%M%S)
+        sed -i -E 's#^([[:space:]]*baseurl[[:space:]]*=[[:space:]]*).*/10\.5/((centos[78]|rhel[789])-amd64).*#\1https://archive.mariadb.org/mariadb-10.5/yum/\2#' /etc/yum.repos.d/mariadb.repo
+        sed -i -E 's#^(gpgkey[[:space:]]*=[[:space:]]*).*/RPM-GPG-KEY-MariaDB$#\1https://supplychain.mariadb.com/MariaDB-Server-GPG-KEY#' /etc/yum.repos.d/mariadb.repo
+        rpm --import https://supplychain.mariadb.com/MariaDB-Server-GPG-KEY
+        yum -q clean all
+    fi
+  fi
+}
+
 setup_initial_csf_block_cronjob() {
   if [[ -f /usr/local/src/centminmod/tools/initial-csf-blocks.sh && ! "$(crontab -l | grep -F '33 */2 * * * /usr/local/src/centminmod/tools/initial-csf-blocks.sh >/dev/null 2>&1')" ]]; then
     mkdir -p /etc/centminmod/cronjobs/
@@ -5165,6 +5180,7 @@ if [[ "$INITIALINSTALL" != [yY] ]]; then
   fix_ftp_csf_ports
   setup_initial_csf_block_cronjob
   switch_mariadb_repo_rhel_paths
+  switch_mariadbtenfive_archives
   switch_mariadbtenfour_archives
   switch_mariadbtenthree_archives
   switch_mariadbtentwo_archives
