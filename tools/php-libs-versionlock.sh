@@ -328,20 +328,25 @@ sonames() {
 }
 
 do_status() {
-  local names name newver gone updates old_provides new_provides old_sonames new_sonames installed
+  local names name newver gone updates old_provides new_provides old_sonames new_sonames installed rc
   names=$(block_names) || return $?
   if [[ -z "$names" ]]; then
     echo "php-libs-versionlock: no PHP library locks in $(lock_file)"
     return 0
   fi
   echo "php-libs-versionlock: $(echo $names | wc -w) locked packages: $(echo $names)"
-  updates=$(dnf -q list updates --disableplugin=versionlock $names 2>/dev/null) || return $?
+  # check-update exits 100 when it lists updates and 0 when there are none;
+  # list updates exits 1 for both no updates and a real failure
+  updates=$(dnf -q check-update --disableplugin=versionlock --disablerepo=mariadb $names 2>/dev/null) || {
+    rc=$?
+    [[ "$rc" -eq 100 ]] || return "$rc"
+  }
   updates=$(awk 'NF == 3 && $2 ~ /^[0-9]/ {print $1, $2}' <<< "$updates") || return $?
   while read -r name newver; do
     [[ -n "$name" ]] || continue
     name=${name%.*}
     old_provides=$(rpm -q --provides "$name") || return $?
-    new_provides=$(dnf -q repoquery --disableplugin=versionlock --provides "${name}-${newver}" 2>/dev/null) || return $?
+    new_provides=$(dnf -q repoquery --disableplugin=versionlock --disablerepo=mariadb --provides "${name}-${newver}" 2>/dev/null) || return $?
     old_sonames=$(sonames <<< "$old_provides") || return $?
     new_sonames=$(sonames <<< "$new_provides") || return $?
     gone=$(comm -23 <(printf '%s\n' "$old_sonames") <(printf '%s\n' "$new_sonames")) || return $?

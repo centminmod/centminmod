@@ -511,13 +511,13 @@ do_lock
 
     seed_locks()
     status_setup = collector_setup + '''
-dnf() { [[ "$2" = list ]] && { echo 'libavif.x86_64 1.1-1 epel'; return 0; }; echo 'libavif.so.16()(64bit)'; }
+dnf() { [[ " $* " = *' --disablerepo=mariadb '* ]] || return 75; [[ "$2" = check-update ]] && { echo 'libavif.x86_64 1.1-1 epel'; return 100; }; echo 'libavif.so.16()(64bit)'; }
 rpm() { [[ "$2" = --provides ]] && { echo 'libavif.so.15()(64bit)'; return 0; }; echo 0.11-1; }
 '''
     for mock in (
             'block_names() { return 73; }',
             'dnf() { return 73; }',
-            "dnf() { [[ \"$2\" = list ]] && { echo 'libavif.x86_64 1.1-1 epel'; return 0; }; return 73; }",
+            "dnf() { [[ \"$2\" = check-update ]] && { echo 'libavif.x86_64 1.1-1 epel'; return 100; }; return 73; }",
             'rpm() { return 73; }',
             "rpm() { [[ \"$2\" = --provides ]] && { echo 'libavif.so.15()(64bit)'; return 0; }; return 73; }",
             'sonames() { return 73; }',
