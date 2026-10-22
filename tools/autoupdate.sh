@@ -70,8 +70,9 @@
 #   downgrade. For nginx, NGINX_VERSION in custom_config.inc pins the
 #   version, but listed same-version rebuilds still run; AUTOUPDATE_NGINX='n'
 #   stops all nginx changes.
-# - Invalid setting values fall back to the default, and check, status, the
-#   log and the dmotd login banner say so.
+# - y/n settings also accept yes/no, on/off, true/false and 1/0, and an empty
+#   value means the default. Invalid setting values fall back to the default,
+#   and check, status, the log and the dmotd login banner say so.
 #
 # COMMANDS   bash /usr/local/src/centminmod/tools/autoupdate.sh <command>
 #   check        what a run would do now and why; changes no update state
