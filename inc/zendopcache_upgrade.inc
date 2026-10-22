@@ -257,6 +257,20 @@ else
   sed -i "s|^opcache.memory_consumption=.*|opcache.memory_consumption=$ZENDOPCACHE_EXISTMEMSIZE|" ${CONFIGSCANDIR}/zendopcache.ini
 
 fi # check if opcache.so exists in zendopcache.ini
+
+  # PHP 7.2 and older carve interned strings and their hash table out of
+  # opcache.memory_consumption, so a template interned_strings_buffer with
+  # a smaller transferred memory size fails with cannot allocate buffer for
+  # interned strings. Cap it at a quarter of opcache.memory_consumption
+  if [[ "$PHPMUVER" = 5.* || "$PHPMUVER" = '7.0' || "$PHPMUVER" = '7.1' || "$PHPMUVER" = '7.2' ]] && [[ "$ZENDOPCACHE_EXISTMEMSIZE" =~ ^[0-9]+$ ]]; then
+    ZENDOPCACHE_ISB=$(awk -F '=' '/^opcache.interned_strings_buffer=/ {print $2}' ${CONFIGSCANDIR}/zendopcache.ini)
+    ZENDOPCACHE_ISB_MAX=$((ZENDOPCACHE_EXISTMEMSIZE / 4))
+    if [[ "$ZENDOPCACHE_ISB" =~ ^[0-9]+$ && "$ZENDOPCACHE_ISB" -gt "$ZENDOPCACHE_ISB_MAX" ]]; then
+      echo -e "PHP $PHPMUVER: capping opcache.interned_strings_buffer $ZENDOPCACHE_ISB -> $ZENDOPCACHE_ISB_MAX for opcache.memory_consumption=$ZENDOPCACHE_EXISTMEMSIZE\n"
+      sed -i "s|^opcache.interned_strings_buffer=.*|opcache.interned_strings_buffer=$ZENDOPCACHE_ISB_MAX|" ${CONFIGSCANDIR}/zendopcache.ini
+    fi
+  fi
+
 fi # zendopcacheon
 
     # cmservice php-fpm restart
