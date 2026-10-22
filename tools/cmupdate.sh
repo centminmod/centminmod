@@ -158,6 +158,10 @@ fupdate() {
     fi
     unset cmsec_target cmsec_replace cmsec_current
   fi
+  # re-add the AUTOUPDATE_NGINX/AUTOUPDATE_PHP cron entry if it went missing
+  if [ -f "${CM_INSTALLDIR}/tools/autoupdate.sh" ]; then
+    bash "${CM_INSTALLDIR}/tools/autoupdate.sh" ensure cmupdate >/dev/null 2>&1
+  fi
 }
 
 ######################################################

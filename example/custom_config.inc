@@ -2459,6 +2459,41 @@
 # Git History: Added with nginx upgrade workflow improvements ~2015-2016
 #NGINX_UPDATEMAINTENANCE='n'
 
+# Unattended Nginx and PHP-FPM Updates (tools/autoupdate.sh)
+# Opt in to automatic centmin.sh menu option 4 (nginx) and 5 (PHP-FPM) updates.
+# AUTOMATIC BEHAVIOR:
+#   - While either is 'y', an hourly /etc/cron.d/centminmod-autoupdate entry runs
+#     tools/autoupdate.sh. dmotd SSH logins, centmin.sh, cmupdate and the
+#     check-for-updates.sh cron job re-add it if it is deleted; set both to 'n'
+#     to turn auto-updates off (the entry is then removed).
+#   - nginx follows NGINX_VERSION from the Centmin Mod code (cmupdate runs first),
+#     or the newest nginx.org release with AUTOUPDATE_NGINX_TARGET='latest'.
+#   - PHP updates stay within the installed major.minor branch (8.3.x -> 8.3.y),
+#     using php.net release data. End-of-life branches are rebuilt when Centmin Mod
+#     adds security backports (tools/autoupdate-rebuilds.txt).
+#   - Updates start only within AUTOUPDATE_HOURS (server local time) and wait
+#     AUTOUPDATE_DELAY_HOURS after a version is first seen; PHP security releases
+#     do not wait.
+#   - Skipped while centmin.sh or yum/dnf runs, load or disk space is outside
+#     limits, or nginx -t fails. After an update nginx/php-fpm must be running,
+#     configs must test OK, PHP modules must all still load and
+#     AUTOUPDATE_CHECK_URLS must not start failing; a failed nginx check puts the
+#     previous build back. Failed updates are retried only after a cmupdate code
+#     change or autoupdate.sh reset.
+#   - Results go to Pushover (PUSH_API_TOKEN/PUSH_USER_KEY) and/or AUTOUPDATE_EMAIL
+#     (needs a working local MTA, e.g. postfix with a relay host).
+# COMMANDS:
+#   - bash /usr/local/src/centminmod/tools/autoupdate.sh check|status|run|reset|notify-test
+#AUTOUPDATE_NGINX='n'
+#AUTOUPDATE_PHP='n'
+#AUTOUPDATE_NGINX_TARGET='centmin'
+#AUTOUPDATE_HOURS='2-5'
+#AUTOUPDATE_DELAY_HOURS='24'
+#AUTOUPDATE_CMUPDATE='y'
+#AUTOUPDATE_NOTIFY='all'
+#AUTOUPDATE_EMAIL=''
+#AUTOUPDATE_CHECK_URLS='http://127.0.0.1/'
+
 # Nginx Upgrade Sleep Time
 # Seconds to wait during Nginx upgrades
 # Git History: First added 2014-04-24 (c4b6d98a), Last modified 2016-02-15 (7240145c)

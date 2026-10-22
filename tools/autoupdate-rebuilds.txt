@@ -1,0 +1,18 @@
+# Same-version rebuilds for tools/autoupdate.sh
+#
+# A new upstream release is found automatically. This list covers Centmin
+# Mod patch changes that only take effect after a rebuild of the version
+# already installed, such as security backports for end-of-life PHP
+# branches. When AUTOUPDATE_PHP='y' or AUTOUPDATE_NGINX='y', a server whose
+# /usr/local/sbin/php-fpm or /usr/local/sbin/nginx binary is older than a
+# matching entry rebuilds it once (after cmupdate has brought this file).
+#
+# Format: <component> <UTC time the change was pushed> <reason>
+#   component: nginx, php (every PHP branch) or php-<major.minor>
+#   time:      date -u +%Y-%m-%dT%H:%M:%SZ
+#
+php-7.2 2026-10-21T16:08:22Z PHP 8.2.35 security backports (CVE-2026-109618, CVE-2026-109619)
+php-7.3 2026-10-21T16:08:22Z PHP 8.2.35 security backports (CVE-2026-109618, CVE-2026-109619)
+php-7.4 2026-10-21T14:28:04Z PHP 8.2.35 security backports (CVE-2026-109618, CVE-2026-109619)
+php-8.0 2026-10-21T14:28:04Z PHP 8.2.35 security backports (CVE-2026-109618, CVE-2026-109619)
+php-8.1 2026-10-21T15:16:54Z PHP 8.2.35 security backports (CVE-2026-109618, CVE-2026-109619)

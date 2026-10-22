@@ -1109,6 +1109,14 @@ cmsec_prewarm_cronsetup() {
   fi
 }
 
+# Add, repair or remove the tools/autoupdate.sh cron entry to match
+# AUTOUPDATE_NGINX / AUTOUPDATE_PHP. Runs on every centmin.sh start.
+autoupdate_cronsetup() {
+  if [[ -f "${SCRIPT_DIR}/tools/autoupdate.sh" ]]; then
+    bash "${SCRIPT_DIR}/tools/autoupdate.sh" ensure centmin.sh >/dev/null 2>&1
+  fi
+}
+
 mytop_setup() {
   if [[ $(rpm -q mytop >/dev/null 2>&1; echo $?) != '0' ]]; then
       yum -y install mytop
@@ -5063,6 +5071,7 @@ initial_pip_updates initial
 jetpack_ip_whitelist_cronsetup
 push_check_updates_cronsetup
 cmsec_prewarm_cronsetup
+autoupdate_cronsetup
 tcp_bbr_setup
 normalize_accept_encoding
 rsync_backport_install
@@ -5227,6 +5236,7 @@ if [[ "$INITIALINSTALL" != [yY] ]]; then
   remove_anonymous_mysqlusers
   push_check_updates_cronsetup
   cmsec_prewarm_cronsetup
+  autoupdate_cronsetup
   fix_wordpress_accept_encoding
   normalize_accept_encoding
   elnine_perl_check

@@ -727,6 +727,21 @@ phpver_checker() {
   fi
 }
 
+# tools/autoupdate.sh: re-adds its cron entry if it went missing while
+# AUTOUPDATE_NGINX/AUTOUPDATE_PHP is 'y', and reports its state
+autoupdate_status() {
+  local _line
+  [ -f "${CMSCRIPT_GITDIR}/tools/autoupdate.sh" ] || return 0
+  _line=$(bash "${CMSCRIPT_GITDIR}/tools/autoupdate.sh" motd 2>/dev/null | head -n1)
+  [[ -n "$_line" ]] || return 0
+  if [[ "$_DMOTD_COMPACT_EFFECTIVE" = [yY] ]]; then
+    _dmotd_push_status "${_line%%|*}" " ${_line#*|}"
+  else
+    echo
+    cecho "* ${_line#*|}" $boldyellow
+  fi
+}
+
 gitenv_askupdate() {
   DT=$(date +"%d%m%y-%H%M%S")
     if [[ -d "${CMSCRIPT_GITDIR}/.git" ]]; then
@@ -1272,6 +1287,7 @@ if [[ "$(id -u)" -eq 0 ]] || sudo -n true 2>/dev/null; then
   if [[ "$(id -u)" -eq 0 || "$SUDO_USER" ]]; then
     check_git_major_branch
     csf_version_checker
+    autoupdate_status
   fi
   # Print the merged compact footer once every check has run. No-op when
   # DMOTD_COMPACT='n' or when no checker contributed a status line.

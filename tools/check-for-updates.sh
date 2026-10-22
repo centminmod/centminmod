@@ -608,6 +608,10 @@ case "$1" in
     ;;
   all )
     push_check_updates_cronsetup
+    # second scheduler path: re-add the autoupdate cron entry if it went missing
+    if [ -f "${CMSCRIPT_GITDIR}/tools/autoupdate.sh" ]; then
+      bash "${CMSCRIPT_GITDIR}/tools/autoupdate.sh" ensure check-for-updates >/dev/null 2>&1
+    fi
     if [[ "$PUSH_CHECKUPDATES_ALERTS" = [yY] && "$PUSH_API_TOKEN" && "$PUSH_USER_KEY" ]]; then
       cmm_check
       ngxver_checker

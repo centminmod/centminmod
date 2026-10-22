@@ -30,7 +30,7 @@ DT=$(date +"%d%m%y-%H%M%S")
 branchname='141.00beta01'
 SCRIPT_MAJORVER='141'
 SCRIPT_MINORVER='00'
-SCRIPT_INCREMENTVER='342'
+SCRIPT_INCREMENTVER='343'
 SCRIPT_VERSIONSHORT="${branchname}"
 SCRIPT_VERSION="${SCRIPT_VERSIONSHORT}.b${SCRIPT_INCREMENTVER}"
 SCRIPT_DATE='16/08/25'
@@ -660,6 +660,13 @@ NGXDYNAMIC_VHOSTSTATS='n'
 NGINX_UPDATEMAINTENANCE='n'
 PHP_UPDATEMAINTENANCE='n'
 MARIADB_UPDATEMAINTENANCE='n'
+
+# unattended nginx and PHP-FPM updates via tools/autoupdate.sh (menu option 4/5
+# routines run from an hourly /etc/cron.d/centminmod-autoupdate entry). Set in
+# /etc/centminmod/custom_config.inc; see tools/autoupdate.sh for AUTOUPDATE_HOURS,
+# AUTOUPDATE_DELAY_HOURS, AUTOUPDATE_EMAIL and the other AUTOUPDATE_* options
+AUTOUPDATE_NGINX='n'
+AUTOUPDATE_PHP='n'
 
 # General Configuration
 NGINXCOMPILE_PIE='y'         # build nginx with Position-independent code (PIC) / Position-indendendent executables (PIEs)
