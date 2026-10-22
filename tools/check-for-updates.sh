@@ -156,11 +156,11 @@ push_log_message() {
     fi
 }
 
-# How tools/autoupdate.sh handles an available nginx|php update, or nothing
+# How tools/autoupdate.sh handles an available nginx|php version, or nothing
 # when it won't apply it by itself
 _autoupdate_alertnote() {
   [ -f "${CMSCRIPT_GITDIR}/tools/autoupdate.sh" ] || return 0
-  bash "${CMSCRIPT_GITDIR}/tools/autoupdate.sh" alertnote "$1" 2>/dev/null | head -n1
+  bash "${CMSCRIPT_GITDIR}/tools/autoupdate.sh" alertnote "$1" "$2" 2>/dev/null | head -n1
 }
 
 push_update_alerts() {
@@ -206,7 +206,7 @@ push_update_alerts() {
     fi
   fi
   if [[ "$pushapp" = 'nginx' ]]; then
-    _au_note=$(_autoupdate_alertnote nginx)
+    _au_note=$(_autoupdate_alertnote nginx "$pushapp_ver")
     if [[ -n "$_au_note" ]]; then
       PUSH_MESSAGE="nginx ${pushapp_ver} update available, ${_au_note}"
     else
@@ -214,7 +214,7 @@ push_update_alerts() {
     fi
     PUSH_TITLE="nginx update available ${PUSH_HOSTNAME} ${PUSH_DATE_TIME}"
   elif [[ "$pushapp" = 'php' ]]; then
-    _au_note=$(_autoupdate_alertnote php)
+    _au_note=$(_autoupdate_alertnote php "$pushapp_ver")
     if [[ -n "$_au_note" ]]; then
       PUSH_MESSAGE="php-fpm ${pushapp_ver} update available, ${_au_note}"
     else

@@ -1,0 +1,16 @@
+# Versions tools/autoupdate.sh never installs
+#
+# Releases known to break Centmin Mod builds or sites. cmupdate brings this
+# file to every server before an auto-update run plans anything, so a line
+# added here stops that release everywhere without changing NGINX_VERSION.
+# With AUTOUPDATE_NGINX_TARGET='latest' the newest release not listed is
+# used instead; PHP waits for the next release of its branch. A version that
+# is already installed is left alone, and same-version rebuilds from
+# tools/autoupdate-rebuilds.txt still run for it.
+#
+# Format: <component> <version> <reason>
+#   component: nginx (nginx.org), freenginx (freenginx.org) or php
+#   version:   exact x.y.z
+#
+# Example:
+# nginx 1.31.3 ngx_devel_kit and set-misc workers crash on variables (nginx PR 1601)

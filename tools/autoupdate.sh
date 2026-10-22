@@ -26,6 +26,10 @@
 #   e.g. 8.4.26 -> 8.4.27. It never moves PHP to another branch.
 # - Never downgrades. A new version waits AUTOUPDATE_DELAY_HOURS after it is
 #   first seen; php.net releases tagged security and rebuilds go ahead at once.
+# - Never a version listed in tools/autoupdate-skip.txt, where Centmin Mod
+#   lists releases known to break builds or sites. cmupdate delivers it, so
+#   a bad release is stopped on every server without changing NGINX_VERSION;
+#   'latest' then uses the newest release not listed, PHP waits for the next.
 # - Same-version rebuilds listed in tools/autoupdate-rebuilds.txt, which
 #   Centmin Mod adds when patches change without a new upstream release,
 #   e.g. security backports for end-of-life PHP 7.2-8.1.
@@ -101,6 +105,7 @@
 #                                       names the full centminmod_*_upgrade.log
 #   /var/lib/centminmod/autoupdate/     state: last results, failures, timers
 #   tools/autoupdate-rebuilds.txt       same-version rebuild list
+#   tools/autoupdate-skip.txt           versions never to install
 #
 # RELATED SETTINGS IT USES (also set in custom_config.inc)
 #   PUSH_API_TOKEN, PUSH_USER_KEY       Pushover app token and user key
@@ -182,6 +187,7 @@ AU_LOG='/var/log/centminmod-autoupdate.log'
 # also read by inc/cpcheck.inc and tools/cmupdate.sh
 AU_LOCK='/var/run/centminmod-autoupdate.lock'
 AU_REBUILDS="${CM_INSTALLDIR}/tools/autoupdate-rebuilds.txt"
+AU_SKIPS="${CM_INSTALLDIR}/tools/autoupdate-skip.txt"
 AU_NGINX_BIN='/usr/local/sbin/nginx'
 AU_PHPFPM_BIN='/usr/local/sbin/php-fpm'
 AU_MAX_ATTEMPTS=3
@@ -644,12 +650,28 @@ au_php_release() {
   au_is_ver "$AU_REL_VER" && [[ "${AU_REL_VER%.*}" = "$1" ]]
 }
 
-au_nginx_latest() {
+# every nginx.org (or freenginx.org) release version, newest first
+au_nginx_releases() {
   if [[ "$FREENGINX_INSTALL" = [yY] ]]; then
-    curl -${ipv_forceopt}sL --connect-timeout 10 --max-time 30 https://freenginx.org/en/download.html | grep -Eo 'freenginx-[0-9]+\.[0-9]+\.[0-9]+\.tar\.gz' | grep -Eo '[0-9]+\.[0-9]+\.[0-9]+' | sort -V | tail -n1
+    curl -${ipv_forceopt}sL --connect-timeout 10 --max-time 30 https://freenginx.org/en/download.html | grep -Eo 'freenginx-[0-9]+\.[0-9]+\.[0-9]+\.tar\.gz' | grep -Eo '[0-9]+\.[0-9]+\.[0-9]+' | sort -u -r -V
   else
-    curl -${ipv_forceopt}sL --connect-timeout 10 --max-time 30 https://nginx.org/download/ | grep -Eo 'nginx-[0-9]+\.[0-9]+\.[0-9]+\.tar\.gz' | grep -Eo '[0-9]+\.[0-9]+\.[0-9]+' | sort -V | tail -n1
+    curl -${ipv_forceopt}sL --connect-timeout 10 --max-time 30 https://nginx.org/download/ | grep -Eo 'nginx-[0-9]+\.[0-9]+\.[0-9]+\.tar\.gz' | grep -Eo '[0-9]+\.[0-9]+\.[0-9]+' | sort -u -r -V
   fi
+}
+
+# au_skip_reason component version: prints why tools/autoupdate-skip.txt
+# lists that version and returns 0, or returns 1 when it is not listed
+au_skip_reason() {
+  local c v reason
+  [[ -f "$AU_SKIPS" ]] || return 1
+  while read -r c v reason; do
+    [[ -z "$c" || "$c" = \#* ]] && continue
+    if [[ "$c" = "$1" && "$v" = "$2" ]]; then
+      echo "${reason:-no reason given}"
+      return 0
+    fi
+  done < "$AU_SKIPS"
+  return 1
 }
 
 # When autoupdate built the installed binary, the time of the Centmin Mod
@@ -710,8 +732,8 @@ au_failure_review() {
 # (upgrade|rebuild|none|skip|wait|held), AU_INSTALLED, AU_TARGET, AU_WHY,
 # AU_KEY, AU_EPOCH and AU_REBUILD_COMP. Changes no state when AU_DRYRUN=y.
 au_plan() {
-  local comp=$1 due branch seen age fkey fhead ftime fcount review
-  AU_ACTION=none AU_INSTALLED='' AU_TARGET='' AU_WHY='' AU_KEY='' AU_EPOCH='' AU_REL_SECURITY=n AU_REBUILD_COMP='' AU_REPAIR=n
+  local comp=$1 due branch seen age fkey fhead ftime fcount review skipc=$1 rel why
+  AU_ACTION=none AU_INSTALLED='' AU_TARGET='' AU_WHY='' AU_KEY='' AU_EPOCH='' AU_REL_SECURITY=n AU_REBUILD_COMP='' AU_REPAIR=n AU_SKIPNOTE=''
   [[ -f "$AU_STATE_DIR/failed-$comp" ]] && IFS='|' read -r fkey fhead ftime fcount < "$AU_STATE_DIR/failed-$comp"
   if [[ "$comp" = nginx ]]; then
     if ! command -v nginx >/dev/null 2>&1; then
@@ -721,11 +743,20 @@ au_plan() {
     if ! au_is_ver "$AU_INSTALLED"; then
       AU_ACTION=skip AU_WHY="installed '$(nginx -v 2>&1 | head -n1)' is not an nginx.org or freenginx release build"; return
     fi
+    [[ "$FREENGINX_INSTALL" = [yY] ]] && skipc=freenginx
     if [[ -n "$AU_NGINX_PIN" ]]; then
       AU_TARGET=$AU_NGINX_PIN
     elif [[ "$AUTOUPDATE_NGINX_TARGET" = latest ]]; then
-      AU_TARGET=$(au_nginx_latest)
-      au_is_ver "$AU_TARGET" || { AU_ACTION=skip AU_WHY='could not get the latest version from nginx.org'; return; }
+      # the newest release that is not on the skip list
+      for rel in $(au_nginx_releases); do
+        if why=$(au_skip_reason "$skipc" "$rel"); then
+          AU_SKIPNOTE="${AU_SKIPNOTE:+$AU_SKIPNOTE; }$skipc $rel is on the skip list: $why"
+          continue
+        fi
+        AU_TARGET=$rel
+        break
+      done
+      au_is_ver "$AU_TARGET" || { AU_ACTION=skip AU_WHY="could not get the latest version from ${skipc}.org"; return; }
     elif [[ "$FREENGINX_INSTALL" = [yY] ]]; then
       AU_TARGET=$FREENGINX_VERSION
     else
@@ -764,10 +795,16 @@ au_plan() {
       AU_ACTION=skip AU_WHY="could not get PHP $branch release data from php.net"; return
     fi
   fi
+  # never install a version on the skip list; a due rebuild still runs
+  if au_vergt "$AU_TARGET" "$AU_INSTALLED" && why=$(au_skip_reason "$skipc" "$AU_TARGET"); then
+    AU_SKIPNOTE="$skipc $AU_TARGET is on the skip list: $why"
+    AU_TARGET=$AU_INSTALLED
+  fi
   if au_vergt "$AU_TARGET" "$AU_INSTALLED"; then
     AU_ACTION=upgrade AU_KEY="$comp $AU_TARGET"
     AU_WHY="$AU_INSTALLED -> $AU_TARGET"
     [[ "$AU_REL_SECURITY" = y ]] && AU_WHY="$AU_WHY (security release)"
+    [[ -n "$AU_SKIPNOTE" ]] && AU_WHY="$AU_WHY; $AU_SKIPNOTE"
     # the upgrade builds from the same code, so it also covers a due rebuild
     [[ -n "$due" ]] && AU_EPOCH=${due%% *}
   elif [[ -n "$due" ]]; then
@@ -799,6 +836,7 @@ au_plan() {
       AU_WHY="$AU_INSTALLED is current"
     fi
     [[ "$comp" = nginx && -n "$AU_NGINX_PIN" ]] && AU_WHY="$AU_WHY (held by $AU_NGINX_PIN_VAR='$AU_NGINX_PIN' in custom_config.inc)"
+    [[ -n "$AU_SKIPNOTE" ]] && AU_WHY="$AU_WHY; $AU_SKIPNOTE"
     return
   fi
   # a failed update left the service down: the new build is what brings it
@@ -1302,6 +1340,9 @@ au_status() {
   [[ -n "$AU_CONFIG_WARN" ]] && echo "Config:   $AU_CONFIG_WARN"
   [[ -n "$AU_NGINX_PIN" ]] && echo "nginx hold: $AU_NGINX_PIN_VAR='$AU_NGINX_PIN' in custom_config.inc, installed nginx $(au_nginx_installed)"
   [[ -n "$AUTOUPDATE_PHP_HOLD" ]] && echo "PHP hold: AUTOUPDATE_PHP_HOLD=$AUTOUPDATE_PHP_HOLD, installed PHP $(au_php_installed) -> $([[ "$AU_PHP_HOLD_INVALID" = y || "$AUTOUPDATE_PHP_HOLD" = "$(au_php_installed)" ]] && echo held || echo 'not held, versions differ')"
+  if [[ -f "$AU_SKIPS" ]] && grep -qvE '^[[:space:]]*(#|$)' "$AU_SKIPS"; then
+    echo "Skip list: $(grep -vE '^[[:space:]]*(#|$)' "$AU_SKIPS" | awk '{print $1, $2}' | paste -sd, - | sed 's/,/, /g') (tools/autoupdate-skip.txt)"
+  fi
   echo "Notify:   AUTOUPDATE_NOTIFY=$AUTOUPDATE_NOTIFY email=${AUTOUPDATE_EMAIL:-none} pushover=$([[ "$AUTOUPDATE_PUSHOVER" = [yY] && -n "$PUSH_API_TOKEN" && -n "$PUSH_USER_KEY" ]] && echo on || echo off)"
   if [[ -f "$AU_CRON_FILE" ]]; then
     echo "Cron:     $AU_CRON_FILE: $(grep -v '^#' "$AU_CRON_FILE" | grep autoupdate.sh)"
@@ -1360,13 +1401,19 @@ au_motd() {
   echo "info|Auto-update: $parts on${held}, hours $AUTOUPDATE_HOURS"
 }
 
-# How auto-update will handle an available nginx|php version, for the
-# update-available alerts of dmotd and check-for-updates.sh; nothing when it
-# won't apply it by itself.
+# How auto-update will handle an available nginx|php version ($2, optional),
+# for the update-available alerts of dmotd and check-for-updates.sh; nothing
+# when it won't apply it by itself.
 au_alertnote() {
+  local skipc=$1 why
+  [[ "$1" = nginx && "$FREENGINX_INSTALL" = [yY] ]] && skipc=freenginx
   case "$1" in
     nginx)
       [[ "$AUTOUPDATE_NGINX" = [yY] && -z "$AU_NGINX_PIN" ]] || return 0
+      if [[ -n "$2" ]] && why=$(au_skip_reason "$skipc" "$2"); then
+        echo "auto-update skips this version, Centmin Mod lists it as: $why"
+        return 0
+      fi
       if [[ "$AUTOUPDATE_NGINX_TARGET" = latest ]]; then
         echo "auto-update applies it after AUTOUPDATE_DELAY_HOURS=${AUTOUPDATE_DELAY_HOURS}h, within AUTOUPDATE_HOURS $AUTOUPDATE_HOURS"
       else
@@ -1376,6 +1423,10 @@ au_alertnote() {
     php)
       [[ "$AUTOUPDATE_PHP" = [yY] ]] || return 0
       [[ "$AU_PHP_HOLD_INVALID" = y || ( -n "$AUTOUPDATE_PHP_HOLD" && "$AUTOUPDATE_PHP_HOLD" = "$(au_php_installed)" ) ]] && return 0
+      if [[ -n "$2" ]] && why=$(au_skip_reason php "$2"); then
+        echo "auto-update skips this version, Centmin Mod lists it as: $why"
+        return 0
+      fi
       echo "auto-update applies it within AUTOUPDATE_HOURS $AUTOUPDATE_HOURS, after AUTOUPDATE_DELAY_HOURS=${AUTOUPDATE_DELAY_HOURS}h unless php.net marks it a security release"
       ;;
   esac
@@ -1406,7 +1457,7 @@ au_main() {
       au_motd
       ;;
     alertnote)
-      au_alertnote "$2"
+      au_alertnote "$2" "$3"
       ;;
     notify-test)
       AU_NOTIFY_FORCE=y au_notify ok "auto-update test notification" "Test notification from $(basename "$0"): AUTOUPDATE_NOTIFY=$AUTOUPDATE_NOTIFY, email=${AUTOUPDATE_EMAIL:-none}."

@@ -2468,7 +2468,8 @@
 #     to turn auto-updates off (the entry is then removed).
 #   - nginx follows the newest nginx.org release, or Centmin Mod's NGINX_VERSION
 #     default (cmupdate runs first) with AUTOUPDATE_NGINX_TARGET='centmin'. An
-#     NGINX_VERSION line in this file holds nginx at that version.
+#     NGINX_VERSION line in this file holds nginx at that version. Releases
+#     Centmin Mod lists in tools/autoupdate-skip.txt are never installed.
 #   - PHP updates stay within the installed major.minor branch (8.3.x -> 8.3.y),
 #     using php.net release data. End-of-life branches are rebuilt when Centmin Mod
 #     adds security backports (tools/autoupdate-rebuilds.txt).
