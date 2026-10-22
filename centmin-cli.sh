@@ -30,7 +30,7 @@ DT=$(date +"%d%m%y-%H%M%S")
 branchname='132.00stable'
 SCRIPT_MAJORVER='132'
 SCRIPT_MINORVER='00'
-SCRIPT_INCREMENTVER='220'
+SCRIPT_INCREMENTVER='221'
 SCRIPT_VERSIONSHORT="${branchname}"
 SCRIPT_VERSION="${SCRIPT_VERSIONSHORT}.b${SCRIPT_INCREMENTVER}"
 SCRIPT_DATE='15/02/25'
@@ -2004,14 +2004,27 @@ elif [[ "$CENTOS_SEVEN" -eq '7' && "$DEVTOOLSETELEVEN" = [nN] && "$DEVTOOLSETTEN
   DEVTOOLSETNINE='n'
   DEVTOOLSETEIGHT='n'
   DEVTOOLSETSEVEN='y'
-elif [[ "$CENTOS_SIX" -eq '6' && "$DEVTOOLSETEIGHT" = [yY] && "$DEVTOOLSETSEVEN" = [yY] ]]; then
-  DEVTOOLSETNINE='n'
-  DEVTOOLSETEIGHT='y'
-  DEVTOOLSETSEVEN='n'
-elif [[ "$CENTOS_SIX" -eq '6' && "$DEVTOOLSETEIGHT" = [nN] && "$DEVTOOLSETSEVEN" = [yY] ]]; then
-  DEVTOOLSETNINE='n'
-  DEVTOOLSETEIGHT='n'
-  DEVTOOLSETSEVEN='y'
+elif [[ "$CENTOS_SIX" -eq '6' ]]; then
+  # CentOS 6 EOL SCL repos no longer work so use newest devtoolset GCC already installed
+  # and put it first in PATH as system GCC 4.4.7 can't build current dependency flags
+  DEVTOOLSETELEVEN='n'
+  DEVTOOLSETTEN='n'
+  if [[ -f /opt/rh/devtoolset-9/root/usr/bin/gcc && -f /opt/rh/devtoolset-9/root/usr/bin/g++ ]]; then
+    DEVTOOLSETNINE='y'
+    DEVTOOLSETEIGHT='n'
+    DEVTOOLSETSEVEN='n'
+    export PATH="/opt/rh/devtoolset-9/root/usr/bin:$PATH"
+  elif [[ -f /opt/rh/devtoolset-8/root/usr/bin/gcc && -f /opt/rh/devtoolset-8/root/usr/bin/g++ ]]; then
+    DEVTOOLSETNINE='n'
+    DEVTOOLSETEIGHT='y'
+    DEVTOOLSETSEVEN='n'
+    export PATH="/opt/rh/devtoolset-8/root/usr/bin:$PATH"
+  elif [[ -f /opt/rh/devtoolset-7/root/usr/bin/gcc && -f /opt/rh/devtoolset-7/root/usr/bin/g++ ]]; then
+    DEVTOOLSETNINE='n'
+    DEVTOOLSETEIGHT='n'
+    DEVTOOLSETSEVEN='y'
+    export PATH="/opt/rh/devtoolset-7/root/usr/bin:$PATH"
+  fi
 fi
 
 if [[ "$CENTOS_SIX" -eq '6' && "$BORINGSSL_SWITCH" = [yY] ]]; then

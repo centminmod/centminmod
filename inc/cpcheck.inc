@@ -397,6 +397,13 @@ fix_remi_repo_gpgcheck() {
 
 switch_mariadbtenfour_archives() {
   if [ -f /etc/yum.repos.d/mariadb.repo ]; then
+    if grep -q "http://yum.mariadb.org/10.4/centos6-amd64" /etc/yum.repos.d/mariadb.repo; then
+        sed -i 's|http://yum.mariadb.org/10.4/centos6-amd64|https://archive.mariadb.org/mariadb-10.4/yum/centos6-amd64|' /etc/yum.repos.d/mariadb.repo
+        sed -i 's|https://yum.mariadb.org/RPM-GPG-KEY-MariaDB|https://supplychain.mariadb.com/MariaDB-Server-GPG-KEY|' /etc/yum.repos.d/mariadb.repo
+        rpm --import https://supplychain.mariadb.com/MariaDB-Server-GPG-KEY
+        yum -q clean all
+    fi
+
     if grep -q "http://yum.mariadb.org/10.4/centos7-amd64" /etc/yum.repos.d/mariadb.repo; then
         sed -i 's|http://yum.mariadb.org/10.4/centos7-amd64|https://archive.mariadb.org/mariadb-10.4/yum/centos7-amd64|' /etc/yum.repos.d/mariadb.repo
         sed -i 's|https://yum.mariadb.org/RPM-GPG-KEY-MariaDB|https://supplychain.mariadb.com/MariaDB-Server-GPG-KEY|' /etc/yum.repos.d/mariadb.repo
@@ -449,6 +456,13 @@ switch_mariadbtenfour_archives() {
 
 switch_mariadbtenthree_archives() {
   if [ -f /etc/yum.repos.d/mariadb.repo ]; then
+    if grep -q "http://yum.mariadb.org/10.3/centos6-amd64" /etc/yum.repos.d/mariadb.repo; then
+        sed -i 's|http://yum.mariadb.org/10.3/centos6-amd64|https://archive.mariadb.org/mariadb-10.3/yum/centos6-amd64|' /etc/yum.repos.d/mariadb.repo
+        sed -i 's|https://yum.mariadb.org/RPM-GPG-KEY-MariaDB|https://supplychain.mariadb.com/MariaDB-Server-GPG-KEY|' /etc/yum.repos.d/mariadb.repo
+        rpm --import https://supplychain.mariadb.com/MariaDB-Server-GPG-KEY
+        yum -q clean all
+    fi
+
     if grep -q "http://yum.mariadb.org/10.3/centos7-amd64" /etc/yum.repos.d/mariadb.repo; then
         sed -i 's|http://yum.mariadb.org/10.3/centos7-amd64|https://archive.mariadb.org/mariadb-10.3/yum/centos7-amd64|' /etc/yum.repos.d/mariadb.repo
         sed -i 's|https://yum.mariadb.org/RPM-GPG-KEY-MariaDB|https://supplychain.mariadb.com/MariaDB-Server-GPG-KEY|' /etc/yum.repos.d/mariadb.repo
@@ -473,6 +487,12 @@ switch_mariadbtenthree_archives() {
 
 switch_mariadbtentwo_archives() {
   if [ -f /etc/yum.repos.d/mariadb.repo ]; then
+    if grep -q "http://yum.mariadb.org/10.2/centos6-amd64" /etc/yum.repos.d/mariadb.repo; then
+        sed -i 's|http://yum.mariadb.org/10.2/centos6-amd64|https://archive.mariadb.org/mariadb-10.2/yum/centos6-amd64|' /etc/yum.repos.d/mariadb.repo
+        rpm --import https://supplychain.mariadb.com/MariaDB-Server-GPG-KEY
+        yum -q clean all
+    fi
+
     if grep -q "http://yum.mariadb.org/10.2/centos7-amd64" /etc/yum.repos.d/mariadb.repo; then
         sed -i 's|http://yum.mariadb.org/10.2/centos7-amd64|https://archive.mariadb.org/mariadb-10.2/yum/centos7-amd64|' /etc/yum.repos.d/mariadb.repo
         # sed -i 's|https://yum.mariadb.org/RPM-GPG-KEY-MariaDB|https://supplychain.mariadb.com/MariaDB-Server-GPG-KEY|' /etc/yum.repos.d/mariadb.repo
@@ -497,6 +517,12 @@ switch_mariadbtentwo_archives() {
 
 switch_mariadbtenone_archives() {
   if [ -f /etc/yum.repos.d/mariadb.repo ]; then
+    if grep -q "http://yum.mariadb.org/10.1/centos6-amd64" /etc/yum.repos.d/mariadb.repo; then
+        sed -i 's|http://yum.mariadb.org/10.1/centos6-amd64|https://archive.mariadb.org/mariadb-10.1/yum/centos6-amd64|' /etc/yum.repos.d/mariadb.repo
+        rpm --import https://supplychain.mariadb.com/MariaDB-Server-GPG-KEY
+        yum -q clean all
+    fi
+
     if grep -q "http://yum.mariadb.org/10.1/centos7-amd64" /etc/yum.repos.d/mariadb.repo; then
         sed -i 's|http://yum.mariadb.org/10.1/centos7-amd64|https://archive.mariadb.org/mariadb-10.1/yum/centos7-amd64|' /etc/yum.repos.d/mariadb.repo
         # sed -i 's|https://yum.mariadb.org/RPM-GPG-KEY-MariaDB|https://supplychain.mariadb.com/MariaDB-Server-GPG-KEY|' /etc/yum.repos.d/mariadb.repo
