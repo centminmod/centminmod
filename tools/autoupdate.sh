@@ -15,11 +15,13 @@
 # It needs the git checkout at /usr/local/src/centminmod that cmupdate keeps.
 #
 # WHAT IT INSTALLS
-# - nginx: Centmin Mod's NGINX_VERSION pin (from centmin.sh after cmupdate,
-#   or custom_config.inc if set there), or FREENGINX_VERSION when
-#   FREENGINX_INSTALL='y'. AUTOUPDATE_NGINX_TARGET='latest' uses the newest
-#   nginx.org/freenginx.org release instead. Only nginx.org and freenginx
-#   builds are updated; Angie and other builds are skipped.
+# - nginx: the newest nginx.org release (freenginx.org when
+#   FREENGINX_INSTALL='y'), so new versions arrive without waiting for a
+#   Centmin Mod update. AUTOUPDATE_NGINX_TARGET='centmin' follows Centmin
+#   Mod's NGINX_VERSION default instead, which cmupdate brings in. An
+#   NGINX_VERSION line in custom_config.inc (FREENGINX_VERSION for freenginx)
+#   holds nginx at that version with either setting. Only nginx.org and
+#   freenginx builds are updated; Angie and other builds are skipped.
 # - PHP-FPM: the newest php.net release of the installed major.minor branch,
 #   e.g. 8.4.26 -> 8.4.27. It never moves PHP to another branch.
 # - Never downgrades. A new version waits AUTOUPDATE_DELAY_HOURS after it is
@@ -67,9 +69,12 @@
 #   back, log it and notify (unless AUTOUPDATE_NOTIFY is failures or none).
 #   Set AUTOUPDATE_NGINX and AUTOUPDATE_PHP to 'n' to turn it off.
 # - AUTOUPDATE_PHP_HOLD keeps a PHP version, e.g. after a deliberate
-#   downgrade. For nginx, NGINX_VERSION in custom_config.inc pins the
-#   version, but listed same-version rebuilds still run; AUTOUPDATE_NGINX='n'
-#   stops all nginx changes.
+#   downgrade. For nginx, an NGINX_VERSION line in custom_config.inc holds
+#   that version (upgrades stop there), but listed same-version rebuilds
+#   still run; AUTOUPDATE_NGINX='n' stops all nginx changes.
+# - A new nginx release that builds but breaks a module at runtime is only
+#   caught, and rolled back, when AUTOUPDATE_CHECK_URLS has a page that uses
+#   that module: list your sites' pages there.
 # - y/n settings also accept yes/no, on/off, true/false and 1/0, and an empty
 #   value means the default. Invalid setting values fall back to the default,
 #   and check, status, the log and the dmotd login banner say so.
@@ -103,7 +108,9 @@
 #     _SMTP_USERNAME, _SMTP_PASSWORD, _FROM_EMAIL
 #                                       SMTP login for email: Amazon SES, a
 #                                       Gmail app password or any SMTP server
-#   NGINX_VERSION, FREENGINX_INSTALL, FREENGINX_VERSION   the nginx target
+#   NGINX_VERSION, FREENGINX_VERSION   a line in custom_config.inc holds nginx
+#                                       at that version
+#   FREENGINX_INSTALL                   'y' updates freenginx from freenginx.org
 #   NGINX_UPDATEMAINTENANCE, PHP_UPDATEMAINTENANCE        'y' serves a 503
 #                                       maintenance page for the whole menu 4/5
 #                                       run, so sites are down for the build;
@@ -119,8 +126,10 @@ AUTOUPDATE_PHP_HOLD=''            # x.y.z, e.g. 8.4.26: while that PHP version i
                                   # PHP alone (no upgrade, rebuild or repair, also for `run`);
                                   # resumes once another version is installed or this is removed.
                                   # A value that is not a version holds PHP and is reported
-AUTOUPDATE_NGINX_TARGET='centmin' # 'centmin' = Centmin Mod's NGINX_VERSION pin,
-                                  # 'latest' = newest nginx.org (or freenginx.org) release
+AUTOUPDATE_NGINX_TARGET='latest'  # 'latest' = newest nginx.org (or freenginx.org) release,
+                                  # 'centmin' = Centmin Mod's NGINX_VERSION default (cmupdate).
+                                  # An NGINX_VERSION line in custom_config.inc holds nginx at
+                                  # that version with either
 #
 # When
 AUTOUPDATE_HOURS='2-5'            # server local hours an update may start in: 2-5, 22-3, 3 or any;
@@ -136,7 +145,8 @@ AUTOUPDATE_MAXLOAD=''             # wait while the 5 minute load average is abov
                                   # default = CPU thread count
 AUTOUPDATE_MINDISK_MB='3072'      # free MB needed on the /svr-setup and /usr/local filesystems
 AUTOUPDATE_CHECK_URLS='http://127.0.0.1/' # space separated URLs that must keep answering below
-                                  # 500 after an update; add a site's PHP page to cover PHP-FPM
+                                  # 500 after an update; add your sites' pages (PHP, cached,
+                                  # module-specific) so a broken update is caught and rolled back
 AUTOUPDATE_NICE='10'              # CPU nice level for the build (systemd hosts only)
 AUTOUPDATE_STUCK_HOURS='4'        # alert once when a run holds the lock this long
 #
@@ -197,6 +207,13 @@ for au_conf in "${CONFIGSCANBASE}/custom_config.inc" "${CONFIGSCANBASE}/pushover
   fi
 done
 unset au_conf
+# An NGINX_VERSION line in custom_config.inc (FREENGINX_VERSION with
+# freenginx) holds nginx at that version whatever AUTOUPDATE_NGINX_TARGET says
+AU_NGINX_PIN='' AU_NGINX_PIN_VAR=NGINX_VERSION
+[[ "$FREENGINX_INSTALL" = [yY] ]] && AU_NGINX_PIN_VAR=FREENGINX_VERSION
+if grep -qE "^[[:space:]]*(export[[:space:]]+)?${AU_NGINX_PIN_VAR}=" "${CONFIGSCANBASE}/custom_config.inc" 2>/dev/null; then
+  AU_NGINX_PIN=${!AU_NGINX_PIN_VAR}
+fi
 if [[ "$FORCE_IPVFOUR" != [yY] ]]; then
   ipv_forceopt=""
 else
@@ -267,8 +284,8 @@ au_validate_config() {
   esac
   case "$AUTOUPDATE_NGINX_TARGET" in
     centmin|latest) ;;
-    *) AU_CONFIG_WARN="$AU_CONFIG_WARN AUTOUPDATE_NGINX_TARGET='$AUTOUPDATE_NGINX_TARGET' is not centmin or latest, using centmin;"
-       AUTOUPDATE_NGINX_TARGET=centmin ;;
+    *) AU_CONFIG_WARN="$AU_CONFIG_WARN AUTOUPDATE_NGINX_TARGET='$AUTOUPDATE_NGINX_TARGET' is not latest or centmin, using latest;"
+       AUTOUPDATE_NGINX_TARGET=latest ;;
   esac
   AU_CONFIG_WARN=${AU_CONFIG_WARN# }
 }
@@ -704,7 +721,9 @@ au_plan() {
     if ! au_is_ver "$AU_INSTALLED"; then
       AU_ACTION=skip AU_WHY="installed '$(nginx -v 2>&1 | head -n1)' is not an nginx.org or freenginx release build"; return
     fi
-    if [[ "$AUTOUPDATE_NGINX_TARGET" = latest ]]; then
+    if [[ -n "$AU_NGINX_PIN" ]]; then
+      AU_TARGET=$AU_NGINX_PIN
+    elif [[ "$AUTOUPDATE_NGINX_TARGET" = latest ]]; then
       AU_TARGET=$(au_nginx_latest)
       au_is_ver "$AU_TARGET" || { AU_ACTION=skip AU_WHY='could not get the latest version from nginx.org'; return; }
     elif [[ "$FREENGINX_INSTALL" = [yY] ]]; then
@@ -779,6 +798,7 @@ au_plan() {
     else
       AU_WHY="$AU_INSTALLED is current"
     fi
+    [[ "$comp" = nginx && -n "$AU_NGINX_PIN" ]] && AU_WHY="$AU_WHY (held by $AU_NGINX_PIN_VAR='$AU_NGINX_PIN' in custom_config.inc)"
     return
   fi
   # a failed update left the service down: the new build is what brings it
@@ -1280,6 +1300,7 @@ au_status() {
   local comp
   echo "Settings: AUTOUPDATE_NGINX=$AUTOUPDATE_NGINX AUTOUPDATE_PHP=$AUTOUPDATE_PHP AUTOUPDATE_NGINX_TARGET=$AUTOUPDATE_NGINX_TARGET AUTOUPDATE_HOURS=$AUTOUPDATE_HOURS AUTOUPDATE_DELAY_HOURS=$AUTOUPDATE_DELAY_HOURS AUTOUPDATE_CMUPDATE=$AUTOUPDATE_CMUPDATE"
   [[ -n "$AU_CONFIG_WARN" ]] && echo "Config:   $AU_CONFIG_WARN"
+  [[ -n "$AU_NGINX_PIN" ]] && echo "nginx hold: $AU_NGINX_PIN_VAR='$AU_NGINX_PIN' in custom_config.inc, installed nginx $(au_nginx_installed)"
   [[ -n "$AUTOUPDATE_PHP_HOLD" ]] && echo "PHP hold: AUTOUPDATE_PHP_HOLD=$AUTOUPDATE_PHP_HOLD, installed PHP $(au_php_installed) -> $([[ "$AU_PHP_HOLD_INVALID" = y || "$AUTOUPDATE_PHP_HOLD" = "$(au_php_installed)" ]] && echo held || echo 'not held, versions differ')"
   echo "Notify:   AUTOUPDATE_NOTIFY=$AUTOUPDATE_NOTIFY email=${AUTOUPDATE_EMAIL:-none} pushover=$([[ "$AUTOUPDATE_PUSHOVER" = [yY] && -n "$PUSH_API_TOKEN" && -n "$PUSH_USER_KEY" ]] && echo on || echo off)"
   if [[ -f "$AU_CRON_FILE" ]]; then
@@ -1322,7 +1343,10 @@ au_motd() {
     echo "warn|Auto-update: ${AU_CONFIG_WARN%%;*}"
     return 0
   fi
-  [[ "$AUTOUPDATE_NGINX" = [yY] ]] && parts="nginx"
+  if [[ "$AUTOUPDATE_NGINX" = [yY] ]]; then
+    parts="nginx"
+    [[ -n "$AU_NGINX_PIN" ]] && held=", nginx held at $AU_NGINX_PIN"
+  fi
   if [[ "$AUTOUPDATE_PHP" = [yY] ]]; then
     parts="${parts:+$parts + }PHP-FPM"
     if [[ -n "$AUTOUPDATE_PHP_HOLD" ]]; then
@@ -1330,7 +1354,7 @@ au_motd() {
         echo "warn|Auto-update: AUTOUPDATE_PHP_HOLD='$AUTOUPDATE_PHP_HOLD' but PHP $(au_php_installed) is installed, so PHP is not held"
         return 0
       fi
-      held=", PHP held at $AUTOUPDATE_PHP_HOLD"
+      held="$held, PHP held at $AUTOUPDATE_PHP_HOLD"
     fi
   fi
   echo "info|Auto-update: $parts on${held}, hours $AUTOUPDATE_HOURS"
@@ -1342,7 +1366,7 @@ au_motd() {
 au_alertnote() {
   case "$1" in
     nginx)
-      [[ "$AUTOUPDATE_NGINX" = [yY] ]] || return 0
+      [[ "$AUTOUPDATE_NGINX" = [yY] && -z "$AU_NGINX_PIN" ]] || return 0
       if [[ "$AUTOUPDATE_NGINX_TARGET" = latest ]]; then
         echo "auto-update applies it after AUTOUPDATE_DELAY_HOURS=${AUTOUPDATE_DELAY_HOURS}h, within AUTOUPDATE_HOURS $AUTOUPDATE_HOURS"
       else
