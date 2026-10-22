@@ -165,6 +165,13 @@ fupdate() {
 }
 
 ######################################################
+# don't change the code under an unattended tools/autoupdate.sh build
+if [[ "$CMM_AUTOUPDATE_RUN" != y && -f /var/run/centminmod-autoupdate.lock ]] && ! flock -n /var/run/centminmod-autoupdate.lock -c true 2>/dev/null; then
+  echo "An unattended tools/autoupdate.sh nginx/PHP-FPM update is running."
+  echo "Run cmupdate after it finishes, see: bash ${CM_INSTALLDIR}/tools/autoupdate.sh status"
+  exit 1
+fi
+
 case "$1" in
   update )
     fupdate

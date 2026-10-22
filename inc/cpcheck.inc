@@ -1117,6 +1117,21 @@ autoupdate_cronsetup() {
   fi
 }
 
+# Refuse to start while tools/autoupdate.sh is updating nginx or PHP-FPM: two
+# builds at once share /svr-setup and menu 4's rollback snapshot. The
+# autoupdate run itself sets CMM_AUTOUPDATE_RUN=y for its centmin-cli.sh.
+autoupdate_lockcheck() {
+  local au_lock=/var/run/centminmod-autoupdate.lock
+  [[ "$CMM_AUTOUPDATE_RUN" = y || ! -f "$au_lock" ]] && return 0
+  if ! flock -n "$au_lock" -c true 2>/dev/null; then
+    # plain echo: cpcheck runs before centmin-cli.sh defines cecho
+    echo "An unattended tools/autoupdate.sh nginx/PHP-FPM update is running."
+    echo "Wait for it to finish, see: bash ${SCRIPT_DIR}/tools/autoupdate.sh status"
+    echo "To start anyway: CMM_AUTOUPDATE_RUN=y $0"
+    exit 1
+  fi
+}
+
 mytop_setup() {
   if [[ $(rpm -q mytop >/dev/null 2>&1; echo $?) != '0' ]]; then
       yum -y install mytop
@@ -4990,6 +5005,7 @@ cpcheck() {
   else
     INITIALINSTALL='n'
   fi
+  autoupdate_lockcheck
 
 if [ -f /var/cpanel/cpanel.config ]; then
 echo "WHM/Cpanel detected.. centmin mod NOT compatible"

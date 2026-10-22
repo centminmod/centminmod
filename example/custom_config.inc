@@ -2471,17 +2471,24 @@
 #   - PHP updates stay within the installed major.minor branch (8.3.x -> 8.3.y),
 #     using php.net release data. End-of-life branches are rebuilt when Centmin Mod
 #     adds security backports (tools/autoupdate-rebuilds.txt).
-#   - Updates start only within AUTOUPDATE_HOURS (server local time) and wait
-#     AUTOUPDATE_DELAY_HOURS after a version is first seen; PHP security releases
-#     do not wait.
-#   - Skipped while centmin.sh or yum/dnf runs, load or disk space is outside
-#     limits, or nginx -t fails. After an update nginx/php-fpm must be running,
-#     configs must test OK, PHP modules must all still load and
-#     AUTOUPDATE_CHECK_URLS must not start failing; a failed nginx check puts the
-#     previous build back. Failed updates are retried only after a cmupdate code
-#     change or autoupdate.sh reset.
-#   - Results go to Pushover (PUSH_API_TOKEN/PUSH_USER_KEY) and/or AUTOUPDATE_EMAIL
-#     (needs a working local MTA, e.g. postfix with a relay host).
+#   - Updates start only within AUTOUPDATE_HOURS (server local time, e.g. 2-5,
+#     22-3, 3 or any) and wait AUTOUPDATE_DELAY_HOURS after a version is first
+#     seen; PHP security releases do not wait. Invalid values fall back to the
+#     default and are reported by check/status and the dmotd banner.
+#   - Skipped while centmin.sh, cmupdate or yum/dnf runs, load or disk space is
+#     outside limits, or nginx -t / php-fpm -t fails; centmin.sh and cmupdate in
+#     turn refuse to start while an update runs. Updates blocked for 72 hours
+#     send one alert.
+#   - After an update nginx/php-fpm must be running on the new binary, configs
+#     must test OK, PHP modules must all still load and AUTOUPDATE_CHECK_URLS
+#     must not start failing; a failed nginx check puts the previous build back.
+#     A failed update is retried after a cmupdate code change and 24 hours, at
+#     most 3 times, or after autoupdate.sh reset.
+#   - Results go to Pushover (PUSH_API_TOKEN/PUSH_USER_KEY) and/or
+#     AUTOUPDATE_EMAIL. Email uses the EMAILNOTIFY_SES_* SMTP login when
+#     EMAILNOTIFY_SES='y' (Amazon SES, a Gmail app password or any SMTP login),
+#     else the local mail command: Gmail and other large providers reject that
+#     unless the server has SPF/DKIM or a relay host.
 # COMMANDS:
 #   - bash /usr/local/src/centminmod/tools/autoupdate.sh check|status|run|reset|notify-test
 #AUTOUPDATE_NGINX='n'
