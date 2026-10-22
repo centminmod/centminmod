@@ -446,7 +446,7 @@ cmm_check() {
           # pulling
           # cecho "===============================================================================" $boldgreen
           cecho " Centmin Mod code updates available for ${CMSCRIPT_GITDIR}" $boldyellow
-          push_update_alerts cmm "$branchname"
+          push_update_alerts cmm "$(git --git-dir="${CMSCRIPT_GITDIR}/.git" rev-parse --abbrev-ref HEAD 2>/dev/null || echo unknown)"
           if [[ "$GET_GITREMOTEURL" != "$CURL_GITURL" ]]; then
             cecho " to update re-run centmin.sh menu option 23 submenu option 1" $boldyellow
           else
