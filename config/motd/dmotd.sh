@@ -89,9 +89,11 @@ _DMOTD_FANCY_ACTIVE='n'
 # Set cache timeout in minutes
 CACHE_TIMEOUT=60
 CMSEC_CACHE_TIMEOUT=1440     # cmsec CVE cache TTL (24h); state-based invalidation also applies
-# Set cache file path
-CACHE_FILE="/tmp/nginx_version_cache"
-CACHE_PHP_FILE="/tmp/php_version_cache"
+# Set cache file path in a root-only directory, not world-writable /tmp where
+# any local user could plant a cache file whose content reaches root's curl
+CACHE_DIR="/var/cache/centminmod/version-check"
+CACHE_FILE="${CACHE_DIR}/nginx_version_cache"
+CACHE_PHP_FILE="${CACHE_DIR}/php_version_cache"
 
 # pushover.net settings
 PUSH_VERBOSE='1'
@@ -619,6 +621,26 @@ echo "
 fi
 }
 
+# Print $1 only if it is a plain x.y.z version number, anything else is no data
+vercache_valid() {
+  [[ "$1" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]] && echo "$1"
+}
+
+# Print the valid version cached in file $1 if younger than CACHE_TIMEOUT
+# minutes. Only root uses the version caches; other users get no cache.
+vercache_read() {
+  [[ "$(id -u)" -eq 0 && -f "$1" ]] || return 1
+  [ $(( ( $(date +%s) - $(stat -c %Y "$1") ) / 60 )) -gt $CACHE_TIMEOUT ] && return 1
+  vercache_valid "$(head -n1 "$1")"
+}
+
+# Write version $2 to cache file $1 if running as root and $2 is valid
+vercache_write() {
+  [[ "$(id -u)" -eq 0 ]] && vercache_valid "$2" >/dev/null || return 0
+  mkdir -p "$CACHE_DIR" 2>/dev/null && chmod 0700 "$CACHE_DIR" 2>/dev/null
+  echo "$2" > "$1" 2>/dev/null
+}
+
 # Function to retrieve the latest NGINX version
 get_latest_nginx_version() {
   if [[ "$FREENGINX_INSTALL" = [yY] ]]; then
@@ -635,48 +657,12 @@ get_latest_nginx_version() {
 
 ngxver_checker() {
   if [[ "$(which nginx >/dev/null 2>&1; echo $?)" = '0' ]]; then
-    if [[ "$DMOTD_NGINXCHECK_DEBUG" = [yY] ]]; then
-        # Check if the cache file exists
-        if [ -f "$CACHE_FILE" ]; then
-            # Calculate the time difference in minutes between now and the cache file's last modification time
-            CACHE_AGE=$(( ( $(date +%s) - $(stat -c %Y "$CACHE_FILE") ) / 60 ))
-        
-            # Check if the cache has expired
-            if [ $CACHE_AGE -gt $CACHE_TIMEOUT ]; then
-                # Cache expired, fetch the latest version and update the cache file
-                LATEST_NGINXVERS=$(get_latest_nginx_version)
-                echo "$LATEST_NGINXVERS" > "$CACHE_FILE"
-            else
-                # Cache still valid, read the value from the cache file
-                LATEST_NGINXVERS=$(cat "$CACHE_FILE")
-            fi
-        else
-            # Cache file does not exist, fetch the latest version and create the cache file
-            LATEST_NGINXVERS=$(get_latest_nginx_version)
-            echo "$LATEST_NGINXVERS" > "$CACHE_FILE"
-        fi
-    else
-        # Check if the cache file exists
-        if [ -f "$CACHE_FILE" ]; then
-            # Calculate the time difference in minutes between now and the cache file's last modification time
-            CACHE_AGE=$(( ( $(date +%s) - $(stat -c %Y "$CACHE_FILE") ) / 60 ))
-        
-            # Check if the cache has expired
-            if [ $CACHE_AGE -gt $CACHE_TIMEOUT ]; then
-                # Cache expired, fetch the latest version and update the cache file
-                LATEST_NGINXVERS=$(get_latest_nginx_version)
-                echo "$LATEST_NGINXVERS" > "$CACHE_FILE"
-            else
-                # Cache still valid, read the value from the cache file
-                LATEST_NGINXVERS=$(cat "$CACHE_FILE")
-            fi
-        else
-            # Cache file does not exist, fetch the latest version and create the cache file
-            LATEST_NGINXVERS=$(get_latest_nginx_version)
-            echo "$LATEST_NGINXVERS" > "$CACHE_FILE"
-        fi
-        # LATEST_NGINXSTABLEVER=$(curl -${ipv_forceopt}sL --connect-timeout 10 https://nginx.org/en/download.html 2>&1 | grep -Eo "nginx-[0-9.]+\.tar[.a-z]*" | grep -v '.asc' | awk -F "nginx-" '/.tar.gz$/ {print $2}' | sed -e 's|.tar.gz||g' | head -n2 | tail -1)
+    # Use the cached version if still valid, else fetch it and update the cache
+    if ! LATEST_NGINXVERS=$(vercache_read "$CACHE_FILE"); then
+      LATEST_NGINXVERS=$(vercache_valid "$(get_latest_nginx_version)")
+      vercache_write "$CACHE_FILE" "$LATEST_NGINXVERS"
     fi
+    # LATEST_NGINXSTABLEVER=$(curl -${ipv_forceopt}sL --connect-timeout 10 https://nginx.org/en/download.html 2>&1 | grep -Eo "nginx-[0-9.]+\.tar[.a-z]*" | grep -v '.asc' | awk -F "nginx-" '/.tar.gz$/ {print $2}' | sed -e 's|.tar.gz||g' | head -n2 | tail -1)
     CURRENT_NGINXVERS=$(nginx -v 2>&1 | awk '{print $3}' | awk -F '/' '{print $2}')
     
     # Convert versions to integers for proper comparison
@@ -685,7 +671,7 @@ ngxver_checker() {
     
     # Update cache if current version is newer than cached "latest"
     if [[ $CURRENT_NGINXVERS_INT -gt $LATEST_NGINXVERS_INT ]]; then
-      echo "$CURRENT_NGINXVERS" > "$CACHE_FILE"
+      vercache_write "$CACHE_FILE" "$CURRENT_NGINXVERS"
       LATEST_NGINXVERS="$CURRENT_NGINXVERS"
       LATEST_NGINXVERS_INT=$CURRENT_NGINXVERS_INT
     fi
@@ -740,24 +726,10 @@ get_latest_php_version() {
 
 phpver_checker() {
   if [[ "$DMOTD_PHPCHECK" = [yY] && "$(which php-fpm >/dev/null 2>&1; echo $?)" = '0' ]]; then
-    # Check if the cache file exists
-    if [ -f "$CACHE_PHP_FILE" ]; then
-      # Calculate the time difference in minutes between now and the cache file's last modification time
-      CACHE_AGE=$(( ( $(date +%s) - $(stat -c %Y "$CACHE_PHP_FILE") ) / 60 ))
-
-      # Check if the cache has expired
-      if [ $CACHE_AGE -gt $CACHE_TIMEOUT ]; then
-        # Cache expired, fetch the latest version and update the cache file
-        LATEST_PHPVERS=$(get_latest_php_version)
-        echo "$LATEST_PHPVERS" > "$CACHE_PHP_FILE"
-      else
-        # Cache still valid, read the value from the cache file
-        LATEST_PHPVERS=$(cat "$CACHE_PHP_FILE")
-      fi
-    else
-      # Cache file does not exist, fetch the latest version and create the cache file
-      LATEST_PHPVERS=$(get_latest_php_version)
-      echo "$LATEST_PHPVERS" > "$CACHE_PHP_FILE"
+    # Use the cached version if still valid, else fetch it and update the cache
+    if ! LATEST_PHPVERS=$(vercache_read "$CACHE_PHP_FILE"); then
+      LATEST_PHPVERS=$(vercache_valid "$(get_latest_php_version)")
+      vercache_write "$CACHE_PHP_FILE" "$LATEST_PHPVERS"
     fi
     CURRENT_PHPVERS=$(php-config --version)
     CURRENT_PHPXZVER_CHECK=$(php-config --version | awk -F '.' '{print $1"."$2}')
@@ -766,7 +738,8 @@ phpver_checker() {
     else
       PHPEXTSION_CHECK='gz'
     fi
-    IS_PHPTAR_AVAIL=$(curl -sI${ipv_forceopt} --connect-timeout 10 https://www.php.net/distributions/php-${LATEST_PHPVERS}.tar.${PHPEXTSION_CHECK}| head -n1 | grep -o 200)
+    IS_PHPTAR_AVAIL=''
+    [[ -n "$LATEST_PHPVERS" ]] && IS_PHPTAR_AVAIL=$(curl -sI${ipv_forceopt} --connect-timeout 10 "https://www.php.net/distributions/php-${LATEST_PHPVERS}.tar.${PHPEXTSION_CHECK}" | head -n1 | grep -o 200)
     if [[ "$CURRENT_PHPVERS" != "$LATEST_PHPVERS" ]] && [[ "$IS_PHPTAR_AVAIL" -eq '200' ]]; then
       if [[ "$_DMOTD_COMPACT_EFFECTIVE" = [yY] && "$ENABLEMOTD_PHPVERCOMPACT" != [nN] ]]; then
         _dmotd_push_status warn " PHP    ${CURRENT_PHPVERS} → ${LATEST_PHPVERS} available — run centmin.sh menu 5"
