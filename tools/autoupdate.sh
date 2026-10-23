@@ -44,11 +44,14 @@
 #  1. takes a lock; centmin.sh and cmupdate refuse to start until it ends
 #  2. runs cmupdate (AUTOUPDATE_CMUPDATE) so patches and version pins are
 #     current, then carries on with the updated copy of this script. If
-#     cmupdate fails or runs over 30 minutes the run uses the current code
+#     cmupdate fails or runs over 30 minutes the run uses the current code,
+#     but it builds nothing when the checkout is left unusable (unmerged or
+#     cut-off git work, local changes not re-applied, an older tree)
 #  3. for nginx, then PHP-FPM, works out the target and waits for a later
 #     run while centmin.sh, cmupdate or yum/dnf/rpm is running, the load or
 #     free disk is outside AUTOUPDATE_MAXLOAD / AUTOUPDATE_MINDISK_MB,
-#     nginx -t or (for PHP) php-fpm -t fails, the service is stopped, or
+#     nginx -t or (for PHP) php-fpm -t fails, the service is stopped (unless
+#     a failed update left it down: then the rebuild is the repair), or
 #     ENABLE_MENU='y' would make centmin-cli.sh interactive
 #  4. builds through menu 4/5, niced on systemd hosts (AUTOUPDATE_NICE)
 #  5. checks the result: the new version is installed and running on the new
@@ -63,8 +66,8 @@
 #
 # SAFETY NETS
 # - A failed update is retried only after the Centmin Mod code changes and 24
-#   hours pass, at most 3 attempts per update; `run` retries now and `reset`
-#   clears the hold. With no newer update pending, the failure clears itself
+#   hours pass, at most 3 automatic attempts per update; `run` retries now
+#   and `reset` clears the hold. With no newer update pending, the failure clears itself
 #   once nginx/php-fpm was rebuilt since (e.g. by menu 4/5) and is healthy; a
 #   service left down or on its old binary is rebuilt on the same retry
 #   schedule; a healthy service still on the failed build stays held until
@@ -84,9 +87,11 @@
 # - A new nginx release that builds but breaks a module at runtime is only
 #   caught, and rolled back, when AUTOUPDATE_CHECK_URLS has a page that uses
 #   that module: list your sites' pages there.
-# - y/n settings also accept yes/no, on/off, true/false and 1/0, and an empty
-#   value means the default. Invalid setting values fall back to the default,
-#   and check, status, the log and the dmotd login banner say so.
+# - y/n settings also accept yes/no, on/off, true/false and 1/0; case and
+#   spaces don't matter and an empty value means the default. An invalid
+#   value falls back to the default (a hold keeps holding, a target falls back
+#   to centmin), check and status list it, and the dmotd login banner and one
+#   alert per new problem say so.
 #
 # COMMANDS   bash /usr/local/src/centminmod/tools/autoupdate.sh <command>
 #   check        what a run would do now and why; changes no update state
@@ -156,20 +161,24 @@ AUTOUPDATE_CMUPDATE='y'           # run cmupdate before checking, so patches and
 AUTOUPDATE_MAXLOAD=''             # wait while the 5 minute load average is above this;
                                   # default = CPU thread count
 AUTOUPDATE_MINDISK_MB='3072'      # free MB needed on the /svr-setup and /usr/local filesystems
-AUTOUPDATE_CHECK_URLS='http://127.0.0.1/' # space separated URLs that must keep answering below
+AUTOUPDATE_CHECK_URLS='http://127.0.0.1/' # space separated http(s) URLs that must keep answering below
                                   # 500 after an update; add your sites' pages (PHP, cached,
                                   # module-specific) so a broken update is caught and rolled back
-AUTOUPDATE_NICE='10'              # CPU nice level for the build (systemd hosts only)
+AUTOUPDATE_NICE='10'              # CPU nice level 0-19 for the build (systemd hosts only)
 AUTOUPDATE_STUCK_HOURS='4'        # alert once when a run holds the lock this long
 #
 # Notifications
-AUTOUPDATE_NOTIFY='all'           # all (successes and notices too), failures or none
+AUTOUPDATE_NOTIFY='all'           # all (successes and notices too), failures or none. The
+                                  # dmotd/check-for-updates "update available" pushes have their
+                                  # own switches: PUSH_MOTD_ALERTS, PUSH_CHECKUPDATES_ALERTS
 AUTOUPDATE_PUSHOVER='y'           # use Pushover when PUSH_API_TOKEN and PUSH_USER_KEY are set
-AUTOUPDATE_EMAIL=''               # space separated recipients. Sent through the EMAILNOTIFY_SES_*
-                                  # SMTP login when EMAILNOTIFY_SES='y', else the local mail or
-                                  # sendmail command, which Gmail and other large providers
-                                  # reject unless the server has SPF/DKIM or a relay host
-AUTOUPDATE_EMAIL_FROM=''          # sender address; default EMAILNOTIFY_SES_FROM_EMAIL for SMTP
+AUTOUPDATE_EMAIL=''               # recipients, space or comma separated. Sent through the
+                                  # EMAILNOTIFY_SES_* SMTP login when EMAILNOTIFY_SES='y' and its
+                                  # server and username are set, else the local mail or sendmail
+                                  # command, which Gmail and other large providers reject
+                                  # unless the server has SPF/DKIM or a relay host
+AUTOUPDATE_EMAIL_FROM=''          # sender address; default for SMTP: EMAILNOTIFY_SES_FROM_EMAIL,
+                                  # for mail/sendmail: the system default
 # end of settings
 ###########################################################
 export PATH="/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin:/root/bin"
@@ -209,10 +218,10 @@ ENABLE_MENU='n'
 for au_conf in "${CONFIGSCANBASE}/custom_config.inc" "${CONFIGSCANBASE}/pushover.ini"; do
   [ -f "$au_conf" ] || continue
   if grep -q $'\r' "$au_conf" 2>/dev/null; then
-    if [ -x /usr/bin/dos2unix ]; then
-      dos2unix -q "$au_conf"
+    if [ -x /usr/bin/dos2unix ] && dos2unix -q "$au_conf" 2>/dev/null; then
       source "$au_conf"
     else
+      # no dos2unix, or it could not rewrite the file (immutable, symlink)
       eval "$(tr -d '\r' < "$au_conf")"
     fi
   else
@@ -222,10 +231,12 @@ done
 unset au_conf
 # An NGINX_VERSION line in custom_config.inc (FREENGINX_VERSION with
 # freenginx) holds nginx at that version whatever AUTOUPDATE_NGINX_TARGET says
-AU_NGINX_PIN='' AU_NGINX_PIN_VAR=NGINX_VERSION
+AU_NGINX_PIN='' AU_NGINX_PIN_VAR=NGINX_VERSION AU_NGINX_PIN_EMPTY=n
 [[ "$FREENGINX_INSTALL" = [yY] ]] && AU_NGINX_PIN_VAR=FREENGINX_VERSION
 if grep -qE "^[[:space:]]*(export[[:space:]]+)?${AU_NGINX_PIN_VAR}=" "${CONFIGSCANBASE}/custom_config.inc" 2>/dev/null; then
   AU_NGINX_PIN=${!AU_NGINX_PIN_VAR}
+  # an empty line is not a hold, but say so: it reads like one
+  [[ -n "$AU_NGINX_PIN" ]] || AU_NGINX_PIN_EMPTY=y
 fi
 if [[ "$FORCE_IPVFOUR" != [yY] ]]; then
   ipv_forceopt=""
@@ -236,10 +247,12 @@ AU_HOST=$(hostname)
 AU_SYSTEMD=n
 [[ -d /run/systemd/system ]] && AU_SYSTEMD=y
 
-# Fall back to the default for any unusable setting, and say so in check,
-# status, the log and the dmotd banner instead of silently never updating.
+# Use the default for an empty setting. An unusable one falls back to the
+# default (holds keep holding, a target to the slower-moving one), and check,
+# status, the run log, the dmotd banner and a one-time alert say so instead of
+# silently never updating.
 au_validate_config() {
-  local v name def
+  local v name def min max u urls
   AU_CONFIG_WARN=''
   for name in AUTOUPDATE_NGINX:n AUTOUPDATE_PHP:n AUTOUPDATE_CMUPDATE:y AUTOUPDATE_PUSHOVER:y; do
     def=${name#*:} name=${name%:*}
@@ -251,7 +264,8 @@ au_validate_config() {
          printf -v "$name" '%s' "$def" ;;
     esac
   done
-  v=$(printf '%s' "$AUTOUPDATE_HOURS" | tr -d '[:space:]' | sed -E 's/:[0-9]{2}//g')
+  v=$(printf '%s' "$AUTOUPDATE_HOURS" | tr -d '[:space:]' | tr '[:upper:]' '[:lower:]' | sed -E 's/:[0-9]{2}//g')
+  [[ -n "$v" ]] || v='2-5'
   [[ "$v" =~ ^[0-9]{1,2}$ ]] && v="$v-$v"
   if [[ "$v" = any ]] || { [[ "$v" =~ ^([0-9]{1,2})-([0-9]{1,2})$ ]] && (( 10#${BASH_REMATCH[1]} < 24 && 10#${BASH_REMATCH[2]} < 24 )); }; then
     AUTOUPDATE_HOURS=$v
@@ -259,22 +273,21 @@ au_validate_config() {
     AU_CONFIG_WARN="$AU_CONFIG_WARN AUTOUPDATE_HOURS='$AUTOUPDATE_HOURS' is invalid, using 2-5;"
     AUTOUPDATE_HOURS='2-5'
   fi
-  for name in AUTOUPDATE_DELAY_HOURS:24 AUTOUPDATE_MINDISK_MB:3072 AUTOUPDATE_STUCK_HOURS:4; do
-    def=${name#*:} name=${name%:*}
-    if [[ "${!name}" =~ ^[0-9]+$ ]]; then
-      # leading zeros would make bash read 08 as bad octal and 03072 as 1594
-      printf -v "$name" '%s' "$((10#${!name}))"
+  # bounded: a huge number would wrap in bash arithmetic (and 0 stuck hours alerts every hour)
+  for name in AUTOUPDATE_DELAY_HOURS:24:0:8760 AUTOUPDATE_MINDISK_MB:3072:0:10000000 AUTOUPDATE_STUCK_HOURS:4:1:720 AUTOUPDATE_NICE:10:0:19; do
+    IFS=: read -r name def min max <<< "$name"
+    v=$(printf '%s' "${!name}" | tr -d '[:space:]')
+    [[ -n "$v" ]] || v=$def
+    # leading zeros would make bash read 08 as bad octal and 03072 as 1594
+    if [[ "$v" =~ ^[0-9]{1,8}$ ]] && (( 10#$v >= min && 10#$v <= max )); then
+      printf -v "$name" '%s' "$((10#$v))"
       continue
     fi
-    AU_CONFIG_WARN="$AU_CONFIG_WARN $name='${!name}' is not a number, using $def;"
+    AU_CONFIG_WARN="$AU_CONFIG_WARN $name='${!name}' is not a number from $min to $max, using $def;"
     printf -v "$name" '%s' "$def"
   done
-  if [[ "$AUTOUPDATE_NICE" =~ ^(-?)([0-9]+)$ ]]; then
-    AUTOUPDATE_NICE="${BASH_REMATCH[1]}$((10#${BASH_REMATCH[2]}))"
-  else
-    AU_CONFIG_WARN="$AU_CONFIG_WARN AUTOUPDATE_NICE='$AUTOUPDATE_NICE' is not a number, using 10;"
-    AUTOUPDATE_NICE=10
-  fi
+  AUTOUPDATE_MAXLOAD=$(printf '%s' "$AUTOUPDATE_MAXLOAD" | tr -d '[:space:]')
+  AUTOUPDATE_CRON_MINUTE=$(printf '%s' "$AUTOUPDATE_CRON_MINUTE" | tr -d '[:space:]')
   if [[ -n "$AUTOUPDATE_MAXLOAD" ]] && ! { [[ "$AUTOUPDATE_MAXLOAD" =~ ^[0-9]+(\.[0-9]+)?$ ]] && awk -v m="$AUTOUPDATE_MAXLOAD" 'BEGIN { exit !(m > 0) }'; }; then
     AU_CONFIG_WARN="$AU_CONFIG_WARN AUTOUPDATE_MAXLOAD='$AUTOUPDATE_MAXLOAD' is not a number above 0, using the CPU thread count;"
     AUTOUPDATE_MAXLOAD=''
@@ -290,20 +303,37 @@ au_validate_config() {
     AU_PHP_HOLD_INVALID=y
     AU_CONFIG_WARN="$AU_CONFIG_WARN AUTOUPDATE_PHP_HOLD='$AUTOUPDATE_PHP_HOLD' is not a version like 8.4.26, holding PHP updates until it is fixed;"
   fi
-  case "$AUTOUPDATE_NOTIFY" in
-    all|failures|none) ;;
+  # a mistyped value falls back to all: a missed failure alert costs more than an extra one
+  v=$(printf '%s' "$AUTOUPDATE_NOTIFY" | tr -d '[:space:]' | tr '[:upper:]' '[:lower:]')
+  case "${v:-all}" in
+    all|failures|none) AUTOUPDATE_NOTIFY=${v:-all} ;;
     *) AU_CONFIG_WARN="$AU_CONFIG_WARN AUTOUPDATE_NOTIFY='$AUTOUPDATE_NOTIFY' is not all, failures or none, using all;"
        AUTOUPDATE_NOTIFY=all ;;
   esac
   # a mistyped nginx hold must not let nginx update to something else
   if [[ -n "$AU_NGINX_PIN" ]] && ! [[ "$AU_NGINX_PIN" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
     AU_CONFIG_WARN="$AU_CONFIG_WARN $AU_NGINX_PIN_VAR='$AU_NGINX_PIN' in custom_config.inc is not a version like 1.31.7, holding nginx updates until it is fixed;"
+  elif [[ "$AU_NGINX_PIN_EMPTY" = y ]]; then
+    AU_CONFIG_WARN="$AU_CONFIG_WARN $AU_NGINX_PIN_VAR is empty in custom_config.inc, so nginx is not held (remove the line, or set a version to hold);"
   fi
-  case "$AUTOUPDATE_NGINX_TARGET" in
-    centmin|latest) ;;
-    *) AU_CONFIG_WARN="$AU_CONFIG_WARN AUTOUPDATE_NGINX_TARGET='$AUTOUPDATE_NGINX_TARGET' is not latest or centmin, using latest;"
-       AUTOUPDATE_NGINX_TARGET=latest ;;
+  # a mistyped target uses centmin, the slower-moving one
+  v=$(printf '%s' "$AUTOUPDATE_NGINX_TARGET" | tr -d '[:space:]' | tr '[:upper:]' '[:lower:]')
+  case "${v:-latest}" in
+    centmin|latest) AUTOUPDATE_NGINX_TARGET=${v:-latest} ;;
+    *) AU_CONFIG_WARN="$AU_CONFIG_WARN AUTOUPDATE_NGINX_TARGET='$AUTOUPDATE_NGINX_TARGET' is not latest or centmin, using centmin;"
+       AUTOUPDATE_NGINX_TARGET=centmin ;;
   esac
+  # space separated http(s) URLs (a newline or comma list would check one odd URL)
+  AUTOUPDATE_CHECK_URLS=$(printf '%s' "$AUTOUPDATE_CHECK_URLS" | tr '\n\t' '  ')
+  read -ra urls <<< "$AUTOUPDATE_CHECK_URLS"
+  for u in "${urls[@]}"; do
+    if ! [[ "$u" =~ ^https?://[^/]+ ]] || [[ "$u" = *,http* ]]; then
+      AU_CONFIG_WARN="$AU_CONFIG_WARN AUTOUPDATE_CHECK_URLS entry '$u' is not one http(s) URL (separate URLs with spaces);"
+    fi
+  done
+  # email lists may be comma separated, as for emailnotify.sh
+  read -ra urls <<< "${AUTOUPDATE_EMAIL//,/ }"
+  AUTOUPDATE_EMAIL="${urls[*]}"
   AU_CONFIG_WARN=${AU_CONFIG_WARN# }
 }
 au_validate_config
@@ -478,10 +508,27 @@ EOF
 
 # Make the cron entry match the AUTOUPDATE_* settings. A missing or edited
 # entry is put back and reported once per repair.
+# One alert per distinct settings problem, kept for a retry until delivered.
+# Only when auto-update is on, or the problem is a mistyped on/off switch.
+au_config_alert() {
+  local f="$AU_STATE_DIR/config-warned"
+  if [[ -z "$AU_CONFIG_WARN" ]]; then rm -f "$f"; return 0; fi
+  au_enabled || [[ "$AU_CONFIG_WARN" == *AUTOUPDATE_NGINX=* || "$AU_CONFIG_WARN" == *AUTOUPDATE_PHP=* ]] || return 0
+  [[ "$(cat "$f" 2>/dev/null)" = "$AU_CONFIG_WARN" ]] && return 0
+  au_log "config: $AU_CONFIG_WARN"
+  au_notify fail "auto-update settings problem" "Auto-update settings in ${CONFIGSCANBASE}/custom_config.inc need fixing: $AU_CONFIG_WARN Check with: bash ${CM_INSTALLDIR}/tools/autoupdate.sh check" && printf '%s\n' "$AU_CONFIG_WARN" > "$f"
+}
+
 au_ensure() {
   local want had=n tmp msg
   [[ "$(id -u)" -eq 0 ]] || return 0
   mkdir -p "$AU_STATE_DIR"
+  if [[ "$AU_ENSURE_BY" = dmotd ]]; then
+    # don't hold up the SSH login banner on a slow Pushover/SMTP server
+    ( au_config_alert ) </dev/null >/dev/null 2>&1 &
+  else
+    au_config_alert
+  fi
   if au_enabled; then
     want=$(au_cron_content)
     [[ -f "$AU_CRON_FILE" && "$(cat "$AU_CRON_FILE" 2>/dev/null)" = "$want" ]] && return 0
@@ -526,6 +573,8 @@ au_ensure() {
 au_pushover() {
   local priority=$1 title=$2 message=$3 response dir
   [[ "$AUTOUPDATE_PUSHOVER" = [yY] && -n "$PUSH_API_TOKEN" && -n "$PUSH_USER_KEY" ]] || return 2
+  # Pushover takes 1024 characters: keep the start and the closing "what next"
+  (( ${#message} > 1024 )) && message="${message:0:860} … ${message: -160}"
   dir=$(mktemp -d) || return 1
   ( umask 077; printf 'form-string = "token=%s"\nform-string = "user=%s"\n' "$(au_curlq "$PUSH_API_TOKEN")" "$(au_curlq "$PUSH_USER_KEY")" > "$dir/cfg" )
   response=$(curl -${ipv_forceopt}s --connect-timeout 10 --max-time 30 -K "$dir/cfg" \
@@ -564,6 +613,11 @@ au_smtp() {
     echo "To: ${AUTOUPDATE_EMAIL// /, }"
     echo "Subject: $subject"
     echo "Date: $(date -R)"
+    echo "Message-ID: <autoupdate.$(date +%s).$$@${from#*@}>"
+    # build log tails can hold UTF-8 compiler quotes
+    echo "MIME-Version: 1.0"
+    echo "Content-Type: text/plain; charset=UTF-8"
+    echo "Content-Transfer-Encoding: 8bit"
     echo
     printf '%s\n' "$body"
   } > "$dir/msg"
@@ -1013,7 +1067,8 @@ au_url_codes() {
   local u urls
   read -ra urls <<< "$AUTOUPDATE_CHECK_URLS"
   for u in "${urls[@]}"; do
-    printf '%s=%s ' "$u" "$(curl -${ipv_forceopt}sk -o /dev/null --connect-timeout 5 --max-time 20 -w '%{http_code}' "$u")"
+    # -g: [] and {} in a URL are literal, not curl ranges
+    printf '%s=%s ' "$u" "$(curl -${ipv_forceopt}gsk -o /dev/null --connect-timeout 5 --max-time 20 -w '%{http_code}' "$u")"
   done
 }
 
@@ -1083,7 +1138,7 @@ au_fail_record() {
 
 au_update() {
   local comp=$1 start runlog clilog rc now problems='' urls_before mods_before mods_after missing
-  local warn_before warn_after warn level title msg rolled='' menu attempt bin replaced=n rcprob='' next fkey
+  local warn_before warn_after warn level title msg rolled='' menu attempt bin replaced=n rcprob='' next fkey pair pairs
   local base="$AU_STATE_DIR/baseline-$comp"
   start=$(date +%s)
   runlog="${CENTMINLOGDIR}/autoupdate_${comp}_$(date +%d%m%y-%H%M%S).log"
@@ -1107,6 +1162,10 @@ au_update() {
     rm -rf "$base"
     mkdir -p "$base" && printf '%s\n' "$urls_before" > "$base/urls" && printf '%s\n' "$mods_before" > "$base/mods" && printf '%s\n' "$warn_before" > "$base/warn"
   fi
+  read -ra pairs <<< "$urls_before"
+  for pair in "${pairs[@]}"; do
+    [[ "${pair##*=}" =~ ^[1-4][0-9][0-9]$ ]] || au_log "$comp: ${pair%=*} answered '${pair##*=}' before the update, so it is not checked"
+  done
 
   # SysV init scripts start nginx/php-fpm from this process tree on hosts
   # without systemd, so they would inherit a nice level and the lock fd
@@ -1226,11 +1285,16 @@ au_update() {
 # a stopped service, php.net unreachable) would otherwise go unnoticed:
 # notify once after it has lasted 72 hours.
 au_pending() {
-  local comp=$1 reason=$2 f="$AU_STATE_DIR/pending-$1" since
+  local comp=$1 reason=$2 f="$AU_STATE_DIR/pending-$1" since what
   [[ -f "$f" ]] || date +%s > "$f"
   since=$(cat "$f")
   if (( $(date +%s) - since > 72 * 3600 )) && [[ ! -f "$f.notified" ]]; then
-    au_notify fail "$comp auto-update blocked" "Auto-update for $comp has not been able to proceed since $(au_date "$since"): $reason" && touch "$f.notified"
+    case "$comp" in
+      run) what="Auto-update runs have been deferred" ;;
+      cmupdate) what="The cmupdate step of auto-update has not succeeded" ;;
+      *) what="Auto-update for $comp has not been able to proceed" ;;
+    esac
+    au_notify fail "$comp auto-update blocked" "$what since $(au_date "$since"): $reason" && touch "$f.notified"
   fi
 }
 
@@ -1425,6 +1489,8 @@ au_run() {
   [[ "$mode" = run ]] && AU_FORCE=y
   for comp in nginx php; do
     if [[ "$comp" = nginx && "$AUTOUPDATE_NGINX" != [yY] ]] || [[ "$comp" = php && "$AUTOUPDATE_PHP" != [yY] ]]; then
+      # an old timer would alert at once when the component is turned back on
+      rm -f "$AU_STATE_DIR/pending-$comp"*
       continue
     fi
     # a long nginx build must not push the PHP restart past the window
@@ -1507,11 +1573,23 @@ au_status() {
   [[ -f "$AU_LOG" ]] && { echo "Recent log ($AU_LOG):"; tail -n 8 "$AU_LOG"; }
 }
 
+# the first settings problem, and how many more `check` shows
+au_warn_line() {
+  local n
+  n=$(tr -cd ';' <<< "$AU_CONFIG_WARN" | wc -c)
+  printf '%s' "${AU_CONFIG_WARN%%;*}"
+  (( n > 1 )) && printf ' (+%s more: autoupdate.sh check)' "$((n - 1))"
+}
+
 # one "tag|text" line for the dmotd login banner, or nothing
 au_motd() {
   local comp fkey fhead failed parts='' held=''
   AU_ENSURE_BY=dmotd au_ensure
-  au_enabled || return 0
+  # a mistyped switch can turn both off: that must not look like "off"
+  if ! au_enabled; then
+    [[ "$AU_CONFIG_WARN" == *AUTOUPDATE_NGINX=* || "$AU_CONFIG_WARN" == *AUTOUPDATE_PHP=* ]] && echo "warn|Auto-update: $(au_warn_line)"
+    return 0
+  fi
   if [[ -f "$AU_STATE_DIR/inprogress" ]] && au_lock_held; then
     IFS='|' read -r comp fkey failed < "$AU_STATE_DIR/inprogress"
     echo "warn|Auto-update: $fkey running since $(au_date "$failed") - wait before using centmin.sh menu 4/5"
@@ -1534,12 +1612,12 @@ au_motd() {
     return 0
   fi
   if [[ -n "$AU_CONFIG_WARN" ]]; then
-    echo "warn|Auto-update: ${AU_CONFIG_WARN%%;*}"
+    echo "warn|Auto-update: $(au_warn_line)"
     return 0
   fi
   if [[ "$AUTOUPDATE_NGINX" = [yY] ]]; then
     parts="nginx"
-    [[ -n "$AU_NGINX_PIN" ]] && held=", nginx pinned to $AU_NGINX_PIN"
+    [[ -n "$AU_NGINX_PIN" ]] && held=", nginx held at $AU_NGINX_PIN"
   fi
   if [[ "$AUTOUPDATE_PHP" = [yY] ]]; then
     parts="${parts:+$parts + }PHP-FPM"
@@ -1565,7 +1643,13 @@ au_alertnote() {
   case "$1" in
     nginx)
       [[ "$AUTOUPDATE_NGINX" = [yY] ]] || return 0
-      if [[ -n "$AU_NGINX_PIN" && "$2" != "$AU_NGINX_PIN" ]]; then
+      # as au_plan: builds that are not nginx.org/freenginx releases are skipped
+      inst=$(au_nginx_installed)
+      au_is_ver "$inst" || return 0
+      if [[ -n "$AU_NGINX_PIN" ]] && ! au_is_ver "$AU_NGINX_PIN"; then
+        echo "auto-update holds nginx at $inst ($AU_NGINX_PIN_VAR in custom_config.inc is not a valid version); run centmin.sh menu option 4 to update by hand"
+        return 0
+      elif [[ -n "$AU_NGINX_PIN" && "$2" != "$AU_NGINX_PIN" ]]; then
         echo "auto-update holds nginx at $AU_NGINX_PIN ($AU_NGINX_PIN_VAR in custom_config.inc); run centmin.sh menu option 4 to update by hand"
         return 0
       fi
@@ -1573,9 +1657,10 @@ au_alertnote() {
         echo "auto-update skips this version, Centmin Mod lists it as: $why"
         return 0
       fi
-      if [[ "$AUTOUPDATE_NGINX_TARGET" = latest ]]; then
-        inst=$(au_nginx_installed)
-        if au_is_ver "$2" && au_is_ver "$inst" && [[ "$(au_branch "$2")" != "$(au_branch "$inst")" ]]; then
+      if [[ -n "$AU_NGINX_PIN" ]]; then
+        echo "auto-update installs it ($AU_NGINX_PIN_VAR in custom_config.inc holds nginx there) after AUTOUPDATE_DELAY_HOURS=${AUTOUPDATE_DELAY_HOURS}h, within AUTOUPDATE_HOURS $AUTOUPDATE_HOURS"
+      elif [[ "$AUTOUPDATE_NGINX_TARGET" = latest ]]; then
+        if au_is_ver "$2" && [[ "$(au_branch "$2")" != "$(au_branch "$inst")" ]]; then
           # dmotd and check-for-updates report the newest release of either branch
           echo "auto-update stays on the $([[ "$(au_branch "$inst")" = 1 ]] && echo mainline || echo stable) branch of nginx $inst; run centmin.sh menu option 4 to change branch"
           return 0
@@ -1587,7 +1672,9 @@ au_alertnote() {
       ;;
     php)
       [[ "$AUTOUPDATE_PHP" = [yY] ]] || return 0
-      [[ "$AU_PHP_HOLD_INVALID" = y || ( -n "$AUTOUPDATE_PHP_HOLD" && "$AUTOUPDATE_PHP_HOLD" = "$(au_php_installed)" ) ]] && return 0
+      inst=$(au_php_installed)
+      au_is_ver "$inst" || return 0
+      [[ "$AU_PHP_HOLD_INVALID" = y || ( -n "$AUTOUPDATE_PHP_HOLD" && "$AUTOUPDATE_PHP_HOLD" = "$inst" ) ]] && return 0
       if [[ -n "$2" ]] && why=$(au_skip_reason php "$2"); then
         echo "auto-update skips this version, Centmin Mod lists it as: $why"
         return 0
@@ -1627,8 +1714,10 @@ au_main() {
       ;;
     notify-test)
       AU_NOTIFY_FORCE=y au_notify ok "auto-update test notification" "Test notification from $(basename "$0"): AUTOUPDATE_NOTIFY=$AUTOUPDATE_NOTIFY, email=${AUTOUPDATE_EMAIL:-none}."
+      rc=$?
       au_status | grep -E '^Notify'
-      tail -n 3 "$AU_LOG" 2>/dev/null
+      if [[ "$rc" -eq 0 ]]; then echo "notify-test: sent, or no channel is configured (see Notify above)"; else echo "notify-test: every configured channel failed, see $AU_LOG"; fi
+      return "$rc"
       ;;
     reset)
       [[ "$(id -u)" -eq 0 ]] || { echo "autoupdate.sh reset must run as root"; return 1; }

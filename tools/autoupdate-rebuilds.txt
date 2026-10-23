@@ -4,8 +4,9 @@
 # Mod patch changes that only take effect after a rebuild of the version
 # already installed, such as security backports for end-of-life PHP
 # branches. When AUTOUPDATE_PHP='y' or AUTOUPDATE_NGINX='y', a server whose
-# /usr/local/sbin/php-fpm or /usr/local/sbin/nginx binary is older than a
-# matching entry rebuilds it once (after cmupdate has brought this file).
+# /usr/local/sbin/php-fpm or /usr/local/sbin/nginx binary was built before a
+# matching entry rebuilds it once (after cmupdate has brought this file). For
+# a binary auto-update built, "built" is the time of the code it was built from.
 #
 # Format: <component> <UTC time the change was pushed> <reason>
 #   component: nginx, php (every PHP branch) or php-<major.minor>
