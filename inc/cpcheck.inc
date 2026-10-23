@@ -1145,7 +1145,11 @@ autoupdate_lockcheck() {
     # plain echo: cpcheck runs before centmin-cli.sh defines cecho
     echo "An unattended tools/autoupdate.sh nginx/PHP-FPM update is running."
     echo "Wait for it to finish, see: bash ${SCRIPT_DIR}/tools/autoupdate.sh status"
-    echo "To start anyway: CMM_AUTOUPDATE_RUN=y $0"
+    # $0 may be the /usr/bin/centmin wrapper or a relative centmin.sh
+    local au_self
+    au_self=$(basename "$0")
+    [[ "$au_self" = centmin-cli.sh ]] || au_self=centmin.sh
+    echo "To start anyway (it can clash with the running build): CMM_AUTOUPDATE_RUN=y bash ${SCRIPT_DIR}/${au_self}"
     exit 1
   fi
 }

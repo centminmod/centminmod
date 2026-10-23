@@ -11,7 +11,8 @@
 # code older than the entry, so run cmupdate before rebuilding by hand.
 #
 # Format: <component> <UTC time the change was pushed> <reason>
-#   component: nginx, php (every PHP branch) or php-<major.minor>
+#   component: nginx (nginx.org and freenginx builds), php (every PHP branch)
+#              or php-<major.minor>
 #   time:      date -u +%Y-%m-%dT%H:%M:%SZ (an entry takes effect at its
 #              time, so a future time waits until then)
 #

@@ -2477,8 +2477,8 @@
 #   - Updates start only within AUTOUPDATE_HOURS (server local time, e.g. 2-5,
 #     22-3, 3 or any) and wait AUTOUPDATE_DELAY_HOURS after a version is first
 #     seen; PHP security releases and rebuilds do not wait. Invalid values fall back to the
-#     default (a hold keeps holding) and are reported by check/status, the dmotd
-#     banner and one alert.
+#     default (a hold keeps holding, a mistyped AUTOUPDATE_NGINX_TARGET uses
+#     centmin) and are reported by check/status, the dmotd banner and one alert.
 #   - Skipped while centmin.sh, cmupdate or yum/dnf runs, load or disk space is
 #     outside limits, nginx -t / php-fpm -t fails, the service is stopped (unless a
 #     failed update left it down) or ENABLE_MENU='y'; centmin.sh and cmupdate in
@@ -2486,7 +2486,8 @@
 #     send one alert.
 #   - After an update nginx/php-fpm must be running on the new binary, configs
 #     must test OK, PHP modules (php -m) must all still load and
-#     AUTOUPDATE_CHECK_URLS must not start failing; when a new nginx binary fails
+#     AUTOUPDATE_CHECK_URLS must not start failing (list final URLs: redirects are
+#     not followed; FORCE_IPVFOUR='y' checks over IPv4); when a new nginx binary fails
 #     a check, menu 4's snapshot of the previous build is restored. A failed
 #     update is retried after a cmupdate code change and 24 hours, at most 3
 #     automatic attempts per update, or after autoupdate.sh reset; a failed
@@ -2495,11 +2496,13 @@
 #   - Results go to Pushover (PUSH_API_TOKEN/PUSH_USER_KEY) and/or
 #     AUTOUPDATE_EMAIL (space or comma separated). Email uses the EMAILNOTIFY_SES_*
 #     SMTP login when EMAILNOTIFY_SES='y' and its server and username are set
-#     (Amazon SES, a Gmail app password or any SMTP login), else the local mail
+#     (Amazon SES, a Gmail app password or any SMTP login; needs curl with SMTP,
+#     EL9/EL10 curl-minimal has none: dnf install --allowerasing curl), else the local mail
 #     or sendmail command: Gmail and other large providers reject that unless
 #     the server has SPF/DKIM or a relay host. AUTOUPDATE_NOTIFY covers these
 #     results; the dmotd/check-for-updates "update available" pushes have their
-#     own PUSH_MOTD_ALERTS / PUSH_CHECKUPDATES_ALERTS switches. With an SMTP password or
+#     own PUSH_MOTD_ALERTS / PUSH_CHECKUPDATES_ALERTS switches, which also turn off
+#     those scripts' CVE, kernel and reboot pushes. With an SMTP password or
 #     Pushover keys in this file, keep it root-only:
 #     chmod 600 /etc/centminmod/custom_config.inc
 # COMMANDS:

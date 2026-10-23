@@ -471,8 +471,11 @@ cmm_check() {
         echo
         echo "################  DMOTD DEBUG END  ################"
         echo
+      elif [[ -f /var/run/centminmod-autoupdate.lock && ! -L /var/run/centminmod-autoupdate.lock && "$(stat -c '%u %a' /var/run/centminmod-autoupdate.lock 2>/dev/null)" = '0 600' ]] && ! flock -n -s /var/run/centminmod-autoupdate.lock -c true 2>/dev/null; then
+        # an unattended tools/autoupdate.sh run (and its cmupdate) owns the checkout
+        :
       else
-        git fetch >/dev/null 2>&1
+        timeout 15 git fetch >/dev/null 2>&1
       fi
       popd >/dev/null 2>&1
       if [[ "$(cd ${CMSCRIPT_GITDIR}; git rev-parse HEAD)" != "$(cd ${CMSCRIPT_GITDIR}; git rev-parse @{u})" ]]; then
