@@ -1635,7 +1635,7 @@ fi
     fi
     echo "***************************************************"
     # remove cached PHP latest version file
-    rm -f /tmp/php_version_cache
+    rm -f /var/cache/centminmod/version-check/php_version_cache
     php-config
     echo "***************************************************"
     php -v
