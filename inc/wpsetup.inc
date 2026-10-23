@@ -3322,7 +3322,7 @@ if [[ -f .wpcli-status && ! "\$(grep -w 'Plugin already updated' .wpcli-status)"
     # only do php-fpm reload when zend opcache caching is enabled and revalidation
     # frequency is greater than 10 seconds set by opcache.revalidate_freq php setting
     if [[ "\$(php --ri "Zend Opcache" >/dev/null 2>&1; echo \$?)" -eq '0' && "\$(php --ri "Zend Opcache" | awk '/opcache.revalidate_freq/ {print \$3}')" -gt '10' ]]; then
-      service php-fpm reload
+      systemctl reload php-fpm
     fi
   rm -rf /tmp/wp_updater_phpfpm.lock
   else
