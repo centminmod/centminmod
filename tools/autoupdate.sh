@@ -347,7 +347,7 @@ au_validate_config() {
        AUTOUPDATE_NGINX_TARGET=centmin ;;
   esac
   # http(s) URLs, space or comma separated; anything else is left out and reported
-  v=$(printf '%s' "$AUTOUPDATE_CHECK_URLS" | tr '\n\t' '  ' | sed -E 's#,(https?://)# \1#g')
+  v=$(printf '%s' "$AUTOUPDATE_CHECK_URLS" | tr '\n\t' '  ' | sed -E 's#,([Hh][Tt][Tt][Pp][Ss]?://)# \1#g')
   read -ra urls <<< "$v"
   AUTOUPDATE_CHECK_URLS=''
   for u in "${urls[@]}"; do
@@ -360,8 +360,15 @@ au_validate_config() {
     fi
   done
   # email lists may be comma separated, as for emailnotify.sh
-  read -ra urls <<< "${AUTOUPDATE_EMAIL//,/ }"
-  AUTOUPDATE_EMAIL="${urls[*]}"
+  read -ra urls <<< "$(printf '%s' "$AUTOUPDATE_EMAIL" | tr '\n\t,' '   ')"
+  AUTOUPDATE_EMAIL=''
+  for u in "${urls[@]}"; do
+    if [[ "$u" = ?*@?* ]]; then
+      AUTOUPDATE_EMAIL="${AUTOUPDATE_EMAIL:+$AUTOUPDATE_EMAIL }$u"
+    else
+      AU_CONFIG_WARN="$AU_CONFIG_WARN AUTOUPDATE_EMAIL entry '$u' is not an email address, so nothing is sent to it;"
+    fi
+  done
   AU_CONFIG_WARN=${AU_CONFIG_WARN# }
 }
 au_validate_config
@@ -479,7 +486,9 @@ au_stale_master() {
   pid=$(au_master_pid "$1")
   [[ -n "$pid" ]] || return 1
   exe=$(readlink "/proc/$pid/exe" 2>/dev/null)
-  [[ -n "$exe" && "$exe" != "$2" ]]
+  # same file, not same text: the kernel resolves symlinks (a linked
+  # /usr/local); "... (deleted)" and nginx.old are not the installed file
+  [[ -n "$exe" ]] && [[ ! "$exe" -ef "$2" ]]
 }
 
 au_healthy() {
@@ -859,6 +868,7 @@ au_rebuild_due() {
     when=${when%$'\r'} reason=${reason%$'\r'}
     [[ -z "$c" || "$c" = \#* ]] && continue
     [[ "$c" = "$rcomp" || ( "$c" = php && "$rcomp" = php-* ) ]] || continue
+    [[ "$when" =~ ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$ ]] || continue
     when=${when%Z}
     ts=$(date -u -d "${when/T/ } UTC" +%s 2>/dev/null) || continue
     # an entry takes effect at its time: a future date (or a typo) must not
@@ -898,12 +908,16 @@ au_plan() {
   local comp=$1 due branch fkey fhead ftime fcount review skipc=$1 rel why releases parity nodata='' upwhy prod repoch rbin
   AU_ACTION=none AU_INSTALLED='' AU_TARGET='' AU_WHY='' AU_KEY='' AU_EPOCH='' AU_REL_SECURITY=n AU_REBUILD_COMP='' AU_REPAIR=n AU_SKIPNOTE=''
   [[ -f "$AU_STATE_DIR/failed-$comp" ]] && IFS='|' read -r fkey fhead ftime fcount < "$AU_STATE_DIR/failed-$comp"
+  # a damaged time must not lift a hold
+  [[ -z "$fkey" || "$ftime" =~ ^[0-9]+$ ]] || ftime=$(date +%s)
   if [[ "$comp" = nginx ]]; then
     if ! command -v nginx >/dev/null 2>&1; then
       AU_ACTION=skip AU_WHY='nginx is not installed'; return
     fi
     AU_INSTALLED=$(au_nginx_installed)
-    if ! au_is_ver "$AU_INSTALLED"; then
+    if ! nginx -v >/dev/null 2>&1; then
+      AU_ACTION=skip AU_WHY="nginx -v fails ($(nginx -v 2>&1 | head -n1)); fix nginx by hand (centmin.sh menu option 4)"; return
+    elif ! au_is_ver "$AU_INSTALLED"; then
       AU_ACTION=skip AU_WHY="installed '$(nginx -v 2>&1 | head -n1)' is not an nginx.org or freenginx release build"; return
     fi
     # menu 4 builds the product FREENGINX_INSTALL names: never switch product unattended
@@ -1072,6 +1086,7 @@ au_plan_gate() {
     IFS='|' read -r rkey rhead rtime rcount < "$AU_STATE_DIR/failed-$comp-rebuild"
     [[ "$rkey" = "$AU_KEY" ]] && gkey=$rkey ghead=$rhead gtime=$rtime gcount=$rcount gfile="$AU_STATE_DIR/failed-$comp-rebuild"
   fi
+  [[ "$gtime" =~ ^[0-9]+$ ]] || gtime=$(date +%s)
   # A failed update is retried only after the Centmin Mod code changed and a
   # day has passed, at most AU_MAX_ATTEMPTS times; reset or run override it.
   # An hour of slack lets the next day's run at the same minute qualify.
@@ -1200,6 +1215,17 @@ au_blocked() {
 }
 
 # HTTP status of each AUTOUPDATE_CHECK_URLS entry: "url=code url=code"
+# au_url_code URL "url=code url=code ...": that URL's code (whole tokens:
+# one URL can be another one plus "=..."); fails when it is not listed
+au_url_code() {
+  local tok toks
+  read -ra toks <<< "$2"
+  for tok in "${toks[@]}"; do
+    [[ "${tok%=*}" = "$1" ]] && { echo "${tok##*=}"; return 0; }
+  done
+  return 1
+}
+
 au_url_codes() {
   local u urls
   read -ra urls <<< "$AUTOUPDATE_CHECK_URLS"
@@ -1219,8 +1245,7 @@ au_url_regressions() {
     for pair in "${pairs[@]}"; do
       u=${pair%=*} b=${pair##*=}
       [[ "$b" =~ ^[1-4][0-9][0-9]$ ]] || continue
-      a=${after#* "$u"=}
-      [[ "$a" = "$after" ]] && a= || a=${a%% *}
+      a=$(au_url_code "$u" "$after")
       [[ "$a" =~ ^[1-4][0-9][0-9]$ ]] || bad="$bad $u ($b -> ${a:-none})"
     done
     [[ -z "$bad" ]] && return 0
@@ -1317,8 +1342,7 @@ au_update() {
     saved=" $(cat "$base/urls" 2>/dev/null) " urls_before=''
     read -ra pairs <<< "$AUTOUPDATE_CHECK_URLS"
     for pair in "${pairs[@]}"; do
-      if [[ "$saved" = *" $pair="* ]]; then
-        code=${saved#* "$pair"=} code=${code%% *}
+      if code=$(au_url_code "$pair" "$saved"); then
         urls_before="$urls_before $pair=$code"
       else
         urls_before="$urls_before $(AUTOUPDATE_CHECK_URLS=$pair au_url_codes)"
@@ -1347,7 +1371,7 @@ au_update() {
   (
     cd "$CM_INSTALLDIR" || exit 1
     if [[ "$AU_SYSTEMD" = y ]] && command -v ionice >/dev/null 2>&1; then
-      nice -n "$AUTOUPDATE_NICE" ionice -c2 -n7 bash ./centmin-cli.sh "${comp}upgrade" "$AU_TARGET"
+      nice -n "$AUTOUPDATE_NICE" ionice -t -c2 -n7 bash ./centmin-cli.sh "${comp}upgrade" "$AU_TARGET"
     elif [[ "$AU_SYSTEMD" = y ]]; then
       nice -n "$AUTOUPDATE_NICE" bash ./centmin-cli.sh "${comp}upgrade" "$AU_TARGET"
     else
@@ -1521,7 +1545,8 @@ au_cmupdate() {
     au_tree_check || return 2
     return 0
   fi
-  before=$(au_head) stash_before=$(au_git rev-parse -q --verify refs/stash 2>/dev/null)
+  # full hashes: git's abbreviation can grow after cmupdate's fetch
+  before=$(au_head_full) stash_before=$(au_git rev-parse -q --verify refs/stash 2>/dev/null)
   # a copy left by an earlier re-clone is not this run's to restore; move it
   # aside, or cmupdate's next re-clone would move the tree into it
   if [[ -e "$moved" ]]; then
@@ -1558,7 +1583,7 @@ au_cmupdate() {
       fi
     fi
   fi
-  after=$(au_head)
+  after=$(au_head_full)
   if [[ -z "$after" ]]; then
     au_say "cmupdate: ${CM_INSTALLDIR} is not a git checkout after cmupdate, see $AU_STATE_DIR/cmupdate.log"
     au_pending cmupdate "${CM_INSTALLDIR} is not a git checkout after cmupdate"
@@ -1584,7 +1609,7 @@ au_cmupdate() {
   au_tree_check "$keep" || return 2
   # (a fresh shallow re-clone lacks the old commit: nothing to compare)
   if [[ "$failed" = y && "$before" != "$after" ]] && au_git cat-file -e "${before}^{commit}" && ! au_git merge-base --is-ancestor "$before" "$after" 2>/dev/null; then
-    why="after a failed cmupdate ${CM_INSTALLDIR} is at $after, not a newer version of $before"
+    why="after a failed cmupdate ${CM_INSTALLDIR} is at ${after:0:9}, not a newer version of ${before:0:9}"
   fi
   if [[ -n "$why" ]]; then
     au_say "cmupdate: $why, not building, see $AU_STATE_DIR/cmupdate.log"
@@ -1593,7 +1618,7 @@ au_cmupdate() {
   fi
   if [[ "$failed" = y ]]; then
     # retried on the next run; the build goes ahead with the current code
-    au_say "cmupdate: failed (exit $rc), continuing with the code at $after, see $AU_STATE_DIR/cmupdate.log"
+    au_say "cmupdate: failed (exit $rc), continuing with the code at ${after:0:9}, see $AU_STATE_DIR/cmupdate.log"
     au_pending cmupdate "cmupdate keeps failing, see $AU_STATE_DIR/cmupdate.log"
     # it may still have moved the code forward: then use the new script
     [[ "$before" = "$after" ]] && return 0
@@ -1601,11 +1626,11 @@ au_cmupdate() {
     touch "$stamp"
     rm -f "$AU_STATE_DIR"/pending-cmupdate*
     if [[ "$before" = "$after" ]]; then
-      au_log "cmupdate: code unchanged at $after"
+      au_log "cmupdate: code unchanged at ${after:0:9}"
       return 0
     fi
   fi
-  au_say "cmupdate: Centmin Mod code updated $before -> $after"
+  au_say "cmupdate: Centmin Mod code updated ${before:0:9} -> ${after:0:9}"
   # carry on with the updated script, the lock stays held on fd 9
   if bash -n "${CM_INSTALLDIR}/tools/autoupdate.sh" 2>/dev/null; then
     AU_NO_CMUPDATE=y AU_LOCKED=y exec bash "${CM_INSTALLDIR}/tools/autoupdate.sh" "$AU_CMD"
