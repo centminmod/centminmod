@@ -269,6 +269,8 @@ AU_SYSTEMD=n
 au_validate_config() {
   local v name def min max u urls
   AU_CONFIG_WARN=''
+  # menu 4 uses this default for an empty value: the rollback must find its snapshot
+  [[ -n "$NGINXBACKUPDIR" ]] || NGINXBACKUPDIR=/usr/local/nginxbackup
   for name in AUTOUPDATE_NGINX:n AUTOUPDATE_PHP:n AUTOUPDATE_CMUPDATE:y AUTOUPDATE_PUSHOVER:y; do
     def=${name#*:} name=${name%:*}
     case "$(printf '%s' "${!name}" | tr -d '[:space:]' | tr '[:upper:]' '[:lower:]')" in
@@ -920,8 +922,9 @@ au_plan() {
       # version) or stable (even), that is not on the skip list
       parity=$(au_branch "$AU_INSTALLED")
       releases=$(au_nginx_releases) || releases=''
-      # menu 4 downloads the nginx source from the same site (it deletes any
-      # cached tarball first), so no list means no build either
+      # menu 4 downloads the nginx source from the same site (with the default
+      # NGINX_DYNAMICTLS='n' it deletes a cached nginx.org tarball first), so
+      # no list means no build either
       [[ -n "$releases" ]] || { AU_ACTION=skip AU_WHY="could not get the release list from ${skipc}.org, which menu 4 also downloads from"; return; }
       for rel in $releases; do
         [[ "$(au_branch "$rel")" = "$parity" ]] || continue
@@ -1181,8 +1184,10 @@ au_blocked() {
   if [[ "$comp" = nginx ]]; then
     # a repair rebuild is what brings a stopped service back
     au_service_active nginx || [[ "$AU_REPAIR" = y ]] || { echo "nginx is not running"; return; }
-    # menu 4 downloads the source again (it deletes a cached tarball first)
-    if [[ -n "$AU_TARGET" ]]; then
+    # menu 4 downloads the source again (with the default NGINX_DYNAMICTLS='n'
+    # it deletes a cached nginx.org tarball first; a valid cached freenginx
+    # tarball is used as it is)
+    if [[ -n "$AU_TARGET" ]] && ! { [[ "$FREENGINX_INSTALL" = [yY] ]] && tar -tzf "$DIR_TMP/freenginx-${AU_TARGET}.tar.gz" >/dev/null 2>&1; }; then
       src="https://nginx.org/download/nginx-${AU_TARGET}.tar.gz"
       [[ "$FREENGINX_INSTALL" = [yY] ]] && src="https://freenginx.org/download/freenginx-${AU_TARGET}.tar.gz"
       curl -${ipv_forceopt}fsI --connect-timeout 10 --max-time 20 -o /dev/null "$src" 2>/dev/null || { echo "$src cannot be downloaded now"; return; }
@@ -1219,7 +1224,7 @@ au_url_regressions() {
       [[ "$a" =~ ^[1-4][0-9][0-9]$ ]] || bad="$bad $u ($b -> ${a:-none})"
     done
     [[ -z "$bad" ]] && return 0
-    sleep 3
+    (( attempt < 3 )) && sleep 3
   done
   echo "${bad# }"
 }
