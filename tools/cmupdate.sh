@@ -74,7 +74,8 @@ fupdate() {
 
   CMUPDATE_GITCURLSTATUS=$(curl -${ipv_forceopt}sL --connect-timeout 20 -sI https://raw.githubusercontent.com/centminmod/centminmod/${cmupdate_branchname}/gitclean.txt | grep 'HTTP/' | awk '/200/ {print $2}')
     if [[ "$CMUPDATE_GITCURLSTATUS" = '200' ]]; then
-      CHECK_GITCLEAN=$(curl -${ipv_forceopt}sLk --connect-timeout 20 https://raw.githubusercontent.com/centminmod/centminmod/${cmupdate_branchname}/gitclean.txt)
+      # an error page must not trigger the re-clone below, which drops local changes
+      CHECK_GITCLEAN=$(curl -${ipv_forceopt}fsSL --connect-timeout 20 --max-time 30 https://raw.githubusercontent.com/centminmod/centminmod/${cmupdate_branchname}/gitclean.txt 2>/dev/null)
     else
       echo
       echo "Error: unable to connect to Github.com repo right now"
@@ -104,7 +105,7 @@ fupdate() {
         echo "Error: wasn't able to successfully update ${CM_INSTALLDIR} code base"
         echo "       restoring previous copy of ${CM_INSTALLDIR} code base"
       fi
-    elif [[ "$CHECK_GITCLEAN" = 'no' ]]; then
+    elif [[ "$CHECK_GITCLEAN" != 'yes' ]]; then
       echo
       echo "-------------------------------------"
       echo "Updating Centmin Mod code"
