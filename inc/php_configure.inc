@@ -1,4 +1,32 @@
 # ------------------------------------------------------------------
+# Function : php_customssl_openssl_ensure
+# Purpose  : EL9/EL10 PHP 7.4/8.0 builds link the OpenSSL 1.1.1 in
+#            OPENSSL_CUSTOMPATH (PHP_CUSTOMSSL), which only Nginx upgrades
+#            otherwise build. Build it when it is missing or lacks the current
+#            AlmaLinux security fix set, instead of PHP silently falling back
+#            to the system OpenSSL 3 through pkg-config.
+# ------------------------------------------------------------------
+php_customssl_openssl_ensure() {
+    local saved_pwd
+    [[ "$PHP_CUSTOMSSL" = [yY] && "$PHP_CUSTOMSSL_FORCE" != [yY] ]] || return 0
+    [[ "$CENTOS_NINE" -eq '9' || "$CENTOS_TEN" -eq '10' ]] || return 0
+    [[ "$PHPVER_ID" -ge '70400' && "$PHPVER_ID" -lt '80100' ]] || return 0
+    [[ "$OPENSSL_VERSION" = 1.1.1* && "$LIBRESSL_SWITCH" = [nN] && "$BORINGSSL_SWITCH" = [nN] ]] || return 0
+    if [[ -x "${OPENSSL_CUSTOMPATH}/bin/openssl" ]] && ! openssl_alma_patches_pending; then
+        return 0
+    fi
+    echo "PHP ${PHPVER_ID} with PHP_CUSTOMSSL='y': building OpenSSL ${OPENSSL_VERSION} in ${OPENSSL_CUSTOMPATH}"
+    saved_pwd="$(pwd)"
+    if [[ ! -f "${DIR_TMP}/${OPENSSL_LINKFILE}" ]]; then
+        openssldownload
+    fi
+    # installopenssl only builds the custom OpenSSL when Nginx does not use the system one
+    OPENSSL_SYSTEM_USE='n' installopenssl
+    cd "$saved_pwd" || return 1
+    [[ -x "${OPENSSL_CUSTOMPATH}/bin/openssl" ]]
+}
+
+# ------------------------------------------------------------------
 # Function : libtidy_centos7_install
 # Purpose  : Install libtidy 5.8.0 from source for CentOS 7 + PHP 8.3+
 #            compatibility. CentOS 7 system libtidy is too old and lacks
@@ -808,6 +836,11 @@ fi
 # PHP 7.4 and 8.0 have backported OpenSSL 3.x supporting patches enabled
 if [[ "$DETECTOPENSSL_THREEZERO" = '3.0' || "$DETECTOPENSSL_THREEONE" = '3.1' || "$DETECTOPENSSL_THREETWO" = '3.2' ]] && [[ "$PHPMVER" = '5.6' || "$PHPMUVER" = '5.6' || "$PHPMVER" = '7.0' || "$PHPMUVER" = '7.0' || "$PHPMVER" = '7.1' || "$PHPMUVER" = '7.1' || "$PHPMVER" = '7.2' || "$PHPMUVER" = '7.2' || "$PHPMVER" = '7.3' || "$PHPMUVER" = '7.3' ]] && [[ "$LIBRESSL_SWITCH" = [nN] && "$BORINGSSL_SWITCH" = [nN] ]]; then
   PHP_CUSTOMSSL='n'
+fi
+
+if ! php_customssl_openssl_ensure; then
+  echo "ERROR: OpenSSL ${OPENSSL_VERSION} for PHP_CUSTOMSSL could not be built in ${OPENSSL_CUSTOMPATH}" >&2
+  return 1
 fi
 
 if [[ "$PHP_CUSTOMSSL" != [yY] && "$PHP_LDMOLD" = [yY] && -f /usr/bin/mold ]]; then
