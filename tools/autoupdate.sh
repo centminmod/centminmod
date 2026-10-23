@@ -1062,11 +1062,12 @@ au_plan() {
 
 # Retry gate and soak delay for the update au_plan picked (uses its locals).
 au_plan_gate() {
-  local seen age gkey=$fkey ghead=$fhead gtime=$ftime gcount=$fcount rkey rhead rtime rcount
+  local seen age gkey=$fkey ghead=$fhead gtime=$ftime gcount=$fcount rkey rhead rtime rcount grec
+  local gfile="$AU_STATE_DIR/failed-$comp"
   # the planned key's own record, in either file (au_fail_record)
   if [[ "$gkey" != "$AU_KEY" && -f "$AU_STATE_DIR/failed-$comp-rebuild" ]]; then
     IFS='|' read -r rkey rhead rtime rcount < "$AU_STATE_DIR/failed-$comp-rebuild"
-    [[ "$rkey" = "$AU_KEY" ]] && gkey=$rkey ghead=$rhead gtime=$rtime gcount=$rcount
+    [[ "$rkey" = "$AU_KEY" ]] && gkey=$rkey ghead=$rhead gtime=$rtime gcount=$rcount gfile="$AU_STATE_DIR/failed-$comp-rebuild"
   fi
   # A failed update is retried only after the Centmin Mod code changed and a
   # day has passed, at most AU_MAX_ATTEMPTS times; reset or run override it.
@@ -1079,8 +1080,17 @@ au_plan_gate() {
     elif [[ "$ghead" = "$(au_head_full)" ]]; then
       AU_ACTION=held AU_WHY="$AU_WHY: failed $(au_date "$gtime"), waiting for a Centmin Mod code update (cmupdate) or autoupdate.sh reset"
       return
-    elif (( $(date +%s) - gtime < 86400 - 3600 )); then
-      AU_ACTION=held AU_WHY="$AU_WHY: failed $(au_date "$gtime"), retrying 24 hours after that"
+    fi
+    # the day counts from when the failure was recorded: an interrupted run
+    # recorded late carries the earlier time its log stopped
+    grec=$(stat -c %Y "$gfile" 2>/dev/null)
+    [[ "$grec" =~ ^[0-9]+$ ]] && (( grec > gtime )) || grec=$gtime
+    if (( $(date +%s) - grec < 86400 - 3600 )); then
+      if (( grec - gtime > 3600 )); then
+        AU_ACTION=held AU_WHY="$AU_WHY: failed $(au_date "$gtime"), recorded $(au_date "$grec"), retrying 24 hours after that"
+      else
+        AU_ACTION=held AU_WHY="$AU_WHY: failed $(au_date "$gtime"), retrying 24 hours after that"
+      fi
       return
     fi
   fi
@@ -1125,7 +1135,7 @@ au_cmm_running() {
   local pid arg args
   # the usual `centmin` command is /usr/bin/centmin sourcing centmin.sh, so
   # its argv names only the wrapper
-  for pid in $(pgrep -U 0 -u 0 -f 'centmin|cmupdate'); do
+  for pid in $(pgrep -U 0 -u 0 -f 'centmin|cmupdate|updatecm'); do
     args=()
     while IFS= read -r -d '' arg; do
       args+=("$arg")
@@ -1136,7 +1146,7 @@ au_cmm_running() {
     esac
     for arg in "${args[@]}"; do
       case "${arg##*/}" in
-        centmin.sh|centmin-cli.sh|cmupdate|cmupdate.sh) echo "${arg##*/} (pid $pid)"; return 0 ;;
+        centmin.sh|centmin-cli.sh|cmupdate|cmupdate.sh|updatecm.sh|cmupdate-fix.sh) echo "${arg##*/} (pid $pid)"; return 0 ;;
         # the wrapper runs as /bin/bash /usr/bin/centmin; a bare "centmin" is
         # more likely a screen/tmux session name
         centmin) [[ "$arg" = */centmin ]] && { echo "centmin (pid $pid)"; return 0; } ;;
@@ -1469,7 +1479,8 @@ au_pending() {
 au_tree_why() {
   if au_git ls-files -u | grep -q .; then
     echo "${CM_INSTALLDIR} has unmerged files"
-  elif [[ -e "${CM_INSTALLDIR}/.git/index.lock" ]]; then
+  elif [[ -n "$(find "${CM_INSTALLDIR}/.git/index.lock" -mmin +2 2>/dev/null)" ]]; then
+    # (a git command running now holds it for a moment)
     echo "a git operation in ${CM_INSTALLDIR} was cut off (.git/index.lock is left)"
   elif [[ -f "$AU_STATE_DIR/cmupdate-localchanges" ]]; then
     echo "cmupdate could not keep local changes in ${CM_INSTALLDIR} applied (git stash list there, then autoupdate.sh reset)"
@@ -1478,7 +1489,7 @@ au_tree_why() {
 
 au_tree_check() {
   local lc="$AU_STATE_DIR/cmupdate-localchanges" why
-  if [[ "$1" != keep && -f "$lc" ]] && ! au_git stash list 2>/dev/null | grep -q 'cmupdate-'; then
+  if [[ "$1" != keep && -f "$lc" ]] && ! au_git stash list 2>/dev/null | grep -qE ': On [^:]*: cmupdate-'; then
     rm -f "$lc" "$lc.sent"
     au_log "cmupdate: the stashed local changes were dealt with, builds resume"
   fi
@@ -1500,15 +1511,22 @@ au_cmupdate() {
   # cmupdate off, already run (re-exec) or run within the hour (stamp): the
   # tree must still be fit to build from
   if [[ "$AUTOUPDATE_CMUPDATE" != [yY] || "$AU_NO_CMUPDATE" = y || -n "$(find "$stamp" -mmin -50 2>/dev/null)" ]]; then
-    au_tree_check || return 2
     # an old timer would alert at once when cmupdate is turned back on
     [[ "$AUTOUPDATE_CMUPDATE" = [yY] ]] || rm -f "$AU_STATE_DIR"/pending-cmupdate*
+    au_tree_check || return 2
     return 0
   fi
   before=$(au_head) stash_before=$(au_git rev-parse -q --verify refs/stash 2>/dev/null)
   # a copy left by an earlier re-clone is not this run's to restore; move it
   # aside, or cmupdate's next re-clone would move the tree into it
   if [[ -e "$moved" ]]; then
+    # a cut-off re-clone: the earlier copy may be the only good tree
+    if ! au_git rev-parse --verify -q HEAD >/dev/null; then
+      why="${CM_INSTALLDIR} is not a usable checkout and an earlier copy is in $moved: put the right one back by hand"
+      au_say "cmupdate: $why, not building"
+      au_pending tree "$why"
+      return 2
+    fi
     if mv "$moved" "${moved}-$(date +%Y%m%d-%H%M%S)" 2>/dev/null; then
       au_log "cmupdate: moved an earlier $moved aside to ${moved}-<date>, remove it when no longer needed"
     else
@@ -1528,8 +1546,11 @@ au_cmupdate() {
     if au_git rev-parse --verify -q HEAD >/dev/null && au_git diff --quiet HEAD; then
       au_say "cmupdate: timed out after re-cloning, kept the new ${CM_INSTALLDIR}; the previous copy is in $moved"
     else
-      rm -rf "$CM_INSTALLDIR" && mv "$moved" "$CM_INSTALLDIR"
-      au_say "cmupdate: timed out while re-cloning, restored the previous ${CM_INSTALLDIR}"
+      if rm -rf "$CM_INSTALLDIR" && mv "$moved" "$CM_INSTALLDIR"; then
+        au_say "cmupdate: timed out while re-cloning, restored the previous ${CM_INSTALLDIR}"
+      else
+        au_say "cmupdate: timed out while re-cloning and could not restore the previous ${CM_INSTALLDIR} from $moved"
+      fi
     fi
   fi
   after=$(au_head)
@@ -1550,13 +1571,14 @@ au_cmupdate() {
   # (a failed fast-forward also leaves its stash without saying so)
   stash_after=$(au_git rev-parse -q --verify refs/stash 2>/dev/null)
   if grep -qE '^(git_sync: WARNING|  Local changes saved to:)' "$AU_STATE_DIR/cmupdate.log" ||
-     { [[ "$stash_after" != "$stash_before" ]] && au_git stash list -n 1 2>/dev/null | grep -q 'cmupdate-'; }; then
+     { [[ "$stash_after" != "$stash_before" ]] && au_git stash list -n 1 2>/dev/null | grep -qE ': On [^:]*: cmupdate-'; }; then
     [[ -f "$lc" ]] || date +%s > "$lc"
     keep=keep
   fi
   # a tree that is not what cmupdate meant to leave is never built from
   au_tree_check "$keep" || return 2
-  if [[ "$failed" = y && "$before" != "$after" ]] && ! au_git merge-base --is-ancestor "$before" "$after" 2>/dev/null; then
+  # (a fresh shallow re-clone lacks the old commit: nothing to compare)
+  if [[ "$failed" = y && "$before" != "$after" ]] && au_git cat-file -e "${before}^{commit}" && ! au_git merge-base --is-ancestor "$before" "$after" 2>/dev/null; then
     why="after a failed cmupdate ${CM_INSTALLDIR} is at $after, not a newer version of $before"
   fi
   if [[ -n "$why" ]]; then
@@ -1635,7 +1657,8 @@ au_take_lock() {
   exec 9>>"$AU_LOCK"
   umask 022
   # a few seconds covers the probes cpcheck, cmupdate and logins make
-  if ! flock -w 10 9; then
+  # waits out shared holders: probes, and a login's 15 second git fetch
+  if ! flock -w 20 9; then
     exec 9>&-
     read -r pid started 2>/dev/null < "${AU_LOCK}.info"
     if [[ "$AU_CMD" = run ]]; then
@@ -1709,7 +1732,7 @@ au_run() {
   # centmin.sh and cmupdate refuse to start while the lock is held; let ours run
   export CMM_AUTOUPDATE_RUN=y
   if ! au_interrupted; then
-    au_say "deferred, the interrupted run's build is still running"
+    au_say "deferred, a centmin-cli.sh upgrade build is still running (an interrupted run left inprogress)"
     au_pending run "the build of an interrupted run is still running"
     return 0
   fi
@@ -2031,7 +2054,16 @@ au_main() {
       # a running update still needs its failure record and baseline: hold
       # the lock while deleting, so no run can start in between
       [[ -L "$AU_LOCK" ]] && { echo "reset: $AU_LOCK is a symlink, not touching it"; return 1; }
-      ( umask 077; exec 9>>"$AU_LOCK" || exit 2; flock -n 9 || exit 1
+      # a wrong-mode lock that no root process holds is replaced, as a run does
+      if [[ -e "$AU_LOCK" && "$(stat -c '%u %a' "$AU_LOCK" 2>/dev/null)" != '0 600' ]] && ! au_lock_root_holder; then
+        rm -f "$AU_LOCK"
+      fi
+      # an interrupted run's build runs on without the lock
+      if pgrep -U 0 -u 0 -f 'centmin-cli\.sh (nginx|php)upgrade' >/dev/null 2>&1; then
+        echo "reset: a centmin-cli.sh nginx/PHP upgrade build is running, run reset after it ends"
+        return 1
+      fi
+      ( umask 077; exec 9>>"$AU_LOCK" || exit 2; flock -w 10 9 || exit 1
         rm -rf "$AU_STATE_DIR"/failed-* "$AU_STATE_DIR"/baseline-* "$AU_STATE_DIR"/pending-* "$AU_STATE_DIR"/stuck-* "$AU_STATE_DIR/cmupdate.stamp" "$AU_STATE_DIR"/cmupdate-localchanges* "$AU_STATE_DIR/inprogress" || exit 3 )
       case $? in
         0) ;;
