@@ -809,6 +809,10 @@ gitenv_askupdate() {
       # an unattended tools/autoupdate.sh run (and its cmupdate) owns the
       # checkout: fetch under a shared hold of its lock, so none starts meanwhile
       _au_fetch=()
+      # root creates it if missing (a fresh boot), so a first run cannot start mid-fetch
+      if [[ "$(id -u)" -eq 0 && ! -e /var/run/centminmod-autoupdate.lock ]]; then
+        ( umask 077; : >> /var/run/centminmod-autoupdate.lock ) 2>/dev/null
+      fi
       if [[ -f /var/run/centminmod-autoupdate.lock && ! -L /var/run/centminmod-autoupdate.lock && "$(stat -c '%u %a' /var/run/centminmod-autoupdate.lock 2>/dev/null)" = '0 600' ]]; then
         _au_fetch=(flock -n -s /var/run/centminmod-autoupdate.lock)
       fi
@@ -823,7 +827,7 @@ gitenv_askupdate() {
         export GIT_TRACE=1
         export GIT_TRACE_PACKET=1
         export GIT_TRACE_PERFORMANCE=1
-        /usr/bin/time --format='real: %es user: %Us sys: %Ss cpu: %P maxmem: %M KB cswaits: %w' "${_au_fetch[@]}" git fetch -v
+        /usr/bin/time --format='real: %es user: %Us sys: %Ss cpu: %P maxmem: %M KB cswaits: %w' "${_au_fetch[@]}" timeout 15 git fetch -v
         echo
         echo "################  DMOTD DEBUG END  ################"
         echo

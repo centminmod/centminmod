@@ -137,7 +137,8 @@
 #                                       maintenance page for the whole menu 4/5
 #                                       run, so sites are down for the build;
 #                                       the default 'n' suits unattended updates
-#   FORCE_IPVFOUR                       IPv4 for version checks and notifications
+#   FORCE_IPVFOUR                       IPv4 for version checks, the nginx source
+#                                       probe, check URLs and notifications
 ###########################################################
 # SETTINGS: defaults; override any of them in /etc/centminmod/custom_config.inc
 #
@@ -173,7 +174,8 @@ AUTOUPDATE_CHECK_URLS='http://127.0.0.1/' # http(s) URLs, space or comma separat
                                   # 500 after an update; add your sites' pages (PHP, cached,
                                   # module-specific) so a broken update is caught and rolled back.
                                   # Redirects are not followed (list final URLs), and
-                                  # FORCE_IPVFOUR='y' (the default) checks them over IPv4
+                                  # FORCE_IPVFOUR='y' (the default) checks them over IPv4.
+                                  # Empty: no URL checks at all
 AUTOUPDATE_NICE='10'              # CPU nice level 0-19 for the build (systemd hosts only)
 AUTOUPDATE_STUCK_HOURS='4'        # alert once when a run holds the lock this long
 #
@@ -191,7 +193,8 @@ AUTOUPDATE_EMAIL=''               # recipients, space or comma separated. Sent t
                                   # command, which Gmail and other large providers reject
                                   # unless the server has SPF/DKIM or a relay host
 AUTOUPDATE_EMAIL_FROM=''          # sender address; default for SMTP: EMAILNOTIFY_SES_FROM_EMAIL,
-                                  # for mail/sendmail: the system default
+                                  # else the SMTP username if it is an address; for
+                                  # mail/sendmail: the system default
 # end of settings
 ###########################################################
 export PATH="/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin:/root/bin"
@@ -347,7 +350,7 @@ au_validate_config() {
        AUTOUPDATE_NGINX_TARGET=centmin ;;
   esac
   # http(s) URLs, space or comma separated; anything else is left out and reported
-  v=$(printf '%s' "$AUTOUPDATE_CHECK_URLS" | tr '\n\t' '  ' | sed -E 's#,([Hh][Tt][Tt][Pp][Ss]?://)# \1#g')
+  v=$(printf '%s' "$AUTOUPDATE_CHECK_URLS" | tr '\n\t' '  ' | sed -E 's#,([A-Za-z][A-Za-z0-9+.-]*://)# \1#g')
   read -ra urls <<< "$v"
   AUTOUPDATE_CHECK_URLS=''
   for u in "${urls[@]}"; do
@@ -360,10 +363,11 @@ au_validate_config() {
     fi
   done
   # email lists may be comma separated, as for emailnotify.sh
-  read -ra urls <<< "$(printf '%s' "$AUTOUPDATE_EMAIL" | tr '\n\t,' '   ')"
+  read -ra urls <<< "$(printf '%s' "$AUTOUPDATE_EMAIL" | tr '\n\t,;' '    ')"
   AUTOUPDATE_EMAIL=''
   for u in "${urls[@]}"; do
-    if [[ "$u" = ?*@?* ]]; then
+    # (also passed unquoted to mail: no glob characters)
+    if [[ "$u" =~ ^[^@\<\>*?[]+@[^@\<\>*?[]+$ ]]; then
       AUTOUPDATE_EMAIL="${AUTOUPDATE_EMAIL:+$AUTOUPDATE_EMAIL }$u"
     else
       AU_CONFIG_WARN="$AU_CONFIG_WARN AUTOUPDATE_EMAIL entry '$u' is not an email address, so nothing is sent to it;"
@@ -905,11 +909,11 @@ au_failure_review() {
 # (upgrade|rebuild|none|skip|wait|held), AU_INSTALLED, AU_TARGET, AU_WHY,
 # AU_KEY, AU_EPOCH and AU_REBUILD_COMP. Changes no state when AU_DRYRUN=y.
 au_plan() {
-  local comp=$1 due branch fkey fhead ftime fcount review skipc=$1 rel why releases parity nodata='' upwhy prod repoch rbin
+  local comp=$1 due branch fkey fhead ftime fcount review skipc=$1 rel why releases parity nodata='' upwhy prod repoch rbin rkey
   AU_ACTION=none AU_INSTALLED='' AU_TARGET='' AU_WHY='' AU_KEY='' AU_EPOCH='' AU_REL_SECURITY=n AU_REBUILD_COMP='' AU_REPAIR=n AU_SKIPNOTE=''
   [[ -f "$AU_STATE_DIR/failed-$comp" ]] && IFS='|' read -r fkey fhead ftime fcount < "$AU_STATE_DIR/failed-$comp"
-  # a damaged time must not lift a hold
-  [[ -z "$fkey" || "$ftime" =~ ^[0-9]+$ ]] || ftime=$(date +%s)
+  # a damaged time must not lift a hold, nor hold for ever: the record's write time
+  [[ -z "$fkey" || "$ftime" =~ ^[0-9]+$ ]] || ftime=$(stat -c %Y "$AU_STATE_DIR/failed-$comp" 2>/dev/null || date +%s)
   if [[ "$comp" = nginx ]]; then
     if ! command -v nginx >/dev/null 2>&1; then
       AU_ACTION=skip AU_WHY='nginx is not installed'; return
@@ -993,9 +997,18 @@ au_plan() {
       AU_TARGET=$AU_INSTALLED nodata="could not get PHP $branch release data from php.net"
     fi
   fi
-  # a failed rebuild whose entry is no longer the due one is done with
-  if [[ "$AU_DRYRUN" != y && -f "$AU_STATE_DIR/failed-$comp-rebuild" && "$(cut -d'|' -f1 "$AU_STATE_DIR/failed-$comp-rebuild")" != "$comp rebuild ${due%% *}" ]]; then
-    rm -f "$AU_STATE_DIR/failed-$comp-rebuild"
+  # a failed rebuild record is done with once another entry is due, or its
+  # entry was withdrawn (the binary predates it); one whose build is in use
+  # stays held, as in failed-<comp>
+  if [[ "$AU_DRYRUN" != y && -f "$AU_STATE_DIR/failed-$comp-rebuild" ]]; then
+    rkey=$(cut -d'|' -f1 "$AU_STATE_DIR/failed-$comp-rebuild")
+    if [[ "$rkey" =~ \ rebuild\ ([0-9]+)$ && "$rkey" != "$comp rebuild ${due%% *}" ]]; then
+      repoch=${BASH_REMATCH[1]} rbin=$AU_NGINX_BIN
+      [[ "$comp" = php ]] && rbin=$AU_PHPFPM_BIN
+      if [[ -n "$due" ]] || (( $(au_build_time "$comp" "$rbin") < repoch )); then
+        rm -f "$AU_STATE_DIR/failed-$comp-rebuild"
+      fi
+    fi
   fi
   # never install a version on the skip list; a due rebuild still runs
   if au_vergt "$AU_TARGET" "$AU_INSTALLED" && why=$(au_skip_reason "$skipc" "$AU_TARGET"); then
@@ -1040,7 +1053,7 @@ au_plan() {
       fi
       return
     elif [[ "$review" = keep ]]; then
-      AU_ACTION=held AU_WHY="the update $fkey failed its checks (see autoupdate.sh status) and $comp still runs that build; fix it, then run autoupdate.sh reset"
+      AU_ACTION=held AU_WHY="the update $fkey failed (its checks, or it was interrupted; see autoupdate.sh status) and $comp still runs that build; fix it, then run autoupdate.sh reset"
       return
     fi
     # the failed update left the service down or on an old binary: rebuild it
@@ -1086,7 +1099,7 @@ au_plan_gate() {
     IFS='|' read -r rkey rhead rtime rcount < "$AU_STATE_DIR/failed-$comp-rebuild"
     [[ "$rkey" = "$AU_KEY" ]] && gkey=$rkey ghead=$rhead gtime=$rtime gcount=$rcount gfile="$AU_STATE_DIR/failed-$comp-rebuild"
   fi
-  [[ "$gtime" =~ ^[0-9]+$ ]] || gtime=$(date +%s)
+  [[ "$gtime" =~ ^[0-9]+$ ]] || gtime=$(stat -c %Y "$gfile" 2>/dev/null || date +%s)
   # A failed update is retried only after the Centmin Mod code changed and a
   # day has passed, at most AU_MAX_ATTEMPTS times; reset or run override it.
   # An hour of slack lets the next day's run at the same minute qualify.
@@ -1500,10 +1513,6 @@ au_pending() {
   fi
 }
 
-# Why the code tree must not be built from (local changes left in a stash,
-# unmerged or cut-off git work): alert and 72h timer, return 2. The stop is
-# lifted once no cmupdate- stash is left (or by reset), unless $1 is "keep":
-# this run's cmupdate log just reported it.
 # why the tree is not built from, or nothing (read-only: check, status, motd)
 au_tree_why() {
   if au_git ls-files -u | grep -q .; then
@@ -1516,6 +1525,10 @@ au_tree_why() {
   fi
 }
 
+# Why the code tree must not be built from (local changes left in a stash,
+# unmerged or cut-off git work): alert and 72h timer, return 2. The stop is
+# lifted once no cmupdate- stash is left (or by reset), unless $1 is "keep":
+# this run's cmupdate log just reported it.
 au_tree_check() {
   local lc="$AU_STATE_DIR/cmupdate-localchanges" why
   if [[ "$1" != keep && -f "$lc" ]] && ! au_git stash list 2>/dev/null | grep -qE ': On [^:]*: cmupdate-'; then
@@ -1686,7 +1699,6 @@ au_take_lock() {
   umask 077
   exec 9>>"$AU_LOCK"
   umask 022
-  # a few seconds covers the probes cpcheck, cmupdate and logins make
   # waits out shared holders: probes, and a login's 15 second git fetch
   if ! flock -w 20 9; then
     exec 9>&-
@@ -1834,11 +1846,13 @@ au_check() {
     enabled=$AUTOUPDATE_NGINX
     [[ "$comp" = php ]] && enabled=$AUTOUPDATE_PHP
     au_plan "$comp"
-    why=$(au_blocked "$comp")
+    # gates apply to a build: none without a target (not installed, skipped)
+    why=-
+    [[ -z "$AU_TARGET" ]] || { why=$(au_blocked "$comp"); why=${why:-ok}; }
     # a component turned off is planned only to show what it would do
     [[ "$enabled" = [yY] ]] || AU_ACTION="$AU_ACTION if turned on"
     printf '%-6s AUTOUPDATE_%s=%s installed=%s target=%s -> %s: %s\n' "$comp" "$(echo "$comp" | tr a-z A-Z)" "$enabled" "${AU_INSTALLED:--}" "${AU_TARGET:--}" "$AU_ACTION" "$AU_WHY"
-    printf '%-6s gates: %s\n' '' "${why:-ok}"
+    printf '%-6s gates: %s\n' '' "$why"
   done
   why=$(au_tree_why)
   [[ -z "$why" ]] || echo "tree   $why: no builds until that is dealt with"
@@ -2093,7 +2107,7 @@ au_main() {
         echo "reset: a centmin-cli.sh nginx/PHP upgrade build is running, run reset after it ends"
         return 1
       fi
-      ( umask 077; exec 9>>"$AU_LOCK" || exit 2; flock -w 10 9 || exit 1
+      ( umask 077; exec 9>>"$AU_LOCK" || exit 2; flock -w 20 9 || exit 1
         rm -rf "$AU_STATE_DIR"/failed-* "$AU_STATE_DIR"/baseline-* "$AU_STATE_DIR"/pending-* "$AU_STATE_DIR"/stuck-* "$AU_STATE_DIR/cmupdate.stamp" "$AU_STATE_DIR"/cmupdate-localchanges* "$AU_STATE_DIR/inprogress" || exit 3 )
       case $? in
         0) ;;

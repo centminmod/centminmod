@@ -2466,10 +2466,11 @@
 #     tools/autoupdate.sh. Root/sudo dmotd SSH logins, centmin.sh, cmupdate and the
 #     check-for-updates.sh cron job re-add it if it is deleted; set both to 'n'
 #     to turn auto-updates off (the entry is then removed).
-#   - nginx follows the newest nginx.org release on the branch you run (mainline
-#     or stable), or Centmin Mod's NGINX_VERSION default (cmupdate runs first)
-#     with AUTOUPDATE_NGINX_TARGET='centmin'. An NGINX_VERSION line in this file
-#     sets the version auto-update installs and stops at. Releases Centmin Mod
+#   - nginx follows the newest nginx.org (freenginx.org for freenginx) release on
+#     the branch you run (mainline or stable), or Centmin Mod's NGINX_VERSION
+#     (FREENGINX_VERSION) default (cmupdate runs first) with
+#     AUTOUPDATE_NGINX_TARGET='centmin'. An NGINX_VERSION line in this file sets
+#     the version auto-update installs and stops at. Releases Centmin Mod
 #     lists in tools/autoupdate-skip.txt are never installed.
 #   - PHP updates stay within the installed major.minor branch (8.3.x -> 8.3.y),
 #     using php.net release data. End-of-life branches are rebuilt when Centmin Mod
@@ -2480,10 +2481,9 @@
 #     default (a hold keeps holding, a mistyped AUTOUPDATE_NGINX_TARGET uses
 #     centmin) and are reported by check/status, the dmotd banner and one alert.
 #   - Skipped while centmin.sh, cmupdate or yum/dnf runs, load or disk space is
-#     outside limits, nginx -t / php-fpm -t fails, the service is stopped (unless a
-#     failed update left it down), nginx.org (freenginx.org for freenginx) does
-#     not serve the nginx source or
-#     ENABLE_MENU='y'; centmin.sh and cmupdate in
+#     outside limits, nginx -t / php-fpm -t fails, the service is stopped (unless
+#     a failed update left it down), nginx.org (freenginx.org for freenginx) does
+#     not serve the nginx source or ENABLE_MENU='y'; centmin.sh and cmupdate in
 #     turn refuse to start while an update runs. Updates blocked for 72 hours
 #     send one alert.
 #   - After an update nginx/php-fpm must be running on the new binary, configs
