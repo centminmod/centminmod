@@ -1,0 +1,19 @@
+# OpenSSL 1.1.1w security fixes taken from AlmaLinux 9 compat-openssl11, rebased onto 1.1.1w
+#
+# Upstream OpenSSL stopped publishing 1.1.1 fixes after 1.1.1w (2023-09-11). These are the
+# fixes Red Hat chose to backport to RHEL 9 compat-openssl11; it is NOT a complete set of
+# fixes for every 1.1.1 CVE published since. Red Hat lists many later CVEs as fix deferred,
+# will not fix or not affected (the last often only because RHEL builds with no-ec2m).
+#
+# source: compat-openssl11-1.1.1k-5.el9_8.6.src.rpm sha256 ec588e6a453a5ed323ffcf93f164bfe401ac732a0edb585300b106fcacb8d1e8
+# applied in this order with: patch -p1 --forward --batch --fuzz=0 --no-backup-if-mismatch
+#
+# tarball <sha256> <file>
+# patch <sha256> <file> <upstream srpm patch> <upstream sha256>
+tarball cf3098950cb4d853ad95c0841f1f9c6d3dc102dccfcacd521d93925208b76ac8 openssl-1.1.1w.tar.gz
+patch 98516eb3579c0ff8f68d16254431934cf8ab3e75de29fd8a5a0c97278dd209a1 01-openssl-1.1.1w-hardening-from-openssl-3.0.1.patch openssl-1.1.1-hardening-from-openssl-3.0.1.patch 90043fe7b53b497c5ce3b1e4ee1d991df8b13461a1dfdf85647aad1fdb332b17
+patch c9bcc2306aa426a56ed37345a65f35e3db77bb89b601db131275fd405e5a6b95 02-openssl-1.1.1w-cve-2025-69419.patch openssl-1.1.1-cve-2025-69419.patch d6e68ad22823af07106a1ecb336c7cf025f2291583de5b3d290aa70fa05b766b
+patch 5bc7ba9c339037739998296a0bf6bc65c9da0311f39eef27c1cf078a655d4d11 03-openssl-1.1.1w-cve-2026-28390.patch openssl-1.1.1-cve-2026-28390.patch 3c75d3683b3eff9a2abbad6e803b8633451608e5dcc962264d38f2f02c4add45
+patch cf826f13b01dc5efbc83190b18f99d580564bccec4356961482c9301f8942999 04-openssl-1.1.1w-cve-2026-45447.patch openssl-1.1.1-cve-2026-45447.patch 08238290ad1c427e8edb97dfe1ec52fbe2c8b6bc8787d8271a048dfbb8ee8ad6
+patch 5751d6551594f9e5a14cb8f11a19634f9fb7342d855ba245740bdb98712a6657 05-openssl-1.1.1w-cve-2026-63072.patch openssl-1.1.1-cve-2026-63072.patch 1cec7619c1acfe31c776619c7332529ea1abb6f277869b0f730b3e0ec58a4a19
+patch 17a04448f17b5bfe6bc9cf1c77e1c17bd70b8cd8f3dcf3da368dcd9079c62001 06-openssl-1.1.1w-cve-2026-84782.patch openssl-1.1.1-cve-2026-84782.patch 200b3c45c248eb68fa11db4b639c1dc96392414d04c29f8dad2ca644086bf4f9
