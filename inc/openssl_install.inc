@@ -672,13 +672,14 @@ fi
   } 2>&1 | tee "${CENTMINLOGDIR}/patch_opensslpatches_${DT}.log"
 }
 
-# OpenSSL 1.1.1w: apply the security fixes AlmaLinux 9 backports to compat-openssl11
-# (patches/openssl/almalinux-1.1.1w/series). This is Red Hat's selection of fixes, not
-# every 1.1.1 CVE published since upstream's last 1.1.1w release. It runs in
-# installopenssl's own shell, not inside opensslpatches' tee pipe, so the result reaches
-# the caller, and before $STATICLIBSSL is replaced. All or nothing: a set that does not
-# apply cleanly is skipped with a warning, or stops the build when
-# OPENSSL_ALMA_PATCHES_STRICT='y'.
+# OpenSSL 1.1.1w: apply the security fixes AlmaLinux 9 backports to compat-openssl11,
+# plus upstream's CVE-2024-9143 fix, which RHEL does not need because it builds without
+# binary field curves (patches/openssl/almalinux-1.1.1w/series). This is Red Hat's
+# selection of fixes, not every 1.1.1 CVE published since upstream's last 1.1.1w
+# release. It runs in installopenssl's own shell, not inside opensslpatches' tee pipe,
+# so the result reaches the caller, and before $STATICLIBSSL is replaced. All or
+# nothing: a set that does not apply cleanly is skipped with a warning, or stops the
+# build when OPENSSL_ALMA_PATCHES_STRICT='y'.
 OPENSSL_ALMA_PATCHES_STAMP='.centminmod-openssl-patches'
 
 openssl_alma_patches_series_id() {
@@ -705,7 +706,7 @@ openssl_alma_patches_pending() {
 
 openssl_alma_patches_skip() {
   OPENSSL_ALMA_PATCH_STATUS='skipped'
-  cecho "WARNING: AlmaLinux OpenSSL ${OPENSSL_VERSION} security fixes NOT applied: $1" $boldyellow
+  cecho "WARNING: OpenSSL ${OPENSSL_VERSION} security fixes NOT applied: $1" $boldyellow
   if [[ "$OPENSSL_ALMA_PATCHES_STRICT" = [yY] ]]; then
     cecho "OPENSSL_ALMA_PATCHES_STRICT='y': stopping before ${STATICLIBSSL} is replaced" $boldyellow
     return 1
@@ -724,7 +725,7 @@ openssl_alma_patches() {
     return 0
   fi
   echo
-  echo "Applying AlmaLinux compat-openssl11 security fixes to OpenSSL ${OPENSSL_VERSION}"
+  echo "Applying OpenSSL ${OPENSSL_VERSION} security fixes from patches/openssl/almalinux-1.1.1w"
   OPENSSL_ALMA_SERIES_ID=$(openssl_alma_patches_series_id) || { openssl_alma_patches_skip "${dir}/series not found"; return $?; }
   command -v patch >/dev/null 2>&1 || { openssl_alma_patches_skip "patch command not found"; return $?; }
   [[ -n "$DIR_TMP" && -d "$tree" ]] || { openssl_alma_patches_skip "${tree} not found"; return $?; }
@@ -751,7 +752,7 @@ openssl_alma_patches() {
   done < <(awk '$1 == "patch" {print $2, $3}' "${dir}/series")
   cd "$DIR_TMP" && rm -rf "$tree" && mv "$work" "$tree" && cd "$tree" || exit 1
   OPENSSL_ALMA_PATCH_STATUS='applied'
-  echo "AlmaLinux compat-openssl11 security fixes applied (series ${OPENSSL_ALMA_SERIES_ID})"
+  echo "OpenSSL ${OPENSSL_VERSION} security fixes applied (series ${OPENSSL_ALMA_SERIES_ID})"
 }
 
 # record which patch set the installed build carries, read by openssl_alma_patches_pending
@@ -1753,12 +1754,13 @@ fi
         fi
         opensslpatches
         crypto_gcc || exit 1
-        # Conditional shared library support for PHP 8.3.26+ compatibility
-        # When PHP_CUSTOMSSL_FORCE='y', build shared libraries to support PHP dynamic linking
-        # Default: no-shared (static only) - maintains nginx static linking compatibility
-        if [[ "$PHP_CUSTOMSSL_FORCE" = [yY] ]]; then
+        # Shared libraries when PHP links this OpenSSL: always for 1.1.1, which PHP 7.4/8.0 use on
+        # EL9/EL10 (a static copy in php-fpm is exported and also serves the system OpenSSL 3
+        # libraries PHP loads), otherwise when PHP_CUSTOMSSL_FORCE='y' (PHP 8.3.26+).
+        # Nginx compiles OpenSSL from its source tree, so it never links these libraries.
+        if [[ "$PHP_CUSTOMSSL_FORCE" = [yY] || "$DETECTOPENSSL_ONEONE" = '1.1.1' ]]; then
             OPENSSL_SHARED_OPT="shared"
-            echo "Building OpenSSL with shared libraries (PHP_CUSTOMSSL_FORCE='y')"
+            echo "Building OpenSSL with shared libraries"
         else
             OPENSSL_SHARED_OPT="no-shared"
             echo "Building OpenSSL with static libraries only (default)"
