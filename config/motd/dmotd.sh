@@ -453,7 +453,7 @@ push_dmotd_alerts() {
       if [ -n "$_push_cfg" ]; then
         ( umask 077; printf 'form-string = "token=%s"\nform-string = "user=%s"\n' \
             "$(printf '%s' "$PUSH_API_TOKEN" | sed 's/[\\"]/\\&/g')" "$(printf '%s' "$PUSH_USER_KEY" | sed 's/[\\"]/\\&/g')" > "$_push_cfg/curl.cfg" )
-        RESPONSE=$(curl -s -K "$_push_cfg/curl.cfg" "${_curl_args[@]}" https://api.pushover.net/1/messages.json)
+        RESPONSE=$(curl -s --connect-timeout 10 --max-time 30 -K "$_push_cfg/curl.cfg" "${_curl_args[@]}" https://api.pushover.net/1/messages.json)
         _curl_rc=$?
         rm -rf "$_push_cfg"
       else
@@ -743,7 +743,8 @@ phpver_checker() {
     fi
     IS_PHPTAR_AVAIL=''
     [[ -n "$LATEST_PHPVERS" ]] && IS_PHPTAR_AVAIL=$(curl -sI${ipv_forceopt} --connect-timeout 10 "https://www.php.net/distributions/php-${LATEST_PHPVERS}.tar.${PHPEXTSION_CHECK}" | head -n1 | grep -o 200)
-    if [[ "$CURRENT_PHPVERS" != "$LATEST_PHPVERS" ]] && [[ "$IS_PHPTAR_AVAIL" -eq '200' ]]; then
+    # only a newer release: the cache can hold another branch's or an older version
+    if [[ "$CURRENT_PHPVERS" != "$LATEST_PHPVERS" && "$(printf '%s\n' "$CURRENT_PHPVERS" "$LATEST_PHPVERS" | sort -V | tail -n1)" = "$LATEST_PHPVERS" ]] && [[ "$IS_PHPTAR_AVAIL" -eq '200' ]]; then
       if [[ "$_DMOTD_COMPACT_EFFECTIVE" = [yY] && "$ENABLEMOTD_PHPVERCOMPACT" != [nN] ]]; then
         _dmotd_push_status warn " PHP    ${CURRENT_PHPVERS} → ${LATEST_PHPVERS} available — run centmin.sh menu 5"
       else
