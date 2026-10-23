@@ -39,8 +39,8 @@
 #
 # HOW A RUN WORKS
 # An hourly /etc/cron.d/centminmod-autoupdate entry runs `autoupdate.sh cron`.
-# Outside AUTOUPDATE_HOURS it only repairs that entry and looks for a stuck
-# run. Inside the window it:
+# Outside AUTOUPDATE_HOURS it only repairs that entry, looks for a stuck run
+# and records a run that died mid-build. Inside the window it:
 #  1. takes a lock; centmin.sh and cmupdate refuse to start until it ends
 #  2. runs cmupdate (AUTOUPDATE_CMUPDATE) so patches and version pins are
 #     current, then carries on with the updated copy of this script. If
@@ -395,7 +395,8 @@ au_master_pid() {
     pidfile=$(awk -F= '/^[[:space:]]*pid[[:space:]]*=/ {gsub(/[[:space:]]/, "", $2); print $2; exit}' /usr/local/etc/php-fpm.conf 2>/dev/null)
   fi
   pid=$(cat "${pidfile:-/nonexistent}" 2>/dev/null)
-  if [[ "$pid" =~ ^[0-9]+$ ]] && kill -0 "$pid" 2>/dev/null; then
+  # the php-fpm pid directory can be owned by the nginx user: trust only a root pid
+  if [[ "$pid" =~ ^[0-9]+$ ]] && kill -0 "$pid" 2>/dev/null && [[ "$(stat -c %u "/proc/$pid" 2>/dev/null)" = 0 ]]; then
     echo "$pid"
   else
     pgrep -U 0 -u 0 -o -f "^$1: master process" 2>/dev/null
@@ -592,10 +593,11 @@ au_email() {
     au_smtp "$subject" "$body"
     rc=$?
   elif command -v mail >/dev/null 2>&1; then
+    # 9>&-: an MTA that delivers in the background must not keep the lock
     if [[ -n "$AUTOUPDATE_EMAIL_FROM" ]]; then
-      printf '%s\n' "$body" | mail -s "$subject" -r "$AUTOUPDATE_EMAIL_FROM" $AUTOUPDATE_EMAIL
+      printf '%s\n' "$body" | mail -s "$subject" -r "$AUTOUPDATE_EMAIL_FROM" $AUTOUPDATE_EMAIL 9>&-
     else
-      printf '%s\n' "$body" | mail -s "$subject" $AUTOUPDATE_EMAIL
+      printf '%s\n' "$body" | mail -s "$subject" $AUTOUPDATE_EMAIL 9>&-
     fi
     rc=$?
   elif [[ -x /usr/sbin/sendmail ]]; then
@@ -605,7 +607,7 @@ au_email() {
       echo "Subject: $subject"
       echo
       printf '%s\n' "$body"
-    } | /usr/sbin/sendmail -oi -t
+    } | /usr/sbin/sendmail -oi -t 9>&-
     rc=$?
   else
     au_log "notify: no mail or sendmail command, email to $AUTOUPDATE_EMAIL not sent"
@@ -960,7 +962,9 @@ au_work_due() {
 # and a setuid sudo or su waiting at a password prompt has effective uid 0.
 au_cmm_running() {
   local pid arg args
-  for pid in $(pgrep -U 0 -u 0 -f 'centmin(-cli)?\.sh|cmupdate'); do
+  # the usual `centmin` command is /usr/bin/centmin sourcing centmin.sh, so
+  # its argv names only the wrapper
+  for pid in $(pgrep -U 0 -u 0 -f 'centmin|cmupdate'); do
     args=()
     while IFS= read -r -d '' arg; do
       args+=("$arg")
@@ -971,7 +975,7 @@ au_cmm_running() {
     esac
     for arg in "${args[@]}"; do
       case "${arg##*/}" in
-        centmin.sh|centmin-cli.sh|cmupdate|cmupdate.sh) echo "${arg##*/} (pid $pid)"; return 0 ;;
+        centmin|centmin.sh|centmin-cli.sh|cmupdate|cmupdate.sh) echo "${arg##*/} (pid $pid)"; return 0 ;;
       esac
     done
   done
@@ -1232,7 +1236,7 @@ au_pending() {
 
 # Returns 2 when the code tree is unusable for a build.
 au_cmupdate() {
-  local stamp="$AU_STATE_DIR/cmupdate.stamp" before after rc
+  local stamp="$AU_STATE_DIR/cmupdate.stamp" before after rc why='' failed
   local moved="${CM_INSTALLDIR}-automoved-cmupdate" premoved=n
   [[ "$AUTOUPDATE_CMUPDATE" = [yY] && "$AU_NO_CMUPDATE" != y ]] || return 0
   # once per hourly run inside the update hours
@@ -1240,7 +1244,8 @@ au_cmupdate() {
   before=$(au_head)
   # a copy left by an earlier interrupted re-clone is not this run's to restore
   [[ -e "$moved" ]] && premoved=y
-  timeout -k 30 1800 bash "${CM_INSTALLDIR}/tools/cmupdate.sh" update > "$AU_STATE_DIR/cmupdate.log" 2>&1 9>&-
+  # no terminal: a git or ssh prompt must fail, not wait for the timeout
+  GIT_TERMINAL_PROMPT=0 timeout -k 30 1800 bash "${CM_INSTALLDIR}/tools/cmupdate.sh" update < /dev/null > "$AU_STATE_DIR/cmupdate.log" 2>&1 9>&-
   rc=$?
   # cmupdate's re-clone moves the tree aside first and puts it back itself on
   # a failed clone; a timeout kill skips that, so put it back here unless the
@@ -1261,12 +1266,26 @@ au_cmupdate() {
     au_pending cmupdate "${CM_INSTALLDIR} is not a git checkout after cmupdate"
     return 2
   fi
+  # cmupdate does not pass git_sync's status on: its log says whether it failed
+  # (the git_sync messages matched here come from inc/git_sync.inc)
+  failed=n
+  [[ "$rc" -ne 0 ]] || grep -qE 'git_sync: ERROR|Error: (unable|wasn)' "$AU_STATE_DIR/cmupdate.log" && failed=y
+  # a tree that is not what cmupdate meant to leave is never built from
   if au_git ls-files -u | grep -q .; then
-    au_say "cmupdate: ${CM_INSTALLDIR} has unmerged files after cmupdate, not building, see $AU_STATE_DIR/cmupdate.log"
-    au_pending cmupdate "${CM_INSTALLDIR} has unmerged files after cmupdate"
+    why="${CM_INSTALLDIR} has unmerged files after cmupdate"
+  elif [[ -e "${CM_INSTALLDIR}/.git/index.lock" ]]; then
+    why="a git operation in ${CM_INSTALLDIR} was cut off (.git/index.lock is left)"
+  elif grep -q 'git_sync: WARNING' "$AU_STATE_DIR/cmupdate.log"; then
+    why="cmupdate could not re-apply local changes in ${CM_INSTALLDIR} (see git stash list there)"
+  elif [[ "$failed" = y && "$before" != "$after" ]] && ! au_git merge-base --is-ancestor "$before" "$after" 2>/dev/null; then
+    why="after a failed cmupdate ${CM_INSTALLDIR} is at $after, not a newer version of $before"
+  fi
+  if [[ -n "$why" ]]; then
+    au_say "cmupdate: $why, not building, see $AU_STATE_DIR/cmupdate.log"
+    au_pending cmupdate "$why"
     return 2
   fi
-  if [[ "$rc" -ne 0 ]] || grep -qE 'git_sync: ERROR|Error: (unable|wasn)' "$AU_STATE_DIR/cmupdate.log"; then
+  if [[ "$failed" = y ]]; then
     # retried on the next run; the build goes ahead with the current code
     au_say "cmupdate: failed (exit $rc), continuing with the code at $after, see $AU_STATE_DIR/cmupdate.log"
     au_pending cmupdate "cmupdate keeps failing, see $AU_STATE_DIR/cmupdate.log"
@@ -1292,7 +1311,8 @@ au_check_stuck() {
   local pid started
   au_lock_held || return 0
   read -r pid started 2>/dev/null < "${AU_LOCK}.info"
-  [[ "$started" =~ ^[0-9]+$ ]] || return 0
+  # the sidecar is left behind by earlier runs: only a live autoupdate pid counts
+  [[ "$started" =~ ^[0-9]+$ && "$pid" =~ ^[0-9]+$ ]] && grep -qa autoupdate "/proc/$pid/cmdline" 2>/dev/null || return 0
   if (( $(date +%s) - started > AUTOUPDATE_STUCK_HOURS * 3600 )) && [[ ! -f "$AU_STATE_DIR/stuck-$started" ]]; then
     au_notify fail "auto-update run stuck" "An autoupdate run (pid $pid) has been running since $(au_date "$started"). Check it with: ps -fp $pid; tail $(ls -t "${CENTMINLOGDIR}"/autoupdate_*.log 2>/dev/null | head -n1)" && touch "$AU_STATE_DIR/stuck-$started"
   fi
@@ -1311,7 +1331,9 @@ au_lock_root_holder() {
 
 au_take_lock() {
   local pid started
-  [[ "$AU_LOCKED" = y ]] && return 0
+  # set by the cmupdate re-exec, which keeps the lock on fd 9
+  [[ "$AU_LOCKED" = y && /proc/$$/fd/9 -ef "$AU_LOCK" ]] && return 0
+  AU_LOCKED=n
   # Other users must not be able to open the lock: flock works on a read-only
   # fd, so a world-readable lock file could be held forever by anyone, which
   # stops every update and makes centmin.sh and cmupdate refuse to start.
@@ -1327,7 +1349,8 @@ au_take_lock() {
   umask 077
   exec 9>>"$AU_LOCK"
   umask 022
-  if ! flock -n 9; then
+  # a few seconds covers the probes cpcheck, cmupdate and logins make
+  if ! flock -w 10 9; then
     exec 9>&-
     read -r pid started 2>/dev/null < "${AU_LOCK}.info"
     if [[ "$AU_CMD" = run ]]; then
@@ -1336,6 +1359,12 @@ au_take_lock() {
       au_log "skip: another autoupdate run (pid $pid) holds the lock"
     fi
     au_check_stuck
+    return 1
+  fi
+  # another root run may have replaced a wrong-mode lock file meanwhile
+  if [[ ! /proc/$$/fd/9 -ef "$AU_LOCK" ]]; then
+    exec 9>&-
+    au_log "skip: $AU_LOCK was replaced while it was being locked"
     return 1
   fi
   echo "$$ $(date +%s)" > "${AU_LOCK}.info"
@@ -1358,6 +1387,8 @@ au_interrupted() {
 au_run() {
   local mode=$1 comp rc=0 why
   [[ "$(id -u)" -eq 0 ]] || { echo "autoupdate.sh must run as root"; return 1; }
+  # only the cmupdate re-exec, which still holds the lock on fd 9, is "locked"
+  [[ "$AU_LOCKED" = y && /proc/$$/fd/9 -ef "$AU_LOCK" ]] || AU_LOCKED=n
   mkdir -p "$AU_STATE_DIR" "$CENTMINLOGDIR"
   if ! au_enabled; then
     [[ "$mode" = run ]] && echo "AUTOUPDATE_NGINX and AUTOUPDATE_PHP are both 'n', nothing to do"
@@ -1529,6 +1560,8 @@ au_motd() {
 au_alertnote() {
   local skipc=$1 why inst
   [[ "$1" = nginx && "$FREENGINX_INSTALL" = [yY] ]] && skipc=freenginx
+  # the callers' version strings come from caches: say nothing about a non-version
+  [[ -z "$2" ]] || au_is_ver "$2" || return 0
   case "$1" in
     nginx)
       [[ "$AUTOUPDATE_NGINX" = [yY] ]] || return 0
@@ -1598,6 +1631,7 @@ au_main() {
       tail -n 3 "$AU_LOG" 2>/dev/null
       ;;
     reset)
+      [[ "$(id -u)" -eq 0 ]] || { echo "autoupdate.sh reset must run as root"; return 1; }
       rm -rf "$AU_STATE_DIR"/failed-* "$AU_STATE_DIR"/baseline-* "$AU_STATE_DIR"/pending-* "$AU_STATE_DIR"/stuck-* "$AU_STATE_DIR/cmupdate.stamp"
       au_lock_held || rm -f "$AU_STATE_DIR/inprogress"
       au_say "reset: cleared failed and interrupted update holds, blocked-update timers and the cmupdate stamp (delay timers are kept)"

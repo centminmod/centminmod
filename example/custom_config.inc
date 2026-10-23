@@ -2493,7 +2493,9 @@
 #     AUTOUPDATE_EMAIL. Email uses the EMAILNOTIFY_SES_* SMTP login when
 #     EMAILNOTIFY_SES='y' (Amazon SES, a Gmail app password or any SMTP login),
 #     else the local mail command: Gmail and other large providers reject that
-#     unless the server has SPF/DKIM or a relay host.
+#     unless the server has SPF/DKIM or a relay host. With an SMTP password or
+#     Pushover keys in this file, keep it root-only:
+#     chmod 600 /etc/centminmod/custom_config.inc
 # COMMANDS:
 #   - bash /usr/local/src/centminmod/tools/autoupdate.sh check|status|run|reset|notify-test
 #   - full reference (how it works, every AUTOUPDATE_* setting and default):
