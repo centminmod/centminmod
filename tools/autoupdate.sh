@@ -100,11 +100,13 @@
 #   status       settings, cron entry, last results, held failures, recent log
 #   run          update now, ignoring AUTOUPDATE_HOURS, the delay and the
 #                wait before retrying a failed update (AUTOUPDATE_PHP_HOLD
-#                still applies; a failed build still in use needs reset)
+#                still applies; a failed build still in use needs reset); a
+#                dropped SSH session does not stop it
 #   ensure       add, repair or remove the cron entry to match the settings
 #   notify-test  send a test Pushover/email notification
-#   reset        forget failed and interrupted update holds, blocked-update
-#                timers and the cmupdate stamp; new-version delays are kept
+#   reset        forget failed and interrupted update holds, the cmupdate
+#                local-changes stop, blocked-update timers and the cmupdate
+#                stamp; new-version delays are kept (refused during a run)
 #   help         show this text
 #   (cron, motd and alertnote are used by the cron entry, the dmotd login
 #   banner and the update-available alerts)
@@ -159,8 +161,9 @@ AUTOUPDATE_CRON_MINUTE=''         # 0-59, minute of the hourly cron run; default
 AUTOUPDATE_CMUPDATE='y'           # run cmupdate before checking, so patches and pins are current
 #
 # Safety limits
-AUTOUPDATE_MAXLOAD=''             # wait while the 5 minute load average is above this;
-                                  # default = CPU thread count
+AUTOUPDATE_MAXLOAD=''             # wait while the 5 minute load average is above this
+                                  # (checked before a run's first build); default = CPU
+                                  # thread count
 AUTOUPDATE_MINDISK_MB='3072'      # free MB needed on the /svr-setup and /usr/local filesystems
 AUTOUPDATE_CHECK_URLS='http://127.0.0.1/' # http(s) URLs, space or comma separated, that must keep answering below
                                   # 500 after an update; add your sites' pages (PHP, cached,
@@ -445,8 +448,10 @@ au_master_pid() {
     pidfile=$(awk -F= '/^[[:space:]]*pid[[:space:]]*=/ {gsub(/[[:space:]]/, "", $2); print $2; exit}' /usr/local/etc/php-fpm.conf 2>/dev/null)
   fi
   pid=$(cat "${pidfile:-/nonexistent}" 2>/dev/null)
-  # the php-fpm pid directory can be owned by the nginx user: trust only a root pid
-  if [[ "$pid" =~ ^[0-9]+$ ]] && kill -0 "$pid" 2>/dev/null && [[ "$(stat -c %u "/proc/$pid" 2>/dev/null)" = 0 ]]; then
+  # the php-fpm pid directory can be owned by the nginx user: trust only a root
+  # process that is the master itself
+  if [[ "$pid" =~ ^[0-9]+$ && "$(stat -c %u "/proc/$pid" 2>/dev/null)" = 0 ]] &&
+     [[ "$(tr '\0' ' ' < "/proc/$pid/cmdline" 2>/dev/null)" = "$1: master process"* ]]; then
     echo "$pid"
   else
     pgrep -U 0 -u 0 -o -f "^$1: master process" 2>/dev/null
@@ -1126,15 +1131,21 @@ au_blocked() {
   fi
   p=$(au_cmm_running) && { echo "$p is running"; return; }
   pgrep -U 0 -u 0 -x 'yum|dnf|rpm|dnf-automatic|yum-cron' >/dev/null 2>&1 && { echo "a yum/dnf/rpm process is running"; return; }
-  max=${AUTOUPDATE_MAXLOAD:-$(nproc 2>/dev/null || echo 1)}
-  load=$(awk '{print $2}' /proc/loadavg)
-  awk -v l="$load" -v m="$max" 'BEGIN { exit !(l > m) }' && { echo "5 minute load $load is above AUTOUPDATE_MAXLOAD $max"; return; }
+  # before a run's first build only: right after it the load is mostly that build
+  if [[ "$AU_BUILT" != y ]]; then
+    max=${AUTOUPDATE_MAXLOAD:-$(nproc 2>/dev/null || echo 1)}
+    load=$(awk '{print $2}' /proc/loadavg)
+    awk -v l="$load" -v m="$max" 'BEGIN { exit !(l > m) }' && { echo "5 minute load $load is above AUTOUPDATE_MAXLOAD $max"; return; }
+  fi
   for d in "$DIR_TMP" /usr/local; do
     [[ -d "$d" ]] || d=/
     avail=$(df -Pm "$d" | awk 'NR==2 {print $4}')
     [[ "$avail" -ge "$AUTOUPDATE_MINDISK_MB" ]] 2>/dev/null || { echo "only ${avail}MB free for $d, need AUTOUPDATE_MINDISK_MB=${AUTOUPDATE_MINDISK_MB}"; return; }
   done
-  nginx -t >/dev/null 2>&1 || { echo "nginx -t fails with the current config, fix it first"; return; }
+  # a PHP-only server has no nginx to test
+  if [[ -x "$AU_NGINX_BIN" ]] && ! nginx -t >/dev/null 2>&1; then
+    echo "nginx -t fails with the current config, fix it first"; return
+  fi
   if [[ "$comp" = nginx ]]; then
     # a repair rebuild is what brings a stopped service back
     au_service_active nginx || [[ "$AU_REPAIR" = y ]] || { echo "nginx is not running"; return; }
@@ -1423,6 +1434,17 @@ au_pending() {
 au_cmupdate() {
   local stamp="$AU_STATE_DIR/cmupdate.stamp" before after rc why='' failed
   local moved="${CM_INSTALLDIR}-automoved-cmupdate" lc="$AU_STATE_DIR/cmupdate-localchanges" stash_before stash_after
+  # turning cmupdate off does not lift a local-changes stop
+  if [[ -f "$lc" && "$AUTOUPDATE_CMUPDATE" != [yY] ]]; then
+    if au_git stash list 2>/dev/null | grep -q 'cmupdate-'; then
+      why="cmupdate could not keep local changes in ${CM_INSTALLDIR} applied (git stash list there, then autoupdate.sh reset)"
+      au_say "cmupdate: $why, not building"
+      au_pending cmupdate "$why"
+      return 2
+    fi
+    rm -f "$lc" "$lc.sent"
+    au_log "cmupdate: the stashed local changes were dealt with, builds resume"
+  fi
   # an old timer would alert at once when cmupdate is turned back on
   [[ "$AUTOUPDATE_CMUPDATE" = [yY] ]] || { rm -f "$AU_STATE_DIR"/pending-cmupdate*; return 0; }
   [[ "$AU_NO_CMUPDATE" != y ]] || return 0
@@ -1522,7 +1544,7 @@ au_cmupdate() {
 
 # notify once when a run has held the lock for AUTOUPDATE_STUCK_HOURS
 au_check_stuck() {
-  local pid started
+  local pid started pgid
   au_lock_held || return 0
   read -r pid started 2>/dev/null < "${AU_LOCK}.info"
   # the sidecar is left behind by earlier runs: only a live autoupdate pid counts
@@ -1530,7 +1552,9 @@ au_check_stuck() {
   if (( $(date +%s) - started > AUTOUPDATE_STUCK_HOURS * 3600 )) && [[ ! -f "$AU_STATE_DIR/stuck-$started" ]]; then
     # only when the marker can be kept (else this repeats hourly); removed again if unsent
     touch "$AU_STATE_DIR/stuck-$started" 2>/dev/null || return 0
-    au_notify fail "auto-update run stuck" "An autoupdate run (pid $pid) has been running since $(au_date "$started"). Check it with: ps -fp $pid; tail $(ls -t "${CENTMINLOGDIR}"/autoupdate_*.log 2>/dev/null | head -n1)" || rm -f "$AU_STATE_DIR/stuck-$started"
+    # the build does not hold the lock: killing only $pid would leave it running unguarded
+    pgid=$(ps -o pgid= -p "$pid" 2>/dev/null | tr -d ' ')
+    au_notify fail "auto-update run stuck" "An autoupdate run (pid $pid) has been running since $(au_date "$started"). Check it with: ps -ef --forest (pid $pid, process group ${pgid:-$pid}); tail $(ls -t "${CENTMINLOGDIR}"/autoupdate_*.log 2>/dev/null | head -n1). To stop it, end the whole process group (kill -- -${pgid:-$pid}): killing only pid $pid leaves the build running without the lock." || rm -f "$AU_STATE_DIR/stuck-$started"
   fi
 }
 
@@ -1644,14 +1668,16 @@ au_run() {
   au_cmupdate
   [[ $? -eq 2 ]] && return 1
   [[ "$mode" = run ]] && AU_FORCE=y
+  AU_BUILT=n
   for comp in nginx php; do
     if [[ "$comp" = nginx && "$AUTOUPDATE_NGINX" != [yY] ]] || [[ "$comp" = php && "$AUTOUPDATE_PHP" != [yY] ]]; then
       # an old timer would alert at once when the component is turned back on
       rm -f "$AU_STATE_DIR/pending-$comp"*
       continue
     fi
-    # a long nginx build must not push the PHP restart past the window
-    if [[ "$mode" = cron ]] && ! au_in_hours; then
+    # a long nginx build must not push the PHP restart past the window (the
+    # run itself started inside it, even if cmupdate took long)
+    if [[ "$mode" = cron && "$AU_BUILT" = y ]] && ! au_in_hours; then
       au_log "$comp: AUTOUPDATE_HOURS window closed, left for the next window"
       continue
     fi
@@ -1677,6 +1703,7 @@ au_run() {
     fi
     rm -f "$AU_STATE_DIR/pending-$comp"*
     au_update "$comp" || rc=1
+    AU_BUILT=y
   done
   # keep 30 days of autoupdate logs
   find "$CENTMINLOGDIR" -maxdepth 1 -name 'autoupdate_*.log' -mtime +30 -delete 2>/dev/null
@@ -1885,6 +1912,8 @@ au_main() {
       au_run cron
       ;;
     run)
+      # a dropped SSH session must not kill the build halfway (inherited by it)
+      trap '' HUP
       au_run run
       ;;
     check)
@@ -1916,9 +1945,13 @@ au_main() {
       ;;
     reset)
       [[ "$(id -u)" -eq 0 ]] || { echo "autoupdate.sh reset must run as root"; return 1; }
-      rm -rf "$AU_STATE_DIR"/failed-* "$AU_STATE_DIR"/baseline-* "$AU_STATE_DIR"/pending-* "$AU_STATE_DIR"/stuck-* "$AU_STATE_DIR/cmupdate.stamp" "$AU_STATE_DIR"/cmupdate-localchanges*
-      au_lock_held || rm -f "$AU_STATE_DIR/inprogress"
-      au_say "reset: cleared failed and interrupted update holds, blocked-update timers and the cmupdate stamp (delay timers are kept)"
+      # a running update still needs its failure record and baseline
+      if au_lock_held; then
+        echo "reset: an auto-update run is in progress (autoupdate.sh status), run reset after it ends"
+        return 1
+      fi
+      rm -rf "$AU_STATE_DIR"/failed-* "$AU_STATE_DIR"/baseline-* "$AU_STATE_DIR"/pending-* "$AU_STATE_DIR"/stuck-* "$AU_STATE_DIR/cmupdate.stamp" "$AU_STATE_DIR"/cmupdate-localchanges* "$AU_STATE_DIR/inprogress"
+      au_say "reset: cleared failed and interrupted update holds, the cmupdate local-changes stop, blocked-update timers and the cmupdate stamp (delay timers are kept)"
       ;;
     help|*)
       sed -n '2,/^# end of settings$/p' "$0" | sed -e '/^#\{10,\}$/d' -e '/^# end of settings$/d' -e 's/^# \{0,1\}//'
