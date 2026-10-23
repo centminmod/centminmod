@@ -6,7 +6,9 @@
 # branches. When AUTOUPDATE_PHP='y' or AUTOUPDATE_NGINX='y', a server whose
 # /usr/local/sbin/php-fpm or /usr/local/sbin/nginx binary was built before a
 # matching entry rebuilds it once (after cmupdate has brought this file). For
-# a binary auto-update built, "built" is the time of the code it was built from.
+# a binary auto-update built, "built" is the time of the code it was built from;
+# for one built by hand (menu 4/5) it is the file time, even if that build used
+# code older than the entry, so run cmupdate before rebuilding by hand.
 #
 # Format: <component> <UTC time the change was pushed> <reason>
 #   component: nginx, php (every PHP branch) or php-<major.minor>

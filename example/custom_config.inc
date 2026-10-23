@@ -2490,7 +2490,8 @@
 #     a check, menu 4's snapshot of the previous build is restored. A failed
 #     update is retried after a cmupdate code change and 24 hours, at most 3
 #     automatic attempts per update, or after autoupdate.sh reset; a failed
-#     build that stays in use is held until reset.
+#     build that stays in use is held until reset or until a newer release or
+#     listed rebuild replaces it.
 #   - Results go to Pushover (PUSH_API_TOKEN/PUSH_USER_KEY) and/or
 #     AUTOUPDATE_EMAIL (space or comma separated). Email uses the EMAILNOTIFY_SES_*
 #     SMTP login when EMAILNOTIFY_SES='y' and its server and username are set
