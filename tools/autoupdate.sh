@@ -161,7 +161,7 @@ AUTOUPDATE_CMUPDATE='y'           # run cmupdate before checking, so patches and
 AUTOUPDATE_MAXLOAD=''             # wait while the 5 minute load average is above this;
                                   # default = CPU thread count
 AUTOUPDATE_MINDISK_MB='3072'      # free MB needed on the /svr-setup and /usr/local filesystems
-AUTOUPDATE_CHECK_URLS='http://127.0.0.1/' # space separated http(s) URLs that must keep answering below
+AUTOUPDATE_CHECK_URLS='http://127.0.0.1/' # http(s) URLs, space or comma separated, that must keep answering below
                                   # 500 after an update; add your sites' pages (PHP, cached,
                                   # module-specific) so a broken update is caught and rolled back
 AUTOUPDATE_NICE='10'              # CPU nice level 0-19 for the build (systemd hosts only)
@@ -218,7 +218,9 @@ ENABLE_MENU='n'
 for au_conf in "${CONFIGSCANBASE}/custom_config.inc" "${CONFIGSCANBASE}/pushover.ini"; do
   [ -f "$au_conf" ] || continue
   if grep -q $'\r' "$au_conf" 2>/dev/null; then
-    if [ -x /usr/bin/dos2unix ] && dos2unix -q "$au_conf" 2>/dev/null; then
+    # dos2unix -q exits 0 even when it skipped the file (symlink, immutable)
+    [ -x /usr/bin/dos2unix ] && dos2unix -q "$au_conf" 2>/dev/null
+    if ! grep -q $'\r' "$au_conf" 2>/dev/null; then
       source "$au_conf"
     else
       # no dos2unix, or it could not rewrite the file (immutable, symlink)
@@ -323,12 +325,16 @@ au_validate_config() {
     *) AU_CONFIG_WARN="$AU_CONFIG_WARN AUTOUPDATE_NGINX_TARGET='$AUTOUPDATE_NGINX_TARGET' is not latest or centmin, using centmin;"
        AUTOUPDATE_NGINX_TARGET=centmin ;;
   esac
-  # space separated http(s) URLs (a newline or comma list would check one odd URL)
-  AUTOUPDATE_CHECK_URLS=$(printf '%s' "$AUTOUPDATE_CHECK_URLS" | tr '\n\t' '  ')
-  read -ra urls <<< "$AUTOUPDATE_CHECK_URLS"
+  # http(s) URLs, space or comma separated; anything else is left out and reported
+  v=$(printf '%s' "$AUTOUPDATE_CHECK_URLS" | tr '\n\t' '  ' | sed -E 's#,(https?://)# \1#g')
+  read -ra urls <<< "$v"
+  AUTOUPDATE_CHECK_URLS=''
   for u in "${urls[@]}"; do
-    if ! [[ "$u" =~ ^https?://[^/]+ ]] || [[ "$u" = *,http* ]]; then
-      AU_CONFIG_WARN="$AU_CONFIG_WARN AUTOUPDATE_CHECK_URLS entry '$u' is not one http(s) URL (separate URLs with spaces);"
+    u=${u%,}
+    if [[ "$u" =~ ^https?://[^/,]+ ]]; then
+      AUTOUPDATE_CHECK_URLS="${AUTOUPDATE_CHECK_URLS:+$AUTOUPDATE_CHECK_URLS }$u"
+    else
+      AU_CONFIG_WARN="$AU_CONFIG_WARN AUTOUPDATE_CHECK_URLS entry '$u' is not an http(s) URL, so it is not checked;"
     fi
   done
   # email lists may be comma separated, as for emailnotify.sh
@@ -393,7 +399,8 @@ au_date() {
 # true while another process holds the autoupdate lock; a lock file that is
 # not root's 0600 file was not made by autoupdate and is ignored
 au_lock_held() {
-  [[ -f "$AU_LOCK" && ! -L "$AU_LOCK" && "$(stat -c '%u %a' "$AU_LOCK" 2>/dev/null)" = '0 600' ]] && ! flock -n "$AU_LOCK" -c true 2>/dev/null
+  # a shared probe: two probes at once must not see each other as a run
+  [[ -f "$AU_LOCK" && ! -L "$AU_LOCK" && "$(stat -c '%u %a' "$AU_LOCK" 2>/dev/null)" = '0 600' ]] && ! flock -n -s "$AU_LOCK" -c true 2>/dev/null
 }
 
 au_service_active() {
@@ -512,11 +519,18 @@ EOF
 # Only when auto-update is on, or the problem is a mistyped on/off switch.
 au_config_alert() {
   local f="$AU_STATE_DIR/config-warned"
-  if [[ -z "$AU_CONFIG_WARN" ]]; then rm -f "$f"; return 0; fi
+  if [[ -z "$AU_CONFIG_WARN" ]]; then rm -f "$f" "$f.sent"; return 0; fi
   au_enabled || [[ "$AU_CONFIG_WARN" == *AUTOUPDATE_NGINX=* || "$AU_CONFIG_WARN" == *AUTOUPDATE_PHP=* ]] || return 0
-  [[ "$(cat "$f" 2>/dev/null)" = "$AU_CONFIG_WARN" ]] && return 0
-  au_log "config: $AU_CONFIG_WARN"
-  au_notify fail "auto-update settings problem" "Auto-update settings in ${CONFIGSCANBASE}/custom_config.inc need fixing: $AU_CONFIG_WARN Check with: bash ${CM_INSTALLDIR}/tools/autoupdate.sh check" && printf '%s\n' "$AU_CONFIG_WARN" > "$f"
+  if [[ "$(cat "$f" 2>/dev/null)" != "$AU_CONFIG_WARN" ]]; then
+    printf '%s\n' "$AU_CONFIG_WARN" > "$f"
+    rm -f "$f.sent"
+    au_log "config: $AU_CONFIG_WARN"
+  elif [[ -f "$f.sent" || -n "$(find "$f" -mmin -60 2>/dev/null)" ]]; then
+    # sent, or tried within the hour: a centmin.sh start must not wait on it
+    return 0
+  fi
+  touch "$f"
+  au_notify fail "auto-update settings problem" "Auto-update settings in ${CONFIGSCANBASE}/custom_config.inc need fixing: $AU_CONFIG_WARN Check with: bash ${CM_INSTALLDIR}/tools/autoupdate.sh check" && touch "$f.sent"
 }
 
 au_ensure() {
@@ -531,7 +545,8 @@ au_ensure() {
   fi
   if au_enabled; then
     want=$(au_cron_content)
-    [[ -f "$AU_CRON_FILE" && "$(cat "$AU_CRON_FILE" 2>/dev/null)" = "$want" ]] && return 0
+    # cron skips a file other users can write, so owner and mode count too
+    [[ -f "$AU_CRON_FILE" && "$(cat "$AU_CRON_FILE" 2>/dev/null)" = "$want" && "$(stat -c '%u %a' "$AU_CRON_FILE" 2>/dev/null)" = '0 644' ]] && return 0
     [[ -f "$AU_CRON_FILE" ]] && had=y
     # a dot file in /etc/cron.d is not read by cron; unique per process
     tmp=$(mktemp "/etc/cron.d/.centminmod-autoupdate.XXXXXX") || { au_log "ensure: could not write in /etc/cron.d"; return 1; }
@@ -540,6 +555,8 @@ au_ensure() {
       au_log "ensure: could not write $AU_CRON_FILE"
       return 1
     }
+    # with SELinux enforcing, crond reads only the cron.d label
+    command -v restorecon >/dev/null 2>&1 && restorecon -F "$AU_CRON_FILE" 2>/dev/null
     if [[ -f "$AU_STATE_DIR/scheduler-installed" ]]; then
       if [[ "$had" = y ]]; then
         au_log "ensure: $AU_CRON_FILE differed from the expected entry, rewritten (${AU_ENSURE_BY:-manual})"
@@ -642,7 +659,16 @@ au_smtp() {
 au_email() {
   local subject=$1 body=$2 rc via='the local MTA'
   [[ -n "$AUTOUPDATE_EMAIL" ]] || return 2
+  local smtp=n
   if [[ "$EMAILNOTIFY_SES" = [yY] && -n "$EMAILNOTIFY_SES_SMTP_SERVER" && -n "$EMAILNOTIFY_SES_SMTP_USERNAME" ]]; then
+    # curl-minimal (EL9/EL10 images) has no SMTP: use the local mail command then
+    if curl -V 2>/dev/null | grep -qw smtp; then
+      smtp=y
+    else
+      au_log "notify: this curl has no SMTP support (curl -V), using the local mail command"
+    fi
+  fi
+  if [[ "$smtp" = y ]]; then
     via="smtp $EMAILNOTIFY_SES_SMTP_SERVER"
     au_smtp "$subject" "$body"
     rc=$?
@@ -702,12 +728,15 @@ Status: bash ${CM_INSTALLDIR}/tools/autoupdate.sh status"
     body="$body
 Log: $logfile
 
-Last 60 log lines:
-$(tail -n 60 "$logfile" | au_strip)"
+Last 60 log lines (cut to 900 characters each, as mail lines may not pass 998):
+$(tail -n 60 "$logfile" | au_strip | tr -d '\r' | cut -c1-900)"
   fi
   au_email "[centminmod autoupdate] $AU_HOST: $title" "$body"
   erc=$?
-  [[ "$prc" -eq 0 || "$erc" -eq 0 || ( "$prc" -eq 2 && "$erc" -eq 2 ) ]]
+  # 2 = no channel configured: one-time alerts stay unsent until one is
+  (( prc == 0 || erc == 0 )) && return 0
+  (( prc == 2 && erc == 2 )) && return 2
+  return 1
 }
 
 ###########################################################
@@ -810,7 +839,7 @@ au_failure_review() {
 # (upgrade|rebuild|none|skip|wait|held), AU_INSTALLED, AU_TARGET, AU_WHY,
 # AU_KEY, AU_EPOCH and AU_REBUILD_COMP. Changes no state when AU_DRYRUN=y.
 au_plan() {
-  local comp=$1 due branch fkey fhead ftime fcount review skipc=$1 rel why releases parity nodata='' upwhy
+  local comp=$1 due branch fkey fhead ftime fcount review skipc=$1 rel why releases parity nodata='' upwhy prod
   AU_ACTION=none AU_INSTALLED='' AU_TARGET='' AU_WHY='' AU_KEY='' AU_EPOCH='' AU_REL_SECURITY=n AU_REBUILD_COMP='' AU_REPAIR=n AU_SKIPNOTE=''
   [[ -f "$AU_STATE_DIR/failed-$comp" ]] && IFS='|' read -r fkey fhead ftime fcount < "$AU_STATE_DIR/failed-$comp"
   if [[ "$comp" = nginx ]]; then
@@ -820,6 +849,12 @@ au_plan() {
     AU_INSTALLED=$(au_nginx_installed)
     if ! au_is_ver "$AU_INSTALLED"; then
       AU_ACTION=skip AU_WHY="installed '$(nginx -v 2>&1 | head -n1)' is not an nginx.org or freenginx release build"; return
+    fi
+    # menu 4 builds the product FREENGINX_INSTALL names: never switch product unattended
+    case "$(nginx -v 2>&1)" in *freenginx/*) prod=freenginx ;; *) prod=nginx ;; esac
+    if [[ "$prod" = freenginx && "$FREENGINX_INSTALL" != [yY] ]] || [[ "$prod" = nginx && "$FREENGINX_INSTALL" = [yY] ]]; then
+      AU_ACTION=skip AU_WHY="FREENGINX_INSTALL='$FREENGINX_INSTALL' does not match the installed $prod $AU_INSTALLED; menu 4 would switch product, so auto-update leaves nginx alone"
+      return
     fi
     [[ "$FREENGINX_INSTALL" = [yY] ]] && skipc=freenginx
     if [[ -n "$AU_NGINX_PIN" ]]; then
@@ -856,6 +891,7 @@ au_plan() {
     if ! command -v php-config >/dev/null 2>&1; then
       AU_ACTION=skip AU_WHY='PHP is not installed'; return
     fi
+    [[ -x "$AU_PHPFPM_BIN" ]] || { AU_ACTION=skip AU_WHY="PHP-FPM is not installed ($AU_PHPFPM_BIN)"; return; }
     AU_INSTALLED=$(au_php_installed)
     if ! au_is_ver "$AU_INSTALLED"; then
       AU_ACTION=skip AU_WHY="installed PHP version '$AU_INSTALLED' is not a release build"; return
@@ -960,20 +996,24 @@ au_plan() {
 
 # Retry gate and soak delay for the update au_plan picked (uses its locals).
 au_plan_gate() {
-  local seen age
+  local seen age gkey=$fkey ghead=$fhead gtime=$ftime gcount=$fcount
+  # a rebuild beside a failed newer upgrade has its own record (au_fail_record)
+  if [[ "$AU_KEY" = *" rebuild "* && -f "$AU_STATE_DIR/failed-$comp-rebuild" ]]; then
+    IFS='|' read -r gkey ghead gtime gcount < "$AU_STATE_DIR/failed-$comp-rebuild"
+  fi
   # A failed update is retried only after the Centmin Mod code changed and a
   # day has passed, at most AU_MAX_ATTEMPTS times; reset or run override it.
   # An hour of slack lets the next day's run at the same minute qualify.
-  if [[ "$fkey" = "$AU_KEY" && "$AU_FORCE" != y ]]; then
-    [[ "$fcount" =~ ^[0-9]+$ ]] || fcount=1
-    if (( fcount >= AU_MAX_ATTEMPTS )); then
-      AU_ACTION=held AU_WHY="$AU_WHY: failed $fcount times, last $(au_date "$ftime"); run autoupdate.sh reset to try again"
+  if [[ "$gkey" = "$AU_KEY" && "$AU_FORCE" != y ]]; then
+    [[ "$gcount" =~ ^[0-9]+$ ]] || gcount=1
+    if (( gcount >= AU_MAX_ATTEMPTS )); then
+      AU_ACTION=held AU_WHY="$AU_WHY: failed $gcount times, last $(au_date "$gtime"); run autoupdate.sh reset to try again"
       return
-    elif [[ "$fhead" = "$(au_head_full)" ]]; then
-      AU_ACTION=held AU_WHY="$AU_WHY: failed $(au_date "$ftime"), waiting for a Centmin Mod code update (cmupdate) or autoupdate.sh reset"
+    elif [[ "$ghead" = "$(au_head_full)" ]]; then
+      AU_ACTION=held AU_WHY="$AU_WHY: failed $(au_date "$gtime"), waiting for a Centmin Mod code update (cmupdate) or autoupdate.sh reset"
       return
-    elif (( $(date +%s) - ftime < 86400 - 3600 )); then
-      AU_ACTION=held AU_WHY="$AU_WHY: failed $(au_date "$ftime"), retrying 24 hours after that"
+    elif (( $(date +%s) - gtime < 86400 - 3600 )); then
+      AU_ACTION=held AU_WHY="$AU_WHY: failed $(au_date "$gtime"), retrying 24 hours after that"
       return
     fi
   fi
@@ -1029,7 +1069,10 @@ au_cmm_running() {
     esac
     for arg in "${args[@]}"; do
       case "${arg##*/}" in
-        centmin|centmin.sh|centmin-cli.sh|cmupdate|cmupdate.sh) echo "${arg##*/} (pid $pid)"; return 0 ;;
+        centmin.sh|centmin-cli.sh|cmupdate|cmupdate.sh) echo "${arg##*/} (pid $pid)"; return 0 ;;
+        # the wrapper runs as /bin/bash /usr/bin/centmin; a bare "centmin" is
+        # more likely a screen/tmux session name
+        centmin) [[ "$arg" = */centmin ]] && { echo "centmin (pid $pid)"; return 0; } ;;
       esac
     done
   done
@@ -1124,15 +1167,25 @@ au_nginx_rollback() {
 
 # Drop a failure record and the pre-failure baseline au_update kept with it.
 au_clear_failed() {
-  rm -rf "$AU_STATE_DIR/failed-$1" "$AU_STATE_DIR/baseline-$1"
+  rm -rf "$AU_STATE_DIR/failed-$1" "$AU_STATE_DIR/failed-$1-rebuild" "$AU_STATE_DIR/baseline-$1"
 }
 
 # failed-<comp> holds "key|git head|time|attempts"
+# A rebuild of the installed version that fails while a failed upgrade to a
+# newer one is on record goes to failed-<comp>-rebuild: the upgrade keeps its
+# own retry gate, so the two cannot take turns failing every hour.
 au_fail_record() {
-  local comp=$1 key=$2 fkey fhead ftime fcount=0
-  IFS='|' read -r fkey fhead ftime fcount 2>/dev/null < "$AU_STATE_DIR/failed-$comp"
+  local comp=$1 key=$2 f="$AU_STATE_DIR/failed-$1" fkey fhead ftime fcount=0 uver inst
+  if [[ "$key" = *" rebuild "* ]] && IFS='|' read -r fkey _ 2>/dev/null < "$f" && [[ "$fkey" =~ ^[a-z]+\ ([0-9]+\.[0-9]+\.[0-9]+)$ ]]; then
+    uver=${BASH_REMATCH[1]}
+    inst=$(au_nginx_installed)
+    [[ "$comp" = php ]] && inst=$(au_php_installed)
+    au_vergt "$uver" "$inst" && f="$f-rebuild"
+  fi
+  fkey='' fcount=0
+  IFS='|' read -r fkey fhead ftime fcount 2>/dev/null < "$f"
   [[ "$fkey" = "$key" && "$fcount" =~ ^[0-9]+$ ]] || fcount=0
-  echo "$key|$(au_head_full)|$(date +%s)|$((fcount + 1))" > "$AU_STATE_DIR/failed-$comp"
+  echo "$key|$(au_head_full)|$(date +%s)|$((fcount + 1))" > "$f"
   echo $((fcount + 1))
 }
 
@@ -1143,8 +1196,12 @@ au_update() {
   start=$(date +%s)
   runlog="${CENTMINLOGDIR}/autoupdate_${comp}_$(date +%d%m%y-%H%M%S).log"
   mkdir -p "$CENTMINLOGDIR" "$AU_STATE_DIR"
+  # without its state (disk full, read-only /var) a failing build would repeat hourly
+  if ! { echo "$comp|$AU_KEY|$start" > "$AU_STATE_DIR/inprogress" && [[ "$(cat "$AU_STATE_DIR/inprogress" 2>/dev/null)" = "$comp|$AU_KEY|$start" ]]; }; then
+    au_say "$comp: cannot write $AU_STATE_DIR (disk full or read-only?), not building"
+    return 1
+  fi
   au_say "$comp: starting $AU_ACTION ($AU_WHY), log $runlog"
-  echo "$comp|$AU_KEY|$start" > "$AU_STATE_DIR/inprogress"
   bin=$AU_NGINX_BIN
   [[ "$comp" = php ]] && bin=$AU_PHPFPM_BIN
   if [[ -f "$AU_STATE_DIR/failed-$comp" && -d "$base" ]]; then
@@ -1153,6 +1210,11 @@ au_update() {
     urls_before=$(cat "$base/urls" 2>/dev/null)
     mods_before=$(cat "$base/mods" 2>/dev/null)
     warn_before=$(cat "$base/warn" 2>/dev/null)
+    # check URLs added since then are measured now
+    read -ra pairs <<< "$AUTOUPDATE_CHECK_URLS"
+    for pair in "${pairs[@]}"; do
+      [[ " $urls_before " = *" $pair="* ]] || urls_before="$urls_before $(AUTOUPDATE_CHECK_URLS=$pair au_url_codes)"
+    done
   else
     urls_before=$(au_url_codes)
     if [[ "$comp" = php ]]; then
@@ -1160,7 +1222,11 @@ au_update() {
       warn_before=$(php -m 2>&1 | grep -Ei 'warning|fatal|error' | sort -u)
     fi
     rm -rf "$base"
-    mkdir -p "$base" && printf '%s\n' "$urls_before" > "$base/urls" && printf '%s\n' "$mods_before" > "$base/mods" && printf '%s\n' "$warn_before" > "$base/warn"
+    if ! { mkdir -p "$base" && printf '%s\n' "$urls_before" > "$base/urls" && printf '%s\n' "$mods_before" > "$base/mods" && printf '%s\n' "$warn_before" > "$base/warn"; }; then
+      rm -f "$AU_STATE_DIR/inprogress"
+      au_say "$comp: cannot write $base (disk full or read-only?), not building"
+      return 1
+    fi
   fi
   read -ra pairs <<< "$urls_before"
   for pair in "${pairs[@]}"; do
@@ -1245,7 +1311,7 @@ au_update() {
     if [[ "$AU_ACTION" = rebuild && "$fkey" =~ ^[a-z]+\ ([0-9]+\.[0-9]+\.[0-9]+)$ ]] && au_vergt "${BASH_REMATCH[1]}" "$AU_TARGET"; then
       # a rebuild of the installed version says nothing about a failed
       # upgrade to a newer one: keep its record for the retry gate
-      rm -rf "$base"
+      rm -rf "$base" "$AU_STATE_DIR/failed-$comp-rebuild"
     else
       au_clear_failed "$comp"
     fi
@@ -1302,12 +1368,21 @@ au_pending() {
 au_cmupdate() {
   local stamp="$AU_STATE_DIR/cmupdate.stamp" before after rc why='' failed
   local moved="${CM_INSTALLDIR}-automoved-cmupdate" premoved=n
-  [[ "$AUTOUPDATE_CMUPDATE" = [yY] && "$AU_NO_CMUPDATE" != y ]] || return 0
+  # an old timer would alert at once when cmupdate is turned back on
+  [[ "$AUTOUPDATE_CMUPDATE" = [yY] ]] || { rm -f "$AU_STATE_DIR"/pending-cmupdate*; return 0; }
+  [[ "$AU_NO_CMUPDATE" != y ]] || return 0
   # once per hourly run inside the update hours
   [[ -n "$(find "$stamp" -mmin -50 2>/dev/null)" ]] && return 0
   before=$(au_head)
-  # a copy left by an earlier interrupted re-clone is not this run's to restore
-  [[ -e "$moved" ]] && premoved=y
+  # a copy left by an earlier re-clone is not this run's to restore; move it
+  # aside, or cmupdate's next re-clone would move the tree into it
+  if [[ -e "$moved" ]]; then
+    if mv "$moved" "${moved}-$(date +%Y%m%d-%H%M%S)" 2>/dev/null; then
+      au_log "cmupdate: moved an earlier $moved aside to ${moved}-<date>, remove it when no longer needed"
+    else
+      premoved=y
+    fi
+  fi
   # no terminal: a git or ssh prompt must fail, not wait for the timeout
   GIT_TERMINAL_PROMPT=0 timeout -k 30 1800 bash "${CM_INSTALLDIR}/tools/cmupdate.sh" update < /dev/null > "$AU_STATE_DIR/cmupdate.log" 2>&1 9>&-
   rc=$?
@@ -1333,13 +1408,14 @@ au_cmupdate() {
   # cmupdate does not pass git_sync's status on: its log says whether it failed
   # (the git_sync messages matched here come from inc/git_sync.inc)
   failed=n
-  [[ "$rc" -ne 0 ]] || grep -qE 'git_sync: ERROR|Error: (unable|wasn)' "$AU_STATE_DIR/cmupdate.log" && failed=y
+  # anchored: cmupdate also prints the latest commit subject, which may quote them
+  [[ "$rc" -ne 0 ]] || grep -qE '^(git_sync: ERROR|Error: (unable|wasn))' "$AU_STATE_DIR/cmupdate.log" && failed=y
   # a tree that is not what cmupdate meant to leave is never built from
   if au_git ls-files -u | grep -q .; then
     why="${CM_INSTALLDIR} has unmerged files after cmupdate"
   elif [[ -e "${CM_INSTALLDIR}/.git/index.lock" ]]; then
     why="a git operation in ${CM_INSTALLDIR} was cut off (.git/index.lock is left)"
-  elif grep -q 'git_sync: WARNING' "$AU_STATE_DIR/cmupdate.log"; then
+  elif grep -q '^git_sync: WARNING' "$AU_STATE_DIR/cmupdate.log"; then
     why="cmupdate could not re-apply local changes in ${CM_INSTALLDIR} (see git stash list there)"
   elif [[ "$failed" = y && "$before" != "$after" ]] && ! au_git merge-base --is-ancestor "$before" "$after" 2>/dev/null; then
     why="after a failed cmupdate ${CM_INSTALLDIR} is at $after, not a newer version of $before"
@@ -1538,6 +1614,8 @@ au_check() {
     [[ "$comp" = php ]] && enabled=$AUTOUPDATE_PHP
     au_plan "$comp"
     why=$(au_blocked "$comp")
+    # a component turned off is planned only to show what it would do
+    [[ "$enabled" = [yY] ]] || AU_ACTION="$AU_ACTION if turned on"
     printf '%-6s AUTOUPDATE_%s=%s installed=%s target=%s -> %s: %s\n' "$comp" "$(echo "$comp" | tr a-z A-Z)" "$enabled" "${AU_INSTALLED:--}" "${AU_TARGET:--}" "$AU_ACTION" "$AU_WHY"
     printf '%-6s gates: %s\n' '' "${why:-ok}"
   done
@@ -1545,7 +1623,7 @@ au_check() {
 }
 
 au_status() {
-  local comp
+  local comp f
   echo "Settings: AUTOUPDATE_NGINX=$AUTOUPDATE_NGINX AUTOUPDATE_PHP=$AUTOUPDATE_PHP AUTOUPDATE_NGINX_TARGET=$AUTOUPDATE_NGINX_TARGET AUTOUPDATE_HOURS=$AUTOUPDATE_HOURS AUTOUPDATE_DELAY_HOURS=$AUTOUPDATE_DELAY_HOURS AUTOUPDATE_CMUPDATE=$AUTOUPDATE_CMUPDATE"
   [[ -n "$AU_CONFIG_WARN" ]] && echo "Config:   $AU_CONFIG_WARN"
   [[ -n "$AU_NGINX_PIN" ]] && echo "nginx hold: $AU_NGINX_PIN_VAR='$AU_NGINX_PIN' in custom_config.inc, updates stop at that version (installed nginx $(au_nginx_installed))"
@@ -1568,7 +1646,9 @@ au_status() {
   fi
   for comp in nginx php; do
     [[ -f "$AU_STATE_DIR/last-$comp" ]] && echo "Last $comp: $(cat "$AU_STATE_DIR/last-$comp")"
-    [[ -f "$AU_STATE_DIR/failed-$comp" ]] && echo "Held $comp: $(cut -d'|' -f1 "$AU_STATE_DIR/failed-$comp") failed $(cut -d'|' -f4 "$AU_STATE_DIR/failed-$comp") time(s), last at code $(cut -d'|' -f2 "$AU_STATE_DIR/failed-$comp")"
+    for f in "$AU_STATE_DIR/failed-$comp" "$AU_STATE_DIR/failed-$comp-rebuild"; do
+      [[ -f "$f" ]] && echo "Held $comp: $(cut -d'|' -f1 "$f") failed $(cut -d'|' -f4 "$f") time(s), last at code $(cut -d'|' -f2 "$f")"
+    done
   done
   [[ -f "$AU_LOG" ]] && { echo "Recent log ($AU_LOG):"; tail -n 8 "$AU_LOG"; }
 }
@@ -1675,6 +1755,11 @@ au_alertnote() {
       inst=$(au_php_installed)
       au_is_ver "$inst" || return 0
       [[ "$AU_PHP_HOLD_INVALID" = y || ( -n "$AUTOUPDATE_PHP_HOLD" && "$AUTOUPDATE_PHP_HOLD" = "$inst" ) ]] && return 0
+      # as au_plan: PHP stays on its installed major.minor branch
+      if [[ -n "$2" && "${2%.*}" != "${inst%.*}" ]]; then
+        echo "auto-update keeps PHP on the ${inst%.*} branch; run centmin.sh menu option 5 to change branch"
+        return 0
+      fi
       if [[ -n "$2" ]] && why=$(au_skip_reason php "$2"); then
         echo "auto-update skips this version, Centmin Mod lists it as: $why"
         return 0
@@ -1716,7 +1801,11 @@ au_main() {
       AU_NOTIFY_FORCE=y au_notify ok "auto-update test notification" "Test notification from $(basename "$0"): AUTOUPDATE_NOTIFY=$AUTOUPDATE_NOTIFY, email=${AUTOUPDATE_EMAIL:-none}."
       rc=$?
       au_status | grep -E '^Notify'
-      if [[ "$rc" -eq 0 ]]; then echo "notify-test: sent, or no channel is configured (see Notify above)"; else echo "notify-test: every configured channel failed, see $AU_LOG"; fi
+      case "$rc" in
+        0) echo "notify-test: sent" ;;
+        2) echo "notify-test: no channel is configured (see Notify above)" ;;
+        *) echo "notify-test: every configured channel failed, see $AU_LOG" ;;
+      esac
       return "$rc"
       ;;
     reset)
