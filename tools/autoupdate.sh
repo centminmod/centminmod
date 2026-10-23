@@ -48,9 +48,10 @@
 #     but it builds nothing when the checkout is left unusable (unmerged or
 #     cut-off git work, local changes not re-applied, an older tree)
 #  3. for nginx, then PHP-FPM, works out the target and waits for a later
-#     run while centmin.sh, cmupdate or yum/dnf/rpm is running, the load or
-#     free disk is outside AUTOUPDATE_MAXLOAD / AUTOUPDATE_MINDISK_MB,
-#     nginx -t or (for PHP) php-fpm -t fails, the service is stopped (unless
+#     run while centmin.sh, cmupdate or yum/dnf/rpm is running, the load
+#     (before the run's first build) or free disk is outside AUTOUPDATE_MAXLOAD
+#     / AUTOUPDATE_MINDISK_MB, nginx -t (where nginx is installed) or (for
+#     PHP) php-fpm -t fails, the service is stopped (unless
 #     a failed update left it down: then the rebuild is the repair), or
 #     ENABLE_MENU='y' would make centmin-cli.sh interactive
 #  4. builds through menu 4/5, niced on systemd hosts (AUTOUPDATE_NICE)
@@ -437,6 +438,14 @@ au_service_restart() {
   else
     service "$1" restart 9>&-
   fi
+}
+
+# "nginx running: yes, php-fpm running: NO" for the services installed here
+au_running() {
+  local out=''
+  [[ -x "$AU_NGINX_BIN" ]] && out="nginx running: $(au_service_active nginx && echo yes || echo NO)"
+  [[ -x "$AU_PHPFPM_BIN" ]] && out="${out:+$out, }php-fpm running: $(au_service_active php-fpm && echo yes || echo NO)"
+  echo "$out"
 }
 
 # pid of the current nginx or php-fpm master, from its pid file
@@ -1395,7 +1404,7 @@ au_update() {
     else
       next="Attempt $attempt of $AU_MAX_ATTEMPTS: tried again after a Centmin Mod code update and 24 hours, or right away after: autoupdate.sh reset"
     fi
-    msg="Auto-update $AU_ACTION of $comp ($AU_WHY) failed: ${problems}.${rolled} nginx running: $(au_service_active nginx && echo yes || echo NO), php-fpm running: $(au_service_active php-fpm && echo yes || echo NO). $next"
+    msg="Auto-update $AU_ACTION of $comp ($AU_WHY) failed: ${problems}.${rolled} $(au_running). $next"
   fi
   [[ -n "$clilog" ]] && echo "centmin-cli log: $clilog" >> "$runlog"
   echo "$(date '+%Y-%m-%d %H:%M:%S')|$level|$AU_ACTION|$AU_WHY|${problems}|$runlog" > "$AU_STATE_DIR/last-$comp"
@@ -1430,23 +1439,44 @@ au_pending() {
   fi
 }
 
-# Returns 2 when the code tree is unusable for a build.
-au_cmupdate() {
-  local stamp="$AU_STATE_DIR/cmupdate.stamp" before after rc why='' failed
-  local moved="${CM_INSTALLDIR}-automoved-cmupdate" lc="$AU_STATE_DIR/cmupdate-localchanges" stash_before stash_after
-  # turning cmupdate off does not lift a local-changes stop
-  if [[ -f "$lc" && "$AUTOUPDATE_CMUPDATE" != [yY] ]]; then
-    if au_git stash list 2>/dev/null | grep -q 'cmupdate-'; then
-      why="cmupdate could not keep local changes in ${CM_INSTALLDIR} applied (git stash list there, then autoupdate.sh reset)"
-      au_say "cmupdate: $why, not building"
-      au_pending cmupdate "$why"
-      return 2
-    fi
+# Why the code tree must not be built from (local changes left in a stash,
+# unmerged or cut-off git work): alert and 72h timer, return 2. The stop is
+# lifted once no cmupdate- stash is left (or by reset), unless $1 is "keep":
+# this run's cmupdate log just reported it.
+au_tree_check() {
+  local lc="$AU_STATE_DIR/cmupdate-localchanges" why=''
+  if [[ "$1" != keep && -f "$lc" ]] && ! au_git stash list 2>/dev/null | grep -q 'cmupdate-'; then
     rm -f "$lc" "$lc.sent"
     au_log "cmupdate: the stashed local changes were dealt with, builds resume"
   fi
-  # an old timer would alert at once when cmupdate is turned back on
-  [[ "$AUTOUPDATE_CMUPDATE" = [yY] ]] || { rm -f "$AU_STATE_DIR"/pending-cmupdate*; return 0; }
+  # alerted until delivered
+  if [[ -f "$lc" && ! -f "$lc.sent" ]]; then
+    au_notify fail "auto-update stopped: local code changes" "cmupdate could not keep your local changes in ${CM_INSTALLDIR} applied; see git stash list in ${CM_INSTALLDIR}. Auto-update builds nothing until you re-apply or drop them (then: bash ${CM_INSTALLDIR}/tools/autoupdate.sh reset)." && touch "$lc.sent"
+  fi
+  if au_git ls-files -u | grep -q .; then
+    why="${CM_INSTALLDIR} has unmerged files"
+  elif [[ -e "${CM_INSTALLDIR}/.git/index.lock" ]]; then
+    why="a git operation in ${CM_INSTALLDIR} was cut off (.git/index.lock is left)"
+  elif [[ -f "$lc" ]]; then
+    why="cmupdate could not keep local changes in ${CM_INSTALLDIR} applied (git stash list there, then autoupdate.sh reset)"
+  fi
+  [[ -n "$why" ]] || return 0
+  au_say "cmupdate: $why, not building"
+  au_pending cmupdate "$why"
+  return 2
+}
+
+# Returns 2 when the code tree is unusable for a build.
+au_cmupdate() {
+  local stamp="$AU_STATE_DIR/cmupdate.stamp" before after rc why='' failed
+  local moved="${CM_INSTALLDIR}-automoved-cmupdate" lc="$AU_STATE_DIR/cmupdate-localchanges" stash_before stash_after keep=
+  if [[ "$AUTOUPDATE_CMUPDATE" != [yY] ]]; then
+    # turning cmupdate off does not lift a stop
+    au_tree_check || return 2
+    # an old timer would alert at once when cmupdate is turned back on
+    rm -f "$AU_STATE_DIR"/pending-cmupdate*
+    return 0
+  fi
   [[ "$AU_NO_CMUPDATE" != y ]] || return 0
   # once per hourly run inside the update hours
   [[ -n "$(find "$stamp" -mmin -50 2>/dev/null)" ]] && return 0
@@ -1458,6 +1488,7 @@ au_cmupdate() {
       au_log "cmupdate: moved an earlier $moved aside to ${moved}-<date>, remove it when no longer needed"
     else
       au_say "cmupdate: could not move an earlier $moved aside, so cmupdate is skipped this run (its re-clone would move the tree into it)"
+      au_tree_check || return 2
       au_pending cmupdate "$moved could not be moved aside"
       return 0
     fi
@@ -1496,22 +1527,11 @@ au_cmupdate() {
   if grep -qE '^(git_sync: WARNING|  Local changes saved to:)' "$AU_STATE_DIR/cmupdate.log" ||
      { [[ "$stash_after" != "$stash_before" ]] && au_git stash list -n 1 2>/dev/null | grep -q 'cmupdate-'; }; then
     [[ -f "$lc" ]] || date +%s > "$lc"
-  elif [[ -f "$lc" ]] && ! au_git stash list 2>/dev/null | grep -q 'cmupdate-'; then
-    rm -f "$lc" "$lc.sent"
-    au_log "cmupdate: the stashed local changes were dealt with, builds resume"
-  fi
-  # alerted until delivered
-  if [[ -f "$lc" && ! -f "$lc.sent" ]]; then
-    au_notify fail "auto-update stopped: local code changes" "cmupdate could not keep your local changes in ${CM_INSTALLDIR} applied; see git stash list in ${CM_INSTALLDIR}. Auto-update builds nothing until you re-apply or drop them (then: bash ${CM_INSTALLDIR}/tools/autoupdate.sh reset)." && touch "$lc.sent"
+    keep=keep
   fi
   # a tree that is not what cmupdate meant to leave is never built from
-  if au_git ls-files -u | grep -q .; then
-    why="${CM_INSTALLDIR} has unmerged files after cmupdate"
-  elif [[ -e "${CM_INSTALLDIR}/.git/index.lock" ]]; then
-    why="a git operation in ${CM_INSTALLDIR} was cut off (.git/index.lock is left)"
-  elif [[ -f "$lc" ]]; then
-    why="cmupdate could not keep local changes in ${CM_INSTALLDIR} applied (git stash list there, then autoupdate.sh reset)"
-  elif [[ "$failed" = y && "$before" != "$after" ]] && ! au_git merge-base --is-ancestor "$before" "$after" 2>/dev/null; then
+  au_tree_check "$keep" || return 2
+  if [[ "$failed" = y && "$before" != "$after" ]] && ! au_git merge-base --is-ancestor "$before" "$after" 2>/dev/null; then
     why="after a failed cmupdate ${CM_INSTALLDIR} is at $after, not a newer version of $before"
   fi
   if [[ -n "$why" ]]; then
@@ -1616,17 +1636,18 @@ au_take_lock() {
 # The previous run died mid-build (reboot, OOM, kill): hold that update like
 # a failure so a build that takes the server down is not repeated. Needs the lock.
 au_interrupted() {
-  local icomp ikey why
+  local icomp ikey
   [[ -f "$AU_STATE_DIR/inprogress" ]] || return 0
-  # the run died but its build (centmin-cli.sh) may still be going: wait for it
-  if why=$(au_cmm_running); then
-    au_log "inprogress is left but $why is still running, recording it once that ends"
+  IFS='|' read -r icomp ikey _ < "$AU_STATE_DIR/inprogress"
+  # the run died but its own build may still be going: wait for that one only,
+  # a menu session opened since must not delay the record past a hand rebuild
+  if [[ "$icomp" = nginx || "$icomp" = php ]] && pgrep -U 0 -u 0 -f "centmin-cli\.sh ${icomp}upgrade" >/dev/null 2>&1; then
+    au_log "inprogress is left but its $icomp build is still running, recording it once that ends"
     return 1
   fi
-  IFS='|' read -r icomp ikey _ < "$AU_STATE_DIR/inprogress"
   rm -f "$AU_STATE_DIR/inprogress"
   [[ "$icomp" = nginx || "$icomp" = php ]] && au_fail_record "$icomp" "$ikey" >/dev/null
-  au_notify fail "auto-update interrupted" "A previous auto-update run was interrupted mid-build ($icomp: $ikey); it is held like a failed update. Check that nginx and php-fpm are healthy. nginx running: $(au_service_active nginx && echo yes || echo NO), php-fpm running: $(au_service_active php-fpm && echo yes || echo NO)."
+  au_notify fail "auto-update interrupted" "A previous auto-update run was interrupted mid-build ($icomp: $ikey); it is held like a failed update. Check that nginx and php-fpm are healthy. $(au_running)."
 }
 
 au_run() {
