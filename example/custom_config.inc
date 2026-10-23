@@ -2481,7 +2481,8 @@
 #     centmin) and are reported by check/status, the dmotd banner and one alert.
 #   - Skipped while centmin.sh, cmupdate or yum/dnf runs, load or disk space is
 #     outside limits, nginx -t / php-fpm -t fails, the service is stopped (unless a
-#     failed update left it down) or ENABLE_MENU='y'; centmin.sh and cmupdate in
+#     failed update left it down), nginx.org does not serve the nginx source or
+#     ENABLE_MENU='y'; centmin.sh and cmupdate in
 #     turn refuse to start while an update runs. Updates blocked for 72 hours
 #     send one alert.
 #   - After an update nginx/php-fpm must be running on the new binary, configs

@@ -52,8 +52,9 @@
 #     (before the run's first build) or free disk is outside AUTOUPDATE_MAXLOAD
 #     / AUTOUPDATE_MINDISK_MB, nginx -t (where nginx is installed) or (for
 #     PHP) php-fpm -t fails, the service is stopped (unless
-#     a failed update left it down: then the rebuild is the repair), or
-#     ENABLE_MENU='y' would make centmin-cli.sh interactive
+#     a failed update left it down: then the rebuild is the repair), the
+#     nginx source cannot be downloaded from nginx.org (or freenginx.org),
+#     or ENABLE_MENU='y' would make centmin-cli.sh interactive
 #  4. builds through menu 4/5, niced on systemd hosts (AUTOUPDATE_NICE)
 #  5. checks the result: the new version is installed and running on the new
 #     binary, config tests pass, no PHP extension went missing from php -m,
@@ -967,6 +968,10 @@ au_plan() {
       AU_TARGET=$AU_INSTALLED nodata="could not get PHP $branch release data from php.net"
     fi
   fi
+  # a failed rebuild whose entry is no longer the due one is done with
+  if [[ "$AU_DRYRUN" != y && -f "$AU_STATE_DIR/failed-$comp-rebuild" && "$(cut -d'|' -f1 "$AU_STATE_DIR/failed-$comp-rebuild")" != "$comp rebuild ${due%% *}" ]]; then
+    rm -f "$AU_STATE_DIR/failed-$comp-rebuild"
+  fi
   # never install a version on the skip list; a due rebuild still runs
   if au_vergt "$AU_TARGET" "$AU_INSTALLED" && why=$(au_skip_reason "$skipc" "$AU_TARGET"); then
     AU_SKIPNOTE="$skipc $AU_TARGET is on the skip list: $why"
@@ -1134,7 +1139,7 @@ au_cmm_running() {
 }
 
 au_blocked() {
-  local comp=$1 p load max avail d
+  local comp=$1 p load max avail d src
   if [[ "$ENABLE_MENU" = [yY] ]]; then
     echo "ENABLE_MENU='y' in custom_config.inc makes centmin-cli.sh interactive, so it cannot run unattended"; return
   fi
@@ -1158,6 +1163,10 @@ au_blocked() {
   if [[ "$comp" = nginx ]]; then
     # a repair rebuild is what brings a stopped service back
     au_service_active nginx || [[ "$AU_REPAIR" = y ]] || { echo "nginx is not running"; return; }
+    # menu 4 downloads the source again (it deletes a cached tarball first)
+    src="https://nginx.org/download/nginx-${AU_TARGET}.tar.gz"
+    [[ "$FREENGINX_INSTALL" = [yY] ]] && src="https://freenginx.org/download/freenginx-${AU_TARGET}.tar.gz"
+    curl -${ipv_forceopt}fsI --connect-timeout 10 --max-time 20 -o /dev/null "$src" 2>/dev/null || { echo "$src cannot be downloaded now"; return; }
   else
     au_service_active php-fpm || [[ "$AU_REPAIR" = y ]] || { echo "php-fpm is not running"; return; }
     # menu 5 tests the config only after installing the new build
@@ -1235,8 +1244,9 @@ au_clear_failed() {
 # gate by taking turns: failed-<comp> (upgrades, repairs, rebuilds on their
 # own) and failed-<comp>-rebuild (a rebuild failing while a failed upgrade to a
 # newer version is on record). A key keeps the file it already has.
+# au_fail_record comp key [failure time, default now]
 au_fail_record() {
-  local comp=$1 key=$2 f="$AU_STATE_DIR/failed-$1" r="$AU_STATE_DIR/failed-$1-rebuild" fkey fhead ftime fcount=0 uver inst
+  local comp=$1 key=$2 when=${3:-$(date +%s)} f="$AU_STATE_DIR/failed-$1" r="$AU_STATE_DIR/failed-$1-rebuild" fkey fhead ftime fcount=0 uver inst
   IFS='|' read -r fkey _ 2>/dev/null < "$f"
   if [[ -f "$r" && "$(cut -d'|' -f1 "$r" 2>/dev/null)" = "$key" ]]; then
     f=$r
@@ -1252,7 +1262,7 @@ au_fail_record() {
   fkey='' fcount=0
   IFS='|' read -r fkey fhead ftime fcount 2>/dev/null < "$f"
   [[ "$fkey" = "$key" && "$fcount" =~ ^[0-9]+$ ]] || fcount=0
-  echo "$key|$(au_head_full)|$(date +%s)|$((fcount + 1))" > "$f"
+  echo "$key|$(au_head_full)|$when|$((fcount + 1))" > "$f"
   echo $((fcount + 1))
 }
 
@@ -1264,7 +1274,8 @@ au_update() {
   runlog="${CENTMINLOGDIR}/autoupdate_${comp}_$(date +%d%m%y-%H%M%S).log"
   mkdir -p "$CENTMINLOGDIR" "$AU_STATE_DIR"
   # without its state (disk full, read-only /var) a failing build would repeat hourly
-  if ! { echo "$comp|$AU_KEY|$start" > "$AU_STATE_DIR/inprogress" && [[ "$(cat "$AU_STATE_DIR/inprogress" 2>/dev/null)" = "$comp|$AU_KEY|$start" ]]; }; then
+  # the run log tells au_interrupted when a dead run stopped
+  if ! { echo "$comp|$AU_KEY|$start|$runlog" > "$AU_STATE_DIR/inprogress" && [[ "$(cat "$AU_STATE_DIR/inprogress" 2>/dev/null)" = "$comp|$AU_KEY|$start|$runlog" ]]; }; then
     au_say "$comp: cannot write $AU_STATE_DIR (disk full or read-only?), not building"
     return 1
   fi
@@ -1443,8 +1454,19 @@ au_pending() {
 # unmerged or cut-off git work): alert and 72h timer, return 2. The stop is
 # lifted once no cmupdate- stash is left (or by reset), unless $1 is "keep":
 # this run's cmupdate log just reported it.
+# why the tree is not built from, or nothing (read-only: check, status, motd)
+au_tree_why() {
+  if au_git ls-files -u | grep -q .; then
+    echo "${CM_INSTALLDIR} has unmerged files"
+  elif [[ -e "${CM_INSTALLDIR}/.git/index.lock" ]]; then
+    echo "a git operation in ${CM_INSTALLDIR} was cut off (.git/index.lock is left)"
+  elif [[ -f "$AU_STATE_DIR/cmupdate-localchanges" ]]; then
+    echo "cmupdate could not keep local changes in ${CM_INSTALLDIR} applied (git stash list there, then autoupdate.sh reset)"
+  fi
+}
+
 au_tree_check() {
-  local lc="$AU_STATE_DIR/cmupdate-localchanges" why=''
+  local lc="$AU_STATE_DIR/cmupdate-localchanges" why
   if [[ "$1" != keep && -f "$lc" ]] && ! au_git stash list 2>/dev/null | grep -q 'cmupdate-'; then
     rm -f "$lc" "$lc.sent"
     au_log "cmupdate: the stashed local changes were dealt with, builds resume"
@@ -1453,13 +1475,7 @@ au_tree_check() {
   if [[ -f "$lc" && ! -f "$lc.sent" ]]; then
     au_notify fail "auto-update stopped: local code changes" "cmupdate could not keep your local changes in ${CM_INSTALLDIR} applied; see git stash list in ${CM_INSTALLDIR}. Auto-update builds nothing until you re-apply or drop them (then: bash ${CM_INSTALLDIR}/tools/autoupdate.sh reset)." && touch "$lc.sent"
   fi
-  if au_git ls-files -u | grep -q .; then
-    why="${CM_INSTALLDIR} has unmerged files"
-  elif [[ -e "${CM_INSTALLDIR}/.git/index.lock" ]]; then
-    why="a git operation in ${CM_INSTALLDIR} was cut off (.git/index.lock is left)"
-  elif [[ -f "$lc" ]]; then
-    why="cmupdate could not keep local changes in ${CM_INSTALLDIR} applied (git stash list there, then autoupdate.sh reset)"
-  fi
+  why=$(au_tree_why)
   [[ -n "$why" ]] || return 0
   au_say "cmupdate: $why, not building"
   au_pending cmupdate "$why"
@@ -1470,16 +1486,14 @@ au_tree_check() {
 au_cmupdate() {
   local stamp="$AU_STATE_DIR/cmupdate.stamp" before after rc why='' failed
   local moved="${CM_INSTALLDIR}-automoved-cmupdate" lc="$AU_STATE_DIR/cmupdate-localchanges" stash_before stash_after keep=
-  if [[ "$AUTOUPDATE_CMUPDATE" != [yY] ]]; then
-    # turning cmupdate off does not lift a stop
+  # cmupdate off, already run (re-exec) or run within the hour (stamp): the
+  # tree must still be fit to build from
+  if [[ "$AUTOUPDATE_CMUPDATE" != [yY] || "$AU_NO_CMUPDATE" = y || -n "$(find "$stamp" -mmin -50 2>/dev/null)" ]]; then
     au_tree_check || return 2
     # an old timer would alert at once when cmupdate is turned back on
-    rm -f "$AU_STATE_DIR"/pending-cmupdate*
+    [[ "$AUTOUPDATE_CMUPDATE" = [yY] ]] || rm -f "$AU_STATE_DIR"/pending-cmupdate*
     return 0
   fi
-  [[ "$AU_NO_CMUPDATE" != y ]] || return 0
-  # once per hourly run inside the update hours
-  [[ -n "$(find "$stamp" -mmin -50 2>/dev/null)" ]] && return 0
   before=$(au_head) stash_before=$(au_git rev-parse -q --verify refs/stash 2>/dev/null)
   # a copy left by an earlier re-clone is not this run's to restore; move it
   # aside, or cmupdate's next re-clone would move the tree into it
@@ -1636,18 +1650,27 @@ au_take_lock() {
 # The previous run died mid-build (reboot, OOM, kill): hold that update like
 # a failure so a build that takes the server down is not repeated. Needs the lock.
 au_interrupted() {
-  local icomp ikey
+  local icomp ikey istart ilog itime
   [[ -f "$AU_STATE_DIR/inprogress" ]] || return 0
-  IFS='|' read -r icomp ikey _ < "$AU_STATE_DIR/inprogress"
+  IFS='|' read -r icomp ikey istart ilog < "$AU_STATE_DIR/inprogress"
   # the run died but its own build may still be going: wait for that one only,
   # a menu session opened since must not delay the record past a hand rebuild
   if [[ "$icomp" = nginx || "$icomp" = php ]] && pgrep -U 0 -u 0 -f "centmin-cli\.sh ${icomp}upgrade" >/dev/null 2>&1; then
     au_log "inprogress is left but its $icomp build is still running, recording it once that ends"
     return 1
   fi
+  # failed when its log stopped, not when this run noticed: a hand rebuild
+  # in between (auto-update off, crond down, before the next tick) is newer
+  if [[ -n "$ilog" ]]; then
+    itime=$(stat -c %Y "$ilog" 2>/dev/null)
+    # no log yet: it died before the build started
+    [[ "$itime" =~ ^[0-9]+$ ]] || itime=$istart
+  fi
+  [[ "$itime" =~ ^[0-9]+$ ]] || itime=$(date +%s)
   rm -f "$AU_STATE_DIR/inprogress"
-  [[ "$icomp" = nginx || "$icomp" = php ]] && au_fail_record "$icomp" "$ikey" >/dev/null
-  au_notify fail "auto-update interrupted" "A previous auto-update run was interrupted mid-build ($icomp: $ikey); it is held like a failed update. Check that nginx and php-fpm are healthy. $(au_running)."
+  [[ "$icomp" = nginx || "$icomp" = php ]] && au_fail_record "$icomp" "$ikey" "$itime" >/dev/null
+  au_notify fail "auto-update interrupted" "A previous auto-update run was interrupted mid-build ($icomp: $ikey, around $(au_date "$itime")); it is held like a failed update. Check that nginx and php-fpm are healthy. $(au_running)."
+  return 0
 }
 
 au_run() {
@@ -1673,7 +1696,10 @@ au_run() {
   au_take_lock || return 0
   # centmin.sh and cmupdate refuse to start while the lock is held; let ours run
   export CMM_AUTOUPDATE_RUN=y
-  au_interrupted
+  if ! au_interrupted; then
+    au_say "deferred, the interrupted run's build is still running"
+    return 0
+  fi
   # before cmupdate: it must not change the code under a running centmin.sh
   if why=$(au_cmm_running); then
     au_say "deferred, $why is running"
@@ -1748,6 +1774,8 @@ au_check() {
     printf '%-6s AUTOUPDATE_%s=%s installed=%s target=%s -> %s: %s\n' "$comp" "$(echo "$comp" | tr a-z A-Z)" "$enabled" "${AU_INSTALLED:--}" "${AU_TARGET:--}" "$AU_ACTION" "$AU_WHY"
     printf '%-6s gates: %s\n' '' "${why:-ok}"
   done
+  why=$(au_tree_why)
+  [[ -z "$why" ]] || echo "tree   $why: no builds until that is dealt with"
   echo "hours  AUTOUPDATE_HOURS=$AUTOUPDATE_HOURS now $(date +%H:%M) -> $(au_in_hours && echo inside || echo outside)"
 }
 
@@ -1781,12 +1809,16 @@ au_status() {
   else
     echo "Cron:     $AU_CRON_FILE not present$(au_enabled && echo ' (run: autoupdate.sh ensure)')"
   fi
-  [[ -f "$AU_STATE_DIR/cmupdate-localchanges" ]] && echo "Stopped:  cmupdate left local code changes in a stash $(au_date "$(cat "$AU_STATE_DIR/cmupdate-localchanges")"); no builds until they are dealt with (git stash list in ${CM_INSTALLDIR}, then autoupdate.sh reset)"
+  if [[ -f "$AU_STATE_DIR/cmupdate-localchanges" ]]; then
+    echo "Stopped:  cmupdate left local code changes in a stash $(au_date "$(cat "$AU_STATE_DIR/cmupdate-localchanges")"); no builds until they are dealt with (git stash list in ${CM_INSTALLDIR}, then autoupdate.sh reset)"
+  elif f=$(au_tree_why) && [[ -n "$f" ]]; then
+    echo "Stopped:  $f; no builds until that is dealt with"
+  fi
   if [[ -f "$AU_STATE_DIR/inprogress" ]]; then
     if au_lock_held; then
       echo "Running:  $(cut -d'|' -f1,2 "$AU_STATE_DIR/inprogress") since $(au_date "$(cut -d'|' -f3 "$AU_STATE_DIR/inprogress")")"
     else
-      echo "Interrupted: $(cut -d'|' -f1,2 "$AU_STATE_DIR/inprogress") started $(au_date "$(cut -d'|' -f3 "$AU_STATE_DIR/inprogress")") and died; the next cron run holds it as failed"
+      echo "Interrupted: $(cut -d'|' -f1,2 "$AU_STATE_DIR/inprogress") started $(au_date "$(cut -d'|' -f3 "$AU_STATE_DIR/inprogress")") and died; the next auto-update run records it as failed"
     fi
   fi
   for comp in nginx php; do
@@ -1816,7 +1848,7 @@ au_motd() {
     return 0
   fi
   if [[ -f "$AU_STATE_DIR/inprogress" ]] && au_lock_held; then
-    IFS='|' read -r comp fkey failed < "$AU_STATE_DIR/inprogress"
+    IFS='|' read -r comp fkey failed _ < "$AU_STATE_DIR/inprogress"
     echo "warn|Auto-update: $fkey running since $(au_date "$failed") - wait before using centmin.sh menu 4/5"
     return 0
   fi
@@ -1834,6 +1866,9 @@ au_motd() {
   done
   if [[ -f "$AU_STATE_DIR/cmupdate-localchanges" ]]; then
     echo "warn|Auto-update: stopped, cmupdate left local code changes in a stash (git stash list in ${CM_INSTALLDIR}), then: autoupdate.sh reset"
+    return 0
+  elif fkey=$(au_tree_why) && [[ -n "$fkey" ]]; then
+    echo "warn|Auto-update: stopped, $fkey"
     return 0
   fi
   if [[ "$AU_SYSTEMD" = y ]] && ! systemctl is-active --quiet crond; then
@@ -1966,12 +2001,16 @@ au_main() {
       ;;
     reset)
       [[ "$(id -u)" -eq 0 ]] || { echo "autoupdate.sh reset must run as root"; return 1; }
-      # a running update still needs its failure record and baseline
-      if au_lock_held; then
-        echo "reset: an auto-update run is in progress (autoupdate.sh status), run reset after it ends"
-        return 1
-      fi
-      rm -rf "$AU_STATE_DIR"/failed-* "$AU_STATE_DIR"/baseline-* "$AU_STATE_DIR"/pending-* "$AU_STATE_DIR"/stuck-* "$AU_STATE_DIR/cmupdate.stamp" "$AU_STATE_DIR"/cmupdate-localchanges* "$AU_STATE_DIR/inprogress"
+      # a running update still needs its failure record and baseline: hold
+      # the lock while deleting, so no run can start in between
+      [[ -L "$AU_LOCK" ]] && { echo "reset: $AU_LOCK is a symlink, not touching it"; return 1; }
+      ( umask 077; exec 9>>"$AU_LOCK" || exit 2; flock -n 9 || exit 1
+        rm -rf "$AU_STATE_DIR"/failed-* "$AU_STATE_DIR"/baseline-* "$AU_STATE_DIR"/pending-* "$AU_STATE_DIR"/stuck-* "$AU_STATE_DIR/cmupdate.stamp" "$AU_STATE_DIR"/cmupdate-localchanges* "$AU_STATE_DIR/inprogress" || exit 3 )
+      case $? in
+        0) ;;
+        1) echo "reset: an auto-update run is in progress (autoupdate.sh status), run reset after it ends"; return 1 ;;
+        *) echo "reset: cannot open $AU_LOCK or clear $AU_STATE_DIR"; return 1 ;;
+      esac
       au_say "reset: cleared failed and interrupted update holds, the cmupdate local-changes stop, blocked-update timers and the cmupdate stamp (delay timers are kept)"
       ;;
     help|*)
