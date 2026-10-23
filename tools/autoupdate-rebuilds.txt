@@ -9,7 +9,8 @@
 #
 # Format: <component> <UTC time the change was pushed> <reason>
 #   component: nginx, php (every PHP branch) or php-<major.minor>
-#   time:      date -u +%Y-%m-%dT%H:%M:%SZ
+#   time:      date -u +%Y-%m-%dT%H:%M:%SZ (an entry takes effect at its
+#              time, so a future time waits until then)
 #
 php-7.2 2026-10-21T16:08:22Z PHP 8.2.35 security backports (CVE-2026-109618, CVE-2026-109619)
 php-7.3 2026-10-21T16:08:22Z PHP 8.2.35 security backports (CVE-2026-109618, CVE-2026-109619)
