@@ -1528,7 +1528,7 @@ fi
         cp -af "$DIR_TMP/njs/build/njs" /usr/local/bin/njs
     fi
     # remove latest Nginx version cache file
-    rm -f /tmp/nginx_version_cache
+    rm -f /var/cache/centminmod/version-check/nginx_version_cache
     echo "nginx upgrade: make time completed in $ngx_make_time seconds"
     echo
     if [ -f "$(which figlet)" ]; then
