@@ -229,7 +229,7 @@ push_update_alerts() {
         _curl_args+=(--form-string "expire=${PUSH_CVE_EMERGENCY_EXPIRE:-3600}")
       fi
     fi
-    RESPONSE=$(curl -s "${_curl_args[@]}" https://api.pushover.net/1/messages.json)
+    RESPONSE=$(curl -s --connect-timeout 10 --max-time 30 "${_curl_args[@]}" https://api.pushover.net/1/messages.json)
     _curl_rc=$?
 
     push_log_message "Notification sent. Response: ${RESPONSE}"
@@ -255,22 +255,25 @@ vercache_valid() {
 vercache_read() {
   [[ "$(id -u)" -eq 0 && -f "$1" ]] || return 1
   [ $(( ( $(date +%s) - $(stat -c %Y "$1") ) / 60 )) -gt $CACHE_TIMEOUT ] && return 1
+  # an empty line is a cached failed fetch: no refetch for CACHE_TIMEOUT
   vercache_valid "$(head -n1 "$1")"
+  return 0
 }
 
-# Write version $2 to cache file $1 if running as root and $2 is valid
+# Write version $2 to cache file $1 if running as root; anything that is not
+# a valid version is written as an empty line (a failed fetch)
 vercache_write() {
-  [[ "$(id -u)" -eq 0 ]] && vercache_valid "$2" >/dev/null || return 0
+  [[ "$(id -u)" -eq 0 ]] || return 0
   mkdir -p "$CACHE_DIR" 2>/dev/null && chmod 0700 "$CACHE_DIR" 2>/dev/null
-  echo "$2" > "$1" 2>/dev/null
+  vercache_valid "$2" > "$1" 2>/dev/null
 }
 
 # Function to retrieve the latest NGINX version
 get_latest_nginx_version() {
   if [[ "$FREENGINX_INSTALL" = [yY] ]]; then
-    curl -${ipv_forceopt}sL --connect-timeout 10 https://freenginx.org/en/download.html 2>&1 | grep -Eo "freenginx-[0-9.]+\.tar[.a-z]*" | grep -v '.asc' | awk -F "freenginx-" '/.tar.gz$/ {print $2}' | sed -e 's|.tar.gz||g' | head -n1 2>&1 | tee "${CENTMINLOGDIR}/cmm-login-nginxver-check-debug_${DT}.log"
+    curl -${ipv_forceopt}sL --connect-timeout 10 --max-time 20 https://freenginx.org/en/download.html 2>&1 | grep -Eo "freenginx-[0-9.]+\.tar[.a-z]*" | grep -v '.asc' | awk -F "freenginx-" '/.tar.gz$/ {print $2}' | sed -e 's|.tar.gz||g' | head -n1 2>&1 | tee "${CENTMINLOGDIR}/cmm-login-nginxver-check-debug_${DT}.log"
   else
-    curl -${ipv_forceopt}sL --connect-timeout 10 https://nginx.org/download/ 2>&1 \
+    curl -${ipv_forceopt}sL --connect-timeout 10 --max-time 20 https://nginx.org/download/ 2>&1 \
     | grep -Eo 'nginx-[0-9]+\.[0-9]+\.[0-9]+\.tar\.gz' \
     | sed -E 's/^nginx-([0-9]+\.[0-9]+\.[0-9]+)\.tar\.gz$/\1/' \
     | sort -V \
@@ -358,7 +361,8 @@ phpver_checker() {
     fi
     IS_PHPTAR_AVAIL=''
     [[ -n "$LATEST_PHPVERS" ]] && IS_PHPTAR_AVAIL=$(curl -sI${ipv_forceopt} --connect-timeout 10 "https://www.php.net/distributions/php-${LATEST_PHPVERS}.tar.${PHPEXTSION_CHECK}" | head -n1 | grep -o 200)
-    if [[ "$CURRENT_PHPVERS" != "$LATEST_PHPVERS" ]] && [[ "$IS_PHPTAR_AVAIL" -eq '200' ]]; then
+    # only a newer release: the cache can hold another branch's or an older version
+    if [[ "$CURRENT_PHPVERS" != "$LATEST_PHPVERS" && "$(printf '%s\n' "$CURRENT_PHPVERS" "$LATEST_PHPVERS" | sort -V | tail -n1)" = "$LATEST_PHPVERS" ]] && [[ "$IS_PHPTAR_AVAIL" -eq '200' ]]; then
       echo
       # cecho "===============================================================================" $boldgreen
       cecho "* PHP Update May Be Available via centmin.sh menu option 5" $boldyellow
