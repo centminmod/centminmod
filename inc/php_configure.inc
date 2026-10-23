@@ -12,7 +12,9 @@ php_customssl_openssl_ensure() {
     [[ "$CENTOS_NINE" -eq '9' || "$CENTOS_TEN" -eq '10' ]] || return 0
     [[ "$PHPVER_ID" -ge '70400' && "$PHPVER_ID" -lt '80100' ]] || return 0
     [[ "$OPENSSL_VERSION" = 1.1.1* && "$LIBRESSL_SWITCH" = [nN] && "$BORINGSSL_SWITCH" = [nN] ]] || return 0
-    if [[ -x "${OPENSSL_CUSTOMPATH}/bin/openssl" ]] && ! openssl_alma_patches_pending; then
+    # a static-only build is rebuilt too: linked into php-fpm, its exported symbols would also
+    # serve the system OpenSSL 3 libraries PHP loads
+    if [[ -x "${OPENSSL_CUSTOMPATH}/bin/openssl" && -e "${OPENSSL_CUSTOMPATH}/lib/libssl.so.1.1" ]] && ! openssl_alma_patches_pending; then
         return 0
     fi
     echo "PHP ${PHPVER_ID} with PHP_CUSTOMSSL='y': building OpenSSL ${OPENSSL_VERSION} in ${OPENSSL_CUSTOMPATH}"
@@ -20,8 +22,10 @@ php_customssl_openssl_ensure() {
     if [[ ! -f "${DIR_TMP}/${OPENSSL_LINKFILE}" ]]; then
         openssldownload
     fi
-    # installopenssl only builds the custom OpenSSL when Nginx does not use the system one
-    OPENSSL_SYSTEM_USE='n' installopenssl
+    # installopenssl builds OPENSSL_CUSTOMPATH only on its default branch, not the ones for Nginx
+    # with system OpenSSL, quicTLS (/opt/openssl-quic) or AWS-LC (/opt/aws-lc-install), and skips
+    # an installed version unless forced
+    OPENSSL_SYSTEM_USE='n' NGINX_QUIC_SUPPORT='n' AWS_LC_SWITCH='n' ngver='' OPENSSL_FORCECOMPILE='y' installopenssl
     cd "$saved_pwd" || return 1
     [[ -x "${OPENSSL_CUSTOMPATH}/bin/openssl" ]]
 }
@@ -806,7 +810,8 @@ DETECTOPENSSL_THREETWO=$(echo $OPENSSL_VERSION  | cut -d . -f1-2 | grep -o 3.2)
 # el9 uses OpenSSL 3.0 and is not supported for PHP builds <=8.0
 # for PHP 7.4 to 8.0, use OpenSSL 1.1.1 instead
 # https://bugs.php.net/bug.php?id=81540
-if [[ "$CENTOS_NINE" -eq '9' && "$PHP_PATCH_OPENSSL_THREE" = [yY] ]] && [[ "$PHPMVER" = '8.1' || "$PHPMUVER" = '8.1' || "$PHPMVER" = '8.2' || "$PHPMUVER" = '8.2' || "$PHPMVER" = '8.3' || "$PHPMUVER" = '8.3' || "$PHPMVER" = '8.4' || "$PHPMUVER" = '8.4' ]]; then
+# key on PHPVER_ID, the PHP being built; PHPMVER is the default PHP_VERSION, not a menu 5 target
+if [[ "$CENTOS_NINE" -eq '9' && "$PHP_PATCH_OPENSSL_THREE" = [yY] ]] && [[ "$PHPVER_ID" -ge '80100' ]]; then
   PHP_CUSTOMSSL='n'
   PHP_PATCH_OPENSSL_THREE='n'
 fi
