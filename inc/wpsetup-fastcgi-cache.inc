@@ -119,7 +119,6 @@ fc_installredisserver() {
     echo "Install & Setup Redis Server from REMI YUM Repo"
     echo
     yum -y install redis --enablerepo=remi --disableplugin=priorities
-    chkconfig redis on
     if [[ -z "$(grep '^vm.overcommit_memory' /etc/sysctl.conf)" ]]; then
       echo "vm.overcommit_memory = 1" >> /etc/sysctl.conf
       sysctl -p
@@ -138,7 +137,13 @@ fc_installredisserver() {
         grep '^maxmemory-samples 10' /etc/redis.conf
       fi
     fi
-    service redis restart
+    if [ -d /run/systemd/system ]; then
+      systemctl enable redis
+      systemctl restart redis
+    else
+      chkconfig redis on
+      service redis restart
+    fi
     echo
     echo "Redis server installed with config file at /etc/redis.conf"
     echo
@@ -3653,7 +3658,7 @@ fi
   cecho "------------------------------------------------------------" $boldgreen
 
 cat > "/root/tools/wp_uninstall_${vhostname}.sh" <<END
-#/bin/bash
+#!/bin/bash
 echo "-------------------------------------------------------------------------"
 echo "Do you want to uninstall/delete WP install for ${vhostname}"
 echo "This will delete all data from /home/nginx/domains/${vhostname}"
@@ -3705,7 +3710,11 @@ sed -i "/$vhostname cacheenabler cron/d" cronjoblist
 crontab cronjoblist
 rm -rf cronjoblist
 pure-pw userdel $ftpuser >/dev/null 2>&1
-service nginx restart
+if [ -x /etc/init.d/nginx ]; then
+  /etc/init.d/nginx restart
+else
+  systemctl restart nginx
+fi
 END
 
 chmod 0700 /root/tools/wp_uninstall_${vhostname}.sh
@@ -3770,7 +3779,11 @@ if [[ -f .wpcli-status && ! "\$(grep -w 'Plugin already updated' .wpcli-status)"
     # only do php-fpm reload when zend opcache caching is enabled and revalidation
     # frequency is greater than 10 seconds set by opcache.revalidate_freq php setting
     if [[ "\$(php --ri "Zend Opcache" >/dev/null 2>&1; echo \$?)" -eq '0' && "\$(php --ri "Zend Opcache" | awk '/opcache.revalidate_freq/ {print \$3}')" -gt '10' ]]; then
-      service php-fpm reload
+      if [ -x /etc/init.d/php-fpm ]; then
+        /etc/init.d/php-fpm reload
+      else
+        systemctl reload php-fpm
+      fi
     fi
   rm -rf /tmp/wp_updater_phpfpm.lock
   else
@@ -4031,7 +4044,7 @@ elif [[ "$disablepwdprotect" = [yY] ]]; then
       sed -i "s|auth_basic \"Private\"|#auth_basic \"Private\"|" /usr/local/nginx/conf/conf.d/$vhostname.ssl.conf >/dev/null 2>&1
       sed -i "s|auth_basic_user_file \/home\/nginx\/domains\/$vhostname\/htpasswd_wplogin|#auth_basic_user_file \/home\/nginx\/domains\/$vhostname\/htpasswd_wplogin|" /usr/local/nginx/conf/conf.d/$vhostname.ssl.conf >/dev/null 2>&1
     fi
-    service nginx reload
+    cmservice nginx reload
 fi
 
 echo
