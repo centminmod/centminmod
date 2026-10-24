@@ -338,7 +338,7 @@ au_validate_config() {
   if [[ "$AUTOUPDATE_NGINX" != y ]]; then
     :
   elif [[ -n "$AU_NGINX_PIN" ]] && ! [[ "$AU_NGINX_PIN" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
-    AU_CONFIG_WARN="$AU_CONFIG_WARN $AU_NGINX_PIN_VAR='$AU_NGINX_PIN' in custom_config.inc is not a version like 1.31.7, holding nginx updates until it is fixed;"
+    AU_CONFIG_WARN="$AU_CONFIG_WARN $AU_NGINX_PIN_VAR='$AU_NGINX_PIN' in custom_config.inc is not a version like 1.31.8, holding nginx updates until it is fixed;"
   elif [[ "$AU_NGINX_PIN_EMPTY" = y ]]; then
     AU_CONFIG_WARN="$AU_CONFIG_WARN $AU_NGINX_PIN_VAR is empty in custom_config.inc, so nginx is not held (remove the line, or set a version to hold);"
   fi
