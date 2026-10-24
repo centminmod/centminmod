@@ -673,6 +673,95 @@ fi
   } 2>&1 | tee "${CENTMINLOGDIR}/patch_opensslpatches_${DT}.log"
 }
 
+# OpenSSL 1.1.1w: apply the security fixes AlmaLinux 9 backports to compat-openssl11,
+# plus upstream's CVE-2024-9143 fix, which RHEL does not need because it builds without
+# binary field curves (patches/openssl/almalinux-1.1.1w/series). This is Red Hat's
+# selection of fixes, not every 1.1.1 CVE published since upstream's last 1.1.1w
+# release. It runs in installopenssl's own shell, not inside opensslpatches' tee pipe,
+# so the result reaches the caller, and before $STATICLIBSSL is replaced. All or
+# nothing: a set that does not apply cleanly is skipped with a warning, or stops the
+# build when OPENSSL_ALMA_PATCHES_STRICT='y'.
+OPENSSL_ALMA_PATCHES_STAMP='.centminmod-openssl-patches'
+
+openssl_alma_patches_series_id() {
+  local series="${CUR_DIR}/patches/openssl/almalinux-1.1.1w/series"
+  [[ -f "$series" ]] || return 1
+  sha256sum "$series" | cut -c1-12
+}
+
+# 0 when the installed OpenSSL 1.1.1w build lacks the current patch set, or, when Nginx
+# compiles OpenSSL from source, its source tree is unpatched: openssldownload extracts
+# the tarball over it on every Nginx upgrade
+openssl_alma_patches_pending() {
+  local dir="${CUR_DIR}/patches/openssl/almalinux-1.1.1w" stamp="${OPENSSL_CUSTOMPATH}/${OPENSSL_ALMA_PATCHES_STAMP}" id last
+  [[ "$OPENSSL_ALMA_PATCHES" = [yY] && "$OPENSSL_VERSION" = '1.1.1w' ]] || return 1
+  id=$(openssl_alma_patches_series_id) || return 1
+  grep -qx "series=${id}" "$stamp" 2>/dev/null || return 0
+  if [[ "$OPENSSL_SYSTEM_USE" != [yY] ]] && grep -qx 'status=applied' "$stamp" && [[ -d "${DIR_TMP}/openssl-${OPENSSL_VERSION}" ]]; then
+    last=$(awk '$1 == "patch" {f = $3} END {print f}' "${dir}/series")
+    # --force: never treat an unpatched tree as an already reversed patch
+    ( cd "${DIR_TMP}/openssl-${OPENSSL_VERSION}" && patch -p1 -R --dry-run --force --fuzz=0 -s -i "${dir}/${last}" ) >/dev/null 2>&1 || return 0
+  fi
+  return 1
+}
+
+openssl_alma_patches_skip() {
+  OPENSSL_ALMA_PATCH_STATUS='skipped'
+  cecho "WARNING: OpenSSL ${OPENSSL_VERSION} security fixes NOT applied: $1" $boldyellow
+  if [[ "$OPENSSL_ALMA_PATCHES_STRICT" = [yY] ]]; then
+    cecho "OPENSSL_ALMA_PATCHES_STRICT='y': stopping before ${STATICLIBSSL} is replaced" $boldyellow
+    return 1
+  fi
+  cecho "WARNING: building upstream OpenSSL ${OPENSSL_VERSION} without them" $boldyellow
+  return 0
+}
+
+# run right after installopenssl extracts ${DIR_TMP}/openssl-${OPENSSL_VERSION}
+openssl_alma_patches() {
+  local dir="${CUR_DIR}/patches/openssl/almalinux-1.1.1w" tree="${DIR_TMP}/openssl-${OPENSSL_VERSION}" work want got f
+  OPENSSL_ALMA_PATCH_STATUS=''
+  [[ "$OPENSSL_VERSION" = '1.1.1w' ]] || return 0
+  if [[ "$OPENSSL_ALMA_PATCHES" != [yY] ]]; then
+    OPENSSL_ALMA_PATCH_STATUS='disabled'
+    return 0
+  fi
+  echo
+  echo "Applying OpenSSL ${OPENSSL_VERSION} security fixes from patches/openssl/almalinux-1.1.1w"
+  OPENSSL_ALMA_SERIES_ID=$(openssl_alma_patches_series_id) || { openssl_alma_patches_skip "${dir}/series not found"; return $?; }
+  command -v patch >/dev/null 2>&1 || { openssl_alma_patches_skip "patch command not found"; return $?; }
+  [[ -n "$DIR_TMP" && -d "$tree" ]] || { openssl_alma_patches_skip "${tree} not found"; return $?; }
+  want=$(awk '$1 == "tarball" {print $2}' "${dir}/series")
+  got=$(sha256sum "${DIR_TMP}/${OPENSSL_LINKFILE}" 2>/dev/null | cut -d' ' -f1)
+  [[ -n "$want" && "$got" = "$want" ]] || { openssl_alma_patches_skip "${OPENSSL_LINKFILE} sha256 ${got:-missing} does not match ${want}"; return $?; }
+  # later patches depend on earlier ones: apply the whole set to a copy, then swap it in
+  work="${tree}.alma-patches"
+  rm -rf "$work"
+  cp -a "$tree" "$work" || { openssl_alma_patches_skip "could not copy ${tree}"; return $?; }
+  while read -r want f; do
+    got=$(sha256sum "${dir}/${f}" 2>/dev/null | cut -d' ' -f1)
+    if [[ "$got" != "$want" ]]; then
+      rm -rf "$work"
+      openssl_alma_patches_skip "${f} sha256 ${got:-missing} does not match the series file"
+      return $?
+    fi
+    if ! ( cd "$work" && patch -p1 --forward --batch --fuzz=0 --no-backup-if-mismatch -s -i "${dir}/${f}" ); then
+      rm -rf "$work"
+      openssl_alma_patches_skip "${f} did not apply cleanly"
+      return $?
+    fi
+    echo "  applied ${f}"
+  done < <(awk '$1 == "patch" {print $2, $3}' "${dir}/series")
+  cd "$DIR_TMP" && rm -rf "$tree" && mv "$work" "$tree" && cd "$tree" || exit 1
+  OPENSSL_ALMA_PATCH_STATUS='applied'
+  echo "OpenSSL ${OPENSSL_VERSION} security fixes applied (series ${OPENSSL_ALMA_SERIES_ID})"
+}
+
+# record which patch set the installed build carries, read by openssl_alma_patches_pending
+openssl_alma_patches_stamp() {
+  [[ -n "$OPENSSL_ALMA_PATCH_STATUS" ]] || return 0
+  printf 'series=%s\nstatus=%s\n' "${OPENSSL_ALMA_SERIES_ID:-none}" "$OPENSSL_ALMA_PATCH_STATUS" > "${STATICLIBSSL}/${OPENSSL_ALMA_PATCHES_STAMP}"
+}
+
 crypto_gcc() {
     if [[ "$CRYPTO_DEVTOOLSETGCC" = [yY] ]]; then
       if [[ "$NGX_LDMOLD" = [yY] ]]; then
@@ -1357,6 +1446,16 @@ if [[ "$CRYPTO_DEVTOOLSETGCC" = [yY] ]]; then
     unset CXXFLAGS
     export CC="ccache /usr/bin/gcc"
     export CXX="ccache /usr/bin/g++"
+    if [[ "$CENTOS_SIX" -eq '6' ]]; then
+      # CentOS 6 system GCC 4.4.7 can't build later nginx dependencies, use newest installed devtoolset GCC
+      for dts in 9 8 7; do
+        if [[ -f "/opt/rh/devtoolset-${dts}/root/usr/bin/gcc" && -f "/opt/rh/devtoolset-${dts}/root/usr/bin/g++" ]]; then
+          export CC="ccache /opt/rh/devtoolset-${dts}/root/usr/bin/gcc"
+          export CXX="ccache /opt/rh/devtoolset-${dts}/root/usr/bin/g++"
+          break
+        fi
+      done
+    fi
 fi
 }
 
@@ -1712,7 +1811,7 @@ fi
       fi
     elif [[ "$AWS_LC_SWITCH" = [nN] ]] && [[ "$LIBRESSL_SWITCH" = [nN] ]] && [[ "$BORINGSSL_SWITCH" = [nN] ]]; then
       OPENSSLVER_CHECK=$(/opt/openssl/bin/openssl version | awk '{print $2}')
-      if [[ "$OPENSSLVER_CHECK" != "$OPENSSL_VERSION" ]] || [[ "$OPENSSL_FORCECOMPILE" = [yY] ]] || [[ "$NGINX_TLS_FINGERPRINT" = [yY] ]]; then
+      if [[ "$OPENSSLVER_CHECK" != "$OPENSSL_VERSION" ]] || [[ "$OPENSSL_FORCECOMPILE" = [yY] ]] || [[ "$NGINX_TLS_FINGERPRINT" = [yY] ]] || openssl_alma_patches_pending; then
         opensslinstallstarttime=$(TZ=UTC date +%s.%N)
 
         if [ -f "$(which figlet)" ]; then
@@ -1763,6 +1862,7 @@ fi
             rm -rf "${DIR_TMP}/openssl-${OPENSSL_VERSION}"
             tar xzf "${OPENSSL_LINKFILE}" || exit 1
             cd "${DIR_TMP}/openssl-${OPENSSL_VERSION}" || exit 1
+            openssl_alma_patches || exit 1
         fi
         rm -rf "$STATICLIBSSL"
         mkdir -p "$STATICLIBSSL"
@@ -1868,6 +1968,7 @@ fi
         else
           rm -rf "${STATICLIBSSL}/lib64"
         fi
+        openssl_alma_patches_stamp
         mkdir -p /opt/openssl/certs/
         \cp -Rpf /etc/ssl/certs/* /opt/openssl/certs/
         \cp -Pf /etc/pki/tls/cert.pem /opt/openssl/

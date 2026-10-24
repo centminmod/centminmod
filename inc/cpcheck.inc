@@ -42,6 +42,17 @@ cmservice_enable_once() {
   touch "$marker" 2>/dev/null
 }
 
+# EL9+ moved the service(8) wrapper out of initscripts into initscripts-service,
+# which minimal/cloud images do not ship. Centmin Mod routines and the ngx*/fpm*
+# shortcuts call service, so without it nginx upgrades and memcached reinstalls
+# silently skip their restarts
+service_wrapper_install() {
+  if [[ "$CENTOS_NINE" -eq '9' || "$CENTOS_TEN" -eq '10' ]] && [[ ! -x /usr/sbin/service ]]; then
+    echo "Installing initscripts-service for the service command..."
+    yum${CACHESKIP} -q -y install initscripts-service
+  fi
+}
+
 # Add perl-DBD-MySQL to yum.conf exclude after MariaDB installation
 # Prevents AppStream OS update conflicts (e.g., AlmaLinux 9.6→9.7)
 perldbiexclude() {
@@ -406,6 +417,13 @@ fix_remi_repo_gpgcheck() {
 
 switch_mariadbtenfour_archives() {
   if [ -f /etc/yum.repos.d/mariadb.repo ]; then
+    if grep -q "http://yum.mariadb.org/10.4/centos6-amd64" /etc/yum.repos.d/mariadb.repo; then
+        sed -i 's|http://yum.mariadb.org/10.4/centos6-amd64|https://archive.mariadb.org/mariadb-10.4/yum/centos6-amd64|' /etc/yum.repos.d/mariadb.repo
+        sed -i 's|https://yum.mariadb.org/RPM-GPG-KEY-MariaDB|https://supplychain.mariadb.com/MariaDB-Server-GPG-KEY|' /etc/yum.repos.d/mariadb.repo
+        rpm --import https://supplychain.mariadb.com/MariaDB-Server-GPG-KEY
+        yum -q clean all
+    fi
+
     if grep -q "http://yum.mariadb.org/10.4/centos7-amd64" /etc/yum.repos.d/mariadb.repo; then
         sed -i 's|http://yum.mariadb.org/10.4/centos7-amd64|https://archive.mariadb.org/mariadb-10.4/yum/centos7-amd64|' /etc/yum.repos.d/mariadb.repo
         sed -i 's|https://yum.mariadb.org/RPM-GPG-KEY-MariaDB|https://supplychain.mariadb.com/MariaDB-Server-GPG-KEY|' /etc/yum.repos.d/mariadb.repo
@@ -458,6 +476,13 @@ switch_mariadbtenfour_archives() {
 
 switch_mariadbtenthree_archives() {
   if [ -f /etc/yum.repos.d/mariadb.repo ]; then
+    if grep -q "http://yum.mariadb.org/10.3/centos6-amd64" /etc/yum.repos.d/mariadb.repo; then
+        sed -i 's|http://yum.mariadb.org/10.3/centos6-amd64|https://archive.mariadb.org/mariadb-10.3/yum/centos6-amd64|' /etc/yum.repos.d/mariadb.repo
+        sed -i 's|https://yum.mariadb.org/RPM-GPG-KEY-MariaDB|https://supplychain.mariadb.com/MariaDB-Server-GPG-KEY|' /etc/yum.repos.d/mariadb.repo
+        rpm --import https://supplychain.mariadb.com/MariaDB-Server-GPG-KEY
+        yum -q clean all
+    fi
+
     if grep -q "http://yum.mariadb.org/10.3/centos7-amd64" /etc/yum.repos.d/mariadb.repo; then
         sed -i 's|http://yum.mariadb.org/10.3/centos7-amd64|https://archive.mariadb.org/mariadb-10.3/yum/centos7-amd64|' /etc/yum.repos.d/mariadb.repo
         sed -i 's|https://yum.mariadb.org/RPM-GPG-KEY-MariaDB|https://supplychain.mariadb.com/MariaDB-Server-GPG-KEY|' /etc/yum.repos.d/mariadb.repo
@@ -482,6 +507,12 @@ switch_mariadbtenthree_archives() {
 
 switch_mariadbtentwo_archives() {
   if [ -f /etc/yum.repos.d/mariadb.repo ]; then
+    if grep -q "http://yum.mariadb.org/10.2/centos6-amd64" /etc/yum.repos.d/mariadb.repo; then
+        sed -i 's|http://yum.mariadb.org/10.2/centos6-amd64|https://archive.mariadb.org/mariadb-10.2/yum/centos6-amd64|' /etc/yum.repos.d/mariadb.repo
+        rpm --import https://supplychain.mariadb.com/MariaDB-Server-GPG-KEY
+        yum -q clean all
+    fi
+
     if grep -q "http://yum.mariadb.org/10.2/centos7-amd64" /etc/yum.repos.d/mariadb.repo; then
         sed -i 's|http://yum.mariadb.org/10.2/centos7-amd64|https://archive.mariadb.org/mariadb-10.2/yum/centos7-amd64|' /etc/yum.repos.d/mariadb.repo
         # sed -i 's|https://yum.mariadb.org/RPM-GPG-KEY-MariaDB|https://supplychain.mariadb.com/MariaDB-Server-GPG-KEY|' /etc/yum.repos.d/mariadb.repo
@@ -506,6 +537,12 @@ switch_mariadbtentwo_archives() {
 
 switch_mariadbtenone_archives() {
   if [ -f /etc/yum.repos.d/mariadb.repo ]; then
+    if grep -q "http://yum.mariadb.org/10.1/centos6-amd64" /etc/yum.repos.d/mariadb.repo; then
+        sed -i 's|http://yum.mariadb.org/10.1/centos6-amd64|https://archive.mariadb.org/mariadb-10.1/yum/centos6-amd64|' /etc/yum.repos.d/mariadb.repo
+        rpm --import https://supplychain.mariadb.com/MariaDB-Server-GPG-KEY
+        yum -q clean all
+    fi
+
     if grep -q "http://yum.mariadb.org/10.1/centos7-amd64" /etc/yum.repos.d/mariadb.repo; then
         sed -i 's|http://yum.mariadb.org/10.1/centos7-amd64|https://archive.mariadb.org/mariadb-10.1/yum/centos7-amd64|' /etc/yum.repos.d/mariadb.repo
         # sed -i 's|https://yum.mariadb.org/RPM-GPG-KEY-MariaDB|https://supplychain.mariadb.com/MariaDB-Server-GPG-KEY|' /etc/yum.repos.d/mariadb.repo
@@ -541,6 +578,21 @@ switch_mariadb_repo_rhel_paths() {
 
     if grep -qE '^gpgkey=.*archive\.mariadb\.org' /etc/yum.repos.d/mariadb.repo; then
         sed -i -E 's#^gpgkey=.*archive\.mariadb\.org.*#gpgkey=https://supplychain.mariadb.com/MariaDB-Server-GPG-KEY#' /etc/yum.repos.d/mariadb.repo
+        rpm --import https://supplychain.mariadb.com/MariaDB-Server-GPG-KEY
+        yum -q clean all
+    fi
+  fi
+}
+
+switch_mariadbtenfive_archives() {
+  # MariaDB 10.5 is EOL: yum.mariadb.org and its mirrors removed the 10.5
+  # directories, which fails every yum/dnf command. Only archive.mariadb.org
+  # still has them (centos7/8 and rhel7/8/9 amd64).
+  if [ -f /etc/yum.repos.d/mariadb.repo ]; then
+    if grep -qE '^[[:space:]]*baseurl[[:space:]]*=.*/10\.5/(centos[78]|rhel[789])-amd64' /etc/yum.repos.d/mariadb.repo; then
+        cp -a /etc/yum.repos.d/mariadb.repo /etc/yum.repos.d/mariadb.repo.bak-$(date +%Y%m%d-%H%M%S)
+        sed -i -E 's#^([[:space:]]*baseurl[[:space:]]*=[[:space:]]*).*/10\.5/((centos[78]|rhel[789])-amd64).*#\1https://archive.mariadb.org/mariadb-10.5/yum/\2#' /etc/yum.repos.d/mariadb.repo
+        sed -i -E 's#^(gpgkey[[:space:]]*=[[:space:]]*).*/RPM-GPG-KEY-MariaDB$#\1https://supplychain.mariadb.com/MariaDB-Server-GPG-KEY#' /etc/yum.repos.d/mariadb.repo
         rpm --import https://supplychain.mariadb.com/MariaDB-Server-GPG-KEY
         yum -q clean all
     fi
@@ -2199,6 +2251,27 @@ fixwp_updater() {
         sed -i 's|service nginx reload|service php-fpm reload|g' "$w"
         sed -i 's|skipping nginx reload|skipping php-fpm reload|g' "$w"
         sed -i 's|only do nginx + php-fpm restarts|only do php-fpm reload|g' "$w"
+      fi
+    done
+  fi
+
+  # EL9+ minimal installs lack the service(8) wrapper, so scripts generated by
+  # older menu 22 code run the init.d script when one exists (as service did)
+  # and systemctl otherwise. Also fix the wp_uninstall scripts' #/bin/bash typo
+  if [ -d /root/tools ]; then
+    find /root/tools -type f -name "wp_updater_*.sh" | while read w; do
+      if grep -q '^[[:space:]]*service php-fpm reload$' "$w"; then
+        echo "updating php-fpm reload for EL9+ in $w"
+        sed -i 's|^\([[:space:]]*\)service php-fpm reload$|\1if [ -x /etc/init.d/php-fpm ]; then\n\1  /etc/init.d/php-fpm reload\n\1else\n\1  systemctl reload php-fpm\n\1fi|' "$w"
+      fi
+    done
+    find /root/tools -type f -name "wp_uninstall_*.sh" | while read u; do
+      if [[ "$(head -n1 "$u")" = '#/bin/bash' ]]; then
+        sed -i '1s|^#/bin/bash$|#!/bin/bash|' "$u"
+      fi
+      if grep -q '^service nginx restart$' "$u"; then
+        echo "updating nginx restart for EL9+ in $u"
+        sed -i 's|^service nginx restart$|if [ -x /etc/init.d/nginx ]; then\n  /etc/init.d/nginx restart\nelse\n  systemctl restart nginx\nfi|' "$u"
       fi
     done
   fi
@@ -4920,6 +4993,7 @@ echo "DirectAdmin detected.. centmin mod NOT compatible"
 echo "aborting script..."
 exit
 fi
+service_wrapper_install
 
 if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]] &&  [[ "$DNF_ENABLE" = [yY] ]]; then
   # yum -y -q install epel-release
@@ -5139,6 +5213,7 @@ if [[ "$INITIALINSTALL" != [yY] ]]; then
   fix_ftp_csf_ports
   setup_initial_csf_block_cronjob
   switch_mariadb_repo_rhel_paths
+  switch_mariadbtenfive_archives
   switch_mariadbtenfour_archives
   switch_mariadbtenthree_archives
   switch_mariadbtentwo_archives

@@ -1908,7 +1908,7 @@ fi # wp install if web root exists
   cecho "------------------------------------------------------------" $boldgreen
 
 cat > "/root/tools/wp_uninstall_${vhostname}.sh" <<END
-#/bin/bash
+#!/bin/bash
 echo "-------------------------------------------------------------------------"
 echo "Do you want to uninstall/delete WP install for ${vhostname}"
 echo "This will delete all data from /home/nginx/domains/${vhostname}"
@@ -1943,7 +1943,11 @@ sed -i "/$vhostname cacheenabler cron/d" cronjoblist
 crontab cronjoblist
 rm -rf cronjoblist
 pure-pw userdel $ftpuser >/dev/null 2>&1
-service nginx restart
+if [ -x /etc/init.d/nginx ]; then
+  /etc/init.d/nginx restart
+else
+  systemctl restart nginx
+fi
 END
 
 chmod 0700 /root/tools/wp_uninstall_${vhostname}.sh
@@ -1987,7 +1991,11 @@ if [ -f "${SCRIPT_DIR}/autoprotect.sh" ]; then
   "${SCRIPT_DIR}/autoprotect.sh"
 fi
 
-service nginx restart
+if [ -x /etc/init.d/nginx ]; then
+  /etc/init.d/nginx restart
+else
+  systemctl restart nginx
+fi
 
 if [[ "$PUREFTPD_DISABLED" = [nN] ]]; then
   cmservice pure-ftpd restart

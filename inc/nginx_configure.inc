@@ -5989,6 +5989,11 @@ else
     fi
     if [[ "$NGINX_SYMBOLIC_AS_NEEDED" = [yY] ]]; then
       NGINX_SYMBOLIC_AS_NEEDED_OPT=' -Wl,-Bsymbolic-functions -Wl,--as-needed'
+      if [[ "$STREAM" = *'--with-stream=dynamic'* && "$STREAMGEOIPOPT" = ' --with-stream_geoip_module' ]]; then
+        # dynamic stream module with built-in stream_geoip relies on nginx binary linking libGeoIP
+        # which --as-needed drops when nginx binary itself has no GeoIP calls
+        NGINX_SYMBOLIC_AS_NEEDED_OPT=' -Wl,-Bsymbolic-functions'
+      fi
     fi
     if [[ "$NGXMODULE_ALTORDER" = [yY] ]]; then
       if [[ "$asknginxipv" = [yY] || "$NGINX_IPV" = [yY] ]]; then

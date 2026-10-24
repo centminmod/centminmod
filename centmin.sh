@@ -30,7 +30,7 @@ DT=$(date +"%d%m%y-%H%M%S")
 branchname='140.00beta01'
 SCRIPT_MAJORVER='140'
 SCRIPT_MINORVER='00'
-SCRIPT_INCREMENTVER='403'
+SCRIPT_INCREMENTVER='426'
 SCRIPT_VERSIONSHORT="${branchname}"
 SCRIPT_VERSION="${SCRIPT_VERSIONSHORT}.b${SCRIPT_INCREMENTVER}"
 SCRIPT_DATE='16/01/25'
@@ -1189,7 +1189,7 @@ MYSQL_INSTALL='n'            # Install official Oracle MySQL Server (MariaDB alt
 SENDMAIL_INSTALL='n'         # Install Sendmail (and mailx) set to y and POSTFIX_INSTALL=n for sendmail
 POSTFIX_INSTALL=y            # Install Postfix (and mailx) set to n and SENDMAIL_INSTALL=y for sendmail
 # Nginx
-NGINX_VERSION='1.31.7'             # Use this version of Nginx
+NGINX_VERSION='1.31.8'             # Use this version of Nginx
 NGINX_ANGIE_VERSION='Angie-1.11.4'
 FREENGINX_VERSION='1.30.1'     # Maxim's Freenginx fork https://freenginx.org/en/download.html
 FREENGINX_INSTALL='n'          # Use Freenginx fork instead of official Nginx
@@ -1225,6 +1225,8 @@ OPENSSL_QUIC_VERSION='OpenSSL_1_1_1w+quic' # quicTLS OpenSSL fork version
 OPENSSL_THREADS='y'        # control whether openssl 1.1 branch uses threading or not
 OPENSSL_TLSONETHREE='y'    # whether OpenSSL 1.1.1 builds enable TLSv1.3
 OPENSSL_CUSTOMPATH='/opt/openssl'  # custom directory path for OpenSSL 1.0.2+
+OPENSSL_ALMA_PATCHES='y'   # OpenSSL 1.1.1w builds: apply the security fixes AlmaLinux 9 backports to compat-openssl11
+OPENSSL_ALMA_PATCHES_STRICT='n' # stop the OpenSSL 1.1.1w build when those fixes cannot be applied
 CLOUDFLARE_PATCHSSL='n'    # set 'y' to implement Cloudflare's chacha20 patch https://github.com/cloudflare/sslconfig
 CLOUDFLARE_ZLIB='y'        # use Cloudflare optimised zlib fork https://blog.cloudflare.com/cloudflare-fights-cancer/
 CLOUDFLARE_ZLIB_DYNAMIC='y' # compile nginx CF zlib as a dynamically instead of statically
@@ -1252,7 +1254,7 @@ BORINGSSL_DIR="/opt"
 
 # AWS-LC
 AWS_LC_SWITCH='n'             # if set to 'y' overrides OpenSSL as default for Nginx https://github.com/aws/aws-lc
-AWS_LC_VERSION='v5.9.0'       # version as per ttps://github.com/aws/aws-lc/tags
+AWS_LC_VERSION='v5.12.0'       # version as per ttps://github.com/aws/aws-lc/tags
 AWS_LC_DIR="/opt"
 AWS_LC_SWITCH_BUILD_TESTS='n' # run AWS-LC build tests
 ##################################
@@ -2149,14 +2151,27 @@ elif [[ "$CENTOS_SEVEN" -eq '7' && "$DEVTOOLSETELEVEN" = [nN] && "$DEVTOOLSETTEN
   DEVTOOLSETNINE='n'
   DEVTOOLSETEIGHT='n'
   DEVTOOLSETSEVEN='y'
-elif [[ "$CENTOS_SIX" -eq '6' && "$DEVTOOLSETEIGHT" = [yY] && "$DEVTOOLSETSEVEN" = [yY] ]]; then
-  DEVTOOLSETNINE='n'
-  DEVTOOLSETEIGHT='y'
-  DEVTOOLSETSEVEN='n'
-elif [[ "$CENTOS_SIX" -eq '6' && "$DEVTOOLSETEIGHT" = [nN] && "$DEVTOOLSETSEVEN" = [yY] ]]; then
-  DEVTOOLSETNINE='n'
-  DEVTOOLSETEIGHT='n'
-  DEVTOOLSETSEVEN='y'
+elif [[ "$CENTOS_SIX" -eq '6' ]]; then
+  # CentOS 6 EOL SCL repos no longer work so use newest devtoolset GCC already installed
+  # and put it first in PATH as system GCC 4.4.7 can't build current dependency flags
+  DEVTOOLSETELEVEN='n'
+  DEVTOOLSETTEN='n'
+  if [[ -f /opt/rh/devtoolset-9/root/usr/bin/gcc && -f /opt/rh/devtoolset-9/root/usr/bin/g++ ]]; then
+    DEVTOOLSETNINE='y'
+    DEVTOOLSETEIGHT='n'
+    DEVTOOLSETSEVEN='n'
+    export PATH="/opt/rh/devtoolset-9/root/usr/bin:$PATH"
+  elif [[ -f /opt/rh/devtoolset-8/root/usr/bin/gcc && -f /opt/rh/devtoolset-8/root/usr/bin/g++ ]]; then
+    DEVTOOLSETNINE='n'
+    DEVTOOLSETEIGHT='y'
+    DEVTOOLSETSEVEN='n'
+    export PATH="/opt/rh/devtoolset-8/root/usr/bin:$PATH"
+  elif [[ -f /opt/rh/devtoolset-7/root/usr/bin/gcc && -f /opt/rh/devtoolset-7/root/usr/bin/g++ ]]; then
+    DEVTOOLSETNINE='n'
+    DEVTOOLSETEIGHT='n'
+    DEVTOOLSETSEVEN='y'
+    export PATH="/opt/rh/devtoolset-7/root/usr/bin:$PATH"
+  fi
 fi
 
 if [[ "$CENTOS_SIX" -eq '6' && "$BORINGSSL_SWITCH" = [yY] ]]; then

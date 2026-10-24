@@ -62,6 +62,38 @@ check_openssl_shared_libraries() {
 }
 
 # ------------------------------------------------------------------
+# Function : php_customssl_openssl_ensure
+# Purpose  : EL9/EL10 PHP 7.4/8.0 builds link the OpenSSL 1.1.1 in
+#            OPENSSL_CUSTOMPATH (PHP_CUSTOMSSL), which only Nginx upgrades
+#            otherwise build. Build it when it is missing or lacks the current
+#            AlmaLinux security fix set, instead of PHP silently falling back
+#            to the system OpenSSL 3 through pkg-config.
+# ------------------------------------------------------------------
+php_customssl_openssl_ensure() {
+    local saved_pwd
+    [[ "$PHP_CUSTOMSSL" = [yY] && "$PHP_CUSTOMSSL_FORCE" != [yY] ]] || return 0
+    [[ "$CENTOS_NINE" -eq '9' || "$CENTOS_TEN" -eq '10' ]] || return 0
+    [[ "$PHPVER_ID" -ge '70400' && "$PHPVER_ID" -lt '80100' ]] || return 0
+    [[ "$OPENSSL_VERSION" = 1.1.1* && "$LIBRESSL_SWITCH" = [nN] && "$BORINGSSL_SWITCH" = [nN] ]] || return 0
+    # a static-only build is rebuilt too: linked into php-fpm, its exported symbols would also
+    # serve the system OpenSSL 3 libraries PHP loads
+    if [[ -x "${OPENSSL_CUSTOMPATH}/bin/openssl" && -e "${OPENSSL_CUSTOMPATH}/lib/libssl.so.1.1" ]] && ! openssl_alma_patches_pending; then
+        return 0
+    fi
+    echo "PHP ${PHPVER_ID} with PHP_CUSTOMSSL='y': building OpenSSL ${OPENSSL_VERSION} in ${OPENSSL_CUSTOMPATH}"
+    saved_pwd="$(pwd)"
+    if [[ ! -f "${DIR_TMP}/${OPENSSL_LINKFILE}" ]]; then
+        openssldownload
+    fi
+    # installopenssl builds OPENSSL_CUSTOMPATH only on its default branch, not the ones for Nginx
+    # with system OpenSSL, quicTLS (/opt/openssl-quic) or AWS-LC (/opt/aws-lc-install), and skips
+    # an installed version unless forced
+    OPENSSL_SYSTEM_USE='n' NGINX_QUIC_SUPPORT='n' AWS_LC_SWITCH='n' ngver='' OPENSSL_FORCECOMPILE='y' installopenssl
+    cd "$saved_pwd" || return 1
+    [[ -x "${OPENSSL_CUSTOMPATH}/bin/openssl" ]]
+}
+
+# ------------------------------------------------------------------
 # Function : check_libzip_openssl_dependency
 # Purpose  : Detect libzip compiled against OpenSSL 1.0.2 on CentOS 7
 #            and force rebuild with custom OpenSSL 1.1.1w
@@ -132,16 +164,36 @@ compile_custom_curl() {
 
         echo ">>> Using compat-openssl11 runtime"
 
-        if ! rpm -q compat-openssl11 compat-openssl11-devel &>/dev/null; then
-            local BASE=${LOCALCENTMINMOD_MIRROR}/centminmodparts/rpms/compat-openssl11
-            dnf install -y  \
-              "${BASE}/compat-openssl11-1.1.1k-5.el9.x86_64.rpm" \
-              "${BASE}/compat-openssl11-devel-1.1.1k-5.el9.x86_64.rpm" || return 1
+        # compat-openssl11 comes from AppStream, so it keeps getting AlmaLinux updates. No EL9
+        # repo ships its -devel, so the headers come from a tarball built from AlmaLinux's source
+        # rpm (centminmod-el9-openssl), pinned by sha256. The old mirror -devel rpm required the
+        # exact 1.1.1k-5.el9 runtime, which blocked those updates
+        local COMPAT11_DIR=/opt/compat-openssl11
+        local COMPAT11_HDR=compat-openssl11-headers-1.1.1k-5.el9_8.6.x86_64.tar.gz
+        local COMPAT11_HDR_SHA256=8461362e6fb97ab1bfffa8e348b4899300b906159f32487cc74c240646485741
+        if rpm -q compat-openssl11-devel-1.1.1k-5.el9 &>/dev/null; then
+            rpm -e compat-openssl11-devel-1.1.1k-5.el9 || return 1
         fi
+        rpm -q compat-openssl11 &>/dev/null || dnf install -y compat-openssl11 || return 1
+        if ! grep -qx "${COMPAT11_HDR_SHA256}  ${COMPAT11_HDR}" "${COMPAT11_DIR}/.headers" 2>/dev/null; then
+            if [[ ! -f "${SRC_DIR}/${COMPAT11_HDR}" ]]; then
+                wget -qO "${SRC_DIR}/${COMPAT11_HDR}" "${LOCALCENTMINMOD_MIRROR}/centminmodparts/rpms/compat-openssl11/${COMPAT11_HDR}" || { rm -f "${SRC_DIR}/${COMPAT11_HDR}"; return 1; }
+            fi
+            if ! echo "${COMPAT11_HDR_SHA256}  ${SRC_DIR}/${COMPAT11_HDR}" | sha256sum -c --quiet -; then
+                echo "ERROR: ${COMPAT11_HDR} does not match its pinned sha256" >&2
+                rm -f "${SRC_DIR}/${COMPAT11_HDR}"
+                return 1
+            fi
+            rm -rf "${COMPAT11_DIR}/include"
+            mkdir -p "${COMPAT11_DIR}" && tar -xzf "${SRC_DIR}/${COMPAT11_HDR}" -C "${COMPAT11_DIR}" || return 1
+            echo "${COMPAT11_HDR_SHA256}  ${COMPAT11_HDR}" > "${COMPAT11_DIR}/.headers"
+        fi
+        mkdir -p "${COMPAT11_DIR}/lib" || return 1
+        ln -sf /usr/lib64/libssl.so.1.1 "${COMPAT11_DIR}/lib/libssl.so"
+        ln -sf /usr/lib64/libcrypto.so.1.1 "${COMPAT11_DIR}/lib/libcrypto.so"
 
-        # headers are in /usr/include/openssl11, libs in /lib64/openssl11
-        export CPPFLAGS="-I/usr/include/openssl11 -D_FORTIFY_SOURCE=2"
-        export LDFLAGS="-L/lib64/openssl11 -Wl,-rpath,/lib64/openssl11 ${LDFLAGS}"
+        export CPPFLAGS="-I${COMPAT11_DIR}/include -D_FORTIFY_SOURCE=2"
+        export LDFLAGS="-L${COMPAT11_DIR}/lib ${LDFLAGS}"
         OPENSSL_CFG="--with-openssl=/usr"
 
     else
@@ -935,7 +987,15 @@ if [[ "$CENTOS_SEVEN" -eq '7' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '
     if [[ $(rpm -q systemd-devel >/dev/null 2>&1; echo $?) != '0' ]]; then
       "$YUMDNFBIN" -y install systemd-devel --disableplugin=priorities >/dev/null 2>&1
     fi
-    FPMSYSTEMD_INTEGRATEOPT=' --with-fpm-systemd'
+    # without systemd-devel, configure aborts with "Your system does not support systemd"
+    # (i.e. the install above failed on unreachable repos); php-fpm.service is Type=forking
+    # so php-fpm runs fine without the systemd integration
+    if [[ $(rpm -q systemd-devel >/dev/null 2>&1; echo $?) = '0' ]]; then
+      FPMSYSTEMD_INTEGRATEOPT=' --with-fpm-systemd'
+    else
+      cecho "systemd-devel install failed: building PHP-FPM without --with-fpm-systemd" $boldyellow
+      FPMSYSTEMD_INTEGRATEOPT=""
+    fi
   else
     FPMSYSTEMD_INTEGRATEOPT=""
   fi
@@ -1154,7 +1214,8 @@ DETECTOPENSSL_THREEFOUR=$(echo $OPENSSL_VERSION  | cut -d . -f1-2 | grep -o 3.4)
 # el9 uses OpenSSL 3.0 and is not supported for PHP builds <=8.0
 # for PHP 7.4 to 8.0, use OpenSSL 1.1.1 instead
 # https://bugs.php.net/bug.php?id=81540
-if [[ "$CENTOS_NINE" -eq '9' && "$PHP_PATCH_OPENSSL_THREE" = [yY] ]] && [[ "$PHPMVER" = '8.1' || "$PHPMUVER" = '8.1' || "$PHPMVER" = '8.2' || "$PHPMUVER" = '8.2' || "$PHPMVER" = '8.3' || "$PHPMUVER" = '8.3' || "$PHPMVER" = '8.4' || "$PHPMUVER" = '8.4' || "$PHPMVER" = '8.5' || "$PHPMUVER" = '8.5' ]]; then
+# key on PHPVER_ID, the PHP being built; PHPMVER is the default PHP_VERSION, not a menu 5 target
+if [[ "$CENTOS_NINE" -eq '9' && "$PHP_PATCH_OPENSSL_THREE" = [yY] ]] && [[ "$PHPVER_ID" -ge '80100' ]]; then
   PHP_CUSTOMSSL='n'
   PHP_PATCH_OPENSSL_THREE='n'
 fi
@@ -1184,6 +1245,11 @@ fi
 # PHP 7.4 and 8.0 have backported OpenSSL 3.x supporting patches enabled
 if [[ "$DETECTOPENSSL_THREEZERO" = '3.0' || "$DETECTOPENSSL_THREEONE" = '3.1' || "$DETECTOPENSSL_THREETWO" = '3.2' || "$DETECTOPENSSL_THREETHREE" = '3.3' || "$DETECTOPENSSL_THREEFOUR" = '3.4' ]] && [[ "$PHPMVER" = '5.6' || "$PHPMUVER" = '5.6' || "$PHPMVER" = '7.0' || "$PHPMUVER" = '7.0' || "$PHPMVER" = '7.1' || "$PHPMUVER" = '7.1' || "$PHPMVER" = '7.2' || "$PHPMUVER" = '7.2' || "$PHPMVER" = '7.3' || "$PHPMUVER" = '7.3' ]] && [[ "$LIBRESSL_SWITCH" = [nN] && "$BORINGSSL_SWITCH" = [nN] ]]; then
   PHP_CUSTOMSSL='n'
+fi
+
+if ! php_customssl_openssl_ensure; then
+  echo "ERROR: OpenSSL ${OPENSSL_VERSION} for PHP_CUSTOMSSL could not be built in ${OPENSSL_CUSTOMPATH}" >&2
+  return 1
 fi
 
 if [[ "$PHP_CUSTOMSSL" != [yY] && "$PHP_LDMOLD" = [yY] && -f /usr/bin/mold ]]; then

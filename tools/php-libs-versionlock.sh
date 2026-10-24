@@ -44,7 +44,7 @@ lock_file() {
 
 ensure_plugin() {
   if [[ ! -f "$LOCK_CONF" ]]; then
-    dnf -y -q install python3-dnf-plugin-versionlock >/dev/null 2>&1
+    dnf -y -q --disablerepo=mariadb install python3-dnf-plugin-versionlock >/dev/null 2>&1
   fi
   [[ -f "$LOCK_CONF" ]]
 }
@@ -168,7 +168,7 @@ do_update() {
   do_unlock
   [[ -z "$names" ]] && return 0
   echo "dnf -y update $(echo $names)"
-  dnf -y update $names
+  dnf -y --disablerepo=mariadb update $names
 }
 
 sonames() {
@@ -183,9 +183,9 @@ do_status() {
     return 0
   fi
   echo "php-libs-versionlock: $(echo $names | wc -w) locked packages: $(echo $names)"
-  dnf -q list updates --disableplugin=versionlock $names 2>/dev/null | awk 'NF == 3 && $2 ~ /^[0-9]/ {print $1, $2}' | while read -r name newver; do
+  dnf -q list updates --disableplugin=versionlock --disablerepo=mariadb $names 2>/dev/null | awk 'NF == 3 && $2 ~ /^[0-9]/ {print $1, $2}' | while read -r name newver; do
     name=${name%.*}
-    gone=$(comm -23 <(rpm -q --provides "$name" | sonames) <(dnf -q repoquery --disableplugin=versionlock --provides "${name}-${newver}" 2>/dev/null | sonames) | tr '\n' ' ')
+    gone=$(comm -23 <(rpm -q --provides "$name" | sonames) <(dnf -q repoquery --disableplugin=versionlock --disablerepo=mariadb --provides "${name}-${newver}" 2>/dev/null | sonames) | tr '\n' ' ')
     if [[ -n "$gone" ]]; then
       echo "  held: $name $(rpm -q --qf '%{VERSION}-%{RELEASE}' "$name") -> $newver SONAME CHANGE removes: $gone"
     else
