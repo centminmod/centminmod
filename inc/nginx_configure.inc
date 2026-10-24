@@ -3648,8 +3648,9 @@ fi
 ngxgeoipmemtweak
 
 if [[ "$CLANG" = [yY] ]]; then
-  # EL9/EL10 installers no longer preinstall clang (EL8 uses scl_install below)
-  if [[ "$CENTOS_SIX" = '6' && ! -f /usr/bin/clang ]] || [[ "$CENTOS_SEVEN" = '7' && ! -f /bin/clang ]] || [[ ( "$CENTOS_NINE" = '9' || "$CENTOS_TEN" = '10' ) && ! -f /usr/bin/clang ]]; then
+  # EL8+ installers no longer preinstall clang, and scl_install's EL8 clang
+  # branch is unreachable, so install it here for EL8 too
+  if [[ "$CENTOS_SIX" = '6' && ! -f /usr/bin/clang ]] || [[ "$CENTOS_SEVEN" = '7' && ! -f /bin/clang ]] || [[ ( "$CENTOS_EIGHT" = '8' || "$CENTOS_NINE" = '9' || "$CENTOS_TEN" = '10' ) && ! -f /usr/bin/clang ]]; then
     time $YUMDNFBIN -q -y install clang clang-devel${DISABLEREPO_DNF}
   fi
   # ensure devtoolset gcc versions are installed

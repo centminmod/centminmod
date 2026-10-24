@@ -5,29 +5,38 @@
 # Addresses: AlmaLinux/Rocky Linux 9.6→9.7 update conflicts with MariaDB-common
 # Community Issue: https://community.centminmod.com/threads/30001/
 
-# Append package globs missing from an existing ^exclude= line in file $1.
-# Token based, so it works on any exclude line layout (EL7 *.i386 *.i586 *.i686
-# or EL8+ *.i686) and never adds duplicates. Prints the tokens it added.
+# Append package globs missing from an existing exclude line in file $1.
+# Token based, so it works on any layout (exclude= or excludepkgs=, spaces
+# around '=', space or comma separated values, EL7 *.i386 *.i586 *.i686 or
+# EL8+ *.i686) and never adds duplicates. Prints the tokens it added.
 exclude_tokens_add() {
-    local conf="$1" tok added=""
+    local conf="$1" re='^(exclude|excludepkgs)[[:space:]]*=' tok sep added=""
     shift
-    grep -q '^exclude=' "$conf" 2>/dev/null || return 0
+    grep -Eq "$re" "$conf" 2>/dev/null || return 0
     for tok in "$@"; do
-        if ! grep '^exclude=' "$conf" | sed 's/^exclude=//' | tr -s ' \t' '\n' | grep -qxF -- "$tok"; then
-            sed -i "/^exclude=/ s|\$| ${tok}|" "$conf"
+        # grep without -q reads all input, so pipefail can't see a SIGPIPE
+        if ! grep -E "$re" "$conf" | sed -r "s/${re}//" | tr -s ' \t,' '\n' | grep -xF -- "$tok" >/dev/null; then
+            # no separator while the value is still empty
+            if grep -Eq "${re}[[:space:]]*\$" "$conf"; then sep=''; else sep=' '; fi
+            sed -i -r "/${re}/ s|[[:space:]]*\$|${sep}${tok}|" "$conf"
             added="${added} ${tok}"
         fi
     done
-    if [[ -n "$added" ]]; then
-        sed -i 's/^exclude=[[:space:]]*/exclude=/' "$conf"
-        echo "added${added} to exclude line in $conf"
-    fi
+    [[ -n "$added" ]] && echo "added${added} to exclude line in $conf"
     return 0
 }
 
 # Same as exclude_tokens_add on the real file behind /etc/yum.conf, so the
 # EL8+ /etc/yum.conf -> /etc/dnf/dnf.conf symlink is never replaced
 yum_exclude_add() {
+    # EL9+ MariaDB 10.11+ RPMs require AppStream mysql-selinux when
+    # selinux-policy-targeted is installed, and a mysql* exclude hides it, so
+    # install it first (an installed excluded package still satisfies the
+    # dependency on later MariaDB upgrades)
+    if [[ " $* " = *" mysql* "* ]] && [[ "$CENTOS_NINE" = '9' || "$CENTOS_TEN" = '10' ]] \
+        && rpm -q selinux-policy-targeted >/dev/null 2>&1 && ! rpm -q mysql-selinux >/dev/null 2>&1; then
+        dnf -y -q install mysql-selinux --disableexcludes=main
+    fi
     exclude_tokens_add "$(readlink -f /etc/yum.conf)" "$@"
 }
 

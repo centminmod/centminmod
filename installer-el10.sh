@@ -17,8 +17,9 @@ trap '_rc=$?; _jobs=$(jobs -p); [ -n "$_jobs" ] && kill $_jobs 2>/dev/null; exit
 #######################################################
 # some OS image templates are missing some locales that need to be installed
 check_install_locale() {
-  # grep -q prints nothing, so test its exit status, not its output
-  if ! locale -a 2>/dev/null | grep -qi "en_US.UTF8"; then
+  # test grep exit status (not output); no -q, as an early grep -q exit can
+  # SIGPIPE locale -a, which pipefail then reports as a missing locale
+  if ! locale -a 2>/dev/null | grep -i "en_US.UTF8" >/dev/null; then
     local os_version=$(rpm -qa yum | grep -o 'el[0-9]*')
     case "$os_version" in
       el7)
@@ -537,7 +538,7 @@ install_group4_essential_batch() {
     local batch_start=$(date +%s)
 
     # Check which packages need installation
-    locale -a 2>/dev/null | grep -qi "en_US.UTF8" || missing_pkgs+=" glibc-langpack-en"
+    locale -a 2>/dev/null | grep -i "en_US.UTF8" >/dev/null || missing_pkgs+=" glibc-langpack-en"
     [[ "$(rpm -qa bc | grep -o 'bc')" != 'bc' ]] && missing_pkgs+=" bc"
     [[ ! -f /usr/bin/tar ]] && missing_pkgs+=" tar"
 
@@ -1995,8 +1996,9 @@ libc_fix() {
   # the unconditional CENTOS_TEN/NINE/EIGHT cascade above. Removed.
   if [[ "$CENTOS_TEN" -eq '10' ]]; then
     # EL10 libc-client/uw-imap-devel only exist in Remi, which is not installed
-    # yet: remitenyum installs them and cpcheck.inc versionlocks them. Installing
-    # them here failed the whole transaction, plugin included.
+    # yet: remitenyum installs them and tools/php-libs-versionlock.sh versionlocks
+    # them once PHP links them. Installing them here failed the whole
+    # transaction, plugin included.
     yum -y install python3-dnf-plugin-versionlock
   elif [[ "$CENTOS_NINE" -eq '9' ]]; then
     yum -y install python3-dnf-plugin-versionlock libc-client uw-imap-devel

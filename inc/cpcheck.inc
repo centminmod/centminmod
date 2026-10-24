@@ -1942,6 +1942,17 @@ varnishfour_setup() {
   fi
 }
 
+percona_telemetry_disable() {
+  # percona-release enable tools also enables its telemetry repo; new installs
+  # disable it in inc/downloads_centos*.inc, this covers existing EL8+ servers
+  local repo=/etc/yum.repos.d/percona-telemetry-release.repo
+  if [[ "$CENTOS_EIGHT" = '8' || "$CENTOS_NINE" = '9' || "$CENTOS_TEN" = '10' ]] && [ -f "$repo" ]; then
+    if awk '/^\[telemetry-release-x86_64\]/ {f=1; next} /^\[/ {f=0} f && /^enabled[[:space:]]*=[[:space:]]*1/ {e=1} END {exit !e}' "$repo"; then
+      dnf config-manager --set-disabled telemetry-release-x86_64 >/dev/null 2>&1
+    fi
+  fi
+}
+
 libc_fix() {
   # https://community.centminmod.com/posts/52555/
   if [[ "$CENTOS_NINE" -eq '9' ]]; then
@@ -5236,6 +5247,7 @@ if [[ "$INITIALINSTALL" != [yY] ]]; then
     # skip libc_fix    
     libc_fix
   fi
+  percona_telemetry_disable
   varnishfour_setup
   disablelogs
   nginxlargefile_fix
