@@ -96,6 +96,9 @@ if [[ "$CENTOS_EIGHT" = '8' ]]; then
         percona-release show
         percona-release disable all
         percona-release enable tools
+        # tools also enables the telemetry repo and percona-release cannot disable
+        # it; keep percona-telemetry-agent uninstallable
+        dnf config-manager --set-disabled telemetry-release-x86_64 >/dev/null 2>&1
         echo
       else
         cecho "Error: problem with Percona repo install." $boldgreen

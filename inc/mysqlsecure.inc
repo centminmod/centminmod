@@ -38,15 +38,15 @@ THEMYSQLPASS=$(/usr/bin/openssl rand -base64 26 | tr -dc 'a-zA-Z0-9')
 
 CHECK_FOR_MARIADB_TENFOUR_ABOVE=$(rpm -qa | grep -i MariaDB-server | grep -v 'utils' | head -n1 | cut -d '-' -f3 | cut -d . -f1,2)
 
-if [[ "$CHECK_FOR_MARIADB_TENFOUR_ABOVE" = '10.4' || "$CHECK_FOR_MARIADB_TENFOUR_ABOVE" = '10.5' || "$CHECK_FOR_MARIADB_TENFOUR_ABOVE" = '10.6' || "$CHECK_FOR_MARIADB_TENFOUR_ABOVE" = '10.11' || "$CHECK_FOR_MARIADB_TENFOUR_ABOVE" = '11.4' || "$CHECK_FOR_MARIADB_TENFOUR_ABOVE" = '11.8' ]]; then
+# any MariaDB >= 10.4 (incl 11.x/12.x) uses mysql.global_priv + ALTER USER
+MARIADB_TENFOUR_ABOVE_SECURED='n'
+if [[ -n "$CHECK_FOR_MARIADB_TENFOUR_ABOVE" && "$(printf '%s\n' 10.4 "$CHECK_FOR_MARIADB_TENFOUR_ABOVE" | sort -V | head -n1)" = '10.4' ]]; then
+  MARIADB_TENFOUR_ABOVE_SECURED='y'
   echo
   ${ALIAS_MYSQL} -e "select concat(user, '@', host, ' => ', json_detailed(priv)) from mysql.global_priv;" > "${CENTMINLOGDIR}/mariadb10.4-or-above-check-users-before.log"
   echo
   ${ALIAS_MYSQL} -e "ALTER USER root@localhost IDENTIFIED VIA mysql_native_password USING PASSWORD('$THEMYSQLPASS')"  >/dev/null 2>&1
   echo
-  ${ALIAS_MYSQL} -e "select concat(user, '@', host, ' => ', json_detailed(priv)) from mysql.global_priv;" > "${CENTMINLOGDIR}/mariadb10.4-or-above-check-users-after.log"
-  echo
-  remove_anonymous_mysqlusers
 else
   remove_anonymous_mysqlusers
   ${ALIAS_MYSQL} -e "DROP DATABASE test;" >/dev/null 2>&1
@@ -56,11 +56,25 @@ fi
 # check
 # ${ALIAS_MYSQL} -e "SELECT User, Host, Password FROM mysql.user;"
 
+# credentials files are root-only (0600) before any secret is written
+touch /root/.my.cnf "${CENTMINLOGDIR}/set-dot-my.cnf.log"
+chmod 600 /root/.my.cnf "${CENTMINLOGDIR}/set-dot-my.cnf.log"
 cat > "/root/.my.cnf" <<EOF
 [client]
 user=root
 password=$THEMYSQLPASS
 EOF
+
+# root now authenticates by password only, so the post-ALTER check
+# can only run once /root/.my.cnf holds the new password
+if [[ "$MARIADB_TENFOUR_ABOVE_SECURED" = 'y' ]]; then
+  # global_priv output includes the root password hash
+  touch "${CENTMINLOGDIR}/mariadb10.4-or-above-check-users-after.log"
+  chmod 600 "${CENTMINLOGDIR}/mariadb10.4-or-above-check-users-after.log"
+  ${ALIAS_MYSQL} -e "select concat(user, '@', host, ' => ', json_detailed(priv)) from mysql.global_priv;" > "${CENTMINLOGDIR}/mariadb10.4-or-above-check-users-after.log"
+  echo
+  remove_anonymous_mysqlusers
+fi
 
 {
 echo ""

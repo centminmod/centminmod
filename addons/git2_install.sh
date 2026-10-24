@@ -276,7 +276,7 @@ yum versionlock git perl-Git
 
 if [[ "$(grep '^exclude=' /etc/yum.conf | grep -o git)" != 'git' ]]; then
     NEW_GITEXCLUDES=$(echo "$(grep '^exclude=' /etc/yum.conf) git perl-Git")
-    sed -i "s|^exclude=.*|$NEW_GITEXCLUDES|" /etc/yum.conf
+    sed -i --follow-symlinks "s|^exclude=.*|$NEW_GITEXCLUDES|" /etc/yum.conf
 fi
 
 echo

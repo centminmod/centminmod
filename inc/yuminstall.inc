@@ -95,7 +95,7 @@ fi
 if [[ -f /etc/yum.repos.d/epel.repo && -z "$(grep 'varnish-libs' /etc/yum.repos.d/epel.repo)" ]]; then
   sed -i 's|varnish|varnish varnish-libs|' /etc/yum.repos.d/epel.repo
 fi
-sed -i 's/metadata_expire=1h/metadata_expire=4h/g' /etc/yum.conf
+sed -i --follow-symlinks 's/metadata_expire=1h/metadata_expire=4h/g' /etc/yum.conf
   # centos 6 unlike centos 7 doesn't install CR yum repo by default
   # https://wiki.centos.org/AdditionalResources/Repositories/CR
   if [[ "$CENTOS_SIX" = '6' ]]; then
@@ -127,7 +127,7 @@ if [[ $(rpm -q epel-release >/dev/null 2>&1; echo $?) != '0' ]]; then
   sar_call
 fi
 
-sed -i 's/metadata_expire=1h/metadata_expire=4h/g' /etc/yum.conf
+sed -i --follow-symlinks 's/metadata_expire=1h/metadata_expire=4h/g' /etc/yum.conf
 yumprior
 fi
 

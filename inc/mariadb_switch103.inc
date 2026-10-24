@@ -509,7 +509,7 @@ funct_logmysqlrotate
         echo "exclude=mysql*">> /etc/yum.conf
     else
         cecho "exclude line exists... adding exclude line for mysql*" $boldgreen
-        sed -i "s/exclude=\*.i386 \*.i586 \*.i686/exclude=\*.i386 \*.i586 \*.i686 mysql\*/" /etc/yum.conf
+        yum_exclude_add 'mysql*'
     fi
     echo "*************************************************"
     cecho "* Starting MariaDB Secure Installation" $boldgreen

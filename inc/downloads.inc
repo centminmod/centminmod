@@ -1,18 +1,23 @@
 checksec_check(){
-  if [ ! -f /usr/bin/checksec ]; then
-    echo
-    yum -y install checksec
-    echo
-  fi
   if [[ ! -f /usr/local/bin/checksec || ! -f "${DIR_TMP}/checksec-${CHECKSEC_VERSION}.tar.gz" ]]; then
     echo
     pushd "$DIR_TMP"
     wget -q -L "https://github.com/slimm609/checksec/releases/download/${CHECKSEC_VERSION}/checksec_${CHECKSEC_VERSION}_linux_amd64.tar.gz" -O "checksec-${CHECKSEC_VERSION}.tar.gz"
     tar xzf "checksec-${CHECKSEC_VERSION}.tar.gz"
-    \cp -af "${DIR_TMP}/checksec" /usr/local/bin/checksec
+    # root runs checksec, so never keep the tarball's uid/gid
+    install -o root -g root -m 0755 "${DIR_TMP}/checksec" /usr/local/bin/checksec
     rm -rf CHANGELOG.md LICENSE README.md
     echo
     popd
+  fi
+  if [ -f /usr/local/bin/checksec ]; then
+    chown root:root /usr/local/bin/checksec
+  fi
+  # distro checksec package only as a fallback when no checksec exists
+  if [[ ! -f /usr/local/bin/checksec && ! -f /usr/bin/checksec ]]; then
+    echo
+    yum -y install checksec
+    echo
   fi
 }
 

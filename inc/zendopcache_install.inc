@@ -65,6 +65,8 @@ fi
 echo ""
 cmservice nginx reload
 
+  touch ${CENTMINLOGDIR}/zendopcache_passfile.txt
+  chmod 600 ${CENTMINLOGDIR}/zendopcache_passfile.txt
   echo "" > ${CENTMINLOGDIR}/zendopcache_passfile.txt
   cecho "-------------------------------------------------------" $boldyellow >> ${CENTMINLOGDIR}/zendopcache_passfile.txt
   cecho "File Location: /usr/local/nginx/html/${N}_opcache.php" $boldgreen >> ${CENTMINLOGDIR}/zendopcache_passfile.txt

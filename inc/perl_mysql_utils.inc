@@ -5,6 +5,32 @@
 # Addresses: AlmaLinux/Rocky Linux 9.6→9.7 update conflicts with MariaDB-common
 # Community Issue: https://community.centminmod.com/threads/30001/
 
+# Append package globs missing from an existing ^exclude= line in file $1.
+# Token based, so it works on any exclude line layout (EL7 *.i386 *.i586 *.i686
+# or EL8+ *.i686) and never adds duplicates. Prints the tokens it added.
+exclude_tokens_add() {
+    local conf="$1" tok added=""
+    shift
+    grep -q '^exclude=' "$conf" 2>/dev/null || return 0
+    for tok in "$@"; do
+        if ! grep '^exclude=' "$conf" | sed 's/^exclude=//' | tr -s ' \t' '\n' | grep -qxF -- "$tok"; then
+            sed -i "/^exclude=/ s|\$| ${tok}|" "$conf"
+            added="${added} ${tok}"
+        fi
+    done
+    if [[ -n "$added" ]]; then
+        sed -i 's/^exclude=[[:space:]]*/exclude=/' "$conf"
+        echo "added${added} to exclude line in $conf"
+    fi
+    return 0
+}
+
+# Same as exclude_tokens_add on the real file behind /etc/yum.conf, so the
+# EL8+ /etc/yum.conf -> /etc/dnf/dnf.conf symlink is never replaced
+yum_exclude_add() {
+    exclude_tokens_add "$(readlink -f /etc/yum.conf)" "$@"
+}
+
 manage_perl_dbd_mysql_exclude() {
     local action="${1:-add}"  # add|remove|status
     local silent="$2"
@@ -29,13 +55,10 @@ manage_perl_dbd_mysql_exclude() {
                     echo "$broken_excludes" >> /etc/dnf/dnf.conf
                     echo "Migrated exclusions from broken yum.conf to dnf.conf"
                 else
-                    # Merge exclusions intelligently
-                    local dnf_excludes=$(grep '^exclude=' /etc/dnf/dnf.conf)
-                    local yum_only_excludes=$(echo "$broken_excludes" | sed "s|$dnf_excludes||g" | sed 's/^exclude=//' | sed 's/^ *//')
-                    if [[ -n "$yum_only_excludes" ]]; then
-                        sed -i "s|^exclude=.*|$dnf_excludes $yum_only_excludes|" /etc/dnf/dnf.conf
-                        echo "Merged additional exclusions from broken yum.conf to dnf.conf"
-                    fi
+                    # Merge exclusions token by token (read -a does not glob *.i686)
+                    local -a yum_tokens
+                    read -ra yum_tokens <<< "${broken_excludes#exclude=}"
+                    exclude_tokens_add /etc/dnf/dnf.conf "${yum_tokens[@]}"
                 fi
             fi
 
@@ -43,9 +66,6 @@ manage_perl_dbd_mysql_exclude() {
             rm -f "$config_file"
             ln -s /etc/dnf/dnf.conf "$config_file"
             echo "✓ Symlink restored: $config_file -> /etc/dnf/dnf.conf"
-
-            # Clear DNF cache to force config re-read
-            dnf clean metadata 2>/dev/null
         fi
     fi
 
@@ -103,9 +123,6 @@ manage_perl_dbd_mysql_exclude() {
                     echo "exclude=perl-DBD-MySQL" >> "$actual_file"
                     echo "Created exclude line with perl-DBD-MySQL in $actual_file"
                 fi
-
-                # Clear DNF metadata cache to force config re-read
-                dnf clean metadata 2>/dev/null || yum clean metadata 2>/dev/null
             else
                 [[ "$silent" != "silent" ]] && echo "perl-DBD-MySQL already in $actual_file excludes"
             fi
@@ -117,9 +134,6 @@ manage_perl_dbd_mysql_exclude() {
                 sed -i 's/\s*perl-DBD-MySQL//g' "$actual_file"
                 sed -i 's/  */ /g' "$actual_file"  # Clean up extra spaces
                 echo "Removed perl-DBD-MySQL from $actual_file excludes"
-
-                # Clear DNF metadata cache
-                dnf clean metadata 2>/dev/null || yum clean metadata 2>/dev/null
             else
                 [[ "$silent" != "silent" ]] && echo "perl-DBD-MySQL not in $actual_file excludes"
             fi

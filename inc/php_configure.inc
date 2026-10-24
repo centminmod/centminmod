@@ -569,7 +569,7 @@ strip_php_extensions() {
 }
 
 checksec_phpext() {
-  if [ ! -f /usr/bin/checksec ]; then
+  if [[ ! -f /usr/local/bin/checksec && ! -f /usr/bin/checksec ]]; then
     echo
     "$YUMDNFBIN" -y install checksec
     echo
@@ -4311,6 +4311,28 @@ install_libsodium_rpm() {
   fi
 }
 
+# EL10 EPEL ships a current libsodium-devel: use it when it is at least
+# LIBSODIUM_VER, so no custom RPM upload or source build is needed
+install_libsodium_epel() {
+  local epel_ver=""
+  if rpm -q libsodium-devel >/dev/null 2>&1; then
+    epel_ver=$(rpm -q --qf '%{VERSION}' libsodium-devel)
+  else
+    epel_ver=$(dnf -q repoquery --latest-limit 1 --qf '%{version}' libsodium-devel --enablerepo=epel 2>/dev/null | tail -n1)
+  fi
+  if [[ -z "$epel_ver" || "$(printf '%s\n' "$LIBSODIUM_VER" "$epel_ver" | sort -V | head -n1)" != "$LIBSODIUM_VER" ]]; then
+    echo "EPEL libsodium-devel ${epel_ver:-not available} is older than ${LIBSODIUM_VER}"
+    return 1
+  fi
+  echo "----------------------------------------------------------------------"
+  echo "Using EPEL libsodium-devel ${epel_ver} (>= ${LIBSODIUM_VER})"
+  echo "----------------------------------------------------------------------"
+  if ! rpm -q libsodium-devel >/dev/null 2>&1; then
+    time dnf -y install libsodium-devel --enablerepo=epel
+  fi
+  rpm -q libsodium-devel >/dev/null 2>&1 && pkg-config --exists libsodium
+}
+
 install_libargon2_rpm() {
   local el_version="$1"
   local rpm_url="${LOCALCENTMINMOD_MIRROR}/centminmodparts/rpms/libargon2/libargon2-custom-${LIBARGON_VER}-1.el${el_version}.x86_64.rpm"
@@ -4507,8 +4529,21 @@ if [[ "$PHP_LIBZIP" = [yY] || "$PHP_ARGON" = [yY] ]] && [[ "$PHPMVER" = '7.2' ||
     LIBDIR_ARGONSODIUM='lib'
   fi
 
+  # EL10: system libsodium from EPEL first. Servers that already have a
+  # /usr/local libsodium (custom RPM or source build) keep using it.
+  LIBSODIUM_SYSTEM='n'
+  if [[ "$CENTOS_TEN" -eq '10' ]] && [[ ! -f "/usr/local/${LIBDIR_ARGONSODIUM}/libsodium.so" ]]; then
+    if install_libsodium_epel; then
+      LIBSODIUM_SYSTEM='y'
+      LIBSODIUM_OPT=' --with-sodium'
+      unset LIBSODIUM_CFLAGS LIBSODIUM_LIBS
+    else
+      echo "falling back to custom libsodium RPM / source build"
+    fi
+  fi
+
   # Try RPM installation first for EL10 (if enabled)
-  if [[ "$PHP_USE_CUSTOM_RPMS" = [yY] && "$CENTOS_TEN" -eq '10' ]] && [[ ! -f "/usr/local/${LIBDIR_ARGONSODIUM}/libsodium.so" ]]; then
+  if [[ "$PHP_USE_CUSTOM_RPMS" = [yY] && "$CENTOS_TEN" -eq '10' && "$LIBSODIUM_SYSTEM" != 'y' ]] && [[ ! -f "/usr/local/${LIBDIR_ARGONSODIUM}/libsodium.so" ]]; then
     if ! rpm -q libsodium-custom >/dev/null 2>&1; then
       echo "----------------------------------------------------------------------"
       echo "PHP_USE_CUSTOM_RPMS enabled for EL10 - attempting RPM installation"
@@ -4534,7 +4569,7 @@ if [[ "$PHP_LIBZIP" = [yY] || "$PHP_ARGON" = [yY] ]] && [[ "$PHPMVER" = '7.2' ||
   fi
 
   # Source compilation (original logic preserved as fallback)
-  if [[ "$PHP_LIBZIP" = [yY] || "$PHP_ARGON" = [yY] ]] && [[ ! -f "/usr/local/${LIBDIR_ARGONSODIUM}/libsodium.so" || ! -f "libsodium-${LIBSODIUM_VER}.tar.gz" ]]; then
+  if [[ "$PHP_LIBZIP" = [yY] || "$PHP_ARGON" = [yY] ]] && [[ "$LIBSODIUM_SYSTEM" != 'y' ]] && [[ ! -f "/usr/local/${LIBDIR_ARGONSODIUM}/libsodium.so" || ! -f "libsodium-${LIBSODIUM_VER}.tar.gz" ]]; then
     pushd "$DIR_TMP"
     if [ -s "libsodium-${LIBSODIUM_VER}.tar.gz" ]; then
         cecho "libsodium-${LIBSODIUM_VER}.tar.gz found, skipping download..." $boldgreen
@@ -4661,7 +4696,8 @@ if [[ "$PHP_LIBZIP" = [yY] || "$PHP_ARGON" = [yY] ]] && [[ "$PHPMVER" = '7.2' ||
   fi
   # if libzip, libsodium or libargon2 libraries still don't exit, disable from php configuration
   if [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' || "$CENTOS_TEN" -eq '10' ]] && [[ "$IMAGEMAGICK_SEVEN" != [yY] ]]; then
-    if [[ ! -f "/usr/local/${LIBDIR_ARGONSODIUM}/libargon2.so" || ! -f "/usr/local/${LIBDIR_ARGONSODIUM}/libsodium.so" ]]; then
+    # LIBSODIUM_SYSTEM=y: EL10 EPEL libsodium in /usr/lib64 instead of /usr/local
+    if [[ ! -f "/usr/local/${LIBDIR_ARGONSODIUM}/libargon2.so" || ( ! -f "/usr/local/${LIBDIR_ARGONSODIUM}/libsodium.so" && "$LIBSODIUM_SYSTEM" != 'y' ) ]]; then
       echo
       echo "disable libzip, libsodium or libargon2 libraries"
       echo

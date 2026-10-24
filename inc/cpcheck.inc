@@ -1573,7 +1573,7 @@ pip_updates() {
         # yum -q -y versionlock python-urllib3 >/dev/null 2>&1
         if [[ ! "$(grep 'python-urllib3' /etc/yum.conf)" ]]; then
           NEW_PYTHONURLLIB_EXCLUDES=$(echo "$(grep '^exclude=' /etc/yum.conf) python-urllib3")
-          sed -i "s|^exclude=.*|$NEW_PYTHONURLLIB_EXCLUDES|" /etc/yum.conf
+          sed -i --follow-symlinks "s|^exclude=.*|$NEW_PYTHONURLLIB_EXCLUDES|" /etc/yum.conf
         fi
         export CC='gcc'
         PYTHONWARNINGS=ignore:::pip._internal.cli.base_command pip install -qqq --upgrade urllib3
@@ -1589,15 +1589,15 @@ pip_updates() {
         fi
         if [[ ! "$(grep 'python-urllib3' /etc/yum.conf)" ]]; then
           NEW_PYTHONURLLIB_EXCLUDES=$(echo "$(grep '^exclude=' /etc/yum.conf) python-urllib3")
-          sed -i "s|^exclude=.*|$NEW_PYTHONURLLIB_EXCLUDES|" /etc/yum.conf
+          sed -i --follow-symlinks "s|^exclude=.*|$NEW_PYTHONURLLIB_EXCLUDES|" /etc/yum.conf
         fi
         if [[ ! "$(grep 'cloud-init' /etc/yum.conf)" ]]; then
           CLOUDINIT_EXCLUDES=$(echo "$(grep '^exclude=' /etc/yum.conf) cloud-init")
-          sed -i "s|^exclude=.*|$CLOUDINIT_EXCLUDES|" /etc/yum.conf
+          sed -i --follow-symlinks "s|^exclude=.*|$CLOUDINIT_EXCLUDES|" /etc/yum.conf
         fi
         if [[ ! "$(grep 'python-requests' /etc/yum.conf)" ]]; then
           PYTHONREQUESTS_EXCLUDES=$(echo "$(grep '^exclude=' /etc/yum.conf) python-requests")
-          sed -i "s|^exclude=.*|$PYTHONREQUESTS_EXCLUDES|" /etc/yum.conf
+          sed -i --follow-symlinks "s|^exclude=.*|$PYTHONREQUESTS_EXCLUDES|" /etc/yum.conf
         fi
         export CC='gcc'
         PYTHONWARNINGS=ignore:::pip._internal.cli.base_command pip install -qqq --upgrade urllib3
@@ -1608,7 +1608,7 @@ pip_updates() {
         yum -q -y versionlock python2-pip >/dev/null 2>&1
         if [[ ! "$(grep 'python2-pip' /etc/yum.conf)" ]]; then
           NEW_PYTHONPIP_EXCLUDES=$(echo "$(grep '^exclude=' /etc/yum.conf) python2-pip")
-          sed -i "s|^exclude=.*|$NEW_PYTHONPIP_EXCLUDES|" /etc/yum.conf
+          sed -i --follow-symlinks "s|^exclude=.*|$NEW_PYTHONPIP_EXCLUDES|" /etc/yum.conf
         fi
         export CC='gcc'
         PYTHONWARNINGS=ignore:::pip._internal.cli.base_command pip install -qqq --upgrade pip
@@ -1617,7 +1617,7 @@ pip_updates() {
         yum -q -y versionlock python-pip >/dev/null 2>&1
         if [[ ! "$(grep 'python-pip' /etc/yum.conf)" ]]; then
           NEW_PYTHONPIP_EXCLUDES=$(echo "$(grep '^exclude=' /etc/yum.conf) python-pip")
-          sed -i "s|^exclude=.*|$NEW_PYTHONPIP_EXCLUDES|" /etc/yum.conf
+          sed -i --follow-symlinks "s|^exclude=.*|$NEW_PYTHONPIP_EXCLUDES|" /etc/yum.conf
         fi
         export CC='gcc'
         PYTHONWARNINGS=ignore:::pip._internal.cli.base_command pip install -qqq --upgrade pip
@@ -1654,7 +1654,7 @@ pip_updates() {
       if [[ "$(yum versionlock list | grep 'python2-pip')" ]]; then
         if [[ ! "$(grep 'python2-pip' /etc/yum.conf)" ]]; then
           NEW_PYTHONPIP_EXCLUDES=$(echo "$(grep '^exclude=' /etc/yum.conf) python2-pip")
-          sed -i "s|^exclude=.*|$NEW_PYTHONPIP_EXCLUDES|" /etc/yum.conf
+          sed -i --follow-symlinks "s|^exclude=.*|$NEW_PYTHONPIP_EXCLUDES|" /etc/yum.conf
         fi
       fi
       if [[ "$CHECK_PIPUPDATE" = 'pip' ]]; then
@@ -1663,7 +1663,7 @@ pip_updates() {
         yum -q -y versionlock python2-pip >/dev/null 2>&1
         if [[ ! "$(grep 'python2-pip' /etc/yum.conf)" ]]; then
           NEW_PYTHONPIP_EXCLUDES=$(echo "$(grep '^exclude=' /etc/yum.conf) python2-pip")
-          sed -i "s|^exclude=.*|$NEW_PYTHONPIP_EXCLUDES|" /etc/yum.conf
+          sed -i --follow-symlinks "s|^exclude=.*|$NEW_PYTHONPIP_EXCLUDES|" /etc/yum.conf
         fi
       fi
       if [[ "$CHECK_PSUTILUPDATE" = 'psutil' || ! "$CHECK_PSUTILINSTALL" ]]; then
@@ -1673,7 +1673,7 @@ pip_updates() {
           # yum -q -y versionlock python2-psutil >/dev/null 2>&1
           if [[ ! "$(grep 'python2-psutil' /etc/yum.conf)" ]]; then
             NEW_PYTHONPSUTIL_EXCLUDES=$(echo "$(grep '^exclude=' /etc/yum.conf) python2-psutil")
-            sed -i "s|^exclude=.*|$NEW_PYTHONPSUTIL_EXCLUDES|" /etc/yum.conf
+            sed -i --follow-symlinks "s|^exclude=.*|$NEW_PYTHONPSUTIL_EXCLUDES|" /etc/yum.conf
           fi
         fi
         PYTHONWARNINGS=ignore:::pip._internal.cli.base_command pip install -qqq --upgrade setuptools
@@ -1695,7 +1695,7 @@ pip_updates() {
       if [[ "$(yum versionlock list | grep 'python-pip')" ]]; then
         if [[ ! "$(grep 'python-pip' /etc/yum.conf)" ]]; then
           NEW_PYTHONPIP_EXCLUDES=$(echo "$(grep '^exclude=' /etc/yum.conf) python-pip")
-          sed -i "s|^exclude=.*|$NEW_PYTHONPIP_EXCLUDES|" /etc/yum.conf
+          sed -i --follow-symlinks "s|^exclude=.*|$NEW_PYTHONPIP_EXCLUDES|" /etc/yum.conf
         fi
       fi
       if [[ "$CHECK_PIPUPDATE" = 'pip' ]]; then
@@ -1704,7 +1704,7 @@ pip_updates() {
         yum -q -y versionlock python-pip >/dev/null 2>&1
         if [[ ! "$(grep 'python-pip' /etc/yum.conf)" ]]; then
           NEW_PYTHONPIP_EXCLUDES=$(echo "$(grep '^exclude=' /etc/yum.conf) python-pip")
-          sed -i "s|^exclude=.*|$NEW_PYTHONPIP_EXCLUDES|" /etc/yum.conf
+          sed -i --follow-symlinks "s|^exclude=.*|$NEW_PYTHONPIP_EXCLUDES|" /etc/yum.conf
         fi
       fi
       if [[ "$CHECK_PSUTILUPDATE" = 'psutil' || ! "$CHECK_PSUTILINSTALL" ]]; then
@@ -1714,7 +1714,7 @@ pip_updates() {
           # yum -q -y versionlock python-psutil >/dev/null 2>&1
           if [[ ! "$(grep 'python-psutil' /etc/yum.conf)" ]]; then
             NEW_PYTHONPSUTIL_EXCLUDES=$(echo "$(grep '^exclude=' /etc/yum.conf) python-psutil")
-            sed -i "s|^exclude=.*|$NEW_PYTHONPSUTIL_EXCLUDES|" /etc/yum.conf
+            sed -i --follow-symlinks "s|^exclude=.*|$NEW_PYTHONPSUTIL_EXCLUDES|" /etc/yum.conf
           fi
         fi
         PYTHONWARNINGS=ignore:::pip._internal.cli.base_command pip2.7 install -qqq --upgrade setuptools
@@ -3208,7 +3208,7 @@ csfipsetcheck() {
 
 checkovzkernels() {
   if [[ -f /proc/user_beancounters ]]; then
-    sed -i 's|installonly_limit=.*|installonly_limit=3|' /etc/yum.conf
+    sed -i --follow-symlinks 's|installonly_limit=.*|installonly_limit=3|' /etc/yum.conf
   fi
 }
 

@@ -30,7 +30,7 @@ DT=$(date +"%d%m%y-%H%M%S")
 branchname='141.00beta01'
 SCRIPT_MAJORVER='141'
 SCRIPT_MINORVER='00'
-SCRIPT_INCREMENTVER='380'
+SCRIPT_INCREMENTVER='381'
 SCRIPT_VERSIONSHORT="${branchname}"
 SCRIPT_VERSION="${SCRIPT_VERSIONSHORT}.b${SCRIPT_INCREMENTVER}"
 SCRIPT_DATE='16/08/25'
@@ -2975,7 +2975,7 @@ elif [[ ! -f /proc/user_beancounters && "$CHECK_LXD" != [yY] ]]; then
        cp -ar /tmp_backup/* /tmp
      create_loopmount "rw,noexec,nosuid tmpfs /tmp" tmpfs
        rm -rf /tmp_backup
-    elif [[ "$TOTALMEM" -ge '2050061' || "$TOTALMEM" -lt '8100000' ]]; then
+    elif [[ "$TOTALMEM" -ge '2050061' && "$TOTALMEM" -lt '8100001' ]]; then
        # set on disk non-tmpfs /tmp to 4GB size
        # if total memory is between 2GB and <8GB
        cp -ar /tmp /tmp_backup
@@ -2994,7 +2994,7 @@ elif [[ ! -f /proc/user_beancounters && "$CHECK_LXD" != [yY] ]]; then
        cp -ar /tmp_backup/* /tmp
        create_loopmount "loop,rw,noexec,nosuid /home/usertmp_donotdelete /tmp" ext4
        rm -rf /tmp_backup
-    elif [[ "$TOTALMEM" -ge '1153434' || "$TOTALMEM" -lt '2050060' ]]; then
+    elif [[ "$TOTALMEM" -ge '1153434' && "$TOTALMEM" -lt '2050061' ]]; then
        # set on disk non-tmpfs /tmp to 2GB size
        # if total memory is between 1.1-2GB
        cp -ar /tmp /tmp_backup
@@ -3389,11 +3389,10 @@ fi
 
 if [[ "$(grep exclude /etc/yum.conf)" && "$MDB_INSTALL" = y ]]; then
     cecho "exclude line exists... adding nginx* mysql* php* exclusions" $boldgreen
-    sed -i "s/exclude=\*.i386 \*.i586 \*.i686 mysql\*/exclude=\*.i386 \*.i586 \*.i686 nginx\* mysql\* php\*/" /etc/yum.conf
-    sed -i "s/exclude=mysql\*/exclude=mysql\* php\*/" /etc/yum.conf
+    yum_exclude_add 'nginx*' 'mysql*' 'php*'
 elif [[ "$(grep exclude /etc/yum.conf)" ]]; then
     cecho "exclude line exists... adding nginx* php* exclusions" $boldgreen
-    sed -i "s/exclude=\*.i386 \*.i586 \*.i686/exclude=\*.i386 \*.i586 \*.i686 nginx\* php\*/" /etc/yum.conf 
+    yum_exclude_add 'nginx*' 'php*'
 fi
 
 
