@@ -3669,7 +3669,7 @@
 # AWS-LC version tag
 # Reference: https://github.com/aws/aws-lc/tags
 # Git History: Added 2024-06-21 (13e367fa)
-#AWS_LC_VERSION='v5.11.0'
+#AWS_LC_VERSION='v5.12.0'
 
 # AWS-LC Directory
 # Git History: Added 2024-06-10 (304dd425)
