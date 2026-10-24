@@ -164,16 +164,36 @@ compile_custom_curl() {
 
         echo ">>> Using compat-openssl11 runtime"
 
-        if ! rpm -q compat-openssl11 compat-openssl11-devel &>/dev/null; then
-            local BASE=${LOCALCENTMINMOD_MIRROR}/centminmodparts/rpms/compat-openssl11
-            dnf install -y  \
-              "${BASE}/compat-openssl11-1.1.1k-5.el9.x86_64.rpm" \
-              "${BASE}/compat-openssl11-devel-1.1.1k-5.el9.x86_64.rpm" || return 1
+        # compat-openssl11 comes from AppStream, so it keeps getting AlmaLinux updates. No EL9
+        # repo ships its -devel, so the headers come from a tarball built from AlmaLinux's source
+        # rpm (centminmod-el9-openssl), pinned by sha256. The old mirror -devel rpm required the
+        # exact 1.1.1k-5.el9 runtime, which blocked those updates
+        local COMPAT11_DIR=/opt/compat-openssl11
+        local COMPAT11_HDR=compat-openssl11-headers-1.1.1k-5.el9_8.6.x86_64.tar.gz
+        local COMPAT11_HDR_SHA256=8461362e6fb97ab1bfffa8e348b4899300b906159f32487cc74c240646485741
+        if rpm -q compat-openssl11-devel-1.1.1k-5.el9 &>/dev/null; then
+            rpm -e compat-openssl11-devel-1.1.1k-5.el9 || return 1
         fi
+        rpm -q compat-openssl11 &>/dev/null || dnf install -y compat-openssl11 || return 1
+        if ! grep -qx "${COMPAT11_HDR_SHA256}  ${COMPAT11_HDR}" "${COMPAT11_DIR}/.headers" 2>/dev/null; then
+            if [[ ! -f "${SRC_DIR}/${COMPAT11_HDR}" ]]; then
+                wget -qO "${SRC_DIR}/${COMPAT11_HDR}" "${LOCALCENTMINMOD_MIRROR}/centminmodparts/rpms/compat-openssl11/${COMPAT11_HDR}" || { rm -f "${SRC_DIR}/${COMPAT11_HDR}"; return 1; }
+            fi
+            if ! echo "${COMPAT11_HDR_SHA256}  ${SRC_DIR}/${COMPAT11_HDR}" | sha256sum -c --quiet -; then
+                echo "ERROR: ${COMPAT11_HDR} does not match its pinned sha256" >&2
+                rm -f "${SRC_DIR}/${COMPAT11_HDR}"
+                return 1
+            fi
+            rm -rf "${COMPAT11_DIR}/include"
+            mkdir -p "${COMPAT11_DIR}" && tar -xzf "${SRC_DIR}/${COMPAT11_HDR}" -C "${COMPAT11_DIR}" || return 1
+            echo "${COMPAT11_HDR_SHA256}  ${COMPAT11_HDR}" > "${COMPAT11_DIR}/.headers"
+        fi
+        mkdir -p "${COMPAT11_DIR}/lib" || return 1
+        ln -sf /usr/lib64/libssl.so.1.1 "${COMPAT11_DIR}/lib/libssl.so"
+        ln -sf /usr/lib64/libcrypto.so.1.1 "${COMPAT11_DIR}/lib/libcrypto.so"
 
-        # headers are in /usr/include/openssl11, libs in /lib64/openssl11
-        export CPPFLAGS="-I/usr/include/openssl11 -D_FORTIFY_SOURCE=2"
-        export LDFLAGS="-L/lib64/openssl11 -Wl,-rpath,/lib64/openssl11 ${LDFLAGS}"
+        export CPPFLAGS="-I${COMPAT11_DIR}/include -D_FORTIFY_SOURCE=2"
+        export LDFLAGS="-L${COMPAT11_DIR}/lib ${LDFLAGS}"
         OPENSSL_CFG="--with-openssl=/usr"
 
     else
