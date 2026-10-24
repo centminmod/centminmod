@@ -30,7 +30,7 @@ DT=$(date +"%d%m%y-%H%M%S")
 branchname='141.00beta01'
 SCRIPT_MAJORVER='141'
 SCRIPT_MINORVER='00'
-SCRIPT_INCREMENTVER='373'
+SCRIPT_INCREMENTVER='374'
 SCRIPT_VERSIONSHORT="${branchname}"
 SCRIPT_VERSION="${SCRIPT_VERSIONSHORT}.b${SCRIPT_INCREMENTVER}"
 SCRIPT_DATE='16/08/25'
@@ -3377,12 +3377,16 @@ fi
     #systemctl restart php-fpm 2>/dev/null
     # /etc/init.d/php-fpm force-quit
     /usr/local/sbin/php-fpm -t || exit $?
-    service php-fpm start || exit $?
-    fileinfo_standalone || exit $?
-
-    if [[ "$CENTOS_SEVEN" -eq '7' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' || "$CENTOS_TEN" -eq '10' ]] && [[ "$SWITCH_PHPFPM_SYSTEMD" = [yY] && -f "$CUR_DIR/tools/php-systemd.sh" ]]; then
+    if [[ "$CENTOS_SEVEN" -eq '7' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' || "$CENTOS_TEN" -eq '10' ]] && [[ "$SWITCH_PHPFPM_SYSTEMD" = [yY] && -f "$CUR_DIR/tools/php-systemd.sh" && -d /run/systemd/system ]]; then
+      # php-systemd.sh replaces the init.d script with php-fpm.service and starts it;
+      # EL10 hosts without the chkconfig package have no /etc/init.d to start from.
+      # /run/systemd/system: systemd is running, otherwise start the init.d script
       $CUR_DIR/tools/php-systemd.sh fpm-systemd
+      systemctl is-active --quiet php-fpm || exit 1
+    else
+      service php-fpm start || exit $?
     fi
+    fileinfo_standalone || exit $?
 
 if [[ "$(grep exclude /etc/yum.conf)" && "$MDB_INSTALL" = y ]]; then
     cecho "exclude line exists... adding nginx* mysql* php* exclusions" $boldgreen
