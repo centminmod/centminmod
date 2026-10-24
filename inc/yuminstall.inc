@@ -373,7 +373,12 @@ sar_call
 fi # /usr/local/src/curlinstall_yum.txt
 
 
-${YUMDNFBIN}${CACHESKIP} -y -q install mytop iftop${DISABLEREPO_DNF}
+# MariaDB 10.5+ client packages ship mytop and their installs remove the EPEL one
+if [[ "$MARIADB_INSTALLTENTWO" = [yY] || "$MARIADB_INSTALLTENTHREE" = [yY] || "$MARIADB_INSTALLTENFOUR" = [yY] ]]; then
+  ${YUMDNFBIN}${CACHESKIP} -y -q install mytop iftop${DISABLEREPO_DNF}
+else
+  ${YUMDNFBIN}${CACHESKIP} -y -q install iftop${DISABLEREPO_DNF}
+fi
 if [ -f /usr/bin/mytop ]; then
 sed -i 's/"long|!"/"long|long_nums|l!"/g' /usr/bin/mytop
 fi
@@ -385,7 +390,10 @@ if [ ! -f /proc/user_beancounters ]; then
   fi
 fi
 
-yum clean all -q
+# EL8+ dnf needs no metadata clean before the repo setup below
+if [[ "$CENTOS_EIGHT" != '8' && "$CENTOS_NINE" != '9' && "$CENTOS_TEN" != '10' ]]; then
+  yum clean all -q
+fi
 yumcentossixdownload
 yumcentossevendownload
 yumcentoseightdownload

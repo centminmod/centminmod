@@ -2334,7 +2334,8 @@ if [[ "$PHP_PGO_ALWAYS" = [yY] ]]; then
 fi
 
 if [[ "$CLANG_PHP" = [yY] ]]; then
-    if [[ "$CENTOS_SIX" = '6' && ! -f /usr/bin/clang ]] || [[ "$CENTOS_SEVEN" = '7' && ! -f /bin/clang ]]; then
+    # EL8+ installers no longer preinstall clang
+    if [[ "$CENTOS_SIX" = '6' && ! -f /usr/bin/clang ]] || [[ "$CENTOS_SEVEN" = '7' && ! -f /bin/clang ]] || [[ ( "$CENTOS_EIGHT" = '8' || "$CENTOS_NINE" = '9' || "$CENTOS_TEN" = '10' ) && ! -f /usr/bin/clang ]]; then
         time $YUMDNFBIN -q -y install clang clang-devel${DISABLEREPO_DNF}
     fi
     if [[ "$GCCINTEL_PHP" = [yY] ]]; then

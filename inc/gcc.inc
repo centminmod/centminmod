@@ -65,7 +65,7 @@ enable_clang() {
    if [[ "$CENTOS_SIX" = 6 || "$CENTOS_SEVEN" = 7 ]] && [[ ! -f /usr/bin/clang ]]; then
       time $YUMDNFBIN -q -y install clang clang-devel${DISABLEREPO_DNF}
    fi
-   if [[ "$CENTOS_EIGHT" = 8 ]] && [[ ! -f /usr/bin/clang ]]; then
+   if [[ "$CENTOS_EIGHT" = 8 || "$CENTOS_NINE" = 9 || "$CENTOS_TEN" = 10 ]] && [[ ! -f /usr/bin/clang ]]; then
       time $YUMDNFBIN -q -y install clang clang-devel${DISABLEREPO_DNF}
    fi
    if [[ "$INITIALINSTALL" != [yY] ]]; then             

@@ -17,7 +17,8 @@ trap '_rc=$?; _jobs=$(jobs -p); [ -n "$_jobs" ] && kill $_jobs 2>/dev/null; exit
 #######################################################
 # some OS image templates are missing some locales that need to be installed
 check_install_locale() {
-  if [[ ! "$(locale -a | grep -qi "en_US.UTF8")" ]]; then
+  # grep -q prints nothing, so test its exit status, not its output
+  if ! locale -a 2>/dev/null | grep -qi "en_US.UTF8"; then
     local os_version=$(rpm -qa yum | grep -o 'el[0-9]*')
     case "$os_version" in
       el7)
@@ -536,7 +537,7 @@ install_group4_essential_batch() {
     local batch_start=$(date +%s)
 
     # Check which packages need installation
-    [[ ! "$(locale -a 2>/dev/null | grep -qi "en_US.UTF8")" ]] && missing_pkgs+=" glibc-langpack-en"
+    locale -a 2>/dev/null | grep -qi "en_US.UTF8" || missing_pkgs+=" glibc-langpack-en"
     [[ "$(rpm -qa bc | grep -o 'bc')" != 'bc' ]] && missing_pkgs+=" bc"
     [[ ! -f /usr/bin/tar ]] && missing_pkgs+=" tar"
 
@@ -999,19 +1000,11 @@ if [[ -f /etc/dnf/dnf.conf && "$CPUS" -ge '2' ]]; then
   elif [[ "$(grep 'max_parallel_downloads' /etc/dnf/dnf.conf)" ]]; then
     sed -i "s|max_parallel_downloads=.*|max_parallel_downloads=$max_dnf_downloads|" /etc/dnf/dnf.conf
   fi
-  if [[ ! "$(grep 'fastestmirror=' /etc/dnf/dnf.conf)" ]]; then
-    echo "fastestmirror=True" >> /etc/dnf/dnf.conf
-  elif [[ "$(grep 'fastestmirror=' /etc/dnf/dnf.conf)" ]]; then
-    sed -i "s|fastestmirror=.*|fastestmirror=True|" /etc/dnf/dnf.conf
-  fi
+  # fastestmirror is not forced: distro mirrorlists and EPEL metalinks are
+  # already geo-sorted, and it pings every mirror (368 for EPEL) on each refresh
   dnf -y update --refresh
 elif [[ -f /etc/dnf/dnf.conf && "$CPUS" -eq '1' ]]; then
   echo "Optimizing /etc/dnf/dnf.conf settings"
-  if [[ ! "$(grep 'fastestmirror=' /etc/dnf/dnf.conf)" ]]; then
-    echo "fastestmirror=True" >> /etc/dnf/dnf.conf
-  elif [[ "$(grep 'fastestmirror=' /etc/dnf/dnf.conf)" ]]; then
-    sed -i "s|fastestmirror=.*|fastestmirror=True|" /etc/dnf/dnf.conf
-  fi
   dnf -y update --refresh
 fi
 
@@ -2366,7 +2359,11 @@ fi
 
 DEF=${1:-novalue}
 
-yum clean all
+# EL8+ dnf fetches metadata for new or changed repos itself; a clean here only
+# forces a full re-download of the metadata dnf update --refresh just fetched
+if [[ "$CENTOS_EIGHT" != '8' && "$CENTOS_NINE" != '9' && "$CENTOS_TEN" != '10' ]]; then
+  yum clean all
+fi
 opt_tcp
 
 if [[ ! -f /usr/bin/git || ! -f /usr/bin/bc || ! -f /usr/bin/wget || ! -f /bin/nano || ! -f /usr/bin/unzip || ! -f /usr/bin/applydeltarpm ]]; then
@@ -2489,13 +2486,12 @@ if [[ "$CENTOS_TEN" -eq '10' ]]; then
   time $YUMDNFBIN -y install \
     libvpx libvpx-devel t1lib t1lib-devel expect readline readline-devel \
     libedit libedit-devel libxslt libxslt-devel openssl openssl-devel curl curl-devel \
-    openldap openldap-devel zlib zlib-devel gd gd-devel pcre pcre-devel \
+    openldap openldap-devel zlib zlib-devel gd gd-devel \
     gettext gettext-devel libidn libidn-devel libjpeg libjpeg-devel libpng libpng-devel \
     freetype freetype-devel libxml2 libxml2-devel glib2 glib2-devel bzip2 bzip2-devel \
     ncurses ncurses-devel e2fsprogs e2fsprogs-devel cyrus-sasl cyrus-sasl-devel \
     pam pam-devel libaio libaio-devel libevent libevent-devel recode recode-devel \
-    libtidy libtidy-devel net-snmp net-snmp-devel enchant2 enchant2-devel lua lua-devel \
-    libc-client libc-client-devel${DISABLEREPO_DNF} --skip-broken
+    libtidy libtidy-devel net-snmp net-snmp-devel enchant2 enchant2-devel lua lua-devel${DISABLEREPO_DNF} --skip-broken
   skip_broken_report "EL10 Phase 2/3 development library pairs"
 
   CURL_BATCH2_END=$(date +%s)
@@ -2512,7 +2508,7 @@ if [[ "$CENTOS_TEN" -eq '10' ]]; then
   # Group 3: Graphics, X11, and Image Processing Libraries
   time $YUMDNFBIN -y install \
     OpenEXR-devel OpenEXR-libs atk cups-libs fftw-libs-double fribidi gdk-pixbuf2 \
-    ghostscript-devel gl-manpages graphviz gtk2 hicolor-icon-theme ilmbase ilmbase-devel \
+    ghostscript-devel graphviz gtk2 hicolor-icon-theme ilmbase-devel \
     jasper-devel jasper-libs jbigkit-devel jbigkit-libs lcms2 lcms2-devel libICE-devel \
     libSM-devel libXaw libXcomposite libXcursor libXdamage-devel libXfixes-devel libXi \
     libXinerama libXmu libXrandr libXt-devel libXxf86vm-devel libdrm-devel libfontenc \
@@ -2564,23 +2560,16 @@ fi
     else
       KERNEL_PKGS=""
     fi
+    # checksec (GitHub binary), plocate (phase 1) and the Remi-only libmcrypt
+    # and oniguruma5php are installed later; pngquant has no EL10 package
     time $YUMDNFBIN -y install \
-      checksec systemd-libs xxhash-devel libzstd xxhash libzstd-devel datamash qrencode \
-      jq clang clang-devel jemalloc jemalloc-devel mold zstd python2-pip \
+      systemd-libs xxhash-devel libzstd xxhash libzstd-devel datamash qrencode \
+      jq jemalloc jemalloc-devel mold zstd libraqm \
       figlet moreutils nghttp2 libnghttp2 libnghttp2-devel \
-      pngquant optipng jpegoptim pwgen pigz pbzip2 xz pxz lz4 \
-      bash-completion mlocate re2c ${KERNEL_PKGS}${DISABLEREPO_DNF} \
+      optipng jpegoptim pwgen pigz pbzip2 xz pxz lz4 \
+      bash-completion re2c ${KERNEL_PKGS}${DISABLEREPO_DNF} \
       --skip-broken --allowerasing
-
-    # Group 4B: REMI repository packages (5 packages)
-    # L10: `--enablerepo=remi` here may no-op during installer-el10.sh's
-    # own phase 4 execution because remi-release is installed later via
-    # inc/* during the `centmin.sh install` handoff. After that, the
-    # remi-modular repo is enabled and these packages resolve correctly.
-    time $YUMDNFBIN -y install \
-      libmcrypt libmcrypt-devel libraqm oniguruma5php oniguruma5php-devel \
-      --enablerepo=epel,epel-testing,remi --skip-broken
-    skip_broken_report "EL10 Phase 4 utility + REMI"
+    skip_broken_report "EL10 Phase 4 utility"
 
     CURL_BATCH4_END=$(date +%s)
     CURL_BATCH4_DURATION=$((CURL_BATCH4_END - CURL_BATCH4_START))
@@ -2613,7 +2602,7 @@ fi
     # L10: `--enablerepo=remi` here depends on remi-release being installed
     # later by inc/* during the centmin.sh install handoff. During this
     # phase it may no-op; afterwards remi-modular is fully usable.
-    time $YUMDNFBIN -y install checksec systemd-libs xxhash-devel libzstd xxhash libzstd-devel datamash qrencode jq clang clang-devel jemalloc jemalloc-devel zstd python2-pip libmcrypt libmcrypt-devel libraqm oniguruma5php oniguruma5php-devel figlet moreutils nghttp2 libnghttp2 libnghttp2-devel pngquant optipng jpegoptim pwgen pigz pbzip2 xz pxz lz4 bash-completion mlocate re2c ${KERNEL_PKGS}${DISABLEREPO_DNF} --enablerepo=epel,epel-testing,remi --skip-broken --allowerasing
+    time $YUMDNFBIN -y install checksec systemd-libs xxhash-devel libzstd xxhash libzstd-devel datamash qrencode jq jemalloc jemalloc-devel zstd libmcrypt libmcrypt-devel libraqm figlet moreutils nghttp2 libnghttp2 libnghttp2-devel pngquant optipng jpegoptim pwgen pigz pbzip2 xz pxz lz4 bash-completion mlocate re2c ${KERNEL_PKGS}${DISABLEREPO_DNF} --enablerepo=epel,remi --skip-broken --allowerasing
     skip_broken_report "EL9 Phase 4 utility + REMI"
     libc_fix
     if [ -f /usr/bin/pip ]; then
@@ -2630,7 +2619,7 @@ fi
     # L10: `--enablerepo=remi` here depends on remi-release being installed
     # later by inc/* during the centmin.sh install handoff. During this
     # phase it may no-op; afterwards remi-modular is fully usable.
-    time $YUMDNFBIN -y install checksec systemd-libs xxhash-devel libzstd xxhash libzstd-devel datamash qrencode jq clang clang-devel jemalloc jemalloc-devel zstd python2-pip libmcrypt libmcrypt-devel libraqm oniguruma5php oniguruma5php-devel figlet moreutils nghttp2 libnghttp2 libnghttp2-devel pngquant optipng jpegoptim pwgen pigz pbzip2 xz pxz lz4 bash-completion mlocate re2c ${KERNEL_PKGS}${DISABLEREPO_DNF} --enablerepo=epel,epel-testing,remi --skip-broken --allowerasing
+    time $YUMDNFBIN -y install checksec systemd-libs xxhash-devel libzstd xxhash libzstd-devel datamash qrencode jq jemalloc jemalloc-devel zstd libmcrypt libmcrypt-devel libraqm figlet moreutils nghttp2 libnghttp2 libnghttp2-devel pngquant optipng jpegoptim pwgen pigz pbzip2 xz pxz lz4 bash-completion mlocate re2c ${KERNEL_PKGS}${DISABLEREPO_DNF} --enablerepo=epel,remi --skip-broken --allowerasing
     skip_broken_report "EL8 Phase 4 utility + REMI"
     libc_fix
     if [ -f /usr/bin/pip ]; then
@@ -2666,7 +2655,8 @@ fi
   if [ -f /etc/yum.repos.d/rpmforge.repo ]; then
     time $YUMDNFBIN -y install GeoIP GeoIP-devel --disablerepo=rpmforge
     sar_call
-  else
+  elif [[ "$CENTOS_TEN" != '10' ]]; then
+    # EL10 GeoIP is Remi-only and installed once Remi is set up
     time $YUMDNFBIN -y install GeoIP GeoIP-devel
     sar_call
   fi
@@ -2692,6 +2682,10 @@ yumupdater() {
 }
 
 install_axel() {
+  # EL8+ downloads only use axel when AXEL=y (EL6/7 centmin.sh axelsetup builds it anyway)
+  if [[ "$AXEL" != [yY] ]] && [[ "$CENTOS_EIGHT" = '8' || "$CENTOS_NINE" = '9' || "$CENTOS_TEN" = '10' ]]; then
+    return 0
+  fi
   cd $DIR_TMP
   echo "Download $AXEL_LINKFILE ..."
   if [ -s $AXEL_LINKFILE ]; then

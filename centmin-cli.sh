@@ -30,7 +30,7 @@ DT=$(date +"%d%m%y-%H%M%S")
 branchname='141.00beta01'
 SCRIPT_MAJORVER='141'
 SCRIPT_MINORVER='00'
-SCRIPT_INCREMENTVER='381'
+SCRIPT_INCREMENTVER='382'
 SCRIPT_VERSIONSHORT="${branchname}"
 SCRIPT_VERSION="${SCRIPT_VERSIONSHORT}.b${SCRIPT_INCREMENTVER}"
 SCRIPT_DATE='16/08/25'
@@ -2713,6 +2713,17 @@ unsetramdisk() {
     fi
 }
 ###
+# allocate the /tmp loop image of $1 KiB: fallocate is instant on ext4/XFS,
+# dd fallback where it is unsupported or short (e.g. OpenVZ simfs, ext3)
+create_tmp_image() {
+  local kib="$1" img=/home/usertmp_donotdelete
+  rm -f "$img"
+  if ! fallocate -l "$((kib * 1024))" "$img" 2>/dev/null || [[ "$(stat -c %s "$img" 2>/dev/null)" != "$((kib * 1024))" ]]; then
+    rm -f "$img"
+    dd if=/dev/zero of="$img" bs=1024 count="$kib"
+  fi
+}
+
 create_loopmount() {
   mnt_options="$1"
   fs_type="$2" # Filesystem type argument
@@ -2887,11 +2898,11 @@ elif [[ ! -f /proc/user_beancounters && "$CENTOS_SEVEN" = '7' && "$CHECK_LXD" !=
        cp -ar /tmp /tmp_backup
        # rm -rf /tmp
        if [[ "$HOME_DFSIZE" -le '15750000' ]]; then
-        dd if=/dev/zero of=/home/usertmp_donotdelete bs=1024 count=1048576
+        create_tmp_image 1048576
        elif [[ "$HOME_DFSIZE" -gt '15750001' && "$HOME_DFSIZE" -le '20999000' ]]; then
-        dd if=/dev/zero of=/home/usertmp_donotdelete bs=1024 count=2097152
+        create_tmp_image 2097152
        else
-        dd if=/dev/zero of=/home/usertmp_donotdelete bs=1024 count=6291456
+        create_tmp_image 6291456
        fi
        echo Y | mkfs.ext4 /home/usertmp_donotdelete
        # mkdir -p /tmp
@@ -2906,11 +2917,11 @@ elif [[ ! -f /proc/user_beancounters && "$CENTOS_SEVEN" = '7' && "$CHECK_LXD" !=
        cp -ar /tmp /tmp_backup
        # rm -rf /tmp
        if [[ "$HOME_DFSIZE" -le '15750000' ]]; then
-        dd if=/dev/zero of=/home/usertmp_donotdelete bs=1024 count=1048576
+        create_tmp_image 1048576
        elif [[ "$HOME_DFSIZE" -gt '15750001' && "$HOME_DFSIZE" -le '20999000' ]]; then
-        dd if=/dev/zero of=/home/usertmp_donotdelete bs=1024 count=2097152
+        create_tmp_image 2097152
        else
-        dd if=/dev/zero of=/home/usertmp_donotdelete bs=1024 count=4194304
+        create_tmp_image 4194304
        fi
        echo Y | mkfs.ext4 /home/usertmp_donotdelete
        # mkdir -p /tmp
@@ -2925,11 +2936,11 @@ elif [[ ! -f /proc/user_beancounters && "$CENTOS_SEVEN" = '7' && "$CHECK_LXD" !=
        cp -ar /tmp /tmp_backup
        # rm -rf /tmp
        if [[ "$HOME_DFSIZE" -le '15750000' ]]; then
-        dd if=/dev/zero of=/home/usertmp_donotdelete bs=1024 count=1048576
+        create_tmp_image 1048576
        elif [[ "$HOME_DFSIZE" -gt '15750001' && "$HOME_DFSIZE" -le '20999000' ]]; then
-        dd if=/dev/zero of=/home/usertmp_donotdelete bs=1024 count=2097152
+        create_tmp_image 2097152
        else
-        dd if=/dev/zero of=/home/usertmp_donotdelete bs=1024 count=3000000
+        create_tmp_image 3000000
        fi
        echo Y | mkfs.ext4 /home/usertmp_donotdelete
        # mkdir -p /tmp
@@ -2944,11 +2955,11 @@ elif [[ ! -f /proc/user_beancounters && "$CENTOS_SEVEN" = '7' && "$CHECK_LXD" !=
        cp -ar /tmp /tmp_backup
        # rm -rf /tmp
        if [[ "$HOME_DFSIZE" -le '15750000' ]]; then
-        dd if=/dev/zero of=/home/usertmp_donotdelete bs=1024 count=1048576
+        create_tmp_image 1048576
        elif [[ "$HOME_DFSIZE" -gt '15750001' && "$HOME_DFSIZE" -le '20999000' ]]; then
-        dd if=/dev/zero of=/home/usertmp_donotdelete bs=1024 count=2097152
+        create_tmp_image 2097152
        else
-        dd if=/dev/zero of=/home/usertmp_donotdelete bs=1024 count=3000000
+        create_tmp_image 3000000
        fi
        echo Y | mkfs.ext4 /home/usertmp_donotdelete
        # mkdir -p /tmp
@@ -2981,11 +2992,11 @@ elif [[ ! -f /proc/user_beancounters && "$CHECK_LXD" != [yY] ]]; then
        cp -ar /tmp /tmp_backup
        rm -rf /tmp
        if [[ "$HOME_DFSIZE" -le '15750000' ]]; then
-        dd if=/dev/zero of=/home/usertmp_donotdelete bs=1024 count=1048576
+        create_tmp_image 1048576
        elif [[ "$HOME_DFSIZE" -gt '15750001' && "$HOME_DFSIZE" -le '20999000' ]]; then
-        dd if=/dev/zero of=/home/usertmp_donotdelete bs=1024 count=2097152
+        create_tmp_image 2097152
        else
-        dd if=/dev/zero of=/home/usertmp_donotdelete bs=1024 count=4194304
+        create_tmp_image 4194304
        fi
        echo Y | mkfs.ext4 /home/usertmp_donotdelete
        mkdir -p /tmp
@@ -3000,11 +3011,11 @@ elif [[ ! -f /proc/user_beancounters && "$CHECK_LXD" != [yY] ]]; then
        cp -ar /tmp /tmp_backup
        rm -rf /tmp
        if [[ "$HOME_DFSIZE" -le '15750000' ]]; then
-        dd if=/dev/zero of=/home/usertmp_donotdelete bs=1024 count=1048576
+        create_tmp_image 1048576
        elif [[ "$HOME_DFSIZE" -gt '15750001' && "$HOME_DFSIZE" -le '20999000' ]]; then
-        dd if=/dev/zero of=/home/usertmp_donotdelete bs=1024 count=2097152
+        create_tmp_image 2097152
        else
-        dd if=/dev/zero of=/home/usertmp_donotdelete bs=1024 count=3000000
+        create_tmp_image 3000000
        fi
        echo Y | mkfs.ext4 /home/usertmp_donotdelete
        mkdir -p /tmp
@@ -3019,11 +3030,11 @@ elif [[ ! -f /proc/user_beancounters && "$CHECK_LXD" != [yY] ]]; then
        cp -ar /tmp /tmp_backup
        rm -rf /tmp
        if [[ "$HOME_DFSIZE" -le '15750000' ]]; then
-        dd if=/dev/zero of=/home/usertmp_donotdelete bs=1024 count=1048576
+        create_tmp_image 1048576
        elif [[ "$HOME_DFSIZE" -gt '15750001' && "$HOME_DFSIZE" -le '20999000' ]]; then
-        dd if=/dev/zero of=/home/usertmp_donotdelete bs=1024 count=2097152
+        create_tmp_image 2097152
        else
-        dd if=/dev/zero of=/home/usertmp_donotdelete bs=1024 count=3000000
+        create_tmp_image 3000000
        fi
        echo Y | mkfs.ext4 /home/usertmp_donotdelete
        mkdir -p /tmp

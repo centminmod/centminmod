@@ -26,8 +26,6 @@ if [[ "$REMIREPO_DISABLE" = [nN] ]]; then
       echo
       echo "disable repo_gpgcheck for REMI"
       sed -i 's|repo_gpgcheck=1|repo_gpgcheck=0|g' /etc/yum.repos.d/remi*.repo
-      yum clean all
-      yum makecache
       echo
       grep repo_gpgcheck /etc/yum.repos.d/remi*.repo
       echo
@@ -112,7 +110,7 @@ if [[ "$CENTOS_TEN" = '10' ]]; then
   fi
 
   # CentOS 9 repo mirrors aren't fully updated so need to specify actual kernel-headers version
-  PACKAGEEXTRA='perl-FindBin oniguruma5php oniguruma5php-devel figlet moreutils nghttp2 libnghttp2 libnghttp2-devel jq clang clang-devel jemalloc jemalloc-devel pngquant optipng jpegoptim pwgen pigz pbzip2 xz pxz lz4 libc-client libc-client-devel uw-imap-devel libtidy libtidy-devel libJudy axel bash-completion mlocate re2c libmcrypt libmcrypt-devel kernel-headers kernel-devel cmake'
+  PACKAGEEXTRA='perl-FindBin oniguruma5php oniguruma5php-devel figlet moreutils nghttp2 libnghttp2 libnghttp2-devel jq jemalloc jemalloc-devel pngquant optipng jpegoptim pwgen pigz pbzip2 xz pxz lz4 libc-client libc-client-devel uw-imap-devel libtidy libtidy-devel libJudy axel bash-completion mlocate re2c libmcrypt libmcrypt-devel kernel-headers kernel-devel cmake'
 
   declare -a arrays
   arrays=(${PACKAGEEXTRA})
@@ -140,7 +138,7 @@ if [[ "$CENTOS_TEN" -eq '10' ]] && [[ "$CENTOS_TEN_BATCH_INSTALL" = [yY] ]]; the
   echo "----------------------------------------------------------------------------------"
   ${YUMDNFBIN}${CACHESKIP} -q -y install \
     perl-FindBin figlet moreutils nghttp2 libnghttp2 libnghttp2-devel \
-    jq clang clang-devel jemalloc jemalloc-devel pngquant optipng \
+    jq jemalloc jemalloc-devel pngquant optipng \
     jpegoptim pwgen pigz pbzip2 xz pxz lz4 libtidy libtidy-devel \
     libJudy axel bash-completion mlocate re2c kernel-headers \
     kernel-devel cmake --skip-broken
