@@ -284,6 +284,8 @@ phpsededit() {
     echo "mail.add_x_header = Off" >> ${CUSTOMPHPINIFILE}
     echo "max_input_nesting_level = 128" >> ${CUSTOMPHPINIFILE}
     echo "max_input_vars = 10000" >> ${CUSTOMPHPINIFILE}
+    # CVE-2026-109619/CVE-2026-115560 mitigation https://www.php.net/archive/2026.php#2026-10-23-1
+    echo "session.upload_progress.enabled = 0" >> ${CUSTOMPHPINIFILE}
     echo "mysqlnd.net_cmd_buffer_size = 16384" >> ${CUSTOMPHPINIFILE}
     echo "mysqlnd.collect_memory_statistics = Off" >> ${CUSTOMPHPINIFILE}
     echo "mysqlnd.mempool_default_size = 16000" >> ${CUSTOMPHPINIFILE}
