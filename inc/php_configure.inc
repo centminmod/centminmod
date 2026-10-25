@@ -454,7 +454,7 @@ php_imagemagick_seven_detected_libzip() {
   # source compile libzip for PHP 8.1+
   if [[ "$PHP_IMAGEMAGICK_SEVEN_USE_REMI_LIBZIP" = [yY] ]]; then
     if ! rpm -qa | grep -qw remi-libzip-devel; then
-      "$YUMDNFBIN" -y install remi-libzip-devel --enablerepo=remi
+      $YUMDNFBIN -y install remi-libzip-devel --enablerepo=remi
     fi
     export LIBZIP_CFLAGS='-I/opt/remi/libzip/include'
     export LIBZIP_LIBS="-L/opt/remi/libzip/lib64 -lzip"
@@ -475,7 +475,7 @@ php_imagemagick_seven_detected_libzip() {
       ldconfig
     fi
     if rpm -qa | grep -qw remi-libzip-devel; then
-      "$YUMDNFBIN" -y remove remi-libzip remi-libzip-devel --enablerepo=remi
+      $YUMDNFBIN -y remove remi-libzip remi-libzip-devel --enablerepo=remi
       ldconfig
     fi
     PHP_LIBZIP='y'
@@ -515,7 +515,7 @@ strip_php_extensions() {
 checksec_phpext() {
   if [ ! -f /usr/bin/checksec ]; then
     echo
-    "$YUMDNFBIN" -y install checksec
+    $YUMDNFBIN -y install checksec
     echo
   fi
   checksec_phpext_dir=$(php-config --extension-dir)
@@ -658,22 +658,22 @@ oniguruma_check() {
     echo
     echo "swap oniguruma5 oniguruma5php"
     echo
-    "$YUMDNFBIN" -y swap oniguruma5 oniguruma5php --enablerepo=remi
+    $YUMDNFBIN -y swap oniguruma5 oniguruma5php --enablerepo=remi
     echo
     echo "swap oniguruma5-devel oniguruma5php-devel"
     echo
-    "$YUMDNFBIN" -y swap oniguruma5-devel oniguruma5php-devel --enablerepo=remi
+    $YUMDNFBIN -y swap oniguruma5-devel oniguruma5php-devel --enablerepo=remi
   fi
   if [[ "$(rpm -qa oniguruma5php oniguruma5php-devel | wc -l)" -lt '2' ]]; then
     echo
     echo "install oniguruma5php oniguruma5php-devel"
     echo
-    "$YUMDNFBIN" -y install oniguruma5php oniguruma5php-devel --enablerepo=remi
+    $YUMDNFBIN -y install oniguruma5php oniguruma5php-devel --enablerepo=remi
     oni_err=$?
     echo "oni_err=$oni_err"
     if [ ! -f /usr/include/oniggnu.h ]; then
       yum clean all
-      "$YUMDNFBIN" -y install oniguruma5php oniguruma5php-devel --enablerepo=remi
+      $YUMDNFBIN -y install oniguruma5php oniguruma5php-devel --enablerepo=remi
       oni_err=$?
       echo "oni_err=$oni_err"
     fi
@@ -740,7 +740,7 @@ fi
 fpmconfdir
 
 # if [[ "$PHP_GD_AVIF" = [yY] ]]; then
-#   "$YUMDNFBIN" -y remove libavif libavif-devel
+#   $YUMDNFBIN -y remove libavif libavif-devel
 #   pushd $DIR_TMP
 #   wget https://github.com/AOMediaCodec/libavif/archive/refs/tags/v1.1.1.tar.gz
 #   popd
@@ -954,7 +954,7 @@ fi
 # key on PHPVER_ID, the PHP being built; PHPMVER is the default PHP_VERSION, not a menu 5 target
 if [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]] && [[ "$PHP_GD_AVIF" = [yY] ]] && [[ "$PHPVER_ID" -ge '80100' ]]; then
   if [[ -z "$(rpm -qa libavif-devel)" ]]; then 
-    "$YUMDNFBIN" -y install libavif-devel
+    $YUMDNFBIN -y install libavif-devel
   fi
   PHP_LIBAVIF_OPT=' --with-avif'
 else
@@ -985,7 +985,7 @@ fi
 if [[ "$CENTOS_SEVEN" -eq '7' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]]; then
   if [[ "$PHPMVER" = 5.5 || "$PHPMUVER" = 5.5 || "$PHPMVER" = 5.6 || "$PHPMUVER" = 5.6 || "$PHPMVER" = 7.0 || "$PHPMUVER" = 7.0 || "$PHPMVER" = 7.1 || "$PHPMUVER" = 7.1 || "$PHPMVER" = 7.2 || "$PHPMUVER" = 7.2 || "$PHPMVER" = 7.3 || "$PHPMUVER" = 7.3 || "$PHPMVER" = 7.4 || "$PHPMUVER" = 7.4 || "$PHPMVER" = 7.5 || "$PHPMUVER" = 7.5 || "$PHPMVER" = 8.0 || "$PHPMUVER" = 8.0 || "$PHPMVER" = 8.1 || "$PHPMUVER" = 8.1 || "$PHPMVER" = 8.2 || "$PHPMUVER" = 8.2 || "$PHPMVER" = 8.3 || "$PHPMUVER" = 8.3 || "$PHPVER_ID" -ge '80000' ]]; then
     if [[ $(rpm -q systemd-devel >/dev/null 2>&1; echo $?) != '0' ]]; then
-      "$YUMDNFBIN" -y install systemd-devel --disableplugin=priorities >/dev/null 2>&1
+      $YUMDNFBIN -y install systemd-devel --disableplugin=priorities >/dev/null 2>&1
     fi
     # without systemd-devel, configure aborts with "Your system does not support systemd"
     # (i.e. the install above failed on unreachable repos); php-fpm.service is Type=forking
