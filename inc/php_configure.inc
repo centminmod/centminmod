@@ -460,44 +460,6 @@ EOF
   fi
 }
 
-# defined at top level: php_imagemagick_seven_detected_libzip() can call it before
-# funct_phpconfigure reaches its nested RPM helper definitions
-install_libzip_rpm() {
-  local el_version="$1"
-  local rpm_url="${LOCALCENTMINMOD_MIRROR}/centminmodparts/rpms/libzip/libzip-custom-${LIBZIP_VER}-1.el${el_version}.x86_64.rpm"
-  local rpm_file="${DIR_TMP}/libzip-custom-${LIBZIP_VER}-1.el${el_version}.x86_64.rpm"
-
-  echo "----------------------------------------------------------------------"
-  echo "Attempting to install libzip ${LIBZIP_VER} from RPM..."
-  echo "URL: $rpm_url"
-  echo "----------------------------------------------------------------------"
-
-  # Download RPM
-  wget${ipv_forceopt_wget} "$rpm_url" -O "$rpm_file" --tries=3
-
-  if [[ -f "$rpm_file" && -s "$rpm_file" ]]; then
-    echo "RPM downloaded successfully, installing..."
-    time $YUMDNFBIN -y install "$rpm_file"
-
-    # Verify installation
-    if rpm -q libzip-custom >/dev/null 2>&1; then
-      echo "----------------------------------------------------------------------"
-      echo "libzip-custom RPM installed successfully"
-      echo "Installation method: RPM (saved ~18-28 seconds vs source compilation)"
-      echo "----------------------------------------------------------------------"
-      rpm -qi libzip-custom
-      echo "----------------------------------------------------------------------"
-      return 0
-    else
-      echo "RPM installation failed verification"
-      return 1
-    fi
-  else
-    echo "RPM download failed or file is empty"
-    return 1
-  fi
-}
-
 php_imagemagick_seven_detected_libzip() {
   # if PHP_IMAGEMAGICK_SEVEN_USE_REMI_LIBZIP='y' use remi-libzip otherwise
   # source compile libzip for PHP 8.1+
@@ -4311,12 +4273,6 @@ if [[ "$PHPMVER" = '7.3' || "$PHPMUVER" = '7.3' || "$PHPMVER" = '7.4' || "$PHPMU
     fi
   fi
 fi
-# a failed remi-libzip-devel install otherwise only shows up at make: the preset
-# LIBZIP_CFLAGS skips PHP configure's pkg-config check for libzip
-if [[ "$LIBZIP_CFLAGS" = *'/opt/remi/libzip/include'* && ! -f /opt/remi/libzip/include/zip.h ]]; then
-  echo "ERROR: /opt/remi/libzip/include/zip.h not found, remi-libzip-devel install failed; installation stopped." >&2
-  { PHPCONFIGURE_ERR=1; return 1; }
-fi
 ########################################################################
 # RPM Installation Helper Functions for PHP Dependencies (EL10)
 # Provides fast RPM-based installation with automatic fallback to source
@@ -4404,6 +4360,42 @@ install_libargon2_rpm() {
       echo "Installation method: RPM (saved ~10-20 seconds vs source compilation)"
       echo "----------------------------------------------------------------------"
       rpm -qi libargon2-custom
+      echo "----------------------------------------------------------------------"
+      return 0
+    else
+      echo "RPM installation failed verification"
+      return 1
+    fi
+  else
+    echo "RPM download failed or file is empty"
+    return 1
+  fi
+}
+
+install_libzip_rpm() {
+  local el_version="$1"
+  local rpm_url="${LOCALCENTMINMOD_MIRROR}/centminmodparts/rpms/libzip/libzip-custom-${LIBZIP_VER}-1.el${el_version}.x86_64.rpm"
+  local rpm_file="${DIR_TMP}/libzip-custom-${LIBZIP_VER}-1.el${el_version}.x86_64.rpm"
+
+  echo "----------------------------------------------------------------------"
+  echo "Attempting to install libzip ${LIBZIP_VER} from RPM..."
+  echo "URL: $rpm_url"
+  echo "----------------------------------------------------------------------"
+
+  # Download RPM
+  wget${ipv_forceopt_wget} "$rpm_url" -O "$rpm_file" --tries=3
+
+  if [[ -f "$rpm_file" && -s "$rpm_file" ]]; then
+    echo "RPM downloaded successfully, installing..."
+    time $YUMDNFBIN -y install "$rpm_file"
+
+    # Verify installation
+    if rpm -q libzip-custom >/dev/null 2>&1; then
+      echo "----------------------------------------------------------------------"
+      echo "libzip-custom RPM installed successfully"
+      echo "Installation method: RPM (saved ~18-28 seconds vs source compilation)"
+      echo "----------------------------------------------------------------------"
+      rpm -qi libzip-custom
       echo "----------------------------------------------------------------------"
       return 0
     else
@@ -4734,6 +4726,13 @@ else
     LIBSODIUM_OPT=""
     LIBZIP_OPT=""
   fi
+fi
+# a missing remi zip.h otherwise only shows up at make: the preset LIBZIP_CFLAGS
+# skips PHP configure's pkg-config check; a system /usr/include/zip.h still builds
+if [[ "$LIBZIP_CFLAGS" = *'/opt/remi/libzip/include'* && ! -f /opt/remi/libzip/include/zip.h && ! -f /usr/include/zip.h ]]; then
+  echo "ERROR: zip.h not found in /opt/remi/libzip/include or /usr/include; installation stopped." >&2
+  echo "ERROR: reinstall it with: yum -y reinstall remi-libzip-devel --enablerepo=remi (use install if not installed)" >&2
+  { PHPCONFIGURE_ERR=1; return 1; }
 fi
 
 # key on PHPVER_ID, the PHP being built; PHPMVER is the default PHP_VERSION, not a menu 5 target
