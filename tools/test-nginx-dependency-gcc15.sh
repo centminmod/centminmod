@@ -119,7 +119,7 @@ done
 # The CVE-2026-111497 guard accepts only fixed brotli releases and fails closed otherwise.
 (
  mkdir -p "$work/local/nginx-dep/bin"
- for case in 1.0.10:0 1.1.1:0 1.2.1:0 1.2.10:0 1.3.0:0 2.0.0:0 1.0.9:1 1.0.11:1 1.1.0:1 1.2.0:1 x.y.z:1 :1; do
+ for case in 1.0.10:0 1.0.11:0 1.1.1:0 1.1.2:0 1.2.1:0 1.2.10:0 1.3.0:0 2.0.0:0 1.0.9:1 1.1.0:1 1.2.0:1 0.6.0:1 x.y.z:1 :1; do
   ver=${case%:*} want=${case##*:}
   printf '#!/bin/sh\necho "brotli %s"\n' "$ver" > "$work/local/nginx-dep/bin/brotli"
   chmod +x "$work/local/nginx-dep/bin/brotli"
