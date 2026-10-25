@@ -1750,6 +1750,20 @@ fi
         bash "${SCRIPT_DIR}/tools/php-libs-versionlock.sh" lock
     fi
 
+    # brotli CVE-2026-111497 stopgap: show what php-fpm loads while the
+    # tools/phpfpm-brotli.sh override is in effect
+    if [ -f /etc/systemd/system/php-fpm.service.d/brotli-source.conf ]; then
+        echo "***************************************************"
+        echo "${SCRIPT_DIR}/tools/phpfpm-brotli.sh status"
+        bash "${SCRIPT_DIR}/tools/phpfpm-brotli.sh" status
+        echo
+        echo "systemctl show -p Environment php-fpm"
+        systemctl show -p Environment php-fpm
+        echo
+        echo "/opt/brotli_php/current/bin/brotli -V"
+        /opt/brotli_php/current/bin/brotli -V
+    fi
+
     if [ -f "$(which figlet)" ]; then
         figlet -ckf standard "PHP Upgraded"
     fi
