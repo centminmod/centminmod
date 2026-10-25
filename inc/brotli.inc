@@ -618,18 +618,23 @@ brdep_update() {
   fi
 }
 
-brotli_version_check() {
+brotli_fixed_version() {
   # CVE-2026-111497 decoder out-of-bounds write is fixed in brotli 1.0.10, 1.1.1, 1.2.1 and later
-  local brotli_ver brotli_major brotli_minor brotli_patch
-  brotli_ver=$(/usr/local/nginx-dep/bin/brotli -V 2>/dev/null | awk '{print $2}')
-  IFS=. read -r brotli_major brotli_minor brotli_patch <<< "$brotli_ver"
-  if [[ "$brotli_major" =~ ^[0-9]+$ && "$brotli_minor" =~ ^[0-9]+$ && "$brotli_patch" =~ ^[0-9]+$ ]]; then
-    if (( brotli_major > 1 || (brotli_major == 1 && (brotli_minor > 2 || (brotli_minor == 2 && brotli_patch >= 1) || (brotli_minor == 1 && brotli_patch >= 1) || (brotli_minor == 0 && brotli_patch >= 10))) )); then
-      echo "brotli $brotli_ver includes the CVE-2026-111497 fix"
-      return 0
-    fi
+  local brotli_major brotli_minor brotli_patch
+  IFS=. read -r brotli_major brotli_minor brotli_patch <<< "$1"
+  [[ "$brotli_major" =~ ^[0-9]+$ && "$brotli_minor" =~ ^[0-9]+$ && "$brotli_patch" =~ ^[0-9]+$ ]] || return 1
+  (( brotli_major > 1 || (brotli_major == 1 && (brotli_minor > 2 || (brotli_minor == 2 && brotli_patch >= 1) || (brotli_minor == 1 && brotli_patch >= 1) || (brotli_minor == 0 && brotli_patch >= 10))) ))
+}
+
+brotli_version_check() {
+  # optional brotli CLI to check, default the nginx-dep build (tools/phpfpm-brotli.sh passes its own)
+  local brotli_bin="${1:-/usr/local/nginx-dep/bin/brotli}" brotli_ver
+  brotli_ver=$("$brotli_bin" -V 2>/dev/null | awk '{print $2}')
+  if brotli_fixed_version "$brotli_ver"; then
+    echo "brotli $brotli_ver includes the CVE-2026-111497 fix"
+    return 0
   fi
-  echo "Error: brotli ${brotli_ver:-unknown} in /usr/local/nginx-dep lacks the CVE-2026-111497 fix (need 1.0.10+, 1.1.1+ or 1.2.1+)"
+  echo "Error: brotli ${brotli_ver:-unknown} in ${brotli_bin%/bin/brotli} lacks the CVE-2026-111497 fix (need 1.0.10+, 1.1.1+ or 1.2.1+)"
   return 1
 }
 

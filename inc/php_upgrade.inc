@@ -1513,7 +1513,15 @@ RestartSec=5s
 TDG
         fi
     fi
+    # brotli CVE-2026-111497 stopgap: refresh or retire the php-fpm brotli
+    # override so the restart below loads it, then confirm it after the restart
+    if [ -f /usr/local/src/centminmod/tools/phpfpm-brotli.sh ]; then
+      PHPFPM_BROTLI_SOURCE="$PHPFPM_BROTLI_SOURCE" bash /usr/local/src/centminmod/tools/phpfpm-brotli.sh prepare
+    fi
     cmservice php-fpm restart
+    if [ -f /usr/local/src/centminmod/tools/phpfpm-brotli.sh ]; then
+      bash /usr/local/src/centminmod/tools/phpfpm-brotli.sh verify
+    fi
     if [ -f /usr/bin/journalctl ]; then
         journalctl -xe -u php-fpm --no-pager | tail -20
     fi
