@@ -21,10 +21,22 @@
 #     hard reset to origin/<branch>. Refuses to reset if stash failed AND
 #     working tree is dirty.
 #
-# EL7 git 1.8.3.1 compatible:
-#   - Uses git stash save -u (legacy syntax), not git stash push.
-#   - Uses git merge-base --is-ancestor (git 1.8.0+).
+# EL6 git 1.7.1 and EL7 git 1.8.3.1 compatible:
+#   - Fetches with an explicit refspec: before git 1.8.4, `git fetch origin
+#     <branch>` only wrote FETCH_HEAD and left origin/<branch> stale. No
+#     --prune: git 1.7.1 then deletes every other origin/* tracking ref.
+#   - Ancestry checks compare git merge-base output instead of using
+#     git merge-base --is-ancestor (git 1.8.0+).
+#   - Uses git stash save -u (legacy syntax), not git stash push. -u needs
+#     git 1.7.7+; when the stash fails, a dirty tree is never hard-reset.
 ######################################################
+
+# True when commit $1 is an ancestor of commit $2.
+_cmm_git_is_ancestor() {
+  local base
+  base=$(git merge-base "$1" "$2" 2>/dev/null) || return 1
+  [ "$base" = "$(git rev-parse "$1")" ]
+}
 
 _cmm_git_sync_impl() {
   local branch="$1"
@@ -43,7 +55,7 @@ _cmm_git_sync_impl() {
   pushd "$workdir" >/dev/null 2>&1 || { echo "git_sync: ERROR — could not enter $workdir"; return 2; }
 
   echo "Checking for updates on origin/$branch ..."
-  if ! git fetch --prune origin "$branch" 2>&1; then
+  if ! git fetch origin "+refs/heads/${branch}:refs/remotes/origin/${branch}" 2>&1; then
     echo "git_sync: ERROR — git fetch failed for origin/$branch (network or auth)"
     popd >/dev/null 2>&1
     return 2
@@ -79,7 +91,7 @@ _cmm_git_sync_impl() {
     return 1
   fi
 
-  if git merge-base --is-ancestor HEAD "origin/$branch" 2>/dev/null; then
+  if _cmm_git_is_ancestor HEAD "origin/$branch"; then
     # ---- FAST-FORWARD CASE ----
     local stash_before stash_after stash_rc
     echo "Fast-forwarding $branch to origin/$branch ..."
@@ -109,7 +121,7 @@ _cmm_git_sync_impl() {
     return 0
   fi
 
-  if git merge-base --is-ancestor "origin/$branch" HEAD 2>/dev/null; then
+  if _cmm_git_is_ancestor "origin/$branch" HEAD; then
     # ---- LOCAL-AHEAD CASE ----
     echo "git_sync: local HEAD is ahead of origin/$branch — refusing to rewind. Skipping update."
     popd >/dev/null 2>&1

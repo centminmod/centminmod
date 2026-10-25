@@ -33,7 +33,7 @@ _cmm_git_sync() {
     return $?
   fi
   cd "$workdir" || return 2
-  git fetch --prune origin "$branch" || return 2
+  git fetch origin "+refs/heads/${branch}:refs/remotes/origin/${branch}" || return 2
   git reset --hard "origin/$branch" || return 2
   chmod +x centmin.sh
   echo "RESULT: SUCCESS (panic-stub) — Centmin Mod synced. Run cmupdate again."
