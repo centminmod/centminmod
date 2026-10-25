@@ -577,17 +577,17 @@ brdep_update() {
 }
 
 brotli_version_check() {
-  # CVE-2026-111497 decoder out-of-bounds write is only fixed in brotli 1.0.10, 1.1.1 and 1.2.1+
+  # CVE-2026-111497 decoder out-of-bounds write is fixed in brotli 1.0.10, 1.1.1, 1.2.1 and later
   local brotli_ver brotli_major brotli_minor brotli_patch
   brotli_ver=$(/usr/local/nginx-dep/bin/brotli -V 2>/dev/null | awk '{print $2}')
   IFS=. read -r brotli_major brotli_minor brotli_patch <<< "$brotli_ver"
   if [[ "$brotli_major" =~ ^[0-9]+$ && "$brotli_minor" =~ ^[0-9]+$ && "$brotli_patch" =~ ^[0-9]+$ ]]; then
-    if [[ "$brotli_ver" = '1.0.10' || "$brotli_ver" = '1.1.1' ]] || (( brotli_major > 1 || (brotli_major == 1 && brotli_minor > 2) || (brotli_major == 1 && brotli_minor == 2 && brotli_patch >= 1) )); then
+    if (( brotli_major > 1 || (brotli_major == 1 && (brotli_minor > 2 || (brotli_minor == 2 && brotli_patch >= 1) || (brotli_minor == 1 && brotli_patch >= 1) || (brotli_minor == 0 && brotli_patch >= 10))) )); then
       echo "brotli $brotli_ver includes the CVE-2026-111497 fix"
       return 0
     fi
   fi
-  echo "Error: brotli ${brotli_ver:-unknown} in /usr/local/nginx-dep lacks the CVE-2026-111497 fix (need 1.0.10, 1.1.1 or 1.2.1+)"
+  echo "Error: brotli ${brotli_ver:-unknown} in /usr/local/nginx-dep lacks the CVE-2026-111497 fix (need 1.0.10+, 1.1.1+ or 1.2.1+)"
   return 1
 }
 
