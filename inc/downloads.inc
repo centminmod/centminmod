@@ -1,5 +1,9 @@
 checksec_check(){
-  if [[ ! -f /usr/local/bin/checksec || ! -f "${DIR_TMP}/checksec-${CHECKSEC_VERSION}.tar.gz" ]]; then
+  # reinstall unless /usr/local/bin/checksec is the pinned 3.x release: 140.00beta01 and
+  # 132.00stable install the bash checksec.sh 2.6.0 there, which rejects the 3.x options used here
+  local checksec_installed
+  checksec_installed=$(/usr/local/bin/checksec --version 2>/dev/null)
+  if [[ "$checksec_installed" != *"checksec version ${CHECKSEC_VERSION} "* || ! -f "${DIR_TMP}/checksec-${CHECKSEC_VERSION}.tar.gz" ]]; then
     echo
     pushd "$DIR_TMP"
     wget -q -L "https://github.com/slimm609/checksec/releases/download/${CHECKSEC_VERSION}/checksec_${CHECKSEC_VERSION}_linux_amd64.tar.gz" -O "checksec-${CHECKSEC_VERSION}.tar.gz"
