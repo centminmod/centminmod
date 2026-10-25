@@ -13,8 +13,23 @@
 #   tools/php-source-patch.sh --src /path/to/php-8.1.34
 #   tools/php-source-patch.sh --src DIR --dry-run
 #   tools/php-source-patch.sh --list --version 7.4.33 --os el8
+#   tools/php-source-patch.sh --src php-8.1.34.tar.xz --tarball /srv/dist/
 #   options:
-#     --src DIR          PHP source tree; main/php_version.h gives the version
+#     --src DIR|TARBALL  PHP source tree, or a php.net style .tar.gz/.tar.xz/
+#                        .tar.bz2 (patched in a scratch copy, so it needs
+#                        --tarball, --list or --dry-run); main/php_version.h
+#                        gives the version
+#     --tarball OUT      patch a copy of the source and pack it like php.net:
+#                        top directory php-X.Y.Z, OUT.sha256 beside it and the
+#                        record inside as php-X.Y.Z/.php-source-patch/record.tsv.
+#                        OUT ends in .tar.gz, .tgz or .tar.xz; a directory gets
+#                        php-X.Y.Z-centmin-<commit>.tar.xz. No tarball when a
+#                        patch fails (the record goes to OUT.record.tsv); the
+#                        source given to --src is not changed. Left out: .git,
+#                        Centmin Mod's copied top-level *.patch files and the
+#                        backups patching made; owners 0/0, nothing group or
+#                        world writable. Refused: a configured tree, symlinks
+#                        that point outside the tree, OUT in or as the input
 #     --version X.Y.Z    PHP version (must match the tree when --src is given)
 #     --patch-dir DIR    patches/php of a Centmin Mod checkout or release bundle
 #                        (default: the checkout or bundle this script is in)
@@ -35,7 +50,8 @@
 #                        regenerate FILE and fail (exit 3) when it differs
 #     --make-bundle DIR  write a release bundle from a Centmin Mod checkout
 #     --self-test        run the built-in tests
-#   environment: PATCH=gpatch selects the GNU patch binary. Patches with git
+#   environment: PATCH=gpatch selects the GNU patch binary, TAR=gtar the GNU
+#   tar binary (--tarball needs GNU tar). Patches with git
 #   renames need GNU patch 2.7 or newer; CentOS 6 ships 2.6, which stops at
 #   php80-cve-2025-1219 and leaves renamed 7.2/7.4 test files at old names
 #
@@ -205,6 +221,14 @@ trace_driver() {
 ###########################################################
 # helpers
 die() { echo "php-source-patch: $*" >&2; exit 2; }
+
+# EXIT trap: tarball temp files beside OUT, then the scratch dir (chmod first: a
+# tree with read-only directories would otherwise survive rm -rf)
+cleanup() {
+  [ -z "${TB_TMP:-}" ] || rm -f "$TB_TMP"
+  [ -z "${TB_SHA_TMP:-}" ] || rm -f "$TB_SHA_TMP"
+  [ -n "${PSP_KEEP_TMP:-}" ] || [ -z "${W:-}" ] || { chmod -R u+rwX "$W" 2>/dev/null; rm -rf "$W"; }
+}
 
 sha256_of() {  # FILE... -> "sha  file" lines
   if command -v sha256sum >/dev/null 2>&1; then sha256sum -- "$@"
@@ -723,7 +747,13 @@ write_record() {  # result
     printf '# php-source-patch record 1\n'
     printf '# tool\tphp-source-patch.sh %s\n# mode\t%s\n# started\t%s\n# finished\t%s\n# result\t%s\n' \
       "$PSP_VERSION" "$RUNMODE" "$STARTED" "$(date -u +%Y-%m-%dT%H:%M:%SZ)" "$1"
-    printf '# src\t%s\n# php_version\t%s\n# php_version_id\t%s\n# os\t%s\n# options\t%s\n' "$SRC" "$VER" "$ID" "$OS" "$OPTSTR"
+    if [ -n "$TB_OUT" ]; then
+      # this record ships inside the tarball: names only, no local paths
+      printf '# src\tphp-%s\n# input\t%s\n# tarball\t%s\n' "$TBVER" "${INPUT##*/}" "${TB_OUT##*/}"
+    else
+      printf '# src\t%s\n' "$SRC"
+    fi
+    printf '# php_version\t%s\n# php_version_id\t%s\n# os\t%s\n# options\t%s\n' "$VER" "$ID" "$OS" "$OPTSTR"
     printf '# data\t%s\n# inc_sha256\t%s\n# patch\t%s\n' "$DATA_DESC" "$INC_SHA" "$PATCH_DESC"
     [ -n "$TOUCHED" ] && printf '# touched\t%s\n' "$TOUCHED"
     printf 'seq\tstatus\tbugid\tfile\tsha256\tline\tdetail\n'
@@ -795,10 +825,10 @@ make_bundle() {  # dir
   mkdir -p "$out/tools" "$out/inc" "$out/patches" || die "cannot create $out"
   cp -p "$SELF" "$out/tools/php-source-patch.sh" && cp -p "$INC" "$out/inc/php_patch.inc" && cp -Rp "$PDIR" "$out/patches/php" || die "copy failed"
   find "$out" -name .DS_Store -exec rm -f {} + 2>/dev/null
-  if command -v git >/dev/null 2>&1 && git -C "$CUR_DIR" rev-parse HEAD >/dev/null 2>&1; then
-    rev=$(git -C "$CUR_DIR" rev-parse HEAD)
-    branch=$(git -C "$CUR_DIR" rev-parse --abbrev-ref HEAD)
-    [ -n "$(git -C "$CUR_DIR" status --porcelain -- inc/php_patch.inc patches/php tools/php-source-patch.sh)" ] && rev="$rev-dirty"
+  if [ -n "$(git_rev)" ]; then
+    rev=$(cd "$CUR_DIR" && git rev-parse HEAD)
+    branch=$(cd "$CUR_DIR" && git rev-parse --abbrev-ref HEAD)
+    [ -n "$(cd "$CUR_DIR" && git status --porcelain -- inc/php_patch.inc patches/php tools/php-source-patch.sh)" ] && rev="$rev-dirty"
   fi
   {
     printf 'php-source-patch bundle 1\ntool %s\nsource centminmod %s %s\ncreated %s\n' "$PSP_VERSION" "$branch" "$rev" "$(date -u +%Y-%m-%dT%H:%M:%SZ)"
@@ -821,6 +851,66 @@ verify_bundle() {
   [ -z "$bad" ] || die "bundle $CUR_DIR checksum mismatch: $bad"
   bad=$(cd "$CUR_DIR" && find tools inc patches -type f | sed 's|^\./||' | awk 'NR == FNR { ok[$2]; next } !($0 in ok)' SHA256SUMS -)
   [ -z "$bad" ] || die "bundle $CUR_DIR has files not in SHA256SUMS: $bad"
+}
+
+###########################################################
+# patched source tarball, packed like a php.net release
+tarball_target() {  # sets TB_OUT and TB_FMT from --tarball, before any patching
+  local out=$TARBALL rev='' d
+  if [ -d "$out" ]; then
+    case $DATAMODE in
+      centmin)
+        rev=$(git_rev)
+        [ -n "$rev" ] && [ -n "$(cd "$CUR_DIR" && git status --porcelain -- inc/php_patch.inc patches/php tools/php-source-patch.sh 2>/dev/null)" ] && rev="$rev-dirty" ;;
+      bundle) rev=$(awk '$1 == "source" { print substr($4, 1, 8) ($4 ~ /-dirty$/ ? "-dirty" : "") }' "$CUR_DIR/BUNDLE") ;;
+    esac
+    out=$out/php-$TBVER-centmin-${rev:-local}.tar.xz
+  fi
+  case $out in
+    *.tar.gz|*.tgz) TB_FMT=gzip ;;
+    *.tar.xz) TB_FMT=xz ;;
+    *) die "--tarball must end in .tar.gz, .tgz or .tar.xz, or be a directory" ;;
+  esac
+  command -v "$TB_FMT" >/dev/null 2>&1 || die "--tarball $out needs $TB_FMT"
+  d=$(cd "$(dirname "$out")" 2>/dev/null && pwd -P) || die "no directory for $out"
+  TB_OUT=$d/${out##*/}
+  # the outputs must not replace the input, land inside a source tree that is
+  # copied into them, or collide with the --record copy
+  [ ! -e "$TB_OUT" ] || [ ! "$TB_OUT" -ef "$INPUT" ] || die "--tarball $TB_OUT is the input"
+  case $TB_OUT in "$SRC"/*) die "--tarball must be outside the source tree $SRC" ;; esac
+  case $RECORD in "$TB_OUT"|"$TB_OUT.sha256") die "--record must not be the tarball or its .sha256" ;; esac
+}
+
+gnu_tar() { $TAR --version 2>/dev/null | head -1 | grep -q 'GNU tar'; }
+
+# commit of the checkout this script runs from; cd, not git -C (git 1.8.5+, newer
+# than CentOS 6 and 7 ship)
+git_rev() {
+  command -v git >/dev/null 2>&1 || return 0
+  (cd "$CUR_DIR" && git rev-parse --short=8 HEAD 2>/dev/null) || true
+}
+
+make_tarball() {
+  local top=php-$TBVER name=${TB_OUT##*/} sha mode
+  # mktemp temp files beside OUT (no symlink games in a shared directory); cleanup()
+  # removes them on any exit, and OUT plus its .sha256 replace the old ones last
+  TB_TMP=$(mktemp "$TB_OUT.tmp.XXXXXX") && TB_SHA_TMP=$(mktemp "$TB_OUT.sha256.tmp.XXXXXX") ||
+    die "cannot create a temporary file beside $TB_OUT"
+  # pipefail: a tar error must not hide behind a successful compressor. Modes as a
+  # release ships them: readable, not group/world writable, no setuid/setgid/sticky
+  (set -o pipefail; cd "$W/out" &&
+    $TAR --owner=0 --group=0 --numeric-owner --mode='u+rw,go+rX,go-w,a-st' \
+      --exclude="$top/.php-source-patch/patch.log" -cf - "$top" |
+    if [ "$TB_FMT" = xz ]; then xz -c; else gzip -9 -n -c; fi > "$TB_TMP") || die "could not write $TB_OUT"
+  sha=$(sha256_of "$TB_TMP" | awk '{ print $1 }')
+  { [ -n "$sha" ] && printf '%s  %s\n' "$sha" "$name" > "$TB_SHA_TMP"; } || die "could not write $TB_OUT.sha256"
+  # mktemp makes 0600 files; give them the modes a plain redirect would have
+  mode=$(printf '%o' $(( 0666 & ~0$(umask) )))
+  chmod "$mode" "$TB_TMP" "$TB_SHA_TMP" &&
+    mv -f "$TB_TMP" "$TB_OUT" && mv -f "$TB_SHA_TMP" "$TB_OUT.sha256" || die "could not write $TB_OUT"
+  TB_TMP='' TB_SHA_TMP=''
+  echo "tarball: $TB_OUT"
+  echo "sha256: $sha  ($name.sha256)"
 }
 
 ###########################################################
@@ -1000,6 +1090,75 @@ EOF
   out=$("${me[@]}" --src "$t/o" --inc "$t/bad3.inc" --os el8 --set FPM_WAKEUP_PATCH=y --list 2>&1); rc=$?
   ok 'unknown patch option (-o FILE) in php_patches(): exit 2' [ "$rc" = 2 ]
   ok '... and names it' has 'patch options this script does not support: -p1 -o out.c'
+  # --tarball: patched copy packed like php.net, the input left alone
+  if ! gnu_tar; then
+    echo "  skip tarball tests: --tarball needs GNU tar (set TAR=gtar)"
+    echo "self-test: $pass passed, $fail failed"
+    [ "$fail" = 0 ]
+    return
+  fi
+  st_tree "$t/tb" 9.9.1
+  : > "$t/tb/php99-a1.patch"
+  sha256_of "$t/tb/src/a.c" "$t/tb/NEWS" > "$t/tb.before"
+  mkdir -p "$t/dist" "$t/x"
+  out=$("${me[@]}" --src "$t/tb" --tarball "$t/dist/php-9.9.1-test.tar.gz" 2>&1); rc=$?
+  ok 'tarball: exit 0' [ "$rc" = 0 ]
+  sha256_of "$t/tb/src/a.c" "$t/tb/NEWS" > "$t/tb.after"
+  ok 'tarball: input tree unchanged' cmp -s "$t/tb.before" "$t/tb.after"
+  ok 'tarball: no record in the input tree' [ ! -e "$t/tb/.php-source-patch" ]
+  got=$(cd "$t/dist" && sha256_of php-9.9.1-test.tar.gz)
+  ok 'tarball: .sha256 matches' [ "$got" = "$(cat "$t/dist/php-9.9.1-test.tar.gz.sha256")" ]
+  got=$($TAR tzf "$t/dist/php-9.9.1-test.tar.gz" | awk '{ sub(/^\.\//, "") } !/^php-9\.9\.1(\/|$)/ { bad++ } END { print bad + 0 }')
+  ok 'tarball: one top directory php-9.9.1' [ "$got" = 0 ]
+  (cd "$t/x" && $TAR xzf "$t/dist/php-9.9.1-test.tar.gz")
+  ok 'tarball: contents patched' grep -q 'int x2 = 1' "$t/x/php-9.9.1/--dash.c"
+  ok 'tarball: record inside' grep -q '^# tarball	php-9.9.1-test.tar.gz' "$t/x/php-9.9.1/.php-source-patch/record.tsv"
+  ok 'tarball: no patch.log, copied patch files or .orig inside' [ -z "$(cd "$t/x/php-9.9.1" && ls .php-source-patch/patch.log *.patch 2>/dev/null; find . -name '*.orig')" ]
+  rm -rf "$t/tin"; mkdir -p "$t/tin/php-9.9.1"; st_tree "$t/tin/php-9.9.1" 9.9.1
+  (cd "$t/tin" && $TAR czf "$t/php-9.9.1.tar.gz" php-9.9.1)
+  out=$("${me[@]}" --src "$t/php-9.9.1.tar.gz" --tarball "$t/dist/from-tarball.tar.gz" 2>&1); rc=$?
+  rm -rf "$t/x"; mkdir -p "$t/x"; (cd "$t/x" && $TAR xzf "$t/dist/from-tarball.tar.gz")
+  ok 'tarball from a tarball: patched' grep -q 'int a1 = 1' "$t/x/php-9.9.1/src/a.c"
+  if command -v xz >/dev/null 2>&1; then
+    out=$("${me[@]}" --src "$t/php-9.9.1.tar.gz" --tarball "$t/dist" 2>&1); rc=$?
+    ok 'tarball into a directory: php-9.9.1-centmin-<rev>.tar.xz' [ "$rc" = 0 -a -f "$t/dist/php-9.9.1-centmin-local.tar.xz" ]
+  fi
+  out=$("${me[@]}" --src "$t/php-9.9.1.tar.gz" 2>&1); rc=$?
+  ok 'tarball --src without --tarball: exit 2' [ "$rc" = 2 ]
+  st_tree "$t/tf" 9.9.1
+  printf 'int d1 = 0;\nint dX = 0;\nint d3 = 0;\n' > "$t/tf/src/d.c"
+  out=$("${me[@]}" --src "$t/tf" --tarball "$t/dist/fail.tar.gz" 2>&1); rc=$?
+  ok 'tarball with a failed patch: exit 1, no tarball' [ "$rc" = 1 -a ! -e "$t/dist/fail.tar.gz" ]
+  ok '... record kept beside it' grep -q '^# result	failed' "$t/dist/fail.tar.gz.record.tsv"
+  : > "$t/tf/config.status"
+  out=$("${me[@]}" --src "$t/tf" --tarball "$t/dist/conf.tar.gz" 2>&1); rc=$?
+  ok 'tarball of a configured tree: exit 2' [ "$rc" = 2 ]
+  # input tricks: a symlinked record dir, .git, world-writable files
+  st_tree "$t/tv" 9.9.1
+  mkdir -p "$t/victim" "$t/tv/.git"; ln -s "$t/victim" "$t/tv/.php-source-patch"
+  : > "$t/tv/.git/config"; chmod 0666 "$t/tv/src/e.c"
+  out=$("${me[@]}" --src "$t/tv" --tarball "$t/dist/tv.tar.gz" --record "$t/new/dir/tv.tsv" 2>&1); rc=$?
+  ok 'tarball: exit 0 with a symlinked .php-source-patch' [ "$rc" = 0 ]
+  ok '... which gets no writes' [ -z "$(ls -A "$t/victim")" ]
+  ok 'tarball: --record in a new directory' grep -q '^# result	ok' "$t/new/dir/tv.tsv"
+  got=$($TAR tvzf "$t/dist/tv.tar.gz")
+  ok 'tarball: no .git inside' [ -z "$(printf '%s\n' "$got" | grep '/\.git')" ]
+  ok 'tarball: nothing group or world writable' [ -z "$(printf '%s\n' "$got" | awk '$1 ~ /^.....w/ || $1 ~ /^........w/')" ]
+  out=$(cd "$t/dist" && "${me[@]}" --src "$t/tb" --tarball ./rel.tar.gz --record ./rel.tar.gz.record.tsv 2>&1); rc=$?
+  ok 'tarball: a relative --record naming OUT.record.tsv is kept' [ "$rc" = 0 -a -s "$t/dist/rel.tar.gz.record.tsv" ]
+  # outputs that would overwrite or land in the input
+  cp -p "$t/php-9.9.1.tar.gz" "$t/same.tar.gz"
+  out=$("${me[@]}" --src "$t/same.tar.gz" --tarball "$t/same.tar.gz" 2>&1); rc=$?
+  ok 'tarball: OUT that is the input: exit 2' [ "$rc" = 2 ]
+  ok '... input unchanged' cmp -s "$t/php-9.9.1.tar.gz" "$t/same.tar.gz"
+  out=$("${me[@]}" --src "$t/tb" --tarball "$t/tb/inside.tar.gz" 2>&1); rc=$?
+  ok 'tarball: OUT inside a directory input: exit 2' [ "$rc" = 2 -a ! -e "$t/tb/inside.tar.gz" ]
+  st_tree "$t/tl" 9.9.1; ln -s /etc "$t/tl/src/etc"
+  out=$("${me[@]}" --src "$t/tl" --tarball "$t/dist/tl.tar.gz" 2>&1); rc=$?
+  ok 'tarball: a symlink out of the tree: exit 2' [ "$rc" = 2 ]
+  ok '... and names it' has 'points outside the tree: src/etc'
+  out=$("${me[@]}" --src "$t/tb" --tarball "$t/dist/l.tar.gz" --list 2>&1); rc=$?
+  ok 'tarball with --list: exit 2' [ "$rc" = 2 ]
   echo "self-test: $pass passed, $fail failed"
   [ "$fail" = 0 ]
 }
@@ -1010,9 +1169,11 @@ main() {
   local a sv='' vers=$PSP_EOL_VERSIONS action=apply cm='' bundle='' i n o
   SELF=$(cd "$(dirname "$0")" && pwd -P)/$(basename "$0")
   SRC='' PDIR='' INC='' OS='' RECORD='' LOG='' VERBOSE=n OPTSTR='' OPTSRC='' SETS='' SEL_N=0 SKIP_N=0 TOUCHED=''
+  TARBALL='' TB_OUT='' TB_FMT='' INPUT='' TBVER=''
   while [ $# -gt 0 ]; do
     case $1 in
-      --src) SRC=${2:?--src needs a directory}; shift 2 ;;
+      --src) SRC=${2:?--src needs a directory or tarball}; shift 2 ;;
+      --tarball) TARBALL=${2:?--tarball needs FILE.tar.gz, FILE.tar.xz or a directory}; shift 2 ;;
       --version) sv=${2:?--version needs X.Y.Z}; shift 2 ;;
       --patch-dir) PDIR=${2:?--patch-dir needs a directory}; shift 2 ;;
       --inc) INC=${2:?--inc needs a file}; shift 2 ;;
@@ -1032,12 +1193,22 @@ main() {
     esac
   done
   [ "${BASH_VERSINFO[0]}" -ge 4 ] || die "needs bash 4.1 or newer"
+  [ -z "$TARBALL" ] || [ "$action" = apply ] || die "--tarball cannot be combined with --$action"
 
   W=$(mktemp -d "${TMPDIR:-/tmp}/php-source-patch.XXXXXX") || die "mktemp failed"
-  [ -n "${PSP_KEEP_TMP:-}" ] || trap 'rm -rf "$W"' EXIT
+  case $W in *$'\n'*) die "TMPDIR must not contain a newline" ;; esac
+  TB_TMP='' TB_SHA_TMP=''
+  trap cleanup EXIT
+  trap 'exit 129' HUP; trap 'exit 130' INT; trap 'exit 143' TERM
 
   PATCH=${PATCH:-}
   if [ -z "$PATCH" ]; then command -v gpatch >/dev/null 2>&1 && PATCH='gpatch' || PATCH='patch'; fi
+  TAR=${TAR:-}
+  if [ -z "$TAR" ]; then command -v gtar >/dev/null 2>&1 && TAR='gtar' || TAR='tar'; fi
+  # GNU tar keeps names as bytes; macOS bsdtar writes decomposed (NFD) pax names
+  # for non-ASCII files, which then no longer match the names PHP's tests use
+  [ -z "$TARBALL" ] || gnu_tar || die "--tarball needs GNU tar (gtar or tar); found: $($TAR --version 2>/dev/null | head -1)"
+  case $RECORD in ''|/*) ;; *) RECORD=$PWD/$RECORD ;; esac
   PATCH_DESC=$($PATCH --version 2>/dev/null | head -1)
   case $PATCH_DESC in 'GNU patch'*|'patch 2.'*) ;; *) die "GNU patch is required (found: ${PATCH_DESC:-no $PATCH}); set PATCH=" ;; esac
 
@@ -1068,7 +1239,7 @@ main() {
   INC_SHA=$(sha256_of "$INC" | awk '{ print $1 }')
   case $DATAMODE in
     centmin) DATA_DESC="centmin $CUR_DIR"
-             command -v git >/dev/null 2>&1 && a=$(git -C "$CUR_DIR" rev-parse --short HEAD 2>/dev/null) && DATA_DESC="$DATA_DESC (git $a)" ;;
+             a=$(git_rev); [ -n "$a" ] && DATA_DESC="$DATA_DESC (git $a)" ;;
     bundle) DATA_DESC="bundle $CUR_DIR ($(awk '$1 == "source" { print $2, $3, $4 }' "$CUR_DIR/BUNDLE"))" ;;
     *) DATA_DESC="patches $PDIR, inc $INC" ;;
   esac
@@ -1095,16 +1266,57 @@ main() {
   esac
 
   # what to patch
-  local mode=fake
+  local mode=fake user_record='' from_tarball=n
+  local -a top=()
   if [ -n "$SRC" ]; then
+    if [ -f "$SRC" ]; then
+      # a php.net style tarball: extract it into scratch and work on that copy
+      [ "$action" != apply ] || [ -n "$TARBALL" ] || die "a tarball --src needs --tarball OUT, --list or --dry-run"
+      INPUT=$(cd "$(dirname "$SRC")" 2>/dev/null && pwd -P)/$(basename "$SRC")
+      mkdir -p "$W/in" && (cd "$W/in" && $TAR --no-same-owner -xf "$INPUT") || die "cannot extract $INPUT"
+      shopt -s dotglob nullglob; top=("$W/in"/*); shopt -u dotglob nullglob
+      [ ${#top[@]} -eq 1 ] && [ -d "${top[0]}" ] && [ ! -h "${top[0]}" ] || die "$INPUT does not hold exactly one top-level directory"
+      SRC=${top[0]} from_tarball=y
+    fi
     SRC=$(cd "$SRC" 2>/dev/null && pwd -P) || die "no source tree"
-    [ -f "$SRC/main/php_version.h" ] || die "$SRC has no main/php_version.h"
+    [ -n "$INPUT" ] || INPUT=$SRC
+    [ -f "$SRC/main/php_version.h" ] || die "$INPUT has no main/php_version.h"
     VER=$(awk '$1 == "#define" && $2 == "PHP_VERSION" { gsub(/"/, "", $3); print $3; exit }' "$SRC/main/php_version.h")
+    # php.net names RC and dev trees by the full version: php-8.4.0RC1
+    TBVER=$VER
+    case $TBVER in ''|*[!A-Za-z0-9.+~-]*) TBVER=${VER%%[!0-9.]*} ;; esac
     VER=${VER%%[!0-9.]*}
     ID=$(awk '/PHP_VERSION_ID/ { print $3; exit }' "$SRC/main/php_version.h")
     [ -n "$ID" ] || ID=$(echo "$VER" | awk -F. '{ printf "%d", $1 * 10000 + $2 * 100 + $3 }')
-    [ -z "$sv" ] || [ "$sv" = "$VER" ] || die "--version $sv does not match $SRC (PHP $VER)"
+    [ -z "$sv" ] || [ "$sv" = "$VER" ] || die "--version $sv does not match $INPUT (PHP $VER)"
     mode=tree
+    if [ -n "$TARBALL" ]; then
+      case $VER in [0-9]*.[0-9]*.[0-9]*) ;; *) die "cannot read a PHP version X.Y.Z (got '$VER')" ;; esac
+      tarball_target
+      # a configured or built tree would put objects and Makefiles in the "source" tarball
+      [ ! -e "$SRC/config.status" ] || die "$INPUT has been configured (config.status); use the php.net tarball or a clean tree"
+      mkdir -p "$W/out" || die "cannot create $W/out"
+      if [ "$from_tarball" = y ]; then
+        mv "$SRC" "$W/out/php-$TBVER" || die "cannot move the extracted tree"
+      else
+        cp -Rp "$SRC" "$W/out/php-$TBVER" || die "cannot copy $SRC"
+      fi
+      SRC=$W/out/php-$TBVER
+      # not part of a release: the patch files Centmin Mod copies into the top of its
+      # build trees, a git checkout's .git (its config can hold credentials) and an
+      # earlier run's record dir, which as a symlink would carry this run's writes
+      for a in "$SRC"/*.patch; do [ -f "$a" ] && rm -f "$a" && echo "note: left out ${a##*/} (a copied Centmin Mod patch file)"; done
+      [ ! -e "$SRC/.git" ] || { rm -rf "$SRC/.git"; echo "note: left out .git"; }
+      rm -rf "$SRC/.php-source-patch"
+      # a symlink that leaves the tree would let patching or packing reach outside it
+      a=$(find "$SRC" -type l | while IFS= read -r a; do
+            case $(readlink "$a") in /*|..|../*|*/..|*/../*) printf '%s\n' "${a#"$SRC"/}"; break ;; esac
+          done)
+      [ -z "$a" ] || die "$INPUT has a symlink that points outside the tree: $a"
+      [ -f "$SRC/configure" ] || echo "note: no configure script; a git checkout needs ./buildconf before ./configure"
+      find "$SRC" \( -name '*.orig' -o -name '*.rej' \) -type f | LC_ALL=C sort > "$W/out.before"
+      user_record=$RECORD RECORD=''
+    fi
   elif [ "$action" = list ] && [ -n "$sv" ]; then
     VER=$sv
     ID=$(echo "$VER" | awk -F. '{ printf "%d", $1 * 10000 + $2 * 100 + $3 }')
@@ -1144,7 +1356,7 @@ main() {
     mkdir -p "$(dirname "$RECORD")" && : > "$LOG" || die "cannot write $RECORD"
   fi
 
-  echo "php-source-patch $PSP_VERSION: PHP $VER ($ID) in $SRC  os=$OS  $OPTSTR"
+  echo "php-source-patch $PSP_VERSION: PHP $VER ($ID) in ${INPUT:-$SRC}${TB_OUT:+ -> ${TB_OUT##*/}}  os=$OS  $OPTSTR"
   echo "data: $DATA_DESC"
   local result=ok counts gap=n
   detect_applied || die "scratch copy failed"
@@ -1178,6 +1390,28 @@ main() {
   write_record "$result"
   counts=$(for ((i = 0; i < SEL_N; i++)); do [ "${SEL_TYPE[i]}" = T ] || echo "${SEL_STATUS[i]:-not-run}"; done | sort | uniq -c | awk '{ printf "%s%s %s", sep, $1, $2; sep = ", " }')
   echo "$([ "$action" = dry-run ] && echo 'dry-run: ')$n patches selected: ${counts:-none}"
+  if [ -n "$TB_OUT" ]; then
+    [ -s "$RECORD" ] || die "the record was not written ($RECORD)"
+    if [ "$result" != ok ]; then
+      # the scratch copy goes away, so keep its record beside the tarball it would have made
+      a=${user_record:-$TB_OUT.record.tsv}
+      { mkdir -p "$(dirname "$a")" && cp -p "$RECORD" "$a"; } || { echo "no tarball written: a patch failed; could not save the record to $a" >&2; exit 1; }
+      echo "no tarball written: a patch failed; record: $a"
+      [ ! -e "$TB_OUT" ] || echo "note: $TB_OUT is from an earlier run and was left as it is"
+      exit 1
+    fi
+    if [ -n "$user_record" ]; then
+      { mkdir -p "$(dirname "$user_record")" && cp -p "$RECORD" "$user_record"; } || die "could not write $user_record"
+      echo "record: $user_record"
+    fi
+    # an earlier failed run's record, unless --record names that same file
+    [ -n "$user_record" ] && [ "$user_record" -ef "$TB_OUT.record.tsv" ] || rm -f "$TB_OUT.record.tsv"
+    # backups GNU patch made of fuzzed files are not part of the source
+    find "$SRC" \( -name '*.orig' -o -name '*.rej' \) -type f | LC_ALL=C sort | comm -13 "$W/out.before" - | while IFS= read -r a; do rm -f "$a"; done
+    make_tarball
+    echo "record: php-$TBVER/.php-source-patch/record.tsv inside the tarball"
+    exit 0
+  fi
   [ -n "$RECORD" ] && echo "record: $RECORD"
   [ "$result" = ok ] || exit 1
   exit 0
