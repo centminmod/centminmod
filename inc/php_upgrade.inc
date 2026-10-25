@@ -1961,6 +1961,20 @@ fi
     # the new PHP is already live, so a lock failure only warns
     php_libs_lock_warn
 
+    # brotli CVE-2026-111497 stopgap: show what php-fpm loads while the
+    # tools/phpfpm-brotli.sh override is in effect
+    if [ -f /etc/systemd/system/php-fpm.service.d/brotli-source.conf ]; then
+        echo "***************************************************"
+        echo "${SCRIPT_DIR}/tools/phpfpm-brotli.sh status"
+        bash "${SCRIPT_DIR}/tools/phpfpm-brotli.sh" status
+        echo
+        echo "systemctl show -p Environment php-fpm"
+        systemctl show -p Environment php-fpm
+        echo
+        echo "/opt/brotli_php/current/bin/brotli -V"
+        /opt/brotli_php/current/bin/brotli -V
+    fi
+
     if command -v figlet >/dev/null 2>&1; then
         figlet -ckf standard "PHP Upgraded"
     fi
