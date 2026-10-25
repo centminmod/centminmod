@@ -454,7 +454,7 @@ php_imagemagick_seven_detected_libzip() {
   # source compile libzip for PHP 8.1+
   if [[ "$PHP_IMAGEMAGICK_SEVEN_USE_REMI_LIBZIP" = [yY] ]]; then
     if ! rpm -qa | grep -qw remi-libzip-devel; then
-      "$YUMDNFBIN" -y install remi-libzip remi-libzip-devel --enablerepo=remi
+      "$YUMDNFBIN" -y install remi-libzip-devel --enablerepo=remi
     fi
     export LIBZIP_CFLAGS='-I/opt/remi/libzip/include'
     export LIBZIP_LIBS="-L/opt/remi/libzip/lib64 -lzip"
@@ -3883,7 +3883,9 @@ if [[ "$PHPMVER" = '7.3' || "$PHPMUVER" = '7.3' || "$PHPMVER" = '7.4' || "$PHPMU
   if [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]] && [[ "$IMAGEMAGICK_SEVEN" != [yY] ]]; then
     PHP_LIBZIP='n'
     if ! rpm -qa | grep -qw remi-libzip-devel; then
-      yum -y install remi-libzip remi-libzip-devel --enablerepo=remi
+      # -devel requires its exact remi-libzip build; naming remi-libzip too lets a
+      # newer remi-safe build conflict with a lagging remi mirror's -devel
+      yum -y install remi-libzip-devel --enablerepo=remi
     fi
     export LIBZIP_CFLAGS='-I/opt/remi/libzip/include'
     export LIBZIP_LIBS="-L/opt/remi/libzip/lib64 -lzip"
@@ -3908,6 +3910,12 @@ if [[ "$PHPMVER" = '7.3' || "$PHPMUVER" = '7.3' || "$PHPMVER" = '7.4' || "$PHPMU
       echo "Custom OpenSSL rpath added for CentOS 7: ${OPENSSL_CUSTOMPATH}/lib"
     fi
   fi
+fi
+# a failed remi-libzip-devel install otherwise only shows up at make: the preset
+# LIBZIP_CFLAGS skips PHP configure's pkg-config check for libzip
+if [[ "$LIBZIP_CFLAGS" = *'/opt/remi/libzip/include'* && ! -f /opt/remi/libzip/include/zip.h ]]; then
+  echo "ERROR: /opt/remi/libzip/include/zip.h not found, remi-libzip-devel install failed; installation stopped." >&2
+  { PHPCONFIGURE_ERR=1; return 1; }
 fi
 if [[ "$PHP_ARGON" = [yY] ]]; then
   # alias for PHP 7.2 argon support
