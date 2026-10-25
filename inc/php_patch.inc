@@ -1035,7 +1035,7 @@ php_patches() {
     dos2unix reduce-fpm-event-wakeups.patch || { patch_status=$?; rm -f reduce-fpm-event-wakeups.patch; exit "$patch_status"; }
     patch -p1 < reduce-fpm-event-wakeups.patch || { patch_status=$?; rm -f reduce-fpm-event-wakeups.patch; exit "$patch_status"; }
   fi
-  if [[ "$PHPVER_ID" -eq '70402' ]]; then
+  if [[ "$PHP_PATCH" = [yY] && "$PHPVER_ID" -eq '70402' ]]; then
     # echo
     # echo "revert PHP 7.4.2 main/php_variables.c to PHP 7.4.1 version"
     # echo "https://community.centminmod.com/posts/81184/"
@@ -1058,7 +1058,7 @@ php_patches() {
       fi
     done
   fi
-  if [[ "$PHPVER_ID" -ge '70400' && "$PHPVER_ID" -le '70432' ]]; then
+  if [[ "$PHP_PATCH" = [yY] && "$PHPVER_ID" -ge '70400' && "$PHPVER_ID" -le '70432' ]]; then
     # for 7.4.0 to 7.4.32 only
     phpseven_bugids='81738 81739'
     for bugid in $phpseven_bugids; do
@@ -1075,7 +1075,7 @@ php_patches() {
       fi
     done
   fi
-  if [[ "$PHPVER_ID" -ge '70433' && "$PHPVER_ID" -le '70434' ]]; then
+  if [[ "$PHP_PATCH" = [yY] && "$PHPVER_ID" -ge '70433' && "$PHPVER_ID" -le '70434' ]]; then
       # for 7.4.33 to 7.4.34 only
       phpseven_bugids='81740 81744 81746 cve-2023-0662 ghsa-76gg-c692-v2mw cve-2023-3823 cve-2023-3824 cve-2024-2756 cve-2024-3096 cve-2024-5458 cve-2024-8925 cve-2024-8926 cve-2024-8927 cve-2024-9026 cve-2024-11236 cve-2024-11234 cve-2024-8932 cve-2024-11233 ghsa-4w77-75f9-2c8w cve-2024-8929 cve-2025-1217 cve-2025-1734 cve-2025-1861 cve-2025-1736 cve-2025-1219 cve-2025-6491 cve-2025-1220 cve-2025-1735 cve-2025-14177 cve-2025-14178 ghsa-www2-q4fc-65wf pcretests cve-2026-6722 cve-2026-7261 cve-2026-7262 cve-2026-6735 cve-2026-7568 cve-2026-7258 cve-2026-14355 cve-2026-9672 cve-2026-17543 cve-2026-7260 gh22643 from-8.2.34-to-7.4 7.4-cve-2026-109618'
 
@@ -1134,7 +1134,7 @@ php_patches() {
           fi
       done
   fi
-  if [[ "$PHPVER_ID" -ge '80000' && "$PHPVER_ID" -le '80099' ]]; then
+  if [[ "$PHP_PATCH" = [yY] && "$PHPVER_ID" -ge '80000' && "$PHPVER_ID" -le '80099' ]]; then
       # for 8.0.x only
       phpeight_bugids='cve-2024-2756 cve-2024-3096 cve-2024-5458 cve-2024-8925 cve-2024-8926 cve-2024-8927 cve-2024-9026 cve-2024-11236 cve-2024-11234 cve-2024-8932 cve-2024-11233 ghsa-4w77-75f9-2c8w cve-2024-8929 cve-2025-1217 cve-2025-1734 cve-2025-1861 cve-2025-1736 cve-2025-1219 cve-2025-6491 cve-2025-1220 cve-2025-1735 pcretests cve-2025-14177 cve-2025-14178 ghsa-www2-q4fc-65wf cve-2025-14179 cve-2026-6722 cve-2026-7261 cve-2026-7262 cve-2026-6735 cve-2026-7259 cve-2026-7568 cve-2026-7258 cve-2026-14355 cve-2026-9672 cve-2026-17543 cve-2026-7260 gh22643 from-8.2.34-to-8.0 8.0-cve-2026-109618'
 
@@ -1193,7 +1193,7 @@ php_patches() {
           fi
       done
   fi
-  if [[ "$PHPVER_ID" -ge '80100' && "$PHPVER_ID" -le '80199' ]]; then
+  if [[ "$PHP_PATCH" = [yY] && "$PHPVER_ID" -ge '80100' && "$PHPVER_ID" -le '80199' ]]; then
       # for 8.1.x only
       phpeightone_bugids='cve-2025-14179 cve-2026-6722 cve-2026-7261 cve-2026-7262 cve-2026-6735 cve-2026-7259 cve-2026-7568 cve-2026-7258 cve-2026-14355 cve-2026-9672 cve-2026-17543 cve-2026-7260 gh22643 from-8.2.34-to-8.1 8.1-cve-2026-109618'
 
