@@ -30,7 +30,7 @@ DT=$(date +"%d%m%y-%H%M%S")
 branchname='132.00stable'
 SCRIPT_MAJORVER='132'
 SCRIPT_MINORVER='00'
-SCRIPT_INCREMENTVER='242'
+SCRIPT_INCREMENTVER='243'
 SCRIPT_VERSIONSHORT="${branchname}"
 SCRIPT_VERSION="${SCRIPT_VERSIONSHORT}.b${SCRIPT_INCREMENTVER}"
 SCRIPT_DATE='15/02/25'
@@ -1104,6 +1104,7 @@ PHP_MCRYPTPECLVER='1.0.7'   # https://pecl.php.net/package/mcrypt
 PHPZOPFLI='n'               # enable zopfli php extension https://github.com/kjdev/php-ext-zopfli
 PHPZOPFLI_ALWAYS='n'        # zopfli php extension always install on php recompiles
 PHP_BROTLI='n'              # brotli php extension https://github.com/kjdev/php-ext-brotli
+PHPFPM_BROTLI_SOURCE='y'    # php-fpm loads source built brotli 1.2.1 until distro brotli has the CVE-2026-111497 fix, tools/phpfpm-brotli.sh
 PHP_LZFOUR='n'              # lz4 php extension https://github.com/kjdev/php-ext-lz4
 PHP_LZF='n'                 # lzf php extension https://github.com/php/pecl-file_formats-lzf php-ext-lzf
 PHP_ZSTD='n'                # zstd php extension https://github.com/kjdev/php-ext-zstd
@@ -2996,6 +2997,9 @@ fi
 
     if [[ "$CENTOS_SEVEN" -eq '7' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]] && [[ "$SWITCH_PHPFPM_SYSTEMD" = [yY] && -f "$CUR_DIR/tools/php-systemd.sh" ]]; then
       $CUR_DIR/tools/php-systemd.sh fpm-systemd
+      if [[ "$PHPFPM_BROTLI_SOURCE" = [yY] ]]; then
+        bash "$CUR_DIR/tools/phpfpm-brotli.sh" on || echo "php-fpm brotli override not enabled, see: $CUR_DIR/tools/phpfpm-brotli.sh status"
+      fi
     fi
 
 if [[ "$(grep exclude /etc/yum.conf)" && "$MDB_INSTALL" = y ]]; then
