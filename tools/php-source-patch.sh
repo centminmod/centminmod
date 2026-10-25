@@ -740,7 +740,7 @@ print_selection() {
 }
 
 write_record() {  # result
-  local i f sha
+  local i f sha data=$DATA_DESC
   [ -n "$RECORD" ] || return 0
   mkdir -p "$(dirname "$RECORD")" || return 0
   {
@@ -750,11 +750,12 @@ write_record() {  # result
     if [ -n "$TB_OUT" ]; then
       # this record ships inside the tarball: names only, no local paths
       printf '# src\tphp-%s\n# input\t%s\n# tarball\t%s\n' "$TBVER" "${INPUT##*/}" "${TB_OUT##*/}"
+      data=$DATA_NAME
     else
       printf '# src\t%s\n' "$SRC"
     fi
     printf '# php_version\t%s\n# php_version_id\t%s\n# os\t%s\n# options\t%s\n' "$VER" "$ID" "$OS" "$OPTSTR"
-    printf '# data\t%s\n# inc_sha256\t%s\n# patch\t%s\n' "$DATA_DESC" "$INC_SHA" "$PATCH_DESC"
+    printf '# data\t%s\n# inc_sha256\t%s\n# patch\t%s\n' "$data" "$INC_SHA" "$PATCH_DESC"
     [ -n "$TOUCHED" ] && printf '# touched\t%s\n' "$TOUCHED"
     printf 'seq\tstatus\tbugid\tfile\tsha256\tline\tdetail\n'
     for ((i = 0; i < SEL_N; i++)); do
@@ -1113,6 +1114,7 @@ EOF
   (cd "$t/x" && $TAR xzf "$t/dist/php-9.9.1-test.tar.gz")
   ok 'tarball: contents patched' grep -q 'int x2 = 1' "$t/x/php-9.9.1/--dash.c"
   ok 'tarball: record inside' grep -q '^# tarball	php-9.9.1-test.tar.gz' "$t/x/php-9.9.1/.php-source-patch/record.tsv"
+  ok 'tarball: no local paths in the record' [ -z "$(grep -F -e "$t" -e "$CUR_DIR" "$t/x/php-9.9.1/.php-source-patch/record.tsv")" ]
   ok 'tarball: no patch.log, copied patch files or .orig inside' [ -z "$(cd "$t/x/php-9.9.1" && ls .php-source-patch/patch.log *.patch 2>/dev/null; find . -name '*.orig')" ]
   rm -rf "$t/tin"; mkdir -p "$t/tin/php-9.9.1"; st_tree "$t/tin/php-9.9.1" 9.9.1
   (cd "$t/tin" && $TAR czf "$t/php-9.9.1.tar.gz" php-9.9.1)
@@ -1237,11 +1239,13 @@ main() {
   [ -f "$INC" ] || die "no php_patch.inc at $INC; use --inc"
   [ "$DATAMODE" = bundle ] && verify_bundle
   INC_SHA=$(sha256_of "$INC" | awk '{ print $1 }')
+  # DATA_NAME: DATA_DESC without local paths, for the record shipped in a tarball
   case $DATAMODE in
-    centmin) DATA_DESC="centmin $CUR_DIR"
-             a=$(git_rev); [ -n "$a" ] && DATA_DESC="$DATA_DESC (git $a)" ;;
-    bundle) DATA_DESC="bundle $CUR_DIR ($(awk '$1 == "source" { print $2, $3, $4 }' "$CUR_DIR/BUNDLE"))" ;;
-    *) DATA_DESC="patches $PDIR, inc $INC" ;;
+    centmin) DATA_DESC="centmin $CUR_DIR" DATA_NAME=centmin
+             a=$(git_rev); [ -n "$a" ] && DATA_DESC="$DATA_DESC (git $a)" DATA_NAME="$DATA_NAME (git $a)" ;;
+    bundle) a=$(awk '$1 == "source" { print $2, $3, $4 }' "$CUR_DIR/BUNDLE")
+            DATA_DESC="bundle $CUR_DIR ($a)" DATA_NAME="bundle ($a)" ;;
+    *) DATA_DESC="patches $PDIR, inc $INC" DATA_NAME="patches ${PDIR##*/}, inc ${INC##*/}" ;;
   esac
 
   # options: Centmin Mod defaults < centmin.sh or BUNDLE < custom_config.inc < --set
