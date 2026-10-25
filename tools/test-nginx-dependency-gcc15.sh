@@ -96,8 +96,10 @@ done
 (
  DIR_TMP="$work/src" NGINX_LIBBROTLI=y NGINX_BROTLI_NEW_METHOD=y
  DEVTOOLSETNINE=y DEVTOOLSETTEN=y DEVTOOLSETELEVEN=y
- mkdir -p "$DIR_TMP" "$work/local/nginx/conf"
+ mkdir -p "$DIR_TMP" "$work/local/nginx/conf" "$work/local/nginx-dep/bin"
  touch "$work/local/nginx/conf/nginx.conf"
+ printf '#!/bin/sh\necho "brotli 1.2.1"\n' > "$work/local/nginx-dep/bin/brotli"
+ chmod +x "$work/local/nginx-dep/bin/brotli"
  cmake_alternatives() { :; }
  curl() { echo 'HTTP/2 200'; }
  git() { if [[ "$1" = clone ]]; then mkdir -p ngx_brotli/deps/brotli/out; touch ngx_brotli/deps/brotli/out/stale; fi; }
@@ -111,6 +113,21 @@ done
  grep '^\-DCMAKE_C_FLAGS=' "$work/cmake" | grep -q -- '-DC_KEEP -std=gnu17' || fail cmake-c
  grep '^\-DCMAKE_CXX_FLAGS=' "$work/cmake" | grep -q -- '-DCXX_KEEP' || fail cmake-cxx
  ! grep '^\-DCMAKE_CXX_FLAGS=' "$work/cmake" | grep -q -- '-std=gnu17' || fail cxx-gnu17
+ printf '#!/bin/sh\necho "brotli 1.2.0"\n' > "$work/local/nginx-dep/bin/brotli"
+ if ngxbrotli_download >/dev/null 2>&1; then fail brotli-guard-build; fi
+)
+# The CVE-2026-111497 guard accepts only fixed brotli releases and fails closed otherwise.
+(
+ mkdir -p "$work/local/nginx-dep/bin"
+ for case in 1.0.10:0 1.1.1:0 1.2.1:0 1.2.10:0 1.3.0:0 2.0.0:0 1.0.9:1 1.0.11:1 1.1.0:1 1.2.0:1 x.y.z:1 :1; do
+  ver=${case%:*} want=${case##*:}
+  printf '#!/bin/sh\necho "brotli %s"\n' "$ver" > "$work/local/nginx-dep/bin/brotli"
+  chmod +x "$work/local/nginx-dep/bin/brotli"
+  brotli_version_check >/dev/null && got=0 || got=1
+  [[ "$got" = "$want" ]] || fail "brotli guard $ver"
+ done
+ rm -f "$work/local/nginx-dep/bin/brotli"
+ if brotli_version_check >/dev/null; then fail brotli-guard-missing; fi
 )
 # A failed dependency must survive tee and stop the surrounding caller.
 (
