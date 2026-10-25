@@ -618,6 +618,21 @@ brdep_update() {
   fi
 }
 
+brotli_version_check() {
+  # CVE-2026-111497 decoder out-of-bounds write is only fixed in brotli 1.0.10, 1.1.1 and 1.2.1+
+  local brotli_ver brotli_major brotli_minor brotli_patch
+  brotli_ver=$(/usr/local/nginx-dep/bin/brotli -V 2>/dev/null | awk '{print $2}')
+  IFS=. read -r brotli_major brotli_minor brotli_patch <<< "$brotli_ver"
+  if [[ "$brotli_major" =~ ^[0-9]+$ && "$brotli_minor" =~ ^[0-9]+$ && "$brotli_patch" =~ ^[0-9]+$ ]]; then
+    if [[ "$brotli_ver" = '1.0.10' || "$brotli_ver" = '1.1.1' ]] || (( brotli_major > 1 || (brotli_major == 1 && brotli_minor > 2) || (brotli_major == 1 && brotli_minor == 2 && brotli_patch >= 1) )); then
+      echo "brotli $brotli_ver includes the CVE-2026-111497 fix"
+      return 0
+    fi
+  fi
+  echo "Error: brotli ${brotli_ver:-unknown} in /usr/local/nginx-dep lacks the CVE-2026-111497 fix (need 1.0.10, 1.1.1 or 1.2.1+)"
+  return 1
+}
+
 ngxbrotli_download() {
   if [[ "$NGINX_LIBBROTLI" = [yY] && "$(uname -m)" = 'x86_64' ]]; then
     nginx_dependency_compiler || return 1
@@ -864,6 +879,8 @@ ngxbrotli_download() {
         git checkout 6e975bcb015f62e1f303054897783355e2a877dc
         git submodule update --init || return 1
         cd deps/brotli
+        # brotli v1.0.10 fixes CVE-2026-111497 decoder out-of-bounds write
+        git checkout v1.0.10 || return 1
         CMAKE_CMD="${BROTLI_CMAKE_CMD:-cmake}" CFLAGS="$CFLAGS -fPIC -O2 -fstack-protector-strong -D_FORTIFY_SOURCE=2" CPPFLAGS="-D_FORTIFY_SOURCE=2" CXXFLAGS="$CXXFLAGS -fPIC -O2" LDFLAGS="$LDFLAGS -Wl,-z,relro,-z,now -pie" ./configure-cmake --prefix=/usr/local/nginx-dep || return 1
         # configure-cmake also passes LDFLAGS to CMAKE_STATIC_LINKER_FLAGS which ar can't use
         "${BROTLI_CMAKE_CMD:-cmake}" -DCMAKE_STATIC_LINKER_FLAGS="" . || return 1
@@ -880,6 +897,7 @@ ngxbrotli_download() {
       ldd /usr/local/nginx-dep/bin/brotli
       echo
     fi
+    brotli_version_check || return 1
 
     if [[ "$NGX_DEP_GCC15" != y && "$CLANG" != [yY] ]]; then
     if [[ "$DEVTOOLSETSEVEN" = [yY] && -f /opt/rh/devtoolset-7/root/usr/bin/gcc && -f /opt/rh/devtoolset-7/root/usr/bin/g++ ]] && [[ "$(gcc --version | head -n1 | awk '{print $3}' | cut -d . -f1,2 | sed "s|\.|0|")" -gt '407' ]]; then
