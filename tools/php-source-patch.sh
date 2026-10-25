@@ -43,13 +43,16 @@
 # one changed nothing), 2 usage or setup error, 3 manifest drift
 #
 # Selection: php_patches() itself decides. The script runs it with every
-# external command stubbed (cp, patch, grep, ...) under an empty PATH, so
-# nothing outside a scratch directory is written. The stubs record each
-# patch call: file, options, directory and php_patch.inc line. Unknown
-# commands, writes outside the scratch dir and unset variables make the
-# selection fail instead of guessing. Content checks (CentOS 7 ffi and
-# OpenSSL 1.0.2 shims) read the real tree through a symlinked shadow.
-# The NEWS-only tolerance of each call site is probed the same way.
+# external command stubbed (cp, patch, grep, ...) under an empty PATH. The
+# stubs record each patch call: file, options, directory and php_patch.inc
+# line. Unknown commands, writes outside the scratch dir and unset variables
+# make the selection fail instead of guessing; recorded patch options must be
+# known patch flags and paths must stay inside the tree. The sandbox catches
+# php_patch.inc changes the script does not model; it is not a jail, so
+# php_patch.inc is trusted code, from the same checkout or checksummed bundle
+# as the patches. Content checks (CentOS 7 ffi and OpenSSL 1.0.2 shims) read
+# the real tree through a symlinked shadow. The NEWS-only tolerance of each
+# call site is probed the same way.
 #
 # Applying: patches already in the tree are found first by reversing the
 # selection last to first on a scratch copy (never by a copied patch file,
@@ -204,12 +207,34 @@ trace_driver() {
 die() { echo "php-source-patch: $*" >&2; exit 2; }
 
 sha256_of() {  # FILE... -> "sha  file" lines
-  if command -v sha256sum >/dev/null 2>&1; then sha256sum "$@"
-  elif command -v shasum >/dev/null 2>&1; then shasum -a 256 "$@"
+  if command -v sha256sum >/dev/null 2>&1; then sha256sum -- "$@"
+  elif command -v shasum >/dev/null 2>&1; then shasum -a 256 -- "$@"
   else
     local f
-    for f in "$@"; do printf '%s  %s\n' "$(openssl dgst -sha256 -r "$f" | awk '{print $1}')" "$f"; done
+    for f in "$@"; do
+      case $f in -*) f=./$f ;; esac
+      printf '%s  %s\n' "$(openssl dgst -sha256 -r "$f" | awk '{print $1}')" "${f#./}"
+    done
   fi
+}
+
+# values from the trace that reach a command line: patch options, directories and
+# touched files. Only known patch flags; paths must be plain and stay in the tree
+args_ok() {
+  local a
+  for a in $1; do
+    case $a in
+      -) ;;
+      -p[0-9]|-p[0-9][0-9]|--strip=[0-9]|-N|--forward|-l|--ignore-whitespace|-F[0-9]|--fuzz=[0-9]|-E|--remove-empty-files|-s|--silent|--quiet|--binary) ;;
+      *) return 1 ;;
+    esac
+  done
+}
+path_ok() {
+  case $1 in
+    .) return 0 ;;
+    ''|/*|-*|..|../*|*/..|*/../*|*[!A-Za-z0-9._/+-]*) return 1 ;;
+  esac
 }
 
 plus_names() { awk -v strip="$2" "$PSP_AWK_PLUS" "$1"; }
@@ -272,7 +297,10 @@ mirror() {
     [ -f "$from/$q" ] && printf '%s\n' "$q" >> "$list"
   done
   [ -s "$list" ] || return 0
-  (cd "$from" && tar chf - -T "$list") | (cd "$to" && tar xf -)
+  # "./" keeps GNU tar 1.29+ from reading a listed name that starts with "-" as an
+  # option (--checkpoint-action=exec=... runs a command)
+  sed 's|^|./|' "$list" > "$list.t"
+  (cd "$from" && tar chf - -T "$list.t") | (cd "$to" && tar xf -)
 }
 
 has_rej() {  # dir cwd candfile
@@ -381,7 +409,7 @@ trace_keys() { awk -F'\t' -v pre="$CUR_DIR/patches/php/" '$1 == "P" { f = $4; if
 
 # fills SEL_* for one configuration; mode tree|fake. Sets SEL_N
 select_patches() {  # id ver os opts mode
-  local id=$1 ver=$2 os=$3 opts=$4 mode=$5 err k line cwd src bug args pre=$CUR_DIR/patches/php/ i n
+  local id=$1 ver=$2 os=$3 opts=$4 mode=$5 err k line cwd src bug args pre=$CUR_DIR/patches/php/ i n a
   local d=$W/trace
   run_trace "$d" "$id" "$ver" "$os" "$opts" '' "$mode"
   err=$(trace_error "$d")
@@ -392,9 +420,12 @@ select_patches() {  # id ver os opts mode
     case $k in P|T|M) ;; *) continue ;; esac
     n=$SEL_N
     SEL_TYPE[n]=$k SEL_LINE[n]=$line SEL_CWD[n]=$cwd SEL_NEWS[n]=- SEL_CONTENT[n]=n
+    path_ok "$cwd" || { echo "php_patch.inc:$line: unsupported directory: $cwd" >&2; return 2; }
     case $k in
       P)
         case $src in "$pre"*) src=${src#"$pre"} ;; *) echo "php_patch.inc:$line: patch source outside patches/php: $src" >&2; return 2 ;; esac
+        path_ok "$src" || { echo "php_patch.inc:$line: unsupported patch file name: $src" >&2; return 2; }
+        args_ok "$args" || { echo "php_patch.inc:$line: patch options this script does not support: $args" >&2; return 2; }
         # $bugid is the loop's id only if it names this file; outside loops it is stale
         case ${src##*/} in *-"$bug".patch|"$bug".patch) ;; *) bug=$(bugid_of "$src") ;; esac
         SEL_FILE[n]=$src SEL_BUGID[n]=$bug SEL_ARGS[n]=$args
@@ -402,7 +433,10 @@ select_patches() {  # id ver os opts mode
         [ -n "${seen[$src|$args|$cwd]:-}" ] && SEL_TYPE[n]=D
         seen[$src|$args|$cwd]=1
         ;;
-      T) SEL_FILE[n]=- SEL_BUGID[n]=- SEL_ARGS[n]=$src ;;
+      T)
+        for a in $src; do path_ok "$a" || { echo "php_patch.inc:$line: unsupported touch argument: $a" >&2; return 2; }; done
+        SEL_FILE[n]=- SEL_BUGID[n]=- SEL_ARGS[n]=$src
+        ;;
       M)
         # a name php_patch.inc logs as "already applied": a copied marker cannot
         # exist in the sandbox, so it is a list entry without its patch file,
@@ -808,6 +842,7 @@ self_test() {
     printf '/* caf\351 */\nint c1 = 0;\nint c2 = 0;\n' > "$1/src/c.c"
     printf 'int d1 = 0;\nint d2 = 0;\nint d3 = 0;\n' > "$1/src/d.c"
     printf 'int e1 = 0;\nint e2 = 0;\nint e3 = 0;\n' > "$1/src/e.c"
+    printf 'int x1 = 0;\nint x2 = 0;\nint x3 = 0;\n' > "$1/--dash.c"
     : > "$1/Zend/zend_vm_gen.php"; : > "$1/Zend/gen.h"
   }
   statuses() { awk -F'\t' '$1 != "seq" && !/^#/ { printf "%s:%s ", $3, $2 }' "$1"; }
@@ -838,7 +873,7 @@ php_patches() {
   {
   if [[ "$PHP_PATCH" = [yY] ]]; then
     if [[ "$PHPVER_ID" -ge '90900' && "$PHPVER_ID" -le '90999' ]]; then
-      phpnine_bugids='a1 news1 crlf1 iso1 gone1 strict1'
+      phpnine_bugids='a1 news1 crlf1 iso1 gone1 strict1 dash1'
       for bugid in $phpnine_bugids; do
         if [[ ! -f "php99-${bugid}.patch" && -f "$CUR_DIR/patches/php/php99-${bugid}.patch" ]]; then
           cp -a $CUR_DIR/patches/php/php99-${bugid}.patch php99-${bugid}.patch || exit 1
@@ -886,6 +921,8 @@ EOF
   printf -- '--- a/src/a.c\r\n+++ b/src/a.c\r\n@@ -6,3 +6,3 @@\r\n int a6 = 0;\r\n-int a7 = 0;\r\n+int a7 = 1;\r\n int a8 = 0;\r\n' > "$P/php99-crlf1.patch"
   printf -- '--- a/src/c.c\n+++ b/src/c.c\n@@ -1,3 +1,3 @@\n /* caf\351 */\n-int c1 = 0;\n+int c1 = 1;\n int c2 = 0;\n' > "$P/php99-iso1.patch"
   printf -- '--- a/src/d.c\n+++ b/src/d.c\n@@ -1,3 +1,3 @@\n int d1 = 0;\n-int d2 = 0;\n+int d2 = 1;\n int d3 = 0;\n' > "$P/php99-strict1.patch"
+  # a top-level name starting with "-": GNU tar 1.29+ reads such -T list lines as options
+  printf -- '--- a/--dash.c\n+++ b/--dash.c\n@@ -1,3 +1,3 @@\n int x1 = 0;\n-int x2 = 0;\n+int x2 = 1;\n int x3 = 0;\n' > "$P/php99-dash1.patch"
   printf -- '--- a/src/e.c\n+++ b/src/e.c\n@@ -1,3 +1,3 @@\n int e1 = 0;\n-int e2 = 0;\n+int e2 = 8;\n int e3 = 0;\n' > "$P/el8-e1.patch"
   local me=("$BASH" "$SELF" --patch-dir "$P" --os other)
 
@@ -899,7 +936,7 @@ EOF
   out=$("${me[@]}" --src "$t/s" --list 2>&1); rc=$?
   ok 'list: exit 0' [ "$rc" = 0 ]
   got=$(printf '%s\n' "$out" | awk '$1 ~ /^[0-9]+$/ && $4 ~ /\.patch$/ { printf "%s:%s ", $4, $3 }')
-  ok "list: order and NEWS rule ($got)" [ "$got" = "php99-a1.patch:y php99-news1.patch:y php99-crlf1.patch:y php99-iso1.patch:y php99-strict1.patch:y " ]
+  ok "list: order and NEWS rule ($got)" [ "$got" = "php99-a1.patch:y php99-news1.patch:y php99-crlf1.patch:y php99-iso1.patch:y php99-strict1.patch:y php99-dash1.patch:y " ]
   ok 'list: missing patch file shown' has 'php99-gone1.patch .*no patch file'
   ok 'list: touch shown' has 'touch Zend/gen.h'
   ok 'list: OS and option gate shown' has 'el8-e1.patch .*os=el8+all-options-y'
@@ -912,13 +949,14 @@ EOF
   ok 'apply: exit 0' [ "$rc" = 0 ]
   got=$(cat "$t/s/src/a.c" "$t/s/src/b.c" "$t/s/src/c.c" "$t/s/src/d.c" | grep -c ' = 1;')
   ok "apply: all code hunks ($got of 5)" [ "$got" = 5 ]
+  ok 'apply: file named --dash.c patched' grep -q 'int x2 = 1' "$t/s/--dash.c"
   ok 'apply: NEWS has a1' grep -q 'a1 fixed' "$t/s/NEWS"
   ok 'apply: NEWS lacks the rejected news1 entry' [ "$(grep -c 'news1 fixed' "$t/s/NEWS")" = 0 ]
   ok 'apply: no NEWS.rej or NEWS.orig' [ ! -e "$t/s/NEWS.rej" -a ! -e "$t/s/NEWS.orig" ]
   ok 'apply: no patch files copied into the tree' [ -z "$(cd "$t/s" && ls -- *.patch 2>/dev/null)" ]
   r=$t/s/.php-source-patch/record.tsv
   got=$(statuses "$r")
-  ok "record: statuses ($got)" [ "$got" = "a1:applied news1:news-only crlf1:applied iso1:applied gone1:skipped-missing-file strict1:applied el8-e1:skipped-gate " ]
+  ok "record: statuses ($got)" [ "$got" = "a1:applied news1:news-only crlf1:applied iso1:applied gone1:skipped-missing-file strict1:applied dash1:applied el8-e1:skipped-gate " ]
   got=$(awk -F'\t' '$3 == "a1" { print $5 }' "$r")
   ok 'record: sha256' [ "$got" = "$(sha256_of "$P/php99-a1.patch" | awk '{ print $1 }')" ]
   ok 'record: touched' grep -q '^# touched	Zend/gen.h' "$r"
@@ -938,7 +976,7 @@ EOF
   ok 'reject: rejected file unchanged' cmp -s "$t/d.before" "$t/f/src/d.c"
   ok 'reject: no .rej or .orig left' [ -z "$(cd "$t/f" && find . -name '*.rej' -o -name '*.orig')" ]
   got=$(statuses "$r")
-  ok "reject: record ($got)" [ "$got" = "a1:applied news1:news-only crlf1:applied iso1:applied gone1:skipped-missing-file strict1:failed el8-e1:skipped-gate " ]
+  ok "reject: record ($got)" [ "$got" = "a1:applied news1:news-only crlf1:applied iso1:applied gone1:skipped-missing-file strict1:failed dash1:not-run el8-e1:skipped-gate " ]
   ok 'reject: result failed' grep -q '^# result	failed' "$r"
   st_tree "$t/n" 9.8.1
   out=$("${me[@]}" --src "$t/n" 2>&1); rc=$?
@@ -958,6 +996,10 @@ EOF
   out=$("${me[@]}" --src "$t/o" --inc "$t/bad2.inc" --list 2>&1); rc=$?
   ok 'unset variable in php_patches(): exit 2' [ "$rc" = 2 ]
   ok '... and names it' has NEW_PHP_OPTION
+  sed 's/patch -p1 < el8-e1.patch/patch -p1 -o out.c < el8-e1.patch/' "$t/c/inc/php_patch.inc" > "$t/bad3.inc"
+  out=$("${me[@]}" --src "$t/o" --inc "$t/bad3.inc" --os el8 --set FPM_WAKEUP_PATCH=y --list 2>&1); rc=$?
+  ok 'unknown patch option (-o FILE) in php_patches(): exit 2' [ "$rc" = 2 ]
+  ok '... and names it' has 'patch options this script does not support: -p1 -o out.c'
   echo "self-test: $pass passed, $fail failed"
   [ "$fail" = 0 ]
 }
@@ -1119,8 +1161,8 @@ main() {
          printf '  %-22s %s\n' "[missing-file]" "${SEL_FILE[i]}" ;;
       D) SEL_STATUS[i]=skipped-duplicate SEL_DETAIL[i]="php_patch.inc:${SEL_LINE[i]} calls it again"
          SEL_SHA[i]=$(sha_of_patch "${SEL_FILE[i]}") ;;
-      T) case ${SEL_ARGS[i]} in */..*|/*|..*) die "unsafe touch ${SEL_ARGS[i]}" ;; esac
-         if [ "$action" = apply ]; then (cd "$SRC/${SEL_CWD[i]}" && touch ${SEL_ARGS[i]}) && TOUCHED="${SEL_ARGS[i]}"; fi
+      T) # arguments were checked by path_ok; split them on spaces, never glob them
+         if [ "$action" = apply ]; then (set -f; cd "$SRC/${SEL_CWD[i]}" && touch -- ${SEL_ARGS[i]}) && TOUCHED="${SEL_ARGS[i]}"; fi
          printf '  %-22s %s\n' "[touch]" "${SEL_ARGS[i]}" ;;
       P) if apply_one "$i"; then
            SEL_STATUS[i]=$ST SEL_DETAIL[i]=$DT
