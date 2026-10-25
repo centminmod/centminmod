@@ -4,7 +4,11 @@ checksec_check(){
     yum -y install checksec
     echo
   fi
-  if [[ ! -f /usr/local/bin/checksec || ! -f "${DIR_TMP}/checksec-${CHECKSEC_VERSION}.tar.gz" ]]; then
+  # reinstall unless /usr/local/bin/checksec is the pinned bash checksec.sh: 141.00beta01
+  # installs the 3.x Go rewrite there, which rejects the --format/--file options used here
+  local checksec_installed
+  checksec_installed=$(/usr/local/bin/checksec --version 2>/dev/null)
+  if [[ "$checksec_installed" != *"checksec v${CHECKSEC_VERSION},"* || ! -f "${DIR_TMP}/checksec-${CHECKSEC_VERSION}.tar.gz" ]]; then
     echo
     pushd "$DIR_TMP"
     wget -q "https://github.com/slimm609/checksec/archive/refs/tags/${CHECKSEC_VERSION}.tar.gz" -O "checksec-${CHECKSEC_VERSION}.tar.gz"
