@@ -3911,12 +3911,6 @@ if [[ "$PHPMVER" = '7.3' || "$PHPMUVER" = '7.3' || "$PHPMVER" = '7.4' || "$PHPMU
     fi
   fi
 fi
-# a failed remi-libzip-devel install otherwise only shows up at make: the preset
-# LIBZIP_CFLAGS skips PHP configure's pkg-config check for libzip
-if [[ "$LIBZIP_CFLAGS" = *'/opt/remi/libzip/include'* && ! -f /opt/remi/libzip/include/zip.h ]]; then
-  echo "ERROR: /opt/remi/libzip/include/zip.h not found, remi-libzip-devel install failed; installation stopped." >&2
-  { PHPCONFIGURE_ERR=1; return 1; }
-fi
 if [[ "$PHP_ARGON" = [yY] ]]; then
   # alias for PHP 7.2 argon support
   if [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]] && [[ "$IMAGEMAGICK_SEVEN" != [yY] ]]; then
@@ -4163,6 +4157,13 @@ else
     LIBSODIUM_OPT=""
     LIBZIP_OPT=""
   fi
+fi
+# a missing remi zip.h otherwise only shows up at make: the preset LIBZIP_CFLAGS
+# skips PHP configure's pkg-config check; a system /usr/include/zip.h still builds
+if [[ "$LIBZIP_CFLAGS" = *'/opt/remi/libzip/include'* && ! -f /opt/remi/libzip/include/zip.h && ! -f /usr/include/zip.h ]]; then
+  echo "ERROR: zip.h not found in /opt/remi/libzip/include or /usr/include; installation stopped." >&2
+  echo "ERROR: reinstall it with: yum -y reinstall remi-libzip-devel --enablerepo=remi (use install if not installed)" >&2
+  { PHPCONFIGURE_ERR=1; return 1; }
 fi
 
 # key on PHPVER_ID, the PHP being built; PHPMVER is the default PHP_VERSION, not a menu 5 target
