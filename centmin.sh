@@ -30,7 +30,7 @@ DT=$(date +"%d%m%y-%H%M%S")
 branchname='141.00beta01'
 SCRIPT_MAJORVER='141'
 SCRIPT_MINORVER='00'
-SCRIPT_INCREMENTVER='393'
+SCRIPT_INCREMENTVER='394'
 SCRIPT_VERSIONSHORT="${branchname}"
 SCRIPT_VERSION="${SCRIPT_VERSIONSHORT}.b${SCRIPT_INCREMENTVER}"
 SCRIPT_DATE='16/08/25'
@@ -913,6 +913,7 @@ PHP_MCRYPTPECLVER='1.0.9'   # https://pecl.php.net/package/mcrypt
 PHPZOPFLI='n'               # enable zopfli php extension https://github.com/kjdev/php-ext-zopfli
 PHPZOPFLI_ALWAYS='n'        # zopfli php extension always install on php recompiles
 PHP_BROTLI='n'              # brotli php extension https://github.com/kjdev/php-ext-brotli
+PHPFPM_BROTLI_SOURCE='y'    # php-fpm loads source built brotli 1.2.1 until distro brotli has the CVE-2026-111497 fix, tools/phpfpm-brotli.sh
 PHP_LZFOUR='n'              # lz4 php extension https://github.com/kjdev/php-ext-lz4
 PHP_LZF='n'                 # lzf php extension https://github.com/php/pecl-file_formats-lzf php-ext-lzf
 PHP_ZSTD='n'                # zstd php extension https://github.com/kjdev/php-ext-zstd
@@ -3393,6 +3394,9 @@ fi
       # /run/systemd/system: systemd is running, otherwise start the init.d script
       $CUR_DIR/tools/php-systemd.sh fpm-systemd
       systemctl is-active --quiet php-fpm || exit 1
+      if [[ "$PHPFPM_BROTLI_SOURCE" = [yY] ]]; then
+        bash "$CUR_DIR/tools/phpfpm-brotli.sh" on || echo "php-fpm brotli override not enabled, see: $CUR_DIR/tools/phpfpm-brotli.sh status"
+      fi
     else
       service php-fpm start || exit $?
     fi
