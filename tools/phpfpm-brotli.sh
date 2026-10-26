@@ -14,6 +14,12 @@
 # status  show what php-fpm loads and whether the distro package is fixed
 # prepare menu 5, before its php-fpm restart: refresh or retire the override
 # verify  menu 5, after its php-fpm restart: confirm it or fall back
+# rpm-revert  downgrade the patched brotli rpm to the distro release
+#
+# With PHPFPM_BROTLI_RPM='y', on and prepare first install a Centmin Mod
+# patched build of the distro brotli packages when one matches the installed
+# release exactly. That fixes the system library for php-fpm, PHP CLI and
+# everything else, so the override is not needed.
 #
 # The override retires itself (on, prepare) once the distro brotli package
 # includes the fix. prepare and verify never fail the calling menu.
@@ -29,6 +35,25 @@ PHPFPM_BIN='/usr/local/sbin/php-fpm'
 DIR_TMP='/svr-setup'
 CUSTOM_CONFIG='/etc/centminmod/custom_config.inc'
 CM_DIR=$(readlink -f "$(dirname "${BASH_SOURCE[0]}")/..")
+
+# Patched distro brotli builds: the distro source rpm rebuilt with the fix,
+# mirror directory, package and sha256. Same version and release plus .cmm1,
+# so the distro's own fixed release still replaces them.
+BROTLI_RPM_SUFFIX='cmm1'
+BROTLI_RPM_MIRROR='https://parts.centminmod.com/centminmodparts/brotli/rpm'
+BROTLI_RPMS='
+brotli-1.0.6-4.el8_10 el8 brotli db1d5c63d218dc6e0977ca42f738c40070cdb332b8a06e036ef7a717da2ef72c
+brotli-1.0.6-4.el8_10 el8 brotli-devel 487e448029c82effbe23b66c915cb7b7c3d4294e1fb7156ae9b5bbabfec2af6d
+brotli-1.0.6-4.el8_10 el8 python3-brotli 8af84eb5d844e0a50be08274dafba3fcf5e38d77d4f403b3da5b74bda80ed1cc
+brotli-1.0.9-10.el9_8 el9 brotli fa4d7aa12f453e0b7c9825f9ab64cbd2813c0d36b9f8f9b82941a8566e4aeb70
+brotli-1.0.9-10.el9_8 el9 brotli-devel 677e2bc325ef4117f64b836e2f45a9910763adfd28a7943d16d3c73c52388392
+brotli-1.0.9-10.el9_8 el9 libbrotli c57c5d107dfbbcfbaac2fa98291059fbdf2d76a04aa8550b3ebb4e984fed21d4
+brotli-1.0.9-10.el9_8 el9 python3-brotli 95c5d90fc3619316d7e7bb3f8170fab5c130b4a997aa47a1128721ea4da50dfb
+brotli-1.1.0-8.el10_2 el10 brotli 185bdb9d0569f14be9364c040e1c3aa4891a65af6bfd1e3fa3354f07ccd2af58
+brotli-1.1.0-8.el10_2 el10 brotli-devel fe399d500abf4d3ed365020eff34029f8b76560c7e2d64235c916c757c393c28
+brotli-1.1.0-8.el10_2 el10 libbrotli cbcecdcc985ab824d71075615f1689ed359c599827c678c9c68c9bad47b07c31
+brotli-1.1.0-8.el10_2 el10 python3-brotli 88973f21632771215afa7e36045cc3462167c02dce97652f91a8e0d699957544
+'
 
 # brotli_fixed_version and brotli_version_check
 source "${CM_DIR}/inc/brotli.inc" || exit 1
@@ -82,6 +107,76 @@ distro_brotli_fixed() {
   pkg=$(distro_brotli_pkg) || return 1
   rpm -q --changelog "$pkg" 2>/dev/null | grep -q 'CVE-2026-111497' && return 0
   brotli_fixed_version "$(rpm -q --qf '%{VERSION}' "$pkg")"
+}
+
+# Source rpm of that package, e.g. brotli-1.0.9-10.el9_8.src.rpm
+distro_brotli_srpm() {
+  local pkg
+  pkg=$(distro_brotli_pkg) || return 1
+  rpm -q --qf '%{SOURCERPM}\n' "$pkg" 2>/dev/null | head -1
+}
+
+# Installed packages built from source rpm $1, as name.arch
+srpm_pkgs() {
+  rpm -qa --qf '%{NAME}.%{ARCH} %{SOURCERPM}\n' | awk -v s="$1" '$2 == s {print $1}' | sort
+}
+
+patched_rpm_installed() {
+  [[ "$(distro_brotli_pkg)" = *".${BROTLI_RPM_SUFFIX}" ]]
+}
+
+# Mirror directory and sha256 of the patched build of package $2 from source rpm $1
+patched_rpm_entry() {
+  awk -v s="${1%.src.rpm}" -v n="$2" '$1 == s && $3 == n {print $2, $4}' <<< "$BROTLI_RPMS"
+}
+
+# Replace the distro brotli packages with the patched build of the same
+# release. Installed from local files, so tools/php-libs-versionlock.sh
+# leaves them unlocked (@commandline counts as a base repo) and a fixed
+# distro release still replaces them.
+install_patched_rpm() {
+  local srpm vr pkgs p n dir sum file out files=()
+  local d="${DIR_TMP}/brotli-rpm"
+  command -v dnf >/dev/null 2>&1 || return 1
+  srpm=$(distro_brotli_srpm) || return 1
+  pkgs=$(srpm_pkgs "$srpm")
+  for p in $pkgs; do
+    if [[ "${p##*.}" != 'x86_64' || -z "$(patched_rpm_entry "$srpm" "${p%.*}")" ]]; then
+      echo "no patched brotli build for ${p} from ${srpm}"
+      return 1
+    fi
+  done
+  vr=$(rpm -q --qf '%{VERSION}-%{RELEASE}\n' "$(distro_brotli_pkg)" | head -1)
+  mkdir -p "$d" || return 1
+  for p in $pkgs; do
+    n=${p%.*}
+    read -r dir sum <<< "$(patched_rpm_entry "$srpm" "$n")"
+    file="${d}/${n}-${vr}.${BROTLI_RPM_SUFFIX}.x86_64.rpm"
+    if ! echo "${sum}  ${file}" | sha256sum -c --quiet - >/dev/null 2>&1; then
+      rm -f "$file"
+      echo "downloading ${file##*/}"
+      if ! curl -fsSL --connect-timeout 30 --max-time 300 -o "$file" "${BROTLI_RPM_MIRROR}/${dir}/${file##*/}" ||
+         ! echo "${sum}  ${file}" | sha256sum -c --quiet - >/dev/null 2>&1; then
+        rm -f "$file"
+        echo "${file##*/} download failed or does not match its pinned sha256"
+        return 1
+      fi
+    fi
+    files+=("$file")
+  done
+  # unsigned packages, checked against the pinned sha256 above instead
+  if ! out=$(dnf -y -q --disablerepo='*' --setopt=localpkg_gpgcheck=0 install "${files[@]}" 2>&1); then
+    printf '%s\n' "$out" | tail -5
+    echo "dnf could not install the patched brotli packages"
+    return 1
+  fi
+  rm -rf "$d"
+  if ! distro_brotli_fixed; then
+    echo "$(distro_brotli_pkg) is still not the patched build"
+    return 1
+  fi
+  echo "installed $(distro_brotli_pkg), the distro brotli release with the CVE-2026-111497 fix"
+  echo "PHP CLI cron jobs use it too, so they need no LD_LIBRARY_PATH prefix"
 }
 
 # php-fpm -t loads the extensions too, so this covers libjxl via imagick
@@ -254,6 +349,15 @@ fpm_brotli_maps() {
   done | sort -u
 }
 
+# php-fpm still maps a libbrotli that a package update replaced on disk
+fpm_maps_replaced_brotli() {
+  local pid
+  for pid in $(fpm_pids); do
+    awk '$6 ~ /libbrotli/ && $7 == "(deleted)" {f = 1} END {exit !f}' "/proc/${pid}/maps" 2>/dev/null && return 0
+  done
+  return 1
+}
+
 # Running php-fpm maps the override's libbrotlidec and no distro libbrotli
 verify_active() {
   local d=$1 maps
@@ -286,9 +390,14 @@ cleanup_dirs() {
   fi
 }
 
-# centmin.sh default, overridden by custom_config.inc
+# centmin.sh default of setting $1, overridden by custom_config.inc
 effective_setting() {
-  sed -n "s/^PHPFPM_BROTLI_SOURCE=['\"]\{0,1\}\([yYnN]\).*/\1/p" "${CM_DIR}/centmin.sh" "$CUSTOM_CONFIG" 2>/dev/null | tail -1
+  sed -n "s/^${1}=['\"]\{0,1\}\([yYnN]\).*/\1/p" "${CM_DIR}/centmin.sh" "$CUSTOM_CONFIG" 2>/dev/null | tail -1
+}
+
+# PHPFPM_BROTLI_RPM from the caller's environment, else centmin.sh and custom_config.inc
+rpm_wanted() {
+  [[ "${PHPFPM_BROTLI_RPM:-$(effective_setting PHPFPM_BROTLI_RPM)}" = [yY] ]]
 }
 
 cli_hint() {
@@ -299,11 +408,18 @@ cli_hint() {
 cmd_on() {
   local prev d foreign
   require_systemd || return 1
+  if rpm_wanted && ! distro_brotli_fixed; then
+    install_patched_rpm
+  fi
   if distro_brotli_fixed; then
     echo "distro $(distro_brotli_pkg) includes the CVE-2026-111497 fix, the override is not needed"
     if [ -f "$DROPIN" ]; then
       cmd_off
       return $?
+    fi
+    if fpm_maps_replaced_brotli; then
+      systemctl restart php-fpm
+      echo "restarted php-fpm to load the updated distro brotli"
     fi
     return 0
   fi
@@ -360,7 +476,7 @@ cmd_off() {
     echo "override is not on"
   fi
   cleanup_dirs
-  if [[ "$(effective_setting)" = [yY] ]]; then
+  if [[ "$(effective_setting PHPFPM_BROTLI_SOURCE)" = [yY] ]] && ! distro_brotli_fixed; then
     echo "PHPFPM_BROTLI_SOURCE='y' is set, so the next menu 5 PHP upgrade turns the override back on"
     echo "set PHPFPM_BROTLI_SOURCE='n' in ${CUSTOM_CONFIG} to keep it off"
   fi
@@ -385,7 +501,16 @@ cmd_status() {
   else
     echo "distro brotli: ${pkg:-not found}, lacks the CVE-2026-111497 fix"
   fi
-  echo "setting:       PHPFPM_BROTLI_SOURCE='$(effective_setting)'"
+  if patched_rpm_installed; then
+    echo "patched rpm:   installed, back to the distro release: ${CM_DIR}/tools/phpfpm-brotli.sh rpm-revert"
+  elif [ -n "$pkg" ] && ! distro_brotli_fixed; then
+    if [ -n "$(patched_rpm_entry "$(distro_brotli_srpm)" "$(rpm -q --qf '%{NAME}' "$pkg")")" ]; then
+      echo "patched rpm:   available for this release, on installs it when PHPFPM_BROTLI_RPM='y'"
+    else
+      echo "patched rpm:   none for this release"
+    fi
+  fi
+  echo "setting:       PHPFPM_BROTLI_SOURCE='$(effective_setting PHPFPM_BROTLI_SOURCE)' PHPFPM_BROTLI_RPM='$(effective_setting PHPFPM_BROTLI_RPM)'"
   echo "environment:   $(unit_prop Environment)"
   echo "php-fpm ELF:   $(readelf -d "$PHPFPM_BIN" 2>/dev/null | sed -n 's/.*(\(RPATH\|RUNPATH\)).*\[\(.*\)\]/\1 \2/p')"
   echo "php-fpm maps:"
@@ -406,6 +531,9 @@ cmd_prepare() {
   require_systemd >/dev/null || return 0
   if [[ ! -f "$DROPIN" && "${PHPFPM_BROTLI_SOURCE:-n}" != [yY] ]]; then
     return 0
+  fi
+  if [[ "${PHPFPM_BROTLI_SOURCE:-n}" = [yY] ]] && rpm_wanted && ! distro_brotli_fixed; then
+    install_patched_rpm 2>&1 | sed 's/^/php-fpm brotli override: /'
   fi
   if distro_brotli_fixed; then
     echo "php-fpm brotli override: distro $(distro_brotli_pkg) includes the CVE-2026-111497 fix"
@@ -459,6 +587,34 @@ cmd_verify() {
   return 0
 }
 
+# Downgrade the patched build to the distro release it was made from
+cmd_rpm_revert() {
+  local pkg vr p out targets=()
+  if ! patched_rpm_installed; then
+    echo "the patched brotli rpm is not installed"
+    return 0
+  fi
+  pkg=$(distro_brotli_pkg)
+  vr=$(rpm -q --qf '%{VERSION}-%{RELEASE}\n' "$pkg" | head -1)
+  vr=${vr%".${BROTLI_RPM_SUFFIX}"}
+  for p in $(srpm_pkgs "$(distro_brotli_srpm)"); do
+    targets+=("${p%.*}-${vr}.${p##*.}")
+  done
+  if ! out=$(dnf -y -q downgrade "${targets[@]}" 2>&1); then
+    printf '%s\n' "$out" | tail -5
+    echo "dnf could not downgrade to the distro ${vr} packages"
+    return 1
+  fi
+  if fpm_maps_replaced_brotli; then
+    systemctl restart php-fpm
+  fi
+  echo "back to the distro $(distro_brotli_pkg), which lacks the CVE-2026-111497 fix"
+  if rpm_wanted; then
+    echo "PHPFPM_BROTLI_RPM='y' is set, so the next menu 5 PHP upgrade or on installs the patched rpm again"
+    echo "set PHPFPM_BROTLI_RPM='n' in ${CUSTOM_CONFIG} to use the php-fpm override instead"
+  fi
+}
+
 if [ "$(id -u)" -ne 0 ]; then
   echo "run as root"
   exit 1
@@ -486,8 +642,11 @@ case "$1" in
   verify )
     cmd_verify
     ;;
+  rpm-revert )
+    cmd_rpm_revert
+    ;;
   * )
-    echo "Usage: $0 {on|off|status}"
+    echo "Usage: $0 {on|off|status|rpm-revert}"
     exit 1
     ;;
 esac
