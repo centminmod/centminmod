@@ -143,6 +143,11 @@ fupdate() {
       fi
     fi
   fi
+  # replace a patched brotli rpm that Centmin Mod has withdrawn, see
+  # tools/phpfpm-brotli.sh reconcile (quiet when there is nothing to do)
+  if [ -f "${CM_INSTALLDIR}/tools/phpfpm-brotli.sh" ]; then
+    bash "${CM_INSTALLDIR}/tools/phpfpm-brotli.sh" reconcile
+  fi
   if [ -x "${CM_INSTALLDIR}/tools/cmm-security/cmsec.sh" ]; then
     cmsec_target="${CM_INSTALLDIR}/tools/cmm-security/cmsec.sh"
     cmsec_replace=1
