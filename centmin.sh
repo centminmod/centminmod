@@ -30,7 +30,7 @@ DT=$(date +"%d%m%y-%H%M%S")
 branchname='140.00beta01'
 SCRIPT_MAJORVER='140'
 SCRIPT_MINORVER='00'
-SCRIPT_INCREMENTVER='435'
+SCRIPT_INCREMENTVER='436'
 SCRIPT_VERSIONSHORT="${branchname}"
 SCRIPT_VERSION="${SCRIPT_VERSIONSHORT}.b${SCRIPT_INCREMENTVER}"
 SCRIPT_DATE='16/01/25'
@@ -1132,6 +1132,7 @@ PHPZOPFLI='n'               # enable zopfli php extension https://github.com/kjd
 PHPZOPFLI_ALWAYS='n'        # zopfli php extension always install on php recompiles
 PHP_BROTLI='n'              # brotli php extension https://github.com/kjdev/php-ext-brotli
 PHPFPM_BROTLI_SOURCE='y'    # php-fpm loads source built brotli 1.2.1 until distro brotli has the CVE-2026-111497 fix, tools/phpfpm-brotli.sh
+PHPFPM_BROTLI_RPM='y'       # with PHPFPM_BROTLI_SOURCE='y', install a Centmin Mod patched distro brotli rpm instead when one matches the installed release
 PHP_LZFOUR='n'              # lz4 php extension https://github.com/kjdev/php-ext-lz4
 PHP_LZF='n'                 # lzf php extension https://github.com/php/pecl-file_formats-lzf php-ext-lzf
 PHP_ZSTD='n'                # zstd php extension https://github.com/kjdev/php-ext-zstd
