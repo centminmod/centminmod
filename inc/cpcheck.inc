@@ -3197,6 +3197,14 @@ nvcheck() {
   fi
 }
 
+brotli_rpm_notice() {
+  # warn when Centmin Mod has withdrawn the patched brotli rpm installed here.
+  # rpm queries only, cmupdate or tools/phpfpm-brotli.sh reconcile replaces it
+  if [[ "$CMM_AUTOUPDATE_RUN" != y && -f "${SCRIPT_DIR}/tools/phpfpm-brotli.sh" ]] && rpm -qf --qf '%{RELEASE}\n' /usr/lib64/libbrotlidec.so.1 2>/dev/null | grep -q 'cmm[0-9]'; then
+    bash "${SCRIPT_DIR}/tools/phpfpm-brotli.sh" notice
+  fi
+}
+
 cmupdatecheck() {
   if [ ! -h /usr/bin/cmupdate ]; then
     rm -rf /usr/bin/cmupdate
@@ -5081,6 +5089,7 @@ if [[ "$INITIALINSTALL" != [yY] ]]; then
   dmotdcheck
   nvcheck
   cmupdatecheck
+  brotli_rpm_notice
   multiphpcheck
   mjemalloc
   blockeditorcheck

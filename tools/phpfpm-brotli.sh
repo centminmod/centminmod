@@ -15,11 +15,15 @@
 # prepare menu 5, before its php-fpm restart: refresh or retire the override
 # verify  menu 5, after its php-fpm restart: confirm it or fall back
 # rpm-revert  downgrade the patched brotli rpm to the distro release
+# reconcile   cmupdate: replace a patched build Centmin Mod has withdrawn
+# notice      centmin.sh start: rpm-only check that warns about a withdrawn build
 #
 # With PHPFPM_BROTLI_RPM='y', on and prepare first install a Centmin Mod
 # patched build of the distro brotli packages when one matches the installed
 # release exactly. That fixes the system library for php-fpm, PHP CLI and
-# everything else, so the override is not needed.
+# everything else, so the override is not needed. A build listed in
+# BROTLI_RPM_REVOKED is replaced by the distro release plus the override on
+# the next cmupdate, on or menu 5 prepare.
 #
 # The override retires itself (on, prepare) once the distro brotli package
 # includes the fix. prepare and verify never fail the calling menu.
@@ -37,22 +41,29 @@ CUSTOM_CONFIG='/etc/centminmod/custom_config.inc'
 CM_DIR=$(readlink -f "$(dirname "${BASH_SOURCE[0]}")/..")
 
 # Patched distro brotli builds: the distro source rpm rebuilt with the fix,
-# mirror directory, package and sha256. Same version and release plus .cmm1,
-# so the distro's own fixed release still replaces them.
-BROTLI_RPM_SUFFIX='cmm1'
+# mirror directory, package and sha256. Same version and release plus ^cmm1:
+# the caret sorts above the distro release but below any later distro rebuild
+# (.1, .alma.1, a release bump), so the distro's own fix still replaces them.
+BROTLI_RPM_SUFFIX='^cmm1'
 BROTLI_RPM_MIRROR='https://parts.centminmod.com/centminmodparts/brotli/rpm'
 BROTLI_RPMS='
-brotli-1.0.6-4.el8_10 el8 brotli db1d5c63d218dc6e0977ca42f738c40070cdb332b8a06e036ef7a717da2ef72c
-brotli-1.0.6-4.el8_10 el8 brotli-devel 487e448029c82effbe23b66c915cb7b7c3d4294e1fb7156ae9b5bbabfec2af6d
-brotli-1.0.6-4.el8_10 el8 python3-brotli 8af84eb5d844e0a50be08274dafba3fcf5e38d77d4f403b3da5b74bda80ed1cc
-brotli-1.0.9-10.el9_8 el9 brotli fa4d7aa12f453e0b7c9825f9ab64cbd2813c0d36b9f8f9b82941a8566e4aeb70
-brotli-1.0.9-10.el9_8 el9 brotli-devel 677e2bc325ef4117f64b836e2f45a9910763adfd28a7943d16d3c73c52388392
-brotli-1.0.9-10.el9_8 el9 libbrotli c57c5d107dfbbcfbaac2fa98291059fbdf2d76a04aa8550b3ebb4e984fed21d4
-brotli-1.0.9-10.el9_8 el9 python3-brotli 95c5d90fc3619316d7e7bb3f8170fab5c130b4a997aa47a1128721ea4da50dfb
-brotli-1.1.0-8.el10_2 el10 brotli 185bdb9d0569f14be9364c040e1c3aa4891a65af6bfd1e3fa3354f07ccd2af58
-brotli-1.1.0-8.el10_2 el10 brotli-devel fe399d500abf4d3ed365020eff34029f8b76560c7e2d64235c916c757c393c28
-brotli-1.1.0-8.el10_2 el10 libbrotli cbcecdcc985ab824d71075615f1689ed359c599827c678c9c68c9bad47b07c31
-brotli-1.1.0-8.el10_2 el10 python3-brotli 88973f21632771215afa7e36045cc3462167c02dce97652f91a8e0d699957544
+brotli-1.0.6-4.el8_10 el8 brotli fe861ba4f1cc8f6eaf81d3c074986060343886cd906cfc20bcc952a39395cfb4
+brotli-1.0.6-4.el8_10 el8 brotli-devel 840237fcb04ad73bc443edae1227765258cd9ac43b5380ae80927aa185c3b918
+brotli-1.0.6-4.el8_10 el8 python3-brotli e30ea19b55639ca23c07f207f7775a105b3e43ab303e410fa38be3eac3498dcf
+brotli-1.0.9-10.el9_8 el9 brotli b7d7a912a15a6e750adbfaa5c29ae87e1dfe238653745d1d121eec577d6d072b
+brotli-1.0.9-10.el9_8 el9 brotli-devel f75c890a9cf7eef1c1f7ab918454878136261763ae1f3c7e85f38fbfcb5542eb
+brotli-1.0.9-10.el9_8 el9 libbrotli 03319fb666388f0b6a0ccc1aefa553e4f2b5d56806985c1e3662a81aa10de261
+brotli-1.0.9-10.el9_8 el9 python3-brotli f285aed342c5092623eea60ce1db6fbc561974615639497fe904e5f1e802557b
+brotli-1.1.0-8.el10_2 el10 brotli 17dd2c31fa5426214bcb4fc66894e30b9fa007ba3d60868b78707676ded64bdd
+brotli-1.1.0-8.el10_2 el10 brotli-devel 9bdb5169e1fed94581341ae876ae7b7a1c24557f6b420fe18e5816bd978e9406
+brotli-1.1.0-8.el10_2 el10 libbrotli 01a2b1057f8bc4c98a19e75165c48ae691700d730fb29ef9f3928a8d6603c8b6
+brotli-1.1.0-8.el10_2 el10 python3-brotli 8ab7f5572a9370bdd2df3a9206b78d6ab655c619bbe32ff7e4c0b731dfd39035
+'
+# Patched builds Centmin Mod has withdrawn, one source rpm per line without
+# .src.rpm, e.g. brotli-1.0.9-10.el9_8^cmm1. Never installed, and replaced by
+# the distro release plus the override where installed. Only ever add lines,
+# so an older checkout can't withdraw more than a newer one.
+BROTLI_RPM_REVOKED='
 '
 
 # brotli_fixed_version and brotli_version_check
@@ -91,29 +102,40 @@ dir_valid() {
   brotli_version_check "${d}/bin/brotli" >/dev/null
 }
 
-# Package owning the system libbrotlidec php-fpm loads without the override
-distro_brotli_pkg() {
-  local lib pkg
+# rpm query (rpm -qf options) on the package owning the system libbrotlidec
+# php-fpm loads without the override. By file, because EL8's rpm 4.14.3 can't
+# look up a release with a caret (^cmm1) by name.
+distro_brotli_rpmq() {
+  local lib
   lib=$(readlink -f /usr/lib64/libbrotlidec.so.1 2>/dev/null)
   [ -f "$lib" ] || return 1
   # rpm prints "not owned by any package" on stdout, so go by its exit status
-  pkg=$(rpm -qf --qf '%{NAME}-%{VERSION}-%{RELEASE}\n' "$lib" 2>/dev/null) || return 1
+  rpm -qf "$@" "$lib" 2>/dev/null
+}
+
+distro_brotli_pkg() {
+  local pkg
+  pkg=$(distro_brotli_rpmq --qf '%{NAME}-%{VERSION}-%{RELEASE}\n') || return 1
   echo "${pkg%%$'\n'*}"
 }
 
-# AlmaLinux/Rocky backports keep the version number, so check the changelog too
+# AlmaLinux/Rocky backports keep the version number, so check the changelog too.
+# A withdrawn patched build doesn't count as fixed.
 distro_brotli_fixed() {
-  local pkg
-  pkg=$(distro_brotli_pkg) || return 1
-  rpm -q --changelog "$pkg" 2>/dev/null | grep -q 'CVE-2026-111497' && return 0
-  brotli_fixed_version "$(rpm -q --qf '%{VERSION}' "$pkg")"
+  distro_brotli_pkg >/dev/null || return 1
+  rpm_revoked "$(distro_brotli_srpm)" && return 1
+  distro_brotli_rpmq --changelog | grep -q 'CVE-2026-111497' && return 0
+  brotli_fixed_version "$(distro_brotli_rpmq --qf '%{VERSION}\n' | head -1)"
 }
 
 # Source rpm of that package, e.g. brotli-1.0.9-10.el9_8.src.rpm
 distro_brotli_srpm() {
-  local pkg
-  pkg=$(distro_brotli_pkg) || return 1
-  rpm -q --qf '%{SOURCERPM}\n' "$pkg" 2>/dev/null | head -1
+  distro_brotli_rpmq --qf '%{SOURCERPM}\n' | head -1
+}
+
+# Version-release of that package, e.g. 1.0.9-10.el9_8^cmm1
+distro_brotli_vr() {
+  distro_brotli_rpmq --qf '%{VERSION}-%{RELEASE}\n' | head -1
 }
 
 # Installed packages built from source rpm $1, as name.arch
@@ -121,8 +143,14 @@ srpm_pkgs() {
   rpm -qa --qf '%{NAME}.%{ARCH} %{SOURCERPM}\n' | awk -v s="$1" '$2 == s {print $1}' | sort
 }
 
+# Any Centmin Mod patched build, current (^cmmN) or older (.cmmN)
 patched_rpm_installed() {
-  [[ "$(distro_brotli_pkg)" = *".${BROTLI_RPM_SUFFIX}" ]]
+  [[ "$(distro_brotli_pkg)" =~ [.^]cmm[0-9]+$ ]]
+}
+
+# Source rpm $1 (with or without .src.rpm) is a withdrawn patched build
+rpm_revoked() {
+  [ -n "$1" ] && grep -qxF "${1%.src.rpm}" <<< "$BROTLI_RPM_REVOKED"
 }
 
 # Mirror directory and sha256 of the patched build of package $2 from source rpm $1
@@ -139,6 +167,10 @@ install_patched_rpm() {
   local d="${DIR_TMP}/brotli-rpm"
   command -v dnf >/dev/null 2>&1 || return 1
   srpm=$(distro_brotli_srpm) || return 1
+  if rpm_revoked "${srpm%.src.rpm}${BROTLI_RPM_SUFFIX}"; then
+    echo "the patched brotli build of ${srpm%.src.rpm} was withdrawn"
+    return 1
+  fi
   pkgs=$(srpm_pkgs "$srpm")
   for p in $pkgs; do
     if [[ "${p##*.}" != 'x86_64' || -z "$(patched_rpm_entry "$srpm" "${p%.*}")" ]]; then
@@ -146,16 +178,18 @@ install_patched_rpm() {
       return 1
     fi
   done
-  vr=$(rpm -q --qf '%{VERSION}-%{RELEASE}\n' "$(distro_brotli_pkg)" | head -1)
+  vr=$(distro_brotli_vr)
+  [[ -n "$pkgs" && -n "$vr" ]] || return 1
   mkdir -p "$d" || return 1
   for p in $pkgs; do
     n=${p%.*}
     read -r dir sum <<< "$(patched_rpm_entry "$srpm" "$n")"
-    file="${d}/${n}-${vr}.${BROTLI_RPM_SUFFIX}.x86_64.rpm"
+    file="${d}/${n}-${vr}${BROTLI_RPM_SUFFIX}.x86_64.rpm"
     if ! echo "${sum}  ${file}" | sha256sum -c --quiet - >/dev/null 2>&1; then
       rm -f "$file"
       echo "downloading ${file##*/}"
-      if ! curl -fsSL --connect-timeout 30 --max-time 300 -o "$file" "${BROTLI_RPM_MIRROR}/${dir}/${file##*/}" ||
+      # the caret in the file name is %5E in the URL
+      if ! curl -fsSL --connect-timeout 30 --max-time 300 -o "$file" "${BROTLI_RPM_MIRROR}/${dir}/$(sed 's/\^/%5E/g' <<< "${file##*/}")" ||
          ! echo "${sum}  ${file}" | sha256sum -c --quiet - >/dev/null 2>&1; then
         rm -f "$file"
         echo "${file##*/} download failed or does not match its pinned sha256"
@@ -400,6 +434,78 @@ rpm_wanted() {
   [[ "${PHPFPM_BROTLI_RPM:-$(effective_setting PHPFPM_BROTLI_RPM)}" = [yY] ]]
 }
 
+# PHPFPM_BROTLI_SOURCE the same way
+source_wanted() {
+  [[ "${PHPFPM_BROTLI_SOURCE:-$(effective_setting PHPFPM_BROTLI_SOURCE)}" = [yY] ]]
+}
+
+# Replace the installed patched build with the distro packages. With
+# PHPFPM_BROTLI_SOURCE='y' the override goes in first, so php-fpm never runs
+# the unfixed distro brotli in between. dnf distro-sync covers a distro
+# release that is no longer in the repos.
+revert_patched_rpm() {
+  local vr p out override=n targets=() names=()
+  vr=$(distro_brotli_vr | sed -E 's/[.^]cmm[0-9]+$//')
+  for p in $(srpm_pkgs "$(distro_brotli_srpm)"); do
+    targets+=("${p%.*}-${vr}.${p##*.}")
+    names+=("${p%.*}")
+  done
+  # an empty list would make dnf distro-sync act on every package
+  if [[ -z "$vr" || "${#names[@]}" -eq 0 ]]; then
+    echo "could not work out the installed brotli packages, nothing changed"
+    return 1
+  fi
+  if source_wanted && phpfpm_loads_brotli && ! foreign_ld_path >/dev/null; then
+    if ensure_build && preflight "$BUILD_DIR" >/dev/null; then
+      [[ "$BUILD_DIR" = "$(active_dir)" ]] || write_dropin "$BUILD_DIR"
+      override=y
+    else
+      echo "WARNING the php-fpm override could not be prepared"
+    fi
+  fi
+  if ! out=$(dnf -y -q downgrade "${targets[@]}" 2>&1) && ! out=$(dnf -y -q distro-sync "${names[@]}" 2>&1); then
+    printf '%s\n' "$out" | tail -5
+    echo "dnf could not replace the patched brotli packages"
+  fi
+  # distro-sync may have found a distro release with the fix
+  if [[ "$override" = y ]] && distro_brotli_fixed; then
+    remove_dropin
+    override=n
+  fi
+  if systemctl is-active --quiet php-fpm; then
+    systemctl restart php-fpm
+    if [[ "$override" = y ]] && ! verify_active "$BUILD_DIR"; then
+      echo "WARNING php-fpm did not come up with brotli from ${BUILD_DIR}, removing the override"
+      remove_dropin
+      systemctl restart php-fpm
+      override=n
+    fi
+  fi
+  cleanup_dirs
+  if patched_rpm_installed; then
+    echo "WARNING the patched brotli build $(distro_brotli_pkg) is still installed"
+    [[ "$override" = y ]] && echo "php-fpm loads brotli ${BROTLI_PHP_VER} from ${BUILD_DIR} instead"
+    return 1
+  fi
+  echo "replaced the patched brotli build with the distro $(distro_brotli_pkg)"
+  if distro_brotli_fixed; then
+    echo "the distro release includes the CVE-2026-111497 fix"
+  elif [[ "$override" = y ]]; then
+    echo "php-fpm loads brotli ${BROTLI_PHP_VER} from ${BUILD_DIR}"
+    cli_hint
+  else
+    echo "WARNING the distro release lacks the CVE-2026-111497 fix and the php-fpm override is not on"
+  fi
+}
+
+# Replace an installed patched build that Centmin Mod has withdrawn
+rpm_reconcile() {
+  patched_rpm_installed || return 0
+  rpm_revoked "$(distro_brotli_srpm)" || return 0
+  echo "Centmin Mod withdrew the patched brotli build $(distro_brotli_pkg), going back to the distro release"
+  revert_patched_rpm
+}
+
 cli_hint() {
   echo "PHP CLI cron jobs that fetch remote URLs need the same override, for example:"
   echo "  env LD_LIBRARY_PATH=${BROTLI_PHP_BASE}/current/lib64 /usr/local/bin/php /path/to/cmd.php xf:run-jobs"
@@ -408,6 +514,7 @@ cli_hint() {
 cmd_on() {
   local prev d foreign
   require_systemd || return 1
+  rpm_reconcile
   if rpm_wanted && ! distro_brotli_fixed; then
     install_patched_rpm
   fi
@@ -501,10 +608,14 @@ cmd_status() {
   else
     echo "distro brotli: ${pkg:-not found}, lacks the CVE-2026-111497 fix"
   fi
-  if patched_rpm_installed; then
+  if patched_rpm_installed && rpm_revoked "$(distro_brotli_srpm)"; then
+    echo "patched rpm:   installed but withdrawn by Centmin Mod, replace it: ${CM_DIR}/tools/phpfpm-brotli.sh reconcile"
+  elif patched_rpm_installed; then
     echo "patched rpm:   installed, back to the distro release: ${CM_DIR}/tools/phpfpm-brotli.sh rpm-revert"
   elif [ -n "$pkg" ] && ! distro_brotli_fixed; then
-    if [ -n "$(patched_rpm_entry "$(distro_brotli_srpm)" "$(rpm -q --qf '%{NAME}' "$pkg")")" ]; then
+    if rpm_revoked "$(distro_brotli_srpm | sed 's/\.src\.rpm$//')${BROTLI_RPM_SUFFIX}"; then
+      echo "patched rpm:   withdrawn for this release, the override is used instead"
+    elif [ -n "$(patched_rpm_entry "$(distro_brotli_srpm)" "$(distro_brotli_rpmq --qf '%{NAME}\n' | head -1)")" ]; then
       echo "patched rpm:   available for this release, on installs it when PHPFPM_BROTLI_RPM='y'"
     else
       echo "patched rpm:   none for this release"
@@ -529,6 +640,8 @@ cmd_status() {
 cmd_prepare() {
   local foreign
   require_systemd >/dev/null || return 0
+  # before the early return below, so a withdrawn build is replaced either way
+  rpm_reconcile 2>&1 | sed 's/^/php-fpm brotli override: /'
   if [[ ! -f "$DROPIN" && "${PHPFPM_BROTLI_SOURCE:-n}" != [yY] ]]; then
     return 0
   fi
@@ -589,39 +702,51 @@ cmd_verify() {
 
 # Downgrade the patched build to the distro release it was made from
 cmd_rpm_revert() {
-  local pkg vr p out targets=()
+  require_systemd || return 1
   if ! patched_rpm_installed; then
     echo "the patched brotli rpm is not installed"
     return 0
   fi
-  pkg=$(distro_brotli_pkg)
-  vr=$(rpm -q --qf '%{VERSION}-%{RELEASE}\n' "$pkg" | head -1)
-  vr=${vr%".${BROTLI_RPM_SUFFIX}"}
-  for p in $(srpm_pkgs "$(distro_brotli_srpm)"); do
-    targets+=("${p%.*}-${vr}.${p##*.}")
-  done
-  if ! out=$(dnf -y -q downgrade "${targets[@]}" 2>&1); then
-    printf '%s\n' "$out" | tail -5
-    echo "dnf could not downgrade to the distro ${vr} packages"
-    return 1
-  fi
-  if fpm_maps_replaced_brotli; then
-    systemctl restart php-fpm
-  fi
-  echo "back to the distro $(distro_brotli_pkg), which lacks the CVE-2026-111497 fix"
-  if rpm_wanted; then
+  revert_patched_rpm || return 1
+  if rpm_wanted && ! rpm_revoked "$(distro_brotli_srpm | sed 's/\.src\.rpm$//')${BROTLI_RPM_SUFFIX}"; then
     echo "PHPFPM_BROTLI_RPM='y' is set, so the next menu 5 PHP upgrade or on installs the patched rpm again"
-    echo "set PHPFPM_BROTLI_RPM='n' in ${CUSTOM_CONFIG} to use the php-fpm override instead"
+    echo "set PHPFPM_BROTLI_RPM='n' in ${CUSTOM_CONFIG} to keep the distro package"
   fi
 }
+
+# cmupdate, after updating the code: replace a withdrawn patched build.
+# Prints nothing when there is nothing to do.
+cmd_reconcile() {
+  require_systemd >/dev/null || return 0
+  rpm_reconcile
+  return 0
+}
+
+# centmin.sh start: rpm queries only, no dnf, no lock and no changes
+cmd_notice() {
+  if patched_rpm_installed && rpm_revoked "$(distro_brotli_srpm)"; then
+    echo "WARNING Centmin Mod withdrew the patched brotli build $(distro_brotli_pkg)"
+    echo "replace it with: ${CM_DIR}/tools/phpfpm-brotli.sh reconcile"
+  fi
+  return 0
+}
+
+# notice runs on every centmin.sh start, so it skips the root check and lock
+if [ "$1" = notice ]; then
+  cmd_notice
+  exit 0
+fi
 
 if [ "$(id -u)" -ne 0 ]; then
   echo "run as root"
   exit 1
 fi
 
+# reconcile runs from cmupdate, so it doesn't wait long behind another run
+lock_wait=300
+[ "$1" = reconcile ] && lock_wait=10
 exec 9>/run/phpfpm-brotli.lock
-if ! flock -w 300 9; then
+if ! flock -w "$lock_wait" 9; then
   echo "another phpfpm-brotli.sh run holds /run/phpfpm-brotli.lock"
   exit 1
 fi
@@ -645,8 +770,11 @@ case "$1" in
   rpm-revert )
     cmd_rpm_revert
     ;;
+  reconcile )
+    cmd_reconcile
+    ;;
   * )
-    echo "Usage: $0 {on|off|status|rpm-revert}"
+    echo "Usage: $0 {on|off|status|prepare|verify|rpm-revert|reconcile|notice}"
     exit 1
     ;;
 esac
