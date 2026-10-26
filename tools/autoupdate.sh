@@ -1911,8 +1911,10 @@ au_os_step() {
   # the install command before the list: a long message is cut for Pushover,
   # which keeps its start and a short last sentence
   msg="$msg security updates${sev:+ ($sev)}. To install: $(au_os_hint "$testing") (dnf updateinfo info --security lists the CVEs). $details. Auto-update only reports them (AUTOUPDATE_OS='$AUTOUPDATE_OS'), leaving out MariaDB, nginx and PHP."
-  # sent with AUTOUPDATE_NOTIFY='failures' too: in notify mode the alert is the point
-  if AU_NOTIFY_FORCE=y au_notify "$level" "OS security updates pending" "$msg"; then
+  # sent with AUTOUPDATE_NOTIFY='failures' too: in notify mode the alert is the point.
+  # The counts in the title (email subject, Pushover title) show what is pending
+  # in an inbox list, and each new set starts its own email thread
+  if AU_NOTIFY_FORCE=y au_notify "$level" "OS security updates pending ($(au_os_n "$npkg" package), $crit critical)" "$msg"; then
     printf '%s\n' "$items" | tr ' ' '\n' > "$AU_STATE_DIR/os-notified"
   fi
   return 0
