@@ -1143,7 +1143,7 @@ autoupdate_lockcheck() {
   # shared: another probe at the same moment (a login, cmupdate) is not a run
   if ! flock -n -s "$au_lock" -c true 2>/dev/null; then
     # plain echo: cpcheck runs before centmin-cli.sh defines cecho
-    echo "An unattended tools/autoupdate.sh nginx/PHP-FPM update is running."
+    echo "An unattended tools/autoupdate.sh nginx/PHP-FPM/OS update is running."
     echo "Wait for it to finish, see: bash ${SCRIPT_DIR}/tools/autoupdate.sh status"
     # $0 may be the /usr/bin/centmin wrapper or a relative centmin.sh
     local au_self

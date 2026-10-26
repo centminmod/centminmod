@@ -2462,10 +2462,11 @@
 # Unattended Nginx and PHP-FPM Updates (tools/autoupdate.sh)
 # Opt in to automatic centmin.sh menu option 4 (nginx) and 5 (PHP-FPM) updates.
 # AUTOMATIC BEHAVIOR:
-#   - While either is 'y', an hourly /etc/cron.d/centminmod-autoupdate entry runs
-#     tools/autoupdate.sh. Root/sudo dmotd SSH logins, centmin.sh, cmupdate and the
-#     check-for-updates.sh cron job re-add it if it is deleted; set both to 'n'
-#     to turn auto-updates off (the entry is then removed).
+#   - While either is 'y' (or AUTOUPDATE_OS is on, below), an hourly
+#     /etc/cron.d/centminmod-autoupdate entry runs tools/autoupdate.sh. Root/sudo
+#     dmotd SSH logins, centmin.sh, cmupdate and the check-for-updates.sh cron job
+#     re-add it if it is deleted; set all three to 'n' to turn auto-updates off
+#     (the entry is then removed).
 #   - nginx follows the newest nginx.org (freenginx.org for freenginx) release on
 #     the branch you run (mainline or stable), or Centmin Mod's NGINX_VERSION
 #     (FREENGINX_VERSION) default (cmupdate runs first) with
@@ -2525,6 +2526,20 @@
 #AUTOUPDATE_NOTIFY='all'
 #AUTOUPDATE_EMAIL=''
 #AUTOUPDATE_CHECK_URLS='http://127.0.0.1/'
+# OS package update alerts (EL8 and newer, dnf). AUTOUPDATE_OS='notify' checks
+# once a day inside AUTOUPDATE_HOURS with dnf check-update --security (dnf.conf
+# excludes and versionlock apply; testing repos, the MariaDB repo and the
+# MariaDB, nginx and PHP packages are left out) and alerts when a pending
+# security advisory is one no earlier alert covered, unless
+# AUTOUPDATE_NOTIFY='none'. The check waits while yum/dnf/rpm runs or disk
+# space is short (and, with nginx or PHP-FPM on, while centmin.sh or cmupdate
+# runs). Nothing is installed: 'security' and 'all' are planned install modes
+# and act as notify for now. A user's own dnf-automatic or yum-cron setup is
+# left alone. With only AUTOUPDATE_OS on, auto-update does not run cmupdate:
+# run cmupdate now and then so fixes to the check arrive. Check now with:
+# bash /usr/local/src/centminmod/tools/autoupdate.sh run os
+#AUTOUPDATE_OS='n'
+#AUTOUPDATE_OS_EXCLUDE=''
 
 # Nginx Upgrade Sleep Time
 # Seconds to wait during Nginx upgrades

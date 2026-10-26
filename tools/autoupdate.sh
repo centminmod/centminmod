@@ -1,6 +1,6 @@
 #!/bin/bash
 ###########################################################
-# Centmin Mod unattended nginx and PHP-FPM updates
+# Centmin Mod unattended nginx and PHP-FPM updates, and OS package update alerts
 #
 # WHAT IT DOES
 # Keeps nginx and/or PHP-FPM updated with nobody logged in, using the same
@@ -10,6 +10,7 @@
 #
 #   AUTOUPDATE_NGINX='y'
 #   AUTOUPDATE_PHP='y'
+#   AUTOUPDATE_OS='notify'    (OS packages: alerts only, see below)
 #
 # then see what it would do: bash tools/autoupdate.sh check
 # It needs the git checkout at /usr/local/src/centminmod that cmupdate keeps.
@@ -36,6 +37,13 @@
 # - Same-version rebuilds listed in tools/autoupdate-rebuilds.txt, which
 #   Centmin Mod adds when patches change without a new upstream release,
 #   e.g. security backports for end-of-life PHP 7.2-8.1.
+# - OS packages (AUTOUPDATE_OS='notify', EL8 and newer): nothing is installed.
+#   Once a day it runs dnf check-update --security, which applies the dnf.conf
+#   excludes and versionlock, with testing repos, the MariaDB repo and the
+#   MariaDB, nginx and PHP packages left out (AUTOUPDATE_OS_EXCLUDE adds more),
+#   and alerts when a pending security advisory (or a package no advisory
+#   names) is one no earlier alert covered; the dmotd login banner shows the
+#   last check's count.
 #
 # HOW A RUN WORKS
 # An hourly /etc/cron.d/centminmod-autoupdate entry runs `autoupdate.sh cron`.
@@ -43,7 +51,8 @@
 # settings alert, looks for a stuck run and records a run that died
 # mid-build. Inside the window it:
 #  1. takes a lock; centmin.sh and cmupdate refuse to start until it ends
-#  2. runs cmupdate (AUTOUPDATE_CMUPDATE) so patches and version pins are
+#  2. runs cmupdate (AUTOUPDATE_CMUPDATE; only while nginx or PHP-FPM
+#     auto-update is on) so patches and version pins are
 #     current, then carries on with the updated copy of this script. If
 #     cmupdate fails or runs over 30 minutes the run uses the current code,
 #     but it builds nothing when the checkout is left unusable (unmerged or
@@ -66,6 +75,13 @@
 #     automatic rollback (menu 5 also updates shared libraries), so a PHP
 #     failure needs a look.
 #  6. notifies by Pushover and/or email (AUTOUPDATE_NOTIFY)
+#  7. with AUTOUPDATE_OS on, the daily OS package check, after any builds
+#     and unless a yum/dnf/rpm process is running, /var/cache/dnf has less
+#     than 512MB free or /tmp less than 16MB (with nginx or PHP-FPM on, the
+#     whole run also waits while centmin.sh or cmupdate runs). Its alerts
+#     (pending updates, enabled testing repos, base OS repos without
+#     advisories) are sent unless AUTOUPDATE_NOTIFY='none'; one that was not
+#     delivered is retried at the next hourly run in the window
 #
 # SAFETY NETS
 # - A failed update is retried only after the Centmin Mod code changes and 24
@@ -83,7 +99,7 @@
 # - Deleting the cron entry does not turn auto-updates off: root/sudo dmotd
 #   logins, centmin.sh, cmupdate and the check-for-updates.sh cron put it
 #   back, log it and notify (unless AUTOUPDATE_NOTIFY is failures or none).
-#   Set AUTOUPDATE_NGINX and AUTOUPDATE_PHP to 'n' to turn it off.
+#   Set AUTOUPDATE_NGINX, AUTOUPDATE_PHP and AUTOUPDATE_OS to 'n' to turn it off.
 # - AUTOUPDATE_PHP_HOLD keeps a PHP version, e.g. after a deliberate
 #   downgrade. For nginx, an NGINX_VERSION line in custom_config.inc holds
 #   that version (upgrades stop there), but listed same-version rebuilds
@@ -105,7 +121,8 @@
 #   run          update now, ignoring AUTOUPDATE_HOURS, the delay and the
 #                wait before retrying a failed update (AUTOUPDATE_PHP_HOLD
 #                still applies; a failed build still in use needs reset); a
-#                dropped SSH session does not stop it
+#                dropped SSH session does not stop it. `run os` runs only
+#                the OS package check, without cmupdate
 #   ensure       add, repair or remove the cron entry to match the settings
 #   notify-test  send a test Pushover/email notification
 #   reset        forget failed and interrupted update holds, the cmupdate
@@ -155,6 +172,12 @@ AUTOUPDATE_NGINX_TARGET='latest'  # 'latest' = newest nginx.org (or freenginx.or
                                   # freenginx; cmupdate brings it). An
                                   # NGINX_VERSION line in custom_config.inc sets the version to
                                   # install and stop at, with either setting
+AUTOUPDATE_OS='n'                 # OS packages (dnf, EL8+): 'notify' = alert when a pending
+                                  # security update is new since the last alert, installs nothing. 'security' and
+                                  # 'all' (installing them) are planned and act as notify for now
+AUTOUPDATE_OS_EXCLUDE=''          # more package globs the OS check leaves out, space or comma
+                                  # separated (MariaDB*, galera*, mysql*, perl-DBD-MySQL, nginx*
+                                  # and php* always are)
 #
 # When
 AUTOUPDATE_HOURS='2-5'            # server local hours an update may start in: 2-5, 22-3, 3 or any;
@@ -270,8 +293,8 @@ AU_SYSTEMD=n
 # status, the run log, the dmotd banner and a one-time alert say so instead of
 # silently never updating.
 au_validate_config() {
-  local v name def min max u urls
-  AU_CONFIG_WARN=''
+  local v name def min max u urls builds=n
+  AU_CONFIG_WARN='' AU_OS_NOTE=''
   # menu 4 uses this default for an empty value: the rollback must find its snapshot
   [[ -n "$NGINXBACKUPDIR" ]] || NGINXBACKUPDIR=/usr/local/nginxbackup
   for name in AUTOUPDATE_NGINX:n AUTOUPDATE_PHP:n AUTOUPDATE_CMUPDATE:y AUTOUPDATE_PUSHOVER:y; do
@@ -284,6 +307,8 @@ au_validate_config() {
          printf -v "$name" '%s' "$def" ;;
     esac
   done
+  # settings only the builds use are reported while nginx or PHP-FPM is on
+  [[ "$AUTOUPDATE_NGINX" = y || "$AUTOUPDATE_PHP" = y ]] && builds=y
   v=$(printf '%s' "$AUTOUPDATE_HOURS" | tr -d '[:space:]' | tr '[:upper:]' '[:lower:]' | sed -E 's/:[0-9]{2}//g')
   [[ -n "$v" ]] || v='2-5'
   [[ "$v" =~ ^[0-9]{1,2}$ ]] && v="$v-$v"
@@ -303,13 +328,15 @@ au_validate_config() {
       printf -v "$name" '%s' "$((10#$v))"
       continue
     fi
-    AU_CONFIG_WARN="$AU_CONFIG_WARN $name='${!name}' is not a number from $min to $max, using $def;"
+    # (the delay and the disk space matter to builds only)
+    [[ "$builds" = y || "$name" = AUTOUPDATE_STUCK_HOURS || "$name" = AUTOUPDATE_NICE ]] &&
+      AU_CONFIG_WARN="$AU_CONFIG_WARN $name='${!name}' is not a number from $min to $max, using $def;"
     printf -v "$name" '%s' "$def"
   done
   AUTOUPDATE_MAXLOAD=$(printf '%s' "$AUTOUPDATE_MAXLOAD" | tr -d '[:space:]')
   AUTOUPDATE_CRON_MINUTE=$(printf '%s' "$AUTOUPDATE_CRON_MINUTE" | tr -d '[:space:]')
   if [[ -n "$AUTOUPDATE_MAXLOAD" ]] && ! { [[ "$AUTOUPDATE_MAXLOAD" =~ ^[0-9]+(\.[0-9]+)?$ ]] && awk -v m="$AUTOUPDATE_MAXLOAD" 'BEGIN { exit !(m > 0) }'; }; then
-    AU_CONFIG_WARN="$AU_CONFIG_WARN AUTOUPDATE_MAXLOAD='$AUTOUPDATE_MAXLOAD' is not a number above 0, using the CPU thread count;"
+    [[ "$builds" = y ]] && AU_CONFIG_WARN="$AU_CONFIG_WARN AUTOUPDATE_MAXLOAD='$AUTOUPDATE_MAXLOAD' is not a number above 0, using the CPU thread count;"
     AUTOUPDATE_MAXLOAD=''
   fi
   if [[ -n "$AUTOUPDATE_CRON_MINUTE" ]] && ! { [[ "$AUTOUPDATE_CRON_MINUTE" =~ ^[0-9]{1,2}$ ]] && (( 10#$AUTOUPDATE_CRON_MINUTE < 60 )); }; then
@@ -346,7 +373,7 @@ au_validate_config() {
   v=$(printf '%s' "$AUTOUPDATE_NGINX_TARGET" | tr -d '[:space:]' | tr '[:upper:]' '[:lower:]')
   case "${v:-latest}" in
     centmin|latest) AUTOUPDATE_NGINX_TARGET=${v:-latest} ;;
-    *) AU_CONFIG_WARN="$AU_CONFIG_WARN AUTOUPDATE_NGINX_TARGET='$AUTOUPDATE_NGINX_TARGET' is not latest or centmin, using centmin;"
+    *) [[ "$builds" = y ]] && AU_CONFIG_WARN="$AU_CONFIG_WARN AUTOUPDATE_NGINX_TARGET='$AUTOUPDATE_NGINX_TARGET' is not latest or centmin, using centmin;"
        AUTOUPDATE_NGINX_TARGET=centmin ;;
   esac
   # http(s) URLs, space or comma separated; anything else is left out and reported
@@ -358,7 +385,7 @@ au_validate_config() {
     [[ -n "$u" ]] || continue
     if [[ "${u,,}" =~ ^https?://[^/,]+ ]]; then
       AUTOUPDATE_CHECK_URLS="${AUTOUPDATE_CHECK_URLS:+$AUTOUPDATE_CHECK_URLS }$u"
-    else
+    elif [[ "$builds" = y ]]; then
       AU_CONFIG_WARN="$AU_CONFIG_WARN AUTOUPDATE_CHECK_URLS entry '$u' is not an http(s) URL, so it is not checked;"
     fi
   done
@@ -371,6 +398,37 @@ au_validate_config() {
       AUTOUPDATE_EMAIL="${AUTOUPDATE_EMAIL:+$AUTOUPDATE_EMAIL }$u"
     else
       AU_CONFIG_WARN="$AU_CONFIG_WARN AUTOUPDATE_EMAIL entry '$u' is not an email address, so nothing is sent to it;"
+    fi
+  done
+  # OS packages: the install modes are not there yet, notify is the safe stand-in
+  v=$(printf '%s' "$AUTOUPDATE_OS" | tr -d '[:space:]' | tr '[:upper:]' '[:lower:]')
+  case "${v:-n}" in
+    n|no|off|false|0) AUTOUPDATE_OS=n ;;
+    # on, as for the other switches: the mode that installs nothing
+    notify|y|yes|on|true|1) AUTOUPDATE_OS=notify ;;
+    # documented as planned: a note in check and status, not a settings problem
+    security|all) AU_OS_NOTE="AUTOUPDATE_OS='$v' does not install updates yet, so it acts as notify"
+       AUTOUPDATE_OS=notify ;;
+    *) AU_CONFIG_WARN="$AU_CONFIG_WARN AUTOUPDATE_OS='$AUTOUPDATE_OS' is not n, notify, security or all, using n;"
+       AUTOUPDATE_OS=n ;;
+  esac
+  # (the text names the switch: with nothing else on it must still be reported)
+  if [[ "$AUTOUPDATE_OS" != n ]] && ! command -v dnf >/dev/null 2>&1; then
+    AU_CONFIG_WARN="$AU_CONFIG_WARN AUTOUPDATE_OS='$AUTOUPDATE_OS' needs dnf (EL8 or newer), which is not installed, using n;"
+    AUTOUPDATE_OS=n
+  fi
+  # Centmin Mod's own packages (menu 11 updates MariaDB; nginx and PHP are
+  # source builds), also on servers whose dnf.conf excludes predate them
+  AU_OS_EXCLUDES='MariaDB* galera* mysql* perl-DBD-MySQL nginx* php*' AU_OS_USER_EXCLUDES=''
+  read -ra urls <<< "$(printf '%s' "$AUTOUPDATE_OS_EXCLUDE" | tr '\n\t,;' '    ')"
+  for u in "${urls[@]}"; do
+    # a package name or glob: no quotes, brackets or other shell characters,
+    # no leading dash (an option to dnf) and a letter or digit (a bare * would
+    # leave every package out, so the check would never find anything)
+    if [[ "$u" =~ ^[A-Za-z0-9_*?][A-Za-z0-9._+*?-]*$ && "$u" =~ [A-Za-z0-9] ]]; then
+      AU_OS_EXCLUDES="$AU_OS_EXCLUDES $u" AU_OS_USER_EXCLUDES="${AU_OS_USER_EXCLUDES:+$AU_OS_USER_EXCLUDES }$u"
+    elif [[ "$AUTOUPDATE_OS" != n ]]; then
+      AU_CONFIG_WARN="$AU_CONFIG_WARN AUTOUPDATE_OS_EXCLUDE entry '$u' is not a package name or glob, so it is not left out;"
     fi
   done
   AU_CONFIG_WARN=${AU_CONFIG_WARN# }
@@ -388,8 +446,18 @@ au_say() {
   au_log "$*"
 }
 
-au_enabled() {
+# nginx or PHP-FPM builds are on (they need cmupdate and the code tree)
+au_builds_on() {
   [[ "$AUTOUPDATE_NGINX" = [yY] || "$AUTOUPDATE_PHP" = [yY] ]]
+}
+
+au_enabled() {
+  au_builds_on || [[ "$AUTOUPDATE_OS" != n ]]
+}
+
+# a mistyped on/off switch can turn everything off: that must still be reported
+au_switch_warn() {
+  [[ "$AU_CONFIG_WARN" == *AUTOUPDATE_NGINX=* || "$AU_CONFIG_WARN" == *AUTOUPDATE_PHP=* || "$AU_CONFIG_WARN" == *AUTOUPDATE_OS=* ]]
 }
 
 # true when version $1 is newer than $2
@@ -549,9 +617,9 @@ au_curlq() {
 
 au_cron_content() {
   cat <<EOF
-# Centmin Mod unattended nginx/PHP-FPM updates, managed by ${CM_INSTALLDIR}/tools/autoupdate.sh
-# Turn off with AUTOUPDATE_NGINX='n' and AUTOUPDATE_PHP='n' in ${CONFIGSCANBASE}/custom_config.inc,
-# deleting this file alone does not: it is put back while either is 'y'.
+# Centmin Mod unattended nginx/PHP-FPM updates and OS update checks, managed by ${CM_INSTALLDIR}/tools/autoupdate.sh
+# Turn off with AUTOUPDATE_NGINX='n', AUTOUPDATE_PHP='n' and AUTOUPDATE_OS='n' in ${CONFIGSCANBASE}/custom_config.inc,
+# deleting this file alone does not: it is put back while any of them is on.
 SHELL=/bin/bash
 PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
 $(au_cron_minute) * * * * root /bin/bash ${CM_INSTALLDIR}/tools/autoupdate.sh cron >/dev/null 2>&1
@@ -565,7 +633,7 @@ EOF
 au_config_alert() {
   local f="$AU_STATE_DIR/config-warned"
   if [[ -z "$AU_CONFIG_WARN" ]]; then rm -f "$f" "$f.sent"; return 0; fi
-  au_enabled || [[ "$AU_CONFIG_WARN" == *AUTOUPDATE_NGINX=* || "$AU_CONFIG_WARN" == *AUTOUPDATE_PHP=* ]] || return 0
+  au_enabled || au_switch_warn || return 0
   if [[ "$(cat "$f" 2>/dev/null)" != "$AU_CONFIG_WARN" ]]; then
     # without its marker every call would alert again
     { printf '%s\n' "$AU_CONFIG_WARN" > "$f" && [[ "$(cat "$f" 2>/dev/null)" = "$AU_CONFIG_WARN" ]]; } || return 0
@@ -583,6 +651,8 @@ au_ensure() {
   local want had=n tmp msg
   [[ "$(id -u)" -eq 0 ]] || return 0
   mkdir -p "$AU_STATE_DIR"
+  # with everything off no run clears it: an old timer would alert at once on re-enabling
+  [[ "$AUTOUPDATE_OS" != n ]] || rm -f "$AU_STATE_DIR"/pending-os*
   if [[ "$AU_ENSURE_BY" = dmotd || "$AU_ENSURE_BY" = centmin.sh ]]; then
     # don't hold up a login banner or centmin.sh start on a slow Pushover/SMTP server
     ( trap '' HUP; au_config_alert ) </dev/null >/dev/null 2>&1 &
@@ -612,7 +682,7 @@ au_ensure() {
         au_log "ensure: $AU_CRON_FILE differed from the expected entry, rewritten (${AU_ENSURE_BY:-manual})"
       else
         au_log "ensure: $AU_CRON_FILE was missing, re-added (${AU_ENSURE_BY:-manual})"
-        msg="$AU_CRON_FILE was missing while AUTOUPDATE_NGINX='$AUTOUPDATE_NGINX' AUTOUPDATE_PHP='$AUTOUPDATE_PHP', so it was re-added (found by ${AU_ENSURE_BY:-manual}). To stop auto-updates set both to 'n' in ${CONFIGSCANBASE}/custom_config.inc."
+        msg="$AU_CRON_FILE was missing while AUTOUPDATE_NGINX='$AUTOUPDATE_NGINX' AUTOUPDATE_PHP='$AUTOUPDATE_PHP' AUTOUPDATE_OS='$AUTOUPDATE_OS', so it was re-added (found by ${AU_ENSURE_BY:-manual}). To stop auto-updates set all three to 'n' in ${CONFIGSCANBASE}/custom_config.inc."
         if [[ "$AU_ENSURE_BY" = dmotd || "$AU_ENSURE_BY" = centmin.sh ]]; then
           # don't hold up the SSH login banner on a slow Pushover/SMTP server
           ( trap '' HUP; au_notify info "auto-update cron entry re-added" "$msg" ) </dev/null >/dev/null 2>&1 &
@@ -626,7 +696,7 @@ au_ensure() {
     fi
   elif [[ -f "$AU_CRON_FILE" || -f "$AU_STATE_DIR/scheduler-installed" ]]; then
     rm -f "$AU_CRON_FILE" "$AU_STATE_DIR/scheduler-installed"
-    au_log "ensure: AUTOUPDATE_NGINX and AUTOUPDATE_PHP are off, removed $AU_CRON_FILE (${AU_ENSURE_BY:-manual})"
+    au_log "ensure: AUTOUPDATE_NGINX, AUTOUPDATE_PHP and AUTOUPDATE_OS are off, removed $AU_CRON_FILE (${AU_ENSURE_BY:-manual})"
   fi
   return 0
 }
@@ -1141,10 +1211,11 @@ au_plan_gate() {
   fi
 }
 
-# True when an enabled component has an upgrade or rebuild ready to start.
-# Changes no state.
+# True when an enabled component has an upgrade or rebuild ready to start,
+# or the daily OS check is due. Changes no state.
 au_work_due() {
   local comp AU_DRYRUN=y
+  [[ "$AUTOUPDATE_OS" != n ]] && ! au_os_done_today && return 0
   for comp in nginx php; do
     [[ "$comp" = nginx && "$AUTOUPDATE_NGINX" != [yY] ]] && continue
     [[ "$comp" = php && "$AUTOUPDATE_PHP" != [yY] ]] && continue
@@ -1491,6 +1562,363 @@ au_update() {
 }
 
 ###########################################################
+# OS packages (dnf): AUTOUPDATE_OS
+
+# root's dnf cache, and the free MB its metadata refresh needs there; bash
+# before 5.1 (EL8) writes each <<< here-string to a file in /tmp, and without
+# room there the excludes and the parsing would silently get nothing
+AU_OS_CACHE=/var/cache/dnf
+AU_OS_MINDISK_MB=512
+AU_OS_MINTMP_MB=16
+# testing repo ids (almalinux-testing, epel-testing, remi-test,
+# remi-modular-test...): left out of every check, reported when enabled; a
+# --disablerepo glob that matches nothing is silently ignored
+AU_OS_TESTING_GLOBS='*-testing *-testing-* *-test *-test-*'
+
+# a value from the last complete OS check's os-status (key=value lines)
+au_os_state() {
+  sed -n "s/^$1=//p" "$AU_STATE_DIR/os-status" 2>/dev/null | head -n1
+}
+
+# the alert items in $1 (advisory ids and package names, space separated)
+# that no delivered alert covered (os-notified: one per line)
+au_os_unalerted() {
+  printf '%s\n' "$1" | tr ' ' '\n' | awk -v f="$AU_STATE_DIR/os-notified" 'BEGIN { while ((getline l < f) > 0) seen[l] = 1 } NF && !($1 in seen)'
+}
+
+# Done for today: a complete check in the last 23 hours (the slack lets the
+# next day's run at the same cron minute qualify) whose alerts went out. An
+# undelivered alert makes the next run in the window check and send again
+# (not while no channel is set up: a later one gets the alert then).
+au_os_done_today() {
+  local testing noinfo t
+  [[ -n "$(find "$AU_STATE_DIR/os-checked" -mmin -1380 2>/dev/null)" ]] || return 1
+  # a check made while the clock was ahead would otherwise skip until it catches up
+  t=$(au_os_state time)
+  [[ "$t" =~ ^[0-9]+$ ]] && (( t <= $(date +%s) )) || return 1
+  [[ "$AUTOUPDATE_NOTIFY" = none ]] && return 0
+  [[ "$AUTOUPDATE_PUSHOVER" = [yY] && -n "$PUSH_API_TOKEN" && -n "$PUSH_USER_KEY" ]] || [[ -n "$AUTOUPDATE_EMAIL" ]] || return 0
+  testing=$(au_os_state testing) noinfo=$(au_os_state noinfo)
+  [[ -z "$(au_os_unalerted "$(au_os_state items)")" ]] &&
+    [[ -z "$testing" || "$(cat "$AU_STATE_DIR/os-testing" 2>/dev/null)" = "$testing" ]] &&
+    [[ -z "$noinfo" || "$(cat "$AU_STATE_DIR/os-noinfo" 2>/dev/null)" = "$noinfo" ]]
+}
+
+# Every dnf call of the OS check: testing repos and the MariaDB repo left out,
+# Centmin Mod's packages excluded on top of dnf.conf, a dnf lock held by
+# another process fails at once (exit 200) instead of waiting, 15 minutes at
+# most, and fd 9 closed so nothing dnf starts can keep the lock.
+au_os_dnf() {
+  # color=never: color=always in dnf.conf would put escape codes in the rows;
+  # errorlevel=3: -q alone also hides warnings such as "Ignoring repositories:"
+  # (a skip_if_unavailable repo dnf could not read), stdout stays the same
+  local x xs args=(-q --setopt=exit_on_lock=True --setopt=color=never --setopt=errorlevel=3 --disablerepo=mariadb)
+  # read -a does not expand the globs
+  read -ra xs <<< "$AU_OS_TESTING_GLOBS"
+  for x in "${xs[@]}"; do
+    args+=("--disablerepo=$x")
+  done
+  read -ra xs <<< "$AU_OS_EXCLUDES"
+  # --exclude=: a value can never be read as another option
+  for x in "${xs[@]}"; do
+    args+=("--exclude=$x")
+  done
+  timeout -k 30 900 nice -n "$AUTOUPDATE_NICE" dnf "${args[@]}" "$@" < /dev/null 9>&-
+}
+
+# the enabled repo ids, space separated; returns 1 when dnf could not list them
+au_os_repos() {
+  local out
+  out=$(timeout -k 10 120 dnf -q --setopt=exit_on_lock=True --setopt=color=never repolist --enabled < /dev/null 2>/dev/null 9>&-) || return 1
+  awk 'NF && !($1 == "repo" && $2 == "id") {print $1}' <<< "$out" | paste -sd' ' -
+}
+
+# the testing repos among the repo ids $1 (dnf run by hand still installs
+# pre-release packages from them)
+au_os_testing() {
+  printf '%s\n' "$1" | tr ' ' '\n' | awk '$1 ~ /-test(ing)?(-|$)/' | paste -sd' ' -
+}
+
+# Repos among the ids $1 whose security updates dnf --security cannot see:
+# the base OS repos (AlmaLinux/Rocky baseos, Oracle ol9_baseos_latest, RHEL
+# rhel-9-for-x86_64-baseos-rpms) without advisories (updateinfo) in their
+# cached metadata, or, with no base OS repo, every repo the check reads when
+# none has them. EPEL's and stale caches' updateinfo do not count: dnf
+# caches repo X in $AU_OS_CACHE/X-<16 hex digits>.
+au_os_noinfo() {
+  local r rs base=() h='[0-9a-f]'
+  h="$h$h$h$h" h="$h$h$h$h"
+  read -ra rs <<< "$(printf '%s\n' "$1" | tr ' ' '\n' | awk 'NF && $1 != "mariadb" && $1 !~ /-test(ing)?(-|$)/' | paste -sd' ' -)"
+  for r in "${rs[@]}"; do
+    [[ "${r,,}" = *baseos* && "${r,,}" != *-debug* && "${r,,}" != *-source* ]] && base+=("$r")
+  done
+  if (( ${#base[@]} )); then
+    for r in "${base[@]}"; do
+      compgen -G "$AU_OS_CACHE/$r-$h/repodata/*updateinfo*" >/dev/null || printf '%s\n' "$r"
+    done | paste -sd' ' -
+    return 0
+  fi
+  for r in "${rs[@]}"; do
+    compgen -G "$AU_OS_CACHE/$r-$h/repodata/*updateinfo*" >/dev/null && return 0
+  done
+  printf '%s' "${rs[*]}"
+}
+
+# OS updaters scheduled outside Centmin Mod that install packages: the
+# dnf-automatic(5) timer only with apply_updates on (off by default)
+au_os_foreign() {
+  local u out='' apply=n
+  [[ "$AU_SYSTEMD" = y ]] || return 0
+  grep -qiE '^[[:space:]]*apply_updates[[:space:]]*=[[:space:]]*(1|yes|true|on)[[:space:]]*$' /etc/dnf/automatic.conf 2>/dev/null && apply=y
+  for u in dnf-automatic-install.timer dnf-automatic.timer dnf5-automatic.timer; do
+    [[ "$u" = dnf-automatic-install.timer || "$apply" = y ]] || continue
+    systemctl is-enabled --quiet "$u" 2>/dev/null && out="${out:+$out }$u"
+  done
+  echo "$out"
+}
+
+# why the OS check cannot run now, or nothing
+au_os_blocked() {
+  local d=$AU_OS_CACHE avail
+  pgrep -U 0 -u 0 -x 'yum|dnf|rpm|dnf-automatic|yum-cron' >/dev/null 2>&1 && { echo "a yum/dnf/rpm process is running"; return; }
+  [[ -d "$d" ]] || d=/var
+  avail=$(df -Pm "$d" 2>/dev/null | awk 'NR==2 {print $4}')
+  [[ "$avail" =~ ^[0-9]+$ ]] || { echo "df cannot read the free space for $d"; return; }
+  (( avail >= AU_OS_MINDISK_MB )) || { echo "only ${avail}MB free for $d, the dnf metadata needs ${AU_OS_MINDISK_MB}MB"; return; }
+  d=${TMPDIR:-/tmp}
+  avail=$(df -Pm "$d" 2>/dev/null | awk 'NR==2 {print $4}')
+  [[ "$avail" =~ ^[0-9]+$ ]] || { echo "df cannot read the free space for $d"; return; }
+  (( avail >= AU_OS_MINTMP_MB )) || echo "only ${avail}MB free in $d, the check needs ${AU_OS_MINTMP_MB}MB there for temporary files"
+}
+
+# the dnf error line of an OS check's stderr file, for alerts and the log
+au_os_err() {
+  local l
+  # a held lock: "metadata already locked by 1234" (the owner details follow)
+  l=$(grep -E '^(Error|Curl error)|already locked by|Malformed lock file' "$1" 2>/dev/null | tail -n 1)
+  [[ -n "$l" ]] || l=$(grep -v '^[[:space:]]*$' "$1" 2>/dev/null | tail -n 1)
+  printf '%s' "${l:0:300}"
+}
+
+# A deferred (gate, lock) or failed check: said, kept for status (os-last)
+# and alerted once after 72 hours
+au_os_fail() {
+  if [[ "$1" = defer ]]; then au_say "os: deferred, $2"; else au_say "os: $2"; fi
+  echo "$(date +%s)|$2" > "$AU_STATE_DIR/os-last" 2>/dev/null
+  au_pending os "$2"
+}
+
+# The install command for what the check reports: the MariaDB repo (menu 11;
+# MariaDB* and galera* come only from it), the testing repos ($1, default the
+# last check's) and AUTOUPDATE_OS_EXCLUDE entries left out. The built-in
+# nginx*/php* (no RPMs: source builds), perl-DBD-MySQL and mysql* excludes
+# are dnf.conf's on current installs and add nothing worth the length.
+au_os_hint() {
+  local x xs cmd='dnf upgrade --security --disablerepo=mariadb'
+  read -ra xs <<< "${1-$(au_os_state testing)}"
+  for x in "${xs[@]}"; do
+    cmd="$cmd --disablerepo=$x"
+  done
+  read -ra xs <<< "$AU_OS_USER_EXCLUDES"
+  for x in "${xs[@]}"; do
+    cmd="$cmd -x '$x'"
+  done
+  printf '%s' "$cmd"
+}
+
+# "1 package", "N packages", "1 advisory", "N advisories"
+au_os_n() {
+  local w=$2
+  if [[ "$1" != 1 && "$w" = *y ]]; then w="${w%y}ies"; elif [[ "$1" != 1 ]]; then w="${w}s"; fi
+  printf '%s %s' "$1" "$w"
+}
+
+# the last OS check, for check and status
+au_os_summary() {
+  local t testing noinfo skipped lt lr
+  t=$(au_os_state time) testing=$(au_os_state testing) noinfo=$(au_os_state noinfo) skipped=$(au_os_state skipped)
+  IFS='|' read -r lt lr 2>/dev/null < "$AU_STATE_DIR/os-last"
+  if [[ "$t" =~ ^[0-9]+$ ]]; then
+    printf 'last check %s: %s with security updates (%s: %s critical, %s important, %s other)%s%s%s' "$(au_date "$t")" "$(au_os_n "$(au_os_state pending)" package)" "$(au_os_n "$(au_os_state advisories)" advisory)" "$(au_os_state critical)" "$(au_os_state important)" "$(au_os_state other)" "${testing:+; testing repos enabled: $testing}" "${noinfo:+; no security advisories (updateinfo) in repos $noinfo, so their security updates cannot be found}" "${skipped:+; repos dnf could not read and left out: $skipped}"
+  else
+    t=0
+    printf 'not checked yet'
+  fi
+  # a later attempt that did not complete
+  [[ "$lt" =~ ^[0-9]+$ && "$lr" != ok ]] && (( lt >= t )) && printf '; last attempt %s: %s' "$(au_date "$lt")" "$lr"
+  echo
+}
+
+# the dmotd banner text for pending OS security updates, from the last
+# check's state (a login never runs dnf), or nothing
+au_os_motd() {
+  local t p ni
+  t=$(au_os_state time) p=$(au_os_state pending) ni=$(au_os_state noinfo)
+  [[ "$t" =~ ^[0-9]+$ && "$p" =~ ^[0-9]+$ ]] || return 0
+  # short: a line for another problem gets this appended
+  if (( p == 0 )); then
+    [[ -n "$ni" ]] || return 0
+    if [[ "$1" = short ]]; then
+      echo "OS security updates cannot be found in $ni (autoupdate.sh status)"
+    else
+      echo "OS security updates cannot be found: no advisories (updateinfo) in repos $ni (checked $(au_date "$t")) - autoupdate.sh status"
+    fi
+  elif [[ "$1" = short ]]; then
+    echo "$(au_os_n "$p" package) with OS security updates pending${ni:+, none found in $ni} (autoupdate.sh status)"
+  else
+    echo "$(au_os_n "$p" package) with OS security updates (advisories: $(au_os_state critical) critical, $(au_os_state important) important; checked $(au_date "$t")${ni:+; none found in $ni}) - $(au_os_hint)"
+  fi
+}
+
+# AUTOUPDATE_OS='notify': once a day, find the pending security updates and
+# alert when one is not covered by an earlier alert. Installs nothing.
+au_os_step() {
+  local mode=$1 why rc what=check-update err="$AU_STATE_DIR/os-dnf.err" list ui='' names adv='' items uncovered repos testing noinfo skipped msg level sev details
+  local npkg nadv crit imp other
+  if [[ "$mode" = cron ]] && au_os_done_today; then
+    au_log "os: checked within the last day"
+    return 0
+  fi
+  why=$(au_os_blocked)
+  if [[ -n "$why" ]]; then
+    au_os_fail defer "$why"
+    return 0
+  fi
+  # dnf errors can name repo URLs: root only
+  ( umask 077; : > "$err" ) 2>/dev/null
+  # check-update applies versionlock and the excludes, updateinfo applies
+  # neither: check-update decides what is pending, updateinfo only names it
+  list=$(au_os_dnf --refresh --security check-update 2>"$err")
+  rc=$?
+  if [[ "$rc" = 0 || "$rc" = 100 ]]; then
+    # "name.arch version repo" rows; a long name may put the version and repo
+    # on the next line. Under "Obsoleting Packages" each new package's row is
+    # followed by the installed one it replaces, indented 4 spaces: only the
+    # new one counts (security advisories can come as obsoletes alone)
+    names=$(awk '/^Obsoleting/ {obs = 1; next}
+      obs && /^[[:space:]]/ && NF == 1 {w = ""; skip = 1; next}
+      skip && NF == 2 {skip = 0; next}
+      {skip = 0}
+      NF == 1 && $1 ~ /\./ {w = $1; next}
+      NF == 2 && w != "" {$0 = w " " $0}
+      {w = ""}
+      obs && /^[[:space:]]/ {next}
+      NF == 3 && $1 ~ /\./ {sub(/\.[^.]*$/, "", $1); print $1}' <<< "$list" | sort -u)
+    # 100 = updates listed: none read means an output format this does not know
+    if [[ "$rc" = 100 && -z "$names" ]]; then
+      au_os_fail fail "dnf check-update listed updates in a format auto-update cannot read: $(grep -m1 . <<< "$list" | cut -c1-200)"
+      return 1
+    fi
+    if [[ -n "$names" ]]; then
+      what=updateinfo
+      ui=$(au_os_dnf --security updateinfo list --updates 2>>"$err")
+      rc=$?
+    fi
+  fi
+  case "$rc" in
+    0|100) ;;
+    200)
+      # another dnf (or a damaged lock file): the 72h alert catches a lasting one
+      au_os_fail defer "a dnf lock is held: $(au_os_err "$err")"
+      return 0 ;;
+    *)
+      # 137: SIGKILL, from timeout's -k or the OOM killer
+      au_os_fail fail "dnf $what failed (exit $rc$([[ "$rc" = 124 ]] && echo ', timed out')$([[ "$rc" = 137 ]] && echo ', killed: timed out or out of memory')): $(au_os_err "$err")"
+      return 1 ;;
+  esac
+  if [[ -n "$ui" ]]; then
+    # "ALSA-2026:1234 Important/Sec. bind-libs-32:9.16.23-40.el9_8.10.x86_64"
+    # of a package check-update listed -> "ALSA-2026:1234 Important bind-libs"
+    # (by name: an advisory for a version versionlock holds back beside an
+    # older allowed update would also count)
+    adv=$(AU_OS_NAMES=$names awk '
+      BEGIN { n = split(ENVIRON["AU_OS_NAMES"], a, "\n"); for (i = 1; i <= n; i++) want[a[i]] = 1 }
+      NF == 3 && $2 ~ /Sec\.$/ {
+        p = $3; sub(/\.[^.]*$/, "", p); sub(/-[^-]*-[^-]*$/, "", p)
+        s = $2; sub(/\/?Sec\.$/, "", s); if (s == "") s = "Unknown"
+        if (p in want) print $1, s, p
+      }' <<< "$ui" | sort -u)
+  fi
+  if repos=$(au_os_repos); then
+    # without advisories in the base OS repos, "0" would be a false all clear
+    testing=$(au_os_testing "$repos") noinfo=$(au_os_noinfo "$repos")
+  else
+    # say what the last check saw rather than "none"
+    testing=$(au_os_state testing) noinfo=$(au_os_state noinfo)
+    au_log "os: dnf repolist failed, testing repos as last seen: ${testing:-none}"
+  fi
+  # a skip_if_unavailable repo dnf could not read: checked without it
+  skipped=$(sed -n 's/^Ignoring repositories: //p' "$err" 2>/dev/null | tail -n1 | tr -d ',' | tr -cd 'A-Za-z0-9_.: -')
+  npkg=$(printf '%s' "$names" | grep -c .)
+  read -r nadv crit imp other <<< "$(awk 'NF && !seen[$1]++ {n++; if ($2 == "Critical") c++; else if ($2 == "Important") i++; else o++} END {print n + 0, c + 0, i + 0, o + 0}' <<< "$adv")"
+  # what an alert covers: the advisory ids, and the packages no advisory
+  # names (updateinfo --updates lists none for an obsoleting package: no
+  # installed package has its name)
+  uncovered=$(AU_OS_ADV=$adv awk 'BEGIN { n = split(ENVIRON["AU_OS_ADV"], a, "\n"); for (i = 1; i <= n; i++) { split(a[i], f, " "); c[f[3]] = 1 } } NF && !($1 in c)' <<< "$names")
+  items=$( { awk '{print $1}' <<< "$adv"; printf '%s\n' "$uncovered"; } | awk 'NF' | sort -u | paste -sd' ' -)
+  # without its state an alert would repeat every hour
+  if ! { { echo "time=$(date +%s)"; echo "pending=$npkg"; echo "advisories=$nadv"; echo "critical=$crit"; echo "important=$imp"; echo "other=$other"
+         echo "testing=$testing"; echo "items=$items"; echo "noinfo=$noinfo"; echo "skipped=$skipped"; } > "$AU_STATE_DIR/os-status.tmp" &&
+         mv -f "$AU_STATE_DIR/os-status.tmp" "$AU_STATE_DIR/os-status" && touch "$AU_STATE_DIR/os-checked"; }; then
+    au_say "os: cannot write $AU_STATE_DIR (disk full or read-only?), no alerts"
+    return 1
+  fi
+  rm -f "$AU_STATE_DIR"/pending-os*
+  echo "$(date +%s)|ok" > "$AU_STATE_DIR/os-last"
+  au_say "os: $(au_os_n "$npkg" package) with security updates ($(au_os_n "$nadv" advisory): $crit critical, $imp important, $other other)${testing:+, testing repos enabled: $testing}${noinfo:+, no advisories in $noinfo}${skipped:+, repos dnf could not read: $skipped}"
+  # one alert per state of the testing repos, kept for a retry until delivered
+  if [[ -z "$testing" ]]; then
+    rm -f "$AU_STATE_DIR/os-testing"
+  elif [[ "$(cat "$AU_STATE_DIR/os-testing" 2>/dev/null)" != "$testing" && "$AUTOUPDATE_NOTIFY" != none ]]; then
+    AU_NOTIFY_FORCE=y au_notify info "testing repos enabled" "These testing repos are enabled: $testing. The auto-update OS check leaves them out, but dnf run by hand, centmin.sh and other updaters install pre-release packages from them. To disable them: dnf config-manager --set-disabled $testing" &&
+      echo "$testing" > "$AU_STATE_DIR/os-testing"
+  fi
+  # and one per state of the repos without advisories
+  if [[ -z "$noinfo" ]]; then
+    rm -f "$AU_STATE_DIR/os-noinfo"
+  elif [[ "$(cat "$AU_STATE_DIR/os-noinfo" 2>/dev/null)" != "$noinfo" && "$AUTOUPDATE_NOTIFY" != none ]]; then
+    AU_NOTIFY_FORCE=y au_notify info "OS security advisories missing" "The cached metadata of these repos has no security advisories (updateinfo): $noinfo. dnf --security, and so the auto-update OS check, cannot find their security updates. Check the repo setup (dnf repolist -v), or update by hand: dnf upgrade" &&
+      echo "$noinfo" > "$AU_STATE_DIR/os-noinfo"
+  fi
+  if (( npkg == 0 )); then
+    rm -f "$AU_STATE_DIR/os-notified"
+    return 0
+  fi
+  # nothing an alert has not covered (some were installed since): this set
+  # becomes the covered one, so an advisory that comes back counts as new
+  if [[ -z "$(au_os_unalerted "$items")" ]]; then
+    [[ "$(paste -sd' ' "$AU_STATE_DIR/os-notified" 2>/dev/null)" = "$items" ]] || printf '%s\n' "$items" | tr ' ' '\n' > "$AU_STATE_DIR/os-notified"
+    return 0
+  fi
+  [[ "$AUTOUPDATE_NOTIFY" = none ]] && return 0
+  # "1 advisory: 1 moderate", "23 advisories: 2 critical, 18 important, 3 moderate"
+  sev=$(awk 'NF && !seen[$1]++ {n++; c[$2]++}
+    END {if (!n) exit; s = n (n == 1 ? " advisory: " : " advisories: "); split("Critical Important Moderate Low", k, " ")
+      for (i = 1; i <= 4; i++) if (c[k[i]]) {s = s (d ? ", " : "") c[k[i]] " " tolower(k[i]); d = 1; delete c[k[i]]}
+      for (x in c) {u += c[x]}; if (u) s = s (d ? ", " : "") u " unrated"; print s}' <<< "$adv")
+  if [[ -n "$adv" ]]; then
+    # "ALSA-2026:1234 (Important): bind-libs bind-utils", critical first
+    details="Advisories: $(awk '{k = $1 " (" $2 ")"; if (!(k in p)) {o[++n] = k; r[k] = ($2 == "Critical" ? 1 : $2 == "Important" ? 2 : $2 == "Moderate" ? 3 : $2 == "Low" ? 4 : 5)} p[k] = p[k] (p[k] == "" ? "" : " ") $3}
+      END {for (i = 1; i <= n; i++) print r[o[i]] "\t" o[i] ": " p[o[i]]}' <<< "$adv" | sort -s -t$'\t' -k1,1n | cut -f2- | paste -sd';' - | sed 's/;/; /g')"
+    [[ -n "$uncovered" ]] && details="$details; packages without a listed advisory: $(printf '%s' "$uncovered" | paste -sd' ' -)"
+  else
+    details="Packages: $(printf '%s' "$names" | paste -sd' ' -)"
+  fi
+  level=ok
+  (( crit > 0 )) && level=fail
+  msg="$npkg packages have"
+  (( npkg == 1 )) && msg="1 package has"
+  # the install command before the list: a long message is cut for Pushover,
+  # which keeps its start and a short last sentence
+  msg="$msg security updates${sev:+ ($sev)}. To install: $(au_os_hint "$testing") (dnf updateinfo info --security lists the CVEs). $details. Auto-update only reports them (AUTOUPDATE_OS='$AUTOUPDATE_OS'), leaving out MariaDB, nginx and PHP."
+  # sent with AUTOUPDATE_NOTIFY='failures' too: in notify mode the alert is the point
+  if AU_NOTIFY_FORCE=y au_notify "$level" "OS security updates pending" "$msg"; then
+    printf '%s\n' "$items" | tr ' ' '\n' > "$AU_STATE_DIR/os-notified"
+  fi
+  return 0
+}
+
+###########################################################
 # run
 
 # Something that keeps an update from happening (low disk, broken config,
@@ -1507,6 +1935,7 @@ au_pending() {
       run) what="Auto-update runs have been deferred" ;;
       cmupdate) what="The cmupdate step of auto-update has not succeeded" ;;
       tree) what="Auto-update builds have been stopped by the state of the Centmin Mod code" ;;
+      os) what="The daily auto-update OS package check has not completed" ;;
       *) what="Auto-update for $comp has not been able to proceed" ;;
     esac
     au_notify fail "$comp auto-update blocked" "$what since $(au_date "$since"): $reason" && touch "$f.notified"
@@ -1751,14 +2180,20 @@ au_interrupted() {
 }
 
 au_run() {
-  local mode=$1 comp rc=0 why
+  local mode=$1 comp comps='nginx php' rc=0 why
   [[ "$(id -u)" -eq 0 ]] || { echo "autoupdate.sh must run as root"; return 1; }
   # only the cmupdate re-exec, which still holds the lock on fd 9, is "locked"
   [[ "$AU_LOCKED" = y && /proc/$$/fd/9 -ef "$AU_LOCK" ]] || AU_LOCKED=n
   mkdir -p "$AU_STATE_DIR" "$CENTMINLOGDIR"
+  # (a setting that was rejected says why it is off)
   if ! au_enabled; then
-    [[ "$mode" = run ]] && echo "AUTOUPDATE_NGINX and AUTOUPDATE_PHP are both 'n', nothing to do"
+    [[ "$mode" = run ]] && echo "AUTOUPDATE_NGINX, AUTOUPDATE_PHP and AUTOUPDATE_OS are all off, nothing to do${AU_CONFIG_WARN:+ (config: $AU_CONFIG_WARN)}"
     return 0
+  fi
+  # `run os`: the OS check alone
+  if [[ "$AU_ONLY" = os ]]; then
+    [[ "$AUTOUPDATE_OS" != n ]] || { echo "AUTOUPDATE_OS is 'n', nothing to do${AU_CONFIG_WARN:+ (config: $AU_CONFIG_WARN)}"; return 0; }
+    comps=''
   fi
   if [[ "$mode" = cron && "$AU_LOCKED" != y ]]; then
     au_check_stuck
@@ -1779,7 +2214,8 @@ au_run() {
     return 0
   fi
   # before cmupdate: it must not change the code under a running centmin.sh
-  if why=$(au_cmm_running); then
+  # (the OS check alone pulls no code, and its dnf has gates of its own)
+  if [[ -n "$comps" ]] && au_builds_on && why=$(au_cmm_running); then
     au_say "deferred, $why is running"
     # alert only when an update is actually waiting on it
     if au_work_due; then
@@ -1790,11 +2226,18 @@ au_run() {
     return 0
   fi
   rm -f "$AU_STATE_DIR"/pending-run*
-  au_cmupdate
-  [[ $? -eq 2 ]] && return 1
+  # code updates serve the builds: OS-only checks (and `run os`) pull no code;
+  # an unusable tree stops the whole run, the OS check too
+  if [[ -n "$comps" ]] && au_builds_on; then
+    au_cmupdate
+    [[ $? -eq 2 ]] && return 1
+  elif [[ -n "$comps" ]]; then
+    # builds off: old cmupdate/tree timers would alert at once when they come back
+    rm -f "$AU_STATE_DIR"/pending-cmupdate* "$AU_STATE_DIR"/pending-tree*
+  fi
   [[ "$mode" = run ]] && AU_FORCE=y
   AU_BUILT=n
-  for comp in nginx php; do
+  for comp in $comps; do
     if [[ "$comp" = nginx && "$AUTOUPDATE_NGINX" != [yY] ]] || [[ "$comp" = php && "$AUTOUPDATE_PHP" != [yY] ]]; then
       # an old timer would alert at once when the component is turned back on
       rm -f "$AU_STATE_DIR/pending-$comp"*
@@ -1830,6 +2273,17 @@ au_run() {
     au_update "$comp" || rc=1
     AU_BUILT=y
   done
+  # OS packages last: a build's baseline (URL codes, php -m) is measured
+  # before any OS change, and an OS problem cannot hold a build
+  if [[ "$AUTOUPDATE_OS" = n ]]; then
+    rm -f "$AU_STATE_DIR"/pending-os*
+  elif [[ "$mode" = cron && "$AU_BUILT" = y ]] && ! au_in_hours; then
+    au_log "os: AUTOUPDATE_HOURS window closed, left for the next window"
+    # builds that take every window would otherwise keep it from ever running
+    au_pending os "builds ran past the end of AUTOUPDATE_HOURS before the OS check"
+  else
+    au_os_step "$mode" || rc=1
+  fi
   # keep 30 days of autoupdate logs
   find "$CENTMINLOGDIR" -maxdepth 1 -name 'autoupdate_*.log' -mtime +30 -delete 2>/dev/null
   if [[ -f "$AU_LOG" && "$(stat -c %s "$AU_LOG")" -gt 1048576 ]]; then
@@ -1854,6 +2308,17 @@ au_check() {
     printf '%-6s AUTOUPDATE_%s=%s installed=%s target=%s -> %s: %s\n' "$comp" "$(echo "$comp" | tr a-z A-Z)" "$enabled" "${AU_INSTALLED:--}" "${AU_TARGET:--}" "$AU_ACTION" "$AU_WHY"
     printf '%-6s gates: %s\n' '' "$why"
   done
+  # a dnf check takes a while and needs the network: show the last one
+  if [[ "$AUTOUPDATE_OS" != n ]]; then
+    printf '%-6s AUTOUPDATE_OS=%s -> %s: %s\n' os "$AUTOUPDATE_OS" "$(au_os_done_today && echo 'checked today' || echo 'check due at the next run')" "$(au_os_summary)"
+    [[ -z "$AU_OS_NOTE" ]] || printf '%-6s note: %s\n' '' "$AU_OS_NOTE"
+    why=$(au_os_blocked)
+    printf '%-6s gates: %s\n' '' "${why:-ok}"
+  else
+    printf '%-6s AUTOUPDATE_OS=n -> off\n' os
+  fi
+  why=$(au_os_foreign)
+  [[ -z "$why" ]] || echo "os     enabled outside Centmin Mod: $why (can install packages on its own schedule, without the auto-update lock)"
   why=$(au_tree_why)
   [[ -z "$why" ]] || echo "tree   $why: no builds until that is dealt with"
   echo "hours  AUTOUPDATE_HOURS=$AUTOUPDATE_HOURS now $(date +%H:%M) -> $(au_in_hours && echo inside || echo outside)"
@@ -1880,8 +2345,13 @@ au_email_path() {
 
 au_status() {
   local comp f
-  echo "Settings: AUTOUPDATE_NGINX=$AUTOUPDATE_NGINX AUTOUPDATE_PHP=$AUTOUPDATE_PHP AUTOUPDATE_NGINX_TARGET=$AUTOUPDATE_NGINX_TARGET AUTOUPDATE_HOURS=$AUTOUPDATE_HOURS AUTOUPDATE_DELAY_HOURS=$AUTOUPDATE_DELAY_HOURS AUTOUPDATE_CMUPDATE=$AUTOUPDATE_CMUPDATE"
+  echo "Settings: AUTOUPDATE_NGINX=$AUTOUPDATE_NGINX AUTOUPDATE_PHP=$AUTOUPDATE_PHP AUTOUPDATE_OS=$AUTOUPDATE_OS AUTOUPDATE_NGINX_TARGET=$AUTOUPDATE_NGINX_TARGET AUTOUPDATE_HOURS=$AUTOUPDATE_HOURS AUTOUPDATE_DELAY_HOURS=$AUTOUPDATE_DELAY_HOURS AUTOUPDATE_CMUPDATE=$AUTOUPDATE_CMUPDATE"
   [[ -n "$AU_CONFIG_WARN" ]] && echo "Config:   $AU_CONFIG_WARN"
+  if [[ "$AUTOUPDATE_OS" != n ]]; then
+    echo "OS:       $(au_os_summary)$(au_builds_on || echo '; cmupdate is not run for OS checks alone, run it now and then')${AU_OS_NOTE:+; $AU_OS_NOTE}"
+  fi
+  f=$(au_os_foreign)
+  [[ -z "$f" ]] || echo "OS:       enabled outside Centmin Mod: $f (can install packages on its own schedule)"
   [[ -n "$AU_NGINX_PIN" ]] && echo "nginx hold: $AU_NGINX_PIN_VAR='$AU_NGINX_PIN' in custom_config.inc, updates stop at that version (installed nginx $(au_nginx_installed))"
   [[ -n "$AUTOUPDATE_PHP_HOLD" ]] && echo "PHP hold: AUTOUPDATE_PHP_HOLD=$AUTOUPDATE_PHP_HOLD, installed PHP $(au_php_installed) -> $([[ "$AU_PHP_HOLD_INVALID" = y || "$AUTOUPDATE_PHP_HOLD" = "$(au_php_installed)" ]] && echo held || echo 'not held, versions differ')"
   if [[ -f "$AU_SKIPS" ]] && grep -qvE '^[[:space:]]*(#|$)' "$AU_SKIPS"; then
@@ -1897,6 +2367,12 @@ au_status() {
     echo "Stopped:  cmupdate left local code changes in a stash $(au_date "$(cat "$AU_STATE_DIR/cmupdate-localchanges")"); no builds until they are dealt with (git stash list in ${CM_INSTALLDIR}, then autoupdate.sh reset)"
   elif f=$(au_tree_why) && [[ -n "$f" ]]; then
     echo "Stopped:  $f; no builds until that is dealt with"
+  fi
+  # (to anyone but root the 0600 lock always looks held)
+  if [[ "$(id -u)" -eq 0 && ! -f "$AU_STATE_DIR/inprogress" ]] && au_lock_held; then
+    # no build: cmupdate or the OS check (centmin.sh and cmupdate wait for it)
+    read -r f _ 2>/dev/null < "${AU_LOCK}.info"
+    echo "Running:  an auto-update run without a build (cmupdate or the OS package check), pid ${f:-?}"
   fi
   if [[ -f "$AU_STATE_DIR/inprogress" ]]; then
     if au_lock_held; then
@@ -1914,26 +2390,36 @@ au_status() {
   [[ -f "$AU_LOG" ]] && { echo "Recent log ($AU_LOG):"; tail -n 8 "$AU_LOG"; }
 }
 
-# the first settings problem, and how many more `check` shows
+# the first settings problem (or the first one matching the ERE $1), and how
+# many more `check` shows
 au_warn_line() {
   local n
   n=$(tr -cd ';' <<< "$AU_CONFIG_WARN" | wc -c)
-  printf '%s' "${AU_CONFIG_WARN%%;*}"
+  printf '%s' "$(tr ';' '\n' <<< "$AU_CONFIG_WARN" | sed 's/^ *//' | grep -m1 -E "${1:-.}")"
   (( n > 1 )) && printf ' (+%s more: autoupdate.sh check)' "$((n - 1))"
+}
+
+# a warn line for au_motd, with the pending OS count added (AU_MOTD_OS)
+au_motd_warn() {
+  echo "warn|Auto-update: $1${AU_MOTD_OS:+; $AU_MOTD_OS}"
 }
 
 # one "tag|text" line for the dmotd login banner, or nothing
 au_motd() {
-  local comp fkey fhead failed parts='' held=''
+  local comp fkey fhead failed parts='' held='' line=''
   AU_ENSURE_BY=dmotd au_ensure
-  # a mistyped switch can turn both off: that must not look like "off"
+  # dmotd shows one line: another problem's line carries the OS count too
+  AU_MOTD_OS=''
+  [[ "$AUTOUPDATE_OS" != n ]] && AU_MOTD_OS=$(au_os_motd short)
+  # a mistyped switch can turn everything off: that must not look like "off"
   if ! au_enabled; then
-    [[ "$AU_CONFIG_WARN" == *AUTOUPDATE_NGINX=* || "$AU_CONFIG_WARN" == *AUTOUPDATE_PHP=* ]] && echo "warn|Auto-update: $(au_warn_line)"
+    # (the switch problem, not another setting's)
+    au_switch_warn && au_motd_warn "$(au_warn_line 'AUTOUPDATE_(NGINX|PHP|OS)=')"
     return 0
   fi
   if [[ -f "$AU_STATE_DIR/inprogress" ]] && au_lock_held; then
     IFS='|' read -r comp fkey failed _ < "$AU_STATE_DIR/inprogress"
-    echo "warn|Auto-update: $fkey running since $(au_date "$failed") - wait before using centmin.sh menu 4/5"
+    au_motd_warn "$fkey running since $(au_date "$failed") - wait before using centmin.sh menu 4/5"
     return 0
   fi
   for comp in nginx php; do
@@ -1944,23 +2430,26 @@ au_motd() {
       IFS='|' read -r fkey fhead failed _ < "$AU_STATE_DIR/failed-$comp"
       # "php rebuild <epoch>" -> "php rebuild", "nginx 1.31.8" stays
       [[ "$fkey" =~ ^(.*rebuild)\ [0-9]+$ ]] && fkey=${BASH_REMATCH[1]}
-      echo "warn|Auto-update: ${fkey} FAILED $(au_date "$failed") - run: bash ${CM_INSTALLDIR}/tools/autoupdate.sh status"
+      au_motd_warn "${fkey} FAILED $(au_date "$failed") - run: bash ${CM_INSTALLDIR}/tools/autoupdate.sh status"
       return 0
     fi
   done
-  if [[ -f "$AU_STATE_DIR/cmupdate-localchanges" ]]; then
-    echo "warn|Auto-update: stopped, cmupdate left local code changes in a stash (git stash list in ${CM_INSTALLDIR}), then: autoupdate.sh reset"
+  # the code tree matters to builds only, OS checks never use it
+  if ! au_builds_on; then
+    :
+  elif [[ -f "$AU_STATE_DIR/cmupdate-localchanges" ]]; then
+    au_motd_warn "stopped, cmupdate left local code changes in a stash (git stash list in ${CM_INSTALLDIR}), then: autoupdate.sh reset"
     return 0
   elif fkey=$(au_tree_why) && [[ -n "$fkey" ]]; then
-    echo "warn|Auto-update: stopped, $fkey"
+    au_motd_warn "stopped, $fkey"
     return 0
   fi
   if [[ "$AU_SYSTEMD" = y ]] && ! systemctl is-active --quiet crond; then
-    echo "warn|Auto-update: crond is not running, scheduled updates cannot run - systemctl start crond"
+    au_motd_warn "crond is not running, scheduled updates cannot run - systemctl start crond"
     return 0
   fi
   if [[ -n "$AU_CONFIG_WARN" ]]; then
-    echo "warn|Auto-update: $(au_warn_line)"
+    au_motd_warn "$(au_warn_line)"
     return 0
   fi
   if [[ "$AUTOUPDATE_NGINX" = [yY] ]]; then
@@ -1971,13 +2460,19 @@ au_motd() {
     parts="${parts:+$parts + }PHP-FPM"
     if [[ -n "$AUTOUPDATE_PHP_HOLD" ]]; then
       if [[ "$AUTOUPDATE_PHP_HOLD" != "$(au_php_installed)" ]]; then
-        echo "warn|Auto-update: AUTOUPDATE_PHP_HOLD='$AUTOUPDATE_PHP_HOLD' but PHP $(au_php_installed) is installed, so PHP is not held"
+        au_motd_warn "AUTOUPDATE_PHP_HOLD='$AUTOUPDATE_PHP_HOLD' but PHP $(au_php_installed) is installed, so PHP is not held"
         return 0
       fi
       held="$held, PHP held at $AUTOUPDATE_PHP_HOLD"
     fi
   fi
-  echo "info|Auto-update: $parts on${held}, hours $AUTOUPDATE_HOURS"
+  if [[ "$AUTOUPDATE_OS" != n ]] && fkey=$(au_os_motd) && [[ -n "$fkey" ]]; then
+    echo "warn|Auto-update: $fkey"
+    return 0
+  fi
+  [[ -n "$parts" ]] && line="$parts on${held}"
+  [[ "$AUTOUPDATE_OS" != n ]] && line="${line:+$line, }OS update alerts on"
+  echo "info|Auto-update: $line, hours $AUTOUPDATE_HOURS"
 }
 
 # How auto-update will handle an available nginx|php version ($2, optional),
@@ -2055,10 +2550,17 @@ au_main() {
   [[ "$(id -u)" -eq 0 ]] && mkdir -p "$AU_STATE_DIR"
   case "$1" in
     cron)
+      unset AU_ONLY
       AU_ENSURE_BY=cron au_ensure
       au_run cron
       ;;
     run)
+      # exported: a cmupdate re-exec passes on only the command
+      case "$2" in
+        '') unset AU_ONLY ;;
+        os) export AU_ONLY=os ;;
+        *) echo "usage: autoupdate.sh run [os]"; return 1 ;;
+      esac
       # a dropped SSH session must not kill the build halfway (inherited by it)
       trap '' HUP
       au_run run
