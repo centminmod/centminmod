@@ -113,6 +113,12 @@ from_repo() {
   dnf -q --disablerepo='*' repoquery --installed --qf '%{name}\t%{from_repo}' "$@" 2>/dev/null
 }
 
+# comma list of the configured repo ids the named packages were installed
+# from: remi is disabled by default, so dnf would not see its updates otherwise
+source_repos() {
+  from_repo "$@" | awk -F'\t' 'NR == FNR {r[$1] = 1; next} ($2 in r) && $2 != "mariadb" && !seen[$2]++ {print $2}' <(awk -F'[][]' '/^\[/ {print $2}' /etc/yum.repos.d/*.repo) - | paste -sd, -
+}
+
 # installed packages from non-base repos owning PHP's libraries plus their
 # sibling subpackages built from the same source rpm (-devel etc), minus
 # packages already locked outside this script's block. Local rpm installs
@@ -163,12 +169,14 @@ do_unlock() {
 }
 
 do_update() {
-  local names
+  local names repos
   names=$(block_names)
   do_unlock
   [[ -z "$names" ]] && return 0
-  echo "dnf -y update $(echo $names)"
-  dnf -y --disablerepo=mariadb update $names
+  repos=$(source_repos $names)
+  echo "dnf -y --refresh${repos:+ --enablerepo=$repos} update $(echo $names)"
+  # --refresh: repo metadata can be up to 48h old; an unreachable repo is skipped, not fatal
+  dnf -y --refresh --setopt=skip_if_unavailable=True --disablerepo=mariadb ${repos:+"--enablerepo=$repos"} update $names
 }
 
 sonames() {
@@ -176,16 +184,17 @@ sonames() {
 }
 
 do_status() {
-  local names name newver gone
+  local names repos name newver gone
   names=$(block_names)
   if [[ -z "$names" ]]; then
     echo "php-libs-versionlock: no PHP library locks in $(lock_file)"
     return 0
   fi
   echo "php-libs-versionlock: $(echo $names | wc -w) locked packages: $(echo $names)"
-  dnf -q list updates --disableplugin=versionlock --disablerepo=mariadb $names 2>/dev/null | awk 'NF == 3 && $2 ~ /^[0-9]/ {print $1, $2}' | while read -r name newver; do
+  repos=$(source_repos $names)
+  dnf -q list updates --refresh --setopt=skip_if_unavailable=True --disableplugin=versionlock --disablerepo=mariadb ${repos:+"--enablerepo=$repos"} $names 2>/dev/null | awk 'NF == 3 && $2 ~ /^[0-9]/ && !seen[$1]++ {print $1, $2}' | while read -r name newver; do
     name=${name%.*}
-    gone=$(comm -23 <(rpm -q --provides "$name" | sonames) <(dnf -q repoquery --disableplugin=versionlock --disablerepo=mariadb --provides "${name}-${newver}" 2>/dev/null | sonames) | tr '\n' ' ')
+    gone=$(comm -23 <(rpm -q --provides "$name" | sonames) <(dnf -q repoquery --disableplugin=versionlock --disablerepo=mariadb ${repos:+"--enablerepo=$repos"} --provides "${name}-${newver}" 2>/dev/null | sonames) | tr '\n' ' ')
     if [[ -n "$gone" ]]; then
       echo "  held: $name $(rpm -q --qf '%{VERSION}-%{RELEASE}' "$name") -> $newver SONAME CHANGE removes: $gone"
     else
