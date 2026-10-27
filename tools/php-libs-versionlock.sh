@@ -170,6 +170,21 @@ from_repo() {
   dnf -q --disablerepo='*' repoquery --installed --qf '%{name}\t%{from_repo}' "$@" 2>/dev/null
 }
 
+# comma list of the configured repo ids the named packages were installed
+# from: remi is disabled by default, so dnf would not see its updates otherwise
+source_repos() {
+  (
+    set -o pipefail
+    local records ids
+    records=$(from_repo "$@") || exit $?
+    ids=$(awk -F'[][]' '/^\[/ {print $2}' /etc/yum.repos.d/*.repo) || exit $?
+    awk -F'\t' '
+      FILENAME == ARGV[1] {if (NF) r[$1] = 1; next}
+      ($2 in r) && $2 != "mariadb" && !seen[$2]++ {print $2}
+    ' <(printf '%s\n' "$ids") <(printf '%s\n' "$records") | paste -sd, -
+  )
+}
+
 # installed packages from non-base repos owning PHP's libraries plus their
 # sibling subpackages built from the same source rpm (-devel etc), minus
 # packages already locked outside this script's block. Local rpm installs
@@ -290,9 +305,10 @@ print(",".join(base.conf.pluginconfpath))
 
 do_update() {
   (
-    local names paths foreign overlay lock_status status=0
+    local names repos paths foreign overlay lock_status status=0
     names=$(block_names) || exit $?
     [[ -z "$names" ]] && exit 0
+    repos=$(source_repos $names) || exit $?
     paths=$(dnf_plugin_paths) || exit $?
     foreign=$(other_locks) || exit $?
     overlay=$(mktemp -d) || exit $?
@@ -304,10 +320,11 @@ do_update() {
     # Establish recoverable ownership and check publication before updating.
     # The global pins remain active even if this process or DNF is killed.
     write_block $names || exit $?
-    echo "dnf -y update $(echo $names)"
+    echo "dnf -y --refresh${repos:+ --enablerepo=$repos} update $(echo $names)"
     # Only this invocation bypasses our own pins. Foreign pins/exclusions and
-    # every other plugin's effective settings remain in force.
-    dnf -y --disablerepo=mariadb "--setopt=pluginconfpath=${paths:+$paths,}$overlay" update $names || status=$?
+    # every other plugin's effective settings remain in force. --refresh: repo
+    # metadata can be up to 48h old; an unreachable repo is skipped, not fatal.
+    dnf -y --refresh --setopt=skip_if_unavailable=True --disablerepo=mariadb ${repos:+"--enablerepo=$repos"} "--setopt=pluginconfpath=${paths:+$paths,}$overlay" update $names || status=$?
     # Keep the saved names protected even if PHP rebuilding aborts. A partial
     # update is locked at its installed versions rather than rolled back.
     write_block $names || {
@@ -328,25 +345,27 @@ sonames() {
 }
 
 do_status() {
-  local names name newver gone updates old_provides new_provides old_sonames new_sonames installed rc
+  local names repos name newver gone updates old_provides new_provides old_sonames new_sonames installed rc
   names=$(block_names) || return $?
   if [[ -z "$names" ]]; then
     echo "php-libs-versionlock: no PHP library locks in $(lock_file)"
     return 0
   fi
   echo "php-libs-versionlock: $(echo $names | wc -w) locked packages: $(echo $names)"
+  repos=$(source_repos $names) || return $?
   # check-update exits 100 when it lists updates and 0 when there are none;
   # list updates exits 1 for both no updates and a real failure
-  updates=$(dnf -q check-update --disableplugin=versionlock --disablerepo=mariadb $names 2>/dev/null) || {
+  updates=$(dnf -q check-update --refresh --setopt=skip_if_unavailable=True --disableplugin=versionlock --disablerepo=mariadb ${repos:+"--enablerepo=$repos"} $names 2>/dev/null) || {
     rc=$?
     [[ "$rc" -eq 100 ]] || return "$rc"
   }
-  updates=$(awk 'NF == 3 && $2 ~ /^[0-9]/ {print $1, $2}' <<< "$updates") || return $?
+  # one line per package: remi and remi-safe can both list the same update
+  updates=$(awk 'NF == 3 && $2 ~ /^[0-9]/ && !seen[$1]++ {print $1, $2}' <<< "$updates") || return $?
   while read -r name newver; do
     [[ -n "$name" ]] || continue
     name=${name%.*}
     old_provides=$(rpm -q --provides "$name") || return $?
-    new_provides=$(dnf -q repoquery --disableplugin=versionlock --disablerepo=mariadb --provides "${name}-${newver}" 2>/dev/null) || return $?
+    new_provides=$(dnf -q repoquery --disableplugin=versionlock --disablerepo=mariadb ${repos:+"--enablerepo=$repos"} --provides "${name}-${newver}" 2>/dev/null) || return $?
     old_sonames=$(sonames <<< "$old_provides") || return $?
     new_sonames=$(sonames <<< "$new_provides") || return $?
     gone=$(comm -23 <(printf '%s\n' "$old_sonames") <(printf '%s\n' "$new_sonames")) || return $?
