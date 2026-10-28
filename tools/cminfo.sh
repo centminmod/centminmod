@@ -1035,6 +1035,17 @@ list_logs() {
     ls -lhrt /root/centminlogs
 }
 
+search_php_upgrade_logs() {
+    local keyword=$1 days=${2:-14}
+    if [[ -z "$keyword" || ! "$days" =~ ^[1-9][0-9]*$ || $# -gt 2 ]]; then
+        echo "Usage: cminfo searchphpupgrade KEYWORD [DAYS]" >&2
+        return 2
+    fi
+    find "$CENTMINLOGDIR" -maxdepth 1 -type f -name 'centminmod_*_php_upgrade.log' \
+        -newermt "$days days ago" -printf '%T@ %p\0' |
+        sort -zn | sed -z 's/^[^ ]* //' | xargs -0 -r grep -Hn -C8 -F -- "$keyword"
+}
+
 setupdate() {
 cat > "/usr/bin/cminfo_updater"<<EOF
 #!/bin/bash
@@ -1503,6 +1514,9 @@ case "$1" in
     listlogs)
     list_logs
         ;;
+    searchphpupgrade)
+    search_php_upgrade_logs "${@:2}"
+        ;;
     debug-menuexit)
     debug_menuexit
         ;;
@@ -1522,6 +1536,6 @@ case "$1" in
       service_info_json "$2"
     ;;
     *)
-    echo "$0 {info|update|ssldates|netstat|syn|top|top-cron|sar-json|sar-cpu-interval|sar-cpu|sar-mem|phpmem|phpstats|phpstats-cron|listlogs|debug-menuexit|versions|checkver|service-info|nginx-patch-log|php-patch-log}"
+    echo "$0 {info|update|ssldates|netstat|syn|top|top-cron|sar-json|sar-cpu-interval|sar-cpu|sar-mem|phpmem|phpstats|phpstats-cron|listlogs|searchphpupgrade KEYWORD [DAYS]|debug-menuexit|versions|checkver|service-info|nginx-patch-log|php-patch-log}"
         ;;
 esac
