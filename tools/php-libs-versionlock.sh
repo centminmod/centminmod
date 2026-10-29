@@ -186,13 +186,12 @@ source_repos() {
 }
 
 # installed packages from non-base repos owning PHP's libraries plus their
-# sibling subpackages built from the same source rpm (-devel etc), minus
-# packages already locked outside this script's block. Local rpm installs
-# (Centmin Mod's *-custom packages) are skipped.
-collect_packages() {
+# sibling subpackages built from the same source rpm (-devel etc). Local rpm
+# installs (Centmin Mod's *-custom packages) are skipped.
+candidate_packages() {
   (
     set -o pipefail
-    local libs lib srpms names installed_records repo_records foreign repos
+    local libs lib srpms names installed_records repo_records repos
     libs=$(php_libs) || exit $?
     [[ -z "$libs" ]] && exit 0
     srpms=$(for lib in $libs; do rpm_file_record '%{SOURCERPM}\n' "$lib" || exit $?; done | sort -u) || exit $?
@@ -200,15 +199,69 @@ collect_packages() {
     names=$(awk -F'\t' 'FILENAME == ARGV[1] {if (NF) s[$1] = 1; next} ($1 in s) {print $2}' <(printf '%s\n' "$srpms") <(printf '%s\n' "$installed_records") | sort -u) || exit $?
     [[ -z "$names" ]] && exit 0
     repo_records=$(from_repo $names) || exit $?
-    # A foreign exclusion forbids one version; it does not pin the package.
-    foreign=$(other_locks | awk '!/^!/' | entry_name) || exit $?
     repos=$(base_repos) || exit $?
     awk -F'\t' '
       FILENAME == ARGV[1] {if (NF) r[$1] = 1; next}
-      FILENAME == ARGV[2] {if (NF) foreign[$1] = 1; next}
-      $2 != "" && !($2 in r) && !($1 in foreign) {print $1}
-    ' <(printf '%s\n' "$repos") <(printf '%s\n' "$foreign") <(printf '%s\n' "$repo_records") | sort -u
+      $2 != "" && !($2 in r) {print $1}
+    ' <(printf '%s\n' "$repos") <(printf '%s\n' "$repo_records") | sort -u
   )
+}
+
+# candidate packages minus packages already locked outside this script's block
+collect_packages() {
+  (
+    set -o pipefail
+    local names foreign
+    names=$(candidate_packages) || exit $?
+    [[ -z "$names" ]] && exit 0
+    # A foreign exclusion forbids one version; it does not pin the package.
+    foreign=$(other_locks | awk '!/^!/' | entry_name) || exit $?
+    awk 'FILENAME == ARGV[1] {if (NF) foreign[$0] = 1; next} !($0 in foreign)' \
+      <(printf '%s\n' "$foreign") <(printf '%s\n' "$names")
+  )
+}
+
+# Before the ledger existed, a 'dnf versionlock delete' (menu 15 ImageMagick,
+# menu 11 MariaDB, ffmpeg nasm) rewrote the lock list without comments and
+# dropped this script's markers, leaving its entries as foreign bare lines that
+# menu 5 never updated again. Until the ledger exists, treat as ours the bare
+# entries that pin the installed version of a package PHP links against, except
+# entries in a dnf '# Added lock' group (user or other menu option pins) and
+# packages other menu options lock on purpose.
+adoptable_entries() {
+  (
+    set -o pipefail
+    local lf names installed entries entry
+    lf=$(lock_file) || exit $?
+    [[ -f "$lf" && ! -e "${lf}.centminmod-php-libs-owned" ]] || exit 0
+    names=$(candidate_packages) || exit $?
+    [[ -z "$names" ]] && exit 0
+    installed=$(rpm -q --qf '%{NAME}-%{EPOCHNUM}:%{VERSION}-%{RELEASE}.*\n' $names) || exit $?
+    entries=$(awk -v b="$LOCK_BEGIN" -v e="$LOCK_END" '
+      FILENAME == ARGV[1] {if (NF) installed[$0] = 1; next}
+      $0 == b {s = 1; next} $0 == e {s = 0; next}
+      s {next}
+      !NF {added = 0; next}
+      /^#/ {added = ($0 ~ /^# Added lock/); next}
+      !added && ($0 in installed)
+    ' <(printf '%s\n' "$installed") "$lf") || exit $?
+    while read -r entry; do
+      [[ -n "$entry" ]] || continue
+      case "$(entry_name <<< "$entry")" in
+        libc-client|uw-imap-devel|ImageMagick*|LibRaw*|nasm|MariaDB*|galera*) continue ;;
+      esac
+      echo "$entry"
+    done <<< "$entries"
+  )
+}
+
+adopt_stranded() {
+  local lf entries
+  lf=$(lock_file) || return $?
+  entries=$(adoptable_entries) || return $?
+  [[ -n "$entries" ]] || return 0
+  printf '%s\n' "$entries" > "${lf}.centminmod-php-libs-owned" || return $?
+  echo "php-libs-versionlock: adopted unmarked locks: $(entry_name <<< "$entries" | xargs)"
 }
 
 write_block() {
@@ -264,6 +317,7 @@ do_lock() {
   local pkgs
   ensure_plugin || { echo "error: python3-dnf-plugin-versionlock not installed, PHP libraries not locked" >&2; return 1; }
   do_check lock >/dev/null || return $?
+  adopt_stranded || return $?
   pkgs=$(collect_packages) || return $?
   write_block $pkgs || return $?
   echo "php-libs-versionlock: locked $(echo $pkgs | wc -w) packages in $(lock_file)"
@@ -272,6 +326,7 @@ do_lock() {
 }
 
 do_unlock() {
+  adopt_stranded || return $?
   write_block || return $?
   echo "php-libs-versionlock: removed locks from $(lock_file)"
 }
@@ -306,6 +361,7 @@ print(",".join(base.conf.pluginconfpath))
 do_update() {
   (
     local names repos paths foreign overlay lock_status status=0
+    adopt_stranded || exit $?
     names=$(block_names) || exit $?
     [[ -z "$names" ]] && exit 0
     repos=$(source_repos $names) || exit $?
@@ -345,8 +401,13 @@ sonames() {
 }
 
 do_status() {
-  local names repos name newver gone updates old_provides new_provides old_sonames new_sonames installed rc
+  local names stranded repos name newver gone updates old_provides new_provides old_sonames new_sonames installed rc
   names=$(block_names) || return $?
+  stranded=$(adoptable_entries) || return $?
+  if [[ -n "$stranded" ]]; then
+    echo "php-libs-versionlock: unmarked locks the next menu 5 run adopts: $(entry_name <<< "$stranded" | xargs)"
+    names=$(printf '%s\n' $names $(entry_name <<< "$stranded") | sort -u)
+  fi
   if [[ -z "$names" ]]; then
     echo "php-libs-versionlock: no PHP library locks in $(lock_file)"
     return 0

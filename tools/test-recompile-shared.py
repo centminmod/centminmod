@@ -140,6 +140,8 @@ cp() {{ command {shlex.quote(cp)} "$@"; }}
 rpm() {{ shift 3; for name in "$@"; do printf '%s-0:%s-1.*\\n' "$name" "$INSTALLED_VERSION"; done; }}
 INSTALLED_VERSION=0.11
 dnf_plugin_paths() {{ echo /etc/dnf/plugins; }}
+php_libs() {{ :; }}
+source_repos() {{ :; }}
 '''
     for status in (0, 42):
         for version in ('0.11', '1.1'):
@@ -249,10 +251,59 @@ dnf() {
     run(collector_setup + '\ndo_unlock', work)
     assert lockfile.read_text() == foreign + collision
 
+    # Lists stripped before the ledger existed: bare pins of the installed
+    # version of a PHP-linked package are adopted once; dnf-added pins, other
+    # versions and packages other menu options lock stay foreign.
     ledger.unlink()
     lockfile.write_text(foreign + records('0.11'))
+    result = run(collector_setup + '\ndo_status', work)
+    assert 'next menu 5 run adopts: libavif libavif-devel' in result.stdout and not ledger.exists()
     run(collector_setup + '\ndo_lock; do_unlock', work)
-    assert lockfile.read_text() == foreign + records('0.11') and ledger.read_text() == ''
+    assert lockfile.read_text() == foreign and ledger.read_text() == ''
+    ledger.unlink()
+    lockfile.write_text(foreign + records('0.11'))
+    result = run(collector_setup + '\ndo_update', work)
+    assert 'adopted unmarked locks: libavif libavif-devel' in result.stdout
+    assert ledger.read_text() == records('1.1') and lockfile.read_text().startswith(foreign)
+    user_pins = '\n# Added lock on Wed Oct 28 03:00:13 2026\nlibavif-0:0.11-1.*\n'
+    for stranded in (user_pins, 'libavif-0:0.9-1.*\n', '!libavif-0:0.11-1.*\n'):
+        ledger.unlink(missing_ok=True)
+        lockfile.write_text(foreign + stranded)
+        result = run(collector_setup + '\nadoptable_entries', work)
+        assert result.stdout == '', stranded
+    ledger.unlink(missing_ok=True)
+    lockfile.write_text('libc-client-0:0.11-1.*\n' + records('0.11'))
+    result = run(collector_setup + '''
+rpm() {
+  case "$1" in
+    -qf) echo libavif.src.rpm ;;
+    -qa) printf 'libavif.src.rpm\\tlibavif\\nlibavif.src.rpm\\tlibc-client\\n' ;;
+    -q) shift 3; for name in "$@"; do printf '%s-0:%s-1.*\\n' "$name" "$INSTALLED_VERSION"; done ;;
+  esac
+}
+dnf() { printf 'libavif\\tepel\\nlibc-client\\tremi\\n'; }
+adoptable_entries''', work)
+    assert result.stdout == 'libavif-0:0.11-1.*\n'
+    lockfile.write_text(records('0.11'))
+    ledger.write_text('')
+    result = run(collector_setup + '\nadoptable_entries', work)
+    assert result.stdout == ''
+
+    # The menu 24 yum update notice hint follows the same ownership.
+    cpcheck = (REPO / 'inc/cpcheck.inc').read_text()
+    held = function(cpcheck, 'php_libs_held').replace('/etc/dnf/plugins/versionlock.conf', str(lockconf))
+    updates = work / 'updates.txt'
+    updates.write_text('Available Upgrades\nlibavif.x86_64  1.1-1.el9  epel\nkernel.x86_64  5.14-1  baseos\n')
+    seed_locks()
+    result = run(held + f'\nphp_libs_held {shlex.quote(str(updates))}', work)
+    assert result.stdout == 'libavif'
+    strip_comments()
+    result = run(held + f'\nphp_libs_held {shlex.quote(str(updates))}', work)
+    assert result.stdout == 'libavif'
+    ledger.unlink()
+    result = run(held + f'\nphp_libs_held {shlex.quote(str(updates))}', work)
+    assert result.stdout == ''
+    print('PASS: stranded marker-less locks adopted once; dnf-added pins, other versions, exclusions and deny-listed packages stay foreign; update notice hint uses the ledger')
     for action in ('do_lock', 'do_list'):
         seed_locks()
         before = lockfile.read_bytes(), ledger.read_bytes()
@@ -369,8 +420,9 @@ class Plugin:
     lockfile.write_text(lockfile.read_text() + negative)
     result = run(collector_setup + '''
 dnf() {
-  [[ "$1" = -y && "$2" = --disablerepo=mariadb && "$3" = --setopt=pluginconfpath=/etc/dnf/plugins,* && "$4" = update ]] || return 75
-  overlay=${3##*,}
+  [[ "$1" = -y && "$2" = --refresh && "$3" = --setopt=skip_if_unavailable=True && "$4" = --disablerepo=mariadb ]] || return 75
+  [[ "$5" = --setopt=pluginconfpath=/etc/dnf/plugins,* && "$6" = update ]] || return 75
+  overlay=${5##*,}
   [[ $(cat "$overlay/locks.list") = $'user-package-0:9.0-1.*\\nImageMagick-0:7-1.*\\n!other-package-0:2-1.*' ]] || return 75
   [[ $(owned_entries) = $'libavif-0:0.11-1.*\\nlibavif-devel-0:0.11-1.*' ]] || return 75
   [[ $(cat "$overlay/versionlock.conf") = $'[main]\\nlocklist='"$overlay/locks.list" ]] || return 75
@@ -463,7 +515,7 @@ mutate do_unlock && touch {shlex.quote(str(done))}
     phpbin = work / 'php-fixture'
     phpbin.touch()
     phpbin.chmod(0o755)
-    discovery_setup = lock_setup.replace('/usr/local/bin/php-config', str(phpconfig)) + f'''
+    discovery_setup = lock_setup.replace('/usr/local/bin/php-config', str(phpconfig)) + function(lock_functions, 'php_libs') + f'''
 PHP_BINARIES={shlex.quote(str(phpbin))}
 ensure_plugin() {{ return 0; }}
 '''
@@ -485,7 +537,7 @@ ensure_plugin() {{ return 0; }}
             'sort() { return 73; }',
             'sed() { return 73; }',
             'base_repos() { return 73; }',
-            'awk() { [[ "$*" = *\'foreign[$1]\'* ]] && return 73; command awk "$@"; }',
+            'awk() { [[ "$*" = *\'foreign[$0] = 1; next} !($0 in foreign)\'* ]] && return 73; command awk "$@"; }',
             'rpm() { return 73; }'):
         seed_locks()
         before = lockfile.read_bytes(), ledger.read_bytes()
