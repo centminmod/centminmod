@@ -2670,21 +2670,25 @@ ngxver_checker() {
 
 php_libs_held() {
   # packages in the yum update list $1 that tools/php-libs-versionlock.sh
-  # versionlocks: yum update leaves them alone, centmin.sh menu 5 updates them
-  local lf
+  # versionlocks: yum update leaves them alone, centmin.sh menu 5 updates them.
+  # Its ledger keeps ownership when dnf versionlock delete drops the markers.
+  local lf ledger
   lf=$(awk -F= '/^[[:space:]]*locklist[[:space:]]*=/ {gsub(/[[:space:]]/, "", $2); print $2; exit}' /etc/dnf/plugins/versionlock.conf 2>/dev/null)
   lf=${lf:-/etc/dnf/plugins/versionlock.list}
   [[ -f "$lf" && -f "$1" ]] || return 0
+  ledger="${lf}.centminmod-php-libs-owned"
+  [[ -f "$ledger" ]] || ledger=/dev/null
   awk '
-    FILENAME == ARGV[1] {
+    FILENAME == ARGV[1] {if (NF) owned[$0] = 1; next}
+    FILENAME == ARGV[2] {
       if ($0 == "# centminmod php-libs-versionlock begin") s = 1
       else if ($0 == "# centminmod php-libs-versionlock end") s = 0
-      else if (s && NF && !/^#/) {sub(/-[0-9]+:[^:]+$/, ""); locked[$0] = 1}
+      else if (NF && !/^#/ && (s || ($0 in owned))) {sub(/-[0-9]+:[^:]+$/, ""); locked[$0] = 1}
       next
     }
     {name = $1; sub(/\.[^.]+$/, "", name)}
     (name in locked) && !seen[name]++ {printf "%s%s", sep, name; sep = " "}
-  ' "$lf" "$1"
+  ' "$ledger" "$lf" "$1"
 }
 
 yumupdatechecker() {
