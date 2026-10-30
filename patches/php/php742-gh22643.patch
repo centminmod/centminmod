@@ -140,3 +140,80 @@ index cf9a15804d..6e0a091363 100644
 -- 
 2.55.0
 
+From 575c10c4e0c9da6555557bc26fd93e52edeaf1fd Mon Sep 17 00:00:00 2001
+From: Jamal Tantaoui <jamal@tantaoui.com>
+Date: Sun, 25 Oct 2026 16:03:26 +0100
+Subject: [PATCH] DatePeriod: restore error handling when the DateInterval is
+ not initialized
+
+The backport of 2d86f8cf489ea5410edd19d301c1aefe330599ab (Fix leak on double
+DatePeriod::__construct() call) checks the interval with
+DATE_CHECK_INITIALIZED(), which in 7.4 emits a warning and returns from inside
+the zend_replace_error_handling(EH_THROW) scope of the constructor. The error
+handling was then never restored, so every later warning of the request was
+thrown as an exception. The macro also printed "Z_OBJCE_P(interval)" in the
+message, as it stringifies its class name argument.
+
+Restore the error handling before returning, as the other error paths of the
+constructor do.
+
+Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+---
+ ext/date/php_date.c                           |  6 ++++-
+ .../DatePeriod_uninitialized_interval.phpt    | 27 +++++++++++++++++++
+ 2 files changed, 32 insertions(+), 1 deletion(-)
+ create mode 100644 ext/date/tests/DatePeriod_uninitialized_interval.phpt
+
+diff --git a/ext/date/php_date.c b/ext/date/php_date.c
+index 15f13d423f..f3eb6c99ac 100644
+--- a/ext/date/php_date.c
++++ b/ext/date/php_date.c
+@@ -4733,7 +4733,11 @@ PHP_METHOD(DatePeriod, __construct)
+ 		}
+ 		dpobj->start_ce = date_ce_date;
+ 	} else {
+-		DATE_CHECK_INITIALIZED(Z_PHPINTERVAL_P(interval)->initialized, Z_OBJCE_P(interval));
++		if (!Z_PHPINTERVAL_P(interval)->initialized) {
++			php_error_docref(NULL, E_WARNING, "The DateInterval object has not been correctly initialized by its constructor");
++			zend_restore_error_handling(&error_handling);
++			return;
++		}
+ 
+ 		/* init */
+ 		php_interval_obj *intobj = Z_PHPINTERVAL_P(interval);
+diff --git a/ext/date/tests/DatePeriod_uninitialized_interval.phpt b/ext/date/tests/DatePeriod_uninitialized_interval.phpt
+new file mode 100644
+index 0000000000..a3f5882ad6
+--- /dev/null
++++ b/ext/date/tests/DatePeriod_uninitialized_interval.phpt
+@@ -0,0 +1,27 @@
++--TEST--
++DatePeriod::__construct() restores error handling when the DateInterval is not initialized
++--FILE--
++<?php
++class UninitializedInterval extends DateInterval
++{
++    public function __construct()
++    {
++    }
++}
++
++try {
++    new DatePeriod(new DateTime('2020-01-01'), new UninitializedInterval(), 1);
++} catch (Exception $e) {
++    echo get_class($e), ': ', $e->getMessage(), "\n";
++}
++
++// The constructor must have restored the error handling: this is a warning, not an exception
++var_dump(strlen());
++?>
++===DONE===
++--EXPECTF--
++Exception: %sThe DateInterval object has not been correctly initialized by its constructor
++
++Warning: strlen() expects exactly 1 parameter, 0 given in %s on line %d
++NULL
++===DONE===
+-- 
+2.56.0
+
