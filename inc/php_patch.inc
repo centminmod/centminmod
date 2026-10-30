@@ -877,7 +877,7 @@ php_patches() {
     fi
     if [[ "$PHPMUVER" = '7.2' || "$PHPMVER" = '7.2' ]] && [[ "$PHPVER_ID" -ge '70200' && "$PHPVER_ID" -le '70234' ]]; then
       # backport security bug patch from PHP 7.3. to 7.2.34
-      phpseven_bugids='77423 80672 80710 81122 76452 81211 81026 79971 81719 81720 81726 81727 81738 81740 81744 81746 cve-2023-0662 ghsa-76gg-c692-v2mw cve-2023-3823 cve-2023-3824 cve-2024-2756 cve-2024-3096 cve-2024-5458 cve-2024-8925 cve-2024-8926 cve-2024-8927 cve-2024-11236 cve-2024-11234 cve-2024-8932 cve-2024-11233 ghsa-4w77-75f9-2c8w cve-2025-14178 cve-2026-6722 cve-2026-7261 cve-2026-7262 cve-2026-6735 cve-2026-7568 cve-2026-14355 cve-2026-9672 cve-2026-17543 cve-2026-7260 from-8.2.34-to-7.2 cve-2026-109618'
+      phpseven_bugids='77423 80672 80710 81122 76452 81211 81026 79971 81719 81720 81726 81727 81738 81740 81744 81746 cve-2023-0662 ghsa-76gg-c692-v2mw cve-2023-3823 cve-2023-3824 cve-2024-2756 cve-2024-3096 cve-2024-5458 cve-2024-8925 cve-2024-8926 cve-2024-8927 cve-2024-11236 cve-2024-11234 cve-2024-8932 cve-2024-11233 ghsa-4w77-75f9-2c8w cve-2025-14178 cve-2026-6722 cve-2026-7261 cve-2026-7262 cve-2026-6735 cve-2026-7568 cve-2026-14355 cve-2026-9672 cve-2026-17543 cve-2026-7260 from-8.2.34-to-7.2 cve-2026-109618 cve-2025-1735 cve-2025-14181'
       for bugid in $phpseven_bugids; do
         if [[ ! -f "php7234-${bugid}.patch" && -f "$CUR_DIR/patches/php/php7234-${bugid}.patch" ]]; then
           echo
@@ -962,7 +962,7 @@ php_patches() {
     fi
     if [[ "$PHPMUVER" = '7.3' || "$PHPMVER" = '7.3' ]] && [[ "$PHPVER_ID" -ge '70300' && "$PHPVER_ID" -le '70333' ]]; then
       # backport security bug patch for php 7.3
-      phpseven_bugids='81026 81719 81720 pcre1038 81726 81727 81738 81740 81744 81746 cve-2023-0662 ghsa-76gg-c692-v2mw cve-2023-3823 cve-2023-3824 cve-2024-2756 cve-2024-3096 cve-2024-5458 cve-2024-8925 cve-2024-8926 cve-2024-8927 cve-2024-11236 cve-2024-11234 cve-2024-8932 cve-2024-11233 ghsa-4w77-75f9-2c8w cve-2024-8929 cve-2025-14178 cve-2026-6722 cve-2026-7261 cve-2026-7262 cve-2026-6735 cve-2026-7568 cve-2026-14355 cve-2026-9672 cve-2026-17543 cve-2026-7260 from-8.2.34-to-7.3 cve-2026-109618'
+      phpseven_bugids='81026 81719 81720 pcre1038 81726 81727 81738 81740 81744 81746 cve-2023-0662 ghsa-76gg-c692-v2mw cve-2023-3823 cve-2023-3824 cve-2024-2756 cve-2024-3096 cve-2024-5458 cve-2024-8925 cve-2024-8926 cve-2024-8927 cve-2024-11236 cve-2024-11234 cve-2024-8932 cve-2024-11233 ghsa-4w77-75f9-2c8w cve-2024-8929 cve-2025-14178 cve-2026-6722 cve-2026-7261 cve-2026-7262 cve-2026-6735 cve-2026-7568 cve-2026-14355 cve-2026-9672 cve-2026-17543 cve-2026-7260 from-8.2.34-to-7.3 cve-2026-109618 cve-2025-1735'
       for bugid in $phpseven_bugids; do
         # bug #81026 fix is already in PHP 7.3.32+ tarballs
         if [[ "$bugid" = '81026' && "$PHPVER_ID" -ge '70332' ]]; then
