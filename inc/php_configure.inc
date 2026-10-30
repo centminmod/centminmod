@@ -500,16 +500,48 @@ php_imagemagick_seven_detected_libzip() {
   fi
 }
 
+# Strip a private copy so a running executable does not block stripping.
+strip_php_binary() {
+    local strip_target strip_tmp strip_status
+    strip_target=$(readlink -f -- "$1") || return $?
+    [[ -f "$strip_target" ]] || return 1
+    strip_tmp=$(mktemp "${strip_target}.strip.XXXXXX") || return $?
+    cp --preserve=all -- "$strip_target" "$strip_tmp" &&
+        strip -s "$strip_tmp" &&
+        mv -f -- "$strip_tmp" "$strip_target"
+    strip_status=$?
+    if [[ "$strip_status" -ne 0 ]]; then
+        rm -f -- "$strip_tmp"
+    fi
+    return "$strip_status"
+}
+
 strip_php_extensions() {
-    strip_php_ext_dir=$(php-config --extension-dir)
+    local strip_php_ext_dir strip_status=0 so_files so_file
+    strip_php_ext_dir=$(php-config --extension-dir) || return $?
+    [[ "$strip_php_ext_dir" = /* && ! "$strip_php_ext_dir" =~ ^/+$ && "$strip_php_ext_dir" != *$'\n'* ]] || return 1
+    # A fresh PHP 8.5 build can have no shared extensions to install.
+    [[ -e "$strip_php_ext_dir" || -L "$strip_php_ext_dir" ]] || return 0
+    [[ -d "$strip_php_ext_dir" ]] || return 1
     echo "Stripping PHP Extensions in $strip_php_ext_dir"
     echo "before stripping"
-    ls -lAhrt $strip_php_ext_dir
+    ls -lAhrt "$strip_php_ext_dir"
     echo
-    find $strip_php_ext_dir -type f -name "*.so" -exec strip -s {} +
+    # Strip private copies and rename them into place: stripping in place
+    # rewrote files a running php-fpm had loaded, crashing its children until
+    # a restart. Renamed files leave those mappings intact, so no restart.
+    so_files=$(find "$strip_php_ext_dir" -type f -name "*.so") || strip_status=$?
+    while IFS= read -r so_file; do
+        [[ -n "$so_file" ]] || continue
+        strip_php_binary "$so_file" || strip_status=$?
+    done <<< "$so_files"
+    if [[ "$strip_status" -ne 0 ]]; then
+        echo "ERROR: PHP extension stripping failed (status $strip_status)." >&2
+    fi
     echo "after stripping"
-    ls -lAhrt $strip_php_ext_dir
+    ls -lAhrt "$strip_php_ext_dir"
     echo
+    return "$strip_status"
 }
 
 checksec_phpext() {
