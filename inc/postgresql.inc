@@ -24,6 +24,18 @@ pgsql_disable_eol_repos() {
     done
 }
 
+pgsql_pgdg_releasever_fix() {
+    # PGDG repo rpm 42.0-69+ builds EL9/EL10 baseurls from
+    # $releasever_major.$releasever_minor. Oracle Linux release packages do not
+    # provide system-release(releasever_minor), so dnf leaves the minor empty and
+    # requests rhel-9.-x86_64 (404). Use $releasever there, as the EL8 repo file
+    # does. Distros whose release package provides the minor are left as is.
+    local pgdg_repo_file="/etc/yum.repos.d/pgdg-redhat-all.repo"
+    if [[ -f "$pgdg_repo_file" ]] && grep -q '\$releasever_major\.\$releasever_minor' "$pgdg_repo_file" && ! rpm -q --whatprovides 'system-release(releasever_minor)' >/dev/null 2>&1; then
+        sed -i 's/\$releasever_major\.\$releasever_minor/$releasever/g' "$pgdg_repo_file"
+    fi
+}
+
 postgresqlinstall() {
     # to allow to persist on centmin mod code updates
     # create persistent config file at /etc/centminmod/custom_config.inc
@@ -32,6 +44,9 @@ postgresqlinstall() {
     #
     # to update postgresql server via yum use
     # yum -y update postgresql18 postgresql18-devel postgresql18-contrib postgresql18-libs postgresql18-server --disableplugin=priorities
+    # repair an existing PGDG repo file too (e.g. moved to 42.0-69/70 by dnf update);
+    # the install blocks below only run when PostgreSQL is not yet installed
+    pgsql_pgdg_releasever_fix
     # Only check versions if POSTGRESQL_BRANCHVER is not already set
     if [[ -z "$POSTGRESQL_BRANCHVER" ]]; then
       if [[ -f /usr/pgsql-18/bin/pg_config ]]; then
@@ -302,6 +317,7 @@ postgresqlinstall() {
             rpm --import https://download.postgresql.org/pub/repos/yum/keys/PGDG-RPM-GPG-KEY-RHEL
             rpm -Uvh ${DIR_TMP}/pgdg-redhat-repo-latest.noarch.rpm
             sed -i 's/gpgcheck=9/gpgcheck=1/g' /etc/yum.repos.d/pgdg-redhat-all.repo
+            pgsql_pgdg_releasever_fix
             pgsql_disable_eol_repos
             yum -y makecache
         elif [[ "$CENTOS_NINE" = '9' ]]; then
@@ -312,6 +328,7 @@ postgresqlinstall() {
             rpm --import https://download.postgresql.org/pub/repos/yum/keys/PGDG-RPM-GPG-KEY-RHEL
             rpm -Uvh ${DIR_TMP}/pgdg-redhat-repo-latest.noarch.rpm
             sed -i 's/gpgcheck=9/gpgcheck=1/g' /etc/yum.repos.d/pgdg-redhat-all.repo
+            pgsql_pgdg_releasever_fix
             pgsql_disable_eol_repos
             yum -y makecache
         elif [[ "$CENTOS_EIGHT" = '8' ]]; then
@@ -322,6 +339,7 @@ postgresqlinstall() {
             rpm --import https://download.postgresql.org/pub/repos/yum/keys/PGDG-RPM-GPG-KEY-RHEL
             rpm -Uvh ${DIR_TMP}/pgdg-redhat-repo-latest.noarch.rpm
             sed -i 's/gpgcheck=9/gpgcheck=1/g' /etc/yum.repos.d/pgdg-redhat-all.repo
+            pgsql_pgdg_releasever_fix
             pgsql_disable_eol_repos
             yum -y makecache
         fi
@@ -381,6 +399,7 @@ postgresqlinstall() {
             rpm --import https://download.postgresql.org/pub/repos/yum/keys/PGDG-RPM-GPG-KEY-RHEL
             rpm -Uvh ${DIR_TMP}/pgdg-redhat-repo-latest.noarch.rpm
             sed -i 's/gpgcheck=9/gpgcheck=1/g' /etc/yum.repos.d/pgdg-redhat-all.repo
+            pgsql_pgdg_releasever_fix
             pgsql_disable_eol_repos
             yum -y makecache
         elif [[ "$CENTOS_NINE" = '9' ]]; then
@@ -391,6 +410,7 @@ postgresqlinstall() {
             rpm --import https://download.postgresql.org/pub/repos/yum/keys/PGDG-RPM-GPG-KEY-RHEL
             rpm -Uvh ${DIR_TMP}/pgdg-redhat-repo-latest.noarch.rpm
             sed -i 's/gpgcheck=9/gpgcheck=1/g' /etc/yum.repos.d/pgdg-redhat-all.repo
+            pgsql_pgdg_releasever_fix
             pgsql_disable_eol_repos
             yum -y makecache
         elif [[ "$CENTOS_EIGHT" = '8' ]]; then
@@ -401,6 +421,7 @@ postgresqlinstall() {
             rpm --import https://download.postgresql.org/pub/repos/yum/keys/PGDG-RPM-GPG-KEY-RHEL
             rpm -Uvh ${DIR_TMP}/pgdg-redhat-repo-latest.noarch.rpm
             sed -i 's/gpgcheck=9/gpgcheck=1/g' /etc/yum.repos.d/pgdg-redhat-all.repo
+            pgsql_pgdg_releasever_fix
             pgsql_disable_eol_repos
             yum -y makecache
         fi
@@ -460,6 +481,7 @@ postgresqlinstall() {
             rpm --import https://download.postgresql.org/pub/repos/yum/keys/PGDG-RPM-GPG-KEY-RHEL
             rpm -Uvh ${DIR_TMP}/pgdg-redhat-repo-latest.noarch.rpm
             sed -i 's/gpgcheck=9/gpgcheck=1/g' /etc/yum.repos.d/pgdg-redhat-all.repo
+            pgsql_pgdg_releasever_fix
             pgsql_disable_eol_repos
             yum -y makecache
         elif [[ "$CENTOS_NINE" = '9' ]]; then
@@ -470,6 +492,7 @@ postgresqlinstall() {
             rpm --import https://download.postgresql.org/pub/repos/yum/keys/PGDG-RPM-GPG-KEY-RHEL
             rpm -Uvh ${DIR_TMP}/pgdg-redhat-repo-latest.noarch.rpm
             sed -i 's/gpgcheck=9/gpgcheck=1/g' /etc/yum.repos.d/pgdg-redhat-all.repo
+            pgsql_pgdg_releasever_fix
             pgsql_disable_eol_repos
             yum -y makecache
         elif [[ "$CENTOS_EIGHT" = '8' ]]; then
@@ -480,6 +503,7 @@ postgresqlinstall() {
             rpm --import https://download.postgresql.org/pub/repos/yum/keys/PGDG-RPM-GPG-KEY-RHEL
             rpm -Uvh ${DIR_TMP}/pgdg-redhat-repo-latest.noarch.rpm
             sed -i 's/gpgcheck=9/gpgcheck=1/g' /etc/yum.repos.d/pgdg-redhat-all.repo
+            pgsql_pgdg_releasever_fix
             pgsql_disable_eol_repos
             yum -y makecache
         fi
