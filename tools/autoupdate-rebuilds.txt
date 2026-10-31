@@ -26,3 +26,5 @@ php-7.3 2026-10-30T12:08:42Z PHP 8.2.34 SOAP security backports (CVE-2026-91765,
 php-7.4 2026-10-30T12:08:42Z EOL backport follow-up fixes (GHSA-m8rr-4c36-8gq4, GHSA-hrwm-9436-5mv3, DatePeriod error handling)
 php-8.0 2026-10-30T12:08:42Z EOL backport follow-up fixes (GHSA-m8rr-4c36-8gq4, GHSA-hrwm-9436-5mv3)
 php-8.1 2026-10-30T12:08:42Z EOL backport follow-up fix (GHSA-m8rr-4c36-8gq4)
+php-7.2 2026-10-31T02:21:02Z PHP 8.1.33/8.2.34 security backports (CVE-2025-1735, CVE-2025-14181)
+php-7.3 2026-10-31T02:21:02Z PHP 8.1.33 security backport (CVE-2025-1735)
