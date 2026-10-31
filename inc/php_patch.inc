@@ -495,6 +495,16 @@ php_patches() {
         dos2unix php5640-80710.patch || { patch_status=$?; rm -f php5640-80710.patch; exit "$patch_status"; }
         patch -p1 < php5640-80710.patch || { patch_status=$?; rm -f php5640-80710.patch; exit "$patch_status"; }
       fi
+      # PHP 5.6 bug #80710 fix: check imap_mail_compose() keys after reading them
+      if [ ! -f php5640-80710-keys.patch ]; then
+        echo
+        echo "patching PHP 5.6 for bug #80710 imap_mail_compose() key checks"
+        echo "https://bugs.php.net/bug.php?id=80710"
+        echo
+        cp -a $CUR_DIR/patches/php/php5640-80710-keys.patch php5640-80710-keys.patch || { patch_status=$?; rm -f php5640-80710-keys.patch; exit "$patch_status"; }
+        dos2unix php5640-80710-keys.patch || { patch_status=$?; rm -f php5640-80710-keys.patch; exit "$patch_status"; }
+        patch -p1 < php5640-80710-keys.patch || { patch_status=$?; rm -f php5640-80710-keys.patch; exit "$patch_status"; }
+      fi
       # PHP 5.6 bug #81122 https://bugs.php.net/bug.php?id=81122
       if [ ! -f php5640-81122.patch ]; then
         echo
