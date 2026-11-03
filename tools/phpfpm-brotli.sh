@@ -745,9 +745,12 @@ fi
 # reconcile runs from cmupdate, so it doesn't wait long behind another run
 lock_wait=300
 [ "$1" = reconcile ] && lock_wait=10
-exec 9>/run/phpfpm-brotli.lock
+# CentOS 6 has no /run, only /var/run
+lock_file='/run/phpfpm-brotli.lock'
+[ -d /run ] || lock_file='/var/run/phpfpm-brotli.lock'
+exec 9>"$lock_file"
 if ! flock -w "$lock_wait" 9; then
-  echo "another phpfpm-brotli.sh run holds /run/phpfpm-brotli.lock"
+  echo "another phpfpm-brotli.sh run holds $lock_file"
   exit 1
 fi
 
