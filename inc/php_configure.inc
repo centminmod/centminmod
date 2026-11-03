@@ -3423,7 +3423,8 @@ else
 fi
 
 # key on PHPVER_ID, the PHP being built; PHPMVER is the default PHP_VERSION, not a menu 5 target
-if [[ "$PHP_LIBGD_EXTERNAL" = [yY] ]] && [[ "$PHPVER_ID" -ge '70400' ]]; then
+# CentOS 6: install_libgd_external builds nothing and system gd-devel 2.0.34 fails gdlib >= 2.1.0, so use bundled GD
+if [[ "$CENTOS_SIX" -ne '6' && "$PHP_LIBGD_EXTERNAL" = [yY] ]] && [[ "$PHPVER_ID" -ge '70400' ]]; then
   LIBGD_EXT_OPT=' --with-external-gd'
   install_libgd_external || return $?
 # elif [[ "$PHP_LIBGD_EXTERNAL" = [yY] ]] && [[ "$PHPMVER" = '7.0' || "$PHPMUVER" = '7.0' || "$PHPMVER" = '7.1' || "$PHPMUVER" = '7.1' || "$PHPMVER" = '7.2' || "$PHPMUVER" = '7.2' || "$PHPMVER" = '7.3' || "$PHPMUVER" = '7.3' ]]; then
