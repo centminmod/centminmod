@@ -2038,7 +2038,7 @@ elif [[ ! -f /usr/include/tidy.h ]]; then
   sar_call
 fi
 
-if [[ ! -d /usr/include/enchant ]] && [[ "$CENTOS_SEVEN" -eq '7' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' || "$CENTOS_TEN" -eq '10' ]]; then
+if [[ ! -d /usr/include/enchant ]] && [[ "$CENTOS_SEVEN" -eq '7' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]]; then
   if [ -f /etc/yum.repos.d/rpmforge.repo ]; then
     yum -q -y install enchant enchant-devel --disablerepo=rpmforge,epel
     sar_call
