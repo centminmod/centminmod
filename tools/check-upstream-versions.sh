@@ -95,7 +95,7 @@ nginx|echo|ORESTY_ECHOVER|gh:openresty/echo-nginx-module:^v[0-9.]+$|s/^v//|tag:v
 nginx|srcache|ORESTY_SRCCACHEVER|gh:openresty/srcache-nginx-module:^v[0-9.]+$|s/^v//|tag:v{V}|any|
 nginx|memc|ORESTY_MEMCVER|gh:openresty/memc-nginx-module:^v[0-9.]+$|s/^v//|tag:v{V}|any|
 nginx|redis2|ORESTY_REDISVER|gh:openresty/redis2-nginx-module:^v[0-9.]+$|s/^v//|tag:v{V}|any|
-nginx|ngx_devel_kit|ORESTY_DEVELKITVER|gh:vision5/ngx_devel_kit:^v[0-9.]+$|s/^v//|tag:v{V}|any|
+nginx|ngx_devel_kit|ORESTY_DEVELKITVER|gh:openresty/ngx_devel_kit:^v[0-9.]+$|s/^v//|-|any|0.3.5+ only in the OpenResty fork (vision5 stops at 0.3.4): bump only where inc/downloadlinks.inc picks the fork URL for 0.3.5+, no pin check across both repos
 nginx|ngx-fancyindex|NGINX_FANCYINDEXVER|gh:aperezdc/ngx-fancyindex:^v[0-9.]+$|s/^v//|tag:v{V}|any|
 nginx|ngx_cache_purge|NGINX_CACHEPURGEVER|gh:nginx-modules/ngx_cache_purge:^[0-9]+\.[0-9.]+$||tag:{V}|any|
 nginx|nginx-dav-ext|NGINX_EXTWEBDAVVER|gh:arut/nginx-dav-ext-module:^v[0-9.]+$|s/^v//|tag:v{V}|any|NGINX_WEBDAV=n default
