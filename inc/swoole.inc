@@ -225,6 +225,26 @@ elif [[ "$PHPMUVER" = '8.5' ]]; then
 fi
 
 if [[ "$PHPSWOOLE" = [yY] ]]; then
+    # Swoole 5.0.0-6.1.11 and 6.2.0-6.2.4 trust client-supplied multipart
+    # Swoole-Upload-File markers, so a request can delete files with the worker's
+    # permissions. Fixed in 6.1.12 (PHP 8.1-8.4) and 6.2.5 (PHP 8.2-8.5). PHP
+    # 7.2-8.0 have no fixed release, so skip the build rather than install one
+    local swoole_phpver="$PHPMVER" swoole_patch="${PHPSWOOLE_VER##*.}" swoole_vuln=n
+    [[ "$PHPMUVER" =~ ^[0-9]+\.[0-9]+$ ]] && swoole_phpver="$PHPMUVER"
+    swoole_patch="${swoole_patch%%[!0-9]*}"
+    case "$PHPSWOOLE_VER" in
+        5.*|6.0.*) swoole_vuln=y ;;
+        6.1.*) [[ "${swoole_patch:-0}" -lt 12 ]] && swoole_vuln=y ;;
+        6.2.*) [[ "${swoole_patch:-0}" -lt 5 ]] && swoole_vuln=y ;;
+    esac
+    if [[ "$swoole_vuln" = 'y' || "$swoole_phpver" = 7.[234] || "$swoole_phpver" = '8.0' ]]; then
+        cecho "Skipping swoole ${PHPSWOOLE_VER} for PHP ${swoole_phpver}: affected by the multipart upload file deletion flaw" $boldyellow
+        cecho "Fixed swoole 6.1.12 / 6.2.5 needs PHP 8.1+; remove older PHPSWOOLE_*_VER pins from /etc/centminmod/custom_config.inc" $boldyellow
+        if [ -f "${CONFIGSCANDIR}/swoole.ini" ]; then
+            cecho "Existing ${CONFIGSCANDIR}/swoole.ini left in place; remove it to stop loading swoole" $boldyellow
+        fi
+        return 0
+    fi
     PHPEXTDIRD=$(php_extension_dir)
       # set extra cflags fro devtoolset-7 and devtoolset-8 compatibility
       check_devtoolset_php
@@ -254,8 +274,8 @@ if [[ "$PHPSWOOLE" = [yY] ]]; then
     /usr/local/bin/phpize
     CFLAGS="${COMPILER_CFLAGS} -fPIC -O2 -fstack-protector-strong -D_FORTIFY_SOURCE=2" CPPFLAGS="-D_FORTIFY_SOURCE=2" CXXFLAGS="-fPIC -O2" LDFLAGS="-Wl,-z,relro,-z,now -pie" ./configure --with-php-config=/usr/local/bin/php-config --enable-mysqlnd --enable-swoole-json --enable-swoole-curl --enable-sockets --enable-openssl
 
-    make${MAKETHREADS}
-    make install
+    make${MAKETHREADS} || return $?
+    make install || return $?
     
     #######################################################
     # check to see if swoole.so already loaded in php.ini
@@ -273,6 +293,14 @@ if [[ "$PHPSWOOLE" = [yY] ]]; then
         echo "$SWOOLESOCHECK"
         echo ""
     fi # swoole.so check
+
+    local swoole_loaded
+    swoole_loaded=$(/usr/local/bin/php -r 'echo phpversion("swoole");' 2>/dev/null)
+    if [[ "$swoole_loaded" != "$PHPSWOOLE_VER" ]]; then
+        cecho "WARNING: PHP loads swoole ${swoole_loaded:-none}, expected ${PHPSWOOLE_VER}" $boldyellow
+    elif [[ "$INITIALINSTALL" != [yY] ]]; then
+        cecho "Restart Swoole server processes to load swoole ${PHPSWOOLE_VER}" $boldyellow
+    fi
 
     # # async client & APIs
     # pushd "$DIR_TMP"

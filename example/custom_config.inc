@@ -5264,19 +5264,23 @@
 
 # PHP Swoole 8.1 Version
 # Git History: Added 2025-01-12 (f79acd1e)
-#PHPSWOOLE_EIGHT_ONE_VER='6.1.10'
+#PHPSWOOLE_EIGHT_ONE_VER='6.1.12'
 
 # PHP Swoole 8.2 Version
 # Git History: Added 2025-01-12 (f79acd1e)
-#PHPSWOOLE_EIGHT_TWO_VER='6.2.3'
+#PHPSWOOLE_EIGHT_TWO_VER='6.2.5'
 
 # PHP Swoole 8.3 Version
 # Git History: Added 2025-01-12 (f79acd1e)
-#PHPSWOOLE_EIGHT_THREE_VER='6.2.3'
+#PHPSWOOLE_EIGHT_THREE_VER='6.2.5'
 
 # PHP Swoole 8.4 Version
 # Git History: Added 2025-01-12 (f79acd1e)
-#PHPSWOOLE_EIGHT_FOUR_VER='6.2.3'
+#PHPSWOOLE_EIGHT_FOUR_VER='6.2.5'
+
+# PHP Swoole 8.5 Version
+# Git History: Added 2025-11-23 (6344948c)
+#PHPSWOOLE_EIGHT_FIVE_VER='6.2.5'
 
 # PHP Swoole PHP 5 Max Version
 # Git History: Added 2021-12-27 (51649e9d)
