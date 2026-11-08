@@ -2980,9 +2980,9 @@
 
 # OpenResty Devel Kit Version
 # Nginx development kit
-# Reference: https://github.com/vision5/ngx_devel_kit
+# Reference: https://github.com/openresty/ngx_devel_kit
 # Git History: First added 2015-05-08 (b1006c5f), Last modified 2016-02-15 (7240145c)
-#ORESTY_DEVELKITVER='0.3.4'  
+#ORESTY_DEVELKITVER='0.3.6'  
 
 # OpenResty Set-Misc Module
 # Various set_xxx directives
