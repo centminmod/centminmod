@@ -3082,13 +3082,13 @@
 # Git History: First added 2015-05-25 (f56179dc), Last modified 2016-02-15 (7240145c)
 #ORESTY_LUAMYSQLVER='0.31'  
 # Git History: First added 2015-05-25 (f56179dc), Last modified 2016-02-15 (7240145c)
-#ORESTY_LUAREDISVER='0.33'  
+#ORESTY_LUAREDISVER='0.34'  
 # Git History: First added 2015-05-25 (f56179dc), Last modified 2016-02-15 (7240145c)
-#ORESTY_LUADNSVER='0.23'  
+#ORESTY_LUADNSVER='0.24'  
 # Git History: First added 2015-05-25 (f56179dc), Last modified 2016-02-15 (7240145c)
 #ORESTY_LUAUPLOADVER='0.11'  
 # Git History: First added 2015-05-25 (f56179dc), Last modified 2016-02-15 (7240145c)
-#ORESTY_LUAWEBSOCKETVER='0.14'  
+#ORESTY_LUAWEBSOCKETVER='0.16'  
 # Git History: First added 2015-05-25 (f56179dc), Last modified 2016-02-15 (7240145c)
 #ORESTY_LUALOCKVER='0.09'  
 # Git History: First added 2015-05-25 (f56179dc), Last modified 2016-02-15 (7240145c)
@@ -3100,9 +3100,9 @@
 # Git History: First added 2015-05-25 (963385d2), Last modified 2016-02-15 (7240145c)
 #ORESTY_LUALRUCACHEVER='0.15'  
 # Git History: First added 2015-05-25 (963385d2), Last modified 2016-02-15 (7240145c)
-#ORESTY_LUARESTYCOREVER='0.1.32'  
+#ORESTY_LUARESTYCOREVER='0.1.35rc2'  
 # Git History: Added 2018-10-30 (d91957ae)
-#ORESTY_LUASTREAMVER='0.0.17'  
+#ORESTY_LUASTREAMVER='0.0.20rc3'  
 # Git History: First added 2015-05-25 (963385d2), Last modified 2016-02-15 (7240145c)
 #ORESTY_LUAUPSTREAMVER='0.08'  
 # Git History: First added 2015-05-25 (4098192a), Last modified 2016-02-15 (7240145c)
@@ -3194,7 +3194,7 @@
 # OpenResty Lua Nginx Module Version
 # Reference: https://github.com/openresty/lua-nginx-module
 # Git History: First added 2015-05-25 (f56179dc), Last modified 2016-02-15 (7240145c)
-#ORESTY_LUANGINXVER='0.10.29'  
+#ORESTY_LUANGINXVER='0.10.32rc7'  
 
 # OpenResty LuaJIT Version
 # Reference: http://luajit.org/
@@ -3209,7 +3209,7 @@
 
 # OpenResty Lua Stream Version
 # Git History: Added 2018-10-30 (d91957ae)
-#ORESTY_LUASTREAMVER='0.0.17'  
+#ORESTY_LUASTREAMVER='0.0.20rc3'  
 
 # Nginx Lua Stream Forced
 # Force enable stream-lua-nginx for Nginx 1.17+
@@ -3232,7 +3232,7 @@
 # Fast JSON encoding/decoding library
 # Reference: https://github.com/openresty/lua-cjson
 # Git History: First added 2015-05-28 (e1355312), Last modified 2016-02-15 (7240145c)
-#LUACJSONVER='2.1.0.19'  
+#LUACJSONVER='2.1.0.20'  
 
 ################################################################################
 # 18. SSL/TLS OPENSSL SETTINGS

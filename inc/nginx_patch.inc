@@ -882,7 +882,11 @@ ngx_luastream_onetwoseven_patch() {
   if [[ "$ORESTY_LUANGINX" = [yY] && "$NGX_LUASTREAM" = [yY] && "$DETECT_NGXVER" -ge '1025004' ]]; then
     NGX_LUANGINXDIR=$(tar -tzf "$DIR_TMP/${NGX_LUANGINXLINKFILE}" | head -1 | cut -f1 -d"/")
     NGX_LUASTREAMDIR=$(tar -tzf "$DIR_TMP/${NGX_LUASTREAMLINKFILE}" | head -1 | cut -f1 -d"/")
-    if [ -d "${DIR_TMP}/${NGX_LUASTREAMDIR}" ]; then
+    # stream-lua-nginx-module 0.0.17+ ships this nginx 1.25.5+ SSL context
+    # fix upstream, so the patch only applies to older stream-lua sources
+    if [ -d "${DIR_TMP}/${NGX_LUASTREAMDIR}" ] && grep -q 'nginx_version >= 1025005' "${DIR_TMP}/${NGX_LUASTREAMDIR}/src/ngx_stream_lua_module.c" 2>/dev/null; then
+      echo "${NGX_LUASTREAMDIR} already includes the nginx 1.25.5+ SSL context fix, skipping luanginx-1.27.0.patch"
+    elif [ -d "${DIR_TMP}/${NGX_LUASTREAMDIR}" ]; then
       pushd "${DIR_TMP}/${NGX_LUASTREAMDIR}"
       cecho "patching lua stream nginx module for nginx 1.25.4+ support" $boldyellow
       cecho "Performing dry-run of the patch..." $boldyellow
@@ -990,6 +994,159 @@ luanginx_patch() {
   builtin_error_page_footer_patch
   no_error_pages_patch
   } 2>&1 | tee -a "${CENTMINLOGDIR}/patch_patchnginx_${DT}.log"
+}
+
+# apply one vendored patch to an extracted lua module source tree. Module
+# trees are reused across menu 4 runs, so a fix already present (applied by an
+# earlier run or shipped upstream) is skipped; a fix that is neither present
+# nor applicable fails the build
+luanginx_module_src_patch() {
+  local archive="$1" pfile="$CUR_DIR/patches/luanginx/$2" list top
+  list=$(tar -tzf "$DIR_TMP/$archive") || { echo "error: cannot list $DIR_TMP/$archive" >&2; return 1; }
+  top=${list%%/*}
+  case "$top" in
+    ''|.|..|*[!a-zA-Z0-9._+-]*) echo "error: unsafe directory name in $archive" >&2; return 1 ;;
+  esac
+  [[ -d "$DIR_TMP/$top/src" && -f "$pfile" ]] || { echo "error: $DIR_TMP/$top/src or $pfile missing" >&2; return 1; }
+  if patch -d "$DIR_TMP/$top" -p1 -R -f -s --fuzz=0 --dry-run < "$pfile" >/dev/null 2>&1; then
+    echo "$2 already present in $top"
+  elif patch -d "$DIR_TMP/$top" -p1 -N -s --fuzz=0 --dry-run < "$pfile" >/dev/null 2>&1; then
+    patch -d "$DIR_TMP/$top" -p1 -N --fuzz=0 --no-backup-if-mismatch < "$pfile" || return 1
+    echo "$2 applied to $top"
+  else
+    echo "error: $2 does not apply to $top" >&2
+    return 1
+  fi
+}
+
+# lua module source fixes, run after luanginx_patch for every Lua build:
+# - coroutine cleanup heap use-after-free fixes from lua-nginx-module 8df8ff0
+#   and stream-lua-nginx-module 8f3886c (2026-11-06, not in any upstream tag)
+# - with AWS_LC_SWITCH='y', AWS-LC compatibility from the unmerged upstream
+#   pull requests lua-nginx-module #2357 and stream-lua-nginx-module #360
+luanginx_module_fixes() {
+  local -a luafix_status
+  {
+  luanginx_module_src_patch "$NGX_LUANGINXLINKFILE" lua-nginx-module-8df8ff0.patch || return 1
+  if [[ "$NGX_LUASTREAM" = [yY] ]]; then
+    luanginx_module_src_patch "$NGX_LUASTREAMLINKFILE" stream-lua-nginx-module-8f3886c.patch || return 1
+  fi
+  if [[ "$AWS_LC_SWITCH" = [yY] ]]; then
+    luanginx_module_src_patch "$NGX_LUANGINXLINKFILE" lua-nginx-module-awslc-pr2357.patch || return 1
+    if [[ "$NGX_LUASTREAM" = [yY] ]]; then
+      luanginx_module_src_patch "$NGX_LUASTREAMLINKFILE" stream-lua-nginx-module-awslc-pr360.patch || return 1
+    fi
+  fi
+  } 2>&1 | tee -a "${CENTMINLOGDIR}/patch_patchnginx_${DT}.log"
+  luafix_status=("${PIPESTATUS[@]}")
+  [[ "${luafix_status[0]}" -eq 0 ]] || return "${luafix_status[0]}"
+  return "${luafix_status[1]}"
+}
+
+# OpenResty nginx core patches for nginx 1.31.x Lua builds, vendored from
+# openresty/openresty v1.31.8.1 patches/nginx/1.31.8 and listed in that
+# release's util/mirror-tarballs apply order (privileged_agent_process_* and
+# the ssl_*_cb_yield patches build on earlier ones). server_header and
+# win32_max_err_str are not vendored; builtin_error_page_footer is rebranded
+# to nginx centminmod. nginx 1.27.x keeps the per-patch functions above.
+OPENRESTY_NGX_PATCHES_1031='stream_balancer_export stream_proxy_get_next_upstream_tries
+stream_proxy_timeout_fields stream_ssl_preread_no_skip resolver_conf_parsing daemon_destroy_pool
+init_cycle_pool_release balancer_status_code builtin_error_page_footer delayed_posted_events
+privileged_agent_process privileged_agent_process_connections privileged_agent_process_thread_pool
+single_process_graceful_exit intercept_error_log upstream_pipelining no_error_pages no_Werror
+log_escape_non_ascii proxy_host_port_vars cache_manager_exit larger_max_error_str pcre_conf_opt
+always_enable_cc_feature_tests ssl_cert_cb_yield ssl_sess_cb_yield ssl_client_hello_cb_yield
+proxy_ssl_verify_cb_yield balancer_pool_max_retry upstream_timeout_fields safe_resolver_ipv6_option
+socket_cloexec reuseport_close_unused_fds upstream_ssl_session_cleanup proc_exit_handler
+quic_ssl_lua_yield http2_subreq_error_wakeup'
+
+# all or nothing: if any patch does not apply, the ones already applied are
+# reverted and nginx builds without the set (Lua still builds, without the
+# features these patches enable). Fails on a partially patched (mixed) tree,
+# when a patch that passed its dry run then fails to apply, or when a revert
+# fails, because building a mixed nginx core is never safe
+openresty_nginx_patchset() {
+  local -a orpatch_status
+  {
+  local ngx_src set_ver set_dir first last first_in last_in p f i
+  local -a applied=()
+  if [[ "$FREENGINX_INSTALL" = [yY] || "$ngver" = 'angie' ]]; then
+    echo "OpenResty nginx core patches skipped, they target official nginx"
+    return 0
+  fi
+  ngx_src="${DIR_TMP}/nginx-${ngver:-$NGINX_VERSION}"
+  if [[ ! -f "$ngx_src/src/core/nginx.h" ]]; then
+    echo "OpenResty nginx core patches skipped, $ngx_src not found"
+    return 0
+  fi
+  DETECT_NGXVER=$(awk '/define nginx_version  / {print $3}' "$ngx_src/src/core/nginx.h")
+  # the 1.31.8 set applies to nginx 1.31.7 and 1.31.8; 1.31.0-1.31.6 lack
+  # upstream changes it builds on (stream proxy timeouts, socket cloexec)
+  if [[ "$DETECT_NGXVER" -ge '1031007' && "$DETECT_NGXVER" -lt '1032000' ]]; then
+    set_ver='1.31.8'
+  elif [[ "$DETECT_NGXVER" -ge '1031000' && "$DETECT_NGXVER" -lt '1031007' ]]; then
+    echo "OpenResty nginx core patches skipped, they need nginx 1.31.7+ (have ${ngver:-$NGINX_VERSION})"
+    return 0
+  elif [[ "$DETECT_NGXVER" -ge '1027000' && "$DETECT_NGXVER" -lt '1028000' ]]; then
+    # nginx 1.27.x uses the per-patch functions in luanginx_patch
+    return 0
+  else
+    echo "OpenResty nginx core patches skipped, no patch set for nginx ${ngver:-$NGINX_VERSION}"
+    return 0
+  fi
+  set_dir="$CUR_DIR/patches/luanginx/nginx-${set_ver}"
+  for p in $OPENRESTY_NGX_PATCHES_1031; do
+    [[ -f "$set_dir/nginx-${set_ver}-${p}.patch" ]] || { echo "error: $set_dir/nginx-${set_ver}-${p}.patch missing" >&2; return 1; }
+  done
+  # the nginx tree can be reused: menu 4 extracts the tarball over the old
+  # tree when NGINX_DYNAMICTLS='y' (restoring patched files), and the initial
+  # install only extracts a missing tree. So judge the set from the source:
+  # it adds no files, so the first and last patches reverse-apply together
+  # only when the whole set is in, and neither does on a pristine tree.
+  # Anything else is a mixed tree (an interrupted run or a hand-applied
+  # patch), which is never built
+  first=${OPENRESTY_NGX_PATCHES_1031%%[[:space:]]*}
+  last=${OPENRESTY_NGX_PATCHES_1031##*[[:space:]]}
+  first_in=n last_in=n
+  patch -d "$ngx_src" -p1 -R -f -s --dry-run < "$set_dir/nginx-${set_ver}-${first}.patch" >/dev/null 2>&1 && first_in=y
+  patch -d "$ngx_src" -p1 -R -f -s --dry-run < "$set_dir/nginx-${set_ver}-${last}.patch" >/dev/null 2>&1 && last_in=y
+  if [[ "$first_in" = y && "$last_in" = y ]]; then
+    echo "OpenResty nginx ${set_ver} core patches already applied to $ngx_src"
+    return 0
+  elif [[ "$first_in" != "$last_in" ]]; then
+    echo "error: $ngx_src is partially patched with OpenResty nginx ${set_ver} patches, remove it and re-run" >&2
+    return 1
+  fi
+  cecho "applying OpenResty nginx ${set_ver} core patches to $ngx_src" $boldyellow
+  for p in $OPENRESTY_NGX_PATCHES_1031; do
+    f="$set_dir/nginx-${set_ver}-${p}.patch"
+    if ! patch -d "$ngx_src" -p1 -N -s --dry-run < "$f" >/dev/null 2>&1; then
+      if patch -d "$ngx_src" -p1 -R -f -s --dry-run < "$f" >/dev/null 2>&1; then
+        echo "error: OpenResty nginx patch $p is already in $ngx_src, the tree is partially patched, remove it and re-run" >&2
+        return 1
+      fi
+      echo "WARNING: OpenResty nginx patch $p does not apply to nginx ${ngver:-$NGINX_VERSION}"
+      for ((i=${#applied[@]}-1; i>=0; i--)); do
+        if ! patch -d "$ngx_src" -p1 -R -s --no-backup-if-mismatch < "${applied[i]}"; then
+          echo "error: could not revert ${applied[i]##*/}, $ngx_src is partially patched" >&2
+          return 1
+        fi
+      done
+      echo "WARNING: reverted ${#applied[@]} OpenResty nginx patches, building Lua without them"
+      return 0
+    fi
+    if ! patch -d "$ngx_src" -p1 -N -s --no-backup-if-mismatch < "$f"; then
+      echo "error: OpenResty nginx patch $p failed after a clean dry run, $ngx_src is partially patched" >&2
+      return 1
+    fi
+    applied+=("$f")
+    echo "  applied $p"
+  done
+  echo "applied ${#applied[@]} OpenResty nginx ${set_ver} core patches"
+  } 2>&1 | tee -a "${CENTMINLOGDIR}/patch_patchnginx_${DT}.log"
+  orpatch_status=("${PIPESTATUS[@]}")
+  [[ "${orpatch_status[0]}" -eq 0 ]] || return "${orpatch_status[0]}"
+  return "${orpatch_status[1]}"
 }
 
 echonginx_patch() {
