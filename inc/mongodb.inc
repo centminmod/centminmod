@@ -83,6 +83,17 @@ if [[ "$PHPMONGODB" = [yY] ]]; then
     
         cecho "Compiling PHP mongo ${MONGODBPHP_VER} PHP extension..." $boldgreen
     
+    if [[ "$PHP_PIE_INSTALL" = [yY] ]]; then
+        # same PHP 8.5 IS_INTERNED shim as the PECL build below
+        local mongodb_pie_cppflags="$CPPFLAGS"
+        if [[ "$(/usr/local/bin/php-config --vernum)" -ge 80500 ]]; then
+            mongodb_pie_cppflags="${mongodb_pie_cppflags} -DIS_INTERNED=ZSTR_IS_INTERNED"
+        fi
+    fi
+    if [[ "$PHP_PIE_INSTALL" = [yY] ]] && php_pie_install mongodb "mongodb/mongodb-extension:${MONGODBPHP_VER}" \
+        "CPPFLAGS=${mongodb_pie_cppflags}" --; then
+        :
+    else
         pwd
         echo "cd $DIR_TMP"
         cd "$DIR_TMP"
@@ -105,6 +116,7 @@ if [[ "$PHPMONGODB" = [yY] ]]; then
     fi
     make${MAKETHREADS} || return $?
     make install || return $?
+    fi
     [[ -s "${PHPEXTDIRD}/mongodb.so" ]] || return 1
 
     #######################################################

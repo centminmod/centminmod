@@ -30,7 +30,7 @@ DT=$(date +"%d%m%y-%H%M%S")
 branchname='141.00beta01'
 SCRIPT_MAJORVER='141'
 SCRIPT_MINORVER='00'
-SCRIPT_INCREMENTVER='423'
+SCRIPT_INCREMENTVER='424'
 SCRIPT_VERSIONSHORT="${branchname}"
 SCRIPT_VERSION="${SCRIPT_VERSIONSHORT}.b${SCRIPT_INCREMENTVER}"
 SCRIPT_DATE='16/08/25'
@@ -917,6 +917,9 @@ PHP_BROTLI='n'              # brotli php extension https://github.com/kjdev/php-
 PHP_LZFOUR='n'              # lz4 php extension https://github.com/kjdev/php-ext-lz4
 PHP_LZF='n'                 # lzf php extension https://github.com/php/pecl-file_formats-lzf php-ext-lzf
 PHP_ZSTD='n'                # zstd php extension https://github.com/kjdev/php-ext-zstd
+PHP_PIE_INSTALL='n'         # y = build supported PHP extensions with PHP PIE https://github.com/php/pie instead of PECL tarballs, falls back to PECL
+PHP_PIE_VER='1.5.5'         # pinned PIE release https://github.com/php/pie/releases
+PHP_PIE_SHA256='2ca0dff6868f1b53c095625674deef38ac698588e0a25e4321cd834a5b7553bc' # sha256 of that release's pie.phar
 
 SHORTCUTS='y'                # shortcuts
 
@@ -1661,6 +1664,7 @@ source "${SCRIPT_DIR}/inc/fileinfo.inc"
 source "${SCRIPT_DIR}/inc/php_configure.inc"
 source "${SCRIPT_DIR}/inc/phpng_download.inc"
 source "${SCRIPT_DIR}/inc/php_upgrade.inc"
+source "${SCRIPT_DIR}/inc/php_pie.inc"
 source "${SCRIPT_DIR}/inc/php_patch.inc"
 source "${SCRIPT_DIR}/inc/suhosin_setup.inc"
 source "${SCRIPT_DIR}/inc/nginx_pagespeed.inc"

@@ -38,7 +38,8 @@ mailparseinstall() {
             # set extra cflags fro devtoolset-7 and devtoolset-8 compatibility
             check_devtoolset_php
             enable_devtoolset "$CLANG_PHP" || return 1
-            checkphpextmailparse
+            # PIE builds from GitHub, so only fetch the PECL tarball when PIE is off or falls back
+            [[ "$PHP_PIE_INSTALL" = [yY] ]] || checkphpextmailparse
             if [[ "$INITIALINSTALL" != [yY] ]]; then
                 MAILPARSE_PHPVER=$(php-config --version | cut -d . -f1,2)
             else
@@ -67,6 +68,11 @@ mailparseinstall() {
             echo
             echo "mailparseinstall MAILPARSEPHP_VER=$MAILPARSEPHP_VER"
 
+            if [[ "$PHP_PIE_INSTALL" = [yY] ]] && php_pie_install mailparse "pecl/mailparse:${MAILPARSEPHP_VER}" \
+                "CFLAGS=${COMPILER_CFLAGS} -fPIC -O2 -fstack-protector-strong -D_FORTIFY_SOURCE=2" "CPPFLAGS=-D_FORTIFY_SOURCE=2" "CXXFLAGS=-fPIC -O2" "LDFLAGS=-Wl,-z,relro,-z,now -pie" --; then
+                :
+            else
+            [[ "$PHP_PIE_INSTALL" = [yY] ]] && checkphpextmailparse
             pwd
             echo "cd $DIR_TMP"
             cd $DIR_TMP
@@ -85,6 +91,7 @@ mailparseinstall() {
             CFLAGS="${COMPILER_CFLAGS} -fPIC -O2 -fstack-protector-strong -D_FORTIFY_SOURCE=2" CPPFLAGS="-D_FORTIFY_SOURCE=2" CXXFLAGS="-fPIC -O2" LDFLAGS="-Wl,-z,relro,-z,now -pie" ./configure --with-php-config=/usr/local/bin/php-config
             make${MAKETHREADS}
             make install
+            fi
 
             #######################################################
             # check if mailparse.so exists in php.ini

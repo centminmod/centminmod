@@ -249,6 +249,19 @@ if [[ "$PHPSWOOLE" = [yY] ]]; then
       # set extra cflags fro devtoolset-7 and devtoolset-8 compatibility
       check_devtoolset_php
       enable_devtoolset "$CLANG_PHP" || return 1
+    if [[ "$PHP_PIE_INSTALL" = [yY] ]]; then
+        # 6.2.x always builds OpenSSL and drops --enable-openssl; neither 6.1.12
+        # nor 6.2.5 has --enable-swoole-json, so their configure ignores it today
+        local swoole_pie_opts='--enable-mysqlnd --enable-swoole-curl --enable-sockets'
+        [[ "$PHPSWOOLE_VER" = 6.1.* ]] && swoole_pie_opts="${swoole_pie_opts} --enable-openssl"
+        if [[ "$CENTOS_TEN" -eq '10' || "$CENTOS_NINE" -eq '9' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_SEVEN" -eq '7' ]] && [ ! -f  /usr/lib64/libbrotlienc.so ]; then
+            $YUMDNFBIN -y -q install brotli-devel
+        fi
+    fi
+    if [[ "$PHP_PIE_INSTALL" = [yY] ]] && php_pie_install swoole "swoole/swoole:${PHPSWOOLE_VER}" \
+        "CFLAGS=${COMPILER_CFLAGS} -fPIC -O2 -fstack-protector-strong -D_FORTIFY_SOURCE=2" "CPPFLAGS=-D_FORTIFY_SOURCE=2" "CXXFLAGS=-fPIC -O2" "LDFLAGS=-Wl,-z,relro,-z,now -pie" -- $swoole_pie_opts; then
+        :
+    else
         echo "*************************************************"
         cecho "* Installing swoole PHP extension" $boldgreen
         echo "*************************************************"
@@ -276,6 +289,7 @@ if [[ "$PHPSWOOLE" = [yY] ]]; then
 
     make${MAKETHREADS} || return $?
     make install || return $?
+    fi
     
     #######################################################
     # check to see if swoole.so already loaded in php.ini

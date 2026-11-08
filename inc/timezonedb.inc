@@ -5,6 +5,11 @@ phptimezonedb_install() {
     echo "Compiling timezonedb PHP Extension $PHPTIMEZONEDB_VER"
     echo
     pushd "${DIR_TMP}" || return $?
+    if [[ "$PHP_PIE_INSTALL" = [yY] ]] && php_pie_install timezonedb "pecl/timezonedb:${PHPTIMEZONEDB_VER}" \
+      "CFLAGS=-fPIC -O2 -fstack-protector-strong -D_FORTIFY_SOURCE=2" "CPPFLAGS=-D_FORTIFY_SOURCE=2" \
+      "CXXFLAGS=-fPIC -O2" "LDFLAGS=-Wl,-z,relro,-z,now -pie" --; then
+      :
+    else
     if [ ! -f "timezonedb-${PHPTIMEZONEDB_VER}.tgz" ]; then
       wget${ipv_forceopt_wget} "https://pecl.php.net/get/timezonedb-${PHPTIMEZONEDB_VER}.tgz" || return $?
     fi
@@ -16,6 +21,7 @@ phptimezonedb_install() {
     make$MAKETHREADS || return $?
     # make test
     make install || return $?
+    fi
     timezonedb_ext_dir=$(php-config --extension-dir) || return $?
     [[ "$timezonedb_ext_dir" = /* && -s "$timezonedb_ext_dir/timezonedb.so" ]] || return 1
 cat > "${CONFIGSCANDIR}/timezonedb.ini" <<EOF || return $?

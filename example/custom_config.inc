@@ -5304,6 +5304,28 @@
 # Git History: Added 2017-12-01 (de9238d7)
 #PHP_MCRYPTPECLVER='1.0.9'  
 
+# PHP PIE Extension Installer
+# Builds timezonedb, mailparse, mcrypt (menu 5), phpredis release builds,
+# MongoDB and Swoole with PHP PIE (https://github.com/php/pie), the PHP
+# Foundation's PECL replacement, instead of pecl.php.net tarballs. Same
+# versions as the *_VER variables, same compiler flags, Centmin Mod still
+# writes /etc/centminmod/php.d/*.ini. PIE needs PHP 8.1+ and GitHub plus
+# Packagist access; any PIE failure falls back to the PECL tarball build.
+# phpredis develop-branch builds (PHP 8.4 default) stay on git; set
+# PHPREDIS_STABLE='y' to build the release with PIE.
+# GitHub API rate limit (60 requests/hour per IP): PIE reads a GitHub token
+# from Composer's auth.json, never put it in this file (it is copied to
+# /root/centminlogs on every run). Use a read-only token and write
+# {"github-oauth":{"github.com":"<token>"}} to /root/.config/composer/auth.json
+# (or /root/.composer/auth.json when only that directory exists), chmod 600.
+# Logs: /root/centminlogs/php-pie-<extension>_<date>.log
+#PHP_PIE_INSTALL='n'
+
+# PHP PIE Version and pie.phar sha256
+# Change both together; the sha256 comes from the release's pie.phar asset
+#PHP_PIE_VER='1.5.5'
+#PHP_PIE_SHA256='2ca0dff6868f1b53c095625674deef38ac698588e0a25e4321cd834a5b7553bc'
+
 # FFMPEG PHP Extension Version
 # FFMPEG PHP extension (deprecated)
 # Git History: First added 2014-04-24 (c4b6d98a), Last modified 2016-02-15 (7240145c)

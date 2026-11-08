@@ -1580,7 +1580,9 @@ if [[ "$PHP_MCRYPTPECL" = [yY] ]] && [[ "$PHPMUVER" = '8.0' || "$PHPVER_ID" -ge 
     echo "PHP_MCRYPTPECL=$PHP_MCRYPTPECL"
     echo "PHPMVER=$PHPMVER"
     echo "PHPMUVER=$PHPMUVER"
-    if [ -f /usr/local/src/centminmod/addons/php80-mcrypt.sh ]; then
+    if [[ "$PHP_PIE_INSTALL" = [yY] ]] && php_pie_install mcrypt "pecl/mcrypt:${PHP_MCRYPTPECLVER}" -- --with-mcrypt=yes; then
+        echo "extension=mcrypt.so" > "${CONFIGSCANDIR}/mcrypt.ini"
+    elif [ -f /usr/local/src/centminmod/addons/php80-mcrypt.sh ]; then
         /usr/local/src/centminmod/addons/php80-mcrypt.sh menu
     fi
 elif [[ "$PHP_MCRYPTPECL" = [yY] ]] && [[ "$PHPMUVER" = '7.4' ]]; then

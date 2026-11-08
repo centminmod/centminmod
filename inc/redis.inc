@@ -275,6 +275,24 @@ if [[ "$REDIS_PHPCURRENTVER" = '8.5' || "$PHPMUVER" = '8.5' || "$REDIS_PHPCURREN
             REDISPHP_VER="$REDISPHPSEVEN_VER"
             echo "REDISPHP_GIT=n: REDISPHP_VER=$REDISPHP_VER"
         fi
+        if [[ "$PHP_PIE_INSTALL" = [yY] ]]; then
+            # same zstd/lz4 support as the tarball build; lzf stays off;
+            # --with-liblz4 needs a value under PIE, =yes equals the bare flag
+            local redis_pie_opts='--enable-redis-zstd --enable-redis-lz4 --with-liblz4=yes'
+            if [[ ! "$(rpm -qa libzstd-devel)" ]]; then
+                yum -q -y install libzstd libzstd-devel || return $?
+            fi
+            if [[ ! "$(rpm -qa lz4-devel)" ]]; then
+                yum -q -y install lz4 lz4-devel || return $?
+            fi
+            if [[ -f "${PHPEXTDIRD}/igbinary.so" && "$IGBINARY_INSTALL" == 'y' && "$PHPREDIS_IGBINARY" = [yY] ]]; then
+                redis_pie_opts="${redis_pie_opts} --enable-redis-igbinary"
+            fi
+        fi
+        if [[ "$PHP_PIE_INSTALL" = [yY] ]] && php_pie_install redis "phpredis/phpredis:${REDISPHP_VER}" \
+            "CFLAGS=${COMPILER_CFLAGS} -fPIC -O2 -fstack-protector-strong -D_FORTIFY_SOURCE=2" "CPPFLAGS=-D_FORTIFY_SOURCE=2" "CXXFLAGS=-fPIC -O2" "LDFLAGS=-Wl,-z,relro,-z,now -pie" -- $redis_pie_opts; then
+            :
+        else
         pwd
         echo "cd $DIR_TMP"
         cd $DIR_TMP || return $?
@@ -336,6 +354,7 @@ if [[ "$REDIS_PHPCURRENTVER" = '8.5' || "$PHPMUVER" = '8.5' || "$REDIS_PHPCURREN
         fi
         make${MAKETHREADS} || return $?
         make install || return $?
+        fi
     fi
 else
     cecho "Compiling PHP redis-${REDISPHP_VER} extension..." $boldgreen
