@@ -4,7 +4,22 @@ checkswooletar() {
     local swoole_phpver="$PHPMVER"
     [[ "$PHPMUVER" =~ ^[0-9]+\.[0-9]+$ ]] && swoole_phpver="$PHPMUVER"
 
-    if [[ "$swoole_phpver" = '7.2' || "$swoole_phpver" = '7.3' || "$swoole_phpver" = '7.4' || "$swoole_phpver" = '8.0' || "$swoole_phpver" = '8.1' || "$swoole_phpver" = '8.2' || "$swoole_phpver" = '8.3' || "$swoole_phpver" = '8.4' ]]; then
+    if [[ "$swoole_phpver" = '8.1' ]]; then
+        PHPSWOOLE_VER="$PHPSWOOLE_EIGHT_ONE_VER"
+        PHPEXT_SWOOLELINKFILE="swoole-${PHPSWOOLE_VER}.tgz"
+        PHPEXT_SWOOLELINK="https://pecl.php.net/get/${PHPEXT_SWOOLELINKFILE}"
+        PHPEXT_SWOOLELINKLOCAL="${LOCALCENTMINMOD_MIRROR}/centminmodparts/swoole/${PHPEXT_SWOOLELINKFILE}"
+    elif [[ "$swoole_phpver" = '8.2' ]]; then
+        PHPSWOOLE_VER="$PHPSWOOLE_EIGHT_TWO_VER"
+        PHPEXT_SWOOLELINKFILE="swoole-${PHPSWOOLE_VER}.tgz"
+        PHPEXT_SWOOLELINK="https://pecl.php.net/get/${PHPEXT_SWOOLELINKFILE}"
+        PHPEXT_SWOOLELINKLOCAL="${LOCALCENTMINMOD_MIRROR}/centminmodparts/swoole/${PHPEXT_SWOOLELINKFILE}"
+    elif [[ "$swoole_phpver" = '8.3' ]]; then
+        PHPSWOOLE_VER="$PHPSWOOLE_EIGHT_THREE_VER"
+        PHPEXT_SWOOLELINKFILE="swoole-${PHPSWOOLE_VER}.tgz"
+        PHPEXT_SWOOLELINK="https://pecl.php.net/get/${PHPEXT_SWOOLELINKFILE}"
+        PHPEXT_SWOOLELINKLOCAL="${LOCALCENTMINMOD_MIRROR}/centminmodparts/swoole/${PHPEXT_SWOOLELINKFILE}"
+    elif [[ "$swoole_phpver" = '7.2' || "$swoole_phpver" = '7.3' || "$swoole_phpver" = '7.4' || "$swoole_phpver" = '8.0' || "$swoole_phpver" = '8.4' ]]; then
         PHPSWOOLE_VER="$PHPSWOOLE_VER"
         PHPEXT_SWOOLELINKFILE="swoole-${PHPSWOOLE_VER}.tgz"
         PHPEXT_SWOOLELINK="https://pecl.php.net/get/${PHPEXT_SWOOLELINKFILE}"
@@ -40,7 +55,22 @@ swooleinstall() {
     [[ "$PHPMUVER" =~ ^[0-9]+\.[0-9]+$ ]] && swoole_phpver="$PHPMUVER"
         if [[ "$PHP_INSTALL" = [yY] ]]; then
 
-    if [[ "$swoole_phpver" = '7.2' || "$swoole_phpver" = '7.3' || "$swoole_phpver" = '7.4' || "$swoole_phpver" = '8.0' || "$swoole_phpver" = '8.1' || "$swoole_phpver" = '8.2' || "$swoole_phpver" = '8.3' || "$swoole_phpver" = '8.4' ]]; then
+    if [[ "$swoole_phpver" = '8.1' ]]; then
+        PHPSWOOLE_VER="$PHPSWOOLE_EIGHT_ONE_VER"
+        PHPEXT_SWOOLELINKFILE="swoole-${PHPSWOOLE_VER}.tgz"
+        PHPEXT_SWOOLELINK="https://pecl.php.net/get/${PHPEXT_SWOOLELINKFILE}"
+        PHPEXT_SWOOLELINKLOCAL="${LOCALCENTMINMOD_MIRROR}/centminmodparts/swoole/${PHPEXT_SWOOLELINKFILE}"
+    elif [[ "$swoole_phpver" = '8.2' ]]; then
+        PHPSWOOLE_VER="$PHPSWOOLE_EIGHT_TWO_VER"
+        PHPEXT_SWOOLELINKFILE="swoole-${PHPSWOOLE_VER}.tgz"
+        PHPEXT_SWOOLELINK="https://pecl.php.net/get/${PHPEXT_SWOOLELINKFILE}"
+        PHPEXT_SWOOLELINKLOCAL="${LOCALCENTMINMOD_MIRROR}/centminmodparts/swoole/${PHPEXT_SWOOLELINKFILE}"
+    elif [[ "$swoole_phpver" = '8.3' ]]; then
+        PHPSWOOLE_VER="$PHPSWOOLE_EIGHT_THREE_VER"
+        PHPEXT_SWOOLELINKFILE="swoole-${PHPSWOOLE_VER}.tgz"
+        PHPEXT_SWOOLELINK="https://pecl.php.net/get/${PHPEXT_SWOOLELINKFILE}"
+        PHPEXT_SWOOLELINKLOCAL="${LOCALCENTMINMOD_MIRROR}/centminmodparts/swoole/${PHPEXT_SWOOLELINKFILE}"
+    elif [[ "$swoole_phpver" = '7.2' || "$swoole_phpver" = '7.3' || "$swoole_phpver" = '7.4' || "$swoole_phpver" = '8.0' || "$swoole_phpver" = '8.4' ]]; then
         PHPSWOOLE_VER="$PHPSWOOLE_VER"
         PHPEXT_SWOOLELINKFILE="swoole-${PHPSWOOLE_VER}.tgz"
         PHPEXT_SWOOLELINK="https://pecl.php.net/get/${PHPEXT_SWOOLELINKFILE}"
@@ -63,6 +93,25 @@ swooleinstall() {
     fi
 
 if [[ "$PHPSWOOLE" = [yY] ]]; then
+    # Swoole 5.0.0-6.1.11 and 6.2.0-6.2.4 trust client-supplied multipart
+    # Swoole-Upload-File markers, so a request can delete files with the worker's
+    # permissions. Fixed in 6.1.12 for PHP 8.1 and 6.2.5 for PHP 8.2-8.3. PHP
+    # 7.2-8.0 have no fixed release, so skip the build rather than install one
+    local swoole_patch="${PHPSWOOLE_VER##*.}" swoole_vuln=n
+    swoole_patch="${swoole_patch%%[!0-9]*}"
+    case "$PHPSWOOLE_VER" in
+        5.*|6.0.*) swoole_vuln=y ;;
+        6.1.*) [[ "${swoole_patch:-0}" -lt 12 ]] && swoole_vuln=y ;;
+        6.2.*) [[ "${swoole_patch:-0}" -lt 5 ]] && swoole_vuln=y ;;
+    esac
+    if [[ "$swoole_vuln" = 'y' || "$swoole_phpver" = 7.[234] || "$swoole_phpver" = '8.0' ]]; then
+        cecho "Skipping swoole ${PHPSWOOLE_VER} for PHP ${swoole_phpver}: affected by the multipart upload file deletion flaw" $boldyellow
+        cecho "Fixed swoole 6.1.12 / 6.2.5 needs PHP 8.1+; remove older PHPSWOOLE_*_VER pins from /etc/centminmod/custom_config.inc" $boldyellow
+        if [ -f "${CONFIGSCANDIR}/swoole.ini" ]; then
+            cecho "Existing ${CONFIGSCANDIR}/swoole.ini left in place; remove it to stop loading swoole" $boldyellow
+        fi
+        return 0
+    fi
     PHPEXTDIRD=`cat /usr/local/bin/php-config | awk '/^extension_dir/ {extdir=$1} END {gsub(/\047|extension_dir|=|)/,"",extdir); print extdir}'`
       # set extra cflags fro devtoolset-7 and devtoolset-8 compatibility
       check_devtoolset_php
@@ -108,6 +157,14 @@ if [[ "$PHPSWOOLE" = [yY] ]]; then
         echo "$SWOOLESOCHECK"
         echo ""
     fi # swoole.so check
+
+    local swoole_loaded
+    swoole_loaded=$(/usr/local/bin/php -r 'echo phpversion("swoole");' 2>/dev/null)
+    if [[ "$swoole_loaded" != "$PHPSWOOLE_VER" ]]; then
+        cecho "WARNING: PHP loads swoole ${swoole_loaded:-none}, expected ${PHPSWOOLE_VER}" $boldyellow
+    elif [[ "$INITIALINSTALL" != [yY] ]]; then
+        cecho "Restart Swoole server processes to load swoole ${PHPSWOOLE_VER}" $boldyellow
+    fi
 
     # # async client & APIs
     # pushd "$DIR_TMP"
