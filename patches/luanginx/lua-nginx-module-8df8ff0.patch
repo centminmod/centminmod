@@ -1,0 +1,41 @@
+From 8df8ff0edce779671f70080ebd252b59ae8acc22 Mon Sep 17 00:00:00 2001
+From: lijunlong <lijunlong@openresty.com>
+Date: Fri, 6 Nov 2026 15:12:00 +0800
+Subject: [PATCH] bugfix: clean pending operations in ordinary coroutines.
+
+Cancel pending timers and cosocket operations before freeing request-owned coroutine contexts, including coroutines without Lua registry references. Previously, aborting a request with a nested ngx.sleep could leave its timer in the Nginx tree and trigger a heap use-after-free.
+
+Add client-abort and ngx.exit regression coverage for pending sleeps in ordinary coroutines, including nesting across coroutine-context list parts.
+
+Validated with the new test against a pre-fix ASan binary (both scenarios report UAF), then against the fixed build. t/077-sleep.t, t/091-coroutine.t, and t/197-coroutine-request-cleanup.t pass 460 assertions; client-abort suites pass 364 more. No ASan reports remain.
+
+Centmin Mod: vendored with the src/ hunk only, the README and t/ hunks
+listed below are not included.
+---
+ README.markdown                  |   8 ++
+ src/ngx_http_lua_util.c           |   7 +-
+ t/197-coroutine-request-cleanup.t | 132 ++++++++++++++++++++++++++++++
+ 3 files changed, 145 insertions(+), 2 deletions(-)
+ create mode 100644 t/197-coroutine-request-cleanup.t
+
+diff --git a/src/ngx_http_lua_util.c b/src/ngx_http_lua_util.c
+index b6581f890a..71f331cec8 100644
+--- a/src/ngx_http_lua_util.c
++++ b/src/ngx_http_lua_util.c
+@@ -3358,11 +3358,14 @@ ngx_http_lua_finalize_threads(ngx_http_request_t *r,
+ 
+             coctx = &cc[i];
+ 
++            /* Plain coroutines have no registry reference, but can still
++             * own a pending timer or cosocket operation. Cancel those before
++             * their request-pool coctx is freed as well. */
++            ngx_http_lua_cleanup_pending_operation(coctx);
++
+             ref = coctx->co_ref;
+ 
+             if (ref != LUA_NOREF) {
+-                ngx_http_lua_cleanup_pending_operation(coctx);
+-
+                 ngx_http_lua_del_thread(r, L, ctx, coctx);
+ 
+                 ctx->uthreads--;

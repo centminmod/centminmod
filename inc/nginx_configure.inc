@@ -482,10 +482,10 @@ fi
 if [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]]; then
   # give AWS-LC priority over quicTLS for HTTP/3 QUIC
   if [[ "$AWS_LC_SWITCH" = [yY] ]]; then
+    # Lua modules build with AWS-LC via luanginx_module_fixes, which applies
+    # the unmerged upstream AWS-LC compatibility patches
     OPENSSL_SYSTEM_USE='n'
     NGINX_QUIC_SUPPORT='n'
-    ORESTY_LUASTREAM='n'
-    ORESTY_LUANGINX='n'
   elif [[ "$NGINX_QUIC_SUPPORT" = [yY] ]]; then
     OPENSSL_SYSTEM_USE='n'
     AWS_LC_SWITCH='n'
@@ -1823,6 +1823,10 @@ if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9'
       NGX_LUASTREAM='n'
     fi
     luanginx_patch
+    # lua module security/compatibility fixes fail the build when they can't
+    # be applied; the OpenResty nginx core patch set is all or nothing
+    luanginx_module_fixes || { NGX_CONFIGURE_ERR=1; return 1; }
+    openresty_nginx_patchset || { NGX_CONFIGURE_ERR=1; return 1; }
     # LUAJIT_XCFLAGOPT=" --with-luajit-xcflags='-DLUAJIT_NUMMODE=2'"
     LUAJIT_XCFLAGOPT=""
     # lua nginx 0.10.7 and lower not compatible with openssl 1.1.x branch

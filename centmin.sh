@@ -30,7 +30,7 @@ DT=$(date +"%d%m%y-%H%M%S")
 branchname='140.00beta01'
 SCRIPT_MAJORVER='140'
 SCRIPT_MINORVER='00'
-SCRIPT_INCREMENTVER='456'
+SCRIPT_INCREMENTVER='457'
 SCRIPT_VERSIONSHORT="${branchname}"
 SCRIPT_VERSION="${SCRIPT_VERSIONSHORT}.b${SCRIPT_INCREMENTVER}"
 SCRIPT_DATE='16/01/25'
@@ -1009,21 +1009,21 @@ LUAJIT_GITINSTALL='y'        # opt to install luajit 2.1 from dev branch http://
 LUAJIT_GITINSTALLVER='2.1-agentzh'   # branch version = v2.1 will override ORESTY_LUAGITVER if LUAJIT_GITINSTALL='y'
 
 ORESTY_LUANGINX='n'             # enable or disable or ORESTY_LUA* nginx modules below
-ORESTY_LUANGINXVER='0.10.26'  # openresty lua-nginx-module https://github.com/openresty/lua-nginx-module
+ORESTY_LUANGINXVER='0.10.32rc7'  # openresty lua-nginx-module https://github.com/openresty/lua-nginx-module
 ORESTY_LUAGITVER='2.0.5'        # luagit http://luajit.org/
 ORESTY_LUAMEMCACHEDVER='0.17'   # openresty https://github.com/openresty/lua-resty-memcached
 ORESTY_LUAMYSQLVER='0.26'    # openresty https://github.com/openresty/lua-resty-mysql
-ORESTY_LUAREDISVER='0.29'       # openresty https://github.com/openresty/lua-resty-redis
-ORESTY_LUADNSVER='0.22'         # openresty https://github.com/openresty/lua-resty-dns
+ORESTY_LUAREDISVER='0.34'       # openresty https://github.com/openresty/lua-resty-redis
+ORESTY_LUADNSVER='0.24'         # openresty https://github.com/openresty/lua-resty-dns
 ORESTY_LUAUPLOADVER='0.11'      # openresty https://github.com/openresty/lua-resty-upload
-ORESTY_LUAWEBSOCKETVER='0.08'   # openresty https://github.com/openresty/lua-resty-websocket
+ORESTY_LUAWEBSOCKETVER='0.16'   # openresty https://github.com/openresty/lua-resty-websocket
 ORESTY_LUALOCKVER='0.09'        # openresty https://github.com/openresty/lua-resty-lock
 ORESTY_LUASTRINGVER='0.15'      # openresty https://github.com/openresty/lua-resty-string
 ORESTY_LUAREDISPARSERVER='0.13'    # openresty https://github.com/openresty/lua-redis-parser
 ORESTY_LUAUPSTREAMCHECKVER='0.08'  # openresty https://github.com/openresty/lua-resty-upstream-healthcheck
-ORESTY_LUALRUCACHEVER='0.13'       # openresty https://github.com/openresty/lua-resty-lrucache
-ORESTY_LUARESTYCOREVER='0.1.28'    # openresty https://github.com/openresty/lua-resty-core
-ORESTY_LUASTREAMVER='0.0.14'        # https://github.com/openresty/stream-lua-nginx-module
+ORESTY_LUALRUCACHEVER='0.15'       # openresty https://github.com/openresty/lua-resty-lrucache
+ORESTY_LUARESTYCOREVER='0.1.35rc2'    # openresty https://github.com/openresty/lua-resty-core
+ORESTY_LUASTREAMVER='0.0.20rc3'        # https://github.com/openresty/stream-lua-nginx-module
 ORESTY_LUASTREAM='y'               # control https://github.com/openresty/stream-lua-nginx-module
 NGX_LUASTREAM_FORCED='y'           # control stream-lua-nginx enabling for nginx 1.17+
 ORESTY_LUAUPSTREAMVER='0.07'       # openresty https://github.com/openresty/lua-upstream-nginx-module
@@ -1032,7 +1032,7 @@ ORESTY_LUALOGGERSOCKETVER='0.1'    # cloudflare openresty https://github.com/clo
 ORESTY_LUACOOKIEVER='master'       # cloudflare openresty https://github.com/cloudflare/lua-resty-cookie
 ORESTY_LUAUPSTREAMCACHEVER='0.1.1' # cloudflare openresty https://github.com/cloudflare/lua-upstream-cache-nginx-module
 NGX_LUAUPSTREAMCACHE='n'           # disable https://github.com/cloudflare/lua-upstream-cache-nginx-module
-LUACJSONVER='2.1.0.9'              # https://github.com/openresty/lua-cjson
+LUACJSONVER='2.1.0.20'              # https://github.com/openresty/lua-cjson
 
 STRIPPHP='y'                 # set 'y' to strip PHP binary to reduce size
 PHP_INSTALL='y'              # Install PHP /w Fast Process Manager
@@ -1939,10 +1939,10 @@ fi
 if [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]]; then
   # give AWS-LC priority over quicTLS for HTTP/3 QUIC
   if [[ "$AWS_LC_SWITCH" = [yY] ]]; then
+    # Lua modules build with AWS-LC via luanginx_module_fixes, which applies
+    # the unmerged upstream AWS-LC compatibility patches
     OPENSSL_SYSTEM_USE='n'
     NGINX_QUIC_SUPPORT='n'
-    ORESTY_LUASTREAM='n'
-    ORESTY_LUANGINX='n'
   elif [[ "$NGINX_QUIC_SUPPORT" = [yY] ]]; then
     OPENSSL_SYSTEM_USE='n'
     AWS_LC_SWITCH='n'

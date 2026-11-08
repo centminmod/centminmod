@@ -73,6 +73,9 @@ trap 'rm -rf "$WORK"' EXIT
 #           installer:installer83.sh  PHPVERLATEST fallback
 # upstream: gh:owner/repo:tagregex | php | pecl:pkg | nginx
 #           freenginx | gnu:pkg
+#           openresty:repo  the version of openresty/<repo> bundled in
+#                           the latest OpenResty release (util/mirror-tarballs),
+#                           RC tags included, any difference is an UPDATE
 # pin check: tag:FMT  git tag FMT exists upstream ({V} = version)
 #            url:URL  HTTP 200 for URL ({V} = version)
 #            -        no check
@@ -101,9 +104,9 @@ nginx|ngx_cache_purge|NGINX_CACHEPURGEVER|gh:nginx-modules/ngx_cache_purge:^[0-9
 nginx|nginx-dav-ext|NGINX_EXTWEBDAVVER|gh:arut/nginx-dav-ext-module:^v[0-9.]+$|s/^v//|tag:v{V}|any|NGINX_WEBDAV=n default
 nginx|upstream_check|NGINX_UPSTREAMCHECKVER|gh:yaoweibin/nginx_upstream_check_module:^v[0-9.]+$|s/^v//|tag:v{V}|any|NGINX_UPSTREAMCHECK=n default
 nginx|zstd (nginx)|inc/zstd_nginx.inc:NGINX_ZSTD_VER|gh:facebook/zstd:^v1\.[0-9]+\.[0-9]+$|s/^v//|tag:v{V}|any|
-lua|lua-nginx-module|ORESTY_LUANGINXVER|gh:openresty/lua-nginx-module:^v0\.10\.[0-9]+$|s/^v//|tag:v{V}|any|must match lua-resty-core base.lua
-lua|stream-lua|ORESTY_LUASTREAMVER|gh:openresty/stream-lua-nginx-module:^v0\.0\.[0-9]+$|s/^v//|tag:v{V}|any|must match lua-resty-core base.lua
-lua|lua-resty-core|ORESTY_LUARESTYCOREVER|gh:openresty/lua-resty-core:^v0\.1\.[0-9]+$|s/^v//|tag:v{V}|any|pins exact lua-nginx/stream-lua versions
+lua|lua-nginx-module|ORESTY_LUANGINXVER|openresty:lua-nginx-module||url:https://github.com/openresty/lua-nginx-module/archive/v{V}.tar.gz|any|OpenResty release bundle, bump with stream-lua and lua-resty-core
+lua|stream-lua|ORESTY_LUASTREAMVER|openresty:stream-lua-nginx-module||url:https://github.com/openresty/stream-lua-nginx-module/archive/v{V}.tar.gz|any|OpenResty release bundle, bump with lua-nginx-module and lua-resty-core
+lua|lua-resty-core|ORESTY_LUARESTYCOREVER|openresty:lua-resty-core||url:https://github.com/openresty/lua-resty-core/archive/v{V}.tar.gz|any|OpenResty release bundle, pins exact lua-nginx/stream-lua versions
 lua|lua-resty-lrucache|ORESTY_LUALRUCACHEVER|gh:openresty/lua-resty-lrucache:^v[0-9.]+$|s/^v//|tag:v{V}|any|
 lua|lua-resty-dns|ORESTY_LUADNSVER|gh:openresty/lua-resty-dns:^v[0-9.]+$|s/^v//|tag:v{V}|any|
 lua|lua-resty-mysql|ORESTY_LUAMYSQLVER|gh:openresty/lua-resty-mysql:^v[0-9.]+$|s/^v//|tag:v{V}|any|
@@ -231,6 +234,17 @@ fetch_upstream() {
           curl -sfL --max-time 30 "https://www.php.net/releases/index.php?json&version=${v}" \
             | grep -oE '"version":"[0-9.]+"' | grep -oE '[0-9][0-9.]*' >> "$tmp"
         done ;;
+      openresty:*)
+        # version of openresty/<repo> in the latest OpenResty release bundle
+        local c="${spec#openresty:}" ortag
+        ortag=$(git ls-remote --tags --refs 'https://github.com/openresty/openresty.git' 2>/dev/null \
+          | awk -F/ '{print $NF}' | grep -E '^v[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$' | sort -V | tail -n1)
+        : > "$tmp"
+        if [ -n "$ortag" ]; then
+          echo "$ortag" > "$WORK/openresty.tag"
+          curl -sfL --max-time 30 "https://raw.githubusercontent.com/openresty/openresty/${ortag}/util/mirror-tarballs" \
+            | awk -v c="/openresty/${c}/" '/^ver=/{v=substr($0,5)} index($0,c) && v!="" {print v; exit}' > "$tmp"
+        fi ;;
       pecl:*)
         curl -sfL --max-time 30 "https://pecl.php.net/rest/r/${spec#pecl:}/allreleases.xml" \
           | tr -d '\n' | grep -oE '<r><v>[^<]+</v><s>stable</s>' \
@@ -291,13 +305,15 @@ series_prefix() {
 }
 upstream_versions() {
   # $1 upstream spec, $2 tag->version sed; prints "version<TAB>tag"
-  local f; f=$(upfile "$1")
+  local f keep_pre=0; f=$(upfile "$1")
   [ -s "$f" ] || return 1
+  # OpenResty releases bundle RC tags, keep them for openresty: specs
+  case "$1" in openresty:*) keep_pre=1 ;; esac
   while read -r tag; do
     local v="$tag"
     [ -n "$2" ] && v=$(echo "$tag" | sed -E "$2")
     printf '%s\t%s\n' "$v" "$tag"
-  done < "$f" | awk -F'\t' 'tolower($1) !~ /(rc|alpha|beta|pre|dev|test)/' | sort -V -k1,1
+  done < "$f" | awk -F'\t' -v k="$keep_pre" 'k || tolower($1) !~ /(rc|alpha|beta|pre|dev|test)/' | sort -V -k1,1
 }
 
 ###########################################################
@@ -367,7 +383,14 @@ while IFS='|' read -r group name src up sedx check series note; do
       [ -z "$latest_series" ] && latest_series="$latest_all"
       latest_shown="$latest_series"
       [ "$series" = 'major' ] && [ "$latest_all" != "$latest_series" ] && latest_shown="$latest_series (newest $latest_all)"
-      if ver_gt "$latest_series" "$v"; then
+      if [[ "$up" = openresty:* ]]; then
+        # sort -V orders 0.10.32 before 0.10.32rc7, so any difference
+        # from the bundled version counts as an update
+        if [ "$latest_series" != "$v" ]; then
+          mark="${mark} ↑${latest_series}"
+          [ "$row_status" = 'OK' -o "$row_status" = 'MAJOR' ] && row_status='UPDATE'
+        fi
+      elif ver_gt "$latest_series" "$v"; then
         mark="${mark} ↑${latest_series}"
         [ "$row_status" = 'OK' -o "$row_status" = 'MAJOR' ] && row_status='UPDATE'
       elif [ "$series" != 'minor' ] && ver_gt "$latest_all" "$v"; then
@@ -402,16 +425,14 @@ else
   echo "Legend: ↑x.y.z newer in same series, ⇡x.y.z newer major/minor series only, ✗ pinned version does not download or tag missing, (url NNN) download check inconclusive."
 fi
 
-# lua-resty-core hard codes the exact lua-nginx-module and
-# stream-lua versions it runs with, report the matching set
-core_tag=$(upstream_versions 'gh:openresty/lua-resty-core:^v0\.1\.[0-9]+$' 's/^v//' | tail -n1 | cut -f2)
-if [ -n "$core_tag" ]; then
-  base=$(curl -sfL --max-time 30 "https://raw.githubusercontent.com/openresty/lua-resty-core/${core_tag}/lib/resty/core/base.lua")
-  http_req=$(echo "$base" | grep -oE 'ngx_lua_version ~= [0-9]+' | head -n1 | grep -oE '[0-9]+$')
-  stream_req=$(echo "$base" | grep -oE 'ngx_lua_version ~= [0-9]+' | sed -n 2p | grep -oE '[0-9]+$')
-  if [ -n "$http_req" ]; then
-    [ "$FORMAT" = 'tsv' ] && pfx='# ' || { pfx=''; echo; }
-    echo "${pfx}lua-resty-core ${core_tag#v} requires lua-nginx-module 0.$((http_req / 1000)).$((http_req % 1000)) and stream-lua 0.0.${stream_req:-?} exactly: bump ORESTY_LUANGINXVER, ORESTY_LUASTREAMVER and ORESTY_LUARESTYCOREVER together."
-  fi
+# lua-resty-core hard codes the exact lua-nginx-module and stream-lua
+# versions it runs with, so the three move together as OpenResty bundles them
+ortag=$(cat "$WORK/openresty.tag" 2>/dev/null)
+or_lua=$(head -n1 "$(upfile 'openresty:lua-nginx-module')" 2>/dev/null)
+or_stream=$(head -n1 "$(upfile 'openresty:stream-lua-nginx-module')" 2>/dev/null)
+or_core=$(head -n1 "$(upfile 'openresty:lua-resty-core')" 2>/dev/null)
+if [ -n "$ortag" ] && [ -n "$or_lua" ] && [ -n "$or_stream" ] && [ -n "$or_core" ]; then
+  [ "$FORMAT" = 'tsv' ] && pfx='# ' || { pfx=''; echo; }
+  echo "${pfx}OpenResty ${ortag#v} bundles lua-nginx-module ${or_lua}, stream-lua ${or_stream} and lua-resty-core ${or_core}: bump ORESTY_LUANGINXVER, ORESTY_LUASTREAMVER and ORESTY_LUARESTYCOREVER together."
 fi
 exit "$WORST"

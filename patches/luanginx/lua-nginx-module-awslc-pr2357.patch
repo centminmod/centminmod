@@ -1,0 +1,72 @@
+AWS-LC compatibility for lua-nginx-module ssl FFI code, source hunks of
+upstream pull request https://github.com/openresty/lua-nginx-module/pull/2357
+(closed unmerged 2026-02-23), applied by Centmin Mod only when AWS_LC_SWITCH=y.
+Centmin Mod change: ngx_http_lua_ffi_ssl_export_keying_material_early also
+returns an error for AWS-LC, which has no SSL_export_keying_material_early
+(checked against AWS-LC v5.12.0 include/openssl/ssl.h).
+---
+diff --git a/src/ngx_http_lua_ssl_client_helloby.c b/src/ngx_http_lua_ssl_client_helloby.c
+index 9800f7d41f..80b79eb2fa 100644
+--- a/src/ngx_http_lua_ssl_client_helloby.c
++++ b/src/ngx_http_lua_ssl_client_helloby.c
+@@ -544,6 +544,9 @@ ngx_http_lua_ffi_ssl_get_client_hello_server_name(ngx_http_request_t *r,
+ #ifdef LIBRESSL_VERSION_NUMBER
+     *err = "LibreSSL does not support by ssl_client_hello_by_lua*";
+     return NGX_ERROR;
++#elif defined(OPENSSL_IS_AWSLC)
++    *err = "AWS-LC does not support by ssl_client_hello_by_lua*";
++    return NGX_ERROR;
+ #else
+     ngx_ssl_conn_t          *ssl_conn;
+ #ifdef SSL_ERROR_WANT_CLIENT_HELLO_CB
+@@ -634,6 +637,9 @@ ngx_http_lua_ffi_ssl_get_client_hello_ext(ngx_http_request_t *r,
+ #ifdef LIBRESSL_VERSION_NUMBER
+     *err = "LibreSSL does not support by ssl_client_hello_by_lua*";
+     return NGX_ERROR;
++#elif defined(OPENSSL_IS_AWSLC)
++    *err = "AWSLC does not support by ssl_client_hello_by_lua*";
++    return NGX_ERROR;
+ #else
+     ngx_ssl_conn_t          *ssl_conn;
+ 
+diff --git a/src/ngx_http_lua_ssl_export_keying_material.c b/src/ngx_http_lua_ssl_export_keying_material.c
+index ec64c049a9..0a54fbbbfe 100644
+--- a/src/ngx_http_lua_ssl_export_keying_material.c
++++ b/src/ngx_http_lua_ssl_export_keying_material.c
+@@ -31,7 +31,7 @@ ngx_http_lua_ffi_ssl_export_keying_material(ngx_http_request_t *r,
+     u_char *out, size_t out_size, const char *label, size_t llen,
+     const u_char *context, size_t ctxlen, int use_ctx, char **err)
+ {
+-#if defined(OPENSSL_IS_BORINGSSL) || OPENSSL_VERSION_NUMBER < 0x10101000L
++#if defined(OPENSSL_IS_BORINGSSL) && !defined(OPENSSL_IS_AWSLC)
+     *err = "BoringSSL does not support SSL_export_keying_material";
+     return NGX_ERROR;
+ #elif defined(LIBRESSL_VERSION_NUMBER)
+@@ -79,11 +79,11 @@ ngx_http_lua_ffi_ssl_export_keying_material_early(ngx_http_request_t *r,
+     u_char *out, size_t out_size, const char *label, size_t llen,
+     const u_char *context, size_t ctxlen, char **err)
+ {
+-#if defined(OPENSSL_IS_BORINGSSL) || OPENSSL_VERSION_NUMBER < 0x10101000L
+-    *err = "BoringSSL does not support SSL_export_keying_material";
++#if defined(OPENSSL_IS_BORINGSSL) || defined(OPENSSL_IS_AWSLC)
++    *err = "BoringSSL and AWS-LC do not support SSL_export_keying_material_early";
+     return NGX_ERROR;
+ #elif defined(LIBRESSL_VERSION_NUMBER)
+-    *err = "LibreSSL does not support SSL_export_keying_material";
++    *err = "LibreSSL does not support SSL_export_keying_material_early";
+     return NGX_ERROR;
+ #elif OPENSSL_VERSION_NUMBER < 0x10101000L
+     *err = "OpenSSL too old";
+diff --git a/src/ngx_http_lua_ssl_ocsp.c b/src/ngx_http_lua_ssl_ocsp.c
+index 73e1b9c7f5..bdbccc8f62 100644
+--- a/src/ngx_http_lua_ssl_ocsp.c
++++ b/src/ngx_http_lua_ssl_ocsp.c
+@@ -511,7 +511,7 @@ ngx_http_lua_ffi_ssl_set_ocsp_status_resp(ngx_http_request_t *r,
+         return NGX_ERROR;
+     }
+ 
+-#ifdef SSL_CTRL_GET_TLSEXT_STATUS_REQ_TYPE
++#if defined(SSL_CTRL_GET_TLSEXT_STATUS_REQ_TYPE) || defined(OPENSSL_IS_AWSLC)
+     if (SSL_get_tlsext_status_type(ssl_conn) == -1) {
+ #else
+     if (ssl_conn->tlsext_status_type == -1) {
