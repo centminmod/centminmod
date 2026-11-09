@@ -4071,6 +4071,15 @@ maintenance_confcheck() {
       \cp -f "${SCRIPT_DIR}/config/nginx/503include-only.conf" /usr/local/nginx/conf/503include-only.conf
     fi
   fi
+  # optional templates no vhost includes by default (MCP/LLM proxy) and the
+  # empty AI crawler maps botlimit.conf includes: copy when missing, never
+  # overwrite (tools/nginx-aicrawlers.sh fills the aicrawlers/ files)
+  for ngx_optconf in mcp_proxy.conf mcp_proxy_http.conf aicrawlers/aicrawlers_ua.conf aicrawlers/aicrawlers_ip.conf; do
+    if [[ ! -f "/usr/local/nginx/conf/${ngx_optconf}" && -f "${SCRIPT_DIR}/config/nginx/${ngx_optconf}" && -d /usr/local/nginx/conf ]]; then
+      mkdir -p "$(dirname "/usr/local/nginx/conf/${ngx_optconf}")"
+      \cp -f "${SCRIPT_DIR}/config/nginx/${ngx_optconf}" "/usr/local/nginx/conf/${ngx_optconf}"
+    fi
+  done
   if [ ! -f /usr/bin/sitestatus ]; then
     if [[ -f "${SCRIPT_DIR}/tools/sitestatus.sh" && -d /usr/local/nginx/conf ]]; then
       \cp -f "${SCRIPT_DIR}/tools/sitestatus.sh" /usr/bin/sitestatus
