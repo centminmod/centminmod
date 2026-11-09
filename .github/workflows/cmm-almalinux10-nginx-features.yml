@@ -1,0 +1,46 @@
+name: Trigger AlmaLinux 10 Nginx Features Workflow
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - 141.00beta01
+    # nginx build, module and addon sources only: each run starts 6 runners
+    # for an hour or more in centminmod/centminmod-workflows
+    paths:
+      - 'centmin.sh'
+      - 'centmin-cli.sh'
+      - 'installer-el10.sh'
+      - 'inc/nginx_*.inc'
+      - 'inc/downloads.inc'
+      - 'inc/downloadlinks.inc'
+      - 'inc/cpcheck.inc'
+      - 'inc/openssl_install.inc'
+      - 'inc/jemalloc.inc'
+      - 'inc/luajit.inc'
+      - 'inc/brotli.inc'
+      - 'inc/zstd_nginx.inc'
+      - 'inc/pcre.inc'
+      - 'inc/zlib.inc'
+      - 'inc/geoip.inc'
+      - 'config/nginx/**'
+      - 'addons/anubis.sh'
+      - 'tools/nginx-aicrawlers.sh'
+
+permissions: {}
+
+jobs:
+  dispatch:
+    # the private centminmod-claudecode copy of this branch has no
+    # REPO_ACCESS_TOKEN, so only the public repo sends the dispatch
+    if: github.repository == 'centminmod/centminmod'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger centminmod-workflows almalinux10-nginx-features.yml
+        uses: peter-evans/repository-dispatch@v4
+        with:
+          token: ${{ secrets.REPO_ACCESS_TOKEN }}
+          repository: centminmod/centminmod-workflows
+          event-type: run-almalinux-10-nginx-features-workflow
+          # the workflow tests this exact commit, not the branch head at run time
+          client-payload: '{"ref": ${{ toJSON(github.ref_name) }}, "sha": ${{ toJSON(github.sha) }}}'
