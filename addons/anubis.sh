@@ -19,7 +19,10 @@ export SYSTEMD_PAGER=''
 #   /usr/local/nginx/conf/anubis.conf        helper locations, once per server {}
 #   /usr/local/nginx/conf/anubis_check.conf  auth_request lines, server {} or
 #                                            chosen locations
-# Existing files are never overwritten, so local edits survive a reinstall.
+# Existing files are never overwritten, so local edits survive a reinstall,
+# with two exceptions: a policy whose status_codes DENY is 2xx or missing gets
+# DENY: 403 (previous file kept as .bak-<date>), and an anubis.conf identical
+# to the shipped one gets the port from BIND in the env file.
 # nginx needs the auth_request module: NGINX_AUTHREQ='y' in
 # /etc/centminmod/custom_config.inc, then a centmin.sh menu 4 nginx rebuild.
 #
@@ -117,6 +120,21 @@ anubis_env_set() {
   fi
 }
 
+anubis_policy_deny() {
+  # nginx auth_request treats any 2xx as a pass, so the policy's status_codes
+  # DENY must not be 2xx (upstream ships DENY: 200, the default when unset)
+  if grep -qE '^[[:space:]]*DENY: 2[0-9][0-9][[:space:]]*$' "$ANUBIS_POLICY"; then
+    sed -i 's|^\([[:space:]]*\)DENY: 2[0-9][0-9][[:space:]]*$|\1DENY: 403|' "$ANUBIS_POLICY"
+  elif ! grep -q '^status_codes:' "$ANUBIS_POLICY"; then
+    printf '\nstatus_codes:\n  CHALLENGE: 200\n  DENY: 403\n' >> "$ANUBIS_POLICY"
+  fi
+  if ! grep -qE '^[[:space:]]*DENY: [0-9]+' "$ANUBIS_POLICY" || grep -qE '^[[:space:]]*DENY: 2[0-9][0-9]' "$ANUBIS_POLICY"; then
+    cecho "Error: could not set status_codes DENY: 403 in ${ANUBIS_POLICY}, edit it by hand" $boldred
+    return 1
+  fi
+  return 0
+}
+
 anubis_nginx_check() {
   # 0 when the running nginx binary has the auth_request module
   if nginx -V 2>&1 | grep -q -- '--with-http_auth_request_module'; then
@@ -176,6 +194,8 @@ anubis_install() {
     return 1
   fi
 
+  # the port Anubis listens on, which anubis.conf must use too
+  local port="$ANUBIS_PORT" env_port
   if [ ! -f "$ANUBIS_ENV" ]; then
     \cp -f /etc/anubis/default.env "$ANUBIS_ENV"
     chmod 0600 "$ANUBIS_ENV"
@@ -192,22 +212,26 @@ anubis_install() {
     cecho "created ${ANUBIS_ENV}" $boldgreen
   else
     cecho "${ANUBIS_ENV} exists, left unchanged" $boldgreen
+    # the running Anubis keeps the existing BIND port, so a later ANUBIS_PORT
+    # change must not move anubis.conf away from it
+    env_port=$(awk -F ':' '/^BIND=/ { p = $NF } END { gsub(/["\047[:space:]]/, "", p); print p }' "$ANUBIS_ENV")
+    if [[ "$env_port" =~ ^[0-9]+$ && "$env_port" != "$ANUBIS_PORT" ]]; then
+      cecho "ANUBIS_PORT='${ANUBIS_PORT}' differs from BIND port ${env_port} in ${ANUBIS_ENV}, keeping ${env_port}" $boldyellow
+      cecho "  to change the port, edit BIND there and the port in /usr/local/nginx/conf/anubis.conf, then restart ${ANUBIS_SERVICE} and reload nginx" $boldyellow
+      port="$env_port"
+    fi
   fi
 
   if [ ! -f "$ANUBIS_POLICY" ]; then
     \cp -f /usr/share/doc/anubis/botPolicies.yaml "$ANUBIS_POLICY"
     chmod 0644 "$ANUBIS_POLICY"
-    # nginx auth_request treats any 2xx as a pass, so DENY must not be 200
-    sed -i 's|^\([[:space:]]*\)DENY: 200[[:space:]]*$|\1DENY: 403|' "$ANUBIS_POLICY"
-    if ! grep -qE '^[[:space:]]*DENY: 403' "$ANUBIS_POLICY"; then
-      if ! grep -q '^status_codes:' "$ANUBIS_POLICY"; then
-        printf '\nstatus_codes:\n  CHALLENGE: 200\n  DENY: 403\n' >> "$ANUBIS_POLICY"
-      else
-        cecho "Error: could not set status_codes DENY: 403 in ${ANUBIS_POLICY}, edit it by hand" $boldred
-        return 1
-      fi
-    fi
+    anubis_policy_deny || return 1
     cecho "created ${ANUBIS_POLICY} (status_codes DENY: 403)" $boldgreen
+  elif grep -qE '^[[:space:]]*DENY: 2[0-9][0-9][[:space:]]*$' "$ANUBIS_POLICY" || ! grep -qE '^[[:space:]]*DENY: [0-9]+' "$ANUBIS_POLICY"; then
+    # an existing policy with a 2xx or no DENY lets denied requests through nginx
+    \cp -pf "$ANUBIS_POLICY" "${ANUBIS_POLICY}.bak-${DT}"
+    anubis_policy_deny || return 1
+    cecho "${ANUBIS_POLICY} had a 2xx or no status_codes DENY, set DENY: 403 (previous file ${ANUBIS_POLICY}.bak-${DT})" $boldyellow
   else
     cecho "${ANUBIS_POLICY} exists, left unchanged" $boldgreen
   fi
@@ -215,12 +239,12 @@ anubis_install() {
   local ngxconf
   for ngxconf in anubis.conf anubis_check.conf; do
     # centmin.sh initial installs copy config/nginx, so an anubis.conf identical
-    # to the shipped one still gets a non-default ANUBIS_PORT
-    if [[ -d /usr/local/nginx/conf ]] && { [[ ! -f "/usr/local/nginx/conf/${ngxconf}" ]] || { [[ "$ngxconf" = 'anubis.conf' && "$ANUBIS_PORT" != '8923' ]] && cmp -s "${CM_INSTALLDIR}/config/nginx/${ngxconf}" "/usr/local/nginx/conf/${ngxconf}"; }; }; then
+    # to the shipped one still gets a non-default port
+    if [[ -d /usr/local/nginx/conf ]] && { [[ ! -f "/usr/local/nginx/conf/${ngxconf}" ]] || { [[ "$ngxconf" = 'anubis.conf' && "$port" != '8923' ]] && cmp -s "${CM_INSTALLDIR}/config/nginx/${ngxconf}" "/usr/local/nginx/conf/${ngxconf}"; }; }; then
       if [ -f "${CM_INSTALLDIR}/config/nginx/${ngxconf}" ]; then
         \cp -f "${CM_INSTALLDIR}/config/nginx/${ngxconf}" "/usr/local/nginx/conf/${ngxconf}"
-        if [[ "$ngxconf" = 'anubis.conf' && "$ANUBIS_PORT" != '8923' ]]; then
-          sed -i "s|127.0.0.1:8923|127.0.0.1:${ANUBIS_PORT}|g" "/usr/local/nginx/conf/${ngxconf}"
+        if [[ "$ngxconf" = 'anubis.conf' && "$port" != '8923' ]]; then
+          sed -i "s|127.0.0.1:8923|127.0.0.1:${port}|g" "/usr/local/nginx/conf/${ngxconf}"
         fi
         cecho "created /usr/local/nginx/conf/${ngxconf}" $boldgreen
       else
@@ -239,7 +263,7 @@ anubis_install() {
     journalctl -u "$ANUBIS_SERVICE" --no-pager -n 20
     return 1
   fi
-  cecho "${ANUBIS_SERVICE} running on 127.0.0.1:${ANUBIS_PORT}" $boldgreen
+  cecho "${ANUBIS_SERVICE} running on 127.0.0.1:${port}" $boldgreen
   echo
   anubis_nginx_check
   echo

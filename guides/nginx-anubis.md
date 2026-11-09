@@ -55,7 +55,9 @@ This installs or upgrades the RPM, writes the config files below, enables and st
 | `/usr/local/nginx/conf/anubis.conf` | nginx helper locations: the challenge pages and the redirect |
 | `/usr/local/nginx/conf/anubis_check.conf` | The `auth_request` check lines |
 
-Existing files are left unchanged, so your edits survive a reinstall or upgrade. One exception: when `ANUBIS_PORT` is not the default 8923, an `anubis.conf` still identical to the shipped copy is replaced with one that uses your port.
+Existing files are left unchanged, so your edits survive a reinstall or upgrade, with two exceptions:
+- A policy file whose `status_codes` `DENY` is a 2xx code, or missing, gets `DENY: 403`. The previous file is kept as `centminmod.botPolicies.yaml.bak-<date>`.
+- An `anubis.conf` still identical to the shipped copy is rewritten with Anubis's port when that is not the default 8923.
 
 The deny status is changed because nginx's `auth_request` treats any 2xx answer as a pass. The upstream default policy answers denied requests with 200, which nginx would let through.
 
@@ -130,7 +132,7 @@ Edit `/etc/anubis/centminmod.botPolicies.yaml`, then restart the service:
 systemctl restart anubis@centminmod
 ```
 
-Keep `DENY: 403` under `status_codes`. A deny status of 200 would let denied requests through nginx. See the policy section of the [Anubis documentation](https://anubis.techaro.lol/docs/) for the rule format.
+Keep `DENY: 403` under `status_codes`. A deny status of 200 would let denied requests through nginx, so `install` changes a 2xx deny status back to 403. See the policy section of the [Anubis documentation](https://anubis.techaro.lol/docs/) for the rule format.
 
 ## Settings
 
@@ -139,7 +141,7 @@ Set these in `/etc/centminmod/custom_config.inc` before running `install`:
 | Setting | Default | Purpose |
 |---------|---------|---------|
 | `ANUBIS_VER` | `1.28.2` | Anubis version. Other versions skip the checksum check |
-| `ANUBIS_PORT` | `8923` | Anubis listen port on 127.0.0.1. Set it before the first `install`, which writes it into `centminmod.env` (`BIND`) and `anubis.conf`. To change it later, edit `BIND` in `/etc/anubis/centminmod.env` and the port in `anubis.conf` together, then restart Anubis and reload nginx. Changing `ANUBIS_PORT` and re-running `install` is not enough: it updates an unedited `anubis.conf` but leaves `BIND` unchanged, so nginx and Anubis end up on different ports |
+| `ANUBIS_PORT` | `8923` | Anubis listen port on 127.0.0.1. Set it before the first `install`, which writes it into `centminmod.env` (`BIND`) and `anubis.conf`. To change it later, edit `BIND` in `/etc/anubis/centminmod.env` and the port in `anubis.conf` together, then restart Anubis and reload nginx. Changing `ANUBIS_PORT` and re-running `install` does not move an existing install: it keeps the `BIND` port, uses it for an unedited `anubis.conf`, and prints a warning |
 | `ANUBIS_METRICS_PORT` | `8924` | Metrics port on 127.0.0.1. The upstream default, 9090, is also Cockpit's port |
 
 Other Anubis options, such as `DIFFICULTY` or `COOKIE_SECURE`, go in `/etc/anubis/centminmod.env`. Restart the service after changing them.
