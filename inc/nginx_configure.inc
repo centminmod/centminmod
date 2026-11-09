@@ -446,6 +446,55 @@ libresslcompile_fix() {
   fi
 }
 
+nginx_sticky_api_fix() {
+  # nginx-sticky-module-ng (bitbucket master, last commit 2016) no longer
+  # compiles on current nginx, Angie or freenginx. Patch its source; idempotent:
+  # - nginx 1.23.0 replaced ngx_http_parse_multi_header_lines(&r->headers_in.cookies, ...)
+  #   with (r, r->headers_in.cookie, ...) returning ngx_table_elt_t *
+  # - Angie's round robin peer has no 'accessed' field: where nginx sets
+  #   accessed = now on a failure, Angie sets recover_at = now + fail_timeout
+  local sticky_src="${DIR_TMP}/${NGX_STICKYDIR}/ngx_http_sticky_module.c"
+  [[ -f "$sticky_src" ]] || return 0
+  if ! grep -q 'r->headers_in.cookie, ' "$sticky_src" && grep -q 'ngx_http_parse_multi_header_lines(&r->headers_in.cookies, ' "$sticky_src"; then
+    sed -i 's|^\tif (ngx_http_parse_multi_header_lines(&r->headers_in.cookies, &iphp->sticky_conf->cookie_name, &route) != NGX_DECLINED) {$|#if (nginx_version >= 1023000)\n\tif (ngx_http_parse_multi_header_lines(r, r->headers_in.cookie, \&iphp->sticky_conf->cookie_name, \&route) != NULL) {\n#else\n&\n#endif|' "$sticky_src"
+    cecho "nginx-sticky-module-ng: cookie lookup switched to the nginx 1.23.0+ API" $boldyellow
+  fi
+  if ! grep -q 'ngx_sticky_peer_recovered' "$sticky_src" && grep -q 'now - peer->accessed > peer->fail_timeout' "$sticky_src"; then
+    sed -i -e 's|now - peer->accessed > peer->fail_timeout|ngx_sticky_peer_recovered(now, peer)|' \
+      -e '/^#include "ngx_http_sticky_misc.h"$/a #if defined(angie_version)\n#define ngx_sticky_peer_recovered(now, peer)  ((now) > (peer)->recover_at)\n#else\n#define ngx_sticky_peer_recovered(now, peer)  ((now) - (peer)->accessed > (peer)->fail_timeout)\n#endif' "$sticky_src"
+    cecho "nginx-sticky-module-ng: fail_timeout check made Angie compatible (recover_at)" $boldyellow
+  fi
+}
+
+nginx_sticky_native_switch() {
+  # nginx 1.29.6+ and Angie build a native ngx_http_upstream_sticky_module that
+  # registers the same 'sticky' directive as nginx-sticky-module-ng and is matched
+  # first, so NGINX_STICKY='y' disables it. freenginx has no native sticky module
+  # and its configure rejects both switches. Angie is checked by name because
+  # Angie 1.11.x reports a nginx_version below 1029006
+  if [[ "$ngver" = 'angie' ]]; then
+    NGX_STICKY_NATIVEOPT=' --without-http_upstream_sticky_module'
+  elif [[ "$FREENGINX_INSTALL" = [yY] ]]; then
+    NGX_STICKY_NATIVEOPT=""
+  elif [[ "$DETECT_NGXVER" -ge '1031000' ]]; then
+    NGX_STICKY_NATIVEOPT=' --without-http_upstream_sticky_module'
+  elif [[ "$DETECT_NGXVER" -ge '1029006' ]]; then
+    # nginx 1.29.6-1.30.x only have the older switch name
+    NGX_STICKY_NATIVEOPT=' --without-http_upstream_sticky'
+  else
+    NGX_STICKY_NATIVEOPT=""
+  fi
+  echo
+  cecho "WARNING: NGINX_STICKY='y' third-party nginx-sticky-module-ng is deprecated and unmaintained" $boldyellow
+  if [ -n "$NGX_STICKY_NATIVEOPT" ]; then
+    cecho "WARNING: native sticky module disabled with${NGX_STICKY_NATIVEOPT} so the third-party 'sticky' directive works" $boldyellow
+    cecho "WARNING: move upstreams to the native 'sticky cookie' directive and set NGINX_STICKY='n'" $boldyellow
+  else
+    cecho "WARNING: native 'sticky cookie' needs nginx 1.29.6+ or Angie, plan to move upstreams to it and set NGINX_STICKY='n'" $boldyellow
+  fi
+  echo
+}
+
 funct_nginxconfigure() {
 
 if [ -f "${CM_INSTALLDIR}/inc/custom_config.inc" ]; then
@@ -853,11 +902,28 @@ if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9'
     HTTP_PUSHOPT=""
   fi
 
-  if [[ "$NGINX_TLS_FINGERPRINT" = [yY] && "$DETECTOPENSSL_ONEONE" && "$DETECTOPENSSL_ONEONE" = '1.1.1' ]] && [[ "$LIBRESSL_SWITCH" = [nN] ]] && [[ "$BORINGSSL_SWITCH" = [nN] ]]; then
-    # only proceed if OpenSSL is installed with Nginx and not LibreSSL or BoringSSL variants
+  if [[ "$NGINX_TLS_FINGERPRINT" = [yY] ]]; then
+    echo
+    cecho "WARNING: NGINX_TLS_FINGERPRINT='y' JA3 nginx-ssl-fingerprint module is deprecated, it needs a patched OpenSSL 1.1.1 source build" $boldyellow
+    cecho "WARNING: use a native alternative instead, such as JA3/JA4 fingerprints passed on by a CDN or proxy in front of nginx, or nginx's \$ssl_ciphers and \$ssl_curves variables, no nginx or OpenSSL patch needed" $boldyellow
+    echo
+  fi
+  if [[ "$NGINX_TLS_FINGERPRINT" = [yY] && "$DETECTOPENSSL_ONEONE" = '1.1.1' && "$OPENSSL_SYSTEM_USE" != [yY] && "$AWS_LC_SWITCH" = [nN] && "$LIBRESSL_SWITCH" = [nN] && "$BORINGSSL_SWITCH" = [nN] && "$ngver" != 'quic' && "$NGINX_QUIC_SUPPORT" != [yY] ]]; then
+    # only proceed when nginx links the source built OpenSSL 1.1.1 that
+    # opensslpatches() patches (inc/openssl_install.inc). The patched nginx calls
+    # SSL_client_hello_get_ja3_data(), which system OpenSSL, AWS-LC, LibreSSL,
+    # BoringSSL and quicTLS lack, so the nginx link would fail on those builds
     ngx_fingerprint_patch
-    HTTP_FINGERPRINTOPT=' --add-module=../nginx-ssl-fingerprint'
+    if grep -q 'fp_ja3_data' src/event/ngx_event_openssl.h 2>/dev/null; then
+      HTTP_FINGERPRINTOPT=' --add-module=../nginx-ssl-fingerprint'
+    else
+      cecho "NGINX_TLS_FINGERPRINT='y' skipped: nginx_fingerprint.patch did not apply to this nginx source" $boldyellow
+      HTTP_FINGERPRINTOPT=""
+    fi
   else
+    if [[ "$NGINX_TLS_FINGERPRINT" = [yY] ]]; then
+      cecho "NGINX_TLS_FINGERPRINT='y' skipped: nginx does not link a source built OpenSSL 1.1.1 (system OpenSSL, AWS-LC, LibreSSL, BoringSSL or QUIC build)" $boldyellow
+    fi
     HTTP_FINGERPRINTOPT=""
   fi
 
@@ -1175,6 +1241,7 @@ if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9'
   if [[ "$NGINX_CACHEPURGE" = [yY] ]]; then
     # ngx_cachepurge_patch
     NGX_CACHEPURGEDIR=$(tar -tzf "$DIR_TMP/${NGX_CACHEPURGEFILE}" | head -1 | cut -f1 -d"/")
+    ngx_cachepurge_freenginx_fix
     CACHEPURGEOPT=" --add-module=../$NGX_CACHEPURGEDIR"
   else
     CACHEPURGEOPT=""
@@ -2121,7 +2188,9 @@ if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9'
     else
       NGX_STICKYDIR=$(tar -tzf "$DIR_TMP/${NGX_STICKYLINKFILE}" | head -1 | cut -f1 -d"/")
     fi
-    STICKYOPT=" --add-module=../$NGX_STICKYDIR"
+    nginx_sticky_api_fix
+    nginx_sticky_native_switch
+    STICKYOPT=" --add-module=../$NGX_STICKYDIR${NGX_STICKY_NATIVEOPT}"
   else
     STICKYOPT=""
   fi
@@ -2463,6 +2532,7 @@ else
 
   if [[ "$NGINX_CACHEPURGE" = [yY] ]]; then
     NGX_CACHEPURGEDIR=$(tar -tzf "$DIR_TMP/${NGX_CACHEPURGEFILE}" | head -1 | cut -f1 -d"/")
+    ngx_cachepurge_freenginx_fix
     CACHEPURGEOPT=" --add-module=../$NGX_CACHEPURGEDIR"
   else
     CACHEPURGEOPT=""
@@ -2712,7 +2782,9 @@ else
 
   if [[ "$NGINX_STICKY" = [yY] ]]; then
     NGX_STICKYDIR=$(tar -tzf "$DIR_TMP/${NGX_STICKYLINKFILE}" | head -1 | cut -f1 -d"/")
-    STICKYOPT=" --add-module=../$NGX_STICKYDIR"
+    nginx_sticky_api_fix
+    nginx_sticky_native_switch
+    STICKYOPT=" --add-module=../$NGX_STICKYDIR${NGX_STICKY_NATIVEOPT}"
   else
     STICKYOPT=""
   fi
@@ -3123,7 +3195,9 @@ fi
 # http://nginx.org/en/docs/stream/ngx_stream_core_module.html
 NGXINSTALL_VER=$(echo "$NGINX_VERSION" | cut -d . -f1,2)
 NGXUPGRADE_VER=$(echo "$ngver" | cut -d . -f1,2)
-if [[ "$ngver" && "$NGXUPGRADE_VER" = '1.9' ]] || [[ "$ngver" && "$NGXUPGRADE_VER" = '1.10' ]] || [[ "$ngver" && "$NGXUPGRADE_VER" = '1.11' ]] || [[ "$ngver" && "$NGXUPGRADE_VER" = '1.12' ]] || [[ "$ngver" && "$NGXUPGRADE_VER" = '1.13' ]] || [[ "$ngver" && "$NGXUPGRADE_VER" = '1.14' ]] || [[ "$ngver" && "$NGXUPGRADE_VER" = '1.15' ]] || [[ "$ngver" && "$NGXUPGRADE_VER" = '1.16' ]] || [[ "$ngver" && "$NGXUPGRADE_VER" = '1.17' ]] || [[ "$ngver" && "$NGXUPGRADE_VER" = '1.18' ]] || [[ "$ngver" && "$NGXUPGRADE_VER" = '1.19' ]] || [[ "$ngver" && "$NGXUPGRADE_VER" = '1.20' ]] || [[ "$ngver" && "$NGXUPGRADE_VER" = '1.21' ]] || [[ "$ngver" && "$NGXUPGRADE_VER" = '1.22' ]] || [[ "$ngver" && "$NGXUPGRADE_VER" = '1.23' ]] || [[ "$ngver" && "$NGXUPGRADE_VER" = '1.24' ]] || [[ "$ngver" && "$NGXUPGRADE_VER" = '1.25' ]] || [[ "$ngver" && "$NGXUPGRADE_VER" = '1.26' ]] || [[ "$ngver" && "$NGXUPGRADE_VER" = '1.27' ]] || [[ "$ngver" && "$NGXUPGRADE_VER" = '1.28' ]] || [[ "$ngver" && "$NGXUPGRADE_VER" = '1.29' ]] || [[ "$ngver" && "$NGXUPGRADE_VER" = '1.30' ]] || [[ "$ngver" && "$NGXUPGRADE_VER" = '1.31' ]] || [[ "$ngver" && "$NGXUPGRADE_VER" = 'master' ]] || [[ "$ngver" && "$NGXUPGRADE_VER" = 'master-google' ]] || [[ "$ngver" && "$NGXUPGRADE_VER" = 'quic' ]]; then
+# ngver 'angie' has no version number for NGXUPGRADE_VER to match: without
+# this Angie builds get no --with-stream or --with-stream_ssl_module
+if [[ "$ngver" = 'angie' ]] || [[ "$ngver" && "$NGXUPGRADE_VER" = '1.9' ]] || [[ "$ngver" && "$NGXUPGRADE_VER" = '1.10' ]] || [[ "$ngver" && "$NGXUPGRADE_VER" = '1.11' ]] || [[ "$ngver" && "$NGXUPGRADE_VER" = '1.12' ]] || [[ "$ngver" && "$NGXUPGRADE_VER" = '1.13' ]] || [[ "$ngver" && "$NGXUPGRADE_VER" = '1.14' ]] || [[ "$ngver" && "$NGXUPGRADE_VER" = '1.15' ]] || [[ "$ngver" && "$NGXUPGRADE_VER" = '1.16' ]] || [[ "$ngver" && "$NGXUPGRADE_VER" = '1.17' ]] || [[ "$ngver" && "$NGXUPGRADE_VER" = '1.18' ]] || [[ "$ngver" && "$NGXUPGRADE_VER" = '1.19' ]] || [[ "$ngver" && "$NGXUPGRADE_VER" = '1.20' ]] || [[ "$ngver" && "$NGXUPGRADE_VER" = '1.21' ]] || [[ "$ngver" && "$NGXUPGRADE_VER" = '1.22' ]] || [[ "$ngver" && "$NGXUPGRADE_VER" = '1.23' ]] || [[ "$ngver" && "$NGXUPGRADE_VER" = '1.24' ]] || [[ "$ngver" && "$NGXUPGRADE_VER" = '1.25' ]] || [[ "$ngver" && "$NGXUPGRADE_VER" = '1.26' ]] || [[ "$ngver" && "$NGXUPGRADE_VER" = '1.27' ]] || [[ "$ngver" && "$NGXUPGRADE_VER" = '1.28' ]] || [[ "$ngver" && "$NGXUPGRADE_VER" = '1.29' ]] || [[ "$ngver" && "$NGXUPGRADE_VER" = '1.30' ]] || [[ "$ngver" && "$NGXUPGRADE_VER" = '1.31' ]] || [[ "$ngver" && "$NGXUPGRADE_VER" = 'master' ]] || [[ "$ngver" && "$NGXUPGRADE_VER" = 'master-google' ]] || [[ "$ngver" && "$NGXUPGRADE_VER" = 'quic' ]]; then
 # if [[ "$ngver" && "$NGXUPGRADE_VER" > '1.9' ]]; then
   if [[ "$NGINX_STREAM" = [yY] ]]; then
     if [[ "$DYNAMIC_SUPPORT" = [yY] && "$NGXDYNAMIC_STREAM" = [yY] ]]; then
@@ -3581,7 +3655,8 @@ fi
   #################################################################################
 
 if [[ "$NGINX_THREADS" = [yY] ]]; then
-  if [[ "$NGX_VEREVAL" -ge '10800' ]] || [[ "$NGX_VEREVAL" = 'master' ]] || [[ "$NGX_VEREVAL" = 'master-google' ]] || [[ "$NGX_VEREVAL" = 'quic' ]]; then
+  # NGX_VEREVAL is the word 'angie' for Angie builds, which -ge evaluates as 0
+  if [[ "$NGX_VEREVAL" -ge '10800' ]] || [[ "$NGX_VEREVAL" = 'master' ]] || [[ "$NGX_VEREVAL" = 'master-google' ]] || [[ "$NGX_VEREVAL" = 'quic' ]] || [[ "$NGX_VEREVAL" = 'angie' ]]; then
     THREADS=' --with-threads'
   else
     THREADS=""

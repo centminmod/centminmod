@@ -1372,6 +1372,8 @@ checklogdetails
   exit #$ERROR
 else 
          cecho "${NGX_STICKYLINKFILE} valid file." $boldyellow
+         # a directory left by an earlier build would make mv nest or fail, reusing stale source
+         rm -rf "nginx-sticky-module-${NGINX_STICKYVER}"
          mv nginx-goodies-nginx-sticky-module-ng-* "nginx-sticky-module-${NGINX_STICKYVER}"
 echo ""
   fi
