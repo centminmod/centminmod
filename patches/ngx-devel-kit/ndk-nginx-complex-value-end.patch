@@ -63,14 +63,16 @@ diff --git a/src/ndk_rewrite.h b/src/ndk_rewrite.h
 index 2479aa2..b0ae283 100644
 --- a/src/ndk_rewrite.h
 +++ b/src/ndk_rewrite.h
-@@ -3,6 +3,14 @@
+@@ -3,6 +3,16 @@
  /* TODO : should remove this when not needed */
- 
- 
-+/* Added in nginx 1.31.3 and backported to 1.30.4; not in freenginx. */
+
+
++/* Added in nginx 1.31.3 and backported to 1.30.4; not in freenginx.
++ * Angie 1.12.1+ has it but still reports nginx_version 1031002. */
 +#if !defined(freenginx)                                               \
-+    && (nginx_version >= 1030004)                                     \
-+    && (nginx_version < 1031000 || nginx_version >= 1031003)
++    && ((defined(angie_version) && angie_version >= 1012001)          \
++        || ((nginx_version >= 1030004)                                \
++            && (nginx_version < 1031000 || nginx_version >= 1031003)))
 +#define NDK_HAVE_HTTP_SCRIPT_COMPLEX_VALUE_END_CODE
 +#endif
 +

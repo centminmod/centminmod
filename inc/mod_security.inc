@@ -8,7 +8,7 @@ modsecurity_install() {
     # build libmodsecurity
     echo
     echo "build libmodsecurity..."
-    # https://github.com/SpiderLabs/ModSecurity/wiki/Compilation-recipes
+    # https://github.com/owasp-modsecurity/ModSecurity/wiki/Compilation-recipes
 
     # force devtoolset gcc usage
     if [[ "$CENTOS_SIX" -eq 6 || "$CENTOS_SEVEN" -eq 7 ]]; then
@@ -301,15 +301,18 @@ modsecurity_install() {
     fi
     pushd "$DIR_TMP"
 
-    if [[ ! "$(/usr/local/nginx-dep/bin/mmdblookup --version | awk '/version/ {print $3}' | sed -e 's|\.|00|g')" -lt '1004002' ]] || [ ! -f /usr/local/nginx-dep/bin/mmdblookup ]; then
+    # install libmaxminddb when missing or older than 1.4.2
+    if [ ! -f /usr/local/nginx-dep/bin/mmdblookup ] || [[ "$(/usr/local/nginx-dep/bin/mmdblookup --version 2>/dev/null | awk '/version/ {split($3, v, "."); printf "%d%03d%03d", v[1], v[2], v[3]}')" -lt '1004002' ]]; then
       install_libmaxmindb
     fi
     
     rm -rf ModSecurity
-    git clone --depth 1 -b v3/master --single-branch https://github.com/SpiderLabs/ModSecurity
+    # pinned release tag instead of the unreleased v3/master branch
+    git clone --depth 1 -b "v${MODSECURITY_LIBVER}" --single-branch https://github.com/owasp-modsecurity/ModSecurity
     cd ModSecurity
     git submodule init
-    git submodule update
+    # others/mbedtls carries nested submodules libmodsecurity configure needs
+    git submodule update --init --recursive
     ./build.sh
     if [[ -f /usr/local/nginx-dep/lib/libmaxminddb.so && "$NGINX_MODSECURITY_MAXMIND" = [yY] ]]; then
       export PKG_CONFIG_PATH=/usr/lib64/pkgconfig:/usr/share/pkgconfig:/usr/local/nginx-dep/lib/pkgconfig
@@ -332,7 +335,9 @@ modsecurity_install() {
         echo "setup MODSEC_OPT"
         pushd "$DIR_TMP"
         rm -rf ModSecurity-nginx
-        git clone --depth 1 https://github.com/SpiderLabs/ModSecurity-nginx.git
+        # v1.0.4 hooks REWRITE/PREACCESS phases, the unreleased master branch
+        # moved to the ACCESS phase
+        git clone --depth 1 -b "v${MODSECURITY_NGINXVER}" https://github.com/owasp-modsecurity/ModSecurity-nginx.git
         ls -lah "${DIR_TMP}/ModSecurity-nginx"
         if [ -d "${DIR_TMP}/ModSecurity-nginx" ]; then
           MODSEC_OPT=" --add-dynamic-module=../ModSecurity-nginx"
@@ -350,8 +355,8 @@ modsecurity_install() {
   
     if [ ! -f /usr/local/nginx/modsec/modsecurity.conf ]; then
       mkdir -p /usr/local/nginx/modsec
-      wget -P /usr/local/nginx/modsec/ https://github.com/SpiderLabs/ModSecurity/raw/v3/master/modsecurity.conf-recommended
-      wget -P /usr/local/nginx/modsec/ https://github.com/SpiderLabs/ModSecurity/raw/v3/master/unicode.mapping
+      wget -P /usr/local/nginx/modsec/ "https://github.com/owasp-modsecurity/ModSecurity/raw/v${MODSECURITY_LIBVER}/modsecurity.conf-recommended"
+      wget -P /usr/local/nginx/modsec/ "https://github.com/owasp-modsecurity/ModSecurity/raw/v${MODSECURITY_LIBVER}/unicode.mapping"
       mv /usr/local/nginx/modsec/modsecurity.conf-recommended /usr/local/nginx/modsec/modsecurity.conf
       if [[ "$NGINX_MODSECURITY_JSONLOGS" = [yY] ]]; then
         # switch to ModSecurity JSON formatted logs
@@ -409,21 +414,7 @@ EOF
       # curl -I localhost?testparam=test
     fi
   
-    MODSEC_INCLUDECHECK=$(grep '\/usr\/local\/nginx\/modsec\/main.conf' /usr/local/nginx/conf/conf.d/virtual.conf)
-  
-    if [[ "$NGINX_MODSECURITY" = [yY] && -z "$MODSEC_INCLUDECHECK" && -f /usr/local/nginx/modsec/main.conf ]]; then
-      sed -i 's/# ssi  on;/# ssi  on; \n\n    modsecurity on;\n    modsecurity_rules_file \/usr\/local\/nginx\/modsec\/main.conf;/g' /usr/local/nginx/conf/conf.d/virtual.conf
-    elif [[ "$NGINX_MODSECURITY" = [yY] && "$MODSEC_INCLUDECHECK" && -f /usr/local/nginx/modsec/main.conf ]]; then
-      sed -i 's|^    #modsecurity on;|    modsecurity on;|g' /usr/local/nginx/conf/conf.d/virtual.conf
-      sed -i 's|^    #modsecurity_rules_file \/usr\/local\/nginx\/modsec\/main.conf;|    modsecurity_rules_file \/usr\/local\/nginx\/modsec\/main.conf;|g' /usr/local/nginx/conf/conf.d/virtual.conf
-    else
-      sed -i 's|^    modsecurity on;|    #modsecurity on;|g' /usr/local/nginx/conf/conf.d/virtual.conf
-      sed -i 's|^    modsecurity_rules_file \/usr\/local\/nginx\/modsec\/main.conf;|    #modsecurity_rules_file \/usr\/local\/nginx\/modsec\/main.conf;|g' /usr/local/nginx/conf/conf.d/virtual.conf
-    fi
-    if [[ "$NGINX_MODSECURITY" != [yY] && "$MODSEC_INCLUDECHECK" ]]; then
-      sed -i 's|^    modsecurity on;|    #modsecurity on;|g' /usr/local/nginx/conf/conf.d/virtual.conf
-      sed -i 's|^    modsecurity_rules_file \/usr\/local\/nginx\/modsec\/main.conf;|    #modsecurity_rules_file \/usr\/local\/nginx\/modsec\/main.conf;|g' /usr/local/nginx/conf/conf.d/virtual.conf
-    fi
+    modsec_virtualconf
   if [[ "$NGINX_MODSECURITY" = [yY] ]]; then
 cat > /etc/logrotate.d/modsecurity <<EOF
 /var/log/modsec_audit.log
@@ -452,5 +443,34 @@ EOF
       sed -i 's|^    modsecurity on;|    #modsecurity on;|g' /usr/local/nginx/conf/conf.d/virtual.conf
       sed -i 's|^    modsecurity_rules_file \/usr\/local\/nginx\/modsec\/main.conf;|    #modsecurity_rules_file \/usr\/local\/nginx\/modsec\/main.conf;|g' /usr/local/nginx/conf/conf.d/virtual.conf
     fi
+  fi
+}
+
+modsec_virtualconf() {
+  # enable or disable the modsecurity directives in the default vhost. ngxinstallmain
+  # calls this again after copying the nginx config templates, because on an initial
+  # install virtual.conf does not exist yet when modsecurity_install runs
+  if [ ! -f /usr/local/nginx/conf/conf.d/virtual.conf ]; then
+    return 0
+  fi
+  MODSEC_INCLUDECHECK=$(grep '\/usr\/local\/nginx\/modsec\/main.conf' /usr/local/nginx/conf/conf.d/virtual.conf)
+
+  # only enable the modsecurity directives when the connector module is being built,
+  # a failed libmodsecurity build would otherwise leave nginx -t failing
+  if [[ "$NGINX_MODSECURITY" = [yY] && -z "$MODSEC_OPT" ]]; then
+    echo "libmodsecurity or ModSecurity-nginx not available, modsecurity directives left disabled"
+  fi
+  if [[ "$NGINX_MODSECURITY" = [yY] && -n "$MODSEC_OPT" && -z "$MODSEC_INCLUDECHECK" && -f /usr/local/nginx/modsec/main.conf ]]; then
+    sed -i 's/# ssi  on;/# ssi  on; \n\n    modsecurity on;\n    modsecurity_rules_file \/usr\/local\/nginx\/modsec\/main.conf;/g' /usr/local/nginx/conf/conf.d/virtual.conf
+  elif [[ "$NGINX_MODSECURITY" = [yY] && -n "$MODSEC_OPT" && "$MODSEC_INCLUDECHECK" && -f /usr/local/nginx/modsec/main.conf ]]; then
+    sed -i 's|^    #modsecurity on;|    modsecurity on;|g' /usr/local/nginx/conf/conf.d/virtual.conf
+    sed -i 's|^    #modsecurity_rules_file \/usr\/local\/nginx\/modsec\/main.conf;|    modsecurity_rules_file \/usr\/local\/nginx\/modsec\/main.conf;|g' /usr/local/nginx/conf/conf.d/virtual.conf
+  else
+    sed -i 's|^    modsecurity on;|    #modsecurity on;|g' /usr/local/nginx/conf/conf.d/virtual.conf
+    sed -i 's|^    modsecurity_rules_file \/usr\/local\/nginx\/modsec\/main.conf;|    #modsecurity_rules_file \/usr\/local\/nginx\/modsec\/main.conf;|g' /usr/local/nginx/conf/conf.d/virtual.conf
+  fi
+  if [[ "$NGINX_MODSECURITY" != [yY] && "$MODSEC_INCLUDECHECK" ]]; then
+    sed -i 's|^    modsecurity on;|    #modsecurity on;|g' /usr/local/nginx/conf/conf.d/virtual.conf
+    sed -i 's|^    modsecurity_rules_file \/usr\/local\/nginx\/modsec\/main.conf;|    #modsecurity_rules_file \/usr\/local\/nginx\/modsec\/main.conf;|g' /usr/local/nginx/conf/conf.d/virtual.conf
   fi
 }

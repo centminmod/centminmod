@@ -642,7 +642,9 @@ if [[ "$CLOUDFLARE_PATCHSSL" = [yY] && "$DETECTOPENSSL_ONEZERO" = '1.1' ]] && [[
     fi
 fi # CLOUDFLARE_PATCHSSL
 
-if [[ "$NGINX_TLS_FINGERPRINT" = [yY] && "$DETECTOPENSSL_ONEONE" && "$DETECTOPENSSL_ONEONE" = '1.1.1' ]] && [[ "$AWS_LC_SWITCH" = [nN] ]] && [[ "$LIBRESSL_SWITCH" = [nN] ]] && [[ "$BORINGSSL_SWITCH" = [nN] ]]; then
+# nginx only links this OpenSSL source when OPENSSL_SYSTEM_USE is not 'y', the same
+# condition nginx_configure.inc checks before it adds the nginx-ssl-fingerprint module
+if [[ "$NGINX_TLS_FINGERPRINT" = [yY] && "$DETECTOPENSSL_ONEONE" && "$DETECTOPENSSL_ONEONE" = '1.1.1' && "$OPENSSL_SYSTEM_USE" != [yY] ]] && [[ "$AWS_LC_SWITCH" = [nN] ]] && [[ "$LIBRESSL_SWITCH" = [nN] ]] && [[ "$BORINGSSL_SWITCH" = [nN] ]]; then
     if [ -f "$(which figlet)" ]; then
          figlet -ckf standard "OpenSSL 1.1.1 branch nginx-ssl-fingerprint module Patch"
      fi
@@ -660,6 +662,13 @@ if [[ "$NGINX_TLS_FINGERPRINT" = [yY] && "$DETECTOPENSSL_ONEONE" && "$DETECTOPEN
          cecho "patching OpenSSL for nginx-ssl-fingerprint module" $boldyellow
          cecho "patch -p1 < openssl_nginx_fingerprint.patch" $boldyellow
          patch -p1 < openssl_nginx_fingerprint.patch
+         # the patch adds a public libssl function without a util/libssl.num entry,
+         # so util/mkdef.pl stops the shared build at libssl.map. Number it after the
+         # last entry, with that entry's version tag (mkdef.pl rejects a lower one)
+         if grep -q 'SSL_client_hello_get_ja3_data' include/openssl/ssl.h && ! grep -q '^SSL_client_hello_get_ja3_data ' util/libssl.num; then
+           read -r ja3_num ja3_ver < <(awk '$2 ~ /^[0-9]+$/ && $2 > n {n = $2; v = $3} END {print n + 1, v}' util/libssl.num)
+           printf 'SSL_client_hello_get_ja3_data %s\t%s\tEXIST::FUNCTION:\n' "$ja3_num" "$ja3_ver" >> util/libssl.num
+         fi
          echo  "######################################################################"
          echo  "OpenSSL 1.1.1 branch nginx-ssl-fingerprint module patched"
          echo  "######################################################################"
@@ -1666,7 +1675,7 @@ fi
       fi
     elif [[ "$AWS_LC_SWITCH" = [nN] ]] && [[ "$LIBRESSL_SWITCH" = [nN] ]] && [[ "$BORINGSSL_SWITCH" = [nN] ]]; then
       OPENSSLVER_CHECK=$(/opt/openssl/bin/openssl version | awk '{print $2}')
-      if [[ "$OPENSSLVER_CHECK" != "$OPENSSL_VERSION" ]] || [[ "$OPENSSL_FORCECOMPILE" = [yY] ]] || [[ "$NGINX_TLS_FINGERPRINT" = [yY] ]] || openssl_alma_patches_pending; then
+      if [[ "$OPENSSLVER_CHECK" != "$OPENSSL_VERSION" ]] || [[ "$OPENSSL_FORCECOMPILE" = [yY] ]] || [[ "$NGINX_TLS_FINGERPRINT" = [yY] && "$OPENSSL_SYSTEM_USE" != [yY] ]] || openssl_alma_patches_pending; then
         opensslinstallstarttime=$(TZ=UTC date +%s.%N)
 
         if [ -f "$(which figlet)" ]; then
