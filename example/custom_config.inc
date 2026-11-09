@@ -835,7 +835,7 @@
 # Freenginx Version
 # Freenginx version if FREENGINX_INSTALL='y'
 # Git History: Added 2024-02-17 (5d801902)
-#FREENGINX_VERSION='1.29.6'
+#FREENGINX_VERSION='1.30.2'
 
 # Freenginx Backport Patches
 # FreeNginx Security Patches Backported to Standard Nginx
@@ -886,8 +886,24 @@
 
 # Nginx Angie Version
 # Angie is another Nginx fork (not currently used)
+# Angie 1.12.0+ turns on 'resolver conf' (/etc/resolv.conf) by default, 'resolver off;' restores the old behaviour
 # Git History: Added 2024-03-27 (95eba223)
-#NGINX_ANGIE_VERSION='Angie-1.11.3'
+#NGINX_ANGIE_VERSION='Angie-1.12.4'
+
+# Angie ACME Module
+# Angie builds only (centmin.sh menu 4 with nginx version 'angie'): compiles Angie's
+# built-in ACME client, --with-http_acme_module (Angie 1.5.0+, static, no extra
+# libraries). Default 'y'. No effect on nginx or freenginx builds.
+# It does nothing until a vhost uses acme_client/acme; the certificate and key are
+# then in $acme_cert_<name> and $acme_cert_key_<name>.
+# PORT 53: DNS-01 (wildcards) makes Angie answer DNS queries on UDP port 53, which
+#   clashes with NSD or another DNS server there (acme_dns_port moves it). Only an
+#   acme_client with challenge=dns and no acme_hook listens; HTTP-01, ALPN and
+#   acme_hook setups do not. ALPN challenges are compiled out on AWS-LC/BoringSSL.
+# Angie's defaults already build its API, metric, Prometheus and Docker modules
+# (plus tunnel and DoH on Angie 1.12+), so no switch is needed for them.
+# Reference: https://en.angie.software/angie/docs/configuration/modules/http/http_acme/
+#NGINX_ANGIE_ACME='y'
 
 # Nginx gsplit-dwarf Optimization
 # Reduce object file sizes during compilation
@@ -1231,6 +1247,14 @@
 # Git History: Added 2017-09-22 (d00d540b)
 #NGXDYNAMIC_VHOSTSTATS='n'
 
+# Auth JWT, Keyval and Rate Limit Dynamic Modules
+# Build NGINX_AUTHJWT, NGINX_KEYVAL and NGINX_RATELIMIT as dynamic modules
+# (default 'y', loaded via dynamic-modules.conf); 'n' builds them static.
+# NGINX_OTEL is always dynamic.
+#NGXDYNAMIC_AUTHJWT='y'
+#NGXDYNAMIC_KEYVAL='y'
+#NGXDYNAMIC_RATELIMIT='y'
+
 ################################################################################
 # 12. NGINX STATIC MODULES
 ################################################################################
@@ -1309,7 +1333,21 @@
 # nginScript version tag
 # Reference: https://github.com/nginx/njs
 # Git History: Added 2023-05-31 (769907e5)
-#NGINX_NJS_VER='1.0.1'  
+#NGINX_NJS_VER='1.0.2'  
+
+# Nginx NJS QuickJS Engine
+# Builds njs with the QuickJS engine as well, so 'js_engine qjs;' works in
+# http, server and location contexts. njs stays the default engine.
+# Only used with NGINX_NJS='y'.
+# AUTOMATIC BEHAVIOR:
+#   - Downloads bellard QuickJS NGINX_NJS_QUICKJS_VER (sha256 checked for the
+#     default release) and builds a -fPIC static libquickjs.a with the nginx compiler
+#   - Passes -I/-L for it so njs nginx/config detects QuickJS
+#   - Stops the nginx build after ./configure if njs did not detect QuickJS, so
+#     the running nginx is not replaced by one without 'js_engine qjs;'
+# Reference: https://github.com/nginx/njs/blob/1.0.2/README.md, https://bellard.org/quickjs/
+#NGINX_NJS_QUICKJS='n'
+#NGINX_NJS_QUICKJS_VER='2026-06-04'
 
 # Nginx GeoIP Legacy Module
 # MaxMind GeoIP legacy databases
@@ -1537,7 +1575,7 @@
 
 # Nginx Cache Purge Version
 # Git History: First added 2014-12-06 (ff4e5d72), Last modified 2016-02-15 (7240145c)
-#NGINX_CACHEPURGEVER='3.0.3'
+#NGINX_CACHEPURGEVER='3.0.4'
 
 # Nginx Access Key Module
 # Token-based access control
@@ -1590,7 +1628,20 @@
 # RTMP streaming server
 # Reference: https://github.com/arut/nginx-rtmp-module
 # Git History: First added 2015-06-14 (3003b45d), Last modified 2018-09-01 (d493c2b6)
-#NGINX_RTMP='n'  
+#NGINX_RTMP='n'
+
+# Nginx HTTP-FLV Module (RTMP module replacement)
+# nginx-http-flv-module: maintained fork of arut nginx-rtmp-module with the same
+# rtmp {} directives plus HTTP-FLV live playback (flv_live). Default off.
+# It registers the same ngx_rtmp_* modules as nginx-rtmp-module, so the two are
+# never built together: with NGINX_RTMP='y' (or NGINX_VIDEO='y') as well,
+# nginx-http-flv-module is built instead, with a warning.
+# Static module (--add-module). The tarball sha256 is checked for the default
+# release; a failed download stops the nginx build before ./configure.
+# Upstream CI tests nginx 1.30.x, so compile test nginx 1.31.x before production use.
+# Reference: https://github.com/winshining/nginx-http-flv-module
+#NGINX_RTMP_HTTPFLV='n'
+#NGINX_RTMP_HTTPFLVVER='1.2.15'
 
 # Nginx FLV Module
 # FLV streaming
@@ -1608,6 +1659,13 @@
 # Reference: http://nginx.org/en/docs/http/ngx_http_auth_request_module.html
 # Git History: First added 2015-07-22 (ec079c56), Last modified 2016-02-15 (7240145c)
 #NGINX_AUTHREQ='n'  
+
+# Nginx JSON Module
+# json_set $var $source path; extracts JSON values into variables (http context)
+# Static only, built when nginx is 1.31.5+ and not Angie or freenginx, which
+# have no such module; otherwise skipped
+# Reference: https://nginx.org/en/docs/http/ngx_http_json_module.html
+#NGINX_JSON='y'
 
 # Nginx Secure Link Module
 # Secure links with expiration and hash
@@ -1629,7 +1687,90 @@
 # Virtual host traffic statistics
 # Reference: https://github.com/vozlt/nginx-module-vts
 # Git History: First added 2015-05-29 (ec807dbd), Last modified 2016-02-15 (7240145c)
-#NGINX_VHOSTSTATS='n'  
+#NGINX_VHOSTSTATS='n'
+
+# Nginx Auth JWT Module (kjdev/nginx-auth-jwt)
+# auth_jwt validates JWTs (JWS) against key files or JWKS (auth_jwt_key_file,
+# auth_jwt_key_request), auth_jwt_require/auth_jwt_require_claim for access
+# rules. Default off. Dynamic unless NGXDYNAMIC_AUTHJWT='n'.
+# AUTOMATIC BEHAVIOR:
+#   - Installs jansson-devel (EL8 AppStream, EL9/EL10 CRB) when missing
+#   - Downloads the release '-full' tarball (bundles the nxe-* git submodules
+#     its config needs; sha256 checked for the default release)
+#   - A failed download or jansson-devel install stops the nginx build before
+#     ./configure, the running nginx is left as it is
+#   - Skipped with a warning when nginx compiles in a static source built OpenSSL
+#     or LibreSSL: the module links -lssl -lcrypto, which would add the system
+#     OpenSSL. Tested upstream with OpenSSL 1.1.1/3.x, not AWS-LC or BoringSSL
+#   - Releases before 0.14.1 have an alg=none authentication bypass. An
+#     auth_jwt_key_request data race fix (main commit 6fc37d3) is newer than 0.15.0
+# Reference: https://github.com/kjdev/nginx-auth-jwt
+#NGINX_AUTHJWT='n'
+#NGINX_AUTHJWTVER='0.15.0'
+
+# Nginx Keyval Module (kjdev/nginx-keyval)
+# keyval_zone and keyval map a key (e.g. $cookie_x, $http_x) to a variable kept
+# in shared memory, in http and stream. No REST API or cluster sync like the
+# NGINX Plus module. Default off. Dynamic unless NGXDYNAMIC_KEYVAL='n'; with
+# NGINX_STREAM='y' ngx_stream_keyval_module is built and loaded too.
+# NGINX_KEYVAL_REDIS='y' adds keyval_zone_redis (Redis backed zones): installs
+#   hiredis-devel from EPEL and links -lhiredis. Each lookup opens a Redis
+#   connection and runs blocking commands in the nginx worker, so keep Redis on
+#   localhost. command_timeout (default 3s) does not stop a Redis that accepts
+#   the connection but never answers while nginx.conf sets timer_resolution
+#   (Centmin Mod default 100ms): each SIGALRM restarts hiredis' blocking read,
+#   so the worker waits until Redis closes the connection.
+# A failed download or hiredis-devel install stops the nginx build before ./configure.
+# Reference: https://github.com/kjdev/nginx-keyval
+#NGINX_KEYVAL='n'
+#NGINX_KEYVALVER='0.5.0'
+#NGINX_KEYVAL_REDIS='n'
+
+# Nginx Rate Limit Module (weserv/rate-limit-nginx-module)
+# rate_limit enforces GCRA limits shared across servers, stored in Redis, Valkey
+# or KeyDB through an nginx upstream (rate_limit_pass, non-blocking). Default off.
+# Dynamic unless NGXDYNAMIC_RATELIMIT='n'. Built only: no Redis side setup.
+# RUNTIME REQUIREMENT: Redis/Valkey must load the redis-rate-limiter module
+#   (https://github.com/onsigntv/redis-rate-limiter, 'loadmodule /path/to/ratelimit.so'),
+#   which has had no change since 2022. Without it Redis rejects the
+#   RATER.LIMIT command the module sends.
+# SIMPLER ALTERNATIVE: a fixed window counter with the lua-resty-redis library
+#   shipped with ORESTY_LUANGINX='y', no Redis module needed, e.g.
+#   access_by_lua_block {
+#     local red = require("resty.redis"):new()
+#     red:set_timeouts(100, 100, 100)
+#     if not red:connect("127.0.0.1", 6379) then return end -- fail open
+#     local key = "rl:" .. ngx.var.remote_addr .. ":" .. math.floor(ngx.time() / 60)
+#     local n = red:incr(key)
+#     if n == 1 then red:expire(key, 60) end
+#     red:set_keepalive(10000, 100)
+#     if n and n > 120 then return ngx.exit(429) end
+#   }
+# No release since v1.0.0 (2022), so NGINX_RATELIMITCOMMIT pins a master commit
+# (sha256 checked for the default commit).
+# Reference: https://github.com/weserv/rate-limit-nginx-module
+#NGINX_RATELIMIT='n'
+#NGINX_RATELIMITCOMMIT='f603f4c7cf9b9ca1ce82256a14d6ab15bae0f2ad'
+
+# Nginx OpenTelemetry Module (nginx/nginx-otel)
+# ngx_otel_module: otel_exporter, otel_trace and otel_trace_context send OTLP/gRPC
+# traces to an OpenTelemetry collector. Default off. Dynamic module only, built
+# against this nginx source tree and loaded via dynamic-modules.conf.
+# AUTOMATIC BEHAVIOR:
+#   - Installs cmake, git, gcc-c++, c-ares-devel, openssl-devel and zlib-devel
+#     when missing
+#   - nginx ./configure runs cmake, which git clones gRPC 1.49.4 (with protobuf,
+#     abseil and re2) and opentelemetry-cpp from github.com, and nginx make
+#     compiles them: needs outbound github.com access and adds a long C++ build
+#   - Skipped with a warning (nginx still builds) when nginx has no dynamic module
+#     support, the build dependencies cannot be installed, cmake is older than
+#     3.16.3, or nginx does not link the system OpenSSL (AWS-LC, BoringSSL,
+#     LibreSSL, quicTLS or source OpenSSL builds): its gRPC links the system OpenSSL
+#   - A failed download, clone or compile stops the nginx build, the running
+#     nginx is left as it is
+# Reference: https://github.com/nginx/nginx-otel, https://nginx.org/en/docs/ngx_otel_module.html
+#NGINX_OTEL='n'
+#NGINX_OTELVER='0.1.2'
 
 # Brotli Compression Module for Nginx
 # Add Google Brotli compression support to Nginx for superior compression ratios vs gzip.
@@ -1898,7 +2039,7 @@
 
 # Nginx HTTP Redis Version
 # Git History: First added 2015-07-26 (b2c2fed5), Last modified 2016-02-15 (7240145c)
-#NGINX_HTTPREDISVER='0.4.0-cmm'  
+#NGINX_HTTPREDISVER='0.4.1-cmm'  
 
 # Nginx PCRE Support
 # PCRE & PCRE-JIT support
@@ -2053,7 +2194,7 @@
 #   - Consider Cloudflare WAF or AWS WAF as managed alternatives
 #   - Monitor CPU/memory impact, enable only on critical applications
 # Related: NGINX_PCRE_TWO, ORESTY_LUANGINX (alternative Lua-based WAF)
-# Reference: https://github.com/SpiderLabs/ModSecurity-nginx
+# Reference: https://github.com/owasp-modsecurity/ModSecurity-nginx
 # Git History: First added 2016-01-18 (5de61813), Last modified 2016-02-15 (7240145c)
 #NGINX_MODSECURITY='n'  
 
@@ -2074,9 +2215,24 @@
 # Git History: Added 2017-08-05 (10863ad9)
 #MODSECURITY_OWASPVER='4.30.0'
 
+# ModSecurity Library Version
+# libmodsecurity release tag, inc/mod_security.inc adds the 'v' prefix
+# Reference: https://github.com/owasp-modsecurity/ModSecurity/releases
+#MODSECURITY_LIBVER='3.0.17'
+
+# ModSecurity-nginx Connector Version
+# Connector release tag, inc/mod_security.inc adds the 'v' prefix. v1.0.4 hooks the
+# REWRITE/PREACCESS phases; the unreleased master branch moved to the ACCESS phase
+# Reference: https://github.com/owasp-modsecurity/ModSecurity-nginx/releases
+#MODSECURITY_NGINXVER='1.0.4'
+
 # Nginx TLS Fingerprint Module
 # SSL/TLS Handshake Fingerprinting Module Integration
 # Adds ability to fingerprint TLS clients based on ClientHello message for bot detection and traffic analysis.
+# DEPRECATED: the module patches the OpenSSL 1.1.1 source, so it is only built when nginx links that
+#   source built OpenSSL 1.1.1 (OPENSSL_SYSTEM_USE='n', no AWS-LC, LibreSSL, BoringSSL or QUIC) and is
+#   skipped with a message otherwise. Use lua-resty-ja4 (JA4, no nginx or OpenSSL patch) instead:
+#   ORESTY_LUAJA4='y' with ORESTY_LUANGINX='y'.
 # AUTOMATIC BEHAVIOR:
 #   - When NGINX_TLS_FINGERPRINT='y' and OpenSSL 1.1.1+: Applies TLS fingerprinting patches (nginx_patch.inc:623)
 #   - Adds $ssl_ja3 and $ssl_ja3_hash nginx variables to all SSL vhosts
@@ -2094,12 +2250,12 @@
 #   - Patch adds $ssl_ja3 and $ssl_ja3_hash variables to ngx_http_ssl_module
 #   - Extracts TLS ClientHello fields: version, ciphers, extensions, curves, point formats
 # CONFIGURE FLAGS:
-#   - Requires: LIBRESSL_SWITCH='n' and BORINGSSL_SWITCH='n' (nginx_configure.inc:862)
+#   - Requires: OPENSSL_SYSTEM_USE='n', AWS_LC_SWITCH='n', LIBRESSL_SWITCH='n', BORINGSSL_SWITCH='n' and no QUIC (nginx_configure.inc)
 #   - No additional ./configure flags, patch modifies SSL module behavior
 # OS COMPATIBILITY:
 #   - EL7: OpenSSL 1.0.2 (not supported, requires OpenSSL 1.1.1+)
-#   - EL8/9/10: OpenSSL 1.1.1+ or 3.x (full support)
-#   - Requires: OpenSSL 1.1.1+ with SSL_client_hello_get0_* API functions
+#   - EL8/9/10: default OPENSSL_SYSTEM_USE='y' links system OpenSSL, so the module is skipped
+#   - Requires: nginx linked to the patched source built OpenSSL 1.1.1 (SSL_client_hello_get_ja3_data)
 # PERFORMANCE IMPACT:
 #   - CPU: +0.1-0.5% per SSL handshake (minimal overhead)
 #   - Memory: +100-200 bytes per connection for JA3 hash storage
@@ -2964,7 +3120,7 @@
 
 # Nginx Headers More Version
 # Git History: First added 2014-04-24 (d962e8b9), Last modified 2016-02-15 (7240145c)
-#NGINX_HEADERSMORE='0.40'
+#NGINX_HEADERSMORE='0.41'
 
 # OpenResty Memc Module Version
 # Memcached module
@@ -3007,7 +3163,7 @@
 
 # OpenResty Echo Version
 # Git History: First added 2015-05-08 (6026a7a5), Last modified 2016-02-15 (7240145c)
-#ORESTY_ECHOVER='0.65'  
+#ORESTY_ECHOVER='0.66'  
 
 # OpenResty Redis2 Version
 # Redis module
@@ -3018,6 +3174,11 @@
 # Nginx Sticky Module
 # Nginx Sticky Sessions Module Integration (Session Persistence)
 # Installs nginx-sticky-module for cookie-based session persistence (load balancer session affinity).
+# DEPRECATED: the third-party module is unmaintained. nginx 1.29.6+ and Angie have a native upstream
+#   'sticky cookie' directive; move upstreams to it and set NGINX_STICKY='n'. While NGINX_STICKY='y',
+#   the native module is disabled (--without-http_upstream_sticky_module on nginx 1.31.0+ and Angie,
+#   --without-http_upstream_sticky on nginx 1.29.6-1.30.x) because both register 'sticky'.
+#   freenginx has no native sticky module, so no switch is passed there.
 # AUTOMATIC BEHAVIOR:
 #   - When NGINX_STICKY='y': Downloads nginx-sticky-module from GitHub master branch (nginx_upgrade.inc:1424-1426)
 #   - Always uses 'master' branch if NGINX_STICKYVER='master' (nginx_configure.inc:2182)
@@ -3050,7 +3211,8 @@
 #   - Recommended: Use secure cookie attributes (httponly, secure, samesite)
 #   - Alternative: IP hash load balancing (ip_hash directive) for privacy
 # CONFLICTS:
-#   - No conflicts with other nginx modules
+#   - Clashes with the native sticky module of nginx 1.29.6+ and Angie (same 'sticky' directive),
+#     which is disabled at configure time while NGINX_STICKY='y'
 #   - Works with upstream module for HTTP, FastCGI, uWSGI load balancing
 # RECOMMENDATION:
 #   - Enable for load-balanced web applications requiring session persistence
@@ -3075,6 +3237,12 @@
 # Nginx Upstream Check Version
 # Git History: First added 2014-07-12 (418c8ef1), Last modified 2016-02-15 (7240145c)
 #NGINX_UPSTREAMCHECKVER='0.4.0'
+
+# Nginx Upstream Check Commit
+# Master commit after v0.4.0 that adds check_1.30.4+.patch, applied on nginx 1.29.6+
+# (check_1.20.1+.patch stays for older nginx). Empty uses the NGINX_UPSTREAMCHECKVER tag.
+# No check_*.patch applies to Angie or freenginx, so the core patch is skipped there.
+#NGINX_UPSTREAMCHECKCOMMIT='02c6c9de14ca1e60adb9f48179707c57d532d622'
 
 # Additional OpenResty module versions
 # Git History: First added 2015-05-25 (f56179dc), Last modified 2016-02-15 (7240145c)
@@ -3110,7 +3278,50 @@
 # Git History: First added 2015-05-25 (4098192a), Last modified 2016-02-15 (7240145c)
 #ORESTY_LUACOOKIEVER='master'  
 # Git History: First added 2015-05-25 (73a334aa), Last modified 2016-02-15 (7240145c)
-#ORESTY_LUAUPSTREAMCACHEVER='0.1.1'  
+#ORESTY_LUAUPSTREAMCACHEVER='0.1.1'
+
+# Optional Lua Libraries (ORESTY_LUANGINX='y' only, each default 'n')
+# Pure Lua, copied at each nginx build into /usr/local/nginx-dep/lib/lua/5.1, which
+# lua_package_path already covers. No nginx module or ./configure change. The
+# tarball sha256 is checked for the default versions; a failed download skips that
+# library with a warning and keeps any copy installed by an earlier build.
+#   ORESTY_LUALIMITTRAFFIC  resty.limit.req/conn/count/traffic: per key or per bot
+#                           rate and connection limits in lua_shared_dict, so per
+#                           server only
+#   ORESTY_LUAHTTP          resty.http cosocket HTTP client (rewrite, access, content
+#                           and timer phases), e.g. JWKS or bot directory fetches.
+#                           mTLS client certificates need ORESTY_LUAOPENSSL='y'
+#   ORESTY_LUAOPENSSL       resty.openssl FFI bindings (pkey incl. Ed25519, x509,
+#                           digest). OpenSSL 1.1.1, 3.x and 4.x only: not AWS-LC or
+#                           BoringSSL. Static OpenSSL needs NGINX_COMPILE_EXPORT='y'
+#   ORESTY_LUAPROMETHEUS    require "prometheus": lua_shared_dict prometheus_metrics
+#                           plus init_worker_by_lua* setup, metrics updated in
+#                           log_by_lua* and served by content_by_lua*
+#   ORESTY_LUAJA4           resty.ja4 (TLS) and resty.ja4h (HTTP) fingerprints, needs
+#                           lua-resty-core 0.1.32+ (skipped otherwise).
+#                           require("resty.ja4").compute() in ssl_client_hello_by_lua*,
+#                           then ja4.get() and require("resty.ja4h").compute() in
+#                           access_by_lua*, header_filter_by_lua* or log_by_lua*.
+#                           TLS JA4 needs an OpenSSL 1.1.1+ build (default system
+#                           OpenSSL on EL8/9/10): AWS-LC and BoringSSL reject
+#                           ssl_client_hello_by_lua*, JA4H still works. JA4H as a
+#                           method is under the FoxIO licence. Replaces the
+#                           deprecated JA3 module (NGINX_TLS_FINGERPRINT)
+# Reference: https://github.com/openresty/lua-resty-limit-traffic
+#   https://github.com/ledgetech/lua-resty-http
+#   https://github.com/fffonion/lua-resty-openssl
+#   https://github.com/knyar/nginx-lua-prometheus
+#   https://github.com/nemethhh/lua-resty-ja4
+#ORESTY_LUALIMITTRAFFIC='n'
+#ORESTY_LUALIMITTRAFFICVER='0.09'
+#ORESTY_LUAHTTP='n'
+#ORESTY_LUAHTTPVER='0.18.0'
+#ORESTY_LUAOPENSSL='n'
+#ORESTY_LUAOPENSSLVER='1.9.0'
+#ORESTY_LUAPROMETHEUS='n'
+#ORESTY_LUAPROMETHEUSVER='0.20260912'
+#ORESTY_LUAJA4='n'
+#ORESTY_LUAJA4VER='0.2.1'
 
 ################################################################################
 # 17. LUA/LUAJIT SETTINGS

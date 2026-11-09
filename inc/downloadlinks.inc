@@ -197,6 +197,68 @@ MASTER_NGX_ZLIBLINKFILE="master-zlib-${NGINX_ZLIBVER}.tar.gz"
 NGX_ZLIBLINK="https://www.zlib.net/${NGX_ZLIBLINKFILE}"
 NGX_ZLIBLINKLOCAL="${LOCALCENTMINMOD_MIRROR}/centminmodparts/zlib/${NGX_ZLIBLINKFILE}"
 
+# bellard QuickJS for njs 'js_engine qjs;' (NGINX_NJS_QUICKJS='y'), the release
+# nginx.org's own njs packages build. The sha256 is checked for the default
+# release only, a different NGINX_NJS_QUICKJS_VER skips the check
+NGX_QUICKJSLINKFILE="quickjs-${NGINX_NJS_QUICKJS_VER}.tar.xz"
+NGX_QUICKJSLINK="https://bellard.org/quickjs/${NGX_QUICKJSLINKFILE}"
+NGX_QUICKJSLINKLOCAL="${LOCALCENTMINMOD_MIRROR}/centminmodparts/quickjs/${NGX_QUICKJSLINKFILE}"
+if [[ "$NGINX_NJS_QUICKJS_VER" = '2026-06-04' ]]; then
+  NGX_QUICKJS_SHA256='b376e839b322978313d929fd20663b11ba58b75df5a46c126dd19ea2fa70ad2a'
+else
+  NGX_QUICKJS_SHA256=''
+fi
+
+# nginx-http-flv-module (NGINX_RTMP_HTTPFLV='y'), built in place of arut
+# nginx-rtmp-module. The sha256 is checked for the default release only, a
+# different NGINX_RTMP_HTTPFLVVER skips the check
+NGX_RTMP_HTTPFLVLINKFILE="nginx-http-flv-module_v${NGINX_RTMP_HTTPFLVVER}.tar.gz"
+NGX_RTMP_HTTPFLVLINK="https://github.com/winshining/nginx-http-flv-module/archive/v${NGINX_RTMP_HTTPFLVVER}.tar.gz"
+if [[ "$NGINX_RTMP_HTTPFLVVER" = '1.2.15' ]]; then
+  NGX_RTMP_HTTPFLV_SHA256='ac963f9802b9ec4cc00f1958526f17c1c17f26489604539138c7758985c797d4'
+else
+  NGX_RTMP_HTTPFLV_SHA256=''
+fi
+
+# optional nginx modules NGINX_AUTHJWT, NGINX_KEYVAL, NGINX_RATELIMIT and
+# NGINX_OTEL. The sha256 is checked for the default release or commit only, a
+# different version skips the check
+# nginx-auth-jwt: the release '-full' asset includes the nxe-json, nxe-jwx and
+# nxe-phase git submodules its config needs, the tag archive does not
+NGX_AUTHJWTLINKFILE="nginx-auth-jwt-${NGINX_AUTHJWTVER}-full.tar.gz"
+NGX_AUTHJWTLINK="https://github.com/kjdev/nginx-auth-jwt/releases/download/${NGINX_AUTHJWTVER}/${NGX_AUTHJWTLINKFILE}"
+if [[ "$NGINX_AUTHJWTVER" = '0.15.0' ]]; then
+  NGX_AUTHJWT_SHA256='5b6d6ba61ee2951a4eb826e1037293b281bfe05e4fc5b6ec75b94a6defeb082e'
+else
+  NGX_AUTHJWT_SHA256=''
+fi
+
+# nginx-keyval tags have no 'v' prefix
+NGX_KEYVALLINKFILE="nginx-keyval_${NGINX_KEYVALVER}.tar.gz"
+NGX_KEYVALLINK="https://github.com/kjdev/nginx-keyval/archive/${NGINX_KEYVALVER}.tar.gz"
+if [[ "$NGINX_KEYVALVER" = '0.5.0' ]]; then
+  NGX_KEYVAL_SHA256='893b59f121a959ddc84f8d26562cdcf9c63605c1e441b41ae01da37e28168f86'
+else
+  NGX_KEYVAL_SHA256=''
+fi
+
+# rate-limit-nginx-module has no release since v1.0.0 (2022), so a commit is pinned
+NGX_RATELIMITLINKFILE="rate-limit-nginx-module_${NGINX_RATELIMITCOMMIT}.tar.gz"
+NGX_RATELIMITLINK="https://github.com/weserv/rate-limit-nginx-module/archive/${NGINX_RATELIMITCOMMIT}.tar.gz"
+if [[ "$NGINX_RATELIMITCOMMIT" = 'f603f4c7cf9b9ca1ce82256a14d6ab15bae0f2ad' ]]; then
+  NGX_RATELIMIT_SHA256='63b84b21e5be3ad946a31faa358125db532432c4d247a5c5ed31feea21511c29'
+else
+  NGX_RATELIMIT_SHA256=''
+fi
+
+NGX_OTELLINKFILE="nginx-otel_v${NGINX_OTELVER}.tar.gz"
+NGX_OTELLINK="https://github.com/nginx/nginx-otel/archive/v${NGINX_OTELVER}.tar.gz"
+if [[ "$NGINX_OTELVER" = '0.1.2' ]]; then
+  NGX_OTEL_SHA256='9bad197b916187e3340ff7a3d7df647053c0fb66df6e85f11be3f4aec1f14f56'
+else
+  NGX_OTEL_SHA256=''
+fi
+
 # wget renamed
 NGX_WEBDAVLINKFILE="nginx-dav-ext-module-${NGINX_EXTWEBDAVVER}.tar.gz"
 NGX_WEBDAVLINK="https://github.com/arut/nginx-dav-ext-module/archive/v${NGINX_EXTWEBDAVVER}.tar.gz"
@@ -249,9 +311,17 @@ NGX_STICKYLINK="https://bitbucket.org/nginx-goodies/nginx-sticky-module-ng/get/$
 NGX_STICKYLINKGITLAB="https://gitlab.com/centminmod-github-mirror/nginx-sticky-module-ng/repository/archive.tar.gz?ref=${NGINX_STICKYVER}"
 
 # wget renamed
-NGX_UPSTREAMCHECKLINKFILE="nginx-upstream-check-${NGINX_UPSTREAMCHECKVER}.tar.gz"
+# the v0.4.0 tag only has check_1.20.1+.patch, NGINX_UPSTREAMCHECKCOMMIT pins the
+# later master commit adding check_1.30.4+.patch for nginx 1.29.6+. The commit is
+# in the archive name so a cached v0.4.0 tarball is not reused
+if [ -n "$NGINX_UPSTREAMCHECKCOMMIT" ]; then
+  NGX_UPSTREAMCHECKLINKFILE="nginx-upstream-check-${NGINX_UPSTREAMCHECKCOMMIT}.tar.gz"
+  NGX_UPSTREAMCHECKLINK="https://github.com/yaoweibin/nginx_upstream_check_module/archive/${NGINX_UPSTREAMCHECKCOMMIT}.tar.gz"
+else
+  NGX_UPSTREAMCHECKLINKFILE="nginx-upstream-check-${NGINX_UPSTREAMCHECKVER}.tar.gz"
+  NGX_UPSTREAMCHECKLINK="https://github.com/yaoweibin/nginx_upstream_check_module/archive/v${NGINX_UPSTREAMCHECKVER}.tar.gz"
+fi
 MASTER_NGX_UPSTREAMCHECKLINKFILE="master-nginx-upstream-check-${NGINX_UPSTREAMCHECKVER}.tar.gz"
-NGX_UPSTREAMCHECKLINK="https://github.com/yaoweibin/nginx_upstream_check_module/archive/v${NGINX_UPSTREAMCHECKVER}.tar.gz"
 NGX_UPSTREAMCHECKLINKGITLAB="https://gitlab.com/centminmod-github-mirror/nginx_upstream_check_module/repository/archive.tar.gz?ref=${NGINX_UPSTREAMCHECKVER}"
 
 # wget renamed
@@ -381,6 +451,51 @@ NGX_LUAUPSTREAMCACHELINKGITLAB="https://gitlab.com/centminmod-github-mirror/lua-
 NGX_LUACJSONLINKFILE="lua-cjson_${LUACJSONVER}.tar.gz"
 NGX_LUACJSONLINK="https://github.com/openresty/lua-cjson/archive/${LUACJSONVER}.tar.gz"
 NGX_LUACJSONLINKGITLAB="https://gitlab.com/centminmod-github-mirror/lua-cjson/repository/archive.tar.gz?ref=${LUACJSONVER}"
+
+# optional pure Lua libraries, each behind its own ORESTY_LUA* toggle and only
+# with ORESTY_LUANGINX='y'. The sha256 is checked for the default release only,
+# a different version skips the check
+NGX_LUALIMITTRAFFICLINKFILE="lua-resty-limit-traffic_v${ORESTY_LUALIMITTRAFFICVER}.tar.gz"
+NGX_LUALIMITTRAFFICLINK="https://github.com/openresty/lua-resty-limit-traffic/archive/v${ORESTY_LUALIMITTRAFFICVER}.tar.gz"
+if [[ "$ORESTY_LUALIMITTRAFFICVER" = '0.09' ]]; then
+  NGX_LUALIMITTRAFFIC_SHA256='547ee6942939928407781dc938723f81c2a619d492f514826e38544f5791bbca'
+else
+  NGX_LUALIMITTRAFFIC_SHA256=''
+fi
+
+NGX_LUAHTTPLINKFILE="lua-resty-http_v${ORESTY_LUAHTTPVER}.tar.gz"
+NGX_LUAHTTPLINK="https://github.com/ledgetech/lua-resty-http/archive/v${ORESTY_LUAHTTPVER}.tar.gz"
+if [[ "$ORESTY_LUAHTTPVER" = '0.18.0' ]]; then
+  NGX_LUAHTTP_SHA256='d84e87bfea7bc1b91c52a27c9464d1412823ce748fd13d3885308f21166f946b'
+else
+  NGX_LUAHTTP_SHA256=''
+fi
+
+# lua-resty-openssl tags have no 'v' prefix
+NGX_LUAOPENSSLLINKFILE="lua-resty-openssl_${ORESTY_LUAOPENSSLVER}.tar.gz"
+NGX_LUAOPENSSLLINK="https://github.com/fffonion/lua-resty-openssl/archive/${ORESTY_LUAOPENSSLVER}.tar.gz"
+if [[ "$ORESTY_LUAOPENSSLVER" = '1.9.0' ]]; then
+  NGX_LUAOPENSSL_SHA256='d074ac5e6a2bc9c1bd57786b8d5784b6d13681d2fdc4dd7b215eb20f0bd6189c'
+else
+  NGX_LUAOPENSSL_SHA256=''
+fi
+
+# nginx-lua-prometheus tags have no 'v' prefix
+NGX_LUAPROMETHEUSLINKFILE="nginx-lua-prometheus_${ORESTY_LUAPROMETHEUSVER}.tar.gz"
+NGX_LUAPROMETHEUSLINK="https://github.com/knyar/nginx-lua-prometheus/archive/${ORESTY_LUAPROMETHEUSVER}.tar.gz"
+if [[ "$ORESTY_LUAPROMETHEUSVER" = '0.20260912' ]]; then
+  NGX_LUAPROMETHEUS_SHA256='c2f42db365feaab20206465b06cd3b700f1157336c10ecc55675c04577dcc911'
+else
+  NGX_LUAPROMETHEUS_SHA256=''
+fi
+
+NGX_LUAJA4LINKFILE="lua-resty-ja4_v${ORESTY_LUAJA4VER}.tar.gz"
+NGX_LUAJA4LINK="https://github.com/nemethhh/lua-resty-ja4/archive/v${ORESTY_LUAJA4VER}.tar.gz"
+if [[ "$ORESTY_LUAJA4VER" = '0.2.1' ]]; then
+  NGX_LUAJA4_SHA256='90239624288f548349a1b81261a24209492acddeb2d3ca7a91dc8b2a2cb62929'
+else
+  NGX_LUAJA4_SHA256=''
+fi
 
 ##
 

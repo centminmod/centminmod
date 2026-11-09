@@ -980,6 +980,114 @@ echo ""
   return 0
 }
 
+nginxquickjs_archive_ok() {
+  # valid xz tarball and, for the default release, the expected sha256
+  [[ -s "$1" ]] || return 1
+  tar -tJf "$1" >/dev/null 2>&1 || return 1
+  if [ -n "$NGX_QUICKJS_SHA256" ]; then
+    [[ "$(sha256sum "$1" | awk '{print $1}')" = "$NGX_QUICKJS_SHA256" ]] || return 1
+  fi
+  return 0
+}
+
+nginxquickjstarball() {
+  # bellard QuickJS source for njs 'js_engine qjs;' (NGINX_NJS_QUICKJS='y'),
+  # extracted to ${DIR_TMP}/${NGX_QUICKJSDIR}
+    cd "$DIR_TMP" || return 1
+
+        cecho "Download ${NGX_QUICKJSLINKFILE} ..." $boldyellow
+    if nginxquickjs_archive_ok "${NGX_QUICKJSLINKFILE}"; then
+        cecho "${NGX_QUICKJSLINKFILE} Archive found, skipping download..." $boldgreen
+    else
+        rm -f "${NGX_QUICKJSLINKFILE}"
+        echo "wget --progress=bar ${NGX_QUICKJSLINK} -O ${NGX_QUICKJSLINKFILE} --tries=3"
+        wget --progress=bar "${NGX_QUICKJSLINK}" -O "${NGX_QUICKJSLINKFILE}" --tries=3
+      if ! nginxquickjs_archive_ok "${NGX_QUICKJSLINKFILE}"; then
+        cecho "Error: ${NGX_QUICKJSLINKFILE} download failed, invalid archive or sha256 mismatch." $boldgreen
+        cecho "Retrying with local mirror..." $boldyellow
+        rm -f "${NGX_QUICKJSLINKFILE}"
+        echo "wget --progress=bar ${NGX_QUICKJSLINKLOCAL} -O ${NGX_QUICKJSLINKFILE} --tries=3"
+        wget --progress=bar "${NGX_QUICKJSLINKLOCAL}" -O "${NGX_QUICKJSLINKFILE}" --tries=3
+        if ! nginxquickjs_archive_ok "${NGX_QUICKJSLINKFILE}"; then
+          cecho "Error: ${NGX_QUICKJSLINKFILE} local mirror download failed, invalid archive or sha256 mismatch." $boldgreen
+          rm -f "${NGX_QUICKJSLINKFILE}"
+          return 1
+        fi
+      fi
+         cecho "Download done." $boldyellow
+    fi
+
+  NGX_QUICKJSDIR=$(tar -tJf "${NGX_QUICKJSLINKFILE}" 2>/dev/null | head -1 | cut -f1 -d"/")
+  if [[ -z "$NGX_QUICKJSDIR" || "$NGX_QUICKJSDIR" = '.' || "$NGX_QUICKJSDIR" = '..' ]]; then
+    cecho "Error: ${NGX_QUICKJSLINKFILE} has no top level directory." $boldgreen
+    return 1
+  fi
+  # fresh source tree each build so no objects from another compiler are reused
+  rm -rf "${DIR_TMP:?}/${NGX_QUICKJSDIR}"
+tar xJf "${NGX_QUICKJSLINKFILE}"
+ERROR=$?
+  if [[ "$ERROR" != '0' || ! -f "${DIR_TMP}/${NGX_QUICKJSDIR}/quickjs.h" ]]; then
+  cecho "Error: ${NGX_QUICKJSLINKFILE} extraction failed." $boldgreen
+  return 1
+else
+         cecho "${NGX_QUICKJSLINKFILE} valid file." $boldyellow
+echo ""
+  fi
+  return 0
+}
+
+nginx_extra_tarball_ok() {
+  # valid gzip tarball and, when a sha256 is given, the expected sha256
+  [[ -s "$1" ]] || return 1
+  tar -tzf "$1" >/dev/null 2>&1 || return 1
+  if [ -n "$2" ]; then
+    [[ "$(sha256sum "$1" | awk '{print $1}')" = "$2" ]] || return 1
+  fi
+  return 0
+}
+
+nginx_extra_tarball() {
+  # nginx_extra_tarball <file> <url> [sha256]
+  # optional nginx module or Lua library source: download <url> to
+  # ${DIR_TMP}/<file> (a valid cached copy is reused), extract a fresh copy in
+  # ${DIR_TMP} and set NGX_EXTRA_TARBALLDIR to its top level directory.
+  # Returns 1 on failure instead of exiting, the caller decides what to do.
+  # Uses absolute paths, so the caller's working directory is unchanged
+  local file="${DIR_TMP}/$1" url="$2" sha="$3"
+  NGX_EXTRA_TARBALLDIR=""
+        cecho "Download $1 ..." $boldyellow
+    if nginx_extra_tarball_ok "$file" "$sha"; then
+        cecho "$1 Archive found, skipping download..." $boldgreen
+    else
+        rm -f "$file"
+        echo "wget --progress=bar ${url} -O ${file} --tries=3"
+        wget --progress=bar "$url" -O "$file" --tries=3
+      if ! nginx_extra_tarball_ok "$file" "$sha"; then
+        cecho "Error: $1 download failed, invalid archive or sha256 mismatch." $boldgreen
+        rm -f "$file"
+        return 1
+      fi
+         cecho "Download done." $boldyellow
+    fi
+
+  NGX_EXTRA_TARBALLDIR=$(tar -tzf "$file" 2>/dev/null | head -1 | cut -f1 -d"/")
+  if [[ -z "$NGX_EXTRA_TARBALLDIR" || "$NGX_EXTRA_TARBALLDIR" = '.' || "$NGX_EXTRA_TARBALLDIR" = '..' ]]; then
+    cecho "Error: $1 has no top level directory." $boldgreen
+    NGX_EXTRA_TARBALLDIR=""
+    return 1
+  fi
+  # fresh source tree each build
+  rm -rf "${DIR_TMP:?}/${NGX_EXTRA_TARBALLDIR}"
+  if ! tar xzf "$file" -C "$DIR_TMP" || [ ! -d "${DIR_TMP}/${NGX_EXTRA_TARBALLDIR}" ]; then
+    cecho "Error: $1 extraction failed." $boldgreen
+    NGX_EXTRA_TARBALLDIR=""
+    return 1
+  fi
+         cecho "$1 valid file." $boldyellow
+echo ""
+  return 0
+}
+
 nginxwebdavtarball() {
 
     cd "$DIR_TMP"
@@ -1381,6 +1489,8 @@ checklogdetails
   exit 1
 else 
          cecho "${NGX_STICKYLINKFILE} valid file." $boldyellow
+         # a directory left by an earlier build would make mv nest or fail, reusing stale source
+         rm -rf "nginx-sticky-module-${NGINX_STICKYVER}"
          mv nginx-goodies-nginx-sticky-module-ng-* "nginx-sticky-module-${NGINX_STICKYVER}"
 echo ""
   fi

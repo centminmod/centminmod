@@ -30,7 +30,7 @@ DT=$(date +"%d%m%y-%H%M%S")
 branchname='141.00beta01'
 SCRIPT_MAJORVER='141'
 SCRIPT_MINORVER='00'
-SCRIPT_INCREMENTVER='426'
+SCRIPT_INCREMENTVER='427'
 SCRIPT_VERSIONSHORT="${branchname}"
 SCRIPT_VERSION="${SCRIPT_VERSIONSHORT}.b${SCRIPT_INCREMENTVER}"
 SCRIPT_DATE='16/08/25'
@@ -654,6 +654,9 @@ NGXDYNAMIC_FANCYINDEX='y'
 NGXDYNAMIC_HIDELENGTH='y'
 NGXDYNAMIC_TESTCOOKIE='n'
 NGXDYNAMIC_VHOSTSTATS='n'
+NGXDYNAMIC_AUTHJWT='y'      # used with NGINX_AUTHJWT='y'
+NGXDYNAMIC_KEYVAL='y'       # used with NGINX_KEYVAL='y'
+NGXDYNAMIC_RATELIMIT='y'    # used with NGINX_RATELIMIT='y'
 
 # set = y to put nginx, php and mariadb major version updates into 503 
 # maintenance mode https://community.centminmod.com/posts/26485/
@@ -702,15 +705,19 @@ NGINX_HTTP2='y'              # Nginx http/2 patch https://community.centminmod.c
 NGINX_KTLS='n'               # Enable Nginx kTLS - TLS in Kernel support if OpenSSL 3.0.x & 5.2+ Kernel detected
 NGINX_HTTPPUSH='n'           # Nginx http/2 push patch https://community.centminmod.com/threads/11910/
 NGINX_ZLIBNG='n'             # 64bit OS only for Nginx compiled against zlib-ng https://github.com/Dead2/zlib-ng
-NGINX_TLS_FINGERPRINT='n'    # JA3 fingerprint module https://github.com/centminmod/nginx-ssl-fingerprint
-NGINX_MODSECURITY='n'        # modsecurity module support https://github.com/SpiderLabs/ModSecurity/wiki/Reference-Manual#Installation_for_NGINX
+NGINX_TLS_FINGERPRINT='n'    # deprecated JA3 fingerprint module, source built OpenSSL 1.1.1 only https://github.com/centminmod/nginx-ssl-fingerprint
+NGINX_MODSECURITY='n'        # modsecurity module support https://github.com/owasp-modsecurity/ModSecurity/wiki/Reference-Manual#Installation_for_NGINX
 NGINX_MODSECURITY_JSONLOGS='n' # enable to switch to JSON log format, to switch back manually edit /usr/local/nginx/modsec/modsecurity.conf
 NGINX_MODSECURITY_MAXMIND='y' # modsecurity built with libmaxminddb is failing to compile so disable it in favour of GeoIP legacy
 MODSECURITY_OWASPVER='4.30.0' # owasp modsecurity ruleset https://github.com/coreruleset/coreruleset/releases
+MODSECURITY_LIBVER='3.0.17'   # libmodsecurity release tag https://github.com/owasp-modsecurity/ModSecurity/releases
+MODSECURITY_NGINXVER='1.0.4'  # ModSecurity-nginx connector release tag https://github.com/owasp-modsecurity/ModSecurity-nginx/releases
 NGINX_REALIP='y'             # http://nginx.org/en/docs/http/ngx_http_realip_module.html
 NGINX_RDNS='n'               # https://github.com/flant/nginx-http-rdns
 NGINX_NJS='n'                # nginScript https://www.nginx.com/blog/
-NGINX_NJS_VER='1.0.1'        # nginxScript tag version https://github.com/nginx/njslaunching-nginscript-and-looking-ahead/
+NGINX_NJS_VER='1.0.2'        # nginxScript tag version https://github.com/nginx/njslaunching-nginscript-and-looking-ahead/
+NGINX_NJS_QUICKJS='n'        # with NGINX_NJS='y' build njs with the QuickJS engine so 'js_engine qjs;' works, njs stays the default engine
+NGINX_NJS_QUICKJS_VER='2026-06-04' # bellard QuickJS release for NGINX_NJS_QUICKJS='y' https://bellard.org/quickjs/
 NGINX_GEOIP='y'              # Nginx GEOIP module install
 NGINX_GEOIPMEM='y'           # Nginx caches GEOIP databases in memory (default), setting 'n' caches to disk instead
 NGINX_GEOIPTWOLITE='n'       # https://github.com/leev/ngx_http_geoip2_module
@@ -726,7 +733,7 @@ NGINX_LENGTHHIDE='n'         # https://github.com/nulab/nginx-length-hiding-filt
 NGINX_LENGTHHIDEGIT='y'      # triggers only if NGINX_LENGTHHIDE='y'
 NGINX_TESTCOOKIE='n'         # https://github.com/kyprizel/testcookie-nginx-module
 NGINX_TESTCOOKIEGIT='n'      # triggers only if NGINX_TESTCOOKIE='y'
-NGINX_CACHEPURGE='y'         # https://github.com/FRiCKLE/ngx_cache_purge/
+NGINX_CACHEPURGE='y'         # https://github.com/nginx-modules/ngx_cache_purge/
 NGINX_ACCESSKEY='n'          #
 NGINX_HTTPCONCAT='n'         # https://github.com/alibaba/nginx-http-concat
 NGINX_THREADS='y'            # https://www.nginx.com/blog/thread-pools-boost-performance-9x/
@@ -736,15 +743,27 @@ NGINX_STREAMGEOIP='y'        # nginx 1.11.3+ option http://hg.nginx.org/nginx/re
 NGINX_STREAMREALIP='y'       # nginx 1.11.4+ option http://hg.nginx.org/nginx/rev/9cac11efb205
 NGINX_STREAMSSLPREREAD='y'   # nginx 1.11.5+ option https://nginx.org/en/docs/stream/ngx_stream_ssl_preread_module.html
 NGINX_RTMP='n'               # Nginx RTMP Module support https://github.com/arut/nginx-rtmp-module
+NGINX_RTMP_HTTPFLV='n'       # nginx-http-flv-module RTMP + HTTP-FLV live streaming, replaces arut NGINX_RTMP (never both) https://github.com/winshining/nginx-http-flv-module
+NGINX_RTMP_HTTPFLVVER='1.2.15' # nginx-http-flv-module release tag https://github.com/winshining/nginx-http-flv-module/releases
 NGINX_FLV='n'                # http://nginx.org/en/docs/http/ngx_http_flv_module.html
 NGINX_MP4='n'                # Nginx MP4 Module http://nginx.org/en/docs/http/ngx_http_mp4_module.html
 NGINX_AUTHREQ='n'            # http://nginx.org/en/docs/http/ngx_http_auth_request_module.html
+NGINX_JSON='y'               # json_set, nginx 1.31.5+ only (not Angie or freenginx) https://nginx.org/en/docs/http/ngx_http_json_module.html
 NGINX_SECURELINK='y'         # http://nginx.org/en/docs/http/ngx_http_secure_link_module.html
 NGINX_FANCYINDEX='y'         # https://github.com/aperezdc/ngx-fancyindex/releases
 NGINX_FANCYINDEXVER='0.6.0'  # https://github.com/aperezdc/ngx-fancyindex/releases
 NGINX_VHOSTSTATS='n'         # https://github.com/vozlt/nginx-module-vts
+NGINX_AUTHJWT='n'            # auth_jwt JWT/JWKS validation module, installs jansson-devel https://github.com/kjdev/nginx-auth-jwt
+NGINX_AUTHJWTVER='0.15.0'    # nginx-auth-jwt release https://github.com/kjdev/nginx-auth-jwt/releases
+NGINX_KEYVAL='n'             # keyval/keyval_zone key-value store module https://github.com/kjdev/nginx-keyval
+NGINX_KEYVALVER='0.5.0'      # nginx-keyval release https://github.com/kjdev/nginx-keyval/releases
+NGINX_KEYVAL_REDIS='n'       # with NGINX_KEYVAL='y' add keyval_zone_redis, installs EPEL hiredis-devel, Redis calls block the nginx worker
+NGINX_RATELIMIT='n'          # Redis/Valkey backed rate_limit module, needs the redis-rate-limiter Redis module https://github.com/weserv/rate-limit-nginx-module
+NGINX_RATELIMITCOMMIT='f603f4c7cf9b9ca1ce82256a14d6ab15bae0f2ad' # rate-limit-nginx-module master commit, no release since v1.0.0 (2022)
+NGINX_OTEL='n'               # OpenTelemetry tracing dynamic module, system OpenSSL builds only, long cmake gRPC build https://github.com/nginx/nginx-otel
+NGINX_OTELVER='0.1.2'        # nginx-otel release https://github.com/nginx/nginx-otel/releases
 
-NGINX_LIBBROTLI='n'          # https://github.com/eustas/ngx_brotli
+NGINX_LIBBROTLI='n'          # https://github.com/google/ngx_brotli
 NGINX_ZSTD='n'               # https://github.com/tokers/zstd-nginx-module
 NGINX_LIBBROTLISTATIC='n'    # only enable if you want pre-compress brotli support and on the fly brotli disabled
 NGINX_BROTLIDEP_UPDATE='n'   # experimental manual update of Google Brotli dependency in ngx_brotli
@@ -759,7 +778,7 @@ NGINX_EXTWEBDAVVER='3.0.0'   # nginx-dav-ext-module version
 NGINX_LIBATOMIC='y'          # Nginx configured with libatomic support
 NGINX_LIBATOMIC_VERSION='7.6.12' # Newer than system default 7.2 for CentOS 7 only https://github.com/ivmai/libatomic_ops/releases
 NGINX_HTTPREDIS='y'          # Nginx redis http://wiki.nginx.org/HttpRedisModule
-NGINX_HTTPREDISVER='0.4.0-cmm'   # Nginx redis version
+NGINX_HTTPREDISVER='0.4.1-cmm'   # Nginx redis version
 NGINX_PCRE='y'               # Nginx specific pcre & pcre-jit support
 NGINX_PCREJIT='y'            # Nginx configured with pcre & pcre-jit support
 NGINX_PCRE_DYNAMIC='y'       # compile nginx pcre as dynamic instead of static library
@@ -771,12 +790,13 @@ NGINX_ZLIBVER='1.3.2'        # http://www.zlib.net/
 NGINX_VIDEO='n'              # control variable when 'y' set for NGINX_SLICE='y', NGINX_RTMP='y', NGINX_FLV='y', NGINX_MP4='y'
 ORESTY_HEADERSMORE='y'       # openresty headers more https://github.com/openresty/headers-more-nginx-module
 ORESTY_HEADERSMOREGIT='n'    # use git master instead of version specific
-NGINX_HEADERSMORE='0.40'
-NGINX_CACHEPURGEVER='3.0.3'
-NGINX_STICKY='n'             # nginx sticky module https://bitbucket.org/nginx-goodies/nginx-sticky-module-ng
+NGINX_HEADERSMORE='0.41'
+NGINX_CACHEPURGEVER='3.0.4'
+NGINX_STICKY='n'             # deprecated third-party sticky module, use native upstream 'sticky cookie' (nginx 1.29.6+, Angie) https://bitbucket.org/nginx-goodies/nginx-sticky-module-ng
 NGINX_STICKYVER='master'
 NGINX_UPSTREAMCHECK='n'      # nginx upstream check https://github.com/yaoweibin/nginx_upstream_check_module
 NGINX_UPSTREAMCHECKVER='0.4.0'
+NGINX_UPSTREAMCHECKCOMMIT='02c6c9de14ca1e60adb9f48179707c57d532d622' # master commit after v0.4.0 adding check_1.30.4+.patch for nginx 1.29.6+, empty uses the NGINX_UPSTREAMCHECKVER tag
 NGINX_OPENRESTY='y'          # Agentzh's openresty Nginx modules
 ORESTY_MEMCVER='0.21'        # openresty memc module https://github.com/openresty/memc-nginx-module
 ORESTY_SRCCACHEVER='0.34'    # openresty subrequest cache module https://github.com/openresty/srcache-nginx-module
@@ -785,7 +805,7 @@ ORESTY_SETMISCGIT='n'        # use git master instead of version specific
 ORESTY_SETMISC='y'           # openresty set-misc-nginx module https://github.com/openresty/echo-nginx-module
 ORESTY_SETMISCVER='0.34'     # openresty set-misc-nginx module https://github.com/openresty/set-misc-nginx-module
 ORESTY_ECHOGIT='n'           # use git master instead of version specific
-ORESTY_ECHOVER='0.65'        # openresty set-misc-nginx module https://github.com/openresty/echo-nginx-module
+ORESTY_ECHOVER='0.66'        # openresty set-misc-nginx module https://github.com/openresty/echo-nginx-module
 ORESTY_REDISVER='0.15'       # openresty redis2-nginx-module https://github.com/openresty/redis2-nginx-module
 
 LUAJIT_GITINSTALL='y'        # opt to install luajit 2.1 from dev branch http://repo.or.cz/w/luajit-2.0.git/shortlog/refs/heads/v2.1
@@ -816,6 +836,16 @@ ORESTY_LUACOOKIEVER='master'       # cloudflare openresty https://github.com/clo
 ORESTY_LUAUPSTREAMCACHEVER='0.1.1' # cloudflare openresty https://github.com/cloudflare/lua-upstream-cache-nginx-module
 NGX_LUAUPSTREAMCACHE='n'           # disable https://github.com/cloudflare/lua-upstream-cache-nginx-module
 LUACJSONVER='2.1.0.20'              # https://github.com/openresty/lua-cjson
+ORESTY_LUALIMITTRAFFIC='n'         # optional with ORESTY_LUANGINX='y' https://github.com/openresty/lua-resty-limit-traffic
+ORESTY_LUALIMITTRAFFICVER='0.09'   # lua-resty-limit-traffic release tag
+ORESTY_LUAHTTP='n'                 # optional with ORESTY_LUANGINX='y' https://github.com/ledgetech/lua-resty-http
+ORESTY_LUAHTTPVER='0.18.0'         # lua-resty-http release tag
+ORESTY_LUAOPENSSL='n'              # optional with ORESTY_LUANGINX='y', OpenSSL 1.1.1/3.x/4.x builds only https://github.com/fffonion/lua-resty-openssl
+ORESTY_LUAOPENSSLVER='1.9.0'       # lua-resty-openssl release tag
+ORESTY_LUAPROMETHEUS='n'           # optional with ORESTY_LUANGINX='y' https://github.com/knyar/nginx-lua-prometheus
+ORESTY_LUAPROMETHEUSVER='0.20260912' # nginx-lua-prometheus release tag
+ORESTY_LUAJA4='n'                  # optional with ORESTY_LUANGINX='y', TLS JA4 needs an OpenSSL 1.1.1+ build https://github.com/nemethhh/lua-resty-ja4
+ORESTY_LUAJA4VER='0.2.1'           # lua-resty-ja4 release tag
 
 STRIPPHP='y'                 # set 'y' to strip PHP binary to reduce size
 PHP_INSTALL='y'              # Install PHP /w Fast Process Manager
@@ -985,8 +1015,9 @@ SENDMAIL_INSTALL='n'         # Install Sendmail (and mailx) set to y and POSTFIX
 POSTFIX_INSTALL=y            # Install Postfix (and mailx) set to n and SENDMAIL_INSTALL=y for sendmail
 # Nginx
 NGINX_VERSION='1.31.8'             # Use this version of Nginx
-NGINX_ANGIE_VERSION='Angie-1.11.4'
-FREENGINX_VERSION='1.30.1'     # Maxim's Freenginx fork https://freenginx.org/en/download.html
+NGINX_ANGIE_VERSION='Angie-1.12.4' # Angie 1.12.0+ turns on 'resolver conf' (/etc/resolv.conf) by default, 'resolver off;' restores the old behaviour
+NGINX_ANGIE_ACME='y'           # Angie builds only: --with-http_acme_module (Angie 1.5.0+), idle until a vhost uses acme_client https://en.angie.software/angie/docs/configuration/modules/http/http_acme/
+FREENGINX_VERSION='1.30.2'     # Maxim's Freenginx fork https://freenginx.org/en/download.html
 FREENGINX_INSTALL='n'          # Use Freenginx fork instead of official Nginx
 FREENGINX_BACKPORT_PATCHES='n' # Backport Freenginx fixes to official Nginx
 NGINX_VHOSTSSL='y'             # enable centmin.sh menu 2 prompt to create self signed SSL vhost 2nd vhost conf

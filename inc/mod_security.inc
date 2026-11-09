@@ -8,7 +8,7 @@ modsecurity_install() {
     # build libmodsecurity
     echo
     echo "build libmodsecurity..."
-    # https://github.com/SpiderLabs/ModSecurity/wiki/Compilation-recipes
+    # https://github.com/owasp-modsecurity/ModSecurity/wiki/Compilation-recipes
 
     # force devtoolset gcc usage
     if [[ "$CENTOS_SIX" -eq 6 || "$CENTOS_SEVEN" -eq 7 ]]; then
@@ -363,7 +363,8 @@ modsecurity_install() {
     fi
     
     rm -rf ModSecurity
-    git clone --depth 1 -b v3/master --single-branch https://github.com/SpiderLabs/ModSecurity
+    # pinned release tag instead of the unreleased v3/master branch
+    git clone --depth 1 -b "v${MODSECURITY_LIBVER}" --single-branch https://github.com/owasp-modsecurity/ModSecurity
     cd ModSecurity
     git submodule init
     # others/mbedtls carries nested submodules libmodsecurity configure needs
@@ -390,7 +391,9 @@ modsecurity_install() {
         echo "setup MODSEC_OPT"
         pushd "$DIR_TMP"
         rm -rf ModSecurity-nginx
-        git clone --depth 1 https://github.com/SpiderLabs/ModSecurity-nginx.git
+        # v1.0.4 hooks REWRITE/PREACCESS phases, the unreleased master branch
+        # moved to the ACCESS phase
+        git clone --depth 1 -b "v${MODSECURITY_NGINXVER}" https://github.com/owasp-modsecurity/ModSecurity-nginx.git
         ls -lah "${DIR_TMP}/ModSecurity-nginx"
         if [ -d "${DIR_TMP}/ModSecurity-nginx" ]; then
           MODSEC_OPT=" --add-dynamic-module=../ModSecurity-nginx"
@@ -408,8 +411,8 @@ modsecurity_install() {
   
     if [ ! -f /usr/local/nginx/modsec/modsecurity.conf ]; then
       mkdir -p /usr/local/nginx/modsec
-      wget -P /usr/local/nginx/modsec/ https://github.com/SpiderLabs/ModSecurity/raw/v3/master/modsecurity.conf-recommended
-      wget -P /usr/local/nginx/modsec/ https://github.com/SpiderLabs/ModSecurity/raw/v3/master/unicode.mapping
+      wget -P /usr/local/nginx/modsec/ "https://github.com/owasp-modsecurity/ModSecurity/raw/v${MODSECURITY_LIBVER}/modsecurity.conf-recommended"
+      wget -P /usr/local/nginx/modsec/ "https://github.com/owasp-modsecurity/ModSecurity/raw/v${MODSECURITY_LIBVER}/unicode.mapping"
       mv /usr/local/nginx/modsec/modsecurity.conf-recommended /usr/local/nginx/modsec/modsecurity.conf
       if [[ "$NGINX_MODSECURITY_JSONLOGS" = [yY] ]]; then
         # switch to ModSecurity JSON formatted logs
