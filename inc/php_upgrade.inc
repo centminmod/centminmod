@@ -1513,7 +1513,15 @@ RestartSec=5s
 TDG
         fi
     fi
+    # brotli CVE-2026-111497 stopgap: refresh or retire the php-fpm brotli
+    # override so the restart below loads it, then confirm it after the restart
+    if [ -f /usr/local/src/centminmod/tools/phpfpm-brotli.sh ]; then
+      PHPFPM_BROTLI_SOURCE="$PHPFPM_BROTLI_SOURCE" bash /usr/local/src/centminmod/tools/phpfpm-brotli.sh prepare
+    fi
     cmservice php-fpm restart
+    if [ -f /usr/local/src/centminmod/tools/phpfpm-brotli.sh ]; then
+      bash /usr/local/src/centminmod/tools/phpfpm-brotli.sh verify
+    fi
     if [ -f /usr/bin/journalctl ]; then
         journalctl -xe -u php-fpm --no-pager | tail -20
     fi
@@ -1740,6 +1748,20 @@ fi
     # stop yum/dnf updates removing a library soname from under this build
     if [[ "$PHP_LIBS_VERSIONLOCK" = [yY] && -f "${SCRIPT_DIR}/tools/php-libs-versionlock.sh" ]]; then
         bash "${SCRIPT_DIR}/tools/php-libs-versionlock.sh" lock
+    fi
+
+    # brotli CVE-2026-111497 stopgap: show what php-fpm loads while the
+    # tools/phpfpm-brotli.sh override is in effect
+    if [ -f /etc/systemd/system/php-fpm.service.d/brotli-source.conf ]; then
+        echo "***************************************************"
+        echo "${SCRIPT_DIR}/tools/phpfpm-brotli.sh status"
+        bash "${SCRIPT_DIR}/tools/phpfpm-brotli.sh" status
+        echo
+        echo "systemctl show -p Environment php-fpm"
+        systemctl show -p Environment php-fpm
+        echo
+        echo "/opt/brotli_php/current/bin/brotli -V"
+        /opt/brotli_php/current/bin/brotli -V
     fi
 
     if [ -f "$(which figlet)" ]; then

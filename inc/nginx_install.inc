@@ -455,6 +455,10 @@ fi
     cp -R $CUR_DIR/htdocs/custom_errorpages/* /usr/local/nginx/html
     #rm -rf $CUR_DIR/htdocs
     cp -R $CUR_DIR/config/nginx/* /usr/local/nginx/conf
+    if [[ "$NGINX_MODSECURITY" = [yY] ]]; then
+      # modsecurity_install ran before virtual.conf existed, enable its directives now
+      modsec_virtualconf
+    fi
     opt_sslcache silent
     if [[ "$NGINX_MAINHOSTNAME_BLANK_INDEX" = [yY] ]]; then
         cp -a /usr/local/nginx/html/index.html /usr/local/nginx/html/index.html-orig

@@ -249,9 +249,17 @@ NGX_STICKYLINK="https://bitbucket.org/nginx-goodies/nginx-sticky-module-ng/get/$
 NGX_STICKYLINKGITLAB="https://gitlab.com/centminmod-github-mirror/nginx-sticky-module-ng/repository/archive.tar.gz?ref=${NGINX_STICKYVER}"
 
 # wget renamed
-NGX_UPSTREAMCHECKLINKFILE="nginx-upstream-check-${NGINX_UPSTREAMCHECKVER}.tar.gz"
+# the v0.4.0 tag only has check_1.20.1+.patch, NGINX_UPSTREAMCHECKCOMMIT pins the
+# later master commit adding check_1.30.4+.patch for nginx 1.29.6+. The commit is
+# in the archive name so a cached v0.4.0 tarball is not reused
+if [ -n "$NGINX_UPSTREAMCHECKCOMMIT" ]; then
+  NGX_UPSTREAMCHECKLINKFILE="nginx-upstream-check-${NGINX_UPSTREAMCHECKCOMMIT}.tar.gz"
+  NGX_UPSTREAMCHECKLINK="https://github.com/yaoweibin/nginx_upstream_check_module/archive/${NGINX_UPSTREAMCHECKCOMMIT}.tar.gz"
+else
+  NGX_UPSTREAMCHECKLINKFILE="nginx-upstream-check-${NGINX_UPSTREAMCHECKVER}.tar.gz"
+  NGX_UPSTREAMCHECKLINK="https://github.com/yaoweibin/nginx_upstream_check_module/archive/v${NGINX_UPSTREAMCHECKVER}.tar.gz"
+fi
 MASTER_NGX_UPSTREAMCHECKLINKFILE="master-nginx-upstream-check-${NGINX_UPSTREAMCHECKVER}.tar.gz"
-NGX_UPSTREAMCHECKLINK="https://github.com/yaoweibin/nginx_upstream_check_module/archive/v${NGINX_UPSTREAMCHECKVER}.tar.gz"
 NGX_UPSTREAMCHECKLINKGITLAB="https://gitlab.com/centminmod-github-mirror/nginx_upstream_check_module/repository/archive.tar.gz?ref=${NGINX_UPSTREAMCHECKVER}"
 
 # wget renamed
@@ -269,7 +277,14 @@ NGX_SRCACHELINKGITLAB="https://gitlab.com/centminmod-github-mirror/srcache-nginx
 # wget renamed
 NGX_DEVELKITLINKFILE="nginx-develkit_v${ORESTY_DEVELKITVER}.tar.gz"
 MASTER_NGX_DEVELKITLINKFILE="master-nginx-develkit_v${ORESTY_DEVELKITVER}.tar.gz"
-NGX_DEVELKITLINK="https://github.com/vision5/ngx_devel_kit/archive/v${ORESTY_DEVELKITVER}.tar.gz"
+# ngx_devel_kit 0.3.5+ only exists in OpenResty's fork (vision5 stops at 0.3.4
+# and the fork has no older tags); 0.3.5+ carries the nginx 1.31.3+/1.30.4+
+# complex value end code fix, detected at configure time
+if [[ "$(printf '%s\n' "$ORESTY_DEVELKITVER" '0.3.5' | sort -V | head -n1)" = '0.3.5' ]]; then
+  NGX_DEVELKITLINK="https://github.com/openresty/ngx_devel_kit/archive/v${ORESTY_DEVELKITVER}.tar.gz"
+else
+  NGX_DEVELKITLINK="https://github.com/vision5/ngx_devel_kit/archive/v${ORESTY_DEVELKITVER}.tar.gz"
+fi
 NGX_DEVELKITLINKGITLAB="https://gitlab.com/centminmod-github-mirror/ngx_devel_kit/repository/archive.tar.gz?ref=v${ORESTY_DEVELKITVER}"
 
 # wget renamed

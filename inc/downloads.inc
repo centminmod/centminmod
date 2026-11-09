@@ -4,7 +4,11 @@ checksec_check(){
     yum -y install checksec
     echo
   fi
-  if [[ ! -f /usr/local/bin/checksec || ! -f "${DIR_TMP}/checksec-${CHECKSEC_VERSION}.tar.gz" ]]; then
+  # reinstall unless /usr/local/bin/checksec is the pinned bash checksec.sh: 141.00beta01
+  # installs the 3.x Go rewrite there, which rejects the --format/--file options used here
+  local checksec_installed
+  checksec_installed=$(/usr/local/bin/checksec --version 2>/dev/null)
+  if [[ "$checksec_installed" != *"checksec v${CHECKSEC_VERSION},"* || ! -f "${DIR_TMP}/checksec-${CHECKSEC_VERSION}.tar.gz" ]]; then
     echo
     pushd "$DIR_TMP"
     wget -q "https://github.com/slimm609/checksec/archive/refs/tags/${CHECKSEC_VERSION}.tar.gz" -O "checksec-${CHECKSEC_VERSION}.tar.gz"
@@ -937,14 +941,15 @@ nginxzlibtarball() {
         echo "wget --progress=bar ${NGX_ZLIBLINK} -O ${NGX_ZLIBLINKFILE} --tries=3"
         wget --progress=bar "${NGX_ZLIBLINK}" -O "${NGX_ZLIBLINKFILE}" --tries=3
 ERROR=$?
-  if [[ "$ERROR" != '0' ]]; then
-  cecho "Error: ${NGX_ZLIBLINKFILE} download failed." $boldgreen
+  # zlib.net can return HTTP 200 with an HTML page, so validate the archive too
+  if [[ "$ERROR" != '0' ]] || ! tar -tzf "${NGX_ZLIBLINKFILE}" >/dev/null 2>&1; then
+  cecho "Error: ${NGX_ZLIBLINKFILE} download failed or invalid archive." $boldgreen
   cecho "Retrying with local mirror..." $boldyellow
         echo "wget --progress=bar ${NGX_ZLIBLINKLOCAL} -O ${NGX_ZLIBLINKFILE} --tries=3"
         wget --progress=bar "${NGX_ZLIBLINKLOCAL}" -O "${NGX_ZLIBLINKFILE}" --tries=3
 ERROR=$?
-  if [[ "$ERROR" != '0' ]]; then
-  cecho "Error: ${NGX_ZLIBLINKFILE} local mirror download failed." $boldgreen
+  if [[ "$ERROR" != '0' ]] || ! tar -tzf "${NGX_ZLIBLINKFILE}" >/dev/null 2>&1; then
+  cecho "Error: ${NGX_ZLIBLINKFILE} local mirror download failed or invalid archive." $boldgreen
 checklogdetails
   exit #$ERROR
 else
@@ -1367,6 +1372,8 @@ checklogdetails
   exit #$ERROR
 else 
          cecho "${NGX_STICKYLINKFILE} valid file." $boldyellow
+         # a directory left by an earlier build would make mv nest or fail, reusing stale source
+         rm -rf "nginx-sticky-module-${NGINX_STICKYVER}"
          mv nginx-goodies-nginx-sticky-module-ng-* "nginx-sticky-module-${NGINX_STICKYVER}"
 echo ""
   fi

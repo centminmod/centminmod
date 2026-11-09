@@ -587,10 +587,11 @@ case "$sshkeys_menu_opt" in
 
       case "$confirm_input" in
         [Yy]* )
+          # keep ssh-copy-id options before user@host: OpenSSH 8.7+ (EL9+) stops option parsing at the host
           if [[ -z "$remotessh_password" ]]; then
-            ssh-copy-id -i "/root/.ssh/${key_name}" "${remoteuser}@${remoteip}" -p "${remoteport}"
+            ssh-copy-id -p "${remoteport}" -i "/root/.ssh/${key_name}" "${remoteuser}@${remoteip}"
           else
-            sshpass -p "$remotessh_password" ssh-copy-id -o StrictHostKeyChecking=no -i "/root/.ssh/${key_name}" "${remoteuser}@${remoteip}" -p "${remoteport}"
+            sshpass -p "$remotessh_password" ssh-copy-id -o StrictHostKeyChecking=no -p "${remoteport}" -i "/root/.ssh/${key_name}" "${remoteuser}@${remoteip}"
           fi
           echo "SSH key '$key_name' copied to the remote host."
           break

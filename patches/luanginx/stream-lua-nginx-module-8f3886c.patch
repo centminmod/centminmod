@@ -1,0 +1,48 @@
+From 8f3886c3071d51eddd4387380103b5a2bcdf6207 Mon Sep 17 00:00:00 2001
+From: lijunlong <lijunlong@openresty.com>
+Date: Fri, 6 Nov 2026 16:50:16 +0800
+Subject: [PATCH] bugfix: clean pending operations in ordinary coroutines.
+
+Cancel pending timers and cosocket operations before freeing session-owned
+coroutine contexts, including ordinary coroutines without Lua registry
+references. Previously, aborting a session or exiting with a nested
+ngx.sleep could leave its timer in the Nginx tree and cause a heap
+use-after-free.
+
+Cover client abort and ngx.exit in content and preread, including nested
+coroutines spanning context list parts. All four scenarios reproduce the
+use-after-free in a pre-fix ASan build.
+
+Validation: the new regression and related sleep, coroutine, preread,
+and client-abort suites pass 766 assertions with 78 skipped under ASan.
+
+Centmin Mod: vendored with the src/ hunk only, the README and t/ hunks
+listed below are not included.
+---
+ README.md                         |  15 +++
+ src/ngx_stream_lua_util.c         |   7 +-
+ t/197-coroutine-request-cleanup.t | 171 ++++++++++++++++++++++++++++++
+ 3 files changed, 191 insertions(+), 2 deletions(-)
+ create mode 100644 t/197-coroutine-request-cleanup.t
+
+diff --git a/src/ngx_stream_lua_util.c b/src/ngx_stream_lua_util.c
+index 8c996658..8984d288 100644
+--- a/src/ngx_stream_lua_util.c
++++ b/src/ngx_stream_lua_util.c
+@@ -2795,11 +2795,14 @@ ngx_stream_lua_finalize_threads(ngx_stream_lua_request_t *r,
+ 
+             coctx = &cc[i];
+ 
++            /* Plain coroutines have no registry reference, but can still
++             * own a pending timer or cosocket operation. Cancel those before
++             * their request-pool coctx is freed as well. */
++            ngx_stream_lua_cleanup_pending_operation(coctx);
++
+             ref = coctx->co_ref;
+ 
+             if (ref != LUA_NOREF) {
+-                ngx_stream_lua_cleanup_pending_operation(coctx);
+-
+                 ngx_stream_lua_probe_thread_delete(r, coctx->co, ctx);
+ 
+                 if (!inited) {

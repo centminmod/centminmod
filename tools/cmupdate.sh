@@ -55,7 +55,7 @@ _cmm_git_sync() {
     return $?
   fi
   cd "$workdir" || return 2
-  git fetch --prune origin "$branch" || return 2
+  git fetch origin "+refs/heads/${branch}:refs/remotes/origin/${branch}" || return 2
   git reset --hard "origin/$branch" || return 2
   chmod +x centmin.sh
   echo "RESULT: SUCCESS (panic-stub) — Centmin Mod synced. Run cmupdate again."
@@ -142,6 +142,11 @@ fupdate() {
         echo "       restoring previous copy of ${CM_INSTALLDIR} code base"
       fi
     fi
+  fi
+  # replace a patched brotli rpm that Centmin Mod has withdrawn, see
+  # tools/phpfpm-brotli.sh reconcile (quiet when there is nothing to do)
+  if [ -f "${CM_INSTALLDIR}/tools/phpfpm-brotli.sh" ]; then
+    bash "${CM_INSTALLDIR}/tools/phpfpm-brotli.sh" reconcile
   fi
   if [ -x "${CM_INSTALLDIR}/tools/cmm-security/cmsec.sh" ]; then
     cmsec_target="${CM_INSTALLDIR}/tools/cmm-security/cmsec.sh"

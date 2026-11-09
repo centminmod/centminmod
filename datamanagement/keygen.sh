@@ -197,7 +197,7 @@ keygen() {
         ssh "$remoteuser@$remotehost" -p "$remoteport" -i $HOME/.ssh/${KEYNAME}-old.key "sed -i 's|$OLDPUBKEY|$NEWPUBKEY|' /root/.ssh/authorized_keys"
       else
         echo "copy $HOME/.ssh/${KEYNAME}.key.pub to remote: $remoteuser@$remotehost"
-        echo "sshpass -p $sshpassword ssh-copy-id -o StrictHostKeyChecking=no -i $HOME/.ssh/${KEYNAME}.key.pub $remoteuser@$remotehost -p $remoteport" | tee "${KEYGEN_LOGDIR}/cmd-generated-${KEYNAME}.key.log"
+        echo "sshpass -p $sshpassword ssh-copy-id -o StrictHostKeyChecking=no -p $remoteport -i $HOME/.ssh/${KEYNAME}.key.pub $remoteuser@$remotehost" | tee "${KEYGEN_LOGDIR}/cmd-generated-${KEYNAME}.key.log"
       fi
     else
       if [[ "$keyrotate" = 'rotate' ]]; then
@@ -210,15 +210,16 @@ keygen() {
         ssh "$remoteuser@$remotehost" -p "$remoteport" -i $HOME/.ssh/${KEYNAME}-old.key "sed -i 's|$OLDPUBKEY|$NEWPUBKEY|' /root/.ssh/authorized_keys"
       else
         echo "copy $HOME/.ssh/${KEYNAME}.key.pub to remote: $remoteuser@$remotehost" | tee "${KEYGEN_LOGDIR}/cmd-generated-${KEYNAME}.key.log"
-        echo "ssh-copy-id -i $HOME/.ssh/${KEYNAME}.key.pub $remoteuser@$remotehost -p $remoteport"
+        echo "ssh-copy-id -p $remoteport -i $HOME/.ssh/${KEYNAME}.key.pub $remoteuser@$remotehost"
       fi
     fi
     if [[ "$VALIDREMOTE" = 'y' && "$keyrotate" != 'rotate' ]]; then
       pushd "$HOME/.ssh" >/dev/null 2>&1
+      # keep ssh-copy-id options before user@host: OpenSSH 8.7+ (EL9+) stops option parsing at the host
       if [[ "$SSHPASS" = [yY] ]]; then
-        sshpass -p "$sshpassword" ssh-copy-id -o StrictHostKeyChecking=no -i $HOME/.ssh/${KEYNAME}.key.pub "$remoteuser@$remotehost" -p "$remoteport"
+        sshpass -p "$sshpassword" ssh-copy-id -o StrictHostKeyChecking=no -p "$remoteport" -i $HOME/.ssh/${KEYNAME}.key.pub "$remoteuser@$remotehost"
       else
-        ssh-copy-id -i $HOME/.ssh/${KEYNAME}.key.pub "$remoteuser@$remotehost" -p "$remoteport"
+        ssh-copy-id -p "$remoteport" -i $HOME/.ssh/${KEYNAME}.key.pub "$remoteuser@$remotehost"
       fi
       SSHCOPYERR=$?
       if [[ "$SSHCOPYERR" -ne '0' ]]; then

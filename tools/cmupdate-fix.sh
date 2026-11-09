@@ -103,7 +103,7 @@ echo
 
 # Step 1/4: fetch
 echo -n " [1/4] Fetching latest $branch from GitHub...        "
-fetch_err=$(git fetch --prune origin "$branch" 2>&1 >/dev/null)
+fetch_err=$(git fetch origin "+refs/heads/${branch}:refs/remotes/origin/${branch}" 2>&1 >/dev/null)
 if [ $? -ne 0 ]; then
   echo "FAIL"
   result_fail "fetch" "$(translate_git_error "$fetch_err")"
@@ -127,6 +127,7 @@ fi
 echo "OK"
 
 # Step 3/4: stash with refs/stash sentinel so we only pop what we created.
+dirty=$(git status --porcelain 2>/dev/null)
 stash_before=$(git rev-parse --verify refs/stash 2>/dev/null || echo none)
 echo -n " [3/4] Stashing local changes (if any)...                 "
 if git stash save -u "cmupdate-fix-stash-$ts" >/dev/null 2>&1; then
@@ -138,8 +139,12 @@ if git stash save -u "cmupdate-fix-stash-$ts" >/dev/null 2>&1; then
     echo "OK (no local changes — nothing to stash)"
     stash_created=0
   fi
+elif [ -n "$dirty" ]; then
+  # git stash save -u needs git 1.7.7+ (CentOS 6 has 1.7.1): never hard-reset a dirty tree
+  echo "FAIL"
+  result_fail "stash" "Could not save your local changes to a git stash, so the reset was not run. Review them with: cd $CM_INSTALLDIR && git status (commit or discard them), then re-run this script. Recovery tag: $recovery_tag"
 else
-  echo "skip"
+  echo "skip (no local changes)"
   stash_created=0
 fi
 

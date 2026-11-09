@@ -1,0 +1,165 @@
+From: Centmin Mod own port, based on php-src 37962c61d297 ("Fix #80710: imap_mail_compose() header injection")
+Subject: [PATCH] bug #80710: check imap_mail_compose() keys after reading them, PHP 5.6 port
+
+Centmin Mod fix to the PHP 5.6 backport of bug #80710 in
+php5640-80710.patch, applied right after it. In the first body part that
+backport checks the type.parameters and disposition key before
+zend_hash_get_current_key() has read it. The first check then reads an
+unset pointer, which can crash PHP or reject a valid key; each later
+check tests the previous key; and the last key is never checked. Its
+multipart loops already read the key first.
+
+Reference fix: https://github.com/php/php-src/commit/37962c61d29794645ec45d45d78123382d82c2e5 (PHP 7.3.28)
+There each of the four loops gets the key from ZEND_HASH_FOREACH, skips a
+key that is not a string (if (key == NULL) continue;), checks it, and only
+then allocates the parameter.
+
+Adaptations for PHP 5.6:
+ * ext/imap/php_imap.c, all four type.parameters and disposition loops:
+   read the key with zend_hash_get_current_key() first; for a key that is
+   not HASH_KEY_IS_STRING, move forward and skip it (a numeric key used to
+   leave key unset or stale); then check it, then allocate the parameter.
+   The first body part's warning labels are kept as the backport has them.
+ * ext/imap/tests/bug80710_3.phpt (new): valid, injected and numeric keys
+   in the first part and in a multipart part.
+---
+diff --git a/ext/imap/php_imap.c b/ext/imap/php_imap.c
+--- a/ext/imap/php_imap.c
++++ b/ext/imap/php_imap.c
+@@ -3643,9 +3643,12 @@
+ 			if(Z_TYPE_PP(pvalue) == IS_ARRAY) {
+ 				disp_param = tmp_param = NULL;
+ 				while (zend_hash_get_current_data(Z_ARRVAL_PP(pvalue), (void **) &disp_data) == SUCCESS) {
++					if (zend_hash_get_current_key(Z_ARRVAL_PP(pvalue), &key, &ind, 0) != HASH_KEY_IS_STRING) {
++						zend_hash_move_forward(Z_ARRVAL_PP(pvalue));
++						continue;
++					}
+ 					CHECK_HEADER_INJECTION(key, 0, "body disposition key");
+ 					disp_param = mail_newbody_parameter();
+-					zend_hash_get_current_key(Z_ARRVAL_PP(pvalue), &key, &ind, 0);
+ 					disp_param->attribute = cpystr(key);
+ 					convert_to_string_ex(disp_data);
+ 					CHECK_HEADER_INJECTION(Z_STRVAL_PP(disp_data), 0, "body disposition value");
+@@ -3683,9 +3686,12 @@
+ 			if (Z_TYPE_PP(pvalue) == IS_ARRAY) {
+ 				disp_param = tmp_param = NULL;
+ 				while (zend_hash_get_current_data(Z_ARRVAL_PP(pvalue), (void **) &disp_data) == SUCCESS) {
++					if (zend_hash_get_current_key(Z_ARRVAL_PP(pvalue), &key, &ind, 0) != HASH_KEY_IS_STRING) {
++						zend_hash_move_forward(Z_ARRVAL_PP(pvalue));
++						continue;
++					}
+ 					CHECK_HEADER_INJECTION(key, 0, "body type.parameters key");
+ 					disp_param = mail_newbody_parameter();
+-					zend_hash_get_current_key(Z_ARRVAL_PP(pvalue), &key, &ind, 0);
+ 					disp_param->attribute = cpystr(key);
+ 					convert_to_string_ex(disp_data);
+ 					CHECK_HEADER_INJECTION(Z_STRVAL_PP(disp_data), 0, "body type.parameters value");
+@@ -3766,9 +3772,12 @@
+ 				if(Z_TYPE_PP(pvalue) == IS_ARRAY) {
+ 					disp_param = tmp_param = NULL;
+ 					while (zend_hash_get_current_data(Z_ARRVAL_PP(pvalue), (void **) &disp_data) == SUCCESS) {
+-						disp_param = mail_newbody_parameter();
+-						zend_hash_get_current_key(Z_ARRVAL_PP(pvalue), &key, &ind, 0);
++						if (zend_hash_get_current_key(Z_ARRVAL_PP(pvalue), &key, &ind, 0) != HASH_KEY_IS_STRING) {
++							zend_hash_move_forward(Z_ARRVAL_PP(pvalue));
++							continue;
++						}
+ 						CHECK_HEADER_INJECTION(key, 0, "body type.parameters key");
++						disp_param = mail_newbody_parameter();
+ 						disp_param->attribute = cpystr(key);
+ 						convert_to_string_ex(disp_data);
+ 						CHECK_HEADER_INJECTION(Z_STRVAL_PP(disp_data), 0, "body type.parameters value");
+@@ -3806,9 +3815,12 @@
+ 				if (Z_TYPE_PP(pvalue) == IS_ARRAY) {
+ 					disp_param = tmp_param = NULL;
+ 					while (zend_hash_get_current_data(Z_ARRVAL_PP(pvalue), (void **) &disp_data) == SUCCESS) {
+-						disp_param = mail_newbody_parameter();
+-						zend_hash_get_current_key(Z_ARRVAL_PP(pvalue), &key, &ind, 0);
++						if (zend_hash_get_current_key(Z_ARRVAL_PP(pvalue), &key, &ind, 0) != HASH_KEY_IS_STRING) {
++							zend_hash_move_forward(Z_ARRVAL_PP(pvalue));
++							continue;
++						}
+ 						CHECK_HEADER_INJECTION(key, 0, "body disposition key");
++						disp_param = mail_newbody_parameter();
+ 						disp_param->attribute = cpystr(key);
+ 						convert_to_string_ex(disp_data);
+ 						CHECK_HEADER_INJECTION(Z_STRVAL_PP(disp_data), 0, "body disposition value");
+diff --git a/ext/imap/tests/bug80710_3.phpt b/ext/imap/tests/bug80710_3.phpt
+new file mode 100644
+--- /dev/null
++++ b/ext/imap/tests/bug80710_3.phpt
+@@ -0,0 +1,74 @@
++--TEST--
++Bug #80710 (imap_mail_compose() header injection) - parameter and disposition keys
++--SKIPIF--
++<?php
++if (!extension_loaded("imap")) die("skip imap extension not available");
++?>
++--FILE--
++<?php
++$envelope = array("from" => "joe@example.com", "to" => "foo@example.com", "subject" => "test");
++
++function part($extra) {
++    return array_merge(array("type" => TYPETEXT, "subtype" => "plain", "contents.data" => "body"), $extra);
++}
++
++echo "valid keys, single part:\n";
++$out = imap_mail_compose($envelope, array(1 => part(array(
++    "type.parameters" => array("format" => "flowed"),
++    "disposition.type" => "inline",
++    "disposition" => array("filename" => "a.txt")))));
++var_dump(stripos($out, "format=flowed") !== false, stripos($out, "filename=a.txt") !== false);
++
++echo "one injected key, single part:\n";
++var_dump(imap_mail_compose($envelope, array(1 => part(array(
++    "type.parameters" => array("x\r\nX-Injected: 1" => "v"))))));
++var_dump(imap_mail_compose($envelope, array(1 => part(array(
++    "disposition.type" => "inline",
++    "disposition" => array("x\r\nX-Injected: 1" => "v"))))));
++
++echo "numeric keys are skipped:\n";
++$out = imap_mail_compose($envelope, array(1 => part(array(
++    "type.parameters" => array(0 => "v", "format" => "flowed"),
++    "disposition.type" => "inline",
++    "disposition" => array(0 => "v", "filename" => "a.txt")))));
++var_dump(stripos($out, "format=flowed") !== false, stripos($out, "filename=a.txt") !== false);
++
++echo "one injected key, multipart:\n";
++$multi = array("type" => TYPEMULTIPART, "subtype" => "mixed");
++var_dump(imap_mail_compose($envelope, array(1 => $multi, 2 => part(array(
++    "type.parameters" => array("x\r\nX-Injected: 1" => "v"))))));
++var_dump(imap_mail_compose($envelope, array(1 => $multi, 2 => part(array(
++    "disposition.type" => "inline",
++    "disposition" => array("x\r\nX-Injected: 1" => "v"))))));
++
++echo "numeric keys are skipped, multipart:\n";
++$out = imap_mail_compose($envelope, array(1 => $multi, 2 => part(array(
++    "type.parameters" => array(0 => "v", "format" => "flowed"),
++    "disposition.type" => "inline",
++    "disposition" => array(0 => "v", "filename" => "a.txt")))));
++var_dump(stripos($out, "format=flowed") !== false, stripos($out, "filename=a.txt") !== false);
++?>
++--EXPECTF--
++valid keys, single part:
++bool(true)
++bool(true)
++one injected key, single part:
++
++Warning: imap_mail_compose(): header injection attempt in body disposition key in %s on line %d
++bool(false)
++
++Warning: imap_mail_compose(): header injection attempt in body type.parameters key in %s on line %d
++bool(false)
++numeric keys are skipped:
++bool(true)
++bool(true)
++one injected key, multipart:
++
++Warning: imap_mail_compose(): header injection attempt in body type.parameters key in %s on line %d
++bool(false)
++
++Warning: imap_mail_compose(): header injection attempt in body disposition key in %s on line %d
++bool(false)
++numeric keys are skipped, multipart:
++bool(true)
++bool(true)

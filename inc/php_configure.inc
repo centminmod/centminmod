@@ -454,7 +454,7 @@ php_imagemagick_seven_detected_libzip() {
   # source compile libzip for PHP 8.1+
   if [[ "$PHP_IMAGEMAGICK_SEVEN_USE_REMI_LIBZIP" = [yY] ]]; then
     if ! rpm -qa | grep -qw remi-libzip-devel; then
-      "$YUMDNFBIN" -y install remi-libzip remi-libzip-devel --enablerepo=remi
+      $YUMDNFBIN -y install remi-libzip-devel --enablerepo=remi
     fi
     export LIBZIP_CFLAGS='-I/opt/remi/libzip/include'
     export LIBZIP_LIBS="-L/opt/remi/libzip/lib64 -lzip"
@@ -475,7 +475,7 @@ php_imagemagick_seven_detected_libzip() {
       ldconfig
     fi
     if rpm -qa | grep -qw remi-libzip-devel; then
-      "$YUMDNFBIN" -y remove remi-libzip remi-libzip-devel --enablerepo=remi
+      $YUMDNFBIN -y remove remi-libzip remi-libzip-devel --enablerepo=remi
       ldconfig
     fi
     PHP_LIBZIP='y'
@@ -500,22 +500,54 @@ php_imagemagick_seven_detected_libzip() {
   fi
 }
 
+# Strip a private copy so a running executable does not block stripping.
+strip_php_binary() {
+    local strip_target strip_tmp strip_status
+    strip_target=$(readlink -f -- "$1") || return $?
+    [[ -f "$strip_target" ]] || return 1
+    strip_tmp=$(mktemp "${strip_target}.strip.XXXXXX") || return $?
+    cp --preserve=all -- "$strip_target" "$strip_tmp" &&
+        strip -s "$strip_tmp" &&
+        mv -f -- "$strip_tmp" "$strip_target"
+    strip_status=$?
+    if [[ "$strip_status" -ne 0 ]]; then
+        rm -f -- "$strip_tmp"
+    fi
+    return "$strip_status"
+}
+
 strip_php_extensions() {
-    strip_php_ext_dir=$(php-config --extension-dir)
+    local strip_php_ext_dir strip_status=0 so_files so_file
+    strip_php_ext_dir=$(php-config --extension-dir) || return $?
+    [[ "$strip_php_ext_dir" = /* && ! "$strip_php_ext_dir" =~ ^/+$ && "$strip_php_ext_dir" != *$'\n'* ]] || return 1
+    # A fresh PHP 8.5 build can have no shared extensions to install.
+    [[ -e "$strip_php_ext_dir" || -L "$strip_php_ext_dir" ]] || return 0
+    [[ -d "$strip_php_ext_dir" ]] || return 1
     echo "Stripping PHP Extensions in $strip_php_ext_dir"
     echo "before stripping"
-    ls -lAhrt $strip_php_ext_dir
+    ls -lAhrt "$strip_php_ext_dir"
     echo
-    find $strip_php_ext_dir -type f -name "*.so" -exec strip -s {} +
+    # Strip private copies and rename them into place: stripping in place
+    # rewrote files a running php-fpm had loaded, crashing its children until
+    # a restart. Renamed files leave those mappings intact, so no restart.
+    so_files=$(find "$strip_php_ext_dir" -type f -name "*.so") || strip_status=$?
+    while IFS= read -r so_file; do
+        [[ -n "$so_file" ]] || continue
+        strip_php_binary "$so_file" || strip_status=$?
+    done <<< "$so_files"
+    if [[ "$strip_status" -ne 0 ]]; then
+        echo "ERROR: PHP extension stripping failed (status $strip_status)." >&2
+    fi
     echo "after stripping"
-    ls -lAhrt $strip_php_ext_dir
+    ls -lAhrt "$strip_php_ext_dir"
     echo
+    return "$strip_status"
 }
 
 checksec_phpext() {
   if [ ! -f /usr/bin/checksec ]; then
     echo
-    "$YUMDNFBIN" -y install checksec
+    $YUMDNFBIN -y install checksec
     echo
   fi
   checksec_phpext_dir=$(php-config --extension-dir)
@@ -658,22 +690,22 @@ oniguruma_check() {
     echo
     echo "swap oniguruma5 oniguruma5php"
     echo
-    "$YUMDNFBIN" -y swap oniguruma5 oniguruma5php --enablerepo=remi
+    $YUMDNFBIN -y swap oniguruma5 oniguruma5php --enablerepo=remi
     echo
     echo "swap oniguruma5-devel oniguruma5php-devel"
     echo
-    "$YUMDNFBIN" -y swap oniguruma5-devel oniguruma5php-devel --enablerepo=remi
+    $YUMDNFBIN -y swap oniguruma5-devel oniguruma5php-devel --enablerepo=remi
   fi
   if [[ "$(rpm -qa oniguruma5php oniguruma5php-devel | wc -l)" -lt '2' ]]; then
     echo
     echo "install oniguruma5php oniguruma5php-devel"
     echo
-    "$YUMDNFBIN" -y install oniguruma5php oniguruma5php-devel --enablerepo=remi
+    $YUMDNFBIN -y install oniguruma5php oniguruma5php-devel --enablerepo=remi
     oni_err=$?
     echo "oni_err=$oni_err"
     if [ ! -f /usr/include/oniggnu.h ]; then
       yum clean all
-      "$YUMDNFBIN" -y install oniguruma5php oniguruma5php-devel --enablerepo=remi
+      $YUMDNFBIN -y install oniguruma5php oniguruma5php-devel --enablerepo=remi
       oni_err=$?
       echo "oni_err=$oni_err"
     fi
@@ -740,7 +772,7 @@ fi
 fpmconfdir
 
 # if [[ "$PHP_GD_AVIF" = [yY] ]]; then
-#   "$YUMDNFBIN" -y remove libavif libavif-devel
+#   $YUMDNFBIN -y remove libavif libavif-devel
 #   pushd $DIR_TMP
 #   wget https://github.com/AOMediaCodec/libavif/archive/refs/tags/v1.1.1.tar.gz
 #   popd
@@ -954,7 +986,7 @@ fi
 # key on PHPVER_ID, the PHP being built; PHPMVER is the default PHP_VERSION, not a menu 5 target
 if [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]] && [[ "$PHP_GD_AVIF" = [yY] ]] && [[ "$PHPVER_ID" -ge '80100' ]]; then
   if [[ -z "$(rpm -qa libavif-devel)" ]]; then 
-    "$YUMDNFBIN" -y install libavif-devel
+    $YUMDNFBIN -y install libavif-devel
   fi
   PHP_LIBAVIF_OPT=' --with-avif'
 else
@@ -985,7 +1017,7 @@ fi
 if [[ "$CENTOS_SEVEN" -eq '7' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]]; then
   if [[ "$PHPMVER" = 5.5 || "$PHPMUVER" = 5.5 || "$PHPMVER" = 5.6 || "$PHPMUVER" = 5.6 || "$PHPMVER" = 7.0 || "$PHPMUVER" = 7.0 || "$PHPMVER" = 7.1 || "$PHPMUVER" = 7.1 || "$PHPMVER" = 7.2 || "$PHPMUVER" = 7.2 || "$PHPMVER" = 7.3 || "$PHPMUVER" = 7.3 || "$PHPMVER" = 7.4 || "$PHPMUVER" = 7.4 || "$PHPMVER" = 7.5 || "$PHPMUVER" = 7.5 || "$PHPMVER" = 8.0 || "$PHPMUVER" = 8.0 || "$PHPMVER" = 8.1 || "$PHPMUVER" = 8.1 || "$PHPMVER" = 8.2 || "$PHPMUVER" = 8.2 || "$PHPMVER" = 8.3 || "$PHPMUVER" = 8.3 || "$PHPVER_ID" -ge '80000' ]]; then
     if [[ $(rpm -q systemd-devel >/dev/null 2>&1; echo $?) != '0' ]]; then
-      "$YUMDNFBIN" -y install systemd-devel --disableplugin=priorities >/dev/null 2>&1
+      $YUMDNFBIN -y install systemd-devel --disableplugin=priorities >/dev/null 2>&1
     fi
     # without systemd-devel, configure aborts with "Your system does not support systemd"
     # (i.e. the install above failed on unreachable repos); php-fpm.service is Type=forking
@@ -3883,7 +3915,9 @@ if [[ "$PHPMVER" = '7.3' || "$PHPMUVER" = '7.3' || "$PHPMVER" = '7.4' || "$PHPMU
   if [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]] && [[ "$IMAGEMAGICK_SEVEN" != [yY] ]]; then
     PHP_LIBZIP='n'
     if ! rpm -qa | grep -qw remi-libzip-devel; then
-      yum -y install remi-libzip remi-libzip-devel --enablerepo=remi
+      # -devel requires its exact remi-libzip build; naming remi-libzip too lets a
+      # newer remi-safe build conflict with a lagging remi mirror's -devel
+      yum -y install remi-libzip-devel --enablerepo=remi
     fi
     export LIBZIP_CFLAGS='-I/opt/remi/libzip/include'
     export LIBZIP_LIBS="-L/opt/remi/libzip/lib64 -lzip"
@@ -4156,9 +4190,17 @@ else
     LIBZIP_OPT=""
   fi
 fi
+# a missing remi zip.h otherwise only shows up at make: the preset LIBZIP_CFLAGS
+# skips PHP configure's pkg-config check; a system /usr/include/zip.h still builds
+if [[ "$LIBZIP_CFLAGS" = *'/opt/remi/libzip/include'* && ! -f /opt/remi/libzip/include/zip.h && ! -f /usr/include/zip.h ]]; then
+  echo "ERROR: zip.h not found in /opt/remi/libzip/include or /usr/include; installation stopped." >&2
+  echo "ERROR: reinstall it with: yum -y reinstall remi-libzip-devel --enablerepo=remi (use install if not installed)" >&2
+  { PHPCONFIGURE_ERR=1; return 1; }
+fi
 
 # key on PHPVER_ID, the PHP being built; PHPMVER is the default PHP_VERSION, not a menu 5 target
-if [[ "$PHP_LIBGD_EXTERNAL" = [yY] ]] && [[ "$PHPVER_ID" -ge '70400' ]]; then
+# CentOS 6: install_libgd_external builds nothing and system gd-devel 2.0.34 fails gdlib >= 2.1.0, so use bundled GD
+if [[ "$CENTOS_SIX" -ne '6' && "$PHP_LIBGD_EXTERNAL" = [yY] ]] && [[ "$PHPVER_ID" -ge '70400' ]]; then
   LIBGD_EXT_OPT=' --with-external-gd'
   install_libgd_external || return $?
 # elif [[ "$PHP_LIBGD_EXTERNAL" = [yY] ]] && [[ "$PHPMVER" = '7.0' || "$PHPMUVER" = '7.0' || "$PHPMVER" = '7.1' || "$PHPMUVER" = '7.1' || "$PHPMVER" = '7.2' || "$PHPMUVER" = '7.2' || "$PHPMVER" = '7.3' || "$PHPMUVER" = '7.3' ]]; then
