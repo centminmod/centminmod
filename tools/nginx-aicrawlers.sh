@@ -218,10 +218,15 @@ aic_need_root() {
 
 aic_valid() {
   # $1 robots|iplist, $2 file
+  local lines
   case "$1" in
     # robots.json must still convert to at least 50 usable tokens, so a format
-    # change upstream falls back to the last good copy instead of an empty map
-    robots) [ "$(jq -r --argjson ov "$AIC_CATEGORY_TABLE" --arg skip ',,' "$AIC_JQ_ROBOTS" "$2" 2>/dev/null | wc -l)" -ge 50 ] ;;
+    # change upstream falls back to the last good copy instead of an empty map.
+    # jq must also exit 0: valid JSON followed by junk prints tokens before jq
+    # fails, and that file would replace the last good copy
+    robots)
+      lines=$(jq -r --argjson ov "$AIC_CATEGORY_TABLE" --arg skip ',,' "$AIC_JQ_ROBOTS" "$2" 2>/dev/null) || return 1
+      [ "$(printf '%s\n' "$lines" | wc -l)" -ge 50 ] ;;
     iplist) jq -r "$AIC_JQ_IPLIST" "$2" >/dev/null 2>&1 ;;
     *) return 1 ;;
   esac
