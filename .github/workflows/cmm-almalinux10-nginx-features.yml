@@ -5,8 +5,8 @@ on:
   push:
     branches:
       - 141.00beta01
-    # nginx build, module and addon sources only: each run starts 6 runners
-    # for an hour or more in centminmod/centminmod-workflows
+    # nginx build, module and addon sources only: each run starts 6 runners in
+    # centminmod/centminmod-workflows, each doing a full install and nginx rebuilds
     paths:
       - 'centmin.sh'
       - 'centmin-cli.sh'
@@ -23,6 +23,12 @@ on:
       - 'inc/pcre.inc'
       - 'inc/zlib.inc'
       - 'inc/geoip.inc'
+      - 'inc/ccache.inc'
+      - 'inc/gcc.inc'
+      - 'inc/google_perftools.inc'
+      - 'inc/fastopen.inc'
+      - 'inc/tcp.inc'
+      - 'patches/**'
       - 'config/nginx/**'
       - 'addons/anubis.sh'
       - 'tools/nginx-aicrawlers.sh'
