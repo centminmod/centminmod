@@ -58,7 +58,7 @@ ERROR=$?
     if [[ "$ERROR" != '0' ]]; then
     cecho "Error: $AXEL_LINKFILE download failed." $boldgreen
 checklogdetails
-    exit #$ERROR
+    exit 1
 else 
          cecho "Download $AXEL_LINKFILE done." $boldyellow
 #echo ""
@@ -76,7 +76,7 @@ ERROR=$?
     if [[ "$ERROR" != '0' ]]; then
     cecho "Error: $AXEL_LINKFILE extraction failed." $boldgreen
 checklogdetails
-    exit #$ERROR
+    exit 1
 else 
          cecho "$AXEL_LINKFILE valid file." $boldyellow
 echo ""

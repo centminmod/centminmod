@@ -30,7 +30,7 @@ DT=$(date +"%d%m%y-%H%M%S")
 branchname='140.00beta01'
 SCRIPT_MAJORVER='140'
 SCRIPT_MINORVER='00'
-SCRIPT_INCREMENTVER='463'
+SCRIPT_INCREMENTVER='464'
 SCRIPT_VERSIONSHORT="${branchname}"
 SCRIPT_VERSION="${SCRIPT_VERSIONSHORT}.b${SCRIPT_INCREMENTVER}"
 SCRIPT_DATE='16/01/25'
@@ -2962,6 +2962,7 @@ ngxinstallstarttime=$(TZ=UTC date +%s.%N)
 {    
 ngxinstallmain
 } 2>&1 | tee "${CENTMINLOGDIR}/centminmod_ngxinstalltime_${DT}.log"
+[[ "${PIPESTATUS[*]}" = "0 0" ]] || exit 1
 wait
 
 ngxinstallendtime=$(TZ=UTC date +%s.%N)
@@ -3355,7 +3356,7 @@ then
 fi
 
 echo "source_pcreinstall"
-source_pcreinstall
+source_pcreinstall || exit $?
 
 echo
 shortcutsinstall
@@ -3688,8 +3689,9 @@ if [[ "$1" = 'install' ]]; then
     cmm_php_fatal_clear
     dlstarttime=$(TZ=UTC date +%s.%N)
     {    
-    alldownloads
+    alldownloads || exit $?
     } 2>&1 | tee "${CENTMINLOGDIR}/centminmod_downloadtimes_${DT}.log"
+    [[ "${PIPESTATUS[*]}" = "0 0" ]] || exit 1
     wait
     if cmm_php_fatal_pending; then
       echo
@@ -3869,7 +3871,7 @@ else
             fi
             
             cmm_php_fatal_clear
-            alldownloads
+            alldownloads || exit $?
             if cmm_php_fatal_pending; then
               echo
               cecho "=================================================================" $boldyellow
@@ -4458,7 +4460,7 @@ fi
         # setramdisk
         diskalert
         cmm_php_fatal_clear
-        alldownloads
+        alldownloads || exit $?
         if cmm_php_fatal_pending; then
           echo
           cecho "=================================================================" $boldyellow

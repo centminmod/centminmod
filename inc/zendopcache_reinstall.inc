@@ -75,7 +75,7 @@ ERROR=$?
   if [[ "$ERROR" != '0' ]]; then
   cecho "Error: ${ZENDOPCACHE_LINKFILE} download failed." $boldgreen
 checklogdetails
-  exit #$ERROR
+  exit 1
 else 
          cecho "Download done." $boldyellow
 #echo ""
@@ -87,7 +87,7 @@ ERROR=$?
   if [[ "$ERROR" != '0' ]]; then
   cecho "Error: ${ZENDOPCACHE_LINKFILE} extraction failed." $boldgreen
 checklogdetails
-  exit #$ERROR
+  exit 1
 else 
          cecho "${ZENDOPCACHE_LINKFILE} valid file." $boldyellow
 echo ""

@@ -191,7 +191,7 @@ fi
 nginx_dependency_compiler || exit 1
 install_gperftools
 
-pcredir_check
+pcredir_check || exit $?
 perl_ipc_cmd_install
     ngx_starttime=$(TZ=UTC date +%s.%N)
 
@@ -218,7 +218,7 @@ fi
     fi
 
     ngx_starttime=$(TZ=UTC date +%s.%N)
-    luajitinstall
+    luajitinstall || exit $?
     ngx_endtime=$(TZ=UTC date +%s.%N)
     luajit_install_time=$(echo "scale=2;$ngx_endtime - $ngx_starttime"|bc )
     echo
@@ -285,7 +285,7 @@ if [[ "$NGINXPATCH" = [yY] && "$FPM_NGINX_RPM" != [yY] ]]; then
     cecho "to allow you to patch files" $boldgreen
     echo "*************************************************"
     ngx_starttime=$(TZ=UTC date +%s.%N)
-    patchnginx
+    patchnginx || exit $?
     ngx_endtime=$(TZ=UTC date +%s.%N)
     ngx_patch=$(echo "scale=2;$ngx_endtime - $ngx_starttime"|bc )
     echo
