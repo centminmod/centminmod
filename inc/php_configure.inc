@@ -134,12 +134,12 @@ check_libzip_openssl_dependency() {
 
 # ------------------------------------------------------------------
 # Function : compile_custom_curl
-# Purpose  : Build & install cURL 8.22.0 (8.17.0 with OpenSSL 1.1.1 or older) in /opt/curl_php when
+# Purpose  : Build & install cURL 8.23.0 (8.17.0 with OpenSSL 1.1.1 or older) in /opt/curl_php when
 #            PHP_CUSTOM_CURL='y' is set.  Leaves system curl untouched.
 # ------------------------------------------------------------------
 compile_custom_curl() {
     local ORIG_DIR=$(pwd)
-    local CURL_VER="8.22.0"
+    local CURL_VER="8.23.0"
     # curl 8.18.0+ requires OpenSSL 3.0+, builds against OpenSSL 1.1.1 or older use this version
     local CURL_VER_OSSL11="8.17.0"
     local CURL_PREFIX="/opt/curl_php"
@@ -154,8 +154,11 @@ compile_custom_curl() {
     fi
 
     [ "${PHP_CUSTOM_CURL}" = 'y' ] || return 0
-    # EL9 PHP 7.4/8.0 builds use compat-openssl11, EL7/EL8 builds use system OpenSSL 1.0.2/1.1.1
-    if [[ "$CURL_OSSL11" = 'y' || "$CENTOS_SEVEN" = '7' || "$CENTOS_EIGHT" -eq 8 ]]; then
+    # EL9 PHP 7.4/8.0 builds use compat-openssl11, EL7/EL8 builds use system OpenSSL 1.0.2/1.1.1,
+    # and a PHP_CUSTOMSSL build exports PKG_CONFIG_PATH to its own OpenSSL 1.1.1, which curl's
+    # --with-openssl then finds through pkg-config
+    if [[ "$CURL_OSSL11" = 'y' || "$CENTOS_SEVEN" = '7' || "$CENTOS_EIGHT" -eq 8 ]] || \
+       [[ "$(pkg-config --modversion openssl 2>/dev/null)" = 1.* ]]; then
         CURL_VER="$CURL_VER_OSSL11"
     fi
     local CURL_SRC_FILE="curl-${CURL_VER}.tar.xz"
@@ -231,8 +234,8 @@ compile_custom_curl() {
     fi
 
     mkdir -p "${SRC_DIR}" "${CURL_PREFIX}"
-    [ -f "${SRC_DIR}/${CURL_SRC_FILE}" ] || \
-        wget -qO "${SRC_DIR}/${CURL_SRC_FILE}" "${CURL_SRC_URL}"
+    [ -s "${SRC_DIR}/${CURL_SRC_FILE}" ] || \
+        wget -qO "${SRC_DIR}/${CURL_SRC_FILE}" "${CURL_SRC_URL}" || { rm -f "${SRC_DIR}/${CURL_SRC_FILE}"; return 1; }
 
     rm -rf "${SRC_DIR}/curl-${CURL_VER}"
     tar -xf "${SRC_DIR}/${CURL_SRC_FILE}" -C "${SRC_DIR}"
