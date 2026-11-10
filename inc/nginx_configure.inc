@@ -742,13 +742,13 @@ if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9'
   fi
 
   if [[ "$DETECT_NGXVER" -ge '1021005' && "$NGINX_PCRE_TWO" = [yY] && "$NGINX_PCRE_DYNAMIC" = [yY] && -s "$(readlink -f /usr/local/nginx-dep/lib/libpcre2-8.so)" ]]; then
-    pcre_two_dir_check
-    source_pcre_two_install
+    pcre_two_dir_check || return $?
+    source_pcre_two_install || return $?
     PCRE_TWO_RPATH='/usr/local/nginx-dep/lib:'
     PCRE_TWO_LD=' -lpcre2-8'
   elif [[ "$DETECT_NGXVER" -ge '1021005' && "$NGINX_PCRE_TWO" = [yY] && "$NGINX_PCRE_DYNAMIC" = [yY] && ! -s "$(readlink -f /usr/local/nginx-dep/lib/libpcre2-8.so)" ]]; then
-    pcre_two_dir_check
-    source_pcre_two_install
+    pcre_two_dir_check || return $?
+    source_pcre_two_install || return $?
     PCRE_TWO_RPATH='/usr/local/nginx-dep/lib:'
     PCRE_TWO_LD=' -lpcre2-8'
   fi
@@ -2234,7 +2234,7 @@ if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9'
       LIBBROTLIENC_OPT="-L/usr/local/nginx-dep/lib ${PCRE_TWO_LD} "
       LIBBROTLIINC_OPT='-I/usr/local/nginx-dep/include '
     elif [[ "$DETECT_NGXVER" -ge '1021005' && "$NGINX_PCRE_TWO" = [yY] && "$NGINX_PCRE_DYNAMIC" = [yY] && ! -s "$(readlink -f /usr/local/nginx-dep/lib/libpcre2-8.so)" ]]; then
-      source_pcre_two_install
+      source_pcre_two_install || return $?
       PCREJITOPT=" --with-pcre-jit"
       PCRE_TWO_RPATH='/usr/local/nginx-dep/lib:'
       LIBBROTLIENC_OPT="-L/usr/local/nginx-dep/lib ${PCRE_TWO_LD} "
@@ -2244,7 +2244,7 @@ if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9'
       LIBBROTLIENC_OPT='-L/usr/local/nginx-dep/lib '
       LIBBROTLIINC_OPT='-I/usr/local/nginx-dep/include '
     elif [[ "$NGINX_PCRE_DYNAMIC" = [yY] && ! -s "$(readlink -f /usr/local/nginx-dep/lib/libpcre.so)" ]]; then
-      nginx_pcreinstall
+      nginx_pcreinstall || return $?
       PCREJITOPT=" --with-pcre-jit"
       LIBBROTLIENC_OPT='-L/usr/local/nginx-dep/lib '
       LIBBROTLIINC_OPT='-I/usr/local/nginx-dep/include '
@@ -3088,7 +3088,7 @@ if [[ -f /usr/local/nginx-dep/bin/pcretest ]] && [[ "$ORESTY_LUANGINX" = [yY] ]]
     PCRE_LD=' -lpcre'
   fi
 elif [[ ! -f /usr/local/nginx-dep/bin/pcretest ]] && [[ "$ORESTY_LUANGINX" = [yY] ]]; then
-  nginx_pcreinstall
+  nginx_pcreinstall || return $?
   if [[ "$DETECT_NGXVER" -ge '1021005' && "$NGINX_PCRE_TWO" = [yY] && "$NGINX_PCRE_DYNAMIC" = [yY] && -s "$(readlink -f /usr/local/nginx-dep/lib/libpcre2-8.so)" ]]; then
     PCRE_LD=""
   else

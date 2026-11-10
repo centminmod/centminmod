@@ -30,7 +30,7 @@ DT=$(date +"%d%m%y-%H%M%S")
 branchname='132.00stable'
 SCRIPT_MAJORVER='132'
 SCRIPT_MINORVER='00'
-SCRIPT_INCREMENTVER='270'
+SCRIPT_INCREMENTVER='271'
 SCRIPT_VERSIONSHORT="${branchname}"
 SCRIPT_VERSION="${SCRIPT_VERSIONSHORT}.b${SCRIPT_INCREMENTVER}"
 SCRIPT_DATE='15/02/25'
@@ -2823,6 +2823,7 @@ ngxinstallstarttime=$(TZ=UTC date +%s.%N)
 {    
 ngxinstallmain
 } 2>&1 | tee "${CENTMINLOGDIR}/centminmod_ngxinstalltime_${DT}.log"
+[[ "${PIPESTATUS[*]}" = "0 0" ]] || exit 1
 wait
 
 ngxinstallendtime=$(TZ=UTC date +%s.%N)
@@ -3201,7 +3202,7 @@ then
 fi
 
 echo "source_pcreinstall"
-source_pcreinstall
+source_pcreinstall || exit $?
 
 echo
 shortcutsinstall
@@ -3533,8 +3534,9 @@ if [[ "$1" = 'install' ]]; then
     
     dlstarttime=$(TZ=UTC date +%s.%N)
     {    
-    alldownloads
+    alldownloads || exit $?
     } 2>&1 | tee "${CENTMINLOGDIR}/centminmod_downloadtimes_${DT}.log"
+    [[ "${PIPESTATUS[*]}" = "0 0" ]] || exit 1
     wait
 
     dlendtime=$(TZ=UTC date +%s.%N)
@@ -3689,7 +3691,7 @@ else
             exit
             fi
             
-            alldownloads
+            alldownloads || exit $?
             funct_centmininstall || exit $?
 
     # setup command shortcut aliases 
@@ -4263,7 +4265,7 @@ fi
         fi
         # setramdisk
         diskalert
-        alldownloads
+        alldownloads || exit $?
         funct_centmininstall || exit $?
         unsetramdisk
         echo "$SCRIPT_VERSION" > /etc/centminmod-release

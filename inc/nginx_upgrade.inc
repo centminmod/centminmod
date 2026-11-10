@@ -434,7 +434,7 @@ elif [[ ! -f "${DIR_TMP}/${LIBRESSL_LINKFILE}" ]]; then
 fi
 
 if [[ ! -f "${DIR_TMP}/${NGX_ZLIBLINKFILE}" || ! -d "${DIR_TMP}/zlib-${NGINX_ZLIBVER}" ]]; then
-    nginxzlibtarball
+    nginxzlibtarball || return 1
 fi
 
 if [[ ! -f "${DIR_TMP}/${NGX_FANCYINDEXLINKFILE}" || ! -f "${DIR_TMP}/${NGX_CACHEPURGEFILE}" || ! -f "${DIR_TMP}/${NGX_ACCESSKEYLINKFILE}" || ! -f "${DIR_TMP}/${NGX_CONCATLINKFILE}" || ! -f "${DIR_TMP}/${OPENSSL_LINKFILE}" || ! -f "${DIR_TMP}/${PCRELINKFILE}" || ! -f "${DIR_TMP}/${NGX_WEBDAVLINKFILE}" || ! -f "${DIR_TMP}/${NGX_HEADERSMORELINKFILE}" || ! -f "${DIR_TMP}/${NGX_STICKYLINKFILE}" || ! -f "${DIR_TMP}/${NGX_UPSTREAMCHECKLINKFILE}" || ! -f "${DIR_TMP}/${NGX_HTTPREDISLINKFILE}" ]] || [[ ! -d "${DIR_TMP}/${NGX_FANCYINDEXDIR}" || ! -d "${DIR_TMP}/${NGX_CACHEPURGEDIR}" || ! -d "${DIR_TMP}/nginx-accesskey-2.0.3" || ! -d "${DIR_TMP}/${NGX_CONCATDIR}" || ! -d "${DIR_TMP}/${OPENSSLDIR}" || ! -d "${DIR_TMP}/${PCRELINKDIR}" || ! -d "${DIR_TMP}/${NGX_WEBDAVLINKDIR}" || ! -d "${DIR_TMP}/${NGX_HEADERSMOREDIR}" || ! -d "${DIR_TMP}/${NGX_STICKYDIR}" || ! -d "${DIR_TMP}/${NGX_UPSTREAMCHECKDIR}" || ! -d "${DIR_TMP}/${NGX_HTTPREDISDIR}" ]]; then
@@ -708,7 +708,7 @@ gethtpasswdsh
 
 # Backup Nginx CONF
 if [ "$NGINXBACKUP" == 'y' ]; then
-  nginxbackup
+  nginxbackup || { nginx_maintenance_off; return 1; }
 fi
 
 # Backup ngx_pagespeed pagespeed.conf
@@ -730,12 +730,12 @@ pagespeeduptasks
     # nginx Modules / Prerequisites
   cecho "Installing nginx Modules / Prerequisites..." $boldgreen
 
-checknginxmodules
-nginx_dependency_compiler || return 1
+checknginxmodules || { nginx_maintenance_off; return 1; }
+nginx_dependency_compiler || { nginx_maintenance_off; return 1; }
 {
 nginxzlib_install
 } 2>&1 | tee "${CENTMINLOGDIR}/nginx-upgrade-zlib_${DT}.log"
-[[ "${PIPESTATUS[*]}" = "0 0" ]] || return 1
+[[ "${PIPESTATUS[*]}" = "0 0" ]] || { nginx_maintenance_off; return 1; }
 install_gperftools
 
 # echo ""
@@ -778,16 +778,16 @@ then
 fi
 
 if [[ "$DETECT_NGXVER" -ge '1021005' && "$NGINX_PCRE_TWO" = [yY] ]]; then
-    pcre_two_dir_check ngxupgrade
+    pcre_two_dir_check ngxupgrade || { nginx_maintenance_off; return 1; }
 else
-    pcredir_check ngxupgrade
+    pcredir_check ngxupgrade || { nginx_maintenance_off; return 1; }
 fi
 
     if [[ -f "$(which figlet)" && "$ORESTY_LUANGINX" = [yY] ]]; then
         figlet -ckf standard "luajit install"
     fi
 
-luajitinstall
+luajitinstall || { nginx_maintenance_off; return 1; }
 
 funct_nginxmodules
 
@@ -895,7 +895,7 @@ fi
                 popd
             fi
                 echo
-                exit
+                exit 1
             fi
         fi
     fi
@@ -944,7 +944,7 @@ fi
     
             rm -rf "$DIR_TMP/nginx-*.tar.gz"
             rm -rf "$DIR_TMP/freenginx-*.tar.gz"
-            exit
+            exit 1
         fi
     fi
     if [[ "$FREENGINX_INSTALL" = [yY] ]]; then
@@ -963,7 +963,7 @@ if [[ "$NGINXPATCH" = [yY] ]]; then
     cecho "Nginx Patch Time - $NGINXPATCH_DELAY seconds delay" $boldgreen
     cecho "to allow you to patch files" $boldgreen
     echo "*************************************************"
-    patchnginx
+    patchnginx || { nginx_maintenance_off; return 1; }
 fi
 
     if [ -f "$(which figlet)" ]; then

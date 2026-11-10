@@ -34,7 +34,7 @@ phpng_download() {
       if [[ "$ERROR" != '0' ]]; then
         cecho "Error: php-${PHPNGVER}.tar.xz download failed." $boldgreen
         checklogdetails
-        exit #$ERROR
+        exit 1
       else 
             cecho "Download done." $boldyellow
         #echo ""
@@ -46,7 +46,7 @@ phpng_download() {
       if [[ "$ERROR" != '0' ]]; then
         cecho "Error: php-${PHPNGVER}.tar.xz extraction failed." $boldgreen
         checklogdetails
-        exit #$ERROR
+        exit 1
       else 
             cecho "php-${PHPNGVER}.tar.xz valid file." $boldyellow
         echo ""
@@ -80,7 +80,7 @@ phpng_download() {
       if [[ "$ERROR" != '0' ]]; then
         cecho "Error: php-${PHPNGVER}.tar.xz download failed." $boldgreen
         checklogdetails
-        exit #$ERROR
+        exit 1
       else 
             cecho "Download done." $boldyellow
         #echo ""
@@ -92,7 +92,7 @@ phpng_download() {
       if [[ "$ERROR" != '0' ]]; then
         cecho "Error: php-${PHPNGVER}.tar.xz extraction failed." $boldgreen
         checklogdetails
-        exit #$ERROR
+        exit 1
       else 
             cecho "php-${PHPNGVER}.tar.xz valid file." $boldyellow
         echo ""
@@ -127,7 +127,7 @@ phpng_download() {
       if [[ "$ERROR" != '0' ]]; then
         cecho "Error: php-${PHPNGVER}.tar.xz download failed." $boldgreen
         checklogdetails
-        exit #$ERROR
+        exit 1
       else 
             cecho "Download done." $boldyellow
         #echo ""
@@ -139,7 +139,7 @@ phpng_download() {
       if [[ "$ERROR" != '0' ]]; then
         cecho "Error: php-${PHPNGVER}.tar.xz extraction failed." $boldgreen
         checklogdetails
-        exit #$ERROR
+        exit 1
       else 
             cecho "php-${PHPNGVER}.tar.xz valid file." $boldyellow
         echo ""
@@ -166,7 +166,7 @@ phpng_download() {
       if [[ "$ERROR" != '0' ]]; then
         cecho "Error: php-${PHPNGVER}.tar.gz download failed." $boldgreen
         checklogdetails
-        exit #$ERROR
+        exit 1
       else 
             cecho "Download done." $boldyellow
         #echo ""
@@ -178,7 +178,7 @@ phpng_download() {
       if [[ "$ERROR" != '0' ]]; then
         cecho "Error: php-${PHPNGVER}.tar.gz extraction failed." $boldgreen
         checklogdetails
-        exit #$ERROR
+        exit 1
       else 
             cecho "php-${PHPNGVER}.tar.gz valid file." $boldyellow
         echo ""

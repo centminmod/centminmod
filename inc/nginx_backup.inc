@@ -5,19 +5,16 @@ NGXBACKUP_DT=$(date +"%d%m%y-%H%M%S")
 # NGINXCONFDIR="${NGINXDIR}/conf"
 # NGINXBACKUPDIR='/usr/local/nginxbackup'
 
-if [ ! -d "$NGINXBACKUPDIR" ]; then
-mkdir $NGINXBACKUPDIR
-mkdir ${NGINXBACKUPDIR}/confbackup/
-mkdir ${NGINXBACKUPDIR}/nginxdirbackup
-fi
+mkdir -p "${NGINXBACKUPDIR}/confbackup" || return 1
 
 echo ""
 echo "backup NGINX CONF..."
 # cp -a $NGINXCONFDIR ${NGINXBACKUPDIR}/confbackup/conf_${NGXBACKUP_DT}
-pushd "$NGINXDIR"
-tar -czf "${NGINXBACKUPDIR}/confbackup/nginx-conf-dir-backup-${NGXBACKUP_DT}.tar.gz" conf
+if ! tar -C "$NGINXDIR" -czf "${NGINXBACKUPDIR}/confbackup/nginx-conf-dir-backup-${NGXBACKUP_DT}.tar.gz" conf; then
+    rm -f "${NGINXBACKUPDIR}/confbackup/nginx-conf-dir-backup-${NGXBACKUP_DT}.tar.gz"
+    return 1
+fi
 ls -lAh "${NGINXBACKUPDIR}/confbackup/nginx-conf-dir-backup-${NGXBACKUP_DT}.tar.gz"
-popd
 
 # echo ""
 # echo "backup NGINX Install Directory $NGINXDIR..."

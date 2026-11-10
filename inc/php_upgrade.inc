@@ -431,7 +431,7 @@ else
         echo "is available. Please run centmin.sh menu option 4 to update Nginx's"
         echo "OpenSSL version first. Then run centmin.sh menu option 5 to update PHP"
         echo
-        exit
+        exit 1
     fi
     echo
     read -ep "Enter PHP Version number you want to upgrade/downgrade to: " phpver
@@ -641,7 +641,7 @@ fi
                     if [[ "$ERROR" != '0' ]]; then
                         cecho "Error: php-${phpver}.tar.${PHPEXTSION} download failed." $boldgreen
                         checklogdetails
-                        exit        
+                        exit 1
                     fi
                 fi
             else 
@@ -656,7 +656,7 @@ fi
         if [[ "$ERROR" != '0' ]]; then
             cecho "Error: php-${phpver}.tar.${PHPEXTSION} extraction failed." $boldgreen
             checklogdetails
-            exit
+            exit 1
         else 
             cecho "php-${phpver}.tar.${PHPEXTSION} valid file." $boldyellow
             echo ""
