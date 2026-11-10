@@ -89,7 +89,7 @@ read -r -d '' DEPS <<'EOF'
 nginx|Nginx|NGINX_VERSION|nginx||url:https://nginx.org/download/nginx-{V}.tar.gz|any|
 nginx|freenginx|FREENGINX_VERSION|freenginx||url:https://freenginx.org/download/freenginx-{V}.tar.gz|minor|stable branch
 nginx|njs|NGINX_NJS_VER|gh:nginx/njs:^[0-9]+\.[0-9]+\.[0-9]+$||tag:{V}|any|NGINX_NJS=n default
-nginx|zlib (nginx)|NGINX_ZLIBVER|gh:madler/zlib:^v[0-9]+\.[0-9.]+$|s/^v//|url:https://www.zlib.net/zlib-{V}.tar.gz|any|zlib.net only hosts the latest release
+nginx|zlib (nginx)|NGINX_ZLIBVER|gh:madler/zlib:^v[0-9]+\.[0-9.]+$|s/^v//|url:https://github.com/madler/zlib/releases/download/v{V}/zlib-{V}.tar.gz|any|downloads the GitHub release asset
 nginx|PCRE2 (nginx)|NGINX_PCRETWOVER|gh:PCRE2Project/pcre2:^pcre2-[0-9]+\.[0-9]+$|s/^pcre2-//|url:MIRROR/centminmodparts/pcre/pcre2-{V}.tar.gz|any|NGINX_PCRE_TWO=n default, new versions need mirror upload
 nginx|mimalloc (nginx)|NGINX_MIMALLOC_VERSION|gh:microsoft/mimalloc:^v[0-9]+\.[0-9]+\.[0-9]+$|s/^v//|tag:v{V}|major|
 nginx|headers-more|NGINX_HEADERSMORE|gh:openresty/headers-more-nginx-module:^v[0-9.]+$|s/^v//|tag:v{V}|any|
