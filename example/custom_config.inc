@@ -2133,7 +2133,7 @@
 
 # Nginx zlib Version
 # Git History: Added 2017-02-05 (171071d2)
-#NGINX_ZLIBVER='1.3.1'  
+#NGINX_ZLIBVER='1.4'  
 
 # Nginx Video Module Control
 # When 'y', enables NGINX_SLICE, NGINX_RTMP, NGINX_FLV, NGINX_MP4
@@ -6168,7 +6168,7 @@
 # Nginx zlib Version
 # Standard zlib version for Nginx
 # Git History: Added 2017-02-05 (171071d2)
-#NGINX_ZLIBVER='1.3.1'
+#NGINX_ZLIBVER='1.4'
 
 # Parallel Gzip Version (pigz)
 # Multi-threaded gzip compression tool version

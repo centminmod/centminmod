@@ -194,7 +194,8 @@ PCRE_SOURCELINKLOCAL="${LOCALCENTMINMOD_MIRROR}/centminmodparts/pcre/${PCRE_SOUR
 
 NGX_ZLIBLINKFILE="zlib-${NGINX_ZLIBVER}.tar.gz"
 MASTER_NGX_ZLIBLINKFILE="master-zlib-${NGINX_ZLIBVER}.tar.gz"
-NGX_ZLIBLINK="https://www.zlib.net/${NGX_ZLIBLINKFILE}"
+# GitHub release assets exist for zlib 1.2.13 and newer; zlib.net only hosts the newest release
+NGX_ZLIBLINK="https://github.com/madler/zlib/releases/download/v${NGINX_ZLIBVER}/${NGX_ZLIBLINKFILE}"
 NGX_ZLIBLINKLOCAL="${LOCALCENTMINMOD_MIRROR}/centminmodparts/zlib/${NGX_ZLIBLINKFILE}"
 
 # bellard QuickJS for njs 'js_engine qjs;' (NGINX_NJS_QUICKJS='y'), the release
