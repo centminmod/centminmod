@@ -414,16 +414,16 @@ if [[ -d "${DIR_TMP}/ngx_pagespeed-release-${NGXPGSPEED_VER}/ngx_pagespeed-maste
     rm -rf ${DIR_TMP}/ngx_pagespeed-*
     rm -rf ${DIR_TMP}/release-1.9.32*
     rm -rf ${DIR_TMP}/incubator-pagespeed-ngx-master*
-    nginxpgspeedtarball
+    nginxpgspeedtarball || return 1
 fi
 
 cecho "Check for missing nginx modules" $boldyellow
 
 LIBRESSLDIR=$(tar -tzf "$DIR_TMP/${LIBRESSL_LINKFILE}" 2>&1 | head -1 | cut -f1 -d"/" | grep libressl)
 if [[ ! -f "${DIR_TMP}/${LIBRESSL_LINKFILE}" || ! -d "${DIR_TMP}/${LIBRESSLDIR}" ]]; then
-    libressldownload
+    libressldownload || return 1
 elif [[ ! -f "${DIR_TMP}/${LIBRESSL_LINKFILE}" ]]; then
-    libressldownload
+    libressldownload || return 1
 fi
 
 if [[ ! -f "${DIR_TMP}/${NGX_ZLIBLINKFILE}" || ! -d "${DIR_TMP}/zlib-${NGINX_ZLIBVER}" ]]; then
@@ -434,15 +434,21 @@ if [[ ! -f "${DIR_TMP}/${NGX_FANCYINDEXLINKFILE}" || ! -f "${DIR_TMP}/${NGX_CACH
 
     if [[ "$PARALLEL_MODE" = [yY] ]] && [[ "$(grep -c "processor" /proc/cpuinfo)" -gt '1' ]]; then
         ngxmoduletarball &
+        local module_pid=$! openssl_pid="" download_status=0
         if [[ "$LIBRESSL_SWITCH" = 'n' ]]; then
             openssldownload &
+            openssl_pid=$!
         fi
         # libressldownload &
-        wait
+        wait "$module_pid" || download_status=1
+        if [[ "$openssl_pid" ]]; then
+            wait "$openssl_pid" || download_status=1
+        fi
+        [[ "$download_status" -eq 0 ]] || return 1
     else
-        ngxmoduletarball
+        ngxmoduletarball || return 1
         if [[ "$LIBRESSL_SWITCH" = 'n' ]]; then
-            openssldownload
+            openssldownload || return 1
         fi
         # libressldownload
     fi
@@ -454,14 +460,14 @@ cecho "Check for pagespeed nginx module download file" $boldyellow
 NGXPGSPEED_DIR=$(tar -tzf "$DIR_TMP/${NGX_PAGESPEEDLINKFILE}" 2>1 | head -1 | cut -f1 -d"/")
 if [[ ! -f "${DIR_TMP}/${NGX_PAGESPEEDGITLINKFILE}" || ! -d "$DIR_TMP/$NGXPGSPEED_DIR" ]]; then
     if [[ "$NGINX_PAGESPEED" = [yY] ]]; then
-        nginxpgspeedtarball
+        nginxpgspeedtarball || return 1
 
     # determine top level extracted directory name for $DIR_TMP/${NGX_PAGESPEEDLINKFILE}
     NGXPGSPEED_DIR=$(tar -tzf "$DIR_TMP/${NGX_PAGESPEEDLINKFILE}" | head -1 | cut -f1 -d"/")
     fi
 elif [[ ! -f "${DIR_TMP}/${NGX_PAGESPEEDGITLINKFILE}" ]]; then
     if [[ "$NGINX_PAGESPEED" = [yY] ]]; then
-        nginxpgspeedtarball
+        nginxpgspeedtarball || return 1
 
     # determine top level extracted directory name for $DIR_TMP/${NGX_PAGESPEEDLINKFILE}
     NGXPGSPEED_DIR=$(tar -tzf "$DIR_TMP/${NGX_PAGESPEEDLINKFILE}" | head -1 | cut -f1 -d"/")
@@ -476,18 +482,18 @@ fi
 cecho "Check for pagespeed PSOL library" $boldyellow
 if [ -d "$DIR_TMP/$NGXPGSPEED_DIR" ]; then
     if [[ ! -f "$DIR_TMP/$NGXPGSPEED_DIR/${NGX_PAGESPEEDPSOLINKLFILE}" ]]; then
-        nginxpgspeedtarball
+        nginxpgspeedtarball || return 1
     fi
 fi
 
 cecho "Check for gperf tools + libunwind download files" $boldyellow
 if [[ ! -f "${DIR_TMP}/${LIBUNWIND_LINKFILE}" || ! -d "$DIR_TMP/$LIBUNWIND_LINKDIR" ]] || [[ ! -f "${DIR_TMP}/${GPERFTOOL_LINKFILE}" || ! -d "$DIR_TMP/$GPERFTOOL_LINKDIR" ]]; then
     if [[ "$GPERFTOOLS_SOURCEINSTALL" = [yY] ]]; then
-        gperftools
+        gperftools || return 1
     fi
 elif [[ ! -f "${DIR_TMP}/${LIBUNWIND_LINKFILE}" ]] || [[ ! -f "${DIR_TMP}/${GPERFTOOL_LINKFILE}" ]]; then
     if [[ "$GPERFTOOLS_SOURCEINSTALL" = [yY] ]]; then
-        gperftools
+        gperftools || return 1
     fi
 fi
 
@@ -498,7 +504,7 @@ if [[ "$NGINX_OPENRESTY" = [yY] ]]; then
     cecho "Check for openresty modules" $boldyellow    
     # if the tar.gz files don't exist first the tar test directory variables can not be populated
     if [[ ! -f "${DIR_TMP}/${NGX_MEMCLINKFILE}" || "$(tar -tzf ${DIR_TMP}/${NGX_MEMCLINKFILE} >/dev/null 2>&1; echo $?)" -ne '0' ]] || [[ ! -f "${DIR_TMP}/${NGX_SRCACHELINKFILE}" || "$(tar -tzf ${DIR_TMP}/${NGX_SRCACHELINKFILE} >/dev/null 2>&1; echo $?)" -ne '0' ]] || [[ ! -f "${DIR_TMP}/${NGX_REDISLINKFILE}" || "$(tar -tzf ${DIR_TMP}/${NGX_REDISLINKFILE} >/dev/null 2>&1; echo $?)" -ne '0' ]] || [[ ! -f "${DIR_TMP}/${NGX_ECHOLINKFILE}" || "$(tar -tzf ${DIR_TMP}/${NGX_ECHOLINKFILE} >/dev/null 2>&1; echo $?)" -ne '0' ]] || [[ ! -f "${DIR_TMP}/${NGX_SETMISCLINKFILE}" || "$(tar -tzf ${DIR_TMP}/${NGX_SETMISCLINKFILE} >/dev/null 2>&1; echo $?)" -ne '0' ]] || [[ ! -f "${DIR_TMP}/${NGX_DEVELKITLINKFILE}" || "$(tar -tzf ${DIR_TMP}/${NGX_DEVELKITLINKFILE} >/dev/null 2>&1; echo $?)" -ne '0' ]]; then
-        openrestytarball
+        openrestytarball || return 1
     fi 
     
     MEMCDIR=$(tar -tzf "$DIR_TMP/${NGX_MEMCLINKFILE}" | head -1 | cut -f1 -d"/")
@@ -509,14 +515,14 @@ if [[ "$NGINX_OPENRESTY" = [yY] ]]; then
     REDISDIR=$(tar -tzf "$DIR_TMP/${NGX_REDISLINKFILE}" | head -1 | cut -f1 -d"/")
 
     if [[ ! -f "${DIR_TMP}/${NGX_MEMCLINKFILE}" || ! -f "${DIR_TMP}/${NGX_SRCACHELINKFILE}"|| ! -f "${DIR_TMP}/${NGX_REDISLINKFILE}" || ! -f "${DIR_TMP}/${NGX_ECHOLINKFILE}" || ! -f "${DIR_TMP}/${NGX_SETMISCLINKFILE}" || ! -f "${DIR_TMP}/${NGX_DEVELKITLINKFILE}" ]] || [[ ! -d "${DIR_TMP}/${MEMCDIR}" || ! -d "${DIR_TMP}/${SRCACHEDIR}"|| ! -d "${DIR_TMP}/${REDISDIR}" || ! -d "${DIR_TMP}/${ECHODIR}" || ! -d "${DIR_TMP}/${SETMISCDIR}" || ! -d "${DIR_TMP}/${DEVELKITDIR}" ]]; then
-        openrestytarball
+        openrestytarball || return 1
     fi
 
     # ORESTY_LUANGINX=y|n
     if [[ "$ORESTY_LUANGINX" = [yY] ]]; then
         if [[ ! -f "${DIR_TMP}/${NGX_LUANGINXLINKFILE}" || ! -f "${DIR_TMP}/${NGX_LUAMEMCACHEDLINKFILE}" || ! -f "${DIR_TMP}/${NGX_LUAMYSQLLINKFILE}" || ! -f "${DIR_TMP}/${NGX_LUAREDISLINKFILE}" || ! -f "${DIR_TMP}/${NGX_LUADNSLINKFILE}" || ! -f "${DIR_TMP}/${NGX_LUAUPLOADLINKFILE}" || ! -f "${DIR_TMP}/${NGX_LUAWEBSOCKETLINKFILE}" || ! -f "${DIR_TMP}/${NGX_LUALOCKLINKFILE}" || ! -f "${DIR_TMP}/${NGX_LUASTRINGLINKFILE}" || ! -f "${DIR_TMP}/${NGX_LUAREDISPARSERLINKFILE}" || ! -f "${DIR_TMP}/${NGX_LUAUPSTREAMCHECKLINKFILE}" || ! -f "${DIR_TMP}/${NGX_LUALRUCACHELINKFILE}"  || ! -f "${DIR_TMP}/${NGX_LUARESTYCORELINKFILE}" || ! -f "${DIR_TMP}/${NGX_LUAUPSTREAMLINKFILE}" || ! -f "${DIR_TMP}/${NGX_LUASTREAMLINKFILE}" || ! -f "${DIR_TMP}/${NGX_LUALOGGERSOCKETLINKFILE}" || ! -f "${DIR_TMP}/${NGX_LUACOOKIELINKFILE}" || ! -f "${DIR_TMP}/${NGX_LUAUPSTREAMCACHELINKFILE}" || ! -f "${DIR_TMP}/${NGX_LUACJSONLINKFILE}" ]] || [[ ! -d "${DIR_TMP}/${NGX_LUANGINXDIR}" || ! -d "${DIR_TMP}/${NGX_LUAMEMCACHEDDIR}" || ! -d "${DIR_TMP}/${NGX_LUAMYSQLDIR}" || ! -d "${DIR_TMP}/${NGX_LUAREDISDIR}" || ! -d "${DIR_TMP}/${NGX_LUADNSDIR}" || ! -d "${DIR_TMP}/${NGX_LUAUPLOADDIR}" || ! -d "${DIR_TMP}/${NGX_LUAWEBSOCKETDIR}" || ! -d "${DIR_TMP}/${NGX_LUALOCKDIR}" || ! -d "${DIR_TMP}/${NGX_LUASTRINGDIR}" || ! -d "${DIR_TMP}/${NGX_LUAREDISPARSERDIR}" || ! -d "${DIR_TMP}/${NGX_LUAUPSTREAMCHECKDIR}" || ! -d "${DIR_TMP}/${NGX_LUALRUCACHEDIR}"  || ! -d "${DIR_TMP}/${NGX_LUARESTYCOREDIR}" || ! -d "${DIR_TMP}/${NGX_LUAUPSTREAMDIR}" || ! -d "${DIR_TMP}/${NGX_LUALOGGERSOCKETDIR}" || ! -d "${DIR_TMP}/${NGX_LUACOOKIEDIR}" || ! -d "${DIR_TMP}/${NGX_LUAUPSTREAMCACHEDIR}" || ! -d "${DIR_TMP}/${NGX_LUACJSONDIR}" ]]; then            
 
-            openrestytarball
+            openrestytarball || return 1
         fi
     fi
 fi
@@ -526,7 +532,7 @@ if [[ "$NGINX_PAGESPEEDGITMASTER" = [yY] ]]; then
     # remove old version downloaded & download master tarball instead
     cd "$DIR_TMP"
     rm -rf release-${NGXPGSPEED_VER}*
-    nginxpgspeedtarball
+    nginxpgspeedtarball || return 1
 fi
 
 }
