@@ -2712,8 +2712,8 @@ yumupdatechecker() {
     {
     message=$1
     color=$2
-    echo -e "$color$message" ; $Reset
-    return
+    echo -e "$color$message" ; $Reset 2>/dev/null
+    return 0
     }
 
     if [ -f /etc/yum/pluginconf.d/versionlock.conf ]; then
