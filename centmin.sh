@@ -30,7 +30,7 @@ DT=$(date +"%d%m%y-%H%M%S")
 branchname='140.00beta01'
 SCRIPT_MAJORVER='140'
 SCRIPT_MINORVER='00'
-SCRIPT_INCREMENTVER='466'
+SCRIPT_INCREMENTVER='467'
 SCRIPT_VERSIONSHORT="${branchname}"
 SCRIPT_VERSION="${SCRIPT_VERSIONSHORT}.b${SCRIPT_INCREMENTVER}"
 SCRIPT_DATE='16/01/25'
@@ -1060,6 +1060,8 @@ PHP_SRC_FAILFAST='y'            # 'n' disables ONLY the pre-yuminstall mirror pr
                                 # would restore the reported bug)
 PHP_TARBALL_MINBYTES='3000000'  # size floor; real php-8.x tarballs are 12-20MB
 PHPGEOIP_MAXVERNUM='80200'      # skip legacy geoip PHP ext at/above this php-config --vernum
+PHPMEMCACHE_MAXVERNUM='80600'   # skip memcache PHP ext (not memcached) at/above this php-config --vernum
+PHPMCRYPT_MAXVERNUM='80600'     # skip mcrypt PECL ext at/above this PHP version ID
 PHP_EXTRA_MIRRORS=''            # space separated extra PHP mirror base URLs - the ONLY way to
                                 # add a custom mirror (phpgeolocation clobbers PHP_MIRRORURL)
 # PHP_MIRROR_LIST_OVERRIDE is a test-only hook (undocumented in custom_config):
@@ -1088,8 +1090,8 @@ PHPSWOOLE_EIGHT_ZERO_VER='5.1.6'
 PHPSWOOLE_EIGHT_ONE_VER='6.1.12'
 PHPSWOOLE_EIGHT_TWO_VER='6.2.5'
 PHPSWOOLE_EIGHT_THREE_VER='6.2.5'
-PHPSWOOLE_EIGHT_FOUR_VER='6.0.0'
-PHPSWOOLE_EIGHT_FIVE_VER='6.1.2'    # placeholder until Swoole officially supports PHP 8.5
+PHPSWOOLE_EIGHT_FOUR_VER='6.2.5'
+PHPSWOOLE_EIGHT_FIVE_VER='6.2.5'
 PHPSWOOLE_FIVE_VER='2.0.5' # max PHP 5.0 supported version
 PHPSWOOLE_SEVEN_ZERO_VER='4.3.5' # max PHP 7.0 supported version
 PHPSWOOLE_SEVEN_ONE_VER='4.5.11' # max PHP 7.1 supported version
@@ -1125,7 +1127,6 @@ PDOPGSQL_PHPVER='18'        # pdo-pgsql PHP extension version for postgresql
 PHP_LIBZIP='n'              # use newer libzip instead of PHP embedded zip
 PHP_ARGON='y'               # alias for PHP_LIBZIP, when PHP_ARGON='y' then PHP_LIBZIP='y'
 LIBZIP_VER='1.10.1'          # required for PHP 7.2 + with libsodium & argon2
-LIBZIP_EIGHT_FIVE_VER='1.22.7'   # PHP 8.5+ requires libzip 1.22.7+
 LIBSODIUM_VER='1.0.20'      # https://github.com/jedisct1/libsodium/releases
 LIBSODIUM_NATIVE='n'        # optimise for specific cpu not portable between different cpu modules
 LIBARGON_VER='20190702'     # https://github.com/P-H-C/phc-winner-argon2
@@ -3339,7 +3340,7 @@ if [[ "$NSD_INSTALL" = [yY] ]]; then
     nsdinstall
 fi
 
-php-config --version | cut -d . -f1,2 | egrep -w '7.0|7.1|7.2|7.3|7.4|8.0|8.1|8.2|8.3|8.4|8.5'
+php-config --version | cut -d . -f1,2 | grep -Ew '7.0|7.1|7.2|7.3|7.4|8.0|8.1|8.2|8.3|8.4|8.5|8.6'
 PHPSEVEN_CHECKVER=$?
 echo "$PHPSEVEN_CHECKVER"
 if [[ "$PHPSEVEN_CHECKVER" = '0' ]]; then
