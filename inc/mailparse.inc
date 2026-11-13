@@ -4,7 +4,7 @@ checkphpextmailparse() {
     else
         MAILPARSE_PHPVER=$(echo $PHP_VERSION | cut -d . -f1,2)
     fi
-    echo "$MAILPARSE_PHPVER" | egrep -w '7.0|7.1|7.2|7.3|7.4|8.0|8.1|8.2|8.3|8.4|8.5'
+    echo "$MAILPARSE_PHPVER" | grep -Ew '7.0|7.1|7.2|7.3|7.4|8.0|8.1|8.2|8.3|8.4|8.5|8.6'
     PHPSEVEN_CHECKVER=$?
     echo "checkphpextmailparse $PHPSEVEN_CHECKVER"
 
@@ -45,7 +45,7 @@ mailparseinstall() {
             else
                 MAILPARSE_PHPVER=$(echo $PHP_VERSION | cut -d . -f1,2)
             fi
-            echo "$MAILPARSE_PHPVER" | egrep -w '7.0|7.1|7.2|7.3|7.4|8.0|8.1|8.2|8.3|8.4|8.5'
+            echo "$MAILPARSE_PHPVER" | grep -Ew '7.0|7.1|7.2|7.3|7.4|8.0|8.1|8.2|8.3|8.4|8.5|8.6'
             PHPSEVEN_CHECKVER=$?
             echo "mailparseinstall $PHPSEVEN_CHECKVER"
 

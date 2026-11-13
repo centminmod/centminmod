@@ -384,6 +384,18 @@ PHPGEOIP_ALWAYS='y'          # GeoIP php extension is always reinstalled on php 
 # Set to '90000' to restore the old behaviour
 PHPGEOIP_MAXVERNUM='80200'   # Related: PHPGEOIP_ALWAYS, NGINX_GEOIPTWOLITE
 
+# PHP memcache Extension Maximum PHP Version
+# Skip the memcache PHP extension (not memcached) at/above this php-config --vernum
+# websupport-sk/pecl-memcache does not build on PHP 8.6 yet; the memcached PHP extension is unaffected
+# Raise it (e.g. '90000') once upstream supports PHP 8.6
+#PHPMEMCACHE_MAXVERNUM='80600'
+
+# PHP mcrypt PECL Extension Maximum PHP Version
+# Skip the mcrypt PECL extension at/above this PHP version ID
+# mcrypt 1.0.9 and its git master do not build on PHP 8.6 yet
+# Raise it (e.g. '90000') once upstream supports PHP 8.6
+#PHPMCRYPT_MAXVERNUM='80600'
+
 # PHP_SRC_FAILFAST='n' disables only the pre-yuminstall PHP mirror preflight abort
 # PHP source tarball and extraction validation always aborts regardless
 # PHP_TARBALL_MINBYTES is the PHP source tarball size floor in bytes which rejects

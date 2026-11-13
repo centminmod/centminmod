@@ -227,7 +227,7 @@ fi
 if [[ "$PHPSWOOLE" = [yY] ]]; then
     # Swoole 5.0.0-6.1.11 and 6.2.0-6.2.4 trust client-supplied multipart
     # Swoole-Upload-File markers, so a request can delete files with the worker's
-    # permissions. Fixed in 6.1.12 for PHP 8.1 and 6.2.5 for PHP 8.2-8.3. PHP
+    # permissions. Fixed in 6.1.12 (PHP 8.1-8.4) and 6.2.5 (PHP 8.2-8.5). PHP
     # 7.2-8.0 have no fixed release, so skip the build rather than install one
     local swoole_phpver="$PHPMVER" swoole_patch="${PHPSWOOLE_VER##*.}" swoole_vuln=n
     [[ "$PHPMUVER" =~ ^[0-9]+\.[0-9]+$ ]] && swoole_phpver="$PHPMUVER"
