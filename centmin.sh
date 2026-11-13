@@ -30,7 +30,7 @@ DT=$(date +"%d%m%y-%H%M%S")
 branchname='140.00beta01'
 SCRIPT_MAJORVER='140'
 SCRIPT_MINORVER='00'
-SCRIPT_INCREMENTVER='468'
+SCRIPT_INCREMENTVER='469'
 SCRIPT_VERSIONSHORT="${branchname}"
 SCRIPT_VERSION="${SCRIPT_VERSIONSHORT}.b${SCRIPT_INCREMENTVER}"
 SCRIPT_DATE='16/01/25'
@@ -2471,8 +2471,8 @@ cecho ()                     # Coloured-echo.
 {
 message=$1
 color=$2
-echo -e "$color$message" ; $Reset
-return
+echo -e "$color$message" ; $Reset 2>/dev/null
+return 0
 }
 
 ###
