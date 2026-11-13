@@ -2,7 +2,7 @@
 zopfliinstall() {
   if [[ "$PHP_INSTALL" = [yY] ]]; then
     if [[ "$PHPZOPFLI" = [yY] ]]; then
-      PHPEXTDIRD=`cat /usr/local/bin/php-config | awk '/^extension_dir/ {extdir=$1} END {gsub(/\047|extension_dir|=|)/,"",extdir); print extdir}'`
+      PHPEXTDIRD=$(php_extension_dir)
       # set extra cflags fro devtoolset-7 and devtoolset-8 compatibility
       check_devtoolset_php
       enable_devtoolset "$CLANG_PHP" || return 1
@@ -35,7 +35,7 @@ zopfliinstall() {
       # check to see if zopfli.so already loaded in php.ini
       ZOPFLISOCHECK=`grep 'zopfli.so' /usr/local/lib/php.ini`
       ZOPFLISOCHECKB=$(grep 'zopfli.so' ${CONFIGSCANDIR}/zopfli.ini)
-      PHPEXTDIRD=`cat /usr/local/bin/php-config | awk '/^extension_dir/ {extdir=$1} END {gsub(/\047|extension_dir|=|)/,"",extdir); print extdir}'`
+      PHPEXTDIRD=$(php_extension_dir)
       
       if [[ -z "$ZOPFLISOCHECK" || -z "$ZOPFLISOCHECKB" ]]; then
           #echo "" >> /usr/local/lib/php.ini

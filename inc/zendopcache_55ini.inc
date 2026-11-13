@@ -4,7 +4,7 @@ zopcache_initialini() {
 PHPMVER=$(echo "$PHP_VERSION" | cut -d . -f1,2)
 
 if [[ "$PHPMVER" > 5.4 ]]; then
-  PHPEXTDIRD=`cat /usr/local/bin/php-config | awk '/^extension_dir/ {extdir=$1} END {gsub(/\047|extension_dir|=|)/,"",extdir); print extdir}'`
+  PHPEXTDIRD=$(php_extension_dir)
 fi # PHPMVER
 
 #######################################################

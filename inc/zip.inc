@@ -2,7 +2,7 @@
 zip_php_install() {
   if [[ "$PHP_INSTALL" = [yY] ]]; then
     if [[ "$PHPZIP" = [yY] ]]; then
-      PHPEXTDIRD=`cat /usr/local/bin/php-config | awk '/^extension_dir/ {extdir=$1} END {gsub(/\047|extension_dir|=|)/,"",extdir); print extdir}'`
+      PHPEXTDIRD=$(php_extension_dir)
       # set extra cflags fro devtoolset-7 and devtoolset-8 compatibility
       check_devtoolset_php
       enable_devtoolset "$CLANG_PHP" || return 1
@@ -34,7 +34,7 @@ zip_php_install() {
       # check to see if zip.so already loaded in php.ini
       ZIPSOCHECK=`grep 'zip.so' /usr/local/lib/php.ini`
       ZIPSOCHECKB=$(grep 'zip.so' ${CONFIGSCANDIR}/zip.ini)
-      PHPEXTDIRD=`cat /usr/local/bin/php-config | awk '/^extension_dir/ {extdir=$1} END {gsub(/\047|extension_dir|=|)/,"",extdir); print extdir}'`
+      PHPEXTDIRD=$(php_extension_dir)
       
       if [[ -z "$ZIPSOCHECK" || -z "$ZIPSOCHECKB" ]]; then
           #echo "" >> /usr/local/lib/php.ini
