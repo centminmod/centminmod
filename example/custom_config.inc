@@ -5387,6 +5387,18 @@
 # Related: PHPGEOIP_ALWAYS, NGINX_GEOIPTWOLITE
 #PHPGEOIP_MAXVERNUM='80200'
 
+# PHP memcache Extension Maximum PHP Version
+# Skip the memcache PHP extension (not memcached) at/above this php-config --vernum
+# websupport-sk/pecl-memcache does not build on PHP 8.6 yet; the memcached PHP extension is unaffected
+# Raise it (e.g. '90000') once upstream supports PHP 8.6
+#PHPMEMCACHE_MAXVERNUM='80600'
+
+# PHP mcrypt PECL Extension Maximum PHP Version
+# Skip the mcrypt PECL extension at/above this PHP version ID
+# mcrypt 1.0.9 and its git master do not build on PHP 8.6 yet
+# Raise it (e.g. '90000') once upstream supports PHP 8.6
+#PHPMCRYPT_MAXVERNUM='80600'
+
 # PHP Extra Source Mirrors
 # Space separated extra PHP mirror base URLs added to the mirror list
 # The only way to add a custom mirror as phpgeolocation overwrites PHP_MIRRORURL

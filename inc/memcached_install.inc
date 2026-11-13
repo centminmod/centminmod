@@ -306,8 +306,23 @@ sleep 2
 memcached_service_restart
 
 #############################################
+# websupport-sk/pecl-memcache has no PHP 8.6 support yet (zval_dtor, WRONG_PARAM_COUNT
+# and INI_INT were removed), so skip it at/above PHPMEMCACHE_MAXVERNUM
+MEMCACHE_PHP_SKIP='n'
     if [[ "$PHP_INSTALL" = [yY] ]]; then
 if [ "$PHP_MEMCACHE" == 'y' ]; then
+    MEMCACHE_PHP_VERNUM=$(/usr/local/bin/php-config --vernum 2>/dev/null)
+    if [[ -n "$MEMCACHE_PHP_VERNUM" && "$MEMCACHE_PHP_VERNUM" -ge "${PHPMEMCACHE_MAXVERNUM:-80600}" ]]; then
+        MEMCACHE_PHP_SKIP='y'
+        cecho "skipping memcache PHP extension - no upstream support for this PHP yet (memcached PHP extension is unaffected)" $boldyellow
+        MEMCACHE_PHP_EXTDIR=$(/usr/local/bin/php-config --extension-dir 2>/dev/null)
+        if [ -f "${CONFIGSCANDIR}/memcache.ini" ] && [ -n "$MEMCACHE_PHP_EXTDIR" ] && [ ! -f "${MEMCACHE_PHP_EXTDIR}/memcache.so" ]; then
+            cecho "removing orphaned ${CONFIGSCANDIR}/memcache.ini" $boldyellow
+            rm -f "${CONFIGSCANDIR}/memcache.ini"
+        fi
+    fi
+fi
+if [ "$PHP_MEMCACHE" == 'y' ] && [[ "$MEMCACHE_PHP_SKIP" != 'y' ]]; then
     PHPCURRENTVER=$(php-config --version | cut -d . -f1,2)
     if [[ "$PHPCURRENTVER" = '7.0' || "$PHPMUVER" = '7.0' || "$PHPCURRENTVER" = '7.1' || "$PHPMUVER" = '7.1' || "$PHPCURRENTVER" = '7.2' || "$PHPMUVER" = '7.2' || "$PHPCURRENTVER" = '7.3' || "$PHPMUVER" = '7.3' || "$PHPCURRENTVER" = '7.4' || "$PHPMUVER" = '7.4' || "$PHPCURRENTVER" = '8.0' || "$PHPMUVER" = '8.0' || "$PHPCURRENTVER" = '8.1' || "$PHPMUVER" = '8.1' || "$PHPCURRENTVER" = '8.2' || "$PHPMUVER" = '8.2' || "$PHPCURRENTVER" = '8.3' || "$PHPMUVER" = '8.3' || "$PHPCURRENTVER" = '8.4' || "$PHPMUVER" = '8.4' || "$PHPCURRENTVER" = '8.5' || "$PHPMUVER" = '8.5' || "$PHPVER_ID" -ge '80000' || "$PHPMUVER" = 'NGDEBUG' || "$PHPSEVEN_CHECKVER" = '0' ]]; then
         echo
@@ -409,7 +424,7 @@ if [ "$PHP_MEMCACHE" == 'y' ]; then
         cecho "PHP memcache extension installed" $boldgreen
     
     fi
-else
+elif [ "$PHP_MEMCACHE" != 'y' ]; then
     # if PHP_MEMCACHE=n remove memcache PHP extension setting file
     rm -rf "${CONFIGSCANDIR}/memcache.ini"
 fi # PHP_MEMCACHE = y
@@ -489,7 +504,7 @@ if [ -f /usr/bin/re2c ]; then
     fi
 fi
 
-php-config --version | cut -d . -f1,2 | grep -Ew '7.0|7.1|7.2|7.3|7.4|8.0|8.1|8.2|8.3|8.4|8.5'
+php-config --version | cut -d . -f1,2 | grep -Ew '7.0|7.1|7.2|7.3|7.4|8.0|8.1|8.2|8.3|8.4|8.5|8.6'
 PHPSEVEN_CHECKVER=$?
 echo "$PHPSEVEN_CHECKVER"
 
@@ -590,7 +605,7 @@ PHPEXTDIR=$(php_extension_dir)
 
 if [[ -z "$MEMCACHESOCHECK" || -z "$MEMCACHESOCHECKB" ]]; then
     echo ""
-    if [ "$PHP_MEMCACHE" == 'y' ]; then
+    if [ "$PHP_MEMCACHE" == 'y' ] && [[ "$MEMCACHE_PHP_SKIP" != 'y' ]]; then
         echo ""
         echo "extension=${PHPEXTDIR:+$PHPEXTDIR/}memcache.so" > "${CONFIGSCANDIR}/memcache.ini"
     fi

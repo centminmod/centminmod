@@ -2530,7 +2530,7 @@ mailparsephpexttarball() {
   else
       MAILPARSE_PHPVER=$(echo $PHP_VERSION | cut -d . -f1,2)
   fi
-  echo "$MAILPARSE_PHPVER" | grep -Ew '7.0|7.1|7.2|7.3|7.4|8.0|8.1|8.2|8.3|8.4|8.5'
+  echo "$MAILPARSE_PHPVER" | grep -Ew '7.0|7.1|7.2|7.3|7.4|8.0|8.1|8.2|8.3|8.4|8.5|8.6'
   PHPSEVEN_CHECKVER=$?
   echo $PHPSEVEN_CHECKVER
 
@@ -4474,9 +4474,9 @@ yuminstall
 questions
 
 if [[ "$INITIALINSTALL" != [yY] ]]; then
-    php-config --version | cut -d . -f1,2 | grep -Ew '7.0|7.1|7.2|7.3|7.4|8.0|8.1|8.2|8.3|8.4|8.5'
+    php-config --version | cut -d . -f1,2 | grep -Ew '7.0|7.1|7.2|7.3|7.4|8.0|8.1|8.2|8.3|8.4|8.5|8.6'
 else
-    echo "$PHP_VERSION" | cut -d . -f1,2 | grep -Ew '7.0|7.1|7.2|7.3|7.4|8.0|8.1|8.2|8.3|8.4|8.5'
+    echo "$PHP_VERSION" | cut -d . -f1,2 | grep -Ew '7.0|7.1|7.2|7.3|7.4|8.0|8.1|8.2|8.3|8.4|8.5|8.6'
 fi
 PHPSEVEN_CHECKVER=$?
 echo "$PHPSEVEN_CHECKVER"

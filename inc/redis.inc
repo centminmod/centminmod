@@ -42,10 +42,10 @@ checkredis_server_install() {
 #######################################################
 checkredistar() {
 
-  if [[ "$REDIS_PHPCURRENTVER" = '8.5' || "$PHPMUVER" = '8.5' || "$REDIS_PHPCURRENTVER" = '8.4' || "$PHPMUVER" = '8.4' || "$REDIS_PHPCURRENTVER" = '8.3' || "$PHPMUVER" = '8.3' || "$REDIS_PHPCURRENTVER" = '8.2' || "$PHPMUVER" = '8.2' || "$REDIS_PHPCURRENTVER" = '8.1' || "$PHPMUVER" = '8.1' || "$REDIS_PHPCURRENTVER" = '8.0' || "$PHPMUVER" = '8.0' || "$PHPVER_ID" -ge '80000' || "$PHPMUVER" = 'NGDEBUG' || "$PHPSEVEN_CHECKVER" = '0' ]] || [[ "$REDIS_PHPCURRENTVER" = '7.4' || "$PHPMUVER" = '7.4' || "$PHPMUVER" = 'NGDEBUG' || "$PHPSEVEN_CHECKVER" = '0' ]] || [[ "$REDIS_PHPCURRENTVER" = '7.3' || "$PHPMUVER" = '7.3' || "$PHPMUVER" = 'NGDEBUG' || "$PHPSEVEN_CHECKVER" = '0' ]] || [[ "$REDIS_PHPCURRENTVER" = '7.2' || "$PHPMUVER" = '7.2' || "$PHPMUVER" = 'NGDEBUG' || "$PHPSEVEN_CHECKVER" = '0' ]] || [[ "$REDIS_PHPCURRENTVER" = '7.1' || "$PHPMUVER" = '7.1' || "$PHPMUVER" = 'NGDEBUG' || "$PHPSEVEN_CHECKVER" = '0' ]] || [[ "$REDIS_PHPCURRENTVER" = '7.0' || "$PHPMUVER" = '7.0' || "$PHPMUVER" = 'NGDEBUG' || "$PHPSEVEN_CHECKVER" = '0' ]] || [[ "$INITIALINSTALL" = [yY] && "$(echo "$PHP_VERSION" | cut -d . -f1,2)" = '7.1' ]] || [[ "$INITIALINSTALL" = [yY] && "$(echo "$PHP_VERSION" | cut -d . -f1,2)" = '7.0' ]]; then
+  if [[ "$REDIS_PHPCURRENTVER" = '8.6' || "$PHPMUVER" = '8.6' || "$REDIS_PHPCURRENTVER" = '8.5' || "$PHPMUVER" = '8.5' || "$REDIS_PHPCURRENTVER" = '8.4' || "$PHPMUVER" = '8.4' || "$REDIS_PHPCURRENTVER" = '8.3' || "$PHPMUVER" = '8.3' || "$REDIS_PHPCURRENTVER" = '8.2' || "$PHPMUVER" = '8.2' || "$REDIS_PHPCURRENTVER" = '8.1' || "$PHPMUVER" = '8.1' || "$REDIS_PHPCURRENTVER" = '8.0' || "$PHPMUVER" = '8.0' || "$PHPVER_ID" -ge '80000' || "$PHPMUVER" = 'NGDEBUG' || "$PHPSEVEN_CHECKVER" = '0' ]] || [[ "$REDIS_PHPCURRENTVER" = '7.4' || "$PHPMUVER" = '7.4' || "$PHPMUVER" = 'NGDEBUG' || "$PHPSEVEN_CHECKVER" = '0' ]] || [[ "$REDIS_PHPCURRENTVER" = '7.3' || "$PHPMUVER" = '7.3' || "$PHPMUVER" = 'NGDEBUG' || "$PHPSEVEN_CHECKVER" = '0' ]] || [[ "$REDIS_PHPCURRENTVER" = '7.2' || "$PHPMUVER" = '7.2' || "$PHPMUVER" = 'NGDEBUG' || "$PHPSEVEN_CHECKVER" = '0' ]] || [[ "$REDIS_PHPCURRENTVER" = '7.1' || "$PHPMUVER" = '7.1' || "$PHPMUVER" = 'NGDEBUG' || "$PHPSEVEN_CHECKVER" = '0' ]] || [[ "$REDIS_PHPCURRENTVER" = '7.0' || "$PHPMUVER" = '7.0' || "$PHPMUVER" = 'NGDEBUG' || "$PHPSEVEN_CHECKVER" = '0' ]] || [[ "$INITIALINSTALL" = [yY] && "$(echo "$PHP_VERSION" | cut -d . -f1,2)" = '7.1' ]] || [[ "$INITIALINSTALL" = [yY] && "$(echo "$PHP_VERSION" | cut -d . -f1,2)" = '7.0' ]]; then
     if [[ "$REDISPHP_GIT" != [yY] ]]; then
-      # PHP 7.4+ (including 8.0-8.5) uses Redis PHP 6.3.0
-      if [[ "$REDIS_PHPCURRENTVER" = '8.5' || "$PHPMUVER" = '8.5' || "$REDIS_PHPCURRENTVER" = '8.4' || "$PHPMUVER" = '8.4' || "$REDIS_PHPCURRENTVER" = '8.3' || "$PHPMUVER" = '8.3' || "$REDIS_PHPCURRENTVER" = '8.2' || "$PHPMUVER" = '8.2' || "$REDIS_PHPCURRENTVER" = '8.1' || "$PHPMUVER" = '8.1' || "$REDIS_PHPCURRENTVER" = '8.0' || "$PHPMUVER" = '8.0' || "$REDIS_PHPCURRENTVER" = '7.4' || "$PHPMUVER" = '7.4' ]]; then
+      # PHP 7.4+ (including 8.0-8.6) uses Redis PHP 6.3.0
+      if [[ "$REDIS_PHPCURRENTVER" = '8.6' || "$PHPMUVER" = '8.6' || "$REDIS_PHPCURRENTVER" = '8.5' || "$PHPMUVER" = '8.5' || "$REDIS_PHPCURRENTVER" = '8.4' || "$PHPMUVER" = '8.4' || "$REDIS_PHPCURRENTVER" = '8.3' || "$PHPMUVER" = '8.3' || "$REDIS_PHPCURRENTVER" = '8.2' || "$PHPMUVER" = '8.2' || "$REDIS_PHPCURRENTVER" = '8.1' || "$PHPMUVER" = '8.1' || "$REDIS_PHPCURRENTVER" = '8.0' || "$PHPMUVER" = '8.0' || "$REDIS_PHPCURRENTVER" = '7.4' || "$PHPMUVER" = '7.4' ]]; then
         REDISPHP_VER="$REDISPHPSEVENFOUR_VER"
         echo "checkredistar: REDISPHP_VER=$REDISPHP_VER"
       # PHP 7.2-7.3 uses Redis PHP 6.0.2
@@ -53,7 +53,7 @@ checkredistar() {
         REDISPHP_VER="$REDISPHPSEVENTWO_VER"
         echo "checkredistar: REDISPHP_VER=$REDISPHP_VER"
       # INITIALINSTALL path for PHP 7.4+
-      elif [[ "$INITIALINSTALL" = [yY] ]] && [[ "$PHPMVER" = '8.5' || "$PHPMVER" = '8.4' || "$PHPMVER" = '8.3' || "$PHPMVER" = '8.2' || "$PHPMVER" = '8.1' || "$PHPMVER" = '8.0' || "$PHPMVER" = '7.4' ]]; then
+      elif [[ "$INITIALINSTALL" = [yY] ]] && [[ "$PHPMVER" = '8.6' || "$PHPMVER" = '8.5' || "$PHPMVER" = '8.4' || "$PHPMVER" = '8.3' || "$PHPMVER" = '8.2' || "$PHPMVER" = '8.1' || "$PHPMVER" = '8.0' || "$PHPMVER" = '7.4' ]]; then
         REDISPHP_VER="$REDISPHPSEVENFOUR_VER"
         echo "checkredistar: REDISPHP_VER=$REDISPHP_VER"
       # INITIALINSTALL path for PHP 7.2-7.3
@@ -155,13 +155,14 @@ echo "redisinstall: PHPMUVER=$PHPMUVER"
 echo "redisinstall: REDIS_PHPCURRENTVER=$REDIS_PHPCURRENTVER"
 echo
 
-if [[ "$REDIS_PHPCURRENTVER" = '8.5' || "$PHPMUVER" = '8.5' || "$REDIS_PHPCURRENTVER" = '8.4' || "$PHPMUVER" = '8.4' || "$REDIS_PHPCURRENTVER" = '8.3' || "$PHPMUVER" = '8.3' || "$REDIS_PHPCURRENTVER" = '8.2' || "$PHPMUVER" = '8.2' || "$REDIS_PHPCURRENTVER" = '8.1' || "$PHPMUVER" = '8.1' || "$REDIS_PHPCURRENTVER" = '8.0' || "$PHPMUVER" = '8.0' || "$PHPVER_ID" -ge '80000' || "$PHPMUVER" = 'NGDEBUG' || "$PHPSEVEN_CHECKVER" = '0' ]] || [[ "$REDIS_PHPCURRENTVER" = '7.4' || "$PHPMUVER" = '7.4' || "$PHPMUVER" = 'NGDEBUG' || "$PHPSEVEN_CHECKVER" = '0' ]] || [[ "$REDIS_PHPCURRENTVER" = '7.3' || "$PHPMUVER" = '7.3' || "$PHPMUVER" = 'NGDEBUG' || "$PHPSEVEN_CHECKVER" = '0' ]] || [[ "$REDIS_PHPCURRENTVER" = '7.2' || "$PHPMUVER" = '7.2' || "$PHPMUVER" = 'NGDEBUG' || "$PHPSEVEN_CHECKVER" = '0' ]] || [[ "$REDIS_PHPCURRENTVER" = '7.1' || "$PHPMUVER" = '7.1' || "$PHPMUVER" = 'NGDEBUG' || "$PHPSEVEN_CHECKVER" = '0' ]] || [[ "$REDIS_PHPCURRENTVER" = '7.0' || "$PHPMUVER" = '7.0' || "$PHPMUVER" = 'NGDEBUG' || "$PHPSEVEN_CHECKVER" = '0' ]] || [[ "$INITIALINSTALL" = [yY] && "$(echo "$PHP_VERSION" | cut -d . -f1,2)" = '7.1' ]] || [[ "$INITIALINSTALL" = [yY] && "$(echo "$PHP_VERSION" | cut -d . -f1,2)" = '7.0' ]]; then
+if [[ "$REDIS_PHPCURRENTVER" = '8.6' || "$PHPMUVER" = '8.6' || "$REDIS_PHPCURRENTVER" = '8.5' || "$PHPMUVER" = '8.5' || "$REDIS_PHPCURRENTVER" = '8.4' || "$PHPMUVER" = '8.4' || "$REDIS_PHPCURRENTVER" = '8.3' || "$PHPMUVER" = '8.3' || "$REDIS_PHPCURRENTVER" = '8.2' || "$PHPMUVER" = '8.2' || "$REDIS_PHPCURRENTVER" = '8.1' || "$PHPMUVER" = '8.1' || "$REDIS_PHPCURRENTVER" = '8.0' || "$PHPMUVER" = '8.0' || "$PHPVER_ID" -ge '80000' || "$PHPMUVER" = 'NGDEBUG' || "$PHPSEVEN_CHECKVER" = '0' ]] || [[ "$REDIS_PHPCURRENTVER" = '7.4' || "$PHPMUVER" = '7.4' || "$PHPMUVER" = 'NGDEBUG' || "$PHPSEVEN_CHECKVER" = '0' ]] || [[ "$REDIS_PHPCURRENTVER" = '7.3' || "$PHPMUVER" = '7.3' || "$PHPMUVER" = 'NGDEBUG' || "$PHPSEVEN_CHECKVER" = '0' ]] || [[ "$REDIS_PHPCURRENTVER" = '7.2' || "$PHPMUVER" = '7.2' || "$PHPMUVER" = 'NGDEBUG' || "$PHPSEVEN_CHECKVER" = '0' ]] || [[ "$REDIS_PHPCURRENTVER" = '7.1' || "$PHPMUVER" = '7.1' || "$PHPMUVER" = 'NGDEBUG' || "$PHPSEVEN_CHECKVER" = '0' ]] || [[ "$REDIS_PHPCURRENTVER" = '7.0' || "$PHPMUVER" = '7.0' || "$PHPMUVER" = 'NGDEBUG' || "$PHPSEVEN_CHECKVER" = '0' ]] || [[ "$INITIALINSTALL" = [yY] && "$(echo "$PHP_VERSION" | cut -d . -f1,2)" = '7.1' ]] || [[ "$INITIALINSTALL" = [yY] && "$(echo "$PHP_VERSION" | cut -d . -f1,2)" = '7.0' ]]; then
     if [[ "$CENTOS_SEVEN" -eq '7' ]] && [[ "$REDIS_PHPCURRENTVER" = '8.0' || "$PHPMUVER" = '8.0' || "$REDIS_PHPCURRENTVER" = '8.1' || "$PHPMUVER" = '8.1' || "$REDIS_PHPCURRENTVER" = '8.2' || "$PHPMUVER" = '8.2' || "$REDIS_PHPCURRENTVER" = '8.3' || "$PHPMUVER" = '8.3' ]]; then
         [[ "$PHPREDIS_STABLE" = [yY] ]] || REDISPHP_GIT='y'
         AUTODETECPHP_OVERRIDE='y'
     fi
 
-    if [[ "$REDIS_PHPCURRENTVER" = '8.4' || "$PHPMUVER" = '8.4' ]]; then
+    # PHP 8.6: phpredis 6.3.0 fails to build (INI_INT/INI_STR removed), develop builds
+    if [[ "$REDIS_PHPCURRENTVER" = '8.4' || "$PHPMUVER" = '8.4' || "$REDIS_PHPCURRENTVER" = '8.6' || "$PHPMUVER" = '8.6' ]]; then
         [[ "$PHPREDIS_STABLE" = [yY] ]] || REDISPHP_GIT='y'
         AUTODETECPHP_OVERRIDE='y'
     fi
@@ -254,8 +255,8 @@ if [[ "$REDIS_PHPCURRENTVER" = '8.5' || "$PHPMUVER" = '8.5' || "$REDIS_PHPCURREN
         make${MAKETHREADS} || return $?
         make install || return $?
     else
-        # PHP 7.4+ (including 8.0-8.5) uses Redis PHP 6.3.0
-        if [[ "$REDIS_PHPCURRENTVER" = '8.5' || "$PHPMUVER" = '8.5' || "$REDIS_PHPCURRENTVER" = '8.4' || "$PHPMUVER" = '8.4' || "$REDIS_PHPCURRENTVER" = '8.3' || "$PHPMUVER" = '8.3' || "$REDIS_PHPCURRENTVER" = '8.2' || "$PHPMUVER" = '8.2' || "$REDIS_PHPCURRENTVER" = '8.1' || "$PHPMUVER" = '8.1' || "$REDIS_PHPCURRENTVER" = '8.0' || "$PHPMUVER" = '8.0' || "$REDIS_PHPCURRENTVER" = '7.4' || "$PHPMUVER" = '7.4' ]]; then
+        # PHP 7.4+ (including 8.0-8.6) uses Redis PHP 6.3.0
+        if [[ "$REDIS_PHPCURRENTVER" = '8.6' || "$PHPMUVER" = '8.6' || "$REDIS_PHPCURRENTVER" = '8.5' || "$PHPMUVER" = '8.5' || "$REDIS_PHPCURRENTVER" = '8.4' || "$PHPMUVER" = '8.4' || "$REDIS_PHPCURRENTVER" = '8.3' || "$PHPMUVER" = '8.3' || "$REDIS_PHPCURRENTVER" = '8.2' || "$PHPMUVER" = '8.2' || "$REDIS_PHPCURRENTVER" = '8.1' || "$PHPMUVER" = '8.1' || "$REDIS_PHPCURRENTVER" = '8.0' || "$PHPMUVER" = '8.0' || "$REDIS_PHPCURRENTVER" = '7.4' || "$PHPMUVER" = '7.4' ]]; then
             REDISPHP_VER="$REDISPHPSEVENFOUR_VER"
             echo "REDISPHP_GIT=n: REDISPHP_VER=$REDISPHP_VER"
         # PHP 7.2-7.3 uses Redis PHP 6.0.2
@@ -263,7 +264,7 @@ if [[ "$REDIS_PHPCURRENTVER" = '8.5' || "$PHPMUVER" = '8.5' || "$REDIS_PHPCURREN
             REDISPHP_VER="$REDISPHPSEVENTWO_VER"
             echo "REDISPHP_GIT=n: REDISPHP_VER=$REDISPHP_VER"
         # INITIALINSTALL path for PHP 7.4+
-        elif [[ "$INITIALINSTALL" = [yY] ]] && [[ "$PHPMVER" = '8.5' || "$PHPMVER" = '8.4' || "$PHPMVER" = '8.3' || "$PHPMVER" = '8.2' || "$PHPMVER" = '8.1' || "$PHPMVER" = '8.0' || "$PHPMVER" = '7.4' ]]; then
+        elif [[ "$INITIALINSTALL" = [yY] ]] && [[ "$PHPMVER" = '8.6' || "$PHPMVER" = '8.5' || "$PHPMVER" = '8.4' || "$PHPMVER" = '8.3' || "$PHPMVER" = '8.2' || "$PHPMVER" = '8.1' || "$PHPMVER" = '8.0' || "$PHPMVER" = '7.4' ]]; then
             REDISPHP_VER="$REDISPHPSEVENFOUR_VER"
             echo "REDISPHP_GIT=n: REDISPHP_VER=$REDISPHP_VER"
         # INITIALINSTALL path for PHP 7.2-7.3

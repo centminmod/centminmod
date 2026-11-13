@@ -493,7 +493,7 @@ if [[ "$UALL" = 'y' ]]; then
     # to the PHP 7.0-7.1 REDISPHPSEVEN_VER fallback and misclassified every
     # same version run as a major upgrade
     PHPMUVER=$(echo "$phpver" | cut -d . -f1,2)
-    if [[ "$PHPMUVER" = '8.4' ]]; then
+    if [[ "$PHPMUVER" = '8.4' || "$PHPMUVER" = '8.6' ]]; then
         REDISPHP_GIT='y'
         AUTODETECPHP_OVERRIDE='y'
     fi
@@ -502,7 +502,7 @@ if [[ "$UALL" = 'y' ]]; then
 elif [[ "$CLI_PHP_VER" ]]; then
     phpver="$CLI_PHP_VER"
     PHPMUVER=$(echo "$phpver" | cut -d . -f1,2)
-    if [[ "$PHPMUVER" = '8.4' ]]; then
+    if [[ "$PHPMUVER" = '8.4' || "$PHPMUVER" = '8.6' ]]; then
         REDISPHP_GIT='y'
         AUTODETECPHP_OVERRIDE='y'
     fi
@@ -651,7 +651,7 @@ else
         echo "#####################################################################"
         echo
     fi
-    if [[ "$REDIS_PHPCURRENTVER" = '8.4' || "$PHPMUVER" = '8.4' ]]; then
+    if [[ "$REDIS_PHPCURRENTVER" = '8.4' || "$PHPMUVER" = '8.4' || "$REDIS_PHPCURRENTVER" = '8.6' || "$PHPMUVER" = '8.6' ]]; then
         REDISPHP_GIT='y'
         AUTODETECPHP_OVERRIDE='y'
     fi
@@ -1542,6 +1542,14 @@ fi
 
 #addmysql_legacyinstall
 
+# pecl mcrypt (1.0.9 and git master) has no PHP 8.6 support yet (stream filter API and
+# INI_STR changes), so skip it at/above PHPMCRYPT_MAXVERNUM; the else branch below then
+# removes the orphaned mcrypt.ini
+if [[ "$PHP_MCRYPTPECL" = [yY] && "$PHPVER_ID" -ge "${PHPMCRYPT_MAXVERNUM:-80600}" ]]; then
+  cecho "skipping mcrypt PECL extension - no upstream support for this PHP yet" $boldyellow
+  PHP_MCRYPTPECL='n'
+fi
+
 # Check if libmcrypt is available for mcrypt PECL extension compilation
 # Especially important for EL10 systems where libmcrypt must be installed from REMI
 if [[ "$PHP_MCRYPTPECL" = [yY] ]]; then
@@ -1750,7 +1758,7 @@ if [[ "$zendopcacheon" = [yY] && "$OLD_OPCACHEPHP" != [yY] ]]; then
 fi
 
 # notes for users if PHP 7.0 detected
-php-config --version | cut -d . -f1,2 | grep -Ew '7.0|7.1|7.2|7.3|7.4|8.0|8.1|8.2|8.3|8.4|8.5'
+php-config --version | cut -d . -f1,2 | grep -Ew '7.0|7.1|7.2|7.3|7.4|8.0|8.1|8.2|8.3|8.4|8.5|8.6'
 PHPSEVEN_CHECKVER=$?
 echo "$PHPSEVEN_CHECKVER"
 

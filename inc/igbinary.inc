@@ -8,7 +8,7 @@ if [ "$IGBINARYGIT" == 'y' ]; then
     cd $DIR_TMP || return $?
 
     igbinary_php_version=$(php-config --version) || return $?
-    printf '%s\n' "$igbinary_php_version" | cut -d . -f1,2 | grep -Ew '7.0|7.1|7.2|7.3|7.4|8.0|8.1|8.2|8.3|8.4|8.5'
+    printf '%s\n' "$igbinary_php_version" | cut -d . -f1,2 | grep -Ew '7.0|7.1|7.2|7.3|7.4|8.0|8.1|8.2|8.3|8.4|8.5|8.6'
     PHPSEVEN_CHECKVER=$?
     echo $PHPSEVEN_CHECKVER
 

@@ -68,8 +68,8 @@ if [[ "$(uname -m)" = 'x86_64' ]]; then
       wget -${ipv_forceopt}v https://downloads.ioncube.com/loader_downloads/ioncube_loaders_lin_x86-64.tar.gz
       tar xvzf ioncube_loaders_lin_x86-64.tar.gz
     fi
-  elif [[ "$(php-config --version | cut -d . -f1-2)" = '8.5' ]]; then
-    echo "ioncube loader does not currently have PHP 8.5 support"
+  elif [[ "$(php-config --version | cut -d . -f1-2)" = '8.5' || "$(php-config --version | cut -d . -f1-2)" = '8.6' ]]; then
+    echo "ioncube loader does not currently have PHP 8.5 or 8.6 support"
     echo "only PHP 8.1, 8.2, 8.3, 8.4 are supported"
     exit
   elif [[ "$(php-config --version | cut -d . -f1-2)" = '8.4' ]]; then
