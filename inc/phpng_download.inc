@@ -4,16 +4,11 @@ phpng_download() {
     PHPNG_YES='y'
     PHPNGVER=$PHPMU_ALPHAVER
     # curl check as download url keeps changing between releases
-    REMIURL='https://downloads.php.net/~saki/'
-    curl -${ipv_forceopt}Is --connect-timeout 30 --max-time 30 "${REMIURL}/php-${PHPNGVER}.tar.xz" | grep 'HTTP/' | grep '200'
+    REMIURL='https://downloads.php.net/~svpernova09/'
+    curl -${ipv_forceopt}Is -o /dev/null -w '%{http_code}\n' --connect-timeout 30 --max-time 30 "${REMIURL}/php-${PHPNGVER}.tar.xz" | grep '^200$'
     REMIURL_CURLCHECK=$?
     if [[ "$REMIURL_CURLCHECK" != '0' ]]; then
-      REMIURL='https://downloads.php.net/~calvinb/'
-    fi
-    curl -${ipv_forceopt}Is --connect-timeout 30 --max-time 30 "${REMIURL}/php-${PHPNGVER}.tar.xz" | grep 'HTTP/' | grep '200'
-    REMIURL_CURLCHECK=$?
-    if [[ "$REMIURL_CURLCHECK" != '0' ]]; then
-      REMIURL='https://downloads.php.net/~eric/'
+      REMIURL='https://downloads.php.net/~mbeccati/'
     fi
     cecho "Downloading PHP $PHPNGVER from ${REMIURL}/" $boldyellow
     cd $DIR_TMP
@@ -60,7 +55,7 @@ phpng_download() {
     PHPNGVER=$PHPMU_ALPHAVER
     # curl check as download url keeps changing between releases
     REMIURL='https://downloads.php.net/~derick'
-    curl -${ipv_forceopt}Is --connect-timeout 30 --max-time 30 "${REMIURL}/php-${PHPNGVER}.tar.xz" | grep 'HTTP/' | grep '200'
+    curl -${ipv_forceopt}Is -o /dev/null -w '%{http_code}\n' --connect-timeout 30 --max-time 30 "${REMIURL}/php-${PHPNGVER}.tar.xz" | grep '^200$'
     REMIURL_CURLCHECK=$?
     if [[ "$REMIURL_CURLCHECK" != '0' ]]; then
       REMIURL='https://downloads.php.net/~cmb'
@@ -111,7 +106,7 @@ phpng_download() {
     PHPNGVER=$PHPMU_ALPHAVER
     # curl check as download url keeps changing between releases
     REMIURL='https://downloads.php.net/~remi'
-    curl -${ipv_forceopt}Is --connect-timeout 30 --max-time 30 "${REMIURL}/php-${PHPNGVER}.tar.xz" | grep 'HTTP/' | grep '200'
+    curl -${ipv_forceopt}Is -o /dev/null -w '%{http_code}\n' --connect-timeout 30 --max-time 30 "${REMIURL}/php-${PHPNGVER}.tar.xz" | grep '^200$'
     REMIURL_CURLCHECK=$?
     if [[ "$REMIURL_CURLCHECK" != '0' ]]; then
       REMIURL='https://downloads.php.net/~pollita'
