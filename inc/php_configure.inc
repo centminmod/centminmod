@@ -144,76 +144,56 @@ compile_custom_curl() {
     local CURL_VER_OSSL11="8.17.0"
     local CURL_PREFIX="/opt/curl_php"
     local SRC_DIR="$DIR_TMP"
-    local CURL_OSSL11='n'
+    local CURL_OSSL_VER CURL_SYS_OSSL3='n'
 
     if [[ "$CENTOS_NINE" -eq 9 ]] &&                               \
        ( [[ "$PHPVER_ID" -ge 70400 && "$PHPVER_ID" -lt 70500 ]] || \
          [[ "$PHPVER_ID" -ge 80000 && "$PHPVER_ID" -lt 80100 ]] ); then
         local PHP_CUSTOM_CURL='y'
-        CURL_OSSL11='y'
     fi
 
     [ "${PHP_CUSTOM_CURL}" = 'y' ] || return 0
-    # EL9 PHP 7.4/8.0 builds use compat-openssl11, EL7/EL8 builds use system OpenSSL 1.0.2/1.1.1,
-    # and a PHP_CUSTOMSSL build exports PKG_CONFIG_PATH to its own OpenSSL 1.1.1, which curl's
-    # --with-openssl then finds through pkg-config
-    if [[ "$CURL_OSSL11" = 'y' || "$CENTOS_SEVEN" = '7' || "$CENTOS_EIGHT" -eq 8 ]] || \
-       [[ "$(pkg-config --modversion openssl 2>/dev/null)" = 1.* ]]; then
+    # curl's --with-openssl uses the OpenSSL pkg-config finds: system OpenSSL 1.0.2/1.1.1 on
+    # EL7/EL8, and the OPENSSL_CUSTOMPATH OpenSSL whose PKG_CONFIG_PATH a PHP_CUSTOMSSL build
+    # exports. When that is the shared OpenSSL 1.1.1 of EL9 PHP 7.4/8.0, curl uses the system
+    # OpenSSL 3 instead: libssl.so.3 and libssl.so.1.1 have different sonames and symbol versions,
+    # so both load in one php-fpm. A static OpenSSL linked into php-fpm would also answer
+    # libcurl's OpenSSL 3 calls, so curl keeps PHP's OpenSSL then
+    CURL_OSSL_VER=$(pkg-config --modversion openssl 2>/dev/null)
+    if [[ "$CENTOS_NINE" -eq 9 ]] && [[ "$CURL_OSSL_VER" = 1.* ]] && \
+       [[ -e "${OPENSSL_CUSTOMPATH}/lib/libssl.so.1.1" ]] && \
+       [[ "$(PKG_CONFIG_PATH= PKG_CONFIG_LIBDIR=/usr/lib64/pkgconfig:/usr/share/pkgconfig pkg-config --modversion openssl 2>/dev/null)" = 3.* ]]; then
+        CURL_SYS_OSSL3='y'
+        CURL_OSSL_VER='3'
+    elif [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_EIGHT" -eq 8 || "$CURL_OSSL_VER" = 1.* ]]; then
         CURL_VER="$CURL_VER_OSSL11"
     fi
     local CURL_SRC_FILE="curl-${CURL_VER}.tar.xz"
     local CURL_SRC_URL="https://curl.se/download/${CURL_SRC_FILE}"
-    echo ">>> PHP_CUSTOM_CURL=y – ensuring cURL ${CURL_VER}"
+    echo ">>> PHP_CUSTOM_CURL=y – ensuring cURL ${CURL_VER} (OpenSSL ${CURL_OSSL_VER:-not found}, system OpenSSL 3: ${CURL_SYS_OSSL3})"
 
-    #
-    # --------  EL 9  +  PHP 7.4 / 8.0  →  use compat-openssl11  ----------
-    #
-    local OPENSSL_CFG CFLAGS LDFLAGS
-    if [[ "$CENTOS_NINE" -eq 9 ]] &&                               \
-       ( [[ "$PHPVER_ID" -ge 70400 && "$PHPVER_ID" -lt 70500 ]] || \
-         [[ "$PHPVER_ID" -ge 80000 && "$PHPVER_ID" -lt 80100 ]] ); then
-
-        echo ">>> Using compat-openssl11 runtime"
-
-        # compat-openssl11 comes from AppStream, so it keeps getting AlmaLinux updates. No EL9
-        # repo ships its -devel, so the headers come from a tarball built from AlmaLinux's source
-        # rpm (centminmod-el9-openssl), pinned by sha256. The old mirror -devel rpm required the
-        # exact 1.1.1k-5.el9 runtime, which blocked those updates
-        local COMPAT11_DIR=/opt/compat-openssl11
-        local COMPAT11_HDR=compat-openssl11-headers-1.1.1k-5.el9_8.6.x86_64.tar.gz
-        local COMPAT11_HDR_SHA256=8461362e6fb97ab1bfffa8e348b4899300b906159f32487cc74c240646485741
-        if rpm -q compat-openssl11-devel-1.1.1k-5.el9 &>/dev/null; then
-            rpm -e compat-openssl11-devel-1.1.1k-5.el9 || return 1
-        fi
-        rpm -q compat-openssl11 &>/dev/null || dnf install -y compat-openssl11 || return 1
-        if ! grep -qx "${COMPAT11_HDR_SHA256}  ${COMPAT11_HDR}" "${COMPAT11_DIR}/.headers" 2>/dev/null; then
-            if [[ ! -f "${SRC_DIR}/${COMPAT11_HDR}" ]]; then
-                wget -qO "${SRC_DIR}/${COMPAT11_HDR}" "${LOCALCENTMINMOD_MIRROR}/centminmodparts/rpms/compat-openssl11/${COMPAT11_HDR}" || { rm -f "${SRC_DIR}/${COMPAT11_HDR}"; return 1; }
-            fi
-            if ! echo "${COMPAT11_HDR_SHA256}  ${SRC_DIR}/${COMPAT11_HDR}" | sha256sum -c --quiet -; then
-                echo "ERROR: ${COMPAT11_HDR} does not match its pinned sha256" >&2
-                rm -f "${SRC_DIR}/${COMPAT11_HDR}"
-                return 1
-            fi
-            rm -rf "${COMPAT11_DIR}/include"
-            mkdir -p "${COMPAT11_DIR}" && tar -xzf "${SRC_DIR}/${COMPAT11_HDR}" -C "${COMPAT11_DIR}" || return 1
-            echo "${COMPAT11_HDR_SHA256}  ${COMPAT11_HDR}" > "${COMPAT11_DIR}/.headers"
-        fi
-        mkdir -p "${COMPAT11_DIR}/lib" || return 1
-        ln -sf /usr/lib64/libssl.so.1.1 "${COMPAT11_DIR}/lib/libssl.so"
-        ln -sf /usr/lib64/libcrypto.so.1.1 "${COMPAT11_DIR}/lib/libcrypto.so"
-
-        export CPPFLAGS="-I${COMPAT11_DIR}/include -D_FORTIFY_SOURCE=2"
-        export LDFLAGS="-L${COMPAT11_DIR}/lib ${LDFLAGS}"
-        OPENSSL_CFG="--with-openssl=/usr"
-
-    else
-        echo ">>> Building curl with its own OpenSSL under ${CURL_PREFIX}"
-        OPENSSL_CFG="--with-openssl"
+    # earlier EL9 PHP 7.4/8.0 curl builds installed this -devel rpm, which requires the exact
+    # 1.1.1k-5.el9 compat-openssl11 runtime and so blocks that package's AlmaLinux updates
+    if [[ "$CENTOS_NINE" -eq 9 ]] && rpm -q compat-openssl11-devel-1.1.1k-5.el9 &>/dev/null; then
+        rpm -e compat-openssl11-devel-1.1.1k-5.el9 || return 1
     fi
-    # -------------------------------------------------------------------
+    local CFLAGS LDFLAGS
 
-    # fast-path if the same curl already exists (only when self-built path)
+    # env-vars for subsequent PHP build, set whether curl is rebuilt or reused below
+    export CURL_CFLAGS="-I${CURL_PREFIX}/include"
+    export CURL_LIBS="-L${CURL_PREFIX}/lib -Wl,-rpath,${CURL_PREFIX}/lib -lcurl"
+    export CURL_SYSTEM_PREFIX="=${CURL_PREFIX}"
+    export CURL_CONFIG="${CURL_PREFIX}/bin/curl-config"
+
+    if [[ "$CENTOS_EIGHT" -eq 8 || "$CENTOS_NINE" -eq 9 ]]; then
+        export CURL_PHP_PKG_CONFIG_PATH="${CURL_PREFIX}/lib64/pkgconfig:"
+        export CURL_PHP_LD_LIBRARY_PATH=":${CURL_PREFIX}/lib64:"
+    else
+        export CURL_PHP_PKG_CONFIG_PATH="${CURL_PREFIX}/lib/pkgconfig:"
+        export CURL_PHP_LD_LIBRARY_PATH=":${CURL_PREFIX}/lib:"
+    fi
+
+    # fast-path if the same curl, built against the same OpenSSL major version, already exists
     # Force cURL rebuild on CentOS 7 with custom OpenSSL to avoid symbol conflicts
     # CentOS 7 system OpenSSL 1.0.2 vs custom OpenSSL 1.1.1w creates runtime conflicts
     if [[ "$CENTOS_SEVEN" = '7' && "$PHP_CUSTOMSSL_FORCE" = [yY] ]]; then
@@ -222,14 +202,11 @@ compile_custom_curl() {
         echo "Required to avoid OpenSSL symbol conflicts (libssl.so.10 vs libssl.so.1.1)"
         echo "----------------------------------------------------------------------"
         # Continue to rebuild (skip the return 0 below)
-    elif [[ "$OPENSSL_CFG" == "--with-openssl" ]] && \
-       [[ -x "${CURL_PREFIX}/bin/curl" ]] && \
-       [[ "$("${CURL_PREFIX}/bin/curl" -V | awk 'NR==1{print $2}')" == "$CURL_VER" ]]
+    elif [[ -x "${CURL_PREFIX}/bin/curl" ]] && \
+       "${CURL_PREFIX}/bin/curl" -V 2>/dev/null | \
+       awk -v v="$CURL_VER" -v s=" OpenSSL/${CURL_OSSL_VER%%.*}." 'NR==1 {found = ($2 == v && index($0, s) > 0); exit} END {exit !found}'
     then
         echo "cURL ${CURL_VER} already present – skipping build."
-        export CURL_CFLAGS="-I${CURL_PREFIX}/include"
-        export CURL_LIBS="-L${CURL_PREFIX}/lib -Wl,-rpath,${CURL_PREFIX}/lib -lcurl"
-        export CURL_SYSTEM_PREFIX="=${CURL_PREFIX}"
         return 0
     fi
 
@@ -238,7 +215,7 @@ compile_custom_curl() {
         wget -qO "${SRC_DIR}/${CURL_SRC_FILE}" "${CURL_SRC_URL}" || { rm -f "${SRC_DIR}/${CURL_SRC_FILE}"; return 1; }
 
     rm -rf "${SRC_DIR}/curl-${CURL_VER}"
-    tar -xf "${SRC_DIR}/${CURL_SRC_FILE}" -C "${SRC_DIR}"
+    tar -xf "${SRC_DIR}/${CURL_SRC_FILE}" -C "${SRC_DIR}" || { rm -f "${SRC_DIR}/${CURL_SRC_FILE}"; return 1; }
     cd "${SRC_DIR}/curl-${CURL_VER}" || return 1
 
     if [[ "$CENTOS_TEN" -eq '10' ]]; then
@@ -260,31 +237,21 @@ compile_custom_curl() {
         CURL_LIBPSL_DISABLE=''
     fi
 
-    ./configure \
+    # the exported PKG_CONFIG_PATH points at PHP's own OpenSSL, which curl's --with-openssl would
+    # find before the system OpenSSL 3; PHP's configure still needs it, so drop it for curl only
+    local CURL_PKG_CONFIG_PATH="$PKG_CONFIG_PATH"
+    [[ "$CURL_SYS_OSSL3" = 'y' ]] && CURL_PKG_CONFIG_PATH=''
+    PKG_CONFIG_PATH="$CURL_PKG_CONFIG_PATH" ./configure \
         --prefix="${CURL_PREFIX}" \
         --disable-static \
         --disable-ldap \
         --disable-ldaps \
         ${CURL_LIBPSL_DISABLE} \
-        ${OPENSSL_CFG} \
+        --with-openssl \
         --with-ca-bundle=${PHP_CACERT_BUNDLE_PATH} \
-        || { echo "Configure failed"; return 1; }
+        || { echo "Configure failed"; cd "${ORIG_DIR}"; return 1; }
 
-    make${MAKETHREADS_PHP} && make install || { echo "Build/install failed"; return 1; }
-
-    # env-vars for subsequent PHP build
-    export CURL_CFLAGS="-I${CURL_PREFIX}/include"
-    export CURL_LIBS="-L${CURL_PREFIX}/lib -Wl,-rpath,${CURL_PREFIX}/lib -lcurl"
-    export CURL_SYSTEM_PREFIX="=${CURL_PREFIX}"
-    export CURL_CONFIG="${CURL_PREFIX}/bin/curl-config"
-
-    if [[ "$CENTOS_EIGHT" -eq 8 || "$CENTOS_NINE" -eq 9 ]]; then
-        export CURL_PHP_PKG_CONFIG_PATH="${CURL_PREFIX}/lib64/pkgconfig:"
-        export CURL_PHP_LD_LIBRARY_PATH=":${CURL_PREFIX}/lib64:"
-    else
-        export CURL_PHP_PKG_CONFIG_PATH="${CURL_PREFIX}/lib/pkgconfig:"
-        export CURL_PHP_LD_LIBRARY_PATH=":${CURL_PREFIX}/lib:"
-    fi
+    make${MAKETHREADS_PHP} && make install || { echo "Build/install failed"; cd "${ORIG_DIR}"; return 1; }
 
     echo "Custom cURL ${CURL_VER} installed – PHP will use --with-curl=${CURL_PREFIX}"
     cd "${ORIG_DIR}"
@@ -4365,13 +4332,14 @@ else
   fi
 
   # only allow custom curl compiles for EL9 + PHP 7.4+ or EL7/EL8 + PHP 7.4+
-  # EL9 + PHP 7.4 or 8.0 is built against custom compat-openssl11 opensl 1.1.1 version
+  # EL9 + PHP 7.4 or 8.0 always builds custom curl (compile_custom_curl picks its OpenSSL); a
+  # failed curl build stops the PHP build rather than falling back to the system libcurl
   if [[ "$CENTOS_NINE" -eq '9' ]] && [[ "$PHPMVER" = '7.4' || "$PHPMUVER" = '7.4' ||"$PHPMVER" = '8.0' || "$PHPMUVER" = '8.0' || "$PHPMVER" = '8.1' || "$PHPMUVER" = '8.1' || "$PHPMVER" = '8.2' || "$PHPMUVER" = '8.2' || "$PHPMVER" = '8.3' || "$PHPMUVER" = '8.3' || "$PHPMVER" = '8.4' || "$PHPMUVER" = '8.4' || "$PHPMVER" = '8.5' || "$PHPMUVER" = '8.5' || "$PHPVER_ID" -ge '80100' ]]; then
-    compile_custom_curl
+    compile_custom_curl || return 1
   elif [[ "$CENTOS_EIGHT" -eq '8' ]] && [[ "$PHPMVER" = '7.4' || "$PHPMUVER" = '7.4' ||"$PHPMVER" = '8.0' || "$PHPMUVER" = '8.0' || "$PHPMVER" = '8.1' || "$PHPMUVER" = '8.1' || "$PHPMVER" = '8.2' || "$PHPMUVER" = '8.2' || "$PHPMVER" = '8.3' || "$PHPMUVER" = '8.3' || "$PHPMVER" = '8.4' || "$PHPMUVER" = '8.4' || "$PHPMVER" = '8.5' || "$PHPMUVER" = '8.5' || "$PHPVER_ID" -ge '80000' ]]; then
-    compile_custom_curl
+    compile_custom_curl || return 1
   elif [[ "$CENTOS_SEVEN" -eq '7' ]] && [[ "$PHPMVER" = '7.4' || "$PHPMUVER" = '7.4' ||"$PHPMVER" = '8.0' || "$PHPMUVER" = '8.0' || "$PHPMVER" = '8.1' || "$PHPMUVER" = '8.1' || "$PHPMVER" = '8.2' || "$PHPMUVER" = '8.2' || "$PHPMVER" = '8.3' || "$PHPMUVER" = '8.3' || "$PHPMVER" = '8.4' || "$PHPMUVER" = '8.4' || "$PHPMVER" = '8.5' || "$PHPMUVER" = '8.5' || "$PHPVER_ID" -ge '80000' ]]; then
-    compile_custom_curl
+    compile_custom_curl || return 1
   fi
 
   if [[ "$MDB_INSTALL" = [yY] || "$MYSQL_INSTALL" = [yY] ]]; then
