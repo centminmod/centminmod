@@ -130,7 +130,6 @@ php|PHP 8.4 fallback|installer:installer84.sh|php||url:https://www.php.net/distr
 php|PHP 8.5 fallback|installer:installer85.sh|php||url:https://www.php.net/distributions/php-{V}.tar.gz|minor|installer fetches latest at runtime
 php|PHP_VERSION default|PHP_VERSION|php||url:https://www.php.net/distributions/php-{V}.tar.gz|minor|installers rewrite it at install
 php|libzip|LIBZIP_VER|gh:nih-at/libzip:^v[0-9]+\.[0-9]+(\.[0-9]+)?$|s/^v//|url:https://github.com/nih-at/libzip/releases/download/v{V}/libzip-{V}.tar.gz|any|
-php|libzip (PHP 8.5)|LIBZIP_EIGHT_FIVE_VER|gh:nih-at/libzip:^v[0-9]+\.[0-9]+(\.[0-9]+)?$|s/^v//|url:https://github.com/nih-at/libzip/releases/download/v{V}/libzip-{V}.tar.gz|any|
 php|libsodium|LIBSODIUM_VER|gh:jedisct1/libsodium:^[0-9.]+-RELEASE$|s/-RELEASE$//|url:https://download.libsodium.org/libsodium/releases/libsodium-{V}.tar.gz|any|
 php|argon2|LIBARGON_VER|gh:P-H-C/phc-winner-argon2:^[0-9]{8}$||tag:{V}|any|
 php|libgd (external)|LIBGD_EXTERNAL_VER|gh:libgd/libgd:^gd-[0-9.]+$|s/^gd-//|tag:gd-{V}|any|
