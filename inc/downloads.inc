@@ -1439,7 +1439,11 @@ echo ""
     fi    
 
 nginxpcretarball
-nginxpcretwotarball
+# PCRE2 is only built when NGINX_PCRE_TWO='y' (pcre_two_dir_check fetches it again then),
+# so a failed PCRE2 download must not stop installs and menu 4 runs that do not use it
+if [[ "$NGINX_PCRE_TWO" = [yY] ]]; then
+  nginxpcretwotarball
+fi
 nginxwebdavtarball
 nginxpgspeedtarball
 
