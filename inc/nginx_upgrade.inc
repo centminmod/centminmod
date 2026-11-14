@@ -7,6 +7,10 @@ nginx_maintenance_on(){
     if [[ "$NGINX_UPDATEMAINTENANCE" = [yY] ]]; then
         if [ -f /usr/bin/sitestatus ]; then
             /usr/bin/sitestatus off
+            # download and build helpers exit 1 on failure, which skips the callers'
+            # nginx_maintenance_off, so also turn maintenance mode off when the shell exits
+            NGINX_MAINTENANCE_EXIT_TRAP='y'
+            trap nginx_maintenance_off EXIT
         fi
     fi
 }
@@ -19,6 +23,10 @@ nginx_maintenance_off(){
     # updated, disable 503 maintenance mod after
     if [[ "$NGINX_UPDATEMAINTENANCE" = [yY] ]]; then
         if [ -f /usr/bin/sitestatus ]; then
+            if [[ "$NGINX_MAINTENANCE_EXIT_TRAP" = 'y' ]]; then
+                trap - EXIT
+                NGINX_MAINTENANCE_EXIT_TRAP='n'
+            fi
             /usr/bin/sitestatus on
         fi
     fi
