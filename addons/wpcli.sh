@@ -54,7 +54,7 @@ fi
 curl -${ipv_forceopt}Is --connect-timeout 30 --max-time 30 $WPCLILINK | grep 'HTTP\/' | grep '200' >/dev/null 2>&1
 WPCLI_CURLCHECK=$?
 if [[ "$WPCLI_CURLCHECK" != '0' ]]; then
-	WPCLILINK='${LOCALCENTMINMOD_MIRROR}/centminmodparts/wp-cli/wp-cli.phar'
+	WPCLILINK="${LOCALCENTMINMOD_MIRROR}/centminmodparts/wp-cli/wp-cli.phar"
 fi
 
 # functions
