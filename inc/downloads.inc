@@ -4130,7 +4130,7 @@ echo ""
 ###############################################
 
 alldownloads() {
-local zlib_download_pid openssl_download_pid libressl_download_pid download_status
+local zlib_download_pid php_download_pid openssl_download_pid libressl_download_pid download_status
 
 if [[ "$FORCE_IPVFOUR" != [yY] ]]; then
   ipv_forceopt=""
@@ -4222,13 +4222,19 @@ else
 fi
 
 if [[ "$PARALLEL_MODE" = [yY] ]] && [[ "$(grep -c "processor" /proc/cpuinfo)" -gt '1' ]]; then
+  # a failed PHP download or extraction must stop the install: a bare wait returns 0
+  # whatever phptarball's background exit status was
+  download_status=0
   phptarball &
+  php_download_pid=$!
   xcachetarball &
   apctarball &
   zopcachetarball &
+  wait "$php_download_pid" || download_status=1
   wait
+  [[ "$download_status" -eq 0 ]] || return 1
 else
-  phptarball
+  phptarball || return $?
   xcachetarball
   apctarball
   zopcachetarball
