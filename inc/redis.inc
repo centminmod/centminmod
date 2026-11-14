@@ -84,6 +84,18 @@ fi
 
 }
 
+phpredis_igbinary_validate() {
+    if [[ "$PHPREDIS_IGBINARY" = [yY] && "$IGBINARY_INSTALL" != [yY] ]]; then
+        echo "PHPREDIS_IGBINARY=y requires IGBINARY_INSTALL=y"
+        return 1
+    fi
+    return 0
+}
+
+phpredis_igbinary_available() {
+    php -r 'exit(extension_loaded("igbinary") && class_exists("Redis", false) && defined("Redis::SERIALIZER_IGBINARY") && (new Redis)->setOption(Redis::OPT_SERIALIZER, Redis::SERIALIZER_IGBINARY) ? 0 : 1);'
+}
+
 checkigbinary() {
     PHPEXTDIRD=$(php_extension_dir)
     cecho "Checking for igbinary.so ..." $boldgreen
@@ -106,6 +118,7 @@ checkigbinary() {
 #######################################################
 redisinstall() {
     if [[ "$PHP_INSTALL" = [yY] ]]; then
+    phpredis_igbinary_validate || return $?
 
     REDIS_SUBMENU=$1
 
@@ -124,7 +137,7 @@ redisinstall() {
       check_devtoolset_php
       enable_devtoolset "$CLANG_PHP" || return 1
 
-if [[ "$INITIALINSTALL" != [yY] ]]; then
+if [[ "$INITIALINSTALL" != [yY] || "$PHPREDIS_IGBINARY" = [yY] ]]; then
     checkigbinary
 fi
 
@@ -219,8 +232,8 @@ if [[ "$REDIS_PHPCURRENTVER" = '8.6' || "$PHPMUVER" = '8.6' || "$REDIS_PHPCURREN
             redis_lzf_opt=''
         fi
         if [[ -f "${PHPEXTDIRD}/igbinary.so" ]] && [ "$IGBINARY_INSTALL" == 'y' ]; then
-            if [[ "$(/usr/local/bin/php-config --vernum 2>/dev/null)" -ge 70400 || "$PHPMUVER" = 'NGDEBUG' ]]; then
-                # disable igbinary on PHP 7.4+ (segfaults seen on PHP 8.0+)
+            if [[ "$PHPREDIS_IGBINARY" != [yY] ]] && [[ "$(/usr/local/bin/php-config --vernum 2>/dev/null)" -ge 70400 || "$PHPMUVER" = 'NGDEBUG' ]]; then
+                # PHP 7.4+ builds without igbinary unless PHPREDIS_IGBINARY='y' (segfaults were seen on PHP 8.0+)
                 echo "redis php configure"
                 echo "CFLAGS="${COMPILER_CFLAGS} -fPIC -O2 -fstack-protector-strong -D_FORTIFY_SOURCE=2" CPPFLAGS="-D_FORTIFY_SOURCE=2" CXXFLAGS="-fPIC -O2" LDFLAGS="-Wl,-z,relro,-z,now -pie" ./configure --with-php-config=/usr/local/bin/php-config${redis_zstd_opt}${redis_lzfour_opt}${redis_lzf_opt}"
                 CFLAGS="${COMPILER_CFLAGS} -fPIC -O2 -fstack-protector-strong -D_FORTIFY_SOURCE=2" CPPFLAGS="-D_FORTIFY_SOURCE=2" CXXFLAGS="-fPIC -O2" LDFLAGS="-Wl,-z,relro,-z,now -pie" ./configure --with-php-config=/usr/local/bin/php-config${redis_zstd_opt}${redis_lzfour_opt}${redis_lzf_opt}
@@ -301,8 +314,8 @@ if [[ "$REDIS_PHPCURRENTVER" = '8.6' || "$PHPMUVER" = '8.6' || "$REDIS_PHPCURREN
                 echo "CFLAGS="${COMPILER_CFLAGS} -fPIC -O2 -fstack-protector-strong -D_FORTIFY_SOURCE=2" CPPFLAGS="-D_FORTIFY_SOURCE=2" CXXFLAGS="-fPIC -O2" LDFLAGS="-Wl,-z,relro,-z,now -pie" ./configure --with-php-config=/usr/local/bin/php-config"
                 CFLAGS="${COMPILER_CFLAGS} -fPIC -O2 -fstack-protector-strong -D_FORTIFY_SOURCE=2" CPPFLAGS="-D_FORTIFY_SOURCE=2" CXXFLAGS="-fPIC -O2" LDFLAGS="-Wl,-z,relro,-z,now -pie" ./configure --with-php-config=/usr/local/bin/php-config
             else
-                if [[ "$(/usr/local/bin/php-config --vernum 2>/dev/null)" -ge 70400 || "$PHPMUVER" = 'NGDEBUG' ]]; then
-                    # disable igbinary on PHP 7.4+ (segfaults seen on PHP 8.0+)
+                if [[ "$PHPREDIS_IGBINARY" != [yY] ]] && [[ "$(/usr/local/bin/php-config --vernum 2>/dev/null)" -ge 70400 || "$PHPMUVER" = 'NGDEBUG' ]]; then
+                    # PHP 7.4+ builds without igbinary unless PHPREDIS_IGBINARY='y' (segfaults were seen on PHP 8.0+)
                     echo "redis php configure alt"
                     echo "CFLAGS="${COMPILER_CFLAGS} -fPIC -O2 -fstack-protector-strong -D_FORTIFY_SOURCE=2" CPPFLAGS="-D_FORTIFY_SOURCE=2" CXXFLAGS="-fPIC -O2" LDFLAGS="-Wl,-z,relro,-z,now -pie" ./configure --with-php-config=/usr/local/bin/php-config${redis_zstd_opt}${redis_lzfour_opt}${redis_lzf_opt}"
                     CFLAGS="${COMPILER_CFLAGS} -fPIC -O2 -fstack-protector-strong -D_FORTIFY_SOURCE=2" CPPFLAGS="-D_FORTIFY_SOURCE=2" CXXFLAGS="-fPIC -O2" LDFLAGS="-Wl,-z,relro,-z,now -pie" ./configure --with-php-config=/usr/local/bin/php-config${redis_zstd_opt}${redis_lzfour_opt}${redis_lzf_opt}
@@ -369,6 +382,9 @@ fi # redis.so check
     #     rm -f ${CONFIGSCANDIR}/redis.ini
     #     echo
     # fi
+    if [[ "$PHPREDIS_IGBINARY" = [yY] ]]; then
+        phpredis_igbinary_available || { echo "PhpRedis igbinary support is unavailable after installation"; return 1; }
+    fi
     if [[ "$REDIS_SUBMENU" = 'submenu' ]]; then
         cmservice php-fpm restart
     fi

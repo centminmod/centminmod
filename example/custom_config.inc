@@ -523,6 +523,10 @@ LIBMEMCACHED_VER='1.0.18'     # libmemcached version for source compile
 TWEMPERF_VER='0.1.1'
 
 PHPREDIS='y'                # redis PHP extension install
+# PHPREDIS_IGBINARY='y' builds PhpRedis on PHP 7.4+ with igbinary support; requires
+# IGBINARY_INSTALL='y'. Applications must select Redis::SERIALIZER_IGBINARY on their
+# Redis connections; application and PHP session serialization defaults do not change.
+PHPREDIS_IGBINARY='n'
 REDISPHP_VER='4.3.0'        # redis PHP version for PHP <7.x
 REDISPHPSEVEN_VER='5.3.7'   # redis PHP version for PHP 7.0.x to 7.1.x
 REDISPHPSEVENTWO_VER='6.1.0'   # redis PHP version for PHP =>7.2.x

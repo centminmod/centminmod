@@ -30,7 +30,7 @@ DT=$(date +"%d%m%y-%H%M%S")
 branchname='140.00beta01'
 SCRIPT_MAJORVER='140'
 SCRIPT_MINORVER='00'
-SCRIPT_INCREMENTVER='473'
+SCRIPT_INCREMENTVER='474'
 SCRIPT_VERSIONSHORT="${branchname}"
 SCRIPT_VERSION="${SCRIPT_VERSIONSHORT}.b${SCRIPT_INCREMENTVER}"
 SCRIPT_DATE='16/01/25'
@@ -1107,6 +1107,7 @@ FFMPEGVER='0.6.0'
 SUHOSINVER='0.9.38'
 
 PHPREDIS='y'                # redis PHP extension install
+PHPREDIS_IGBINARY='n'       # opt in to igbinary support in modern PhpRedis builds
 REDISPHP_VER='4.3.0'            # redis PHP version for PHP <7.x
 REDISPHPSEVEN_VER='5.3.7'       # redis PHP version for PHP 7.0.x to 7.1.x
 REDISPHPSEVENTWO_VER='6.0.2'    # redis PHP version for PHP 7.2.x to 7.3.x
@@ -1789,6 +1790,8 @@ if [ -f "${CM_INSTALLDIR}/inc/z_custom.inc" ]; then
         cat "${CM_INSTALLDIR}/inc/z_custom.inc" > "${CENTMINLOGDIR}/inc-zcustom-config-settings_${DT}.log"
     fi
 fi
+
+phpredis_igbinary_validate || exit $?
 
 # run after custom_config.inc and z_custom.inc are sourced so persistent
 # DISABLE_IPVSIX, FORCE_IPVFOUR and SKIP_CHECKIPVSIX overrides are honoured
