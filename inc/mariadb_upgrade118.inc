@@ -346,7 +346,7 @@ if [[ "$MDB_COUNTRY" = 'US' || "$MDB_CONTINENT" = 'NA' ]]; then
         MDB_MIRROR_BASEURL='https://rpm.mariadb.org'
     fi
 elif [[ "$MDB_COUNTRY" = 'SG' || "$MDB_CONTINENT" = 'AS' ]]; then
-    MDB_MIRROR_BASEURL='https://download.nus.edu.sg/mirror/mariadb/yum'
+    MDB_MIRROR_BASEURL='https://mirror.djvg.sg/mariadb/yum'
     MDB_REPOMD_URL="${MDB_MIRROR_BASEURL}/${MDB_REPO_DIR}/repodata/repomd.xml"
     # fallback check of repomd.xml
     curl -s "$MDB_REPOMD_URL" -o repomd.xml
@@ -590,7 +590,7 @@ if [[ "$MDB_COUNTRY" = 'US' || "$MDB_CONTINENT" = 'NA' ]]; then
     echo "rpm --import https://supplychain.mariadb.com/MariaDB-Server-GPG-KEY"
     rpm --import https://supplychain.mariadb.com/MariaDB-Server-GPG-KEY
 elif [[ "$MDB_COUNTRY" = 'SG' || "$MDB_CONTINENT" = 'AS' ]]; then
-    MDB_MIRROR_BASEURL='https://download.nus.edu.sg/mirror/mariadb/yum'
+    MDB_MIRROR_BASEURL='https://mirror.djvg.sg/mariadb/yum'
     MDB_REPOMD_URL="${MDB_MIRROR_BASEURL}/${MDB_REPO_DIR}/repodata/repomd.xml"
     # fallback check of repomd.xml
     curl -s "$MDB_REPOMD_URL" -o repomd.xml
