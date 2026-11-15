@@ -575,6 +575,18 @@ switch_mariadb_repo_rhel_paths() {
   fi
 }
 
+switch_mariadb_repo_nus_mirror() {
+  # The NUS Singapore MariaDB mirror (download.nus.edu.sg) no longer resolves,
+  # which fails every yum/dnf command on SG/Asia servers whose mariadb.repo
+  # was written with it. Point them at the current Singapore mirror, which
+  # carries the same <version>/rhelN-amd64 yum paths and GPG key.
+  if [ -f /etc/yum.repos.d/mariadb.repo ] && grep -qE 'https?://download\.nus\.edu\.sg/mirror/mariadb/yum' /etc/yum.repos.d/mariadb.repo; then
+    cp -a /etc/yum.repos.d/mariadb.repo /etc/yum.repos.d/mariadb.repo.bak-nus-$(date +%Y%m%d-%H%M%S)
+    sed -i -E 's#https?://download\.nus\.edu\.sg/mirror/mariadb/yum#https://mirror.djvg.sg/mariadb/yum#g' /etc/yum.repos.d/mariadb.repo
+    yum -q clean all
+  fi
+}
+
 switch_mariadbtenfive_archives() {
   # MariaDB 10.5 is EOL: yum.mariadb.org and its mirrors removed the 10.5
   # directories, which fails every yum/dnf command. Only archive.mariadb.org
@@ -5018,6 +5030,7 @@ echo "DirectAdmin detected.. centmin mod NOT compatible"
 echo "aborting script..."
 exit
 fi
+switch_mariadb_repo_nus_mirror
 service_wrapper_install
 
 if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]] &&  [[ "$DNF_ENABLE" = [yY] ]]; then
