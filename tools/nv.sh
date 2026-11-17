@@ -1304,7 +1304,7 @@ server {
   #add_header Referrer-Policy "strict-origin-when-cross-origin";
   #add_header Permissions-Policy "accelerometer=(), camera=(), geolocation=(), gyroscope=(), magnetometer=(), microphone=(), payment=(), usb=()";
   $COMP_HEADER;
-  ssl_buffer_size 1369;
+  ssl_buffer_size 4k;
   ssl_session_tickets on;
   
   # enable ocsp stapling
@@ -1406,7 +1406,7 @@ server {
   #add_header Referrer-Policy "strict-origin-when-cross-origin";
   #add_header Permissions-Policy "accelerometer=(), camera=(), geolocation=(), gyroscope=(), magnetometer=(), microphone=(), payment=(), usb=()";
   $COMP_HEADER;
-  ssl_buffer_size 1369;
+  ssl_buffer_size 4k;
   ssl_session_tickets on;
   
   # enable ocsp stapling
@@ -1506,7 +1506,7 @@ server {
   #add_header Referrer-Policy "strict-origin-when-cross-origin";
   #add_header Permissions-Policy "accelerometer=(), camera=(), geolocation=(), gyroscope=(), magnetometer=(), microphone=(), payment=(), usb=()";
   $COMP_HEADER;
-  ssl_buffer_size 1369;
+  ssl_buffer_size 4k;
   ssl_session_tickets on;
   
   # enable ocsp stapling

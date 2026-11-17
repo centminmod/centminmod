@@ -2736,6 +2736,12 @@
 
 # Nginx Config Allow Override
 # Allow Centmin Mod to update nginx.conf defaults when revised
+# Only uncommented values still at a previous default are changed; set 'n' to keep them:
+# - nginx.conf worker_connections 4096, 10000, 50000, 80000, 100000 or 300000 -> 65536
+#   on every centmin.sh/centmin-cli.sh start (inc/cpcheck.inc update_nginxconf),
+#   taking effect at the next nginx reload or restart
+# - conf.d/*.conf ssl_buffer_size 1369 -> 4k during nginx upgrades: menu 4,
+#   centmin-cli.sh nginxupgrade and tools/autoupdate.sh (nginx_sslbuffer_default_update)
 # Git History: First added 2017-04-15 (18abfb26), Last modified 2019-08-08 (631b5a11)
 #NGINX_ALLOWOVERRIDE='y'  
 

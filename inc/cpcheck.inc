@@ -2119,7 +2119,6 @@ update_cmdshortcuts() {
 
 update_nginxconf() {
   if [[ -f /usr/local/nginx/conf/nginx.conf && "$NGINX_ALLOWOVERRIDE" = [yY] ]]; then
-    NGX_WRKCON=$(grep -w 'worker_connections' /usr/local/nginx/conf/nginx.conf | column -t| tr -s " " | sed -e 's|;||g' | awk '{print $2}' | grep -v 'worker_connections'| head -n1)
     NGX_KEEPALIVEREQUESTS=$(grep -w 'keepalive_requests' /usr/local/nginx/conf/nginx.conf | column -t| tr -s " " | sed -e 's|;||g' | awk '{print $2}' | grep -v 'keepalive_requests'| head -n1)
     NGX_KT=$(grep -w 'keepalive_timeout' /usr/local/nginx/conf/nginx.conf | column -t| tr -s " " | sed -e 's|;||g' | awk '{print $2}'| grep -v keep| head -n1)
     # adjust to new default higher values only if previous defaults are detected
@@ -2138,8 +2137,12 @@ update_nginxconf() {
       # http://hg.nginx.org/nginx/rev/f790816a0e87
       sed -i 's|keepalive_requests .*|keepalive_requests  100000;|' /usr/local/nginx/conf/nginx.conf
     fi
-    if [[ "$NGX_WRKCON" -eq '4096' || "$NGX_WRKCON" -eq '10000' || "$NGX_WRKCON" -eq '50000' || "$NGX_WRKCON" -eq '80000' || "$NGX_WRKCON" -eq '100000' ]]; then
-      sed -i 's|worker_connections .*|worker_connections  300000;|' /usr/local/nginx/conf/nginx.conf
+    # 300000 preallocated ~126 MiB of connection slots per worker; 65536 is ~27 MiB.
+    # Only an uncommented line still at a previous default changes; the rest of
+    # that line, commented lines and custom values are kept.
+    local ngx_wrkcon_old='^([[:space:]]*)worker_connections[[:space:]]+(4096|10000|50000|80000|100000|300000);'
+    if grep -qE "$ngx_wrkcon_old" /usr/local/nginx/conf/nginx.conf; then
+      sed -i --follow-symlinks -E "s/${ngx_wrkcon_old}/\1worker_connections  65536;/" /usr/local/nginx/conf/nginx.conf
     fi
     if [[ "$(echo $NGX_KT | grep -o 's')" = 's' ]]; then
       NGX_KT=$(echo $NGX_KT | sed -e 's|s||g')
