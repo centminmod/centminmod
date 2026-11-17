@@ -12,7 +12,7 @@ Practical guides for common Centmin Mod configurations and workflows.
 | [Nginx Docker Reverse Proxy](nginx-docker-reverse-proxy.md) | Nginx & Docker | 2026-01-31 | 2026-01-31 |
 | [Nginx Modules in 141.00beta01](nginx-141-modules.md) | Nginx | 2026-11-09 | 2026-11-09 |
 | [AI Crawler Maps for Nginx](nginx-ai-crawlers.md) | Nginx & Bots | 2026-11-09 | 2026-11-09 |
-| [Anubis Bot Challenge for Nginx](nginx-anubis.md) | Nginx & Bots | 2026-11-09 | 2026-11-09 |
+| [Anubis Bot Challenge for Nginx](nginx-anubis.md) | Nginx & Bots | 2026-11-09 | 2026-11-18 |
 | [MCP / SSE / LLM Reverse Proxy](nginx-mcp-proxy.md) | Nginx & AI | 2026-11-09 | 2026-11-09 |
 
 ---
@@ -114,16 +114,19 @@ Sort AI crawlers by what they do, then rate limit or block each kind separately 
 Protect a site from scrapers with an Anubis proof-of-work challenge, using addons/anubis.sh and nginx auth_request.
 
 **Use cases covered:**
-- Stopping mass scrapers that don't run JavaScript
+- Stopping scrapers that pretend to be browsers
 - Protecting a whole site or chosen paths
 - Exempting APIs, feeds and webhooks
+- Running Anubis on a site behind Cloudflare
 
 **Topics include:**
 - Building nginx with auth_request
 - Installing, checking status and uninstalling Anubis
-- Adding the includes to a vhost
-- Editing the bot policy and settings
-- Troubleshooting 500 errors, challenge loops and location conflicts
+- Adding the includes to a vhost, and what each page costs in checks
+- What the default bot policy allows, challenges and denies
+- Editing the bot policy and settings, including redirect domains and optional Go memory tuning
+- Benchmarking a site that runs Anubis
+- Troubleshooting 500 errors, challenge loops, Cloudflare and redirect errors, and location conflicts
 
 ---
 

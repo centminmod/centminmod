@@ -120,15 +120,26 @@ anubis_env_set() {
   fi
 }
 
+# status_codes DENY lines in the YAML forms a hand edit can leave: optional
+# quotes, any spacing after the colon and a trailing comment. _2XX_ANY also
+# catches a 2xx followed by anything else, for the final check.
+ANUBIS_DENY_2XX_RE="^[[:space:]]*DENY:[[:space:]]*[\"']?2[0-9]{2}[\"']?[[:space:]]*(#.*)?\$"
+ANUBIS_DENY_2XX_ANY_RE="^[[:space:]]*DENY:[[:space:]]*[\"']?2[0-9]{2}([^0-9]|\$)"
+ANUBIS_DENY_SET_RE="^[[:space:]]*DENY:[[:space:]]*[\"']?[0-9]+"
+
 anubis_policy_deny() {
   # nginx auth_request treats any 2xx as a pass, so the policy's status_codes
   # DENY must not be 2xx (upstream ships DENY: 200, the default when unset)
-  if grep -qE '^[[:space:]]*DENY: 2[0-9][0-9][[:space:]]*$' "$ANUBIS_POLICY"; then
-    sed -i 's|^\([[:space:]]*\)DENY: 2[0-9][0-9][[:space:]]*$|\1DENY: 403|' "$ANUBIS_POLICY"
+  if grep -qE "$ANUBIS_DENY_2XX_RE" "$ANUBIS_POLICY"; then
+    # keep the indentation and any trailing comment
+    sed -i -E "s/^([[:space:]]*)DENY:[[:space:]]*[\"']?2[0-9]{2}[\"']?([[:space:]]*(#.*)?)\$/\1DENY: 403\2/" "$ANUBIS_POLICY"
   elif ! grep -q '^status_codes:' "$ANUBIS_POLICY"; then
     printf '\nstatus_codes:\n  CHALLENGE: 200\n  DENY: 403\n' >> "$ANUBIS_POLICY"
+  elif ! grep -qE "$ANUBIS_DENY_SET_RE" "$ANUBIS_POLICY" && grep -qE '^status_codes:[[:space:]]*(#.*)?$' "$ANUBIS_POLICY"; then
+    # a status_codes block without a DENY line
+    sed -i -E '/^status_codes:[[:space:]]*(#.*)?$/a\  DENY: 403' "$ANUBIS_POLICY"
   fi
-  if ! grep -qE '^[[:space:]]*DENY: [0-9]+' "$ANUBIS_POLICY" || grep -qE '^[[:space:]]*DENY: 2[0-9][0-9]' "$ANUBIS_POLICY"; then
+  if ! grep -qE "$ANUBIS_DENY_SET_RE" "$ANUBIS_POLICY" || grep -qE "$ANUBIS_DENY_2XX_ANY_RE" "$ANUBIS_POLICY"; then
     cecho "Error: could not set status_codes DENY: 403 in ${ANUBIS_POLICY}, edit it by hand" $boldred
     return 1
   fi
@@ -227,7 +238,7 @@ anubis_install() {
     chmod 0644 "$ANUBIS_POLICY"
     anubis_policy_deny || return 1
     cecho "created ${ANUBIS_POLICY} (status_codes DENY: 403)" $boldgreen
-  elif grep -qE '^[[:space:]]*DENY: 2[0-9][0-9][[:space:]]*$' "$ANUBIS_POLICY" || ! grep -qE '^[[:space:]]*DENY: [0-9]+' "$ANUBIS_POLICY"; then
+  elif grep -qE "$ANUBIS_DENY_2XX_ANY_RE" "$ANUBIS_POLICY" || ! grep -qE "$ANUBIS_DENY_SET_RE" "$ANUBIS_POLICY"; then
     # an existing policy with a 2xx or no DENY lets denied requests through nginx
     \cp -pf "$ANUBIS_POLICY" "${ANUBIS_POLICY}.bak-${DT}"
     anubis_policy_deny || return 1
@@ -271,7 +282,7 @@ anubis_install() {
   echo "  include /usr/local/nginx/conf/anubis.conf;"
   echo "  include /usr/local/nginx/conf/anubis_check.conf;"
   echo "then: nginx -t && nprestart"
-  echo "HTTPS vhosts only unless COOKIE_SECURE=false is set in ${ANUBIS_ENV}, see /usr/local/nginx/conf/anubis.conf"
+  echo "HTTPS vhosts only unless COOKIE_SECURE=false and COOKIE_PARTITIONED=false are set in ${ANUBIS_ENV}, see /usr/local/nginx/conf/anubis.conf"
   return 0
 }
 
