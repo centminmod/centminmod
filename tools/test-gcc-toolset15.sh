@@ -6,8 +6,10 @@ scratch=$(mktemp -d "$repo/.gcc15-test.XXXXXX")
 trap 'rm -rf "$scratch"' EXIT
 helper=$(sed -n '/^enable_gcc_toolset15() {/,/^}/p' "$repo/inc/gcc.inc")
 [[ -n "$helper" ]]
-helper=${helper//\/opt\/rh\/gcc-toolset-15/$scratch/toolset}
-helper=${helper//\/usr\/lib\/gcc-toolset\/15-env.source/$scratch/15-env.source}
+toolset_pat='/opt/rh/gcc-toolset-${ver}'
+helper=${helper//"$toolset_pat"/$scratch/toolset}
+helper=${helper//\/usr\/lib\/gcc-toolset\//$scratch/}
+[[ "$helper" != *'/opt/rh/'* && "$helper" != *'/usr/lib/gcc-toolset'* ]]
 eval "$helper"
 mkdir -p "$scratch/toolset/root/usr/bin"
 printf ':\n' > "$scratch/toolset/enable"
@@ -19,7 +21,8 @@ install_fake() {
   chmod +x "$scratch/toolset/root/usr/bin/"*
 }
 yum() {
-  [[ "$*" = '-y install gcc-toolset-15-gcc gcc-toolset-15-gcc-c++ gcc-toolset-15-binutils gcc-toolset-15-runtime' ]] || return 1
+  local v="${GCC_TOOLSET_VER:-15}"
+  [[ "$*" = "-y install gcc-toolset-$v-gcc gcc-toolset-$v-gcc-c++ gcc-toolset-$v-binutils gcc-toolset-$v-runtime" ]] || return 1
   case "$install_result" in
     fail) return 1;;
     incomplete) return 0;;
@@ -49,6 +52,73 @@ install_fake
 printf 'return 9\n' > "$scratch/15-env.source"
 if enable_gcc_toolset15; then echo 'FAIL: activation source failure accepted'; exit 1; fi
 printf ':\n' > "$scratch/15-env.source"
+# GCC Toolset 15 adds no C++ standard flag.
+enable_gcc_toolset15 >/dev/null
+[[ "$CXX" = "ccache $scratch/toolset/root/usr/bin/g++" && -z "$GCC_TOOLSET_CXXSTD" ]]
+# Opt-in GCC Toolset 16: its own packages, env file and version check, gnu++17 by default.
+GCC_TOOLSET_VER=16 INITIALINSTALL=y install_result=success
+export GCC_TEST_VERSION=16.2.1
+rm -f "$scratch/toolset/root/usr/bin/gcc"
+printf ':\n' > "$scratch/16-env.source"
+enable_gcc_toolset15 >/dev/null
+[[ "$CC" = "$scratch/toolset/root/usr/bin/gcc" && "$CXX" = "$scratch/toolset/root/usr/bin/g++ -std=gnu++17" ]]
+DEVTOOLSETSIXTEEN_CXXSTD=''
+enable_gcc_toolset15 >/dev/null
+[[ "$CXX" = "$scratch/toolset/root/usr/bin/g++" ]]
+DEVTOOLSETSIXTEEN_CXXSTD='gnu++20'
+enable_gcc_toolset15 >/dev/null
+[[ "$CXX" = "$scratch/toolset/root/usr/bin/g++ -std=gnu++20" ]]
+# A value that is not a standard name falls back to gnu++17 with a warning.
+DEVTOOLSETSIXTEEN_CXXSTD='-std=gnu++17'
+[[ "$(enable_gcc_toolset15 2>&1 >/dev/null)" = *'WARNING: DEVTOOLSETSIXTEEN_CXXSTD'* ]]
+enable_gcc_toolset15 >/dev/null 2>&1
+[[ "$CXX" = "$scratch/toolset/root/usr/bin/g++ -std=gnu++17" ]]
+unset DEVTOOLSETSIXTEEN_CXXSTD
+# With ccache the standard flag stays after the compiler path.
+INITIALINSTALL=n
+enable_gcc_toolset15 >/dev/null
+[[ "$CC" = "ccache $scratch/toolset/root/usr/bin/gcc" && "$CXX" = "ccache $scratch/toolset/root/usr/bin/g++ -std=gnu++17" ]]
+export GCC_TEST_VERSION=15.2.1
+if enable_gcc_toolset15 2>/dev/null; then echo 'FAIL: GCC 15 accepted for GCC Toolset 16'; exit 1; fi
+unset GCC_TEST_VERSION
+GCC_TOOLSET_VER=15
+# DEVTOOLSETSIXTEEN='y' selects 16 only on EL 8.10, 9.9, 10.3 or newer.
+select_fn=$(sed -n '/^gcc_toolset_select() {/,/^}/p' "$repo/inc/gcc.inc")
+[[ -n "$select_fn" ]]
+eval "$select_fn"
+# check_select <expected> <EL major> <CENTOSVER_NUMERIC> <DEVTOOLSETSIXTEEN> [DEVTOOLSETFIFTTEEN, default y]
+check_select() {
+  CENTOS_EIGHT= CENTOS_NINE= CENTOS_TEN= DEVTOOLSETFIFTTEEN=${5:-y}
+  case "$2" in 8) CENTOS_EIGHT=8;; 9) CENTOS_NINE=9;; 10) CENTOS_TEN=10;; esac
+  CENTOSVER_NUMERIC=$3 DEVTOOLSETSIXTEEN=$4 CENTOSVER=test
+  gcc_toolset_select >/dev/null
+  [[ "$GCC_TOOLSET_VER" = "$1" ]] || { echo "FAIL: EL$2 $3 DEVTOOLSETSIXTEEN=$4 DEVTOOLSETFIFTTEEN=${5:-y} selected GCC Toolset $GCC_TOOLSET_VER"; exit 1; }
+  # Selection never rewrites DEVTOOLSETFIFTTEEN, so later custom_config.inc re-sources agree with it.
+  [[ "$DEVTOOLSETFIFTTEEN" = "${5:-y}" ]] || { echo 'FAIL: gcc_toolset_select changed DEVTOOLSETFIFTTEEN'; exit 1; }
+}
+check_select 15 9 99 n
+check_select 16 9 99 y
+check_select 16 9 910 y
+check_select 15 9 98 y
+check_select 15 9 9 y
+check_select 15 9 99 y n
+check_select 16 10 103 y
+check_select 16 10 1010 y
+check_select 15 10 102 y
+check_select 15 10 100 y
+check_select 16 8 810 y
+check_select 15 8 89 y
+check_select 15 7 79 y
+GCC_TOOLSET_VER=15
+# Both entry scripts select the toolset after the last config load: custom_config.inc, then z_custom.inc.
+for f in centmin.sh centmin-cli.sh; do
+  awk '/source "\$\{CONFIGSCANBASE\}\/custom_config.inc"/{c=NR} /source "\$\{CM_INSTALLDIR\}\/inc\/z_custom.inc"/{z=NR} /^gcc_toolset_select$/{s=NR; n++} END{exit !(c && z && s > c && s > z && n == 1)}' "$repo/$f" || { echo "FAIL: $f must call gcc_toolset_select once, after custom_config.inc and z_custom.inc"; exit 1; }
+done
+# No hardcoded GCC Toolset 15 path or package is left behind the GCC_TOOLSET_VER switch.
+if grep -n 'gcc-toolset-15' "$repo"/inc/*.inc; then echo 'FAIL: hardcoded gcc-toolset-15 left in inc/'; exit 1; fi
+# ModSecurity checks for GCC Toolset 16 before the older-toolset ladder can replace CXX.
+grep -A1 -F 'if [[ "$CENTOS_EIGHT" -eq 8 || "$CENTOS_NINE" -eq 9 || "$CENTOS_TEN" -eq 10 ]]; then' "$repo/inc/mod_security.inc" | grep -q 'GCC_TOOLSET_VER" = 16' || { echo 'FAIL: ModSecurity GCC Toolset 16 branch is not first'; exit 1; }
+echo 'PASS: GCC Toolset 16 opt-in selection and activation'
 # Exercise the actual branch-specific OS defaults, without sourcing the main script.
 defaults=$(sed -n '/^# Official GCC Toolset 15 on supported EL releases\./,/^fi$/p' "$repo/centmin.sh")
 [[ -n "$defaults" ]]
@@ -129,6 +199,8 @@ if [[ -n "$compression" ]]; then
     gcc() { echo ' -march x86-64'; }
     compgcc_fifteen
     [[ "$label" = 'gcc15 built' && "$CFLAGS" = *' -std=gnu17'* && "$CXXFLAGS" != *' -std=gnu17'* ]] || { echo 'FAIL: compression GCC15 label or language flags'; exit 1; }
+    GCC_TOOLSET_VER=16 compgcc_fifteen
+    [[ "$label" = 'gcc16 built' ]] || { echo 'FAIL: compression GCC16 label'; exit 1; }
     enable_gcc_toolset15() { return 1; }
     if compgcc_fifteen; then echo 'FAIL: compression ignored activation failure'; exit 1; fi
   )
@@ -333,6 +405,23 @@ echo 'PASS: parent activation failures stop before later work, including timesta
     [[ "$CC" = *clang* && "$COMPILER_CFLAGS" != *-std=gnu17* ]] || exit 1
   done
   [[ $(wc -l < "$scratch/selected") -eq $((before+1)) ]] || exit 1
+  # The final CXX reset keeps the C++ standard flag of the toolset it activated.
+  CENTOS_EIGHT=8
+  enable_gcc_toolset15() { GCC_TOOLSET_CXXSTD=' -std=gnu++17'; }
+  enable_devtoolset >/dev/null 2>&1 || exit 1
+  [[ "$CXX" = 'g++ -std=gnu++17' ]] || exit 1
+  INITIALINSTALL=n
+  enable_devtoolset >/dev/null 2>&1 || exit 1
+  [[ "$CXX" = 'ccache g++ -std=gnu++17' ]] || exit 1
+  # A flag left over from an earlier GCC 16 call never reaches a non-toolset path.
+  INITIALINSTALL=y CENTOS_EIGHT=0 CENTOS_NINE=9 DEVTOOLSETFIFTTEEN=n
+  enable_devtoolset >/dev/null 2>&1 || exit 1
+  [[ "$CXX" = g++ ]] || exit 1
+  enable_gcc_toolset15() { GCC_TOOLSET_CXXSTD=''; }
+  CENTOS_EIGHT=8 CENTOS_NINE=0 DEVTOOLSETFIFTTEEN=y
+  enable_devtoolset >/dev/null 2>&1 || exit 1
+  [[ "$CXX" = g++ ]] || exit 1
+  CENTOS_EIGHT=0 DEVTOOLSETFIFTTEEN=y
   # A GCC15 opt-out on EL9 retains its existing system-compiler path.
   CENTOS_NINE=9 DEVTOOLSETFIFTTEEN=n
   enable_devtoolset >/dev/null 2>&1 || exit 1

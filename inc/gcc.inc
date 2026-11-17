@@ -1,36 +1,71 @@
-# Install and activate official GCC Toolset 15; shared by all compiler callers.
+# GCC Toolset major version behind every DEVTOOLSETFIFTTEEN code path:
+# 15 by default, 16 when gcc_toolset_select accepts DEVTOOLSETSIXTEEN='y'.
+: "${GCC_TOOLSET_VER:=15}"
+
+# Opt-in GCC Toolset 16 in place of 15 on EL 8.10, 9.9, 10.3 or newer. It runs through
+# the GCC Toolset 15 code paths, so it also needs DEVTOOLSETFIFTTEEN='y' (the EL8+ default).
+# Call after custom_config.inc and z_custom.inc load.
+gcc_toolset_select() {
+  GCC_TOOLSET_VER=15
+  [[ "$DEVTOOLSETSIXTEEN" = [yY] ]] || return 0
+  if [[ "$DEVTOOLSETFIFTTEEN" != [yY] ]]; then
+    echo "DEVTOOLSETSIXTEEN='y' needs DEVTOOLSETFIFTTEEN='y'; GCC Toolset 16 not used"
+  elif [[ "$CENTOS_EIGHT" = '8' && "$CENTOSVER_NUMERIC" -ge 810 ]] ||
+       [[ "$CENTOS_NINE" = '9' && "$CENTOSVER_NUMERIC" -ge 99 ]] ||
+       [[ "$CENTOS_TEN" = '10' && "$CENTOSVER_NUMERIC" -ge 103 ]]; then
+    GCC_TOOLSET_VER=16
+  else
+    echo "DEVTOOLSETSIXTEEN='y' needs EL 8.10, 9.9, 10.3 or newer; using GCC Toolset 15 on ${CENTOSVER}"
+  fi
+}
+
+# Install and activate the official GCC Toolset (GCC_TOOLSET_VER); shared by all compiler callers.
 enable_gcc_toolset15() {
-  local toolset=/opt/rh/gcc-toolset-15
+  local ver="${GCC_TOOLSET_VER:-15}"
+  local toolset="/opt/rh/gcc-toolset-${ver}"
   local gcc_version gxx_version toolset_env
-  if [[ ! -x "$toolset/root/usr/bin/gcc" || ! -x "$toolset/root/usr/bin/g++" || ! -x "$toolset/root/usr/bin/ld" ]] || [[ ! -f "$toolset/enable" && ! -f /usr/lib/gcc-toolset/15-env.source ]]; then
-    if ! yum -y install gcc-toolset-15-gcc gcc-toolset-15-gcc-c++ gcc-toolset-15-binutils gcc-toolset-15-runtime; then
-      echo "ERROR: GCC Toolset 15 packages could not be installed. Check enabled repositories and retry." >&2
+  if [[ ! -x "$toolset/root/usr/bin/gcc" || ! -x "$toolset/root/usr/bin/g++" || ! -x "$toolset/root/usr/bin/ld" ]] || [[ ! -f "$toolset/enable" && ! -f "/usr/lib/gcc-toolset/${ver}-env.source" ]]; then
+    if ! yum -y install "gcc-toolset-${ver}-gcc" "gcc-toolset-${ver}-gcc-c++" "gcc-toolset-${ver}-binutils" "gcc-toolset-${ver}-runtime"; then
+      echo "ERROR: GCC Toolset ${ver} packages could not be installed. Check enabled repositories and retry." >&2
       return 1
     fi
   fi
   toolset_env="$toolset/enable"
   if [[ ! -f "$toolset_env" ]]; then
-    toolset_env=/usr/lib/gcc-toolset/15-env.source
+    toolset_env="/usr/lib/gcc-toolset/${ver}-env.source"
   fi
   if [[ ! -x "$toolset/root/usr/bin/gcc" || ! -x "$toolset/root/usr/bin/g++" || ! -x "$toolset/root/usr/bin/ld" || ! -f "$toolset_env" ]]; then
-    echo "ERROR: GCC Toolset 15 installation is incomplete." >&2
+    echo "ERROR: GCC Toolset ${ver} installation is incomplete." >&2
     return 1
   fi
   source "$toolset_env" || return 1
   gcc_version=$("$toolset/root/usr/bin/gcc" -dumpfullversion -dumpversion) || return 1
   gxx_version=$("$toolset/root/usr/bin/g++" -dumpfullversion -dumpversion) || return 1
-  if [[ "$gcc_version" != 15.* || "$gxx_version" != 15.* ]]; then
-    echo "ERROR: Expected GCC/G++ 15, found $gcc_version / $gxx_version." >&2
+  if [[ "$gcc_version" != "${ver}".* || "$gxx_version" != "${ver}".* ]]; then
+    echo "ERROR: Expected GCC/G++ ${ver}, found $gcc_version / $gxx_version." >&2
     return 1
   fi
+  # GCC 16 defaults to C++20: keep GCC 15's gnu++17 unless DEVTOOLSETSIXTEEN_CXXSTD
+  # names another standard ('' = no pin). A later project -std still wins.
+  GCC_TOOLSET_CXXSTD=""
+  if [[ "$ver" -ge 16 ]]; then
+    local cxxstd="${DEVTOOLSETSIXTEEN_CXXSTD-gnu++17}" std_re='^(c|gnu)\+\+[0-9a-z]+$'
+    if [[ -n "$cxxstd" && ! "$cxxstd" =~ $std_re ]]; then
+      echo "WARNING: DEVTOOLSETSIXTEEN_CXXSTD='$cxxstd' is not a standard such as gnu++17; using gnu++17" >&2
+      cxxstd=gnu++17
+    fi
+    if [[ -n "$cxxstd" ]]; then
+      GCC_TOOLSET_CXXSTD=" -std=${cxxstd}"
+    fi
+  fi
   export CC="$toolset/root/usr/bin/gcc"
-  export CXX="$toolset/root/usr/bin/g++"
+  export CXX="$toolset/root/usr/bin/g++${GCC_TOOLSET_CXXSTD}"
   if [[ "$INITIALINSTALL" != [yY] ]]; then
     export CC="ccache $CC"
     export CXX="ccache $CXX"
     export CCACHE_CPP2=yes
   fi
-  echo "GCC Toolset 15: gcc=$gcc_version g++=$gxx_version; CC=$CC; CXX=$CXX"
+  echo "GCC Toolset ${ver}: gcc=$gcc_version g++=$gxx_version; CC=$CC; CXX=$CXX"
 }
 
 check_devtoolset_php() {
@@ -84,6 +119,8 @@ enable_clang() {
 
 enable_devtoolset() {
    COMPILER_CFLAGS=""
+   # C++ standard flag from the GCC Toolset this call activates (empty for GCC 15)
+   local devtoolset_cxxstd=""
    # Optional argument preserves the caller's explicit Clang selection.
    if [[ "${1:-n}" = [yY] ]]; then
       enable_clang
@@ -129,6 +166,7 @@ enable_devtoolset() {
       if [[ "$CENTOS_SIX" -eq 6 || "$CENTOS_SEVEN" -eq 7 || "$CENTOS_EIGHT" -eq 8 || "$CENTOS_NINE" -eq 9 || "$CENTOS_TEN" -eq 10 ]]; then
         if [[ "$DEVTOOLSETFIFTTEEN" = [yY] ]] && [[ "$CENTOS_EIGHT" = '8' || "$CENTOS_NINE" = '9' || "$CENTOS_TEN" = '10' ]]; then
             enable_gcc_toolset15 || return 1
+            devtoolset_cxxstd="$GCC_TOOLSET_CXXSTD"
             GENERALDEVTOOLSET_FALLTHROUGH=' -Wimplicit-fallthrough=0'
             GENERALDEVTOOLSET_EXTRAFLAGS=' -fcode-hoisting -Wno-cast-function-type -Wno-deprecated-declarations'
         elif [[ "$CENTOS_TEN" = 10 && "$CENTOSVER_NUMERIC" -ge '100' ]]; then
@@ -264,10 +302,10 @@ enable_devtoolset() {
          unset CXX
          if [[ "$INITIALINSTALL" != [yY] ]]; then
             export CC="ccache gcc${MOLD_LINKER_OPT}"
-            export CXX="ccache g++${MOLD_LINKER_OPT}"
+            export CXX="ccache g++${devtoolset_cxxstd}${MOLD_LINKER_OPT}"
          else
             export CC="gcc${MOLD_LINKER_OPT}"
-            export CXX="g++${MOLD_LINKER_OPT}"
+            export CXX="g++${devtoolset_cxxstd}${MOLD_LINKER_OPT}"
          fi
       fi
 

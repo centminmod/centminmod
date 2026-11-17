@@ -738,6 +738,16 @@
 # Git History: First added 2024-09-20 (2244b83f), Last modified 2025-05-18 (395dea9c)
 #DEVTOOLSETFIFTTEEN='n'
 
+# GCC Toolset 16 (GCC 16)
+# Opt-in replacement for GCC Toolset 15 on EL 8.10, 9.9, 10.3 or newer; older
+# releases keep GCC Toolset 15. Needs DEVTOOLSETFIFTTEEN='y', the EL8/9/10 default.
+# GCC 16 compiles C++ as C++20 (gnu++20) by default, so Centmin Mod passes
+# -std=gnu++17 to match GCC 15 builds. DEVTOOLSETSIXTEEN_CXXSTD='' drops that pin:
+# GCC 16's C++20 then applies unless a project picks its own standard, and
+# configure scripts from autoconf before 2.73 pick -std=gnu++11.
+#DEVTOOLSETSIXTEEN='y'
+#DEVTOOLSETSIXTEEN_CXXSTD='gnu++17'
+
 # Devtoolset/GCC-Toolset for PHP Compilation
 # Forces use of modern GCC toolsets regardless of OS default compiler version
 # AUTOMATIC BEHAVIOR:

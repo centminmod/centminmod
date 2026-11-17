@@ -4502,9 +4502,9 @@ if [[ "$DEVTOOLSETFIFTTEEN" = [yY] ]] && [[ "$CENTOS_EIGHT" = '8' || "$CENTOS_NI
 else
 if [[ "$CENTOS_EIGHT" = '8' && "$CLANG" = [nN] && "$NGINX_DEVTOOLSETGCC" = [yY] ]]; then
   CENTOSVER_NUMERIC=$(echo $CENTOSVER | sed -e 's|\.||g')
-  if [[ ! -f /opt/rh/gcc-toolset-9/root/usr/bin/gcc || ! -f /opt/rh/gcc-toolset-9/root/usr/bin/g++ ]] || [[ ! -f /opt/rh/gcc-toolset-10/root/usr/bin/gcc || ! -f /opt/rh/gcc-toolset-10/root/usr/bin/g++ ]] || [[ ! -f /opt/rh/gcc-toolset-11/root/usr/bin/gcc || ! -f /opt/rh/gcc-toolset-11/root/usr/bin/g++ ]] || [[ ! -f /opt/rh/gcc-toolset-12/root/usr/bin/gcc || ! -f /opt/rh/gcc-toolset-12/root/usr/bin/g++ ]] || [[ ! -f /opt/rh/gcc-toolset-13/root/usr/bin/gcc || ! -f /opt/rh/gcc-toolset-13/root/usr/bin/g++ ]] || [[ ! -f /opt/rh/gcc-toolset-15/root/usr/bin/gcc || ! -f /opt/rh/gcc-toolset-15/root/usr/bin/g++ ]]; then
-    if [[ "$CENTOSVER_NUMERIC" -ge '89' && "$DEVTOOLSETFIFTTEEN" = [yY] && ! -f /opt/rh/gcc-toolset-15/root/usr/bin/gcc ]] || [[ "$CENTOSVER_NUMERIC" -ge '89' && "$DEVTOOLSETFIFTTEEN" = [yY] && ! -f /opt/rh/gcc-toolset-15/root/usr/bin/g++ ]]; then
-        yum -y install gcc-toolset-15-gcc gcc-toolset-15-gcc-c++ gcc-toolset-15-binutils
+  if [[ ! -f /opt/rh/gcc-toolset-9/root/usr/bin/gcc || ! -f /opt/rh/gcc-toolset-9/root/usr/bin/g++ ]] || [[ ! -f /opt/rh/gcc-toolset-10/root/usr/bin/gcc || ! -f /opt/rh/gcc-toolset-10/root/usr/bin/g++ ]] || [[ ! -f /opt/rh/gcc-toolset-11/root/usr/bin/gcc || ! -f /opt/rh/gcc-toolset-11/root/usr/bin/g++ ]] || [[ ! -f /opt/rh/gcc-toolset-12/root/usr/bin/gcc || ! -f /opt/rh/gcc-toolset-12/root/usr/bin/g++ ]] || [[ ! -f /opt/rh/gcc-toolset-13/root/usr/bin/gcc || ! -f /opt/rh/gcc-toolset-13/root/usr/bin/g++ ]] || [[ ! -f /opt/rh/gcc-toolset-${GCC_TOOLSET_VER}/root/usr/bin/gcc || ! -f /opt/rh/gcc-toolset-${GCC_TOOLSET_VER}/root/usr/bin/g++ ]]; then
+    if [[ "$CENTOSVER_NUMERIC" -ge '89' && "$DEVTOOLSETFIFTTEEN" = [yY] && ! -f /opt/rh/gcc-toolset-${GCC_TOOLSET_VER}/root/usr/bin/gcc ]] || [[ "$CENTOSVER_NUMERIC" -ge '89' && "$DEVTOOLSETFIFTTEEN" = [yY] && ! -f /opt/rh/gcc-toolset-${GCC_TOOLSET_VER}/root/usr/bin/g++ ]]; then
+        yum -y install gcc-toolset-${GCC_TOOLSET_VER}-gcc gcc-toolset-${GCC_TOOLSET_VER}-gcc-c++ gcc-toolset-${GCC_TOOLSET_VER}-binutils
     fi
     if [[ "$CENTOSVER_NUMERIC" -ge '89' && "$DEVTOOLSETFOURTEEN" = [yY] && ! -f /opt/rh/gcc-toolset-14/root/usr/bin/gcc ]] || [[ "$CENTOSVER_NUMERIC" -ge '89' && "$DEVTOOLSETFOURTEEN" = [yY] && ! -f /opt/rh/gcc-toolset-14/root/usr/bin/g++ ]]; then
         yum -y install gcc-toolset-14-annobin-annocheck gcc-toolset-14-annobin-docs.noarch gcc-toolset-14-annobin-plugin-gcc gcc-toolset-14-binutils gcc-toolset-14-binutils-devel gcc-toolset-14-dwz gcc-toolset-14-gcc gcc-toolset-14-gcc-c++ gcc-toolset-14-gcc-gfortran gcc-toolset-14-libasan-devel gcc-toolset-14-libatomic-devel gcc-toolset-14-libgccjit gcc-toolset-14-libgccjit-devel gcc-toolset-14-libitm-devel gcc-toolset-14-liblsan-devel gcc-toolset-14-libquadmath-devel gcc-toolset-14-libstdc++-devel gcc-toolset-14-libtsan-devel gcc-toolset-14-libubsan-devel gcc-toolset-14-runtime --skip-broken
@@ -4527,7 +4527,7 @@ if [[ "$CENTOS_EIGHT" = '8' && "$CLANG" = [nN] && "$NGINX_DEVTOOLSETGCC" = [yY] 
     if [[ "$DEVTOOLSETNINE" = [yY] && ! -f /opt/rh/gcc-toolset-9/root/usr/bin/gcc ]] || [[ "$DEVTOOLSETNINE" = [yY] && ! -f /opt/rh/gcc-toolset-9/root/usr/bin/g++ ]]; then
         yum -y install gcc-toolset-9-binutils gcc-toolset-9-gcc gcc-toolset-9-gcc-c++
     fi
-    if [[ "$CENTOSVER_NUMERIC" -ge '89' && "$DEVTOOLSETFIFTTEEN" = [yY] && -f /opt/rh/gcc-toolset-15/root/usr/bin/gcc ]]; then
+    if [[ "$CENTOSVER_NUMERIC" -ge '89' && "$DEVTOOLSETFIFTTEEN" = [yY] && -f /opt/rh/gcc-toolset-${GCC_TOOLSET_VER}/root/usr/bin/gcc ]]; then
       DEVTOOLSETFIFTTEEN_FALLTHROUGH=' -Wimplicit-fallthrough=0 -Wno-implicit-function-declaration -Wno-cast-align -Wno-builtin-declaration-mismatch -Wno-deprecated-declarations -Wno-int-conversion -Wno-unused-result -Wno-vla-parameter -Wno-maybe-uninitialized -Wno-return-local-addr -Wno-array-parameter -Wno-alloc-size-larger-than -Wno-address -Wno-array-bounds -Wno-discarded-qualifiers -Wno-stringop-overread -Wno-stringop-truncation -Wno-missing-field-initializers -Wno-unused-variable -Wno-format -Wno-error=unused-result -Wno-missing-profile -Wno-stringop-overflow -Wno-free-nonheap-object -Wno-discarded-qualifiers -Wno-bad-function-cast -Wno-dangling-pointer -Wno-array-parameter'
       DEVTOOLSETFIFTTEEN_EXTRAFLAGS=' -fcode-hoisting -Wno-cast-function-type -Wno-format-extra-args'
       DEVTOOLSETFOURTEEN_FALLTHROUGH=""
@@ -4862,7 +4862,7 @@ if [[ "$CENTOS_EIGHT" = '8' && "$CLANG" = [nN] && "$NGINX_DEVTOOLSETGCC" = [yY] 
     if [[ "$DEVTOOLSETNINE" = [yY] && ! -f /opt/rh/gcc-toolset-9/root/usr/bin/gcc ]] || [[ "$DEVTOOLSETNINE" = [yY] && ! -f /opt/rh/gcc-toolset-9/root/usr/bin/g++ ]]; then
         yum -y install gcc-toolset-9-binutils gcc-toolset-9-gcc gcc-toolset-9-gcc-c++
     fi
-    if [[ "$DEVTOOLSETFIFTTEEN" = [yY] && -f /opt/rh/gcc-toolset-15/root/usr/bin/gcc ]]; then
+    if [[ "$DEVTOOLSETFIFTTEEN" = [yY] && -f /opt/rh/gcc-toolset-${GCC_TOOLSET_VER}/root/usr/bin/gcc ]]; then
       DEVTOOLSETFIFTTEEN_FALLTHROUGH=' -Wimplicit-fallthrough=0 -Wno-implicit-function-declaration -Wno-cast-align -Wno-builtin-declaration-mismatch -Wno-deprecated-declarations -Wno-int-conversion -Wno-unused-result -Wno-vla-parameter -Wno-maybe-uninitialized -Wno-return-local-addr -Wno-array-parameter -Wno-alloc-size-larger-than -Wno-address -Wno-array-bounds -Wno-discarded-qualifiers -Wno-stringop-overread -Wno-stringop-truncation -Wno-missing-field-initializers -Wno-unused-variable -Wno-format -Wno-error=unused-result -Wno-missing-profile -Wno-stringop-overflow -Wno-free-nonheap-object -Wno-discarded-qualifiers -Wno-bad-function-cast -Wno-dangling-pointer -Wno-array-parameter'
       DEVTOOLSETFIFTTEEN_EXTRAFLAGS=' -fcode-hoisting -Wno-cast-function-type -Wno-format-extra-args'
       DEVTOOLSETFOURTEEN_FALLTHROUGH=""
@@ -5655,10 +5655,10 @@ fi
 # el10 default GCC settings
 if [[ "$CENTOS_TEN" -eq '10' && "$CLANG" = [nN] && "$NGINX_DEVTOOLSETGCC" = [yY] ]]; then
   CENTOSVER_NUMERIC=$(echo $CENTOSVER | sed -e 's|\.||g')
-  if [[ "$CENTOSVER_NUMERIC" -ge '100' && "$DEVTOOLSETFIFTTEEN" = [yY] && -f /opt/rh/gcc-toolset-15/root/usr/bin/gcc ]]; then
+  if [[ "$CENTOSVER_NUMERIC" -ge '100' && "$DEVTOOLSETFIFTTEEN" = [yY] && -f /opt/rh/gcc-toolset-${GCC_TOOLSET_VER}/root/usr/bin/gcc ]]; then
     sar_call
-    /opt/rh/gcc-toolset-15/root/usr/bin/gcc --version
-    /opt/rh/gcc-toolset-15/root/usr/bin/g++ --version
+    /opt/rh/gcc-toolset-${GCC_TOOLSET_VER}/root/usr/bin/gcc --version
+    /opt/rh/gcc-toolset-${GCC_TOOLSET_VER}/root/usr/bin/g++ --version
   elif [[ "$CENTOSVER_NUMERIC" -ge '100' && "$DEVTOOLSETFOURTEEN" = [yY] && -f /usr/bin/gcc ]]; then
     DEVTOOLSETFOURTEEN_FALLTHROUGH=' -Wimplicit-fallthrough=0 -Wno-implicit-function-declaration -Wno-cast-align -Wno-builtin-declaration-mismatch -Wno-deprecated-declarations -Wno-int-conversion -Wno-unused-result -Wno-vla-parameter -Wno-maybe-uninitialized -Wno-return-local-addr -Wno-array-parameter -Wno-alloc-size-larger-than -Wno-address -Wno-array-bounds -Wno-discarded-qualifiers -Wno-stringop-overread -Wno-stringop-truncation -Wno-missing-field-initializers -Wno-unused-variable -Wno-format -Wno-error=unused-result -Wno-missing-profile -Wno-stringop-overflow -Wno-free-nonheap-object -Wno-discarded-qualifiers -Wno-bad-function-cast -Wno-dangling-pointer -Wno-array-parameter'
     DEVTOOLSETFOURTEEN_EXTRAFLAGS=' -fcode-hoisting -Wno-cast-function-type -Wno-format-extra-args'
@@ -5703,13 +5703,13 @@ fi
 # el9 default GCC 11, 12, 13 settings
 if [[ "$CENTOS_NINE" -eq '9' && "$CLANG" = [nN] && "$NGINX_DEVTOOLSETGCC" = [yY] ]]; then
   CENTOSVER_NUMERIC=$(echo $CENTOSVER | sed -e 's|\.||g')
-  if [[ "$CENTOSVER_NUMERIC" -ge '93' && "$DEVTOOLSETFIFTTEEN" = [yY] && ! -f /opt/rh/gcc-toolset-15/root/usr/bin/gcc ]]; then
-    if [[ "$(rpm -ql gcc-toolset-15-gcc >/dev/null 2>&1; echo $?)" -ne '0' ]]; then
-      time yum -y install gcc-toolset-15-gcc gcc-toolset-15-gcc-c++ gcc-toolset-15-binutils
+  if [[ "$CENTOSVER_NUMERIC" -ge '93' && "$DEVTOOLSETFIFTTEEN" = [yY] && ! -f /opt/rh/gcc-toolset-${GCC_TOOLSET_VER}/root/usr/bin/gcc ]]; then
+    if [[ "$(rpm -ql gcc-toolset-${GCC_TOOLSET_VER}-gcc >/dev/null 2>&1; echo $?)" -ne '0' ]]; then
+      time yum -y install gcc-toolset-${GCC_TOOLSET_VER}-gcc gcc-toolset-${GCC_TOOLSET_VER}-gcc-c++ gcc-toolset-${GCC_TOOLSET_VER}-binutils
     fi
     sar_call
-    /opt/rh/gcc-toolset-15/root/usr/bin/gcc --version
-    /opt/rh/gcc-toolset-15/root/usr/bin/g++ --version
+    /opt/rh/gcc-toolset-${GCC_TOOLSET_VER}/root/usr/bin/gcc --version
+    /opt/rh/gcc-toolset-${GCC_TOOLSET_VER}/root/usr/bin/g++ --version
   elif [[ "$CENTOSVER_NUMERIC" -ge '93' && "$DEVTOOLSETFOURTEEN" = [yY] && ! -f /opt/rh/gcc-toolset-14/root/usr/bin/gcc ]]; then
     if [[ "$(rpm -ql gcc-toolset-14-gcc >/dev/null 2>&1; echo $?)" -ne '0' ]] || [[ "$(rpm -ql gcc-toolset-14-gcc-c++ >/dev/null 2>&1; echo $?)" -ne '0' ]] || [[ "$(rpm -ql gcc-toolset-14-binutils >/dev/null 2>&1; echo $?)" -ne '0' ]]; then
       time yum -y install gcc-toolset-14-annobin-annocheck gcc-toolset-14-annobin-docs.noarch gcc-toolset-14-annobin-plugin-gcc gcc-toolset-14-binutils gcc-toolset-14-binutils-devel gcc-toolset-14-dwz gcc-toolset-14-gcc gcc-toolset-14-gcc-c++ gcc-toolset-14-gcc-gfortran gcc-toolset-14-libasan-devel gcc-toolset-14-libatomic-devel gcc-toolset-14-libgccjit gcc-toolset-14-libgccjit-devel gcc-toolset-14-libitm-devel gcc-toolset-14-liblsan-devel gcc-toolset-14-libquadmath-devel gcc-toolset-14-libstdc++-devel gcc-toolset-14-libtsan-devel gcc-toolset-14-libubsan-devel gcc-toolset-14-runtime --skip-broken
@@ -5732,7 +5732,7 @@ if [[ "$CENTOS_NINE" -eq '9' && "$CLANG" = [nN] && "$NGINX_DEVTOOLSETGCC" = [yY]
     /opt/rh/gcc-toolset-12/root/usr/bin/gcc --version
     /opt/rh/gcc-toolset-12/root/usr/bin/g++ --version
   fi
-  if [[ "$CENTOSVER_NUMERIC" -ge '93' && "$DEVTOOLSETFIFTTEEN" = [yY] && -f /opt/rh/gcc-toolset-15/root/usr/bin/gcc ]]; then
+  if [[ "$CENTOSVER_NUMERIC" -ge '93' && "$DEVTOOLSETFIFTTEEN" = [yY] && -f /opt/rh/gcc-toolset-${GCC_TOOLSET_VER}/root/usr/bin/gcc ]]; then
     DEVTOOLSETFIFTTEEN_FALLTHROUGH=' -Wimplicit-fallthrough=0 -Wno-implicit-function-declaration -Wno-cast-align -Wno-builtin-declaration-mismatch -Wno-deprecated-declarations -Wno-int-conversion -Wno-unused-result -Wno-vla-parameter -Wno-maybe-uninitialized -Wno-return-local-addr -Wno-array-parameter -Wno-alloc-size-larger-than -Wno-address -Wno-array-bounds -Wno-discarded-qualifiers -Wno-stringop-overread -Wno-stringop-truncation -Wno-missing-field-initializers -Wno-unused-variable -Wno-format -Wno-error=unused-result -Wno-missing-profile -Wno-stringop-overflow -Wno-free-nonheap-object -Wno-discarded-qualifiers -Wno-bad-function-cast -Wno-dangling-pointer -Wno-array-parameter'
     DEVTOOLSETFIFTTEEN_EXTRAFLAGS=' -fcode-hoisting -Wno-cast-function-type -Wno-format-extra-args'
     DEVTOOLSETFOURTEEN_FALLTHROUGH=""

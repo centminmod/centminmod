@@ -159,7 +159,7 @@ compgcc_fourteen() {
 
 compgcc_fifteen() {
   enable_gcc_toolset15 || return 1
-  label='gcc15 built'
+  label="gcc${GCC_TOOLSET_VER:-15} built"
   export CXXFLAGS="-Wimplicit-fallthrough=0 -Wno-error=unused-result -Wno-unused-result"
   export CFLAGS="$CXXFLAGS -Wno-implicit-function-declaration -Wno-int-conversion -std=gnu17"
   COMP_CPU_MARCH=$(gcc -c -Q -march=native --help=target | awk '/  -march/ {print $2}' | head -n1 )

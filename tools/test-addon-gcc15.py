@@ -19,8 +19,11 @@ with tempfile.TemporaryDirectory(prefix='addon-gcc15-') as work:
     (temp / 'addons').mkdir()
     (temp / 'inc').mkdir()
     toolset = temp / 'toolset'
-    helper = (ROOT / 'inc/gcc.inc').read_text().replace('/opt/rh/gcc-toolset-15', str(toolset))
-    helper = helper.replace('/usr/lib/gcc-toolset/15-env.source', str(temp / 'missing-env'))
+    helper = (ROOT / 'inc/gcc.inc').read_text().replace('/opt/rh/gcc-toolset-${ver}', str(toolset))
+    helper = helper.replace('/usr/lib/gcc-toolset/${ver}-env.source', str(temp / 'missing-env'))
+    # Both toolset paths must be redirected, or the helper checks the real /opt/rh tree.
+    assert '/opt/rh/gcc-toolset-${ver}' not in helper and '/usr/lib/gcc-toolset/${ver}' not in helper
+    assert str(toolset) in helper and str(temp / 'missing-env') in helper
     (temp / 'inc/gcc.inc').write_text(helper)
     setup = f'''
 export PATH=/usr/bin:/bin

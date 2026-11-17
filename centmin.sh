@@ -30,7 +30,7 @@ DT=$(date +"%d%m%y-%H%M%S")
 branchname='141.00beta01'
 SCRIPT_MAJORVER='141'
 SCRIPT_MINORVER='00'
-SCRIPT_INCREMENTVER='444'
+SCRIPT_INCREMENTVER='445'
 SCRIPT_VERSIONSHORT="${branchname}"
 SCRIPT_VERSION="${SCRIPT_VERSIONSHORT}.b${SCRIPT_INCREMENTVER}"
 SCRIPT_DATE='16/08/25'
@@ -596,6 +596,8 @@ DEVTOOLSETSEVEN='n'           # Enable or disable devtoolset-7 GCC 7.1 support i
 DEVTOOLSETEIGHT='n'           # Enable or disable devtoolset-8 GCC 8 support
 DEVTOOLSETNINE='n'            # Enable or disable devtoolset-9 GCC 9 support
 DEVTOOLSETTEN='y'             # Enable or disable devtoolset-10 GCC 10 support
+DEVTOOLSETSIXTEEN='n'         # y = GCC Toolset 16 instead of 15 on EL 8.10, 9.9, 10.3 or newer
+DEVTOOLSETSIXTEEN_CXXSTD='gnu++17' # GCC 16 C++ standard; '' = no pin (GCC 16 or project default)
 NGINX_DEVTOOLSETGCC='y'       # Use lastest devtoolset even for CentOS 7 nginx compiles
 GENERAL_DEVTOOLSETGCC='n'     # Use lastest devtoolset whereever possible/coded
 CRYPTO_DEVTOOLSETGCC='y'      # Use lastest devtoolset for libressl or openssl compiles
@@ -2016,6 +2018,9 @@ if [ -f "${CM_INSTALLDIR}/inc/z_custom.inc" ]; then
         cat "${CM_INSTALLDIR}/inc/z_custom.inc" > "${CENTMINLOGDIR}/inc-zcustom-config-settings_${DT}.log"
     fi
 fi
+
+# GCC Toolset 16 opt-in: after custom_config.inc and z_custom.inc have loaded
+gcc_toolset_select
 
 if [ -f "${CONFIGSCANBASE}/custom_config.inc" ]; then
   OPENSSL_VERSION_CUSTOMCONFIG=$(awk -F "'" '/^OPENSSL_VERSION=/ {print $2}' "${CONFIGSCANBASE}/custom_config.inc")

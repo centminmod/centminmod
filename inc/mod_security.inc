@@ -141,7 +141,22 @@ modsecurity_install() {
       fi
     fi
     if [[ "$CENTOS_EIGHT" -eq 8 || "$CENTOS_NINE" -eq 9 || "$CENTOS_TEN" -eq 10 ]]; then
-      if [[ ! -f /opt/rh/gcc-toolset-15/root/usr/bin/gcc || ! -f /opt/rh/gcc-toolset-15/root/usr/bin/g++ ]]; then
+      if [[ "$GCC_TOOLSET_VER" = 16 && "$DEVTOOLSETFIFTTEEN" = [yY] ]]; then
+        # GCC Toolset 16 opt-in: activate it directly so the older-toolset checks below
+        # can't replace its compiler or drop its C++ standard flag
+        enable_gcc_toolset15 || return 1
+        unset CC
+        unset CXX
+        if [[ "$INITIALINSTALL" != [yY] ]]; then
+          export CC="ccache gcc"
+          export CXX="ccache g++${GCC_TOOLSET_CXXSTD}"
+        else
+          export CC="gcc"
+          export CXX="g++${GCC_TOOLSET_CXXSTD}"
+        fi
+        gcc --version
+        g++ --version
+      elif [[ ! -f /opt/rh/gcc-toolset-${GCC_TOOLSET_VER}/root/usr/bin/gcc || ! -f /opt/rh/gcc-toolset-${GCC_TOOLSET_VER}/root/usr/bin/g++ ]]; then
         scl_install
         unset CC
         unset CXX
@@ -211,16 +226,16 @@ modsecurity_install() {
         # export CFLAGS="-Wimplicit-fallthrough=0"
         gcc --version
         g++ --version
-      elif [[ -f /opt/rh/gcc-toolset-15/root/usr/bin/gcc && -f /opt/rh/gcc-toolset-15/root/usr/bin/g++ ]]; then
+      elif [[ -f /opt/rh/gcc-toolset-${GCC_TOOLSET_VER}/root/usr/bin/gcc && -f /opt/rh/gcc-toolset-${GCC_TOOLSET_VER}/root/usr/bin/g++ ]]; then
         enable_gcc_toolset15 || return 1
         unset CC
         unset CXX
         if [[ "$INITIALINSTALL" != [yY] ]]; then
           export CC="ccache gcc"
-          export CXX="ccache g++"
+          export CXX="ccache g++${GCC_TOOLSET_CXXSTD}"
         else
           export CC="gcc"
-          export CXX="g++"
+          export CXX="g++${GCC_TOOLSET_CXXSTD}"
         fi
         # export CFLAGS="-Wimplicit-fallthrough=0"
         gcc --version
