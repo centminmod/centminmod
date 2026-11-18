@@ -14,6 +14,7 @@ Practical guides for common Centmin Mod configurations and workflows.
 | [AI Crawler Maps for Nginx](nginx-ai-crawlers.md) | Nginx & Bots | 2026-11-09 | 2026-11-09 |
 | [Anubis Bot Challenge for Nginx](nginx-anubis.md) | Nginx & Bots | 2026-11-09 | 2026-11-18 |
 | [MCP / SSE / LLM Reverse Proxy](nginx-mcp-proxy.md) | Nginx & AI | 2026-11-09 | 2026-11-09 |
+| [XenForo Guest Page Cache](xenforo-guest-page-cache.md) | Nginx & XenForo | 2026-11-19 | 2026-11-19 |
 
 ---
 
@@ -147,3 +148,23 @@ Put an MCP server, an SSE stream or a streaming LLM API behind nginx with the mc
 - Changing template settings safely
 - Optional Mcp-Method and Mcp-Name header checks with the nginx JSON module
 - Troubleshooting buffering, timeouts, 403 and 400 responses
+
+---
+
+### XenForo Guest Page Cache
+
+**File:** [xenforo-guest-page-cache.md](xenforo-guest-page-cache.md)
+
+Serve XenForo 2.3 pages to guests from a cache, with nginx's FastCGI cache or XenForo's own page cache.
+
+**Use cases covered:**
+- Keeping PHP-FPM free during floods of guest traffic
+- Caching guest pages without serving them to logged-in members
+- Choosing between nginx's cache (fastest) and XenForo's (per-visitor CSRF token)
+
+**Topics include:**
+- Measured requests/s for no cache, XenForo's page cache and the nginx cache
+- Cache path, cookie and URL bypass maps, and the per-site include
+- Checking HIT and BYPASS with curl, clearing and removing the cache
+- XenForo's page cache with its own Redis context
+- The shared CSRF token trade-off, and pitfalls such as turning off XenForo's gzip
