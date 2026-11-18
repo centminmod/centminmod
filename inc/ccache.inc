@@ -146,6 +146,21 @@ if [ "$CCACHEINSTALL" == 'y' ]; then
   if [[ "$CCACHE_YUM_INSTALL" = 'y' ]] && [ ! -f /usr/bin/ccache ] && [[ "$CENTOS_EIGHT" = '8' || "$CENTOS_NINE" = '9' || "$CENTOS_TEN" = '10' ]]; then
     echo "Installing ccache from EPEL repository..."
     if [ ! -f /usr/bin/ccache ]; then
+      # An ELevate in-place upgrade can leave no EPEL repo. ccache is EPEL-only and
+      # builds add the ccache compiler prefix, so set EPEL up the way yuminstall does.
+      if [ ! -f /etc/yum.repos.d/epel.repo ]; then
+        echo "EPEL repo not found, installing epel-release for ccache"
+        $YUMDNFBIN -y install epel-release
+        if [ -f /etc/yum.repos.d/epel.repo ]; then
+          if [[ "$CENTOS_TEN" = '10' ]]; then
+            yumpriorepel_ten
+          elif [[ "$CENTOS_NINE" = '9' ]]; then
+            yumpriorepel_nine
+          elif [[ "$CENTOS_EIGHT" = '8' ]]; then
+            yumpriorepel_eight
+          fi
+        fi
+      fi
       echo "$YUMDNFBIN -y install ccache${DISABLEREPO_DNF}"
       $YUMDNFBIN -y install ccache${DISABLEREPO_DNF}
       if [ -f /usr/bin/ccache ]; then
