@@ -62,8 +62,8 @@
 #       (verified on live AL9 / Rocky 9.8 hosts 2026-10-29). Comparing a
 #       Rocky kernel against AlmaLinux NVRs would report a false PATCHED.
 #   14. Falls back to the vendor's own fixed-NVR baseline (AlmaLinux 8/9/10,
-#       Rocky Linux 8/9/10, CloudLinux 7h/8) only when the changelog cannot
-#       be read.
+#       AlmaLinux Kitten 10, Rocky Linux 8/9/10, CloudLinux 7h/8) only when
+#       the changelog cannot be read.
 #   15. Detects Linode-provided kernels and emits a Linode-specific advisory
 #       (no fixed Linode baseline known at script ship date).
 #
@@ -95,8 +95,11 @@
 #     the RHEL backport, in the same builds that first carry the
 #     CVE-2026-98432 fix. Every earlier Rocky kernel lacks it, including
 #     687.60.1 / 687.61.1, which share NVRs with fixed AlmaLinux builds.
-#   Rocky CIQ (_ciq) kernels, AlmaLinux Kitten 10, RHEL 8/9/10, Oracle Linux
-#   8/9/10 RHCK, CloudLinux 9/10: no vendor NVR verified here; changelog only.
+#   AlmaLinux Kitten 10: kernel-6.12.0-281.el10 or newer
+#     Verified 2026-11-18 from the Kitten BaseOS kernel-core changelogs:
+#     277-280.el10 lack the fix, 281.el10 is the first with it.
+#   Rocky CIQ (_ciq) kernels, RHEL 8/9/10, Oracle Linux 8/9/10 RHCK,
+#   CloudLinux 9/10: no vendor NVR verified here; changelog only.
 #
 # Stock CentOS/RHEL 7 and 6:
 #   NOT_AFFECTED. TuxCare: the EL7 3.10 ESP code always copies nonlinear
@@ -847,8 +850,9 @@ J_UEK_DETECTED="$uek_detected"
 # ----- vendor routing -----
 # [Divergence 5] vendor_label set = known affected distro. fixed_kernel is
 # set only where a fixed NVR was verified for the vendor's own builds
-# (AlmaLinux 8/9/10, Rocky Linux 8/9/10, CloudLinux 7h/8); everywhere else
-# the changelog decides. old_stock marks the stock EL6/EL7 kernels.
+# (AlmaLinux 8/9/10, AlmaLinux Kitten 10, Rocky Linux 8/9/10, CloudLinux
+# 7h/8); everywhere else the changelog decides. old_stock marks the stock
+# EL6/EL7 kernels.
 
 fixed_kernel=""
 vendor_label=""
@@ -873,7 +877,7 @@ else
     almalinux:8*)            fixed_kernel="4.18.0-553.177.2.el8_10";  vendor_label="AlmaLinux 8" ;;
     almalinux:9*)            fixed_kernel="5.14.0-687.59.2.el9_8";    vendor_label="AlmaLinux 9" ;;
     almalinux:10*)           fixed_kernel="6.12.0-211.68.2.el10_2";   vendor_label="AlmaLinux 10" ;;
-    almalinux-kitten:10*)    vendor_label="AlmaLinux Kitten 10"; pending_vendor_nvr="true" ;;
+    almalinux-kitten:10*)    fixed_kernel="6.12.0-281.el10";          vendor_label="AlmaLinux Kitten 10" ;;
     rocky:8*|rocky:9*|rocky:10*)
       vendor_label="Rocky Linux ${os_version%%.*}"
       # Rocky's own NVRs, never AlmaLinux's. CIQ-supported kernels (_ciq)
