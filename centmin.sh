@@ -30,7 +30,7 @@ DT=$(date +"%d%m%y-%H%M%S")
 branchname='141.00beta01'
 SCRIPT_MAJORVER='141'
 SCRIPT_MINORVER='00'
-SCRIPT_INCREMENTVER='455'
+SCRIPT_INCREMENTVER='456'
 SCRIPT_VERSIONSHORT="${branchname}"
 SCRIPT_VERSION="${SCRIPT_VERSIONSHORT}.b${SCRIPT_INCREMENTVER}"
 SCRIPT_DATE='16/08/25'
@@ -1191,6 +1191,8 @@ WGET_VERSION_TEN='1.25.0'
 TCP_BBR_ENABLE='n'
 # TCP Fast Open
 TCP_FASTOPEN_ENABLE='n'
+# EL8/EL9/EL10: net.ipv4.tcp_tw_reuse = 2 (loopback-only TIME_WAIT reuse) instead of 0
+TCP_TW_REUSE_LOOPBACK='y'
 
 # centmin.sh curl options
 if [ -f /etc/os-release ]; then

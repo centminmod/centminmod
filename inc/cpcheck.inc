@@ -5004,7 +5004,8 @@ if [[ ! -f /proc/user_beancounters ]]; then
 fi
 if [[ ! -f /proc/user_beancounters ]]; then
   # fix for https://community.centminmod.com/posts/35922/
-  if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' || "$CENTOS_TEN" -eq '10' ]] && [ -f /etc/sysctl.d/101-sysctl.conf ]; then
+  # EL7 only: on EL8/EL9/EL10 tcp_loopback_sysctl_update below sets 2 (loopback only)
+  if [[ "$CENTOS_SEVEN" = '7' ]] && [ -f /etc/sysctl.d/101-sysctl.conf ]; then
     if [[ "$(sysctl -a 2>&1 | awk '/net.ipv4.tcp_tw_reuse/ {print $3}')" = '1' ]]; then
       sed -i 's|net.ipv4.tcp_tw_reuse.*|net.ipv4.tcp_tw_reuse = 0|' /etc/sysctl.d/101-sysctl.conf
       if [ -f /etc/sysctl.conf ]; then
@@ -5020,6 +5021,64 @@ if [[ ! -f /proc/user_beancounters ]]; then
     fi
   fi
 fi
+tcp_loopback_sysctl_update
+}
+
+# Loopback TCP settings for busy PHP sites. Runs on every centmin.sh and
+# centmin-cli.sh start (tcpcheck_centos), after the sysctl files are created.
+# - net.ipv4.tcp_tw_reuse = 2 on EL8/EL9/EL10: TIME_WAIT reuse for loopback
+#   connections only (the kernel default; RHEL 8's 4.18 kernel has it too).
+#   Centmin Mod has written 0 since 2016 (a9dbaaef), when the only choice was
+#   1, for all connections. With 0, PHP sites that open new TCP
+#   connections to Redis or MariaDB on 127.0.0.1 for every request fill the
+#   1024-65535 port range with TIME_WAIT sockets, and connect() then burns
+#   kernel CPU searching for a free port. Only a 0 or 1 line is changed, and
+#   only when the running kernel accepts 2. EL7 and EL6 keep 0 (both turn 1
+#   into 0 above). TCP_TW_REUSE_LOOPBACK='n' in custom_config.inc leaves the
+#   line as it is.
+# - net.ipv4.ip_local_reserved_ports = 9000-9005: the default PHP-FPM pool and
+#   the extra pool templates listen on 127.0.0.1:9000-9005, inside the
+#   ephemeral range. Reserving them stops an outgoing connection from taking
+#   one as its source port, which makes a PHP-FPM restart fail with EADDRINUSE.
+#   Added only when no ip_local_reserved_ports setting is active yet (the
+#   running value is empty and no uncommented line sets it), to
+#   /etc/sysctl.d/101-sysctl.conf (EL7-EL10, created by Centmin Mod) or
+#   /etc/sysctl.conf (EL6).
+tcp_loopback_sysctl_update() {
+  [[ -f /proc/user_beancounters ]] && return 0
+  local f files=() changed=0
+  local twre='^[[:space:]]*net\.ipv4\.tcp_tw_reuse[[:space:]]*=[[:space:]]*[01][[:space:]]*$'
+  if [[ "$CENTOS_SIX" = '6' ]]; then
+    [[ -f /etc/sysctl.conf ]] && files=(/etc/sysctl.conf)
+  elif [[ -f /etc/sysctl.d/101-sysctl.conf ]]; then
+    files=(/etc/sysctl.d/101-sysctl.conf)
+    [[ -f /etc/sysctl.conf ]] && files+=(/etc/sysctl.conf)
+  fi
+  [[ "${#files[@]}" -gt 0 ]] || return 0
+  if [[ "$TCP_TW_REUSE_LOOPBACK" != [nN] ]] \
+    && [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' || "$CENTOS_TEN" -eq '10' ]] \
+    && grep -qE "$twre" "${files[@]}" 2>/dev/null; then
+    if sysctl -qw net.ipv4.tcp_tw_reuse=2 >/dev/null 2>&1; then
+      for f in "${files[@]}"; do
+        grep -qE "$twre" "$f" && sed -i -E "s/${twre}/net.ipv4.tcp_tw_reuse = 2/" "$f"
+      done
+      changed=1
+    fi
+  fi
+  if [[ -f /proc/sys/net/ipv4/ip_local_reserved_ports && -z "$(cat /proc/sys/net/ipv4/ip_local_reserved_ports)" ]] \
+    && ! grep -qE '^[[:space:]]*net\.ipv4\.ip_local_reserved_ports[[:space:]]*=' "${files[@]}" 2>/dev/null; then
+    [[ -s "${files[0]}" && -n "$(tail -c1 "${files[0]}")" ]] && echo >> "${files[0]}"
+    echo "net.ipv4.ip_local_reserved_ports = 9000-9005" >> "${files[0]}"
+    changed=1
+  fi
+  if [[ "$changed" -eq 1 ]]; then
+    if [[ "$CENTOS_SIX" = '6' ]]; then
+      sysctl -p >/dev/null 2>&1
+    else
+      /sbin/sysctl --system >/dev/null 2>&1
+    fi
+  fi
+  return 0
 }
 
 remi_tweaks() {

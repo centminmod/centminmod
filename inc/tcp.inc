@@ -359,4 +359,6 @@ sysctl -p
         fi
     fi # centos 6 or 7
 fi
+# tcp_tw_reuse = 2 on EL8+ and reserved PHP-FPM ports (inc/cpcheck.inc)
+tcp_loopback_sysctl_update
 }

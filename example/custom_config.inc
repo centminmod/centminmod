@@ -6066,6 +6066,20 @@
 # Git History: Added 2022-09-25 (2a0e8ae3)
 #TCP_FASTOPEN_ENABLE='n'
 
+# Loopback TIME_WAIT Reuse And Reserved PHP-FPM Ports
+# On every centmin.sh / centmin-cli.sh start (inc/cpcheck.inc tcp_loopback_sysctl_update):
+# - EL8/EL9/EL10: a 'net.ipv4.tcp_tw_reuse = 0' or '= 1' line in
+#   /etc/sysctl.d/101-sysctl.conf or /etc/sysctl.conf becomes '= 2' (TIME_WAIT reuse for
+#   loopback connections only, the kernel default), when the running kernel accepts 2.
+#   Busy PHP sites that open new TCP connections to Redis or MariaDB on 127.0.0.1 for every
+#   request otherwise run short of local ports. EL7 and EL6 keep 0. Set 'n' to leave the
+#   line as it is.
+# - EL6-EL10: 'net.ipv4.ip_local_reserved_ports = 9000-9005' is added to
+#   /etc/sysctl.d/101-sysctl.conf (/etc/sysctl.conf on EL6) when no reservation is active
+#   yet, so outgoing connections never take the PHP-FPM pool ports as their source port
+#   (which can make a PHP-FPM restart fail to bind 127.0.0.1:9000).
+#TCP_TW_REUSE_LOOPBACK='y'
+
 ################################################################################
 # 45. WORDPRESS SETTINGS
 ################################################################################
