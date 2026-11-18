@@ -168,6 +168,21 @@ nginx_deprecate_httptwo_param_fix() {
   fi
 }
 
+# nginx 1.25.1+ deprecates the listen directive's http2 parameter. New HTTPS vhosts
+# (menu 2, menu 22) drop it from LISTENOPT and DEDI_LISTEN_HTTPS_V6 and get
+# "http2 on;" ($HTTPTWO_ON) instead. Safe to call more than once. Existing vhosts
+# are migrated by nginx_deprecate_httptwo_param() during nginx upgrades.
+# Same function in tools/nv.sh, tools/nvwp.sh and addons/acmetool.sh.
+nginx_httptwo_directive() {
+  if [[ "$(nginx -v 2>&1 | awk -F '/' '{print $2}' | awk '{print $1}' | awk -F '.' '{printf "%d%03d%03d\n", $1, $2, $3}')" -ge '1025001' ]]; then
+    if [[ "$LISTENOPT" = *http2* ]]; then
+      LISTENOPT="${LISTENOPT/ http2/}"
+      HTTPTWO_ON='http2 on;'
+    fi
+    DEDI_LISTEN_HTTPS_V6="${DEDI_LISTEN_HTTPS_V6/ http2/}"
+  fi
+}
+
 # nginx upgrades (menu 4, centmin-cli.sh nginxupgrade, tools/autoupdate.sh):
 # move conf.d vhosts still on the old ssl_buffer_size 1369 default to 4k.
 # Custom values and commented lines are left alone. Symlinks are skipped

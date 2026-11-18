@@ -1650,6 +1650,7 @@ location ~* ${WPSUBDIR}/wp-admin/(load-styles\.php) {
 ENSS
 
 # separate ssl vhost at yourdomain.com.ssl.conf
+nginx_httptwo_directive
 cat > "/usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf"<<ESS
 # Centmin Mod Getting Started Guide
 # must read https://centminmod.com/getstarted.html
@@ -1667,6 +1668,7 @@ cat > "/usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf"<<ESS
 server {
   listen ${DEDI_IP}443 $LISTENOPT;
   $DEDI_LISTEN_HTTPS_V6
+  $HTTPTWO_ON
   server_name $vhostname www.$vhostname;
 
   ssl_dhparam /usr/local/nginx/conf/ssl/${vhostname}/dhparam.pem;

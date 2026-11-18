@@ -331,7 +331,7 @@ def check_migration():
             vhost = render(heredoc(fastcgi if mode.startswith("fastcgi-") else standard, "conf.d/",
                                    "ESS" if mode.startswith("ssl-") else "ENSS"), prefix,
                            DEDI_LISTEN="listen 80;", NGX_LOGFORMAT="main", wpsubdir_value=prefix.lstrip("/"),
-                           COMP_HEADER="#spdy_headers_comp 5", LISTENOPT="ssl http2",
+                           COMP_HEADER="#spdy_headers_comp 5", LISTENOPT="ssl", HTTPTWO_ON="http2 on;",
                            SUBDIR_INCLUDE=("include " + str(secure) + ";") if prefix else "",
                            NONSUBDIR_INCLUDE="" if prefix else "include " + str(secure) + ";")
             if mode == "redis-default":

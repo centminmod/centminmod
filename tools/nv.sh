@@ -202,6 +202,19 @@ else
   SPDY_HEADER='#add_header Alternate-Protocol  443:npn-spdy/3;'
 fi
 
+# nginx 1.25.1+ deprecates the listen directive's http2 parameter. New HTTPS vhosts
+# drop it from LISTENOPT and DEDI_LISTEN_HTTPS_V6 and get "http2 on;" ($HTTPTWO_ON)
+# instead. Safe to call more than once. Same function in inc/nginx_configure.inc.
+nginx_httptwo_directive() {
+  if [[ "$(nginx -v 2>&1 | awk -F '/' '{print $2}' | awk '{print $1}' | awk -F '.' '{printf "%d%03d%03d\n", $1, $2, $3}')" -ge '1025001' ]]; then
+    if [[ "$LISTENOPT" = *http2* ]]; then
+      LISTENOPT="${LISTENOPT/ http2/}"
+      HTTPTWO_ON='http2 on;'
+    fi
+    DEDI_LISTEN_HTTPS_V6="${DEDI_LISTEN_HTTPS_V6/ http2/}"
+  fi
+}
+
 if [ ! -d "$CUR_DIR" ]; then
   echo "Error: directory $CUR_DIR does not exist"
   echo "check $0 branchname variable is set correctly"
@@ -1262,6 +1275,7 @@ EVT
 fi
 
 # single ssl vhost at yourdomain.com.ssl.conf
+nginx_httptwo_directive
 cat > "/usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf"<<ESX
 # Centmin Mod Getting Started Guide
 # must read https://centminmod.com/getstarted.html
@@ -1282,6 +1296,7 @@ server {
 server {
   listen ${DEDI_IP}443 $LISTENOPT;
   $DEDI_LISTEN_HTTPS_V6
+  $HTTPTWO_ON
   server_name $vhostname www.$vhostname;
 
   include /usr/local/nginx/conf/ssl/${vhostname}/${vhostname}.crt.key.conf;
@@ -1363,6 +1378,7 @@ elif [[ "$sslconfig" = 'yd' ]]; then
   rm -rf /usr/local/nginx/conf/conf.d/$vhostname.conf
 
 # single ssl vhost at yourdomain.com.ssl.conf
+nginx_httptwo_directive
 cat > "/usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf"<<ESS
 # Centmin Mod Getting Started Guide
 # must read https://centminmod.com/getstarted.html
@@ -1382,6 +1398,7 @@ server {
 server {
   listen ${DEDI_IP}443 $LISTENOPT;
   $DEDI_LISTEN_HTTPS_V6
+  $HTTPTWO_ON
   server_name $vhostname www.$vhostname;
 
   ssl_dhparam /usr/local/nginx/conf/ssl/${vhostname}/dhparam.pem;
@@ -1463,6 +1480,7 @@ server {
 ESS
 else
 # separate ssl vhost at yourdomain.com.ssl.conf
+nginx_httptwo_directive
 cat > "/usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf"<<ESS
 # Centmin Mod Getting Started Guide
 # must read https://centminmod.com/getstarted.html
@@ -1482,6 +1500,7 @@ cat > "/usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf"<<ESS
 server {
   listen ${DEDI_IP}443 $LISTENOPT;
   $DEDI_LISTEN_HTTPS_V6
+  $HTTPTWO_ON
   server_name $vhostname www.$vhostname;
 
   ssl_dhparam /usr/local/nginx/conf/ssl/${vhostname}/dhparam.pem;
