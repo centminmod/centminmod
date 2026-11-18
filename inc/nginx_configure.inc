@@ -184,7 +184,9 @@ nginx_httptwo_directive() {
 }
 
 # nginx upgrades (menu 4, centmin-cli.sh nginxupgrade, tools/autoupdate.sh):
-# move conf.d vhosts still on the old ssl_buffer_size 1369 default to 4k.
+# move conf.d vhosts still on an old ssl_buffer_size default (1369, or 4k
+# from 060bdd8b) to 16k. 16k doubled HTTPS throughput for a 139 KB cached
+# page vs 4k, and a TTFB lab found no first-byte cost.
 # Custom values and commented lines are left alone. Symlinks are skipped
 # here, but menu 4's earlier vhost loops (sed -i) already replace conf.d
 # symlinks with regular files, so in a menu 4 run they migrate like the rest.
@@ -192,16 +194,16 @@ nginx_httptwo_directive() {
 # snapshot. NGINX_ALLOWOVERRIDE='n' skips it.
 nginx_sslbuffer_default_update() {
   [[ "$NGINX_ALLOWOVERRIDE" = [yY] ]] || return 0
-  local v re='^[[:space:]]*ssl_buffer_size[[:space:]]+1369;'
+  local v re='^[[:space:]]*ssl_buffer_size[[:space:]]+(1369|4k);'
   for v in /usr/local/nginx/conf/conf.d/*.conf; do
     [[ -f "$v" ]] || continue
     grep -qE "$re" "$v" || continue
     if [[ -L "$v" ]]; then
-      echo "ssl_buffer_size 1369 left in symlinked vhost, update by hand: $v"
+      echo "ssl_buffer_size 1369/4k left in symlinked vhost, update by hand: $v"
       continue
     fi
-    if sed -i -E 's/^([[:space:]]*)ssl_buffer_size[[:space:]]+1369;/\1ssl_buffer_size 4k;/' "$v"; then
-      echo "ssl_buffer_size 1369 -> 4k: $v"
+    if sed -i -E 's/^([[:space:]]*)ssl_buffer_size[[:space:]]+(1369|4k);/\1ssl_buffer_size 16k;/' "$v"; then
+      echo "ssl_buffer_size 1369/4k -> 16k: $v"
     else
       echo "WARNING: could not update ssl_buffer_size in $v"
     fi

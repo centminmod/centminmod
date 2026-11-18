@@ -2153,6 +2153,42 @@ update_nginxconf() {
   fi
 }
 
+# On every centmin.sh / centmin-cli.sh start, move conf.d vhosts still on an old
+# ssl_buffer_size default (1369, or 4k from 060bdd8b) to 16k, the same change
+# nginx upgrades make (nginx_sslbuffer_default_update). Only uncommented lines
+# in regular files change; symlinks, comments and custom values are left alone.
+# Runs only when nginx -t passes first; the changed vhosts are backed up and
+# restored if nginx -t fails afterwards. Like the worker_connections update in
+# update_nginxconf, the new value takes effect at the next nginx reload or
+# restart. NGINX_ALLOWOVERRIDE='n' skips it. Silent once nothing matches.
+update_nginx_sslbuffer() {
+  [[ "$NGINX_ALLOWOVERRIDE" = [yY] && -d /usr/local/nginx/conf/conf.d ]] || return 0
+  command -v nginx >/dev/null 2>&1 || return 0
+  local re='^[[:space:]]*ssl_buffer_size[[:space:]]+(1369|4k);' v bak files=()
+  for v in /usr/local/nginx/conf/conf.d/*.conf; do
+    [[ -f "$v" && ! -L "$v" ]] && grep -qE "$re" "$v" && files+=("$v")
+  done
+  [[ "${#files[@]}" -gt 0 ]] || return 0
+  if ! nginx -t >/dev/null 2>&1; then
+    echo "nginx -t fails before any change: ssl_buffer_size 1369/4k -> 16k update skipped"
+    return 0
+  fi
+  bak="${CENTMINLOGDIR:-/root/centminlogs}/sslbuffer-update-$(date +%d%m%y-%H%M%S)"
+  mkdir -p "$bak" && cp -a "${files[@]}" "$bak/" || return 0
+  for v in "${files[@]}"; do
+    sed -i -E 's/^([[:space:]]*)ssl_buffer_size[[:space:]]+(1369|4k);/\1ssl_buffer_size 16k;/' "$v" \
+      && echo "ssl_buffer_size 1369/4k -> 16k: $v"
+  done
+  if nginx -t >/dev/null 2>&1; then
+    rm -rf "$bak"
+    echo "ssl_buffer_size 16k applies at the next nginx reload (ngxreload) or restart"
+  else
+    cp -a "$bak"/*.conf /usr/local/nginx/conf/conf.d/
+    echo "WARNING: nginx -t failed after the ssl_buffer_size update; vhosts restored (copies in $bak)"
+  fi
+  return 0
+}
+
 checkipvsix() {
   # set via persistent config file at
   # /etc/centminmod/custom_config.inc as outlined on 
@@ -5297,6 +5333,7 @@ if [[ "$INITIALINSTALL" != [yY] ]]; then
     fixwp_updater
   fi
   update_nginxconf
+  update_nginx_sslbuffer
   nginx_systemd_switch
   fix_phpfpm_systemd_switch
   update_cmdshortcuts

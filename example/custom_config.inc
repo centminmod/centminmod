@@ -2740,8 +2740,12 @@
 # - nginx.conf worker_connections 4096, 10000, 50000, 80000, 100000 or 300000 -> 65536
 #   on every centmin.sh/centmin-cli.sh start (inc/cpcheck.inc update_nginxconf),
 #   taking effect at the next nginx reload or restart
-# - conf.d/*.conf ssl_buffer_size 1369 -> 4k during nginx upgrades: menu 4,
-#   centmin-cli.sh nginxupgrade and tools/autoupdate.sh (nginx_sslbuffer_default_update)
+# - conf.d/*.conf ssl_buffer_size 1369 or 4k -> 16k on every centmin.sh/centmin-cli.sh
+#   start (inc/cpcheck.inc update_nginx_sslbuffer: only when nginx -t passes, restored
+#   if nginx -t fails after it, applied at the next nginx reload or restart), and
+#   during nginx upgrades: menu 4, centmin-cli.sh nginxupgrade and tools/autoupdate.sh
+#   (nginx_sslbuffer_default_update). A vhost set back to 4k by hand is changed again
+#   at the next start: to keep 4k, set 'n' (which also stops the other updates above)
 # Git History: First added 2017-04-15 (18abfb26), Last modified 2019-08-08 (631b5a11)
 #NGINX_ALLOWOVERRIDE='y'  
 
