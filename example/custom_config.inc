@@ -4684,10 +4684,46 @@
 # Git History: Added 2017-10-05 (63b0fffd)
 #PHP_TUNING='n'  
 
+# PHP-FPM Pool Size On Install
+# When a php-fpm.conf template is installed (initial install, or menu 5's
+# "overwrite php-fpm.conf"), set pm.max_children to 2x the CPU threads,
+# at least 8 and at most the template value (30, or 8 for low-memory installs).
+# Existing servers keep their pool size. Skipped when PHP_TUNING='y'.
+# In a XenForo 2.3 benchmark on 8 CPU threads, 12-16 children matched 30 on
+# requests/s with 10-24% lower p99 latency. Sites that wait on remote
+# databases or APIs may need more children: set 'n' to keep the template value.
+#PHPFPM_CHILDREN_AUTO='y'
+
 # PHP Huge Pages
-# Enable explicit huge pages support for PHP 7 on CentOS 7.x systems
+# Explicit huge pages for PHP Zend OPcache's shared memory and code.
+# EL7/EL8: unchanged (PHP 8 builds already set vm.nr_hugepages in /etc/sysctl.conf;
+# 'y' adds opcache.huge_code_pages=1 when transparent huge pages are off).
+# EL9/EL10: reserves vm.nr_hugepages for the OPcache segment
+# (opcache.memory_consumption + JIT buffer + PHP code, capped at a quarter of
+# available memory) in /etc/sysctl.d/102-php-opcache-hugepages.conf and sets
+# opcache.huge_code_pages=1 in ${CONFIGSCANDIR}/zz-opcache-tuning.ini.
+# A pool already set outside Centmin Mod is left at its size. Nothing is reserved
+# when the segment can't use huge pages: an OPcache or JIT size that isn't a
+# multiple of 2 MB, a default huge page size other than 2 MB, or more than a
+# quarter of available memory. Skipped in LXD/LXC containers. Applied after the
+# PHP build on PHP installs and menu 5 upgrades; restart PHP-FPM after a change
+# (fpmrestart), not a reload. Needs 2 GB+ available memory (at initial install the
+# build ramdisk counts against it: if no pages were reserved then, a later menu 5
+# PHP upgrade reserves them). Measured +4% req/s on XenForo 2.3 / PHP 8.3,
+# +16-18% together with PHP_OPCACHE_JIT.
 # Git History: Added 2018-12-29 (fa21b383)
-#PHP_HUGEPAGES='n'  
+#PHP_HUGEPAGES='n'
+
+# PHP OPcache JIT
+# Opt-in tracing JIT for PHP 8.0+: writes opcache.jit=tracing and
+# opcache.jit_buffer_size=PHP_OPCACHE_JIT_BUFFER to
+# ${CONFIGSCANDIR}/zz-opcache-tuning.ini on PHP installs and menu 5 upgrades.
+# Measured +10-12% req/s on XenForo 2.3 / PHP 8.3. The buffer adds to OPcache
+# shared memory. JIT turns itself off when an extension such as Xdebug
+# overrides the executor. Set 'n' and run menu 5 (or delete the ini file) and
+# restart PHP-FPM to turn it off.
+#PHP_OPCACHE_JIT='n'
+#PHP_OPCACHE_JIT_BUFFER='64M'
 
 # PHP PCRE JIT Stack Size Adjust
 # Increase PHP's default PCRE JIT stack size from 192 KB to 512 KB (or custom value)

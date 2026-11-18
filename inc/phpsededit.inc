@@ -327,3 +327,34 @@ phpsededit() {
     fi
 
 }
+# PHPFPM_CHILDREN_AUTO='y' (default): when a php-fpm.conf template is installed
+# (initial install, or menu 5's "overwrite php-fpm.conf"), size pm.max_children
+# to 2x the CPU threads, at least 8 and at most the template's value (30 in
+# php-fpm.conf, 8 in php-fpm-min.conf). In a 2026-11-18 XenForo 2.3 benchmark
+# on 8 CPU threads, 12 and 16 children served the same requests/s as 30 with
+# 10-24% lower p99 latency, and 8 children lost 3%. Sites that wait on remote
+# databases or APIs may want more: set pm.max_children by hand, or
+# PHPFPM_CHILDREN_AUTO='n' in custom_config.inc to keep the template value.
+# Skipped when PHP_TUNING='y' (phptuning sizes the pool on initial installs).
+# start/min/max spare values above the new size are lowered too, so the pool
+# stays valid if pm is later switched to dynamic.
+phpfpm_children_auto() {
+  local conf=/usr/local/etc/php-fpm.conf cur threads want
+  [[ "$PHPFPM_CHILDREN_AUTO" = [yY] && "$PHP_TUNING" != [yY] && -f "$conf" ]] || return 0
+  cur=$(awk -F'=' '/^pm\.max_children[[:space:]]*=/ {gsub(/[[:space:]]/, "", $2); print $2; exit}' "$conf")
+  threads=$(nproc 2>/dev/null)
+  [[ "$cur" =~ ^[0-9]+$ && "$threads" =~ ^[0-9]+$ && "$threads" -gt 0 ]] || return 0
+  want=$((threads * 2))
+  [[ "$want" -lt 8 ]] && want=8
+  [[ "$want" -gt "$cur" ]] && want=$cur
+  if [[ "$want" -ne "$cur" ]]; then
+    sed -i -E "s|^pm\.max_children[[:space:]]*=.*|pm.max_children = ${want}|" "$conf"
+    local k v
+    for k in start_servers min_spare_servers max_spare_servers; do
+      v=$(awk -F'=' -v k="pm.${k}" '$1 ~ "^"k"[[:space:]]*$" {gsub(/[[:space:]]/, "", $2); print $2; exit}' "$conf")
+      [[ "$v" =~ ^[0-9]+$ && "$v" -gt "$want" ]] && sed -i -E "s|^pm\.${k}[[:space:]]*=.*|pm.${k} = ${want}|" "$conf"
+    done
+    echo "pm.max_children = ${want} (${threads} CPU threads x 2, PHPFPM_CHILDREN_AUTO='y')"
+  fi
+  return 0
+}

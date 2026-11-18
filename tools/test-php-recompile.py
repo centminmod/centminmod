@@ -36,6 +36,7 @@ lscpu() { :; }; free() { :; }; df() { :; }; tail() { :; }; journalctl() { :; }
 sar_call() { :; }; php_patches() { event patches; [[ "$FAILPHASE" != patches ]] || return 7; }; check_devtoolset_php() { :; }
 enable_devtoolset() { :; }; max_spawn_rate_check() { :; }
 phpsededit() { event ini-tune; }; phptuning() { event fpm-tune; }
+opcache_tuning_ini() { :; }; phpfpm_children_auto() { :; }
 zendopcacheextfix() { :; }; phpiadmin() { :; }; strip_php_extensions() { event strip; [[ "$FAILPHASE" != strip ]] || return 7; }
 fileinfo_standalone() { event fileinfo; [[ "$FAILPHASE" != fileinfo ]] || return 7; }; phptimezonedb_install() { event timezonedb; [[ "$FAILPHASE" != timezonedb ]] || return 7; }; run_after_php_upgrade() { :; }
 funct_phpconfigure() { event configure; [[ "$PWD" = "$DIR_TMP/php-8.3.35/fpm-build" && "$FAILPHASE" != configure ]] || return 7; }

@@ -1226,6 +1226,8 @@ echo "..."
 
 phpsededit
 phptuning
+# PHP_OPCACHE_JIT / EL9/EL10 PHP_HUGEPAGES (inc/zendopcache_tweaks.inc), after the PHP build
+opcache_tuning_ini
 
 PHPDIFF=$(diff /usr/local/lib/php.ini /usr/local/lib/php.ini-oldversion_$DT)
 echo ""
@@ -1298,6 +1300,7 @@ if [[ "$overwritephpfpmconf" = [yY] ]]; then
         echo -e "\nCopying php-fpm.conf /usr/local/etc/php-fpm.conf\n"
         cp -f "$CUR_DIR/config/php-fpm/php-fpm.conf" /usr/local/etc/php-fpm.conf || return $?
     fi # lessphpmem
+    phpfpm_children_auto
 
     if [[ "$CENTOS_NINE" -eq '9' || "$CENTOS_TEN" -eq '10' ]]; then
       sed -i 's|\/var\/run\/php-fpm\/php-fpm.pid|\/run\/php-fpm\/php-fpm.pid|' /usr/local/etc/php-fpm.conf

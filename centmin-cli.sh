@@ -30,7 +30,7 @@ DT=$(date +"%d%m%y-%H%M%S")
 branchname='141.00beta01'
 SCRIPT_MAJORVER='141'
 SCRIPT_MINORVER='00'
-SCRIPT_INCREMENTVER='456'
+SCRIPT_INCREMENTVER='457'
 SCRIPT_VERSIONSHORT="${branchname}"
 SCRIPT_VERSION="${SCRIPT_VERSIONSHORT}.b${SCRIPT_INCREMENTVER}"
 SCRIPT_DATE='16/08/25'
@@ -856,7 +856,10 @@ ZSTD_LOGROTATE_PHPFPM='n'    # initial install only for zstd compressed log rota
 PHP_PATCH='y'                # Apply PHP patches if they exist
 PHP_MYSQLND_PATCH_FIX='y'    # Apply PHP 7.3 backported mysqlnd patch for MariaDB for PHP <=7.2 https://community.centminmod.com/posts/86953/
 PHP_TUNING='n'               # initial php-fpm install auto tuning
-PHP_HUGEPAGES='n'            # Enable explicit huge pages support for PHP 7 on CentOS 7.x systems
+PHPFPM_CHILDREN_AUTO='y'     # php-fpm.conf template installs (initial install, menu 5 overwrite): pm.max_children = 2x CPU threads (min 8, max template value); skipped if PHP_TUNING='y'
+PHP_HUGEPAGES='n'            # explicit huge pages for PHP OPcache: EL7/EL8, and EL9/EL10 (reserves vm.nr_hugepages for the OPcache segment)
+PHP_OPCACHE_JIT='n'          # opt-in OPcache tracing JIT for PHP 8.0+ (zz-opcache-tuning.ini), applied on PHP installs and menu 5 upgrades
+PHP_OPCACHE_JIT_BUFFER='64M' # opcache.jit_buffer_size used when PHP_OPCACHE_JIT='y'
 PHP_CUSTOMSSL='n'            # compile php-fpm against openssl 1.0.2+ or libressl 2.3+ whichever nginx uses
 PHP_CUSTOMSSL_FORCE='n'      # unless force enabled PHP_CUSTOMSSL is disabled on EL7 systems due to additional work needed
 PHPMAKETEST=n                # set to y to enable make test after PHP make for diagnostic purposes
@@ -3390,6 +3393,7 @@ else
     cp "$CUR_DIR/config/php-fpm/php-fpm.conf" /usr/local/etc/php-fpm.conf
     phptuning
 fi
+phpfpm_children_auto
 
 if [[ "$CENTOS_TEN" -eq '10' ]]; then
   sed -i 's|\/var\/run\/php-fpm\/php-fpm.pid|\/run\/php-fpm\/php-fpm.pid|' /usr/local/etc/php-fpm.conf
@@ -3516,6 +3520,8 @@ if [[ "$PHPMVER" > 5.4 && "$ZOPCACHE_OVERRIDE" != [yY] ]] && [[ "$APCINSTALL" = 
 fi
 
 phpsededit
+# PHP_OPCACHE_JIT / EL9/EL10 PHP_HUGEPAGES, now that zendopcache.ini has its final memory size
+opcache_tuning_ini
 
 # igbinary still needed for libmemcached PHP extension if ZOPCACHE=yY
 # or for redis php extension

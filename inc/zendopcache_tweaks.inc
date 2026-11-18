@@ -218,3 +218,123 @@ opcachehugepages() {
     fi
   fi
 }
+# PHP_OPCACHE_JIT='y' (PHP 8.0+) and PHP_HUGEPAGES='y' (EL9/EL10) write the
+# Centmin Mod managed ${CONFIGSCANDIR}/zz-opcache-tuning.ini. It sorts after
+# zendopcache.ini, so its values win, and zendopcache.ini rewrites (menu 5,
+# menu 12) leave it alone. It is removed when neither toggle applies.
+# Measured 2026-11-18 on XenForo 2.3, PHP 8.3, Xeon E3-1270 v6: tracing JIT
+# with a 64M buffer +10-12% req/s, huge pages +4%, both +16-18%.
+# EL9/EL10 huge pages: vm.nr_hugepages is sized to the OPcache segment
+# (opcache.memory_consumption + JIT buffer, in 2 MB pages, + 32 for PHP's code
+# copied by huge_code_pages), capped at a quarter of available memory, and kept
+# in /etc/sysctl.d/102-php-opcache-hugepages.conf. PHP 8 maps the segment with
+# MAP_HUGETLB in one piece when enough pages are free, else it quietly uses
+# normal pages, so no pages are reserved when the segment can't use them: a
+# segment size that is not a multiple of 2 MB, a default huge page size other
+# than 2 MB, or a segment larger than a quarter of available memory. A JIT
+# buffer set in another ini file (PHP_OPCACHE_JIT='n') is counted too. LXD/LXC
+# containers are skipped, like the EL7/EL8 huge pages setup above.
+# A pool sized outside Centmin Mod (vm.nr_hugepages already set) is left alone.
+# Called after phpsededit on installs and menu 5 PHP upgrades, after the PHP
+# build (PHP extension builds can still follow; the 2 GB minimum leaves them room).
+# Restart PHP-FPM after a change (fpmrestart): a reload starts the new master
+# while the old OPcache segment still holds its huge pages.
+opcache_tuning_ini() {
+  local ini="${CONFIGSCANDIR}/zz-opcache-tuning.ini"
+  local hpconf=/etc/sysctl.d/102-php-opcache-hugepages.conf
+  local phpver="${PHPMUVER:-$PHPMVER}" phpmajor jitbuf="${PHP_OPCACHE_JIT_BUFFER:-64M}"
+  local lines=() jitmb=0 segjit hpwant=0 opmem need pages maxpages availkb hptotal hpsizekb f
+  [[ -n "$CONFIGSCANDIR" && -d "$CONFIGSCANDIR" ]] || return 0
+  phpmajor="${phpver%%.*}"
+  if [[ "$PHP_OPCACHE_JIT" = [yY] && "$phpmajor" =~ ^[0-9]+$ && "$phpmajor" -ge 8 ]]; then
+    if [[ "$jitbuf" =~ ^([0-9]+)[Mm]$ ]]; then
+      jitmb="${BASH_REMATCH[1]}"
+    elif [[ "$jitbuf" =~ ^([0-9]+)[Gg]$ ]]; then
+      jitmb=$((BASH_REMATCH[1] * 1024))
+    else
+      echo "PHP_OPCACHE_JIT_BUFFER='$jitbuf' not understood (use e.g. 64M), using 64M"
+      jitbuf='64M'; jitmb=64
+    fi
+    lines+=("opcache.jit=tracing" "opcache.jit_buffer_size=${jitbuf}")
+  fi
+  if [[ "$CENTOS_NINE" = '9' || "$CENTOS_TEN" = '10' ]]; then
+    availkb=$(awk '/^MemAvailable:/ {print $2}' /proc/meminfo)
+    # the configured pool; HugePages_Total also counts in-use surplus pages left
+    # after the pool was set to 0, until PHP-FPM restarts
+    hptotal=$(cat /proc/sys/vm/nr_hugepages 2>/dev/null)
+    hpsizekb=$(awk '/^Hugepagesize:/ {print $2}' /proc/meminfo)
+    [[ "$hptotal" =~ ^[0-9]+$ ]] || hptotal=0
+    [[ "$hpsizekb" =~ ^[0-9]+$ ]] || hpsizekb=2048
+    # Pages reserved by an earlier run no longer count as available memory: add
+    # them back, so every run sizes and checks against the same memory.
+    [[ -f "$hpconf" && "$availkb" =~ ^[0-9]+$ ]] && availkb=$(( availkb + hptotal * hpsizekb ))
+    if [[ "$PHP_HUGEPAGES" = [yY] && ! -f /proc/user_beancounters && "$CHECK_LXD" != [yY] ]]; then
+      # the last opcache.memory_consumption in the scanned ini files (PHP reads them
+      # in this order, so a later file wins); first number on the line, so a
+      # trailing "; comment 256" can't be folded in
+      opmem=$(cat "${CONFIGSCANDIR}"/*.ini 2>/dev/null | awk -F'=' '/^[[:space:]]*opcache\.memory_consumption[[:space:]]*=/ {if (match($2, /[0-9]+/)) v=substr($2, RSTART, RLENGTH)} END {print v}')
+      # the JIT buffer is part of the same segment: PHP_OPCACHE_JIT's, else one set in
+      # another ini file (the last opcache.jit_buffer_size: bytes, K, M or G)
+      segjit=$jitmb
+      if [[ "$segjit" -eq 0 ]]; then
+        segjit=$(for f in "${CONFIGSCANDIR}"/*.ini; do [[ "$f" = "$ini" ]] || cat "$f"; done 2>/dev/null \
+          | awk -F'=' '/^[[:space:]]*opcache\.jit_buffer_size[[:space:]]*=/ {v=$2} END {sub(/;.*/, "", v); gsub(/[[:space:]"\047]/, "", v); u=toupper(substr(v, length(v))); n=v+0; if (u=="G") n*=1024; else if (u=="K") n=int(n/1024); else if (u!="M") n=int(n/1048576); print n+0}')
+        [[ "$segjit" =~ ^[0-9]+$ ]] || segjit=0
+      fi
+      [[ "$opmem" =~ ^[0-9]+$ ]] && need=$(( (opmem + segjit) / 2 ))
+      if [[ ! -f "$hpconf" && "$hptotal" -gt 0 ]]; then
+        # a pool set outside Centmin Mod (sysctl, kernel command line, tuned): leave its
+        # size alone; OPcache uses it when it is large enough
+        lines+=("opcache.huge_code_pages=1")
+        echo "PHP_HUGEPAGES: vm.nr_hugepages is already ${hptotal}, set outside Centmin Mod; pool size left as it is"
+      elif [[ -z "$need" ]]; then
+        echo "PHP_HUGEPAGES='y' but no opcache.memory_consumption in ${CONFIGSCANDIR}: no huge pages reserved"
+      elif [[ "$hpsizekb" -ne 2048 ]]; then
+        echo "PHP_HUGEPAGES='y' but the default huge page size is ${hpsizekb} kB, and PHP OPcache needs 2 MB pages: no huge pages reserved"
+      elif (( opmem % 2 || segjit % 2 )); then
+        # PHP maps the segment on huge pages only when its size is a 2 MB multiple,
+        # and the JIT buffer, at the memory_consumption offset, must start on a 2 MB
+        # boundary or JIT can't make it executable
+        echo "PHP_HUGEPAGES='y' but OPcache ${opmem}M and JIT ${segjit}M are not both multiples of 2 MB: no huge pages reserved"
+      elif [[ ! "$availkb" =~ ^[0-9]+$ || "$availkb" -lt '1980000' ]]; then
+        echo "PHP_HUGEPAGES='y' but under 2 GB of memory is available: no huge pages reserved"
+      elif (( need > availkb / 4 / hpsizekb )); then
+        echo "PHP_HUGEPAGES='y' but OPcache ${opmem}M + JIT ${segjit}M is more than a quarter of available memory: no huge pages reserved"
+      else
+        hpwant=1
+      fi
+    fi
+    if [[ "$hpwant" -eq 1 ]]; then
+      pages=$(( need + 32 ))
+      maxpages=$(( availkb / 4 / hpsizekb ))
+      (( pages > maxpages )) && pages=$maxpages
+      printf '%s\n' "# centminmod PHP_HUGEPAGES='y' (EL9/EL10): OPcache ${opmem}M + JIT ${segjit}M + PHP code" \
+        "vm.nr_hugepages = ${pages}" > "$hpconf"
+      sysctl -q -w vm.nr_hugepages="${pages}" >/dev/null 2>&1
+      lines+=("opcache.huge_code_pages=1")
+      hptotal=$(cat /proc/sys/vm/nr_hugepages 2>/dev/null)
+      echo "vm.nr_hugepages = ${pages} ($hpconf), allocated now: ${hptotal}"
+      if [[ "$hptotal" =~ ^[0-9]+$ && "$hptotal" -lt "$need" ]]; then
+        echo "note: OPcache needs ${need} huge pages but only ${hptotal} could be allocated now (fragmented memory); the full pool is allocated at the next boot"
+      fi
+      if grep -qsE '^[[:space:]]*vm\.nr_hugepages[[:space:]]*=' /etc/sysctl.conf; then
+        echo "note: /etc/sysctl.conf also sets vm.nr_hugepages and is applied after $hpconf at boot"
+      fi
+    elif [[ -f "$hpconf" ]]; then
+      rm -f "$hpconf"
+      if ! grep -qsE '^[[:space:]]*vm\.nr_hugepages[[:space:]]*=' /etc/sysctl.conf /etc/sysctl.d/*.conf /run/sysctl.d/*.conf /usr/local/lib/sysctl.d/*.conf /usr/lib/sysctl.d/*.conf \
+        && ! grep -q 'hugepages=' /proc/cmdline 2>/dev/null; then
+        sysctl -q -w vm.nr_hugepages=0 >/dev/null 2>&1
+      fi
+      echo "PHP OPcache huge pages no longer reserved: removed $hpconf"
+    fi
+  fi
+  if [[ "${#lines[@]}" -gt 0 ]]; then
+    printf '%s\n' "; managed by Centmin Mod (PHP_OPCACHE_JIT / PHP_HUGEPAGES), rewritten on PHP installs and upgrades" "${lines[@]}" > "$ini"
+    echo "$ini:"; sed 's/^/  /' "$ini"
+  elif [[ -f "$ini" ]]; then
+    rm -f "$ini"
+    echo "PHP_OPCACHE_JIT and PHP_HUGEPAGES not enabled: removed $ini"
+  fi
+  return 0
+}
