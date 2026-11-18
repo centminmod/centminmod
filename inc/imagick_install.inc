@@ -199,6 +199,13 @@ checkphpext() {
     echo
 }
 
+# True when a Remi build of package $1 with major version $2 is installed.
+# Remi names ImageMagick 7 'ImageMagick' on EL10 and ImageMagick 6 'ImageMagick'
+# on EL8/EL9, so check the version as well as the name.
+imagemagick_remi_major_installed() {
+    rpm -q --qf '%{VERSION} %{RELEASE}\n' "$1" 2>/dev/null | grep -qE "^${2}\..* .*remi"
+}
+
 checkimagicksys() {
 
     if [ ! -f /etc/yum/pluginconf.d/versionlock.conf ]; then
@@ -292,28 +299,28 @@ checkimagicksys() {
                     if [[ "$INITIALINSTALL" != [yY] ]]; then
                         # yum clean all >/dev/null 2>&1
                         if [[ "$CENTOS_EIGHT" = '8' || "$CENTOS_NINE" = '9' || "$CENTOS_TEN" = '10' ]] && [[ "$IMAGEMAGICK_SEVEN" = [yY] ]]; then
-                            if [[ ! "$(rpm -qi ImageMagick7 | grep 'Release' | grep -o remi >/dev/null 2>&1; echo $?)" = '0' ]]; then
+                            if ! imagemagick_remi_major_installed "ImageMagick${REMI_IMAGEMAGICK_PKGNAME}" 7; then
                                 echo "############## ImageMagick7 Routine Start ##############"
                                 echo "$YUMDNFBIN versionlock delete ImageMagick${REMI_IMAGEMAGICK_PKGNAME} ImageMagick${REMI_IMAGEMAGICK_PKGNAME}-devel ImageMagick${REMI_IMAGEMAGICK_PKGNAME}-c++ ImageMagick${REMI_IMAGEMAGICK_PKGNAME}-c++-devel ImageMagick${REMI_IMAGEMAGICK_PKGNAME}-libs${IMG_HEIFOPT} ImageMagick${REMI_IMAGEMAGICK_PKGNAME}-heic ImageMagick${REMI_IMAGEMAGICK_PKGNAME}-djvu LibRaw"
                                 $YUMDNFBIN versionlock delete ImageMagick${REMI_IMAGEMAGICK_PKGNAME} ImageMagick${REMI_IMAGEMAGICK_PKGNAME}-devel ImageMagick${REMI_IMAGEMAGICK_PKGNAME}-c++ ImageMagick${REMI_IMAGEMAGICK_PKGNAME}-c++-devel ImageMagick${REMI_IMAGEMAGICK_PKGNAME}-libs${IMG_HEIFOPT} ImageMagick${REMI_IMAGEMAGICK_PKGNAME}-heic ImageMagick${REMI_IMAGEMAGICK_PKGNAME}-djvu LibRaw
                                 echo "$YUMDNFBIN versionlock delete ImageMagick ImageMagick-devel ImageMagick-c++ ImageMagick-c++-devel ImageMagick-libs${IMG_HEIFOPT} ImageMagick-heic ImageMagick${REMI_IMAGEMAGICK_PKGNAME}-djvu LibRaw"
                                 $YUMDNFBIN versionlock delete ImageMagick ImageMagick-devel ImageMagick-c++ ImageMagick-c++-devel ImageMagick-libs${IMG_HEIFOPT} ImageMagick-heic ImageMagick${REMI_IMAGEMAGICK_PKGNAME}-djvu LibRaw
-                                echo "$YUMDNFBIN -y remove ImageMagick ImageMagick-c++ ImageMagick-c++-devel ImageMagick-devel ImageMagick-djvu ImageMagick-libs"
-                                $YUMDNFBIN -y remove ImageMagick ImageMagick-c++ ImageMagick-c++-devel ImageMagick-devel ImageMagick-djvu ImageMagick-libs
+                                echo "$YUMDNFBIN -y remove --setopt=clean_requirements_on_remove=False ImageMagick ImageMagick-c++ ImageMagick-c++-devel ImageMagick-devel ImageMagick-djvu ImageMagick-libs"
+                                $YUMDNFBIN -y remove --setopt=clean_requirements_on_remove=False ImageMagick ImageMagick-c++ ImageMagick-c++-devel ImageMagick-devel ImageMagick-djvu ImageMagick-libs
                                 if [[ "$CENTOS_EIGHT" = '8' || "$CENTOS_NINE" = '9' || "$CENTOS_TEN" = '10' ]] && [[ -z "$(rpm -qa libjxl)" || -z "$(rpm -qa liblqr)" ]]; then
                                     $YUMDNFBIN -y install openjpeg2-devel djvulibre-libs highway jxl-pixbuf-loader libaom libdav1d libheif libjxl liblqr-1 libvmaf
                                 fi
                                 echo "############## ImageMagick7 Routine End ##############"
                             fi
                         elif [[ "$CENTOS_EIGHT" = '8' || "$CENTOS_NINE" = '9' || "$CENTOS_TEN" = '10' ]] && [[ "$IMAGEMAGICK_SEVEN" != [yY] ]]; then
-                            if [[ ! "$(rpm -qi ImageMagick6 | grep 'Release' | grep -o remi >/dev/null 2>&1; echo $?)" = '0' ]]; then
+                            if ! imagemagick_remi_major_installed "ImageMagick${REMI_IMAGEMAGICK_PKGNAME}" 6; then
                                 echo "############## ImageMagick6 Routine Start ##############"
                                 echo "$YUMDNFBIN versionlock delete ImageMagick${REMI_IMAGEMAGICK_PKGNAME} ImageMagick${REMI_IMAGEMAGICK_PKGNAME}-devel ImageMagick${REMI_IMAGEMAGICK_PKGNAME}-c++ ImageMagick${REMI_IMAGEMAGICK_PKGNAME}-c++-devel ImageMagick${REMI_IMAGEMAGICK_PKGNAME}-libs${IMG_HEIFOPT} ImageMagick${REMI_IMAGEMAGICK_PKGNAME}-heic ImageMagick${REMI_IMAGEMAGICK_PKGNAME}-djvu LibRaw"
                                 $YUMDNFBIN versionlock delete ImageMagick${REMI_IMAGEMAGICK_PKGNAME} ImageMagick${REMI_IMAGEMAGICK_PKGNAME}-devel ImageMagick${REMI_IMAGEMAGICK_PKGNAME}-c++ ImageMagick${REMI_IMAGEMAGICK_PKGNAME}-c++-devel ImageMagick${REMI_IMAGEMAGICK_PKGNAME}-libs${IMG_HEIFOPT} ImageMagick${REMI_IMAGEMAGICK_PKGNAME}-heic ImageMagick${REMI_IMAGEMAGICK_PKGNAME}-djvu LibRaw
                                 echo "$YUMDNFBIN versionlock delete ImageMagick ImageMagick-devel ImageMagick-c++ ImageMagick-c++-devel ImageMagick-libs${IMG_HEIFOPT} ImageMagick-heic ImageMagick${REMI_IMAGEMAGICK_PKGNAME}-djvu LibRaw"
                                 $YUMDNFBIN versionlock delete ImageMagick ImageMagick-devel ImageMagick-c++ ImageMagick-c++-devel ImageMagick-libs${IMG_HEIFOPT} ImageMagick-heic ImageMagick${REMI_IMAGEMAGICK_PKGNAME}-djvu LibRaw
-                                echo "$YUMDNFBIN -y remove ImageMagick ImageMagick-c++ ImageMagick-c++-devel ImageMagick-devel ImageMagick-djvu ImageMagick-libs"
-                                $YUMDNFBIN -y remove ImageMagick ImageMagick-c++ ImageMagick-c++-devel ImageMagick-devel ImageMagick-djvu ImageMagick-libs
+                                echo "$YUMDNFBIN -y remove --setopt=clean_requirements_on_remove=False ImageMagick ImageMagick-c++ ImageMagick-c++-devel ImageMagick-devel ImageMagick-djvu ImageMagick-libs"
+                                $YUMDNFBIN -y remove --setopt=clean_requirements_on_remove=False ImageMagick ImageMagick-c++ ImageMagick-c++-devel ImageMagick-devel ImageMagick-djvu ImageMagick-libs
                                 if [[ "$CENTOS_EIGHT" = '8' || "$CENTOS_NINE" = '9' || "$CENTOS_TEN" = '10' ]] && [[ -z "$(rpm -qa libjxl)" || -z "$(rpm -qa liblqr)" ]]; then
                                     $YUMDNFBIN -y install openjpeg2-devel djvulibre-libs highway jxl-pixbuf-loader libaom libdav1d libheif libjxl liblqr-1 libvmaf
                                 fi
@@ -348,6 +355,11 @@ checkimagicksys() {
                             dnf module disable nginx:1.24 -y
                             echo
                             time $YUMDNFBIN -y install ImageMagick${REMI_IMAGEMAGICK_PKGNAME} ImageMagick${REMI_IMAGEMAGICK_PKGNAME}-devel ImageMagick${REMI_IMAGEMAGICK_PKGNAME}-c++-devel --disablerepo=epel --enablerepo=remi${DISABLEREPO_DNF} --disableplugin=priorities${VERSIONLOCK_REPO} --skip-broken
+                        fi
+                        if [[ "$CENTOS_EIGHT" = '8' || "$CENTOS_NINE" = '9' || "$CENTOS_TEN" = '10' ]] && ! rpm -q "ImageMagick${REMI_IMAGEMAGICK_PKGNAME}-libs" >/dev/null 2>&1; then
+                            cecho "ERROR: ImageMagick${REMI_IMAGEMAGICK_PKGNAME}-libs is not installed after the ImageMagick install above" $boldred
+                            cecho "PHP imagick will not load. Find the missing dependency in the dnf output above," $boldred
+                            cecho "install it, then rerun centmin.sh menu 5 or menu 15" $boldred
                         fi
                         if [[ "$CENTOS_SEVEN" -eq '7' && "$(rpm -qa libwebp-devel)" ]]; then
                             yum -y swap libwebp-devel libwebp7-devel --enablerepo=remi
