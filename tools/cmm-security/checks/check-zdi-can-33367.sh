@@ -49,7 +49,10 @@
 #   12. Marks stock CentOS/RHEL 6 and 7 as not_affected (medium confidence)
 #       and stock CloudLinux 7 (non-h) as not_affected per CloudLinux.
 #       CloudLinux 7h (hybrid EL8-based kernel) IS affected and is
-#       disambiguated via the .lve[.N].el7h kernel suffix.
+#       disambiguated via the .lve[.N].el7h kernel suffix. A stock
+#       .el6/.el7 kernel counts whatever the userspace, e.g. an
+#       ELevate-upgraded EL8 host still booted into its old 3.10 kernel.
+#       AlmaLinux Kitten (ID="almalinux") is told apart by NAME.
 #   13. Checks the running kernel's RPM changelog for the upstream fix
 #       subject (FIX_MARKER below). This is the primary signal on every
 #       distro. [Divergence from 46300] Version numbers are NOT unique
@@ -567,9 +570,17 @@ if [ -r /etc/os-release ]; then
 fi
 J_OS_ID="$os_id"; J_OS_VERSION="$os_version"; J_OS_PRETTY="$os_pretty"
 
+# AlmaLinux Kitten ships ID="almalinux" with NAME="AlmaLinux Kitten" and
+# VERSION_ID="10" (almalinux-kitten-release-10.0-21, checked 2026-11-17), so
+# it is routed by NAME. The JSON os_id keeps the real ID.
+os_route_id="$os_id"
+case "$os_id:$os_name" in
+  almalinux:*Kitten*) os_route_id="almalinux-kitten" ;;
+esac
+
 # EL6 has no /etc/os-release; key it off /etc/redhat-release so an
 # unrecognised OS never reaches the changelog-only verdict path.
-os_key="${os_id}:${os_version}"
+os_key="${os_route_id}:${os_version}"
 if [ -z "$os_id" ] && grep -qsE 'release 6([^0-9]|$)' /etc/redhat-release; then
   os_key="el6:6"
   os_pretty="$(head -n 1 /etc/redhat-release 2>/dev/null || true)"
@@ -589,7 +600,7 @@ case "$running_kernel_full" in
   *.lve.el8*|*.lve.el9*|*.lve.el10*|*.lve.[0-9]*.el8*|*.lve.[0-9]*.el9*|*.lve.[0-9]*.el10*) kernel_track="cloudlinux" ;;
   *.uek.*|*uek*)        kernel_track="oracle-uek" ;;
   *)
-    case "$os_id" in
+    case "$os_route_id" in
       almalinux)        kernel_track="almalinux" ;;
       almalinux-kitten) kernel_track="almalinux-kitten" ;;
       rocky)            kernel_track="rocky" ;;
@@ -837,11 +848,12 @@ J_UEK_DETECTED="$uek_detected"
 # [Divergence 5] vendor_label set = known affected distro. fixed_kernel is
 # set only where a fixed NVR was verified for the vendor's own builds
 # (AlmaLinux 8/9/10, Rocky Linux 8/9/10, CloudLinux 7h/8); everywhere else
-# the changelog decides.
+# the changelog decides. old_stock marks the stock EL6/EL7 kernels.
 
 fixed_kernel=""
 vendor_label=""
 pending_vendor_nvr="false"
+old_stock="false"
 
 if [ -n "$container_kind" ] || [ "$chroot_state" = "true" ]; then
   dbg "Skipping vendor routing due to container/chroot."
@@ -854,8 +866,8 @@ else
       # kernel-ml/lt or self-built kernel leaves vendor_label empty, so the
       # unknown-OS path below decides from the changelog alone.
       case "$running_kernel" in
-        2.6.32-*) vendor_label="EL6 (stock 2.6.32 kernel)" ;;
-        3.10.0-*) vendor_label="${os_id} 7 (stock 3.10 kernel)" ;;
+        2.6.32-*) vendor_label="EL6 (stock 2.6.32 kernel)"; old_stock="true" ;;
+        3.10.0-*) vendor_label="${os_id} 7 (stock 3.10 kernel)"; old_stock="true" ;;
       esac
       ;;
     almalinux:8*)            fixed_kernel="4.18.0-553.177.2.el8_10";  vendor_label="AlmaLinux 8" ;;
@@ -889,6 +901,21 @@ else
     rhel:8*|rhel:9*|rhel:10*)
       vendor_label="RHEL ${os_version%%.*}"; pending_vendor_nvr="true" ;;
   esac
+  # A stock EL6/EL7 kernel is not affected whatever the userspace, for
+  # example on an ELevate-upgraded EL8 host still booted into its old 3.10
+  # kernel. Drop that OS's baseline so no fixed-kernel step is shown.
+  # CloudLinux 7 keeps its own verdict below.
+  if [ "$old_stock" != "true" ]; then
+    case "$os_key:$running_kernel" in
+      cloudlinux:7*) ;;
+      *:2.6.32-*.el6*|*:3.10.0-*.el7*)
+        vendor_label="${vendor_label:-${os_id:-unknown OS}} (stock ${running_kernel%%-*} kernel)"
+        old_stock="true"
+        fixed_kernel=""
+        pending_vendor_nvr="false"
+        ;;
+    esac
+  fi
 fi
 
 J_VENDOR_BASELINE="$fixed_kernel"
@@ -909,25 +936,23 @@ elif [ "$uek_detected" = "true" ]; then
   record_reason "UEK kernel detected; no UEK status known for $CVE."
   upgrade_status "indeterminate" "low"
 else
+  if [ "$old_stock" = "true" ]; then
+    say "Detected OS:     ${os_pretty:-$os_key}"
+    say "Vendor branch:   $vendor_label"
+    say "Running kernel:  $running_kernel_full"
+    say ""
+    say "RESULT: stock EL6 / EL7 kernels are NOT AFFECTED by $CVE."
+    say "The EL7 3.10 ESP code always copies nonlinear packets before decrypting,"
+    say "and the EL6 2.6.32 kernel predates skb_zerocopy()."
+    say ""
+    say "Confidence: MEDIUM. This is TuxCare's analysis; Red Hat has not published"
+    say "an EL6/EL7 status. If Red Hat later publishes a contradicting status,"
+    say "this verdict should be downgraded to 'indeterminate' until vendor confirms."
+    record_reason "EL6/EL7 NOT_AFFECTED per TuxCare code-path analysis; not vendor-confirmed by Red Hat."
+    J_COMPARISON_RESULT="not_affected"
+    upgrade_status "not_affected" "medium"
+  fi
   case "$os_key" in
-    centos:7*|rhel:7*|centos:6*|rhel:6*|el6:*)
-      if [ -n "$vendor_label" ]; then
-        say "Detected OS:     ${os_pretty:-$os_key}"
-        say "Vendor branch:   $vendor_label"
-        say "Running kernel:  $running_kernel_full"
-        say ""
-        say "RESULT: stock EL6 / EL7 kernels are NOT AFFECTED by $CVE."
-        say "The EL7 3.10 ESP code always copies nonlinear packets before decrypting,"
-        say "and the EL6 2.6.32 kernel predates skb_zerocopy()."
-        say ""
-        say "Confidence: MEDIUM. This is TuxCare's analysis; Red Hat has not published"
-        say "an EL6/EL7 status. If Red Hat later publishes a contradicting status,"
-        say "this verdict should be downgraded to 'indeterminate' until vendor confirms."
-        record_reason "EL6/EL7 NOT_AFFECTED per TuxCare code-path analysis; not vendor-confirmed by Red Hat."
-        J_COMPARISON_RESULT="not_affected"
-        upgrade_status "not_affected" "medium"
-      fi
-      ;;
     cloudlinux:7*)
       if [ "$kernel_track" != "cloudlinux-7h" ]; then
         say "Detected OS:     ${os_pretty:-CloudLinux 7}"
