@@ -14,6 +14,13 @@ ARCH_CHECK="$(uname -m)"
 # quick info overview for centminmod.com installs
 #####################################################
 branchname='132.00stable'
+# CSF lfd PT_LOAD_ACTION (/etc/csf/load.sh -> cminfo top|netstat load) runs during a
+# load spike: report only, no package installs, self-setup, config edits or restarts.
+# The parent check covers load.sh copies that call cminfo without 'load' (132, older installs).
+cminfo_readonly='n'
+if [[ "$2" == load ]] || grep -qaF '/etc/csf/load.sh' "/proc/$PPID/cmdline" 2>/dev/null; then
+    cminfo_readonly='y'
+fi
 DT=$(date +"%d%m%y-%H%M%S")
 CENTMINLOGDIR='/root/centminlogs'
 LOCALCENTMINMOD_MIRROR='https://parts.centminmod.com'
@@ -166,39 +173,41 @@ fi
 
 CENTOSVER_NUMERIC=$(echo $CENTOSVER | sed -e 's|\.||g')
 
-if [ ! -f /usr/sbin/virt-what ]; then
-    yum -y -q install virt-what
-fi
+if [[ "$cminfo_readonly" != y ]]; then
+  if [ ! -f /usr/sbin/virt-what ]; then
+      yum -y -q install virt-what
+  fi
 
-if [ ! -f /usr/sbin/lshw ]; then
-    yum -y -q install lshw
-fi
+  if [ ! -f /usr/sbin/lshw ]; then
+      yum -y -q install lshw
+  fi
 
-if [ ! -f /usr/sbin/tcpdump ]; then
-    yum -y -q install tcpdump
-fi
+  if [ ! -f /usr/sbin/tcpdump ]; then
+      yum -y -q install tcpdump
+  fi
 
-if [ ! -f /usr/bin/tree ]; then
-    yum -y -q install tree
-fi
+  if [ ! -f /usr/bin/tree ]; then
+      yum -y -q install tree
+  fi
 
-if [ ! -f /usr/bin/jq ]; then
-    yum -y -q install jq
-fi
+  if [ ! -f /usr/bin/jq ]; then
+      yum -y -q install jq
+  fi
 
-if [ ! -f /usr/bin/smem ]; then
-    yum -y -q install smem
-fi
+  if [ ! -f /usr/bin/smem ]; then
+      yum -y -q install smem
+  fi
 
-if [[ ! -f /usr/bin/datamash && -f /usr/bin/systemctl ]]; then
-  if [[ "$CENTOS_TEN" -eq 10 ]]; then
-    echo
-    wget -q -4 ${LOCALCENTMINMOD_MIRROR}/centminmodparts/rpms/datamash/el10/datamash-1.9-1.el10.x86_64.rpm
-    echo
-    yum -y localinstall datamash-1.9-1.el10.x86_64.rpm --allowerasing
-    echo
-  else
-    yum -y -q install datamash
+  if [[ ! -f /usr/bin/datamash && -f /usr/bin/systemctl ]]; then
+    if [[ "$CENTOS_TEN" -eq 10 ]]; then
+      echo
+      wget -q -4 ${LOCALCENTMINMOD_MIRROR}/centminmodparts/rpms/datamash/el10/datamash-1.9-1.el10.x86_64.rpm
+      echo
+      yum -y localinstall datamash-1.9-1.el10.x86_64.rpm --allowerasing
+      echo
+    else
+      yum -y -q install datamash
+    fi
   fi
 fi
 
@@ -242,10 +251,10 @@ else
   WGETOPT="-cnv --no-dns-cache${ipv_forceopt_wget}"
 fi
 
-if [ ! -f /root/.mytop ]; then
+if [[ "$cminfo_readonly" != y && ! -f /root/.mytop ]]; then
   echo -e "host=localhost\ndb=mysql\ndelay=2\nidle=0" > /root/.mytop
 fi
-if [ ! -f /usr/local/bin/mytop ]; then
+if [[ "$cminfo_readonly" != y && ! -f /usr/local/bin/mytop ]]; then
   wget -q -4 https://gist.github.com/centminmod/14419caaba4f33ffdb240b526f46e8b5/raw/mytop.pl -O /usr/local/bin/mytop
   chmod +x /usr/local/bin/mytop
   echo -e "host=localhost\ndb=mysql\ndelay=2\nidle=0\nfullqueries=1" > /root/.mytop
@@ -737,9 +746,15 @@ top_info() {
     echo "df -hT"
     df -hT
 
-    if [[ -f /usr/local/nginx/conf/conf.d/virtual.conf && -f /usr/local/nginx/conf/phpstatus.conf && "$(grep '^#include /usr/local/nginx/conf/phpstatus.conf' /usr/local/nginx/conf/conf.d/virtual.conf)" ]]; then
+    # php-fpm already sets pm.status_path, so enabling the nginx /phpstatus include
+    # needs only a tested nginx reload; never done from the lfd load alert
+    if [[ "$cminfo_readonly" != y && -f /usr/local/nginx/conf/conf.d/virtual.conf && -f /usr/local/nginx/conf/phpstatus.conf && "$(grep '^#include /usr/local/nginx/conf/phpstatus.conf' /usr/local/nginx/conf/conf.d/virtual.conf)" ]]; then
         sed -i 's|^#include /usr/local/nginx/conf/phpstatus.conf;|include /usr/local/nginx/conf/phpstatus.conf;|' /usr/local/nginx/conf/conf.d/virtual.conf
-        nprestart >/dev/null 2>&1
+        if nginx -t >/dev/null 2>&1; then
+            nginx -s reload >/dev/null 2>&1
+        else
+            sed -i 's|^include /usr/local/nginx/conf/phpstatus.conf;|#include /usr/local/nginx/conf/phpstatus.conf;|' /usr/local/nginx/conf/conf.d/virtual.conf
+        fi
     fi
     if [[ -f /usr/local/nginx/conf/conf.d/virtual.conf && "$(grep '^include /usr/local/nginx/conf/phpstatus.conf' /usr/local/nginx/conf/conf.d/virtual.conf)" && -f /usr/bin/fpmstats ]]; then
         echo
@@ -755,6 +770,13 @@ top_info() {
         phpfpm_mem_stats
         echo
         curl -s "localhost/phpstatus"
+    elif [[ "$cminfo_readonly" = y ]]; then
+        echo
+        echo "------------------------------------------------------------------"
+        echo "php-fpm stats"
+        [ -f /usr/bin/smem ] && phpfpm_mem_stats
+        echo
+        echo "php-fpm status page skipped: phpstatus.conf include is not enabled in virtual.conf (run cminfo top manually to enable it)"
     fi
     echo
     echo "------------------------------------------------------------------"
@@ -858,7 +880,7 @@ top_info() {
         echo
     fi
     if [[ "$PT_SUMMARY_REPORT" = [Yy] ]]; then
-        if [[ "$(uname -m)" = 'x86_64' && ! -f /usr/bin/pt-summary ]]; then
+        if [[ "$cminfo_readonly" != y && "$(uname -m)" = 'x86_64' && ! -f /usr/bin/pt-summary ]]; then
             # 64bit OS only
             yum -q -y install percona-toolkit --enablerepo=percona-release-x86_64
         fi
@@ -1065,30 +1087,32 @@ EOF
     # echo "cminfo configured"
 }
 
-if [ ! -x /usr/bin/cminfo ]; then
-    chmod 0700 /usr/bin/cminfo
-fi
+if [[ "$cminfo_readonly" != y ]]; then
+  if [ ! -x /usr/bin/cminfo ]; then
+      chmod 0700 /usr/bin/cminfo
+  fi
 
-if [ ! -f /usr/bin/cminfo_updater ]; then
-    setupdate
-else
-    setupdate
-fi
+  if [ ! -f /usr/bin/cminfo_updater ]; then
+      setupdate
+  else
+      setupdate
+  fi
 
-if [ ! -f /usr/bin/crontab ]; then
-    yum -q -y install cronie
-fi
+  if [ ! -f /usr/bin/crontab ]; then
+      yum -q -y install cronie
+  fi
 
-# insert itself into cronjob for auto updates
-if [[ -z "$(crontab -l 2>&1 | grep cminfo_updater)" ]]; then
-    crontab -l > cronjoblist
-    mkdir -p /etc/centminmod/cronjobs
-    cp cronjoblist /etc/centminmod/cronjobs/cronjoblist-before-cminfo-setup.txt
-    echo "*/4 * * * * /usr/bin/cminfo_updater 2>/dev/null" >> cronjoblist
-    cp cronjoblist /etc/centminmod/cronjobs/cronjoblist-after-cminfo-setup.txt
-    crontab cronjoblist
-    rm -rf cronjoblist
-    crontab -l
+  # insert itself into cronjob for auto updates
+  if [[ -z "$(crontab -l 2>&1 | grep cminfo_updater)" ]]; then
+      crontab -l > cronjoblist
+      mkdir -p /etc/centminmod/cronjobs
+      cp cronjoblist /etc/centminmod/cronjobs/cronjoblist-before-cminfo-setup.txt
+      echo "*/4 * * * * /usr/bin/cminfo_updater 2>/dev/null" >> cronjoblist
+      cp cronjoblist /etc/centminmod/cronjobs/cronjoblist-after-cminfo-setup.txt
+      crontab cronjoblist
+      rm -rf cronjoblist
+      crontab -l
+  fi
 fi
 
 infooutput() {
