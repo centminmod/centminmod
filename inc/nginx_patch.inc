@@ -1109,7 +1109,7 @@ openresty_nginx_patchset() {
     return 0
   fi
   DETECT_NGXVER=$(awk '/define nginx_version  / {print $3}' "$ngx_src/src/core/nginx.h")
-  # the 1.31.8 set applies to nginx 1.31.7 and 1.31.8; 1.31.0-1.31.6 lack
+  # the 1.31.8 set applies to nginx 1.31.7 to 1.31.9; 1.31.0-1.31.6 lack
   # upstream changes it builds on (stream proxy timeouts, socket cloexec)
   if [[ "$DETECT_NGXVER" -ge '1031007' && "$DETECT_NGXVER" -lt '1032000' ]]; then
     set_ver='1.31.8'
