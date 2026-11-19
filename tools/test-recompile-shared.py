@@ -142,6 +142,7 @@ INSTALLED_VERSION=0.11
 dnf_plugin_paths() {{ echo /etc/dnf/plugins; }}
 php_libs() {{ :; }}
 source_repos() {{ :; }}
+base_origin() {{ :; }}
 '''
     for status in (0, 42):
         for version in ('0.11', '1.1'):
@@ -654,6 +655,7 @@ ensure_plugin() {{ return 0; }}
     run(lock_setup + '\n' + base_setup + '\nrpm() { return 73; }; base_repos', work, 73)
     result = run(lock_setup + '\n' + base_setup + '\nrpm() { echo AlmaLinux; }; base_repos', work)
     assert 'baseos\n' in result.stdout
+    assert 'anaconda\n' in result.stdout and 'AppStream\n' in result.stdout and 'BaseOS\n' in result.stdout
     run(lock_setup + '\n' + base_setup + '\nrpm() { echo AlmaLinux; }; awk() { return 73; }; base_repos', work, 73)
     seed_locks()
     run(collector_setup + '''
@@ -689,6 +691,151 @@ rpm() { [[ "$2" = --provides ]] && { echo 'libavif.so.15()(64bit)'; return 0; };
     result = run(lock_setup + '\nrpm() { echo 7; }; set -- lock\n' + dispatch, work)
     assert 'EL7 repos are frozen' in result.stdout
     print('PASS: actual discovery/filter/status failures preserve locks; genuine unowned libraries and empty queries remain valid')
+
+    # Cloud and DVD images: anaconda records install media AppStream packages
+    # as from_repo AppStream, not the configured appstream repo id. PHP links
+    # libselinux (anaconda); python3-libselinux (AppStream) is its sibling and
+    # an OS vendor package, so it is never locked, and locks older versions
+    # of this script made are removed by lock and update. PYREPO: the repo
+    # python3-libselinux came from.
+    vendor_setup = collector_setup + '\n' + base_setup + '\n' + function(lock_functions, 'base_origin') + '''
+php_libs() { printf '%s\\n' /test/libavif.so /test/libselinux.so; }
+PYREPO=AppStream
+rpm() {
+  case "$1" in
+    -qf) case "$4" in
+           /test/libavif.so) echo libavif.src.rpm ;;
+           /test/libselinux.so) echo libselinux.src.rpm ;;
+           *) echo AlmaLinux ;;
+         esac ;;
+    -qa) printf 'libavif.src.rpm\\tlibavif\\nlibavif.src.rpm\\tlibavif-devel\\nlibselinux.src.rpm\\tlibselinux\\nlibselinux.src.rpm\\tpython3-libselinux\\n' ;;
+    -q) shift 3; for name in "$@"; do printf '%s-0:%s-1.*\\n' "$name" "$INSTALLED_VERSION"; done ;;
+  esac
+}
+dnf() {
+  local args=" $* "
+  [[ "$1" = -y ]] && { echo "DNF_UPDATE${args##* update}"; INSTALLED_VERSION=1.1; return 0; }
+  if [[ "$2" = check-update ]]; then
+    [[ -n "$HELD" ]] || return 0
+    for name in "$@"; do
+      case "$name" in
+        libavif|python3-libselinux) echo "$name.x86_64 1.1-1 repo" ;;
+      esac
+    done
+    return 100
+  fi
+  [[ -n "$REPOQUERY_FAIL" ]] && return 73
+  [[ "$3" = repoquery ]] || return 0
+  shift 6
+  for name in "$@"; do
+    case "$name" in
+      libselinux) printf '%s\\tanaconda\\n' "$name" ;;
+      python3-libselinux) printf '%s\\t%s\\n' "$name" "$PYREPO"; if [[ -n "${PYEXTRA+x}" ]]; then printf '%s\\t%s\\n' "$name" "$PYEXTRA"; fi ;;
+      libavif) printf '%s\\tepel\\n' "$name"; if [[ -n "$MIXED" ]]; then printf '%s\\tAppStream\\n' "$name"; fi ;;
+      *) printf '%s\\tepel\\n' "$name" ;;
+    esac
+  done
+}
+'''
+    pyselinux = lambda version: f'python3-libselinux-0:{version}-1.*\n'
+    for repo in ('AppStream', 'BaseOS', 'anaconda', 'baseos'):
+        ledger.unlink(missing_ok=True)
+        lockfile.write_text(foreign)
+        run(vendor_setup + f'\nPYREPO={repo}; do_lock', work)
+        assert ledger.read_text() == records('0.11') and 'python3-libselinux' not in lockfile.read_text(), repo
+    # Non-base origin control: the same sibling from a third-party repo is locked.
+    ledger.unlink()
+    lockfile.write_text(foreign)
+    run(vendor_setup + '\nPYREPO=epel; do_lock', work)
+    assert pyselinux('0.11') in ledger.read_text() and pyselinux('0.11') in lockfile.read_text()
+    # An owned lock on it is removed by update, which does not update it.
+    seed_locks()
+    run(vendor_setup + '\nwrite_block libavif libavif-devel python3-libselinux', work)
+    assert pyselinux('0.11') in ledger.read_text()
+    result = run(vendor_setup + '\ndo_update', work)
+    assert 'unlocking OS vendor or local rpm packages: python3-libselinux' in result.stdout
+    assert 'DNF_UPDATE libavif libavif-devel \n' in result.stdout
+    assert ledger.read_text() == records('1.1') and 'python3-libselinux' not in lockfile.read_text()
+    # Only vendor packages owned: update unlocks them and runs no dnf update.
+    seed_locks()
+    run(vendor_setup + '\nwrite_block python3-libselinux', work)
+    result = run(vendor_setup + '\ndo_update', work)
+    assert 'DNF_UPDATE' not in result.stdout and ledger.read_text() == ''
+    assert lockfile.read_text() == foreign
+    # A failed origin query stops update before dnf runs.
+    seed_locks()
+    run(vendor_setup + '\nwrite_block libavif libavif-devel python3-libselinux', work)
+    before = lockfile.read_bytes(), ledger.read_bytes()
+    result = run(vendor_setup + '\nREPOQUERY_FAIL=y; do_update', work, 73)
+    assert 'DNF_UPDATE' not in result.stdout and (lockfile.read_bytes(), ledger.read_bytes()) == before
+    result = run(vendor_setup + '\nbase_origin() { return 73; }; do_update', work, 73)
+    assert 'DNF_UPDATE' not in result.stdout and (lockfile.read_bytes(), ledger.read_bytes()) == before
+    # The forum report: unmarked locks (no ledger) include python3-libselinux.
+    # status names it for removal, not as held; lock adopts and removes it
+    # without a rebuild. A bare pin on libselinux (anaconda, never locked by
+    # this script) is not adopted, even with its comment stripped.
+    selinux_pin = 'libselinux-0:0.11-1.*\n'
+    ledger.unlink()
+    lockfile.write_text(foreign + records('0.11') + pyselinux('0.11') + selinux_pin)
+    result = run(vendor_setup + '\ndo_status', work)
+    assert 'next menu 5 run adopts: libavif libavif-devel python3-libselinux\n' in result.stdout
+    assert 'run removes: python3-libselinux\n  to remove them now without rebuilding PHP, run: bash ' in result.stdout
+    assert re.search(r'without rebuilding PHP, run: bash \S+ lock\n', result.stdout)
+    assert '2 locked packages: libavif libavif-devel' in result.stdout and not ledger.exists()
+    result = run(vendor_setup + '\ndo_lock', work)
+    assert 'adopted unmarked locks: libavif libavif-devel python3-libselinux\n' in result.stdout
+    assert ledger.read_text() == records('0.11') and pyselinux('0.11') not in lockfile.read_text()
+    assert selinux_pin in lockfile.read_text()
+    result = run(vendor_setup + '\ndo_status', work)
+    assert 'python3-libselinux' not in result.stdout
+    # update adopts and unlocks in the same run, and updates only the rest.
+    for repo in ('AppStream', 'BaseOS'):
+        ledger.unlink()
+        lockfile.write_text(foreign + records('0.11') + pyselinux('0.11'))
+        result = run(vendor_setup + f'\nPYREPO={repo}; do_update', work)
+        assert 'adopted unmarked locks: libavif libavif-devel python3-libselinux\n' in result.stdout, repo
+        assert 'unlocking OS vendor or local rpm packages: python3-libselinux' in result.stdout, repo
+        assert 'DNF_UPDATE libavif libavif-devel \n' in result.stdout, repo
+        assert ledger.read_text() == records('1.1') and 'python3-libselinux' not in lockfile.read_text(), repo
+    # A second record of unknown origin (rpm -i) keeps an AppStream name locked.
+    seed_locks()
+    run(vendor_setup + '\nwrite_block python3-libselinux', work)
+    result = run(vendor_setup + "\nPYEXTRA=''; do_update", work)
+    assert 'unlocking' not in result.stdout and 'DNF_UPDATE python3-libselinux \n' in result.stdout
+    assert ledger.read_text() == pyselinux('1.1')
+    # A dnf-added pin on the installed version stays foreign; so does a bare
+    # pin on a package with no recorded origin (rpm -i).
+    for pin, repo in (('# Added lock on Wed Oct 21 16:37:14 2026\n' + pyselinux('0.11'), 'AppStream'), (pyselinux('0.11'), '')):
+        ledger.unlink()
+        lockfile.write_text(foreign + records('0.11') + '\n' + pin)
+        result = run(vendor_setup + f'\nPYREPO={repo}; do_lock', work)
+        assert 'adopted unmarked locks: libavif libavif-devel\n' in result.stdout, repr(repo)
+        assert pin in lockfile.read_text() and 'python3-libselinux' not in ledger.read_text(), repr(repo)
+    # A name installed with mixed origins stays locked and is updated.
+    seed_locks()
+    result = run(vendor_setup + '\nMIXED=y; do_update', work)
+    assert 'unlocking' not in result.stdout and 'DNF_UPDATE libavif libavif-devel \n' in result.stdout
+    assert ledger.read_text() == records('1.1')
+    # status: vendor-only locks report removal, not "no locks"; vendor names
+    # never reach the held-update query; an origin query failure stops it.
+    seed_locks()
+    run(vendor_setup + '\nwrite_block python3-libselinux', work)
+    result = run(vendor_setup + '\nHELD=y; do_status', work)
+    assert 'run removes: python3-libselinux\n' in result.stdout and 'no PHP library locks' not in result.stdout
+    assert 'held:' not in result.stdout and 'locked packages' not in result.stdout
+    run(vendor_setup + '\nwrite_block libavif libavif-devel python3-libselinux', work)
+    result = run(vendor_setup + '\nHELD=y; do_status', work)
+    assert '  held: libavif ' in result.stdout and 'held: python3-libselinux' not in result.stdout
+    before = lockfile.read_bytes(), ledger.read_bytes()
+    result = run(vendor_setup + '\nREPOQUERY_FAIL=y; do_status', work, 73)
+    assert 'run removes' not in result.stdout and (lockfile.read_bytes(), ledger.read_bytes()) == before
+    # A failed rewrite when only vendor locks are left keeps them and fails.
+    seed_locks()
+    run(vendor_setup + '\nwrite_block python3-libselinux', work)
+    before = lockfile.read_bytes(), ledger.read_bytes()
+    result = run(vendor_setup + '\nmv() { return 76; }; do_update', work, 76)
+    assert 'DNF_UPDATE' not in result.stdout and (lockfile.read_bytes(), ledger.read_bytes()) == before
+    print('PASS: install media AppStream/BaseOS packages are base; older vendor locks are adopted and removed by lock/update; user and origin-less pins stay; mixed origins stay locked')
 
     # These are actual source fragments, with earlier installer setup omitted.
     install = (REPO / 'inc/nginx_install.inc').read_text()

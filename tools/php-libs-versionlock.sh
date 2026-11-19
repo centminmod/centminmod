@@ -183,13 +183,16 @@ with_siblings() {
 # etc) plus pseudo repos for the OS install and local rpm installs.
 # Vendor of individual packages is unreliable (AlmaLinux 8 base packages
 # carry vendor CloudLinux), so classify by the repo a package came from.
+# The OS installer (anaconda) records its install source as anaconda and the
+# install media's other repos by their .treeinfo variant names, so cloud and
+# DVD images record AppStream packages (python3-libselinux etc) as AppStream.
 base_repos() {
   (
     set -o pipefail
     local osvendor vendor f
     osvendor=$(rpm_file_record '%{VENDOR}\n' /etc/redhat-release) || exit $?
     osvendor=${osvendor%%$'\n'*}
-    printf '%s\n' anaconda System @System commandline @commandline
+    printf '%s\n' anaconda AppStream BaseOS System @System commandline @commandline
     for f in /etc/yum.repos.d/*.repo; do
       [[ -f "$f" ]] || continue
       vendor=$(rpm_file_record '%{VENDOR}' "$f") || exit $?
@@ -221,34 +224,61 @@ source_repos() {
   )
 }
 
-# the named installed packages that came from non-base repos: not the OS
-# vendor's, the OS install or local rpm files (Centmin Mod's *-custom packages)
-non_base() {
+# the named installed packages that came from non-base repos (non_base): not
+# the OS vendor's, the OS install or local rpm files (Centmin Mod's *-custom
+# packages); or the named installed packages that came only from those
+# (base_origin). A name installed more than once with mixed origins is non-base;
+# one with any record of unknown origin is never base.
+repo_origin() {
   (
     set -o pipefail
-    local repo_records repos
+    local want=$1 repo_records repos
+    shift
     [[ $# -eq 0 ]] && exit 0
     repo_records=$(from_repo "$@") || exit $?
     repos=$(base_repos) || exit $?
-    awk -F'\t' '
+    awk -F'\t' -v want="$want" '
       FILENAME == ARGV[1] {if (NF) r[$1] = 1; next}
-      $2 != "" && !($2 in r) {print $1}
+      $2 == "" {if (NF) unknown[$1] = 1; next}
+      ($2 in r) {base[$1] = 1; next}
+      {other[$1] = 1}
+      END {
+        if (want == "base") {for (n in base) if (!(n in other) && !(n in unknown)) print n}
+        else for (n in other) print n
+      }
     ' <(printf '%s\n' "$repos") <(printf '%s\n' "$repo_records") | sort -u
   )
 }
 
-# installed packages from non-base repos owning PHP's libraries plus their
-# sibling subpackages built from the same source rpm (-devel etc). Local rpm
-# installs (Centmin Mod's *-custom packages) are skipped.
-candidate_packages() {
+non_base() {
+  repo_origin non-base "$@"
+}
+
+base_origin() {
+  repo_origin base "$@"
+}
+
+# installed packages owning PHP's libraries plus their sibling subpackages
+# built from the same source rpm (-devel etc), from any repo
+linked_packages() {
   (
     set -o pipefail
-    local libs lib srpms names installed_records
+    local libs lib srpms installed_records
     libs=$(php_libs) || exit $?
     [[ -z "$libs" ]] && exit 0
     srpms=$(for lib in $libs; do rpm_file_record '%{SOURCERPM}\n' "$lib" || exit $?; done | sort -u) || exit $?
     installed_records=$(rpm -qa --qf '%{SOURCERPM}\t%{NAME}\n') || exit $?
-    names=$(awk -F'\t' 'FILENAME == ARGV[1] {if (NF) s[$1] = 1; next} ($1 in s) {print $2}' <(printf '%s\n' "$srpms") <(printf '%s\n' "$installed_records") | sort -u) || exit $?
+    awk -F'\t' 'FILENAME == ARGV[1] {if (NF) s[$1] = 1; next} ($1 in s) {print $2}' <(printf '%s\n' "$srpms") <(printf '%s\n' "$installed_records") | sort -u
+  )
+}
+
+# the linked packages from non-base repos. Local rpm installs (Centmin Mod's
+# *-custom packages) are skipped.
+candidate_packages() {
+  (
+    set -o pipefail
+    local names
+    names=$(linked_packages) || exit $?
     [[ -z "$names" ]] && exit 0
     non_base $names
   )
@@ -274,14 +304,22 @@ collect_packages() {
 # menu 5 never updated again. Until the ledger exists, treat as ours the bare
 # entries that pin the installed version of a package PHP links against, except
 # entries in a dnf '# Added lock' group (user or other menu option pins) and
-# packages other menu options lock on purpose.
+# packages other menu options lock on purpose. Install media AppStream/BaseOS
+# packages are adopted too: older versions of this script classified them as
+# non-base and locked them; adopting them lets lock and update remove those
+# locks. Other OS vendor packages were never locked by this script.
 adoptable_entries() {
   (
     set -o pipefail
-    local lf names installed entries entry
+    local lf linked records names media installed entries entry
     lf=$(lock_file) || exit $?
     [[ -f "$lf" && ! -e "${lf}.centminmod-php-libs-owned" ]] || exit 0
-    names=$(candidate_packages) || exit $?
+    linked=$(linked_packages) || exit $?
+    [[ -z "$linked" ]] && exit 0
+    names=$(non_base $linked) || exit $?
+    records=$(from_repo $linked) || exit $?
+    media=$(awk -F'\t' '$2 == "AppStream" || $2 == "BaseOS" {print $1}' <<< "$records") || exit $?
+    names=$(printf '%s\n' $names $media | sort -u) || exit $?
     [[ -z "$names" ]] && exit 0
     installed=$(rpm -q --qf '%{NAME}-%{EPOCHNUM}:%{VERSION}-%{RELEASE}.*\n' $names) || exit $?
     entries=$(awk -v b="$LOCK_BEGIN" -v e="$LOCK_END" '
@@ -407,13 +445,23 @@ print(",".join(base.conf.pluginconfpath))
 
 do_update() {
   (
-    local names locked gone repos paths foreign overlay lock_status status=0
+    local names vendor locked gone repos paths foreign overlay lock_status status=0
     adopt_stranded || exit $?
     names=$(block_names) || exit $?
     [[ -z "$names" ]] && exit 0
+    # Same origin policy as lock: OS vendor packages that older versions of
+    # this script locked are unlocked and left to yum update.
+    vendor=$(base_origin $names) || exit $?
+    if [[ -n "$vendor" ]]; then
+      echo "php-libs-versionlock: unlocking OS vendor or local rpm packages: $(echo $vendor)"
+      names=$(awk 'FILENAME == ARGV[1] {if (NF) v[$0] = 1; next} NF && !($0 in v)' <(printf '%s\n' $vendor) <(printf '%s\n' $names)) || exit $?
+    fi
     names=$(with_siblings $names) || exit $?
     # never a bare dnf update: with no package names it updates the whole system
-    [[ -z "$names" ]] && exit 0
+    if [[ -z "$names" ]]; then
+      [[ -n "$vendor" ]] && { write_block || exit $?; }
+      exit 0
+    fi
     repos=$(source_repos $names) || exit $?
     paths=$(dnf_plugin_paths) || exit $?
     foreign=$(other_locks) || exit $?
@@ -471,15 +519,21 @@ sonames() {
 }
 
 do_status() {
-  local names stranded repos name newver gone updates old_provides new_provides old_sonames new_sonames installed rc
+  local names stranded vendor repos name newver gone updates old_provides new_provides old_sonames new_sonames installed rc
   names=$(block_names) || return $?
   stranded=$(adoptable_entries) || return $?
   if [[ -n "$stranded" ]]; then
     echo "php-libs-versionlock: unmarked locks the next menu 5 run adopts: $(entry_name <<< "$stranded" | xargs)"
     names=$(printf '%s\n' $names $(entry_name <<< "$stranded") | sort -u)
   fi
+  vendor=$(base_origin $names) || return $?
+  if [[ -n "$vendor" ]]; then
+    echo "php-libs-versionlock: OS vendor or local rpm package locks the next menu 5 run removes: $(echo $vendor)"
+    echo "  to remove them now without rebuilding PHP, run: bash $0 lock"
+    names=$(awk 'FILENAME == ARGV[1] {if (NF) v[$0] = 1; next} NF && !($0 in v)' <(printf '%s\n' $vendor) <(printf '%s\n' $names)) || return $?
+  fi
   if [[ -z "$names" ]]; then
-    echo "php-libs-versionlock: no PHP library locks in $(lock_file)"
+    [[ -z "$vendor" ]] && echo "php-libs-versionlock: no PHP library locks in $(lock_file)"
     return 0
   fi
   echo "php-libs-versionlock: $(echo $names | wc -w) locked packages: $(echo $names)"
