@@ -510,15 +510,15 @@ elif [[ "$CLI_PHP_VER" ]]; then
     # lessphpmem='y'
 else
     if [ -f /usr/local/bin/getphpver ]; then
-      display_phpver="$(getphpver 73), $(getphpver 74), $(getphpver 80), $(getphpver 81), $(getphpver 82), $(getphpver 83), $(getphpver 84), $(getphpver 85)"
+      display_phpver="$(getphpver 73), $(getphpver 74), $(getphpver 80), $(getphpver 81), $(getphpver 82), $(getphpver 83), $(getphpver 84), $(getphpver 85), $(getphpver 86)"
     else
-      display_phpver="7.3.33, 7.4.33, 8.0.30, 8.1.31, 8.2.28, 8.3.21, 8.4.8, 8.5.0"
+      display_phpver="7.3.33, 7.4.33, 8.0.30, 8.1.34, 8.2.36, 8.3.37, 8.4.28, 8.5.13, 8.6.0"
     fi
     echo
     echo "----------------------------------------------------------------"
     echo "Install which version of PHP? (i.e. $display_phpver, NGDEBUG)"
     echo "PHP 7.x/7.1.x/7.2.x/7.3.x is GA Stable but still may have broken PHP extensions."
-    echo "NGDEBUG is PHP 8.5 dev builds minus incompatible PHP extensions"
+    echo "NGDEBUG is PHP 8.6 dev builds minus incompatible PHP extensions"
     echo "----------------------------------------------------------------"
     echo
     echo "Current PHP Version: $(php-config --version)"
@@ -533,7 +533,10 @@ else
     fi
     if [ -f /usr/local/bin/getphpver ]; then
         getlatest_phpbranch=$(php-config --version | awk  -F '.' '{print $1$2}')
-        if [[ "$getlatest_phpbranch" = '85' ]]; then
+        if [[ "$getlatest_phpbranch" = '86' ]]; then
+            getlatest_phpbranchver=$(getphpver 8 | xargs | sed -e 's| |, |g')
+            echo "Latest PHP Version Installable: $getlatest_phpbranchver"
+        elif [[ "$getlatest_phpbranch" = '85' ]]; then
             getlatest_phpbranchver=$(getphpver 8 | xargs | sed -e 's| |, |g')
             echo "Latest PHP Version Installable: $getlatest_phpbranchver"
         elif [[ "$getlatest_phpbranch" = '84' ]]; then
@@ -597,6 +600,7 @@ else
     # of 8.0.30 try to use getphpver to get the latest PHP version within that branch
     declare -A php_versions
     php_versions=(
+        ['8.6']='86'
         ['8.5']='85'
         ['8.4']='84'
         ['8.3']='83'
