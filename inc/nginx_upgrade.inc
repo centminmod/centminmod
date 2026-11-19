@@ -1494,6 +1494,7 @@ fi
     fi
     nginx_deprecate_httptwo_param
     nginx_sslbuffer_default_update
+    nginx_wp_fastcgi_keepconn_update
         if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' || "$CENTOS_TEN" -eq '10' ]]; then
             systemctl daemon-reload
         fi

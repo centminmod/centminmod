@@ -211,6 +211,38 @@ nginx_sslbuffer_default_update() {
   return 0
 }
 
+# nginx upgrades (menu 4, centmin-cli.sh nginxupgrade, tools/autoupdate.sh):
+# comment out fastcgi_keep_conn on in menu 22 WordPress fastcgi_cache vhosts.
+# With it on, TCP PHP-FPM stalled ~45 ms per request, and it is the
+# precondition for PHP CVE-2026-129289 (PHP-FPM request smuggling).
+# Commented lines and symlinks are left alone. Each changed file is copied to
+# ${NGINXBACKUPDIR:-/usr/local/nginxbackup}/fastcgi-keepconn first.
+# NGINX_ALLOWOVERRIDE='n' skips it.
+nginx_wp_fastcgi_keepconn_update() {
+  [[ "$NGINX_ALLOWOVERRIDE" = [yY] ]] || return 0
+  local f d bak re='^[[:space:]]*fastcgi_keep_conn[[:space:]]+on;'
+  bak="${NGINXBACKUPDIR:-/usr/local/nginxbackup}/fastcgi-keepconn"
+  for f in /usr/local/nginx/conf/wpincludes/*/php-fastcgicache.conf; do
+    [[ -f "$f" ]] || continue
+    grep -qE "$re" "$f" || continue
+    if [[ -L "$f" ]]; then
+      echo "fastcgi_keep_conn on left in symlinked file, update by hand: $f"
+      continue
+    fi
+    d=$(basename "$(dirname "$f")")
+    if ! { mkdir -p "$bak" && cp -a "$f" "$bak/${d}-php-fastcgicache.conf.$(date +%d%m%y-%H%M%S)"; }; then
+      echo "WARNING: could not back up $f, left unchanged"
+      continue
+    fi
+    if sed -i -E 's/^([[:space:]]*)fastcgi_keep_conn[[:space:]]+on;/\1#fastcgi_keep_conn on;/' "$f"; then
+      echo "fastcgi_keep_conn on -> off: $f"
+    else
+      echo "WARNING: could not update fastcgi_keep_conn in $f"
+    fi
+  done
+  return 0
+}
+
 mercurial_check() {
   if [[ -f /usr/bin/hg && "$(hg version | head -n1 | grep -o '2.6')" = '2.6' ]]; then
     if [[ "$CENTOS_SEVEN" -eq '7' ]]; then
