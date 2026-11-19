@@ -30,7 +30,7 @@ DT=$(date +"%d%m%y-%H%M%S")
 branchname='141.00beta01'
 SCRIPT_MAJORVER='141'
 SCRIPT_MINORVER='00'
-SCRIPT_INCREMENTVER='471'
+SCRIPT_INCREMENTVER='472'
 SCRIPT_VERSIONSHORT="${branchname}"
 SCRIPT_VERSION="${SCRIPT_VERSIONSHORT}.b${SCRIPT_INCREMENTVER}"
 SCRIPT_DATE='16/08/25'
@@ -935,10 +935,11 @@ MONGODBPHP_VER='1.7.5'      # MongoDB PHP version
 MONGODBPHP_SEVEN_ZERO_VER='1.9.2' # MongoDB max PHP =<7.0 version
 MONGODBPHP_SEVEN_VER='1.11.1'     # MongoDB max PHP 7.1+ version
 MONGODBPHP_EIGHT_VER='1.13.0'
-MONGODBPHP_EIGHTTWO_VER='1.21.11'     # MongoDB PHP version
-MONGODBPHP_EIGHTTHREE_VER='1.21.11'   # MongoDB PHP 8.3+ version
-MONGODBPHP_EIGHTFOUR_VER='1.21.11'    # MongoDB PHP 8.4+ version
-MONGODBPHP_EIGHTFIVE_VER='1.21.11'    # MongoDB PHP 8.5+ version
+MONGODBPHP_EIGHTTWO_VER='1.21.14'     # MongoDB PHP version
+MONGODBPHP_EIGHTTHREE_VER='1.21.14'   # MongoDB PHP 8.3+ version
+MONGODBPHP_EIGHTFOUR_VER='1.21.14'    # MongoDB PHP 8.4+ version
+MONGODBPHP_EIGHTFIVE_VER='1.21.14'    # MongoDB PHP 8.5 version
+MONGODBPHP_EIGHTSIX_VER='2.5.8'       # MongoDB PHP 8.6+ version (2.x: 1.21.x does not build on PHP 8.6)
 MONGODB_SASL='n'            # SASL not working yet leave = n
 PDOPGSQL_PHPVER='18'        # pdo-pgsql PHP extension version for postgresql
 PHP_LIBZIP='n'              # use newer libzip instead of PHP embedded zip

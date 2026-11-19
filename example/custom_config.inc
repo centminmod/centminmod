@@ -5322,19 +5322,25 @@
 
 # MongoDB PHP 8.2+ Version
 # Git History: Added 2022-06-11 (059c2212)
-#MONGODBPHP_EIGHTTWO_VER='1.21.11'
+#MONGODBPHP_EIGHTTWO_VER='1.21.14'
 
 # MongoDB PHP 8.3+ Version
 # Git History: Added 2025-11-23 (6344948c)
-#MONGODBPHP_EIGHTTHREE_VER='1.21.11'
+#MONGODBPHP_EIGHTTHREE_VER='1.21.14'
 
 # MongoDB PHP 8.4+ Version
 # Git History: Added 2025-11-23 (6344948c)
-#MONGODBPHP_EIGHTFOUR_VER='1.21.11'
+#MONGODBPHP_EIGHTFOUR_VER='1.21.14'
 
-# MongoDB PHP 8.5+ Version
+# MongoDB PHP 8.5 Version
 # Git History: Added 2025-11-23 (6344948c)
-#MONGODBPHP_EIGHTFIVE_VER='1.21.11'
+#MONGODBPHP_EIGHTFIVE_VER='1.21.14'
+
+# MongoDB PHP 8.6+ Version
+# 2.x line: mongodb 1.21.x and 2.1.x do not build on PHP 8.6. mongodb 2.x
+# removes deprecated 1.x APIs; applications using the mongodb/mongodb
+# library need its 2.x release
+#MONGODBPHP_EIGHTSIX_VER='2.5.8'
 
 # MongoDB SASL Support
 # SASL authentication (not working yet, keep = n)
