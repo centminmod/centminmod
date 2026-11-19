@@ -1359,7 +1359,9 @@ fastcgi_cache_methods GET;
 fastcgi_cache_key       "\$scheme\$request_method\$host\$request_uri\$normalized_encoding";
 #fastcgi_cache_key       "\$scheme\$request_method\$host\$request_uri\$normalized_encoding\$wpfcgi_wosession";
 fastcgi_cache_lock         on;
-fastcgi_keep_conn          on;
+# off by default: TCP PHP-FPM stalled ~45 ms per request with it on, and it is
+# the precondition for PHP CVE-2026-129289 (PHP-FPM request smuggling)
+#fastcgi_keep_conn          on;
 fastcgi_cache_lock_age     5s;
 fastcgi_cache_lock_timeout 5s;
 fastcgi_cache_use_stale    error timeout invalid_header updating http_500;
