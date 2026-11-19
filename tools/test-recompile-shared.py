@@ -137,7 +137,7 @@ patchnginx
     lock_setup = lock_functions + f'''
 LOCK_CONF={shlex.quote(str(lockconf))}
 cp() {{ command {shlex.quote(cp)} "$@"; }}
-rpm() {{ shift 3; for name in "$@"; do printf '%s-0:%s-1.*\\n' "$name" "$INSTALLED_VERSION"; done; }}
+rpm() {{ [[ "$1" = -qa ]] && {{ printf 'libavif.src.rpm\\tlibavif\\nlibavif.src.rpm\\tlibavif-devel\\n'; return 0; }}; shift 3; for name in "$@"; do printf '%s-0:%s-1.*\\n' "$name" "$INSTALLED_VERSION"; done; }}
 INSTALLED_VERSION=0.11
 dnf_plugin_paths() {{ echo /etc/dnf/plugins; }}
 php_libs() {{ :; }}
@@ -181,7 +181,7 @@ write_block() { return 76; }; dnf() { echo UNEXPECTED_UPDATE; }
         calls.write_text('0')
         result = run(lock_setup + f'''
 dnf() {{ return {status}; }}
-rpm() {{ count=$(cat {shlex.quote(str(calls))}); count=$((count + 1)); echo "$count" > {shlex.quote(str(calls))}; [[ "$count" -gt 1 ]] && return 76; shift 3; for name in "$@"; do printf '%s-0:%s-1.*\\n' "$name" "$INSTALLED_VERSION"; done; }}
+rpm() {{ [[ "$1" = -qa ]] && {{ printf 'libavif.src.rpm\\tlibavif\\nlibavif.src.rpm\\tlibavif-devel\\n'; return 0; }}; count=$(cat {shlex.quote(str(calls))}); count=$((count + 1)); echo "$count" > {shlex.quote(str(calls))}; [[ "$count" -gt 1 ]] && return 76; shift 3; for name in "$@"; do printf '%s-0:%s-1.*\\n' "$name" "$INSTALLED_VERSION"; done; }}
 do_update
 ''', work, expected)
         assert 'failed to restore PHP library version locks' in result.stderr
@@ -453,6 +453,107 @@ mktemp() {{ if [[ "$1" = -d ]]; then command mktemp -d {shlex.quote(str(work / '
     strip_comments()
     result = run(collector_setup + '\nblock_names; do_update', work)
     assert 'libavif\nlibavif-devel\n' in result.stdout and ledger.read_text() == records('1.1')
+
+    # A subpackage of a locked source rpm (EPEL aom beside libaom) is updated
+    # and locked with it, whether it was installed before the update or the
+    # update pulled it in; a foreign pin on it stays the owner.
+    # TOOLS_BEFORE/TOOLS_AFTER: libavif-tools is installed before/after the
+    # update; TOOLS_REPO(_AFTER): the repo it came from (after the update);
+    # QA_FAIL_AFTER: rpm -qa fails after the update; RENAMED: the update
+    # replaced every package with newavif; NOSRC: a package with no source rpm.
+    sibling_setup = collector_setup + '''
+TOOLS_AFTER=y TOOLS_REPO=epel
+base_repos() { printf '%s\\n' anaconda System @System commandline @commandline baseos; }
+rpm() {
+  case "$1 $3" in
+    -qa*) [[ "$INSTALLED_VERSION" = 1.1 && -n "$QA_FAIL_AFTER" ]] && return 73
+      [[ -n "$OTHERFAM" ]] && printf 'webp.src.rpm\\tlibwebp\\n'
+      [[ "$INSTALLED_VERSION" = 1.1 && -n "$RENAMED" ]] && { printf 'newavif.src.rpm\\tnewavif\\n'; return 0; }
+      printf 'libavif.src.rpm\\tlibavif\\nlibavif.src.rpm\\tlibavif-devel\\n'
+      if [[ "$INSTALLED_VERSION" = 1.1 ]]; then [[ -n "$TOOLS_AFTER" ]]; else [[ -n "$TOOLS_BEFORE" ]]; fi && printf 'libavif.src.rpm\\tlibavif-tools\\n'
+      [[ -n "$NOSRC" ]] && printf '(none)\\tlibnosrc\\n(none)\\tgpg-pubkey\\n'
+      printf 'other.src.rpm\\tkernel\\n' ;;
+    -qf*) echo libavif.src.rpm ;;
+    -q*) shift 3; for name in "$@"; do printf '%s-0:%s-1.*\\n' "$name" "$INSTALLED_VERSION"; done ;;
+  esac
+}
+dnf() {
+  [[ "$1" = -y ]] && { echo "DNF_ARGS ${*: -3}"; INSTALLED_VERSION=1.1; TOOLS_REPO=${TOOLS_REPO_AFTER:-$TOOLS_REPO}; return ${DNF_STATUS:-0}; }
+  shift 6; for name in "$@"; do printf '%s\\t%s\\n' "$name" "$([[ "$name" = libavif-tools ]] && echo "$TOOLS_REPO" || echo epel)"; done
+}
+'''
+    tools = 'libavif-tools-0:1.1-1.*\n'
+    for before in ('', 'y'):
+        seed_locks()
+        result = run(sibling_setup + f'\nTOOLS_BEFORE={before}; do_update', work)
+        assert ledger.read_text() == records('1.1') + tools and tools in lockfile.read_text(), before
+        assert ('DNF_ARGS libavif libavif-devel libavif-tools' in result.stdout) == bool(before), before
+        assert 'dnf update removed' not in result.stderr, before
+    seed_locks()
+    pinned = 'libavif-tools-0:0.5-1.*\n'
+    lockfile.write_text(pinned + lockfile.read_text())
+    result = run(sibling_setup + '\nTOOLS_BEFORE=y; do_update', work)
+    assert ledger.read_text() == records('1.1') and lockfile.read_text().count('libavif-tools') == 1
+    assert 'DNF_ARGS libavif libavif-devel libavif-tools' not in result.stdout
+    # A sibling from a base repo or a local rpm file stays unlocked and out of
+    # the update, as in do_lock; a local rpm the update replaced from epel is
+    # locked.
+    for repo in ('baseos', '@commandline', 'commandline'):
+        seed_locks()
+        result = run(sibling_setup + f'\nTOOLS_BEFORE=y TOOLS_REPO={repo}; do_update', work)
+        assert ledger.read_text() == records('1.1') and 'libavif-tools' not in lockfile.read_text(), repo
+        assert 'DNF_ARGS update libavif libavif-devel' in result.stdout, repo
+    seed_locks()
+    result = run(sibling_setup + '\nTOOLS_BEFORE=y TOOLS_REPO=@commandline TOOLS_REPO_AFTER=epel; do_update', work)
+    assert 'DNF_ARGS update libavif libavif-devel' in result.stdout
+    assert ledger.read_text() == records('1.1') + tools and tools in lockfile.read_text()
+    # A sibling the update removed, or a locked package removed earlier, drops
+    # out of the block instead of failing the relock.
+    seed_locks()
+    result = run(sibling_setup + '\nTOOLS_BEFORE=y TOOLS_AFTER=; do_update', work)
+    assert ledger.read_text() == records('1.1') and 'libavif-tools' not in lockfile.read_text()
+    assert 'dnf update removed libavif-tools' in result.stderr
+    # An update that replaced every saved package fails closed: locks kept.
+    seed_locks()
+    for dnf_status, expected in ((0, 1), (42, 42)):
+        seed_locks()
+        result = run(sibling_setup + f'\nRENAMED=y DNF_STATUS={dnf_status}; do_update', work, expected)
+        assert 'no locked PHP library package is installed' in result.stderr and 'rerun centmin.sh menu 5' in result.stderr
+        assert ledger.read_text() == records('0.11') and records('0.11') in lockfile.read_text()
+    # One family replaced while another survives: the survivors stay locked and
+    # the dropped family is reported; the post-build lock covers replacements.
+    seed_locks()
+    webp = lambda version: f'libwebp-0:{version}-1.*\n'
+    run(sibling_setup + '\nOTHERFAM=y; write_block libavif libavif-devel libwebp', work)
+    result = run(sibling_setup + '\nOTHERFAM=y RENAMED=y; do_update', work)
+    assert 'dnf update removed libavif libavif-devel' in result.stderr
+    assert ledger.read_text() == webp('1.1') and 'libavif' not in lockfile.read_text()
+    # A failed sibling query before the update stops before dnf runs.
+    seed_locks()
+    before = lockfile.read_bytes(), ledger.read_bytes()
+    result = run(sibling_setup + '\nrpm() { [[ "$1" = -qa ]] && return 73; return 0; }; do_update', work, 73)
+    assert 'DNF_ARGS' not in result.stdout and (lockfile.read_bytes(), ledger.read_bytes()) == before
+    seed_locks()
+    lockfile.write_text(lockfile.read_text().replace('libavif-0:0.11-1.*\n', 'libavif-0:0.11-1.*\nlibgone-0:1-1.*\n'))
+    ledger.write_text(ledger.read_text() + 'libgone-0:1-1.*\n')
+    result = run(sibling_setup + '\ndo_update', work)
+    assert 'DNF_ARGS libavif libavif-devel libavif-tools' not in result.stdout and 'libgone' not in result.stdout
+    assert ledger.read_text() == records('1.1') + tools and 'libgone' not in lockfile.read_text()
+    # Nothing installed: no bare dnf update (it would update the whole system).
+    seed_locks()
+    result = run(sibling_setup + '\nrpm() { [[ "$1" = -qa ]] && echo; return 0; }; do_update', work)
+    assert 'DNF_ARGS' not in result.stdout and ledger.read_text() == records('0.11')
+    # Packages without a source rpm, e.g. gpg-pubkey, are never siblings.
+    seed_locks()
+    run(sibling_setup + '\nNOSRC=y; write_block libavif libavif-devel libnosrc; do_update', work)
+    assert 'libnosrc-0:1.1-1.*\n' in ledger.read_text() and 'gpg-pubkey' not in lockfile.read_text()
+    # A failed sibling query after the update warns how to finish the job and
+    # relocks the saved names; a sibling it pulled in waits for that lock.
+    seed_locks()
+    result = run(sibling_setup + '\nQA_FAIL_AFTER=y; do_update', work)
+    assert 'could not check for new sibling packages' in result.stderr and 'run: bash ' in result.stderr
+    assert ledger.read_text() == records('1.1') and 'libavif-tools' not in lockfile.read_text()
+    print('PASS: update locks new and existing sibling subpackages; foreign pins, base-repo and source-less packages and removed packages handled')
 
     # Use the host's native flock syscall on the actual inherited fd9; this
     # remains a real kernel/process concurrency check on macOS and Linux.
