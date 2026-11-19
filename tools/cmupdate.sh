@@ -114,10 +114,15 @@ fupdate() {
       cd "${CM_INSTALLDIR}"
       git branch
       _cmm_git_sync "$cmupdate_branchname_new" "${CM_INSTALLDIR}"
+      cmupdate_sync_rc=$?
       git log -1 --pretty=tformat:'Latest commit: %h (%ad)%n    %s' --date=short
       echo
       echo "-------------------------------------"
-      echo "Updated Centmin Mod code"
+      if [ "$cmupdate_sync_rc" = 2 ]; then
+        echo "Centmin Mod code update failed, see the messages above"
+      else
+        echo "Updated Centmin Mod code"
+      fi
       echo "-------------------------------------"
       echo
     else
@@ -167,6 +172,10 @@ fupdate() {
   # re-add the AUTOUPDATE_NGINX/AUTOUPDATE_PHP cron entry if it went missing
   if [ -f "${CM_INSTALLDIR}/tools/autoupdate.sh" ]; then
     bash "${CM_INSTALLDIR}/tools/autoupdate.sh" ensure cmupdate >/dev/null 2>&1
+  fi
+  # a failed git sync makes cmupdate exit 2
+  if [ "${cmupdate_sync_rc:-0}" = 2 ]; then
+    return 2
   fi
 }
 
