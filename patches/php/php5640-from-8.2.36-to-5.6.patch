@@ -1,0 +1,2053 @@
+From: Alexandre Daubois <alex.daubois@gmail.com>
+Date: Mon, 21 Sep 2026 15:49:40 +0200
+Subject: Fix GHSA-q23r-hr55-xmpg: out-of-bounds read on empty
+ SOAP-ENC:arraySize
+
+(cherry picked from commit 59e46404a744b7ef469f51acd3ee225d518dbaf8)
+(cherry picked from commit 34911d08770ae9f9659d5a0b8c8b61ae7b6ced3b)
+(cherry picked from commit 921fa63e52f15c9bcbc431d7b19ffa60fe051a1a)
+(cherry picked from commit ed597fa1e8dda50784d379b0797d9a3bd03d07f9)
+(cherry picked from commit ab2abf2613a7d33d931f04c8f7c85a82777ee811)
+(cherry picked from commit add8e2a98730794803a72fd6d4cfe00cbcb8e1d8)
+(cherry picked from commit ea777e5ace0954759229321e5115b6de54a0feea)
+(cherry picked from commit 15be08427de9829f51076dcc66b092b3c8b2aa59)
+---
+ ext/soap/php_encoding.c                      |  2 +-
+ ext/soap/tests/GHSA-q23r-hr55-xmpg-wsdl.phpt | 80 ++++++++++++++++++++++++++++
+ ext/soap/tests/GHSA-q23r-hr55-xmpg-wsdl.wsdl | 67 +++++++++++++++++++++++
+ ext/soap/tests/GHSA-q23r-hr55-xmpg.phpt      | 65 ++++++++++++++++++++++
+ 4 files changed, 213 insertions(+), 1 deletion(-)
+ create mode 100644 ext/soap/tests/GHSA-q23r-hr55-xmpg-wsdl.phpt
+ create mode 100644 ext/soap/tests/GHSA-q23r-hr55-xmpg-wsdl.wsdl
+ create mode 100644 ext/soap/tests/GHSA-q23r-hr55-xmpg.phpt
+
+diff --git a/ext/soap/php_encoding.c b/ext/soap/php_encoding.c
+index 47080ba..b461d8f 100644
+--- a/ext/soap/php_encoding.c
++++ b/ext/soap/php_encoding.c
+@@ -2143,7 +2143,7 @@ static int calc_dimension_12(const char* str)
+ 		}
+ 		str++;
+ 	}
+-	return i;
++	return i != 0 ? i : 1;
+ }
+ 
+ static int* get_position_12(int dimension, const char* str)
+diff --git a/ext/soap/tests/GHSA-q23r-hr55-xmpg-wsdl.phpt b/ext/soap/tests/GHSA-q23r-hr55-xmpg-wsdl.phpt
+new file mode 100644
+index 0000000..1b39fee
+--- /dev/null
++++ b/ext/soap/tests/GHSA-q23r-hr55-xmpg-wsdl.phpt
+@@ -0,0 +1,80 @@
++--TEST--
++GHSA-q23r-hr55-xmpg: Unbounded array walk on empty wsdl:arraySize
++--EXTENSIONS--
++soap
++--INI--
++soap.wsdl_cache_enabled=0
++--FILE--
++<?php
++
++const WSDL = __DIR__ . '/GHSA-q23r-hr55-xmpg-wsdl.wsdl';
++
++function itemType() { return ['A', 'B', 'C']; }
++function sizeOnly() { return ['A', 'B', 'C']; }
++
++function request(string $operation): string {
++    return <<<XML
++        <?xml version="1.0"?>
++        <env:Envelope
++            xmlns:env="http://www.w3.org/2003/05/soap-envelope"
++            xmlns:m="urn:arraysize">
++
++            <env:Body>
++                <m:{$operation}/>
++            </env:Body>
++        </env:Envelope>
++        XML;
++}
++
++class ReplayClient extends SoapClient
++{
++    public function __construct(public string $arrayType) {
++        parent::__construct(WSDL);
++    }
++
++    public function __doRequest($request, $location, $action, $version, $oneWay = 0): ?string {
++        return <<<XML
++            <?xml version="1.0"?>
++            <env:Envelope
++                xmlns:env="http://www.w3.org/2003/05/soap-envelope"
++                xmlns:ns1="urn:arraysize"
++                xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
++                xmlns:xsd="http://www.w3.org/2001/XMLSchema">
++
++                <env:Body>
++                    <ns1:{$this->arrayType}Response>
++                        <result xsi:type="ns1:{$this->arrayType}Array">
++                            <item xsi:type="xsd:string">A</item>
++                            <item xsi:type="xsd:string">B</item>
++                            <item xsi:type="xsd:string">C</item>
++                        </result>
++                    </ns1:{$this->arrayType}Response>
++                </env:Body>
++            </env:Envelope>
++            XML;
++    }
++}
++
++$server = new SoapServer(WSDL);
++$server->addFunction(['itemType', 'sizeOnly']);
++
++foreach (['itemType', 'sizeOnly'] as $operation) {
++    ob_start();
++    $server->handle(request($operation));
++    $response = ob_get_clean();
++
++    preg_match('/arraySize="[^"]*"/', $response, $matches);
++    echo 'encode ', $operation, ' => ', $matches[0] ?? 'none', "\n";
++}
++
++foreach (['ItemType', 'SizeOnly'] as $arrayType) {
++    $client = new ReplayClient($arrayType);
++    echo 'decode ', $arrayType, ' => ', json_encode($client->{lcfirst($arrayType)}()), "\n";
++}
++
++?>
++--EXPECT--
++encode itemType => arraySize="3"
++encode sizeOnly => arraySize="3"
++decode ItemType => ["A","B","C"]
++decode SizeOnly => ["A","B","C"]
+diff --git a/ext/soap/tests/GHSA-q23r-hr55-xmpg-wsdl.wsdl b/ext/soap/tests/GHSA-q23r-hr55-xmpg-wsdl.wsdl
+new file mode 100644
+index 0000000..55b5b92
+--- /dev/null
++++ b/ext/soap/tests/GHSA-q23r-hr55-xmpg-wsdl.wsdl
+@@ -0,0 +1,67 @@
++<?xml version="1.0" encoding="UTF-8"?>
++<definitions xmlns="http://schemas.xmlsoap.org/wsdl/"
++             xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"
++             xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/"
++             xmlns:xsd="http://www.w3.org/2001/XMLSchema"
++             xmlns:enc12="http://www.w3.org/2003/05/soap-encoding"
++             xmlns:tns="urn:arraysize"
++             targetNamespace="urn:arraysize">
++
++  <types>
++    <xsd:schema targetNamespace="urn:arraysize">
++      <xsd:import namespace="http://www.w3.org/2003/05/soap-encoding"/>
++
++      <xsd:complexType name="ItemTypeArray">
++        <xsd:complexContent>
++          <xsd:restriction base="enc12:Array">
++            <xsd:attribute ref="enc12:itemType" wsdl:itemType="xsd:string"/>
++            <xsd:attribute ref="enc12:arraySize" wsdl:arraySize=""/>
++          </xsd:restriction>
++        </xsd:complexContent>
++      </xsd:complexType>
++
++      <xsd:complexType name="SizeOnlyArray">
++        <xsd:complexContent>
++          <xsd:restriction base="enc12:Array">
++            <xsd:attribute ref="enc12:arraySize" wsdl:arraySize=""/>
++          </xsd:restriction>
++        </xsd:complexContent>
++      </xsd:complexType>
++    </xsd:schema>
++  </types>
++
++  <message name="emptyRequest"/>
++  <message name="itemTypeResponse"><part name="result" type="tns:ItemTypeArray"/></message>
++  <message name="sizeOnlyResponse"><part name="result" type="tns:SizeOnlyArray"/></message>
++
++  <portType name="ArrayPortType">
++    <operation name="itemType">
++      <input message="tns:emptyRequest"/>
++      <output message="tns:itemTypeResponse"/>
++    </operation>
++    <operation name="sizeOnly">
++      <input message="tns:emptyRequest"/>
++      <output message="tns:sizeOnlyResponse"/>
++    </operation>
++  </portType>
++
++  <binding name="ArrayBinding" type="tns:ArrayPortType">
++    <soap:binding style="rpc" transport="http://schemas.xmlsoap.org/soap/http"/>
++    <operation name="itemType">
++      <soap:operation soapAction="itemType"/>
++      <input><soap:body use="encoded" namespace="urn:arraysize" encodingStyle="http://www.w3.org/2003/05/soap-encoding"/></input>
++      <output><soap:body use="encoded" namespace="urn:arraysize" encodingStyle="http://www.w3.org/2003/05/soap-encoding"/></output>
++    </operation>
++    <operation name="sizeOnly">
++      <soap:operation soapAction="sizeOnly"/>
++      <input><soap:body use="encoded" namespace="urn:arraysize" encodingStyle="http://www.w3.org/2003/05/soap-encoding"/></input>
++      <output><soap:body use="encoded" namespace="urn:arraysize" encodingStyle="http://www.w3.org/2003/05/soap-encoding"/></output>
++    </operation>
++  </binding>
++
++  <service name="ArrayService">
++    <port name="ArrayPort" binding="tns:ArrayBinding">
++      <soap:address location="test://"/>
++    </port>
++  </service>
++</definitions>
+diff --git a/ext/soap/tests/GHSA-q23r-hr55-xmpg.phpt b/ext/soap/tests/GHSA-q23r-hr55-xmpg.phpt
+new file mode 100644
+index 0000000..886b3ff
+--- /dev/null
++++ b/ext/soap/tests/GHSA-q23r-hr55-xmpg.phpt
+@@ -0,0 +1,65 @@
++--TEST--
++GHSA-q23r-hr55-xmpg: Out-of-bounds read on empty SOAP-ENC:arraySize
++--EXTENSIONS--
++soap
++--FILE--
++<?php
++
++function echo_back($data) { $GLOBALS['decoded'][] = $data; return null; }
++
++function request(string $arraySize, string $itemType = ''): string {
++    $itemTypeAttribute = $itemType === '' ? '' : "SOAP-ENC:itemType=\"{$itemType}\"";
++
++    return <<<XML
++        <?xml version="1.0"?>
++        <SOAP-ENV:Envelope
++            xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
++            xmlns:SOAP-ENC="http://schemas.xmlsoap.org/soap/encoding/"
++            xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
++            xmlns:xsd="http://www.w3.org/2001/XMLSchema">
++
++            <SOAP-ENV:Body SOAP-ENV:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/">
++                <echo_back>
++                    <data xsi:type="SOAP-ENC:Array" {$itemTypeAttribute} SOAP-ENC:arraySize="{$arraySize}">
++                        <item xsi:type="xsd:string">A</item>
++                        <item xsi:type="xsd:string">B</item>
++                        <item xsi:type="xsd:string">C</item>
++                    </data>
++                </echo_back>
++            </SOAP-ENV:Body>
++        </SOAP-ENV:Envelope>
++        XML;
++}
++
++function decode(SoapServer $server, string $request): string {
++    ob_start();
++    $server->handle($request);
++    $response = ob_get_clean();
++
++    if (str_contains($response, '<SOAP-ENV:Fault>')) {
++        return 'fault: ' . strip_tags($response);
++    }
++
++    return json_encode(array_pop($GLOBALS['decoded']));
++}
++
++$server = new SoapServer(null, ['uri' => 'http://test']);
++$server->addFunction('echo_back');
++
++$GLOBALS['decoded'] = [];
++
++foreach (['', ' ', 'abc', '*', '3', '2 2'] as $arraySize) {
++    echo var_export($arraySize, true), ' => ', decode($server, request($arraySize)), "\n";
++}
++
++echo "itemType => ", decode($server, request('', 'xsd:string')), "\n";
++
++?>
++--EXPECT--
++'' => ["A","B","C"]
++' ' => ["A","B","C"]
++'abc' => ["A","B","C"]
++'*' => ["A","B","C"]
++'3' => ["A","B","C"]
++'2 2' => [["A","B"],["C"]]
++itemType => ["A","B","C"]
+From: Alexandre Daubois <alex.daubois@gmail.com>
+Date: Fri, 13 Nov 2026 08:33:23 +0100
+Subject: Fix GHSA-68fq-fh7h-f8gr: refuse keyless phar signature when .pubkey
+ exists
+
+The signature type is not covered by the signature, so an OpenSSL signed
+phar could be downgraded to a keyless hash algorithm.
+
+(cherry picked from commit 7050cf338092a93e7d4caa4b7dc0bb8771f52a01)
+(cherry picked from commit 88287560c4a3945ad189e6bbf2436165fb73a767)
+(cherry picked from commit 1a73af7b2445c7c5837ef66e9818c51739bb4e94)
+(cherry picked from commit f41d31eeb93e3009a739a3ac25989cefe1968253)
+(cherry picked from commit 09ce3861bf193c0bbdd87b0cab0fe37839d4aeb9)
+(cherry picked from commit 0719d3cac6fe2fa0f73906d2975841d2ac9fb8c7)
+(cherry picked from commit 418d878d39c7d9da02b356a62c5057037c237b77)
+(cherry picked from commit 5eb063ca73b070ef7b2b45c06378a58759b91f3e)
+---
+ ext/phar/tests/ghsa-68fq-fh7h-f8gr.phpt | 122 ++++++++++++++++++++++++++++++++
+ ext/phar/util.c                         |  17 +++++
+ 2 files changed, 139 insertions(+)
+ create mode 100644 ext/phar/tests/ghsa-68fq-fh7h-f8gr.phpt
+
+diff --git a/ext/phar/tests/ghsa-68fq-fh7h-f8gr.phpt b/ext/phar/tests/ghsa-68fq-fh7h-f8gr.phpt
+new file mode 100644
+index 0000000..e03123f
+--- /dev/null
++++ b/ext/phar/tests/ghsa-68fq-fh7h-f8gr.phpt
+@@ -0,0 +1,122 @@
++--TEST--
++GHSA-68fq-fh7h-f8gr (OpenSSL signature bypass by downgrading the algorithm to a keyless one)
++--EXTENSIONS--
++phar
++openssl
++--SKIPIF--
++<?php
++if (!in_array("OpenSSL", Phar::getSupportedSignatures())) die("skip openssl support required");
++?>
++--INI--
++phar.readonly=0
++phar.require_hash=1
++--FILE--
++<?php
++$base = __DIR__ . '/' . basename(__FILE__, '.php');
++$private = openssl_pkey_get_private(file_get_contents(__DIR__ . '/files/private.pem'));
++$pkey = '';
++openssl_pkey_export($private, $pkey, null, ['config' => __DIR__ . '/files/openssl.cnf']);
++$pubkey = openssl_pkey_get_details($private)['key'];
++
++function build(string $file, string $pkey): string
++{
++    $phar = new Phar($file);
++    $phar['main.php'] = '<?php echo "GENUINE\n";';
++    $phar->setStub('<?php __HALT_COMPILER();');
++    $phar->setSignatureAlgorithm(Phar::OPENSSL, $pkey);
++
++    return file_get_contents($file);
++}
++
++// a phar built in this process comes back from the cache, so each case is read under its own name
++function open(string $file, string $archive, ?string $pubkey): void
++{
++    file_put_contents($file, $archive);
++    if ($pubkey !== null) {
++        file_put_contents($file . '.pubkey', $pubkey);
++    }
++
++    try {
++        echo (new Phar($file))->getSignature()['hash_type'], "\n";
++    } catch (UnexpectedValueException $e) {
++        echo $e->getMessage(), "\n";
++    }
++}
++
++function downgrade_phar(string $archive): string
++{
++    // the last 12 bytes are [length][algorithm]["GBMB"], the signature sits just before them
++    $siglen = unpack('V', substr($archive, -12, 4))[1];
++    $message = substr($archive, 0, strlen($archive) - 12 - $siglen);
++
++    return $message . hash('sha256', $message, true) . pack('V', 0x0003) . 'GBMB'; // 0x0003 is PHAR_SIG_SHA256
++}
++
++function downgrade_tar(string $archive): string
++{
++    for ($offset = 0; $offset + 512 <= strlen($archive); ) {
++        $size = (int) octdec(trim(substr($archive, $offset + 124, 12), " \0")); // octal size field of a 512 byte header
++
++        if (rtrim(substr($archive, $offset, 100), "\0") === '.phar/signature.bin') {
++            // the signed message stops at this header, so rewriting the entry content leaves it alone
++            $blob = pack('VV', 0x0003, 32) . hash('sha256', substr($archive, 0, $offset), true); // [algorithm][digest length][digest]
++
++            return substr_replace($archive, str_pad($blob, $size, "\0"), $offset + 512, $size);
++        }
++
++        $offset += 512 + (($size + 511) & ~511);
++    }
++
++    throw new RuntimeException('no signature entry');
++}
++
++function downgrade_zip(string $archive): string
++{
++    $eocd = strrpos($archive, "PK\x05\x06");
++    $cdir = unpack('V', substr($archive, $eocd + 16, 4))[1]; // the eocd holds the directory offset at +16 and the archive comment length at +20
++    $comment = substr($archive, $eocd + 22, unpack('v', substr($archive, $eocd + 20, 2))[1]);
++
++    for ($record = $cdir; substr($archive, $record, 4) === "PK\x01\x02"; ) {
++        $namelen = unpack('v', substr($archive, $record + 28, 2))[1];
++
++        if (substr($archive, $record + 46, $namelen) === '.phar/signature.bin') {
++            $size = unpack('V', substr($archive, $record + 24, 4))[1];
++            $local = unpack('V', substr($archive, $record + 42, 4))[1];
++            $content = $local + 30 + unpack('v', substr($archive, $local + 26, 2))[1] + unpack('v', substr($archive, $local + 28, 2))[1];
++            // the signed message is everything before the local entry plus the directory up to this record
++            $message = substr($archive, 0, $local) . substr($archive, $cdir, $record - $cdir) . $comment;
++            $blob = pack('VV', 0x0003, 32) . hash('sha256', $message, true);
++
++            return substr_replace($archive, str_pad($blob, $size, "\0"), $content, $size);
++        }
++
++        $record += 46 + $namelen + unpack('v', substr($archive, $record + 30, 2))[1] + unpack('v', substr($archive, $record + 32, 2))[1];
++    }
++
++    throw new RuntimeException('no signature entry');
++}
++
++foreach (['phar' => 'downgrade_phar', 'phar.tar' => 'downgrade_tar', 'phar.zip' => 'downgrade_zip'] as $suffix => $downgrade) {
++    $archive = build($base . '.source.' . $suffix, $pkey);
++    open($base . '.signed.' . $suffix, $archive, $pubkey);
++    open($base . '.tampered.' . $suffix, $downgrade($archive), $pubkey);
++    open($base . '.nokey.' . $suffix, $downgrade($archive), null);
++}
++?>
++--CLEAN--
++<?php
++$base = __DIR__ . '/' . basename(__FILE__, '.clean.php');
++foreach (glob($base . '.*.phar*') as $file) {
++    unlink($file);
++}
++?>
++--EXPECTF--
++OpenSSL
++phar "%stampered.phar" SHA256 signature could not be verified: openssl public key found, but the signature does not use openssl
++SHA-256
++OpenSSL
++phar error: tar-based phar "%stampered.phar.tar" signature cannot be verified: openssl public key found, but the signature does not use openssl
++SHA-256
++OpenSSL
++phar error: signature cannot be verified: openssl public key found, but the signature does not use openssl in zip-based phar "%stampered.phar.zip"
++SHA-256
+diff --git a/ext/phar/util.c b/ext/phar/util.c
+index 0db8110..8becf20 100644
+--- a/ext/phar/util.c
++++ b/ext/phar/util.c
+@@ -1554,6 +1554,23 @@ int phar_verify_signature(php_stream *fp, size_t end_of_phar, php_uint32 sig_typ
+ 
+ 	php_stream_rewind(fp);
+ 
++	if (sig_type != PHAR_SIG_OPENSSL) {
++		php_stream_statbuf ssb;
++		char *pfile;
++		zend_bool has_pubkey;
++
++		spprintf(&pfile, 0, "%s.pubkey", fname);
++		has_pubkey = php_stream_stat_path_ex(pfile, PHP_STREAM_URL_STAT_QUIET, &ssb, NULL) == 0;
++		efree(pfile);
++
++		if (has_pubkey) {
++			if (error) {
++				spprintf(error, 0, "openssl public key found, but the signature does not use openssl");
++			}
++			return FAILURE;
++		}
++	}
++
+ 	switch (sig_type) {
+ 		case PHAR_SIG_OPENSSL: {
+ #ifdef PHAR_HAVE_OPENSSL
+From: Jakub Zelenka <bukka@php.net>
+Date: Mon, 26 Oct 2026 18:54:31 +0100
+Subject: Fix GHSA-5j3f-64r7-f564: PATH_INFO underflow in CGI
+ init_request_info()
+
+When the suffix stripped from SCRIPT_FILENAME (or PATH_TRANSLATED) is
+longer than PATH_INFO, the re-derived PATH_INFO pointed before the value
+and was then read, written and copied from. Only rewrite PATH_INFO when
+it is longer than the stripped suffix, as FPM has done since the
+CVE-2019-11043 fix.
+
+(cherry picked from commit 964cdcfa5adfa577cde97df89fc8fda04815694d)
+(cherry picked from commit 4c94b3ce3ff6e9e0290825198bb6f4c9bb3779c6)
+(cherry picked from commit ed780cf394e39241bb8dbe14a50245751a908f41)
+(cherry picked from commit 39bab551ef8048dc258a3f3263f198ae6cdcdda2)
+(cherry picked from commit 58c88b7c1a5addb61dd210ad10687789012fe344)
+(cherry picked from commit 171efa4f4fcaa2bdda9c4902612ff0a0f9971f1c)
+(cherry picked from commit 1e3b848d9c281a34b2bf9f5d56fb80371f0872e6)
+(cherry picked from commit 1a502ecc4b1dcf7a52b61bb2a75e4741e931590b)
+---
+ sapi/cgi/cgi_main.c                     |  4 +--
+ sapi/cgi/tests/ghsa-5j3f-64r7-f564.phpt | 60 +++++++++++++++++++++++++++++++++
+ 2 files changed, 62 insertions(+), 2 deletions(-)
+ create mode 100644 sapi/cgi/tests/ghsa-5j3f-64r7-f564.phpt
+
+diff --git a/sapi/cgi/cgi_main.c b/sapi/cgi/cgi_main.c
+index da5ca80..575e5dc 100644
+--- a/sapi/cgi/cgi_main.c
++++ b/sapi/cgi/cgi_main.c
+@@ -1269,9 +1269,9 @@ static void init_request_info(fcgi_request *request TSRMLS_DC)
+ 						 */
+ 						int slen = len - strlen(pt);
+ 						int pilen = env_path_info ? strlen(env_path_info) : 0;
+-						char *path_info = env_path_info ? env_path_info + pilen - slen : NULL;
++						char *path_info = (env_path_info && pilen > slen) ? env_path_info + pilen - slen : NULL;
+ 
+-						if (orig_path_info != path_info) {
++						if (path_info && orig_path_info != path_info) {
+ 							if (orig_path_info) {
+ 								char old;
+ 
+diff --git a/sapi/cgi/tests/ghsa-5j3f-64r7-f564.phpt b/sapi/cgi/tests/ghsa-5j3f-64r7-f564.phpt
+new file mode 100644
+index 0000000..cab27ad
+--- /dev/null
++++ b/sapi/cgi/tests/ghsa-5j3f-64r7-f564.phpt
+@@ -0,0 +1,60 @@
++--TEST--
++GHSA-5j3f-64r7-f564 (PATH_INFO underflow when the stripped suffix is longer than PATH_INFO)
++--SKIPIF--
++<?php include "skipif.inc"; ?>
++--FILE--
++<?php
++include "include.inc";
++
++$php = get_cgi_path();
++$script = __DIR__ . "/ghsa-5j3f-64r7-f564.target.php";
++file_put_contents($script, '<?php var_dump($_SERVER["PATH_INFO"] ?? null, $_SERVER["ORIG_PATH_INFO"] ?? null);');
++
++function run_cgi(string $php, array $env): void {
++    /* Keep what is needed to start the binary (e.g. sanitizer runtime on Windows). */
++    $base_env = array_filter([
++        "PATH" => getenv("PATH"),
++        "SystemRoot" => getenv("SystemRoot"),
++    ], 'is_string');
++    $p = proc_open(
++        [$php, "-n", "-d", "cgi.fix_pathinfo=1"],
++        [0 => ["pipe", "r"], 1 => ["pipe", "w"]],
++        $pipes,
++        null,
++        $env + ["REDIRECT_STATUS" => "1", "REQUEST_METHOD" => "GET"] + $base_env
++    );
++    fclose($pipes[0]);
++    $out = stream_get_contents($pipes[1]);
++    fclose($pipes[1]);
++    proc_close($p);
++    echo substr($out, strpos($out, "\r\n\r\n") + 4);
++}
++
++echo "Suffix shorter than PATH_INFO\n";
++run_cgi($php, ["SCRIPT_FILENAME" => "$script/b", "PATH_INFO" => "/a/b"]);
++
++echo "Suffix longer than PATH_INFO\n";
++run_cgi($php, ["SCRIPT_FILENAME" => "$script/xxxxxxxxxxxxxxxx", "PATH_INFO" => "/x"]);
++
++echo "Suffix taken from PATH_TRANSLATED\n";
++run_cgi($php, [
++    "SCRIPT_FILENAME" => $php,
++    "PATH_TRANSLATED" => "$script/xxxxxxxxxxxxxxxx",
++    "REDIRECT_URL" => "/redirected",
++    "PATH_INFO" => "/x",
++]);
++?>
++--CLEAN--
++<?php
++@unlink(__DIR__ . "/ghsa-5j3f-64r7-f564.target.php");
++?>
++--EXPECT--
++Suffix shorter than PATH_INFO
++string(2) "/b"
++string(4) "/a/b"
++Suffix longer than PATH_INFO
++string(2) "/x"
++NULL
++Suffix taken from PATH_TRANSLATED
++string(2) "/x"
++NULL
+From: Jakub Zelenka <bukka@php.net>
+Date: Mon, 26 Oct 2026 20:10:08 +0100
+Subject: Fix GHSA-3mg3-cr28-46gc: FPM XSS within status endpoint via user and
+ script
+
+The fix for GHSA-7qg2-v9fj-4mwv escaped only the request URI and query
+string. The request method, auth user and script filename were still
+printed raw in the full status output. Escape all of them using a common
+helper.
+
+(cherry picked from commit 1ecb92f2cdeb235bb10d6c220c9be4a13f527243)
+(cherry picked from commit 02629c6960c31adea93aa6a9e8acc69e835f3681)
+
+adapt for 8.0 and older: only the HTML/XML output is escaped there
+
+(cherry picked from commit 005bde3e8721e7b378bd1121f7fc95161ae7d60c)
+(cherry picked from commit 00922d4f0162cd16aacda20fe23b2bece79788f5)
+(cherry picked from commit 3885687db45b7675c7d357d6031cd821f2d413d0)
+(cherry picked from commit b2fdf24d77796b6b7b70f294be6c23e3d3a9d55e)
+(cherry picked from commit c26975497208a80dd19c8c4bbc557d605ce1cca8)
+(cherry picked from commit 427d38185116d96b42e4a4bf62b570369c7cad41)
+---
+ sapi/fpm/fpm/fpm_status.c | 70 ++++++++++++++++++++++++++++-------------------
+ 1 file changed, 42 insertions(+), 28 deletions(-)
+
+diff --git a/sapi/fpm/fpm/fpm_status.c b/sapi/fpm/fpm/fpm_status.c
+index d9a8263..26ea3714 100644
+--- a/sapi/fpm/fpm/fpm_status.c
++++ b/sapi/fpm/fpm/fpm_status.c
+@@ -46,6 +46,22 @@ int fpm_status_init_child(struct fpm_worker_pool_s *wp) /* {{{ */
+ }
+ /* }}} */
+ 
++static char *fpm_status_escape(char *str, int encode, char **tmp TSRMLS_DC)
++{
++	size_t len;
++
++	*tmp = NULL;
++	if (str[0] == '\0') {
++		return NULL;
++	}
++	if (encode) {
++		*tmp = php_escape_html_entities_ex((unsigned char *) str, strlen(str), &len, 1,
++				ENT_DISALLOWED | ENT_HTML_DOC_XML1 | ENT_COMPAT, NULL, /* double_encode */ 1 TSRMLS_CC);
++		return *tmp;
++	}
++	return str;
++}
++
+ int fpm_status_handle_request(TSRMLS_D) /* {{{ */
+ {
+ 	struct fpm_scoreboard_s scoreboard, *scoreboard_p;
+@@ -384,8 +400,10 @@ int fpm_status_handle_request(TSRMLS_D) /* {{{ */
+ 		/* no need to test the var 'full' */
+ 		if (full_syntax) {
+ 			int i, first;
+-			size_t len, len_uri;
+-			char *query_string, *request_uri_string;
++			char *tmp_request_method_string, *tmp_request_uri_string, *tmp_query_string;
++			char *tmp_auth_user_string, *tmp_script_filename_string;
++			char *request_method_string, *request_uri_string, *query_string;
++			char *auth_user_string, *script_filename_string;
+ 			struct timeval duration, now;
+ #ifdef HAVE_FPM_LQ
+ 			float cpu;
+@@ -412,24 +430,11 @@ int fpm_status_handle_request(TSRMLS_D) /* {{{ */
+ 					}
+ 				}
+ 
+-				request_uri_string = NULL;
+-				len_uri = 0;
+-				if (proc.request_uri[0] != '\0') {
+-					if (!encode) {
+-						request_uri_string = proc.request_uri;
+-					} else {
+-						request_uri_string = php_escape_html_entities_ex((unsigned char *)proc.request_uri, strlen(proc.request_uri), &len_uri, 1, ENT_DISALLOWED | ENT_HTML_DOC_XML1 | ENT_COMPAT, NULL, 1 TSRMLS_CC);
+-					}
+-				}
+-				query_string = NULL;
+-				len = 0;
+-				if (proc.query_string[0] != '\0') {
+-					if (!encode) {
+-						query_string = proc.query_string;
+-					} else {
+-						query_string = php_escape_html_entities_ex((unsigned char *)proc.query_string, strlen(proc.query_string), &len, 1, ENT_DISALLOWED | ENT_HTML_DOC_XML1 | ENT_COMPAT, NULL, 1 TSRMLS_CC);
+-					}
+-				}
++				request_method_string = fpm_status_escape(proc.request_method, encode, &tmp_request_method_string TSRMLS_CC);
++				request_uri_string = fpm_status_escape(proc.request_uri, encode, &tmp_request_uri_string TSRMLS_CC);
++				query_string = fpm_status_escape(proc.query_string, encode, &tmp_query_string TSRMLS_CC);
++				auth_user_string = fpm_status_escape(proc.auth_user, encode, &tmp_auth_user_string TSRMLS_CC);
++				script_filename_string = fpm_status_escape(proc.script_filename, encode, &tmp_script_filename_string TSRMLS_CC);
+ 
+ #ifdef HAVE_FPM_LQ
+ 				/* prevent NaN */
+@@ -453,13 +458,13 @@ int fpm_status_handle_request(TSRMLS_D) /* {{{ */
+ 					now_epoch - proc.start_epoch,
+ 					proc.requests,
+ 					duration.tv_sec * 1000000UL + duration.tv_usec,
+-					proc.request_method[0] != '\0' ? proc.request_method : "-",
+-					request_uri_string ? request_uri_string: "-",
++					request_method_string ? request_method_string : "-",
++					request_uri_string ? request_uri_string : "-",
+ 					query_string ? "?" : "",
+ 					query_string ? query_string : "",
+ 					proc.content_length,
+-					proc.auth_user[0] != '\0' ? proc.auth_user : "-",
+-					proc.script_filename[0] != '\0' ? proc.script_filename : "-",
++					auth_user_string ? auth_user_string : "-",
++					script_filename_string ? script_filename_string : "-",
+ #ifdef HAVE_FPM_LQ
+ 					proc.request_stage == FPM_REQUEST_ACCEPTING ? cpu : 0.,
+ #endif
+@@ -467,11 +472,20 @@ int fpm_status_handle_request(TSRMLS_D) /* {{{ */
+ 				PUTS(buffer);
+ 				efree(buffer);
+ 
+-				if (len > 0 && query_string) {
+-					efree(query_string);
++				if (tmp_request_method_string) {
++					efree(tmp_request_method_string);
+ 				}
+-				if (len_uri > 0 && request_uri_string) {
+-					efree(request_uri_string);
++				if (tmp_request_uri_string) {
++					efree(tmp_request_uri_string);
++				}
++				if (tmp_query_string) {
++					efree(tmp_query_string);
++				}
++				if (tmp_auth_user_string) {
++					efree(tmp_auth_user_string);
++				}
++				if (tmp_script_filename_string) {
++					efree(tmp_script_filename_string);
+ 				}
+ 			}
+ 
+From: Jakub Zelenka <bukka@php.net>
+Date: Thu, 29 Oct 2026 11:19:04 +0100
+Subject: Fix GHSA-qc49-hpvq-g2w6: Drain unread request bodies
+
+Opening php://input can create a request body stream without
+consuming the input from the SAPI. Request shutdown treated the
+stream as proof that the body was read and skipped the drain.
+
+Drain whenever post_read is false, independently of whether the
+stream exists. This keeps unread FastCGI STDIN bytes from being
+parsed as another request when FCGI_KEEP_CONN is set.
+
+As a final safeguard, reject a new FastCGI request if the
+previous STDIN record was only partially consumed.
+
+(cherry picked from commit 28014fd092c7acdafb9c074e735f099893a5ef66)
+(cherry picked from commit 130836964c5c26b2421891a706ebad5f0b14f713)
+(cherry picked from commit 51ec3171910cc4c9aa81bd96cadee1d99feb98f5)
+(cherry picked from commit a539b19cdc1c7d807dc0774a3168dcd20107ac13)
+(cherry picked from commit df339d81fcb940035252b1dd88fb6866c2bc179d)
+(cherry picked from commit aecf2444ca6ffd6c223726d16d0facfe8941fc6b)
+(cherry picked from commit e49ead238a7d95246bc5af24d410747e7301d413)
+(cherry picked from commit a539653a74da633fec0ab4d90dab76388a8a6bf6)
+
+adapt for 5.6: the FastCGI code lives in sapi/cgi and sapi/fpm there, the
+test needs the FPM tester and is not included
+---
+ main/SAPI.c            | 3 ++-
+ sapi/cgi/fastcgi.c     | 6 ++++++
+ sapi/fpm/fpm/fastcgi.c | 6 ++++++
+ 3 files changed, 14 insertions(+), 1 deletion(-)
+
+diff --git a/main/SAPI.c b/main/SAPI.c
+index 660012d..9ccde5f 100644
+--- a/main/SAPI.c
++++ b/main/SAPI.c
+@@ -515,7 +515,8 @@ SAPI_API void sapi_deactivate(TSRMLS_D)
+ 	zend_llist_destroy(&SG(sapi_headers).headers);
+ 	if (SG(request_info).request_body) {
+ 		SG(request_info).request_body = NULL;
+-	} else if (SG(server_context)) {
++	}
++	if (SG(server_context)) {
+ 		if (!SG(post_read)) {
+ 			/* make sure we've consumed all request input data */
+ 			char dummy[SAPI_POST_BLOCK_SIZE];
+diff --git a/sapi/cgi/fastcgi.c b/sapi/cgi/fastcgi.c
+index 5502c99..ac758e0 100644
+--- a/sapi/cgi/fastcgi.c
++++ b/sapi/cgi/fastcgi.c
+@@ -885,6 +885,10 @@ static int fcgi_read_request(fcgi_request *req)
+ 	int len, padding;
+ 	unsigned char buf[FCGI_MAX_LENGTH+8];
+ 
++	if (UNEXPECTED(req->in_len != 0)) {
++		return 0;
++	}
++
+ 	req->keep = 0;
+ 	req->closed = 0;
+ 	req->in_len = 0;
+@@ -1140,6 +1144,8 @@ static inline void fcgi_close(fcgi_request *req, int force, int destroy)
+ 		req->nodelay = 0;
+ #endif
+ 		req->fd = -1;
++		/* a partially read STDIN record does not outlive its connection */
++		req->in_len = 0;
+ 	}
+ }
+ 
+diff --git a/sapi/fpm/fpm/fastcgi.c b/sapi/fpm/fpm/fastcgi.c
+index 6ac568b..b827ea8 100644
+--- a/sapi/fpm/fpm/fastcgi.c
++++ b/sapi/fpm/fpm/fastcgi.c
+@@ -510,6 +510,10 @@ static int fcgi_read_request(fcgi_request *req)
+ 	int len, padding;
+ 	unsigned char buf[FCGI_MAX_LENGTH+8];
+ 
++	if (UNEXPECTED(req->in_len != 0)) {
++		return 0;
++	}
++
+ 	req->keep = 0;
+ 	req->closed = 0;
+ 	req->in_len = 0;
+@@ -762,6 +766,8 @@ void fcgi_close(fcgi_request *req, int force, int destroy)
+ 		close(req->fd);
+ #endif
+ 		req->fd = -1;
++		/* a partially read STDIN record does not outlive its connection */
++		req->in_len = 0;
+ 		fpm_request_finished();
+ 	}
+ }
+From: Jakub Zelenka <bukka@php.net>
+Date: Sun, 1 Nov 2026 15:18:09 +0100
+Subject: Fix GHSA-4646-p932-gw34: keep SOAP DTD alive during cleanup
+
+(cherry picked from commit 66db5cda7df3d7a0e1fc7b171bd9ca318fca49fb)
+(cherry picked from commit 47f8976103f6022dc10d12eed151b2bc2980ac72)
+(cherry picked from commit 57d625e81be43c2f21fcfbde4d508220f50ef2a5)
+(cherry picked from commit 0289ac37e28d8be9937328980e6b82ad97937c43)
+(cherry picked from commit 43f1e582da656d8f9a213d89a03e0ea439bdaeea)
+(cherry picked from commit 877bb1d0f011fce3e91371be193699a65d89a5b7)
+(cherry picked from commit 9abe0057dec3d06c53b09ba5653aff1f5cc4c02f)
+(cherry picked from commit aa481ab4b2cc02ea2f149a7be0332d0227bae818)
+---
+ ext/soap/php_xml.c                      |  3 +++
+ ext/soap/tests/GHSA-4646-p932-gw34.phpt | 35 +++++++++++++++++++++++++++++++++
+ 2 files changed, 38 insertions(+)
+ create mode 100644 ext/soap/tests/GHSA-4646-p932-gw34.phpt
+
+diff --git a/ext/soap/php_xml.c b/ext/soap/php_xml.c
+index b5562e2..7131dac 100644
+--- a/ext/soap/php_xml.c
++++ b/ext/soap/php_xml.c
+@@ -53,6 +53,9 @@ static void cleanup_xml_node(xmlNodePtr node)
+ 				xmlUnlinkNode(trav);
+ 				xmlFreeNode(trav);
+ 			}
++		} else if (trav->type == XML_DTD_NODE) {
++			/* Attribute-value entity references can share content with the DTD.
++			 * Keep it alive until the document itself is freed. */
+ 		} else if ((trav->type != XML_ELEMENT_NODE) &&
+ 		           (trav->type != XML_CDATA_SECTION_NODE)) {
+ 			xmlUnlinkNode(trav);
+diff --git a/ext/soap/tests/GHSA-4646-p932-gw34.phpt b/ext/soap/tests/GHSA-4646-p932-gw34.phpt
+new file mode 100644
+index 0000000..8e3567d
+--- /dev/null
++++ b/ext/soap/tests/GHSA-4646-p932-gw34.phpt
+@@ -0,0 +1,35 @@
++--TEST--
++GHSA-4646-p932-gw34: DTD entity references must not outlive their declarations
++--POST--
++<?xml version="1.0" encoding="UTF-8"?>
++<!DOCTYPE Envelope [<!ENTITY e "boom">]>
++<SOAP-ENV:Envelope xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
++                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
++                   xmlns:xsd="http://www.w3.org/2001/XMLSchema"
++                   xmlns:ns1="urn:t">
++  <SOAP-ENV:Header>
++    <h SOAP-ENV:actor="&e;" SOAP-ENV:mustUnderstand="1"/>
++  </SOAP-ENV:Header>
++  <SOAP-ENV:Body>
++    <ns1:echo_><param0 xsi:type="xsd:string">x</param0></ns1:echo_>
++  </SOAP-ENV:Body>
++</SOAP-ENV:Envelope>
++--EXTENSIONS--
++soap
++--FILE--
++<?php
++function echo_($x) {
++    return $x;
++}
++
++$server = new SoapServer(null, [
++    'uri' => 'urn:t',
++    'style' => SOAP_RPC,
++    'use' => SOAP_ENCODED,
++]);
++$server->addFunction('echo_');
++$server->handle();
++?>
++--EXPECT--
++<?xml version="1.0" encoding="UTF-8"?>
++<SOAP-ENV:Envelope xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"><SOAP-ENV:Body><SOAP-ENV:Fault><faultcode>SOAP-ENV:Server</faultcode><faultstring>DTD are not supported by SOAP</faultstring></SOAP-ENV:Fault></SOAP-ENV:Body></SOAP-ENV:Envelope>
+From: Ilija Tovilo <ilija.tovilo@me.com>
+Date: Sun, 15 Nov 2026 15:25:20 +0100
+Subject: Fix GHSA-gr4f-wgx5-jpfv: DATEG(tzcache) use-after-free
+
+(cherry picked from commit f986c5ca37c0fdc50595d8291a9920a1df23bf38)
+(cherry picked from commit b3a6786b50a3df7df665b201d45aa8dbb45b9e0e)
+(cherry picked from commit 3ea77dfbe4f451599d62ed8192720a81c1c747df)
+(cherry picked from commit 1b2a0beddcb339c2833030ab88fce55001b19321)
+(cherry picked from commit db78019ba131c6d57579db76367383d4b3cce536)
+(cherry picked from commit a9a85ddc4be3ed78b2f34120dfc1bce0432cd8f6)
+
+adapt for 7.1 and older: no zend_test extension there, the test is not included
+
+(cherry picked from commit 937b1e7da7b09fc329b7a88c4733a5ffa36e5dd8)
+(cherry picked from commit 9a98666be1d3ba6b48e20593a68ca6f6e73e4dd6)
+---
+ main/main.c | 10 +---------
+ 1 file changed, 1 insertion(+), 9 deletions(-)
+
+diff --git a/main/main.c b/main/main.c
+index 68678ae..589b5f5 100644
+--- a/main/main.c
++++ b/main/main.c
+@@ -704,15 +704,7 @@ PHPAPI void php_log_err(char *log_message TSRMLS_DC)
+ 			char *error_time_str;
+ 
+ 			time(&error_time);
+-#ifdef ZTS
+-			if (!php_during_module_startup()) {
+-				error_time_str = php_format_date("d-M-Y H:i:s e", 13, error_time, 1 TSRMLS_CC);
+-			} else {
+-				error_time_str = php_format_date("d-M-Y H:i:s e", 13, error_time, 0 TSRMLS_CC);
+-			}
+-#else
+-			error_time_str = php_format_date("d-M-Y H:i:s e", 13, error_time, 1 TSRMLS_CC);
+-#endif
++			error_time_str = php_format_date("d-M-Y H:i:s e", 13, error_time, PG(modules_activated) && EG(active) TSRMLS_CC);
+ 			len = spprintf(&tmp, 0, "[%s] %s%s", error_time_str, log_message, PHP_EOL);
+ #ifdef PHP_WIN32
+ 			php_flock(fd, 2);
+From: Ilija Tovilo <ilija.tovilo@me.com>
+Date: Wed, 11 Nov 2026 16:53:47 +0100
+Subject: Fix GHSA-fm2m-fjf5-v3cp: RCE via corrupted session file
+
+If the session write is interrupted, and the previous session file wasn't
+truncated, we can end up with two partial sessions concatenated together. The
+approximate location of failure may be attacker-controllable in threaded
+environments if another thread causes the process to _exit().
+
+(cherry picked from commit 41c0941ae27d1033129e0e09ce3af034ffee86ba)
+(cherry picked from commit 9c5d97f5bf9548b139f94dadf9d5471b01ecfd3f)
+(cherry picked from commit 7885efe2c204c8987403696a61be24068261d495)
+(cherry picked from commit cb09392cbfc8b56ab3c717b661813bd03751c09d)
+(cherry picked from commit bc64b42b72f1bab5dc7f3cc455fca97ab7ff7bc3)
+(cherry picked from commit 53d2d1341188871582751ed8a2d119d8ef673fc5)
+(cherry picked from commit ffc409d4c29488866a0c42c5d9fc83095a127009)
+(cherry picked from commit d9b649452a8eb1e25bbe8c0d543b41f5a43b0b83)
+---
+ ext/session/mod_files.c | 7 +++----
+ 1 file changed, 3 insertions(+), 4 deletions(-)
+
+diff --git a/ext/session/mod_files.c b/ext/session/mod_files.c
+index 5c69ae3..9bf4ff6 100644
+--- a/ext/session/mod_files.c
++++ b/ext/session/mod_files.c
+@@ -414,10 +414,9 @@ PS_WRITE_FUNC(files)
+ 		return FAILURE;
+ 	}
+ 
+-	/* Truncate file if the amount of new data is smaller than the existing data set. */
+-
+-	if (vallen < (int)data->st_size) {
+-		php_ignore_value(ftruncate(data->fd, 0));
++	if (ftruncate(data->fd, 0) != 0) {
++		php_error_docref(NULL TSRMLS_CC, E_WARNING, "ftruncate() failed: %s (%d)", strerror(errno), errno);
++		return FAILURE;
+ 	}
+ 
+ #if defined(HAVE_PWRITE)
+From: Arnaud Le Blanc <arnaud.lb@gmail.com>
+Date: Mon, 9 Nov 2026 12:02:32 +0100
+Subject: Fix GHSA-658j-r8rw-q6mx: session.upload_progress.enabled is off by
+ default
+
+Default change only: upload progress is already disabled in EOL versions,
+so the runtime check of the session INI settings is not backported.
+
+(cherry picked from commit 3f70f66611583bca4ec18385f7f407e2808fa61f)
+(cherry picked from commit 5a80b303fc9942cdd3483f9338c99330fb32e36f)
+(cherry picked from commit 62a316a5ecae7852bf58f139d9d1ab968f76062e)
+(cherry picked from commit 9035a0672e35e2f9c73f4aed8147e240f23ce9ad)
+(cherry picked from commit b6650ff64052ce030dbcb1bb4fa37404936223ca)
+(cherry picked from commit 7a340c638e87474e0dbc1297ca904babd27362f5)
+(cherry picked from commit 8fa55683e5895810db1d500f556d2f856a5560be)
+(cherry picked from commit 41ebd827c1ed76b1ba7a778a019e3eff2bfcd2b2)
+---
+ ext/session/session.c | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
+
+diff --git a/ext/session/session.c b/ext/session/session.c
+index 650ef17..7b61bfc 100644
+--- a/ext/session/session.c
++++ b/ext/session/session.c
+@@ -820,7 +820,7 @@ PHP_INI_BEGIN()
+ 
+ 	/* Upload progress */
+ 	STD_PHP_INI_BOOLEAN("session.upload_progress.enabled",
+-	                                                "1",     ZEND_INI_PERDIR, OnUpdateBool,        rfc1867_enabled, php_ps_globals, ps_globals)
++	                                                "0",     ZEND_INI_PERDIR, OnUpdateBool,        rfc1867_enabled, php_ps_globals, ps_globals)
+ 	STD_PHP_INI_BOOLEAN("session.upload_progress.cleanup",
+ 	                                                "1",     ZEND_INI_PERDIR, OnUpdateBool,        rfc1867_cleanup, php_ps_globals, ps_globals)
+ 	STD_PHP_INI_ENTRY("session.upload_progress.prefix",
+@@ -2438,6 +2438,7 @@ static PHP_GINIT_FUNCTION(ps) /* {{{ */
+ 	ps_globals->mod = NULL;
+ 	ps_globals->serializer = NULL;
+ 	ps_globals->mod_data = NULL;
++	ps_globals->rfc1867_enabled = 0;
+ 	ps_globals->session_status = php_session_none;
+ 	ps_globals->default_mod = NULL;
+ 	ps_globals->mod_user_implemented = 0;
+From: Jakub Zelenka <bukka@php.net>
+Date: Fri, 6 Nov 2026 21:46:18 +0100
+Subject: Fix GHSA-f6gg-rchx-xw8j: mixed case HTTPS and FTPS
+
+Determine TLS use from a case-insensitive comparison of the complete
+URL scheme, preventing mixed-case HTTPS and FTPS URLs from downgrading
+to plaintext. Add regression tests for both wrappers.
+
+(cherry picked from commit cb68a63e8177f9dc25aba23c0d79c7da82ea69db)
+(cherry picked from commit 061a2967440b9fab45946765f387546d3055b41f)
+(cherry picked from commit 19ba8751e0f5207b77cc1b23f313acd4196eed4c)
+(cherry picked from commit 09edf3451bc81b6023e362748c58decf7b1cee0b)
+(cherry picked from commit 9516ee4e5f90d33161e5a87353655f62b6ee7a09)
+
+adapt for 7.2 and older: the URL scheme is a C string there
+
+(cherry picked from commit 1125e1a57eefd3c87140457073b35b320a88a01d)
+(cherry picked from commit 0221042cef32d39397f1abcbca08e8b663d44a75)
+(cherry picked from commit 58913810283adf71167d9145118292c7b736a909)
+---
+ ext/standard/ftp_fopen_wrapper.c                   |  2 +-
+ ext/standard/http_fopen_wrapper.c                  |  2 +-
+ ext/standard/tests/http/ghsa-f6gg-rchx-xw8j.phpt   | 61 ++++++++++++++++++++++
+ .../tests/streams/ghsa-f6gg-rchx-xw8j.phpt         | 34 ++++++++++++
+ 4 files changed, 97 insertions(+), 2 deletions(-)
+ create mode 100644 ext/standard/tests/http/ghsa-f6gg-rchx-xw8j.phpt
+ create mode 100644 ext/standard/tests/streams/ghsa-f6gg-rchx-xw8j.phpt
+
+diff --git a/ext/standard/ftp_fopen_wrapper.c b/ext/standard/ftp_fopen_wrapper.c
+index 5bffa47..736359a 100644
+--- a/ext/standard/ftp_fopen_wrapper.c
++++ b/ext/standard/ftp_fopen_wrapper.c
+@@ -150,7 +150,7 @@ static php_stream *php_ftp_fopen_connect(php_stream_wrapper *wrapper, const char
+ 		return NULL;
+ 	}
+ 
+-	use_ssl = resource->scheme && (strlen(resource->scheme) > 3) && resource->scheme[3] == 's';
++	use_ssl = resource->scheme && !strcasecmp(resource->scheme, "ftps");
+ 
+ 	/* use port 21 if one wasn't specified */
+ 	if (resource->port == 0)
+diff --git a/ext/standard/http_fopen_wrapper.c b/ext/standard/http_fopen_wrapper.c
+index da0ee50..5006a35 100644
+--- a/ext/standard/http_fopen_wrapper.c
++++ b/ext/standard/http_fopen_wrapper.c
+@@ -241,7 +241,7 @@ php_stream *php_stream_url_wrap_http_ex(php_stream_wrapper *wrapper,
+ 			zval_dtor(&ztmp);
+ 		}
+ 
+-		use_ssl = resource->scheme && (strlen(resource->scheme) > 4) && resource->scheme[4] == 's';
++		use_ssl = resource->scheme && !strcasecmp(resource->scheme, "https");
+ 		/* choose default ports */
+ 		if (use_ssl && resource->port == 0)
+ 			resource->port = 443;
+diff --git a/ext/standard/tests/http/ghsa-f6gg-rchx-xw8j.phpt b/ext/standard/tests/http/ghsa-f6gg-rchx-xw8j.phpt
+new file mode 100644
+index 0000000..11bfa68
+--- /dev/null
++++ b/ext/standard/tests/http/ghsa-f6gg-rchx-xw8j.phpt
+@@ -0,0 +1,61 @@
++--TEST--
++GHSA-f6gg-rchx-xw8j: mixed-case HTTPS URLs must use TLS
++--EXTENSIONS--
++openssl
++--SKIPIF--
++<?php
++if (!function_exists('proc_open')) die('skip proc_open() not available');
++?>
++--FILE--
++<?php
++$serverCode = <<<'CODE'
++    $server = stream_socket_server('tcp://127.0.0.1:0', $errno, $errstr);
++    phpt_notify_server_start($server);
++
++    $conn = stream_socket_accept($server);
++    $request = fread($conn, 1);
++
++    if ($request === "\x16") {
++        $result = 'TLS';
++    } else {
++        while (($line = stream_get_line($conn, 8192, "\r\n")) !== false) {
++            $request .= $line . "\r\n";
++            if ($line === '') {
++                break;
++            }
++        }
++        $request .= stream_get_contents($conn, strlen('opensec-sensitive-body'));
++        $result = str_contains($request, 'Authorization: Basic ')
++            && str_contains($request, 'X-Opensec-Request: validation')
++            && str_contains($request, 'opensec-sensitive-body')
++                ? 'plaintext credentials and body'
++                : 'unexpected plaintext request';
++    }
++
++    fclose($conn);
++    fclose($server);
++    phpt_notify(message: $result);
++CODE;
++
++$clientCode = <<<'CODE'
++    $context = stream_context_create([
++        'http' => [
++            'method' => 'POST',
++            'content' => 'opensec-sensitive-body',
++            'header' => "X-Opensec-Request: validation\r\n",
++        ],
++        'ssl' => [
++            'verify_peer' => false,
++            'verify_peer_name' => false,
++        ],
++    ]);
++    var_dump(@file_get_contents('HTTPS://alice:secret@{{ ADDR }}/secret', false, $context));
++    echo phpt_wait();
++CODE;
++
++include sprintf('%s/../../../openssl/tests/ServerClientTestCase.inc', __DIR__);
++ServerClientTestCase::getInstance()->run($clientCode, $serverCode);
++?>
++--EXPECT--
++bool(false)
++TLS
+diff --git a/ext/standard/tests/streams/ghsa-f6gg-rchx-xw8j.phpt b/ext/standard/tests/streams/ghsa-f6gg-rchx-xw8j.phpt
+new file mode 100644
+index 0000000..8c70015
+--- /dev/null
++++ b/ext/standard/tests/streams/ghsa-f6gg-rchx-xw8j.phpt
+@@ -0,0 +1,34 @@
++--TEST--
++GHSA-f6gg-rchx-xw8j: mixed-case FTPS URLs must enable TLS
++--EXTENSIONS--
++openssl
++--SKIPIF--
++<?php
++if (!function_exists('proc_open')) die('skip proc_open() not available');
++?>
++--FILE--
++<?php
++$serverCode = <<<'CODE'
++    $server = stream_socket_server('tcp://127.0.0.1:0', $errno, $errstr);
++    phpt_notify_server_start($server);
++
++    $conn = stream_socket_accept($server);
++    fwrite($conn, "220 Ready\r\n");
++    $command = stream_get_line($conn, 8192, "\r\n");
++
++    fclose($conn);
++    fclose($server);
++    phpt_notify(message: $command);
++CODE;
++
++$clientCode = <<<'CODE'
++    var_dump(@fopen('FTPS://{{ ADDR }}/secret', 'r'));
++    echo phpt_wait();
++CODE;
++
++include sprintf('%s/../../../openssl/tests/ServerClientTestCase.inc', __DIR__);
++ServerClientTestCase::getInstance()->run($clientCode, $serverCode);
++?>
++--EXPECT--
++bool(false)
++AUTH TLS
+From: "Ian P. Christian" <ian.christian@zoopla.co.uk>
+Date: Tue, 27 Oct 2026 17:59:48 +0100
+Subject: Fix GHSA-jm4m-qfqx-967m: FPM worker stdio pipe fd closed twice
+
+Backport of the GH-24046 fix (cd161267c0d2ca293b6959114d7c68867273bbda).
+
+Co-authored-by: ndossche <7771979+ndossche@users.noreply.github.com>
+(cherry picked from commit 8c38b791449708540fd356ddc6927f463faeca91)
+(cherry picked from commit 11400f4539ae94dea40824d2110a3917c474c649)
+(cherry picked from commit 7074465966ec994202c9c340b86e76ca0470db99)
+(cherry picked from commit cd7dda6f6f2365911cf628cf663241b4fc68e418)
+(cherry picked from commit ba46b69a7315a4f3e82b9e3f46acb8773515d60b)
+(cherry picked from commit 0cd3fc1fa99ecac2f50fbd94d342879517efd903)
+(cherry picked from commit 3f9b3a1771ea46eb2bf5000637d90aa81ea3eac5)
+(cherry picked from commit e169d612bc4c2835d1830dc938da0a70690619b6)
+
+adapt for 5.6: the test needs the FPM tester and is not included
+---
+ sapi/fpm/fpm/fpm_children.c | 8 ++++++++
+ 1 file changed, 8 insertions(+)
+
+diff --git a/sapi/fpm/fpm/fpm_children.c b/sapi/fpm/fpm/fpm_children.c
+index 74c2f38..b42a480 100644
+--- a/sapi/fpm/fpm/fpm_children.c
++++ b/sapi/fpm/fpm/fpm_children.c
+@@ -69,7 +69,11 @@ static void fpm_child_close(struct fpm_child_s *child, int in_event_loop) /* {{{
+ 			fpm_event_fire(&child->ev_stdout);
+ 		}
+ 		if (child->fd_stdout != -1) {
++			if (in_event_loop) {
++				fpm_event_del(&child->ev_stdout);
++			}
+ 			close(child->fd_stdout);
++			child->fd_stdout = -1;
+ 		}
+ 	}
+ 
+@@ -78,7 +82,11 @@ static void fpm_child_close(struct fpm_child_s *child, int in_event_loop) /* {{{
+ 			fpm_event_fire(&child->ev_stderr);
+ 		}
+ 		if (child->fd_stderr != -1) {
++			if (in_event_loop) {
++				fpm_event_del(&child->ev_stderr);
++			}
+ 			close(child->fd_stderr);
++			child->fd_stderr = -1;
+ 		}
+ 	}
+ 
+From: =?utf-8?b?T25kxZllaiBTdXLDvQ==?= <ondrej@sury.org>
+Date: Tue, 17 Nov 2026 08:32:28 +0100
+Subject: fix new tests for 8.0 (use SKIPIF instead of --EXTENSIONS--,
+ use the http ServerClientTestCase.inc)
+
+(cherry picked from commit 8658823a8cf566f05b48c614cc3b39b6fcfccbec)
+(cherry picked from commit 138cbb49a8873f734eef2efae77399093dbc0482)
+(cherry picked from commit 62daec242113e72c7ab78fd48e856989dbd6ad49)
+(cherry picked from commit 1a9219bf92659e9466401212233e982386843fa1)
+(cherry picked from commit e334aae2bb4337326b5c682ed9c0accde0e11052)
+(cherry picked from commit 51c4646ade24841329be98c535cd58a0d5cb8a78)
+---
+ ext/phar/tests/ghsa-68fq-fh7h-f8gr.phpt             |  5 ++---
+ ext/soap/tests/GHSA-4646-p932-gw34.phpt             |  4 ++--
+ ext/standard/tests/http/ghsa-f6gg-rchx-xw8j.phpt    | 10 +++++-----
+ ext/standard/tests/streams/ghsa-f6gg-rchx-xw8j.phpt |  4 ++--
+ 4 files changed, 11 insertions(+), 12 deletions(-)
+
+diff --git a/ext/phar/tests/ghsa-68fq-fh7h-f8gr.phpt b/ext/phar/tests/ghsa-68fq-fh7h-f8gr.phpt
+index e03123f..68a8915 100644
+--- a/ext/phar/tests/ghsa-68fq-fh7h-f8gr.phpt
++++ b/ext/phar/tests/ghsa-68fq-fh7h-f8gr.phpt
+@@ -1,10 +1,9 @@
+ --TEST--
+ GHSA-68fq-fh7h-f8gr (OpenSSL signature bypass by downgrading the algorithm to a keyless one)
+---EXTENSIONS--
+-phar
+-openssl
+ --SKIPIF--
+ <?php
++if (!extension_loaded("phar")) die("skip phar extension not available");
++if (!extension_loaded("openssl")) die("skip openssl extension not available");
+ if (!in_array("OpenSSL", Phar::getSupportedSignatures())) die("skip openssl support required");
+ ?>
+ --INI--
+diff --git a/ext/soap/tests/GHSA-4646-p932-gw34.phpt b/ext/soap/tests/GHSA-4646-p932-gw34.phpt
+index 8e3567d..7c95060 100644
+--- a/ext/soap/tests/GHSA-4646-p932-gw34.phpt
++++ b/ext/soap/tests/GHSA-4646-p932-gw34.phpt
+@@ -14,8 +14,8 @@ GHSA-4646-p932-gw34: DTD entity references must not outlive their declarations
+     <ns1:echo_><param0 xsi:type="xsd:string">x</param0></ns1:echo_>
+   </SOAP-ENV:Body>
+ </SOAP-ENV:Envelope>
+---EXTENSIONS--
+-soap
++--SKIPIF--
++<?php if (!extension_loaded('soap')) die('skip soap extension not available'); ?>
+ --FILE--
+ <?php
+ function echo_($x) {
+diff --git a/ext/standard/tests/http/ghsa-f6gg-rchx-xw8j.phpt b/ext/standard/tests/http/ghsa-f6gg-rchx-xw8j.phpt
+index 11bfa68..461d9a3 100644
+--- a/ext/standard/tests/http/ghsa-f6gg-rchx-xw8j.phpt
++++ b/ext/standard/tests/http/ghsa-f6gg-rchx-xw8j.phpt
+@@ -25,16 +25,16 @@ $serverCode = <<<'CODE'
+             }
+         }
+         $request .= stream_get_contents($conn, strlen('opensec-sensitive-body'));
+-        $result = str_contains($request, 'Authorization: Basic ')
+-            && str_contains($request, 'X-Opensec-Request: validation')
+-            && str_contains($request, 'opensec-sensitive-body')
++        $result = strpos($request, 'Authorization: Basic ') !== false
++            && strpos($request, 'X-Opensec-Request: validation') !== false
++            && strpos($request, 'opensec-sensitive-body') !== false
+                 ? 'plaintext credentials and body'
+                 : 'unexpected plaintext request';
+     }
+ 
+     fclose($conn);
+     fclose($server);
+-    phpt_notify(message: $result);
++    phpt_notify(WORKER_DEFAULT_NAME, $result);
+ CODE;
+ 
+ $clientCode = <<<'CODE'
+@@ -53,7 +53,7 @@ $clientCode = <<<'CODE'
+     echo phpt_wait();
+ CODE;
+ 
+-include sprintf('%s/../../../openssl/tests/ServerClientTestCase.inc', __DIR__);
++include sprintf('%s/ServerClientTestCase.inc', __DIR__);
+ ServerClientTestCase::getInstance()->run($clientCode, $serverCode);
+ ?>
+ --EXPECT--
+diff --git a/ext/standard/tests/streams/ghsa-f6gg-rchx-xw8j.phpt b/ext/standard/tests/streams/ghsa-f6gg-rchx-xw8j.phpt
+index 8c70015..7c8cc7e 100644
+--- a/ext/standard/tests/streams/ghsa-f6gg-rchx-xw8j.phpt
++++ b/ext/standard/tests/streams/ghsa-f6gg-rchx-xw8j.phpt
+@@ -18,7 +18,7 @@ $serverCode = <<<'CODE'
+ 
+     fclose($conn);
+     fclose($server);
+-    phpt_notify(message: $command);
++    phpt_notify(WORKER_DEFAULT_NAME, $command);
+ CODE;
+ 
+ $clientCode = <<<'CODE'
+@@ -26,7 +26,7 @@ $clientCode = <<<'CODE'
+     echo phpt_wait();
+ CODE;
+ 
+-include sprintf('%s/../../../openssl/tests/ServerClientTestCase.inc', __DIR__);
++include sprintf('%s/../http/ServerClientTestCase.inc', __DIR__);
+ ServerClientTestCase::getInstance()->run($clientCode, $serverCode);
+ ?>
+ --EXPECT--
+From: =?utf-8?b?T25kxZllaiBTdXLDvQ==?= <ondrej@sury.org>
+Date: Tue, 17 Nov 2026 08:36:51 +0100
+Subject: fix GHSA-q23r tests for 7.4 and older (no constructor promotion,
+ str_contains(), flexible heredoc, scalar and return types)
+
+(cherry picked from commit aacb70d3b3f53ff7dbd4f8994e11532b4e904d8c)
+(cherry picked from commit fd923991ddad9edb755794fe6f039c13d9652e15)
+(cherry picked from commit 0be064c9f64a671e54981ea8e3ab64b6fa28aac6)
+(cherry picked from commit 4cbf93a3d36410b07e3b61028aab61020b47628a)
+(cherry picked from commit cea1aa2f3148d6674c83aff2dedaed59617bdb41)
+---
+ ext/soap/tests/GHSA-q23r-hr55-xmpg-wsdl.phpt | 63 +++++++++++++++-------------
+ ext/soap/tests/GHSA-q23r-hr55-xmpg.phpt      | 40 +++++++++---------
+ 2 files changed, 53 insertions(+), 50 deletions(-)
+
+diff --git a/ext/soap/tests/GHSA-q23r-hr55-xmpg-wsdl.phpt b/ext/soap/tests/GHSA-q23r-hr55-xmpg-wsdl.phpt
+index 1b39fee..d560504 100644
+--- a/ext/soap/tests/GHSA-q23r-hr55-xmpg-wsdl.phpt
++++ b/ext/soap/tests/GHSA-q23r-hr55-xmpg-wsdl.phpt
+@@ -12,46 +12,49 @@ const WSDL = __DIR__ . '/GHSA-q23r-hr55-xmpg-wsdl.wsdl';
+ function itemType() { return ['A', 'B', 'C']; }
+ function sizeOnly() { return ['A', 'B', 'C']; }
+ 
+-function request(string $operation): string {
++function request($operation) {
+     return <<<XML
+-        <?xml version="1.0"?>
+-        <env:Envelope
+-            xmlns:env="http://www.w3.org/2003/05/soap-envelope"
+-            xmlns:m="urn:arraysize">
++<?xml version="1.0"?>
++<env:Envelope
++    xmlns:env="http://www.w3.org/2003/05/soap-envelope"
++    xmlns:m="urn:arraysize">
+ 
+-            <env:Body>
+-                <m:{$operation}/>
+-            </env:Body>
+-        </env:Envelope>
+-        XML;
++    <env:Body>
++        <m:{$operation}/>
++    </env:Body>
++</env:Envelope>
++XML;
+ }
+ 
+ class ReplayClient extends SoapClient
+ {
+-    public function __construct(public string $arrayType) {
++    public $arrayType;
++
++    public function __construct($arrayType) {
++        $this->arrayType = $arrayType;
+         parent::__construct(WSDL);
+     }
+ 
+-    public function __doRequest($request, $location, $action, $version, $oneWay = 0): ?string {
++    public function __doRequest($request, $location, $action, $version, $oneWay = 0) {
+         return <<<XML
+-            <?xml version="1.0"?>
+-            <env:Envelope
+-                xmlns:env="http://www.w3.org/2003/05/soap-envelope"
+-                xmlns:ns1="urn:arraysize"
+-                xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+-                xmlns:xsd="http://www.w3.org/2001/XMLSchema">
++<?xml version="1.0"?>
++<env:Envelope
++    xmlns:env="http://www.w3.org/2003/05/soap-envelope"
++    xmlns:ns1="urn:arraysize"
++    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
++    xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+ 
+-                <env:Body>
+-                    <ns1:{$this->arrayType}Response>
+-                        <result xsi:type="ns1:{$this->arrayType}Array">
+-                            <item xsi:type="xsd:string">A</item>
+-                            <item xsi:type="xsd:string">B</item>
+-                            <item xsi:type="xsd:string">C</item>
+-                        </result>
+-                    </ns1:{$this->arrayType}Response>
+-                </env:Body>
+-            </env:Envelope>
+-            XML;
++    <env:Body>
++        <ns1:{$this->arrayType}Response>
++            <result xsi:type="ns1:{$this->arrayType}Array">
++                <item xsi:type="xsd:string">A</item>
++                <item xsi:type="xsd:string">B</item>
++                <item xsi:type="xsd:string">C</item>
++            </result>
++        </ns1:{$this->arrayType}Response>
++    </env:Body>
++</env:Envelope>
++XML;
+     }
+ }
+ 
+@@ -64,7 +67,7 @@ foreach (['itemType', 'sizeOnly'] as $operation) {
+     $response = ob_get_clean();
+ 
+     preg_match('/arraySize="[^"]*"/', $response, $matches);
+-    echo 'encode ', $operation, ' => ', $matches[0] ?? 'none', "\n";
++    echo 'encode ', $operation, ' => ', isset($matches[0]) ? $matches[0] : 'none', "\n";
+ }
+ 
+ foreach (['ItemType', 'SizeOnly'] as $arrayType) {
+diff --git a/ext/soap/tests/GHSA-q23r-hr55-xmpg.phpt b/ext/soap/tests/GHSA-q23r-hr55-xmpg.phpt
+index 886b3ff..9ff7a62 100644
+--- a/ext/soap/tests/GHSA-q23r-hr55-xmpg.phpt
++++ b/ext/soap/tests/GHSA-q23r-hr55-xmpg.phpt
+@@ -7,36 +7,36 @@ soap
+ 
+ function echo_back($data) { $GLOBALS['decoded'][] = $data; return null; }
+ 
+-function request(string $arraySize, string $itemType = ''): string {
++function request($arraySize, $itemType = '') {
+     $itemTypeAttribute = $itemType === '' ? '' : "SOAP-ENC:itemType=\"{$itemType}\"";
+ 
+     return <<<XML
+-        <?xml version="1.0"?>
+-        <SOAP-ENV:Envelope
+-            xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
+-            xmlns:SOAP-ENC="http://schemas.xmlsoap.org/soap/encoding/"
+-            xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+-            xmlns:xsd="http://www.w3.org/2001/XMLSchema">
++<?xml version="1.0"?>
++<SOAP-ENV:Envelope
++    xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
++    xmlns:SOAP-ENC="http://schemas.xmlsoap.org/soap/encoding/"
++    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
++    xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+ 
+-            <SOAP-ENV:Body SOAP-ENV:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/">
+-                <echo_back>
+-                    <data xsi:type="SOAP-ENC:Array" {$itemTypeAttribute} SOAP-ENC:arraySize="{$arraySize}">
+-                        <item xsi:type="xsd:string">A</item>
+-                        <item xsi:type="xsd:string">B</item>
+-                        <item xsi:type="xsd:string">C</item>
+-                    </data>
+-                </echo_back>
+-            </SOAP-ENV:Body>
+-        </SOAP-ENV:Envelope>
+-        XML;
++    <SOAP-ENV:Body SOAP-ENV:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/">
++        <echo_back>
++            <data xsi:type="SOAP-ENC:Array" {$itemTypeAttribute} SOAP-ENC:arraySize="{$arraySize}">
++                <item xsi:type="xsd:string">A</item>
++                <item xsi:type="xsd:string">B</item>
++                <item xsi:type="xsd:string">C</item>
++            </data>
++        </echo_back>
++    </SOAP-ENV:Body>
++</SOAP-ENV:Envelope>
++XML;
+ }
+ 
+-function decode(SoapServer $server, string $request): string {
++function decode(SoapServer $server, $request) {
+     ob_start();
+     $server->handle($request);
+     $response = ob_get_clean();
+ 
+-    if (str_contains($response, '<SOAP-ENV:Fault>')) {
++    if (strpos($response, '<SOAP-ENV:Fault>') !== false) {
+         return 'fault: ' . strip_tags($response);
+     }
+ 
+From: =?utf-8?b?T25kxZllaiBTdXLDvQ==?= <ondrej@sury.org>
+Date: Tue, 17 Nov 2026 08:42:19 +0100
+Subject: fix GHSA-68fq test for 7.3 and older (no scalar and return types,
+ sha256 support may be missing)
+
+(cherry picked from commit b53515f892a601eeee6cf66e8e29a334101a2c6d)
+(cherry picked from commit e465383f7c88a9055dceb05833ab95dc30e5a303)
+(cherry picked from commit 22c8198243352d07f46d11c564889623a0c51417)
+(cherry picked from commit 3109084f252841ad7a5fdc4d877167ae030878be)
+---
+ ext/phar/tests/ghsa-68fq-fh7h-f8gr.phpt | 11 ++++++-----
+ 1 file changed, 6 insertions(+), 5 deletions(-)
+
+diff --git a/ext/phar/tests/ghsa-68fq-fh7h-f8gr.phpt b/ext/phar/tests/ghsa-68fq-fh7h-f8gr.phpt
+index 68a8915..0cf05f8 100644
+--- a/ext/phar/tests/ghsa-68fq-fh7h-f8gr.phpt
++++ b/ext/phar/tests/ghsa-68fq-fh7h-f8gr.phpt
+@@ -5,6 +5,7 @@ GHSA-68fq-fh7h-f8gr (OpenSSL signature bypass by downgrading the algorithm to a
+ if (!extension_loaded("phar")) die("skip phar extension not available");
+ if (!extension_loaded("openssl")) die("skip openssl extension not available");
+ if (!in_array("OpenSSL", Phar::getSupportedSignatures())) die("skip openssl support required");
++if (!in_array("SHA-256", Phar::getSupportedSignatures())) die("skip sha256 support required");
+ ?>
+ --INI--
+ phar.readonly=0
+@@ -17,7 +18,7 @@ $pkey = '';
+ openssl_pkey_export($private, $pkey, null, ['config' => __DIR__ . '/files/openssl.cnf']);
+ $pubkey = openssl_pkey_get_details($private)['key'];
+ 
+-function build(string $file, string $pkey): string
++function build($file, $pkey)
+ {
+     $phar = new Phar($file);
+     $phar['main.php'] = '<?php echo "GENUINE\n";';
+@@ -28,7 +29,7 @@ function build(string $file, string $pkey): string
+ }
+ 
+ // a phar built in this process comes back from the cache, so each case is read under its own name
+-function open(string $file, string $archive, ?string $pubkey): void
++function open($file, $archive, $pubkey)
+ {
+     file_put_contents($file, $archive);
+     if ($pubkey !== null) {
+@@ -42,7 +43,7 @@ function open(string $file, string $archive, ?string $pubkey): void
+     }
+ }
+ 
+-function downgrade_phar(string $archive): string
++function downgrade_phar($archive)
+ {
+     // the last 12 bytes are [length][algorithm]["GBMB"], the signature sits just before them
+     $siglen = unpack('V', substr($archive, -12, 4))[1];
+@@ -51,7 +52,7 @@ function downgrade_phar(string $archive): string
+     return $message . hash('sha256', $message, true) . pack('V', 0x0003) . 'GBMB'; // 0x0003 is PHAR_SIG_SHA256
+ }
+ 
+-function downgrade_tar(string $archive): string
++function downgrade_tar($archive)
+ {
+     for ($offset = 0; $offset + 512 <= strlen($archive); ) {
+         $size = (int) octdec(trim(substr($archive, $offset + 124, 12), " \0")); // octal size field of a 512 byte header
+@@ -69,7 +70,7 @@ function downgrade_tar(string $archive): string
+     throw new RuntimeException('no signature entry');
+ }
+ 
+-function downgrade_zip(string $archive): string
++function downgrade_zip($archive)
+ {
+     $eocd = strrpos($archive, "PK\x05\x06");
+     $cdir = unpack('V', substr($archive, $eocd + 16, 4))[1]; // the eocd holds the directory offset at +16 and the archive comment length at +20
+From: =?utf-8?b?T25kxZllaiBTdXLDvQ==?= <ondrej@sury.org>
+Date: Tue, 17 Nov 2026 08:42:19 +0100
+Subject: fix GHSA-5j3f test for 7.3 and older (proc_open() takes a string
+ command, no scalar types, no ??)
+
+(cherry picked from commit 8ee2bc67c144c58e882047b36ca04e8df1e28489)
+(cherry picked from commit 37c350c224e96c4c44655d60d6c36c4a882a8201)
+(cherry picked from commit 12bcc173e92ccd5e2275714ccbf3c3111aba5151)
+(cherry picked from commit ece01c94f88e5ec2e03be0c54fa61caf973c8ba4)
+---
+ sapi/cgi/tests/ghsa-5j3f-64r7-f564.phpt | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
+
+diff --git a/sapi/cgi/tests/ghsa-5j3f-64r7-f564.phpt b/sapi/cgi/tests/ghsa-5j3f-64r7-f564.phpt
+index cab27ad..8d8809a 100644
+--- a/sapi/cgi/tests/ghsa-5j3f-64r7-f564.phpt
++++ b/sapi/cgi/tests/ghsa-5j3f-64r7-f564.phpt
+@@ -8,16 +8,16 @@ include "include.inc";
+ 
+ $php = get_cgi_path();
+ $script = __DIR__ . "/ghsa-5j3f-64r7-f564.target.php";
+-file_put_contents($script, '<?php var_dump($_SERVER["PATH_INFO"] ?? null, $_SERVER["ORIG_PATH_INFO"] ?? null);');
++file_put_contents($script, '<?php var_dump(isset($_SERVER["PATH_INFO"]) ? $_SERVER["PATH_INFO"] : null, isset($_SERVER["ORIG_PATH_INFO"]) ? $_SERVER["ORIG_PATH_INFO"] : null);');
+ 
+-function run_cgi(string $php, array $env): void {
++function run_cgi($php, array $env) {
+     /* Keep what is needed to start the binary (e.g. sanitizer runtime on Windows). */
+     $base_env = array_filter([
+         "PATH" => getenv("PATH"),
+         "SystemRoot" => getenv("SystemRoot"),
+     ], 'is_string');
+     $p = proc_open(
+-        [$php, "-n", "-d", "cgi.fix_pathinfo=1"],
++        escapeshellarg($php) . " -n -d cgi.fix_pathinfo=1",
+         [0 => ["pipe", "r"], 1 => ["pipe", "w"]],
+         $pipes,
+         null,
+From: =?utf-8?b?T25kxZllaiBTdXLDvQ==?= <ondrej@sury.org>
+Date: Tue, 17 Nov 2026 08:48:21 +0100
+Subject: add GHSA-gr4f test for 7.1 and older (no zend_test extension,
+ check the time zone of the logged messages)
+
+(cherry picked from commit 48f784b29f89e976ebaf52c2fba4a691d5b677a9)
+(cherry picked from commit cf57aabcb179dd3f643e7bfe5b14952fd0e9f4dd)
+---
+ ext/date/tests/GHSA-gr4f-wgx5-jpfv.phpt | 35 +++++++++++++++++++++++++++++++++
+ 1 file changed, 35 insertions(+)
+ create mode 100644 ext/date/tests/GHSA-gr4f-wgx5-jpfv.phpt
+
+diff --git a/ext/date/tests/GHSA-gr4f-wgx5-jpfv.phpt b/ext/date/tests/GHSA-gr4f-wgx5-jpfv.phpt
+new file mode 100644
+index 0000000..a554a68
+--- /dev/null
++++ b/ext/date/tests/GHSA-gr4f-wgx5-jpfv.phpt
+@@ -0,0 +1,35 @@
++--TEST--
++GHSA-gr4f-wgx5-jpfv: DATEG(tzcache) use-after-free
++--CREDITS--
++Sebastian Bergmann
++--GET--
++a=1&b=2
++--INI--
++error_log="{PWD}/GHSA-gr4f-wgx5-jpfv.log"
++log_errors=1
++max_input_vars=1
++date.timezone=Europe/Prague
++extension=GHSA-gr4f-wgx5-jpfv-does-not-exist
++--FILE--
++<?php
++/* There is no zend_test extension here: a missing extension gives the warning
++ * during module startup. The time zone cache must only be used while a request
++ * is active, so messages logged outside of it carry UTC timestamps. */
++error_log("in request");
++foreach (file(__DIR__ . "/GHSA-gr4f-wgx5-jpfv.log") as $line) {
++    if (preg_match('/^\[\S+ \S+ (\S+)\] (?:PHP Warning:  )?(PHP Startup|Unknown|in request)/', $line, $m)) {
++        echo $m[2], ": ", $m[1], "\n";
++    }
++}
++echo "Hello world\n";
++?>
++--CLEAN--
++<?php
++@unlink(__DIR__ . "/GHSA-gr4f-wgx5-jpfv.log");
++?>
++--EXPECTF--
++%AWarning: Unknown: Input variables exceeded 1. To increase the limit change max_input_vars in php.ini. in Unknown on line 0
++PHP Startup: UTC
++Unknown: UTC
++in request: Europe/Prague
++Hello world%A
+From: =?utf-8?b?T25kxZllaiBTdXLDvQ==?= <ondrej@sury.org>
+Date: Tue, 17 Nov 2026 09:03:58 +0100
+Subject: add GHSA-3mg3 test for 5.6 (rewritten for the old FPM test helpers)
+
+---
+ sapi/fpm/tests/ghsa-3mg3-cr28-46gc-status-xss.phpt | 81 ++++++++++++++++++++++
+ 1 file changed, 81 insertions(+)
+ create mode 100644 sapi/fpm/tests/ghsa-3mg3-cr28-46gc-status-xss.phpt
+
+diff --git a/sapi/fpm/tests/ghsa-3mg3-cr28-46gc-status-xss.phpt b/sapi/fpm/tests/ghsa-3mg3-cr28-46gc-status-xss.phpt
+new file mode 100644
+index 0000000..a4bd9ba
+--- /dev/null
++++ b/sapi/fpm/tests/ghsa-3mg3-cr28-46gc-status-xss.phpt
+@@ -0,0 +1,81 @@
++--TEST--
++FPM: GHSA-3mg3-cr28-46gc - status xss via request method, auth user and script filename
++--SKIPIF--
++<?php include "skipif.inc"; ?>
++--FILE--
++<?php
++
++include "include.inc";
++
++$logfile = dirname(__FILE__).'/php-fpm.log.tmp';
++$port = 9000+PHP_INT_SIZE;
++
++$cfg = <<<EOT
++[global]
++error_log = $logfile
++[unconfined]
++listen = 127.0.0.1:$port
++pm.status_path = /status
++pm = static
++pm.max_children = 3
++EOT;
++
++$scriptFilename = dirname(__FILE__) . '/ghsa-3mg3-cr28-46gc-<svg>.php';
++file_put_contents($scriptFilename, "<?php\nusleep(300000);\n");
++
++$fpm = run_fpm($cfg, $tail);
++if (is_resource($fpm)) {
++    fpm_display_log($tail, 2);
++    try {
++        require_once 'fcgi.inc';
++        /* this request is still running when the status page is fetched */
++        $client = new Adoy\FastCGI\Client('127.0.0.1', $port);
++        $id = $client->async_request(array(
++            'GATEWAY_INTERFACE'  => 'FastCGI/1.0',
++            'REQUEST_METHOD'     => '<svg>',
++            'SCRIPT_FILENAME'    => $scriptFilename,
++            'SCRIPT_NAME'        => '/ghsa-3mg3-cr28-46gc-<svg>.php',
++            'QUERY_STRING'       => '',
++            'REQUEST_URI'        => '/ghsa-3mg3-cr28-46gc-<svg>.php',
++            'DOCUMENT_URI'       => '/ghsa-3mg3-cr28-46gc-<svg>.php',
++            'HTTP_AUTHORIZATION' => 'Basic ' . base64_encode('"<svg onload=x>:x'),
++            'SERVER_SOFTWARE'    => 'php/fcgiclient',
++            'REMOTE_ADDR'        => '127.0.0.1',
++            'REMOTE_PORT'        => '9985',
++            'SERVER_ADDR'        => '127.0.0.1',
++            'SERVER_PORT'        => '80',
++            'SERVER_NAME'        => php_uname('n'),
++            'SERVER_PROTOCOL'    => 'HTTP/1.1',
++            'CONTENT_TYPE'       => '',
++            'CONTENT_LENGTH'     => 0
++        ), false);
++        usleep(100000);
++
++        $html = run_request('127.0.0.1', $port, '/status', 'full&html');
++        var_dump(strpos($html, '<svg'));
++        var_dump(substr_count($html, '&lt;svg'));
++
++        $client->wait_for_response($id);
++        echo "Done\n";
++    } catch (Exception $e) {
++        echo "error: ", $e->getMessage(), "\n";
++    }
++
++    proc_terminate($fpm);
++    stream_get_contents($tail);
++    fclose($tail);
++    proc_close($fpm);
++}
++
++?>
++--EXPECTF--
++[%d-%s-%d %d:%d:%d] NOTICE: fpm is running, pid %d
++[%d-%s-%d %d:%d:%d] NOTICE: ready to handle connections
++bool(false)
++int(4)
++Done
++--CLEAN--
++<?php
++    @unlink(dirname(__FILE__).'/php-fpm.log.tmp');
++    @unlink(dirname(__FILE__).'/ghsa-3mg3-cr28-46gc-<svg>.php');
++?>
+From: =?utf-8?b?T25kxZllaiBTdXLDvQ==?= <ondrej@sury.org>
+Date: Tue, 17 Nov 2026 09:03:58 +0100
+Subject: add GHSA-qc49 tests for 5.6 (rewritten for the old FPM test helpers)
+
+---
+ sapi/fpm/tests/unread-body-keep-conn.phpt      | 137 ++++++++++++++++++++++++
+ sapi/fpm/tests/unread-body-partial-record.phpt | 139 +++++++++++++++++++++++++
+ 2 files changed, 276 insertions(+)
+ create mode 100644 sapi/fpm/tests/unread-body-keep-conn.phpt
+ create mode 100644 sapi/fpm/tests/unread-body-partial-record.phpt
+
+diff --git a/sapi/fpm/tests/unread-body-keep-conn.phpt b/sapi/fpm/tests/unread-body-keep-conn.phpt
+new file mode 100644
+index 0000000..bbc7dec
+--- /dev/null
++++ b/sapi/fpm/tests/unread-body-keep-conn.phpt
+@@ -0,0 +1,137 @@
++--TEST--
++FPM: unread request body cannot become a new request on a kept connection
++--SKIPIF--
++<?php include "skipif.inc"; ?>
++--FILE--
++<?php
++
++include "include.inc";
++
++function record($type, $content, $id)
++{
++    return pack('CCnnCC', 1, $type, $id, strlen($content), 0, 0) . $content;
++}
++
++function encode_length($length)
++{
++    return $length < 128 ? chr($length) : pack('N', $length | 0x80000000);
++}
++
++function params(array $params)
++{
++    $encoded = '';
++    foreach ($params as $name => $value) {
++        $encoded .= encode_length(strlen($name)) . encode_length(strlen($value)) . $name . $value;
++    }
++    return $encoded;
++}
++
++function request($id, $keep, array $params, $stdin)
++{
++    return record(1, pack('nCxxxxx', 1, $keep), $id)
++        . record(4, params($params), $id)
++        . record(4, '', $id)
++        . record(5, $stdin, $id)
++        . record(5, '', $id);
++}
++
++function transact($port, $request)
++{
++    $socket = fsockopen('127.0.0.1', $port);
++    stream_set_timeout($socket, 3);
++    $written = 0;
++    while ($written < strlen($request)) {
++        $written += fwrite($socket, substr($request, $written));
++    }
++    stream_socket_shutdown($socket, STREAM_SHUT_WR);
++    $response = stream_get_contents($socket);
++    fclose($socket);
++    return $response;
++}
++
++$logfile = dirname(__FILE__).'/php-fpm.log.tmp';
++$port = 9000+PHP_INT_SIZE;
++
++$cfg = <<<EOT
++[global]
++error_log = $logfile
++[unconfined]
++listen = 127.0.0.1:$port
++pm = static
++pm.max_children = 1
++catch_workers_output = yes
++EOT;
++
++$code = <<<'PHP'
++<?php
++if ($_SERVER['REMOTE_ADDR'] === '203.0.113.1') {
++    echo "smuggled\n";
++} else {
++    $input = fopen('php://input', 'r');
++    echo "outer\n";
++}
++PHP;
++
++$script = dirname(__FILE__) . '/unread-body-keep-conn.src.php';
++file_put_contents($script, $code);
++
++$fpm = run_fpm($cfg, $tail);
++if (is_resource($fpm)) {
++    fpm_display_log($tail, 2);
++
++    $hiddenParams = array(
++        'GATEWAY_INTERFACE' => 'FastCGI/1.0',
++        'REQUEST_METHOD' => 'GET',
++        'SCRIPT_FILENAME' => $script,
++        'SCRIPT_NAME' => '/smuggled.php',
++        'REQUEST_URI' => '/smuggled.php',
++        'SERVER_PROTOCOL' => 'HTTP/1.1',
++        'REMOTE_ADDR' => '203.0.113.1',
++        'CONTENT_LENGTH' => '0',
++    );
++    $hidden = request(2, false, $hiddenParams, '');
++    $body = str_pad("--B\r\nContent-Disposition: form-data\r\n\r\n", 12000, 'A');
++    $body = substr_replace($body, $hidden, 5120, strlen($hidden));
++
++    $outerParams = array(
++        'GATEWAY_INTERFACE' => 'FastCGI/1.0',
++        'REQUEST_METHOD' => 'POST',
++        'SCRIPT_FILENAME' => $script,
++        'SCRIPT_NAME' => '/open.php',
++        'REQUEST_URI' => '/open.php',
++        'SERVER_PROTOCOL' => 'HTTP/1.1',
++        'REMOTE_ADDR' => '127.0.0.1',
++        'CONTENT_TYPE' => 'multipart/form-data; boundary=B',
++        'CONTENT_LENGTH' => (string) strlen($body),
++    );
++    foreach (array(false, true) as $keep) {
++        $response = transact($port, request(1, $keep, $outerParams, $body));
++        echo 'keep ', $keep ? 'on' : 'off', ': ',
++            strpos($response, 'smuggled') !== false ? 'smuggled' : 'safe', "\n";
++    }
++
++    $body = 'A' . $hidden;
++    $outerParams['CONTENT_TYPE'] = 'application/octet-stream';
++    $outerParams['CONTENT_LENGTH'] = '1';
++    $response = transact($port, request(1, true, $outerParams, $body));
++    echo 'partial frame: ',
++        strpos($response, 'smuggled') !== false ? 'smuggled' : 'safe', "\n";
++
++    proc_terminate($fpm);
++    stream_get_contents($tail);
++    fclose($tail);
++    proc_close($fpm);
++}
++
++?>
++--EXPECTF--
++[%d-%s-%d %d:%d:%d] NOTICE: fpm is running, pid %d
++[%d-%s-%d %d:%d:%d] NOTICE: ready to handle connections
++keep off: safe
++keep on: safe
++partial frame: safe
++--CLEAN--
++<?php
++    @unlink(dirname(__FILE__).'/php-fpm.log.tmp');
++    @unlink(dirname(__FILE__).'/unread-body-keep-conn.src.php');
++?>
+diff --git a/sapi/fpm/tests/unread-body-partial-record.phpt b/sapi/fpm/tests/unread-body-partial-record.phpt
+new file mode 100644
+index 0000000..be6af63
+--- /dev/null
++++ b/sapi/fpm/tests/unread-body-partial-record.phpt
+@@ -0,0 +1,139 @@
++--TEST--
++FPM: partially read STDIN record does not make the worker reject later connections
++--SKIPIF--
++<?php include "skipif.inc"; ?>
++--FILE--
++<?php
++
++include "include.inc";
++
++function record($type, $content, $id)
++{
++    return pack('CCnnCC', 1, $type, $id, strlen($content), 0, 0) . $content;
++}
++
++function encode_length($length)
++{
++    return $length < 128 ? chr($length) : pack('N', $length | 0x80000000);
++}
++
++function params(array $params)
++{
++    $encoded = '';
++    foreach ($params as $name => $value) {
++        $encoded .= encode_length(strlen($name)) . encode_length(strlen($value)) . $name . $value;
++    }
++    return $encoded;
++}
++
++function request($id, $keep, array $params, $stdin)
++{
++    return record(1, pack('nCxxxxx', 1, $keep), $id)
++        . record(4, params($params), $id)
++        . record(4, '', $id)
++        . record(5, $stdin, $id)
++        . record(5, '', $id);
++}
++
++function transact($port, $request)
++{
++    $socket = fsockopen('127.0.0.1', $port);
++    stream_set_timeout($socket, 3);
++    $written = 0;
++    while ($written < strlen($request)) {
++        $written += fwrite($socket, substr($request, $written));
++    }
++    stream_socket_shutdown($socket, STREAM_SHUT_WR);
++    $response = stream_get_contents($socket);
++    fclose($socket);
++    return $response;
++}
++
++$logfile = dirname(__FILE__).'/php-fpm.log.tmp';
++$port = 9000+PHP_INT_SIZE;
++
++$cfg = <<<EOT
++[global]
++error_log = $logfile
++[unconfined]
++listen = 127.0.0.1:$port
++pm = static
++pm.max_children = 1
++catch_workers_output = yes
++EOT;
++
++$code = <<<'PHP'
++<?php
++if ($_SERVER['REMOTE_ADDR'] === '203.0.113.1') {
++    echo "smuggled\n";
++} else {
++    echo "outer ", strlen(file_get_contents('php://input')), "\n";
++}
++PHP;
++
++$script = dirname(__FILE__) . '/unread-body-partial-record.src.php';
++file_put_contents($script, $code);
++
++$fpm = run_fpm($cfg, $tail);
++if (is_resource($fpm)) {
++    fpm_display_log($tail, 2);
++
++    $hiddenParams = array(
++        'GATEWAY_INTERFACE' => 'FastCGI/1.0',
++        'REQUEST_METHOD' => 'GET',
++        'SCRIPT_FILENAME' => $script,
++        'SCRIPT_NAME' => '/smuggled.php',
++        'REQUEST_URI' => '/smuggled.php',
++        'SERVER_PROTOCOL' => 'HTTP/1.1',
++        'REMOTE_ADDR' => '203.0.113.1',
++        'CONTENT_LENGTH' => '0',
++    );
++    $hidden = request(2, false, $hiddenParams, '');
++    $outerParams = array(
++        'GATEWAY_INTERFACE' => 'FastCGI/1.0',
++        'REQUEST_METHOD' => 'POST',
++        'SCRIPT_FILENAME' => $script,
++        'SCRIPT_NAME' => '/open.php',
++        'REQUEST_URI' => '/open.php',
++        'SERVER_PROTOCOL' => 'HTTP/1.1',
++        'REMOTE_ADDR' => '127.0.0.1',
++        'CONTENT_TYPE' => 'application/octet-stream',
++        'CONTENT_LENGTH' => '1',
++    );
++    $plainParams = array('REQUEST_METHOD' => 'GET', 'CONTENT_LENGTH' => '0') + $outerParams;
++    unset($plainParams['CONTENT_TYPE']);
++
++    /* The STDIN record is longer than CONTENT_LENGTH so it is left partially read. */
++    foreach (array(false, true) as $keep) {
++        $response = transact($port, request(1, $keep, $outerParams, 'A' . $hidden));
++        echo 'keep ', $keep ? 'on' : 'off', ': ',
++            strpos($response, 'smuggled') !== false ? 'smuggled' : 'safe', ', ',
++            strpos($response, 'outer 1') !== false ? 'served' : 'not served', "\n";
++        /* The only worker must still serve new connections. */
++        foreach (array(1, 2) as $n) {
++            $response = transact($port, request(1, false, $plainParams, ''));
++            echo "  next connection $n: ", strpos($response, 'outer 0') !== false ? 'served' : 'not served', "\n";
++        }
++    }
++
++    proc_terminate($fpm);
++    stream_get_contents($tail);
++    fclose($tail);
++    proc_close($fpm);
++}
++
++?>
++--EXPECTF--
++[%d-%s-%d %d:%d:%d] NOTICE: fpm is running, pid %d
++[%d-%s-%d %d:%d:%d] NOTICE: ready to handle connections
++keep off: safe, served
++  next connection 1: served
++  next connection 2: served
++keep on: safe, served
++  next connection 1: served
++  next connection 2: served
++--CLEAN--
++<?php
++    @unlink(dirname(__FILE__).'/php-fpm.log.tmp');
++    @unlink(dirname(__FILE__).'/unread-body-partial-record.src.php');
++?>
+From: =?utf-8?b?T25kxZllaiBTdXLDvQ==?= <ondrej@sury.org>
+Date: Tue, 17 Nov 2026 12:19:41 +0100
+Subject: fix GHSA-q23r tests for 5.6 (use SKIPIF,
+ run-tests.php looks up EXTENSIONS modules in the compiled-in extension_dir)
+
+---
+ ext/soap/tests/GHSA-q23r-hr55-xmpg-wsdl.phpt | 4 ++--
+ ext/soap/tests/GHSA-q23r-hr55-xmpg.phpt      | 4 ++--
+ 2 files changed, 4 insertions(+), 4 deletions(-)
+
+diff --git a/ext/soap/tests/GHSA-q23r-hr55-xmpg-wsdl.phpt b/ext/soap/tests/GHSA-q23r-hr55-xmpg-wsdl.phpt
+index d560504..6cc840b 100644
+--- a/ext/soap/tests/GHSA-q23r-hr55-xmpg-wsdl.phpt
++++ b/ext/soap/tests/GHSA-q23r-hr55-xmpg-wsdl.phpt
+@@ -1,7 +1,7 @@
+ --TEST--
+ GHSA-q23r-hr55-xmpg: Unbounded array walk on empty wsdl:arraySize
+---EXTENSIONS--
+-soap
++--SKIPIF--
++<?php require_once('skipif.inc'); ?>
+ --INI--
+ soap.wsdl_cache_enabled=0
+ --FILE--
+diff --git a/ext/soap/tests/GHSA-q23r-hr55-xmpg.phpt b/ext/soap/tests/GHSA-q23r-hr55-xmpg.phpt
+index 9ff7a62..5f63760 100644
+--- a/ext/soap/tests/GHSA-q23r-hr55-xmpg.phpt
++++ b/ext/soap/tests/GHSA-q23r-hr55-xmpg.phpt
+@@ -1,7 +1,7 @@
+ --TEST--
+ GHSA-q23r-hr55-xmpg: Out-of-bounds read on empty SOAP-ENC:arraySize
+---EXTENSIONS--
+-soap
++--SKIPIF--
++<?php require_once('skipif.inc'); ?>
+ --FILE--
+ <?php
+ 

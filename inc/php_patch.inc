@@ -693,6 +693,33 @@ php_patches() {
         dos2unix php5640-cve-2024-8927.patch
         patch -p1 < php5640-cve-2024-8927.patch
       fi
+      if [ ! -f php5640-cve-2026-6735.patch ]; then
+        echo
+        echo "patching PHP 5.6 for bug #cve-2026-6735"
+        echo "https://github.com/php/php-src/security/advisories/GHSA-7qg2-v9fj-4mwv"
+        echo
+        cp -a $CUR_DIR/patches/php/php5640-cve-2026-6735.patch php5640-cve-2026-6735.patch
+        dos2unix php5640-cve-2026-6735.patch
+        patch -p1 < php5640-cve-2026-6735.patch
+      fi
+      if [ ! -f php5640-from-8.2.36-to-5.6.patch ]; then
+        echo
+        echo "patching PHP 5.6 for bug #from-8.2.36-to-5.6"
+        echo "https://www.php.net/ChangeLog-8.php#8.2.36"
+        echo
+        cp -a $CUR_DIR/patches/php/php5640-from-8.2.36-to-5.6.patch php5640-from-8.2.36-to-5.6.patch
+        dos2unix php5640-from-8.2.36-to-5.6.patch
+        patch -p1 < php5640-from-8.2.36-to-5.6.patch
+      fi
+      if [ ! -f php5640-cve-2026-129292-free.patch ]; then
+        echo
+        echo "patching PHP 5.6 for bug #cve-2026-129292-free"
+        echo "https://github.com/php/php-src/security/advisories/GHSA-3mg3-cr28-46gc"
+        echo
+        cp -a $CUR_DIR/patches/php/php5640-cve-2026-129292-free.patch php5640-cve-2026-129292-free.patch
+        dos2unix php5640-cve-2026-129292-free.patch
+        patch -p1 < php5640-cve-2026-129292-free.patch
+      fi
     fi
 
     if [[ "$PHPVER_ID" = '70213' || "$PHPVER_ID" = '70125' ]]; then
