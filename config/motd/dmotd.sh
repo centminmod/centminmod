@@ -60,6 +60,7 @@ DMOTD_CSFVERCHECK='y'              # 'n' silences csf_version_checker entirely
 DMOTD_BRANCHCHECK='y'              # 'n' silences check_git_major_branch info notice
                                    # (use when staying on a specific branch intentionally)
 DMOTD_PHPLIBCHECK='y'              # 'n' silences the missing PHP shared library warning
+DMOTD_PHPCHECK='y'                 # 'n' silences the new PHP version available notice
 DMOTD_PHPCVE_2026_109618='y'       # 'n' silences the critical PHP CVE-2026-109618/109619 notice
                                    # (independent of DMOTD_PHPCHECK and all compact toggles)
 DMOTD_CVECHECK_COMPACT='n'         # 'y' collapses cmsec to 1 summary line (vulnerable CVEs always expand)
@@ -712,7 +713,8 @@ get_latest_php_version() {
       wget -q https://github.com/centminmod/get-php-versions/raw/master/get-php-ver.sh -O /usr/local/bin/getphpver
       chmod +x /usr/local/bin/getphpver
   fi
-  if [[ ! "$(grep '83' /usr/local/bin/getphpver)" ]]; then
+  # re-download until getphpver has the empty-cache fix (refresh_versions)
+  if ! grep -q 'refresh_versions' /usr/local/bin/getphpver 2>/dev/null; then
       wget -q https://github.com/centminmod/get-php-versions/raw/master/get-php-ver.sh -O /usr/local/bin/getphpver
       chmod +x /usr/local/bin/getphpver
   fi

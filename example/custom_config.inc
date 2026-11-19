@@ -6471,6 +6471,11 @@
 # track CSF updates separately or do not want the daily mirror check.
 #DMOTD_CSFVERCHECK='y'
 
+# New PHP version available notice on SSH login and in tools/check-for-updates.sh
+# when php.net has a newer release of the installed PHP branch.
+# Default 'y'; 'n' silences it.
+#DMOTD_PHPCHECK='y'
+
 # cmsec compact summary (independent of DMOTD_COMPACT)
 # 'y' collapses cmsec output to a single summary line:
 #   cmsec: kernel X.Y.Z — N/N OK (P patched, A n/a)
