@@ -54,6 +54,19 @@ _cmm_git_sync_impl() {
 
   pushd "$workdir" >/dev/null 2>&1 || { echo "git_sync: ERROR — could not enter $workdir"; return 2; }
 
+  # A stash pop that conflicted on an earlier run leaves unmerged files, which
+  # block git stash and git merge on every later run: say how to clear them.
+  if [ -n "$(git ls-files -u 2>/dev/null)" ]; then
+    echo "git_sync: ERROR — unresolved git conflicts in $workdir:"
+    git ls-files -u 2>/dev/null | cut -f2 | sort -u | sed "s/^/    /"
+    echo "  Keep the committed version of each file listed with:"
+    echo "    cd $workdir && git checkout HEAD -- <file>"
+    echo "  Your earlier local changes stay in: git -C $workdir stash list"
+    echo "  Then run cmupdate again. Help: $forum_url"
+    popd >/dev/null 2>&1
+    return 2
+  fi
+
   echo "Checking for updates on origin/$branch ..."
   if ! git fetch origin "+refs/heads/${branch}:refs/remotes/origin/${branch}" 2>&1; then
     echo "git_sync: ERROR — git fetch failed for origin/$branch (network or auth)"
@@ -113,7 +126,16 @@ _cmm_git_sync_impl() {
         if ! git stash pop --quiet 2>/dev/null; then
           echo "git_sync: WARNING — local changes could not be re-applied cleanly"
           echo "  Your original changes are preserved in 'git -C $workdir stash list'"
-          echo "  Resolve any <<<<<< conflict markers manually, then 'git stash drop' when done."
+          if [ -n "$(git ls-files -u 2>/dev/null)" ]; then
+            echo "  These files now hold <<<<<<< conflict markers:"
+            git ls-files -u 2>/dev/null | cut -f2 | sort -u | sed "s/^/    /"
+            echo "  Keep the committed version with: cd $workdir && git checkout HEAD -- <file>"
+            echo "  or resolve the markers by hand, then run cmupdate again."
+          else
+            echo "  Resolve any <<<<<< conflict markers manually, then 'git stash drop' when done."
+          fi
+          popd >/dev/null 2>&1
+          return 2
         fi
       fi
     fi
