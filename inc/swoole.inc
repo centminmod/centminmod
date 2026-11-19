@@ -250,8 +250,8 @@ if [[ "$PHPSWOOLE" = [yY] ]]; then
       check_devtoolset_php
       enable_devtoolset "$CLANG_PHP" || return 1
     if [[ "$PHP_PIE_INSTALL" = [yY] ]]; then
-        # 6.2.x always builds OpenSSL and drops --enable-openssl; neither 6.1.12
-        # nor 6.2.5 has --enable-swoole-json, so their configure ignores it today
+        # 6.2.x always builds OpenSSL and drops --enable-openssl; neither 6.1.13
+        # nor 6.2.6 has --enable-swoole-json, so their configure ignores it today
         local swoole_pie_opts='--enable-mysqlnd --enable-swoole-curl --enable-sockets'
         [[ "$PHPSWOOLE_VER" = 6.1.* ]] && swoole_pie_opts="${swoole_pie_opts} --enable-openssl"
         if [[ "$CENTOS_TEN" -eq '10' || "$CENTOS_NINE" -eq '9' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_SEVEN" -eq '7' ]] && [ ! -f  /usr/lib64/libbrotlienc.so ]; then
