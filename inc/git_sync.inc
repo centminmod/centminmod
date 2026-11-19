@@ -61,7 +61,7 @@ _cmm_git_sync_impl() {
     git ls-files -u 2>/dev/null | cut -f2 | sort -u | sed "s/^/    /"
     echo "  Keep the committed version of each file listed with:"
     echo "    cd $workdir && git checkout HEAD -- <file>"
-    echo "  Your earlier local changes stay in: git -C $workdir stash list"
+    echo "  Your earlier local changes stay in: cd $workdir && git stash list"
     echo "  Then run cmupdate again. Help: $forum_url"
     popd >/dev/null 2>&1
     return 2
@@ -125,7 +125,7 @@ _cmm_git_sync_impl() {
       if [ "$stash_after" != "$stash_before" ]; then
         if ! git stash pop --quiet 2>/dev/null; then
           echo "git_sync: WARNING — local changes could not be re-applied cleanly"
-          echo "  Your original changes are preserved in 'git -C $workdir stash list'"
+          echo "  Your original changes are preserved in 'cd $workdir && git stash list'"
           if [ -n "$(git ls-files -u 2>/dev/null)" ]; then
             echo "  These files now hold <<<<<<< conflict markers:"
             git ls-files -u 2>/dev/null | cut -f2 | sort -u | sed "s/^/    /"
@@ -188,7 +188,7 @@ _cmm_git_sync_impl() {
     echo "git_sync: ERROR — git reset --hard origin/$branch failed"
     echo "  Recovery tag $recovery_tag still points at your previous code."
     if [ "$stash_created" = "1" ]; then
-      echo "  Local changes preserved in: git -C $workdir stash list"
+      echo "  Local changes preserved in: cd $workdir && git stash list"
     fi
     popd >/dev/null 2>&1
     return 2
@@ -201,9 +201,9 @@ _cmm_git_sync_impl() {
   echo "  Centmin Mod local code has been resynced to origin/$branch."
   echo "  Recovery tag: $recovery_tag"
   if [ "$stash_created" = "1" ]; then
-    echo "  Local changes saved to: git -C $workdir stash list"
+    echo "  Local changes saved to: cd $workdir && git stash list"
   fi
-  echo "  Roll back with: git -C $workdir reset --hard $recovery_tag"
+  echo "  Roll back with: cd $workdir && git reset --hard $recovery_tag"
   echo
 
   popd >/dev/null 2>&1
