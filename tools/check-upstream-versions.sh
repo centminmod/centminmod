@@ -141,6 +141,7 @@ phpext|mongodb ext (PHP 8.2)|MONGODBPHP_EIGHTTWO_VER|pecl:mongodb||url:https://p
 phpext|mongodb ext (PHP 8.3)|MONGODBPHP_EIGHTTHREE_VER|pecl:mongodb||url:https://pecl.php.net/get/mongodb-{V}.tgz|major|2.x drops deprecated APIs
 phpext|mongodb ext (PHP 8.4)|MONGODBPHP_EIGHTFOUR_VER|pecl:mongodb||url:https://pecl.php.net/get/mongodb-{V}.tgz|major|2.x drops deprecated APIs
 phpext|mongodb ext (PHP 8.5)|MONGODBPHP_EIGHTFIVE_VER|pecl:mongodb||url:https://pecl.php.net/get/mongodb-{V}.tgz|major|2.x drops deprecated APIs
+phpext|mongodb ext (PHP 8.6)|MONGODBPHP_EIGHTSIX_VER|pecl:mongodb||url:https://pecl.php.net/get/mongodb-{V}.tgz|major|1.21.x/2.1.x do not build on PHP 8.6
 phpext|swoole (PHP 8.0)|PHPSWOOLE_EIGHT_ZERO_VER|gh:swoole/swoole-src:^v[0-9]+\.[0-9]+\.[0-9]+$|s/^v//|url:https://pecl.php.net/get/swoole-{V}.tgz|major|
 phpext|swoole (PHP 8.1)|PHPSWOOLE_EIGHT_ONE_VER|gh:swoole/swoole-src:^v[0-9]+\.[0-9]+\.[0-9]+$|s/^v//|url:https://pecl.php.net/get/swoole-{V}.tgz|minor|check newer minor still supports PHP 8.1
 phpext|swoole (PHP 8.2)|PHPSWOOLE_EIGHT_TWO_VER|gh:swoole/swoole-src:^v[0-9]+\.[0-9]+\.[0-9]+$|s/^v//|url:https://pecl.php.net/get/swoole-{V}.tgz|major|

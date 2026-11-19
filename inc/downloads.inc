@@ -2832,6 +2832,12 @@ mongodbphplocaltarball() {
     PHPEXT_MONGODBLINKFILE="mongodb-${MONGODBPHP_VER}.tgz"
     PHPEXT_MONGODBLINK="https://pecl.php.net/get/${PHPEXT_MONGODBLINKFILE}"
     PHPEXT_MONGODBLINKLOCAL="${LOCALCENTMINMOD_MIRROR}/centminmodparts/mongodb/${PHPEXT_MONGODBLINKFILE}"
+  elif [[ "$CENTOS_SEVEN" -eq '7' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]] && [[ "$mongodb_phpver" = '8.6' || "$PHPVER_ID" -ge '80600' ]]; then
+    # PHP 8.6 requires mongodb 2.x: 1.21.x and 2.1.x use macros PHP 8.6 removed
+    MONGODBPHP_VER="$MONGODBPHP_EIGHTSIX_VER"
+    PHPEXT_MONGODBLINKFILE="mongodb-${MONGODBPHP_VER}.tgz"
+    PHPEXT_MONGODBLINK="https://pecl.php.net/get/${PHPEXT_MONGODBLINKFILE}"
+    PHPEXT_MONGODBLINKLOCAL="${LOCALCENTMINMOD_MIRROR}/centminmodparts/mongodb/${PHPEXT_MONGODBLINKFILE}"
   elif [[ "$CENTOS_SEVEN" -eq '7' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]] && [[ "$mongodb_phpver" = '8.5' || "$PHPVER_ID" -ge '80500' ]]; then
     # PHP 8.5 requires mongodb 1.21.2+
     MONGODBPHP_VER="$MONGODBPHP_EIGHTFIVE_VER"
@@ -2919,6 +2925,12 @@ mongodbphptarball() {
   elif [[ "$CENTOS_SEVEN" -eq '7' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]] && [[ "$mongodb_phpver" = '8.4' ]]; then
     # PHP 8.4 requires mongodb 1.21.2+
     MONGODBPHP_VER="$MONGODBPHP_EIGHTFOUR_VER"
+    PHPEXT_MONGODBLINKFILE="mongodb-${MONGODBPHP_VER}.tgz"
+    PHPEXT_MONGODBLINK="https://pecl.php.net/get/${PHPEXT_MONGODBLINKFILE}"
+    PHPEXT_MONGODBLINKLOCAL="${LOCALCENTMINMOD_MIRROR}/centminmodparts/mongodb/${PHPEXT_MONGODBLINKFILE}"
+  elif [[ "$CENTOS_SEVEN" -eq '7' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]] && [[ "$mongodb_phpver" = '8.6' || "$PHPVER_ID" -ge '80600' ]]; then
+    # PHP 8.6 requires mongodb 2.x: 1.21.x and 2.1.x use macros PHP 8.6 removed
+    MONGODBPHP_VER="$MONGODBPHP_EIGHTSIX_VER"
     PHPEXT_MONGODBLINKFILE="mongodb-${MONGODBPHP_VER}.tgz"
     PHPEXT_MONGODBLINK="https://pecl.php.net/get/${PHPEXT_MONGODBLINKFILE}"
     PHPEXT_MONGODBLINKLOCAL="${LOCALCENTMINMOD_MIRROR}/centminmodparts/mongodb/${PHPEXT_MONGODBLINKFILE}"
