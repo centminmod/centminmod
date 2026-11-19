@@ -468,7 +468,7 @@ MONGODBPHP_VER='1.7.5'      # MongoDB PHP version
 MONGODBPHP_SEVEN_ZERO_VER='1.9.2' # MongoDB max PHP =<7.0 version
 MONGODBPHP_SEVEN_VER='1.11.1'     # MongoDB max PHP 7.1+ version
 MONGODBPHP_EIGHT_VER='1.13.0'
-MONGODBPHP_EIGHTTWO_VER='1.17.3'     # MongoDB PHP version
+MONGODBPHP_EIGHTTWO_VER='1.21.14'     # MongoDB PHP version
 MONGODB_SASL='n'            # SASL not working yet leave = n
 PDOPGSQL_PHPVER='11'       # pdo-pgsql PHP extension version for postgresql
 PHP_LIBZIP='n'              # use newer libzip instead of PHP embedded zip
