@@ -437,7 +437,10 @@ else
     read -ep "Enter PHP Version number you want to upgrade/downgrade to: " phpver
 
     PHP_MAX_VER=$(echo "$phpver" | cut -d . -f1,2)
-    if [[ "$PHP_MAX_VER" = 8.4 || "$PHP_MAX_VER" = 8.5 ]]; then
+    # refuse 8.4 and every newer branch, not only the ones known today
+    PHP_MAX_MAJOR=${PHP_MAX_VER%%.*}
+    PHP_MAX_MINOR=${PHP_MAX_VER#*.}
+    if [[ "$PHP_MAX_MAJOR" =~ ^[0-9]+$ && "$PHP_MAX_MINOR" =~ ^[0-9]+$ ]] && (( PHP_MAX_MAJOR > 8 || (PHP_MAX_MAJOR == 8 && PHP_MAX_MINOR >= 4) )); then
         echo
         echo
         echo "$branchname Max supported PHP version is 8.3. For PHP => 8.4 support"
