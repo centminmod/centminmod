@@ -4216,7 +4216,9 @@ sub render {
 sub variants {
     my ($s) = @_;
     my $no_geo = $s; $no_geo =~ s/^\s*fastcgi_param GEOIP_[^\n]*\n//mg;
-    return ($s, $no_geo);
+    # also match sites made before the template commented out fastcgi_keep_conn
+    my @base = ($s, $no_geo);
+    return (@base, map { (my $k = $_) =~ s/^([ \t]*)#(fastcgi_keep_conn[ \t]+on;[ \t]*)$/$1$2/mg; $k } @base);
 }
 sub matches { my ($s, @templates) = @_; return scalar grep { defined $_ && length($_) && norm($s) eq norm($_) } @templates; }
 sub strip_oauth { my $s = shift; $s =~ s/^# WordPress OAuth discovery start\n.*?^# WordPress OAuth discovery end\n?//msg; return $s; }

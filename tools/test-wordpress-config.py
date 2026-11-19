@@ -275,6 +275,7 @@ def check_migration():
         ("FastCGI mobile caching enabled", "", "fastcgi-mobile"),
         ("FastCGI custom mobile exclusion", "", "fastcgi-custom-mobile"),
         ("FastCGI customized map include", "", "fastcgi-custom-map-include"),
+        ("FastCGI legacy keepalive on", "", "fastcgi-legacy-keepconn"),
         ("Redis root defaults", "", "redis-default"), ("Redis subdirectory defaults", "/blog", "redis-default"),
         ("root defaults", "", "ok"), ("subdirectory defaults", "/blog", "ok"),
         ("nested defaults", "/sites/news", "ok"), ("custom wpsecure", "", "custom-security"),
@@ -411,8 +412,12 @@ def check_migration():
             if mode == "fastcgi-custom-map-include":
                 put("wpfastcgi_cache_map_include_mobile.conf", "~CustomMobile 1;\n")
             php = render(heredoc(fastcgi, "php-fastcgicache.conf", "HFF"))
-            php_path = put("wpincludes/wp-test.invalid/php-fastcgicache.conf",
-                           php.replace(" $http_authorization;", ";"))
+            old_php = php.replace(" $http_authorization;", ";")
+            if mode == "fastcgi-legacy-keepconn":
+                # sites made before the template commented out fastcgi_keep_conn
+                old_php = re.sub(r"^(\s*)#(fastcgi_keep_conn\s+on;)", r"\1\2", old_php, flags=re.M)
+                assert re.search(r"^\s*fastcgi_keep_conn\s+on;", old_php, re.M)
+            php_path = put("wpincludes/wp-test.invalid/php-fastcgicache.conf", old_php)
             redis = render(heredoc(standard, "rediscache_", "XFF"), prefix)
             redis_path = put("wpincludes/wp-test.invalid/rediscache_wp-test.invalid.conf", re.sub(
                 r"# Bypass stored and new OAuth discovery responses[^\n]*\nif .*?\n}\n", "", redis, flags=re.S))
@@ -514,9 +519,13 @@ def check_migration():
                 if mode == "custom-php":
                     expected -= {php_path}
                 if mode in ("ok", "redis-default", "comments", "include-comment", "include-text", "compat-tail", "custom-map", "custom-redis", "custom-php", "upstream-256k",
-                            "ssl-default", "ssl-live", "tcp-wpsc", "tcp-all", "fastcgi-default", "fastcgi-mobile"):
+                            "ssl-default", "ssl-live", "tcp-wpsc", "tcp-all", "fastcgi-default", "fastcgi-mobile", "fastcgi-legacy-keepconn"):
                     expected.add(secure)
             assert updated == expected, (label, sorted(map(str, updated)), sorted(map(str, expected)), result.stdout, result.stderr)
+            if mode == "fastcgi-legacy-keepconn":
+                migrated = php_path.read_text(encoding="utf-8")
+                assert re.search(r"^\s*fastcgi_keep_conn\s+on;", migrated, re.M), label
+                assert "$http_authorization" in migrated, label
             assert result.stderr == "", (label, result.stderr)
             assert not (base / "python-called").exists(), label
             if mode in ("stopped", "disabled", "locked", "no-wordpress"):
