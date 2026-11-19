@@ -206,7 +206,7 @@ phpng_download() {
       PHPNGVER='8.7.0'
     fi
     PHPNG_YES='y'
-    cecho "Downloading PHP $PHPMUVER from https://git.php.net/repository/php-src.git" $boldyellow
+    cecho "Downloading PHP $PHPMUVER from https://github.com/php/php-src.git" $boldyellow
     cd $DIR_TMP
     if [ -f php-${PHPNGVER}.tar.gz ]; then
       rm -rf php-${PHPNGVER}.tar.gz
@@ -214,9 +214,9 @@ phpng_download() {
     if [ -d php-${PHPNGVER} ]; then
       rm -rf php-${PHPNGVER}
     fi
-    time git clone --depth=5 https://git.php.net/repository/php-src.git php-${PHPNGVER}
+    time git clone --depth=5 https://github.com/php/php-src.git php-${PHPNGVER}
     if [ $? -ne 0 ] || [ ! -f "${DIR_TMP}/php-${PHPNGVER}/main/php_version.h" ]; then
-      cmm_php_fatal "php-${PHPNGVER} git clone failed or source tree incomplete (git.php.net)"
+      cmm_php_fatal "php-${PHPNGVER} git clone failed or source tree incomplete (github.com/php/php-src)"
       return 1
     fi
     cecho "Download PHP $PHPMUVER completed" $boldyellow
