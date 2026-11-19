@@ -143,6 +143,42 @@ block_names() {
   done
 }
 
+# the installed named packages plus installed non-base packages built from
+# the same source rpms; siblings other menu options or the user lock are left out.
+# An update can pull in a new subpackage: EPEL libaom-devel 3.13.3+ requires
+# aom, which requires its exact libaom version, so an unlocked aom fails yum
+# update once libaom is held. Named packages no longer installed are dropped.
+with_siblings() {
+  (
+    set -o pipefail
+    local installed_records foreign installed srpms siblings
+    [[ $# -eq 0 ]] && exit 0
+    installed_records=$(rpm -qa --qf '%{SOURCERPM}\t%{NAME}\n') || exit $?
+    foreign=$(other_locks | awk '!/^!/' | entry_name) || exit $?
+    installed=$(awk -F'\t' '
+      FILENAME == ARGV[1] {if (NF) n[$0] = 1; next}
+      ($2 in n) {print $2}
+    ' <(printf '%s\n' "$@") <(printf '%s\n' "$installed_records") | sort -u) || exit $?
+    # gpg-pubkey and other packages without a source rpm report (none)
+    srpms=$(awk -F'\t' '
+      FILENAME == ARGV[1] {if (NF) n[$0] = 1; next}
+      ($2 in n) && $1 != "(none)" {print $1}
+    ' <(printf '%s\n' "$installed") <(printf '%s\n' "$installed_records")) || exit $?
+    siblings=$(awk -F'\t' '
+      FILENAME == ARGV[1] {if (NF) n[$0] = 1; next}
+      FILENAME == ARGV[2] {if (NF) s[$0] = 1; next}
+      FILENAME == ARGV[3] {if (NF) f[$0] = 1; next}
+      ($1 in s) && !($2 in n) && !($2 in f) {print $2}
+    ' <(printf '%s\n' "$installed") <(printf '%s\n' "$srpms") <(printf '%s\n' "$foreign") <(printf '%s\n' "$installed_records") | sort -u) || exit $?
+    # Same origin policy as lock: a sibling installed from a local rpm file
+    # stays unlocked until a repo update replaces it.
+    if [[ -n "$siblings" ]]; then
+      siblings=$(non_base $siblings) || exit $?
+    fi
+    printf '%s\n' $installed $siblings | sort -u
+  )
+}
+
 # repo ids from repo files shipped by the OS vendor (baseos, appstream, crb
 # etc) plus pseudo repos for the OS install and local rpm installs.
 # Vendor of individual packages is unreliable (AlmaLinux 8 base packages
@@ -185,25 +221,36 @@ source_repos() {
   )
 }
 
+# the named installed packages that came from non-base repos: not the OS
+# vendor's, the OS install or local rpm files (Centmin Mod's *-custom packages)
+non_base() {
+  (
+    set -o pipefail
+    local repo_records repos
+    [[ $# -eq 0 ]] && exit 0
+    repo_records=$(from_repo "$@") || exit $?
+    repos=$(base_repos) || exit $?
+    awk -F'\t' '
+      FILENAME == ARGV[1] {if (NF) r[$1] = 1; next}
+      $2 != "" && !($2 in r) {print $1}
+    ' <(printf '%s\n' "$repos") <(printf '%s\n' "$repo_records") | sort -u
+  )
+}
+
 # installed packages from non-base repos owning PHP's libraries plus their
 # sibling subpackages built from the same source rpm (-devel etc). Local rpm
 # installs (Centmin Mod's *-custom packages) are skipped.
 candidate_packages() {
   (
     set -o pipefail
-    local libs lib srpms names installed_records repo_records repos
+    local libs lib srpms names installed_records
     libs=$(php_libs) || exit $?
     [[ -z "$libs" ]] && exit 0
     srpms=$(for lib in $libs; do rpm_file_record '%{SOURCERPM}\n' "$lib" || exit $?; done | sort -u) || exit $?
     installed_records=$(rpm -qa --qf '%{SOURCERPM}\t%{NAME}\n') || exit $?
     names=$(awk -F'\t' 'FILENAME == ARGV[1] {if (NF) s[$1] = 1; next} ($1 in s) {print $2}' <(printf '%s\n' "$srpms") <(printf '%s\n' "$installed_records") | sort -u) || exit $?
     [[ -z "$names" ]] && exit 0
-    repo_records=$(from_repo $names) || exit $?
-    repos=$(base_repos) || exit $?
-    awk -F'\t' '
-      FILENAME == ARGV[1] {if (NF) r[$1] = 1; next}
-      $2 != "" && !($2 in r) {print $1}
-    ' <(printf '%s\n' "$repos") <(printf '%s\n' "$repo_records") | sort -u
+    non_base $names
   )
 }
 
@@ -360,9 +407,12 @@ print(",".join(base.conf.pluginconfpath))
 
 do_update() {
   (
-    local names repos paths foreign overlay lock_status status=0
+    local names locked gone repos paths foreign overlay lock_status status=0
     adopt_stranded || exit $?
     names=$(block_names) || exit $?
+    [[ -z "$names" ]] && exit 0
+    names=$(with_siblings $names) || exit $?
+    # never a bare dnf update: with no package names it updates the whole system
     [[ -z "$names" ]] && exit 0
     repos=$(source_repos $names) || exit $?
     paths=$(dnf_plugin_paths) || exit $?
@@ -383,7 +433,27 @@ do_update() {
     dnf -y --refresh --setopt=skip_if_unavailable=True --disablerepo=mariadb ${repos:+"--enablerepo=$repos"} "--setopt=pluginconfpath=${paths:+$paths,}$overlay" update $names || status=$?
     # Keep the saved names protected even if PHP rebuilding aborts. A partial
     # update is locked at its installed versions rather than rolled back.
-    write_block $names || {
+    # Subpackages the update pulled in are locked with their siblings.
+    # Warn, not fail: on 141.00beta01 a failed update makes menu 5 skip the
+    # post-build lock, the other step that would lock a new sibling.
+    if ! locked=$(with_siblings $names); then
+      echo "warning: could not check for new sibling packages to lock, locking $(echo $names)" >&2
+      echo "warning: if yum update then fails on a held library, run: bash $0 lock" >&2
+      locked=$names
+    elif [[ -z "$locked" ]]; then
+      # An obsoleting update replaced every saved package: fail closed and
+      # keep the pre-update locks instead of removing them all.
+      echo "error: no locked PHP library package is installed after dnf update; locks left unchanged" >&2
+      echo "  check what replaced them, then rerun centmin.sh menu 5 to rebuild PHP and lock its libraries" >&2
+      [[ "$status" -ne 0 ]] && exit "$status"
+      exit 1
+    else
+      gone=$(awk 'FILENAME == ARGV[1] {if (NF) l[$0] = 1; next} NF && !($0 in l)' <(printf '%s\n' $locked) <(printf '%s\n' $names)) || gone=
+      # Not fatal: a successful PHP rebuild's lock step locks any replacement
+      # PHP links against; on 141.00beta01 failing here would skip that step.
+      [[ -n "$gone" ]] && echo "warning: dnf update removed $(echo $gone), their locks are dropped; check what replaced them" >&2
+    fi
+    write_block $locked || {
       lock_status=$?
       echo "error: failed to restore PHP library version locks after dnf update" >&2
       [[ "$status" -ne 0 ]] && exit "$status"
