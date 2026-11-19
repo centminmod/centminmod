@@ -432,7 +432,16 @@ if [[ "$LIBMEMCACHED_YUM" = [yY] ]]; then
         echo "cd $DIR_TMP"
         cd "$DIR_TMP"
         #tar xvzf libmemcached-${LIBMEMCACHED_VER}.tar.gz
-        cd ${DIR_TMP}/libmemcached-${LIBMEMCACHED_VER}
+        # no YUM package on this OS, so the source is needed even with LIBMEMCACHED_YUM='y'
+        if [ ! -d "${DIR_TMP}/libmemcached-${LIBMEMCACHED_VER}" ]; then
+            libmemcachedtarball
+        fi
+        if [ ! -d "${DIR_TMP}/libmemcached-${LIBMEMCACHED_VER}" ]; then
+            cecho "Error: libmemcached-${LIBMEMCACHED_VER} source not available, cannot compile libmemcached" $boldgreen
+            checklogdetails
+            return 1
+        fi
+        cd "${DIR_TMP}/libmemcached-${LIBMEMCACHED_VER}"
         if [[ "$INITIALINSTALL" != [yY] ]]; then
             make clean
         fi

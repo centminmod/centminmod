@@ -3205,6 +3205,7 @@ fi #LIBMEMCACHED_YUM
 
 ###############################################
 libmemcachedtarball() {
+  local libmemcached_dlurl libmemcached_dlok
 
 if [[ "$LIBMEMCACHED_YUM" = [nN] || "$LIBMEMCACHED_YUM" = [yY] ]]; then
 
@@ -3215,24 +3216,29 @@ if [[ -s "${PHPEXT_LIBMEMCACHEDLINKFILE}" && "$(tar -tzf ${PHPEXT_LIBMEMCACHEDLI
   cecho "${PHPEXT_LIBMEMCACHEDLINKFILE} found, skipping download..." $boldgreen
   else
   echo "Error: ${PHPEXT_LIBMEMCACHEDLINKFILE} not found !!! Downloading now......" $boldgreen
-        echo "wget ${WGETOPT} --progress=bar ${PHPEXT_LIBMEMCACHEDLINK} --tries=3"
-        wget ${WGETOPT} --progress=bar "${PHPEXT_LIBMEMCACHEDLINK}" --tries=3
-ERROR=$?
-  if [[ "$ERROR" != '0' ]]; then
-  rm -f "${PHPEXT_LIBMEMCACHEDLINKFILE}"
-  if [[ "$LIBMEMCACHED_YUM" = [yY] ]]; then
-    # source tarball is only compiled when LIBMEMCACHED_YUM='n'
-    cecho "Warning: ${PHPEXT_LIBMEMCACHEDLINKFILE} download failed, not needed with LIBMEMCACHED_YUM='y', continuing" $boldyellow
-    return 0
+  # Centmin Mod mirror first, upstream launchpad.net only as a fallback
+  libmemcached_dlok='n'
+  for libmemcached_dlurl in "${PHPEXT_LIBMEMCACHEDLINKLOCAL}" "${PHPEXT_LIBMEMCACHEDLINK}"; do
+    rm -f "${PHPEXT_LIBMEMCACHEDLINKFILE}"
+    echo "wget ${WGETOPT} --progress=bar ${libmemcached_dlurl} -O ${PHPEXT_LIBMEMCACHEDLINKFILE} --tries=3 --timeout=60"
+    if wget ${WGETOPT} --progress=bar "${libmemcached_dlurl}" -O "${PHPEXT_LIBMEMCACHEDLINKFILE}" --tries=3 --timeout=60 && tar -tzf "${PHPEXT_LIBMEMCACHEDLINKFILE}" >/dev/null 2>&1; then
+      libmemcached_dlok='y'
+      break
+    fi
+    cecho "Error: ${PHPEXT_LIBMEMCACHEDLINKFILE} download from ${libmemcached_dlurl} failed." $boldgreen
+  done
+  if [[ "$libmemcached_dlok" != 'y' ]]; then
+    rm -f "${PHPEXT_LIBMEMCACHEDLINKFILE}"
+    if [[ "$LIBMEMCACHED_YUM" = [yY] ]]; then
+      # LIBMEMCACHED_YUM='y' installs libmemcached from YUM on EL7+ or with remi.repo
+      cecho "Warning: ${PHPEXT_LIBMEMCACHEDLINKFILE} download failed, not needed with LIBMEMCACHED_YUM='y', continuing" $boldyellow
+      return 0
+    fi
+    cecho "Error: ${PHPEXT_LIBMEMCACHEDLINKFILE} download failed." $boldgreen
+    checklogdetails
+    exit 1
   fi
-  cecho "Error: ${PHPEXT_LIBMEMCACHEDLINKFILE} download failed." $boldgreen
-  cecho "trying local mirror download..." $boldgreen
-  libmemcachedlocaltarball
-  return 0
-else 
-         cecho "Download done." $boldyellow
-#echo ""
-  fi
+  cecho "Download done." $boldyellow
 fi
 
 tar xzf "${PHPEXT_LIBMEMCACHEDLINKFILE}"
