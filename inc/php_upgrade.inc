@@ -436,22 +436,6 @@ else
     echo
     read -ep "Enter PHP Version number you want to upgrade/downgrade to: " phpver
 
-    PHP_MAX_VER=$(echo "$phpver" | cut -d . -f1,2)
-    # refuse 8.4 and every newer branch, not only the ones known today
-    PHP_MAX_MAJOR=${PHP_MAX_VER%%.*}
-    PHP_MAX_MINOR=${PHP_MAX_VER#*.}
-    if [[ "$PHP_MAX_MAJOR" =~ ^[0-9]+$ && "$PHP_MAX_MINOR" =~ ^[0-9]+$ ]] && (( PHP_MAX_MAJOR > 8 || (PHP_MAX_MAJOR == 8 && PHP_MAX_MINOR >= 4) )); then
-        echo
-        echo
-        echo "$branchname Max supported PHP version is 8.3. For PHP => 8.4 support"
-        echo "Upgrade switch to Centmin Mod 140.00beta01 or higher as per:"
-        echo "https://community.centminmod.com/threads/25572/"
-        echo
-        echo "Update instructions https://community.centminmod.com/posts/100211/"
-        echo
-        exit
-    fi
-
     # if user incorrectly enters PHP version without minor version i.e. 8.0 instead
     # of 8.0.30 try to use getphpver to get the latest PHP version within that branch
     declare -A php_versions
@@ -560,6 +544,22 @@ fi # UALL
 
 # CLI and update-all need the same target version used by interactive upgrades.
 PHPMUVER=$(echo "$phpver" | cut -d . -f1,2)
+
+# 132.00stable builds PHP up to 8.3: refuse 8.4 and every newer branch here,
+# after every input path (menu 5 prompt and its retry, centmin-cli.sh phpupgrade)
+PHP_MAX_MAJOR=${PHPMUVER%%.*}
+PHP_MAX_MINOR=${PHPMUVER#*.}
+if [[ "$PHPMUVER" = *.* && "$PHP_MAX_MAJOR" =~ ^[0-9]+$ && "$PHP_MAX_MINOR" =~ ^[0-9]+$ ]] && (( 10#$PHP_MAX_MAJOR > 8 || (10#$PHP_MAX_MAJOR == 8 && 10#$PHP_MAX_MINOR >= 4) )); then
+    echo
+    echo
+    echo "$branchname Max supported PHP version is 8.3. For PHP => 8.4 support"
+    echo "Upgrade switch to Centmin Mod 140.00beta01 or higher as per:"
+    echo "https://community.centminmod.com/threads/25572/"
+    echo
+    echo "Update instructions https://community.centminmod.com/posts/100211/"
+    echo
+    exit
+fi
 
 ## grab newer custom written htpasswd.sh as well
 gethtpasswdsh
