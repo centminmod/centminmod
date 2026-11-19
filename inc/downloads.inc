@@ -3219,9 +3219,16 @@ if [[ -s "${PHPEXT_LIBMEMCACHEDLINKFILE}" && "$(tar -tzf ${PHPEXT_LIBMEMCACHEDLI
         wget ${WGETOPT} --progress=bar "${PHPEXT_LIBMEMCACHEDLINK}" --tries=3
 ERROR=$?
   if [[ "$ERROR" != '0' ]]; then
+  rm -f "${PHPEXT_LIBMEMCACHEDLINKFILE}"
+  if [[ "$LIBMEMCACHED_YUM" = [yY] ]]; then
+    # source tarball is only compiled when LIBMEMCACHED_YUM='n'
+    cecho "Warning: ${PHPEXT_LIBMEMCACHEDLINKFILE} download failed, not needed with LIBMEMCACHED_YUM='y', continuing" $boldyellow
+    return 0
+  fi
   cecho "Error: ${PHPEXT_LIBMEMCACHEDLINKFILE} download failed." $boldgreen
-checklogdetails
-  exit 1
+  cecho "trying local mirror download..." $boldgreen
+  libmemcachedlocaltarball
+  return 0
 else 
          cecho "Download done." $boldyellow
 #echo ""
