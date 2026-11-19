@@ -29,6 +29,7 @@ CONFIGSCANBASE='/etc/centminmod'
 CENTMINLOGDIR='/root/centminlogs'
 SSHLOGIN_KERNELCHECK='n'
 DMOTD_CVECHECK='y'           # cmsec CVE detection (also gate for `cmsec` subcommand)
+DMOTD_PHPCHECK='y'           # new PHP version available check ('n' disables)
 DMOTD_CVECHECK_SUPPRESS=''   # comma-separated CVE IDs to suppress
 FORCE_IPVFOUR='y' # curl/wget commands through script force IPv4
 
@@ -330,7 +331,8 @@ get_latest_php_version() {
       wget -q https://github.com/centminmod/get-php-versions/raw/master/get-php-ver.sh -O /usr/local/bin/getphpver
       chmod +x /usr/local/bin/getphpver
   fi
-  if [[ ! "$(grep '83' /usr/local/bin/getphpver)" ]]; then
+  # re-download until getphpver has the empty-cache fix (refresh_versions)
+  if ! grep -q 'refresh_versions' /usr/local/bin/getphpver 2>/dev/null; then
       wget -q https://github.com/centminmod/get-php-versions/raw/master/get-php-ver.sh -O /usr/local/bin/getphpver
       chmod +x /usr/local/bin/getphpver
   fi
