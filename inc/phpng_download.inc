@@ -1,9 +1,10 @@
 ########################################################################
 phpng_download() {
-  if [[ "$(echo $PHPMU_ALPHAVER | cut -c1-10)" = '8.6.0alpha' || "$(echo $PHPMU_ALPHAVER | cut -c1-9)" = '8.6.0beta' || "$(echo $PHPMU_ALPHAVER | cut -c1-7)" = '8.6.0RC'  ]]; then
+  if [[ "$(echo $PHPMU_ALPHAVER | cut -c1-10)" = '8.7.0alpha' || "$(echo $PHPMU_ALPHAVER | cut -c1-9)" = '8.7.0beta' || "$(echo $PHPMU_ALPHAVER | cut -c1-7)" = '8.7.0RC'  ]]; then
     PHPNG_YES='y'
     PHPNGVER=$PHPMU_ALPHAVER
     # curl check as download url keeps changing between releases
+    # PHP 8.6 release manager dirs; replace with the PHP 8.7 release managers' dirs once elected
     REMIURL='https://downloads.php.net/~svpernova09/'
     curl -${ipv_forceopt}Is -o /dev/null -w '%{http_code}\n' --connect-timeout 30 --max-time 30 "${REMIURL}/php-${PHPNGVER}.tar.xz" | grep '^200$'
     REMIURL_CURLCHECK=$?
@@ -196,13 +197,13 @@ phpng_download() {
         echo ""
       fi    
 ####################################################################    
-  elif [[ "$PHPMUVER" = 'NGDEBUG' || "$PHPMUVER" = '5.7' || "$PHPMUVER" = '8.6' ]] && [[ "$(echo $PHPMU_ALPHAVER | cut -c1-10)" != '7.0.0alpha' || "$(echo $PHPMU_ALPHAVER | cut -c1-9)" != '7.0.0beta' || "$(echo $PHPMU_ALPHAVER | cut -c1-7)" != '7.0.0RC' ]]; then
+  elif [[ "$PHPMUVER" = 'NGDEBUG' || "$PHPMUVER" = '5.7' || "$PHPMUVER" = '8.7' ]] && [[ "$(echo $PHPMU_ALPHAVER | cut -c1-10)" != '7.0.0alpha' || "$(echo $PHPMU_ALPHAVER | cut -c1-9)" != '7.0.0beta' || "$(echo $PHPMU_ALPHAVER | cut -c1-7)" != '7.0.0RC' ]]; then
     if [[ "$PHPMUVER" = 'NGDEBUG' ]]; then
       PHPNGVER='NGDEBUG'
     elif [[ "$PHPMUVER" = '5.7' ]]; then
       PHPNGVER='5.7.0'
-    elif [[ "$PHPMUVER" = '8.6' ]]; then
-      PHPNGVER='8.6.0'
+    elif [[ "$PHPMUVER" = '8.7' ]]; then
+      PHPNGVER='8.7.0'
     fi
     PHPNG_YES='y'
     cecho "Downloading PHP $PHPMUVER from https://git.php.net/repository/php-src.git" $boldyellow
