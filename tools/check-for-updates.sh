@@ -387,12 +387,12 @@ ngxver_checker() {
 # Function to retrieve the latest PHP version
 get_latest_php_version() {
   local getphpver_tmp
-  # (re)download until getphpver has the empty-cache fix (refresh_versions).
+  # (re)download until getphpver has the complete tag list fix (old_count).
   # Short timeouts and no package installs, so a slow network cannot hold up
   # the SSH login, and a failed download never replaces a working copy.
-  if ! grep -q 'refresh_versions' /usr/local/bin/getphpver 2>/dev/null; then
+  if ! grep -q 'old_count' /usr/local/bin/getphpver 2>/dev/null; then
     getphpver_tmp=$(mktemp /usr/local/bin/.getphpver.XXXXXX) || return 0
-    if wget -q -T 10 -t 1 https://github.com/centminmod/get-php-versions/raw/master/get-php-ver.sh -O "$getphpver_tmp" && grep -q 'refresh_versions' "$getphpver_tmp"; then
+    if wget -q -T 10 -t 1 https://github.com/centminmod/get-php-versions/raw/master/get-php-ver.sh -O "$getphpver_tmp" && grep -q 'old_count' "$getphpver_tmp"; then
       chmod 0755 "$getphpver_tmp" && mv -f "$getphpver_tmp" /usr/local/bin/getphpver
     else
       rm -f "$getphpver_tmp"
@@ -400,7 +400,7 @@ get_latest_php_version() {
   fi
   [ -x /usr/local/bin/getphpver ] || return 0
   if [[ "$DMOTD_PHPCHECK_DEBUG" = [yY] ]]; then
-      LATEST_PHPVERS=$(bash -x getphpver "$(php-config --version | awk -F '.' '{print $1$2}')" 2>"${CENTMINLOGDIR}/cmm-check-for-updates-phpver-check-debug_${DT}.log")
+      LATEST_PHPVERS=$(timeout 20 bash -x getphpver "$(php-config --version | awk -F '.' '{print $1$2}')" 2>"${CENTMINLOGDIR}/cmm-check-for-updates-phpver-check-debug_${DT}.log")
   else
     LATEST_PHPVERS=$(timeout 20 getphpver "$(php-config --version | awk -F '.' '{print $1$2}')")
   fi
