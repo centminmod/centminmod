@@ -650,22 +650,23 @@ ngxver_checker() {
 
 # Function to retrieve the latest PHP version
 get_latest_php_version() {
-  if [ ! -f /usr/local/bin/getphpver ]; then
-      wget -q https://github.com/centminmod/get-php-versions/raw/master/get-php-ver.sh -O /usr/local/bin/getphpver
-      chmod +x /usr/local/bin/getphpver
-  fi
-  # re-download until getphpver has the empty-cache fix (refresh_versions)
+  local getphpver_tmp
+  # (re)download until getphpver has the empty-cache fix (refresh_versions).
+  # Short timeouts and no package installs, so a slow network cannot hold up
+  # the SSH login, and a failed download never replaces a working copy.
   if ! grep -q 'refresh_versions' /usr/local/bin/getphpver 2>/dev/null; then
-      wget -q https://github.com/centminmod/get-php-versions/raw/master/get-php-ver.sh -O /usr/local/bin/getphpver
-      chmod +x /usr/local/bin/getphpver
+    getphpver_tmp=$(mktemp /usr/local/bin/.getphpver.XXXXXX) || return 0
+    if wget -q -T 10 -t 1 https://github.com/centminmod/get-php-versions/raw/master/get-php-ver.sh -O "$getphpver_tmp" && grep -q 'refresh_versions' "$getphpver_tmp"; then
+      chmod 0755 "$getphpver_tmp" && mv -f "$getphpver_tmp" /usr/local/bin/getphpver
+    else
+      rm -f "$getphpver_tmp"
+    fi
   fi
-  if [ ! -f /usr/bin/jq ]; then
-    yum -q -y install jq
-  fi
+  [ -x /usr/local/bin/getphpver ] || return 0
   if [[ "$DMOTD_PHPCHECK_DEBUG" = [yY] ]]; then
       LATEST_PHPVERS=$(bash -x getphpver "$(php-config --version | awk -F '.' '{print $1$2}')" 2>"${CENTMINLOGDIR}/cmm-login-phpver-check-debug_${DT}.log")
   else
-    LATEST_PHPVERS=$(getphpver "$(php-config --version | awk -F '.' '{print $1$2}')")
+    LATEST_PHPVERS=$(timeout 20 getphpver "$(php-config --version | awk -F '.' '{print $1$2}')")
   fi
   echo "$LATEST_PHPVERS"
 }
@@ -685,7 +686,7 @@ phpver_checker() {
       PHPEXTSION_CHECK='gz'
     fi
     IS_PHPTAR_AVAIL=''
-    [[ -n "$LATEST_PHPVERS" ]] && IS_PHPTAR_AVAIL=$(curl -sI${ipv_forceopt} --connect-timeout 10 "https://www.php.net/distributions/php-${LATEST_PHPVERS}.tar.${PHPEXTSION_CHECK}" | head -n1 | grep -o 200)
+    [[ -n "$LATEST_PHPVERS" ]] && IS_PHPTAR_AVAIL=$(curl -sI${ipv_forceopt} --connect-timeout 10 --max-time 15 "https://www.php.net/distributions/php-${LATEST_PHPVERS}.tar.${PHPEXTSION_CHECK}" | head -n1 | grep -o 200)
     # only a newer release: the cache can hold another branch's or an older version
     if [[ "$CURRENT_PHPVERS" != "$LATEST_PHPVERS" && "$(printf '%s\n' "$CURRENT_PHPVERS" "$LATEST_PHPVERS" | sort -V | tail -n1)" = "$LATEST_PHPVERS" ]] && [[ "$IS_PHPTAR_AVAIL" -eq '200' ]]; then
       if [[ "$_DMOTD_COMPACT_EFFECTIVE" = [yY] && "$ENABLEMOTD_PHPVERCOMPACT" != [nN] ]]; then
