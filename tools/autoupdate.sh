@@ -2033,7 +2033,8 @@ au_cmupdate() {
     au_pending cmupdate "${CM_INSTALLDIR} is not a git checkout after cmupdate"
     return 2
   fi
-  # cmupdate does not pass git_sync's status on: its log says whether it failed
+  # cmupdate exits 2 when git_sync fails (copies from before 19 Nov 2026
+  # always exit 0), and its log says whether it failed
   # (the git_sync messages matched here come from inc/git_sync.inc)
   failed=n
   # anchored: cmupdate also prints the latest commit subject, which may quote them

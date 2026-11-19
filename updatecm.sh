@@ -63,9 +63,17 @@ update() {
   fi
   echo
   echo "-------------------------------------"
-  echo "Updated Centmin Mod code"
+  if [ "$_rc" = 2 ]; then
+    echo "Centmin Mod code update failed, see the messages above"
+  else
+    echo "Updated Centmin Mod code"
+  fi
   echo "-------------------------------------"
   echo
+  # a failed git sync makes updatecm.sh exit 2
+  if [ "$_rc" = 2 ]; then
+    return 2
+  fi
 }
 
 # don't change the code under an unattended tools/autoupdate.sh build
@@ -78,9 +86,13 @@ starttime=$(TZ=UTC date +%s.%N)
 {
 update
 } 2>&1 | tee "${CENTMINLOGDIR}/updatecm_${DT}.log"
+updatecm_rc=${PIPESTATUS[0]}
 
 endtime=$(TZ=UTC date +%s.%N)
 
 INSTALLTIME=$(echo "scale=2;$endtime - $starttime"|bc )
 echo "" >> "${CENTMINLOGDIR}/updatecm_${DT}.log"
 echo "Total updatecm.sh Time: $INSTALLTIME seconds" >> "${CENTMINLOGDIR}/updatecm_${DT}.log"
+if [ "$updatecm_rc" = 2 ]; then
+  exit 2
+fi
