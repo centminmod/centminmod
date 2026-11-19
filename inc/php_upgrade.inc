@@ -467,11 +467,18 @@ else
     
     # Check if the entered version is in the array
     if [[ -n ${php_versions[$phpver]} ]]; then
-        # Get full PHP version
-        phpver=$(getphpver ${php_versions[$phpver]})
-        echo
-        echo "Enter full PHP version next time i.e. $phpver"
-        echo "Setting upgrade PHP version as $phpver"
+        # Get full PHP version; use it only if the lookup returned X.Y.Z
+        # (an empty or failed lookup otherwise replaced the entered version with "")
+        phpver_full=$(getphpver ${php_versions[$phpver]})
+        if [[ "$phpver_full" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            phpver="$phpver_full"
+            echo
+            echo "Enter full PHP version next time i.e. $phpver"
+            echo "Setting upgrade PHP version as $phpver"
+        else
+            echo
+            echo "could not look up the latest PHP $phpver release, enter the full version i.e. ${phpver}.x"
+        fi
     fi
     PHPMUVER=$(echo "$phpver" | cut -d . -f1,2)
     echo
