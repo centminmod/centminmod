@@ -2758,7 +2758,7 @@ ERROR=$?
     if [[ "$ERROR" != '0' ]]; then
     cecho "Error: ${PHPEXT_MONGODBLINKFILE} local download failed." $boldgreen
 checklogdetails
-    exit 1
+    return 1
 else 
          cecho "Download local done." $boldyellow
 #echo ""
@@ -2770,7 +2770,7 @@ ERROR=$?
     if [[ "$ERROR" != '0' ]]; then
     cecho "Error: ${PHPEXT_MONGODBLINKFILE} local extraction failed." $boldgreen
 checklogdetails
-    exit 1
+    return 1
 else 
          cecho "${PHPEXT_MONGODBLINKFILE} local valid file." $boldyellow
 echo ""
@@ -2830,8 +2830,9 @@ if [[ -s "${PHPEXT_MONGODBLINKFILE}" && "$(tar -tzf ${PHPEXT_MONGODBLINKFILE} >/
 ERROR=$?
     if [[ "$ERROR" != '0' ]]; then
     cecho "Error: ${PHPEXT_MONGODBLINKFILE} download failed." $boldgreen
-checklogdetails
-    exit 1
+    cecho "trying local mirror download..." $boldgreen
+    mongodbphplocaltarball
+    return $?
 else 
          cecho "Download done." $boldyellow
 #echo ""
@@ -2844,8 +2845,7 @@ ERROR=$?
     cecho "Error: ${PHPEXT_MONGODBLINKFILE} extraction failed." $boldgreen
     cecho "trying local mirror download..." $boldgreen
     mongodbphplocaltarball
-# checklogdetails
-#   exit #$ERROR
+    return $?
 else 
          cecho "${PHPEXT_MONGODBLINKFILE} valid file." $boldyellow
 echo ""
@@ -2881,7 +2881,7 @@ swoolephplocaltarball() {
     fi
 
     cd "$DIR_TMP"
-    rm -rf mongo*
+    rm -rf swoole*
 
         cecho "Download local ${PHPEXT_SWOOLELINKFILE} ..." $boldyellow
 if [[ -s "${PHPEXT_SWOOLELINKFILE}" && "$(tar -tzf ${PHPEXT_SWOOLELINKFILE} >/dev/null 2>&1; echo $?)" -eq '0' ]]; then
@@ -2894,7 +2894,7 @@ ERROR=$?
     if [[ "$ERROR" != '0' ]]; then
     cecho "Error: ${PHPEXT_SWOOLELINKFILE} local download failed." $boldgreen
 checklogdetails
-    exit 1
+    return 1
 else 
          cecho "Download local done." $boldyellow
 #echo ""
@@ -2906,7 +2906,7 @@ ERROR=$?
     if [[ "$ERROR" != '0' ]]; then
     cecho "Error: ${PHPEXT_SWOOLELINKFILE} local extraction failed." $boldgreen
 checklogdetails
-    exit 1
+    return 1
 else 
          cecho "${PHPEXT_SWOOLELINKFILE} local valid file." $boldyellow
 echo ""
@@ -2953,8 +2953,9 @@ if [[ -s "${PHPEXT_SWOOLELINKFILE}" && "$(tar -tzf ${PHPEXT_SWOOLELINKFILE} >/de
 ERROR=$?
     if [[ "$ERROR" != '0' ]]; then
     cecho "Error: ${PHPEXT_SWOOLELINKFILE} download failed." $boldgreen
-checklogdetails
-    exit 1
+    cecho "trying local mirror download..." $boldgreen
+    swoolephplocaltarball
+    return $?
 else 
          cecho "Download done." $boldyellow
 #echo ""
@@ -2967,8 +2968,7 @@ ERROR=$?
     cecho "Error: ${PHPEXT_SWOOLELINKFILE} extraction failed." $boldgreen
     cecho "trying local mirror download..." $boldgreen
     swoolephplocaltarball
-# checklogdetails
-#   exit #$ERROR
+    return $?
 else 
          cecho "${PHPEXT_SWOOLELINKFILE} valid file." $boldyellow
 echo ""

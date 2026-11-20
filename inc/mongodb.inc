@@ -71,7 +71,7 @@ if [[ "$PHPMONGODB" = [yY] ]]; then
         echo "cd $DIR_TMP"
         cd "$DIR_TMP"
     #tar xvzf ${PHPEXT_MONGODBLINKFILE}
-    cd "${DIR_TMP}/mongodb-${MONGODBPHP_VER}"
+    cd "${DIR_TMP}/mongodb-${MONGODBPHP_VER}" || return $?
     if [[ "$INITIALINSTALL" != [yY] ]]; then
         make clean
     fi
