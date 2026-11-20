@@ -152,7 +152,7 @@ axelsetup() {
         if [[ "$ERROR" != '0' ]]; then
         cecho "Error: rpmforge-release-0.5.3-1.el5.rf.${ARCH}.rpm download failed." $boldgreen
       FAILRPMFORGE='y'
-      checklogdetails
+      checklogdetails 'Continuing script...'
         # exit $ERROR
       else 
               cecho "Download done." $boldyellow
