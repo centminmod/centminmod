@@ -170,6 +170,13 @@ if [[ -f "${CONFIGSCANDIR}/ioncube.ini" ]]; then
   rm -rf ${CONFIGSCANDIR}/ioncube.ini
 fi
 
+if [ ! -f "${PHPEXTDIRD}/ioncube.so" ]; then
+  # no ionCube loader for this PHP version (e.g. PHP 8.5/8.6), so do not
+  # point PHP at a loader that does not exist
+  echo "no ionCube loader installed for PHP ${ICPHPVER}, ${CONFIGSCANDIR}/ioncube.ini not created"
+  exit
+fi
+
 touch ${CONFIGSCANDIR}/ioncube.ini
 
 cat > "${CONFIGSCANDIR}/ioncube.ini" <<EOF
