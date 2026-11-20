@@ -262,6 +262,95 @@ php_ext_so_missing() {
 }
 
 ########################################################################
+# Last step of menu 5, after every extension build: disable any ini whose
+# extension= or zend_extension= file is missing, so PHP never logs "Unable to
+# load dynamic library" for an extension that could not be built for this PHP
+# (swoole or memcache on PHP 8.6, ionCube without a loader). Runs on major
+# upgrades too, where the orphan repair above is skipped. The ini is renamed to
+# .ini.missing-so so its settings are kept, and php_ext_missing_so_ini_restore
+# puts it back at the start of the next menu 5 run so the build is retried.
+# OPcache is skipped: PHP 8.5+ builds it in and has no opcache.so.
+php_ext_orphan_ini_disable() {
+  local extdir ini so path missing
+  extdir=$(php_extension_dir) || return 0
+  [ -d "$extdir" ] || return 0
+  for ini in "${CONFIGSCANDIR}"/*.ini; do
+    [ -f "$ini" ] || continue
+    missing=''
+    while IFS= read -r so || [ -n "$so" ]; do
+      [ -n "$so" ] || continue
+      case "${so##*/}" in opcache|opcache.so) continue ;; esac
+      if [[ "$so" = /* ]]; then
+        path="$so"
+      else
+        path="${extdir}/${so}"
+        [[ "$path" = *.so ]] || path="${path}.so"
+      fi
+      [ -f "$path" ] || missing="${missing} ${so}"
+    done < <(sed -nE "s/^[[:space:]]*(zend_)?extension[[:space:]]*=[[:space:]]*[\"']?([^\"';[:space:]]+).*/\2/p" "$ini")
+    if [ -n "$missing" ]; then
+      cecho "disabling ${ini} (missing:${missing}), renamed to ${ini##*/}.missing-so" $boldyellow
+      mv -f "$ini" "${ini}.missing-so"
+    fi
+  done
+}
+
+# Start of menu 5: restore inis the last run's php_ext_orphan_ini_disable set
+# aside, so extension detection sees them again and retries their builds
+php_ext_missing_so_ini_restore() {
+  local ini
+  for ini in "${CONFIGSCANDIR}"/*.ini.missing-so; do
+    [ -f "$ini" ] || continue
+    [ -e "${ini%.missing-so}" ] && continue
+    echo "restoring ${ini%.missing-so} to retry its build"
+    mv -f "$ini" "${ini%.missing-so}"
+  done
+}
+
+########################################################################
+# PHP 8.6 upgrade notes for menu 5, shown only when moving from PHP < 8.6 to
+# 8.6+. 'pre' runs before the build, while the old PHP still answers php -m,
+# and records what will be lost; 'post' repeats the notes at the end so they
+# are not lost in the build output.
+php86_upgrade_notice() {
+  local ext loaded
+  if [[ "$1" = 'pre' ]]; then
+    PHP86_NOTICE='n'
+    PHP86_NOTICE_EXTS=''
+    [[ "$PHPMUVER" =~ ^([0-9]+)\.([0-9]+)$ ]] || return 0
+    (( BASH_REMATCH[1] * 100 + BASH_REMATCH[2] >= 806 )) || return 0
+    [[ "$(/usr/local/bin/php-config --vernum 2>/dev/null)" =~ ^[0-9]+$ ]] || return 0
+    [[ "$(/usr/local/bin/php-config --vernum)" -lt 80600 ]] || return 0
+    PHP86_NOTICE='y'
+    loaded=$(php -m 2>/dev/null)
+    for ext in memcache mcrypt swoole imap pspell 'ionCube Loader'; do
+      grep -qixF "$ext" <<< "$loaded" && PHP86_NOTICE_EXTS="${PHP86_NOTICE_EXTS:+${PHP86_NOTICE_EXTS}, }${ext}"
+    done
+  fi
+  [[ "$PHP86_NOTICE" = 'y' ]] || return 0
+  echo
+  cecho "-------------------------------------------------------------------" $boldyellow
+  cecho "PHP 8.6 upgrade notes" $boldyellow
+  if [[ -n "$PHP86_NOTICE_EXTS" ]]; then
+    cecho "* Not available on PHP 8.6, so not loaded after this upgrade: ${PHP86_NOTICE_EXTS}" $boldyellow
+    cecho "  memcache, mcrypt, swoole and ionCube have no PHP 8.6 release yet;" $boldyellow
+    cecho "  imap and pspell left PHP core in PHP 8.4" $boldyellow
+  fi
+  cecho "* PHP 8.6 php.ini defaults: session.use_strict_mode=1, session.cookie_httponly=1" $boldyellow
+  cecho "  and session.cookie_samesite=Lax. Apps that need sessions on cross-site POST" $boldyellow
+  cecho "  returns (payment gateways, SSO) may need overrides in a separate file such as" $boldyellow
+  cecho "  ${CONFIGSCANDIR}/zz-session.ini, which menu 5 does not overwrite" $boldyellow
+  if [[ "$PHPMONGODB" = [yY] ]]; then
+    cecho "* mongodb PHP extension moves to ${MONGODBPHP_EIGHTSIX_VER} on PHP 8.6 (2.x API)" $boldyellow
+  fi
+  if [[ "$PHP_OPCACHE_JIT" = [yY] ]]; then
+    cecho "* PHP_OPCACHE_JIT=y: PHP 8.6.0 has OPcache JIT bugs whose fixes are due in PHP 8.6.1" $boldyellow
+  fi
+  cecho "-------------------------------------------------------------------" $boldyellow
+  echo
+}
+
+########################################################################
 autodetectinstallextensions() {
 
 PHPEXTDIR_AUTODETECT=$(php_extension_dir)
@@ -756,6 +845,8 @@ PHPMU_ALPHAVER=$(echo "$phpver")
 
     cd "${DIR_TMP}/php-${phpver}" || { cmm_php_fatal "php-${phpver} source dir missing at compile phase"; exit 1; }
 
+    php86_upgrade_notice pre
+    php_ext_missing_so_ini_restore
     autodetectextensions
     zopcacheupgrade
     #addmysql_legacy
@@ -1676,6 +1767,7 @@ fi
 
 fileinfo_standalone || return $?
 php_timezonedb_optional
+php_ext_orphan_ini_disable
 run_after_php_upgrade
 
 # set php-fpm alias log inspection shotcuts
@@ -1855,6 +1947,7 @@ if [[ "$PHPSEVEN_CHECKVER" = '0' ]]; then
     cecho "then restart PHP-FPM again..." $boldyellow
     echo
 fi
+php86_upgrade_notice post
 # timezonedb php extension not compatible with PHP 5.6
 if [[ "$PHPMUVER" = '5.6' && -f "${CONFIGSCANDIR}/timezonedb.ini" ]]; then
     check_timezonedb_installed=$(php -m 2>&1 | grep -v 'Unable to load dynamic library' | grep -o timezonedb)
