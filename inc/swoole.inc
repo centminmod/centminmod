@@ -224,6 +224,24 @@ elif [[ "$PHPMUVER" = '8.5' ]]; then
     PHPEXT_SWOOLELINKLOCAL="${LOCALCENTMINMOD_MIRROR}/centminmodparts/swoole/${PHPEXT_SWOOLELINKFILE}"
 fi
 
+# No swoole release builds on PHP 8.6 yet (6.2.x, 6.3.0RC2 and git master stop
+# with #error at PHP_VERSION_ID 80600), so skip it at/above PHPSWOOLE_MAXVERNUM
+# and drop a swoole.ini whose swoole.so is gone, before the build can fail
+local swoole_vernum swoole_extdir
+swoole_vernum=$(/usr/local/bin/php-config --vernum 2>/dev/null)
+[[ "$swoole_vernum" =~ ^[0-9]+$ ]] || swoole_vernum="${PHPVER_ID:-0}"
+if [[ "$swoole_vernum" -ge "${PHPSWOOLE_MAXVERNUM:-80600}" ]]; then
+    if [[ "$PHPSWOOLE" = [yY] ]]; then
+        cecho "skipping swoole PHP extension - no upstream support for this PHP yet" $boldyellow
+    fi
+    swoole_extdir=$(php_extension_dir)
+    if [ -f "${CONFIGSCANDIR}/swoole.ini" ] && [ -n "$swoole_extdir" ] && [ ! -f "${swoole_extdir}/swoole.so" ]; then
+        cecho "removing orphaned ${CONFIGSCANDIR}/swoole.ini" $boldyellow
+        rm -f "${CONFIGSCANDIR}/swoole.ini"
+    fi
+    return 0
+fi
+
 if [[ "$PHPSWOOLE" = [yY] ]]; then
     # Swoole 5.0.0-6.1.11 and 6.2.0-6.2.4 trust client-supplied multipart
     # Swoole-Upload-File markers, so a request can delete files with the worker's

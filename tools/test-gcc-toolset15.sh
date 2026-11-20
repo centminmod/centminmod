@@ -360,6 +360,8 @@ echo 'PASS: parent activation failures stop before later work, including timesta
   CENTOS_EIGHT=8 CENTOS_NINE=0 CENTOS_TEN=0 CENTOS_SEVEN=0
   enable_devtoolset() { return 7; }
   yum() { touch "$scratch/unexpected-install"; }
+  # The swoole PHP 8.6 cap would return before activation on a PHP 8.6 host.
+  PHPSWOOLE_MAXVERNUM=99999999
   for pair in 'memcached_install funct_memcachedreinstall' 'redis redisinstall' 'imagick_install imagickinstall' 'imagick_install libheif_install' 'mongodb mongodbinstall' 'swoole swooleinstall' 'mailparse mailparseinstall' 'geoip geoipphpext' 'geoip geoiptwolite_phpext_install' 'zip zip_php_install' 'zopfli zopfliinstall' 'zstd_nginx nginx_zstd_setup' 'compress_php php_ext_brotli' 'compress_php php_ext_lzfour' 'compress_php php_ext_lzf' 'compress_php php_ext_zopfli' 'compress_php php_ext_zstd'; do
     read -r file fn <<< "$pair"
     source "$repo/inc/$file.inc"

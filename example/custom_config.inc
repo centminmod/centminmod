@@ -401,6 +401,12 @@ PHPGEOIP_MAXVERNUM='80200'   # Related: PHPGEOIP_ALWAYS, NGINX_GEOIPTWOLITE
 # Raise it (e.g. '90000') once upstream supports PHP 8.6
 #PHPMCRYPT_MAXVERNUM='80600'
 
+# PHP swoole Extension Maximum PHP Version
+# Skip the swoole PHP extension at/above this php-config --vernum
+# swoole 6.2.x, 6.3.0RC2 and its git master stop the build with #error on PHP 8.6
+# Raise it (e.g. '90000') once upstream supports PHP 8.6
+#PHPSWOOLE_MAXVERNUM='80600'
+
 # PHP_SRC_FAILFAST='n' disables only the pre-yuminstall PHP mirror preflight abort
 # PHP source tarball and extraction validation always aborts regardless
 # PHP_TARBALL_MINBYTES is the PHP source tarball size floor in bytes which rejects
