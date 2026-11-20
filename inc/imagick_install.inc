@@ -700,7 +700,7 @@ elif [[ "$PHPMUVER" = '7.0' || "$PHPMUVER" = '7.1' || "$PHPMUVER" = '7.2' || "$P
     sar_call
 else
     echo "compiling imagick PHP extension for fallback nont PHP 7/8 ..."
-    cd imagick-${IMAGICKPHP_VER}
+    cd "imagick-${IMAGICKPHP_VER}" || return $?
     if [[ "$INITIALINSTALL" != [yY] ]]; then
         make clean
     fi
