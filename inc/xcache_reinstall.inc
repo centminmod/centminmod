@@ -4,7 +4,7 @@ funct_xcachereinstall() {
       cecho "* XCache developers no longer keep it up to date" $boldyellow
       cecho "* XCache does not perform better than Zend Opcache defaults" $boldyellow
       echo
-      exit 0
+      return 0
 }
 
 function funct_xcachereinstall_disabled {
