@@ -726,6 +726,10 @@ then
         fi
     fi
   
+  # start from a fresh source tree: php_patches skips any patch whose copy is
+  # left in an older php-${PHP_VERSION} tree, and tar would overwrite the
+  # patched sources, so a re-run would compile unpatched sources
+  rm -rf "${DIR_TMP:?}/php-${PHP_VERSION:?}"
   tar $PHPTAR_FLAGS "php-${PHP_VERSION}.tar.${PHPEXTSION}"
 
 ERROR=$?
@@ -751,6 +755,7 @@ ERROR=$?
           cecho "Download again done." $boldyellow
         fi
       fi
+      rm -rf "${DIR_TMP:?}/php-${PHP_VERSION:?}"
       tar $PHPTAR_FLAGS "php-${PHP_VERSION}.tar.${PHPEXTSION}"
     fi # error 2
 else 
