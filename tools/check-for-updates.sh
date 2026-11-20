@@ -481,7 +481,7 @@ needrestart_check() {
         elif echo "$output" | grep -q "Reboot is required to fully utilize these updates."; then
             # For EL8 & EL9
             modified_output=$(echo "$output" | sed 's/Reboot/Server Reboot/')
-            push_modified_output=$(echo "$modified_output" | sed -n '/Core libraries or services have been updated:/,/Server Reboot is required/p' | sed '1d;$d')
+            push_modified_output=$(echo "$modified_output" | sed -n '/Core libraries or services have been updated since boot-up:/,/Server Reboot is required/p' | sed '1d;$d')
             # Display the modified output and the additional message
             echo
             # cecho "===============================================================================" $boldgreen
