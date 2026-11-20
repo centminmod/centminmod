@@ -642,7 +642,7 @@ if [[ "$PHPMUVER" > 7 || "$PHPSEVEN_CHECKVER" = '0' ]] && [[ "$(echo $IMAGICKPHP
     make${MAKETHREADS}
     make install
 else    
-    cd imagick-${IMAGICKPHP_VER}
+    cd "imagick-${IMAGICKPHP_VER}" || return $?
     if [[ "$INITIALINSTALL" != [yY] ]]; then
         make clean
     fi

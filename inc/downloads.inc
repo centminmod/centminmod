@@ -2418,8 +2418,8 @@ if [[ -s "${PHPEXT_IMAGICKLINKFILE}" && "$(tar -tzf ${PHPEXT_IMAGICKLINKFILE} >/
 ERROR=$?
   if [[ "$ERROR" != '0' ]]; then
   cecho "Error: ${PHPEXT_IMAGICKLINKFILE} local download failed." $boldgreen
-checklogdetails
-  exit 1
+checklogdetails "Continuing without ${PHPEXT_IMAGICKLINKFILE}..."
+  return 1
 else 
          cecho "Download local done." $boldyellow
 #echo ""
@@ -2430,8 +2430,8 @@ tar xzf "${PHPEXT_IMAGICKLINKFILE}"
 ERROR=$?
   if [[ "$ERROR" != '0' ]]; then
   cecho "Error: ${PHPEXT_IMAGICKLINKFILE} local extraction failed." $boldgreen
-checklogdetails
-  exit 1
+checklogdetails "Continuing without ${PHPEXT_IMAGICKLINKFILE}..."
+  return 1
 else 
          cecho "${PHPEXT_IMAGICKLINKFILE} local valid file." $boldyellow
 echo ""
@@ -2462,8 +2462,9 @@ if [[ -s "${PHPEXT_IMAGICKLINKFILE}" && "$(tar -tzf ${PHPEXT_IMAGICKLINKFILE} >/
 ERROR=$?
   if [[ "$ERROR" != '0' ]]; then
   cecho "Error: ${PHPEXT_IMAGICKLINKFILE} download failed." $boldgreen
-checklogdetails
-  exit 1
+  cecho "trying local mirror download..." $boldgreen
+  imagickphpextlocaltarball
+  return $?
 else 
          cecho "Download done." $boldyellow
 #echo ""
@@ -2476,8 +2477,7 @@ ERROR=$?
   cecho "Error: ${PHPEXT_IMAGICKLINKFILE} extraction failed." $boldgreen
   cecho "trying local mirror download..." $boldgreen
   imagickphpextlocaltarball
-# checklogdetails
-#   exit #$ERROR
+  return $?
 else 
          cecho "${PHPEXT_IMAGICKLINKFILE} valid file." $boldyellow
 echo ""

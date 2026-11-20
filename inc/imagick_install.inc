@@ -510,7 +510,7 @@ elif [[ "$PHPMUVER" = '7.0' || "$PHPMUVER" = '7.1' || "$PHPMUVER" = '7.2' || "$P
     make install
     sar_call
 else    
-    cd imagick-${IMAGICKPHP_VER}
+    cd "imagick-${IMAGICKPHP_VER}" || return $?
     if [[ "$INITIALINSTALL" != [yY] ]]; then
         make clean
     fi
