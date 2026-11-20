@@ -897,7 +897,19 @@ needrestart_check() {
         fi
         if [[ "$_reboot_required" -eq 1 ]]; then
             if [[ "$_DMOTD_COMPACT_EFFECTIVE" = [yY] && "$ENABLEMOTD_NEEDRESTARTCOMPACT" != [nN] ]]; then
-                _dmotd_push_status warn " ! Reboot required — flush MySQL first: mysqladmin flush-tables && sleep 180"
+                # Name the updated packages: EL8+ lists "  * glibc", EL7
+                # "  kernel -> 3.10.0-...". kernel-* and dbus-* fold into kernel
+                # and dbus; kernel goes first. Names stop at 29 chars, then "+N",
+                # so the line stays within 79 columns with the fancy [!!] badge.
+                local _pkgs
+                _pkgs=$(echo "$output" | awk '
+                  /^  [^ ]/ { n = ($1 == "*") ? $2 : $1; sub(/^kernel-.*/, "kernel", n); sub(/^dbus-.*/, "dbus", n)
+                    if (!seen[n]++) { if (n == "kernel") k = 1; else o[++c] = n } }
+                  END { if (k) l[++t] = "kernel"; for (i = 1; i <= c; i++) l[++t] = o[i]
+                    for (i = 1; i <= t; i++) { x = (i > 1 ? s ", " : "") l[i]; if (i > 1 && length(x) > 29) break; s = x }
+                    if (i <= t) s = s " +" (t - i + 1); print s }')
+                _dmotd_push_status warn " ! Reboot pending — updated since boot: ${_pkgs:-core packages}"
+                _dmotd_push_status info "   before reboot: mysqladmin flush-tables && sleep 180"
             else
                 modified_output=$(echo "$output" | sed 's/Reboot/Server Reboot/')
                 echo
