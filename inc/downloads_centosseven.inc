@@ -28,7 +28,7 @@ if [[ "$ATRPMSREPO_DISABLE" = [nN] ]]; then
     if [[ "$ERROR" != '0' ]]; then
     cecho "Error: ${CENTOSSEVENATRPMSFILE} download failed." $boldgreen
   FAILATRPMS='y'
-  checklogdetails
+  checklogdetails 'Continuing script...'
     # exit #$ERROR
   else 
     cecho "Download done." $boldyellow
@@ -73,7 +73,7 @@ ERROR=$?
   if [[ "$ERROR" != '0' ]]; then
   cecho "Error: ${CENTOSSEVENAXIVOFILE} download failed." $boldgreen
 FAILAXIVO='y'
-checklogdetails
+checklogdetails 'Continuing script...'
   # exit #$ERROR
 else 
   cecho "Download done." $boldyellow
@@ -138,7 +138,7 @@ if [[ "$REMIREPO_DISABLE" = [nN] ]]; then
     if [[ "$ERROR" != '0' ]]; then
     cecho "Error: ${CENTOSSEVENREMIFILE} download failed." $boldgreen
   FAILREMI='y'
-  checklogdetails
+  checklogdetails 'Continuing script...'
     # exit #$ERROR
   else 
     cecho "Download done." $boldyellow
@@ -207,7 +207,7 @@ elif [ ! -f /etc/yum.repos.d/epel.repo ]; then
    if [[ "$ERROR" != '0' ]]; then
    cecho "Error: ${CENTOSSEVENEPELFILE} download failed." $boldgreen
   FAILEPEL='y'
-  checklogdetails
+  checklogdetails 'Continuing script...'
    # exit #$ERROR
   else 
    cecho "Download done." $boldyellow
@@ -259,7 +259,7 @@ if [[ "$RPMFORGEREPO_DISABLE" = [nN] ]]; then
     if [[ "$ERROR" != '0' ]]; then
     cecho "Error: ${CENTOSSEVENRPMFORGEFILE} download failed." $boldgreen
   FAILRPMFORGE='y'
-  checklogdetails
+  checklogdetails 'Continuing script...'
     #exit #$ERROR
   else 
           cecho "Download done." $boldyellow
@@ -292,7 +292,7 @@ ERROR=$?
   if [[ "$ERROR" != '0' ]]; then
   cecho "Error: ${CENTOSSEVENCENTALTFILE} download failed." $boldgreen
 FAILCENTALT='y'
-checklogdetails
+checklogdetails 'Continuing script...'
   # exit #$ERROR
 else 
          cecho "Download done." $boldyellow
@@ -328,7 +328,7 @@ ERROR=$?
   if [[ "$ERROR" != '0' ]]; then
   cecho "Error: ${CENTOSSEVENPERCONALRELEASEFILE} download failed." $boldgreen
 FAILPERCONA='y'
-checklogdetails
+checklogdetails 'Continuing script...'
   # exit #$ERROR
 else 
          cecho "Download done." $boldyellow

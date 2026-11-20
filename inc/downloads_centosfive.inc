@@ -17,7 +17,7 @@ elif [ ! -f /etc/yum.repos.d/epel.repo ]; then
 		if [[ "$ERROR" != '0' ]]; then
 		cecho "Error: ${CENTOSFIVEEPELFILE} download failed." $boldgreen
 	FAILEPEL='y'
-	checklogdetails
+	checklogdetails 'Continuing script...'
 		# exit #$ERROR
 	else 
 		cecho "Download done." $boldyellow
@@ -56,7 +56,7 @@ if [[ "$RPMFORGEREPO_DISABLE" = [nN] ]]; then
 		if [[ "$ERROR" != '0' ]]; then
 		cecho "Error: ${CENTOSFIVERPMFORGEFILE} download failed." $boldgreen
 	FAILRPMFORGE='y'
-	checklogdetails
+	checklogdetails 'Continuing script...'
 		#exit #$ERROR
 	else 
          	cecho "Download done." $boldyellow
@@ -88,7 +88,7 @@ ERROR=$?
 	if [[ "$ERROR" != '0' ]]; then
 	cecho "Error: ${CENTOSFIVECENTALTFILE} download failed." $boldgreen
 FAILCENTALT='y'
-checklogdetails
+checklogdetails 'Continuing script...'
 	# exit #$ERROR
 else 
          cecho "Download done." $boldyellow
@@ -110,7 +110,7 @@ ERROR=$?
 	if [[ "$ERROR" != '0' ]]; then
 	cecho "Error: ${CENTOSFIVEPERCONARELEASEFILE} download failed." $boldgreen
 FAILPERCONA='y'
-checklogdetails
+checklogdetails 'Continuing script...'
 	# exit #$ERROR
 else 
          cecho "Download done." $boldyellow
@@ -139,7 +139,7 @@ ERROR=$?
 	if [[ "$ERROR" != '0' ]]; then
 	cecho "Error: ${CENTOSFIVEVARNISHFILE} download failed." $boldgreen
 FAILVARNISH='y'
-checklogdetails
+checklogdetails 'Continuing script...'
 	# exit #$ERROR
 else 
          cecho "Download done." $boldyellow

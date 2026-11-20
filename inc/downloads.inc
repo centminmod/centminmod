@@ -32,7 +32,7 @@ checklogdetails() {
   echo " "
   cecho "----------------------------------------------------------------------------------" $boldyellow
   echo "check Centmin Mod log for details at /root/centminlogs/"
-  echo "Aborting script..."
+  echo "${1:-Aborting script...}"
   cecho "----------------------------------------------------------------------------------" $boldyellow
   #exit #$ERROR
 }
@@ -735,7 +735,7 @@ then
 ERROR=$?
   if [[ "$ERROR" != '0' ]]; then
     cecho "Error: php-${PHP_VERSION}.tar.${PHPEXTSION} extraction failed." $boldgreen
-    checklogdetails
+    checklogdetails 'Continuing script...'
     # exit #$ERROR
     if [[ "$ERROR" -eq '2' ]]; then
       PHP_MIRRORURL="https://www.php.net"
@@ -750,7 +750,7 @@ ERROR=$?
         ERROR=$?
         if [[ "$ERROR" != '0' ]]; then
           cecho "Error: php-${PHP_VERSION}.tar.${PHPEXTSION} download again failed." $boldgreen
-          checklogdetails
+          checklogdetails 'Continuing script...'
         else 
           cecho "Download again done." $boldyellow
         fi
@@ -2757,7 +2757,7 @@ if [[ -s "${PHPEXT_MONGODBLINKFILE}" && "$(tar -tzf ${PHPEXT_MONGODBLINKFILE} >/
 ERROR=$?
     if [[ "$ERROR" != '0' ]]; then
     cecho "Error: ${PHPEXT_MONGODBLINKFILE} local download failed." $boldgreen
-checklogdetails
+checklogdetails "Continuing without ${PHPEXT_MONGODBLINKFILE}..."
     return 1
 else 
          cecho "Download local done." $boldyellow
@@ -2769,7 +2769,7 @@ tar xzf "${PHPEXT_MONGODBLINKFILE}"
 ERROR=$?
     if [[ "$ERROR" != '0' ]]; then
     cecho "Error: ${PHPEXT_MONGODBLINKFILE} local extraction failed." $boldgreen
-checklogdetails
+checklogdetails "Continuing without ${PHPEXT_MONGODBLINKFILE}..."
     return 1
 else 
          cecho "${PHPEXT_MONGODBLINKFILE} local valid file." $boldyellow
@@ -2893,7 +2893,7 @@ if [[ -s "${PHPEXT_SWOOLELINKFILE}" && "$(tar -tzf ${PHPEXT_SWOOLELINKFILE} >/de
 ERROR=$?
     if [[ "$ERROR" != '0' ]]; then
     cecho "Error: ${PHPEXT_SWOOLELINKFILE} local download failed." $boldgreen
-checklogdetails
+checklogdetails "Continuing without ${PHPEXT_SWOOLELINKFILE}..."
     return 1
 else 
          cecho "Download local done." $boldyellow
@@ -2905,7 +2905,7 @@ tar xzf "${PHPEXT_SWOOLELINKFILE}"
 ERROR=$?
     if [[ "$ERROR" != '0' ]]; then
     cecho "Error: ${PHPEXT_SWOOLELINKFILE} local extraction failed." $boldgreen
-checklogdetails
+checklogdetails "Continuing without ${PHPEXT_SWOOLELINKFILE}..."
     return 1
 else 
          cecho "${PHPEXT_SWOOLELINKFILE} local valid file." $boldyellow
