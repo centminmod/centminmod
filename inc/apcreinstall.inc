@@ -3,7 +3,7 @@ funct_apcreinstall() {
       cecho "* APC Cache is no longer supported" $boldyellow
       cecho "* APC Cache does not perform better than Zend Opcache defaults" $boldyellow
       echo
-      exit 0
+      return 0
 }
 
 function funct_apcreinstall_disabled {

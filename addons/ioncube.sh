@@ -71,6 +71,14 @@ if [[ "$(uname -m)" = 'x86_64' ]]; then
   elif [[ "$(php-config --version | cut -d . -f1-2)" = '8.5' || "$(php-config --version | cut -d . -f1-2)" = '8.6' ]]; then
     echo "ioncube loader does not currently have PHP 8.5 or 8.6 support"
     echo "only PHP 8.1, 8.2, 8.3, 8.4 are supported"
+    # menu 5 points ioncube.ini at the new PHP's extension dir, where there is
+    # no loader, so disable it rather than leave PHP failing to load it
+    ioncube_ini='/etc/centminmod/php.d/ioncube.ini'
+    ioncube_so=$(sed -nE 's/^[[:space:]]*zend_extension[[:space:]]*=[[:space:]]*"?([^";[:space:]]+).*/\1/p' "$ioncube_ini" 2>/dev/null | head -n1)
+    if [[ -f "$ioncube_ini" && ! -f "$ioncube_so" ]]; then
+      mv -f "$ioncube_ini" "${ioncube_ini}.missing-so"
+      echo "disabled $ioncube_ini (loader ${ioncube_so:-unknown} missing), renamed to ioncube.ini.missing-so"
+    fi
     exit
   elif [[ "$(php-config --version | cut -d . -f1-2)" = '8.4' ]]; then
     rm -rf ioncube_loaders_lin_x86-64.tar.gz
