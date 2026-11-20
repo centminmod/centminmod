@@ -108,6 +108,18 @@ memcached_service_restart() {
   fi
 }
 
+# php-memcached needs --with-libmemcached-dir set to the prefix libmemcached
+# was installed to: YUM packages use /usr and a source build uses /usr/local.
+# Choose by where the headers are, not by which YUM repo files exist: the
+# EL8-EL10 packages come from the base, CRB or EPEL repo.
+memcached_libmemcached_dir() {
+  if [[ "$LIBMEMCACHED_YUM" = [yY] && -f /usr/include/libmemcached/memcached.h ]]; then
+    echo /usr
+  else
+    echo /usr/local
+  fi
+}
+
 funct_memcachedreinstall() {
    if [[ "$CLANG_MEMCACHED" = [yY] ]]; then
       enable_clang
@@ -560,16 +572,12 @@ if [[ "$PHPMUVER" > 7 || "$PHPSEVEN_CHECKVER" = '0' ]]; then
         make clean
     fi
     /usr/local/bin/phpize
-    if [[ "$LIBMEMCACHED_YUM" = [nN] ]]; then
-        CFLAGS="${COMPILER_CFLAGS} -fPIC -O2 -fstack-protector-strong -D_FORTIFY_SOURCE=2" CPPFLAGS="-D_FORTIFY_SOURCE=2" CXXFLAGS="-fPIC -O2" LDFLAGS="-Wl,-z,relro,-z,now -pie" ./configure --with-php-config=/usr/local/bin/php-config --enable-memcached-json --with-libmemcached-dir=/usr/local
-    elif [[ "$LIBMEMCACHED_YUM" = [yY] && -f /etc/yum.repos.d/remi.repo ]]; then
-        CFLAGS="${COMPILER_CFLAGS} -fPIC -O2 -fstack-protector-strong -D_FORTIFY_SOURCE=2" CPPFLAGS="-D_FORTIFY_SOURCE=2" CXXFLAGS="-fPIC -O2" LDFLAGS="-Wl,-z,relro,-z,now -pie" ./configure --with-php-config=/usr/local/bin/php-config --enable-memcached-json --with-libmemcached-dir=/usr
-    elif [ ! -f /etc/yum.repos.d/remi.repo ]; then
-        CFLAGS="${COMPILER_CFLAGS} -fPIC -O2 -fstack-protector-strong -D_FORTIFY_SOURCE=2" CPPFLAGS="-D_FORTIFY_SOURCE=2" CXXFLAGS="-fPIC -O2" LDFLAGS="-Wl,-z,relro,-z,now -pie" ./configure --with-php-config=/usr/local/bin/php-config --enable-memcached-json --with-libmemcached-dir=/usr/local
+    CFLAGS="${COMPILER_CFLAGS} -fPIC -O2 -fstack-protector-strong -D_FORTIFY_SOURCE=2" CPPFLAGS="-D_FORTIFY_SOURCE=2" CXXFLAGS="-fPIC -O2" LDFLAGS="-Wl,-z,relro,-z,now -pie" ./configure --with-php-config=/usr/local/bin/php-config --enable-memcached-json --with-libmemcached-dir="$(memcached_libmemcached_dir)"
+    if make${MAKETHREADS} && make install; then
+        cecho "memcached PHP extension installed" $boldgreen
+    else
+        cecho "memcached PHP extension build failed, see the output above" $boldyellow
     fi
-    make${MAKETHREADS}
-    make install
-    cecho "memcached PHP extension installed" $boldgreen
 else
     echo
     echo "compiling memcached PHP extension ${MEMCACHEDPHP_VER} ..."
@@ -582,16 +590,12 @@ else
         make clean
     fi
     /usr/local/bin/phpize
-    if [[ "$LIBMEMCACHED_YUM" = [nN] ]]; then
-        CFLAGS="${COMPILER_CFLAGS} -fPIC -O2 -fstack-protector-strong -D_FORTIFY_SOURCE=2" CPPFLAGS="-D_FORTIFY_SOURCE=2" CXXFLAGS="-fPIC -O2" LDFLAGS="-Wl,-z,relro,-z,now -pie" ./configure --with-php-config=/usr/local/bin/php-config --enable-memcached-json --with-libmemcached-dir=/usr/local
-    elif [[ "$LIBMEMCACHED_YUM" = [yY] && -f /etc/yum.repos.d/remi.repo ]]; then
-        CFLAGS="${COMPILER_CFLAGS} -fPIC -O2 -fstack-protector-strong -D_FORTIFY_SOURCE=2" CPPFLAGS="-D_FORTIFY_SOURCE=2" CXXFLAGS="-fPIC -O2" LDFLAGS="-Wl,-z,relro,-z,now -pie" ./configure --with-php-config=/usr/local/bin/php-config --enable-memcached-json --with-libmemcached-dir=/usr
-    elif [ ! -f /etc/yum.repos.d/remi.repo ]; then
-        CFLAGS="${COMPILER_CFLAGS} -fPIC -O2 -fstack-protector-strong -D_FORTIFY_SOURCE=2" CPPFLAGS="-D_FORTIFY_SOURCE=2" CXXFLAGS="-fPIC -O2" LDFLAGS="-Wl,-z,relro,-z,now -pie" ./configure --with-php-config=/usr/local/bin/php-config --enable-memcached-json --with-libmemcached-dir=/usr/local
+    CFLAGS="${COMPILER_CFLAGS} -fPIC -O2 -fstack-protector-strong -D_FORTIFY_SOURCE=2" CPPFLAGS="-D_FORTIFY_SOURCE=2" CXXFLAGS="-fPIC -O2" LDFLAGS="-Wl,-z,relro,-z,now -pie" ./configure --with-php-config=/usr/local/bin/php-config --enable-memcached-json --with-libmemcached-dir="$(memcached_libmemcached_dir)"
+    if make${MAKETHREADS} && make install; then
+        cecho "memcached PHP extension installed" $boldgreen
+    else
+        cecho "memcached PHP extension build failed, see the output above" $boldyellow
     fi
-    make${MAKETHREADS}
-    make install
-    cecho "memcached PHP extension installed" $boldgreen
 fi # php 7 or not
 
 #############################################
