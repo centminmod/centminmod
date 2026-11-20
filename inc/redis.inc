@@ -142,8 +142,19 @@ if [[ "$INITIALINSTALL" != [yY] || "$PHPREDIS_IGBINARY" = [yY] ]]; then
     checkigbinary || return $?
 fi
 
+# phpredis 6.3.0, the newest release, fails to build on PHP 8.6 (INI_INT/INI_STR
+# removed) and only the develop branch builds. Check the installed PHP so fresh
+# installs are covered too: PHPMUVER and REDIS_PHPCURRENTVER are unset there.
+local redis_php_vernum
+redis_php_vernum=$(/usr/local/bin/php-config --vernum 2>/dev/null)
+[[ "$redis_php_vernum" =~ ^[0-9]+$ ]] || redis_php_vernum="${PHPVER_ID:-0}"
+if [[ "$redis_php_vernum" -ge 80600 ]]; then
+    if [[ "$PHPREDIS_STABLE" = [yY] ]]; then
+        cecho "PHPREDIS_STABLE=y ignored: no phpredis release builds on PHP 8.6 yet, using the develop branch" $boldyellow
+    fi
+    REDISPHP_GIT='y'
 # Menu 5 can force Git before reaching the installer; honor the explicit release choice.
-if [[ "$PHPREDIS_STABLE" = [yY] ]]; then
+elif [[ "$PHPREDIS_STABLE" = [yY] ]]; then
     REDISPHP_GIT='n'
 fi
 checkredistar || return $?

@@ -30,7 +30,7 @@ DT=$(date +"%d%m%y-%H%M%S")
 branchname='141.00beta01'
 SCRIPT_MAJORVER='141'
 SCRIPT_MINORVER='00'
-SCRIPT_INCREMENTVER='478'
+SCRIPT_INCREMENTVER='479'
 SCRIPT_VERSIONSHORT="${branchname}"
 SCRIPT_VERSION="${SCRIPT_VERSIONSHORT}.b${SCRIPT_INCREMENTVER}"
 SCRIPT_DATE='16/08/25'
@@ -3565,7 +3565,7 @@ geoiptwolite_phpext_install || return $?
 
 if [[ "$PHPREDIS" = [yY] ]]; then
     echo "redisinstall"
-    redisinstall || return $?
+    php_ext_optional redis "$PHPREDIS" redisinstall || return $?
 fi
 
 if [[ "$REDIS_SERVER_INSTALL" = [yY] ]]; then
