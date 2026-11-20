@@ -77,7 +77,7 @@ if [[ "$CENTOS_TEN" = '10' ]]; then
     if [[ "$ERROR" != '0' ]]; then
       cecho "Error: EPEL repo install failed." $boldgreen
       FAILEPEL='y'
-      checklogdetails
+      checklogdetails 'Continuing script...'
     elif [[ "$ERROR" = '0' ]]; then
       yumpriorepel_ten
       echo

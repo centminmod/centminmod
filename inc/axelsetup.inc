@@ -57,7 +57,7 @@ return 0
 ERROR=$?
     if [[ "$ERROR" != '0' ]]; then
     cecho "Error: $AXEL_LINKFILE download failed." $boldgreen
-checklogdetails
+checklogdetails 'Continuing script...'
     #exit #$ERROR
 else 
          cecho "Download $AXEL_LINKFILE done." $boldyellow
@@ -75,7 +75,7 @@ tar xzf $AXEL_LINKFILE
 ERROR=$?
     if [[ "$ERROR" != '0' ]]; then
     cecho "Error: $AXEL_LINKFILE extraction failed." $boldgreen
-checklogdetails
+checklogdetails 'Continuing script...'
     #exit #$ERROR
 else 
          cecho "$AXEL_LINKFILE valid file." $boldyellow
@@ -152,7 +152,7 @@ axelsetup() {
         if [[ "$ERROR" != '0' ]]; then
         cecho "Error: rpmforge-release-0.5.3-1.el5.rf.${ARCH}.rpm download failed." $boldgreen
       FAILRPMFORGE='y'
-      checklogdetails
+      checklogdetails 'Continuing script...'
         # #exit $ERROR
       else 
               cecho "Download done." $boldyellow
@@ -182,7 +182,7 @@ axelsetup() {
       if [[ "$ERROR" != '0' ]]; then
       cecho "Error: axel-2.4-1.el5.rf.${ARCH}.rpm download failed." $boldgreen
     FAILEDAXELRPM='y'
-    checklogdetails
+    checklogdetails 'Continuing script...'
       #exit $ERROR
     else 
             cecho "Download done." $boldyellow
