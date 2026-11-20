@@ -660,6 +660,10 @@ fi
             fi
         fi
     
+        # start from a fresh source tree: php_patches skips any patch whose copy is
+        # left in an older php-${phpver} tree, and tar would overwrite the patched
+        # sources, so rebuilding the same version would compile unpatched sources
+        rm -rf "${DIR_TMP:?}/php-${phpver:?}"
         tar $PHPTAR_FLAGS "php-${phpver}.tar.${PHPEXTSION}"
     
         ERROR=$?
