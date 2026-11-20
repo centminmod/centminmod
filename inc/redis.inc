@@ -141,6 +141,16 @@ if [[ "$INITIALINSTALL" != [yY] || "$PHPREDIS_IGBINARY" = [yY] ]]; then
     checkigbinary
 fi
 
+# phpredis 6.3.0, the newest release, fails to build on PHP 8.6 (INI_INT/INI_STR
+# removed) and only the develop branch builds. Check the installed PHP so fresh
+# installs are covered too: PHPMUVER and REDIS_PHPCURRENTVER are unset there.
+local redis_php_vernum
+redis_php_vernum=$(/usr/local/bin/php-config --vernum 2>/dev/null)
+[[ "$redis_php_vernum" =~ ^[0-9]+$ ]] || redis_php_vernum="${PHPVER_ID:-0}"
+if [[ "$redis_php_vernum" -ge 80600 ]]; then
+    REDISPHP_GIT='y'
+fi
+
 checkredistar
 
 echo
@@ -185,7 +195,7 @@ if [[ "$REDIS_PHPCURRENTVER" = '8.6' || "$PHPMUVER" = '8.6' || "$REDIS_PHPCURREN
         fi
         if [ ! -d redis-develop ]; then
             time git clone -b develop "$PHPREDISGITLINK" redis-develop
-            git submodule update --init
+            git -C redis-develop submodule update --init
         fi
         cd redis-develop
         if [[ "$INITIALINSTALL" != [yY] ]]; then
@@ -365,7 +375,11 @@ REDISSOCHECK=`grep 'redis.so' /usr/local/lib/php.ini`
 REDISSOCHECKB=$(grep 'redis.so' ${CONFIGSCANDIR}/redis.ini)
 PHPEXTDIRD=$(php_extension_dir)
 
-if [[ -z "$REDISSOCHECK" || -z "$REDISSOCHECKB" ]]; then
+if [[ -n "$PHPEXTDIRD" && ! -f "${PHPEXTDIRD}/redis.so" ]]; then
+    # a failed build must not leave PHP trying to load a missing redis.so
+    cecho "redis PHP extension build failed: ${PHPEXTDIRD}/redis.so not found" $boldyellow
+    rm -f "${CONFIGSCANDIR}/redis.ini"
+elif [[ -z "$REDISSOCHECK" || -z "$REDISSOCHECKB" ]]; then
     #echo "" >> /usr/local/lib/php.ini
     echo "extension=redis.so" > ${CONFIGSCANDIR}/redis.ini
 else
