@@ -30,7 +30,7 @@ DT=$(date +"%d%m%y-%H%M%S")
 branchname='141.00beta01'
 SCRIPT_MAJORVER='141'
 SCRIPT_MINORVER='00'
-SCRIPT_INCREMENTVER='479'
+SCRIPT_INCREMENTVER='480'
 SCRIPT_VERSIONSHORT="${branchname}"
 SCRIPT_VERSION="${SCRIPT_VERSIONSHORT}.b${SCRIPT_INCREMENTVER}"
 SCRIPT_DATE='16/08/25'
@@ -877,6 +877,7 @@ PHP_TARBALL_MINBYTES='3000000'  # size floor; real php-8.x tarballs are 12-20MB
 PHPGEOIP_MAXVERNUM='80200'      # skip legacy geoip PHP ext at/above this php-config --vernum
 PHPMEMCACHE_MAXVERNUM='80600'   # skip memcache PHP ext (not memcached) at/above this php-config --vernum
 PHPMCRYPT_MAXVERNUM='80600'     # skip mcrypt PECL ext at/above this PHP version ID
+PHPSWOOLE_MAXVERNUM='80600'     # skip swoole PHP ext at/above this php-config --vernum
 PHP_EXTRA_MIRRORS=''            # space separated extra PHP mirror base URLs - the ONLY way to
                                 # add a custom mirror (phpgeolocation clobbers PHP_MIRRORURL)
 # PHP_MIRROR_LIST_OVERRIDE is a test-only hook (undocumented in custom_config):

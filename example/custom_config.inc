@@ -5461,6 +5461,12 @@
 # Raise it (e.g. '90000') once upstream supports PHP 8.6
 #PHPMCRYPT_MAXVERNUM='80600'
 
+# PHP swoole Extension Maximum PHP Version
+# Skip the swoole PHP extension at/above this php-config --vernum
+# swoole 6.2.x, 6.3.0RC2 and its git master stop the build with #error on PHP 8.6
+# Raise it (e.g. '90000') once upstream supports PHP 8.6
+#PHPSWOOLE_MAXVERNUM='80600'
+
 # PHP Extra Source Mirrors
 # Space separated extra PHP mirror base URLs added to the mirror list
 # The only way to add a custom mirror as phpgeolocation overwrites PHP_MIRRORURL
