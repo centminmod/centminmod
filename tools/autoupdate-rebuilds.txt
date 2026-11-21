@@ -33,3 +33,6 @@ php-7.3 2026-11-19T21:22:41Z PHP 8.2.36 security backports (CVE-2026-129289, CVE
 php-7.4 2026-11-19T21:22:41Z PHP 8.2.36 security backports (CVE-2026-129289, CVE-2026-115560, CVE-2026-129496, CVE-2026-126714 and 8 more)
 php-8.0 2026-11-19T21:22:41Z PHP 8.2.36 security backports (CVE-2026-129289, CVE-2026-115560, CVE-2026-129496, CVE-2026-126714 and 8 more)
 php-8.1 2026-11-19T21:22:41Z PHP 8.2.36 security backports (CVE-2026-129289, CVE-2026-115560, CVE-2026-129496, CVE-2026-126714 and 8 more)
+php-7.4 2026-11-21T10:39:43Z drop inapplicable CVE-2024-11235 ??= fix from PHP 8.2.36 security backports
+php-8.0 2026-11-21T10:39:43Z drop inapplicable CVE-2024-11235 ??= fix from PHP 8.2.36 security backports
+php-8.1 2026-11-21T10:39:44Z drop inapplicable CVE-2024-11235 ??= fix from PHP 8.2.36 security backports
