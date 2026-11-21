@@ -30,7 +30,7 @@ DT=$(date +"%d%m%y-%H%M%S")
 branchname='140.00beta01'
 SCRIPT_MAJORVER='140'
 SCRIPT_MINORVER='00'
-SCRIPT_INCREMENTVER='513'
+SCRIPT_INCREMENTVER='514'
 SCRIPT_VERSIONSHORT="${branchname}"
 SCRIPT_VERSION="${SCRIPT_VERSIONSHORT}.b${SCRIPT_INCREMENTVER}"
 SCRIPT_DATE='16/01/25'
@@ -1199,7 +1199,7 @@ SENDMAIL_INSTALL='n'         # Install Sendmail (and mailx) set to y and POSTFIX
 POSTFIX_INSTALL=y            # Install Postfix (and mailx) set to n and SENDMAIL_INSTALL=y for sendmail
 # Nginx
 NGINX_VERSION='1.31.9'             # Use this version of Nginx
-NGINX_ANGIE_VERSION='Angie-1.12.4' # Angie 1.12.0+ turns on 'resolver conf' (/etc/resolv.conf) by default, 'resolver off;' restores the old behaviour
+NGINX_ANGIE_VERSION='Angie-1.12.5' # Angie 1.12.0+ turns on 'resolver conf' (/etc/resolv.conf) by default, 'resolver off;' restores the old behaviour
 FREENGINX_VERSION='1.30.2'     # Maxim's Freenginx fork https://freenginx.org/en/download.html
 FREENGINX_INSTALL='n'          # Use Freenginx fork instead of official Nginx
 FREENGINX_BACKPORT_PATCHES='n' # Backport Freenginx fixes to official Nginx
