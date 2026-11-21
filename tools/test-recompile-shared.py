@@ -689,6 +689,25 @@ ensure_plugin() {{ return 0; }}
     assert 'baseos\n' in result.stdout
     assert 'anaconda\n' in result.stdout and 'AppStream\n' in result.stdout and 'BaseOS\n' in result.stdout
     run(lock_setup + '\n' + base_setup + '\nrpm() { echo AlmaLinux; }; awk() { return 73; }; base_repos', work, 73)
+    # AlmaLinux extras ships epel-release with the OS vendor (AlmaLinux) until
+    # EPEL's own build replaces it; its repos are never base. Other vendor
+    # repo files and unowned repo files are classified as before.
+    (repodir / 'epel.repo').write_text('[epel]\n[epel-testing]\n')
+    (repodir / 'epel-next.repo').write_text('[epel-next]\n')
+    (repodir / 'local.repo').write_text('[localrepo]\n')
+    owners = '''rpm() {
+  case "$4" in
+    */redhat-release) echo AlmaLinux ;;
+    */epel.repo) printf 'epel-release\\tAlmaLinux' ;;
+    */epel-next.repo) printf 'epel-next-release\\tAlmaLinux' ;;
+    */local.repo) echo "file $4 is not owned by any package"; return 1 ;;
+    *) printf 'almalinux-repos\\tAlmaLinux' ;;
+  esac
+}'''
+    result = run(lock_setup + '\n' + base_setup + '\n' + owners + '; base_repos', work)
+    assert 'baseos\n' in result.stdout and not re.search(r'^(epel|epel-testing|epel-next|localrepo)$', result.stdout, re.M), result.stdout
+    for name in ('epel.repo', 'epel-next.repo', 'local.repo'):
+        (repodir / name).unlink()
     seed_locks()
     run(collector_setup + '''
 rpm() { [[ "$1" = -qf ]] && { echo "file $4 is not owned by any package"; return 1; }; return 0; }
