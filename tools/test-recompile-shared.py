@@ -490,12 +490,44 @@ dnf() {
         assert ledger.read_text() == records('1.1') + tools and tools in lockfile.read_text(), before
         assert ('DNF_ARGS libavif libavif-devel libavif-tools' in result.stdout) == bool(before), before
         assert 'dnf update removed' not in result.stderr, before
+    # An installed sibling pinned outside the block (user, other menu option
+    # or a lost marker) keeps its whole family at the installed versions: dnf
+    # cannot update aom while libaom of the same source rpm stays pinned. The
+    # warning names the exact entries to delete; other families still update.
+    for pin in ('libavif-tools-0:0.5-1.*\n', '\n# Added lock on Fri Nov 20 01:02:03 2026\nlibavif-tools-0:0.11-1.*\n'):
+        seed_locks()
+        lockfile.write_text(lockfile.read_text() + pin)
+        result = run(sibling_setup + '\nTOOLS_BEFORE=y; do_update', work)
+        entry = pin.strip().splitlines()[-1]
+        assert 'DNF_ARGS' not in result.stdout and ledger.read_text() == records('0.11'), pin
+        assert lockfile.read_text().count('libavif-tools') == 1 and records('0.11') in lockfile.read_text(), pin
+        assert 'menu 5 cannot update libavif libavif-devel:' in result.stderr, result.stderr
+        assert f"dnf versionlock delete '{entry}'\n" in result.stderr, result.stderr
     seed_locks()
-    pinned = 'libavif-tools-0:0.5-1.*\n'
-    lockfile.write_text(pinned + lockfile.read_text())
+    run(sibling_setup + '\nOTHERFAM=y; write_block libavif libavif-devel libwebp', work)
+    lockfile.write_text(lockfile.read_text() + 'libavif-tools-0:0.5-1.*\n')
+    result = run(sibling_setup + '\nOTHERFAM=y TOOLS_BEFORE=y; do_update', work)
+    assert re.search(r'^DNF_ARGS \S+ update libwebp$', result.stdout, re.M), result.stdout
+    assert 'menu 5 cannot update libavif libavif-devel:' in result.stderr and 'libwebp' not in result.stderr
+    # A foreign pin on the named package itself blocks it the same way.
+    seed_locks()
+    lockfile.write_text(lockfile.read_text() + 'libavif-0:0.5-1.*\n')
     result = run(sibling_setup + '\nTOOLS_BEFORE=y; do_update', work)
-    assert ledger.read_text() == records('1.1') and lockfile.read_text().count('libavif-tools') == 1
-    assert 'DNF_ARGS libavif libavif-devel libavif-tools' not in result.stdout
+    assert 'DNF_ARGS' not in result.stdout and "delete 'libavif-0:0.5-1.*'\n" in result.stderr
+    assert ledger.read_text() == records('0.11') + 'libavif-tools-0:0.11-1.*\n'
+    # Exclusions and pins on siblings that are not installed block nothing.
+    for pin, before in (('!libavif-tools-0:1.1-1.*\n', 'y'), ('libavif-tools-0:0.5-1.*\n', '')):
+        seed_locks()
+        lockfile.write_text(lockfile.read_text() + pin)
+        result = run(sibling_setup + f'\nTOOLS_BEFORE={before}; do_update', work)
+        assert 'cannot update' not in result.stderr and 'DNF_ARGS' in result.stdout, pin
+        assert lockfile.read_text().count(pin) == 1, pin
+    # A failed family query stops before dnf runs and changes nothing.
+    seed_locks()
+    lockfile.write_text(lockfile.read_text() + 'libavif-tools-0:0.5-1.*\n')
+    before = lockfile.read_bytes(), ledger.read_bytes()
+    result = run(sibling_setup + '\nforeign_family_locks() { return 73; }; TOOLS_BEFORE=y; do_update', work, 73)
+    assert 'DNF_ARGS' not in result.stdout and (lockfile.read_bytes(), ledger.read_bytes()) == before
     # A sibling from a base repo or a local rpm file stays unlocked and out of
     # the update, as in do_lock; a local rpm the update replaced from epel is
     # locked.
@@ -682,8 +714,14 @@ rpm() { [[ "$2" = --provides ]] && { echo 'libavif.so.15()(64bit)'; return 0; };
         assert 'SONAME CHANGE' not in result.stdout and 'no PHP library locks' not in result.stdout
         assert (lockfile.read_bytes(), ledger.read_bytes()) == before
     result = run(status_setup + '\ndo_status', work)
-    assert 'SONAME CHANGE removes: libavif.so.15' in result.stdout
+    assert 'SONAME CHANGE removes: libavif.so.15' in result.stdout and 'cannot update' not in result.stdout
     run(status_setup + '\ndnf() { return 0; }; do_status', work)
+    # status names the foreign sibling pin that keeps menu 5 from updating.
+    lockfile.write_text(lockfile.read_text() + '\n# Added lock on Fri Nov 20 01:02:03 2026\nlibavif-tools-0:0.11-1.*\n')
+    result = run(status_setup + "\nrpm() { [[ \"$1\" = -qa ]] && { printf 'libavif.src.rpm\\tlibavif\\nlibavif.src.rpm\\tlibavif-devel\\nlibavif.src.rpm\\tlibavif-tools\\n'; return 0; }; "
+                 "[[ \"$2\" = --provides ]] && { echo 'libavif.so.15()(64bit)'; return 0; }; echo 0.11-1; }; do_status", work)
+    assert "menu 5 cannot update libavif libavif-devel: packages built from the same source rpm are version locked outside this script:\n  libavif-tools-0:0.11-1.*\n" in result.stdout, result.stdout
+    assert "dnf versionlock delete 'libavif-tools-0:0.11-1.*'\n" in result.stdout and 'held: libavif' in result.stdout
     full_lock_script = (REPO / 'tools/php-libs-versionlock.sh').read_text()
     dispatch = full_lock_script[full_lock_script.index('if [[ "$1" != \'check\''):]
     run(lock_setup + '\nrpm() { return 73; }; set -- lock\n' + dispatch, work, 73)

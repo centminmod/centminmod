@@ -179,6 +179,45 @@ with_siblings() {
   )
 }
 
+# name<tab>lock entry: the version locks other menu options or the user hold
+# on installed packages built from the same source rpm as a named package,
+# including the named package itself. dnf cannot update the named package
+# while such a sibling stays pinned: EPEL aom requires its exact libaom.
+foreign_family_locks() {
+  (
+    set -o pipefail
+    local foreign installed_records
+    [[ $# -eq 0 ]] && exit 0
+    # A foreign exclusion forbids one version; it does not pin the package.
+    foreign=$(other_locks | awk '!/^!/') || exit $?
+    [[ -z "$foreign" ]] && exit 0
+    installed_records=$(rpm -qa --qf '%{SOURCERPM}\t%{NAME}\n') || exit $?
+    awk -F'\t' '
+      FILENAME == ARGV[1] {if (NF) n[$0] = 1; next}
+      FILENAME == ARGV[2] {if (NF) {name = $0; sub(/-[0-9]+:[^:]+$/, "", name); entry[$0] = name}; next}
+      $1 == "(none)" {next}
+      ($2 in n) {named[$1 SUBSEP $2] = 1}
+      {srpms[$2] = srpms[$2] SUBSEP $1}
+      END {
+        for (k in named) {
+          split(k, nk, SUBSEP)
+          for (e in entry) if (index(srpms[entry[e]] SUBSEP, SUBSEP nk[1] SUBSEP)) print nk[2] "\t" e
+        }
+      }
+    ' <(printf '%s\n' "$@") <(printf '%s\n' "$foreign") <(printf '%s\n' "$installed_records") | sort -u
+  )
+}
+
+# $1: foreign_family_locks output
+report_family_locks() {
+  local entries
+  entries=$(cut -f2 <<< "$1" | sort -u)
+  echo "warning: centmin.sh menu 5 cannot update $(cut -f1 <<< "$1" | sort -u | xargs): packages built from the same source rpm are version locked outside this script:"
+  sed 's/^/  /' <<< "$entries"
+  echo "  dnf can only update them together. Unless you added these locks on purpose, remove them and rerun centmin.sh menu 5:"
+  echo "  dnf versionlock delete$(awk '{printf " \047%s\047", $0}' <<< "$entries")"
+}
+
 # repo ids from repo files shipped by the OS vendor (baseos, appstream, crb
 # etc) plus pseudo repos for the OS install and local rpm installs.
 # Vendor of individual packages is unreliable (AlmaLinux 8 base packages
@@ -445,7 +484,7 @@ print(",".join(base.conf.pluginconfpath))
 
 do_update() {
   (
-    local names vendor locked gone repos paths foreign overlay lock_status status=0
+    local names vendor locked gone repos paths foreign overlay lock_status blocked pending status=0
     adopt_stranded || exit $?
     names=$(block_names) || exit $?
     [[ -z "$names" ]] && exit 0
@@ -462,7 +501,19 @@ do_update() {
       [[ -n "$vendor" ]] && { write_block || exit $?; }
       exit 0
     fi
-    repos=$(source_repos $names) || exit $?
+    # A family with a foreign-pinned sibling stays locked at its installed
+    # versions; updating the rest would fail dnf's best candidate check.
+    pending=$names
+    blocked=$(foreign_family_locks $names) || exit $?
+    if [[ -n "$blocked" ]]; then
+      report_family_locks "$blocked" >&2
+      pending=$(awk -F'\t' 'FILENAME == ARGV[1] {h[$1] = 1; next} NF && !($0 in h)' <(printf '%s\n' "$blocked") <(printf '%s\n' $names)) || exit $?
+      if [[ -z "$pending" ]]; then
+        write_block $names || exit $?
+        exit 0
+      fi
+    fi
+    repos=$(source_repos $pending) || exit $?
     paths=$(dnf_plugin_paths) || exit $?
     foreign=$(other_locks) || exit $?
     overlay=$(mktemp -d) || exit $?
@@ -474,11 +525,11 @@ do_update() {
     # Establish recoverable ownership and check publication before updating.
     # The global pins remain active even if this process or DNF is killed.
     write_block $names || exit $?
-    echo "dnf -y --refresh${repos:+ --enablerepo=$repos} update $(echo $names)"
+    echo "dnf -y --refresh${repos:+ --enablerepo=$repos} update $(echo $pending)"
     # Only this invocation bypasses our own pins. Foreign pins/exclusions and
     # every other plugin's effective settings remain in force. --refresh: repo
     # metadata can be up to 48h old; an unreachable repo is skipped, not fatal.
-    dnf -y --refresh --setopt=skip_if_unavailable=True --disablerepo=mariadb ${repos:+"--enablerepo=$repos"} "--setopt=pluginconfpath=${paths:+$paths,}$overlay" update $names || status=$?
+    dnf -y --refresh --setopt=skip_if_unavailable=True --disablerepo=mariadb ${repos:+"--enablerepo=$repos"} "--setopt=pluginconfpath=${paths:+$paths,}$overlay" update $pending || status=$?
     # Keep the saved names protected even if PHP rebuilding aborts. A partial
     # update is locked at its installed versions rather than rolled back.
     # Subpackages the update pulled in are locked with their siblings.
@@ -519,7 +570,7 @@ sonames() {
 }
 
 do_status() {
-  local names stranded vendor repos name newver gone updates old_provides new_provides old_sonames new_sonames installed rc
+  local names stranded vendor blocked repos name newver gone updates old_provides new_provides old_sonames new_sonames installed rc
   names=$(block_names) || return $?
   stranded=$(adoptable_entries) || return $?
   if [[ -n "$stranded" ]]; then
@@ -537,6 +588,8 @@ do_status() {
     return 0
   fi
   echo "php-libs-versionlock: $(echo $names | wc -w) locked packages: $(echo $names)"
+  blocked=$(foreign_family_locks $names) || return $?
+  [[ -n "$blocked" ]] && report_family_locks "$blocked"
   repos=$(source_repos $names) || return $?
   # check-update exits 100 when it lists updates and 0 when there are none;
   # list updates exits 1 for both no updates and a real failure
