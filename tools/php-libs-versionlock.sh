@@ -228,13 +228,19 @@ report_family_locks() {
 base_repos() {
   (
     set -o pipefail
-    local osvendor vendor f
+    local osvendor owner vendor f
     osvendor=$(rpm_file_record '%{VENDOR}\n' /etc/redhat-release) || exit $?
     osvendor=${osvendor%%$'\n'*}
     printf '%s\n' anaconda AppStream BaseOS System @System commandline @commandline
     for f in /etc/yum.repos.d/*.repo; do
       [[ -f "$f" ]] || continue
-      vendor=$(rpm_file_record '%{VENDOR}' "$f") || exit $?
+      owner=$(rpm_file_record '%{NAME}\t%{VENDOR}' "$f") || exit $?
+      # AlmaLinux ships EPEL's release package in its extras repo with its own
+      # vendor until EPEL's build replaces it: EPEL repos are never base.
+      case "${owner%%$'\t'*}" in
+        epel-release|epel-next-release) continue ;;
+      esac
+      vendor=${owner#*$'\t'}
       if [[ "${f##*/}" = 'redhat.repo' ]] || [[ -n "$osvendor" && "$vendor" = "$osvendor" ]]; then
         awk -F'[][]' '/^\[/ {print $2}' "$f" || exit $?
       fi
