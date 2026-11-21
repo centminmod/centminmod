@@ -47,6 +47,25 @@ imagick_php_patches() {
   fi
 }
 
+# Succeeds when a failed EOL backport patch only rejected NEWS hunks: patch
+# exited 1, NEWS.rej is the only reject and no hunk was skipped or reversed.
+# NEWS is not compiled, so the build can continue with the code hunks applied.
+php_patch_news_only_reject() {
+  local patch_file="$1" patch_rc="$2" patch_out="$3" file news_reject=n
+  [[ "$patch_rc" -eq 1 ]] || return 1
+  if grep -qiE "can't find file to patch|Skipping patch|hunks? ignored|Reversed" <<< "$patch_out"; then
+    return 1
+  fi
+  while read -r file; do
+    file=$(echo "$file" | sed 's/b\///')
+    if [[ -f "$file.rej" ]]; then
+      [[ "$file" = 'NEWS' ]] || return 1
+      news_reject=y
+    fi
+  done < <(grep -oP '(?<=\+\+\+ )[^\s]+' "$patch_file")
+  [[ "$news_reject" = 'y' ]]
+}
+
 php_patches() {
   {
   if [[ "$PHP_PATCH" = [yY] ]]; then
@@ -915,8 +934,15 @@ php_patches() {
             cp -a $CUR_DIR/patches/php/php7234-${bugid}.patch php7234-${bugid}.patch
             dos2unix php7234-${bugid}.patch
             # Attempt to apply the patch
-            if patch -p1 < php7234-${bugid}.patch; then
+            patch_out=$(patch -p1 < php7234-${bugid}.patch 2>&1)
+            patch_rc=$?
+            printf '%s\n' "$patch_out"
+            if [[ "$patch_rc" -eq 0 ]]; then
               echo "Patch applied successfully for bug #${bugid}"
+            elif php_patch_news_only_reject "php7234-${bugid}.patch" "$patch_rc" "$patch_out"; then
+              echo "NEWS-only reject for bug #${bugid}: code hunks applied, keeping original NEWS"
+              [[ -f NEWS.orig ]] && mv -f NEWS.orig NEWS
+              rm -f NEWS.rej
             else
               echo "Patching failed for bug #${bugid}"
               # Check each target file for .orig and .rej files
@@ -986,8 +1012,15 @@ php_patches() {
           cp -a $CUR_DIR/patches/php/php7331-${bugid}.patch php7331-${bugid}.patch
           dos2unix php7331-${bugid}.patch
           # Attempt to apply the patch
-          if patch -p1 < php7331-${bugid}.patch; then
+          patch_out=$(patch -p1 < php7331-${bugid}.patch 2>&1)
+          patch_rc=$?
+          printf '%s\n' "$patch_out"
+          if [[ "$patch_rc" -eq 0 ]]; then
             echo "Patch applied successfully for bug #${bugid}"
+          elif php_patch_news_only_reject "php7331-${bugid}.patch" "$patch_rc" "$patch_out"; then
+            echo "NEWS-only reject for bug #${bugid}: code hunks applied, keeping original NEWS"
+            [[ -f NEWS.orig ]] && mv -f NEWS.orig NEWS
+            rm -f NEWS.rej
           else
             echo "Patching failed for bug #${bugid}"
             # Check each target file for .orig and .rej files
@@ -1084,8 +1117,15 @@ php_patches() {
               dos2unix php742-${bugid}.patch
 
               # Attempt to apply the patch
-              if patch -p1 < php742-${bugid}.patch; then
+              patch_out=$(patch -p1 < php742-${bugid}.patch 2>&1)
+              patch_rc=$?
+              printf '%s\n' "$patch_out"
+              if [[ "$patch_rc" -eq 0 ]]; then
                   echo "Patch applied successfully for bug #${bugid}"
+              elif php_patch_news_only_reject "php742-${bugid}.patch" "$patch_rc" "$patch_out"; then
+                  echo "NEWS-only reject for bug #${bugid}: code hunks applied, keeping original NEWS"
+                  [[ -f NEWS.orig ]] && mv -f NEWS.orig NEWS
+                  rm -f NEWS.rej
               else
                   echo "Patching failed for bug #${bugid}"
 
@@ -1134,8 +1174,15 @@ php_patches() {
               dos2unix php80-${bugid}.patch
 
               # Attempt to apply the patch
-              if patch -p1 < php80-${bugid}.patch; then
+              patch_out=$(patch -p1 < php80-${bugid}.patch 2>&1)
+              patch_rc=$?
+              printf '%s\n' "$patch_out"
+              if [[ "$patch_rc" -eq 0 ]]; then
                   echo "Patch applied successfully for bug #${bugid}"
+              elif php_patch_news_only_reject "php80-${bugid}.patch" "$patch_rc" "$patch_out"; then
+                  echo "NEWS-only reject for bug #${bugid}: code hunks applied, keeping original NEWS"
+                  [[ -f NEWS.orig ]] && mv -f NEWS.orig NEWS
+                  rm -f NEWS.rej
               else
                   echo "Patching failed for bug #${bugid}"
 
@@ -1184,8 +1231,15 @@ php_patches() {
               dos2unix php81-${bugid}.patch
 
               # Attempt to apply the patch
-              if patch -p1 < php81-${bugid}.patch; then
+              patch_out=$(patch -p1 < php81-${bugid}.patch 2>&1)
+              patch_rc=$?
+              printf '%s\n' "$patch_out"
+              if [[ "$patch_rc" -eq 0 ]]; then
                   echo "Patch applied successfully for bug #${bugid}"
+              elif php_patch_news_only_reject "php81-${bugid}.patch" "$patch_rc" "$patch_out"; then
+                  echo "NEWS-only reject for bug #${bugid}: code hunks applied, keeping original NEWS"
+                  [[ -f NEWS.orig ]] && mv -f NEWS.orig NEWS
+                  rm -f NEWS.rej
               else
                   echo "Patching failed for bug #${bugid}"
 
