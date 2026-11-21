@@ -2197,3 +2197,162 @@ index dd51b84396e..74e14e0ccea 100644
 -- 
 2.43.7
 
+From 9ee208f631ecd6e104abf884cf941d7599f94edd Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Ond=C5=99ej=20Sur=C3=BD?= <ondrej@sury.org>
+Date: Fri, 20 Nov 2026 13:37:01 +0100
+Subject: [PATCH 1/2] Remove inapplicable CVE-2024-11235 NEWS entry (affects
+ 8.3+ only)
+
+---
+ NEWS | 6 ------
+ 1 file changed, 6 deletions(-)
+
+diff --git a/NEWS b/NEWS
+index 74e14e0cce..abf8bea5a5 100644
+--- a/NEWS
++++ b/NEWS
+@@ -42,12 +42,6 @@ Backported from 8.2.36
+   . Fixed GHSA-mmf9-xm3v-hg2x (Denial of service through folded HTTP response
+     headers). (CVE-2026-127960) (Jakub Zelenka)
+ 
+-Backported from 8.3.19
+-
+-- Core:
+-  . Fixed GHSA-rwp7-7vc6-8477 (Reference counting in php_request_shutdown
+-    causes Use-After-Free). (CVE-2024-11235) (ilutov)
+-
+ Backported from 8.2.35
+ 
+ - Core:
+-- 
+2.55.0
+
+
+From 751efb55fb8065634ce24f203264069851028e6d Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Ond=C5=99ej=20Sur=C3=BD?= <ondrej@sury.org>
+Date: Fri, 20 Nov 2026 14:09:43 +0100
+Subject: [PATCH 2/2] Drop inapplicable GHSA-rwp7-7vc6-8477 ??= fix (affects
+ 8.3+ only)
+
+---
+ Zend/tests/ghsa-rwp7-7vc6-8477_001.phpt | 26 -------------------------
+ Zend/tests/ghsa-rwp7-7vc6-8477_002.phpt | 24 -----------------------
+ Zend/tests/ghsa-rwp7-7vc6-8477_003.phpt | 22 ---------------------
+ Zend/zend_opcode.c                      |  8 --------
+ 4 files changed, 80 deletions(-)
+ delete mode 100644 Zend/tests/ghsa-rwp7-7vc6-8477_001.phpt
+ delete mode 100644 Zend/tests/ghsa-rwp7-7vc6-8477_002.phpt
+ delete mode 100644 Zend/tests/ghsa-rwp7-7vc6-8477_003.phpt
+
+diff --git a/Zend/tests/ghsa-rwp7-7vc6-8477_001.phpt b/Zend/tests/ghsa-rwp7-7vc6-8477_001.phpt
+deleted file mode 100644
+index d0e9ddcba4..0000000000
+--- a/Zend/tests/ghsa-rwp7-7vc6-8477_001.phpt
++++ /dev/null
+@@ -1,26 +0,0 @@
+---TEST--
+-GHSA-rwp7-7vc6-8477: Use-after-free for ??= due to incorrect live-range calculation
+---FILE--
+-<?php
+-
+-class Foo {
+-    public function foo() {
+-        return $this;
+-    }
+-
+-    public function __set($name, $value) {
+-        throw new Exception('Hello');
+-    }
+-}
+-
+-$foo = new Foo();
+-
+-try {
+-    $foo->foo()->baz ??= 1;
+-} catch (Exception $e) {
+-    echo $e->getMessage();
+-}
+-
+-?>
+---EXPECT--
+-Hello
+diff --git a/Zend/tests/ghsa-rwp7-7vc6-8477_002.phpt b/Zend/tests/ghsa-rwp7-7vc6-8477_002.phpt
+deleted file mode 100644
+index 4115d9eae2..0000000000
+--- a/Zend/tests/ghsa-rwp7-7vc6-8477_002.phpt
++++ /dev/null
+@@ -1,24 +0,0 @@
+---TEST--
+-GHSA-rwp7-7vc6-8477: Use-after-free for ??= due to incorrect live-range calculation
+---FILE--
+-<?php
+-
+-class Foo {
+-    public int $prop;
+-
+-    public function foo() {
+-        return $this;
+-    }
+-}
+-
+-$foo = new Foo();
+-
+-try {
+-    $foo->foo()->prop ??= 'foo';
+-} catch (Error $e) {
+-    echo $e->getMessage();
+-}
+-
+-?>
+---EXPECT--
+-Cannot assign string to property Foo::$prop of type int
+diff --git a/Zend/tests/ghsa-rwp7-7vc6-8477_003.phpt b/Zend/tests/ghsa-rwp7-7vc6-8477_003.phpt
+deleted file mode 100644
+index f2808afbf8..0000000000
+--- a/Zend/tests/ghsa-rwp7-7vc6-8477_003.phpt
++++ /dev/null
+@@ -1,22 +0,0 @@
+---TEST--
+-GHSA-rwp7-7vc6-8477: Use-after-free for ??= due to incorrect live-range calculation
+---FILE--
+-<?php
+-
+-class Foo {
+-    public int $prop;
+-}
+-
+-function newFoo() {
+-    return new Foo();
+-}
+-
+-try {
+-    newFoo()->prop ??= 'foo';
+-} catch (Error $e) {
+-    echo $e->getMessage();
+-}
+-
+-?>
+---EXPECT--
+-Cannot assign string to property Foo::$prop of type int
+diff --git a/Zend/zend_opcode.c b/Zend/zend_opcode.c
+index 5333954122..15056f2355 100644
+--- a/Zend/zend_opcode.c
++++ b/Zend/zend_opcode.c
+@@ -901,14 +901,6 @@ static void zend_calc_live_ranges(
+ 		opnum--;
+ 		opline--;
+ 
+-		/* SEPARATE always redeclares its op1. For the purposes of live-ranges,
+-		 * its declaration is irrelevant. Don't terminate the current live-range
+-		 * to avoid breaking special handling of COPY_TMP. */
+-		if (opline->opcode == ZEND_SEPARATE) {
+-			ZEND_ASSERT(opline->op1.var == opline->result.var);
+-			continue;
+-		}
+-
+ 		if ((opline->result_type & (IS_TMP_VAR|IS_VAR)) && !is_fake_def(opline)) {
+ 			uint32_t var_num = EX_VAR_TO_NUM(opline->result.var) - var_offset;
+ 			/* Defs without uses can occur for two reasons: Either because the result is
+-- 
+2.55.0
+
