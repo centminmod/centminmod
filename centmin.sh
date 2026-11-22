@@ -30,7 +30,7 @@ DT=$(date +"%d%m%y-%H%M%S")
 branchname='141.00beta01'
 SCRIPT_MAJORVER='141'
 SCRIPT_MINORVER='00'
-SCRIPT_INCREMENTVER='498'
+SCRIPT_INCREMENTVER='499'
 SCRIPT_VERSIONSHORT="${branchname}"
 SCRIPT_VERSION="${SCRIPT_VERSIONSHORT}.b${SCRIPT_INCREMENTVER}"
 SCRIPT_DATE='16/08/25'
@@ -1127,6 +1127,14 @@ PHP_OVERWRITECONF='y'       # whether to show the php upgrade prompt to overwrit
 PHP_VERSION='8.3.36'        # Use this version of PHP
 PHP_MIRRORURL='https://www.php.net'
 PHPUPGRADE_MIRRORURL="$PHP_MIRRORURL"
+# Default PHP for a direct centmin.sh install: bump PHP_VERSION_DEFAULT, never
+# the PHP_VERSION line above. Installers write their chosen version into that
+# line of this tracked file, so changing it in git makes cmupdate's stash pop
+# conflict. The stock 8.3.36 value means no installer changed it.
+PHP_VERSION_DEFAULT='8.3.37'
+if [[ "$PHP_VERSION" = '8.3.36' ]]; then
+  PHP_VERSION="$PHP_VERSION_DEFAULT"
+fi
 XCACHE_VERSION='3.2.0'      # Use this version of Xcache
 APCCACHE_VERSION='3.1.13'   # Use this version of APC Cache
 IGBINARY_VERSION='1.2.1'
