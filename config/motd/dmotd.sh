@@ -341,8 +341,26 @@ push_dmotd_alerts() {
   local pushapp_ver="$2"
   local pushapp_severity="${3:-}"
   local _cooldown_dir _cooldown_key _cooldown_file _last_ts _now_ts
+  local _sent_dir _sent_key _sent_file
   local _cve_id _cve_rest _cve_kernel _cve_verdict _cve_severity _push_priority _push_url
-  local PUSH_MESSAGE PUSH_TITLE RESPONSE _curl_rc
+  local PUSH_MESSAGE PUSH_TITLE RESPONSE _curl_rc _push_cfg
+  # nginx/php/cmm update available alerts are pushed once per app and version,
+  # not on every SSH login. Markers are shared with tools/check-for-updates.sh
+  # so each version is pushed once in total. cmm is keyed on the upstream
+  # commit because its branch name stays the same between code updates
+  # (or the local commit when the branch has no upstream).
+  if [[ "$pushapp" = 'nginx' || "$pushapp" = 'php' || "$pushapp" = 'cmm' ]]; then
+    _sent_dir="/var/cache/centminmod/dmotd-push"
+    _sent_key="$pushapp_ver"
+    if [[ "$pushapp" = 'cmm' ]]; then
+      _sent_key="$(git --git-dir="${CMSCRIPT_GITDIR}/.git" rev-parse --verify -q '@{u}' 2>/dev/null)"
+      [ -n "$_sent_key" ] || _sent_key="noupstream-$(git --git-dir="${CMSCRIPT_GITDIR}/.git" rev-parse --verify -q HEAD 2>/dev/null)"
+    fi
+    _sent_file="${_sent_dir}/${pushapp}-$(printf '%s' "$_sent_key" | tr '/|: ' '_____').sent"
+    if [ -f "$_sent_file" ]; then
+      return 0
+    fi
+  fi
   # Per-CVE alert cooldown to prevent login-time alert spam.
   # Each (CVE-id, kernel) tuple alerts at most once per CVE_ALERT_COOLDOWN seconds.
   local CVE_ALERT_COOLDOWN="${CVE_ALERT_COOLDOWN:-86400}"
@@ -396,8 +414,6 @@ push_dmotd_alerts() {
       log_message "$PUSH_MESSAGE"
 
       local _curl_args=(
-        --form-string "token=${PUSH_API_TOKEN}"
-        --form-string "user=${PUSH_USER_KEY}"
         --form-string "message=${PUSH_MESSAGE}"
         --form-string "title=${PUSH_TITLE}"
       )
@@ -413,8 +429,18 @@ push_dmotd_alerts() {
           _curl_args+=(--form-string "expire=${PUSH_CVE_EMERGENCY_EXPIRE:-3600}")
         fi
       fi
-      RESPONSE=$(curl -s --connect-timeout 10 --max-time 30 "${_curl_args[@]}" https://api.pushover.net/1/messages.json)
-      _curl_rc=$?
+      # token and user key go in a curl config file in a 0700 mktemp directory,
+      # not on the command line where any local user can read them with ps
+      _push_cfg=$(mktemp -d 2>/dev/null)
+      if [ -n "$_push_cfg" ]; then
+        ( umask 077; printf 'form-string = "token=%s"\nform-string = "user=%s"\n' \
+            "$(printf '%s' "$PUSH_API_TOKEN" | sed 's/[\\"]/\\&/g')" "$(printf '%s' "$PUSH_USER_KEY" | sed 's/[\\"]/\\&/g')" > "$_push_cfg/curl.cfg" )
+        RESPONSE=$(curl -s --connect-timeout 10 --max-time 30 -K "$_push_cfg/curl.cfg" "${_curl_args[@]}" https://api.pushover.net/1/messages.json)
+        _curl_rc=$?
+        rm -rf "$_push_cfg"
+      else
+        RESPONSE='' _curl_rc=1
+      fi
 
       log_message "Notification sent. Response: ${RESPONSE}"
       # Update CVE alert cooldown marker ONLY after a verified-successful Pushover
@@ -425,6 +451,20 @@ push_dmotd_alerts() {
          && [ "${_curl_rc:-1}" -eq 0 ] \
          && printf '%s' "$RESPONSE" | grep -q '"status":1'; then
         touch "$_cooldown_file" 2>/dev/null
+      fi
+      # Same gate for the nginx/php/cmm sent marker. Older nginx/php markers
+      # stay (pruned after 180 days): dmotd and check-for-updates.sh can see
+      # different latest versions and would otherwise re-alert in turn.
+      # cmm keeps only the latest upstream commit.
+      if [ -n "${_sent_file:-}" ] && [ "${_curl_rc:-1}" -eq 0 ] \
+         && printf '%s' "$RESPONSE" | grep -q '"status":1'; then
+        [ -d "$_sent_dir" ] || mkdir -p -m 0700 "$_sent_dir" 2>/dev/null
+        if [[ "$pushapp" = 'cmm' ]]; then
+          rm -f "${_sent_dir}/cmm-"*.sent 2>/dev/null
+        else
+          find "$_sent_dir" -maxdepth 1 -name "${pushapp}-*.sent" -mtime +180 -delete 2>/dev/null
+        fi
+        touch "$_sent_file" 2>/dev/null
       fi
     fi
   fi
