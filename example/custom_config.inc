@@ -5676,12 +5676,14 @@
 #MARIADB_INSTALLTENFIVE='n'  
 
 # MariaDB 10.6 LTS Install
-# Default for EL7/8/9
+# Default for EL7. MariaDB 10.6 reached community EOL in July 2026.
+# EL8/EL9 fresh installs default to MariaDB 10.11 LTS; set this to 'y'
+# on EL8/EL9 to install MariaDB 10.6 instead
 # Git History: First added 2022-05-28 (e42d2f41), Last modified 2025-05-18 (395dea9c)
 #MARIADB_INSTALLTENSIX='y'  
 
 # MariaDB 10.11 LTS Install
-# Default for EL10
+# Default for EL8/EL9/EL10
 # Git History: First added 2024-07-03 (cefa63bf), Last modified 2025-05-18 (395dea9c)
 #MARIADB_INSTALLTENELEVEN='n'
 

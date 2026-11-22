@@ -937,7 +937,7 @@ if [[ "$CENTOS_TEN" -eq '10' ]]; then
   append_config_if_missing "PHP_OVERWRITECONF='n'"
   append_config_if_missing "PYTHON_INSTALL_ALTERNATIVES='y'"
 fi
-# set el9 to utf8mb4 charset for MariaDB 10.6
+# set el9 to utf8mb4 charset for MariaDB 10.11
 if [[ "$CENTOS_NINE" -eq '9' ]]; then
   #echo "DEVTOOLSETTEN='n'" >> /etc/centminmod/custom_config.inc
   #echo "DEVTOOLSETELEVEN='n'" >> /etc/centminmod/custom_config.inc

@@ -30,7 +30,7 @@ DT=$(date +"%d%m%y-%H%M%S")
 branchname='141.00beta01'
 SCRIPT_MAJORVER='141'
 SCRIPT_MINORVER='00'
-SCRIPT_INCREMENTVER='495'
+SCRIPT_INCREMENTVER='496'
 SCRIPT_VERSIONSHORT="${branchname}"
 SCRIPT_VERSION="${SCRIPT_VERSIONSHORT}.b${SCRIPT_INCREMENTVER}"
 SCRIPT_DATE='16/08/25'
@@ -1866,26 +1866,26 @@ CUR_DIR=$SCRIPT_DIR # Get current directory.
 CM_INSTALLDIR=$CUR_DIR
 
 if [[ "$CENTOS_EIGHT" -eq '8' ]]; then
-  # el8 OSes will default to MariaDB 10.6 LTS releases
+  # el8 OSes will default to MariaDB 10.11 LTS releases
   MARIADB_INSTALLTENTWO='n'
   MARIADB_INSTALLTENTHREE='n'
   MARIADB_INSTALLTENFOUR='n'
   MARIADB_INSTALLTENFIVE='n'
-  MARIADB_INSTALLTENSIX='y'
-  MARIADB_INSTALLTENELEVEN='n'
+  MARIADB_INSTALLTENSIX='n'
+  MARIADB_INSTALLTENELEVEN='y'
   MARIADB_INSTALLELEVENFOUR='n'
   # use system OpenSSL 1.1.1 by default
   OPENSSL_SYSTEM_USE='y'
 fi
 
 if [[ "$CENTOS_NINE" -eq '9' ]]; then
-  # el9 OSes will default to MariaDB 10.6 LTS releases
+  # el9 OSes will default to MariaDB 10.11 LTS releases
   MARIADB_INSTALLTENTWO='n'
   MARIADB_INSTALLTENTHREE='n'
   MARIADB_INSTALLTENFOUR='n'
   MARIADB_INSTALLTENFIVE='n'
-  MARIADB_INSTALLTENSIX='y'
-  MARIADB_INSTALLTENELEVEN='n'
+  MARIADB_INSTALLTENSIX='n'
+  MARIADB_INSTALLTENELEVEN='y'
   MARIADB_INSTALLELEVENFOUR='n'
   # use system OpenSSL 3.0.7 by default
   OPENSSL_SYSTEM_USE='y'
@@ -1942,7 +1942,8 @@ fi
 # MariaDB Install Version Override Mutual Exclusion
 # When user sets a specific MariaDB version in custom_config.inc,
 # disable conflicting OS-default version flags for clean selection
-# Supports EL9 (default 10.6) and EL10 (default 10.11) overrides
+# Supports EL8/EL9/EL10 (default 10.11) overrides. EL8/EL9 can still
+# opt into EOL MariaDB 10.6 with MARIADB_INSTALLTENSIX='y'
 #########################################################
 if [[ "$MARIADB_INSTALLTWELVETHREE" = [yY] ]]; then
   MARIADB_INSTALLELEVENEIGHT='n'
@@ -1967,6 +1968,15 @@ elif [[ "$MARIADB_INSTALLELEVENFOUR" = [yY] ]]; then
   MARIADB_INSTALLELEVENEIGHT='n'
   MARIADB_INSTALLTENELEVEN='n'
   MARIADB_INSTALLTENSIX='n'
+  MARIADB_INSTALLTENFIVE='n'
+  MARIADB_INSTALLTENFOUR='n'
+  MARIADB_INSTALLTENTHREE='n'
+  MARIADB_INSTALLTENTWO='n'
+elif [[ "$MARIADB_INSTALLTENSIX" = [yY] ]] && [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]]; then
+  MARIADB_INSTALLTWELVETHREE='n'
+  MARIADB_INSTALLELEVENEIGHT='n'
+  MARIADB_INSTALLELEVENFOUR='n'
+  MARIADB_INSTALLTENELEVEN='n'
   MARIADB_INSTALLTENFIVE='n'
   MARIADB_INSTALLTENFOUR='n'
   MARIADB_INSTALLTENTHREE='n'
