@@ -1009,6 +1009,33 @@ elif [[ -f /etc/dnf/dnf.conf && "$CPUS" -eq '1' ]]; then
   dnf -y update --refresh
 fi
 
+# EL10 moved nft_compat/xt_conntrack/xt_multiport into kernel-modules-extra,
+# which CSF needs to load any rule. When the running kernel is from an older
+# EL10 point release than the repos (e.g. a 10.2 kernel after the update above
+# pulled 10.3), kernel-modules-extra for it is gone from the repos and CSF/lfd
+# fail until a reboot into the newer kernel - and CSF 16.32 keeps failing at
+# boot on the stale csf.error. Stop here like the SELinux reboot above.
+el10_csf_kmods_available() {
+  local kdir kmod
+  kdir="/lib/modules/$(uname -r)"
+  [ -f "$kdir/modules.dep" ] || return 0  # fail open: cannot tell
+  for kmod in nft_compat xt_conntrack xt_multiport; do
+    grep -qE "/${kmod}\.ko(\.xz)?:" "$kdir/modules.dep" || grep -qE "/${kmod}\.ko$" "$kdir/modules.builtin" 2>/dev/null || return 1
+  done
+}
+if [[ "$CENTOS_TEN" -eq '10' && ! -f /.dockerenv && "$CHECK_LXD" != 'y' ]] && ! el10_csf_kmods_available; then
+  dnf -y install "kernel-modules-extra-$(uname -r)" || dnf -y install kernel-modules-extra
+  if ! el10_csf_kmods_available; then
+    echo
+    echo "Running kernel $(uname -r) lacks nft_compat, xt_conntrack or xt_multiport,"
+    echo "which CSF firewall needs, and kernel-modules-extra for it is not in the enabled repos."
+    echo "Installed: $(rpm -q kernel-modules-extra | tr '\n' ' ')"
+    echo "Default boot kernel: $(grubby --default-kernel 2>/dev/null)"
+    echo "Please reboot into the newest kernel then install Centmin Mod"
+    exit
+  fi
+fi
+
 if [[ "$CENTOS_ALPHATEST" != [yY] && "$CENTOS_TEN" -eq '10' ]] || [[ "$CENTOS_ALPHATEST" != [yY] && "$CENTOS_EIGHT" -eq '8' ]] || [[ "$CENTOS_ALPHATEST" != [yY] && "$CENTOS_NINE" -eq '9' ]]; then
   if [[ "$ORACLELINUX_TEN" -eq '10' ]]; then
     label_os=OracleLinux
