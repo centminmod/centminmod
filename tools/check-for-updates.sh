@@ -162,9 +162,19 @@ push_update_alerts() {
   local pushapp_ver="$2"
   local pushapp_severity="${3:-}"
   local _cooldown_dir _cooldown_key _cooldown_file _last_ts _now_ts
+  local _sent_dir _sent_file
   local _cve_id _cve_rest _cve_kernel _cve_verdict _cve_severity _push_priority _push_url
   local PUSH_MESSAGE PUSH_TITLE RESPONSE _curl_rc
   local CVE_ALERT_COOLDOWN="${CVE_ALERT_COOLDOWN:-86400}"
+  if [[ "$pushapp" = 'restart' ]]; then
+    # The reboot needed alert is pushed once per boot and list of updated
+    # packages, so a pending reboot is not re-alerted on every cron run.
+    _sent_dir="/var/cache/centminmod/dmotd-push"
+    _sent_file="${_sent_dir}/restart-$(cat /proc/sys/kernel/random/boot_id 2>/dev/null)-$(printf '%s' "$pushapp_ver" | cksum | awk '{print $1}').sent"
+    if [ -f "$_sent_file" ]; then
+      return 0
+    fi
+  fi
   if [[ "$pushapp" = 'cve' ]]; then
     # Per-CVE alert cooldown to prevent cron-driven alert spam.
     _cooldown_dir="/var/cache/centminmod/cmsec/push"
@@ -240,6 +250,13 @@ push_update_alerts() {
        && [ "${_curl_rc:-1}" -eq 0 ] \
        && printf '%s' "$RESPONSE" | grep -q '"status":1'; then
       touch "$_cooldown_file" 2>/dev/null
+    fi
+    # Same gate for the restart sent marker; only the latest one is kept.
+    if [ -n "${_sent_file:-}" ] && [ "${_curl_rc:-1}" -eq 0 ] \
+       && printf '%s' "$RESPONSE" | grep -q '"status":1'; then
+      [ -d "$_sent_dir" ] || mkdir -p -m 0700 "$_sent_dir" 2>/dev/null
+      rm -f "${_sent_dir}/restart-"*.sent 2>/dev/null
+      touch "$_sent_file" 2>/dev/null
     fi
   fi
 }
@@ -384,7 +401,9 @@ cmm_check() {
       # if git remote repo url is not same as one defined in giturl.txt then pull a new copy of
       # centmin mod code locally using giturl.txt defined git repo name
       GET_GITVER=$(git --version | awk '{print $3}' | sed -e 's|\.||g' | cut -c1,2)
-      CURL_GITURL=$(curl -sk${ipv_forceopt} --connect-timeout 10 https://raw.githubusercontent.com/centminmod/centminmod/$(awk -F "=" '/branchname=/ {print $2}' ${CMSCRIPT_GITDIR}/centmin.sh | sed -e "s|'||g" )/giturl.txt)
+      CURL_GITURL=$(curl -s${ipv_forceopt} --connect-timeout 10 https://raw.githubusercontent.com/centminmod/centminmod/$(awk -F "=" '/branchname=/ {print $2}' ${CMSCRIPT_GITDIR}/centmin.sh | sed -e "s|'||g" )/giturl.txt)
+      # only a https github.com/gitlab.com git url counts, anything else is no data
+      [[ "$CURL_GITURL" =~ ^https://(github|gitlab)\.com/[A-Za-z0-9._/-]+\.git$ ]] || CURL_GITURL=''
       # if git version >1.8 use supported ls-remote --get-url flag otherwise use alternative
       if [[ -d "${CMSCRIPT_GITDIR}" ]]; then
         if [[ "$GET_GITVER" -ge '18' ]]; then

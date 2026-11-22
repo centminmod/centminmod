@@ -2525,15 +2525,17 @@ gitenv_askupdate() {
       # https://github.com/centminmod/centminmod/raw/${branchname}/giturl.txt
       # check if you can properly resolve raw.githubusercontent.com first in case of dns outpages
       # issues at github end https://community.centminmod.com/threads/centmin-mod-github-com-repo-504-timeouts.9232/
-      CURL_GITURLCHECKER=$(curl -sk${ipv_forceopt} https://raw.githubusercontent.com/centminmod/centminmod/${branchname}/giturl.txt >/dev/null 2>&1; echo $?)
+      CURL_GITURLCHECKER=$(curl -s${ipv_forceopt} https://raw.githubusercontent.com/centminmod/centminmod/${branchname}/giturl.txt >/dev/null 2>&1; echo $?)
       if [[ "$CURL_GITURLCHECKER" = '0' ]]; then
-        CURL_GITURL=$(curl -sk${ipv_forceopt} https://raw.githubusercontent.com/centminmod/centminmod/${branchname}/giturl.txt)
+        CURL_GITURL=$(curl -s${ipv_forceopt} https://raw.githubusercontent.com/centminmod/centminmod/${branchname}/giturl.txt)
       else
         # just default to https://github.com/centminmod/centminmod.git if can not resolve the
         # https://raw.githubusercontent.com/centminmod/centminmod/${branchname}/giturl.txt
         # url link
         CURL_GITURL='https://github.com/centminmod/centminmod.git'
       fi
+      # only a https github.com/gitlab.com git url, else the default repo
+      [[ "$CURL_GITURL" =~ ^https://(github|gitlab)\.com/[A-Za-z0-9._/-]+\.git$ ]] || CURL_GITURL='https://github.com/centminmod/centminmod.git'
       # if git version >1.8 use supported ls-remote --get-url flag otherwise use alternative
       if [[ "$GET_GITVER" -ge '18' ]]; then
         GET_GITREMOTEURL=$(cd /usr/local/src/centminmod >/dev/null 2>&1; git ls-remote --get-url)
@@ -5299,9 +5301,14 @@ histformat() {
 setupdate() {
 cat > "/usr/bin/cminfo_updater"<<EOF
 #!/bin/bash
-rm -rf /usr/bin/cminfo
-wget -q --no-check-certificate -O /usr/bin/cminfo https://raw.githubusercontent.com/centminmod/centminmod/${branchname}/tools/cminfo.sh
-chmod 0700 /usr/bin/cminfo
+# verified TLS download to a temp file: a failed or bad download keeps the
+# current /usr/bin/cminfo instead of leaving it missing or broken
+CMINFO_TMP=\$(mktemp /usr/bin/.cminfo.XXXXXX) || exit 1
+if wget -q -O "\$CMINFO_TMP" https://raw.githubusercontent.com/centminmod/centminmod/${branchname}/tools/cminfo.sh && head -n1 "\$CMINFO_TMP" | grep -q '^#!/bin/bash' && bash -n "\$CMINFO_TMP"; then
+  chmod 0700 "\$CMINFO_TMP" && mv -f "\$CMINFO_TMP" /usr/bin/cminfo
+else
+  rm -f "\$CMINFO_TMP"
+fi
 EOF
 
 chmod 0700 /usr/bin/cminfo_updater

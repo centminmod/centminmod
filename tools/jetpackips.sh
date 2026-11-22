@@ -23,7 +23,15 @@ jetpack_ip_whitelist_cronsetup() {
 }
 jetpack_ip_whitelist_cronsetup
 
-jetpackallowips=$(curl -${ipv_forceopt}sk https://jetpack.com/ips-v4.txt | awk '{print "allow "$1";"}')
+jetpackips=$(curl -${ipv_forceopt}sf --connect-timeout 10 --max-time 30 https://jetpack.com/ips-v4.txt | tr -d '\r' | awk 'NF {print $1}')
+# only a non-empty list of IPv4 addresses/ranges replaces the include, so a failed
+# or bad download never leaves nginx a broken file or a bare deny all
+if [[ -z "$jetpackips" ]] || echo "$jetpackips" | grep -Evq '^([0-9]{1,3}\.){3}[0-9]{1,3}(/[0-9]{1,2})?$'; then
+  echo "error: no valid IP list from https://jetpack.com/ips-v4.txt"
+  echo "keeping current /usr/local/nginx/conf/jetpack_whitelist_ip.conf"
+  exit 1
+fi
+jetpackallowips=$(echo "$jetpackips" | awk '{print "allow "$1";"}')
 echo "populating include file /usr/local/nginx/conf/jetpack_whitelist_ip.conf with:"
 echo
 echo -e "# jetpack ip whitelist https://jetpack.com/support/hosting-faq/\n$jetpackallowips\ndeny all;" | tee /usr/local/nginx/conf/jetpack_whitelist_ip.conf

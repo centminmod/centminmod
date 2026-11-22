@@ -1071,7 +1071,6 @@ search_php_upgrade_logs() {
 setupdate() {
 cat > "/usr/bin/cminfo_updater"<<EOF
 #!/bin/bash
-rm -rf /usr/bin/cminfo
 CMINFOLINK='https://raw.githubusercontent.com/centminmod/centminmod/${branchname}/tools/cminfo.sh'
 
 # fallback mirror
@@ -1080,8 +1079,14 @@ CMINFO_CURLCHECK=\$?
 if [[ "\$CMINFO_CURLCHECK" != '0' ]]; then
     CMINFOLINK='https://gitlab.com/centminmod-github-mirror/centminmod/raw/master/tools/cminfo.sh'
 fi
-wget -q --no-check-certificate -O /usr/bin/cminfo "\$CMINFOLINK"
-chmod 0700 /usr/bin/cminfo
+# verified TLS download to a temp file: a failed or bad download keeps the
+# current /usr/bin/cminfo instead of leaving it missing or broken
+CMINFO_TMP=\$(mktemp /usr/bin/.cminfo.XXXXXX) || exit 1
+if wget -q -O "\$CMINFO_TMP" "\$CMINFOLINK" && head -n1 "\$CMINFO_TMP" | grep -q '^#!/bin/bash' && bash -n "\$CMINFO_TMP"; then
+  chmod 0700 "\$CMINFO_TMP" && mv -f "\$CMINFO_TMP" /usr/bin/cminfo
+else
+  rm -f "\$CMINFO_TMP"
+fi
 EOF
     chmod 0700 /usr/bin/cminfo_updater
     # echo "cminfo configured"

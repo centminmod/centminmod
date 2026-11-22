@@ -27,7 +27,10 @@
 #   OK      up to date
 #   ?       upstream lookup failed
 #
-# exit code: 0 all OK, 1 updates available, 2 broken pins
+# exit code: 0 all OK, 1 updates available, 2 broken pins,
+#   3 no updates or broken pins found but an upstream lookup
+#   failed: ? rows are unchecked, not up to date. A failed
+#   lookup always adds a WARNING line after the table.
 #
 # network notes: github.com archive/ and api.github.com can
 # be blocked in sandboxes, so github tags are read with
@@ -327,12 +330,13 @@ if [ "$PINCHECK" = 'y' ]; then
 fi
 
 WORST=0
+LOOKUP_FAILS=0
 while IFS='|' read -r group name src up sedx check series note; do
   [ -z "$group" ] && continue
   vers=$(upstream_versions "$up" "$sedx")
   latest_all=$(echo "$vers" | tail -n1 | cut -f1)
   row_status='OK'; cells=(); latest_shown=''
-  any_pin='n'
+  any_pin='n'; lookup_fail='n'
   for t in "${TARGETS[@]}"; do
     v="${PIN["$name|$t"]}"
     if [ -z "$v" ]; then cells+=('-'); continue; fi
@@ -356,11 +360,12 @@ while IFS='|' read -r group name src up sedx check series note; do
           esac ;;
       esac
     fi
-    # version compare
-    if [ "$series" = 'pin' ]; then
-      latest_shown='n/a'
-    elif [ -z "$latest_all" ]; then
+    # version compare; an empty lookup also skipped any tag:{V} pin check
+    if [ -z "$latest_all" ]; then
+      lookup_fail='y'
       [ "$row_status" = 'OK' ] && row_status='?'
+    elif [ "$series" = 'pin' ]; then
+      latest_shown='n/a'
     else
       pfx=$(series_prefix "$v" "$series")
       latest_series=$(echo "$vers" | cut -f1 | grep -F -- "$pfx" | awk -v p="$pfx" 'index($0,p)==1' | sort -V | tail -n1)
@@ -378,6 +383,7 @@ while IFS='|' read -r group name src up sedx check series note; do
     cells+=("${v}${mark}")
   done
   [ "$any_pin" = 'n' ] && continue
+  [ "$lookup_fail" = 'y' ] && LOOKUP_FAILS=$((LOOKUP_FAILS + 1))
   case "$row_status" in
     BROKEN) WORST=2 ;;
     UPDATE|MAJOR) [ "$WORST" -lt 1 ] && WORST=1 ;;
@@ -413,5 +419,11 @@ if [ -n "$core_tag" ]; then
     [ "$FORMAT" = 'tsv' ] && pfx='# ' || { pfx=''; echo; }
     echo "${pfx}lua-resty-core ${core_tag#v} requires lua-nginx-module 0.$((http_req / 1000)).$((http_req % 1000)) and stream-lua 0.0.${stream_req:-?} exactly: bump ORESTY_LUANGINXVER, ORESTY_LUASTREAMVER and ORESTY_LUARESTYCOREVER together."
   fi
+fi
+# a network outage must not read as "all OK"
+if [ "$LOOKUP_FAILS" -gt 0 ]; then
+  [ "$FORMAT" = 'tsv' ] && pfx='# ' || { pfx=''; echo; }
+  echo "${pfx}WARNING: upstream lookup failed for ${LOOKUP_FAILS} software row(s) (Latest upstream ?): the report is incomplete and those rows are unchecked, not up to date. Re-run with network access."
+  [ "$WORST" -eq 0 ] && WORST=3
 fi
 exit "$WORST"
