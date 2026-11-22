@@ -151,7 +151,9 @@ gitenv_setup() {
   # get Centmin Mod Git url remotely so to allow for Git repo renaming in future where
   # user can just use centmin.sh menu option 23 submenus to switch to a newly renamed
   # Git repo name if needed
-  REMOTE_CMGIT=$(curl -sk${ipv_forceopt} https://raw.githubusercontent.com/centminmod/centminmod/${branchname}/giturl.txt)
+  REMOTE_CMGIT=$(curl -s${ipv_forceopt} https://raw.githubusercontent.com/centminmod/centminmod/${branchname}/giturl.txt)
+  # clone only from a https github.com/gitlab.com git url, else the default repo
+  [[ "$REMOTE_CMGIT" =~ ^https://(github|gitlab)\.com/[A-Za-z0-9._/-]+\.git$ ]] || REMOTE_CMGIT='https://github.com/centminmod/centminmod.git'
   echo
   cecho "setup Centmin Mod git sourced install..." $boldyellow
   cd /usr/local/src
@@ -210,9 +212,11 @@ gitenv_setup() {
 
 gitenv_update() {
   CM_DIRSIZE=$(df -P /usr/local/src/centminmod | awk '{print $4}' | tail -1 | awk '{print $1}')
-  REMOTE_CMGIT=$(curl -sk${ipv_forceopt} https://raw.githubusercontent.com/centminmod/centminmod/${branchname}/giturl.txt)
+  REMOTE_CMGIT=$(curl -s${ipv_forceopt} https://raw.githubusercontent.com/centminmod/centminmod/${branchname}/giturl.txt)
+  # clone only from a https github.com/gitlab.com git url, else the default repo
+  [[ "$REMOTE_CMGIT" =~ ^https://(github|gitlab)\.com/[A-Za-z0-9._/-]+\.git$ ]] || REMOTE_CMGIT='https://github.com/centminmod/centminmod.git'
 if [[ -d "${SCRIPT_DIR}/.git" ]]; then
-  if [[ "$(curl -${ipv_forceopt}sLk https://github.com/centminmod/centminmod/raw/${branchname}/gitclean.txt)" = 'no' ]]; then
+  if [[ "$(curl -${ipv_forceopt}sL https://github.com/centminmod/centminmod/raw/${branchname}/gitclean.txt)" = 'no' ]]; then
     echo
     cecho "Updating Current Centmin Mod code branch via git" $boldyellow
     # git fetch
@@ -360,7 +364,9 @@ gitenv_change() {
     exit 1
   fi
   CM_DIRSIZE=$(df -P /usr/local/src/centminmod | awk '{print $4}' | tail -1 | awk '{print $1}')
-  REMOTE_CMGIT=$(curl -sk${ipv_forceopt} https://raw.githubusercontent.com/centminmod/centminmod/${branchname}/giturl.txt)
+  REMOTE_CMGIT=$(curl -s${ipv_forceopt} https://raw.githubusercontent.com/centminmod/centminmod/${branchname}/giturl.txt)
+  # clone only from a https github.com/gitlab.com git url, else the default repo
+  [[ "$REMOTE_CMGIT" =~ ^https://(github|gitlab)\.com/[A-Za-z0-9._/-]+\.git$ ]] || REMOTE_CMGIT='https://github.com/centminmod/centminmod.git'
 if [[ -d "${SCRIPT_DIR}/.git" ]]; then
   echo
   echo "fetching latest branch list..."

@@ -181,13 +181,17 @@ push_update_alerts() {
   # not on every cron run. Markers are shared with dmotd push_dmotd_alerts()
   # so each version is pushed once in total. cmm is keyed on the upstream
   # commit because its branch name stays the same between code updates
-  # (or the local commit when the branch has no upstream).
-  if [[ "$pushapp" = 'nginx' || "$pushapp" = 'php' || "$pushapp" = 'cmm' ]]; then
+  # (or the local commit when the branch has no upstream). The reboot needed
+  # alert (this script only) is pushed once per boot and list of updated
+  # packages, so a pending reboot is not re-alerted on every cron run.
+  if [[ "$pushapp" = 'nginx' || "$pushapp" = 'php' || "$pushapp" = 'cmm' || "$pushapp" = 'restart' ]]; then
     _sent_dir="/var/cache/centminmod/dmotd-push"
     _sent_key="$pushapp_ver"
     if [[ "$pushapp" = 'cmm' ]]; then
       _sent_key="$(git --git-dir="${CMSCRIPT_GITDIR}/.git" rev-parse --verify -q '@{u}' 2>/dev/null)"
       [ -n "$_sent_key" ] || _sent_key="noupstream-$(git --git-dir="${CMSCRIPT_GITDIR}/.git" rev-parse --verify -q HEAD 2>/dev/null)"
+    elif [[ "$pushapp" = 'restart' ]]; then
+      _sent_key="$(cat /proc/sys/kernel/random/boot_id 2>/dev/null)-$(printf '%s' "$pushapp_ver" | cksum | awk '{print $1}')"
     fi
     _sent_file="${_sent_dir}/${pushapp}-$(printf '%s' "$_sent_key" | tr '/|: ' '_____').sent"
     if [ -f "$_sent_file" ]; then
@@ -288,15 +292,15 @@ push_update_alerts() {
        && printf '%s' "$RESPONSE" | grep -q '"status":1'; then
       touch "$_cooldown_file" 2>/dev/null
     fi
-    # Same gate for the nginx/php/cmm sent marker. Older nginx/php markers
-    # stay (pruned after 180 days): dmotd and check-for-updates.sh can see
-    # different latest versions and would otherwise re-alert in turn.
-    # cmm keeps only the latest upstream commit.
+    # Same gate for the nginx/php/cmm/restart sent marker. Older nginx/php
+    # markers stay (pruned after 180 days): dmotd and check-for-updates.sh can
+    # see different latest versions and would otherwise re-alert in turn.
+    # cmm keeps only the latest upstream commit, restart the latest boot+list.
     if [ -n "${_sent_file:-}" ] && [ "${_curl_rc:-1}" -eq 0 ] \
        && printf '%s' "$RESPONSE" | grep -q '"status":1'; then
       [ -d "$_sent_dir" ] || mkdir -p -m 0700 "$_sent_dir" 2>/dev/null
-      if [[ "$pushapp" = 'cmm' ]]; then
-        rm -f "${_sent_dir}/cmm-"*.sent 2>/dev/null
+      if [[ "$pushapp" = 'cmm' || "$pushapp" = 'restart' ]]; then
+        rm -f "${_sent_dir}/${pushapp}-"*.sent 2>/dev/null
       else
         find "$_sent_dir" -maxdepth 1 -name "${pushapp}-*.sent" -mtime +180 -delete 2>/dev/null
       fi
@@ -445,7 +449,9 @@ cmm_check() {
       # if git remote repo url is not same as one defined in giturl.txt then pull a new copy of
       # centmin mod code locally using giturl.txt defined git repo name
       GET_GITVER=$(git --version | awk '{print $3}' | sed -e 's|\.||g' | cut -c1,2)
-      CURL_GITURL=$(curl -sk${ipv_forceopt} --connect-timeout 10 https://raw.githubusercontent.com/centminmod/centminmod/$(awk -F "=" '/branchname=/ {print $2}' ${CMSCRIPT_GITDIR}/centmin.sh | sed -e "s|'||g" )/giturl.txt)
+      CURL_GITURL=$(curl -s${ipv_forceopt} --connect-timeout 10 https://raw.githubusercontent.com/centminmod/centminmod/$(awk -F "=" '/branchname=/ {print $2}' ${CMSCRIPT_GITDIR}/centmin.sh | sed -e "s|'||g" )/giturl.txt)
+      # only a https github.com/gitlab.com git url counts, anything else is no data
+      [[ "$CURL_GITURL" =~ ^https://(github|gitlab)\.com/[A-Za-z0-9._/-]+\.git$ ]] || CURL_GITURL=''
       # if git version >1.8 use supported ls-remote --get-url flag otherwise use alternative
       if [[ -d "${CMSCRIPT_GITDIR}" ]]; then
         if [[ "$GET_GITVER" -ge '18' ]]; then
