@@ -733,8 +733,9 @@ if [[ "$CENTOS_NINE" -eq '9' ]]; then
   echo "WGET_VERSION_EIGHT='1.24.5'" >> /etc/centminmod/custom_config.inc
   echo "WGET_VERSION_NINE='1.24.5'" >> /etc/centminmod/custom_config.inc
 fi
-# set el8 defaults
+# set el8 defaults (utf8mb4 charset for MariaDB 10.11)
 if [[ "$CENTOS_EIGHT" -eq '8' ]]; then
+  echo "SET_DEFAULT_MYSQLCHARSET='utf8mb4'" >> /etc/centminmod/custom_config.inc
   echo "GENERAL_DEVTOOLSETGCC='y'" >> /etc/centminmod/custom_config.inc
   #echo "DEVTOOLSETTEN='n'" >> /etc/centminmod/custom_config.inc
   #echo "DEVTOOLSETELEVEN='n'" >> /etc/centminmod/custom_config.inc
