@@ -952,11 +952,12 @@ if [[ "$CENTOS_NINE" -eq '9' ]]; then
   append_config_if_missing "PHP_OVERWRITECONF='n'"
   append_config_if_missing "PYTHON_INSTALL_ALTERNATIVES='y'"
 fi
-# set el8 defaults
+# set el8 defaults (utf8mb4 charset for MariaDB 10.11)
 if [[ "$CENTOS_EIGHT" -eq '8' ]]; then
   #echo "DEVTOOLSETTEN='n'" >> /etc/centminmod/custom_config.inc
   #echo "DEVTOOLSETELEVEN='n'" >> /etc/centminmod/custom_config.inc
   #echo "DEVTOOLSETTWELVE='y'" >> /etc/centminmod/custom_config.inc
+  append_config_if_missing "SET_DEFAULT_MYSQLCHARSET='utf8mb4'"
   append_config_if_missing "SELFSIGNEDSSL_ECDSA='y'"
   if [[ "$ISMINMEM_OVERRIDE" = [yY] && "$ISMINSWAP_OVERRIDE" = [yY] ]]; then
     append_config_if_missing "PHPFINFO='n'"
