@@ -3268,8 +3268,10 @@ if [[ "$ngver" = 'angie' ]] || [[ "$ngver" && "$NGXUPGRADE_VER" = '1.9' ]] || [[
   if [[ -f /usr/local/nginx/conf/nginx.conf && -f /usr/local/nginx/conf/redisupstream.conf ]]; then
     sed -i "s|^#include \/usr\/local\/nginx\/conf\/redisupstream.conf|include \/usr\/local\/nginx\/conf\/redisupstream.conf|" /usr/local/nginx/conf/nginx.conf
   fi
-  if [[ -f /usr/local/nginx/conf/conf.d/virtual.conf && -z "$(grep ' reuseport' /usr/local/nginx/conf/conf.d/virtual.conf)" ]]; then
-    sed -i "s|backlog=.*|backlog=2048 reuseport;|" /usr/local/nginx/conf/conf.d/virtual.conf
+  # re-add reuseport to the default listen 80 line on EL7+ kernels (SO_REUSEPORT
+  # supported); keep its backlog value and any other listen options
+  if [[ -f /usr/local/nginx/conf/conf.d/virtual.conf && -z "$(grep ' reuseport' /usr/local/nginx/conf/conf.d/virtual.conf)" ]] && [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_EIGHT" = '8' || "$CENTOS_NINE" = '9' || "$CENTOS_TEN" = '10' ]]; then
+    sed -i -E "/^[[:space:]]*listen[[:space:]]+80[[:space:]]+default_server/ s|(backlog=[0-9]+)|\1 reuseport|" /usr/local/nginx/conf/conf.d/virtual.conf
   fi
   # workaround for nginx 1.9 compatibility
   # sed -i.bak 's|ngx_http_set_connection_log|ngx_set_connection_log|g' ${DIR_TMP}/lua-nginx-module-${ORESTY_LUANGINXVER}/src/ngx_http_lua_initworkerby.c
@@ -3312,8 +3314,10 @@ elif [[ -z "$ngver" && "$NGXINSTALL_VER" = '1.9' ]] || [[ -z "$ngver" && "$NGXIN
   if [[ -f /usr/local/nginx/conf/nginx.conf && -f /usr/local/nginx/conf/redisupstream.conf ]]; then
     sed -i "s|^#include \/usr\/local\/nginx\/conf\/redisupstream.conf|include \/usr\/local\/nginx\/conf\/redisupstream.conf|" /usr/local/nginx/conf/nginx.conf
   fi
-  if [[ -f /usr/local/nginx/conf/conf.d/virtual.conf && -z "$(grep ' reuseport' /usr/local/nginx/conf/conf.d/virtual.conf)" ]]; then
-    sed -i "s|backlog=.*|backlog=2048 reuseport;|" /usr/local/nginx/conf/conf.d/virtual.conf
+  # re-add reuseport to the default listen 80 line on EL7+ kernels (SO_REUSEPORT
+  # supported); keep its backlog value and any other listen options
+  if [[ -f /usr/local/nginx/conf/conf.d/virtual.conf && -z "$(grep ' reuseport' /usr/local/nginx/conf/conf.d/virtual.conf)" ]] && [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_EIGHT" = '8' || "$CENTOS_NINE" = '9' || "$CENTOS_TEN" = '10' ]]; then
+    sed -i -E "/^[[:space:]]*listen[[:space:]]+80[[:space:]]+default_server/ s|(backlog=[0-9]+)|\1 reuseport|" /usr/local/nginx/conf/conf.d/virtual.conf
   fi
   # workaround for nginx 1.9 compatibility
   # sed -i.bak 's|ngx_http_set_connection_log|ngx_set_connection_log|g' ${DIR_TMP}/lua-nginx-module-${ORESTY_LUANGINXVER}/src/ngx_http_lua_initworkerby.c
@@ -6006,7 +6010,8 @@ if [[ "$CHECK_LXD" != [yY] ]] && [[ ! -f /proc/user_beancounters && -f /usr/loca
     SET_NGINXBACKLOG=$(($GETSOMAXCON_VALUE/2))
     # take care of non-HTTPS listen backlog socket directive as per ip/port pair rules
     if [ ! -z "$SET_NGINXBACKLOG" ]; then
-      sed -i "s|backlog=.*|backlog=$SET_NGINXBACKLOG;|" /usr/local/nginx/conf/conf.d/virtual.conf
+      # change only the number: keep reuseport, fastopen and the closing semicolon
+      sed -i -E "s|backlog=[0-9]+|backlog=$SET_NGINXBACKLOG|" /usr/local/nginx/conf/conf.d/virtual.conf
     fi
 fi
 if [[ "$CHECK_LXD" != [yY] ]] && [[ "$AUTOHARDTUNE_NGINXBACKLOG" = [yY] && ! -f /proc/user_beancounters && -f "${NGINX_DIRINSTALL}/src/os/unix/ngx_linux_config.h" ]]; then
