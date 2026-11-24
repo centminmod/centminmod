@@ -2972,7 +2972,11 @@ reuseportchecks() {
     if [[ "$CENTOS_SEVEN" -eq '7' ]]; then
       CHECKREUSEPORT=$(grep --color -Ro SO_REUSEPORT /usr/src/kernels | head -n1 | awk -F ":" '{print $2}')
     fi
-    if [[ "$CHECKREUSEPORT" = 'SO_REUSEPORT' ]] || [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]]; then
+    # a kernel that rejects SO_REUSEPORT (ngx_kernel_reuseport returns 3) never gets
+    # reuseport: nginx built with it would not start there
+    ngx_kernel_reuseport
+    ngx_reuseport_rc=$?
+    if [[ "$ngx_reuseport_rc" -ne 3 ]] && { [[ "$CHECKREUSEPORT" = 'SO_REUSEPORT' ]] || [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]]; }; then
       SUPPORT_REUSEPORT=y
       if [ -f /usr/local/nginx/conf/nginx.conf ]; then
         sed -i 's|accept_mutex .*|accept_mutex off;|' /usr/local/nginx/conf/nginx.conf
