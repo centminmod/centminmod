@@ -906,6 +906,24 @@ nginx_extra_modules() {
   return 0
 }
 
+# true for nginx 1.9+ (stream, threads and reuseport) and the named mainline builds;
+# a numeric test, so a new release such as 1.32 needs no version list update
+ngx_version_modern() {
+  case "$1" in
+    master|master-google|quic) return 0 ;;
+  esac
+  [[ "$1" =~ ^([0-9]+)\.([0-9]+)$ ]] || return 1
+  (( 10#${BASH_REMATCH[1]} > 1 || ( 10#${BASH_REMATCH[1]} == 1 && 10#${BASH_REMATCH[2]} >= 9 ) ))
+}
+
+# SO_REUSEPORT on the running kernel: 0 = accepted, 3 = rejected, anything else = not
+# tested (no perl or Socket module). nginx built with reuseport fails to start when
+# setsockopt(SO_REUSEPORT) fails, and nginx -t does not catch it (old OpenVZ or
+# container kernels); 15 is SO_REUSEPORT on x86_64 Linux
+ngx_kernel_reuseport() {
+  perl -MSocket -e 'my $o = eval { Socket::SO_REUSEPORT() } || 15; socket(my $s, PF_INET, SOCK_STREAM, 0) or exit 1; setsockopt($s, SOL_SOCKET, $o, 1) or exit 3' >/dev/null 2>&1
+}
+
 funct_nginxconfigure() {
 
 if [ -f "${CM_INSTALLDIR}/inc/custom_config.inc" ]; then
@@ -3683,7 +3701,7 @@ NGXINSTALL_VER=$(echo "$NGINX_VERSION" | cut -d . -f1,2)
 NGXUPGRADE_VER=$(echo "$ngver" | cut -d . -f1,2)
 # ngver 'angie' has no version number for NGXUPGRADE_VER to match: without
 # this Angie builds get no --with-stream or --with-stream_ssl_module
-if [[ "$ngver" = 'angie' ]] || [[ "$ngver" && "$NGXUPGRADE_VER" = '1.9' ]] ||[[ "$ngver" && "$NGXUPGRADE_VER" = '1.10' ]] || [[ "$ngver" && "$NGXUPGRADE_VER" = '1.11' ]] || [[ "$ngver" && "$NGXUPGRADE_VER" = '1.12' ]] || [[ "$ngver" && "$NGXUPGRADE_VER" = '1.13' ]] || [[ "$ngver" && "$NGXUPGRADE_VER" = '1.14' ]] || [[ "$ngver" && "$NGXUPGRADE_VER" = '1.15' ]] || [[ "$ngver" && "$NGXUPGRADE_VER" = '1.16' ]] || [[ "$ngver" && "$NGXUPGRADE_VER" = '1.17' ]] || [[ "$ngver" && "$NGXUPGRADE_VER" = '1.18' ]] || [[ "$ngver" && "$NGXUPGRADE_VER" = '1.19' ]] || [[ "$ngver" && "$NGXUPGRADE_VER" = '1.20' ]] || [[ "$ngver" && "$NGXUPGRADE_VER" = '1.21' ]] || [[ "$ngver" && "$NGXUPGRADE_VER" = '1.22' ]] || [[ "$ngver" && "$NGXUPGRADE_VER" = '1.23' ]] || [[ "$ngver" && "$NGXUPGRADE_VER" = '1.24' ]] || [[ "$ngver" && "$NGXUPGRADE_VER" = '1.25' ]] || [[ "$ngver" && "$NGXUPGRADE_VER" = '1.26' ]] || [[ "$ngver" && "$NGXUPGRADE_VER" = '1.27' ]] || [[ "$ngver" && "$NGXUPGRADE_VER" = '1.28' ]] || [[ "$ngver" && "$NGXUPGRADE_VER" = '1.29' ]] || [[ "$ngver" && "$NGXUPGRADE_VER" = '1.30' ]] || [[ "$ngver" && "$NGXUPGRADE_VER" = '1.31' ]] || [[ "$ngver" && "$NGXUPGRADE_VER" = 'master' ]] || [[ "$ngver" && "$NGXUPGRADE_VER" = 'master-google' ]] || [[ "$ngver" && "$NGXUPGRADE_VER" = 'quic' ]]; then
+if [[ "$ngver" = 'angie' ]] || { [[ "$ngver" ]] && ngx_version_modern "$NGXUPGRADE_VER"; }; then
 # if [[ "$ngver" && "$NGXUPGRADE_VER" > '1.9' ]]; then
   if [[ "$NGINX_STREAM" = [yY] ]]; then
     if [[ "$DYNAMIC_SUPPORT" = [yY] && "$NGXDYNAMIC_STREAM" = [yY] ]]; then
@@ -3722,15 +3740,23 @@ if [[ "$ngver" = 'angie' ]] || [[ "$ngver" && "$NGXUPGRADE_VER" = '1.9' ]] ||[[ 
   if [[ -f /usr/local/nginx/conf/nginx.conf && -f /usr/local/nginx/conf/redisupstream.conf ]]; then
     sed -i "s|^#include \/usr\/local\/nginx\/conf\/redisupstream.conf|include \/usr\/local\/nginx\/conf\/redisupstream.conf|" /usr/local/nginx/conf/nginx.conf
   fi
-  # re-add reuseport to the default listen 80 line on EL7+ kernels (SO_REUSEPORT
-  # supported); keep its backlog value and any other listen options
-  if [[ -f /usr/local/nginx/conf/conf.d/virtual.conf && -z "$(grep ' reuseport' /usr/local/nginx/conf/conf.d/virtual.conf)" ]] && [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_EIGHT" = '8' || "$CENTOS_NINE" = '9' || "$CENTOS_TEN" = '10' ]]; then
-    sed -i -E "/^[[:space:]]*listen[[:space:]]+80[[:space:]]+default_server/ s|(backlog=[0-9]+)|\1 reuseport|" /usr/local/nginx/conf/conf.d/virtual.conf
+  # reuseport in virtual.conf: remove it when the running kernel rejects SO_REUSEPORT
+  # (nginx would not start), re-add it to the default listen 80 line on EL7+ when the
+  # kernel accepts it (keeping the backlog value and any other listen options), and
+  # leave it alone when the kernel could not be tested
+  if [[ -f /usr/local/nginx/conf/conf.d/virtual.conf ]]; then
+    ngx_kernel_reuseport
+    ngx_reuseport_rc=$?
+    if [[ "$ngx_reuseport_rc" -eq 3 ]]; then
+      sed -i -E 's/[[:space:]]+reuseport([[:space:];])/\1/g' /usr/local/nginx/conf/conf.d/virtual.conf
+    elif [[ "$ngx_reuseport_rc" -eq 0 && -z "$(grep ' reuseport' /usr/local/nginx/conf/conf.d/virtual.conf)" ]] && [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_EIGHT" = '8' || "$CENTOS_NINE" = '9' || "$CENTOS_TEN" = '10' ]]; then
+      sed -i -E "/^[[:space:]]*listen[[:space:]]+80[[:space:]]+default_server/ s|(backlog=[0-9]+)|\1 reuseport|" /usr/local/nginx/conf/conf.d/virtual.conf
+    fi
   fi
   # workaround for nginx 1.9 compatibility
   # sed -i.bak 's|ngx_http_set_connection_log|ngx_set_connection_log|g' ${DIR_TMP}/lua-nginx-module-${ORESTY_LUANGINXVER}/src/ngx_http_lua_initworkerby.c
   # sed -i.bak 's|ngx_http_set_connection_log|ngx_set_connection_log|g' ${DIR_TMP}/lua-nginx-module-${ORESTY_LUANGINXVER}/src/ngx_http_lua_timer.c
-elif [[ -z "$ngver" && "$NGXINSTALL_VER" = '1.9' ]] || [[ -z "$ngver" && "$NGXINSTALL_VER" = '1.10' ]] || [[ -z "$ngver" && "$NGXINSTALL_VER" = '1.11' ]] || [[ -z "$ngver" && "$NGXINSTALL_VER" = '1.12' ]] || [[ -z "$ngver" && "$NGXINSTALL_VER" = '1.13' ]] || [[ -z "$ngver" && "$NGXINSTALL_VER" = '1.14' ]] || [[ -z "$ngver" && "$NGXINSTALL_VER" = '1.15' ]] || [[ -z "$ngver" && "$NGXINSTALL_VER" = '1.16' ]] || [[ -z "$ngver" && "$NGXINSTALL_VER" = '1.17' ]] || [[ -z "$ngver" && "$NGXINSTALL_VER" = '1.17' ]] || [[ -z "$ngver" && "$NGXINSTALL_VER" = '1.17' ]] || [[ -z "$ngver" && "$NGXINSTALL_VER" = '1.18' ]] || [[ -z "$ngver" && "$NGXINSTALL_VER" = '1.19' ]] || [[ -z "$ngver" && "$NGXINSTALL_VER" = '1.20' ]] || [[ -z "$ngver" && "$NGXINSTALL_VER" = '1.21' ]] || [[ -z "$ngver" && "$NGXINSTALL_VER" = '1.22' ]] || [[ -z "$ngver" && "$NGXINSTALL_VER" = '1.23' ]] || [[ -z "$ngver" && "$NGXINSTALL_VER" = '1.24' ]] || [[ -z "$ngver" && "$NGXINSTALL_VER" = '1.25' ]] || [[ -z "$ngver" && "$NGXINSTALL_VER" = '1.26' ]] || [[ -z "$ngver" && "$NGXINSTALL_VER" = '1.27' ]] || [[ -z "$ngver" && "$NGXINSTALL_VER" = '1.28' ]] || [[ -z "$ngver" && "$NGXINSTALL_VER" = '1.29' ]] || [[ -z "$ngver" && "$NGXINSTALL_VER" = '1.30' ]] || [[ -z "$ngver" && "$NGXINSTALL_VER" = '1.31' ]] || [[ -z "$ngver" && "$NGXINSTALL_VER" = 'master' ]] || [[ -z "$ngver" && "$NGXINSTALL_VER" = 'master-google' ]] || [[ -z "$ngver" && "$NGXINSTALL_VER" = 'quic' ]]; then
+elif [[ -z "$ngver" ]] && ngx_version_modern "$NGXINSTALL_VER"; then
   if [[ "$NGINX_STREAM" = [yY] ]]; then
     if [[ "$DYNAMIC_SUPPORT" = [yY] && "$NGXDYNAMIC_STREAM" = [yY] ]]; then
       STREAM=' --with-stream=dynamic --with-stream_ssl_module'
@@ -3768,10 +3794,18 @@ elif [[ -z "$ngver" && "$NGXINSTALL_VER" = '1.9' ]] || [[ -z "$ngver" && "$NGXIN
   if [[ -f /usr/local/nginx/conf/nginx.conf && -f /usr/local/nginx/conf/redisupstream.conf ]]; then
     sed -i "s|^#include \/usr\/local\/nginx\/conf\/redisupstream.conf|include \/usr\/local\/nginx\/conf\/redisupstream.conf|" /usr/local/nginx/conf/nginx.conf
   fi
-  # re-add reuseport to the default listen 80 line on EL7+ kernels (SO_REUSEPORT
-  # supported); keep its backlog value and any other listen options
-  if [[ -f /usr/local/nginx/conf/conf.d/virtual.conf && -z "$(grep ' reuseport' /usr/local/nginx/conf/conf.d/virtual.conf)" ]] && [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_EIGHT" = '8' || "$CENTOS_NINE" = '9' || "$CENTOS_TEN" = '10' ]]; then
-    sed -i -E "/^[[:space:]]*listen[[:space:]]+80[[:space:]]+default_server/ s|(backlog=[0-9]+)|\1 reuseport|" /usr/local/nginx/conf/conf.d/virtual.conf
+  # reuseport in virtual.conf: remove it when the running kernel rejects SO_REUSEPORT
+  # (nginx would not start), re-add it to the default listen 80 line on EL7+ when the
+  # kernel accepts it (keeping the backlog value and any other listen options), and
+  # leave it alone when the kernel could not be tested
+  if [[ -f /usr/local/nginx/conf/conf.d/virtual.conf ]]; then
+    ngx_kernel_reuseport
+    ngx_reuseport_rc=$?
+    if [[ "$ngx_reuseport_rc" -eq 3 ]]; then
+      sed -i -E 's/[[:space:]]+reuseport([[:space:];])/\1/g' /usr/local/nginx/conf/conf.d/virtual.conf
+    elif [[ "$ngx_reuseport_rc" -eq 0 && -z "$(grep ' reuseport' /usr/local/nginx/conf/conf.d/virtual.conf)" ]] && [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_EIGHT" = '8' || "$CENTOS_NINE" = '9' || "$CENTOS_TEN" = '10' ]]; then
+      sed -i -E "/^[[:space:]]*listen[[:space:]]+80[[:space:]]+default_server/ s|(backlog=[0-9]+)|\1 reuseport|" /usr/local/nginx/conf/conf.d/virtual.conf
+    fi
   fi
   # workaround for nginx 1.9 compatibility
   # sed -i.bak 's|ngx_http_set_connection_log|ngx_set_connection_log|g' ${DIR_TMP}/lua-nginx-module-${ORESTY_LUANGINXVER}/src/ngx_http_lua_initworkerby.c
