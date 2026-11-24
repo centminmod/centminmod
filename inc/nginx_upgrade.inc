@@ -682,7 +682,8 @@ nginx_master_ready() {
     [[ "$pid" =~ ^[1-9][0-9]*$ && "$pid" -gt 1 ]] || return 1
     kill -0 "$pid" 2>/dev/null || return 1
     ps -p "$pid" -o args= | grep -Eq '^(nginx|angie): master' || return 1
-    ps -eo ppid=,args= | awk -v pid="$pid" '$1 == pid && $2 ~ /^(nginx|angie):$/ && $3 == "worker" && $4 == "process" && $0 !~ /worker process is shutting down/ { ready=1 } END { exit !ready }'
+    # one -o per column: procps before 3.3.15 (EL6/EL7) reads "ppid=,args=" as one column
+    ps -eo ppid= -o args= | awk -v pid="$pid" '$1 == pid && $2 ~ /^(nginx|angie):$/ && $3 == "worker" && $4 == "process" && $0 !~ /worker process is shutting down/ { ready=1 } END { exit !ready }'
 }
 
 function funct_nginxupgrade {
@@ -1542,7 +1543,7 @@ fi
            if [[ "$(cat /usr/local/nginx/logs/nginx.pid.oldbin 2>/dev/null)" != "$old_nginx_pid" ]] || ! kill -0 "$old_nginx_pid" 2>/dev/null; then
              break
            fi
-           if ! ps -eo ppid=,args= | awk -v pid="$old_nginx_pid" '$1 == pid && $2 ~ /^(nginx|angie):$/ && $3 == "worker" { found=1 } END { exit !found }'; then
+           if ! ps -eo ppid= -o args= | awk -v pid="$old_nginx_pid" '$1 == pid && $2 ~ /^(nginx|angie):$/ && $3 == "worker" { found=1 } END { exit !found }'; then
              break
            fi
            if (( SECONDS >= nginx_deadline )); then
