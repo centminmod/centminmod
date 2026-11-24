@@ -195,6 +195,14 @@ compressmenu_notice() {
 }
 
 zstdinstall() {
+  # remove the libzstd library and headers an older full 'make install' put in
+  # /usr/local: /etc/ld.so.conf.d/wget.conf lists /usr/local/lib, so system programs
+  # (rpm, libarchive) loaded it instead of the OS libzstd and its security updates
+  if [[ -e /usr/lib64/libzstd.so.1 ]] && grep -qx 'prefix=/usr/local' /usr/local/lib/pkgconfig/libzstd.pc 2>/dev/null; then
+    rm -f /usr/local/lib/libzstd.so* /usr/local/lib/libzstd.a /usr/local/lib/pkgconfig/libzstd.pc /usr/local/include/zstd.h /usr/local/include/zdict.h /usr/local/include/zstd_errors.h
+    ldconfig
+    echo "removed /usr/local libzstd library and headers, system programs use the OS libzstd"
+  fi
   if [[ ! -f /usr/local/bin/zstd || ! -f "${DIR_TMP}/zstd-${ZSTD_VER}.tar.gz" ]]; then
     cd ${DIR_TMP}
     if [ -s zstd-${ZSTD_VER}.tar.gz ]; then
@@ -206,15 +214,10 @@ zstdinstall() {
     tar xvzf zstd-${ZSTD_VER}.tar.gz
     cd zstd-${ZSTD_VER}
     make clean
-    if [[ "$(grep 'lib-mt' Makefile)" ]]; then
-      echo
-      echo "make lib-mt"
-      echo
-      make lib-mt -j$(nproc)
-    else
-      make -j$(nproc)
-    fi
-    make install
+    # command line tools only: the zstd binary has libzstd built in, and a shared
+    # libzstd in /usr/local/lib would override the OS one for system programs
+    make -C programs zstd-release -j$(nproc)
+    make -C programs install
     if [ -f /usr/local/bin/zstd ]; then
       cecho "zstd installed" $boldyellow
     fi
