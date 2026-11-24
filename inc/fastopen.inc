@@ -60,7 +60,9 @@ elif [[ "$TCP_FASTOPEN_ENABLE" = [yY] ]] && [[ "$TCPFASTOPEN" -eq '1' && "$SUPPO
   fi
 elif [[ "$TCP_FASTOPEN_ENABLE" != [yY] ]]; then
   if [ -f /usr/local/nginx/conf/conf.d/virtual.conf ]; then
-    sed -i 's| fastopen=256| |g' /usr/local/nginx/conf/conf.d/virtual.conf
+    # remove only the exact fastopen=256 token; a longer value such as fastopen=2560
+    # must not leave a bare number behind (nginx: invalid parameter)
+    sed -i -E 's/ fastopen=256([^0-9]|$)/\1/g' /usr/local/nginx/conf/conf.d/virtual.conf
   fi
 fi
 }
