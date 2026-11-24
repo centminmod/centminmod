@@ -138,6 +138,12 @@ php_ext_zstd() {
     rm -rf php-ext-zstd
     git clone --recursive --depth=1 https://github.com/kjdev/php-ext-zstd.git
     cd php-ext-zstd
+    # build the bundled zstd from the ZSTD_VER release instead of the submodule pin
+    if (cd zstd && git fetch -q --depth=1 origin tag "v${ZSTD_VER}" && git checkout -q "v${ZSTD_VER}"); then
+      echo "php-ext-zstd: bundled zstd v${ZSTD_VER}"
+    else
+      cecho "php-ext-zstd: zstd v${ZSTD_VER} checkout failed, using the bundled submodule version" $boldyellow
+    fi
     phpize
     CFLAGS="${COMPILER_CFLAGS} -fPIC -O2 -fstack-protector-strong -D_FORTIFY_SOURCE=2" CPPFLAGS="-D_FORTIFY_SOURCE=2" CXXFLAGS="-fPIC -O2" LDFLAGS="-Wl,-z,relro,-z,now -pie" ./configure --with-php-config=/usr/local/bin/php-config
     time make -j$(nproc)
