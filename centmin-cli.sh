@@ -30,7 +30,7 @@ DT=$(date +"%d%m%y-%H%M%S")
 branchname='141.00beta01'
 SCRIPT_MAJORVER='141'
 SCRIPT_MINORVER='00'
-SCRIPT_INCREMENTVER='499'
+SCRIPT_INCREMENTVER='500'
 SCRIPT_VERSIONSHORT="${branchname}"
 SCRIPT_VERSION="${SCRIPT_VERSIONSHORT}.b${SCRIPT_INCREMENTVER}"
 SCRIPT_DATE='16/08/25'
@@ -1020,7 +1020,7 @@ MYSQL_INSTALL='n'            # Install official Oracle MySQL Server (MariaDB alt
 SENDMAIL_INSTALL='n'         # Install Sendmail (and mailx) set to y and POSTFIX_INSTALL=n for sendmail
 POSTFIX_INSTALL=y            # Install Postfix (and mailx) set to n and SENDMAIL_INSTALL=y for sendmail
 # Nginx
-NGINX_VERSION='1.31.9'             # Use this version of Nginx
+NGINX_VERSION='1.31.10'            # Use this version of Nginx
 NGINX_ANGIE_VERSION='Angie-1.12.5' # Angie 1.12.0+ turns on 'resolver conf' (/etc/resolv.conf) by default, 'resolver off;' restores the old behaviour
 NGINX_ANGIE_ACME='y'           # Angie builds only: --with-http_acme_module (Angie 1.5.0+), idle until a vhost uses acme_client https://en.angie.software/angie/docs/configuration/modules/http/http_acme/
 FREENGINX_VERSION='1.30.2'     # Maxim's Freenginx fork https://freenginx.org/en/download.html

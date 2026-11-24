@@ -18,7 +18,7 @@ Centmin Mod 141.00beta01 brings four kinds of nginx module changes:
    - HTTP-FLV live streaming
 4. **Two deprecated modules:**
    - The third-party sticky module still builds, with a warning.
-   - The JA3 TLS fingerprint module prints a warning and is skipped on most builds, including the default nginx 1.31.9.
+   - The JA3 TLS fingerprint module prints a warning and is skipped on most builds, including the default nginx 1.31.10.
 
 Nothing optional is built unless you ask for it. A server that keeps its existing settings gets the security updates and the JSON module on its next rebuild. Angie builds also get the ACME client, and ModSecurity users move to the pinned connector (see [Upgrade Notes](#upgrade-notes-for-existing-servers)).
 
@@ -35,7 +35,7 @@ All modules are controlled from `/etc/centminmod/custom_config.inc`, followed by
 2. **Rebuild nginx.** Use centmin.sh menu option 4 (Nginx Upgrade / Downgrade) and enter your current nginx version, or `angie` on an Angie server (a version number would switch it to stock nginx). You can also run it without the menu:
    ```bash
    cd /usr/local/src/centminmod
-   ./centmin-cli.sh nginx-update 1.31.9   # or: nginx-update angie
+   ./centmin-cli.sh nginx-update 1.31.10  # or: nginx-update angie
    ```
 
 3. **Check the module is in the build.**
