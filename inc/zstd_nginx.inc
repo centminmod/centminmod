@@ -1,5 +1,5 @@
 #######################################################
-NGINX_ZSTD_VER='1.5.7'
+NGINX_ZSTD_VER='1.6.0'
 
 nginx_zstdinstall() {
   if [[ ! -f /usr/local/nginx-dep/bin/zstd || ! -f "${DIR_TMP}/zstd-nginx/zstd-${NGINX_ZSTD_VER}.tar.gz" || "$REBUILD_NGINX_ZSTD" = [yY] ]]; then
