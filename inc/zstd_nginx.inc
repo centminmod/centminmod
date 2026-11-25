@@ -72,12 +72,15 @@ zstd_types text/plain text/css text/xml application/javascript application/x-jav
 FFE
 fi
 
+    # initial installs get here before nginx.conf exists, nginx_install.inc adds the include later
+    if [ -f /usr/local/nginx/conf/nginx.conf ]; then
 ZSTD_INCLUDECHECK=$(grep '\/usr\/local\/nginx\/conf\/zstd_inc.conf' /usr/local/nginx/conf/nginx.conf)
 
     if [[ -z "$ZSTD_INCLUDECHECK" && -f /usr/local/nginx/conf/zstd_inc.conf ]]; then
         sed -i 's/http {/http { \n include \/usr\/local\/nginx\/conf\/zstd_inc.conf;/g' /usr/local/nginx/conf/nginx.conf
     fi
     sed -i 's|^ #include \/usr\/local\/nginx\/conf\/zstd_inc.conf;| include \/usr\/local\/nginx\/conf\/zstd_inc.conf;|g' /usr/local/nginx/conf/nginx.conf
+    fi
   elif [[ -f /usr/local/nginx/conf/nginx.conf ]]; then
     sed -i 's|^ include \/usr\/local\/nginx\/conf\/zstd_inc.conf;| #include \/usr\/local\/nginx\/conf\/zstd_inc.conf;|g' /usr/local/nginx/conf/nginx.conf
   fi

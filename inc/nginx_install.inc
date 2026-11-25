@@ -459,6 +459,14 @@ fi
       # modsecurity_install ran before virtual.conf existed, enable its directives now
       modsec_virtualconf
     fi
+    if [[ "$NGINX_LIBBROTLI" = [yY] && -f /usr/local/nginx/conf/brotli_inc.conf ]] && ! grep -q 'brotli_inc.conf' /usr/local/nginx/conf/nginx.conf; then
+      # ngxbrotli_download ran before nginx.conf existed, add its include now
+      sed -i 's/http {/http { \n include \/usr\/local\/nginx\/conf\/brotli_inc.conf;/g' /usr/local/nginx/conf/nginx.conf
+    fi
+    if [[ "$NGINX_ZSTD" = [yY] && -f /usr/local/nginx/conf/zstd_inc.conf ]] && ! grep -q 'zstd_inc.conf' /usr/local/nginx/conf/nginx.conf; then
+      # nginx_zstd_setup ran before nginx.conf existed, add its include now
+      sed -i 's/http {/http { \n include \/usr\/local\/nginx\/conf\/zstd_inc.conf;/g' /usr/local/nginx/conf/nginx.conf
+    fi
     opt_sslcache silent
     if [[ "$NGINX_MAINHOSTNAME_BLANK_INDEX" = [yY] ]]; then
         cp -a /usr/local/nginx/html/index.html /usr/local/nginx/html/index.html-orig
