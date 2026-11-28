@@ -501,13 +501,18 @@ kcarectl_covers_cve() {
 }
 
 json_escape() {
-  printf '%s' "$1" | python3 -c 'import sys,json;print(json.dumps(sys.stdin.read()))' 2>/dev/null && return 0
+  # -I (isolated mode): a json.py in the caller's working directory is never imported.
+  printf '%s' "$1" | python3 -I -c 'import sys,json;print(json.dumps(sys.stdin.read()))' 2>/dev/null && return 0
+  # Join all lines first: escapes placed before the N loop reached line 1 only.
+  # $!N keeps a one-line input off N at end of input (GNU sed would print it
+  # unescaped and exit).
   printf '"%s"' "$(printf '%s' "$1" | sed \
+    -e ':a' -e '$!N' -e '$!ba' \
     -e 's/\\/\\\\/g' \
     -e 's/"/\\"/g' \
     -e 's/\t/\\t/g' \
     -e 's/\r/\\r/g' \
-    -e ':a' -e 'N' -e '$!ba' -e 's/\n/\\n/g' \
+    -e 's/\n/\\n/g' \
     | tr -d '\000-\010\013\014\016-\037')"
 }
 
