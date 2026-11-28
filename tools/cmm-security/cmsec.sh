@@ -53,15 +53,18 @@ header() { printf '\n%b%s%b\n' "$C_BLUE" "$*" "$C_RESET"; }
 # could contain quotes, backslashes, or control characters. Returns the
 # value WITHOUT enclosing quotes so callers can embed it inside printf '%s'.
 cmsec_json_escape_inner() {
-  printf '%s' "$1" | python3 -c 'import sys,json; sys.stdout.write(json.dumps(sys.stdin.read())[1:-1])' 2>/dev/null && return 0
+  # -I (isolated mode): a json.py in the caller's working directory is never imported.
+  printf '%s' "$1" | python3 -I -c 'import sys,json; sys.stdout.write(json.dumps(sys.stdin.read())[1:-1])' 2>/dev/null && return 0
   # Bash fallback: backslash and quote, then strip ASCII controls (lossy but
   # produces valid JSON). Mirrors check-cve-2026-31431.sh json_escape().
+  # Join all lines first ($!N: see the checks' json_escape()).
   printf '%s' "$1" | sed \
+    -e ':a' -e '$!N' -e '$!ba' \
     -e 's/\\/\\\\/g' \
     -e 's/"/\\"/g' \
     -e 's/\t/\\t/g' \
     -e 's/\r/\\r/g' \
-    -e ':a' -e 'N' -e '$!ba' -e 's/\n/\\n/g' \
+    -e 's/\n/\\n/g' \
     | tr -d '\000-\010\013\014\016-\037'
 }
 
@@ -202,6 +205,12 @@ run_check_cached() {
 
   local state_key
   state_key="$(cmsec_cache_state_key "$check_path" "")"
+  # An empty key (cmsec_cache_state_key failed) would match any stored entry:
+  # run the check fresh and leave the cache alone.
+  if [ -z "$state_key" ]; then
+    run_check_fresh "$check_id" "$check_path" "" "$cache_file"
+    return $?
+  fi
 
   if [ "$NO_CACHE" -ne 1 ] && [ "$DMOTD_MODE" -eq 1 ]; then
     payload="$(cmsec_cache_read "$cache_file" "$state_key" 2>/dev/null || true)"
@@ -250,9 +259,15 @@ run_check_fresh() {
   local stdout_capture exit_rc
   stdout_capture="$("$check_path" --json --quiet 2>/dev/null)"
   exit_rc=$?
-  local payload
+  local payload key_after
   payload="$(printf '%s\n%s\n' "EXIT_RC=$exit_rc" "$stdout_capture")"
-  cmsec_cache_write "$cache_file" "$state_key" "$payload"
+  # The state can change while the check runs (an NFS server starts, a
+  # livepatch loads): store the payload only under the key it was computed
+  # for, so a verdict for the old state never sits under a valid key.
+  key_after="$(cmsec_cache_state_key "$check_path" "")"
+  if [ -n "$state_key" ] && [ "$state_key" = "$key_after" ]; then
+    cmsec_cache_write "$cache_file" "$state_key" "$payload"
+  fi
   printf '%s' "$payload"
   return $exit_rc
 }

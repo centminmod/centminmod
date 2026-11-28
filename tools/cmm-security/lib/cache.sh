@@ -13,12 +13,13 @@
 #                                 matches the current state and TTL hasn't
 #                                 expired, echoes the cached payload and
 #                                 returns 0; otherwise returns 1
-#   cmsec_cache_read_stale FILE -> echoes any existing cached payload regardless
-#                                 of state-key/TTL match (used for stale
-#                                 fallback under flock contention)
-#   cmsec_cache_write FILE PAYLOAD -> writes PAYLOAD with current state key
-#                                 header under flock; safe under concurrent
-#                                 dmotd login stampedes
+#   cmsec_cache_read_stale FILE KEY -> echoes the cached payload when its state
+#                                 key matches KEY, whatever its age (dmotd stale
+#                                 fallback while a refresh runs)
+#   cmsec_cache_write FILE KEY PAYLOAD -> writes PAYLOAD with state key KEY
+#                                 under flock; safe under concurrent dmotd
+#                                 login stampedes
+#   All three refuse an empty KEY (a failed cmsec_cache_state_key).
 #
 # Cache file format:
 #   #cmsec-cache-v1
@@ -171,6 +172,7 @@ $(grep -lE '^[[:space:]]*(install[[:space:]]+(esp4|esp6|rxrpc)[[:space:]]+/bin/f
 cmsec_cache_read() {
   local file="$1"
   local current_key="$2"
+  [ -n "$current_key" ] || return 1
   [ -r "$file" ] || return 1
 
   local stored_key written_ts age_min
@@ -191,17 +193,16 @@ cmsec_cache_read_stale() {
   # If the state key differs (e.g., user rebooted into a new kernel), the
   # cached payload reflects a system state that no longer exists and MUST
   # NOT be returned — that would cause dmotd to keep showing "VULNERABLE"
-  # on a freshly-patched system until the async refresh completed. The
-  # state-key argument is optional (omitted = legacy unconditional read,
-  # not used by current callers) so this stays additive.
+  # on a freshly-patched system until the async refresh completed. An empty
+  # key (a failed cmsec_cache_state_key) returns nothing: it used to mean an
+  # unconditional read, which served any stored verdict.
   local file="$1"
   local current_key="${2:-}"
+  [ -n "$current_key" ] || return 1
   [ -r "$file" ] || return 1
-  if [ -n "$current_key" ]; then
-    local stored_key
-    stored_key="$(awk -F= '/^STATE_KEY=/{print $2; exit}' "$file" 2>/dev/null)"
-    [ "$stored_key" = "$current_key" ] || return 1
-  fi
+  local stored_key
+  stored_key="$(awk -F= '/^STATE_KEY=/{print $2; exit}' "$file" 2>/dev/null)"
+  [ "$stored_key" = "$current_key" ] || return 1
   awk 'flag{print; next} /^---$/{flag=1}' "$file"
 }
 
@@ -210,6 +211,8 @@ cmsec_cache_write() {
   shift 2
   local payload="$*"
   local lock="${file%.cache}.lock"
+  # Never store under an empty key: the readers refuse it anyway.
+  [ -n "$current_key" ] || return 0
 
   # Ensure parent dir exists with proper mode.
   cmsec_cache_dir >/dev/null
