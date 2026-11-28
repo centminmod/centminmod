@@ -37,7 +37,9 @@ CMSEC_CACHE_BASE="${CMSEC_CACHE_BASE:-/var/cache/centminmod/cmsec}"
 CMSEC_CACHE_TTL_MIN="${CMSEC_CACHE_TTL_MIN:-1440}"   # 24h fallback safety net
 
 cmsec_cache_dir() {
-  if [ ! -d "$CMSEC_CACHE_BASE" ]; then
+  # A non-root caller also falls back to its per-user dir when the base exists
+  # but is not writable (root's 0700 dir): it can neither read nor write it.
+  if [ ! -d "$CMSEC_CACHE_BASE" ] || [ ! -w "$CMSEC_CACHE_BASE" ]; then
     if [ "$(id -u 2>/dev/null || echo 1)" = "0" ]; then
       mkdir -p "$CMSEC_CACHE_BASE" 2>/dev/null && chmod 0700 "$CMSEC_CACHE_BASE" 2>/dev/null
     else
@@ -127,9 +129,43 @@ $(grep -lE '^[[:space:]]*(install[[:space:]]+(esp4|esp6|rxrpc)[[:space:]]+/bin/f
   fi
   modprobe_dirtyfrag_digest="$(printf '%s|%s' "$modprobe_dirtyfrag_digest" "$_mod_loaded" \
                                 | sha256sum | awk '{print $1}' | head -c 16)"
-  printf '%s|%s|%s|%s|%s|%s|%s|%s' \
-    "$kernel" "$os_identity" "$cmdline_mitig" "$sysctl_ptrace_scope" "$livepatch_digest" "$script_sha" "$baseline_sha" "$modprobe_dirtyfrag_digest" \
-    | sha256sum | awk '{print $1}'
+  local state
+  state="$(printf '%s|%s|%s|%s|%s|%s|%s|%s' \
+    "$kernel" "$os_identity" "$cmdline_mitig" "$sysctl_ptrace_scope" "$livepatch_digest" "$script_sha" "$baseline_sha" "$modprobe_dirtyfrag_digest")"
+  # Checks that cmsec can hide (CMSEC_DISPLAY_GATED: CVE-2026-99362, shown
+  # only when an NFS server is in use) also key on the NFS server state, so
+  # starting, stopping, enabling or reconfiguring it re-runs them. Other
+  # checks keep their keys, so NFS changes never re-run them. Inputs: nfsd
+  # thread count and offered versions (root-only files, present while the
+  # nfsd filesystem is mounted), nfsd kernel threads and whether kthreadd
+  # (PID 2) is visible at all (the non-root signal; hidepid hides it), the
+  # nfs-server unit state, boot links, and the nfs.conf / CSF files behind
+  # the reported fields. One -o per ps column: procps before 3.3.15
+  # (EL6/EL7) reads "pid=,ppid=,comm=" as a single column.
+  if [ -n "$check_script" ] && grep -q '^CMSEC_DISPLAY_GATED="true"' "$check_script" 2>/dev/null; then
+    local nfsd_state="" _nf
+    for _nf in /proc/fs/nfsd/threads /proc/fs/nfsd/versions; do
+      if [ -r "$_nf" ]; then
+        nfsd_state="$nfsd_state|$_nf=$(head -n 1 "$_nf" 2>/dev/null)"
+      elif [ -e "$_nf" ]; then
+        nfsd_state="$nfsd_state|$_nf"
+      fi
+    done
+    nfsd_state="$nfsd_state|$(ps -e -o pid= -o ppid= -o comm= 2>/dev/null | awk '$1 == 2 {v = 1} $2 == 2 && $3 == "nfsd" {n++} END {print "kthreads=" n + 0 ",pid2=" v + 0}')"
+    if command -v systemctl >/dev/null 2>&1 && [ -d /run/systemd/system ]; then
+      # timeout: this runs on every dmotd login; a busy PID 1 must not stall it.
+      local _to=""
+      command -v timeout >/dev/null 2>&1 && _to="timeout 5"
+      nfsd_state="$nfsd_state|active=$($_to systemctl is-active nfs-server.service 2>/dev/null)"
+    fi
+    for _nf in /etc/systemd/system/*.wants/nfs-server.service /run/systemd/system/*.wants/nfs-server.service \
+               /etc/rc[0-6].d/S[0-9][0-9]nfs /etc/inittab /etc/nfs.conf /etc/nfs.conf.d/*.conf \
+               /etc/csf/csf.conf /etc/csf/csf.disable; do
+      [ -e "$_nf" ] && nfsd_state="$nfsd_state|$_nf:$(stat -c %Y "$_nf" 2>/dev/null)"
+    done
+    state="$state|$nfsd_state"
+  fi
+  printf '%s' "$state" | sha256sum | awk '{print $1}'
 }
 
 cmsec_cache_read() {
@@ -182,7 +218,8 @@ cmsec_cache_write() {
   # process is already refreshing) — caller can fall back to stale cache.
   if command -v flock >/dev/null 2>&1; then
     (
-      exec 9>"$lock" 2>/dev/null || exit 0
+      # stderr first: a failed `9>` redirect reports before a later 2>/dev/null applies.
+      exec 2>/dev/null 9>"$lock" || exit 0
       flock -n 9 || exit 0
       umask 022
       {

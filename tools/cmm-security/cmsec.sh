@@ -265,6 +265,9 @@ parse_payload() {
   PARSE_JSON="$(printf '%s\n' "$payload" | awk 'NR>1')"
   PARSE_STATUS="$(printf '%s' "$PARSE_JSON" | awk -F'"' '/"final_status"/ {print $4; exit}')"
   PARSE_KERNEL="$(printf '%s' "$PARSE_JSON" | awk -F'"' '/"running_kernel_full"/ {print $4; exit}')"
+  # "hidden" = the check does not apply to this host (e.g. CVE-2026-99362
+  # with no NFS server in use); it is left out of the dmotd and full-run output.
+  PARSE_DISPLAY="$(printf '%s' "$PARSE_JSON" | awk -F'"' '/"display"/ {print $4; exit}')"
   [ -z "$PARSE_STATUS" ] && case "${PARSE_EXIT:-3}" in
     0) PARSE_STATUS="patched" ;;
     1) PARSE_STATUS="vulnerable" ;;
@@ -393,6 +396,11 @@ do_one_check_full() {
     local payload
     payload="$(run_check_cached "$cve_id" "$check_path")"
     parse_payload "$payload"
+    # dmotd consumers (compact tally, silent mode, Pushover) skip hidden
+    # checks, the same as the banner lines; plain --json keeps them.
+    if [ "$DMOTD_MODE" -eq 1 ] && [ "$PARSE_DISPLAY" = "hidden" ]; then
+      return "${PARSE_EXIT:-0}"
+    fi
     if [ -n "$PARSE_JSON" ]; then
       printf '%s\n' "$PARSE_JSON"
     else
@@ -427,6 +435,7 @@ do_one_check_dmotd() {
 
   payload="$(run_check_cached "$cve_id" "$check_path")"
   parse_payload "$payload"
+  [ "$PARSE_DISPLAY" = "hidden" ] && return "${PARSE_EXIT:-0}"
 
   local extra=""
   case "$CMSEC_KERNEL_TRACK" in
@@ -442,6 +451,20 @@ do_one_check_dmotd() {
 
   emit_dmotd_line "$cve_id" "$PARSE_STATUS" "$CMSEC_KERNEL_TRACK" "$extra"
   return "${PARSE_EXIT:-3}"
+}
+
+# Checks that set CMSEC_DISPLAY_GATED="true" can report "display": "hidden"
+# when they do not apply to this host. The full `cmsec` run reads their
+# cached JSON first and skips the hidden ones; other checks are not run twice.
+check_hidden_in_full_run() {
+  local cve_id="$1" check_path payload
+  check_path="$(resolve_check_path "$cve_id")" || return 1
+  grep -q '^CMSEC_DISPLAY_GATED="true"' "$check_path" 2>/dev/null || return 1
+  is_suppressed "$cve_id" && return 1
+  [ "$CMSEC_IN_CONTAINER" = "true" ] && return 1
+  payload="$(run_check_cached "$cve_id" "$check_path")"
+  parse_payload "$payload"
+  [ "$PARSE_DISPLAY" = "hidden" ]
 }
 
 do_run() {
@@ -481,6 +504,9 @@ do_run() {
   fi
 
   for cve_id in $checks; do
+    if [ "$JSON_OUT" -ne 1 ] && check_hidden_in_full_run "$cve_id"; then
+      continue
+    fi
     saw_any=1
     if [ "$JSON_OUT" -ne 1 ]; then
       header "===== cmsec: $cve_id ====="
